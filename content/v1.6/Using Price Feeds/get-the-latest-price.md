@@ -1,0 +1,122 @@
+---
+title: "Get the Latest Price"
+slug: "get-the-latest-price"
+hidden: false
+metadata: 
+  title: "Get the Latest Price of an Asset"
+  description: "How to use Chainlink Price Feeds to retrieve the latest price of ETH in your smart contracts."
+  image: 
+    0: "https://files.readme.io/9d99262-670379d-OpenGraph_V3.png"
+    1: "670379d-OpenGraph_V3.png"
+    2: 1459
+    3: 1459
+    4: "#dbe1f8"
+createdAt: "2020-07-17T16:39:46.533Z"
+updatedAt: "2021-03-18T12:06:51.205Z"
+---
+[block:callout]
+{
+  "type": "success",
+  "body": "This March, you have the chance to help build the next generation of smart contracts.\n\nThe Chainlink Spring Hackathon has a prize pot of over $80k+ and is sponsored by some of the most prominent crypto projects.\n\nMarch 15th - April 11th\n<a href=\"https://chain.link/hackathon?utm_source=chainlink&utm_medium=developer-docs&utm_campaign=hackathon\" target=\"_blank\"><b>Register Here.</b></a>",
+  "title": "Join the Spring Chainlink 2021 Hackathon"
+}
+[/block]
+This page explains how to get the latest price of Ethereum (ETH) inside smart contracts, using the <a href="https://kovan.etherscan.io/address/0x9326BFA02ADD2366b30bacB125260Af641031331" target="_blank">ETH/USD Price Feed</a> on the Kovan testnet.
+
+> 📘 
+> 
+> The full list of price feeds for each network are available from [Price Feed Contracts](doc:reference-contracts).
+
+# Code Examples
+
+## Solidity
+
+To consume price data, your smart contract should reference <a href="https://github.com/smartcontractkit/chainlink/blob/master/evm-contracts/src/v0.6/interfaces/AggregatorV3Interface.sol" target="_blank">`AggregatorV3Interface`</a>, which defines the external functions implemented by Price Feeds.
+
+<div class="row text-center center">
+<div class="col-xs-12 col-md-6 col-md-offset-3">
+<a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&gist=0c5928a00094810d2ba01fd8d1083581" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
+</div>
+<div class="col-xs-12 col-md-6 col-md-offset-3">
+<a href="https://docs.chain.link/docs/example-walkthrough" target="_blank">What is Remix?</a>
+</div>
+</div>
+
+```javascript Kovan
+
+pragma solidity ^0.6.7;
+
+import "@chainlink/contracts/src/v0.6/interfaces/AggregatorV3Interface.sol";
+
+contract PriceConsumerV3 {
+
+    AggregatorV3Interface internal priceFeed;
+
+    /**
+     * Network: Kovan
+     * Aggregator: ETH/USD
+     * Address: 0x9326BFA02ADD2366b30bacB125260Af641031331
+     */
+    constructor() public {
+        priceFeed = AggregatorV3Interface(0x9326BFA02ADD2366b30bacB125260Af641031331);
+    }
+
+    /**
+     * Returns the latest price
+     */
+    function getLatestPrice() public view returns (int) {
+        (
+            uint80 roundID, 
+            int price,
+            uint startedAt,
+            uint timeStamp,
+            uint80 answeredInRound
+        ) = priceFeed.latestRoundData();
+        return price;
+    }
+}
+```
+
+The `latestRoundData` function returns five values representing information about the latest price data. See [API Reference](doc:price-feeds-api-reference) for more details.
+
+## Javascript
+```javascript Kovan
+const web3 = new Web3("https://kovan.infura.io/v3/<infura_project_id>");
+const aggregatorV3InterfaceABI = [{"inputs":[],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"description","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint80","name":"_roundId","type":"uint80"}],"name":"getRoundData","outputs":[{"internalType":"uint80","name":"roundId","type":"uint80"},{"internalType":"int256","name":"answer","type":"int256"},{"internalType":"uint256","name":"startedAt","type":"uint256"},{"internalType":"uint256","name":"updatedAt","type":"uint256"},{"internalType":"uint80","name":"answeredInRound","type":"uint80"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"latestRoundData","outputs":[{"internalType":"uint80","name":"roundId","type":"uint80"},{"internalType":"int256","name":"answer","type":"int256"},{"internalType":"uint256","name":"startedAt","type":"uint256"},{"internalType":"uint256","name":"updatedAt","type":"uint256"},{"internalType":"uint80","name":"answeredInRound","type":"uint80"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"version","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}];
+const addr = "0x9326BFA02ADD2366b30bacB125260Af641031331";
+const priceFeed = new web3.eth.Contract(aggregatorV3InterfaceABI, addr);
+priceFeed.methods.latestRoundData().call()
+    .then((roundData) => {
+        // Do something with roundData
+        console.log("Latest Round Data", roundData)
+    });
+```
+[block:html]
+{
+  "html": "<div class=\"row text-center center\">\n\t<div class=\"col-xs-12 col-md-6 col-md-offset-3\">\n\t\t<a id=\"get-price-button\" href=\"javascript:getLatestPrice();\" class=\"cl-button--ghost javascript-tracked\">Latest Price: </a>\n    <input id=\"get-price-field\" type=\"number\" placeholder=\"Latest Price\"></input>\n\t</div>\n</div>"
+}
+[/block]
+## Python
+
+```python Kovan
+web3 = Web3(Web3.HTTPProvider('https://kovan.infura.io/v3/<infura_project_id>'))
+abi = '[{"inputs":[],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"description","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint80","name":"_roundId","type":"uint80"}],"name":"getRoundData","outputs":[{"internalType":"uint80","name":"roundId","type":"uint80"},{"internalType":"int256","name":"answer","type":"int256"},{"internalType":"uint256","name":"startedAt","type":"uint256"},{"internalType":"uint256","name":"updatedAt","type":"uint256"},{"internalType":"uint80","name":"answeredInRound","type":"uint80"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"latestRoundData","outputs":[{"internalType":"uint80","name":"roundId","type":"uint80"},{"internalType":"int256","name":"answer","type":"int256"},{"internalType":"uint256","name":"startedAt","type":"uint256"},{"internalType":"uint256","name":"updatedAt","type":"uint256"},{"internalType":"uint80","name":"answeredInRound","type":"uint80"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"version","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}]'
+addr = '0x9326BFA02ADD2366b30bacB125260Af641031331'
+contract = web3.eth.contract(address=addr, abi=abi)
+latestData = contract.functions.latestRoundData().call()
+print(latestData)
+```
+
+<div class="row text-center center">
+<div class="col-xs-12 col-md-6 col-md-offset-3">
+<a href="https://repl.it/@alexroan/GetLatestPriceWeb3PY" target="_blank" class="cl-button--ghost python-tracked">Run this python ↗</a>
+</div>
+</div>
+
+# How Do Price Feeds Get Their Data?
+
+Price Feeds are aggregated from many data sources by a decentralized set of independent Node Operators. The [Decentralized Data Model](doc:architecture-decentralized-model) describes this in detail.
+
+# More Aggregator Functions
+
+Getting the latest price is not the only data that can be retrieved from aggregators. You can also retrieve historical price data. To find out more, move on to [Historical Price Data](doc:historical-price-data).

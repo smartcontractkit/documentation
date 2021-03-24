@@ -1,0 +1,86 @@
+---
+title: "Get a Random Number"
+slug: "get-a-random-number"
+hidden: false
+metadata: 
+  description: "How to generate a random number inside a smart contract using Chainlink VRF."
+  image: 
+    0: "https://files.readme.io/b7f753e-670379d-OpenGraph_V3.png"
+    1: "670379d-OpenGraph_V3.png"
+    2: 1459
+    3: 1459
+    4: "#dbe1f8"
+createdAt: "2020-07-22T10:56:15.157Z"
+updatedAt: "2020-10-16T09:47:49.989Z"
+---
+This page explains how to get a random number inside a smart contract, using Chainlink VRF.
+
+# Random Number Consumer
+
+Chainlink VRF follows the [Request & Receive Data](doc:request-and-receive-data) cycle. To consume randomness, your contract should inherit from <a href="https://github.com/smartcontractkit/chainlink/blob/master/evm-contracts/src/v0.6/VRFConsumerBase.sol" target="_blank">`VRFConsumerBase`</a> and define two required functions
+
+1. `requestRandomness`, which makes the initial request for randomness.
+2. `fulfillRandomness`, which is the function that receives and does something with verified randomness.
+
+The contract should own enough LINK to pay the specified fee.
+
+> ⚠️ Choosing a seed
+> 
+> It is vital that you choose a seed that is difficult to anticipate. See [Choosing a Seed](doc:chainlink-vrf-api-reference#choosing-a-seed) for more details.
+
+<div class="row text-center center">
+<div class="col-xs-12 col-md-6 col-md-offset-3">
+<a href="https://remix.ethereum.org/#version=soljson-v0.6.6+commit.6c089d02.js&optimize=false&evmVersion=null&gist=536123b71478ad4442cfc4278e8de577" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
+</div>
+<div class="col-xs-12 col-md-6 col-md-offset-3">
+<a href="https://docs.chain.link/docs/example-walkthrough" target="_blank">What is Remix?</a>
+</div>
+</div>
+
+```javascript Kovan
+
+pragma solidity 0.6.6;
+
+import "@chainlink/contracts/src/v0.6/VRFConsumerBase.sol";
+
+contract RandomNumberConsumer is VRFConsumerBase {
+    
+    bytes32 internal keyHash;
+    uint256 internal fee;
+    
+    uint256 public randomResult;
+    
+    /**
+     * Constructor inherits VRFConsumerBase
+     * 
+     * Network: Kovan
+     * Chainlink VRF Coordinator address: 0xdD3782915140c8f3b190B5D67eAc6dc5760C46E9
+     * LINK token address:                0xa36085F69e2889c224210F603D836748e7dC0088
+     * Key Hash: 0x6c3699283bda56ad74f6b855546325b68d482e983852a7a82979cc4807b641f4
+     */
+    constructor() 
+        VRFConsumerBase(
+            0xdD3782915140c8f3b190B5D67eAc6dc5760C46E9, // VRF Coordinator
+            0xa36085F69e2889c224210F603D836748e7dC0088  // LINK Token
+        ) public
+    {
+        keyHash = 0x6c3699283bda56ad74f6b855546325b68d482e983852a7a82979cc4807b641f4;
+        fee = 0.1 * 10 ** 18; // 0.1 LINK
+    }
+    
+    /** 
+     * Requests randomness from a user-provided seed
+     */
+    function getRandomNumber(uint256 userProvidedSeed) public returns (bytes32 requestId) {
+        require(LINK.balanceOf(address(this)) >= fee, "Not enough LINK - fill contract with faucet");
+        return requestRandomness(keyHash, fee, userProvidedSeed);
+    }
+
+    /**
+     * Callback function used by VRF Coordinator
+     */
+    function fulfillRandomness(bytes32 requestId, uint256 randomness) internal override {
+        randomResult = randomness;
+    }
+}
+```

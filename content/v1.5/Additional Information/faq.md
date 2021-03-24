@@ -1,0 +1,130 @@
+---
+title: "FAQ"
+slug: "faq"
+hidden: false
+metadata: 
+  title: "Developer FAQ - Chainlink"
+  description: "Find answers to common questions about developing on Chainlink."
+createdAt: "2018-07-30T12:52:28.099Z"
+updatedAt: "2020-06-04T13:04:29.477Z"
+---
+# General
+
+## What is the latest progress of the project?
+
+We usually have many development efforts going on at once with the node, the GUI, and the contracts. Check out the project tracker (linked below) to see the current development status.
+
+Resources:
+*  <a href="https://www.pivotaltracker.com/n/projects/2129823" target="_blank">Project Tracker</a>
+*  <a href="https://github.com/smartcontractkit/chainlink" target="_blank">GitHub</a>
+
+## When is <*something*> expected?
+
+We do not usually give time frames unless something is visibly near completion on the project tracker. This includes features, contracts, and integration with other projects. If something is immediately pending to be merged within the code base, it will be visible as an open PR (pull request) in the repository.
+
+Resources:
+*  <a href="https://github.com/smartcontractkit/chainlink/pulls" target="_blank">Pull Requests</a>
+
+## How many members does the team have?
+
+The team is visible <a href="https://chain.link/team/" target="_blank">on our website</a>. We also encourage community contributions to our <a href="https://github.com/smartcontractkit/chainlink" target="_blank">Github repository</a>.
+
+## Are you hiring?
+
+We are always looking for talented and experienced individuals. Please visit <a href="https://careers.chain.link" target="_blank">our careers page</a>.
+
+Resources:
+*  <a href="https://careers.chain.link" target="_blank">Chainlink Careers</a>
+
+# Running a node
+
+## How do I set up a Chainlink node?
+
+You can set up a node to run on a test network or the Ethereum mainnet right now. The node will not be able to participate in fulfilling service agreement requests yet, but will in the near future. However, it can be used to fulfill requests sent to your oracle contract address and you can add external adapters to it for extending its functionality.
+
+Resources:
+*  [Running a Chainlink Node](doc:running-a-chainlink-node) 
+
+## How much LINK to run a node?
+
+You will be able to run a Chainlink node with 0 LINK, however, you will not be able to participate in requests that require a deposit until you’ve earned some LINK first.
+
+Requesters may specify an amount of LINK that all nodes must deposit as a penalty fee in case the node doesn’t fulfill the request. However, since penalty fees are optional, not all requests will require it.
+
+## What are the hardware requirements for a Chainlink node?
+
+The hardware requirements of the Chainlink node are very minimal to operate. It should run with 1 core and 1 GB of RAM, though you may want to up the RAM to 2 GB for better reliability. However, connectivity to an Ethereum client is required for communication with the blockchain. If you decide to run your own Ethereum client, you will want to run that on a separate machine. Hardware requirements of Ethereum clients may change over time.
+
+Resources:
+*  [Running a Chainlink Node](doc:running-a-chainlink-node) 
+*  <a href="https://github.com/smartcontractkit/chainlink/wiki/Development-Setup-Guide" target="_blank">Development Setup Guide</a>
+*  <a href="https://ethereum.stackexchange.com/a/27369" target="_blank">StackExchange Answer</a>
+*  <a href="https://ethereum.stackexchange.com/questions/tagged/hardware" target="_blank">All Ethereum Hardware Questions</a>
+
+## Do I need to have access to APIs in order to provide data?
+
+The Chainlink node can fulfill requests from open (unauthenticated) APIs out-of-the-box, without the need for [External Adapters](doc:external-adapters) as long as you've added the [jobs in the Fulfilling Requests guide](doc:fulfilling-requests#section-add-jobs-to-the-node). For these requests, requesters would supply the URL to the open API they wish each node to retrieve, and the Chainlink node will use its core adapters to fulfill the request.
+
+If you would like to provide access to an API which requires authentication, you will need to create a job specific for that API, either with an external adapter or by using the parameters of the [HttpGet adapter](doc:adapters#section-httpget).
+
+Resources:
+*  [Adapters](doc:adapters#section-httpget)
+
+##  Is there a list of external adapters available?
+
+Currently, the community maintains lists of available external adapters.
+
+Resources:
+*  <a href="https://market.link/" target="_blank">Chainlink Market</a>
+*  <a href="https://chainlinkadapters.com/" target="_blank">Chainlink Adapters</a>
+
+## How many nodes are currently running?
+
+The <a href="https://market.link/search/nodes" target="_blank">Chainlink Market</a> keeps a list of node operators registered with them across multiple networks.
+
+Resources:
+*  <a href="https://market.link/" target="_blank">Chainlink Market</a>
+
+# Smart contract creators
+
+## How do I request data from Chainlink?
+
+You can use our <a href="https://blog.chain.link/how-to-use-chainlink-with-truffle-2/" target="_blank">Truffle Box</a> to get started by unboxing a developer-focused template.
+
+If you already have a project started and would like to integrate Chainlink, you can [add Chainlink to your existing project](doc:create-a-chainlinked-project#section-add-chainlink-to-your-existing-project) by using our `chainlink` NPM package.
+
+Resources:
+*  [Create a Chainlinked Project](doc:create-a-chainlinked-project) 
+*  [Example Walkthrough](doc:example-walkthrough) 
+*  <a href="https://blog.chain.link/how-to-use-chainlink-with-truffle-2/" target="_blank">How to use Chainlink with Truffle</a>
+
+## Can Chainlink be used to connect to <*some blockchain/API*>?
+
+Yes, the Chainlink node can connect to most APIs out-of-the-box. Some APIs require authentication by providing request headers for the operator's API key, which the Chainlink node supports. Additionally, external adapters allow for connectivity to any resource as long as the adapter conforms to a minimal JSON specification for communicating to and from the Chainlink node.
+
+Resources:
+*  [External Adapters](doc:external-adapters) 
+<a href="https://blog.chain.link/chainlink-external-adapters-explained/">Chainlink External Adapters Explained</a>
+
+## How do I select Chainlink nodes for my requests?
+
+You can use the <a href="https://market.link/" target="_blank">Chainlink Market</a> to select nodes for your requests. Then with the node's oracle contract address and Job ID, you will use the [`sendChainlinkRequestTo`](doc:chainlink-framework#section-sendchainlinkrequestto)  method to create requests to oracles.
+
+Resources:
+*  [Create a Chainlinked Project](doc:create-a-chainlinked-project) 
+*  [Example Walkthrough](doc:example-walkthrough) 
+*  <a href="https://market.link/" target="_blank">Chainlink Market</a>
+*  [Chainlink Contract Reference](doc:chainlink-framework#section-sendchainlinkrequestto)
+
+# Token
+
+## What is the LINK token used for?
+
+The LINK token is an ERC677 token that inherits functionality from the ERC20 token standard and allows token transfers to contain a data payload. It is used to pay node operators for retrieving data for smart contracts and also for deposits placed by node operators as required by contract creators.
+
+Resources:
+*  <a href="https://github.com/ethereum/EIPs/issues/677" target="_blank">ERC677: transferAndCall Token Standard</a>
+
+## What wallet do I use to store LINK?
+
+Any wallet that handles ERC20 tokens should work fine. The ERC677 token standard that the LINK token implements still retains all functionality of ERC20 tokens.
