@@ -1,4 +1,5 @@
 ---
+layout: nodes.liquid
 title: "Example Projects"
 slug: "example-projects"
 hidden: false
