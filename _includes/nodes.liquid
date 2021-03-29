@@ -5,53 +5,16 @@ layout: ./main.liquid
 </style>
 <div style="display:flex">
     <navigation style="padding:16px;max-width:250px;">
-        <div>
-            <strong>NODE OPERATORS</strong>
-            <a href="/docs/node-operator-overview" >Overview</a>
-            <a href="/docs/running-a-chainlink-node" >Running a Chainlink Node</a>
-            <a href="/docs/fulfilling-requests" >Fulfilling Requests</a>
-            <a href="/docs/run-an-ethereum-client" >Run an Ethereum Client</a>
-            <a href="/docs/performing-system-maintenance" >Performing System Maintenance</a>
-            <a href="/docs/connecting-to-a-remote-database" >Connecting to a Remote Database</a>
-            <a href="/docs/configuration-variables" >Configuration Variables</a>
-            <a href="/docs/enabling-https-connections" >Enabling HTTPS Connections</a>
-            <a href="/docs/miscellaneous" >Miscellaneous</a>
-            <a href="/docs/best-security-practices" >Best Security and Operating Practices</a>
-            <a href="/docs/fluxaggregator-uses" >FluxAggregator Uses</a>
-        </div>
-        <div>
-        <strong>ORACLE JOBS</strong>
-        <a href="/docs/job-specifications" >Job Specifications</a>
-<a href="/docs/adapters" >Core Adapters</a>
-<a href="/docs/initiators" >Initiators</a>
-        </div>
-        <div>
-        <strong>EXTERNAL ADAPTERS</strong>
-        <a href="/docs/external-adapters" >Introduction</a>
-        <a href="/docs/contract-creators" >External Adapters in Solidity</a>
-        <a href="/docs/developers" >Building External Adapters</a>
-        <a href="/docs/node-operators" >Bridges: Adding External Adapters to Nodes</a>
-
-    </div>
-    <div>
-        <strong>EXTERNAL INITIATORS</strong><a href="/docs/external-initiators-introduction" >Introduction</a>
-        <a href="/docs/building-external-initiators" >Building External Initiators</a>
-        <a href="/docs/external-initiators-in-nodes" >Adding External Initiators to Nodes</a>
+        {% for section in navigation.navigation %} 
+        <div> 
+            {{section.section}}
+            {% for destination in section.contents %}
+            <a href="/docs/{{destination.url}}" {% if page.fileSlug == destination.url%} class="active" {% endif %}>{{destination.title}}</a>
+            {% endfor %}
+            
+            </div>
+            {% endfor %}
         
-
-    </div>
-    <div>
-        <strong>DATA PROVIDER NODES</strong>
-        <a href="/docs/chainlink-alarm-clock" >Chainlink Alarm Clock (Testnet)</a>
-        <a href="/docs/lcx-testnet" >LCX (Testnet)</a>
-        <a href="/docs/kraken-rates-oracle-node" >Kraken Rates Oracle Node</a>
-        <a href="/docs/tiingo-eod-stock-price-oracle" >Tiingo EOD Stock Price Oracle</a>
-        <a href="/docs/geodb-oracle-node" >GeoDB Oracle Node</a>
-        <a href="/docs/therundown-oracle-node" >TheRunDown Oracle Node</a>
-        <a href="/docs/dns-ownership-oracle" >DNS Ownership Oracle</a>
-        <a href="/docs/watchsignals" >WatchSignals Luxury Watch Price Oracle</a>
-        
-    </div>
     </navigation>
     <div style="max-width:800px;margin: 0px auto; padding:16px;">
     <!--{% include banner %}-->
