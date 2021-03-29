@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Binance Chainlink (Ethereum Mainnet)"
 slug: "binance-chainlink-ethereum-mainnet"
 hidden: false
-createdAt: "2019-09-24T13:23:17.707Z"
-updatedAt: "2019-11-01T17:46:20.931Z"
+date: Last Modified
 ---
 This Chainlink has a dedicated connection to <a href="https://github.com/binance-exchange/binance-official-api-docs">Binance's API</a>. This Chainlink will allow requesters to create queries to the API, and return the response.
 [block:api-header]

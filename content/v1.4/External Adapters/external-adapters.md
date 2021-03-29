@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Introduction"
 slug: "external-adapters"
 hidden: false
-createdAt: "2018-08-29T13:01:40.140Z"
-updatedAt: "2020-11-12T11:54:52.042Z"
+date: Last Modified
 ---
 External adapters are how Chainlink enables easy integration of custom computations and specialized APIs. External adapters are services which the core of the Chainlink node communicates via its API with a simple JSON specification. If you want a step by step, be sure to check out our [blog post](https://blog.chain.link/build-and-use-external-adapters/). 
 

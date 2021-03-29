@@ -1,4 +1,5 @@
 ---
+layout: nodes.liquid
 title: "Make a GET Request"
 slug: "make-a-http-get-request"
 hidden: false
@@ -11,8 +12,7 @@ metadata:
     2: 1459
     3: 1459
     4: "#dbe1f8"
-createdAt: "2020-07-30T10:34:29.711Z"
-updatedAt: "2021-03-09T11:40:26.729Z"
+date: Last Modified
 ---
 [block:callout]
 {

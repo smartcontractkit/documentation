@@ -1,4 +1,5 @@
 ---
+layout: nodes.liquid
 title: "Developer Communications"
 slug: "developer-communications"
 hidden: false
@@ -11,8 +12,7 @@ metadata:
     2: 1459
     3: 1459
     4: "#dbe1f8"
-createdAt: {}
-updatedAt: "2020-09-03T16:28:27.286Z"
+date: Last Modified
 ---
 # Price feed upgrades
 

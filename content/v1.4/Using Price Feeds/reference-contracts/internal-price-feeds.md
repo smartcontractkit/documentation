@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Internal Price Feeds"
 slug: "internal-price-feeds"
 hidden: true
-createdAt: "2020-11-19T12:15:03.838Z"
-updatedAt: "2020-12-23T12:23:41.238Z"
+date: Last Modified
 ---
 > ❗️Do not publish
 >

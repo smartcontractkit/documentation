@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Tron Chainlink (Testnet)"
 slug: "tron-chainlink-testnet"
 hidden: true
-createdAt: "2019-02-27T19:58:59.079Z"
-updatedAt: "2019-11-01T17:43:08.839Z"
+date: Last Modified
 ---
 This Chainlink has a dedicated connection to <a href="https://www.trongrid.io/" target="_blank">TronGrid</a> to access the Tron blockchain. This Chainlink's functionality is currently limited to retrieving information on the blockchain and cannot send transactions.
 [block:api-header]

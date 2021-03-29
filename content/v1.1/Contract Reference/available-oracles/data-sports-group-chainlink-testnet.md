@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "DataSportsGroup Chainlink (Testnet)"
 slug: "data-sports-group-chainlink-testnet"
 hidden: true
-createdAt: "2018-10-06T20:16:18.259Z"
-updatedAt: "2019-11-01T17:44:07.979Z"
+date: Last Modified
 ---
 Chainlink has a dedicated connection to <a href="http://datasportsgroup.com/" target="_blank">Data Sports Group's API</a>. This Chainlink will retrieve the winner of a match for sporting events
 [block:api-header]

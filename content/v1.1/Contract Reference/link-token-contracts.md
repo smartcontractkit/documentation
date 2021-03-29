@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "LINK Token Contracts"
 slug: "link-token-contracts"
 hidden: false
-createdAt: "2020-04-24T10:11:53.866Z"
-updatedAt: "2020-10-13T09:41:12.493Z"
+date: Last Modified
 ---
 LINK tokens are used to pay node operators for retrieving data for smart contracts and also for deposits placed by node operators as required by contract creators.
 

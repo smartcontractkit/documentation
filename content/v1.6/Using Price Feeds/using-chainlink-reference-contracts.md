@@ -1,4 +1,5 @@
 ---
+layout: nodes.liquid
 title: "Introduction to Price Feeds"
 slug: "using-chainlink-reference-contracts"
 hidden: false
@@ -11,8 +12,7 @@ metadata:
     2: 1459
     3: 1459
     4: "#dbe1f8"
-createdAt: "2019-05-29T23:20:19.690Z"
-updatedAt: "2021-03-18T11:56:35.649Z"
+date: Last Modified
 ---
 [block:callout]
 {

@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "FluxAggregator Uses"
 slug: "fluxaggregator-uses"
 hidden: false
-createdAt: "2020-06-05T21:19:12.029Z"
-updatedAt: "2020-06-05T21:25:11.743Z"
+date: Last Modified
 ---
 This page outlines the uses of the FluxAggregator contract for the node operators that feed data into it.
 [block:api-header]

@@ -1,4 +1,5 @@
 ---
+layout: nodes.liquid
 title: "Migration Instructions"
 slug: "migrating-to-flux-aggregator"
 hidden: false
@@ -10,8 +11,7 @@ metadata:
     2: 1459
     3: 1459
     4: "#dbe1f8"
-createdAt: "2020-08-11T09:47:36.562Z"
-updatedAt: "2020-08-26T16:20:57.732Z"
+date: Last Modified
 ---
 The Chainlink price reference feeds are being upgraded to a new version as of August 2020. This new release includes many new features which help make price feeds more resistant to network congestion and introduce new functions which allow developers to better handle stale data.
 

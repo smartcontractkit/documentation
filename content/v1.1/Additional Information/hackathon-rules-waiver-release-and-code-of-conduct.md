@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Hackathon Rules, Waiver & Release, and Code of Conduct"
 slug: "hackathon-rules-waiver-release-and-code-of-conduct"
 hidden: true
-createdAt: "2020-08-20T17:06:11.433Z"
-updatedAt: "2020-08-20T17:06:11.433Z"
+date: Last Modified
 ---
 # Participation Eligibility
 

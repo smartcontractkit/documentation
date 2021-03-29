@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Hackathon Resources"
 slug: "hackathon-resources"
 hidden: false
-createdAt: "2020-06-29T02:13:16.359Z"
-updatedAt: "2021-02-26T11:15:52.932Z"
+date: Last Modified
 ---
 [block:callout]
 {

@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "FOAM Chainlink (Testnet)"
 slug: "foam-chainlink-testnet"
 hidden: true
-createdAt: "2019-09-02T19:50:48.207Z"
-updatedAt: "2019-11-01T17:40:48.402Z"
+date: Last Modified
 ---
 This Chainlink has a dedicated connection to Google's BigQuery API for FOAM.
 [block:api-header]

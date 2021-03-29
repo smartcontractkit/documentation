@@ -1,4 +1,5 @@
 ---
+layout: nodes.liquid
 title: "Binance Smart Chain Price Feeds"
 slug: "binance-smart-chain-addresses"
 hidden: false
@@ -10,8 +11,7 @@ metadata:
     2: 1459
     3: 1459
     4: "#dbe1f8"
-createdAt: "2020-11-05T09:19:45.267Z"
-updatedAt: "2021-03-12T20:44:15.579Z"
+date: Last Modified
 ---
 For implementation instructions, please refer to [Get the Latest Price](doc:get-the-latest-price).
 

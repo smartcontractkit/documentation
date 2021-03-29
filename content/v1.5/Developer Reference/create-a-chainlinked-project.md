@@ -1,4 +1,5 @@
 ---
+layout: nodes.liquid
 title: "Install Instructions"
 slug: "create-a-chainlinked-project"
 hidden: false
@@ -11,8 +12,7 @@ metadata:
     2: 1459
     3: 1459
     4: "#dbe1f8"
-createdAt: "2019-04-11T20:44:47.860Z"
-updatedAt: "2020-10-30T11:13:17.016Z"
+date: Last Modified
 ---
 [block:image]
 {

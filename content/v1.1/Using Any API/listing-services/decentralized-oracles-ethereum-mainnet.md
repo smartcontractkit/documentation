@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Oracles (Mainnet)"
 slug: "decentralized-oracles-ethereum-mainnet"
 hidden: false
-createdAt: "2019-05-29T17:03:53.524Z"
-updatedAt: "2020-10-16T11:57:14.373Z"
+date: Last Modified
 ---
 [block:image]
 {

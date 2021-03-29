@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "CryptoCompare Chainlink (Ethereum Mainnet)"
 slug: "cryptocompare-chainlink-ethereum-mainnet"
 hidden: false
-createdAt: "2019-05-30T17:17:50.418Z"
-updatedAt: "2019-11-01T17:46:42.010Z"
+date: Last Modified
 ---
 CryptoCompare provides a <a href="https://min-api.cryptocompare.com/" target="_blank">free API</a> for getting cryptocurrency live pricing data, OHLC historical data, volume data or tick data from multiple exchanges. You can also get free aggregated news and block explorer data (supply, hashrate, latest block number etc).
 [block:api-header]

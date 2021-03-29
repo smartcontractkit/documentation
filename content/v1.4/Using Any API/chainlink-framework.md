@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "API Reference"
 slug: "chainlink-framework"
 hidden: false
-createdAt: "2018-12-16T16:41:04.260Z"
-updatedAt: "2020-12-10T17:21:01.314Z"
+date: Last Modified
 ---
 API reference for <a href="https://github.com/smartcontractkit/chainlink/blob/master/evm-contracts/src/v0.6/ChainlinkClient.sol" target="_blank">`ChailninkClient`</a>.
 

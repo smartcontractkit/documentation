@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Aggregator Job (ETH/XDR)"
 slug: "aggregator-job-ethxdr"
 hidden: true
-createdAt: "2020-06-04T20:58:20.073Z"
-updatedAt: "2020-06-12T17:43:08.965Z"
+date: Last Modified
 ---
 In order to contribute to the price aggregator contract, you will need to run an external adapter for the provider you have been assigned. The Chainlink team will let you know which API to provide, and you can use this page as a guide for adding jobs to your node.
 

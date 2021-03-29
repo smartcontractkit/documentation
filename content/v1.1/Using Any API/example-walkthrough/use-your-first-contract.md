@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Use your first contract!"
 slug: "use-your-first-contract"
 hidden: false
-createdAt: "2018-06-21T18:43:09.166Z"
-updatedAt: "2020-09-09T15:37:22.329Z"
+date: Last Modified
 ---
 * Navigate back to Remix.
 * On the left side panel you will see a list of functions of your contract.

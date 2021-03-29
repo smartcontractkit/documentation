@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "BraveNewCoin Chainlink (Ethereum Mainnet)"
 slug: "bravenewcoin-chainlink-ethereum-mainnet"
 hidden: false
-createdAt: "2019-05-30T16:38:20.416Z"
-updatedAt: "2020-07-13T19:16:04.325Z"
+date: Last Modified
 ---
 This Chainlink has a dedicated connection to <a href="https://bravenewcoin.com" target="_blank">Brave New Coin's</a> API. Brave New Coin aggregates prices 24/7 for the overall marketplace for cryptographic assets from over 200 exchanges. Currently fresh price points are calculated every 5 minutes and are time-stamped with the date-time for the start of each period.
 [block:api-header]

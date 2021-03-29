@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Aggregator Job (FTSE Index, market closure)"
 slug: "aggregator-job-ftse-index-market-closure"
 hidden: true
-createdAt: "2020-05-04T10:09:17.341Z"
-updatedAt: "2020-05-11T19:09:52.829Z"
+date: Last Modified
 ---
 In order to contribute to the price aggregator contract, you will need to run the job on this page. The Chainlink team will let you know which API to provide, and you can use this page as a guide for adding jobs for each provider to your node. These jobs make use of external adapters instead of specifying the URLs directly in the HttpGet adapter.
 

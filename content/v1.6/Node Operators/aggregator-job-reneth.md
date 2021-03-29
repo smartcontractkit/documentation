@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Aggregator Job (REN/ETH)"
 slug: "aggregator-job-reneth"
 hidden: true
-createdAt: "2020-07-06T11:16:37.482Z"
-updatedAt: "2020-07-06T11:16:37.482Z"
+date: Last Modified
 ---
 In order to contribute to the price aggregator contract, you will need to run an external adapter for the provider you have been assigned. The Chainlink team will let you know which API to provide, and you can use this page as a guide for adding jobs to your node.
 

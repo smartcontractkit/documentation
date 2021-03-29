@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Addresses & Job IDs"
 slug: "addresses-and-job-ids"
 hidden: true
-createdAt: "2018-10-09T19:02:05.697Z"
-updatedAt: "2019-05-28T22:36:49.824Z"
+date: Last Modified
 ---
 [block:image]
 {

@@ -1,4 +1,5 @@
 ---
+layout: nodes.liquid
 title: "Ethereum Price Feeds"
 slug: "ethereum-addresses"
 hidden: false
@@ -10,8 +11,7 @@ metadata:
     2: 1459
     3: 1459
     4: "#dbe1f8"
-createdAt: "2020-11-05T09:18:16.027Z"
-updatedAt: "2021-03-19T17:39:13.997Z"
+date: Last Modified
 ---
 For implementation instructions, please refer to [Get the Latest Price](doc:get-the-latest-price).
 

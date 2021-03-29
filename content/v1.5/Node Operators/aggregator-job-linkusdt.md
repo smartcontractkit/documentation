@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Aggregator Job (LINK/USDT)"
 slug: "aggregator-job-linkusdt"
 hidden: true
-createdAt: "2020-02-11T01:14:52.915Z"
-updatedAt: "2020-02-20T19:37:31.848Z"
+date: Last Modified
 ---
 In order to contribute to the price aggregator contract, you will need to run one of the jobs on this page. The Chainlink team will let you know which API to provide, and you can use this page as a guide for adding jobs for each provider to your node.
 

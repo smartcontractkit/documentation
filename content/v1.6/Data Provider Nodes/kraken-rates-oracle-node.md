@@ -1,4 +1,5 @@
 ---
+layout: nodes.liquid
 title: "Kraken Rates Oracle Node"
 slug: "kraken-rates-oracle-node"
 hidden: false
@@ -9,8 +10,7 @@ metadata:
     2: 1459
     3: 1459
     4: "#dbe1f8"
-createdAt: "2021-01-28T16:53:16.596Z"
-updatedAt: "2021-03-19T11:10:55.003Z"
+date: Last Modified
 ---
 This Chainlink has a dedicated connection to <a href="https://blog.cfbenchmarks.com/rest-api/" target="_blank">Kraken's Prices</a> API. 
 

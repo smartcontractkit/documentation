@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Santiment Chainlink (Testnet)"
 slug: "santiment-chainlink-testnet"
 hidden: true
-createdAt: "2019-02-08T16:35:06.083Z"
-updatedAt: "2019-11-01T17:43:16.870Z"
+date: Last Modified
 ---
 This Chainlink has a dedicated connection to <a href="https://docs.santiment.net/" target="_blank">Santiment's GraphQL API</a>. This Chainlink will pass any GraphQL query sent to it to the API, and return the response.
 [block:api-header]

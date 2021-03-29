@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Synthetix Oracles"
 slug: "synthetix-oracles"
 hidden: true
-createdAt: "2019-11-01T20:57:51.195Z"
-updatedAt: "2019-11-07T19:40:11.564Z"
+date: Last Modified
 ---
 [block:api-header]
 {

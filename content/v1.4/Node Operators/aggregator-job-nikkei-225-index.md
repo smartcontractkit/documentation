@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Aggregator Job (Nikkei 225 Index)"
 slug: "aggregator-job-nikkei-225-index"
 hidden: true
-createdAt: "2020-03-26T18:48:34.250Z"
-updatedAt: "2020-06-16T19:08:13.714Z"
+date: Last Modified
 ---
 In order to contribute to the price aggregator contract, you will need to run one of the jobs on this page. The Chainlink team will let you know which API to provide, and you can use this page as a guide for adding jobs for each provider to your node. These jobs make use of external adapters instead of specifying the URLs directly in the HttpGet adapter.
 

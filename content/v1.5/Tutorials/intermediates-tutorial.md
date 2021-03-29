@@ -1,4 +1,5 @@
 ---
+layout: nodes.liquid
 title: "Intermediates - Random Numbers"
 slug: "intermediates-tutorial"
 excerpt: "Using Chainlink VRF"
@@ -6,8 +7,7 @@ hidden: true
 metadata: 
   title: "Intermediates Tutorial"
   description: "Learn how to use randomness in your smart contracts using Chainlink VRF."
-createdAt: "2020-11-20T17:22:53.922Z"
-updatedAt: "2020-12-04T16:54:58.415Z"
+date: Last Modified
 ---
 # Introduction
 

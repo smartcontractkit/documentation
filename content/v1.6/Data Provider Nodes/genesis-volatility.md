@@ -1,10 +1,11 @@
 ---
+layout: nodes.liquid
 title: "Genesis Volatility"
 slug: "genesis-volatility"
 hidden: true
-createdAt: "2021-03-05T14:41:18.698Z"
-updatedAt: "2021-03-09T11:34:51.320Z"
+date: Last Modified
 ---
+layout: nodes.liquid
 tbd
 
 # Steps For Using This Oracle

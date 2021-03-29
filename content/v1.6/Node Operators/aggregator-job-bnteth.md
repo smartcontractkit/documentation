@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Aggregator Job (BNT/ETH)"
 slug: "aggregator-job-bnteth"
 hidden: true
-createdAt: "2020-07-22T17:41:42.299Z"
-updatedAt: "2020-07-22T17:41:42.299Z"
+date: Last Modified
 ---
 In order to contribute to the price aggregator contract, you will need to run an external adapter for the provider you have been assigned. The Chainlink team will let you know which API to provide, and you can use this page as a guide for adding jobs to your node.
 

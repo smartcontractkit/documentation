@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Deploy your first contract"
 slug: "deploy-your-first-contract"
 hidden: true
-createdAt: "2018-06-21T00:01:55.437Z"
-updatedAt: "2020-10-29T12:56:02.658Z"
+date: Last Modified
 ---
 [block:embed]
 {

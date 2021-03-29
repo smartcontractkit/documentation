@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Defi Money Market Job"
 slug: "defi-money-market-job"
 hidden: true
-createdAt: "2020-02-25T17:44:16.014Z"
-updatedAt: "2020-02-25T17:44:16.014Z"
+date: Last Modified
 ---
 You will need the following external adapter:
 - <a href="https://github.com/smartcontractkit/defi-money-market-adapter" target="_blank">Defi Money Market Adapter</a>

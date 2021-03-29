@@ -1,10 +1,10 @@
 ---
+layout: nodes.liquid
 title: "ENS"
 slug: "ens"
 excerpt: "Ethereum Name Service"
 hidden: false
-createdAt: "2020-12-10T12:20:44.641Z"
-updatedAt: "2020-12-15T13:11:15.258Z"
+date: Last Modified
 ---
 Chainlink is moving to the <a href="https://docs.ens.domains/" target="_blank">Ethereum Name Service (ENS)</a> as the source of truth for Price Feed addresses. ENS is a distributed, open, and extensible naming system based on the Ethereum blockchain, which eliminates the need to copy or type long addresses. Instead, addresses can be retrieved inside deployed code.
 

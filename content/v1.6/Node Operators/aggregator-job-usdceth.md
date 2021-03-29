@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Aggregator Job (USDC/ETH)"
 slug: "aggregator-job-usdceth"
 hidden: true
-createdAt: "2019-12-19T20:21:40.506Z"
-updatedAt: "2020-02-20T19:25:46.187Z"
+date: Last Modified
 ---
 In order to contribute to the price aggregator contract, you will need to run one of the jobs on this page. The Chainlink team will let you know which API to provide, and you can use this page as a guide for adding jobs for each provider to your node.
 

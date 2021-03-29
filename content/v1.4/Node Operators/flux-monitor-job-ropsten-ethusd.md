@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Flux Monitor Job Ropsten (ETH/USD)"
 slug: "flux-monitor-job-ropsten-ethusd"
 hidden: true
-createdAt: "2020-01-24T19:41:39.721Z"
-updatedAt: "2020-06-25T08:39:59.306Z"
+date: Last Modified
 ---
 [block:callout]
 {

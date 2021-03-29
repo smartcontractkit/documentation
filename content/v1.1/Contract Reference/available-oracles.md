@@ -1,12 +1,12 @@
 ---
+layout: nodes.liquid
 title: "Testnet Oracle Reference"
 slug: "available-oracles"
 hidden: false
 metadata: 
   title: "Chainlink Testnet Oracles for Smart Contracts"
   description: "This collection of Chainlinks is ready to use today on Ethereum testnets Rinkey, Ropsten and Kovan. Easily connect your smart contract to one of these APIs."
-createdAt: "2018-09-07T18:47:06.635Z"
-updatedAt: "2020-10-21T09:44:02.601Z"
+date: Last Modified
 ---
 We have a growing collection of pre-made Chainlinks, which will easily connect your smart contract to a specific api, giving your smart contract secure access to everything that API does. Additional Chainlinks can be built around existing APIs by their creators and/or individual developers by quickly making an [External Adapter.](https://docs.chain.link/v1.0/docs/external-adapters) 
 

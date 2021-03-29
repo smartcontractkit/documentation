@@ -1,12 +1,12 @@
 ---
+layout: nodes.liquid
 title: "FAQ"
 slug: "faq"
 hidden: false
 metadata: 
   title: "Developer FAQ - Chainlink"
   description: "Find answers to common questions about developing on Chainlink."
-createdAt: "2018-07-30T12:52:28.099Z"
-updatedAt: "2021-03-19T11:13:51.230Z"
+date: Last Modified
 ---
 # General
 

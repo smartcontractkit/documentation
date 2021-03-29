@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "External Adapters in Solidity"
 slug: "contract-creators"
 hidden: false
-createdAt: "2018-08-29T13:57:41.515Z"
-updatedAt: "2020-11-26T11:27:22.609Z"
+date: Last Modified
 ---
 ### Using parameters with an External Adapter
 

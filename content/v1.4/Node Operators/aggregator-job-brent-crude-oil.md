@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Aggregator Job (Brent Crude Oil)"
 slug: "aggregator-job-brent-crude-oil"
 hidden: true
-createdAt: "2020-04-03T19:50:20.399Z"
-updatedAt: "2020-04-03T19:50:20.399Z"
+date: Last Modified
 ---
 In order to contribute to the price aggregator contract, you will need to run one of the jobs on this page. The Chainlink team will let you know which API to provide, and you can use this page as a guide for adding jobs for each provider to your node. These jobs make use of external adapters instead of specifying the URLs directly in the HttpGet adapter.
 

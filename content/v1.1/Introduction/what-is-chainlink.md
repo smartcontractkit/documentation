@@ -1,4 +1,5 @@
 ---
+layout: nodes.liquid
 title: "What is Chainlink?"
 slug: "what-is-chainlink"
 hidden: true
@@ -9,8 +10,7 @@ metadata:
     2: 1459
     3: 1459
     4: "#dbe1f8"
-createdAt: "2020-03-19T16:17:04.105Z"
-updatedAt: "2020-09-28T15:24:01.743Z"
+date: Last Modified
 ---
 Chainlink is a general-purpose framework for building decentralized oracle networks that give your smart contract access to secure and reliable data inputs and outputs.
 

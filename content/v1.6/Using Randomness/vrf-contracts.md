@@ -1,4 +1,5 @@
 ---
+layout: nodes.liquid
 title: "Contract Addresses"
 slug: "vrf-contracts"
 hidden: false
@@ -10,8 +11,7 @@ metadata:
     2: 1459
     3: 1459
     4: "#dbe1f8"
-createdAt: "2020-05-19T00:35:17.606Z"
-updatedAt: "2021-02-25T19:52:50.052Z"
+date: Last Modified
 ---
 Chainlink VRF allows you to integrate provably-fair and verifiably random data in your smart contract. 
 

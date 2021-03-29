@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "FlightAware Chainlink (Testnet)"
 slug: "flightaware-chainlink-testnet"
 hidden: true
-createdAt: "2021-02-23T20:26:12.689Z"
-updatedAt: "2021-03-09T11:35:08.588Z"
+date: Last Modified
 ---
 This Chainlink has a dedicated connection to <a href="https://uk.flightaware.com/" target="_blank">FlightAware</a>.
 

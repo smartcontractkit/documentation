@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Kaiko Chainlink (Ethereum Mainnet)"
 slug: "kaiko-chainlink-ethereum-mainnet"
 hidden: false
-createdAt: "2019-06-10T23:51:51.192Z"
-updatedAt: "2019-11-01T17:46:48.987Z"
+date: Last Modified
 ---
 This Chainlink has a dedicated connection to Kaiko's API. Kaiko is the leading provider of institutional grade cryptocurrency market data.
 

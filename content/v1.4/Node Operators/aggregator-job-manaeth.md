@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Aggregator Job (MANA/ETH)"
 slug: "aggregator-job-manaeth"
 hidden: true
-createdAt: "2019-12-19T00:52:52.062Z"
-updatedAt: "2020-02-19T17:29:27.412Z"
+date: Last Modified
 ---
 In order to contribute to the price aggregator contract, you will need to run one of the jobs on this page. The Chainlink team will let you know which API to provide, and you can use this page as a guide for adding jobs for each provider to your node.
 

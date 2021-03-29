@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "API Reference"
 slug: "chainlink-framework"
 hidden: false
-createdAt: "2018-12-16T16:41:04.260Z"
-updatedAt: "2020-09-15T12:34:32.216Z"
+date: Last Modified
 ---
 We understand that building smart contracts is difficult enough as it is, and making your contracts compatible with off-chain data just adds to the complexity. Therefore, we created a framework with minimal requirements, yet unbounded flexibility, so you can focus more on the functionality of your smart contracts rather than what feeds them.
 

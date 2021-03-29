@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Introduction"
 slug: "introduction-1"
 hidden: false
-createdAt: "2020-12-15T09:50:35.468Z"
-updatedAt: "2020-12-15T10:43:43.360Z"
+date: Last Modified
 ---
 External Initiators are customizable initiators allowing engineers to have jobs kick-off depending on any parameters they please. These are initiators outside the core initiators. They are one of the key pieces to Chainlink being blockchain agnostic.
 

@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Random.org Chainlink (Testnet)"
 slug: "randomorg-chainlink-testnet"
 hidden: true
-createdAt: "2019-03-07T21:32:51.558Z"
-updatedAt: "2019-11-01T17:43:57.955Z"
+date: Last Modified
 ---
 Chainlink has a dedicated connection to <a href="https://www.random.org/" target="_blank">Random.org's API</a>. This Chainlink will retrieve a single random number to return to your smart contract.
 [block:api-header]

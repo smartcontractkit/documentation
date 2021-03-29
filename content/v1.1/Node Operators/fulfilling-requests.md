@@ -1,12 +1,12 @@
 ---
+layout: nodes.liquid
 title: "Fulfilling Requests"
 slug: "fulfilling-requests"
 hidden: false
 metadata: 
   title: "Chainlink Node Operators: Fulfilling Requests"
   description: "Deploy your own Oracle contract and add jobs to your node so that it can provide data to smart contracts."
-createdAt: "2018-11-01T09:31:28.594Z"
-updatedAt: "2020-10-20T09:16:13.970Z"
+date: Last Modified
 ---
 With your own Oracle contract, you can use your own node to fulfill requests. This guide will show you how to deploy your own Oracle contract and add jobs to your node so that it can provide data to smart contracts.
 [block:api-header]

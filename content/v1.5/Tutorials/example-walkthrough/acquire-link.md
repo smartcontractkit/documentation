@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Acquire testnet LINK"
 slug: "acquire-link"
 hidden: false
-createdAt: "2018-06-21T00:00:12.345Z"
-updatedAt: "2020-10-29T13:02:26.686Z"
+date: Last Modified
 ---
 This page will show you how to obtain and add testnet LINK to MetaMask. If you already have testnet LINK, skip to [Deploy your first contract](doc:deploy-your-first-contract).
 

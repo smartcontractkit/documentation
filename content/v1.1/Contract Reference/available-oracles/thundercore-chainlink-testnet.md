@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "ThunderCore Chainlink (Testnet)"
 slug: "thundercore-chainlink-testnet"
 hidden: true
-createdAt: "2019-07-09T02:01:28.213Z"
-updatedAt: "2019-11-20T14:48:16.912Z"
+date: Last Modified
 ---
 Chainlink has a dedicated connection to ThunderCore...
 [block:api-header]

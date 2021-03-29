@@ -1,4 +1,5 @@
 ---
+layout: nodes.liquid
 title: "Polygon (Matic) Price Feeds"
 slug: "matic-addresses"
 hidden: false
@@ -10,8 +11,7 @@ metadata:
     2: 1459
     3: 1459
     4: "#dbe1f8"
-createdAt: "2020-11-05T09:19:07.252Z"
-updatedAt: "2021-03-19T18:49:34.911Z"
+date: Last Modified
 ---
 For implementation instructions, please refer to [Get the Latest Price](doc:get-the-latest-price).
 

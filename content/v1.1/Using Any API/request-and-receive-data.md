@@ -1,12 +1,12 @@
 ---
+layout: nodes.liquid
 title: "Introduction to Using Any API"
 slug: "request-and-receive-data"
 hidden: false
 metadata: 
   title: "Request and Receive API Data with Chainlink"
   description: "Chainlink provides your smart contract with access to any external API. Learn how to integration any API into your smart contract."
-createdAt: "2018-06-15T00:07:23.941Z"
-updatedAt: "2020-10-20T18:15:42.206Z"
+date: Last Modified
 ---
 [block:image]
 {

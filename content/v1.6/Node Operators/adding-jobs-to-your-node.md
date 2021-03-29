@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Adding Jobs to Your Node"
 slug: "adding-jobs-to-your-node"
 hidden: true
-createdAt: "2019-05-07T18:42:40.020Z"
-updatedAt: "2019-06-13T19:51:30.647Z"
+date: Last Modified
 ---
 Below are the [Job Specifications](doc:job-specifications) for the jobs available on the [Addresses & Job IDs](doc:addresses-and-job-ids) page.
 [block:code]

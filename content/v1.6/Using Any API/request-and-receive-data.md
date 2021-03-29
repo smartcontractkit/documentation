@@ -1,4 +1,5 @@
 ---
+layout: nodes.liquid
 title: "Introduction to Using Any API"
 slug: "request-and-receive-data"
 hidden: false
@@ -11,8 +12,7 @@ metadata:
     2: 1459
     3: 1459
     4: "#dbe1f8"
-createdAt: "2018-06-15T00:07:23.941Z"
-updatedAt: "2021-02-26T11:13:51.465Z"
+date: Last Modified
 ---
 [block:callout]
 {

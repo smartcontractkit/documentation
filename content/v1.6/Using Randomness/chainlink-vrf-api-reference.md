@@ -1,4 +1,5 @@
 ---
+layout: nodes.liquid
 title: "API Reference"
 slug: "chainlink-vrf-api-reference"
 hidden: false
@@ -11,8 +12,7 @@ metadata:
     2: 1459
     3: 1459
     4: "#dbe1f8"
-createdAt: "2020-07-22T10:54:40.842Z"
-updatedAt: "2021-02-26T11:13:43.008Z"
+date: Last Modified
 ---
 [block:callout]
 {

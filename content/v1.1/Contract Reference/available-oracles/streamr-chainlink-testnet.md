@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Streamr Chainlink (Testnet)"
 slug: "streamr-chainlink-testnet"
 hidden: true
-createdAt: "2019-03-26T19:19:42.453Z"
-updatedAt: "2019-11-01T17:42:36.658Z"
+date: Last Modified
 ---
 Chainlink has a dedicated connection to <a href="https://www.streamr.com" target="_blank">Streamr's API</a>. This Chainlink will retrieve the latest entry for a given stream to your smart contract.
 [block:api-header]

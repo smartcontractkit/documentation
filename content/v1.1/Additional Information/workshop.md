@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Workshop Links"
 slug: "workshop"
 hidden: false
-createdAt: "2018-12-09T17:30:13.487Z"
-updatedAt: "2020-07-29T07:04:23.776Z"
+date: Last Modified
 ---
 [block:api-header]
 {

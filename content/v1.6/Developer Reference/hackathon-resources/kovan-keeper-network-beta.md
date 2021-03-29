@@ -1,4 +1,5 @@
 ---
+layout: nodes.liquid
 title: "Kovan Keeper Network (Beta)"
 slug: "kovan-keeper-network-beta"
 hidden: false
@@ -9,8 +10,7 @@ metadata:
     2: 1459
     3: 1459
     4: "#dbe1f8"
-createdAt: "2021-03-15T14:46:34.023Z"
-updatedAt: "2021-03-17T12:33:13.941Z"
+date: Last Modified
 ---
 # Background
 

@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Job Specifications"
 slug: "job-specifications"
 hidden: false
-createdAt: "2018-07-27T19:15:17.487Z"
-updatedAt: "2020-12-17T15:25:36.385Z"
+date: Last Modified
 ---
 ## What is a job?
 

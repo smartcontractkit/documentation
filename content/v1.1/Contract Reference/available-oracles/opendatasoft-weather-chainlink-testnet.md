@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "OpenDataSoft Weather Chainlink (Testnet)"
 slug: "opendatasoft-weather-chainlink-testnet"
 hidden: true
-createdAt: "2019-07-12T15:12:43.815Z"
-updatedAt: "2019-11-01T17:42:23.608Z"
+date: Last Modified
 ---
 This Chainlink has a dedicated connection to <a href="https://public.opendatasoft.com/explore/dataset/donnees-synop-essentielles-omm/api/">OpenDataSoft's SYNOP Weather API</a>. This Chainlink will allow requesters to create queries to the API, and return the response.
 [block:api-header]

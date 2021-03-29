@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Crypto APIs Chainlink (Testnet)"
 slug: "crypto-apis-chainlink-testnet"
 hidden: true
-createdAt: "2019-11-26T18:54:27.683Z"
-updatedAt: "2019-11-26T23:20:25.248Z"
+date: Last Modified
 ---
 This Chainlink has a dedicated connection to <a href="https://cryptoapis.io/" target="_blank">Crypto APIs'</a> API. 
 [block:api-header]

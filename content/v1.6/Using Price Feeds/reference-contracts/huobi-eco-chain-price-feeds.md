@@ -1,4 +1,5 @@
 ---
+layout: nodes.liquid
 title: "Huobi Eco Chain Price Feeds"
 slug: "huobi-eco-chain-price-feeds"
 hidden: false
@@ -10,7 +11,7 @@ metadata:
     3: 1459
     4: "#dbe1f8"
 createdAt: {}
-updatedAt: "2021-03-19T18:49:49.406Z"
+date: Last Modified
 ---
 For implementation instructions, please refer to [Get the Latest Price](doc:get-the-latest-price).
 

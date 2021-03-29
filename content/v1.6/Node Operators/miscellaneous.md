@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Miscellaneous"
 slug: "miscellaneous"
 hidden: false
-createdAt: "2018-11-05T03:13:14.981Z"
-updatedAt: "2021-01-13T23:37:12.321Z"
+date: Last Modified
 ---
 [block:api-header]
 {

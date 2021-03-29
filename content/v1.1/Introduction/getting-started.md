@@ -1,4 +1,5 @@
 ---
+layout: nodes.liquid
 title: "Getting Started"
 slug: "getting-started"
 hidden: false
@@ -11,8 +12,7 @@ metadata:
     2: 1459
     3: 1459
     4: "#dbe1f8"
-createdAt: "2019-04-11T17:37:20.713Z"
-updatedAt: "2020-09-28T15:24:17.598Z"
+date: Last Modified
 ---
 [block:html]
 {

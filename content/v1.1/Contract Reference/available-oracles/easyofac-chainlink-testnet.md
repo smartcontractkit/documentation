@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "EasyOFAC Chainlink (Testnet)"
 slug: "easyofac-chainlink-testnet"
 hidden: true
-createdAt: "2019-08-16T18:35:29.599Z"
-updatedAt: "2019-11-01T17:40:58.188Z"
+date: Last Modified
 ---
 Chainlink has a dedicated connection to <a href="https://easyofac.com/site/docs" target="_blank">EasyOFAC's API</a>. This Chainlink is able to retrieve data for any free API endpoint from EasyOFAC's API.
 [block:api-header]

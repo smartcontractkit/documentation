@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Oracles (Testnet)"
 slug: "testnet-oracles"
 hidden: false
-createdAt: "2019-05-07T17:58:40.247Z"
-updatedAt: "2020-10-16T11:57:26.056Z"
+date: Last Modified
 ---
 [block:image]
 {

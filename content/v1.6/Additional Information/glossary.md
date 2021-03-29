@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Glossary"
 slug: "glossary"
 hidden: false
-createdAt: "2018-06-19T18:14:24.127Z"
-updatedAt: "2020-12-02T20:22:15.543Z"
+date: Last Modified
 ---
 ### Adapter
 

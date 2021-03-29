@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "The Hunt"
 slug: "the-hunt"
 hidden: true
-createdAt: "2020-12-02T16:56:43.579Z"
-updatedAt: "2021-01-08T06:43:21.024Z"
+date: Last Modified
 ---
 Welcome to the hunt. We hope you find it fun. All discussion can be in the [#nft-hunt](https://discord.gg/fDmn8RNKHb) channel. It's also where you'll submit passwords to get the NFTs! 
 

@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "VRF Draft"
 slug: "vrf-draft"
 hidden: true
-createdAt: "2020-04-24T21:16:37.659Z"
-updatedAt: "2020-04-25T05:28:27.927Z"
+date: Last Modified
 ---
 > 🚧In Development - Do Not Share
 >

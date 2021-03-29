@@ -1,4 +1,5 @@
 ---
+layout: nodes.liquid
 title: "API Reference"
 slug: "chainlink-vrf-api-reference"
 hidden: false
@@ -11,8 +12,7 @@ metadata:
     2: 1459
     3: 1459
     4: "#dbe1f8"
-createdAt: "2020-07-22T10:54:40.842Z"
-updatedAt: "2020-07-22T11:55:36.958Z"
+date: Last Modified
 ---
 API reference for <a href="https://github.com/smartcontractkit/chainlink/blob/7a4e19a8ff07db1be0b397465d38d175bc0bb5b5/evm-contracts/src/v0.6/VRFConsumerBase.sol" target="_blank">`VRFConsumerBase`</a>.
 

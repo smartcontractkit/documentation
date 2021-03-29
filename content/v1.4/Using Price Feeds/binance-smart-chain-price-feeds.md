@@ -1,4 +1,5 @@
 ---
+layout: nodes.liquid
 title: "Binance Smart Chain Price Feeds"
 slug: "binance-smart-chain-price-feeds"
 hidden: true
@@ -9,8 +10,7 @@ metadata:
     2: 1459
     3: 1459
     4: "#dbe1f8"
-createdAt: "2020-08-12T09:34:52.378Z"
-updatedAt: "2020-08-12T12:26:28.366Z"
+date: Last Modified
 ---
 # Introduction to Price Feeds
 

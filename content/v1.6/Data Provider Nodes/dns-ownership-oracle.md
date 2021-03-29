@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "DNS Ownership Oracle"
 slug: "dns-ownership-oracle"
 hidden: false
-createdAt: "2021-03-11T09:46:23.931Z"
-updatedAt: "2021-03-19T11:10:20.548Z"
+date: Last Modified
 ---
 This oracle checks Google’s DNS service to determine if a given domain is owned by a given blockchain address.
 

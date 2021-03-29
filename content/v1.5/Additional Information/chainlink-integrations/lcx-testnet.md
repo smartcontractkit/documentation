@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "LCX (Testnet)"
 slug: "lcx-testnet"
 hidden: false
-createdAt: "2020-11-09T17:20:36.236Z"
-updatedAt: "2020-11-09T17:23:41.240Z"
+date: Last Modified
 ---
 This Chainlink has a dedicated connection to <a href="https://www.lcx.com/Cryptocurrency-Reference-Price-Services/" target="_blank">LCX's Cryptocurrency Reference Prices</a> API. This service offers reliable daily reference prices of the U.S. dollar price and Euro price of one Bitcoin and one Ethereum. 
 

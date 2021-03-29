@@ -1,4 +1,5 @@
 ---
+layout: nodes.liquid
 title: "Beginners - The Basics"
 slug: "beginners-tutorial"
 excerpt: "Smart Contracts and Chainlink"
@@ -12,8 +13,7 @@ metadata:
     2: 1459
     3: 1459
     4: "#dbe1f8"
-createdAt: "2020-11-20T17:17:22.964Z"
-updatedAt: "2020-12-21T12:02:09.939Z"
+date: Last Modified
 ---
 # Introduction
 

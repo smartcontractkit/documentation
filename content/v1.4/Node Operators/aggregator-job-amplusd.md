@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Aggregator Job (AMPL/USD)"
 slug: "aggregator-job-amplusd"
 hidden: true
-createdAt: "2019-10-17T19:35:25.710Z"
-updatedAt: "2020-04-17T19:16:20.448Z"
+date: Last Modified
 ---
 In order to contribute to the price aggregator contract, you will need to run one of the jobs on this page. The Chainlink team will let you know which API to provide, and you can use this page as a guide for adding jobs for each provider to your node.
 

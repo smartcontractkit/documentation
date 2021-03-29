@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Automation Test"
 slug: "automation-test"
 hidden: true
-createdAt: "2021-02-05T11:56:48.249Z"
-updatedAt: "2021-03-12T14:42:14.104Z"
+date: Last Modified
 ---
 # Ethereum Mainnet
 

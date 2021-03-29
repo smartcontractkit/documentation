@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Install, configure & fund MetaMask"
 slug: "install-metamask"
 hidden: true
-createdAt: "2018-06-21T17:36:10.572Z"
-updatedAt: "2020-12-11T10:44:29.562Z"
+date: Last Modified
 ---
 This page will show you how to configure the MetaMask browser extension. If you already have MetaMask configured, skip to [Acquire testnet LINK](doc:acquire-link).
 [block:embed]

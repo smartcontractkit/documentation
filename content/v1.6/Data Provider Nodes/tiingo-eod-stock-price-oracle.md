@@ -1,4 +1,5 @@
 ---
+layout: nodes.liquid
 title: "Tiingo EOD Stock Price Oracle"
 slug: "tiingo-eod-stock-price-oracle"
 hidden: false
@@ -9,8 +10,7 @@ metadata:
     2: 1459
     3: 1459
     4: "#dbe1f8"
-createdAt: "2021-02-12T11:02:33.442Z"
-updatedAt: "2021-03-19T11:10:47.223Z"
+date: Last Modified
 ---
 Tiingo consists of a data research and analytics arm, a news aggregator, and a professional suite of APIs. With coverage of over 65,000 Equities and ETFs, the Tiingo End of Day Stock Price oracle gives you access to one of the most expansive data sets available for US & Chinese markets. Our stock price data is decentralized across at least 3 data sources on average for each price feed. This means if any one of them goes down, you keep going.
 

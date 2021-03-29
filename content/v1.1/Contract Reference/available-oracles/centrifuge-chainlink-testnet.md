@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Centrifuge Chainlink (Testnet)"
 slug: "centrifuge-chainlink-testnet"
 hidden: true
-createdAt: "2020-05-25T05:23:21.186Z"
-updatedAt: "2020-05-28T15:34:35.518Z"
+date: Last Modified
 ---
 This Chainlink has a dedicated connection to <a href="https://centrifuge.io/" target="_blank">Centrifuge</a>.
 [block:api-header]

@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Strava Chainlink (Testnet)"
 slug: "strava-chainlink-testnet"
 hidden: true
-createdAt: "2019-08-15T19:48:19.908Z"
-updatedAt: "2019-11-01T17:41:06.257Z"
+date: Last Modified
 ---
 This Chainlink has a dedicated connection to <a href="https://developers.strava.com/docs/reference/">Strava's API</a>. This Chainlink will allow requesters to create queries to the API, and return the response.
 [block:api-header]

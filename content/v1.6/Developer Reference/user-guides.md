@@ -1,10 +1,10 @@
 ---
+layout: nodes.liquid
 title: "User Guides"
 slug: "user-guides"
 excerpt: "Getting started with Ethereum, Metamask and Smart Contracts"
 hidden: false
-createdAt: "2021-03-17T12:54:21.850Z"
-updatedAt: "2021-03-17T13:07:56.309Z"
+date: Last Modified
 ---
 [block:callout]
 {

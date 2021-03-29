@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "CPC Rainfall Chainlink (Ethereum Mainnet)"
 slug: "cpc-rainfall-chainlink-ethereum-mainnet"
 hidden: true
-createdAt: "2020-07-31T17:18:28.780Z"
-updatedAt: "2020-07-31T19:58:37.623Z"
+date: Last Modified
 ---
 This Chainlink has a dedicated connection to <a href="" target="_blank">CPC Rainfall</a> API.
 [block:api-header]

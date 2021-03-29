@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "SportRadar NBA V5 Chainlink (Testnet)"
 slug: "sportradar-nba-v5-chainlink-testnet"
 hidden: true
-createdAt: "2019-08-09T14:37:24.182Z"
-updatedAt: "2019-11-01T17:41:50.141Z"
+date: Last Modified
 ---
 This Chainlink has a dedicated connection to <a href="https://developer.sportradar.com/docs/read/basketball/NBA_v5">SportRadar's API</a>. This Chainlink will allow requesters to create queries to the API, and return the response.
 [block:api-header]

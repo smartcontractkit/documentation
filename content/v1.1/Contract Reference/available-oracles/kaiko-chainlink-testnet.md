@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Kaiko Chainlink (Testnet)"
 slug: "kaiko-chainlink-testnet"
 hidden: false
-createdAt: "2018-11-07T04:40:54.461Z"
-updatedAt: "2020-10-21T09:40:35.247Z"
+date: Last Modified
 ---
 This Chainlink has a dedicated connection to Kaiko's API. Kaiko is the leading provider of institutional grade cryptocurrency market data.
 

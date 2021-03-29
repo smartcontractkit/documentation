@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Matic Documentation"
 slug: "matic-documentation"
 hidden: true
-createdAt: "2020-08-18T13:01:34.750Z"
-updatedAt: "2020-08-19T13:25:11.133Z"
+date: Last Modified
 ---
 Chainlink enables your contracts to access to *any* external data source, through a decentralized oracle network. Whether your contract requires sports results, the latest weather, or any other publicly available data, Chainlink provides the tools required for your contract to consume it.
 

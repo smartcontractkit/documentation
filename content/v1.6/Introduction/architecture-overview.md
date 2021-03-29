@@ -1,4 +1,5 @@
 ---
+layout: nodes.liquid
 title: "Architecture Overview"
 slug: "architecture-overview"
 hidden: false
@@ -10,8 +11,7 @@ metadata:
     2: 1459
     3: 1459
     4: "#dbe1f8"
-createdAt: "2018-06-19T18:18:16.809Z"
-updatedAt: "2021-02-26T11:12:48.845Z"
+date: Last Modified
 ---
 [block:callout]
 {

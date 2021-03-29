@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "OpenSky Network Chainlink (Testnet)"
 slug: "opensky-chainlink-testnet"
 hidden: true
-createdAt: "2018-10-04T13:19:46.824Z"
-updatedAt: "2019-11-01T17:44:16.083Z"
+date: Last Modified
 ---
 This Chainlink has a dedicated connection to <a href="https://opensky-network.org/" target="_blank">OpenSky Network's API</a>. The OpenSky Network is a community-based receiver network which continuously collects air traffic surveillance data. Unlike other networks, OpenSky keeps the collected raw data forever and makes it accessible to researchers. With over ten trillion ADS-B and Mode S messages collected from more than 1000 sensors around the world, the OpenSky Network exhibits the largest air traffic surveillance dataset of its kind.
 [block:api-header]

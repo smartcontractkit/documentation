@@ -1,4 +1,5 @@
 ---
+layout: nodes.liquid
 title: "Example Walkthrough"
 slug: "example-walkthrough"
 hidden: false
@@ -11,8 +12,7 @@ metadata:
     2: 1459
     3: 1459
     4: "#dbe1f8"
-createdAt: "2019-04-11T18:26:45.684Z"
-updatedAt: "2020-10-19T09:12:56.031Z"
+date: Last Modified
 ---
 # Introduction
 

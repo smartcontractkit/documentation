@@ -1,4 +1,5 @@
 ---
+layout: nodes.liquid
 title: "GeoDB Oracle Node"
 slug: "geodb-oracle-node"
 hidden: false
@@ -9,8 +10,7 @@ metadata:
     2: 1459
     3: 1459
     4: "#dbe1f8"
-createdAt: "2021-02-19T11:22:49.758Z"
-updatedAt: "2021-03-19T11:10:38.442Z"
+date: Last Modified
 ---
 GeoDB is a decentralized Big Data ecosystem that compensates data providers who share data and makes data affordable and trusted for data consumers. It uses blockchain technology to collect user data without compromising identities, distribute rewards to data providers, and validate and manage the ecosystem using a decentralized governance model. This oracle, given a location, radius around it, and time duration, returns the number of <a href="https://docs.geodb.com/geocash-1/geocash" target="_blank">GeoCash</a> Users in that area during that time.
 

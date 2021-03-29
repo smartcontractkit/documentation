@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Chainlink Alarm Clock (Testnet)"
 slug: "chainlink-alarm-clock"
 hidden: false
-createdAt: "2018-11-07T02:25:04.159Z"
-updatedAt: "2020-10-21T09:39:44.569Z"
+date: Last Modified
 ---
 You can use Chainlink to trigger a smart contract at a specified time. Using this Chainlink, you will create a request with a timestamp for the node to call back to your desired function. You can include additional logic in that function to perform additional computation.
 [block:api-header]

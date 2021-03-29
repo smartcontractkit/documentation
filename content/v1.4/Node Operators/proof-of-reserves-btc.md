@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Proof of Reserves (BTC)"
 slug: "proof-of-reserves-btc"
 hidden: true
-createdAt: "2020-09-25T17:42:24.988Z"
-updatedAt: "2020-09-25T18:22:12.844Z"
+date: Last Modified
 ---
 In order to contribute to the price aggregator contract, you will need to run external adapters for the provider you have been assigned. The Chainlink team will let you know which API to provide, and you can use this page as a guide for adding jobs to your node.
 

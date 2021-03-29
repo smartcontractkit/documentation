@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Aggregator Job (BTC/ETH)"
 slug: "aggregator-job-btceth"
 hidden: true
-createdAt: "2019-12-10T21:30:20.358Z"
-updatedAt: "2020-02-20T17:21:22.255Z"
+date: Last Modified
 ---
 In order to contribute to the price aggregator contract, you will need to run one of the jobs on this page. The Chainlink team will let you know which API to provide, and you can use this page as a guide for adding jobs for each provider to your node.
 

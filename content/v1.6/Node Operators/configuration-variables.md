@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Configuration Variables"
 slug: "configuration-variables"
 hidden: false
-createdAt: "2018-11-02T14:55:32.509Z"
-updatedAt: "2020-10-28T14:02:25.769Z"
+date: Last Modified
 ---
 ## ALLOW_ORIGINS
 - Default: "http://localhost:3000,http://localhost:6688"

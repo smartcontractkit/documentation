@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Introduction"
 slug: "external-initiators-introduction"
 hidden: false
-createdAt: "2021-01-08T14:00:15.626Z"
-updatedAt: "2021-02-26T11:15:35.644Z"
+date: Last Modified
 ---
 [block:callout]
 {

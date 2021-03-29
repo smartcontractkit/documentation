@@ -1,4 +1,5 @@
 ---
+layout: nodes.liquid
 title: "Overview"
 slug: "node-operator-overview"
 hidden: false
@@ -11,8 +12,7 @@ metadata:
     2: 1459
     3: 1459
     4: "#dbe1f8"
-createdAt: "2019-04-11T22:41:55.856Z"
-updatedAt: "2019-04-15T20:07:38.167Z"
+date: Last Modified
 ---
 [block:image]
 {

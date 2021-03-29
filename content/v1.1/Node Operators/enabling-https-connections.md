@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Enabling HTTPS Connections"
 slug: "enabling-https-connections"
 hidden: false
-createdAt: "2018-07-28T14:25:02.723Z"
-updatedAt: "2020-10-21T09:46:41.425Z"
+date: Last Modified
 ---
 This guide will walk you through how to generate your own self-signed certificates for use by the Chainlink node. You can also substitute self-signed certificates with certificates of your own, like those created by <a href="https://letsencrypt.org/" target="_blank" rel="noreferrer, noopener">Let's Encrypt</a>.
 [block:callout]

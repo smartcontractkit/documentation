@@ -1,4 +1,5 @@
 ---
+layout: nodes.liquid
 title: "TheRunDown Oracle Node"
 slug: "therundown-oracle-node"
 hidden: false
@@ -9,8 +10,7 @@ metadata:
     2: 1459
     3: 1459
     4: "#dbe1f8"
-createdAt: "2021-02-19T11:35:00.349Z"
-updatedAt: "2021-03-19T11:10:33.580Z"
+date: Last Modified
 ---
 TheRundown is the leading platform for real-time odds from the most popular sportsbooks, sports and markets.
 

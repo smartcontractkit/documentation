@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Make a GET Request"
 slug: "make-a-http-get-request"
 hidden: false
-createdAt: "2020-07-30T10:34:29.711Z"
-updatedAt: "2020-10-23T15:28:58.381Z"
+date: Last Modified
 ---
 This page explains how to make an HTTP GET request to an external API from a smart contract, using Chainlink's [Request & Receive Data](doc:request-and-receive-data) cycle.
 

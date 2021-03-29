@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Aggregator Job (TRX/USD)"
 slug: "aggregator-job-trxusd"
 hidden: true
-createdAt: "2019-12-26T01:54:29.996Z"
-updatedAt: "2020-02-20T19:30:24.135Z"
+date: Last Modified
 ---
 In order to contribute to the price aggregator contract, you will need to run one of the jobs on this page. The Chainlink team will let you know which API to provide, and you can use this page as a guide for adding jobs for each provider to your node.
 

@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Aggregator Job (PCE/BEA)"
 slug: "aggregator-job-bea"
 hidden: true
-createdAt: "2019-10-17T17:31:06.123Z"
-updatedAt: "2019-10-17T19:35:44.599Z"
+date: Last Modified
 ---
 In order to contribute to the price aggregator contract, you will need to run one of the jobs on this page. The Chainlink team will let you know which API to provide, and you can use this page as a guide for adding jobs for each provider to your node.
 

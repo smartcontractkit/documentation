@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "DeFi Score Chainlink (Testnet)"
 slug: "defi-score-chainlink-testnet"
 hidden: true
-createdAt: "2020-02-28T17:31:59.761Z"
-updatedAt: "2020-02-28T19:21:13.791Z"
+date: Last Modified
 ---
 This Chainlink has a dedicated connection to <a href="https://docs.defiscore.io/">DeFi Score's API</a>. This Chainlink will allow requesters to create queries to the API, and return the response.
 [block:api-header]

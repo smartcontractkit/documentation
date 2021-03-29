@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Tutorials"
 slug: "tutorials"
 hidden: false
-createdAt: "2020-11-20T17:16:06.717Z"
-updatedAt: "2020-12-21T11:56:21.966Z"
+date: Last Modified
 ---
 [block:image]
 {

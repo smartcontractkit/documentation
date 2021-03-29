@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Use your first contract!"
 slug: "use-your-first-contract"
 hidden: false
-createdAt: "2018-06-21T18:43:09.166Z"
-updatedAt: "2020-10-29T13:04:12.408Z"
+date: Last Modified
 ---
 # Executing Functions
 

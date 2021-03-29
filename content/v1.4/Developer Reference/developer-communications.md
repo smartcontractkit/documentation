@@ -1,4 +1,5 @@
 ---
+layout: nodes.liquid
 title: "Developer Communications"
 slug: "developer-communications"
 hidden: false
@@ -11,8 +12,7 @@ metadata:
     2: 1459
     3: 1459
     4: "#dbe1f8"
-createdAt: {}
-updatedAt: "2021-01-06T10:06:53.895Z"
+date: Last Modified
 ---
 # Stay up to date with the latest upgrades
 [block:callout]

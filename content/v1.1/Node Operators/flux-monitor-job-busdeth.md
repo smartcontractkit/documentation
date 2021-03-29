@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Flux Monitor Job (BUSD/ETH)"
 slug: "flux-monitor-job-busdeth"
 hidden: true
-createdAt: "2020-06-25T08:35:31.413Z"
-updatedAt: "2020-06-25T08:35:31.413Z"
+date: Last Modified
 ---
 In order to contribute to the price aggregator contract, you will need to run one of the jobs on this page. The Chainlink team will let you know which API to provide, and you can use this page as a guide for adding jobs for each provider to your node.
 

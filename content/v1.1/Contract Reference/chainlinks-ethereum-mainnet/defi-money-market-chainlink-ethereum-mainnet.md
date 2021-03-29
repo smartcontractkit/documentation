@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "DEFI Money Market Chainlink (Ethereum Mainnet)"
 slug: "defi-money-market-chainlink-ethereum-mainnet"
 hidden: false
-createdAt: "2020-03-02T07:47:34.132Z"
-updatedAt: "2020-03-02T14:08:36.968Z"
+date: Last Modified
 ---
 This Chainlink has a dedicated connection to DEFI Money Market. DeFi Money Market (DMM) Ecosystem acts as a bridge between Ethereum digital assets and real-world assets allowing holders to earn interest completely on-chain.
 [block:api-header]

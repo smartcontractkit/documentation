@@ -1,4 +1,5 @@
 ---
+layout: nodes.liquid
 title: "xDai Price Feeds"
 slug: "xdai-price-feeds"
 hidden: false
@@ -9,8 +10,7 @@ metadata:
     2: 1459
     3: 1459
     4: "#dbe1f8"
-createdAt: "2021-02-04T16:41:18.088Z"
-updatedAt: "2021-03-12T14:49:41.971Z"
+date: Last Modified
 ---
 For implementation instructions, please refer to [Get the Latest Price](doc:get-the-latest-price).
 

@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "The Hunt"
 slug: "the-hunt"
 hidden: true
-createdAt: "2020-12-02T16:56:43.579Z"
-updatedAt: "2021-02-24T16:43:55.639Z"
+date: Last Modified
 ---
 [block:callout]
 {

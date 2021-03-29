@@ -1,4 +1,5 @@
 ---
+layout: nodes.liquid
 title: "Introduction to Chainlink VRF"
 slug: "chainlink-vrf"
 hidden: false
@@ -11,8 +12,7 @@ metadata:
     2: 1459
     3: 1459
     4: "#dbe1f8"
-createdAt: "2020-05-10T10:35:04.608Z"
-updatedAt: "2020-10-26T11:46:01.927Z"
+date: Last Modified
 ---
 [block:image]
 {

@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Aggregator Job (BNT/USD)"
 slug: "aggregator-job-bntusd"
 hidden: true
-createdAt: "2020-01-15T00:07:20.737Z"
-updatedAt: "2020-04-21T17:57:00.034Z"
+date: Last Modified
 ---
 In order to contribute to the price aggregator contract, you will need to run one of the jobs on this page. The Chainlink team will let you know which API to provide, and you can use this page as a guide for adding jobs for each provider to your node.
 

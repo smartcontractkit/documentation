@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Aggregator Job (XRP/USD)"
 slug: "aggregator-job-xrpusd"
 hidden: true
-createdAt: "2020-02-19T20:35:22.240Z"
-updatedAt: "2020-02-20T19:38:48.428Z"
+date: Last Modified
 ---
 In order to contribute to the price aggregator contract, you will need to run one of the jobs on this page. The Chainlink team will let you know which API to provide, and you can use this page as a guide for adding jobs for each provider to your node.
 

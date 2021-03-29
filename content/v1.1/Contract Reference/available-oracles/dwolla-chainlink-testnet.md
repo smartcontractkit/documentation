@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Dwolla Chainlink (Testnet)"
 slug: "dwolla-chainlink-testnet"
 hidden: true
-createdAt: "2019-11-01T18:52:17.256Z"
-updatedAt: "2019-11-11T21:51:50.862Z"
+date: Last Modified
 ---
 This Chainlink has a dedicated connection to <a href="https://www.dwolla.com/" target="_blank">Dwolla's</a> API. This Chainlink allows requesters to send payments between sources or get the status of a payment.
 [block:api-header]

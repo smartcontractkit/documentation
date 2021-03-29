@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Introduction"
 slug: "external-adapters"
 hidden: false
-createdAt: "2018-08-29T13:01:40.140Z"
-updatedAt: "2021-02-26T11:15:27.557Z"
+date: Last Modified
 ---
 [block:callout]
 {

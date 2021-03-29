@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "AION Chainlink (Testnet)"
 slug: "aion-chainlink-testnet"
 hidden: true
-createdAt: "2019-01-25T14:07:16.785Z"
-updatedAt: "2019-11-01T17:43:40.788Z"
+date: Last Modified
 ---
 This Chainlink has a dedicated connection to <a href="https://mastery.aion.network" target="_blank">AION's Mastery Testnet</a>. This Chainlink's functionality is currently limited to retrieving information on the blockchain and cannot send transactions.
 [block:api-header]

@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Best Security and Operating Practices"
 slug: "best-security-practices"
 hidden: false
-createdAt: "2019-05-21T14:55:38.603Z"
-updatedAt: "2020-05-05T22:47:39.131Z"
+date: Last Modified
 ---
 The following information provides a set of best security and operating practices that node operators need to utilize at a minimum to enhance the security and reliability of their infrastructure.
 [block:api-header]

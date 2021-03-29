@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Flux Monitor Job"
 slug: "flux-monitor-job"
 hidden: true
-createdAt: "2020-08-06T19:52:03.647Z"
-updatedAt: "2020-08-06T19:52:03.647Z"
+date: Last Modified
 ---
 In order to contribute to the price aggregator contract, you will need to run one of the jobs on this page. The Chainlink team will let you know which API to provide, and you can use this page as a guide for adding jobs for each provider to your node.
 

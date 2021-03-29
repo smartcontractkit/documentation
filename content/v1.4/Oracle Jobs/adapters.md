@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Adapters"
 slug: "adapters"
 hidden: false
-createdAt: "2018-08-30T21:49:50.355Z"
-updatedAt: "2020-11-20T17:03:14.476Z"
+date: Last Modified
 ---
 Adapters are the built-in functionality that every Chainlink node supports.
 [block:api-header]

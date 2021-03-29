@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Find Existing Jobs"
 slug: "listing-services"
 hidden: false
-createdAt: "2020-02-19T20:35:22.270Z"
-updatedAt: "2020-10-29T16:45:36.146Z"
+date: Last Modified
 ---
 This page explains how to find an existing Oracle Job to suit the needs of your API call.
 

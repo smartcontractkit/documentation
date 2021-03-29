@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "CoinMarketCap Chainlink (Testnet)"
 slug: "coinmarketcap"
 hidden: false
-createdAt: "2018-09-07T18:50:27.943Z"
-updatedAt: "2020-10-21T09:40:03.106Z"
+date: Last Modified
 ---
 This Chainlink supports the <a href="https://pro.coinmarketcap.com/api/v1#operation/getV1CryptocurrencyQuotesLatest" target="_blank">latest market quotes</a> endpoint for any coin and market supported by CoinMarketCap. The <a href="https://pro.coinmarketcap.com/api/v1#" target="_blank">CoinMarketCap Professional API</a> is a suite of high-performance RESTful JSON endpoints that are specifically designed to meet the mission-critical demands of application developers, data scientists, and enterprise business platforms.
 [block:api-header]

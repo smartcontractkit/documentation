@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Blocklytics Chainlink (Testnet)"
 slug: "blocklytics-chainlink-testnet"
 hidden: true
-createdAt: "2020-02-07T06:16:35.226Z"
-updatedAt: "2020-02-07T19:17:29.454Z"
+date: Last Modified
 ---
 This Chainlink has a dedicated connection to <a href="https://blocklytics.org/" target="_blank">Blocklytics</a>.
 [block:api-header]

@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "eth.events Chainlink (Testnet)"
 slug: "ethevents-chainlink-testnet"
 hidden: true
-createdAt: "2019-08-09T16:31:38.457Z"
-updatedAt: "2019-11-01T17:41:40.920Z"
+date: Last Modified
 ---
 This Chainlink has a dedicated connection to <a href="https://docs.eth.events/en/latest/index.html">eth.event's API</a>. This Chainlink will allow requesters to create queries to the API, and return the response.
 [block:api-header]

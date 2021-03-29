@@ -1,4 +1,5 @@
 ---
+layout: nodes.liquid
 title: "Price Feed Contracts"
 slug: "reference-contracts"
 hidden: false
@@ -11,8 +12,7 @@ metadata:
     2: 1459
     3: 1459
     4: "#dbe1f8"
-createdAt: "2020-04-21T09:24:49.095Z"
-updatedAt: "2020-10-13T12:26:26.930Z"
+date: Last Modified
 ---
 Chainlink Price Feed contracts are updated on a regular basis by multiple Chainlink nodes. This page lists contract addresses so you can use them in your own projects.
 

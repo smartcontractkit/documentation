@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "CoinGecko Chainlink (Ethereum Mainnet)"
 slug: "coingecko-chainlink-ethereum-mainnet"
 hidden: false
-createdAt: "2020-07-08T17:02:13.596Z"
-updatedAt: "2020-07-08T17:02:13.596Z"
+date: Last Modified
 ---
 This Chainlink has a dedicated connection to <a href="https://www.coingecko.com/en" target="_blank">CoinGecko's</a> API. In addition to tracking price, volume and market capitalization, CoinGecko tracks community growth, open-source code development, major events and on-chain metrics.
 [block:api-header]

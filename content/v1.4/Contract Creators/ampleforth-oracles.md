@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Ampleforth Oracles"
 slug: "ampleforth-oracles"
 hidden: true
-createdAt: "2019-11-04T16:14:57.840Z"
-updatedAt: "2019-11-05T16:31:11.651Z"
+date: Last Modified
 ---
 [block:api-header]
 {

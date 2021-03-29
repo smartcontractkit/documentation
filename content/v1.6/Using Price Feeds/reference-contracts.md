@@ -1,4 +1,5 @@
 ---
+layout: nodes.liquid
 title: "Contract Addresses"
 slug: "reference-contracts"
 hidden: false
@@ -11,8 +12,7 @@ metadata:
     2: 1459
     3: 1459
     4: "#dbe1f8"
-createdAt: "2020-04-21T09:24:49.095Z"
-updatedAt: "2021-03-22T09:47:09.977Z"
+date: Last Modified
 ---
 [block:callout]
 {

@@ -1,4 +1,5 @@
 ---
+layout: nodes.liquid
 title: "Get a Random Number"
 slug: "get-a-random-number"
 hidden: false
@@ -10,8 +11,7 @@ metadata:
     2: 1459
     3: 1459
     4: "#dbe1f8"
-createdAt: "2020-07-22T10:56:15.157Z"
-updatedAt: "2021-02-26T11:13:38.735Z"
+date: Last Modified
 ---
 [block:callout]
 {

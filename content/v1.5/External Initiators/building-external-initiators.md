@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Building External Initiators"
 slug: "building-external-initiators"
 hidden: false
-createdAt: "2020-12-15T09:51:00.054Z"
-updatedAt: "2020-12-15T10:22:00.313Z"
+date: Last Modified
 ---
 We will be using the [Chainlink external initiators](https://github.com/smartcontractkit/external-initiator) repo for reference. You can see some examples of already created [external initiators](https://github.com/smartcontractkit/external-initiator/tree/master/blockchain) in the blockchain folder, and a walkthrough of setting one up (not writing the code) [here](https://www.youtube.com/watch?v=J8oJEp4qz5w).
 

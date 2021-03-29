@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Adding External Initiators to your node"
 slug: "adding-external-initiators-to-your-node"
 hidden: false
-createdAt: "2020-12-15T10:42:11.418Z"
-updatedAt: "2020-12-15T10:42:11.418Z"
+date: Last Modified
 ---
 1. Setup a new project in a different folder than the one your node runs on. 
 

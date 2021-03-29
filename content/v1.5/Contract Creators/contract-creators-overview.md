@@ -1,12 +1,12 @@
 ---
+layout: nodes.liquid
 title: "Overview"
 slug: "contract-creators-overview"
 hidden: true
 metadata: 
   title: "Overview for Smart Contract Developers Integrating Chainlink"
   description: "Developer documentation and user guides for building smart contracts with the goal of connecting them to off-chain data sources."
-createdAt: "2018-06-21T00:00:56.436Z"
-updatedAt: "2020-07-14T20:28:45.400Z"
+date: Last Modified
 ---
 [block:image]
 {

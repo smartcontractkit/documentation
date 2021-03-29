@@ -1,4 +1,5 @@
 ---
+layout: nodes.liquid
 title: "Get a Random Number"
 slug: "get-a-random-number"
 hidden: false
@@ -10,8 +11,7 @@ metadata:
     2: 1459
     3: 1459
     4: "#dbe1f8"
-createdAt: "2020-07-22T10:56:15.157Z"
-updatedAt: "2020-10-16T09:47:49.989Z"
+date: Last Modified
 ---
 This page explains how to get a random number inside a smart contract, using Chainlink VRF.
 

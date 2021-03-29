@@ -1,4 +1,5 @@
 ---
+layout: nodes.liquid
 title: "Running a Chainlink Node"
 slug: "running-a-chainlink-node"
 hidden: false
@@ -11,8 +12,7 @@ metadata:
     2: 1459
     3: 1459
     4: "#dbe1f8"
-createdAt: "2018-06-19T18:25:47.394Z"
-updatedAt: "2020-12-04T10:43:02.952Z"
+date: Last Modified
 ---
 In this section, we'll explain the requirements and basics for running your own Chainlink node. 
 

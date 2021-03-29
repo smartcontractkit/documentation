@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Mainnet Oracle Reference"
 slug: "chainlinks-ethereum-mainnet"
 hidden: false
-createdAt: "2019-05-30T16:35:39.328Z"
-updatedAt: "2020-10-06T10:35:55.062Z"
+date: Last Modified
 ---
 We have a growing collection of pre-made Chainlinks, which will easily connect your smart contract to a specific API, giving your smart contract secure access to everything that API does. Additional Chainlinks can be built around existing APIs by their creators and/or individual developers by quickly making an [External Adapter](https://docs.chain.link/docs/external-adapters).
 

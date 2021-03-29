@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Amberdata Chainlink (Testnet)"
 slug: "amberdata-chainlink-testnet"
 hidden: false
-createdAt: "2019-05-09T20:43:42.775Z"
-updatedAt: "2020-10-21T09:38:11.851Z"
+date: Last Modified
 ---
 Chainlink has a dedicated connection to <a href="https://amberdata.io/" target="_blank">Amberdata's API</a>. This Chainlink is able to retrieve data for any free API endpoint from Amberdata's <a href="https://docs.amberdata.io/reference" target="_blank">Market Data and Blockchain Data</a>.
 

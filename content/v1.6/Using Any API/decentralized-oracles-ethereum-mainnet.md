@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Contract Addresses"
 slug: "decentralized-oracles-ethereum-mainnet"
 hidden: false
-createdAt: "2020-10-29T14:34:07.283Z"
-updatedAt: "2021-03-09T11:43:25.416Z"
+date: Last Modified
 ---
 # Overview
 

@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Job Specifications"
 slug: "job-specifications"
 hidden: false
-createdAt: "2018-07-27T19:15:17.487Z"
-updatedAt: "2020-07-30T15:48:48.257Z"
+date: Last Modified
 ---
 Job specifications, or specs, contain the sequential tasks that the node must perform to produce a final result. A spec contains at least one initiator and one task, which are discussed in detail below. Specs are defined using standard JSON so that they are human-readable and can be easily parsed by the Chainlink node.
 

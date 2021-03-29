@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Random.org Chainlink (Ethereum Mainnet)"
 slug: "randomorg-chainlink-ethereum-mainnet"
 hidden: true
-createdAt: "2019-05-31T20:42:11.449Z"
-updatedAt: "2019-11-01T17:46:56.349Z"
+date: Last Modified
 ---
 Chainlink has a dedicated connection to <a href="https://www.random.org/" target="_blank">Random.org's API</a>. This Chainlink will retrieve a single random number to return to your smart contract.
 [block:api-header]

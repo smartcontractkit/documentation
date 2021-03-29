@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Contract Reference (Binance Smart Chain)"
 slug: "reference-data-contracts-binance-smart-chain"
 hidden: true
-createdAt: "2020-07-17T07:31:07.198Z"
-updatedAt: "2020-08-10T09:45:25.672Z"
+date: Last Modified
 ---
 > 🚧 In Development - Do Not Share
 >

@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Performing System Maintenance"
 slug: "performing-system-maintenance"
 hidden: false
-createdAt: "2018-07-26T11:47:37.790Z"
-updatedAt: "2020-10-20T09:19:05.908Z"
+date: Last Modified
 ---
 You may occasionally need to restart the system which the Chainlink node runs on. In order to be able to accomplish this without any downtime in regards to completing requests, you can perform the upgrade as a series of steps to pass access to the database to a new instance while the first instance is down.
 

@@ -1,4 +1,5 @@
 ---
+layout: nodes.liquid
 title: "Intermediates - Random Numbers"
 slug: "intermediates-tutorial"
 excerpt: "Using Chainlink VRF"
@@ -12,8 +13,7 @@ metadata:
     2: 1459
     3: 1459
     4: "#dbe1f8"
-createdAt: "2020-11-20T17:22:53.922Z"
-updatedAt: "2020-12-21T11:44:39.270Z"
+date: Last Modified
 ---
 # Introduction
 

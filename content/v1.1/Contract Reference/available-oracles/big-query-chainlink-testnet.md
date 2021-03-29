@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "BigQuery Chainlink (Testnet)"
 slug: "big-query-chainlink-testnet"
 hidden: false
-createdAt: "2019-05-16T12:40:40.595Z"
-updatedAt: "2020-10-21T09:38:34.682Z"
+date: Last Modified
 ---
 This Chainlink has a dedicated connection to Google's BigQuery API for retrieving the Ethereum gas price.
 [block:api-header]

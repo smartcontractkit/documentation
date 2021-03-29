@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Hackathon Resources"
 slug: "hackathon-resources"
 hidden: true
-createdAt: "2020-06-29T02:13:16.359Z"
-updatedAt: "2020-09-07T15:46:53.224Z"
+date: Last Modified
 ---
 ### Hackathon & Project Resources
 

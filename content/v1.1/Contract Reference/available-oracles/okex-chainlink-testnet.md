@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "OKEx Chainlink (Testnet)"
 slug: "okex-chainlink-testnet"
 hidden: true
-createdAt: "2020-07-08T07:26:43.013Z"
-updatedAt: "2020-07-08T07:34:04.375Z"
+date: Last Modified
 ---
 This Chainlink has a dedicated connection to <a href="https://www.okex.com/" target="_blank">OKEx</a>.
 [block:api-header]

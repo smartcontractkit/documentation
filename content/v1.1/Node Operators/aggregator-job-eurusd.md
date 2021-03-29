@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Aggregator Job (EUR/USD)"
 slug: "aggregator-job-eurusd"
 hidden: true
-createdAt: "2019-11-21T23:09:34.513Z"
-updatedAt: "2020-02-19T16:45:43.173Z"
+date: Last Modified
 ---
 In order to contribute to the price aggregator contract, you will need to run one of the jobs on this page. The Chainlink team will let you know which API to provide, and you can use this page as a guide for adding jobs for each provider to your node.
 

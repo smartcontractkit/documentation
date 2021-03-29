@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Coinbase Chainlink (Testnet)"
 slug: "coinbase-chainlink-testnet"
 hidden: true
-createdAt: "2019-11-01T11:13:29.694Z"
-updatedAt: "2020-04-28T15:05:57.263Z"
+date: Last Modified
 ---
 This Chainlink has a dedicated connection to <a href="https://www.coinbase.com/" target="_blank">Coinbase's</a> Oracle API.
 [block:api-header]

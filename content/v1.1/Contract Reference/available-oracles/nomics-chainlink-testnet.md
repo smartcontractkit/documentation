@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Nomics Chainlink (Testnet)"
 slug: "nomics-chainlink-testnet"
 hidden: true
-createdAt: "2019-10-01T13:05:45.925Z"
-updatedAt: "2019-11-01T17:40:29.616Z"
+date: Last Modified
 ---
 This Chainlink has a dedicated connection to <a href="https://nomics.com/" target="_blank">Nomics'</a> API. Nomics is an API-first cryptoasset data company delivering professional-grade market data APIs to institutional crypto investors and exchanges.
 [block:api-header]

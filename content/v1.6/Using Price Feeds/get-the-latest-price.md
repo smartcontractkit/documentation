@@ -1,4 +1,5 @@
 ---
+layout: nodes.liquid
 title: "Get the Latest Price"
 slug: "get-the-latest-price"
 hidden: false
@@ -11,8 +12,7 @@ metadata:
     2: 1459
     3: 1459
     4: "#dbe1f8"
-createdAt: "2020-07-17T16:39:46.533Z"
-updatedAt: "2021-03-18T12:06:51.205Z"
+date: Last Modified
 ---
 [block:callout]
 {

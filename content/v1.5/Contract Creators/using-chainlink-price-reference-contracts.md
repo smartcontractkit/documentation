@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Using Chainlink Price Reference Contracts"
 slug: "using-chainlink-price-reference-contracts"
 hidden: true
-createdAt: "2020-04-06T10:41:14.222Z"
-updatedAt: "2020-04-07T23:29:46.611Z"
+date: Last Modified
 ---
 [block:api-header]
 {

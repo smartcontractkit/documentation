@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Introduction to Chainlink Tutorials"
 slug: "tutorials"
 hidden: true
-createdAt: "2020-11-20T17:16:06.717Z"
-updatedAt: "2020-12-03T13:40:04.544Z"
+date: Last Modified
 ---
 [block:image]
 {

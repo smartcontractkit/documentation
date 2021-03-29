@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Aggregator Job (LEND/ETH)"
 slug: "aggregator-job-lendeth"
 hidden: true
-createdAt: "2019-12-10T22:07:08.755Z"
-updatedAt: "2020-02-20T17:27:38.138Z"
+date: Last Modified
 ---
 In order to contribute to the price aggregator contract, you will need to run one of the jobs on this page. The Chainlink team will let you know which API to provide, and you can use this page as a guide for adding jobs for each provider to your node.
 

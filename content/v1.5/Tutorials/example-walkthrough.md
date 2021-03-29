@@ -1,4 +1,5 @@
 ---
+layout: nodes.liquid
 title: "Intermediates - Calling APIs"
 slug: "example-walkthrough"
 hidden: false
@@ -11,8 +12,7 @@ metadata:
     2: 1459
     3: 1459
     4: "#dbe1f8"
-createdAt: "2019-04-11T18:26:45.684Z"
-updatedAt: "2020-12-03T13:44:33.360Z"
+date: Last Modified
 ---
 # Introduction
 

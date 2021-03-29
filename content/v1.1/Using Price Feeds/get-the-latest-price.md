@@ -1,4 +1,5 @@
 ---
+layout: nodes.liquid
 title: "Get the Latest Price"
 slug: "get-the-latest-price"
 hidden: false
@@ -11,8 +12,7 @@ metadata:
     2: 1459
     3: 1459
     4: "#dbe1f8"
-createdAt: "2020-07-17T16:39:46.533Z"
-updatedAt: "2020-09-14T14:15:36.700Z"
+date: Last Modified
 ---
 This page explains how to get the latest price of Ethereum (ETH) inside smart contracts, using the <a href="https://kovan.etherscan.io/address/0x9326BFA02ADD2366b30bacB125260Af641031331" target="_blank">ETH/USD Price Feed</a> on the Kovan testnet.
 

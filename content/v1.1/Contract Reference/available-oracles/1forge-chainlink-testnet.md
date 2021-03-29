@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "1Forge Chainlink (Testnet)"
 slug: "1forge-chainlink-testnet"
 hidden: true
-createdAt: "2019-07-22T21:02:16.772Z"
-updatedAt: "2019-11-01T17:42:08.199Z"
+date: Last Modified
 ---
 This Chainlink has a dedicated connection to <a href="https://1forge.com/forex-data-api/api-documentation">1Forge's API</a>. This Chainlink will allow requesters to create queries to the API, and return the response.
 [block:api-header]

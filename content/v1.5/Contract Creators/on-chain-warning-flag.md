@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "On-Chain Warning Flag"
 slug: "on-chain-warning-flag"
 hidden: true
-createdAt: "2020-07-03T11:36:35.763Z"
-updatedAt: "2020-07-29T22:27:14.452Z"
+date: Last Modified
 ---
 > 🚧In Development - Do Not Share
 >

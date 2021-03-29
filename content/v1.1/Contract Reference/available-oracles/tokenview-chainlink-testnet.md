@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "TokenView Chainlink (Testnet)"
 slug: "tokenview-chainlink-testnet"
 hidden: false
-createdAt: "2019-11-21T19:13:12.381Z"
-updatedAt: "2020-10-21T09:42:39.798Z"
+date: Last Modified
 ---
 Chainlink has a dedicated connection to TokenView.
 [block:api-header]

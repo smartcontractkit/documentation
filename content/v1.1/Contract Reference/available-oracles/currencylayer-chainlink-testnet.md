@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "CurrencyLayer Chainlink (Testnet)"
 slug: "currencylayer-chainlink-testnet"
 hidden: true
-createdAt: "2019-07-25T19:46:59.270Z"
-updatedAt: "2019-11-01T17:41:58.771Z"
+date: Last Modified
 ---
 This Chainlink has a dedicated connection to <a href="https://currencylayer.com/documentation">CurrencyLayer's API</a>. This Chainlink will allow requesters to create queries to the API, and return the response.
 [block:api-header]

@@ -1,4 +1,5 @@
 ---
+layout: nodes.liquid
 title: "Advanced - API Calls"
 slug: "advanced-tutorial"
 excerpt: "Calling APIs from Smart Contracts"
@@ -10,8 +11,7 @@ metadata:
     2: 1459
     3: 1459
     4: "#dbe1f8"
-createdAt: "2020-11-20T17:24:12.229Z"
-updatedAt: "2021-03-15T10:53:16.571Z"
+date: Last Modified
 ---
 > 👍 Prerequisites
 >

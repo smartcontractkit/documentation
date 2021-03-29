@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Aggregator Job (CHF/USD)"
 slug: "aggregator-job-chfusd"
 hidden: true
-createdAt: "2019-11-21T23:14:16.799Z"
-updatedAt: "2020-02-19T16:47:56.846Z"
+date: Last Modified
 ---
 In order to contribute to the price aggregator contract, you will need to run one of the jobs on this page. The Chainlink team will let you know which API to provide, and you can use this page as a guide for adding jobs for each provider to your node.
 

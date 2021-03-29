@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Aggregator Job (N225 Index, market closure)"
 slug: "aggregator-job-n225-index-market-closure"
 hidden: true
-createdAt: "2020-05-04T06:05:44.047Z"
-updatedAt: "2020-05-11T19:08:40.183Z"
+date: Last Modified
 ---
 In order to contribute to the price aggregator contract, you will need to run the job on this page. The Chainlink team will let you know which API to provide, and you can use this page as a guide for adding jobs for each provider to your node. These jobs make use of external adapters instead of specifying the URLs directly in the HttpGet adapter.
 

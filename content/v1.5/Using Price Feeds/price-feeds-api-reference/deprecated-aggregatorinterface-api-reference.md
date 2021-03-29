@@ -1,4 +1,5 @@
 ---
+layout: nodes.liquid
 title: "Deprecated API Reference"
 slug: "deprecated-aggregatorinterface-api-reference"
 hidden: false
@@ -9,8 +10,7 @@ metadata:
     2: 1459
     3: 1459
     4: "#dbe1f8"
-createdAt: "2020-08-26T12:49:24.767Z"
-updatedAt: "2020-08-31T15:26:54.532Z"
+date: Last Modified
 ---
 > 🚧 Deprecated
 > 

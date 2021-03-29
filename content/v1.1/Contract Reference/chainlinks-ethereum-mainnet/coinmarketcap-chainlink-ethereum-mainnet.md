@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "CoinMarketCap Chainlink (Ethereum Mainnet)"
 slug: "coinmarketcap-chainlink-ethereum-mainnet"
 hidden: false
-createdAt: "2019-05-30T16:58:23.610Z"
-updatedAt: "2019-11-01T17:46:34.795Z"
+date: Last Modified
 ---
 This Chainlink supports the <a href="https://pro.coinmarketcap.com/api/v1#operation/getV1CryptocurrencyQuotesLatest" target="_blank">latest market quotes</a> endpoint for any coin and market supported by CoinMarketCap. The <a href="https://pro.coinmarketcap.com/api/v1#" target="_blank">CoinMarketCap Professional API</a> is a suite of high-performance RESTful JSON endpoints that are specifically designed to meet the mission-critical demands of application developers, data scientists, and enterprise business platforms.
 [block:api-header]

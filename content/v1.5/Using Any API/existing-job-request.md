@@ -1,4 +1,5 @@
 ---
+layout: nodes.liquid
 title: "Make an Existing Job Request"
 slug: "existing-job-request"
 hidden: false
@@ -11,8 +12,7 @@ metadata:
     2: 1459
     3: 1459
     4: "#dbe1f8"
-createdAt: "2020-07-30T10:37:06.069Z"
-updatedAt: "2020-11-06T13:49:53.723Z"
+date: Last Modified
 ---
 Using an *existing* Oracle Job makes your smart contract code more succinct. This page explains how to make an HTTP GET request to the <a href="https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd" target="_blank">ETH-USD Price endpoint</a> in the <a href="https://www.coingecko.com/en/api#explore-api" target="_blank">CoinGecko API</a>, to retrieve the price of ETH, using an existing Oracle job.
 

@@ -1,4 +1,5 @@
 ---
+layout: nodes.liquid
 title: "Basic Request Model"
 slug: "architecture-request-model"
 hidden: false
@@ -10,8 +11,7 @@ metadata:
     2: 1459
     3: 1459
     4: "#dbe1f8"
-createdAt: "2020-09-28T15:44:34.364Z"
-updatedAt: "2020-11-06T13:22:01.916Z"
+date: Last Modified
 ---
 # Contracts Overview
 

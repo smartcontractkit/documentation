@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Aggregator Job (XAG/USD)"
 slug: "aggregator-job-xagusd"
 hidden: true
-createdAt: "2019-11-21T23:11:29.537Z"
-updatedAt: "2020-06-03T16:42:20.286Z"
+date: Last Modified
 ---
 In order to contribute to the price aggregator contract, you will need to run an external adapter for the provider you have been assigned. The Chainlink team will let you know which API to provide, and you can use this page as a guide for adding jobs to your node.
 

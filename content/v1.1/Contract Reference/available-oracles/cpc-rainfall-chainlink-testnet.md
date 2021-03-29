@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "CPC Rainfall Chainlink (Testnet)"
 slug: "cpc-rainfall-chainlink-testnet"
 hidden: true
-createdAt: "2020-05-01T17:49:10.285Z"
-updatedAt: "2020-07-09T20:23:00.098Z"
+date: Last Modified
 ---
 This Chainlink has a dedicated connection to <a href="" target="_blank">CPC Rainfall</a> API.
 [block:api-header]

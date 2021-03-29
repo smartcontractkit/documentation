@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Initiators"
 slug: "initiators"
 hidden: false
-createdAt: "2019-05-31T01:52:56.408Z"
-updatedAt: "2020-09-04T17:31:46.915Z"
+date: Last Modified
 ---
 [block:api-header]
 {

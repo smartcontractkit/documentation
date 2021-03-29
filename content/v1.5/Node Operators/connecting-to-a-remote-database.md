@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Connecting to a Remote Database"
 slug: "connecting-to-a-remote-database"
 hidden: false
-createdAt: "2019-05-31T18:01:25.108Z"
-updatedAt: "2020-04-07T12:37:34.720Z"
+date: Last Modified
 ---
 This page will serve as a basic, vendor-neutral guide for setting up a PostgreSQL database and connecting your Chainlink node to it.
 

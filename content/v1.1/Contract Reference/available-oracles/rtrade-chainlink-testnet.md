@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "RTrade Chainlink (Testnet)"
 slug: "rtrade-chainlink-testnet"
 hidden: true
-createdAt: "2019-01-23T19:51:36.660Z"
-updatedAt: "2019-11-01T17:43:48.731Z"
+date: Last Modified
 ---
 This Chainlink has a dedicated connection to <a href="https://documenter.getpostman.com/view/4295780/RWEcQM6W" target="_blank">RTrade's Temporal API</a>. This Chainlink's functionality is currently limited to retrieving information about the public IPFS network.
 [block:api-header]

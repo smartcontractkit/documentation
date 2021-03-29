@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Service Agreement Examples"
 slug: "service-agreement-examples"
 hidden: true
-createdAt: "2019-07-17T20:01:24.144Z"
-updatedAt: "2019-11-20T14:48:16.934Z"
+date: Last Modified
 ---
 The example below is a simple service agreement where each node will reach out to the same endpoint and return their individual results.
 [block:code]

@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Scorechain Chainlink (Testnet)"
 slug: "scorechain-chainlink-testnet"
 hidden: true
-createdAt: "2019-11-03T11:23:49.674Z"
-updatedAt: "2019-11-12T14:07:01.298Z"
+date: Last Modified
 ---
 This Chainlink has a dedicated connection to <a href="https://www.scorechain.com/" target="_blank">Scorechain's</a> API. 
 [block:api-header]

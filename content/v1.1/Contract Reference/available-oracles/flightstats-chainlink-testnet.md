@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Flightstats Chainlink (Testnet)"
 slug: "flightstats-chainlink-testnet"
 hidden: true
-createdAt: "2019-10-13T09:52:26.088Z"
-updatedAt: "2019-11-21T19:09:50.091Z"
+date: Last Modified
 ---
 This Chainlink has a dedicated connection to Flightstats' API. This Chainlink allows requesters to get the ratings and status of different flights.
 [block:api-header]

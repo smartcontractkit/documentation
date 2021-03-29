@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Binance Chainlink (Testnet)"
 slug: "binance-chainlink-testnet"
 hidden: true
-createdAt: "2019-09-09T14:57:48.192Z"
-updatedAt: "2020-03-03T16:09:42.399Z"
+date: Last Modified
 ---
 This Chainlink has a dedicated connection to <a href="https://github.com/binance-exchange/binance-official-api-docs">Binance's API</a>. This Chainlink will allow requesters to create queries to the API, and return the response.
 [block:api-header]

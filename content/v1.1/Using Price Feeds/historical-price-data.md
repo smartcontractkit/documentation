@@ -1,4 +1,5 @@
 ---
+layout: nodes.liquid
 title: "Historical Price Data"
 slug: "historical-price-data"
 hidden: false
@@ -11,8 +12,7 @@ metadata:
     2: 1459
     3: 1459
     4: "#dbe1f8"
-createdAt: {}
-updatedAt: "2020-10-30T11:17:57.888Z"
+date: Last Modified
 ---
 The most common use case for Price Feeds is to [Get the Latest Price](doc:get-the-latest-price). However, <a href="https://github.com/smartcontractkit/chainlink/blob/master/evm-contracts/src/v0.6/interfaces/AggregatorV3Interface.sol" target="_blank" rel="noreferrer, noopener">`AggregatorV3Interface`</a> also exposes functions which can be used to retrieve price data of a previous round ID.
 

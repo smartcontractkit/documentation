@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Flux Monitor Job Ropsten (BTC/USD)"
 slug: "flux-monitor-job-ropsten-btcusd"
 hidden: true
-createdAt: "2020-01-28T22:36:17.228Z"
-updatedAt: "2020-06-25T08:25:51.103Z"
+date: Last Modified
 ---
 [block:callout]
 {

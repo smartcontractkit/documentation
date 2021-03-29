@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "EasyPost Chainlink (Testnet)"
 slug: "easypost-chainlink-testnet"
 hidden: false
-createdAt: "2018-09-27T14:54:20.014Z"
-updatedAt: "2020-10-21T09:40:48.013Z"
+date: Last Modified
 ---
 This Chainlink has a dedicated connection to EasyPost's API. Providing access to EasyPost's Test and Production APIs so that you can develop on both endpoints.
 [block:api-header]

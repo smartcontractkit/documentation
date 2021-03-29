@@ -3,8 +3,7 @@ layout: nodes.liquid
 title: "Example Projects"
 slug: "example-projects"
 hidden: false
-createdAt: "2020-04-21T21:16:46.384Z"
-updatedAt: "2020-12-22T04:30:35.381Z"
+date: Last Modified
 ---
 # Hackathons
 

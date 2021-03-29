@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Flightstats Chainlink (Testnet) (Etherisc)"
 slug: "flightstats-chainlink-testnet-etherisc"
 hidden: false
-createdAt: "2019-11-21T19:03:59.751Z"
-updatedAt: "2020-07-27T16:21:27.354Z"
+date: Last Modified
 ---
 This Chainlink has a dedicated connection to Flightstats' API. This Chainlink allows requesters to get the ratings and status of different flights.
 [block:api-header]

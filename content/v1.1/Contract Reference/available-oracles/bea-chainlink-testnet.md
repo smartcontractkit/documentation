@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "BEA Chainlink (Testnet)"
 slug: "bea-chainlink-testnet"
 hidden: true
-createdAt: "2019-07-17T20:27:13.619Z"
-updatedAt: "2019-11-01T17:42:15.526Z"
+date: Last Modified
 ---
 This Chainlink has a dedicated connection to <a href="https://apps.bea.gov/API/signup/index.cfm">U.S. Bureau of Economic Analysis' API</a>. This Chainlink will retrieve the average of the previous 3 months of the T20804 table.
 [block:api-header]

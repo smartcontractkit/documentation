@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Internal Price Feeds"
 slug: "internal-price-feeds"
 hidden: true
-createdAt: "2020-11-19T12:15:03.838Z"
-updatedAt: "2021-03-19T18:49:15.542Z"
+date: Last Modified
 ---
 # Ethereum Mainnet
 

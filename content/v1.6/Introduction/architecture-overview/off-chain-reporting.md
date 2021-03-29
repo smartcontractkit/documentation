@@ -1,4 +1,5 @@
 ---
+layout: nodes.liquid
 title: "Off-Chain Reporting"
 slug: "off-chain-reporting"
 hidden: false
@@ -9,8 +10,7 @@ metadata:
     2: 1459
     3: 1459
     4: "#dbe1f8"
-createdAt: "2021-01-18T17:17:25.567Z"
-updatedAt: "2021-03-12T13:55:22.174Z"
+date: Last Modified
 ---
 Off-Chain Reporting (OCR) is the next Oracle network upgrade replacing the [`FluxAggregator` model](doc:architecture-decentralized-model). It represents a significant step towards increasing the decentralization and scalability of Chainlink networks.
 

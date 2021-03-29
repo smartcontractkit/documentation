@@ -1,4 +1,5 @@
 ---
+layout: nodes.liquid
 title: "Decentralized Data Model"
 slug: "architecture-decentralized-model"
 hidden: false
@@ -10,8 +11,7 @@ metadata:
     2: 1459
     3: 1459
     4: "#dbe1f8"
-createdAt: "2020-09-28T15:45:13.879Z"
-updatedAt: "2020-09-28T15:58:44.881Z"
+date: Last Modified
 ---
 This page describes how data aggregation is applied to produce Chainlink Price Feeds.
 

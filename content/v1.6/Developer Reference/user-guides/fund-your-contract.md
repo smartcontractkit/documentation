@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Fund your contract"
 slug: "fund-your-contract"
 hidden: false
-createdAt: "2018-06-21T18:37:07.113Z"
-updatedAt: "2021-03-09T14:12:02.906Z"
+date: Last Modified
 ---
 This guide explains how to fund your Solidity contract with LINK using the Remix IDE.
 

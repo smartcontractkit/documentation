@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Fund your contract"
 slug: "fund-your-contract"
 hidden: false
-createdAt: "2018-06-21T18:37:07.113Z"
-updatedAt: "2020-10-29T13:03:23.124Z"
+date: Last Modified
 ---
 * On Remix - in the left side panel that displays your contract title, click the copy icon to the right of the title to copy your contract address to your clipboard.
 [block:image]

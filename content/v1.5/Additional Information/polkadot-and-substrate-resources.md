@@ -1,9 +1,9 @@
 ---
+layout: nodes.liquid
 title: "Polkadot and Substrate Resources"
 slug: "polkadot-and-substrate-resources"
 hidden: true
-createdAt: "2020-09-07T15:46:23.629Z"
-updatedAt: "2020-09-07T15:46:23.629Z"
+date: Last Modified
 ---
 # Polkadot and Substrate Resources
 

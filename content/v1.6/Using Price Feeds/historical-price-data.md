@@ -1,4 +1,5 @@
 ---
+layout: nodes.liquid
 title: "Historical Price Data"
 slug: "historical-price-data"
 hidden: false
@@ -11,8 +12,7 @@ metadata:
     2: 1459
     3: 1459
     4: "#dbe1f8"
-createdAt: {}
-updatedAt: "2021-03-18T12:02:46.145Z"
+date: Last Modified
 ---
 [block:callout]
 {
