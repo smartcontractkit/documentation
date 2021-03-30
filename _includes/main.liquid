@@ -363,39 +363,7 @@
                     </button>
                     </a>
                 </form>
-                <div style="display:none;position:absolute;top:16px;left:16px;height:50vh;width:50vw;padding:16px;z-index:1000;background:#CCC"  id="resultsBox">Search Results:<div id="resultsOutput"></div></div>
-                    <script>
-                        const button = document.getElementById('search-link');
-                        listner = document.getElementById('search-form').addEventListener('submit', (event) => {
-                            console.log('search form submit event');
-                            event.preventDefault();
-                            fetch('/search-index.json').then(response => {
-                                return response.json();
-                            })
-                            .then(response => {
-                                searchIndex = response;
-                                console.log('got response',response);
-                                // TEST
-                                const query = document.getElementById('search-query').value;
-                                const searchString=query.toLowerCase();
-                                console.log('searching for query',query);
-                                const results = [];
-                                for(const item of searchIndex.search) {
-                                    const found = item.text.indexOf(searchString);
-                                    if(found !== -1) {
-                                        results.push(item);
-                                    }
-                                }
-                                const resultBox = document.getElementById('resultsBox');
-                                resultBox.style.display = 'block';
-                                document.getElementById('resultsOutput').innerHTML = results.map(result => `<a href="${result.url}" style="display:block;">${result.title}</a>`).join('');
-
-                                console.table(results);
-                                console.log(resultBox);
-                            })
-                        });
-                        console.log(listner, 'is the listener');
-                    </script>
+                {% include _search.html %}
 
                 </nav>
                 
