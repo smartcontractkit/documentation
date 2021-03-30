@@ -2,4 +2,4 @@
 layout: nodes.liquid
 date: Last Modified
 ---
-Testing? Is this the home page?
+Welcome to the Chainlink Docs 2.0

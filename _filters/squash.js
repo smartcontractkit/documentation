@@ -1,12 +1,12 @@
-const eleventyNavigationPlugin = require("@11ty/eleventy-navigation");
+// NOTE: THIS DOESN'T WORK, currently hardcoding in .eleventy.js
+/**
+ * Make a search index string by removing duplicated words
+ * and removing less useful, common short words
+ *
+ * @param {String} text
+ */
 
-
-module.exports = function(eleventyConfig) {
-  eleventyConfig.addPlugin(eleventyNavigationPlugin);
-  const rdmd = require( '@readme/markdown' ); 
-  eleventyConfig.setLibrary('md', {render: rdmd.html});
-
-  eleventyConfig.addFilter('squash', function(text) {
+ module.exports = function(text) {
     var content = new String(text);
   
     // all lower case, please
@@ -28,8 +28,5 @@ module.exports = function(eleventyConfig) {
     //remove repeated spaces
     result = result.replace(/[ ]{2,}/g, ' ');
   
-    result = result.replace(/\\/g,'');
-
     return result;
-  });
-};
+  }
