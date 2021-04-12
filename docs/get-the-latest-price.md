@@ -41,7 +41,7 @@ To consume price data, your smart contract should reference <a href="https://git
 </div>
 </div>
 
-```javascript Kovan
+```solidity
 
 pragma solidity ^0.6.7;
 
