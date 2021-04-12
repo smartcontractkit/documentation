@@ -55,7 +55,7 @@ The core adapter walks the `copyPath` specified and returns the value found at t
 
 For the JSON object:
 
-```json
+```javascript
 {"RAW": {"ETH": {"USD": {"LASTMARKET": "_someValue"}}}}
 ```
 
@@ -78,7 +78,7 @@ req.add("copyPath", "RAW.ETH.USD.LASTMARKET");
 
 #### Job Specification Example
 
-```json
+```javascript
 {
   "type": "Copy",
   "params": {
@@ -94,7 +94,7 @@ req.add("copyPath", "RAW.ETH.USD.LASTMARKET");
 
 For arrays, you can access the path of an array by using the index. If this is your JSON:
 
-```json
+```javascript
 {"endpoint": [ {"path":"value"}]}
 ```
 
@@ -188,7 +188,7 @@ req.add("extPath", "price/BTC/USD");
 
 #### Job Specification Example
 
-```json
+```javascript
 {
   "type": "HttpGet",
   "params": {
@@ -266,7 +266,7 @@ The core adapter walks the `path` specified and returns the value found at that 
 
 For the stringified JSON:
 
-```json
+```javascript
 "{\"RAW\": {\"ETH\": {\"USD\": {\"LASTMARKET\": \"_someValue\"}}}}"
 ```
 
@@ -289,7 +289,7 @@ req.add("path", "RAW.ETH.USD.LASTMARKET");
 
 #### Job Specification Example
 
-```json
+```javascript
 {
   "type": "JsonParse",
   "params": {

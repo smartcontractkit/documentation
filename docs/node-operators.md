@@ -26,7 +26,7 @@ The Bridge Name should be unique to the local node, and the Bridge URL should be
 
 To add jobs which use the bridge, simply give their bridge name to the task type, as shown below for the `randomNumber` type.
 
-```json
+```javascript
 {
   "initiators": [
     { "type": "runLog" }
@@ -47,7 +47,7 @@ Since `randomNumber` is not a [core adapter](../adapters), it is an external ada
 
 You can also exclude extra parameters from the spec when creating the job. This will allow requesters the ability to specify them per-request:
 
-```json
+```javascript
 {
   "initiators": [
     { "type": "runLog" }
@@ -74,7 +74,7 @@ How can we test the adapter on our node?
 
 The easiest way is to setup a web job and manually add the parameter. 
 
-```json
+```javascript
 {
   "name": "weather-cl-ea BOSTON",
   "initiators": [
@@ -94,7 +94,7 @@ The easiest way is to setup a web job and manually add the parameter.
 ``` 
 
 Adding the following:
-```json
+```javascript
 "params": {
         "city": "boston"
       }

@@ -20,7 +20,7 @@ Specs are defined using standard JSON so that they are human-readable and can be
 
 Here is an example of a spec:
 
-```json
+```javascript
 {
   "initiators": [
     {

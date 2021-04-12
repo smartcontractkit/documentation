@@ -30,7 +30,7 @@ The [Copy](../adapters#copy) adapter allows for the same functionality of the [J
 
 For example, if an adapter returns JSON data like what is below:
 
-```json
+```javascript
 {
     "firstValue": "SomeValue",
     "details": {
@@ -44,7 +44,7 @@ For example, if an adapter returns JSON data like what is below:
 
 And you wanted the value in the field "open", you would specify the path for the adapter to walk through the JSON object to your desired field.
 
-```json
+```javascript
 "copyPath": ["details", "open"]
 ```
 

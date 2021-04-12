@@ -49,7 +49,7 @@ Let's walk through a real example, where we retrieve 24 volume of the <a href="h
 ### Core Adapters Example
 
 1. [HttpGet](../adapters#httpget) - Calls the API and returns the body of an HTTP GET result for [ETH/USD pair](https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETH&tsyms=USD).  Example: 
-```json
+```javascript
 {"RAW":
   {"ETH":
     {"USD":

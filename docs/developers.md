@@ -21,13 +21,13 @@ When an external adapter receives a request from the Chainlink node, the JSON pa
 -  `id` 
 -  `data`
 
-```json
+```javascript
 {"id":"278c97ffadb54a5bbb93cfec5f7b5503","data":{}}
 ```
 
 If the node has a value defined for the Bridge Response URL, the payload will include a `"responseURL"` field that can be used to update responses via PATCH requests:
 
-```json
+```javascript
 {
   "id": "278c97ffadb54a5bbb93cfec5f7b5503",
   "data": {},
@@ -43,7 +43,7 @@ https://example.com/api/:parent/:child
 
 Then the payload to the external adapter would need:
 
-```json
+```javascript
 {
   "id": "278c97ffadb54a5bbb93cfec5f7b5503",
   "data": {
@@ -68,7 +68,7 @@ When the external adapter has a response payload, it must include the response p
 
 An example of the response data can look like:
 
-```json
+```javascript
 {
   "jobRunID": "278c97ffadb54a5bbb93cfec5f7b5503",
   "data": {
@@ -90,7 +90,7 @@ If the endpoint gave a known error, the error should be included in the external
 
 An example of what the error response payload should look like:
 
-```json
+```javascript
 {
   "jobRunID": "278c97ffadb54a5bbb93cfec5f7b5503",
   "data": {},

@@ -126,7 +126,7 @@ After the function signature and a short description, two code examples are prov
 
 ## setChainlinkOracle
 
-```javascript
+```solidity
 function setChainlinkOracle(
   address _oracle
 )
