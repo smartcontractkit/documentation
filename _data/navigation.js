@@ -78,6 +78,56 @@ module.exports = {
           },
         ],
       },
+    ],
+    smartContractDeveloper: [
+      {
+        section: 'INTRODUCTION',
+        contents: [
+          { title: 'Getting Started', url: 'getting-started' },
+          { title: 'Tutorials', url: 'tutorials' },
+          { title: 'Architecture Overview', url: 'architecture-overview' },
+        ],
+      },
+      {
+        section: 'DEVELOPER REFERENCE',
+        contents: [
+          { title: 'Install Instructions', url: 'create-a-chainlinked-project' },
+          { title: 'LINK Token Contracts', url: 'link-token-contracts' },
+          { title: 'Developer Communications', url: 'developer-communications' },
+          { title: 'Hackathon Resources', url: 'hackathon-resources' },
+          { title: 'User Guides', url: 'user-guides' },
+        ],
+      },
+      {
+        section: 'USING PRICE FEEDS',
+        contents: [
+          { title: 'Introduction to Price Feeds', url: 'using-chainlink-reference-contracts' },
+          { title: 'Get the Latest Price', url: 'get-the-latest-price' },
+          { title: 'Historical Price Data', url: 'historical-price-data' },
+          { title: 'API Reference', url: 'price-feeds-api-reference' },
+          { title: 'Contract Addresses', url: 'reference-contracts' },
+        ],
+      },
+      {
+        section: 'USING RANDOMNESS',
+        contents: [
+          { title: 'Introduction to Chainlink VRF', url: 'chainlink-vrf' },
+          { title: 'Get a Random Number', url: 'get-a-random-number' },
+          { title: 'API Reference', url: 'chainlink-vrf-api-reference' },
+          { title: 'Contract Addresses', url: 'vrf-contracts' },
+        ],
+      },
+      {
+        section: 'USING ANY API',
+        contents: [
+          { title: 'Introduction to Using Any API', url: 'request-and-receive-data' },
+          { title: 'Make a GET Request', url: 'make-a-http-get-request' },
+          { title: 'Make an Existing Job Request', url: 'existing-job-request' },
+          { title: 'Find Existing Jobs', url: 'listing-services' },
+          { title: 'API Reference', url: 'chainlink-framework' },
+          { title: 'Contract Addresses', url: 'decentralized-oracles-ethereum-mainnet' },
+        ],
+      },
       {
         section: 'DATA PROVIDER NODES',
         contents: [
@@ -107,6 +157,5 @@ module.exports = {
         ],
       },
     ],
-    smartContractDeveloper: [],
   },
 }
