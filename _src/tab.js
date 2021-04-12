@@ -16,7 +16,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 node.style['display'] = 'none';
               }
             }
-            console.log('event target is',event.target);
             for(handle of event.target.parentElement.children) {
               if(handle === tabHandle) {
                 handle.classList.add('selected');
@@ -30,5 +29,4 @@ document.addEventListener('DOMContentLoaded', () => {
     item.prepend(tabBar);
   }
 
-  console.log('acting on ', list)
 })
