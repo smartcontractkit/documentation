@@ -1,21 +1,40 @@
-name: Build
+name: Build and Deploy
 on: 
   push: 
     branches: 
       - main
 
 jobs:
-  build_deploy:
-    runs-on: ubuntu-18.04
+  build:
+    name: Build
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@master
+      - name: Checkout Repo
+        uses: actions/checkout@master
+      - name: Install Dependencies
+        run: yarn
       - name: Build
-        uses: TartanLlama/actions-eleventy@v1.2
+        run: yarn build
+      - name: Archive Production Artifact
+        uses: actions/upload-artifact@master
         with:
-          install_dependencies: true
-      - name: Deploy
-        uses: peaceiris/actions-gh-pages@v1.1.0
+          name: _site
+          path: _site
+  deploy:
+    name: Deploy
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@master
+      - name: Download Artifact
+        uses: actions/download-artifact@master
+        with:
+          name: _site
+          path: _site
+      - name: Deploy to Firebase
+        uses: w9jds/firebase-action@master
+        with:
+          args: deploy --only hosting
         env:
-          PUBLISH_DIR: _site 
-          PUBLISH_BRANCH: gh-pages
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
