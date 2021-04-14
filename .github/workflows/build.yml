@@ -15,23 +15,6 @@ jobs:
         run: yarn
       - name: Build
         run: yarn build
-      - name: Archive Production Artifact
-        uses: actions/upload-artifact@master
-        with:
-          name: _site
-          path: _site
-  deploy:
-    name: Deploy
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repo
-        uses: actions/checkout@master
-      - name: Download Artifact
-        uses: actions/download-artifact@master
-        with:
-          name: _site
-          path: _site
       - name: Deploy to Firebase
         uses: w9jds/firebase-action@94389a881adad57284e35860f5d258ab262dcd91
         with:
