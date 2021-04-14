@@ -1,23 +1,10 @@
 name: Build and Deploy
 on: 
-  push
+  push: 
+    branches: 
+      - main
 
 jobs:
-  build:
-    name: Build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repo
-        uses: actions/checkout@master
-      - name: Install Dependencies
-        run: yarn
-      - name: Build
-        run: yarn build
-      - name: Archive Production Artifact
-        uses: actions/upload-artifact@master
-        with:
-          name: _site
-          path: _site
   deploy:
     name: Deploy
     needs: build
