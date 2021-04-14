@@ -84,28 +84,128 @@ module.exports = {
         section: 'INTRODUCTION',
         contents: [
           { title: 'Getting Started', url: 'getting-started' },
-          { title: 'Tutorials', url: 'tutorials' },
-          { title: 'Architecture Overview', url: 'architecture-overview' },
+          {
+            title: 'Tutorials',
+            url: 'tutorials',
+            children: [
+              {
+                title: 'Beginners - The Basics',
+                url: 'beginners-tutorial',
+              },
+              {
+                title: 'Intermediates - Random Numbers',
+                url: 'intermediates-tutorial',
+              },
+              {
+                title: 'Advanced - API Calls',
+                url: 'advanced-tutorial',
+              },
+            ],
+          },
+          {
+            title: 'Architecture Overview',
+            url: 'architecture-overview',
+            children: [
+              {
+                title: 'Basic Request Model',
+                url: 'architecture-request-model',
+              },
+              {
+                title: 'Decentralized Data Model',
+                url:
+                  'architecture-decentralized-model',
+              },
+              {
+                title: 'Off-Chain Reporting',
+                url: 'off-chain-reporting',
+              },
+            ],
+          },
         ],
       },
       {
         section: 'DEVELOPER REFERENCE',
         contents: [
-          { title: 'Install Instructions', url: 'create-a-chainlinked-project' },
+          {
+            title: 'Install Instructions',
+            url: 'create-a-chainlinked-project',
+          },
           { title: 'LINK Token Contracts', url: 'link-token-contracts' },
-          { title: 'Developer Communications', url: 'developer-communications' },
+          {
+            title: 'Developer Communications',
+            url: 'developer-communications',
+          },
           { title: 'Hackathon Resources', url: 'hackathon-resources' },
-          { title: 'User Guides', url: 'user-guides' },
+          {
+            title: 'User Guides',
+            url: 'user-guides',
+            children: [
+              {
+                title: 'Install, configure & fund MetaMask',
+                url: 'install-metamask',
+              },
+              {
+                title: 'Acquire testnet LINK',
+                url: 'acquire-link',
+              },
+              {
+                title: 'Deploy your first contract',
+                url: 'deploy-your-first-contract',
+              },
+              {
+                title: 'Fund your contract',
+                url: 'fund-your-contract',
+              },
+              {
+                title: 'Use your first contract!',
+                url: 'use-your-first-contract',
+              },
+            ],
+          },
         ],
       },
       {
         section: 'USING PRICE FEEDS',
         contents: [
-          { title: 'Introduction to Price Feeds', url: 'using-chainlink-reference-contracts' },
+          {
+            title: 'Introduction to Price Feeds',
+            url: 'using-chainlink-reference-contracts',
+          },
           { title: 'Get the Latest Price', url: 'get-the-latest-price' },
           { title: 'Historical Price Data', url: 'historical-price-data' },
-          { title: 'API Reference', url: 'price-feeds-api-reference' },
-          { title: 'Contract Addresses', url: 'reference-contracts' },
+          {
+            title: 'API Reference',
+            url: 'price-feeds-api-reference',
+            children: [],
+          },
+          {
+            title: 'Contract Addresses',
+            url: 'reference-contracts',
+            children: [
+              { title: 'ENS', url: 'ens' },
+              {
+                title: 'Ethereum Price Feeds',
+                url: 'ethereum-addresses',
+              },
+              {
+                title: 'Binance Smart Chain Price Feeds',
+                url:
+                  'binance-smart-chain-addresses',
+              },
+              {
+                title: 'Polygon (Matic) Price Feeds',
+                url: 'matic-addresses',
+              },
+              {
+                title: 'xDai Price Feeds',
+                url: 'xdai-price-feeds',
+              },
+              {
+                title: 'Huobi Eco Chain Price Feeds',
+                url: 'huobi-eco-chain-price-feeds',
+              },
+            ],
+          },
         ],
       },
       {
@@ -120,12 +220,21 @@ module.exports = {
       {
         section: 'USING ANY API',
         contents: [
-          { title: 'Introduction to Using Any API', url: 'request-and-receive-data' },
+          {
+            title: 'Introduction to Using Any API',
+            url: 'request-and-receive-data',
+          },
           { title: 'Make a GET Request', url: 'make-a-http-get-request' },
-          { title: 'Make an Existing Job Request', url: 'existing-job-request' },
+          {
+            title: 'Make an Existing Job Request',
+            url: 'existing-job-request',
+          },
           { title: 'Find Existing Jobs', url: 'listing-services' },
           { title: 'API Reference', url: 'chainlink-framework' },
-          { title: 'Contract Addresses', url: 'decentralized-oracles-ethereum-mainnet' },
+          {
+            title: 'Contract Addresses',
+            url: 'decentralized-oracles-ethereum-mainnet',
+          },
         ],
       },
       {

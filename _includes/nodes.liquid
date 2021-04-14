@@ -3,11 +3,27 @@ layout: ./main.liquid
 ---
 <div class="nav-content">
     <navigation>
-        {% for section in navigation.navigation.nodeOperator %}
+        {% unless section %}
+        {% assign section = "nodeOperator" %}
+        {% endunless %}
+
+        {% for group in navigation.navigation[section] %}
             <div>
-                <span class="nav-header">{{section.section}}</span>
-                {% for destination in section.contents %}
-                    <a href="/docs/{{destination.url}}" {% if page.fileSlug == destination.url%} class="active" {% endif %}>{{destination.title}}</a>
+                <span class="nav-header">{{group.section}}</span>
+                {% for destination in group.contents %}
+                    {% if destination.children %}
+                        <a href="/docs/{{destination.url}}" class="expandable" {% if page.fileSlug == destination.url%} class="active" {% endif %}>{{destination.title}}</a>
+                        {% for child in destination.children %}
+                        <a href="/docs/{{child.url}}" style="padding-left: 32px;" {% if page.fileSlug == destination.url%} class="active" {% endif %}>{{child.title}}</a>
+                        {% endfor %}
+                    {% else %}
+                        <a href="/docs/{{destination.url}}" {% if page.fileSlug == destination.url%} class="active" {% endif %}>{{destination.title}}</a>
+    
+
+                    {% endif %}
+
+                    
+
                 {% endfor %}
 
             </div>
