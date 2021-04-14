@@ -17,7 +17,7 @@ date: Last Modified
           <h3>Get Price Feeds in your Smart Contracts</h3>
           <p>Retrieve the latest prices of assets in your smart contracts.</p>
           <a
-            href="https://docs.chain.link/docs/using-chainlink-reference-contracts"
+            href="/docs/using-chainlink-reference-contracts"
             class="cl-button--ghost"
             >Learn More
           </a>
@@ -34,7 +34,7 @@ date: Last Modified
             Use Chainlink VRF to consume randomness in your smart contracts.
           </p>
           <a
-            href="https://docs.chain.link/docs/chainlink-vrf"
+            href="/docs/chainlink-vrf"
             class="cl-button--ghost"
             >Learn More
           </a>
@@ -53,7 +53,7 @@ date: Last Modified
             library.
           </p>
           <a
-            href="https://docs.chain.link/docs/request-and-receive-data"
+            href="/docs/request-and-receive-data"
             class="cl-button--ghost"
             >Learn More
           </a>
@@ -71,7 +71,7 @@ date: Last Modified
         Beginner's Walkthrough
       </p>
       <a
-        href="https://docs.chain.link/docs/beginners-tutorial"
+        href="/docs/beginners-tutorial"
         class="keychainify-checked"
         >Start Building</a
       >
@@ -87,7 +87,7 @@ date: Last Modified
                 off-chain data and smart contracts.
               </p>
               <a
-                href="https://docs.chain.link/docs/architecture-overview"
+                href="/docs/architecture-overview"
                 class="cl-button--ghost"
                 >Architecture</a
               >
@@ -165,7 +165,7 @@ date: Last Modified
     <p>Find answers to our most commonly asked questions.</p>
     <div class="rowcenter" style="margin-top: 24px !important">
       <a
-        href="https://docs.chain.link/docs/faq"
+        href="/docs/faq"
         class="cl-button--ghost cl-button--ghost--white"
         >FAQ</a
       >
