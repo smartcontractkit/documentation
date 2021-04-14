@@ -1,25 +1,15 @@
-name: Build and Deploy
+name: Test
 on: 
-  push: 
-    branches: 
-      - main
+  pull_request
 
 jobs:
-  deploy:
-    name: Deploy
-    needs: build
+  test:
+    name: Test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
         uses: actions/checkout@master
-      - name: Download Artifact
-        uses: actions/download-artifact@master
-        with:
-          name: _site
-          path: _site
-      - name: Deploy to Firebase
-        uses: w9jds/firebase-action@master
-        with:
-          args: deploy --only hosting
-        env:
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+      - name: Install Dependencies
+        run: yarn
+      - name: Build
+        run: yarn build
