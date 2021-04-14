@@ -1,7 +1,7 @@
 ---
 layout: nodes.liquid
 title: "Install Instructions"
-section: smartContractDeveloper
+section: smartContract
 hidden: false
 metadata: 
   title: "Getting Started with Chainlink for Smart Contract Developers"

@@ -79,7 +79,7 @@ module.exports = {
         ],
       },
     ],
-    smartContractDeveloper: [
+    smartContract: [
       {
         section: 'INTRODUCTION',
         contents: [

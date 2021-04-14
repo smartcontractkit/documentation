@@ -1,6 +1,6 @@
 ---
 layout: nodes.liquid
-section: smartContractDeveloper
+section: smartContract
 date: Last Modified
 ---
 
