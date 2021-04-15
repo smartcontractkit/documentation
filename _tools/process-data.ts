@@ -1,8 +1,6 @@
 import * as fs from 'fs';
 import { NETWORKS } from './networks';
 
-global['XMLHttpRequest'] = require('xmlhttprequest').XMLHttpRequest;
-
 const targetData = NETWORKS;
 
 /**
