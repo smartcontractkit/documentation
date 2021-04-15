@@ -1,57 +1,5 @@
 export const NETWORKS = [
   {
-    page: "internal-price-feeds",
-    title: "Internal Price Feeds",
-    internal: true,
-    networks: [
-      {
-        name: "ethereum mainnet",
-        url: "https://etherscan.io/address/",
-        source: "directory.json",
-      },
-      {
-        name: "kovan",
-        url: "https://kovan.etherscan.io/address/",
-        source: "directory-bsc-testnet.json",
-      },
-      {
-        name: "rinkeby",
-        url: "https://rinkeby.etherscan.io/address/",
-        source: "directory-rinkeby.json",
-      },
-      {
-        name: "bsc mainnet",
-        url: "https://bscscan.com/address/",
-        source: "directory-bsc-mainnet.json",
-      },
-      {
-        name: "bsc testnet",
-        url: "https://testnet.bscscan.com/address/",
-        source: "directory-bsc-testnet.json",
-      },
-      {
-        name: "matic mainnet",
-        url: "https://explorer-mainnet.maticvigil.com/address/",
-        source: "directory-matic-mainnet.json",
-      },
-      {
-        name: "matic mumbai testnet",
-        url: "https://explorer-mumbai.maticvigil.com/address/",
-        source: "directory-matic-testnet.json",
-      },
-      {
-        name: "xdai mainnet",
-        url: "https://blockscout.com/poa/xdai/address/",
-        source: "directory-xdai-mainnet.json",
-      },
-      {
-        name: "huobi mainnet",
-        url: "https://hecoinfo.com/address/",
-        source: "directory-heco-mainnet.json",
-      },
-    ],
-  },
-  {
     page: "ethereum-addresses",
     title: "Ethereum Price Feeds",
     networks: [

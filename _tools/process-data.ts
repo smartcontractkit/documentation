@@ -26,7 +26,6 @@ interface ResultProxy {
   pair: string;
   decimals: number;
   proxy: string;
-  aggregator: string;
 }
 
 function load(filename): DataFile {
@@ -64,8 +63,7 @@ for (let page of targetData) {
       const contract = contents.contracts[contractKey];
       if (
         contract.status === 'testnet-priority' ||
-        contract.status === 'live' ||
-        (page.internal && contract.status !== 'dead')
+        contract.status === 'live'
       ) {
         liveContracts[contractKey] = { decimals: contract.decimals };
         if (contract.v3Facade) {
@@ -83,7 +81,6 @@ for (let page of targetData) {
           pair: proxy.name,
           decimals: liveContracts[proxy.aggregator].decimals,
           proxy: proxyKey,
-          aggregator: proxy.aggregator,
         });
       }
     }
