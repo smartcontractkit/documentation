@@ -1,6 +1,4 @@
 import * as fs from 'fs';
-import { initializeApp } from 'firebase/app';
-import { getStorage, ref, uploadString } from 'firebase/storage';
 import { NETWORKS } from './networks';
 
 global['XMLHttpRequest'] = require('xmlhttprequest').XMLHttpRequest;
@@ -102,33 +100,5 @@ for (let page of targetData) {
   }
 }
 
-// Upload the data to firebase
-const firebaseConfig = {
-  apiKey: 'AIzaSyA2hTOlj4DHnYJ4KMYlnvCiJP9v1vd-Oec',
-  authDomain: 'docs2-cl.firebaseapp.com',
-  databaseURL: 'https://docs2-cl-default-rtdb.firebaseio.com',
-  projectId: 'docs2-cl',
-  storageBucket: 'docs2-cl.appspot.com',
-  messagingSenderId: '650776382319',
-  appId: '1:650776382319:web:a58e9e0f186d296574769a',
-  measurementId: 'G-WWWK70W05J',
-};
-
-initializeApp(firebaseConfig);
-
-const filename = 'addresses.json';
-const storage = getStorage();
-const fileRef = ref(storage, filename);
-
-console.log(finalResult);
-/*
-try {
-uploadString(fileRef, JSON.stringify(finalResult), 'string', {
-  contentType: 'application/json',
-}).then((snapshot) => {
-  console.log('Uploaded address data!');
-}).catch(err => {console.error('error uploading was',err)});
-} catch(err) {
-  console.log("caught an error",err);
-}
-*/
+// Write the data to disk
+fs.writeFileSync('addresses.json',JSON.stringify(finalResult));

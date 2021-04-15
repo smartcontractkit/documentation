@@ -24,3 +24,13 @@ jobs:
       #   run: cat data-source/package.json
       - name: Process Data
         run: yarn process
+      - uses: google-github-actions/setup-gcloud@master
+        with:
+          project_id: fluindotio
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          export_default_credentials: true
+      - name: upload-file
+        uses: google-github-actions/upload-cloud-storage@main
+        with:
+          path: addresses.json
+          destination: cl-docs-storage-preview/addresses.json
