@@ -96,4 +96,9 @@ for (let page of targetData) {
 }
 
 // Write the data to disk
-fs.writeFileSync('addresses.json',JSON.stringify(finalResult));
+try {
+  fs.mkdirSync('address_dist')
+} catch (err) {
+  // Doesn't matter if the directory already exists
+}
+fs.writeFileSync('address_dist/addresses.json',JSON.stringify(finalResult));

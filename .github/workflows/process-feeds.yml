@@ -24,13 +24,11 @@ jobs:
       #   run: cat data-source/package.json
       - name: Process Data
         run: yarn process
-      - uses: google-github-actions/setup-gcloud@master
+      - name: Deploy to Firebase
+        uses: w9jds/firebase-action@94389a881adad57284e35860f5d258ab262dcd91
         with:
-          project_id: fluindotio
-          service_account_key: ${{ secrets.GCP_SA_KEY }}
-          export_default_credentials: true
-      - name: upload-file
-        uses: google-github-actions/upload-cloud-storage@main
-        with:
-          path: addresses.json
-          destination: cl-docs-storage-preview/addresses.json
+
+          args: -c firebase-addresses.json deploy --only hosting
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+          PROJECT_ID: cl-docs-addresses
