@@ -85,11 +85,14 @@ priceFeed.methods.latestRoundData().call()
         console.log("Latest Round Data", roundData)
     });
 ```
-[block:html]
-{
-  "html": "<div class=\"row text-center center\">\n\t<div class=\"col-xs-12 col-md-6 col-md-offset-3\">\n\t\t<a id=\"get-price-button\" href=\"javascript:getLatestPrice();\" class=\"cl-button--ghost javascript-tracked\">Latest Price: </a>\n    <input id=\"get-price-field\" type=\"number\" placeholder=\"Latest Price\"></input>\n\t</div>\n</div>"
-}
-[/block]
+
+<div class="row text-center center">
+	<div class="col-xs-12 col-md-6 col-md-offset-3">
+		<a id="get-price-button" href="javascript:getLatestPrice();" class="cl-button--ghost javascript-tracked">Latest Price: </a>
+    <input id="get-price-field" type="number" placeholder="Latest Price">
+	</div>
+</div>
+
 ## Python
 
 ```python Kovan

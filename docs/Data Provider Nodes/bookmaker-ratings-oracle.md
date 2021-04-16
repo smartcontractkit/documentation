@@ -18,19 +18,19 @@ Bookmaker Ratings is the premier betting media in Russia and Eastern Europe. The
 
 #### Ethereum Mainnet
 Payment Amount: 1 LINK  
-LINK Token Address: `<<MAINNET_LINK_TOKEN>>` 
+LINK Token Address: `{{variables.MAINNET_LINK_TOKEN}}` 
 Oracle Address: `0x0A39479Cc18b1c03D27D1e4A783C63754b75213d`  
 JobID: `c40d034d30fe461981cb745eaab08070`  
 
 #### Ethereum Kovan Testnet
 Payment Amount: 0.1  LINK
-LINK Token Address: `<<KOVAN_LINK_TOKEN>>`
+LINK Token Address: `{{variables.KOVAN_LINK_TOKEN}}`
 Oracle Address: `0x56dd6586DB0D08c6Ce7B2f2805af28616E082455`
 JobID: `0x56dd6586DB0D08c6Ce7B2f2805af28616E082455`
 
 #### Binance Smart Chain Mainnet
 Payment Amount: 0.1 LINK
-LINK Token address:`<<BINANCE_MAINNET_LINK_TOKEN>>`
+LINK Token address:`{{variables.BINANCE_MAINNET_LINK_TOKEN}}`
 Oracle Address: `0xc2EA1866804c84f5642a97b7FA38B45Ea8A69F6D`
 JobID: `1ceaa2fb40e040f6a19507ceaed23fd1`
 

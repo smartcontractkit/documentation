@@ -16,10 +16,14 @@ metadata:
     3: 1459
     4: "#dbe1f8"
 ---
+<<<<<<< HEAD
 
 <p>
   https://www.youtube.com/watch?v=JqZWariqh5s
 </p>
+=======
+<iframe width="560" height="315" src="https://www.youtube.com/embed/JqZWariqh5s" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+>>>>>>> 8d667fc... variables and style and path tweaks
 
 # Introduction
 

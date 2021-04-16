@@ -18,19 +18,19 @@ WatchSignals is the industry leader in market research on luxury watch prices. A
 
 #### Ethereum Mainnet
 Payment Amount: 1 LINK  
-LINK Token Address: `<<MAINNET_LINK_TOKEN>>` 
+LINK Token Address: `{{variables.MAINNET_LINK_TOKEN}}` 
 Oracle Address: `0x60B2582FB902Dff0B99c7AC30ABC08AaEfEEB309 `  
 JobID: `3d765e2892934cb9b5c734cc43da6620 `  
 
 #### Ethereum Kovan Testnet
 Payment Amount: 0.1  LINK  
-LINK Token Address: `<<KOVAN_LINK_TOKEN>>`
+LINK Token Address: `{{variables.KOVAN_LINK_TOKEN}}`
 Oracle Address: `0x56dd6586DB0D08c6Ce7B2f2805af28616E082455 `  
 JobID: `77102eb8faae4532b9534d30749f54dc `  
 
 #### Binance Smart Chain Mainnet
 Payment Amount: 0.1 LINK  
-LINK Token address:`<<BINANCE_MAINNET_LINK_TOKEN>>`
+LINK Token address:`{{variables.BINANCE_MAINNET_LINK_TOKEN}}`
 Oracle Address: `0x556e418c54679B6BdeB07419B355791b0784dF4C `  
 JobID: `2bbfde60662c4f0f9ef6f46567ca7fbc `  
 

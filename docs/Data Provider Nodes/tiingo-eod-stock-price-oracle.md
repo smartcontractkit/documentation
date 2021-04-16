@@ -27,7 +27,7 @@ You will need to use the following LINK token address, oracle address, and Job I
 
 #### Ethereum Mainnet
 Payment amount: 3 LINK
-LINK Token address:  `<<MAINNET_LINK_TOKEN>>`
+LINK Token address:  `{{variables.MAINNET_LINK_TOKEN}}`
 Oracle address: `0x4a1803f29fe5350e9a164d9865576af798e8eef8`
 JobID: `d89c60f0b0c045a5a317b1b70215dd16`
 
@@ -41,7 +41,7 @@ Requests on Kovan will return mocked data for testing purposes. Teams looking to
 
 #### Binance Smart Chain Mainnet
 Payment amount: 0.1 LINK
-LINK Token address:`<<BINANCE_MAINNET_LINK_TOKEN>>`
+LINK Token address:`{{variables.BINANCE_MAINNET_LINK_TOKEN}}`
 Oracle address: `0x3ee8dfe6094f642f1d19b7adf6b1a71c57453a8d `
 JobID: `2a3a607ac0254695935be32e9390178d`
 

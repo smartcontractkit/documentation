@@ -18,25 +18,25 @@ CipherTrace, the industry standard in cryptocurrency intelligence, introduces De
 
 #### Ethereum Mainnet
 Payment Amount: 1 LINK  
-LINK Token Address: `<<MAINNET_LINK_TOKEN>>` 
+LINK Token Address: `{{variables.MAINNET_LINK_TOKEN}}` 
 Oracle Address: `0xAcB07C9f9b0FEC39FD0F305FbA69A26b5772f81A`  
 JobID: `5348c2c08d03431a8872078bee96c6de`  
 
 #### Ethereum Kovan Testnet
 Payment Amount: 0.1  LINK
-LINK Token Address: `<<KOVAN_LINK_TOKEN>>`
+LINK Token Address: `{{variables.KOVAN_LINK_TOKEN}}`
 Oracle Address: `0x56dd6586DB0D08c6Ce7B2f2805af28616E082455`
 JobID: `22adbb38c8554f6ab36aedf42b17be18`
 
 #### Binance Smart Chain Mainnet
 Payment Amount: 0.1 LINK
-LINK Token address:`<<BINANCE_MAINNET_LINK_TOKEN>>`
+LINK Token address:`{{variables.BINANCE_MAINNET_LINK_TOKEN}}`
 Oracle Address: `0xf401c4DC6Ae678bB3b44adF1199e42Ea7066BAed`
 JobID: `8f156beb0abb44a1ad0fec925ab38707`
 
 #### Polygon (Matic) Mainnet
 Payment Amount: 0.1 LINK
-LINK Token Address: `<<MATIC_MAINNET_LINK_TOKEN>>`
+LINK Token Address: `{{variables.MATIC_MAINNET_LINK_TOKEN}}`
 Oracle Address: `0x9B4FC5D90287A7EE39BAeB2950B696870A1c0669`
 JobID: `6fb6404456574a999a88ed4aaea5a475`
 

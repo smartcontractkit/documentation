@@ -18,31 +18,31 @@ Genesis Volatility is a leading provider of data analytics on the crypto derivat
 
 #### Ethereum Mainnet
 Payment Amount: 1 LINK  
-LINK Token Address: `<<MAINNET_LINK_TOKEN>>` 
+LINK Token Address: `{{variables.MAINNET_LINK_TOKEN}}` 
 Oracle Address: `0x2587B47e53a02789F986E9a7e837fE5879f1fe30`  
 JobID: `da5f65bda578430f9ba520716d42e397`  
 
 #### Ethereum Kovan Testnet
 Payment Amount: 0.1  LINK  
-LINK Token Address: `<<KOVAN_LINK_TOKEN>>`
+LINK Token Address: `{{variables.KOVAN_LINK_TOKEN}}`
 Oracle Address: `0x56dd6586DB0D08c6Ce7B2f2805af28616E082455`  
 JobID: `5fd92f9bbc67465a80b8c4770dd89212`  
 
 #### Binance Smart Chain Mainnet
 Payment Amount: 0.1 LINK  
-LINK Token address:`<<BINANCE_MAINNET_LINK_TOKEN>>`
+LINK Token address:`{{variables.BINANCE_MAINNET_LINK_TOKEN}}`
 Oracle Address: `0xCAEd48E87a5c04D7dCD70C9efd3Ee2fA852a5874`  
 JobID: `3d240b3bbd094aa8a8fbf979a8be1492`  
 
 #### Polygon (Matic) Mainnet
 Payment Amount: 0.1 LINK  
-LINK Token Address: `<<MATIC_MAINNET_LINK_TOKEN>>` 
+LINK Token Address: `{{variables.MATIC_MAINNET_LINK_TOKEN}}` 
 Oracle Address: `0x5C7E97565989804455C2AB0eCfE0A456f448682d`  
 JobID: `b787c7fc8937433298302d4bf2cd7249`  
 
 #### xDAI Mainnet
 Payment Amount: 0.1 LINK  
-LINK Token address:`<<XDAI_MAINNET_LINK_TOKEN>>`
+LINK Token address:`{{variables.XDAI_MAINNET_LINK_TOKEN}}`
 Oracle Address: `0x670714Ef34E469DBC90d82087E95db1B1E71F279`  
 JobID: `5428e2d7e7d24b849878412c0aa9f821`  
 

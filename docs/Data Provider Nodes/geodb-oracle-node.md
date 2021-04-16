@@ -26,20 +26,20 @@ GeoDB is a decentralized Big Data ecosystem that compensates data providers who 
 #### Ethereum Mainnet
 
 Payment Amount: 3 LINK
-LINK Token Address: `<<MAINNET_LINK_TOKEN>>`
+LINK Token Address: `{{variables.MAINNET_LINK_TOKEN}}`
 Oracle Address: `0xdCDD8Cb3d4E7332C404772dBFE83C583D17fe821`
 JobID: `8a2b5fe5465349229f22f732a3e098cb`
 
 #### Ethereum Kovan Testnet
 
 Payment Amount: 0.1 LINK
-LINK Token Address: `<<KOVAN_LINK_TOKEN>>`
+LINK Token Address: `{{variables.KOVAN_LINK_TOKEN}}`
 Oracle Address: `0x56dd6586DB0D08c6Ce7B2f2805af28616E082455`
 JobID: `ef0e16c96ce04795b261725db827ba32`
 
 #### Binance Smart Chain Mainnet
 Payment Amount: 0.1 LINK
-LINK Token Address: `<<BINANCE_MAINNET_LINK_TOKEN>>`
+LINK Token Address: `{{variables.BINANCE_MAINNET_LINK_TOKEN}}`
 Oracle Address: `0xa31ffd6ad080985284cf2fc19ed4df61e8ba22d9`
 JobID: `f88bd47507b245babccefc9f81ee1b72`
 

@@ -27,20 +27,20 @@ You will need to use the following LINK token address, oracle address, and Job I
 
 #### Rinkeby
 Payment amount: 1 LINK
-LINK Token address: `<<RINKEBY_LINK_TOKEN>>`
-Oracle address: `<<RINKEBY_CHAINLINK_ORACLE>>` 
+LINK Token address: `{{variables.RINKEBY_LINK_TOKEN}}`
+Oracle address: `{{variables.RINKEBY_CHAINLINK_ORACLE}}` 
 JobID: `49ea116156cd44be997e7670a5dde80d`
 
 #### Kovan
 Payment amount: 1 LINK
-LINK Token address: `<<KOVAN_LINK_TOKEN>>`
-Oracle address: `<<KOVAN_CHAINLINK_ORACLE>>` 
+LINK Token address: `{{variables.KOVAN_LINK_TOKEN}}`
+Oracle address: `{{variables.KOVAN_CHAINLINK_ORACLE}}` 
 JobID: `8f4eeda1a8724077a0560ee84eb006b4`
 
 #### Mainnet
 Payment amount: 0.5 LINK
-LINK Token address: `<<MAINNET_LINK_TOKEN>>`
-Oracle address: `<<MAINNET_CHAINLINK_ORACLE>>` 
+LINK Token address: `{{variables.MAINNET_LINK_TOKEN}}`
+Oracle address: `{{variables.MAINNET_CHAINLINK_ORACLE}}` 
 JobID: contact `dataproviders@chain.link` for details
 
 # Create your contract
