@@ -1,8 +1,8 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
 date: Last Modified
 title: "Using Chainlink Price Reference Contracts"
-permalink: "using-chainlink-price-reference-contracts"
+permalink: "docs/using-chainlink-price-reference-contracts/"
 hidden: true
 ---
 [block:api-header]

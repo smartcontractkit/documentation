@@ -1,8 +1,9 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
+section: smartContract
 date: Last Modified
 title: "Get the Latest Price"
-permalink: "get-the-latest-price"
+permalink: "docs/get-the-latest-price/"
 hidden: false
 metadata: 
   title: "Get the Latest Price of an Asset"

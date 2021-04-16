@@ -1,8 +1,8 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
 date: Last Modified
 title: "Miscellaneous"
-permalink: "miscellaneous"
+permalink: "docs/miscellaneous/"
 hidden: false
 ---
 [block:api-header]

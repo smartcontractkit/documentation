@@ -1,8 +1,9 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
+section: smartContract
 date: Last Modified
 title: "Kovan Keeper Network (Beta)"
-permalink: "kovan-keeper-network-beta"
+permalink: "docs/kovan-keeper-network-beta/"
 hidden: false
 metadata: 
   image: 

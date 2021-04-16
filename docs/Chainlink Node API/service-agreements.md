@@ -1,7 +1,7 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
 date: Last Modified
 title: "Service Agreements"
-permalink: "service-agreements"
+permalink: "docs/service-agreements/"
 hidden: false
 ---

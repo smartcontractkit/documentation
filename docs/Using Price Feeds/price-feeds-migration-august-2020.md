@@ -1,8 +1,9 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
+section: smartContract
 date: Last Modified
 title: "Price Feeds August 2020"
-permalink: "price-feeds-migration-august-2020"
+permalink: "docs/price-feeds-migration-august-2020/"
 hidden: true
 metadata: 
   image: 

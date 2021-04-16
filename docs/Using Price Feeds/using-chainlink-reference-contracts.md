@@ -1,8 +1,9 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
+section: smartContract
 date: Last Modified
 title: "Introduction to Price Feeds"
-permalink: "using-chainlink-reference-contracts"
+permalink: "docs/using-chainlink-reference-contracts/"
 hidden: false
 metadata: 
   title: "How to Use Chainlink Decentralized Price Feeds in Smart Contracts"

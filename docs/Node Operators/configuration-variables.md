@@ -1,8 +1,8 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
 date: Last Modified
 title: "Configuration Variables"
-permalink: "configuration-variables"
+permalink: "docs/configuration-variables/"
 hidden: false
 ---
 ## ALLOW_ORIGINS

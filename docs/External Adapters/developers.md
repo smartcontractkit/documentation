@@ -1,8 +1,8 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
 date: Last Modified
 title: "Building External Adapters"
-permalink: "developers"
+permalink: "docs/developers/"
 hidden: false
 ---
 Developers of external adapters will need to know how the Chainlink node requests data from it, and how the data should be formatted for a response. External adapters can be written in any language, and even run on separate machines, to include serverless functions.

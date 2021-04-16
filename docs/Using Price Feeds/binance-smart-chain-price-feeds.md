@@ -1,8 +1,9 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
+section: smartContract
 date: Last Modified
 title: "Binance Smart Chain Price Feeds"
-permalink: "binance-smart-chain-price-feeds"
+permalink: "docs/binance-smart-chain-price-feeds/"
 hidden: true
 metadata: 
   image: 

@@ -1,8 +1,9 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
+section: smartContract
 date: Last Modified
 title: "Tiingo EOD Stock Price Oracle"
-permalink: "tiingo-eod-stock-price-oracle"
+permalink: "docs/tiingo-eod-stock-price-oracle/"
 hidden: false
 metadata: 
   image: 

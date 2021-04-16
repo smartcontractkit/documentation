@@ -1,8 +1,9 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
+section: smartContract
 date: Last Modified
 title: "Off-Chain Reporting"
-permalink: "off-chain-reporting"
+permalink: "docs/off-chain-reporting/"
 hidden: false
 metadata: 
   image: 

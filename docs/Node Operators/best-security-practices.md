@@ -1,8 +1,8 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
 date: Last Modified
 title: "Best Security and Operating Practices"
-permalink: "best-security-practices"
+permalink: "docs/best-security-practices/"
 hidden: false
 ---
 The following information provides a set of best security and operating practices that node operators need to utilize at a minimum to enhance the security and reliability of their infrastructure.

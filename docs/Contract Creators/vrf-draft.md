@@ -1,8 +1,8 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
 date: Last Modified
 title: "VRF Draft"
-permalink: "vrf-draft"
+permalink: "docs/vrf-draft/"
 hidden: true
 ---
 > 🚧In Development - Do Not Share

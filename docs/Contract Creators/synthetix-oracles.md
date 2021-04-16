@@ -1,8 +1,8 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
 date: Last Modified
 title: "Synthetix Oracles"
-permalink: "synthetix-oracles"
+permalink: "docs/synthetix-oracles/"
 hidden: true
 ---
 [block:api-header]

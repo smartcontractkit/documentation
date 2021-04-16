@@ -1,8 +1,9 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
+section: smartContract
 date: Last Modified
 title: "Kraken Rates Oracle Node"
-permalink: "kraken-rates-oracle-node"
+permalink: "docs/kraken-rates-oracle-node/"
 hidden: false
 metadata: 
   image: 

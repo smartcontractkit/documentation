@@ -1,8 +1,9 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
+section: smartContract
 date: Last Modified
 title: "Acquire testnet LINK"
-permalink: "acquire-link"
+permalink: "docs/acquire-link/"
 hidden: false
 ---
 This page will show you how to obtain and add testnet LINK to MetaMask. If you already have testnet LINK, skip to [Deploy your first contract](../deploy-your-first-contract).

@@ -1,8 +1,8 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
 date: Last Modified
 title: "Flux Monitor Job Ropsten (BTC/USD)"
-permalink: "flux-monitor-job-ropsten-btcusd"
+permalink: "docs/flux-monitor-job-ropsten-btcusd/"
 hidden: true
 ---
 [block:callout]

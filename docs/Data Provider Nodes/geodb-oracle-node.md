@@ -1,8 +1,9 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
+section: smartContract
 date: Last Modified
 title: "GeoDB Oracle Node"
-permalink: "geodb-oracle-node"
+permalink: "docs/geodb-oracle-node/"
 hidden: false
 metadata: 
   image: 

@@ -1,8 +1,8 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
 date: Last Modified
 title: "Fulfilling Requests"
-permalink: "fulfilling-requests"
+permalink: "docs/fulfilling-requests/"
 hidden: false
 metadata: 
   title: "Chainlink Node Operators: Fulfilling Requests"

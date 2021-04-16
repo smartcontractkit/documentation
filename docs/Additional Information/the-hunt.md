@@ -1,8 +1,8 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
 date: Last Modified
 title: "The Hunt"
-permalink: "the-hunt"
+permalink: "docs/the-hunt/"
 hidden: true
 ---
 [block:callout]

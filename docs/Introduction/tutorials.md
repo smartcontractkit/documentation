@@ -1,8 +1,9 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
+section: smartContract
 date: Last Modified
 title: "Tutorials"
-permalink: "tutorials"
+permalink: "docs/tutorials/"
 hidden: false
 ---
 [block:image]

@@ -1,7 +1,7 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
 date: Last Modified
 title: "Spec"
-permalink: "specs"
+permalink: "docs/specs/"
 hidden: false
 ---

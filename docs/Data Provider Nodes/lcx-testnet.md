@@ -1,8 +1,9 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
+section: smartContract
 date: Last Modified
 title: "LCX (Testnet)"
-permalink: "lcx-testnet"
+permalink: "docs/lcx-testnet/"
 hidden: false
 metadata: 
   image: 

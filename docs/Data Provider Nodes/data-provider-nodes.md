@@ -1,8 +1,9 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
+section: smartContract
 date: Last Modified
 title: "Introduction to Data Provider Nodes"
-permalink: "data-provider-nodes"
+permalink: "docs/data-provider-nodes/"
 hidden: false
 ---
 # Data Provider Nodes

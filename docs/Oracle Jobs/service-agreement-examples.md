@@ -1,8 +1,8 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
 date: Last Modified
 title: "Service Agreement Examples"
-permalink: "service-agreement-examples"
+permalink: "docs/service-agreement-examples/"
 hidden: true
 ---
 The example below is a simple service agreement where each node will reach out to the same endpoint and return their individual results.

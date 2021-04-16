@@ -1,8 +1,9 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
+section: smartContract
 date: Last Modified
 title: "Introduction to Chainlink VRF"
-permalink: "chainlink-vrf"
+permalink: "docs/chainlink-vrf/"
 hidden: false
 metadata: 
   title: "Generate Random Numbers for Smart Contracts using Chainlink VRF"

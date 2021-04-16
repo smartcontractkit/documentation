@@ -1,8 +1,9 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
+section: smartContract
 date: Last Modified
 title: "Make a GET Request"
-permalink: "make-a-http-get-request"
+permalink: "docs/make-a-http-get-request/"
 hidden: false
 metadata: 
   title: "Make a GET Request"

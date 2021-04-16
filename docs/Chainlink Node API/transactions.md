@@ -1,7 +1,7 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
 date: Last Modified
 title: "Transactions"
-permalink: "transactions"
+permalink: "docs/transactions/"
 hidden: false
 ---

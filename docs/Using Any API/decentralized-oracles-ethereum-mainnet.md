@@ -1,8 +1,9 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
+section: smartContract
 date: Last Modified
 title: "Contract Addresses"
-permalink: "decentralized-oracles-ethereum-mainnet"
+permalink: "docs/decentralized-oracles-ethereum-mainnet/"
 hidden: false
 ---
 # Overview

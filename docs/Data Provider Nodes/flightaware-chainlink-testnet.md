@@ -1,8 +1,9 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
+section: smartContract
 date: Last Modified
 title: "FlightAware Chainlink (Testnet)"
-permalink: "flightaware-chainlink-testnet"
+permalink: "docs/flightaware-chainlink-testnet/"
 hidden: true
 ---
 This Chainlink has a dedicated connection to <a href="https://uk.flightaware.com/" target="_blank">FlightAware</a>.

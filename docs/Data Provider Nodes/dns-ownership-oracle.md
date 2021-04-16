@@ -1,8 +1,9 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
+section: smartContract
 date: Last Modified
 title: "DNS Ownership Oracle"
-permalink: "dns-ownership-oracle"
+permalink: "docs/dns-ownership-oracle/"
 hidden: false
 ---
 This oracle checks Google’s DNS service to determine if a given domain is owned by a given blockchain address.

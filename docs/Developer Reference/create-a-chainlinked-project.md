@@ -1,8 +1,9 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
+section: smartContract
 date: Last Modified
 title: "Install Instructions"
-permalink: "create-a-chainlinked-project"
+permalink: "docs/create-a-chainlinked-project/"
 hidden: false
 metadata: 
   title: "Getting Started with Chainlink for Smart Contract Developers"

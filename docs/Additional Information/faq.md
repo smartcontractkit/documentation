@@ -1,8 +1,8 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
 date: Last Modified
 title: "FAQ"
-permalink: "faq"
+permalink: "docs/faq/"
 hidden: false
 metadata: 
   title: "Developer FAQ - Chainlink"

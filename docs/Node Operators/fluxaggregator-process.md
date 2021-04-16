@@ -1,8 +1,8 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
 date: Last Modified
 title: "FluxAggregator Process"
-permalink: "fluxaggregator-process"
+permalink: "docs/fluxaggregator-process/"
 hidden: true
 ---
 This page describes how the <a href="https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/src/v0.6/FluxAggregator.sol" target="_blank">`FluxAggregator`</a> contract interacts with oracle nodes to aggregate data.

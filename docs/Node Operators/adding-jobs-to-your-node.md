@@ -1,8 +1,8 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
 date: Last Modified
 title: "Adding Jobs to Your Node"
-permalink: "adding-jobs-to-your-node"
+permalink: "docs/adding-jobs-to-your-node/"
 hidden: true
 ---
 Below are the [Job Specifications](../job-specifications) for the jobs available on the [Addresses & Job IDs](../addresses-and-job-ids) page.

@@ -1,8 +1,9 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
+section: smartContract
 date: Last Modified
 title: "Contract Addresses"
-permalink: "reference-contracts"
+permalink: "docs/reference-contracts/"
 hidden: false
 metadata: 
   title: "Chainlink Price Feed Smart Contract Addresses"

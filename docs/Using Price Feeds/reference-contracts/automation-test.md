@@ -1,8 +1,9 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
+section: smartContract
 date: Last Modified
 title: "Automation Test"
-permalink: "automation-test"
+permalink: "docs/automation-test/"
 hidden: true
 ---
 # Ethereum Mainnet

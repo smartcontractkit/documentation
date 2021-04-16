@@ -1,8 +1,9 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
+section: smartContract
 date: Last Modified
 title: "Getting Started"
-permalink: "getting-started"
+permalink: "docs/getting-started/"
 hidden: false
 metadata: 
   title: "Getting Started - Chainlink"

@@ -1,8 +1,9 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
+section: smartContract
 date: Last Modified
 title: "Hackathon Resources"
-permalink: "hackathon-resources"
+permalink: "docs/hackathon-resources/"
 hidden: false
 ---
 ### Hackathon & Project Resources

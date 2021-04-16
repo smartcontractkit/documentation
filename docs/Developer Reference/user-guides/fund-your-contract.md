@@ -1,8 +1,9 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
+section: smartContract
 date: Last Modified
 title: "Fund your contract"
-permalink: "fund-your-contract"
+permalink: "docs/fund-your-contract/"
 hidden: false
 ---
 This guide explains how to fund your Solidity contract with LINK using the Remix IDE.

@@ -1,8 +1,8 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
 date: Last Modified
 title: "Addresses & Job IDs"
-permalink: "addresses-and-job-ids"
+permalink: "docs/addresses-and-job-ids/"
 hidden: true
 ---
 [block:image]

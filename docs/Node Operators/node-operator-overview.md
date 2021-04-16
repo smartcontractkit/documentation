@@ -1,8 +1,8 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
 date: Last Modified
 title: "Overview"
-permalink: "node-operator-overview"
+permalink: "docs/node-operator-overview/"
 hidden: false
 metadata: 
   title: "Node Operator Overview"

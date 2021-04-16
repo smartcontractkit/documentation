@@ -1,8 +1,9 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
+section: smartContract
 date: Last Modified
 title: "dxFeed Price Oracle"
-permalink: "dxfeed-oracle"
+permalink: "docs/dxfeed-oracle/"
 hidden: false
 ---
 dxFeed, a subsidiary of <a href="https://devexperts.com" target="_blank">Devexperts</a>, is an industry leader in providing high-quality financial data, including real-time and historical market data services, reference data, corporate actions, "time machine" market replay and more. This oracle will initially provide real-time pricing data for a range of equities and cryptocurrencies.  

@@ -1,8 +1,9 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
+section: smartContract
 date: Last Modified
 title: "TheRundown Oracle Node"
-permalink: "therundown-oracle-node"
+permalink: "docs/therundown-oracle-node/"
 hidden: false
 metadata: 
   image: 

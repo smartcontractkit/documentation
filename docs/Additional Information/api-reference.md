@@ -1,8 +1,8 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
 date: Last Modified
 title: "API Reference"
-permalink: "api-reference"
+permalink: "docs/api-reference/"
 hidden: false
 type: "link"
 link_url: "https://docs.chain.link/reference"

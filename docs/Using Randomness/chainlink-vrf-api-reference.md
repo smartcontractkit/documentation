@@ -1,8 +1,9 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
+section: smartContract
 date: Last Modified
 title: "API Reference"
-permalink: "chainlink-vrf-api-reference"
+permalink: "docs/chainlink-vrf-api-reference/"
 hidden: false
 metadata: 
   title: "Chainlink VRF API Reference"

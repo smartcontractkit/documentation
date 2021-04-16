@@ -1,8 +1,8 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
 date: Last Modified
 title: "Job Specifications"
-permalink: "job-specifications"
+permalink: "docs/job-specifications/"
 hidden: false
 ---
 ## What is a job?

@@ -1,7 +1,7 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
 date: Last Modified
 title: "Backup"
-permalink: "backup"
+permalink: "docs/backup/"
 hidden: false
 ---

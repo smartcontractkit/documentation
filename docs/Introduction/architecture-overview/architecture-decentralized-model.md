@@ -1,8 +1,9 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
+section: smartContract
 date: Last Modified
 title: "Decentralized Data Model"
-permalink: "architecture-decentralized-model"
+permalink: "docs/architecture-decentralized-model/"
 hidden: false
 metadata: 
   title: "Chainlink Decentralised Data Model"

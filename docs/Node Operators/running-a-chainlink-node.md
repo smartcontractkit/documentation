@@ -1,8 +1,8 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
 date: Last Modified
 title: "Running a Chainlink Node"
-permalink: "running-a-chainlink-node"
+permalink: "docs/running-a-chainlink-node/"
 hidden: false
 metadata: 
   title: "Running a Chainlink Node"

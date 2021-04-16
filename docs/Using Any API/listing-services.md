@@ -1,8 +1,9 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
+section: smartContract
 date: Last Modified
 title: "Find Existing Jobs"
-permalink: "listing-services"
+permalink: "docs/listing-services/"
 hidden: false
 ---
 This page explains how to find an existing Oracle Job to suit the needs of your API call.

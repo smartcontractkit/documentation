@@ -1,8 +1,8 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
 date: Last Modified
 title: "Polkadot and Substrate Resources"
-permalink: "polkadot-and-substrate-resources"
+permalink: "docs/polkadot-and-substrate-resources/"
 hidden: true
 ---
 # Polkadot and Substrate Resources

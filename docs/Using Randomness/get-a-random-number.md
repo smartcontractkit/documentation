@@ -1,8 +1,9 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
+section: smartContract
 date: Last Modified
 title: "Get a Random Number"
-permalink: "get-a-random-number"
+permalink: "docs/get-a-random-number/"
 hidden: false
 metadata: 
   description: "How to generate a random number inside a smart contract using Chainlink VRF."

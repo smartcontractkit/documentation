@@ -1,8 +1,8 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
 date: Last Modified
 title: "Aggregator Job (LRC/ETH)"
-permalink: "aggregator-job-lrceth"
+permalink: "docs/aggregator-job-lrceth/"
 hidden: true
 ---
 In order to contribute to the price aggregator contract, you will need to run one of the jobs on this page. The Chainlink team will let you know which API to provide, and you can use this page as a guide for adding jobs for each provider to your node.

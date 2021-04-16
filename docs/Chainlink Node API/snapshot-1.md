@@ -1,7 +1,7 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
 date: Last Modified
 title: "Snapshot"
-permalink: "snapshot-1"
+permalink: "docs/snapshot-1/"
 hidden: false
 ---

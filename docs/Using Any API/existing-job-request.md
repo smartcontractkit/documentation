@@ -1,8 +1,9 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
+section: smartContract
 date: Last Modified
 title: "Make an Existing Job Request"
-permalink: "existing-job-request"
+permalink: "docs/existing-job-request/"
 hidden: false
 metadata: 
   title: "Make an Existing Job Request"

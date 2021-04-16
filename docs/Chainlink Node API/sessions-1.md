@@ -1,7 +1,7 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
 date: Last Modified
 title: "Sessions"
-permalink: "sessions-1"
+permalink: "docs/sessions-1/"
 hidden: false
 ---

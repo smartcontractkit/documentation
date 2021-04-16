@@ -1,8 +1,8 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
 date: Last Modified
 title: "Defi Money Market Job"
-permalink: "defi-money-market-job"
+permalink: "docs/defi-money-market-job/"
 hidden: true
 ---
 You will need the following external adapter:

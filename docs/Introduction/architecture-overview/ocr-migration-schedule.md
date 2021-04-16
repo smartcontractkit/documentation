@@ -1,8 +1,9 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
+section: smartContract
 date: Last Modified
 title: "OCR Migration Schedule"
-permalink: "ocr-migration-schedule"
+permalink: "docs/ocr-migration-schedule/"
 hidden: true
 ---
 > 🚧 OCR Migration

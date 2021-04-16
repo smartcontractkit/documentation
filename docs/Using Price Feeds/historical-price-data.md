@@ -1,8 +1,9 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
+section: smartContract
 date: Last Modified
 title: "Historical Price Data"
-permalink: "historical-price-data"
+permalink: "docs/historical-price-data/"
 hidden: false
 metadata: 
   title: "Get Historical Price Data"

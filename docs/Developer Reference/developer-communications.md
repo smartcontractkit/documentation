@@ -1,8 +1,9 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
+section: smartContract
 date: Last Modified
 title: "Developer Communications"
-permalink: "developer-communications"
+permalink: "docs/developer-communications/"
 hidden: false
 metadata: 
   title: "Developer Communications"

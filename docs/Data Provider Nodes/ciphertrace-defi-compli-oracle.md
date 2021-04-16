@@ -1,8 +1,9 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
+section: smartContract
 date: Last Modified
 title: "CipherTrace DeFi Compli Oracle"
-permalink: "ciphertrace-defi-compli-oracle"
+permalink: "docs/ciphertrace-defi-compli-oracle/"
 hidden: false
 ---
 CipherTrace, the industry standard in cryptocurrency intelligence, introduces DeFi Compli, a compliance solution enabling DEXs and DeFi applications to abide by the Office of Foreign Assets Control (OFAC) sanction requirements. This oracle delivers CipherTrace's source-signed compliance data directly on-chain to your smart contract.

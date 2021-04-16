@@ -1,8 +1,8 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
 date: Last Modified
 title: "Aggregator Job (Fast Gas)"
-permalink: "aggregator-job-fast-gas"
+permalink: "docs/aggregator-job-fast-gas/"
 hidden: true
 ---
 In order to contribute to the gas price aggregator contract, you will need to run one of the external adapters listed below. The Chainlink team will let you know which API to provide, and you can use this page as a guide for adding jobs for each provider to your node.

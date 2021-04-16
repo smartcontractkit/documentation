@@ -1,8 +1,8 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
 date: Last Modified
 title: "Glossary"
-permalink: "glossary"
+permalink: "docs/glossary/"
 hidden: false
 ---
 ### Adapter

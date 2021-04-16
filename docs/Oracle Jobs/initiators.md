@@ -1,8 +1,8 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
 date: Last Modified
 title: "Initiators"
-permalink: "initiators"
+permalink: "docs/initiators/"
 hidden: false
 ---
 [block:api-header]

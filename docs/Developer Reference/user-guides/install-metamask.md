@@ -1,8 +1,9 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
+section: smartContract
 date: Last Modified
 title: "Install, configure & fund MetaMask"
-permalink: "install-metamask"
+permalink: "docs/install-metamask/"
 hidden: false
 ---
 This page will show you how to configure the MetaMask browser extension. If you already have MetaMask configured, skip to [Acquire testnet LINK](../acquire-link).

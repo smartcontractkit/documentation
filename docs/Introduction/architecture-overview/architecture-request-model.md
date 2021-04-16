@@ -1,8 +1,9 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
+section: smartContract
 date: Last Modified
 title: "Basic Request Model"
-permalink: "architecture-request-model"
+permalink: "docs/architecture-request-model/"
 hidden: false
 metadata: 
   title: "Chainlink Basic Request Model"

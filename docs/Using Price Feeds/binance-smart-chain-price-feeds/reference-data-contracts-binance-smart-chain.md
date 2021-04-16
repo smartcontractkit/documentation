@@ -1,8 +1,9 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
+section: smartContract
 date: Last Modified
 title: "Contract Reference (Binance Smart Chain)"
-permalink: "reference-data-contracts-binance-smart-chain"
+permalink: "docs/reference-data-contracts-binance-smart-chain/"
 hidden: true
 ---
 > 🚧 In Development - Do Not Share

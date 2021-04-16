@@ -1,8 +1,9 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
+section: smartContract
 date: Last Modified
 title: "ENS"
-permalink: "ens"
+permalink: "docs/ens/"
 excerpt: "Ethereum Name Service"
 hidden: false
 metadata: 

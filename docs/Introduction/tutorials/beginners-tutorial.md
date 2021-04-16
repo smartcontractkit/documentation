@@ -1,8 +1,9 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
+section: smartContract
 date: Last Modified
 title: "Beginners - The Basics"
-permalink: "beginners-tutorial"
+permalink: "docs/beginners-tutorial/"
 excerpt: "Smart Contracts and Chainlink"
 hidden: false
 metadata: 

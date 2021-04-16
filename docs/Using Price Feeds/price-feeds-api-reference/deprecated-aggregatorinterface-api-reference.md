@@ -1,8 +1,9 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
+section: smartContract
 date: Last Modified
 title: "Deprecated API Reference"
-permalink: "deprecated-aggregatorinterface-api-reference"
+permalink: "docs/deprecated-aggregatorinterface-api-reference/"
 hidden: false
 metadata: 
   image: 

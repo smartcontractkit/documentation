@@ -1,8 +1,9 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
+section: smartContract
 date: Last Modified
 title: "Introduction to Using Any API"
-permalink: "request-and-receive-data"
+permalink: "docs/request-and-receive-data/"
 hidden: false
 metadata: 
   title: "Request and Receive API Data with Chainlink"

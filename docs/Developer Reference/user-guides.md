@@ -1,8 +1,9 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
+section: smartContract
 date: Last Modified
 title: "User Guides"
-permalink: "user-guides"
+permalink: "docs/user-guides/"
 excerpt: "Getting started with Ethereum, Metamask and Smart Contracts"
 hidden: false
 ---

@@ -1,8 +1,9 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
+section: smartContract
 date: Last Modified
 title: "WatchSignals Luxury Watch Price Oracle"
-permalink: "watchsignals"
+permalink: "docs/watchsignals/"
 hidden: false
 ---
 WatchSignals is the industry leader in market research on luxury watch prices. As a service provided by data-driven platform Zapevo, WatchSignals gathers luxury watch prices from trusted marketplaces, shows serial numbers and collector database information, presents certificates of authenticity, and provides long-term appraisal data. This oracle, given a reference number, returns the average price for a specific model of a luxury watch.

@@ -1,7 +1,7 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
 date: Last Modified
 title: "Bridge Types"
-permalink: "bridge-types-2"
+permalink: "docs/bridge-types-2/"
 hidden: false
 ---

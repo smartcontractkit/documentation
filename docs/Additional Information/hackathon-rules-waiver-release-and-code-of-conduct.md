@@ -1,8 +1,8 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
 date: Last Modified
 title: "Hackathon Rules, Waiver & Release, and Code of Conduct"
-permalink: "hackathon-rules-waiver-release-and-code-of-conduct"
+permalink: "docs/hackathon-rules-waiver-release-and-code-of-conduct/"
 hidden: true
 ---
 # Participation Eligibility

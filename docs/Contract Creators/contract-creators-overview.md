@@ -1,8 +1,8 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
 date: Last Modified
 title: "Overview"
-permalink: "contract-creators-overview"
+permalink: "docs/contract-creators-overview/"
 hidden: true
 metadata: 
   title: "Overview for Smart Contract Developers Integrating Chainlink"

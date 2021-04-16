@@ -1,8 +1,9 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
+section: smartContract
 date: Last Modified
 title: "Migration Instructions"
-permalink: "migrating-to-flux-aggregator"
+permalink: "docs/migrating-to-flux-aggregator/"
 hidden: false
 metadata: 
   description: "Migrating to the latest version of Chainlink Price Feeds."

@@ -1,7 +1,7 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
 date: Last Modified
 title: "Run"
-permalink: "runs-2"
+permalink: "docs/runs-2/"
 hidden: false
 ---

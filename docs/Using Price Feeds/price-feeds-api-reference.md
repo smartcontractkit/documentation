@@ -1,8 +1,9 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
+section: smartContract
 date: Last Modified
 title: "API Reference"
-permalink: "price-feeds-api-reference"
+permalink: "docs/price-feeds-api-reference/"
 hidden: false
 metadata: 
   description: "API reference for using Chainlink Price Feeds in smart contracts."

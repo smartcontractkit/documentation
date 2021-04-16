@@ -1,8 +1,8 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
 date: Last Modified
 title: "On-Chain Warning Flag"
-permalink: "on-chain-warning-flag"
+permalink: "docs/on-chain-warning-flag/"
 hidden: true
 ---
 > 🚧In Development - Do Not Share

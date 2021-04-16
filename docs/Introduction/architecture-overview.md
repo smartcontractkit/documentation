@@ -1,8 +1,9 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
+section: smartContract
 date: Last Modified
 title: "Architecture Overview"
-permalink: "architecture-overview"
+permalink: "docs/architecture-overview/"
 hidden: false
 metadata: 
   title: "Chainlink Architecture Overview"

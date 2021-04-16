@@ -1,7 +1,7 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
 date: Last Modified
 title: "Debug Vars"
-permalink: "debug-vars"
+permalink: "docs/debug-vars/"
 hidden: false
 ---

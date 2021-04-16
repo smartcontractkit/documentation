@@ -1,8 +1,9 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
+section: smartContract
 date: Last Modified
 title: "Bookmaker Ratings Oracle"
-permalink: "bookmaker-ratings-oracle"
+permalink: "docs/bookmaker-ratings-oracle/"
 hidden: false
 ---
 Bookmaker Ratings is the premier betting media in Russia and Eastern Europe. Their expansive set of APIs providers users with access to proprietary and aggregated sports odds and sports results data.

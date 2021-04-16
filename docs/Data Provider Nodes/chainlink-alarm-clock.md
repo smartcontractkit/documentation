@@ -1,8 +1,9 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
+section: smartContract
 date: Last Modified
 title: "Chainlink Alarm Clock (Testnet)"
-permalink: "chainlink-alarm-clock"
+permalink: "docs/chainlink-alarm-clock/"
 hidden: false
 metadata: 
   image: 

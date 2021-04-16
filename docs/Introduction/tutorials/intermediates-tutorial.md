@@ -1,8 +1,9 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
+section: smartContract
 date: Last Modified
 title: "Intermediates - Random Numbers"
-permalink: "intermediates-tutorial"
+permalink: "docs/intermediates-tutorial/"
 excerpt: "Using Chainlink VRF"
 hidden: false
 metadata: 

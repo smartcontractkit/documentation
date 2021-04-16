@@ -1,8 +1,9 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
+section: smartContract
 date: Last Modified
 title: "Advanced - API Calls"
-permalink: "advanced-tutorial"
+permalink: "docs/advanced-tutorial/"
 excerpt: "Calling APIs from Smart Contracts"
 hidden: false
 metadata: 

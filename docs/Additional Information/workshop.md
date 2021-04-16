@@ -1,8 +1,8 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
 date: Last Modified
 title: "Workshop Links"
-permalink: "workshop"
+permalink: "docs/workshop/"
 hidden: false
 ---
 [block:api-header]

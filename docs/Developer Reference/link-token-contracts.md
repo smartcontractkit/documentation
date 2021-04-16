@@ -1,8 +1,9 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
+section: smartContract
 date: Last Modified
 title: "LINK Token Contracts"
-permalink: "link-token-contracts"
+permalink: "docs/link-token-contracts/"
 hidden: false
 metadata: 
   title: "LINK Token Contracts"

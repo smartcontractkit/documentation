@@ -1,8 +1,9 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
+section: smartContract
 date: Last Modified
 title: "Deploy your first contract"
-permalink: "deploy-your-first-contract"
+permalink: "docs/deploy-your-first-contract/"
 hidden: false
 ---
 [block:embed]

@@ -1,8 +1,9 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
+section: smartContract
 date: Last Modified
 title: "Smart Contracts & Oracles Payments"
-permalink: "paying-for-smart-contracts-oracles"
+permalink: "docs/paying-for-smart-contracts-oracles/"
 hidden: true
 ---
 For every transaction on the blockchain that is not just reading data, we need to pay ETH to compensate Ethereum nodes for providing their resources. Similarly, with calls to Chainlink nodes, it's required to pay LINK for bringing data, price feeds, VRF, and off-chain computation on-chain. This page explains how to pay these nodes correctly and avoid unexpected issues.

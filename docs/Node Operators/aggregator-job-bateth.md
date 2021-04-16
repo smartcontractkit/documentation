@@ -1,8 +1,8 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
 date: Last Modified
 title: "Aggregator Job (BAT/ETH)"
-permalink: "aggregator-job-bateth"
+permalink: "docs/aggregator-job-bateth/"
 hidden: true
 ---
 In order to contribute to the price aggregator contract, you will need to run one of the jobs on this page. The Chainlink team will let you know which API to provide, and you can use this page as a guide for adding jobs for each provider to your node.

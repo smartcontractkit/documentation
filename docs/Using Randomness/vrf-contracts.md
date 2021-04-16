@@ -1,8 +1,9 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
+section: smartContract
 date: Last Modified
 title: "Contract Addresses"
-permalink: "vrf-contracts"
+permalink: "docs/vrf-contracts/"
 hidden: false
 metadata: 
   title: "Chainlink VRF Contract Addresses"

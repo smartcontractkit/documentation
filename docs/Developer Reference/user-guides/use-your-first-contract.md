@@ -1,8 +1,9 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
+section: smartContract
 date: Last Modified
 title: "Use your first contract!"
-permalink: "use-your-first-contract"
+permalink: "docs/use-your-first-contract/"
 hidden: false
 ---
 # Executing Functions

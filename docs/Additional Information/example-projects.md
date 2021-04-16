@@ -1,8 +1,8 @@
---
-layout: node.liquid
+---
+layout: nodes.liquid
 date: Last Modified
 title: "Example Projects"
-permalink: "example-projects"
+permalink: "docs/example-projects/"
 hidden: false
 ---
 # Hackathons
