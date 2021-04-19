@@ -30,3 +30,10 @@ metadata:
 }
 [/block]
 Running a Chainlink node allows you to provide external data directly to smart contracts. In this section, we'll explain how to configure your own Chainlink node and become a node operator.
+
+
+## What's Next
+Learn how to get your own node up and running.
+
+* [Running a Chainlink Node](../running-a-chainlink-node)
+* [Node Operator Email List](https://link.us18.list-manage.com/subscribe?u=8969e6baa6d67e10213eff25b&id=e70d98a987)

@@ -29,21 +29,9 @@ With your own Oracle contract, you can use your own node to fulfill requests. Th
 }
 [/block]
 - Go to <a href="https://remix.ethereum.org/#gist=03a079b9055f42d993d0066d6f454c6f&optimize=true&version=soljson-v0.4.24+commit.e67f0147.js" target="_blank" rel="noreferrer, noopener">Remix</a> and expand the gist menu
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "https://files.readme.io/05f12f3-00eeef4-remix001.jpg",
-        "00eeef4-remix001.jpg",
-        736,
-        686,
-        "#f3f4f8"
-      ]
-    }
-  ]
-}
-[/block]
+
+![Remix File Explorer](https://files.readme.io/05f12f3-00eeef4-remix001.jpg)
+
 
 [block:callout]
 {
@@ -52,6 +40,7 @@ With your own Oracle contract, you can use your own node to fulfill requests. Th
 }
 [/block]
 - Click on Oracle.sol. The contents of this file will be very minimal, since we only need to import the code hosted on Github.- On the Compile tab, click on the "Compile Oracle.sol" button near the left
+
 [block:image]
 {
   "images": [
@@ -68,6 +57,7 @@ With your own Oracle contract, you can use your own node to fulfill requests. Th
 }
 [/block]
 - Change to the Run tab- Select Oracle from the drop-down in the left panel- Copy the line below for your network and paste it into the text field next to the Deploy button
+
 [block:code]
 {
   "codes": [
@@ -106,6 +96,7 @@ With your own Oracle contract, you can use your own node to fulfill requests. Th
 }
 [/block]
 - Click DeployMetamask will prompt you to Confirm the Transaction
+
 [block:callout]
 {
   "type": "warning",
@@ -114,6 +105,7 @@ With your own Oracle contract, you can use your own node to fulfill requests. Th
 }
 [/block]
 A link to Etherscan will display at the bottom, you can open that in a new tab to keep track of the transaction
+
 [block:image]
 {
   "images": [
@@ -129,7 +121,9 @@ A link to Etherscan will display at the bottom, you can open that in a new tab t
   ]
 }
 [/block]
+
 Once successful, you should have a new address for the deployed contract
+
 [block:image]
 {
   "images": [
@@ -158,7 +152,9 @@ Once successful, you should have a new address for the deployed contract
   "title": "Add your node to the Oracle contract"
 }
 [/block]
+
 - In Remix, call the `setFulfillmentPermission` function with the address of your node, a comma, and the value `true`, as the input parameters. This will allow your node the ability to fulfill requests to your oracle contract.
+
 [block:image]
 {
   "images": [
@@ -175,6 +171,7 @@ Once successful, you should have a new address for the deployed contract
 }
 [/block]
 You can get the address of your node when it starts or by visiting the Configuration page of the GUI.
+
 [block:image]
 {
   "images": [
@@ -191,12 +188,14 @@ You can get the address of your node when it starts or by visiting the Configura
 }
 [/block]
 Once you call the `setFulfillmentPermission` function, Confirm it in Metamask and wait for it to confirm on the blockchain.
+
 [block:api-header]
 {
   "title": "Add jobs to the node"
 }
 [/block]
 Adding jobs to the node is easily accomplished via the GUI. We have example [Job Specifications](../job-specifications) below.
+
 [block:callout]
 {
   "type": "danger",
@@ -204,6 +203,7 @@ Adding jobs to the node is easily accomplished via the GUI. We have example [Job
 }
 [/block]
 If using Chainlink version `0.9.4` or above, you can add a `name` to your job spec. 
+
 [block:code]
 {
   "codes": [
@@ -236,6 +236,7 @@ If using Chainlink version `0.9.4` or above, you can add a `name` to your job sp
 }
 [/block]
 - From the admin dashboard, click on New Job.
+
 [block:image]
 {
   "images": [
@@ -251,7 +252,9 @@ If using Chainlink version `0.9.4` or above, you can add a `name` to your job sp
   ]
 }
 [/block]
+
 - Paste the job from above into the text field.
+
 [block:image]
 {
   "images": [
@@ -267,7 +270,9 @@ If using Chainlink version `0.9.4` or above, you can add a `name` to your job sp
   ]
 }
 [/block]
+
 - Click Create Job and you'll be notified of the new JobID creation. Take note of this JobID as you'll need it later.
+
 [block:image]
 {
   "images": [
@@ -283,7 +288,9 @@ If using Chainlink version `0.9.4` or above, you can add a `name` to your job sp
   ]
 }
 [/block]
+
 - Repeat this process for each of the jobs above.
+
 [block:callout]
 {
   "type": "info",
@@ -303,7 +310,9 @@ If using Chainlink version `0.9.4` or above, you can add a `name` to your job sp
   "body": "If you're going through this guide on Ethereum mainnet, the TestnetConsumer.sol contract will still work. However, understand that you're sending real LINK to yourself. **Be sure to practice on the test networks multiple times before attempting to run a node on mainnet.**"
 }
 [/block]
+
 With the jobs added, you can now use your node to fulfill requests. This last section shows what requesters will do when they send requests to your node. It is also a way to test and make sure that your node is functioning correctly.- In Remix, create a new file named TestnetConsumer.sol and copy and paste the <a href="https://gist.githubusercontent.com/thodges-gh/8df9420393fb29b216d1832e037f2eff/raw/350addafcd19e984cdd4465921fbcbe7ce8500d4/ATestnetConsumer.sol" target="_blank" rel="noreferrer, noopener">TestnetConsumer.sol</a> contract into it.- Click "Start to compile".
+
 [block:image]
 {
   "images": [
@@ -320,6 +329,7 @@ With the jobs added, you can now use your node to fulfill requests. This last se
 }
 [/block]
 The contract should compile. You can now deploy it and fund it by sending some LINK to its address. See the [Fund your contract.](../fund-your-contract) page for instructions on how to do that.- To create a request, input your oracle contract address and the JobID for the EthUint256 job into the `requestEthereumPrice` request method, separated by a comma.
+
 [block:image]
 {
   "images": [
