@@ -25,19 +25,19 @@ TheRundown is the leading platform for real-time odds from the most popular spor
 
 #### Ethereum Mainnet
 Payment Amount: 1 LINK  
-LINK Token Address: `<<MAINNET_LINK_TOKEN>>` 
+LINK Token Address: `{{variables.MAINNET_LINK_TOKEN}}` 
 Oracle Address: `0x0ae3a0e0e3feb67ec83f423b3b653051aa9bf4d3`  
 JobID: `8ea9bb3a6b3f41c1b8cc6a041895a660`  
 
 #### Ethereum Kovan Testnet
 Payment Amount: 0.1 LINK  
-LINK Token Address: `<<KOVAN_LINK_TOKEN>>`
+LINK Token Address: `{{variables.KOVAN_LINK_TOKEN}}`
 Oracle Address: `0x56dd6586DB0D08c6Ce7B2f2805af28616E082455`  
 JobID: `dbb65efc02d34cddb920eca1bec22ade`  
 
 #### Polygon (Matic) Mainnet
 Payment Amount: 0.03 LINK  
-LINK Token Address: `<<MATIC_MAINNET_LINK_TOKEN>>` 
+LINK Token Address: `{{variables.MATIC_MAINNET_LINK_TOKEN}}` 
 Oracle Address: `0xcD5BdCc649f81B9E53671Eb0D17c2831AF04e1d1`  
 JobID: `96cf91943c8f40b19c6eb401f49f36f9`  
 

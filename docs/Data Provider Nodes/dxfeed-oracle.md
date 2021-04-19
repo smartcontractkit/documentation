@@ -18,19 +18,19 @@ dxFeed, a subsidiary of <a href="https://devexperts.com" target="_blank">Devexpe
 
 #### Ethereum Mainnet
 Payment Amount: 1 LINK  
-LINK Token Address: `<<MAINNET_LINK_TOKEN>>` 
+LINK Token Address: `{{variables.MAINNET_LINK_TOKEN}}` 
 Oracle Address: `0xECcB8F881cE2552EdA4115a162ffE2666B601c33`  
 JobID: `beeca27f5c0942b0958b64c284b5117d`  
 
 #### Ethereum Kovan Testnet
 Payment Amount: 0.1  LINK
-LINK Token Address: `<<KOVAN_LINK_TOKEN>>`
+LINK Token Address: `{{variables.KOVAN_LINK_TOKEN}}`
 Oracle Address: `0x56dd6586DB0D08c6Ce7B2f2805af28616E082455`
 JobID: `0391a670ba8e4a2f80750acfe65b0c89`
 
 #### Binance Smart Chain Mainnet
 Payment Amount: 0.1 LINK
-LINK Token address:`<<BINANCE_MAINNET_LINK_TOKEN>>`
+LINK Token address:`{{variables.BINANCE_MAINNET_LINK_TOKEN}}`
 Oracle Address: `0x97a585920a3D0E8922406c5E6D826F76F29ecCd4`
 JobID: `c37e674b864a47ccb33096ca007d64e4`
 

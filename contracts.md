@@ -2,6 +2,7 @@
 layout: nodes.liquid
 section: smartContract
 date: Last Modified
+permalink: /
 ---
 
 <div>

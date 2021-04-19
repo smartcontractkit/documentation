@@ -26,13 +26,13 @@ This Chainlink has a dedicated connection to <a href="https://www.lcx.com/Crypto
 You will need to use the following LINK token address, oracle address, and Job ID in order to create the Chainlink request.
 
 #### Rinkeby
-LINK Token address: <<RINKEBY_LINK_TOKEN>>
-Oracle address: <<RINKEBY_CHAINLINK_ORACLE>> 
+LINK Token address: {{variables.RINKEBY_LINK_TOKEN}}
+Oracle address: {{variables.RINKEBY_CHAINLINK_ORACLE}} 
 JobID: eb3b27aac93e4bf68406f164b86b049e
 
 #### Kovan
-LINK Token address: <<KOVAN_LINK_TOKEN>>
-Oracle address: <<KOVAN_CHAINLINK_ORACLE>> 
+LINK Token address: {{variables.KOVAN_LINK_TOKEN}}
+Oracle address: {{variables.KOVAN_CHAINLINK_ORACLE}} 
 JobID: 81c63592d97a4485b1d1339b3578e07f
 
 # Create your contract

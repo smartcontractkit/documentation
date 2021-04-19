@@ -18,25 +18,25 @@ This oracle checks Google’s DNS service to determine if a given domain is owne
 
 #### Ethereum Mainnet
 Payment Amount: 1 LINK  
-LINK Token Address: `<<MAINNET_LINK_TOKEN>>` 
+LINK Token Address: `{{variables.MAINNET_LINK_TOKEN}}` 
 Oracle Address: `0x240BaE5A27233Fd3aC5440B5a598467725F7D1cd`  
 JobID: `6ca2e68622bd421d98c648f056ee7c76`
 
 #### Ethereum Kovan Testnet
 Payment Amount: 0.1  LINK  
-LINK Token Address: `<<KOVAN_LINK_TOKEN>>`
+LINK Token Address: `{{variables.KOVAN_LINK_TOKEN}}`
 Oracle Address: `0x56dd6586DB0D08c6Ce7B2f2805af28616E082455`  
 JobID: `791bd73c8a1349859f09b1cb87304f71`
 
 #### Binance Smart Chain Mainnet
 Payment Amount: 0.1 LINK  
-LINK Token address:`<<BINANCE_MAINNET_LINK_TOKEN>>`
+LINK Token address:`{{variables.BINANCE_MAINNET_LINK_TOKEN}}`
 Oracle Address: `0x63B72AF260E8b40A7b89E238FeB53448A97b03D2`  
 JobID: `fb06afd5a9df4e6cb156f6b797b63a24`  
 
 #### Polygon (Matic) Mainnet
 Payment Amount: 0.1 LINK  
-LINK Token Address: `<<MATIC_MAINNET_LINK_TOKEN>>` 
+LINK Token Address: `{{variables.MATIC_MAINNET_LINK_TOKEN}}` 
 Oracle Address: `0x63B72AF260E8b40A7b89E238FeB53448A97b03D2`  
 JobID: `f3daed2990114e98906aaf21c4172da3`  
 
