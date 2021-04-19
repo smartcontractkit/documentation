@@ -20,11 +20,155 @@ Chainlink is moving to the <a href="https://docs.ens.domains/" target="_blank">E
 # Try It
 
 Try this Ethereum Mainnet lookup tool
-[block:html]
-{
-  "html": "\n<div class=\"row\">\n  <div class=\"col-xs-12\"><h3>Lookup<h3></div>\n  <div class=\"col-xs-12 col-md-4\">\n    <b>Pair:</b><br>\n  \t<select class=\"cl-select\" onchange=\"getDropdownAddress()\" name=\"pairs\" id=\"pairs\">\n      <option value=\"\">Choose Pair</option>\n<option value=\"aave-eth.data.eth\">AAVE / ETH</option>\n<option value=\"aave-usd.data.eth\">AAVE / USD</option>\n<option value=\"ada-usd.data.eth\">ADA / USD</option>\n<option value=\"adx-usd.data.eth\">ADX / USD</option>\n<option value=\"ant-eth.data.eth\">ANT / ETH</option>\n<option value=\"aud-usd.data.eth\">AUD / USD</option>\n<option value=\"bal-eth.data.eth\">BAL / ETH</option>\n<option value=\"bat-eth.data.eth\">BAT / ETH</option>\n<option value=\"bch-usd.data.eth\">BCH / USD</option>\n<option value=\"bnb-usd.data.eth\">BNB / USD</option>\n<option value=\"bnt-eth-bancor.data.eth\">BNT / ETH (Bancor)</option>\n<option value=\"bnt-eth.data.eth\">BNT / ETH</option>\n<option value=\"bnt-usd.data.eth\">BNT / USD</option>\n<option value=\"brent-usd.data.eth\">BRENT / USD</option>\n<option value=\"btc-ars.data.eth\">BTC / ARS</option>\n<option value=\"btc-difficulty.data.eth\">BTC Difficulty</option>\n<option value=\"btc-eth.data.eth\">BTC / ETH</option>\n<option value=\"btc-usd.data.eth\">BTC / USD</option>\n<option value=\"busd-eth.data.eth\">BUSD / ETH</option>\n<option value=\"bzrx-eth.data.eth\">BZRX / ETH</option>\n<option value=\"chf-usd.data.eth\">CHF / USD</option>\n<option value=\"comp-eth.data.eth\">COMP / ETH</option>\n<option value=\"comp-usd.data.eth\">COMP / USD</option>\n<option value=\"cro-eth.data.eth\">CRO / ETH</option>\n<option value=\"crv-eth.data.eth\">CRV / ETH</option>\n<option value=\"dai-eth.data.eth\">DAI / ETH</option>\n<option value=\"dai-usd.data.eth\">DAI / USD</option>\n<option value=\"dash-usd.data.eth\">DASH / USD</option>\n<option value=\"dmg-eth.data.eth\">DMG / ETH</option>\n<option value=\"dot-usd.data.eth\">DOT / USD</option>\n<option value=\"enj-eth.data.eth\">ENJ / ETH</option>\n<option value=\"eos-usd.data.eth\">EOS / USD</option>\n<option value=\"etc-usd.data.eth\">ETC / USD</option>\n<option value=\"eth-usd.data.eth\">ETH / USD</option>\n<option value=\"eth-xdr.data.eth\">ETH / XDR</option>\n<option value=\"eur-mwh.data.eth\">EUR / MWh</option>\n<option value=\"eur-usd.data.eth\">EUR / USD</option>\n<option value=\"fast-gas-gwei.data.eth\">Fast Gas / Gwei</option>\n<option value=\"fil-usd.data.eth\">FIL / USD</option>\n<option value=\"fnx-usd.data.eth\">FNX / USD</option>\n<option value=\"ftm-eth.data.eth\">FTM / ETH</option>\n<option value=\"ftse-gbp.data.eth\">FTSE / GBP</option>\n<option value=\"gbp-usd.data.eth\">GBP / USD</option>\n<option value=\"jpy-usd.data.eth\">JPY / USD</option>\n<option value=\"knc-eth.data.eth\">KNC / ETH</option>\n<option value=\"knc-usd.data.eth\">KNC / USD</option>\n<option value=\"lend-eth.data.eth\">LEND / ETH</option>\n<option value=\"lend-usd.data.eth\">LEND / USD</option>\n<option value=\"link-eth-bancor.data.eth\">LINK / ETH (Bancor)</option>\n<option value=\"link-eth.data.eth\">LINK / ETH</option>\n<option value=\"link-usd.data.eth\">LINK / USD</option>\n<option value=\"lrc-eth.data.eth\">LRC / ETH</option>\n<option value=\"ltc-usd.data.eth\">LTC / USD</option>\n<option value=\"mana-eth.data.eth\">MANA / ETH</option>\n<option value=\"mkr-eth.data.eth\">MKR / ETH</option>\n<option value=\"mln-eth.data.eth\">MLN / ETH</option>\n<option value=\"n225-jpy.data.eth\">N225 / JPY</option>\n<option value=\"nmr-eth.data.eth\">NMR / ETH</option>\n<option value=\"orchid.data.eth\">Orchid</option>\n<option value=\"oxt-usd.data.eth\">OXT / USD</option>\n<option value=\"rcn-btc.data.eth\">RCN / BTC</option>\n<option value=\"ren-eth-bancor.data.eth\">REN / ETH (Bancor)</option>\n<option value=\"ren-eth.data.eth\">REN / ETH</option>\n<option value=\"ren-usd.data.eth\">REN / USD</option>\n<option value=\"rep-eth.data.eth\">REP / ETH</option>\n<option value=\"rlc-eth.data.eth\">RLC / ETH</option>\n<option value=\"scex-usd.data.eth\">sCEX / USD</option>\n<option value=\"sdefi-usd.data.eth\">sDEFI / USD</option>\n<option value=\"snx-eth.data.eth\">SNX / ETH</option>\n<option value=\"snx-usd.data.eth\">SNX / USD</option>\n<option value=\"susd-eth.data.eth\">SUSD / ETH</option>\n<option value=\"sxp-usd.data.eth\">SXP / USD</option>\n<option value=\"total-marketcap-usd.data.eth\">Total Marketcap / USD</option>\n<option value=\"trx-usd.data.eth\">TRX / USD</option>\n<option value=\"tusd-eth.data.eth\">TUSD / ETH</option>\n<option value=\"tusd-reserves.data.eth\">TUSD Reserves</option>\n<option value=\"tusd-supply.data.eth\">TUSD Supply</option>\n<option value=\"uma-eth.data.eth\">UMA / ETH</option>\n<option value=\"uni-eth.data.eth\">UNI / ETH</option>\n<option value=\"uni-usd.data.eth\">UNI / USD</option>\n<option value=\"usdc-eth.data.eth\">USDC / ETH</option>\n<option value=\"usdk-usd.data.eth\">USDK / USD</option>\n<option value=\"usdt-eth.data.eth\">USDT / ETH</option>\n<option value=\"wnxm-eth.data.eth\">WNXM / ETH</option>\n<option value=\"wom-eth.data.eth\">WOM / ETH</option>\n<option value=\"wti-usd.data.eth\">WTI / USD</option>\n<option value=\"xag-usd.data.eth\">XAG / USD</option>\n<option value=\"xau-usd.data.eth\">XAU / USD</option>\n<option value=\"xhv-usd.data.eth\">XHV / USD</option>\n<option value=\"xmr-usd.data.eth\">XMR / USD</option>\n<option value=\"xrp-usd.data.eth\">XRP / USD</option>\n<option value=\"xtz-usd.data.eth\">XTZ / USD</option>\n<option value=\"yfi-eth.data.eth\">YFI / ETH</option>\n<option value=\"yfi-usd.data.eth\">YFI / USD</option>\n<option value=\"zrx-eth.data.eth\">ZRX / ETH</option>\n    </select>\n  </div>\n  <div class=\"col-xs-12 col-md-8\">\n    <b>Address:</b><br>\n  \t<a id=\"address1-link\" rel=\"noreferrer, noopener\" target=\"_blank\">\n      <code class=\"rdmd-code lang-\" data-lang=\"\" name=\"\">\n        <button class=\"rdmd-code-copy fa\"></button>\n        <div id=\"address1\" class=\"cm-s-neo\">-</div>\n      </code>\n    </a>\n  </div>\n</div>\n\n    <hr>\n    \n<div class=\"row\">\n\t<div class=\"col-xs-12 col-md-12\"><h3>Manual Lookup<h3></div>\n\t<div class=\"col-xs-12 col-md-4\">\n    <input id=\"asset-1\" type=\"text\" value=\"ETH\" size=\"5\"></input>\n  \t<span>/</span>\n    <input id=\"asset-2\" type=\"text\" value=\"USD\" size=\"5\"></input>\n\t</div>\n\t<div class=\"col-xs-12 col-md-8\">\n\t\t<a id=\"get-price-button\" href=\"javascript:getManualAddress();\" class=\"cl-button--ghost cl-button--ghost-sm\">Lookup</a>\n\t</div>\n\t<div class=\"col-xs-12 col-md-4\">\n    <b>ENS Name:</b><br>\n    <a id=\"address2-label-link\" rel=\"noreferrer, noopener\" target=\"_blank\">\n      <code class=\"rdmd-code lang-\" data-lang=\"\" name=\"\">\n        <button class=\"rdmd-code-copy fa\"></button>\n        <div id=\"address2-label\" class=\"cm-s-neo\">-</div>\n      </code>\n    </a>\n\t</div>\n  <div class=\"col-xs-12 col-md-8\">\n    <b>Address:</b><br>\n    <a id=\"address2-link\" rel=\"noreferrer, noopener\" target=\"_blank\">\n      <code class=\"rdmd-code lang-\" data-lang=\"\" name=\"\">\n        <button class=\"rdmd-code-copy fa\"></button>\n        <div id=\"address2\" class=\"cm-s-neo\">-</div>\n      </code>\n    </a>\n\t</div>\n</div>"
-}
-[/block]
+<div class="rdmd-html">
+<div class="row">
+  <div class="col-xs-12"><h3>Lookup<h3></div>
+  <div class="col-xs-12 col-md-4">
+    <b>Pair:</b><br>
+  	<select class="cl-select" onchange="getDropdownAddress()" name="pairs" id="pairs">
+      <option value="">Choose Pair</option>
+<option value="aave-eth.data.eth">AAVE / ETH</option>
+<option value="aave-usd.data.eth">AAVE / USD</option>
+<option value="ada-usd.data.eth">ADA / USD</option>
+<option value="adx-usd.data.eth">ADX / USD</option>
+<option value="ant-eth.data.eth">ANT / ETH</option>
+<option value="aud-usd.data.eth">AUD / USD</option>
+<option value="bal-eth.data.eth">BAL / ETH</option>
+<option value="bat-eth.data.eth">BAT / ETH</option>
+<option value="bch-usd.data.eth">BCH / USD</option>
+<option value="bnb-usd.data.eth">BNB / USD</option>
+<option value="bnt-eth-bancor.data.eth">BNT / ETH (Bancor)</option>
+<option value="bnt-eth.data.eth">BNT / ETH</option>
+<option value="bnt-usd.data.eth">BNT / USD</option>
+<option value="brent-usd.data.eth">BRENT / USD</option>
+<option value="btc-ars.data.eth">BTC / ARS</option>
+<option value="btc-difficulty.data.eth">BTC Difficulty</option>
+<option value="btc-eth.data.eth">BTC / ETH</option>
+<option value="btc-usd.data.eth">BTC / USD</option>
+<option value="busd-eth.data.eth">BUSD / ETH</option>
+<option value="bzrx-eth.data.eth">BZRX / ETH</option>
+<option value="chf-usd.data.eth">CHF / USD</option>
+<option value="comp-eth.data.eth">COMP / ETH</option>
+<option value="comp-usd.data.eth">COMP / USD</option>
+<option value="cro-eth.data.eth">CRO / ETH</option>
+<option value="crv-eth.data.eth">CRV / ETH</option>
+<option value="dai-eth.data.eth">DAI / ETH</option>
+<option value="dai-usd.data.eth">DAI / USD</option>
+<option value="dash-usd.data.eth">DASH / USD</option>
+<option value="dmg-eth.data.eth">DMG / ETH</option>
+<option value="dot-usd.data.eth">DOT / USD</option>
+<option value="enj-eth.data.eth">ENJ / ETH</option>
+<option value="eos-usd.data.eth">EOS / USD</option>
+<option value="etc-usd.data.eth">ETC / USD</option>
+<option value="eth-usd.data.eth">ETH / USD</option>
+<option value="eth-xdr.data.eth">ETH / XDR</option>
+<option value="eur-mwh.data.eth">EUR / MWh</option>
+<option value="eur-usd.data.eth">EUR / USD</option>
+<option value="fast-gas-gwei.data.eth">Fast Gas / Gwei</option>
+<option value="fil-usd.data.eth">FIL / USD</option>
+<option value="fnx-usd.data.eth">FNX / USD</option>
+<option value="ftm-eth.data.eth">FTM / ETH</option>
+<option value="ftse-gbp.data.eth">FTSE / GBP</option>
+<option value="gbp-usd.data.eth">GBP / USD</option>
+<option value="jpy-usd.data.eth">JPY / USD</option>
+<option value="knc-eth.data.eth">KNC / ETH</option>
+<option value="knc-usd.data.eth">KNC / USD</option>
+<option value="lend-eth.data.eth">LEND / ETH</option>
+<option value="lend-usd.data.eth">LEND / USD</option>
+<option value="link-eth-bancor.data.eth">LINK / ETH (Bancor)</option>
+<option value="link-eth.data.eth">LINK / ETH</option>
+<option value="link-usd.data.eth">LINK / USD</option>
+<option value="lrc-eth.data.eth">LRC / ETH</option>
+<option value="ltc-usd.data.eth">LTC / USD</option>
+<option value="mana-eth.data.eth">MANA / ETH</option>
+<option value="mkr-eth.data.eth">MKR / ETH</option>
+<option value="mln-eth.data.eth">MLN / ETH</option>
+<option value="n225-jpy.data.eth">N225 / JPY</option>
+<option value="nmr-eth.data.eth">NMR / ETH</option>
+<option value="orchid.data.eth">Orchid</option>
+<option value="oxt-usd.data.eth">OXT / USD</option>
+<option value="rcn-btc.data.eth">RCN / BTC</option>
+<option value="ren-eth-bancor.data.eth">REN / ETH (Bancor)</option>
+<option value="ren-eth.data.eth">REN / ETH</option>
+<option value="ren-usd.data.eth">REN / USD</option>
+<option value="rep-eth.data.eth">REP / ETH</option>
+<option value="rlc-eth.data.eth">RLC / ETH</option>
+<option value="scex-usd.data.eth">sCEX / USD</option>
+<option value="sdefi-usd.data.eth">sDEFI / USD</option>
+<option value="snx-eth.data.eth">SNX / ETH</option>
+<option value="snx-usd.data.eth">SNX / USD</option>
+<option value="susd-eth.data.eth">SUSD / ETH</option>
+<option value="sxp-usd.data.eth">SXP / USD</option>
+<option value="total-marketcap-usd.data.eth">Total Marketcap / USD</option>
+<option value="trx-usd.data.eth">TRX / USD</option>
+<option value="tusd-eth.data.eth">TUSD / ETH</option>
+<option value="tusd-reserves.data.eth">TUSD Reserves</option>
+<option value="tusd-supply.data.eth">TUSD Supply</option>
+<option value="uma-eth.data.eth">UMA / ETH</option>
+<option value="uni-eth.data.eth">UNI / ETH</option>
+<option value="uni-usd.data.eth">UNI / USD</option>
+<option value="usdc-eth.data.eth">USDC / ETH</option>
+<option value="usdk-usd.data.eth">USDK / USD</option>
+<option value="usdt-eth.data.eth">USDT / ETH</option>
+<option value="wnxm-eth.data.eth">WNXM / ETH</option>
+<option value="wom-eth.data.eth">WOM / ETH</option>
+<option value="wti-usd.data.eth">WTI / USD</option>
+<option value="xag-usd.data.eth">XAG / USD</option>
+<option value="xau-usd.data.eth">XAU / USD</option>
+<option value="xhv-usd.data.eth">XHV / USD</option>
+<option value="xmr-usd.data.eth">XMR / USD</option>
+<option value="xrp-usd.data.eth">XRP / USD</option>
+<option value="xtz-usd.data.eth">XTZ / USD</option>
+<option value="yfi-eth.data.eth">YFI / ETH</option>
+<option value="yfi-usd.data.eth">YFI / USD</option>
+<option value="zrx-eth.data.eth">ZRX / ETH</option>
+    </select>
+  </div>
+  <div class="col-xs-12 col-md-8">
+    <b>Address:</b><br>
+  	<a id="address1-link" rel="noreferrer, noopener" target="_blank">
+      <code class="rdmd-code lang-" data-lang="" name="">
+        <button class="rdmd-code-copy fa"></button>
+        <div id="address1" class="cm-s-neo">-</div>
+      </code>
+    </a>
+  </div>
+</div>
+
+    <hr>
+    
+<div class="row">
+	<div class="col-xs-12 col-md-12"><h3>Manual Lookup<h3></div>
+	<div class="col-xs-12 col-md-4">
+    <input id="asset-1" type="text" value="ETH" size="5"></input>
+  	<span>/</span>
+    <input id="asset-2" type="text" value="USD" size="5"></input>
+	</div>
+	<div class="col-xs-12 col-md-8">
+		<a id="get-price-button" href="javascript:getManualAddress();" class="cl-button--ghost cl-button--ghost-sm">Lookup</a>
+	</div>
+	<div class="col-xs-12 col-md-4">
+    <b>ENS Name:</b><br>
+    <a id="address2-label-link" rel="noreferrer, noopener" target="_blank">
+      <code class="rdmd-code lang-" data-lang="" name="">
+        <button class="rdmd-code-copy fa"></button>
+        <div id="address2-label" class="cm-s-neo">-</div>
+      </code>
+    </a>
+	</div>
+  <div class="col-xs-12 col-md-8">
+    <b>Address:</b><br>
+    <a id="address2-link" rel="noreferrer, noopener" target="_blank">
+      <code class="rdmd-code lang-" data-lang="" name="">
+        <button class="rdmd-code-copy fa"></button>
+        <div id="address2" class="cm-s-neo">-</div>
+      </code>
+    </a>
+	</div>
+</div></div>
+<h1 class="heading heading-1 header-scroll" align=""><div class="heading-anchor anchor waypoint" id="naming-structure"></div><div class="heading-text"><div id="section-naming-structure" class="heading-anchor_backwardsCompatibility"></div>
+
+
 # Naming Structure
 
 Chainlink price feeds fall under the `data.eth` naming suffix. To obtain a specific feed address, prefix this with the assets in the feed, separated by a dash (-).
