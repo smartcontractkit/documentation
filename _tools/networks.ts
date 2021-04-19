@@ -11,7 +11,7 @@ export const NETWORKS = [
       {
         name: "Kovan Testnet",
         url: "https://kovan.etherscan.io/address/",
-        source: "directory-bsc-testnet.json",
+        source: "directory-kovan.json",
       },
       {
         name: "Rinkeby Testnet",
