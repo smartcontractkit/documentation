@@ -16,11 +16,11 @@ metadata:
     3: 1459
     4: "#dbe1f8"
 ---
-[block:html]
-{
-  "html": "<iframe width=\"560\" height=\"315\" src=\"https://www.youtube.com/embed/JqZWariqh5s\" frameborder=\"0\" allow=\"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture\" allowfullscreen></iframe>"
-}
-[/block]
+
+<p>
+  https://www.youtube.com/watch?v=JqZWariqh5s
+</p>
+
 # Introduction
 
 > 👍 Assumed knowledge
