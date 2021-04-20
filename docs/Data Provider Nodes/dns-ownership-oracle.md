@@ -44,15 +44,6 @@ JobID: `f3daed2990114e98906aaf21c4172da3`
 
 Import `ChainlinkClient.sol` into your contract so you can inherit the Chainlink behavior.
 
-<div class="row text-center center">
-<div class="col-xs-12 col-md-6 col-md-offset-3">
-<a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&gist=df94f31ce2fc161f8b6032dbc6bfcc9c" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
-</div>
-<div class="col-xs-12 col-md-6 col-md-offset-3">
-<a href="/docs/example-walkthrough" target="_blank">What is Remix?</a>
-</div>
-</div>
-
 ```javascript Solidity 4
 pragma solidity ^0.4.24;
 
@@ -104,6 +95,12 @@ contract DnsOwnershipChainlink is ChainlinkClient {
   
 }
 ```
+
+<div class="row text-center center">
+  <div class="col-xs-12 col-md-12">
+  <a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&gist=df94f31ce2fc161f8b6032dbc6bfcc9c" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
+  </div>
+</div>
 
 # Tasks
 * <a href="https://market.link/adapters/9bfdd269-133c-44d4-9c67-b66cca770c0f" target="_blank">DNS Record Check</a>

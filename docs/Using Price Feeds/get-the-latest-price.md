@@ -28,12 +28,9 @@ This page explains how to get the latest price of Ethereum (ETH) inside smart co
 To consume price data, your smart contract should reference <a href="https://github.com/smartcontractkit/chainlink/blob/master/evm-contracts/src/v0.6/interfaces/AggregatorV3Interface.sol" target="_blank">`AggregatorV3Interface`</a>, which defines the external functions implemented by Price Feeds.
 
 <div class="row text-center center">
-<div class="col-xs-12 col-md-6 col-md-offset-3">
-<a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&gist=0c5928a00094810d2ba01fd8d1083581" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
-</div>
-<div class="col-xs-12 col-md-6 col-md-offset-3">
-<a href="/docs/example-walkthrough" target="_blank">What is Remix?</a>
-</div>
+    <div class="col-xs-12 col-md-12">
+    <a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&gist=0c5928a00094810d2ba01fd8d1083581" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
+    </div>
 </div>
 
 ```javascript Kovan

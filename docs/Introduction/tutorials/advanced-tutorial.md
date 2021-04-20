@@ -140,9 +140,9 @@ contract APIConsumer is ChainlinkClient {
 ```
 
 <div class="row text-center center">
-<div class="col-xs-12 col-md-6 col-md-offset-3">
-<a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&gist=8a173a65099261582a652ba18b7d96c1" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
-</div>
+  <div class="col-xs-12 col-md-12">
+  <a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&gist=8a173a65099261582a652ba18b7d96c1" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
+  </div>
 </div>
 
 Let's walk through what's happening here:

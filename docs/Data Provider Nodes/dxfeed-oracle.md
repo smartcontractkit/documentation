@@ -38,15 +38,6 @@ JobID: `c37e674b864a47ccb33096ca007d64e4`
 
 Import `ChainlinkClient.sol` into your contract so you can inherit the Chainlink behavior.
 
-<div class="row text-center center">
-<div class="col-xs-12 col-md-6 col-md-offset-3">
-<a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&gist=f4cf631362b18c98b73db158c414a9d5" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
-</div>
-<div class="col-xs-12 col-md-6 col-md-offset-3">
-<a href="/docs/example-walkthrough" target="_blank">What is Remix?</a>
-</div>
-</div>
-
 ```javascript Solidity 4
 pragma solidity ^0.4.24;
 
@@ -98,6 +89,12 @@ contract DxFeedChainlink is ChainlinkClient {
   
 }
 ```
+
+<div class="row text-center center">
+  <div class="col-xs-12 col-md-12">
+  <a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&gist=f4cf631362b18c98b73db158c414a9d5" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
+  </div>
+</div>
 
 # Tasks
 * <a href="https://market.link/adapters/5b85b098-6b1b-4613-aaaf-1d8d2d71a34f" target="_blank">dxFeed</a>
