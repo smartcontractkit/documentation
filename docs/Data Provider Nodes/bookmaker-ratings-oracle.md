@@ -90,7 +90,7 @@ contract BookmakerRatingsChainlink is ChainlinkClient {
 }
 ```
 
-<div class="row text-center center">
+<div class="row cl-button-container">
   <div class="col-xs-12 col-md-12">
   <a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&gist=52cb4628921603e788d494d482ae9e72" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
   </div>

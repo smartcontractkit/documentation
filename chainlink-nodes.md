@@ -1,10 +1,10 @@
 ---
 layout: nodes.liquid
 date: Last Modified
+title: "Welcome to Chainlink Node Operation!"
 ---
 
 <div>
-  <h3>Welcome to Chainlink Node Operators!</h3>
   <div class="markdown-body">
     <div class="row center cl-section cl-section--one">
       <div class="col-md-4 col-sm-12 col-xs-12">

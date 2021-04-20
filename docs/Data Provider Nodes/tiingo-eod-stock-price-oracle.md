@@ -101,7 +101,7 @@ contract TiingoChainlink is ChainlinkClient {
 }
 ```
 
-<div class="row text-center center">
+<div class="row cl-button-container">
   <div class="col-xs-12 col-md-12">
   <a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&gist=0cfa70c25bd5a386bf9ee2e8e9f386e0" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
   </div>

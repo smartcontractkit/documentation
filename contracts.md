@@ -1,12 +1,12 @@
 ---
 layout: nodes.liquid
 section: smartContract
+title: "Welcome to Chainlink Smart Contract Development!"
 date: Last Modified
 permalink: /
 ---
 
 <div>
-  <h3>Welcome to Chainlink Contract Developers!</h3>
   <div class="markdown-body">
     <div class="row cl-section cl-section--one">
       <div class="col-md-4 col-sm-12 col-xs-12">

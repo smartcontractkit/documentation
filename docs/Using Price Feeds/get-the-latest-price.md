@@ -62,7 +62,7 @@ contract PriceConsumerV3 {
 }
 ```
 
-<div class="row text-center center">
+<div class="row cl-button-container">
     <div class="col-xs-12 col-md-12">
     <a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&gist=0c5928a00094810d2ba01fd8d1083581" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
     </div>
@@ -83,7 +83,7 @@ priceFeed.methods.latestRoundData().call()
     });
 ```
 
-<div class="row text-center center">
+<div class="row cl-button-container">
 	<div class="col-xs-12 col-md-12">
 		<a id="get-price-button" href="javascript:getLatestPrice();" class="cl-button--ghost javascript-tracked">Latest Price: </a>
     <input id="get-price-field" type="number" placeholder="Latest Price">
@@ -101,10 +101,10 @@ latestData = contract.functions.latestRoundData().call()
 print(latestData)
 ```
 
-<div class="row text-center center">
-<div class="col-xs-12 col-md-12">
-<a href="https://repl.it/@alexroan/GetLatestPriceWeb3PY" target="_blank" class="cl-button--ghost python-tracked">Run this python ↗</a>
-</div>
+<div class="row cl-button-container">
+    <div class="col-xs-12 col-md-12">
+    <a href="https://repl.it/@alexroan/GetLatestPriceWeb3PY" target="_blank" class="cl-button--ghost python-tracked">Run this python ↗</a>
+    </div>
 </div>
 
 # How Do Price Feeds Get Their Data?

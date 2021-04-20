@@ -31,7 +31,7 @@ Price Feeds are updated in rounds. Rounds are identified by their `roundId`, whi
 
 ## Solidity
 
-<div class="row text-center center">
+<div class="row cl-button-container">
     <div class="col-xs-12 col-md-12">
     <a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&gist=e32b050a9a832beeee2ebb97a9d75abc" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
     </div>
@@ -101,7 +101,7 @@ priceFeed.methods.getRoundData(validId).call()
 ```
 [block:html]
 {
-  "html": "<div class=\"row text-center center\">\n\t<div class=\"col-xs-12 col-md-6 col-md-offset-3\">\n\t\t<a id=\"get-price-button\" href=\"javascript:getHistoricalPrice();\" class=\"cl-button--ghost javascript-tracked\">Round 18446744073709562301: </a>\n    <input id=\"get-price-field\" type=\"number\" placeholder=\"Historical Price\"></input>\n\t</div>\n</div>"
+  "html": "<div class=\"row cl-button-container\">\n\t<div class=\"col-xs-12 col-md-6 col-md-offset-3\">\n\t\t<a id=\"get-price-button\" href=\"javascript:getHistoricalPrice();\" class=\"cl-button--ghost javascript-tracked\">Round 18446744073709562301: </a>\n    <input id=\"get-price-field\" type=\"number\" placeholder=\"Historical Price\"></input>\n\t</div>\n</div>"
 }
 [/block]
 ## Python
@@ -120,7 +120,7 @@ historicalData = contract.functions.getRoundData(validRoundId).call()
 print(historicalData)
 ```
 
-<div class="row text-center center">
+<div class="row cl-button-container">
 <div class="col-xs-12 col-md-6 col-md-offset-3">
 <a href="https://repl.it/@alexroan/GetHistoricalPriceWeb3PY" target="_blank" class="cl-button--ghost python-tracked">Run this python ↗</a>
 </div>

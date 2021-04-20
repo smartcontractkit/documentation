@@ -240,43 +240,43 @@ module.exports = {
         section: 'DATA PROVIDER NODES',
         contents: [
           {
-            url: 'chainlink-alarm-clock',
             title: 'Chainlink Alarm Clock (Testnet)',
+            url: 'chainlink-alarm-clock'
           },
-          { url: 'lcx-testnet', title: 'LCX (Testnet)' },
+          { title: 'LCX (Testnet)', url: 'lcx-testnet' },
           {
-            url: 'kraken-rates-oracle-node',
             title: 'Kraken Rates Oracle Node',
+            url: 'kraken-rates-oracle-node'
           },
           {
-            url: 'tiingo-eod-stock-price-oracle',
             title: 'Tiingo EOD Stock Price Oracle',
+            url: 'tiingo-eod-stock-price-oracle'
           },
-          { url: 'geodb-oracle-node', title: 'GeoDB Oracle Node' },
+          { title: 'GeoDB Oracle Node', url: 'geodb-oracle-node' },
           {
-            url: 'therundown-oracle-node',
             title: 'TheRunDown Oracle Node',
+            url: 'therundown-oracle-node',
           },
-          { url: 'dns-ownership-oracle', title: 'DNS Ownership Oracle' },
+          { title: 'DNS Ownership Oracle', url: 'dns-ownership-oracle' },
           {
-            url: 'watchsignals',
             title: 'WatchSignals Luxury Watch Price Oracle',
+            url: 'watchsignals'
           },
           {
-            url: 'genesis-volatility',
             title: 'Genesis Volatility Cryptocurrency Options Oracle',
+            url: 'genesis-volatility'
           },
           {
-            url: 'dxfeed-oracle',
             title: 'dxFeed Price Oracle',
+            url: 'dxfeed-oracle'
           },
           {
-            url: 'ciphertrace-defi-compli-oracle',
             title: 'CipherTrace DeFi Compli Oracle',
+            url: 'ciphertrace-defi-compli-oracle'
           },
           {
-            url: 'bookmaker-ratings-oracle',
-            title: 'Bookmaker Ratings Oracle'
+            title: 'Bookmaker Ratings Oracle',
+            url: 'bookmaker-ratings-oracle'
           },
         ],
       },
