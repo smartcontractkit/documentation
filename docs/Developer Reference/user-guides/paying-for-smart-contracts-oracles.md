@@ -90,6 +90,3 @@ When the contract has enough LINK to make a `sendChainlinkRequestTo` function ca
   ]
 }
 [/block]
-## Keepers
-
-tbd - will add after the keeper demo
