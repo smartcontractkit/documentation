@@ -262,6 +262,22 @@ module.exports = {
             url: 'watchsignals',
             title: 'WatchSignals Luxury Watch Price Oracle',
           },
+          {
+            url: 'genesis-volatility',
+            title: 'Genesis Volatility Cryptocurrency Options Oracle',
+          },
+          {
+            url: 'dxfeed-oracle',
+            title: 'dxFeed Price Oracle',
+          },
+          {
+            url: 'ciphertrace-defi-compli-oracle',
+            title: 'CipherTrace DeFi Compli Oracle',
+          },
+          {
+            url: 'bookmaker-ratings-oracle',
+            title: 'Bookmaker Ratings Oracle'
+          },
         ],
       },
     ],
