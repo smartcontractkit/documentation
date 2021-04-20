@@ -83,7 +83,6 @@ module.exports = {
       {
         section: 'INTRODUCTION',
         contents: [
-          { title: 'Getting Started', url: 'getting-started' },
           {
             title: 'Tutorials',
             url: 'tutorials',
