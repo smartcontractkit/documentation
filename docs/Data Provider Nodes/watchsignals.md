@@ -38,15 +38,6 @@ JobID: `2bbfde60662c4f0f9ef6f46567ca7fbc `
 
 Import `ChainlinkClient.sol` into your contract so you can inherit the Chainlink behavior.
 
-<div class="row text-center center">
-<div class="col-xs-12 col-md-6 col-md-offset-3">
-<a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&gist=9148bd05d20d9216ecc04966c87a3f61" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
-</div>
-<div class="col-xs-12 col-md-6 col-md-offset-3">
-<a href="/docs/example-walkthrough" target="_blank">What is Remix?</a>
-</div>
-</div>
-
 ```javascript Solidity 4
 pragma solidity ^0.4.24;
 
@@ -98,6 +89,12 @@ contract WatchsignalsChainlink is ChainlinkClient {
   
 }
 ```
+
+<div class="row cl-button-container">
+  <div class="col-xs-12 col-md-12">
+  <a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&gist=9148bd05d20d9216ecc04966c87a3f61" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
+  </div>
+</div>
 
 # Tasks
 * <a href="https://market.link/adapters/7a33d9fc-5f33-4be0-8072-d5572fc52272?network=42" target="_blank">WatchSignals</a>

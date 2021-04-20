@@ -50,15 +50,6 @@ JobID: `5428e2d7e7d24b849878412c0aa9f821`
 
 Import `ChainlinkClient.sol` into your contract so you can inherit the Chainlink behavior.
 
-<div class="row text-center center">
-<div class="col-xs-12 col-md-6 col-md-offset-3">
-<a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&gist=010fc1d45ff025525eb1e0122b8b6efc" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
-</div>
-<div class="col-xs-12 col-md-6 col-md-offset-3">
-<a href="/docs/example-walkthrough" target="_blank">What is Remix?</a>
-</div>
-</div>
-
 ```javascript Solidity 4
 pragma solidity ^0.4.24;
 
@@ -110,6 +101,12 @@ contract REPLACE_MEChainlink is ChainlinkClient {
   
 }
 ```
+
+<div class="row cl-button-container">
+  <div class="col-xs-12 col-md-12">
+  <a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&gist=010fc1d45ff025525eb1e0122b8b6efc" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
+  </div>
+</div>
 
 # Tasks
 * <a href="https://market.link/adapters/e6dc161e-ba60-4b93-b2f0-c0e5b77763f2/data-sources?" target="_blank">GVol</a>

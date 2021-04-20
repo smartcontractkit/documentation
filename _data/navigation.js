@@ -83,7 +83,6 @@ module.exports = {
       {
         section: 'INTRODUCTION',
         contents: [
-          { title: 'Getting Started', url: 'getting-started' },
           {
             title: 'Tutorials',
             url: 'tutorials',
@@ -241,27 +240,43 @@ module.exports = {
         section: 'DATA PROVIDER NODES',
         contents: [
           {
-            url: 'chainlink-alarm-clock',
             title: 'Chainlink Alarm Clock (Testnet)',
+            url: 'chainlink-alarm-clock'
           },
-          { url: 'lcx-testnet', title: 'LCX (Testnet)' },
+          { title: 'LCX (Testnet)', url: 'lcx-testnet' },
           {
-            url: 'kraken-rates-oracle-node',
             title: 'Kraken Rates Oracle Node',
+            url: 'kraken-rates-oracle-node'
           },
           {
-            url: 'tiingo-eod-stock-price-oracle',
             title: 'Tiingo EOD Stock Price Oracle',
+            url: 'tiingo-eod-stock-price-oracle'
           },
-          { url: 'geodb-oracle-node', title: 'GeoDB Oracle Node' },
+          { title: 'GeoDB Oracle Node', url: 'geodb-oracle-node' },
           {
-            url: 'therundown-oracle-node',
             title: 'TheRunDown Oracle Node',
+            url: 'therundown-oracle-node',
           },
-          { url: 'dns-ownership-oracle', title: 'DNS Ownership Oracle' },
+          { title: 'DNS Ownership Oracle', url: 'dns-ownership-oracle' },
           {
-            url: 'watchsignals',
             title: 'WatchSignals Luxury Watch Price Oracle',
+            url: 'watchsignals'
+          },
+          {
+            title: 'Genesis Volatility Cryptocurrency Options Oracle',
+            url: 'genesis-volatility'
+          },
+          {
+            title: 'dxFeed Price Oracle',
+            url: 'dxfeed-oracle'
+          },
+          {
+            title: 'CipherTrace DeFi Compli Oracle',
+            url: 'ciphertrace-defi-compli-oracle'
+          },
+          {
+            title: 'Bookmaker Ratings Oracle',
+            url: 'bookmaker-ratings-oracle'
           },
         ],
       },

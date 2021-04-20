@@ -229,10 +229,10 @@ function getHouseName(uint256 id) private pure returns (string memory) {
 
 See the full contract in Remix! (We've added a few helper functions in there which should make using the contract easier and more flexible. Have a play around with it to understand all the internal workings).
 
-<div class="row text-center center">
-<div class="col-xs-12 col-md-6 col-md-offset-3">
-<a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&gist=55c1263fcfc710f834aa38b7bbd21dc1" target="_blank" class="cl-button--ghost solidity-tracked">Open this contract using Remix ↗</a>
-</div>
+<div class="row cl-button-container">
+  <div class="col-xs-12 col-md-12">
+  <a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&gist=55c1263fcfc710f834aa38b7bbd21dc1" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
+  </div>
 </div>
 
 # 5. Deployment
