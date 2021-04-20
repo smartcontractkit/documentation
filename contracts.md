@@ -6,9 +6,9 @@ permalink: /
 ---
 
 <div>
-  <h3>Welcome to Chainlink Smart Contracts!</h3>
+  <h3>Welcome to Chainlink Contract Developers!</h3>
   <div class="markdown-body">
-    <div class="row center cl-section cl-section--one">
+    <div class="row cl-section cl-section--one">
       <div class="col-md-4 col-sm-12 col-xs-12">
         <div class="cl-featuredcard">
           <img
@@ -16,7 +16,7 @@ permalink: /
             class="cl-image-featured"
           />
           <h3>Get Price Feeds in your Smart Contracts</h3>
-          <p>Retrieve the latest prices of assets in your smart contracts.</p>
+          <p>Retrieve the latest prices and data points of assets in your smart contracts.</p>
           <a
             href="/docs/using-chainlink-reference-contracts"
             class="cl-button--ghost"
@@ -96,7 +96,7 @@ permalink: /
           </div>
           <div class="col-md-6 col-sm-12 col-xs-12">
             <div class="cl-featuredcard">
-              <h3>Discover Chainlinks</h3>
+              <h3>Discover On-chain Reference Data</h3>
               <p>
                 Find everything you need to build your connected smart contracts
                 on the world's first oracle market
@@ -190,158 +190,3 @@ permalink: /
     />
   </div>
 </div>
-
-
-<style>
-.row {
-    display: flex;
-    flex: 0 0 auto;
-}
-.center {
-  align-items: center;
-}
-.cl-section {
-    padding: 0 0 48px;
-    justify-content: center;
-      align-content: space-between;
-}
-.markdown-body .cl-section {
-    padding: 0 0 48px;
-    text-align: center;
-}
-.markdown-body img {
-    box-sizing: content-box;
-    display: inline-block;
-    vertical-align: middle;
-    max-width: 48px;
-    margin-left: auto;
-    margin-right: auto;
-    border-style: none;
-    outline: none !important;
-}
-.col-sm-12 {
-    -ms-flex-preferred-size: 100%;
-    flex-basis: 100%;
-    max-width: 100%;
-}
-.col-md-4 {
-    flex-basis: 32%;
-    max-width: 32%;
-    margin-right: 10px;
-    box-sizing: border-box;
-    -webkit-box-flex: 0;
-    -ms-flex: 0 0 auto;
-    flex: 0 0 auto;
-}
-.col-md-6 {
-    -ms-flex-preferred-size: 48%;
-    flex-basis: 48%;
-    max-width: 48%;
-    margin-right: 10px;
-    box-sizing: border-box;
-    -webkit-box-flex: 0;
-    -ms-flex: 0 0 auto;
-    flex: 0 0 auto;
-}
-.cl-section--one{
-  margin-top: 30px;
-}
-/* feature-card */
-.cl-featuredcard {
-    -webkit-text-size-adjust: 100%;
-    word-wrap: break-word;
-    text-align: center;
-    -webkit-box-direction: normal;
-    padding: 24px;
-    padding-bottom: 48px;
-    padding-top: 48px;
-    width: 100%;
-    border-radius: 8px;
-    border: 1px solid #dee7fc;
-    position: relative;
-    box-sizing: border-box;
-    height: 380px;
-}
-.cl-featuredcard h3 {
-    font-size: 1.25em;
-    font-weight: 600;
-}
-.cl-featuredcard a.cl-button--ghost {
-    display: inline-block;
-    padding: 8px;
-    padding-left: 20px;
-    padding-right: 20px;
-    border: 2px solid #375bd2;
-    margin: .3em .3em .3em 0;
-    border-radius: 6px;
-    box-sizing: border-box;
-    text-decoration: none!important;
-    color: #375bd2;
-    text-align: center;
-    transition: all .2s;
-    transform: translateX(-50%);
-    bottom: 45px;
-    position: absolute;
-    width: 80%;
-}
-.cl-featuredcard a.cl-button--ghost:hover {
-    color: #fff;
-    background-color: #375bd2;
-}
-.cl-section--one .cl-featuredcard .cl-button--ghost {
-    transform: translateX(-50%);
-    bottom: 30px;
-    position: absolute;
-    width: 80%;
-}
-/* cl-box */
-.cl-box {
-    width: 100%;
-    height: auto;
-    margin-top: 0;
-    text-align: center;
-    padding: 56px 80px;
-    border-radius: 16px;
-}
-.cl-box__lightblue {
-    background-color: #f5f7fe;
-}
-.cl-box-blue {
-    background-color: #375bd2;
-    border-radius: 16px;
-    color: #fff;
-}
-/* buttons */
-.cl-button--ghost--white {
-    border: 2px solid #fff;
-    color: #fff;
-    display: inline-block;
-    padding: 8px;
-    padding-left: 20px;
-    padding-right: 20px;
-    margin: .3em .3em .3em 0;
-    border-radius: 6px;
-    box-sizing: border-box;
-    text-decoration: none!important;
-    text-align: center;
-    transition: all .2s;
-}
-.cl-button--ghost--white:hover {
-    color: #375bd2;
-    background-color: #fff;
-}
-/* productcard */
-.cl-productcard {
-    padding: 16px;
-    padding-top: 32px;
-    width: 100%;
-    border-radius: 8px;
-    border: 0 solid #dee7fc;
-    background-color: #fff;
-    transition: all .2s;
-}
-.cl-productcard:hover {
-    background-color: #f5f7fe;
-    cursor: pointer;
-}
-</style>
