@@ -52,9 +52,25 @@
         <link
             href="https://assets-global.website-files.com/5f6b7190899f41fb70882d08/5fa973e31adbc3414aa8f77d_Chainlink-webclip.png"
             rel="apple-touch-icon">
-        <script async="" src="https://www.googletagmanager.com/gtag/js?id=UA-128878871-16"></script>
+        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-128878871-16"></script>
         <script
             type="text/javascript">window.dataLayer = window.dataLayer || []; function gtag() { dataLayer.push(arguments); } gtag('js', new Date()); gtag('config', 'UA-128878871-16');</script>
+
+        <!-- Detect highlighting -->
+        <script>
+            let lastEvent = 0;
+            const checkForHighlight = (event) => {
+                try {
+                    const selection = window.getSelection().toString();
+                    // Rate limit to 30s
+                    if(Date.now() > (lastEvent + 1000 * 30)) {
+                        gtag('event','select_content',{'event_category': 'docs-engagement', label: selection.substring(0,30)});
+                        lastEvent = Date.now();
+                    }
+                } catch (e) {}
+            }
+            document.addEventListener('mouseup',checkForHighlight);
+        </script>
 
 
     </head>
