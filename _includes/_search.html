@@ -12,9 +12,10 @@
     top: 10vh;
     border-radius:8px;
     border:1px solid #CCC;
-    right: 0;
     height: 60vh;
-    width: 90vw;
+    left:5%;
+    right:5%;
+    margin:32px;
     padding: 16px;
     z-index: 10000;
     background-color: white;
@@ -85,10 +86,10 @@
     document.getElementById('search-query').focus();
     document.getElementById('search-query').select();
    
-    document.body.addEventListener('click', (event) => {
-      console.log(event);
+    let clickListener = document.body.addEventListener('click', (event) => {
       if (resultBox !== event.target && !resultBox.contains(event.target)) {
         closeResultsBox();
+        document.body.removeEventListener('click',clickListener);
       }
     });
 
