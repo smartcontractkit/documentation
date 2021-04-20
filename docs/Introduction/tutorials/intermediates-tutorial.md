@@ -237,7 +237,7 @@ See the full contract in Remix! (We've added a few helper functions in there whi
 
 # 5. Deployment
 
-Time to compile and deploy the contract! If you don't know how to deploy a contract to the Kovan testnet from Remix, follow **[the Beginner Tutorial](https://docs.chain.link/docs/beginners-tutorial)**.
+Time to compile and deploy the contract! If you don't know how to deploy a contract to the Kovan testnet from Remix, follow **[the Beginner Tutorial](/docs/beginners-tutorial)**.
 
 This deployment is slightly different than the example from the beginners tutorial. In this tutorial, we have to pass in parameters to the constructor upon deployment.
 
@@ -272,7 +272,7 @@ These are the coordinator address, LINK address, key hash, and fee. Click deploy
   "body": "For a full reference of the addresses, key hashes and fees for each network, see [VRF Contracts](../vrf-contracts)."
 }
 [/block]
-(Note: you should <a href="https://docs.chain.link/docs/beginners-tutorial#7c-obtaining-testnet-eth" target="_blank">have some Kovan ETH in your Metamask account</a> to pay for the GAS).
+(Note: you should <a href="/docs/beginners-tutorial#7c-obtaining-testnet-eth" target="_blank">have some Kovan ETH in your Metamask account</a> to pay for the GAS).
 
 Once deployed, the contract is almost ready to go! However, it can't request anything yet, since it doesn't own LINK. If we hit `rollDice` with no LINK, the transaction will revert.
 

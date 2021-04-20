@@ -52,7 +52,7 @@ Source code gist: [https://gist.github.com/thodges-gh/9999e8d5284057146d456f4bdd
 
 ## Slide: What’s this contract going to do?
 
-Job IDs: <a href="https://docs.chain.link/v1.0/docs/addresses-and-job-specs" target="_blank">https://docs.chain.link/v1.0/docs/addresses-and-job-specs</a>
+Job IDs: <a href="/v1.0/docs/addresses-and-job-specs" target="_blank">/v1.0/docs/addresses-and-job-specs</a>
 [block:code]
 {
   "codes": [
@@ -130,7 +130,7 @@ RopstenConsumer contract: <a href="https://github.com/smartcontractkit/chainlink
 
 ## Slide: Use the contract
 
-Job IDs: <a href="https://docs.chain.link/v1.0/docs/addresses-and-job-specs" target="_blank">https://docs.chain.link/v1.0/docs/addresses-and-job-specs</a>
+Job IDs: <a href="/v1.0/docs/addresses-and-job-specs" target="_blank">/v1.0/docs/addresses-and-job-specs</a>
 [block:code]
 {
   "codes": [

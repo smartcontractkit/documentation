@@ -83,7 +83,7 @@ An example of the response data can look like:
 }
 ```
 
-You'll also notice some additional fields: `status`, `error`, and `pending`. An external adapter may mark the JobRun as pending if the answer needs to be returned at a specified time, or when a desired result is found. The `pending` field should also be set to `true` if this is the case. When the external adapter calls back to the node to update the JobRun, this should be done with an HTTP PATCH request. See the [Chainlink Node API documentation](https://docs.chain.link/v1.0/reference#run) page for details.
+You'll also notice some additional fields: `status`, `error`, and `pending`. An external adapter may mark the JobRun as pending if the answer needs to be returned at a specified time, or when a desired result is found. The `pending` field should also be set to `true` if this is the case. When the external adapter calls back to the node to update the JobRun, this should be done with an HTTP PATCH request. See the [Chainlink Node API documentation](/v1.0/reference#run) page for details.
 
 ### Returning Errors
 

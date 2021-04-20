@@ -52,7 +52,7 @@ Import `ChainlinkClient.sol` into your contract so you can inherit the Chainlink
 <a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&gist=a0325e320876120063445b0cfc241c7a" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
 </div>
 <div class="col-xs-12 col-md-6 col-md-offset-3">
-<a href="https://docs.chain.link/docs/example-walkthrough" target="_blank">What is Remix?</a>
+<a href="/docs/example-walkthrough" target="_blank">What is Remix?</a>
 </div>
 </div>
 
@@ -111,10 +111,10 @@ contract GeoDBChainlink is ChainlinkClient {
 # Tasks
 
 * <a href="https://market.link/adapters/beb55d62-8771-4953-ba1d-704af03c12ee/data-sources?network=1" target="_blank">GeoDB</a>
-* [Copy](https://docs.chain.link/docs/adapters#copy)
-* [Multiply](https://docs.chain.link/docs/adapters#multiply)
-* [EthUint256](https://docs.chain.link/docs/adapters#ethuint256)
-* [EthTx](https://docs.chain.link/docs/adapters#ethtx)
+* [Copy](/docs/adapters#copy)
+* [Multiply](/docs/adapters#multiply)
+* [EthUint256](/docs/adapters#ethuint256)
+* [EthTx](/docs/adapters#ethtx)
 
 # Request Parameters
 

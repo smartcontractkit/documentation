@@ -36,7 +36,7 @@ However, before we go into the implementation, let's first understand how Oracle
 
 ## 1b. Initiators
 
-[Initiators](../initiators) are what kick off a job inside an Oracle. In the case of a Request and Receive job, the [RunLog](https://docs.chain.link/docs/initiators#runlog) initiator watches the blockchain for when a smart contract makes a request. Once it catches a request, it initiates the job. This runs the adapters (both core and external) that the job is configured to run, eventually returning the response to the contract that made the request.
+[Initiators](../initiators) are what kick off a job inside an Oracle. In the case of a Request and Receive job, the [RunLog](/docs/initiators#runlog) initiator watches the blockchain for when a smart contract makes a request. Once it catches a request, it initiates the job. This runs the adapters (both core and external) that the job is configured to run, eventually returning the response to the contract that made the request.
 
 ## 1c. Core Adapters
 

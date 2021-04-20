@@ -9,8 +9,8 @@ hidden: false
 
 Job specifications, or specs, contain the sequential tasks that the node must perform to produce a final result. Chainlink jobs are divided into 2 segments.
 
-1. [Initiators](https://docs.chain.link/docs/initiators)
-2. [Adapters](https://docs.chain.link/docs/adapters) (also known as tasks)
+1. [Initiators](/docs/initiators)
+2. [Adapters](/docs/adapters) (also known as tasks)
 
 A job must contain at least one of each. 
 

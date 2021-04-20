@@ -38,7 +38,7 @@ The contract should own enough LINK to pay the specified fee. The beginner walkt
 <a href="https://remix.ethereum.org/#version=soljson-v0.6.6+commit.6c089d02.js&optimize=false&evmVersion=null&gist=536123b71478ad4442cfc4278e8de577" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
 </div>
 <div class="col-xs-12 col-md-6 col-md-offset-3">
-<a href="https://docs.chain.link/docs/example-walkthrough" target="_blank">What is Remix?</a>
+<a href="/docs/example-walkthrough" target="_blank">What is Remix?</a>
 </div>
 </div>
 

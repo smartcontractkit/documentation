@@ -32,7 +32,7 @@ Hardware requirements are light. The only heavy part is you'll need a blockchain
         558,
         "#dcd8c2"
       ],
-      "caption": "The Chainlink node is middleware, operating between the blockchain and external data. More information on our architecture is available <a href=\"https://docs.chain.link/v1.1/docs/architecture-overview\" target=\"_blank\" rel=\"noreferrer, noopener\">here</a>."
+      "caption": "The Chainlink node is middleware, operating between the blockchain and external data. More information on our architecture is available <a href=\"/v1.1/docs/architecture-overview\" target=\"_blank\" rel=\"noreferrer, noopener\">here</a>."
     }
   ]
 }

@@ -36,7 +36,7 @@ Price Feeds are updated in rounds. Rounds are identified by their `roundId`, whi
 <a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&gist=e32b050a9a832beeee2ebb97a9d75abc" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
 </div>
 <div class="col-xs-12 col-md-6 col-md-offset-3">
-<a href="https://docs.chain.link/docs/example-walkthrough" target="_blank">What is Remix?</a>
+<a href="/docs/example-walkthrough" target="_blank">What is Remix?</a>
 </div>
 </div>
 

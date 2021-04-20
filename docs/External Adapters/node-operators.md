@@ -65,7 +65,7 @@ You can also exclude extra parameters from the spec when creating the job. This 
 
 ## Testing External Adapters and Bridges
 
-The easiest way to test to see if you're external adapter is working, is to use a web job. You can read more about the [web initiator here](https://docs.chain.link/docs/initiators#web).
+The easiest way to test to see if you're external adapter is working, is to use a web job. You can read more about the [web initiator here](/docs/initiators#web).
 
 Let's say you have an external adapter called `weather-cl-ea` and it's registered in the `bridges` tab. It takes 1 parameter: `city:boston`, and in solidity, you'd pass the parameter with: 
 ```javascript

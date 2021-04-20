@@ -54,7 +54,7 @@ Import `ChainlinkClient.sol` into your contract so you can inherit the Chainlink
 <a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&gist=0cfa70c25bd5a386bf9ee2e8e9f386e0" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
 </div>
 <div class="col-xs-12 col-md-6 col-md-offset-3">
-<a href="https://docs.chain.link/docs/example-walkthrough" target="_blank">What is Remix?</a>
+<a href="/docs/example-walkthrough" target="_blank">What is Remix?</a>
 </div>
 </div>
 
@@ -113,10 +113,10 @@ contract TiingoChainlink is ChainlinkClient {
 # Tasks
 
 - [Tiingo](https://market.link/adapters/ce0a34cf-306e-4fa4-8d27-271028694cb2/data-sources?network=1)
-- [Copy](https://docs.chain.link/docs/adapters#copy)
-- [Multiply](https://docs.chain.link/docs/adapters#multiply)
-- [EthUint256](https://docs.chain.link/docs/adapters#ethuint256)
-- [EthTx](https://docs.chain.link/docs/adapters#ethtx)
+- [Copy](/docs/adapters#copy)
+- [Multiply](/docs/adapters#multiply)
+- [EthUint256](/docs/adapters#ethuint256)
+- [EthTx](/docs/adapters#ethtx)
 
 # Request Parameters
 

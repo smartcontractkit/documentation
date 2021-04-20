@@ -9,19 +9,19 @@ hidden: false
 
 An Adapter is a piece of software responsible for executing a specific piece of functionality. A Chainlink node comes with a number of Adapters built in, commonly known as Core Adapters, but can also be extended via [Bridges](#section-bridge) to connect with user defined [External Adapters](#section-external-adapter). Core Adapters offered by the Chainlink Node by default:
 
-- [Bridge](https://docs.chain.link/docs/adapters#section-bridge)
-- [Copy](https://docs.chain.link/docs/adapters#section-copy)
-- [EthBytes32](https://docs.chain.link/docs/adapters#section-ethbytes32)
-- [EthInt256](https://docs.chain.link/docs/adapters#section-ethint256)
-- [EthTx](https://docs.chain.link/docs/adapters#section-ethtx)
-- [EthUint256](https://docs.chain.link/docs/adapters#section-ethuint256)
-- [HTTPGet](https://docs.chain.link/docs/adapters#section-httpget)
-- [HTTPPost](https://docs.chain.link/docs/adapters#section-httppost)
-- [JSONParse](https://docs.chain.link/docs/adapters#section-jsonparse)
-- [Multiply](https://docs.chain.link/docs/adapters#section-multiply)
-- [NoOp](https://docs.chain.link/docs/adapters#section-noop)
-- [NoOpPend](https://docs.chain.link/docs/adapters#section-nooppend)
-- [Sleep](https://docs.chain.link/docs/adapters#section-sleep)
+- [Bridge](/docs/adapters#section-bridge)
+- [Copy](/docs/adapters#section-copy)
+- [EthBytes32](/docs/adapters#section-ethbytes32)
+- [EthInt256](/docs/adapters#section-ethint256)
+- [EthTx](/docs/adapters#section-ethtx)
+- [EthUint256](/docs/adapters#section-ethuint256)
+- [HTTPGet](/docs/adapters#section-httpget)
+- [HTTPPost](/docs/adapters#section-httppost)
+- [JSONParse](/docs/adapters#section-jsonparse)
+- [Multiply](/docs/adapters#section-multiply)
+- [NoOp](/docs/adapters#section-noop)
+- [NoOpPend](/docs/adapters#section-nooppend)
+- [Sleep](/docs/adapters#section-sleep)
 
 ### Answer
 

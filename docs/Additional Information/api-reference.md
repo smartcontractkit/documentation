@@ -5,5 +5,5 @@ title: "API Reference"
 permalink: "docs/api-reference/"
 hidden: false
 type: "link"
-link_url: "https://docs.chain.link/reference"
+link_url: "/reference"
 ---

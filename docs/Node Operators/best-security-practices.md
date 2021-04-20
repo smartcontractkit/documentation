@@ -69,7 +69,7 @@ JSON_CONSOLE](../configuration-variables#section-json_console) configuration var
 [/block]
 Due to the early nature of the software, it may be required to perform frequent updates to your Chainlink node. 
 
-On performing system maintenance to update the Chainlink node, follow [this](https://docs.chain.link/docs/performing-system-maintenance#section-failover-node-example) guide.
+On performing system maintenance to update the Chainlink node, follow [this](/docs/performing-system-maintenance#section-failover-node-example) guide.
 [block:api-header]
 {
   "title": "Jobs and Config"
