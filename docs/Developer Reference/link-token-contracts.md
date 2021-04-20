@@ -1,0 +1,176 @@
+---
+layout: nodes.liquid
+section: smartContract
+date: Last Modified
+title: "LINK Token Contracts"
+permalink: "docs/link-token-contracts/"
+hidden: false
+metadata: 
+  title: "LINK Token Contracts"
+  description: "Addresses for the LINK token on supported networks."
+  image: 
+    0: "https://files.readme.io/72d4bd9-link.png"
+    1: "link.png"
+    2: 1459
+    3: 1459
+    4: "#dbe1f8"
+---
+LINK tokens are used to pay node operators for retrieving data for smart contracts and also for deposits placed by node operators as required by contract creators.
+
+The LINK token is an ERC677 token that inherits functionality from the ERC20 token standard and allows token transfers to contain a data payload. Read more about the <a href="https://github.com/ethereum/EIPs/issues/677" target="_blank" rel="noreferrer, noopener">ERC677 transferAndCall token standard</a>.
+
+# Ethereum
+
+## Mainnet
+
+|Parameter|Value|
+|:---|:---|
+|`ETH_CHAIN_ID`|`1`|
+|Address|<a href="https://etherscan.io/token/0x514910771af9ca656af840dff83e8264ecf986ca" target="_blank" rel="noreferrer, noopener">`0x514910771af9ca656af840dff83e8264ecf986ca`</a>|
+|Name|ChainLink Token|
+|Symbol|LINK|
+|Decimals|18|
+
+## Kovan
+
+> 🚰Kovan Faucets
+>
+> Testnet LINK is available from https://kovan.chain.link/
+> Testnet ETH is available from https://faucet.kovan.network/
+
+|Parameter|Value|
+|:---|:---|
+|`ETH_CHAIN_ID`|`42`|
+|Address|<a href="https://kovan.etherscan.io/token/0xa36085F69e2889c224210F603D836748e7dC0088" target="_blank" rel="noreferrer, noopener">`0xa36085F69e2889c224210F603D836748e7dC0088`</a>|
+|Name|ChainLink Token|
+|Symbol|LINK|
+|Decimals|18|
+
+## Rinkeby
+
+> 🚰Rinkeby Faucets
+>
+> Testnet LINK is available from https://rinkeby.chain.link/
+> Testnet ETH is available from https://faucet.rinkeby.io/
+
+|Parameter|Value|
+|:---|:---|
+|`ETH_CHAIN_ID`|`4`|
+|Address|<a href="https://rinkeby.etherscan.io/token/0x01BE23585060835E02B77ef475b0Cc51aA1e0709" target="_blank" rel="noreferrer, noopener">`0x01BE23585060835E02B77ef475b0Cc51aA1e0709`</a>|
+|Name|ChainLink Token|
+|Symbol|LINK|
+|Decimals|18|
+
+## Goerli
+
+|Parameter|Value|
+|:---|:---|
+|`ETH_CHAIN_ID`|`5`|
+|Address|<a href="https://goerli.etherscan.io/address/0x326c977e6efc84e512bb9c30f76e30c160ed06fb" target="_blank" rel="noreferrer, noopener">`0x326c977e6efc84e512bb9c30f76e30c160ed06fb`</a>|
+|Name|ChainLink Token|
+|Symbol|LINK|
+|Decimals|18|
+
+--------------------
+
+# Other EVM Compatible Chains
+
+LINK is native to Ethereum, so to use LINK on other chains, it must be bridged. <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blank">This guide</a> explains how to bridge and swap tokens to other chains.
+
+## Binance Smart Chain
+
+### Mainnet
+
+> 📘 Important
+>
+> The LINK provided by the <a href="https://www.binance.org/en/bridge" target="_blank">Binance Bridge</a> is not ERC-677 compatible, so cannot be used with Chainlink oracles. However, it can be <a href="https://pegswap.surge.sh/" target="_blank">**converted to the official LINK token on BSC using Chainlink's PegSwap service**</a>. 
+
+|Parameter|Value|
+|:---|:---|
+|`ETH_CHAIN_ID`|`56`|
+|Address|<a href="https://bscscan.com/token/0x404460c6a5ede2d891e8297795264fde62adbb75" target="_blank" rel="noreferrer, noopener">`0x404460c6a5ede2d891e8297795264fde62adbb75`</a>|
+|Name|ChainLink Token|
+|Symbol|LINK|
+|Decimals|18|
+
+### Testnet
+
+> 🚰BSC Faucet
+>
+> Testnet LINK is available from <a href="https://linkfaucet.protofire.io/bsctest" target="_blank" rel="noreferrer, noopener">the community faucet</a>.
+
+|Parameter|Value|
+|:---|:---|
+|`ETH_CHAIN_ID`|`97`|
+|Address|<a href="https://testnet.bscscan.com/address/0x84b9b910527ad5c03a9ca831909e21e236ea7b06" target="_blank" rel="noreferrer, noopener">`0x84b9b910527ad5c03a9ca831909e21e236ea7b06`</a>|
+|Name|ChainLink Token|
+|Symbol|LINK|
+|Decimals|18|
+
+## Polygon (Matic)
+
+> 📘 Important
+>
+> The LINK provided by the <a href="https://wallet.matic.network/bridge" target="_blank">Polygon (Matic) Bridge</a> is not ERC-677 compatible, so cannot be used with Chainlink oracles. However, it can be <a href="https://pegswap.surge.sh/" target="_blank">**converted to the official LINK token on Polygon (Matic) using Chainlink's PegSwap service**</a>
+
+You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blank"> watch this video </a>. 
+
+### Mainnet
+
+|Parameter|Value|
+|:---|:---|
+|`ETH_CHAIN_ID`|`137`|
+|Address|<a href="https://explorer.matic.network/address/0xb0897686c545045afc77cf20ec7a532e3120e0f1" target="_blank" rel="noreferrer, noopener">`0xb0897686c545045afc77cf20ec7a532e3120e0f1`</a>|
+|Name|ChainLink Token|
+|Symbol|LINK|
+|Decimals|18|
+
+### Mumbai Testnet
+
+> 🚰Mumbai Faucet
+>
+> Testnet LINK and MATIC are available from <a href="https://faucet.matic.today" target="_blank" rel="noreferrer, noopener">the official matic faucet</a> and <a href="https://linkfaucet.protofire.io/mumbai" target="_blank" rel="noreferrer, noopener">the community faucet</a>.
+
+|Parameter|Value|
+|:---|:---|
+|`ETH_CHAIN_ID`|`80001`|
+|Address|<a href="https://explorer-mumbai.maticvigil.com/address/0x326C977E6efc84E512bB9C30f76E30c160eD06FB" target="_blank" rel="noreferrer, noopener">`0x326C977E6efc84E512bB9C30f76E30c160eD06FB `</a>|
+|Name|ChainLink Token|
+|Symbol|LINK|
+|Decimals|18|
+
+## RSK
+
+### Mainnet
+
+> 🌉Token Bridge
+>
+> Supported token bridge at https://tokenbridge.rsk.co/
+
+|Parameter|Value|
+|:---|:---|
+|`ETH_CHAIN_ID`|`30`|
+|Address|<a href="https://explorer.rsk.co/address/0x14adae34bef7ca957ce2dde5add97ea050123827" target="_blank" rel="noreferrer, noopener">`0x14adae34bef7ca957ce2dde5add97ea050123827`</a>|
+|Name|rLINK|
+|Symbol|rLINK|
+|Decimals|18|
+
+## xDai
+
+### Mainnet
+
+> 🚰xDai Faucet
+>
+> Free xDai for transactions: https://blockscout.com/poa/xdai/faucet
+>
+> 🌉OmniBridge
+>
+> Supported bridge: https://omni.xdaichain.com/
+
+|Parameter|Value|
+|:---|:---|
+|`ETH_CHAIN_ID`|`100`|
+|Address|<a href="https://blockscout.com/poa/xdai/address/0xE2e73A1c69ecF83F464EFCE6A5be353a37cA09b2" target="_blank" rel="noreferrer, noopener">`0xE2e73A1c69ecF83F464EFCE6A5be353a37cA09b2`</a>|
+|Name|ChainLink Token on xDai|
+|Symbol|LINK|
+|Decimals|18|

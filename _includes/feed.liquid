@@ -1,0 +1,57 @@
+---
+layout: ./nodes.liquid
+section: smartContract
+---
+
+<p>For implementation instructions, please refer to <a href="../get-the-latest-price">Get the Latest Price</a>.</p>
+
+<p>For LINK token and Faucet details, please refer to <a href="../link-token-contracts">LINK Token Contracts</a>.</p>
+
+<style>
+    table {
+        border-collapse: collapse;
+        width:100%;
+
+    }
+    th, td {
+        border: 1px solid #dfe2e5;
+        padding: 6px 13px;
+    }
+    thead tr {
+        background-color: #f6f8fa;
+    }
+    tr:nth-child(2n) {
+        background-color: rgb(251, 252, 253);
+    }
+
+</style>
+
+
+<div id="feed-data">
+    Loading feeds...
+</div>
+
+<script>
+    dest = document.getElementById('feed-data');
+    render = (data) => {
+        let html = '';
+        for(let network of data["{{stub}}"].networks) {
+            html += `<h2>${network.name}</h2>`;
+            console.log(network);
+            
+            let proxyList = '';
+            for(let proxy of network.proxies) {
+                proxyList += `<tr><td><code>${proxy.pair}</code></td><td>${proxy.decimals}</td><td><a href="${network.url}${proxy.proxy}"><code>${proxy.proxy}</code></a></td></tr>`;
+            }
+            html += `<table><thead><tr><th>Pair</th><th>Dec</th><th>Proxy</th></tr></thead><tbody>${proxyList}</tbody></table>`;
+        }
+        dest.innerHTML = html;
+    }
+    
+    fetch('https://cl-docs-addresses.web.app/addresses.json')
+    .then(response => response.json())
+    .then(json => {
+        render(json);
+    });
+    
+</script>
