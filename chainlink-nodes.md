@@ -14,7 +14,7 @@ date: Last Modified
             class="cl-image-featured"
           />
           <h3>Set Up a Chainlink Node</h3>
-          <p>Run your own node on a local machine or remote server.</p>
+          <p>Install and Run your own node on a local machine or remote server.</p>
           <a
             href="/docs/running-a-chainlink-node"
             class="cl-button--ghost"
@@ -46,7 +46,7 @@ date: Last Modified
             class="cl-image-featured"
             height="50"
           />
-          <h3>Add External Adapters</h3>
+          <h3>Add External Adapters to Your Node</h3>
           <p>
             Bring high-quality data and premium web APIs to contract developers.
           </p>
@@ -184,7 +184,7 @@ date: Last Modified
   </div>
 </div>
 
-
+<!-- 
 <style>
 .row {
     display: flex;
@@ -337,4 +337,4 @@ date: Last Modified
     background-color: #f5f7fe;
     cursor: pointer;
 }
-</style>
+</style> -->
