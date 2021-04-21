@@ -191,7 +191,7 @@ We have the code. What we need next is a compiler.
 
 Fortunately for us, Remix also has support for gist. This means that Remix can load code from Github, and in this case, `PriceConsumerV3.sol` Click the button below to open a new tab, then once Remix has loaded, find the `gists` folder in the File Explorer on the left-hand side, and click on the file to open the code in the editor.
 
-<div class="row cl-button-containerw">
+<div class="row cl-button-container">
   <div class="col-xs-12 col-md-12">
   <a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&gist=0c5928a00094810d2ba01fd8d1083581" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
   </div>
