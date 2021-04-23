@@ -4,6 +4,7 @@ section: smartContract
 date: Last Modified
 title: "Introduction to Using Any API"
 permalink: "docs/request-and-receive-data/"
+whatsnext: {"Make a GET Request":"/docs/make-a-http-get-request/","Make an Existing Job Request":"/docs/existing-job-request", "API Reference":"/docs/chainlink-framework", "Contract Addresses":"/docs/decentralized-oracles-ethereum-mainnet"}
 hidden: false
 metadata: 
   title: "Request and Receive API Data with Chainlink"

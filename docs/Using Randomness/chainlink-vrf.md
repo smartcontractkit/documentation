@@ -4,6 +4,7 @@ section: smartContract
 date: Last Modified
 title: "Introduction to Chainlink VRF"
 permalink: "docs/chainlink-vrf/"
+whatsnext: {"Get a Random Number":"/docs/get-a-random-number", "API Reference":"/docs/chainlink-vrf-api-reference", "Contract Addresses":"/docs/vrf-contracts"}
 hidden: false
 metadata: 
   title: "Generate Random Numbers for Smart Contracts using Chainlink VRF"

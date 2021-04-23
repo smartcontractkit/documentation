@@ -4,6 +4,7 @@ section: smartContract
 date: Last Modified
 title: "LCX (Testnet)"
 permalink: "docs/lcx-testnet/"
+whatsnext: {"Kraken Rates Oracle Node":"/docs/kraken-rates-oracle-node"}
 hidden: false
 metadata: 
   image: 

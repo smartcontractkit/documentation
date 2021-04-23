@@ -3,6 +3,7 @@ layout: nodes.liquid
 date: Last Modified
 title: "Connecting to a Remote Database"
 permalink: "docs/connecting-to-a-remote-database/"
+whatsnext: {"Configuration Variables":"/docs/configuration-variables"}
 hidden: false
 ---
 This page will serve as a basic, vendor-neutral guide for setting up a PostgreSQL database and connecting your Chainlink node to it.

@@ -240,6 +240,10 @@ module.exports = {
         section: 'DATA PROVIDER NODES',
         contents: [
           {
+            title: 'Introduction to Data Provider Nodes',
+            url: 'data-provider-nodes'
+          },
+          {
             title: 'Chainlink Alarm Clock (Testnet)',
             url: 'chainlink-alarm-clock'
           },

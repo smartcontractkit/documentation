@@ -3,6 +3,7 @@ layout: nodes.liquid
 date: Last Modified
 title: "Job Specifications"
 permalink: "docs/job-specifications/"
+whatsnext: {"Core Adapters":"/docs/adapters", "Initiators":"/docs/initiators", "Node Operator Email List":"https://link.us18.list-manage.com/subscribe?u=8969e6baa6d67e10213eff25b&id=e70d98a987"}
 hidden: false
 ---
 ## What is a job?

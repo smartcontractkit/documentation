@@ -4,6 +4,7 @@ section: smartContract
 date: Last Modified
 title: "Tiingo EOD Stock Price Oracle"
 permalink: "docs/tiingo-eod-stock-price-oracle/"
+whatsnext: {"GeoDB Oracle Node":"/docs/geodb-oracle-node"}
 hidden: false
 metadata: 
   image: 

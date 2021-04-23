@@ -3,6 +3,7 @@ layout: nodes.liquid
 date: Last Modified
 title: "Configuration Variables"
 permalink: "docs/configuration-variables/"
+whatsnext: {"Enabling HTTPS Connections":"/docs/enabling-https-connections"}
 hidden: false
 ---
 ## ALLOW_ORIGINS

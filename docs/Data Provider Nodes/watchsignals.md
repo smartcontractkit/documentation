@@ -3,6 +3,7 @@ layout: nodes.liquid
 section: smartContract
 date: Last Modified
 title: "WatchSignals Luxury Watch Price Oracle"
+whatsnext: {"Genesis Volatility Cryptocurrency Options Oracle":"/docs/genesis-volatility/"}
 permalink: "docs/watchsignals/"
 hidden: false
 ---

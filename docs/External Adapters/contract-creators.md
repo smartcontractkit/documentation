@@ -3,6 +3,7 @@ layout: nodes.liquid
 date: Last Modified
 title: "External Adapters in Solidity"
 permalink: "docs/contract-creators/"
+whatsnext: {"Building External Adapters":"/docs/developers", "Bridges: Adding External Adapters to Nodes":"/docs/node-operators"}
 hidden: false
 ---
 ### Using parameters with an External Adapter

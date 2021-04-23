@@ -4,6 +4,7 @@ section: smartContract
 date: Last Modified
 title: "Install Instructions"
 permalink: "docs/create-a-chainlinked-project/"
+whatsnext: {"Introduction to Price Feeds":"/docs/using-chainlink-reference-contracts", "Introduction to Chainlink VRF":"/docs/chainlink-vrf", "Introduction to Using Any API":"/docs/request-and-receive-data"}
 hidden: false
 metadata: 
   title: "Getting Started with Chainlink for Smart Contract Developers"

@@ -4,6 +4,7 @@ section: smartContract
 date: Last Modified
 title: "Make an Existing Job Request"
 permalink: "docs/existing-job-request/"
+whatsnext: {"Find Existing Jobs":"/docs/listing-services", "API Reference":"/docs/chainlink-framework", "Contract Addresses":"/docs/decentralized-oracles-ethereum-mainnet"}
 hidden: false
 metadata: 
   title: "Make an Existing Job Request"

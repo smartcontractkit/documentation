@@ -4,6 +4,7 @@ section: smartContract
 date: Last Modified
 title: "Basic Request Model"
 permalink: "docs/architecture-request-model/"
+whatsnext: {"Make a GET Request":"/docs/make-a-http-get-request/", "Decentralized Data Model":"/docs/architecture-decentralized-model"}
 hidden: false
 metadata: 
   title: "Chainlink Basic Request Model"

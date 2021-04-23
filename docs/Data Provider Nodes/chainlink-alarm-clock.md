@@ -3,6 +3,7 @@ layout: nodes.liquid
 section: smartContract
 date: Last Modified
 title: "Chainlink Alarm Clock (Testnet)"
+whatsnext: {"LCX (Testnet)":"/docs/lcx-testnet"}
 permalink: "docs/chainlink-alarm-clock/"
 hidden: false
 metadata: 

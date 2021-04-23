@@ -5,6 +5,7 @@ date: Last Modified
 title: "Beginners - The Basics"
 permalink: "docs/beginners-tutorial/"
 excerpt: "Smart Contracts and Chainlink"
+whatsnext: {"Get the Latest Price":"/docs/get-the-latest-price", "Deploy your first contract":"/docs/deploy-your-first-contract", "Intermediates - Random Numbers":"/docs/intermediates-tutorial"}
 hidden: false
 metadata: 
   title: "Beginners Tutorial"

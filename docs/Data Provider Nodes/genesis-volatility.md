@@ -3,6 +3,7 @@ layout: nodes.liquid
 section: smartContract
 date: Last Modified
 title: "Genesis Volatility Cryptocurrency Options Oracle"
+whatsnext: {"dxFeed Price Oracle":"/docs/dxfeed-oracle/"}
 permalink: "docs/genesis-volatility/"
 hidden: false
 ---
