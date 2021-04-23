@@ -28,9 +28,12 @@ Currently, any return value must fit within 32 bytes, if the value is bigger tha
 > Making a GET request will fail unless your deployed contract has enough LINK to pay for it. **Learn how to [Acquire testnet LINK](../acquire-link) and [Fund your contract](../fund-your-contract)**.
 
 <div class="row cl-button-container">
-    <div class="col-xs-12 col-md-12">
+  <div class="col-xs-12 col-md-12">
     <a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&gist=8a173a65099261582a652ba18b7d96c1" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
-    </div>
+  </div>
+  <div class="col-xs-12 col-md-12">
+    <a href="../deploy-your-first-contract" title="">What is Remix?</a>
+  </div>
 </div>
 
 ```javascript Kovan

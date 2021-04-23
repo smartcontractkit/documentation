@@ -233,6 +233,9 @@ See the full contract in Remix! (We've added a few helper functions in there whi
   <div class="col-xs-12 col-md-12">
   <a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&gist=55c1263fcfc710f834aa38b7bbd21dc1" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
   </div>
+  <div class="col-xs-12 col-md-12">
+    <a href="../deploy-your-first-contract" title="">What is Remix?</a>
+  </div>
 </div>
 
 # 5. Deployment
