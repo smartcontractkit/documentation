@@ -4,6 +4,7 @@ section: smartContract
 date: Last Modified
 title: "GeoDB Oracle Node"
 permalink: "docs/geodb-oracle-node/"
+whatsnext: {"TheRundown Oracle Node":"/docs/therundown-oracle-node/"}
 hidden: false
 metadata: 
   image: 

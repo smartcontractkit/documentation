@@ -3,6 +3,7 @@ layout: nodes.liquid
 date: Last Modified
 title: "Miscellaneous"
 permalink: "docs/miscellaneous/"
+whatsnext: {"Best Security and Operating Practices":"/docs/best-security-practices"}
 hidden: false
 ---
 [block:api-header]

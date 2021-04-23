@@ -4,6 +4,7 @@ section: smartContract
 date: Last Modified
 title: "TheRundown Oracle Node"
 permalink: "docs/therundown-oracle-node/"
+whatsnext: {"DNS Ownership Oracle":"/docs/dns-ownership-oracle/"}
 hidden: false
 metadata: 
   image: 

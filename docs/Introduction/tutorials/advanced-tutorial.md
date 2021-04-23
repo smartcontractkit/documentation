@@ -5,6 +5,7 @@ date: Last Modified
 title: "Advanced - API Calls"
 permalink: "docs/advanced-tutorial/"
 excerpt: "Calling APIs from Smart Contracts"
+whatsnext: {"Make a GET Request":"/docs/make-a-http-get-request/", "Make an Existing Job Request":"/docs/existing-job-request"}
 hidden: false
 metadata: 
   image: 

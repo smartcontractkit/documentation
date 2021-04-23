@@ -4,7 +4,7 @@ section: smartContract
 date: Last Modified
 title: "Decentralized Data Model"
 permalink: "docs/architecture-decentralized-model/"
-hidden: false
+whatsnext: {"Get the Latest Price":"/docs/get-the-latest-price", "Off-Chain Reporting":"/docs/off-chain-reporting"}
 metadata: 
   title: "Chainlink Decentralised Data Model"
   description: "This page describes the decentralized architecture which enables Chainlink to aggregate data from multiple independent node operators."

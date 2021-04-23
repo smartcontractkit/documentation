@@ -4,6 +4,7 @@ section: smartContract
 date: Last Modified
 title: "Architecture Overview"
 permalink: "docs/architecture-overview/"
+whatsnext: {"Basic Request Model":"/docs/architecture-request-model", "Decentralized Data Model":"/docs/architecture-decentralized-model", "Off-Chain Reporting":"/docs/off-chain-reporting"}
 hidden: false
 metadata: 
   title: "Chainlink Architecture Overview"

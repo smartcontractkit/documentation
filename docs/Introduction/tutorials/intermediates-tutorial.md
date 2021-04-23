@@ -5,6 +5,7 @@ date: Last Modified
 title: "Intermediates - Random Numbers"
 permalink: "docs/intermediates-tutorial/"
 excerpt: "Using Chainlink VRF"
+whatsnext: {"Get a Random Number":"/docs/get-a-random-number", "Advanced - API Calls":"/docs/advanced-tutorial"}
 hidden: false
 metadata: 
   title: "Intermediates Tutorial"

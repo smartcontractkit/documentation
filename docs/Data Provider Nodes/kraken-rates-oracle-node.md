@@ -4,6 +4,7 @@ section: smartContract
 date: Last Modified
 title: "Kraken Rates Oracle Node"
 permalink: "docs/kraken-rates-oracle-node/"
+whatsnext: {"Tiingo EOD Stock Price Oracle":"/docs/tiingo-eod-stock-price-oracle"}
 hidden: false
 metadata: 
   image: 

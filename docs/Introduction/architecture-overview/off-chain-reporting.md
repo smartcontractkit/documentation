@@ -4,6 +4,7 @@ section: smartContract
 date: Last Modified
 title: "Off-Chain Reporting"
 permalink: "docs/off-chain-reporting/"
+whatsnext: {"Migration Instructions to Flux Aggregator ":"/docs/migrating-to-flux-aggregator/"}
 hidden: false
 metadata: 
   image: 

@@ -3,6 +3,7 @@ layout: nodes.liquid
 date: Last Modified
 title: "Running a Chainlink Node"
 permalink: "docs/running-a-chainlink-node/"
+whatsnext: {"Fulfilling Requests":"/docs/fulfilling-requests", "Performing System Maintenance":"/docs/performing-system-maintenance", "Miscellaneous":"/docs/miscellaneous", "Best Security and Operating Practices":"/docs/best-security-practices", "Node Operator Email List":"https://link.us18.list-manage.com/subscribe?u=8969e6baa6d67e10213eff25b&id=e70d98a987"}
 hidden: false
 metadata: 
   title: "Running a Chainlink Node"

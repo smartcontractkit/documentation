@@ -4,6 +4,7 @@ section: smartContract
 date: Last Modified
 title: "Tutorials"
 permalink: "docs/tutorials/"
+whatsnext: {"Beginners - The Basics":"/docs/beginners-tutorial", "Intermediates - Random Numbers":"/docs/intermediates-tutorial", "Advanced - API Calls":"/docs/advanced-tutorial"}
 hidden: false
 ---
 [block:image]
