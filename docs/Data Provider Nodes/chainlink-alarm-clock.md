@@ -54,13 +54,9 @@ contract ChainlinkAlarmClock is ChainlinkClient {
 }
 ```
 
-<div class="row cl-button-container">
-  <div class="col-xs-12 col-md-12">
+<div class="remix-callout">
   <a href="https://remix.ethereum.org/#gist=e71aab73726c5a2f99ee00c1a70cfef8&optimize=true&version=soljson-v0.6.12+commit.27d51765.js&evmVersion=null&runs=200" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
-  </div>
-  <div class="col-xs-12 col-md-12">
     <a href="../deploy-your-first-contract" title="">What is Remix?</a>
-  </div>
 </div>
 
 # Tasks

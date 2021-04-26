@@ -30,13 +30,9 @@ This example uses the <a href="https://market.link/nodes/ef076e87-49f4-486b-9878
 >
 > Making a job request will fail unless your deployed contract has enough LINK to pay for it. **Learn how to [Acquire testnet LINK](../acquire-link) and [Fund your contract](../fund-your-contract)**.
 
-<div class="row cl-button-container">
-  <div class="col-xs-12 col-md-12">
+<div class="remix-callout">
     <a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&gist=e5f752fa134b49ef481da74ec1a453a6" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
-  </div>
-  <div class="col-xs-12 col-md-12">
     <a href="../deploy-your-first-contract" title="">What is Remix?</a>
-  </div>
 </div>
 
 ```javascript

@@ -100,13 +100,9 @@ contract GeoDBChainlink is ChainlinkClient {
 }
 ```
 
-<div class="row cl-button-container">
-  <div class="col-xs-12 col-md-12">
+<div class="remix-callout">
   <a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&gist=a0325e320876120063445b0cfc241c7a" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
-  </div>
-  <div class="col-xs-12 col-md-12">
     <a href="../deploy-your-first-contract" title="">What is Remix?</a>
-  </div>
 </div>
 
 # Tasks
