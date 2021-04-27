@@ -282,6 +282,10 @@ module.exports = {
             title: 'Bookmaker Ratings Oracle',
             url: 'bookmaker-ratings-oracle'
           },
+          {
+            title: 'Finage Global Market Data Oracle',
+            url: 'finage-global-market-data-oracle'
+          }
         ],
       },
     ],
