@@ -109,7 +109,6 @@
  
   let searchTimeout;
   const performSearch = (event) => {
-      // console.log('perform search event',event);
       if(!(event instanceof KeyboardEvent)) {
         event.preventDefault();
       }
@@ -147,16 +146,11 @@
         )
         .join('');
 
-
-    // let url = window.location+'';
-    // url = url.substring(0,url.indexOf('?'));
-    // window.history.replaceState('','',`${url}?q=${query}`);
-    // // Log to analytics
+    // Log to analytics
     if(searchTimeout) {
       clearTimeout(searchTimeout);
     }
       searchTimeout = setTimeout(() => {
-        console.log('timeout is activating!');
         gtag('event', 'search', {
           'event_category': 'docs-engagement', 
           'search_term': query,
@@ -166,7 +160,6 @@
         SULX.post(path, JSON.stringify(data));
         searchTimeout = null;
       },1000);
-      console.log(searchTimeout);
       
   }
 
@@ -175,7 +168,7 @@
       showResultsBox));
 
   document.getElementById('search-form')
-    .addEventListener('keydown',performSearch );
+    .addEventListener('keyup',performSearch );
   document.getElementById('search-form')
     .addEventListener('submit',performSearch );
 </script>
