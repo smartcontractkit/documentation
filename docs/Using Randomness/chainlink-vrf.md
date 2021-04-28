@@ -35,7 +35,7 @@ metadata:
 [block:callout]
 {
   "type": "info",
-  "body": "If you're interested in early access to Chainlink VRF on mainnet, please email [vrf@chain.link](mailto:vrf@chain.link).",
+  "body": "Please [contact us](https://chainlinkcommunity.typeform.com/to/OYQO67EF) for more information.",
   "title": "Available now on mainnet"
 }
 [/block]
