@@ -177,29 +177,26 @@ Our contract is initialized with the hard-coded address of the ETH / USD Kovan p
 
 There are a few things that are needed to deploy a contract to a testnet:
 
-☑️ Smart contract code 
-☐ A Solidity compiler 
-☐ An address to deploy from 
-☐ Some ETH (in our case, testnet ETH, which is free) 
+- [x] Smart contract code 
+- [ ] A Solidity compiler 
+- [ ] An address to deploy from 
+- [ ] Some ETH (in our case, testnet ETH, which is free) 
 
 We have the code. What we need next is a compiler.
 
 ## 7a. The Remix IDE
 
-☐ A Solidity compiler
+- [ ] A Solidity compiler 
 
 <a href="https://remix.ethereum.org/" target="_blank">Remix</a> is an online IDE which enables anyone to write, compile and deploy smart contracts from the browser.
 
 Fortunately for us, Remix also has support for gist. This means that Remix can load code from Github, and in this case, `PriceConsumerV3.sol` Click the button below to open a new tab, then once Remix has loaded, find the `gists` folder in the File Explorer on the left-hand side, and click on the file to open the code in the editor.
 
-<div class="row cl-button-container">
-  <div class="col-xs-12 col-md-12">
-  <a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&gist=0c5928a00094810d2ba01fd8d1083581" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
-  </div>
-  <div class="col-xs-12 col-md-12">
-    <a href="../deploy-your-first-contract" title="">What is Remix?</a>
-  </div>
+<div class="remix-callout">
+  <a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&gist=0c5928a00094810d2ba01fd8d1083581" target="_blank" class="cl-button--ghost">Deploy this contract using Remix ↗</a>
+  <a href="../deploy-your-first-contract" title="">What is Remix?</a>
 </div>
+
 [block:image]
 {
   "images": [
@@ -218,11 +215,11 @@ Fortunately for us, Remix also has support for gist. This means that Remix can l
 [/block]
 Have a play around with the contract. This is what we'll use for the compiler.
 
-☑️ A Solidity compiler 
+- [x] A Solidity compiler 
 
 ## 7b. Metamask wallet
 
-☐ An address to deploy from 
+- [ ] An address to deploy from 
 
 Contracts are deployed by addresses on the network, so deploy our own we need an address. Not only that, but we need one which we can easily use with Remix. Fortunately, Metamask is just what is needed. Metamask allows anyone to create an address, store funds and interact with Ethereum compatible blockchains from a browser extension.
 
@@ -246,17 +243,17 @@ Once that's done, hop over to the Kovan testnet inside Metamask extension, as se
 [/block]
 We now have an address to deploy to the Kovan testnet from.
 
-☑️An address to deploy from 
+- [x] An address to deploy from 
 
 ## 7c. Obtaining testnet ETH
 
-☐ Some ETH
+- [ ] Some ETH
 
 Making transactions on Ethereum blockchains are not free, they cost ETH. Deploying a contract is no exception to this rule. Fortunately, testnet ETH doesn't actually cost anything, since the purpose of testnets is to test smart contracts publically before they are deployed to the mainnet.
 
 Connect your Metamask wallet and request ETH from one of the available faucets on [LINK Token Contracts page](../link-token-contracts).
 
-☑️ Some ETH
+- [x] Some ETH
 
 ## 7d. Compiling
 
