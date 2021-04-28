@@ -3,7 +3,7 @@ layout: nodes.liquid
 date: Last Modified
 title: "Building External Adapters"
 permalink: "docs/developers/"
-whatsnext: {"Bridges: Adding External Adapters to Nodes":"/docs/node-operators"}
+whatsnext: {"Bridges: Adding External Adapters to Nodes":"/docs/node-operators/"}
 hidden: false
 ---
 Developers of external adapters will need to know how the Chainlink node requests data from it, and how the data should be formatted for a response. External adapters can be written in any language, and even run on separate machines, to include serverless functions.
@@ -84,7 +84,7 @@ An example of the response data can look like:
 }
 ```
 
-You'll also notice some additional fields: `status`, `error`, and `pending`. An external adapter may mark the JobRun as pending if the answer needs to be returned at a specified time, or when a desired result is found. The `pending` field should also be set to `true` if this is the case. When the external adapter calls back to the node to update the JobRun, this should be done with an HTTP PATCH request. See the [Chainlink Node API documentation](/v1.0/reference#run) page for details.
+You'll also notice some additional fields: `status`, `error`, and `pending`. An external adapter may mark the JobRun as pending if the answer needs to be returned at a specified time, or when a desired result is found. The `pending` field should also be set to `true` if this is the case. When the external adapter calls back to the node to update the JobRun, this should be done with an HTTP PATCH request.
 
 ### Returning Errors
 

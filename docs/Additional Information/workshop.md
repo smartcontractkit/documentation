@@ -28,7 +28,7 @@ Ropsten Explorer: <a href="https://ropsten.explorer.chain.link/" target="_blank"
 
 ## Slide: Preparation for Ropsten
 
-- Metamask: <a href="https://metamask.io" target="_blank">https://metamask.io</a> ([Install Metamask instructions: seed phrase](https://www.youtube.com/watch?v=AqNULIvIlJ8#t=2m46))
+- Metamask: <a href="https://metamask.io" target="_blank">https://metamask.io</a> ([Install Metamask instructions: seed phrase](https://www.youtube.com/watch?v=AqNULIvIlJ8/#t=2m46))
 - Ropsten ETH faucet: <a href="https://faucet.ropsten.be" target="_blank">https://faucet.ropsten.be</a>
 - Ropsten LINK faucet: <a href="https://ropsten.chain.link" target="_blank">https://ropsten.chain.link</a>
 
@@ -52,7 +52,7 @@ Source code gist: [https://gist.github.com/thodges-gh/9999e8d5284057146d456f4bdd
 
 ## Slide: What’s this contract going to do?
 
-Job IDs: <a href="/v1.0/docs/addresses-and-job-specs" target="_blank">/v1.0/docs/addresses-and-job-specs</a>
+Job IDs: <a href="/docs/addresses-and-job-specs" target="_blank">/docs/addresses-and-job-specs</a>
 [block:code]
 {
   "codes": [
@@ -130,7 +130,7 @@ RopstenConsumer contract: <a href="https://github.com/smartcontractkit/chainlink
 
 ## Slide: Use the contract
 
-Job IDs: <a href="/v1.0/docs/addresses-and-job-specs" target="_blank">/v1.0/docs/addresses-and-job-specs</a>
+Job IDs: <a href="/docs/addresses-and-job-specs" target="_blank">/docs/addresses-and-job-specs</a>
 [block:code]
 {
   "codes": [

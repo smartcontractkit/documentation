@@ -18,8 +18,8 @@ TheRundown is the leading platform for real-time odds from the most popular spor
 
 # Steps For Using This Oracle
 
-- Write and deploy your [Chainlink](../example-walkthrough) contract using the network details below
-- Fund it with [LINK](../link-token-contracts)
+- Write and deploy your [Chainlink](../intermediates-tutorial/) contract using the network details below
+- Fund it with [LINK](../link-token-contracts/)
 - Call your [request method](#section-chainlink-examples)
 
 # Network Details
@@ -100,15 +100,15 @@ contract TheRundownChainlink is ChainlinkClient {
 
 <div class="remix-callout">
   <a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&gist=eeb0e1b523ebc0ace072190f0e743c01" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
-    <a href="../deploy-your-first-contract" title="">What is Remix?</a>
+    <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
 </div>
 
 # Tasks
 * <a href="https://market.link/adapters/73674a2e-9085-4875-adc7-3c2930180b44/data-sources" target="_blank">TheRundown</a>
-* [Copy](../adapters#copy)
-* [Multiply](../adapters#multiply)
-* [EthUint256](../adapters#ethuint256)
-* [EthTx](../adapters#ethtx)
+* [Copy](../adapters/#copy)
+* [Multiply](../adapters/#multiply)
+* [EthUint256](../adapters/#ethuint256)
+* [EthTx](../adapters/#ethtx)
 
 # Request Parameters
 ### `matchId`

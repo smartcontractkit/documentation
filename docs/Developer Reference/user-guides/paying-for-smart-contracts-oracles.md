@@ -12,7 +12,7 @@ For every transaction on the blockchain that is not just reading data, we need t
 
 A wallet that deploys a contract needs to have enough ETH to cover gas costs. If you're deploying contracts that depend on Chainlink Price Feeds, VRF or API calls, you still need only ETH.
 
-For instance, the contract below uses the existing job via [dxFeed Price Oracle](../dxfeed-oracle) to retrieve the price of a given asset pair and requires only ETH for deployment.
+For instance, the contract below uses the existing job via [dxFeed Price Oracle](../dxfeed-oracle/) to retrieve the price of a given asset pair and requires only ETH for deployment.
 [block:image]
 {
   "images": [

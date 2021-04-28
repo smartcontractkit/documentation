@@ -4,7 +4,7 @@ section: smartContract
 date: Last Modified
 title: "Get a Random Number"
 permalink: "docs/get-a-random-number/"
-whatsnext: {"API Reference":"/docs/chainlink-vrf-api-reference", "Contract Addresses":"/docs/vrf-contracts"}
+whatsnext: {"API Reference":"/docs/chainlink-vrf-api-reference/", "Contract Addresses":"/docs/vrf-contracts/"}
 hidden: false
 metadata: 
   description: "How to generate a random number inside a smart contract using Chainlink VRF."
@@ -19,12 +19,12 @@ This page explains how to get a random number inside a smart contract using Chai
 
 # Random Number Consumer
 
-Chainlink VRF follows the [Request & Receive Data](../request-and-receive-data) cycle. To consume randomness, your contract should inherit from <a href="https://github.com/smartcontractkit/chainlink/blob/master/evm-contracts/src/v0.6/VRFConsumerBase.sol" target="_blank">`VRFConsumerBase`</a> and define two required functions
+Chainlink VRF follows the [Request & Receive Data](../request-and-receive-data/) cycle. To consume randomness, your contract should inherit from <a href="https://github.com/smartcontractkit/chainlink/blob/master/evm-contracts/src/v0.6/VRFConsumerBase.sol" target="_blank">`VRFConsumerBase`</a> and define two required functions
 
 1. `requestRandomness`, which makes the initial request for randomness.
 2. `fulfillRandomness`, which is the function that receives and does something with verified randomness.
 
-The contract should own enough LINK to pay the specified fee. The beginner walkthrough explains how to [fund your contract](../fund-your-contract).
+The contract should own enough LINK to pay the specified fee. The beginner walkthrough explains how to [fund your contract](../fund-your-contract/).
 
 > 🚧 Security Considerations
 >
@@ -32,11 +32,11 @@ The contract should own enough LINK to pay the specified fee. The beginner walkt
 
 >❗️ Remember to fund your contract with LINK!
 >
-> Requesting randomness will fail unless your deployed contract has enough LINK to pay for it. **Learn how to [Acquire testnet LINK](../acquire-link) and [Fund your contract](../fund-your-contract)**.
+> Requesting randomness will fail unless your deployed contract has enough LINK to pay for it. **Learn how to [Acquire testnet LINK](../acquire-link/) and [Fund your contract](../fund-your-contract/)**.
 
 <div class="remix-callout">
     <a href="https://remix.ethereum.org/#version=soljson-v0.6.6+commit.6c089d02.js&optimize=false&evmVersion=null&gist=536123b71478ad4442cfc4278e8de577" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
-    <a href="../deploy-your-first-contract" title="">What is Remix?</a>
+    <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
 </div>
 
 ```solidity Kovan

@@ -11,8 +11,8 @@ Genesis Volatility is a leading provider of data analytics on the crypto derivat
 
 # Steps For Using This Oracle
 
-- Write and deploy your [Chainlink](../example-walkthrough) contract using the network details below
-- Fund it with [LINK](../link-token-contracts)
+- Write and deploy your [Chainlink](../intermediates-tutorial/) contract using the network details below
+- Fund it with [LINK](../link-token-contracts/)
 - Call your [request method](#section-chainlink-examples)
 
 # Network Details
@@ -105,15 +105,15 @@ contract REPLACE_MEChainlink is ChainlinkClient {
 
 <div class="remix-callout">
   <a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&gist=010fc1d45ff025525eb1e0122b8b6efc" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
-    <a href="../deploy-your-first-contract" title="">What is Remix?</a>
+    <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
 </div>
 
 # Tasks
 * <a href="https://market.link/adapters/e6dc161e-ba60-4b93-b2f0-c0e5b77763f2/data-sources?" target="_blank">GVol</a>
-* [Copy](../adapters#copy)
-* [Multiply](../adapters#multiply)
-* [EthInt256](../adapters#ethint256)
-* [EthTx](../adapters#ethtx)
+* [Copy](../adapters/#copy)
+* [Multiply](../adapters/#multiply)
+* [EthInt256](../adapters/#ethint256)
+* [EthTx](../adapters/#ethtx)
 
 # Request Parameters
 ### `symbol`

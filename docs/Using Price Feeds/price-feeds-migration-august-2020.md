@@ -17,7 +17,7 @@ Chainlink Price Feeds give smart contract developers a simple way to fetch curre
 
 > 📘 Upgrade to New Contracts
 >
-> Chainlink is constantly upgrading how price feed data is updated and aggregated on-chain.  Users should point to the new addresses in order to automatically support the latest releases for price feeds. For more information about how to upgrade, see [Migrating to Aggregator Proxies](../migrating-to-aggregator-proxies).
+> Chainlink is constantly upgrading how price feed data is updated and aggregated on-chain.  Users should point to the new addresses in order to automatically support the latest releases for price feeds. For more information about how to upgrade, see [Migrating to Aggregator Proxies](../migrating-to-aggregator-proxies/).
 
 # Contract Migration
 

@@ -9,7 +9,7 @@ In order to contribute to the price aggregator contract, you will need to run on
 
 First, add a test job to your node which uses the Web initiator so that you can validate that the job will run successfully. If the API requires an API key, replace `YOUR_API_KEY` with your own.
 
-If using an <a href="https://chainlinkadapters.com/" target="_blank">external adapter</a>, follow [these instructions](../node-operators) for adding that bridge to your node. Replace `YOUR_BRIDGE_NAME` with the name of your bridge in the job spec.
+If using an <a href="https://chainlinkadapters.com/" target="_blank">external adapter</a>, follow [these instructions](../node-operators/) for adding that bridge to your node. Replace `YOUR_BRIDGE_NAME` with the name of your bridge in the job spec.
 [block:code]
 {
   "codes": [

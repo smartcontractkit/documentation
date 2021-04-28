@@ -4,7 +4,7 @@ section: smartContract
 date: Last Modified
 title: "Introduction to Chainlink VRF"
 permalink: "docs/chainlink-vrf/"
-whatsnext: {"Get a Random Number":"/docs/get-a-random-number", "API Reference":"/docs/chainlink-vrf-api-reference", "Contract Addresses":"/docs/vrf-contracts"}
+whatsnext: {"Get a Random Number":"/docs/get-a-random-number/", "API Reference":"/docs/chainlink-vrf-api-reference/", "Contract Addresses":"/docs/vrf-contracts/"}
 hidden: false
 metadata: 
   title: "Generate Random Numbers for Smart Contracts using Chainlink VRF"
@@ -46,7 +46,7 @@ Chainlink VRF (Verifiable Random Function) is a provably-fair and verifiable sou
 *  Random assignment of duties and resources (e.g. randomly assigning judges to cases)
 *  Choosing a representative sample for consensus mechanisms
 
-Learn how to write smart contracts that consume random numbers: [Get a Random Number](../get-a-random-number).
+Learn how to write smart contracts that consume random numbers: [Get a Random Number](../get-a-random-number/).
 
 # On-chain Verification of Randomness
 

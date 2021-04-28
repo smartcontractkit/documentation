@@ -19,7 +19,7 @@ This should not be the same as your Chainlink base.
 
 3. Create External Initiator keys
 
-Enter the [Chainlink nodes CLI](/docs/miscellaneous#execute-commands-running-docker) and run the following command
+Enter the [Chainlink nodes CLI](/docs/miscellaneous/#execute-commands-running-docker) and run the following command
 ```
 chainlink initiators create <NAME> <URL>
 ```

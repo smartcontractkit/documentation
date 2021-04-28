@@ -4,7 +4,7 @@ section: smartContract
 date: Last Modified
 title: "Fund your contract"
 permalink: "docs/fund-your-contract/"
-whatsnext: {"Use your first contract!":"/docs/use-your-first-contract"}
+whatsnext: {"Use your first contract!":"/docs/use-your-first-contract/"}
 hidden: false
 ---
 This guide explains how to fund your Solidity contract with LINK using the Remix IDE.

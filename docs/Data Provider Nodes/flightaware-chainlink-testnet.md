@@ -10,8 +10,8 @@ This Chainlink has a dedicated connection to <a href="https://uk.flightaware.com
 
 # Steps for using this oracle
 
-- Write and deploy your [Chainlinked](../request-and-receive-data) contract using the network details below
-- Fund it with [LINK](../link-token-contracts)
+- Write and deploy your [Chainlinked](../request-and-receive-data/) contract using the network details below
+- Fund it with [LINK](../link-token-contracts/)
 - Call your [request method](#section-chainlink-examples) 
 
 # Chainlink Network Details
@@ -82,10 +82,10 @@ contract FlightAwareChainlink is ChainlinkClient {
 
 # Tasks
 
-- [FlightAware](../external-adapters)
-- [Copy](../adapters#section-copy)
-- [Ethuint256](../adapters#section-ethuint256)
-- [EthTx](../adapters#section-ethtx)
+- [FlightAware](../external-adapters/)
+- [Copy](../adapters/#section-copy)
+- [Ethuint256](../adapters/#section-ethuint256)
+- [EthTx](../adapters/#section-ethtx)
 
 # Request Parameters
 

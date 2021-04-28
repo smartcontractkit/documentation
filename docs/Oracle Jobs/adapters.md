@@ -3,7 +3,7 @@ layout: nodes.liquid
 date: Last Modified
 title: "Core Adapters"
 permalink: "docs/adapters/"
-whatsnext: {"Introduction to External Adapters":"/docs/external-adapters", "Initiators":"/docs/initiators", "Node Operator Email List":"https://link.us18.list-manage.com/subscribe?u=8969e6baa6d67e10213eff25b&id=e70d98a987"}
+whatsnext: {"Introduction to External Adapters":"/docs/external-adapters/", "Initiators":"/docs/initiators/", "Node Operator Email List":"https://link.us18.list-manage.com/subscribe?u=8969e6baa6d67e10213eff25b&id=e70d98a987/"}
 hidden: false
 ---
 Core adapters are the built-in functionality that every Chainlink node supports. Strung together, they act as tasks that need to be performed to complete a Job.
@@ -47,7 +47,7 @@ req.add("operator", "gte");
   "title": "Copy"
 }
 [/block]
-The core adapter walks the `copyPath` specified and returns the value found at that result. If returning JSON data from an [external adapter](../external-adapters), you will need to use this adapter to parse the response.
+The core adapter walks the `copyPath` specified and returns the value found at that result. If returning JSON data from an [external adapter](../external-adapters/), you will need to use this adapter to parse the response.
 
 #### Parameters
 
@@ -258,7 +258,7 @@ If you really must access one of these IPs, you can use the `HTTPPostWithUnrestr
   "title": "JsonParse"
 }
 [/block]
-The core adapter walks the `path` specified and returns the value found at that result. If returning JSON data from the [HttpGet](../adapters#section-httpget) or [HttpPost](../adapters#section-httppost) adapters, you must use this adapter to parse the response.
+The core adapter walks the `path` specified and returns the value found at that result. If returning JSON data from the [HttpGet](../adapters/#section-httpget) or [HttpPost](../adapters/#section-httppost) adapters, you must use this adapter to parse the response.
 
 #### Parameters
 

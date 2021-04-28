@@ -15,7 +15,7 @@ Follow the instructions in the README to run the adapter as a function in your i
 
 Make sure your node's `ACCOUNT_ADDRESS` is updated in the <a href="https://github.com/smartcontractkit/reference-data-directory" target="_blank">reference-data-directory repository</a>. Your node needs to only have one wallet to manage. If your node is using multiple addresses, consolidate to one.
 
-Follow [these instructions](../node-operators) for adding a bridge to your node. Then add the following job to your node. Replace the following values:
+Follow [these instructions](../node-operators/) for adding a bridge to your node. Then add the following job to your node. Replace the following values:
 - `FLUX_AGGREGATOR_ADDRESS` with the address of the aggregator
 - `FROM_SYMBOL` with the symbol of the currency
 - `TO_SYMBOL` with the symbol to convert to

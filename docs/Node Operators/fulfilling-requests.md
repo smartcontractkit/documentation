@@ -3,7 +3,7 @@ layout: nodes.liquid
 date: Last Modified
 title: "Fulfilling Requests"
 permalink: "docs/fulfilling-requests/"
-whatsnext: {"Performing System Maintenance":"/docs/performing-system-maintenance", "Miscellaneous":"/docs/miscellaneous", "Best Security and Operating Practices":"/docs/best-security-practices", "Node Operator Email List":"https://link.us18.list-manage.com/subscribe?u=8969e6baa6d67e10213eff25b&id=e70d98a987"}
+whatsnext: {"Performing System Maintenance":"/docs/performing-system-maintenance/", "Miscellaneous":"/docs/miscellaneous/", "Best Security and Operating Practices":"/docs/best-security-practices/", "Node Operator Email List":"https://link.us18.list-manage.com/subscribe?u=8969e6baa6d67e10213eff25b&id=e70d98a987/"}
 hidden: false
 metadata: 
   title: "Chainlink Node Operators: Fulfilling Requests"
@@ -15,12 +15,12 @@ With your own Oracle contract, you can use your own node to fulfill requests. Th
   "title": "Prerequisites"
 }
 [/block]
-- Going through the [Beginner Walkthrough](../example-walkthrough) will help you obtain Testnet LINK and set up Metamask- [Run an Ethereum Client](../run-an-ethereum-client) - [Running a Chainlink Node](../running-a-chainlink-node)
+- Going through the [Beginner Walkthrough](../beginners-tutorial) will help you obtain Testnet LINK and set up Metamask- [Run an Ethereum Client](../run-an-ethereum-client/) - [Running a Chainlink Node](../running-a-chainlink-node/)
 [block:callout]
 {
   "type": "success",
   "title": "Make sure to fund your node address!",
-  "body": "In the `keys` tab, you'll see at the bottom `Account Addresses`. The address of your node is the `regular` one. \n\nIN OLDER VERSIONS: Go to `configuration` in your node. You'll see `ACCOUNT_ADDRESS`. This is the address of your node. Send this address ETH. You can find testnet ETH on various [faucets](../link-token-contracts).\n\nIf you don't see `ACCOUNT_ADDRESS` there, check the 'Keys' tab and scroll down"
+  "body": "In the `keys` tab, you'll see at the bottom `Account Addresses`. The address of your node is the `regular` one. \n\nIN OLDER VERSIONS: Go to `configuration` in your node. You'll see `ACCOUNT_ADDRESS`. This is the address of your node. Send this address ETH. You can find testnet ETH on various [faucets](../link-token-contracts/).\n\nIf you don't see `ACCOUNT_ADDRESS` there, check the 'Keys' tab and scroll down"
 }
 [/block]
 
@@ -195,7 +195,7 @@ Once you call the `setFulfillmentPermission` function, Confirm it in Metamask an
   "title": "Add jobs to the node"
 }
 [/block]
-Adding jobs to the node is easily accomplished via the GUI. We have example [Job Specifications](../job-specifications) below.
+Adding jobs to the node is easily accomplished via the GUI. We have example [Job Specifications](../job-specifications/) below.
 
 [block:callout]
 {
@@ -329,7 +329,7 @@ With the jobs added, you can now use your node to fulfill requests. This last se
   ]
 }
 [/block]
-The contract should compile. You can now deploy it and fund it by sending some LINK to its address. See the [Fund your contract.](../fund-your-contract) page for instructions on how to do that.- To create a request, input your oracle contract address and the JobID for the EthUint256 job into the `requestEthereumPrice` request method, separated by a comma.
+The contract should compile. You can now deploy it and fund it by sending some LINK to its address. See the [Fund your contract.](../fund-your-contract/) page for instructions on how to do that.- To create a request, input your oracle contract address and the JobID for the EthUint256 job into the `requestEthereumPrice` request method, separated by a comma.
 
 [block:image]
 {

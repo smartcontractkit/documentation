@@ -16,7 +16,7 @@ metadata:
 ---
 Chainlink VRF allows you to integrate provably-fair and verifiably random data in your smart contract. 
 
-For implementation details, read [Introduction to Chainlink VRF](../chainlink-vrf).
+For implementation details, read [Introduction to Chainlink VRF](../chainlink-vrf/).
 
 # Polygon (Matic) Mainnet
 

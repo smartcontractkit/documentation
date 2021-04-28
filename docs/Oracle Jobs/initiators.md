@@ -3,7 +3,7 @@ layout: nodes.liquid
 date: Last Modified
 title: "Initiators"
 permalink: "docs/initiators/"
-whatsnext: {"Introduction to External Initiators":"/docs/external-initiators-introduction", "Node Operator Email List":"https://link.us18.list-manage.com/subscribe?u=8969e6baa6d67e10213eff25b&id=e70d98a987"}
+whatsnext: {"Introduction to External Initiators":"/docs/external-initiators-introduction/", "Node Operator Email List":"https://link.us18.list-manage.com/subscribe?u=8969e6baa6d67e10213eff25b&id=e70d98a987/"}
 hidden: false
 ---
 [block:api-header]
@@ -59,7 +59,7 @@ The `EthLog` initiator creates an Ethereum log filter, and when any log comes in
   "title": "External"
 }
 [/block]
-The external initiator works like the [web](../initiators#section-web) initiator, but is given its own credentials along with a name and URL.
+The external initiator works like the [web](../initiators/#section-web) initiator, but is given its own credentials along with a name and URL.
 
 You can create an external initiator by running the `chainlink initiators create NAME URL` command. This will give you an access key and secret pair, which will be used for incoming requests to invoke a job with this external initiator, and an outgoing token and secret pair which optionally can be used to help the Chainlink node authenticate with external services. Any incoming requests must provide the access key and secret in order to invoke the job run.
 

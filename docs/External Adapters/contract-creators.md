@@ -3,12 +3,12 @@ layout: nodes.liquid
 date: Last Modified
 title: "External Adapters in Solidity"
 permalink: "docs/contract-creators/"
-whatsnext: {"Building External Adapters":"/docs/developers", "Bridges: Adding External Adapters to Nodes":"/docs/node-operators"}
+whatsnext: {"Building External Adapters":"/docs/developers/", "Bridges: Adding External Adapters to Nodes":"/docs/node-operators/"}
 hidden: false
 ---
 ### Using parameters with an External Adapter
 
-As a contract creator, using an external adapter is no different than creating a request for any other job spec. You will simply need to know which parameters are supported by the adapter. for example, our [BraveNewCoin Chainlink](../bravenewcoin#section-run-parameters) requires that the parameters `endpoint`, `coin`, and `market` are used. Notice the method below uses `req.add` to create a run parameter for each required value.
+As a contract creator, using an external adapter is no different than creating a request for any other job spec. You will simply need to know which parameters are supported by the adapter. Notice the method below uses `req.add` to create a run parameter for each required value.
 
 ```javascript
 function requestMWAPrice(string _coin, string _market)
@@ -28,7 +28,7 @@ function requestMWAPrice(string _coin, string _market)
 
 ### Using the Copy adapter with an External Adapter
 
-The [Copy](../adapters#copy) adapter allows for the same functionality of the [JsonParse](../adapters#jsonparse)  adapter but for getting data from the external adapter's response.
+The [Copy](../adapters/#copy) adapter allows for the same functionality of the [JsonParse](../adapters/#jsonparse)  adapter but for getting data from the external adapter's response.
 
 For example, if an adapter returns JSON data like what is below:
 

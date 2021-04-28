@@ -4,7 +4,7 @@ section: smartContract
 date: Last Modified
 title: "Introduction to Using Any API"
 permalink: "docs/request-and-receive-data/"
-whatsnext: {"Make a GET Request":"/docs/make-a-http-get-request/","Make an Existing Job Request":"/docs/existing-job-request", "API Reference":"/docs/chainlink-framework", "Contract Addresses":"/docs/decentralized-oracles-ethereum-mainnet"}
+whatsnext: {"Make a GET Request":"/docs/make-a-http-get-request/","Make an Existing Job Request":"/docs/existing-job-request/", "API Reference":"/docs/chainlink-framework/", "Contract Addresses":"/docs/decentralized-oracles-ethereum-mainnet/"}
 hidden: false
 metadata: 
   title: "Request and Receive API Data with Chainlink"
@@ -35,7 +35,7 @@ metadata:
 
 > 📘
 > 
-> If your smart contracts need access to price data, try using [Chainlink Price Feeds](../using-chainlink-reference-contracts).
+> If your smart contracts need access to price data, try using [Chainlink Price Feeds](../using-chainlink-reference-contracts/).
 
 Chainlink enables your contracts to access to *any* external data source, through our decentralized oracle network.
 
@@ -47,4 +47,4 @@ We understand that building smart contracts is difficult enough as it is, and ma
 
 Chainlink’s decentralized oracle network provides smart contracts with the ability to push and pull data, facilitating the interoperability between on-chain and off-chain applications.
 
-Learn how to [Make a GET Request](../make-a-http-get-request) from your smart contract.
+Learn how to [Make a GET Request](../make-a-http-get-request/) from your smart contract.

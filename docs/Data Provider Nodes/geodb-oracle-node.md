@@ -18,8 +18,8 @@ GeoDB is a decentralized Big Data ecosystem that compensates data providers who 
 
 # Steps For Using This Oracle
 
-- Write and deploy your [Chainlink](../example-walkthrough) contract using the network details below
-- Fund it with [LINK](../link-token-contracts)
+- Write and deploy your [Chainlink](../intermediates-tutorial/) contract using the network details below
+- Fund it with [LINK](../link-token-contracts/)
 - Call your [request method](#chainlink-examples)
 
 # Network Details
@@ -102,16 +102,16 @@ contract GeoDBChainlink is ChainlinkClient {
 
 <div class="remix-callout">
   <a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&gist=a0325e320876120063445b0cfc241c7a" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
-    <a href="../deploy-your-first-contract" title="">What is Remix?</a>
+    <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
 </div>
 
 # Tasks
 
 * <a href="https://market.link/adapters/beb55d62-8771-4953-ba1d-704af03c12ee/data-sources?network=1" target="_blank">GeoDB</a>
-* [Copy](/docs/adapters#copy)
-* [Multiply](/docs/adapters#multiply)
-* [EthUint256](/docs/adapters#ethuint256)
-* [EthTx](/docs/adapters#ethtx)
+* [Copy](/docs/adapters/#copy)
+* [Multiply](/docs/adapters/#multiply)
+* [EthUint256](/docs/adapters/#ethuint256)
+* [EthTx](/docs/adapters/#ethtx)
 
 # Request Parameters
 

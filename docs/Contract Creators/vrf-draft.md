@@ -20,9 +20,9 @@ If you are not already familiar with how Chainlink works, data is delivered to s
 Usually this request/response scheme plays out over a small number of blocks.
 
 This is enough background to get started implementing random data in your contracts. However, if you would like a deeper introduction into how Chainlink works, please see:
-- [Example Walkthrough](../example-walkthrough) 
-- [Create a Chainlinked Project](../create-a-chainlinked-project) 
-- [Example Projects](../example-projects) 
+- [Example Walkthrough](../intermediates-tutorial/) 
+- [Create a Chainlinked Project](../create-a-chainlinked-project/) 
+- [Example Projects](../example-projects/) 
 
 
 # Code
@@ -65,7 +65,7 @@ contract VRFConsumer {
 > _vrfCoordinator `0xf720CF1B963e0e7bE9F58fd471EFa67e7bF00cfb`
 > _link: `0x20fE562d797A42Dcb3399062AE9546cd06f63280`
 
-See [LINK Token Contracts](../link-token-contracts) for Ropsten faucet and token details.
+See [LINK Token Contracts](../link-token-contracts/) for Ropsten faucet and token details.
 
 
 ## Request
@@ -101,7 +101,7 @@ function requestRandomness(bytes32 _keyHash, uint256 _fee, uint256 _seed)
 
 > 👍Example request
 >
-> See [Ropsten tx](https://ropsten.etherscan.io/tx/0x756f416eb14718f55585fc6269dbf9db6d19a509b369bf0501a95d9196afd68d#eventlog) where the **VRFCoordinator** receives a request and emits event `RandomnessRequest`
+> See [Ropsten tx](https://ropsten.etherscan.io/tx/0x756f416eb14718f55585fc6269dbf9db6d19a509b369bf0501a95d9196afd68d/#eventlog) where the **VRFCoordinator** receives a request and emits event `RandomnessRequest`
 
 
 ## Response
@@ -149,7 +149,7 @@ Send a job to the **VRFCoordinator** with these details:
 
 ## Ropsten Contracts
 
-See [LINK Token Contracts](../link-token-contracts) for Ropsten faucet and token details.
+See [LINK Token Contracts](../link-token-contracts/) for Ropsten faucet and token details.
 
 |Name|Address|
 |:---|:---|

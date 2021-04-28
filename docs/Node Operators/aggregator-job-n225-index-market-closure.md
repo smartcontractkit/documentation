@@ -18,7 +18,7 @@ TH_API_KEY=YOUR_TRADINGHOURS_API_KEY
 RPC_URL=http://YOUR_MAINNET_RPC_URL
 ```
 
-First, add a test job to your node which uses the Web initiator so that you can validate that the job will run successfully. Follow [these instructions](../node-operators) for adding that bridge to your node.
+First, add a test job to your node which uses the Web initiator so that you can validate that the job will run successfully. Follow [these instructions](../node-operators/) for adding that bridge to your node.
 [block:code]
 {
   "codes": [

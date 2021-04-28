@@ -5,7 +5,7 @@ date: Last Modified
 title: "Intermediates - Random Numbers"
 permalink: "docs/intermediates-tutorial/"
 excerpt: "Using Chainlink VRF"
-whatsnext: {"Get a Random Number":"/docs/get-a-random-number", "Advanced - API Calls":"/docs/advanced-tutorial"}
+whatsnext: {"Get a Random Number":"/docs/get-a-random-number/", "Advanced - API Calls":"/docs/advanced-tutorial/"}
 hidden: false
 metadata: 
   title: "Intermediates Tutorial"
@@ -26,11 +26,11 @@ metadata:
 
 > 👍 Assumed knowledge
 >
-> This tutorial assumes some basic knowledge around Ethereum, and writing smart contracts. If you're brand new to smart contract development, we recommend working through our [Beginners Tutorial](../beginners-tutorial) before this one.
+> This tutorial assumes some basic knowledge around Ethereum, and writing smart contracts. If you're brand new to smart contract development, we recommend working through our [Beginners Tutorial](../beginners-tutorial/) before this one.
 
-Randomness is very difficult to generate on blockchains. The reason for this is because every node must come to the same conclusion, forming a consensus. There's no way to generate random numbers natively in smart contracts, which is unfortunate because they can be very useful for a wide range of applications. Fortunately, Chainlink provides [Chainlink VRF](../chainlink-vrf), AKA Chainlink Verifiable Random Function.
+Randomness is very difficult to generate on blockchains. The reason for this is because every node must come to the same conclusion, forming a consensus. There's no way to generate random numbers natively in smart contracts, which is unfortunate because they can be very useful for a wide range of applications. Fortunately, Chainlink provides [Chainlink VRF](../chainlink-vrf/), AKA Chainlink Verifiable Random Function.
 
-If you've walked through the [Beginners Tutorial](../beginners-tutorial), you'll know how to write smart contracts, use [Chainlink Price Feeds](../using-chainlink-reference-contracts), and how to deploy a contract to a testnet. If not, head there and come back once you've finished.
+If you've walked through the [Beginners Tutorial](../beginners-tutorial/), you'll know how to write smart contracts, use [Chainlink Price Feeds](../using-chainlink-reference-contracts/), and how to deploy a contract to a testnet. If not, head there and come back once you've finished.
 
 In this tutorial, we go through:
 - The Chainlink request & receive cycle
@@ -42,11 +42,11 @@ In this tutorial, we go through:
 
 The previous tutorial went through how to consume Chainlink Price Feeds, which consists of reference data posted on-chain by oracles. This data is stored in a contract and can be referenced by consumers until the price is updated by the oracle.
 
-Randomness, on the other hand, cannot be reference data. If the result of randomness is stored on-chain, any actor could see the value and predict the outcome. Instead, randomness must be requested from an oracle, which generates a number and a cryptographic proof then returns that result to the contract that requested it. This sequence is what's known as the [Request and Receive](../architecture-request-model) cycle.
+Randomness, on the other hand, cannot be reference data. If the result of randomness is stored on-chain, any actor could see the value and predict the outcome. Instead, randomness must be requested from an oracle, which generates a number and a cryptographic proof then returns that result to the contract that requested it. This sequence is what's known as the [Request and Receive](../architecture-request-model/) cycle.
 
 # 2. Using LINK
 
-In return for providing this service of generating a random number, Oracles need to be paid in [LINK](../link-token-contracts). This is paid by the contract that requests the randomness, and payment occurs during the request.
+In return for providing this service of generating a random number, Oracles need to be paid in [LINK](../link-token-contracts/). This is paid by the contract that requests the randomness, and payment occurs during the request.
 [block:callout]
 {
   "type": "info",
@@ -62,7 +62,7 @@ For example, if the current price of Chainlink VRF is 0.1 LINK, our contract mus
 
 # 4. Using Chainlink VRF
 
-To see a basic implementation of Chainlink VRF, see [Get a Random Number](../get-a-random-number).
+To see a basic implementation of Chainlink VRF, see [Get a Random Number](../get-a-random-number/).
 
 In this example, we'll create a contract with a Game of Thrones theme. It will request randomness from Chainlink VRF, the result of which it will transform into a number between 1 and 20, mimicking the rolling of a 20 sided dice. Each number represents a Game of Thrones house. So, if you land a 1, you are assigned house Targaryan, 2 is Lannister, and so on.
 
@@ -128,7 +128,7 @@ constructor(address vrfCoordinator, address link, bytes32 keyHash, uint256 fee)
 }
 ```
 
-As you can see, `VRFConsumerBase` needs to know the address of the vrfCoordinator, and the address of the LINK token. Both of which are [available in the docs](../vrf-contracts).
+As you can see, `VRFConsumerBase` needs to know the address of the vrfCoordinator, and the address of the LINK token. Both of which are [available in the docs](../vrf-contracts/).
 
 ## 4d. `rollDice` function
 
@@ -232,7 +232,7 @@ See the full contract in Remix! (We've added a few helper functions in there whi
 
 <div class="remix-callout">
   <a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&gist=55c1263fcfc710f834aa38b7bbd21dc1" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
-    <a href="../deploy-your-first-contract" title="">What is Remix?</a>
+    <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
 </div>
 
 # 5. Deployment
@@ -269,7 +269,7 @@ These are the coordinator address, LINK address, key hash, and fee. Click deploy
 {
   "type": "info",
   "title": "Address, Key Hashes and more",
-  "body": "For a full reference of the addresses, key hashes and fees for each network, see [VRF Contracts](../vrf-contracts)."
+  "body": "For a full reference of the addresses, key hashes and fees for each network, see [VRF Contracts](../vrf-contracts/)."
 }
 [/block]
 (Note: you should <a href="/docs/beginners-tutorial#7c-obtaining-testnet-eth" target="_blank">have some Kovan ETH in your Metamask account</a> to pay for the GAS).
@@ -278,7 +278,7 @@ Once deployed, the contract is almost ready to go! However, it can't request any
 
 # 6. Obtaining testnet LINK
 
-Since the contract is on testnet, as with Kovan ETH, we don't need to purchase _real_ LINK. Testnet LINK can be obtained by requesting from a [faucet](../link-token-contracts).
+Since the contract is on testnet, as with Kovan ETH, we don't need to purchase _real_ LINK. Testnet LINK can be obtained by requesting from a [faucet](../link-token-contracts/).
 
 Use your Metamask address on the Kovan network to request LINK, then send 1 LINK to the contract address. This address can be found in Remix, under "Deployed Contracts" on the bottom left.
 

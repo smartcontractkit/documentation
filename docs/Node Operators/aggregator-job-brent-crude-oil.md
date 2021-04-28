@@ -12,9 +12,9 @@ Here are the links to the repositories of the external adapters:
 - <a href="https://github.com/smartcontractkit/eodhistoricaldata-adapter" target="_blank">EOD Historical Data</a>
 - <a href="https://github.com/smartcontractkit/yahoo-finance-adapter" target="_blank">Yahoo Finance</a>
 
-Follow [these instructions](../node-operators) for adding a bridge to your node before adding jobs.
+Follow [these instructions](../node-operators/) for adding a bridge to your node before adding jobs.
 
-First, add a test job to your node which uses the Web initiator so that you can validate that the job will run successfully. Follow [these instructions](../node-operators) for adding that bridge to your node.
+First, add a test job to your node which uses the Web initiator so that you can validate that the job will run successfully. Follow [these instructions](../node-operators/) for adding that bridge to your node.
 [block:code]
 {
   "codes": [

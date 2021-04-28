@@ -3,7 +3,7 @@ layout: nodes.liquid
 date: Last Modified
 title: "Configuration Variables"
 permalink: "docs/configuration-variables/"
-whatsnext: {"Enabling HTTPS Connections":"/docs/enabling-https-connections"}
+whatsnext: {"Enabling HTTPS Connections":"/docs/enabling-https-connections/"}
 hidden: false
 ---
 ## ALLOW_ORIGINS
@@ -29,7 +29,7 @@ Configures "development" mode. Allows for use of the `/service_agreements` endpo
 ## CHAINLINK_PORT
 - Default: "6688"
 
-Port used for the [API Reference](../api-reference) and GUI.
+Port used for the [API Reference](../api-reference/) and GUI.
 
 ## CHAINLINK_TLS_HOST
 - Default: _none_
@@ -64,7 +64,7 @@ If the database file is already in use, the Chainlink node will wait the specifi
 ## DATABASE_URL
 - Default: _none_
 
-The PostgreSQL URI to connect to your database. See the [Running a Chainlink Node](../running-a-chainlink-node#set-the-remote-database_url-config) for an example.
+The PostgreSQL URI to connect to your database. See the [Running a Chainlink Node](../running-a-chainlink-node/#set-the-remote-database_url-config) for an example.
 
 ## DEFAULT_HTTP_LIMIT
 - Default: "32768"

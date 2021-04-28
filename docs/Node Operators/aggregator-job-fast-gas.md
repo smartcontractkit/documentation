@@ -15,7 +15,7 @@ These directories have the adapters:
 - ethgasstation
 - poa-gasprice
 
-Follow the instructions in the README to run the adapter in your infrastructure. Follow [these instructions](../node-operators) for adding a bridge to your node. Then add the following job to your node. Replace `YOUR_BRIDGE_NAME` with the name of your bridge.
+Follow the instructions in the README to run the adapter in your infrastructure. Follow [these instructions](../node-operators/) for adding a bridge to your node. Then add the following job to your node. Replace `YOUR_BRIDGE_NAME` with the name of your bridge.
 
 First, add a test job to your node which uses the Web initiator so that you can validate that the job will run successfully. If the API requires an API key, replace `YOUR_API_KEY` with your own.
 [block:code]

@@ -28,7 +28,7 @@ Contract creators are developers who build smart contracts with the goal of conn
 # Getting started
 ---
 
-You can start creating your contracts now! Start with [Create a Chainlinked Project](../create-a-chainlinked-project) or the [Example Walkthrough](../example-walkthrough).
+You can start creating your contracts now! Start with [Create a Chainlinked Project](../create-a-chainlinked-project/) or the [Example Walkthrough](../intermediates-tutorial/).
 
 We strongly recommend you deploy first to testnets before deploying to Ethereum mainnet. Chainlink provides a practical developer environment on Ropsten, Rinkeby and Kovan.
 
@@ -45,14 +45,14 @@ There are two categories of data sources available to you:
 
 Reference data contracts are updated by a network on independent Chainlink nodes. They aggregate results from many sources and make that data available in a single place.
 
-Visit [Using Reference Data](../using-chainlink-reference-contracts) for more information.
+Visit [Using Reference Data](../using-chainlink-reference-contracts/) for more information.
 
-This type of data source is great for immediately using data in your smart contract without waiting to receive a response back to your contract. We have provided a list of reference data: [Reference Data Contracts](../reference-contracts)
+This type of data source is great for immediately using data in your smart contract without waiting to receive a response back to your contract. We have provided a list of reference data: [Reference Data Contracts](../reference-contracts/)
 
 ## Request & Receive
 
 Request & receive describes the scheme in which your contract requests data from an oracle and the oracle sends the data back to your contract, triggering a custom function which does something with the data.
 
-Visit our [Example Walkthrough](../example-walkthrough) which allows you to fetch the price of ETHUSD and use it in your contract.
+Visit our [Example Walkthrough](../intermediates-tutorial/) which allows you to fetch the price of ETHUSD and use it in your contract.
 
-This type of data source is great for connecting to any API and bringing its data on-chain. We have provided lists of ready-made data sources available: [Chainlinks (Testnet)](../available-oracles) and [Chainlinks (Ethereum Mainnet)](../chainlinks-ethereum-mainnet)
+This type of data source is great for connecting to any API and bringing its data on-chain. We have provided lists of ready-made data sources available: [Chainlinks (Testnet)](../available-oracles) and [Chainlinks (Ethereum Mainnet/)](../chainlinks-ethereum-mainnet/)

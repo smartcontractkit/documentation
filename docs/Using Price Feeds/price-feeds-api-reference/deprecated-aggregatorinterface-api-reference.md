@@ -15,7 +15,7 @@ metadata:
 ---
 > 🚧 Deprecated
 > 
-> This API is deprecated. Please see [API Reference](../price-feeds-api-reference) for the latest Price Feed API.
+> This API is deprecated. Please see [API Reference](../price-feeds-api-reference/) for the latest Price Feed API.
 
 API reference for <a href="https://github.com/smartcontractkit/chainlink/blob/master/evm-contracts/src/v0.6/interfaces/AggregatorInterface.sol" target="_blank" rel="noreferrer, noopener">`AggregatorInterface`</a>.
 

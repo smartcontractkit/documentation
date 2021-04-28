@@ -9,7 +9,7 @@ In order to contribute to the price aggregator contract, you will need to run an
 
 External adapters can be found <a href="https://github.com/smartcontractkit/external-adapters-js" target="_blank">here</a>.
 
-Follow the instructions in the README to run the adapter in your infrastructure. You may need to obtain an API key for the data provider assigned to you. Follow [these instructions](../node-operators) for adding the external adapter as a bridge to your node.
+Follow the instructions in the README to run the adapter in your infrastructure. You may need to obtain an API key for the data provider assigned to you. Follow [these instructions](../node-operators/) for adding the external adapter as a bridge to your node.
 
 First, add a test job to your node which uses the Web initiator so that you can validate that the job will run successfully. Replace the following values:
 - `YOUR_BRIDGE_NAME` with the name of your bridge

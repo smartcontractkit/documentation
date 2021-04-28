@@ -4,7 +4,7 @@ section: smartContract
 date: Last Modified
 title: "Find Existing Jobs"
 permalink: "docs/listing-services/"
-whatsnext: {"API Reference":"/docs/chainlink-framework", "Contract Addresses":"/docs/decentralized-oracles-ethereum-mainnet"}
+whatsnext: {"API Reference":"/docs/chainlink-framework/", "Contract Addresses":"/docs/decentralized-oracles-ethereum-mainnet/"}
 hidden: false
 ---
 This page explains how to find an existing Oracle Job to suit the needs of your API call.
@@ -13,7 +13,7 @@ This page explains how to find an existing Oracle Job to suit the needs of your 
 
 Oracles enable smart contracts to retrieve data from the outside world. Each oracle node can be configured to perform a wide range of tasks depending on the adapters it supports. For example, if your contract needs to make an HTTP GET request, it needs to use an oracle that supports the HTTP GET adapter.
 
-Oracles jobs can be specialized even further by implementing the configuration using [External Adapters](../developers). For example, an Oracle job could implement URL, parameters, and conversion to Solidity compatible data, to retrieve a very specific piece of data from a specific API endpoint. Consuming a job like this is demonstrated in [Make an Existing Job Request](../existing-job-request).
+Oracles jobs can be specialized even further by implementing the configuration using [External Adapters](../developers/). For example, an Oracle job could implement URL, parameters, and conversion to Solidity compatible data, to retrieve a very specific piece of data from a specific API endpoint. Consuming a job like this is demonstrated in [Make an Existing Job Request](../existing-job-request/).
 
 # Choosing an Oracle Job
 

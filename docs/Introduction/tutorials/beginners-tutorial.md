@@ -5,7 +5,7 @@ date: Last Modified
 title: "Beginners - The Basics"
 permalink: "docs/beginners-tutorial/"
 excerpt: "Smart Contracts and Chainlink"
-whatsnext: {"Get the Latest Price":"/docs/get-the-latest-price", "Deploy your first contract":"/docs/deploy-your-first-contract", "Intermediates - Random Numbers":"/docs/intermediates-tutorial"}
+whatsnext: {"Get the Latest Price":"/docs/get-the-latest-price/", "Deploy your first contract":"/docs/deploy-your-first-contract/", "Intermediates - Random Numbers":"/docs/intermediates-tutorial/"}
 hidden: false
 metadata: 
   title: "Beginners Tutorial"
@@ -28,7 +28,7 @@ metadata:
 >
 > If you're new to smart contract development this is a great place to start. We walk you through developing your first smart contract that interacts with Chainlink.
 
-Chainlink's most popular feature is our [Price Feeds](../using-chainlink-reference-contracts). They are the quickest way to connect smart contracts to the real-world market prices of assets. They are also extremely easy to implement.
+Chainlink's most popular feature is our [Price Feeds](../using-chainlink-reference-contracts/). They are the quickest way to connect smart contracts to the real-world market prices of assets. They are also extremely easy to implement.
 
 In this tutorial we go through:
 - What smart contracts are
@@ -110,9 +110,9 @@ Oracles provide a bridge between the real-world and on-chain smart contracts, by
 
 # 6. How do smart contracts use oracles?
 
-The most popular use for oracles is that of [Price Feeds](../using-chainlink-reference-contracts) . DeFi platforms like <a href="https://aave.com/" target="_blank">AAVE</a> and <a href="https://www.synthetix.io/" target="_blank">Synthetix</a> use Chainlink price feed oracles to obtain accurate real-time asset prices in their smart contracts.
+The most popular use for oracles is that of [Price Feeds](../using-chainlink-reference-contracts/) . DeFi platforms like <a href="https://aave.com/" target="_blank">AAVE</a> and <a href="https://www.synthetix.io/" target="_blank">Synthetix</a> use Chainlink price feed oracles to obtain accurate real-time asset prices in their smart contracts.
 
-Chainlink price feeds are sources of data [aggregated from many independent Chainlink node operators](../architecture-decentralized-model). Each price feed has an on-chain address and functions that enable contracts to read from that address. For example, the <a href="https://feeds.chain.link/eth-usd" target="_blank">ETH / USD feed</a><IMAGE>.
+Chainlink price feeds are sources of data [aggregated from many independent Chainlink node operators](../architecture-decentralized-model/). Each price feed has an on-chain address and functions that enable contracts to read from that address. For example, the <a href="https://feeds.chain.link/eth-usd" target="_blank">ETH / USD feed</a><IMAGE>.
 [block:image]
 {
   "images": [
@@ -130,7 +130,7 @@ Chainlink price feeds are sources of data [aggregated from many independent Chai
 [/block]
 ## 6a. Using Chainlink price feeds
 
-The following code is from the [Get the Latest Price](../get-the-latest-price) page. It describes a contract which obtains the latest ETH / USD price using the Kovan testnet.
+The following code is from the [Get the Latest Price](../get-the-latest-price/) page. It describes a contract which obtains the latest ETH / USD price using the Kovan testnet.
 
 ```javascript
 
@@ -194,7 +194,7 @@ Fortunately for us, Remix also has support for gist. This means that Remix can l
 
 <div class="remix-callout">
   <a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&gist=0c5928a00094810d2ba01fd8d1083581" target="_blank" class="cl-button--ghost">Deploy this contract using Remix ↗</a>
-  <a href="../deploy-your-first-contract" title="">What is Remix?</a>
+  <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
 </div>
 
 [block:image]
@@ -251,7 +251,7 @@ We now have an address to deploy to the Kovan testnet from.
 
 Making transactions on Ethereum blockchains are not free, they cost ETH. Deploying a contract is no exception to this rule. Fortunately, testnet ETH doesn't actually cost anything, since the purpose of testnets is to test smart contracts publically before they are deployed to the mainnet.
 
-Connect your Metamask wallet and request ETH from one of the available faucets on [LINK Token Contracts page](../link-token-contracts).
+Connect your Metamask wallet and request ETH from one of the available faucets on [LINK Token Contracts page](../link-token-contracts/).
 
 - [x] Some ETH
 

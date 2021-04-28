@@ -42,8 +42,8 @@ Initialize your consumer contract.
 constructor(address _vrfCoordinator, address _link) public
 ```
 
-* `_vrfCoordinator`: Address of the Chainlink VRF Coordinator. See [Chainlink VRF Addresses](../vrf-contracts) for details.
-* `_link`: Address of the LINK token. See [LINK Token Addresses](../link-token-contracts) for details.
+* `_vrfCoordinator`: Address of the Chainlink VRF Coordinator. See [Chainlink VRF Addresses](../vrf-contracts/) for details.
+* `_link`: Address of the LINK token. See [LINK Token Addresses](../link-token-contracts/) for details.
 
 ___
 
@@ -58,7 +58,7 @@ function requestRandomness(bytes32 _keyHash, uint256 _fee, uint256 _seed)
     public returns (bytes32 requestId)
 ```
 
-* `_keyHash`: The public key against which randomness is generated. See [Chainlink VRF Addresses](../vrf-contracts) for details.
+* `_keyHash`: The public key against which randomness is generated. See [Chainlink VRF Addresses](../vrf-contracts/) for details.
 * `_fee`: The fee, in LINK, for the request. Specified by the oracle.
 * `_seed`: This is the seed from which output randomness is determined. Provided by you.
 * `RETURN`: The ID unique to a single request.

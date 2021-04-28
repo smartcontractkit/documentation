@@ -5,7 +5,7 @@ date: Last Modified
 title: "Advanced - API Calls"
 permalink: "docs/advanced-tutorial/"
 excerpt: "Calling APIs from Smart Contracts"
-whatsnext: {"Make a GET Request":"/docs/make-a-http-get-request/", "Make an Existing Job Request":"/docs/existing-job-request"}
+whatsnext: {"Make a GET Request":"/docs/make-a-http-get-request/", "Make an Existing Job Request":"/docs/existing-job-request/"}
 hidden: false
 metadata: 
   image: 
@@ -17,7 +17,7 @@ metadata:
 ---
 > 👍 Prerequisites
 >
-> This tutorial requires basic knowledge about Ethereum, smart contracts, and the Chainlink Request & Receive cycle. If you're unfamiliar with those concepts, follow the [Beginners](../beginners-tutorial) or [Intermediates](../intermediates-tutorial) tutorials.
+> This tutorial requires basic knowledge about Ethereum, smart contracts, and the Chainlink Request & Receive cycle. If you're unfamiliar with those concepts, follow the [Beginners](../beginners-tutorial/) or [Intermediates](../intermediates-tutorial/) tutorials.
 
 *By the end of the tutorial, you should know the following:*
 - How to request data from a public API in a smart contract
@@ -29,29 +29,29 @@ metadata:
 
 ## 1a. Request & Receive Recap
 
-The request and receive cycle describes how a smart contract requests data from an oracle and receives the response in a separate transaction. If you need a refresher, check out the [Basic Request Model](../architecture-request-model).
+The request and receive cycle describes how a smart contract requests data from an oracle and receives the response in a separate transaction. If you need a refresher, check out the [Basic Request Model](../architecture-request-model/).
 
-In the [Intermediates tutorial](../intermediates-tutorial), we request randomness from a VRF oracle, then await the response. The fulfilment function is already given to us from the `VRFConsumerBase` contract, so oracles already know where to send the response to. However, with API calls, our contract _defines_ which function it wants to receive the response to.
+In the [Intermediates tutorial](../intermediates-tutorial/), we request randomness from a VRF oracle, then await the response. The fulfilment function is already given to us from the `VRFConsumerBase` contract, so oracles already know where to send the response to. However, with API calls, our contract _defines_ which function it wants to receive the response to.
 
 However, before we go into the implementation, let's first understand how Oracle jobs can get data on-chain.
 
 ## 1b. Initiators
 
-[Initiators](../initiators) are what kick off a job inside an Oracle. In the case of a Request and Receive job, the [RunLog](/docs/initiators#runlog) initiator watches the blockchain for when a smart contract makes a request. Once it catches a request, it initiates the job. This runs the adapters (both core and external) that the job is configured to run, eventually returning the response to the contract that made the request.
+[Initiators](../initiators/) are what kick off a job inside an Oracle. In the case of a Request and Receive job, the [RunLog](/docs/initiators/#runlog) initiator watches the blockchain for when a smart contract makes a request. Once it catches a request, it initiates the job. This runs the adapters (both core and external) that the job is configured to run, eventually returning the response to the contract that made the request.
 
 ## 1c. Core Adapters
 
-Each oracle job has a configured set of tasks it needs to carry out when it is run. These tasks are defined by what [Adapters](../adapters) they support. For example: if a job needs to make a GET request to an API, find a specific unsigned integer field in a JSON response, then submit that back to the requesting contract, it would need a job with the following Core Adapters:
-- [HttpGet](../adapters#httpget) - Call the API
-- [JsonParse](../adapters#jsonparse) - Parse the JSON and retrieve the desired data
-- [EthUint256](../adapters#ethuint256) - Convert the data to Ethereum compatible data type (uint256)
-- [EthTx](../adapters#ethtx)  - Submit the transaction to the chain, completing the cycle.
+Each oracle job has a configured set of tasks it needs to carry out when it is run. These tasks are defined by what [Adapters](../adapters/) they support. For example: if a job needs to make a GET request to an API, find a specific unsigned integer field in a JSON response, then submit that back to the requesting contract, it would need a job with the following Core Adapters:
+- [HttpGet](../adapters/#httpget) - Call the API
+- [JsonParse](../adapters/#jsonparse) - Parse the JSON and retrieve the desired data
+- [EthUint256](../adapters/#ethuint256) - Convert the data to Ethereum compatible data type (uint256)
+- [EthTx](../adapters/#ethtx)  - Submit the transaction to the chain, completing the cycle.
 
 Let's walk through a real example, where we retrieve 24 volume of the <a href="https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETH&tsyms=USD" target="_blank">ETH/USD pair</a> from the cryptocompare API.
 
 ### Core Adapters Example
 
-1. [HttpGet](../adapters#httpget) - Calls the API and returns the body of an HTTP GET result for [ETH/USD pair](https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETH&tsyms=USD).  Example: 
+1. [HttpGet](../adapters/#httpget) - Calls the API and returns the body of an HTTP GET result for [ETH/USD pair](https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETH&tsyms=USD).  Example: 
 ```json
 {"RAW":
   {"ETH":
@@ -68,15 +68,15 @@ Let's walk through a real example, where we retrieve 24 volume of the <a href="h
 }
 ```
 
-2. [JsonParse](../adapters#jsonparse) - walks a specified `path` (`"RAW.ETH.USD.VOLUME24HOUR"`) and returns the value found at that result. Example: `703946.0675653099`
+2. [JsonParse](../adapters/#jsonparse) - walks a specified `path` (`"RAW.ETH.USD.VOLUME24HOUR"`) and returns the value found at that result. Example: `703946.0675653099`
 
-3. [Multiply](../adapters#multiply) - parses the input into a float and multiplies it by the 10^18. Example: `703946067565309900000000`
+3. [Multiply](../adapters/#multiply) - parses the input into a float and multiplies it by the 10^18. Example: `703946067565309900000000`
 
-4. [EthUint256](../adapters#ethuint256) - formats the input into an integer and then converts it into Solidity's `uint256` format. Example: `0xc618a1e4`
+4. [EthUint256](../adapters/#ethuint256) - formats the input into an integer and then converts it into Solidity's `uint256` format. Example: `0xc618a1e4`
 
-5. [EthTx](../adapters#ethtx) - takes the given input, places it into the data field of the transaction, signs a transaction, and broadcasts it to the network. Example: [transaction result](https://kovan.etherscan.io/tx/0xf36ec811db8bde1245b6aa16bc052d4fbab287b220cf194bb91ae452f1fad084)
+5. [EthTx](../adapters/#ethtx) - takes the given input, places it into the data field of the transaction, signs a transaction, and broadcasts it to the network. Example: [transaction result](https://kovan.etherscan.io/tx/0xf36ec811db8bde1245b6aa16bc052d4fbab287b220cf194bb91ae452f1fad084)
 
-**Important: Some core adapters accept parameters to be passed to them to inform them how to run.** For example: [JsonParse](../adapters#jsonparse) accepts a `path` parameter which informs the adapter where to find the data in the JSON object.
+**Important: Some core adapters accept parameters to be passed to them to inform them how to run.** For example: [JsonParse](../adapters/#jsonparse) accepts a `path` parameter which informs the adapter where to find the data in the JSON object.
 
 Let's see what this looks like in a contract.
 
@@ -142,17 +142,17 @@ contract APIConsumer is ChainlinkClient {
 
 <div class="remix-callout">
   <a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&gist=8a173a65099261582a652ba18b7d96c1" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
-    <a href="../deploy-your-first-contract" title="">What is Remix?</a>
+    <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
 </div>
 
 Let's walk through what's happening here:
 1. Constructor - Setup the contract with the Oracle address, Job ID, and LINK fee that the oracle charges for the job
-2. `requestVolumeData` - This builds and sends a request, which includes the fulfilment functions selector, to the oracle. Notice how it adds the `get`, `path` and `times` parameters. These are read by the Adapters in the job to perform the tasks correctly. `get` is used by [HttpGet](../adapters#httpget), `path` is used by [JsonParse](../adapters#jsonparse) and `times` is used by [Multiply](../adapters#multiply).
+2. `requestVolumeData` - This builds and sends a request, which includes the fulfilment functions selector, to the oracle. Notice how it adds the `get`, `path` and `times` parameters. These are read by the Adapters in the job to perform the tasks correctly. `get` is used by [HttpGet](../adapters/#httpget), `path` is used by [JsonParse](../adapters/#jsonparse) and `times` is used by [Multiply](../adapters/#multiply).
 3. `fulfill` - Where the result is sent once the Oracle job is complete
 [block:callout]
 {
   "type": "info",
-  "body": "Note, the calling contract should own enough LINK to pay the specified fee (by default 0.1 LINK). You can use [this tutorial](../fund-your-contract) to fund your contract.",
+  "body": "Note, the calling contract should own enough LINK to pay the specified fee (by default 0.1 LINK). You can use [this tutorial](../fund-your-contract/) to fund your contract.",
   "title": "LINK Required"
 }
 [/block]
@@ -196,7 +196,7 @@ function requestVolumeData() public returns (bytes32 requestId) {
 
 Now that we know how core adapters and external adapters are used to construct jobs and how smart contracts can use jobs to make requests let's put that to use!
 
-Head to [Make an Existing Job Request](../existing-job-request) to see how a smart contract can get any city's temperature using an existing oracle job found on Chainlink Market, without having to specify the URL inside the contract.
+Head to [Make an Existing Job Request](../existing-job-request/) to see how a smart contract can get any city's temperature using an existing oracle job found on Chainlink Market, without having to specify the URL inside the contract.
 
 Then, using your knowledge of external adapters, find a different adapter on the market, and create another contract that consumes that data. Let us know the cool things you come up with in our <a href="https://discord.gg/2YHSAey" target="_blank">discord</a>!
 

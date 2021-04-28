@@ -4,7 +4,7 @@ section: smartContract
 date: Last Modified
 title: "Install Instructions"
 permalink: "docs/create-a-chainlinked-project/"
-whatsnext: {"Introduction to Price Feeds":"/docs/using-chainlink-reference-contracts", "Introduction to Chainlink VRF":"/docs/chainlink-vrf", "Introduction to Using Any API":"/docs/request-and-receive-data"}
+whatsnext: {"Introduction to Price Feeds":"/docs/using-chainlink-reference-contracts/", "Introduction to Chainlink VRF":"/docs/chainlink-vrf/", "Introduction to Using Any API":"/docs/request-and-receive-data/"}
 hidden: false
 metadata: 
   title: "Getting Started with Chainlink for Smart Contract Developers"
@@ -31,11 +31,11 @@ metadata:
   ]
 }
 [/block]
-This page explains how to install and use the [Chainlink Library](../chainlink-framework) in your projects.
+This page explains how to install and use the [Chainlink Library](../chainlink-framework/) in your projects.
 
 > 📘 
 >
-> If you're new to smart contract development and want a step-by-step guide, try out our [Beginner Walkthrough](../example-walkthrough) 
+> If you're new to smart contract development and want a step-by-step guide, try out our [Beginner Walkthrough](../intermediates-tutorial/) 
 
 # Install into Existing Projects
 
@@ -139,11 +139,11 @@ ___
 
 Once you have the Chainlink library installed, you can leverage the Chainlink ecosystem. 
 
-If you're interested in retrieving up to date crypto prices in your contracts, learn more about our [Price Feeds](../using-chainlink-reference-contracts). 
+If you're interested in retrieving up to date crypto prices in your contracts, learn more about our [Price Feeds](../using-chainlink-reference-contracts/). 
 
-If you need to consume randomness in your contracts, learn about [Chainlink VRF](../chainlink-vrf). 
+If you need to consume randomness in your contracts, learn about [Chainlink VRF](../chainlink-vrf/). 
 
-And if you want your contracts to retrieve data from off-chain APIs, learn about [Using Any API](../request-and-receive-data).
+And if you want your contracts to retrieve data from off-chain APIs, learn about [Using Any API](../request-and-receive-data/).
 
 # Testing Chainlink Contracts
 
