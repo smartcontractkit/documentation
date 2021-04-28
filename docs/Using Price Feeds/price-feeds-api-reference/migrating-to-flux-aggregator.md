@@ -42,7 +42,7 @@ ___
 >
 > This step is required if you want your contracts to always reference the most up to date aggregator. If you do not upgrade, your consumer contracts may not receive the most accurate price data in future.
 
-Use the latest [Price Feed Contracts](../reference-contracts) to update the addresses that your contracts reference.
+Use the latest [Price Feed Contracts](../reference-contracts/) to update the addresses that your contracts reference.
 
 In order to make this migration as seamless a possible, developers are encouraged to use the proxy contracts instead of pointing directly to aggregator addresses. These contracts use the same interface your contracts use today, but can be upgraded to support future releases.
 

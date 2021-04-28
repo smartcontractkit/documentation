@@ -4,10 +4,10 @@ section: smartContract
 date: Last Modified
 title: "Install, configure & fund MetaMask"
 permalink: "docs/install-metamask/"
-whatsnext: {"Acquire testnet LINK":"/docs/acquire-link"}
+whatsnext: {"Acquire testnet LINK":"/docs/acquire-link/"}
 hidden: false
 ---
-This page will show you how to configure the MetaMask browser extension. If you already have MetaMask configured, skip to [Acquire testnet LINK](../acquire-link).
+This page will show you how to configure the MetaMask browser extension. If you already have MetaMask configured, skip to [Acquire testnet LINK](../acquire-link/).
 
 <p>
   https://www.youtube.com/watch?v=4ZgFijd02Jo

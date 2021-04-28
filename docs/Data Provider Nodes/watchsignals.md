@@ -11,8 +11,8 @@ WatchSignals is the industry leader in market research on luxury watch prices. A
 
 # Steps For Using This Oracle
 
-- Write and deploy your [Chainlink](../example-walkthrough) contract using the network details below
-- Fund it with [LINK](../link-token-contracts)
+- Write and deploy your [Chainlink](/docs/intermediates-tutorial/) contract using the network details below
+- Fund it with [LINK](../link-token-contracts/)
 - Call your [request method](#section-chainlink-examples)
 
 # Network Details
@@ -93,15 +93,15 @@ contract WatchsignalsChainlink is ChainlinkClient {
 
 <div class="remix-callout">
   <a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&gist=9148bd05d20d9216ecc04966c87a3f61" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
-    <a href="../deploy-your-first-contract" title="">What is Remix?</a>
+    <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
 </div>
 
 # Tasks
 * <a href="https://market.link/adapters/7a33d9fc-5f33-4be0-8072-d5572fc52272?network=42" target="_blank">WatchSignals</a>
-* [Copy](../adapters#copy)
-* [Multiply](../adapters#multiply)
-* [EthUint256](../adapters#ethuint256)
-* [EthTx](../adapters#ethtx)
+* [Copy](../adapters/#copy)
+* [Multiply](../adapters/#multiply)
+* [EthUint256](../adapters/#ethuint256)
+* [EthTx](../adapters/#ethtx)
 
 # Request Parameters
 ### `refNumber`

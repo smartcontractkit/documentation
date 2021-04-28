@@ -22,7 +22,7 @@ Follow the instructions in the README to run the adapter as a function in your i
 
 Give your node's `ACCOUNT_ADDRESS` to the Chainlink team before proceeding. Your node needs to only have one wallet to manage. If your node is using multiple addresses, consolidate to one.
 
-Follow [these instructions](../node-operators) for adding a bridge to your node. Then add the following job to your node. Replace `YOUR_BRIDGE_NAME` with the name of your bridge.
+Follow [these instructions](../node-operators/) for adding a bridge to your node. Then add the following job to your node. Replace `YOUR_BRIDGE_NAME` with the name of your bridge.
 [block:code]
 {
   "codes": [

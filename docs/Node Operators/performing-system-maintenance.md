@@ -3,7 +3,7 @@ layout: nodes.liquid
 date: Last Modified
 title: "Performing System Maintenance"
 permalink: "docs/performing-system-maintenance/"
-whatsnext: {"Connecting to a Remote Database":"/docs/connecting-to-a-remote-database"}
+whatsnext: {"Connecting to a Remote Database":"/docs/connecting-to-a-remote-database/"}
 hidden: false
 ---
 You may occasionally need to restart the system which the Chainlink node runs on. In order to be able to accomplish this without any downtime in regards to completing requests, you can perform the upgrade as a series of steps to pass access to the database to a new instance while the first instance is down.
@@ -16,7 +16,7 @@ Whether you use Docker or the binary to run the node, the database file will nee
 [block:callout]
 {
   "type": "info",
-  "body": "This example uses Docker to run the Chainlink node, see the [Running a Chainlink Node](../running-a-chainlink-node) page for instructions on how to set it up."
+  "body": "This example uses Docker to run the Chainlink node, see the [Running a Chainlink Node](../running-a-chainlink-node/) page for instructions on how to set it up."
 }
 [/block]
 First, pull the latest Docker image for your desired tag based on release version (latest is used in this example):
@@ -27,7 +27,7 @@ docker pull smartcontract/chainlink:latest
 
 This will pull the latest code base of the Chainlink node, which has been pre-compiled and uploaded to Dockerhub for your use.
 
-Next, update the environment file you created from the [Running a Chainlink Node](../running-a-chainlink-node) guide to include a setting for the `DATABASE_TIMEOUT` environment variable. For one hour, use the following value, or you can specify 0 for indefinite:
+Next, update the environment file you created from the [Running a Chainlink Node](../running-a-chainlink-node/) guide to include a setting for the `DATABASE_TIMEOUT` environment variable. For one hour, use the following value, or you can specify 0 for indefinite:
 
 ```
 DATABASE_TIMEOUT=1h
@@ -114,7 +114,7 @@ You should see the same `[INFO]` message that the node is waiting for lock on th
 [block:callout]
 {
   "type": "info",
-  "body": "This example uses Docker to run the Chainlink node, see the [Running a Chainlink Node](../running-a-chainlink-node) page for instructions on how to set it up."
+  "body": "This example uses Docker to run the Chainlink node, see the [Running a Chainlink Node](../running-a-chainlink-node/) page for instructions on how to set it up."
 }
 [/block]
 You may want to run multiple instances of the Chainlink node on the same machine, so that if one instance goes down, the secondary instance can automatically pick up requests. Building off the concepts in the previous example, we'll use Docker to have primary and a secondary containers referencing the same database file.

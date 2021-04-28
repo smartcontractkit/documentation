@@ -4,7 +4,7 @@ section: smartContract
 date: Last Modified
 title: "Use your first contract!"
 permalink: "docs/use-your-first-contract/"
-whatsnext: {"Introduction to Price Feeds":"/docs/using-chainlink-reference-contracts", "Introduction to Chainlink VRF":"/docs/chainlink-vrf", "Introduction to Using Any API":"/docs/request-and-receive-data"}
+whatsnext: {"Introduction to Price Feeds":"/docs/using-chainlink-reference-contracts/", "Introduction to Chainlink VRF":"/docs/chainlink-vrf/", "Introduction to Using Any API":"/docs/request-and-receive-data/"}
 hidden: false
 ---
 # Executing Functions
@@ -67,7 +67,7 @@ hidden: false
   ]
 }
 [/block]
-* MetaMask will pop-up to confirm the transaction, click Confirm. (If you get a gas estimation failed message here, make sure the contract is [funded with LINK](../fund-your-contract).)
+* MetaMask will pop-up to confirm the transaction, click Confirm. (If you get a gas estimation failed message here, make sure the contract is [funded with LINK](../fund-your-contract/)./)
 [block:image]
 {
   "images": [

@@ -4,7 +4,7 @@ section: smartContract
 date: Last Modified
 title: "Tiingo EOD Stock Price Oracle"
 permalink: "docs/tiingo-eod-stock-price-oracle/"
-whatsnext: {"GeoDB Oracle Node":"/docs/geodb-oracle-node"}
+whatsnext: {"GeoDB Oracle Node":"/docs/geodb-oracle-node/"}
 hidden: false
 metadata: 
   image: 
@@ -18,8 +18,8 @@ Tiingo consists of a data research and analytics arm, a news aggregator, and a p
 
 # Steps For Using This Oracle
 
-- Write and deploy your [Chainlink](../example-walkthrough)  contract using the network details below
-- Fund it with [LINK](../link-token-contracts)
+- Write and deploy your [Chainlink](../intermediates-tutorial/)  contract using the network details below
+- Fund it with [LINK](../link-token-contracts/)
 - Call your [request method](#section-chainlink-examples)
 
 # Network Details
@@ -104,16 +104,16 @@ contract TiingoChainlink is ChainlinkClient {
 
 <div class="remix-callout">
   <a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&gist=0cfa70c25bd5a386bf9ee2e8e9f386e0" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
-    <a href="../deploy-your-first-contract" title="">What is Remix?</a>
+    <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
 </div>
 
 # Tasks
 
 - [Tiingo](https://market.link/adapters/ce0a34cf-306e-4fa4-8d27-271028694cb2/data-sources?network=1)
-- [Copy](/docs/adapters#copy)
-- [Multiply](/docs/adapters#multiply)
-- [EthUint256](/docs/adapters#ethuint256)
-- [EthTx](/docs/adapters#ethtx)
+- [Copy](/docs/adapters/#copy)
+- [Multiply](/docs/adapters/#multiply)
+- [EthUint256](/docs/adapters/#ethuint256)
+- [EthTx](/docs/adapters/#ethtx)
 
 # Request Parameters
 

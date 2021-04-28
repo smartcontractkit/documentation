@@ -29,22 +29,22 @@ Be sure to check the docs above for remix examples!
 
 Be sure to check the documentation in the links above for in depth-descriptions of everything.
 
-New? Start with [Beginners - The Basics](../beginners-tutorial), and follow everything in [Tutorials](../tutorials) 
-- [Beginners - The Basics](../beginners-tutorial) 
-- [Step-by-step guide to working with smart contracts](/docs/example-walkthrough)
+New? Start with [Beginners - The Basics](../beginners-tutorial/), and follow everything in [Tutorials](../tutorials/) 
+- [Beginners - The Basics](../beginners-tutorial/) 
+- [Step-by-step guide to working with smart contracts](/docs/intermediates-tutorial)
 - [Video Tutorials](https://www.youtube.com/playlist?list=PLVP9aGDn-X0QwJVbQvuKr-zrh2_DV5M6J)
 - [What is Ethereum?](https://www.youtube.com/playlist?list=PLVP9aGDn-X0QwJVbQvuKr-zrh2_DV5M6J)
 - [Developer Blog (many tutorials)](https://blog.chain.link/tag/developers/)
 - [Testing Chainlink Smart Contracts](https://blog.chain.link/testing-chainlink-smart-contracts/)
 - [NFTs and Chainlink](https://blog.chain.link/build-deploy-and-sell-your-own-dynamic-nft/)
 - [Build an external adapter](/docs/developers)
- - [External Initiator, to kick off nodes in interesting ways](/docs/initiators#external)
+ - [External Initiator, to kick off nodes in interesting ways](/docs/initiators/#external)
 
 ## Inspiration
 - [77 Use Cases by Chainlink](https://blog.chain.link/44-ways-to-enhance-your-smart-contract-with-chainlink/)
 - [Past winners & code](/docs/example-projects)
 - [Chainlink Marketplace](https://market.link/)
-- [Chainlink docs](/docs)
+- [Chainlink docs](/)
 
 ### The chainlink community is some of the most inviting groups of engineers always looking to help you grow to the next stage.
 
@@ -56,7 +56,7 @@ New? Start with [Beginners - The Basics](../beginners-tutorial), and follow ever
 
 ## Blockchain Specific
 
-- [Matic Price Feeds](../matic-addresses) 
-- [Binance Smart Chain Price Feeds](../binance-smart-chain-addresses) 
+- [Matic Price Feeds](../matic-addresses/) 
+- [Binance Smart Chain Price Feeds](../binance-smart-chain-addresses/) 
 - [Conflux](https://github.com/Conflux-Network-Global/demo-cfx-chainlink)
 - [Polkadot and Substrate Resources](/docs/polkadot-and-substrate-resources)

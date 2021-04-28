@@ -3,7 +3,7 @@ layout: nodes.liquid
 date: Last Modified
 title: "Running a Chainlink Node"
 permalink: "docs/running-a-chainlink-node/"
-whatsnext: {"Fulfilling Requests":"/docs/fulfilling-requests", "Performing System Maintenance":"/docs/performing-system-maintenance", "Miscellaneous":"/docs/miscellaneous", "Best Security and Operating Practices":"/docs/best-security-practices", "Node Operator Email List":"https://link.us18.list-manage.com/subscribe?u=8969e6baa6d67e10213eff25b&id=e70d98a987"}
+whatsnext: {"Fulfilling Requests":"/docs/fulfilling-requests/", "Performing System Maintenance":"/docs/performing-system-maintenance/", "Miscellaneous":"/docs/miscellaneous/", "Best Security and Operating Practices":"/docs/best-security-practices/", "Node Operator Email List":"https://link.us18.list-manage.com/subscribe?u=8969e6baa6d67e10213eff25b&id=e70d98a987/"}
 hidden: false
 metadata: 
   title: "Running a Chainlink Node"
@@ -17,9 +17,9 @@ metadata:
 ---
 In this section, we'll explain the requirements and basics for running your own Chainlink node. 
 
-It's important to note that nodes can fulfill requests for open APIs out-of-the-box using our core [Adapters](../adapters) without needing any additional configuration. 
+It's important to note that nodes can fulfill requests for open APIs out-of-the-box using our core [Adapters](../adapters/) without needing any additional configuration. 
 
-If you would like to provide data from an authenticated API, you can add an [external adapter](../external-adapters) to enable connectivity through the Chainlink node.
+If you would like to provide data from an authenticated API, you can add an [external adapter](../external-adapters/) to enable connectivity through the Chainlink node.
 
 Hardware requirements are light. The only heavy part is you'll need a blockchain node connection. If you use a 3rd party (defined below), you can use a machine with as little as 10GB of storage and 2GB of RAM. 
 [block:image]
@@ -33,7 +33,7 @@ Hardware requirements are light. The only heavy part is you'll need a blockchain
         558,
         "#dcd8c2"
       ],
-      "caption": "The Chainlink node is middleware, operating between the blockchain and external data. More information on our architecture is available <a href=\"/v1.1/docs/architecture-overview\" target=\"_blank\" rel=\"noreferrer, noopener\">here</a>."
+      "caption": "The Chainlink node is middleware, operating between the blockchain and external data. More information on our architecture is available <a href=\"/docs/architecture-overview\" target=\"_blank\" rel=\"noreferrer, noopener\">here</a>."
     }
   ]
 }
@@ -81,9 +81,9 @@ It's recommended to run the Chainlink node with <a href="https://www.docker.com/
 }
 [/block]
 - A fully synced Ethereum client with websockets enabled. Client specific instructions can be found below:
-  - [Run Geth](../run-an-ethereum-client#geth)
-  - [Run OpenEthereum](../run-an-ethereum-client#parity)
-  - [Use an external service](../run-an-ethereum-client#external-services)
+  - [Run Geth](../run-an-ethereum-client/#geth)
+  - [Run OpenEthereum](../run-an-ethereum-client/#parity)
+  - [Use an external service](../run-an-ethereum-client/#external-services)
 [block:api-header]
 {
   "title": "Create a Directory"
@@ -118,7 +118,7 @@ Create a local directory to hold the Chainlink data:
 {
   "type": "info",
   "title": "Other Supported Networks",
-  "body": "Chainlink is blockchain agnostic technology. The [LINK Token Contracts](../link-token-contracts) page details networks which support the LINK token. You can setup your node to provide data to any of these blockchains."
+  "body": "Chainlink is blockchain agnostic technology. The [LINK Token Contracts](../link-token-contracts/) page details networks which support the LINK token. You can setup your node to provide data to any of these blockchains."
 }
 [/block]
 
@@ -127,7 +127,7 @@ Create a local directory to hold the Chainlink data:
   "title": "Create an Environment File"
 }
 [/block]
-Run the following as a command to create an environment file and populate with variables specific to the network you're running on. For a full list of available configuration variables, click [here](../configuration-variables).
+Run the following as a command to create an environment file and populate with variables specific to the network you're running on. For a full list of available configuration variables, click [here](../configuration-variables/).
 [block:code]
 {
   "codes": [
@@ -227,7 +227,7 @@ If you are using an external provider for connectivity to the Ethereum blockchai
 [block:callout]
 {
   "type": "warning",
-  "body": "Ganache is a mock testnet and it doesn't work with Chainlink because of that. To use the features of the network, you need to deploy your contract on a real environment: one of the testnets or mainnets. The full list of supported environments can be found [here](../link-token-contracts).",
+  "body": "Ganache is a mock testnet and it doesn't work with Chainlink because of that. To use the features of the network, you need to deploy your contract on a real environment: one of the testnets or mainnets. The full list of supported environments can be found [here](../link-token-contracts/).",
   "title": "Running Chainlink Node on Ganache"
 }
 [/block]
@@ -237,7 +237,7 @@ If you are using an external provider for connectivity to the Ethereum blockchai
   "title": "Set the Remote DATABASE_URL Config"
 }
 [/block]
-You will need to connect your Chainlink node with a remote PostgreSQL database. See the [Connecting to a Remote Database](../connecting-to-a-remote-database) page for more information. Use the example below to configure your `DATABASE_URL` setting in your environment file, replacing `$VARIABLES` with their actual values.
+You will need to connect your Chainlink node with a remote PostgreSQL database. See the [Connecting to a Remote Database](../connecting-to-a-remote-database/) page for more information. Use the example below to configure your `DATABASE_URL` setting in your environment file, replacing `$VARIABLES` with their actual values.
 
 - `$USERNAME`: The database username (must be owner)
 - `$PASSWORD`: The user's password
@@ -330,11 +330,11 @@ Now you can run the Docker image. Replace `<version>` with your desired version.
   "body": "If you're running a local database you may need to add `--network host` to the end of the command above."
 }
 [/block]
-The first time running the image, it will ask you for a password and confirmation. This will be your wallet password that you can use to unlock the keystore file generated for you. Then, you'll be prompted to enter an API Email and Password. This will be used to expose the API for the GUI interface, and will be used every time you log into your node. When running the node again, you can supply the `-p` option with a path to a text file containing the wallet key password, and a `-a` option, pointing to a text file containing the API email and password. Instructions on how to do that are [here](../miscellaneous#use-password-and-api-files-on-startup). 
+The first time running the image, it will ask you for a password and confirmation. This will be your wallet password that you can use to unlock the keystore file generated for you. Then, you'll be prompted to enter an API Email and Password. This will be used to expose the API for the GUI interface, and will be used every time you log into your node. When running the node again, you can supply the `-p` option with a path to a text file containing the wallet key password, and a `-a` option, pointing to a text file containing the API email and password. Instructions on how to do that are [here](../miscellaneous/#use-password-and-api-files-on-startup). 
 [block:callout]
 {
   "type": "info",
   "body": "You will need to send some ETH to your node's address in order for it to fulfill requests. You can view your node's ETH address when the node starts up or on the Configuration page of the GUI."
 }
 [/block]
-You can now connect to your Chainlink node's UI interface by navigating to <a href="http://localhost:6688" target="_blank" rel="noreferrer, noopener">http://localhost:6688</a>. If using a VPS, you can create a <a href="https://www.howtogeek.com/168145/how-to-use-ssh-tunneling/" target="_blank" rel="noreferrer, noopener">SSH tunnel</a> to your node for `6688:localhost:6688` to enable connectivity to the GUI. Typically this is done with `ssh -i $KEY $USER@$REMOTE-IP -L 6688:localhost:6688 -N`. A SSH tunnel is recommended over opening up ports specific to the Chainlink node to be public facing. See our [Best Security and Operating Practices](../best-security-practices) page for more details on how to secure your node.
+You can now connect to your Chainlink node's UI interface by navigating to <a href="http://localhost:6688" target="_blank" rel="noreferrer, noopener">http://localhost:6688</a>. If using a VPS, you can create a <a href="https://www.howtogeek.com/168145/how-to-use-ssh-tunneling/" target="_blank" rel="noreferrer, noopener">SSH tunnel</a> to your node for `6688:localhost:6688` to enable connectivity to the GUI. Typically this is done with `ssh -i $KEY $USER@$REMOTE-IP -L 6688:localhost:6688 -N`. A SSH tunnel is recommended over opening up ports specific to the Chainlink node to be public facing. See our [Best Security and Operating Practices](../best-security-practices/) page for more details on how to secure your node.

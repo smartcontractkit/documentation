@@ -55,7 +55,7 @@ In order to make it easy to use the reference data contracts, you can import <a 
   ]
 }
 [/block]
-Also see [Create a Chainlinked Project](../create-a-chainlinked-project) for additional ways to use Chainlink contracts in your project.
+Also see [Create a Chainlinked Project](../create-a-chainlinked-project/) for additional ways to use Chainlink contracts in your project.
 [block:api-header]
 {
   "title": "Inherit the AggregatorInterface in Your Contract"

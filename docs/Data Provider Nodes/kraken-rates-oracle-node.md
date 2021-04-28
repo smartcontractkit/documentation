@@ -4,7 +4,7 @@ section: smartContract
 date: Last Modified
 title: "Kraken Rates Oracle Node"
 permalink: "docs/kraken-rates-oracle-node/"
-whatsnext: {"Tiingo EOD Stock Price Oracle":"/docs/tiingo-eod-stock-price-oracle"}
+whatsnext: {"Tiingo EOD Stock Price Oracle":"/docs/tiingo-eod-stock-price-oracle/"}
 hidden: false
 metadata: 
   image: 
@@ -18,8 +18,8 @@ This Chainlink has a dedicated connection to <a href="https://blog.cfbenchmarks.
 
 # Steps for using this oracle
 
-- Write and deploy your [Chainlink](../example-walkthrough)  contract using the network details below
-- Fund it with [LINK](../link-token-contracts)
+- Write and deploy your [Chainlink](../intermediates-tutorial/)  contract using the network details below
+- Fund it with [LINK](../link-token-contracts/)
 - Call your [request method](#section-chainlink-examples) 
 
 # Network Details
@@ -102,15 +102,15 @@ contract KrakenChainlink is ChainlinkClient {
 
 <div class="remix-callout">
   <a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&gist=a619c568fc457f13877c2bbf066b510a" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
-    <a href="../deploy-your-first-contract" title="">What is Remix?</a>
+    <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
 </div>
 
 # Tasks
 
-- [Kraken](../external-adapters)
-- [Multiply](../adapters#section-multiply)
-- [EthUint256](../adapters#section-ethuint256)
-- [EthTx](../adapters#section-ethtx)
+- [Kraken](../external-adapters/)
+- [Multiply](../adapters/#section-multiply)
+- [EthUint256](../adapters/#section-ethuint256)
+- [EthTx](../adapters/#section-ethtx)
 
 # Request Parameters
 

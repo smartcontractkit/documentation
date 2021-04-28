@@ -4,7 +4,7 @@ section: smartContract
 date: Last Modified
 title: "Decentralized Data Model"
 permalink: "docs/architecture-decentralized-model/"
-whatsnext: {"Get the Latest Price":"/docs/get-the-latest-price", "Off-Chain Reporting":"/docs/off-chain-reporting"}
+whatsnext: {"Get the Latest Price":"/docs/get-the-latest-price/", "Off-Chain Reporting":"/docs/off-chain-reporting/"}
 metadata: 
   title: "Chainlink Decentralised Data Model"
   description: "This page describes the decentralized architecture which enables Chainlink to aggregate data from multiple independent node operators."
@@ -47,7 +47,7 @@ Each price feed is updated by a decentralized oracle network. Each oracle operat
 
 In order for an update to take place, the price feed contract must receive responses from a minimum number of oracles. For example, 14 / 21 oracles. Otherwise, the latest answer will not be updated.
 
-Each oracle in the set publishes answers to the latest price of an asset during an aggregation round. The answers are validated and aggregated by a smart contract, which forms the feed's latest and trusted answer. Developers wishing to use an asset's latest and trusted answer can do so easily by following the [Get the Latest Price](../get-the-latest-price) page.
+Each oracle in the set publishes answers to the latest price of an asset during an aggregation round. The answers are validated and aggregated by a smart contract, which forms the feed's latest and trusted answer. Developers wishing to use an asset's latest and trusted answer can do so easily by following the [Get the Latest Price](../get-the-latest-price/) page.
 
 ## Aggregation Parameters
 
@@ -90,7 +90,7 @@ AggregatorV3Interface feed = AggregatorV3Interface(address);
 return feed.latestRoundData();
 ```
 
-Learn how to create a consumer contract to [Get the Latest Price](../get-the-latest-price) of an asset.
+Learn how to create a consumer contract to [Get the Latest Price](../get-the-latest-price/) of an asset.
 
 ## Proxy
 
@@ -104,4 +104,4 @@ Aggregators are the contracts that receive periodic price updates from multiple 
 
 This data can be accessed by referencing the Price Feed address using the <a href="https://github.com/smartcontractkit/chainlink/blob/master/evm-contracts/src/v0.6/interfaces/AggregatorV3Interface.sol" target="_blank">`AggregatorV3Interface`</a> contract.
 
-To learn how to consume Price Feed data, see [Get the Latest Price](../get-the-latest-price).
+To learn how to consume Price Feed data, see [Get the Latest Price](../get-the-latest-price/).

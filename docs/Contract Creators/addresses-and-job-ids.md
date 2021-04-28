@@ -57,26 +57,26 @@ Oracle address: <a href="https://kovan.etherscan.io/address/0x2f90A6D021db21e1B2
   ]
 }
 [/block]
-You will need the `JobID` as bytes when requesting data from Chainlink. We have pre-made jobs available for you. Types with a Multiplier indicate that the value received from the given endpoint will be multiplied by the specified "times" value before being written to the blockchain. *If you use a JobId with a [Multiply](../adapters#section-multiply) adapter without specifying a "times" parameter, the result will be multiplied by 0.* The string value of the JobIDs will need to be given to the Request as bytes.
+You will need the `JobID` as bytes when requesting data from Chainlink. We have pre-made jobs available for you. Types with a Multiplier indicate that the value received from the given endpoint will be multiplied by the specified "times" value before being written to the blockchain. *If you use a JobId with a [Multiply](../adapters/#section-multiply) adapter without specifying a "times" parameter, the result will be multiplied by 0.* The string value of the JobIDs will need to be given to the Request as bytes.
 [block:parameters]
 {
   "data": {
-    "0-0": "[HttpGet](../adapters#section-httpget)\n[JsonParse](../adapters#section-jsonparse)\n[EthBytes32](../adapters#section-ethbytes32)",
+    "0-0": "[HttpGet](../adapters/#section-httpget)\n[JsonParse](../adapters/#section-jsonparse)\n[EthBytes32](../adapters/#section-ethbytes32)",
     "0-1": "Ropsten: 5b280bfed77646d297fdb6e718c7127a\nRinkeby: b0bde308282843d49a3a8d2dd2464af1\nKovan: 50fc4215f89443d185b061e5d7af9490",
     "0-2": "`get`(string)\n`path`(dot-delimited string or array of strings)",
-    "1-0": "[HttpPost](../adapters#section-httppost)\n[JsonParse](../adapters#section-jsonparse)\n[EthBytes32](../adapters#section-ethbytes32)",
+    "1-0": "[HttpPost](../adapters/#section-httppost)\n[JsonParse](../adapters/#section-jsonparse)\n[EthBytes32](../adapters/#section-ethbytes32)",
     "1-1": "Ropsten: 469e74c5bca740c0addba9ea67eecc51\nRinkeby: c28c092ad6f045c79bdbd54ebb42ce4d\nKovan: b9fd06bb42dd444db1b944849cbffb11",
     "1-2": "`post`(string)\n`path`(dot-delimited string or array of strings)",
-    "2-0": "[HttpGet](../adapters#section-httpget)\n[JsonParse](../adapters#section-jsonparse)\n[EthInt256](../adapters#section-ethint256)",
+    "2-0": "[HttpGet](../adapters/#section-httpget)\n[JsonParse](../adapters/#section-jsonparse)\n[EthInt256](../adapters/#section-ethint256)",
     "2-1": "Ropsten: 93032b68d4704fa6be2c3ccf7a23c107\nRinkeby: 648f1b4629324c7ab41b7980b3091138\nKovan: f9d13102fb90482f992fc06e15ed373b",
     "2-2": "`get`(string)\n`path`(dot-delimited string or array of strings)",
-    "3-0": "[HttpGet](../adapters#section-httpget)\n[JsonParse](../adapters#section-jsonparse)\n[Multiply](../adapters#secion-multiply)\n[EthInt256](../adapters#section-ethint256)",
+    "3-0": "[HttpGet](../adapters/#section-httpget)\n[JsonParse](../adapters#section-jsonparse)\n[Multiply](../adapters/#secion-multiply)\n[EthInt256](../adapters/#section-ethint256)",
     "3-1": "Ropsten: e055293deb37425ba83a2d5870c57649\nRinkeby: c8084988f0b54520ba17945c4a2ab7bc\nKovan: ad752d90098243f8a5c91059d3e5616c",
     "3-2": "`get`(string)\n`path`(dot-delimited string or array of strings)\n`times`(int)",
-    "4-0": "[HttpGet](../adapters#section-httpget)\n[JsonParse](../adapters#section-jsonparse)\n[EthUint256](../adapters#section-ethuint256)",
+    "4-0": "[HttpGet](../adapters/#section-httpget)\n[JsonParse](../adapters/#section-jsonparse)\n[EthUint256](../adapters/#section-ethuint256)",
     "4-1": "Ropsten: fb5fb7b18921487fb26503cb075abf41\nRinkeby: 367c3cb39ab34bccad27deea5e37f365\nKovan: 2c6578f488c843588954be403aba2deb",
     "4-2": "`get`(string)\n`path`(dot-delimited string or array of strings)",
-    "5-0": "[HttpGet](../adapters#section-httpget)\n[JsonParse](../adapters#section-jsonparse)\n[Multiply](../adapters#secion-multiply)\n[EthUint256](../adapters#section-ethuint256)",
+    "5-0": "[HttpGet](../adapters/#section-httpget)\n[JsonParse](../adapters#section-jsonparse)\n[Multiply](../adapters/#secion-multiply)\n[EthUint256](../adapters/#section-ethuint256)",
     "5-1": "Ropsten: 493610cff14346f786f88ed791ab7704\nRinkeby: 6d1bfe27e7034b1d87b5270556b17277\nKovan: 29fa9aa13bf1468788b7cc4a500a45b8",
     "5-2": "`get`(string)\n`path`(dot-delimited string or array of strings)\n`times`(int)",
     "h-0": "Tasks",
@@ -84,7 +84,7 @@ You will need the `JobID` as bytes when requesting data from Chainlink. We have 
     "h-2": "Required Parameters",
     "6-1": "Ropsten: 7ac0b3beac2c448cb2f6b2840d61d31f\nRinkeby: 4ce9b71a1ac94abcad1ff9198e760b8c\nKovan 6d914edc36e14d6c880c9c55bda5bc04",
     "6-2": "`get`(string)\n`path`(dot-delimited string or array of strings)",
-    "6-0": "[HttpGet](../adapters#section-httpget)\n[JsonParse](../adapters#section-jsonparse)\n[EthBool](../adapters#section-ethbool)"
+    "6-0": "[HttpGet](../adapters/#section-httpget)\n[JsonParse](../adapters/#section-jsonparse)\n[EthBool](../adapters/#section-ethbool)"
   },
   "cols": 3,
   "rows": 7

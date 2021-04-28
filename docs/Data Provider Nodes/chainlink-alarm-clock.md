@@ -3,7 +3,7 @@ layout: nodes.liquid
 section: smartContract
 date: Last Modified
 title: "Chainlink Alarm Clock (Testnet)"
-whatsnext: {"LCX (Testnet)":"/docs/lcx-testnet"}
+whatsnext: {"LCX (Testnet)":"/docs/lcx-testnet/"}
 permalink: "docs/chainlink-alarm-clock/"
 hidden: false
 metadata: 
@@ -18,8 +18,8 @@ You can use Chainlink to trigger a smart contract at a specified time. Using thi
 
 # Steps For Using This Oracle
 
-- Write and deploy your [Chainlinked](../example-walkthrough)  contract using the network details below
-- Fund it with [LINK](../link-token-contracts) (0.1 LINK is required per-request)
+- Write and deploy your [Chainlinked](../intermediates-tutorial/)  contract using the network details below
+- Fund it with [LINK](../link-token-contracts/) (0.1 LINK is required per-request/)
 - Call your [request method](#section-chainlink-examples) 
 
 # Chainlink Network Details
@@ -56,14 +56,14 @@ contract ChainlinkAlarmClock is ChainlinkClient {
 
 <div class="remix-callout">
   <a href="https://remix.ethereum.org/#gist=e71aab73726c5a2f99ee00c1a70cfef8&optimize=true&version=soljson-v0.6.12+commit.27d51765.js&evmVersion=null&runs=200" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
-    <a href="../deploy-your-first-contract" title="">What is Remix?</a>
+    <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
 </div>
 
 # Tasks
 
-- [Sleep](../adapters#sleep)
-- [EthBool](../adapters#ethbool)
-- [EthTx](../adapters#ethtx)
+- [Sleep](../adapters/#sleep)
+- [EthBool](../adapters/#ethbool)
+- [EthTx](../adapters/#ethtx)
 
 # Request Parameters
 

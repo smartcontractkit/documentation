@@ -3,7 +3,7 @@ layout: nodes.liquid
 date: Last Modified
 title: "Miscellaneous"
 permalink: "docs/miscellaneous/"
-whatsnext: {"Best Security and Operating Practices":"/docs/best-security-practices"}
+whatsnext: {"Best Security and Operating Practices":"/docs/best-security-practices/"}
 hidden: false
 ---
 [block:api-header]
@@ -146,7 +146,7 @@ Then make your changes and use the longer `docker run` command again.
   "title": "Use Password and API Files On Startup"
 }
 [/block]
-The Chainlink node can be supplied with files for the wallet password and API email and password (on separate lines) on startup so that you don't need to enter credentials when starting the node. Following the pattern established in [Running a Chainlink Node](../running-a-chainlink-node), you can create an API file by running the following:
+The Chainlink node can be supplied with files for the wallet password and API email and password (on separate lines) on startup so that you don't need to enter credentials when starting the node. Following the pattern established in [Running a Chainlink Node](../running-a-chainlink-node/), you can create an API file by running the following:
 [block:callout]
 {
   "type": "warning",

@@ -10,8 +10,8 @@ Bookmaker Ratings is the premier betting media in Russia and Eastern Europe. The
 
 # Steps For Using This Oracle
 
-- Write and deploy your [Chainlink](../example-walkthrough) contract using the network details below
-- Fund it with [LINK](../link-token-contracts)
+- Write and deploy your [Chainlink](../intermediates-tutorial/) contract using the network details below
+- Fund it with [LINK](../link-token-contracts/)
 - Call your [request method](#section-chainlink-examples)
 
 # Network Details
@@ -92,14 +92,14 @@ contract BookmakerRatingsChainlink is ChainlinkClient {
 
 <div class="remix-callout">
   <a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&gist=52cb4628921603e788d494d482ae9e72" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
-    <a href="../deploy-your-first-contract" title="">What is Remix?</a>
+    <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
 </div>
 
 # Tasks
 * <a href="https://market.link/adapters/c00ebe50-6ab3-46d8-8509-c153c3d87562/data-sources" target="_blank">Bookmaker Ratings</a>
-* [Copy](../adapters#copy)
-* [EthBytes32](../adapters#ethbytes32)
-* [EthTx](../adapters#ethtx)
+* [Copy](../adapters/#copy)
+* [EthBytes32](../adapters/#ethbytes32)
+* [EthTx](../adapters/#ethtx)
 
 # Request Parameters
 ### `gameIds`

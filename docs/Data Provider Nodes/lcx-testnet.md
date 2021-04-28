@@ -4,7 +4,7 @@ section: smartContract
 date: Last Modified
 title: "LCX (Testnet)"
 permalink: "docs/lcx-testnet/"
-whatsnext: {"Kraken Rates Oracle Node":"/docs/kraken-rates-oracle-node"}
+whatsnext: {"Kraken Rates Oracle Node":"/docs/kraken-rates-oracle-node/"}
 hidden: false
 metadata: 
   image: 
@@ -18,8 +18,8 @@ This Chainlink has a dedicated connection to <a href="https://www.lcx.com/Crypto
 
 # Steps for using this oracle
 
-- Write and deploy your [Chainlink](../example-walkthrough)  contract using the network details below
-- Fund it with [LINK](../link-token-contracts) (1 LINK is required per-request)
+- Write and deploy your [Chainlink](../intermediates-tutorial/)  contract using the network details below
+- Fund it with [LINK](../link-token-contracts/) (1 LINK is required per-request/)
 - Call your [request method](#section-chainlink-examples) 
 
 # Network Details
@@ -94,15 +94,15 @@ contract LCXChainlink is ChainlinkClient {
 
 <div class="remix-callout">
   <a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&gist=c0aa62a734c36393da8ac81247d42509" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
-    <a href="../deploy-your-first-contract" title="">What is Remix?</a>
+    <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
 </div>
 
 # Tasks
 
-- [LCX](../external-adapters)
-- [Multiply](../adapters#section-multiply)
-- [EthUint256](../adapters#section-ethuint256)
-- [EthTx](../adapters#section-ethtx)
+- [LCX](../external-adapters/)
+- [Multiply](../adapters/#section-multiply)
+- [EthUint256](../adapters/#section-ethuint256)
+- [EthTx](../adapters/#section-ethtx)
 
 # Request Parameters
 

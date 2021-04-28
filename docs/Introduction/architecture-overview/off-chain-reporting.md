@@ -14,13 +14,13 @@ metadata:
     3: 1459
     4: "#dbe1f8"
 ---
-Off-Chain Reporting (OCR) is the next Oracle network upgrade replacing the [`FluxAggregator` model](../architecture-decentralized-model). It represents a significant step towards increasing the decentralization and scalability of Chainlink networks.
+Off-Chain Reporting (OCR) is the next Oracle network upgrade replacing the [`FluxAggregator` model](../architecture-decentralized-model/). It represents a significant step towards increasing the decentralization and scalability of Chainlink networks.
 
 See the <a href="https://uploads-ssl.webflow.com/5f6b7190899f41fb70882d08/603651a1101106649eef6a53_chainlink-ocr-protocol-paper-02-24-20.pdf" target="_blank">OCR protocol paper</a> for a technical deep dive.
 
 # Change Summary
 
-In the [`FluxAggregator` model](../architecture-decentralized-model), every node must submit their price value individually, and once all responses are received on-chain, the contract aggregates them to confirm the price.
+In the [`FluxAggregator` model](../architecture-decentralized-model/), every node must submit their price value individually, and once all responses are received on-chain, the contract aggregates them to confirm the price.
 
 This solution has been highly effective and reliable since its release. However, there are some drawbacks. Since every single node must submit a transaction per round, each pays gas to do so, with aggregation occurring on-chain once all nodes have submitted. 
 
@@ -61,8 +61,8 @@ All nodes watch the blockchain for the final report to remove any single point o
 
 > 🚧Subgraph users
 >
-> Those using subgraph, make sure to either update the aggregator you're listening to once they go live, or preferably, move to [ENS](../ens) to make sure you're always using the correct address.
+> Those using subgraph, make sure to either update the aggregator you're listening to once they go live, or preferably, move to [ENS](../ens/) to make sure you're always using the correct address.
 
-For smart contracts that currently consume price feeds, there will be no interruptions. Service will not be affected, and the functions described in the  [Price Feeds API Reference](../price-feeds-api-reference) will continue to work.
+For smart contracts that currently consume price feeds, there will be no interruptions. Service will not be affected, and the functions described in the  [Price Feeds API Reference](../price-feeds-api-reference/) will continue to work.
 
-The upgrade will happen automatically so long as your contracts are requesting data from the proxy addresses as described in the [Price Feed Migration Instructions](../migrating-to-flux-aggregator) from August 2020 and listed both on our [Contract Addresses](../reference-contracts) page and [ENS](../ens).
+The upgrade will happen automatically so long as your contracts are requesting data from the proxy addresses as described in the [Price Feed Migration Instructions](../migrating-to-flux-aggregator) from August 2020 and listed both on our [Contract Addresses](../reference-contracts/) page and [ENS](../ens/).

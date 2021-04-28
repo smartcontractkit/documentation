@@ -10,7 +10,7 @@ You will need the following external adapter:
 
 Follow the instructions in the README to run the adapter as a function in your infrastructure or to run as a Docker container
 
-Follow [these instructions](../node-operators) for adding a bridge to your node. Then add the following job to your node. Replace `YOUR_BRIDGE_NAME` with the name of your bridge.
+Follow [these instructions](../node-operators/) for adding a bridge to your node. Then add the following job to your node. Replace `YOUR_BRIDGE_NAME` with the name of your bridge.
 [block:code]
 {
   "codes": [

@@ -7,7 +7,7 @@ hidden: true
 ---
 In order to contribute to the price aggregator contract, you will need to run one of the jobs on this page. The Chainlink team will let you know which API to provide, and you can use this page as a guide for adding jobs for each provider to your node.
 
-External adapters can be found <a href="https://github.com/smartcontractkit/external-adapters-js" target="_blank">here</a>. Follow [these instructions](../node-operators) for adding an external adapter as a bridge to your node. Replace `YOUR_BRIDGE_NAME` with the name of your bridge in the job spec.
+External adapters can be found <a href="https://github.com/smartcontractkit/external-adapters-js" target="_blank">here</a>. Follow [these instructions](../node-operators/) for adding an external adapter as a bridge to your node. Replace `YOUR_BRIDGE_NAME` with the name of your bridge in the job spec.
 
 First, add a test job to your node which uses the Web initiator so that you can validate that the job will run successfully. If the API requires an API key, replace `YOUR_API_KEY` with your own.
 [block:code]

@@ -28,7 +28,7 @@ Developers should subscribe to update notifications via any of the following cha
 * <a href="http://eepurl.com/hbUYlz" target="_blank">Developer Email List</a>
 * <a href="http://eepurl.com/hnh_5H" target="_blank">Node Operator Email List</a>
 * <a href="https://discord.gg/qj9qarT" target="_blank">Discord Channel</a>
-* [On-chain registry](../ens): To increase security, we will be utilizing ENS to provide an onchain registry of all feeds and their latest addresses. 
+* [On-chain registry](../ens/): To increase security, we will be utilizing ENS to provide an onchain registry of all feeds and their latest addresses. 
 
 **Subscribe to the channels above for future notifications about the newest resiliency, scalability and security updates to Chainlink reference data.**
 
@@ -40,7 +40,7 @@ Developers should subscribe to update notifications via any of the following cha
 
 > ❗️ Required
 >
-> Please follow the [Migration Instructions](../migrating-to-aggregator-proxies)  and update to the latest [Price Feed Contracts](../reference-contracts) to ensure your contracts always reference the most up to date aggregator. If you do not upgrade after the timeline in this document, your consumer contracts may not receive the most accurate price data.
+> Please follow the [Migration Instructions](../migrating-to-flux-aggregator/)  and update to the latest [Price Feed Contracts](../reference-contracts/) to ensure your contracts always reference the most up to date aggregator. If you do not upgrade after the timeline in this document, your consumer contracts may not receive the most accurate price data.
 
 The update to [`FluxAggregator`](https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/src/v0.6/FluxAggregator.sol) adds congestion resilience capabilities and gas optimizations for reports involving median calculations over the previous version. 
 
@@ -53,7 +53,7 @@ The update to [`FluxAggregator`](https://github.com/smartcontractkit/chainlink/b
 ### Migration timeline
 
 **24 Aug 2020: Upgrade Information Released**
-Please visit our [Migration Instructions](../migrating-to-aggregator-proxies) or go directly to the latest [Price Feed Contracts](../reference-contracts) page to update today. 
+Please visit our [Migration Instructions](../migrating-to-flux-aggregator/) or go directly to the latest [Price Feed Contracts](../reference-contracts/) page to update today. 
 
 **1 Sep 2020: First Upgrade Notice**
 

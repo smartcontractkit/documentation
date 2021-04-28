@@ -18,7 +18,7 @@ Here are the links to the repositories of the external adapters:
 
 Follow the instructions in the README to run the adapter as a function in your infrastructure. You may need to obtain an API key for the data provider assigned to you.
 
-Once the adapter is deployed in your infrastructure, [add the adapter](../node-operators) as a bridge to your node with the name: `synth-index`. The Bridge URL should be the URL of the adapter, and leave Minimum Contract Payment and Confirmations at 0.
+Once the adapter is deployed in your infrastructure, [add the adapter](../node-operators/) as a bridge to your node with the name: `synth-index`. The Bridge URL should be the URL of the adapter, and leave Minimum Contract Payment and Confirmations at 0.
 [block:code]
 {
   "codes": [

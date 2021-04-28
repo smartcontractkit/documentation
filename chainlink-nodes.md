@@ -68,7 +68,7 @@ title: "Welcome to Chainlink Node Operation!"
         Learn the best security and operating practices for node operators
       </p>
       <a
-        href="/docs/chainlink-nodes"
+        href="/chainlink-nodes/"
         class="keychainify-checked"
         >Learn More</a
       >

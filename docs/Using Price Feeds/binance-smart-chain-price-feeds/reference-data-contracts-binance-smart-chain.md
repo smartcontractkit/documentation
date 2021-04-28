@@ -37,7 +37,7 @@ Use one of the following Job IDs in order to create a Chainlink request to this 
 
 ## Binance
 
-For more information, see [Binance Chainlink (Testnet)](../binance-chainlink-testnet).
+For more information, see [Binance Chainlink (Testnet)](../binance-chainlink-testnet/).
 
 |Task|JobID|
 |:---|:---|
@@ -47,7 +47,7 @@ For more information, see [Binance Chainlink (Testnet)](../binance-chainlink-tes
 
 ## BraveNewCoin
 
-For more information, see [BraveNewCoin Chainlink (Testnet)](../bravenewcoin).
+For more information, see [BraveNewCoin Chainlink (Testnet)](../bravenewcoin/).
 
 |Task|JobID|
 |:---|:---|
@@ -55,7 +55,7 @@ For more information, see [BraveNewCoin Chainlink (Testnet)](../bravenewcoin).
 
 ## CoinMarketCap
 
-For more information, see [CoinMarketCap Chainlink (Testnet)](../coinmarketcap).
+For more information, see [CoinMarketCap Chainlink (Testnet)](../coinmarketcap/).
 
 |Task|JobID|
 |:---|:---|
@@ -63,7 +63,7 @@ For more information, see [CoinMarketCap Chainlink (Testnet)](../coinmarketcap).
 
 ## CryptoCompare
 
-For more information, see [CryptoCompare Chainlink (Testnet)](../cryptocompare).
+For more information, see [CryptoCompare Chainlink (Testnet)](../cryptocompare/).
 
 |Task|JobID|
 |:---|:---|
@@ -71,7 +71,7 @@ For more information, see [CryptoCompare Chainlink (Testnet)](../cryptocompare).
 
 ## Kaiko
 
-For more information, see [Kaiko Chainlink (Testnet)](../kaiko-chainlink-testnet).
+For more information, see [Kaiko Chainlink (Testnet)](../kaiko-chainlink-testnet/).
 
 |Task|JobID|
 |:---|:---|
