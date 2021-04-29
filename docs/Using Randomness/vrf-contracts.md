@@ -47,7 +47,7 @@ For implementation details, read [Introduction to Chainlink VRF](../chainlink-vr
 [block:callout]
 {
   "type": "success",
-  "body": "For the most efficient consumption of Chainlink VRF on Binance Smart Chain, please contact us using [this form](https://chainlinkcommunity.typeform.com/to/OYQO67EF) to create a payment channel, through which we can provide VRF to you at the cost of Ethereum network gas fees. You will only be paying in LINK for the gas costs incurred by the Chainlink node from calling your smart contract.",
+  "body": "For the most efficient consumption of Chainlink VRF on Binance Smart Chain, please contact us using [this form](https://chainlinkcommunity.typeform.com/to/OYQO67EF) to create a payment channel, through which we can provide VRF to you at the cost of BSC network gas fees. You will only be paying in LINK for the gas costs incurred by the Chainlink node from calling your smart contract.",
   "title": "Early Access"
 }
 [/block]
