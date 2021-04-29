@@ -123,47 +123,6 @@ module.exports = {
         ],
       },
       {
-        section: 'DEVELOPER REFERENCE',
-        contents: [
-          {
-            title: 'Install Instructions',
-            url: 'create-a-chainlinked-project',
-          },
-          { title: 'LINK Token Contracts', url: 'link-token-contracts' },
-          {
-            title: 'Developer Communications',
-            url: 'developer-communications',
-          },
-          { title: 'Hackathon Resources', url: 'hackathon-resources' },
-          {
-            title: 'User Guides',
-            url: 'user-guides',
-            children: [
-              {
-                title: 'Install, configure & fund MetaMask',
-                url: 'install-metamask',
-              },
-              {
-                title: 'Acquire testnet LINK',
-                url: 'acquire-link',
-              },
-              {
-                title: 'Deploy your first contract',
-                url: 'deploy-your-first-contract',
-              },
-              {
-                title: 'Fund your contract',
-                url: 'fund-your-contract',
-              },
-              {
-                title: 'Use your first contract!',
-                url: 'use-your-first-contract',
-              },
-            ],
-          },
-        ],
-      },
-      {
         section: 'USING PRICE FEEDS',
         contents: [
           {
@@ -233,6 +192,47 @@ module.exports = {
           {
             title: 'Contract Addresses',
             url: 'decentralized-oracles-ethereum-mainnet',
+          },
+        ],
+      },
+      {
+        section: 'DEVELOPER REFERENCE',
+        contents: [
+          {
+            title: 'Install Instructions',
+            url: 'create-a-chainlinked-project',
+          },
+          { title: 'LINK Token Contracts', url: 'link-token-contracts' },
+          {
+            title: 'Developer Communications',
+            url: 'developer-communications',
+          },
+          { title: 'Hackathon Resources', url: 'hackathon-resources' },
+          {
+            title: 'User Guides',
+            url: 'user-guides',
+            children: [
+              {
+                title: 'Install, configure & fund MetaMask',
+                url: 'install-metamask',
+              },
+              {
+                title: 'Acquire testnet LINK',
+                url: 'acquire-link',
+              },
+              {
+                title: 'Deploy your first contract',
+                url: 'deploy-your-first-contract',
+              },
+              {
+                title: 'Fund your contract',
+                url: 'fund-your-contract',
+              },
+              {
+                title: 'Use your first contract!',
+                url: 'use-your-first-contract',
+              },
+            ],
           },
         ],
       },
