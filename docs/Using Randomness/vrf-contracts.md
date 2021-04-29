@@ -36,6 +36,31 @@ For implementation details, read [Introduction to Chainlink VRF](../chainlink-vr
 |Key Hash|`0x6e75b569a01ef56d18cab6a8e71e6600d6ce853834d4a5748b720d06f878b3a4`|
 |Fee|0.0001 LINK|
 
+# Binance Smart Chain Mainnet
+
+|Item|Value|
+|---|---|
+|LINK Token|`0x404460C6A5EdE2D891e8297795264fDe62ADBB75`|
+|VRF Coordinator|`0x747973a5A2a4Ae1D3a8fDF5479f1514F65Db9C31`|
+|Key Hash|`0xc251acd21ec4fb7f31bb8868288bfdbaeb4fbfec2df3735ddbd4f7dc8d60103c`|
+|Fee|0.2 LINK - initial fees on BSC are meant to cover the highest gas cost prices. To use VRF more efficiently, please [contact us](https://chainlinkcommunity.typeform.com/to/OYQO67EF)|
+[block:callout]
+{
+  "type": "success",
+  "body": "For the most efficient consumption of Chainlink VRF on Binance Smart Chain, please contact us using [this form](https://chainlinkcommunity.typeform.com/to/OYQO67EF) to create a payment channel, through which we can provide VRF to you at the cost of BSC network gas fees. You will only be paying in LINK for the gas costs incurred by the Chainlink node from calling your smart contract.",
+  "title": "Early Access"
+}
+[/block]
+# Binance Smart Chain Testnet
+
+|Item|Value|
+|---|---|
+|LINK|`0x84b9B910527Ad5C03A9Ca831909E21e236EA7b06`|
+|VRF Coordinator|`0xa555fC018435bef5A13C6c6870a9d4C11DEC329C `|
+|Key Hash|`0xcaf3c3727e033261d383b315559476f48034c13b18f8cafed4d871abe5049186 `|
+|Fee|0.1 LINK|
+
+
 # Ethereum Mainnet
 
 |Item|Value|
