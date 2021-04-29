@@ -38,12 +38,11 @@ section: smartContract
     render = (data) => {
         let html = '';
         for(let network of data["{{stub}}"].networks) {
-            html += `<h2>${network.name}</h2>`;
-            console.log(network);
+            html += `<h2 id="${network.name}">${network.name}</h2>`;
             
             let proxyList = '';
             for(let proxy of network.proxies) {
-                proxyList += `<tr><td><code>${proxy.pair}</code></td><td>${proxy.decimals}</td><td><a href="${network.url}${proxy.proxy}" target="_blank"><code>${proxy.proxy}</code></a></td></tr>`;
+                proxyList += `<tr id="${network.name} ${proxy.pair}"><td><code>${proxy.pair}</code></td><td>${proxy.decimals}</td><td><a href="${network.url}${proxy.proxy}" target="_blank"><code>${proxy.proxy}</code></a></td></tr>`;
             }
             html += `<table><thead><tr><th>Pair</th><th>Dec</th><th>Proxy</th></tr></thead><tbody>${proxyList}</tbody></table>`;
         }
