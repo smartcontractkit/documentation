@@ -26,13 +26,13 @@ Each price feed is updated by multiple, independent Chainlink oracle operators. 
   "images": [
     {
       "image": [
-        "https://files.readme.io/bf08b31-5ef7eba-screenshot.png",
-        "5ef7eba-screenshot.png",
+        "/images/contract-devs/price-aggr.png",
+        "price-aggregator",
         3600,
         2400,
         "#fafafa"
       ],
-      "caption": "Screenshot of the <a href=\"https://feeds.chain.link/eth-usd\" target=\"_blank\">ETH/USD Price Feed</a>"
+      "caption": "Screenshot of the <a href=\"https://data.chain.link/eth-usd\" target=\"_blank\">ETH/USD Price Feed</a>"
     }
   ]
 }
