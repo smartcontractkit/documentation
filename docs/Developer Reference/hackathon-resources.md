@@ -13,12 +13,12 @@ If you're looking to just start jumping into stuff, here is a directory that can
 # Want to check out winners code of past hackathons to get some inspiration? 
 Check out the <a href="/docs/example-projects"> example winners projects here. </a>
 
-## Boilerplate code, and starter projects
+## Boilerplate code, and starter kits
 
 Be sure to check the docs above for remix examples!
-- [Chainlink Brownie Mix (Python)](https://github.com/smartcontractkit/chainlink-mix)
-- [Chainlink Truffle Box (Javascript)](https://github.com/smartcontractkit/box)
-- [Chainlink Hardhat Demo (Javascript)](https://github.com/pappas999/chainlink-hardhat-box)
+- [Chainlink Brownie Starter Kit (Python)](https://github.com/smartcontractkit/chainlink-mix)
+- [Chainlink Truffle Starter Kit (Javascript)](https://github.com/smartcontractkit/truffle-starter-kit)
+- [Chainlink Hardhat Starter Kit (Javascript)](https://github.com/smartcontractkit/hardhat-starter-kit)
 
 ## Support Communications 
 
