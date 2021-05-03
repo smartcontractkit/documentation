@@ -118,8 +118,8 @@ Chainlink price feeds are sources of data [aggregated from many independent Chai
   "images": [
     {
       "image": [
-        "https://files.readme.io/2ed2492-bf08b31-5ef7eba-screenshot.png",
-        "bf08b31-5ef7eba-screenshot.png",
+        "/images/contract-devs/price-aggr.png",
+        "Price Aggregation",
         3600,
         2400,
         "#fafafa"
