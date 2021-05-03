@@ -20,7 +20,7 @@ You can use Chainlink to trigger a smart contract at a specified time. Using thi
 
 - Write and deploy your [Chainlinked](../intermediates-tutorial/)  contract using the network details below
 - Fund it with [LINK](../link-token-contracts/) (0.1 LINK is required per-request/)
-- Call your [request method](#section-chainlink-examples) 
+- Call your [request method](./#chainlink-examples) 
 
 # Chainlink Network Details
 

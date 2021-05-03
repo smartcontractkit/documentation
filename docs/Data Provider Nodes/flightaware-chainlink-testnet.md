@@ -12,7 +12,7 @@ This Chainlink has a dedicated connection to <a href="https://uk.flightaware.com
 
 - Write and deploy your [Chainlinked](../request-and-receive-data/) contract using the network details below
 - Fund it with [LINK](../link-token-contracts/)
-- Call your [request method](#section-chainlink-examples) 
+- Call your [request method](./#chainlink-examples) 
 
 # Chainlink Network Details
 
@@ -83,9 +83,9 @@ contract FlightAwareChainlink is ChainlinkClient {
 # Tasks
 
 - [FlightAware](../external-adapters/)
-- [Copy](../adapters/#section-copy)
-- [Ethuint256](../adapters/#section-ethuint256)
-- [EthTx](../adapters/#section-ethtx)
+- [Copy](../adapters/#copy)
+- [Ethuint256](../adapters/#ethuint256)
+- [EthTx](../adapters/#ethtx)
 
 # Request Parameters
 
