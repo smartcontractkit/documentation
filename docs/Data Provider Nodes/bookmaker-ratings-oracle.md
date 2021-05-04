@@ -13,7 +13,7 @@ Bookmaker Ratings is the premier betting media in Russia and Eastern Europe. The
 
 - Write and deploy your [Chainlink](../intermediates-tutorial/) contract using the network details below
 - Fund it with [LINK](../link-token-contracts/)
-- Call your [request method](#section-chainlink-examples)
+- Call your [request method](./#chainlink-examples)
 
 # Network Details
 

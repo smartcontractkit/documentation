@@ -67,12 +67,12 @@ Resources:
 
 ## Do I need to have access to APIs in order to provide data?
 
-The Chainlink node can fulfill requests from open (unauthenticated) APIs out-of-the-box, without the need for [External Adapters](../external-adapters/) as long as you've added the [jobs in the Fulfilling Requests guide](../fulfilling-requests/#section-add-jobs-to-the-node). For these requests, requesters would supply the URL to the open API they wish each node to retrieve, and the Chainlink node will use its core adapters to fulfill the request.
+The Chainlink node can fulfill requests from open (unauthenticated) APIs out-of-the-box, without the need for [External Adapters](../external-adapters/) as long as you've added the [jobs in the Fulfilling Requests guide](../fulfilling-requests/#add-jobs-to-the-node). For these requests, requesters would supply the URL to the open API they wish each node to retrieve, and the Chainlink node will use its core adapters to fulfill the request.
 
-If you would like to provide access to an API which requires authentication, you will need to create a job specific for that API, either with an external adapter or by using the parameters of the [HttpGet adapter](../adapters/#section-httpget).
+If you would like to provide access to an API which requires authentication, you will need to create a job specific for that API, either with an external adapter or by using the parameters of the [HttpGet adapter](../adapters/#httpget).
 
 Resources:
-*  [Adapters](../adapters/#section-httpget)
+*  [Adapters](../adapters/#httpget)
 
 ##  Is there a list of external adapters available?
 
@@ -95,7 +95,7 @@ Resources:
 
 You can use our <a href="https://blog.chain.link/how-to-use-chainlink-with-truffle-2/" target="_blank">Truffle Box</a> to get started by unboxing a developer-focused template.
 
-If you already have a project started and would like to integrate Chainlink, you can [add Chainlink to your existing project](../create-a-chainlinked-project/#section-add-chainlink-to-your-existing-project) by using our `chainlink` NPM package.
+If you already have a project started and would like to integrate Chainlink, you can [add Chainlink to your existing project](../create-a-chainlinked-project/#add-chainlink-to-your-existing-project) by using our `chainlink` NPM package.
 
 Resources:
 *  [Create a Chainlinked Project](../create-a-chainlinked-project/) 
@@ -112,13 +112,13 @@ Resources:
 
 ## How do I select Chainlink nodes for my requests?
 
-You can use the <a href="https://market.link/" target="_blank">Chainlink Market</a> to select nodes for your requests. Then with the node's oracle contract address and Job ID, you will use the [`sendChainlinkRequestTo`](../chainlink-framework/#section-sendchainlinkrequestto)  method to create requests to oracles.
+You can use the <a href="https://market.link/" target="_blank">Chainlink Market</a> to select nodes for your requests. Then with the node's oracle contract address and Job ID, you will use the [`sendChainlinkRequestTo`](../chainlink-framework/#sendchainlinkrequestto)  method to create requests to oracles.
 
 Resources:
 *  [Create a Chainlinked Project](../create-a-chainlinked-project/) 
 *  [Example Walkthrough](../intermediates-tutorial/) 
 *  <a href="https://market.link/" target="_blank">Chainlink Market</a>
-*  [Chainlink Contract Reference](../chainlink-framework/#section-sendchainlinkrequestto)
+*  [Chainlink Contract Reference](../chainlink-framework/#sendchainlinkrequestto)
 
 ## How do I request a value that is greater than 32 bytes?
 

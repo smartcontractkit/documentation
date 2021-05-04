@@ -20,7 +20,7 @@ This Chainlink has a dedicated connection to <a href="https://www.lcx.com/Crypto
 
 - Write and deploy your [Chainlink](../intermediates-tutorial/)  contract using the network details below
 - Fund it with [LINK](../link-token-contracts/) (1 LINK is required per-request/)
-- Call your [request method](#section-chainlink-examples) 
+- Call your [request method](./#chainlink-examples) 
 
 # Network Details
 
@@ -100,9 +100,9 @@ contract LCXChainlink is ChainlinkClient {
 # Tasks
 
 - [LCX](../external-adapters/)
-- [Multiply](../adapters/#section-multiply)
-- [EthUint256](../adapters/#section-ethuint256)
-- [EthTx](../adapters/#section-ethtx)
+- [Multiply](../adapters/#multiply)
+- [EthUint256](../adapters/#ethuint256)
+- [EthTx](../adapters/#ethtx)
 
 # Request Parameters
 

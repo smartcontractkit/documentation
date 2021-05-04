@@ -20,7 +20,7 @@ TheRundown is the leading platform for real-time odds from the most popular spor
 
 - Write and deploy your [Chainlink](../intermediates-tutorial/) contract using the network details below
 - Fund it with [LINK](../link-token-contracts/)
-- Call your [request method](#section-chainlink-examples)
+- Call your [request method](./#chainlink-examples)
 
 # Network Details
 

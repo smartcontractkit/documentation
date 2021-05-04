@@ -285,6 +285,10 @@ module.exports = {
           {
             title: 'Finage Global Market Data Oracle',
             url: 'finage-global-market-data-oracle'
+          },
+          {
+            title: 'SportMonks Sports Data Oracle',
+            url: 'sport-monks-oracle'
           }
         ],
       },

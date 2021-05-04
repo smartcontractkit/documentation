@@ -258,7 +258,7 @@ If you really must access one of these IPs, you can use the `HTTPPostWithUnrestr
   "title": "JsonParse"
 }
 [/block]
-The core adapter walks the `path` specified and returns the value found at that result. If returning JSON data from the [HttpGet](../adapters/#section-httpget) or [HttpPost](../adapters/#section-httppost) adapters, you must use this adapter to parse the response.
+The core adapter walks the `path` specified and returns the value found at that result. If returning JSON data from the [HttpGet](../adapters/#httpget) or [HttpPost](../adapters/#httppost) adapters, you must use this adapter to parse the response.
 
 #### Parameters
 

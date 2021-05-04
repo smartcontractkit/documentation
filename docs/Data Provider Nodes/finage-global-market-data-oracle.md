@@ -13,7 +13,7 @@ Finage is a leading real-time stock, forex, and cryptocurrency data provider. Th
 
 - Write and deploy your [Chainlink](../example-walkthrough) contract using the network details below
 - Fund it with [LINK](../link-token-contracts)
-- Call your [request method](#section-chainlink-examples)
+- Call your [request method](./#chainlink-examples)
 
 # Network Details
 
