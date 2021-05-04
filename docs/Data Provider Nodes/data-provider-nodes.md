@@ -4,8 +4,7 @@ section: smartContract
 date: Last Modified
 title: "Introduction to Data Provider Nodes"
 permalink: "docs/data-provider-nodes/"
-whatsnext: {"Chainlink Alarm Clock (Testnet)":"/docs/chainlink-alarm-clock/","LCX (Testnet)":"/docs/lcx-testnet/","Kraken Rates Oracle Node":"/docs/kraken-rates-oracle-node/"}
-hidden: false
+whatsnext: {"Data Provider Nodes List":"/docs/data-provider-nodes-list/"}
 ---
 # Data Provider Nodes
 

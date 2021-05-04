@@ -244,51 +244,8 @@ module.exports = {
             url: 'data-provider-nodes'
           },
           {
-            title: 'Chainlink Alarm Clock (Testnet)',
-            url: 'chainlink-alarm-clock'
-          },
-          { title: 'LCX (Testnet)', url: 'lcx-testnet' },
-          {
-            title: 'Kraken Rates Oracle Node',
-            url: 'kraken-rates-oracle-node'
-          },
-          {
-            title: 'Tiingo EOD Stock Price Oracle',
-            url: 'tiingo-eod-stock-price-oracle'
-          },
-          { title: 'GeoDB Oracle Node', url: 'geodb-oracle-node' },
-          {
-            title: 'TheRunDown Oracle Node',
-            url: 'therundown-oracle-node',
-          },
-          { title: 'DNS Ownership Oracle', url: 'dns-ownership-oracle' },
-          {
-            title: 'WatchSignals Luxury Watch Price Oracle',
-            url: 'watchsignals'
-          },
-          {
-            title: 'Genesis Volatility Cryptocurrency Options Oracle',
-            url: 'genesis-volatility'
-          },
-          {
-            title: 'dxFeed Price Oracle',
-            url: 'dxfeed-oracle'
-          },
-          {
-            title: 'CipherTrace DeFi Compli Oracle',
-            url: 'ciphertrace-defi-compli-oracle'
-          },
-          {
-            title: 'Bookmaker Ratings Oracle',
-            url: 'bookmaker-ratings-oracle'
-          },
-          {
-            title: 'Finage Global Market Data Oracle',
-            url: 'finage-global-market-data-oracle'
-          },
-          {
-            title: 'SportMonks Sports Data Oracle',
-            url: 'sport-monks-oracle'
+            title: 'Data Provider Nodes List',
+            url: 'data-provider-nodes-list'
           }
         ],
       },
