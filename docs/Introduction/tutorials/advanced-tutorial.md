@@ -25,6 +25,10 @@ metadata:
 - Be able to find the Oracle Jobs and Adapters for your contract
 - How to request data from an Oracle Job
 
+<p>
+  https://www.youtube.com/watch?v=ay4rXZhAefs
+</p>
+
 # 1. Requesting API Data
 
 ## 1a. Request & Receive Recap
