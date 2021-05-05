@@ -1,6 +1,7 @@
 module.exports = function (eleventyConfig) {
   const rdmd = require('@readme/markdown');
   const format = require('date-fns/format');
+  const htmlmin = require('html-minifier');
 
   const embedYouTube = require('eleventy-plugin-youtube-embed');
   eleventyConfig.setLibrary('md', { render: rdmd.html });
@@ -12,7 +13,24 @@ module.exports = function (eleventyConfig) {
   eleventyConfig.addPlugin(embedYouTube);
   eleventyConfig.addPassthroughCopy({ _src: '/' });
 
+  // Allow us to put rendered markdown in HTML
   eleventyConfig.addPairedShortcode('markdown', (content) => {
     return rdmd.html(content);
+  });
+
+  // Minify our build to save the bits
+  eleventyConfig.addTransform('htmlmin', function (content, outputPath) {
+    if (outputPath?.endsWith('.html')) {
+      let minified = htmlmin.minify(content, {
+        useShortDoctype: true,
+        removeComments: true,
+        collapseWhitespace: true,
+        minifyCSS: true,
+        minifyJS: true,
+      });
+      return minified;
+    }
+
+    return content;
   });
 };
