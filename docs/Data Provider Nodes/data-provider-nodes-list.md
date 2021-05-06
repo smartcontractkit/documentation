@@ -22,3 +22,4 @@ permalink: "docs/data-provider-nodes-list/"
 | [Bookmaker Ratings Oracle](../bookmaker-ratings-oracle)                   | Ethereum, Binance Smart Chain                |
 | [Finage Global Market Data Oracle](../finage-global-market-data-oracle)   | Ethereum, Binance Smart Chain                |
 | [SportMonks Sports Data Oracle](../sport-monks-oracle)                    | Ethereum, Binance Smart Chain                |
+| [Tradermade Forex Data Oracle](../tradermade-forex-data-oracle)           | Ethereum, Binance Smart Chain                |
