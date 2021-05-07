@@ -18,7 +18,7 @@ For instance, the contract below uses the existing job via [dxFeed Price Oracle]
   "images": [
     {
       "image": [
-        "https://files.readme.io/aa0ff6f-Screenshot_2021-04-08_at_14.32.58.png",
+        "/files/aa0ff6f-Screenshot_2021-04-08_at_14.32.58.png",
         "Screenshot 2021-04-08 at 14.32.58.png",
         2864,
         1384,
@@ -48,7 +48,7 @@ For instance, the same contract mentioned earlier needs LINK to pay oracle node 
   "images": [
     {
       "image": [
-        "https://files.readme.io/4ffc692-Screenshot_2021-04-08_at_14.35.42.png",
+        "/files/4ffc692-Screenshot_2021-04-08_at_14.35.42.png",
         "Screenshot 2021-04-08 at 14.35.42.png",
         2880,
         1212,
@@ -64,7 +64,7 @@ If the contract doesn't have enough LINK to pay the oracle node, you'll encounte
   "images": [
     {
       "image": [
-        "https://files.readme.io/322e28d-Screenshot_2021-04-08_at_14.34.51.png",
+        "/files/322e28d-Screenshot_2021-04-08_at_14.34.51.png",
         "Screenshot 2021-04-08 at 14.34.51.png",
         2868,
         1308,
@@ -80,7 +80,7 @@ When the contract has enough LINK to make a `sendChainlinkRequestTo` function ca
   "images": [
     {
       "image": [
-        "https://files.readme.io/5aed95f-Screenshot_2021-04-08_at_14.36.19.png",
+        "/files/5aed95f-Screenshot_2021-04-08_at_14.36.19.png",
         "Screenshot 2021-04-08 at 14.36.19.png",
         2870,
         1324,

@@ -9,7 +9,7 @@ metadata:
   title: "Chainlink Decentralised Data Model"
   description: "This page describes the decentralized architecture which enables Chainlink to aggregate data from multiple independent node operators."
   image: 
-    0: "https://files.readme.io/d49af32-670379d-OpenGraph_V3.png"
+    0: "/files/OpenGraph_V3.png"
     1: "670379d-OpenGraph_V3.png"
     2: 1459
     3: 1459
@@ -68,7 +68,7 @@ A new aggregation round starts after a specified amount of time from the last up
   "images": [
     {
       "image": [
-        "https://files.readme.io/399e90d-Simple_Architecture_Diagram_2_V1.png",
+        "/files/399e90d-Simple_Architecture_Diagram_2_V1.png",
         "Simple Architecture Diagram_2 V1.png",
         3229,
         628,

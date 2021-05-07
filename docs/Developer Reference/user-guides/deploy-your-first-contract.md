@@ -30,7 +30,7 @@ Remix is a web IDE (integrated development environment) for creating, running, a
   "images": [
     {
       "image": [
-        "https://files.readme.io/8dbedba-Screen_Shot_2020-09-08_at_7.05.27_AM.png",
+        "/files/8dbedba-Screen_Shot_2020-09-08_at_7.05.27_AM.png",
         "Screen Shot 2020-09-08 at 7.05.27 AM.png",
         2604,
         1268,
@@ -46,7 +46,7 @@ Remix is a web IDE (integrated development environment) for creating, running, a
   "images": [
     {
       "image": [
-        "https://files.readme.io/7c7f098-remix.jpg",
+        "/files/7c7f098-remix.jpg",
         "remix.jpg",
         907,
         634,
@@ -63,7 +63,7 @@ Remix is a web IDE (integrated development environment) for creating, running, a
   "images": [
     {
       "image": [
-        "https://files.readme.io/50b7476-remix.png",
+        "/files/50b7476-remix.png",
         "remix.png",
         454,
         264,
@@ -79,7 +79,7 @@ Remix is a web IDE (integrated development environment) for creating, running, a
   "images": [
     {
       "image": [
-        "https://files.readme.io/429ae12-remix.png",
+        "/files/429ae12-remix.png",
         "remix.png",
         454,
         350,
@@ -95,7 +95,7 @@ Remix is a web IDE (integrated development environment) for creating, running, a
   "images": [
     {
       "image": [
-        "https://files.readme.io/b8774fe-Screen_Shot_2020-09-08_at_7.10.07_AM.png",
+        "/files/b8774fe-Screen_Shot_2020-09-08_at_7.10.07_AM.png",
         "Screen Shot 2020-09-08 at 7.10.07 AM.png",
         2578,
         1248,
@@ -119,7 +119,7 @@ Remix is a web IDE (integrated development environment) for creating, running, a
   "images": [
     {
       "image": [
-        "https://files.readme.io/d5708a0-remix.png",
+        "/files/d5708a0-remix.png",
         "remix.png",
         340,
         446,
@@ -135,7 +135,7 @@ Remix is a web IDE (integrated development environment) for creating, running, a
   "images": [
     {
       "image": [
-        "https://files.readme.io/d082799-metamask.png",
+        "/files/d082799-metamask.png",
         "metamask.png",
         340,
         597,
@@ -160,7 +160,7 @@ It will take a few moments for the contract to be deployed. The Remix UI will up
   "images": [
     {
       "image": [
-        "https://files.readme.io/8ff4abe-remix7.jpg",
+        "/files/8ff4abe-remix7.jpg",
         "remix7.jpg",
         1480,
         184,
@@ -176,7 +176,7 @@ It will take a few moments for the contract to be deployed. The Remix UI will up
   "images": [
     {
       "image": [
-        "https://files.readme.io/64722ed-remix8.jpg",
+        "/files/64722ed-remix8.jpg",
         "remix8.jpg",
         892,
         226,
@@ -192,7 +192,7 @@ It will take a few moments for the contract to be deployed. The Remix UI will up
   "images": [
     {
       "image": [
-        "https://files.readme.io/85c4ddb-remix.png",
+        "/files/85c4ddb-remix.png",
         "remix.png",
         283,
         650,

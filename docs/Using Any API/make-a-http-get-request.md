@@ -10,7 +10,7 @@ metadata:
   title: "Make a GET Request"
   description: "Learn how to make a GET request to an API from a smart contract, using Chainlink."
   image: 
-    0: "https://files.readme.io/930cbb7-link.png"
+    0: "/files/930cbb7-link.png"
     1: "link.png"
     2: 1459
     3: 1459

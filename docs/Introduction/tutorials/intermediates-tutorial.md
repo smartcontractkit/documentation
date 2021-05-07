@@ -11,7 +11,7 @@ metadata:
   title: "Intermediates Tutorial"
   description: "Learn how to use randomness in your smart contracts using Chainlink VRF."
   image: 
-    0: "https://files.readme.io/2a242f1-link.png"
+    0: "/files/2a242f1-link.png"
     1: "link.png"
     2: 1459
     3: 1459
@@ -247,7 +247,7 @@ Once compiled, you'll see a menu that looks like this in the deploy pane:
   "images": [
     {
       "image": [
-        "https://files.readme.io/f6c0c2b-Screenshot_2020-12-18_at_16.23.19.png",
+        "/files/f6c0c2b-Screenshot_2020-12-18_at_16.23.19.png",
         "Screenshot 2020-12-18 at 16.23.19.png",
         796,
         304,

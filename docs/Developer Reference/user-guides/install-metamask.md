@@ -24,7 +24,7 @@ MetaMask is a wallet that runs as a self-contained application inside your brows
   "images": [
     {
       "image": [
-        "https://files.readme.io/bb28207-metamask.png",
+        "/files/bb28207-metamask.png",
         "metamask.png",
         340,
         573,

@@ -9,7 +9,7 @@ hidden: false
 metadata: 
   title: "Chainlink Architecture Overview"
   image: 
-    0: "https://files.readme.io/8d4c52c-670379d-OpenGraph_V3.png"
+    0: "/files/OpenGraph_V3.png"
     1: "670379d-OpenGraph_V3.png"
     2: 1459
     3: 1459
@@ -20,7 +20,7 @@ metadata:
   "images": [
     {
       "image": [
-        "https://files.readme.io/906a744-5c0ae00-8c35025-Request__Receive_Data.png",
+        "/files/8c35025-Request__Receive_Data.png",
         "5c0ae00-8c35025-Request__Receive_Data.png",
         3246,
         730,

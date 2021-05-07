@@ -10,7 +10,7 @@ metadata:
   title: "Request and Receive API Data with Chainlink"
   description: "Chainlink provides your smart contract with access to any external API. Learn how to integration any API into your smart contract."
   image: 
-    0: "https://files.readme.io/bc12c34-link.png"
+    0: "/files/bc12c34-link.png"
     1: "link.png"
     2: 1459
     3: 1459
@@ -21,7 +21,7 @@ metadata:
   "images": [
     {
       "image": [
-        "https://files.readme.io/8c35025-Request__Receive_Data.png",
+        "/files/8c35025-Request__Receive_Data.png",
         "Request & Receive Data.png",
         3246,
         730,
