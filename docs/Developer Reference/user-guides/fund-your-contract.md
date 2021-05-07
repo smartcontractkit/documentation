@@ -18,7 +18,7 @@ This guide explains how to fund your Solidity contract with LINK using the Remix
   "images": [
     {
       "image": [
-        "https://files.readme.io/25d2c8e-Screen_Shot_2020-09-08_at_7.15.50_AM.png",
+        "/files/25d2c8e-Screen_Shot_2020-09-08_at_7.15.50_AM.png",
         "Screen Shot 2020-09-08 at 7.15.50 AM.png",
         2596,
         1550,
@@ -39,7 +39,7 @@ This guide explains how to fund your Solidity contract with LINK using the Remix
   "images": [
     {
       "image": [
-        "https://files.readme.io/867073d-metamask.png",
+        "/files/867073d-metamask.png",
         "metamask.png",
         340,
         577,

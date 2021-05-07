@@ -9,7 +9,7 @@ whatsnext: {"Make a GET Request":"/docs/make-a-http-get-request/", "Make an Exis
 hidden: false
 metadata: 
   image: 
-    0: "https://files.readme.io/04b8e56-cl.png"
+    0: "/files/04b8e56-cl.png"
     1: "cl.png"
     2: 1459
     3: 1459

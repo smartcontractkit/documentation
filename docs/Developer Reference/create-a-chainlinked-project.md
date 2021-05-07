@@ -10,7 +10,7 @@ metadata:
   title: "Getting Started with Chainlink for Smart Contract Developers"
   description: "Everything you need to know on how to create a new Chainlink project or update an existing one using the Chainlink Library for Solidity"
   image: 
-    0: "https://files.readme.io/1e53dff-670379d-OpenGraph_V3.png"
+    0: "/files/OpenGraph_V3.png"
     1: "670379d-OpenGraph_V3.png"
     2: 1459
     3: 1459
@@ -21,7 +21,7 @@ metadata:
   "images": [
     {
       "image": [
-        "https://files.readme.io/c6e99c5-Untitled_design_23.png",
+        "/files/c6e99c5-Untitled_design_23.png",
         "Untitled design (23).png",
         800,
         418,

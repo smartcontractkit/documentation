@@ -8,7 +8,7 @@ whatsnext: {"Kraken Rates Oracle Node":"/docs/kraken-rates-oracle-node/"}
 hidden: false
 metadata: 
   image: 
-    0: "https://files.readme.io/b76c02e-cl.png"
+    0: "/files/OpenGraph_V3.png"
     1: "cl.png"
     2: 1459
     3: 1459

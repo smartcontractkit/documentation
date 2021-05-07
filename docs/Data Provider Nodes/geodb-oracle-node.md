@@ -8,7 +8,7 @@ whatsnext: {"TheRundown Oracle Node":"/docs/therundown-oracle-node/"}
 hidden: false
 metadata: 
   image: 
-    0: "https://files.readme.io/070eb54-cl.png"
+    0: "/files/070eb54-cl.png"
     1: "cl.png"
     2: 1459
     3: 1459
