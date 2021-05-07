@@ -18,19 +18,22 @@ module.exports = function (eleventyConfig) {
     return rdmd.html(content);
   });
 
-  // Minify our build to save the bits
-  eleventyConfig.addTransform('htmlmin', function (content, outputPath) {
-    if (outputPath?.endsWith('.html')) {
-      let minified = htmlmin.minify(content, {
-        useShortDoctype: true,
-        removeComments: true,
-        collapseWhitespace: true,
-        minifyCSS: true,
-        minifyJS: true,
-      });
-      return minified;
-    }
+  // Only for prod environments
+  if (process.env.NODE_ENV !== 'development') {
+    // Minify our build to save the bits
+    eleventyConfig.addTransform('htmlmin', function (content, outputPath) {
+      if (outputPath?.endsWith('.html')) {
+        let minified = htmlmin.minify(content, {
+          useShortDoctype: true,
+          removeComments: true,
+          collapseWhitespace: true,
+          minifyCSS: true,
+          minifyJS: true,
+        });
+        return minified;
+      }
 
-    return content;
-  });
+      return content;
+    });
+  }
 };
