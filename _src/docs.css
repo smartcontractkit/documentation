@@ -163,6 +163,12 @@ navigation a.active:hover {
   background-color: #2a5ada;
   color: white;
 }
+navigation .menu {
+  display: none;
+}
+.nomenu {
+  display: none;
+}
 .nav-header {
   font-weight: bold;
   text-transform: uppercase;
@@ -194,12 +200,16 @@ tr:nth-child(2n) {
 hr {
   margin-bottom: 40px;
 }
-.corner-floated {
-  float: right;
-  margin-top: 30px;
-  padding-right: 30px;
-  z-index: 1000;
-  position: relative;
+.title {
+  display: flex;
+}
+.title h1 {
+  flex-grow: 1;
+}
+.title .corner-floated {
+  width: 160px;
+  margin-top: 40px;
+  text-align: right;
 }
 
 .row {
@@ -253,6 +263,62 @@ hr {
   display: flex;
   flex-direction: column;
   align-items: center;
+}
+
+/** Search */
+#searchbox-button {
+  background-color: rgba(0, 0, 0, 0);
+  display: flex;
+  align-items: center;
+  padding-right: 50px;
+  opacity: 50%;
+}
+#searchbox-button:hover {
+  opacity: 100%;
+}
+#resultsBox {
+  display: none;
+  flex-direction: column;
+  position: absolute;
+  top: 10vh;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  height: 60vh;
+  left: 5%;
+  right: 5%;
+  margin: 32px;
+  padding: 16px;
+  z-index: 10000;
+  background-color: white;
+  overflow: hidden;
+
+  filter: drop-shadow(5px 5px 4px #ccc);
+  box-shadow: rgb(12 22 44 / 32%) 0px 8px 24px -16px;
+}
+#search-form {
+  box-sizing: border-box;
+  font-size: 14px;
+  width: 100%;
+  border-width: 1px;
+  border-style: solid;
+  border-color: rgb(206, 208, 213);
+  color: rgb(109, 115, 128);
+  background-color: rgb(255, 255, 255);
+  outline: 0px;
+  display: flex;
+  align-items: center;
+  border-radius: 4px;
+}
+#search-query {
+  width: 100%;
+  height: 44px;
+  border: 0px solid white;
+}
+#resultsOutput {
+  overflow-y: scroll;
+  flex-grow: 1;
+  padding-bottom: 32px;
+  height: 90%;
 }
 
 /** Fonts */
@@ -789,8 +855,27 @@ input[type='reset'] {
 
 /** Mobile */
 @media screen and (max-width: 900px) {
-  navigation {
+  navigation:not(.open) {
     display: none;
+  }
+  navigation.open {
+    display: block;
+    position: absolute;
+    margin-top: 0;
+    height: 100vh;
+    background-color: white;
+    z-index: 10000;
+    width: 100%;
+    padding-top: 0;
+  }
+  .nomenu {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  navigation .menu {
+    display: block;
+    width: 100%;
   }
   .nav-content > div {
     width: 100%;
@@ -801,16 +886,20 @@ input[type='reset'] {
   #nav-container nav {
     flex-direction: column;
     align-items: flex-start;
+    padding: 8px;
   }
   #nav-container .tab {
-    padding: 8px 0 4px;
+    padding: 8px 8px 4px 0;
+    display: inline;
   }
   #nav-container .tab a {
     padding: 0;
   }
-
   #github-button {
     display: none;
+  }
+  .nav-content {
+    flex-direction: column;
   }
   .nav-content > div {
     padding-top: 0px;
@@ -824,14 +913,26 @@ input[type='reset'] {
   .container {
     padding: 0;
   }
+  #searchbox-button {
+    padding: 0;
+  }
+  .page-title {
+    margin-top: 8px;
+  }
+  .title {
+    flex-direction: column;
+  }
+  .title .corner-floated {
+    width: 100%;
+    text-align: left;
+    margin-top: 8px;
+  }
   .cl-featuredcard {
     flex-direction: column;
   }
   .cl-featuredcard > div > div {
     height: auto;
   }
-}
-@media only screen and (max-width: 1023px) {
   .cl-featuredcard {
     height: auto;
     margin-bottom: 20px;
@@ -848,13 +949,7 @@ input[type='reset'] {
     border: 1px solid #dee7fc;
     margin-bottom: 20px;
   }
-}
-@media screen and (max-width: 1099px) {
   .corner-floated {
-    clear: both;
-    float: none;
-    padding: 4px 16px 0;
-    margin-top: 0;
   }
 }
 @media only screen and (min-width: 576px) {
@@ -867,37 +962,10 @@ input[type='reset'] {
     margin-right: 0;
   }
 }
-@media only screen and (min-width: 768px) {
-  .col-md-6 {
-    flex-basis: 48%;
-    max-width: 48%;
-    margin: 0 10px 10px 0;
-  }
-  .col-md-6:last-child {
-    margin-right: 0;
-  }
-}
-@media only screen and (min-width: 576px) and (max-width: 1140px) {
-  .col-sm-12 {
-    -ms-flex-preferred-size: 100%;
-    flex-basis: 100%;
-    max-width: 100%;
-  }
-}
 @media only screen and (min-width: 992px) {
   .col-md-12 {
     flex-basis: 100%;
     max-width: 100%;
     margin-left: 20px;
-  }
-}
-@media only screen and (max-width: 400px) {
-  .cl-section--questions a {
-    display: block;
-  }
-}
-@media all and (max-width: 1100px) {
-  .cl-custom-page {
-    margin-right: 30px;
   }
 }
