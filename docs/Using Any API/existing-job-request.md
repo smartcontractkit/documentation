@@ -73,8 +73,8 @@ contract OpenWeatherConsumer is ChainlinkClient {
     /**
      * Initial request
      */
-    function requestEthereumPrice(string memory _city) public {
-        Chainlink.Request memory req = buildChainlinkRequest(jobId, address(this), this.fulfillEthereumPrice.selector);
+    function requestWeatherTemperature(string memory _city) public {
+        Chainlink.Request memory req = buildChainlinkRequest(jobId, address(this), this.fulfillWeatherTemperature.selector);
         req.add("city", _city);
         sendChainlinkRequestTo(oracle, req, fee);
     }
@@ -82,7 +82,7 @@ contract OpenWeatherConsumer is ChainlinkClient {
     /**
      * Callback function
      */
-    function fulfillEthereumPrice(bytes32 _requestId, uint256 _result) public recordChainlinkFulfillment(_requestId) {
+    function fulfillWeatherTemperature(bytes32 _requestId, uint256 _result) public recordChainlinkFulfillment(_requestId) {
         result = _result;
     }
 
