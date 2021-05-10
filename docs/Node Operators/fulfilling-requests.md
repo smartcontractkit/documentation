@@ -31,7 +31,7 @@ With your own Oracle contract, you can use your own node to fulfill requests. Th
 [/block]
 - Go to <a href="https://remix.ethereum.org/#gist=03a079b9055f42d993d0066d6f454c6f&optimize=true&version=soljson-v0.4.24+commit.e67f0147.js" target="_blank" rel="noreferrer, noopener">Remix</a> and expand the gist menu
 
-![Remix File Explorer](https://files.readme.io/05f12f3-00eeef4-remix001.jpg)
+![Remix File Explorer](/files/05f12f3-00eeef4-remix001.jpg)
 
 
 [block:callout]
@@ -47,7 +47,7 @@ With your own Oracle contract, you can use your own node to fulfill requests. Th
   "images": [
     {
       "image": [
-        "https://files.readme.io/6aa5936-remix002.jpg",
+        "/files/6aa5936-remix002.jpg",
         "remix002.jpg",
         836,
         1382,
@@ -86,7 +86,7 @@ With your own Oracle contract, you can use your own node to fulfill requests. Th
   "images": [
     {
       "image": [
-        "https://files.readme.io/b9d3620-remix004.jpg",
+        "/files/b9d3620-remix004.jpg",
         "remix004.jpg",
         1216,
         1716,
@@ -112,7 +112,7 @@ A link to Etherscan will display at the bottom, you can open that in a new tab t
   "images": [
     {
       "image": [
-        "https://files.readme.io/b6fe1ac-remix005.jpg",
+        "/files/b6fe1ac-remix005.jpg",
         "remix005.jpg",
         1486,
         174,
@@ -130,7 +130,7 @@ Once successful, you should have a new address for the deployed contract
   "images": [
     {
       "image": [
-        "https://files.readme.io/6858cf3-remix006.jpg",
+        "/files/6858cf3-remix006.jpg",
         "remix006.jpg",
         1072,
         170,
@@ -161,7 +161,7 @@ Once successful, you should have a new address for the deployed contract
   "images": [
     {
       "image": [
-        "https://files.readme.io/c6925db-remix007.jpg",
+        "/files/c6925db-remix007.jpg",
         "remix007.jpg",
         1302,
         1542,
@@ -178,7 +178,7 @@ You can get the address of your node when it starts or by visiting the Configura
   "images": [
     {
       "image": [
-        "https://files.readme.io/d2e5225-Screenshot_from_2018-12-17_08-23-16.png",
+        "/files/d2e5225-Screenshot_from_2018-12-17_08-23-16.png",
         "Screenshot from 2018-12-17 08-23-16.png",
         801,
         170,
@@ -243,7 +243,7 @@ If using Chainlink version `0.9.4` or above, you can add a `name` to your job sp
   "images": [
     {
       "image": [
-        "https://files.readme.io/25bb51c-Screenshot_from_2018-11-02_08-30-26.png",
+        "/files/25bb51c-Screenshot_from_2018-11-02_08-30-26.png",
         "Screenshot from 2018-11-02 08-30-26.png",
         123,
         71,
@@ -261,7 +261,7 @@ If using Chainlink version `0.9.4` or above, you can add a `name` to your job sp
   "images": [
     {
       "image": [
-        "https://files.readme.io/ee412d6-Screenshot_from_2018-12-15_08-30-43.png",
+        "/files/ee412d6-Screenshot_from_2018-12-15_08-30-43.png",
         "Screenshot from 2018-12-15 08-30-43.png",
         1291,
         823,
@@ -279,7 +279,7 @@ If using Chainlink version `0.9.4` or above, you can add a `name` to your job sp
   "images": [
     {
       "image": [
-        "https://files.readme.io/a7a2f0c-Screenshot_from_2018-11-02_08-42-22.png",
+        "/files/a7a2f0c-Screenshot_from_2018-11-02_08-42-22.png",
         "Screenshot from 2018-11-02 08-42-22.png",
         631,
         54,
@@ -319,7 +319,7 @@ With the jobs added, you can now use your node to fulfill requests. This last se
   "images": [
     {
       "image": [
-        "https://files.readme.io/a8a5ecd-Screenshot_from_2019-05-16_15-39-05.png",
+        "/files/a8a5ecd-Screenshot_from_2019-05-16_15-39-05.png",
         "Screenshot from 2019-05-16 15-39-05.png",
         473,
         433,
@@ -336,7 +336,7 @@ The contract should compile. You can now deploy it and fund it by sending some L
   "images": [
     {
       "image": [
-        "https://files.readme.io/dfce3b0-Screenshot_from_2019-05-16_17-12-51.png",
+        "/files/dfce3b0-Screenshot_from_2019-05-16_17-12-51.png",
         "Screenshot from 2019-05-16 17-12-51.png",
         831,
         38,
@@ -352,7 +352,7 @@ The contract should compile. You can now deploy it and fund it by sending some L
   "images": [
     {
       "image": [
-        "https://files.readme.io/6741635-Screenshot_from_2019-05-15_15-38-25.png",
+        "/files/6741635-Screenshot_from_2019-05-15_15-38-25.png",
         "Screenshot from 2019-05-15 15-38-25.png",
         228,
         99,
@@ -374,7 +374,7 @@ To withdraw LINK from the Oracle contract, head to Remix and search for the "wit
   "images": [
     {
       "image": [
-        "https://files.readme.io/f8ffdc0-c6925db-remix007.jpg",
+        "/files/f8ffdc0-c6925db-remix007.jpg",
         "c6925db-remix007.jpg",
         567,
         672,

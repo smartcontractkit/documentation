@@ -11,7 +11,7 @@ metadata:
   title: "Beginners Tutorial"
   description: "Learn what smart contracts are, how to write them, and how to use Chainlink price feeds to deploy your very own Chainlink smart contract."
   image: 
-    0: "https://files.readme.io/1a63254-link.png"
+    0: "/files/1a63254-link.png"
     1: "link.png"
     2: 1459
     3: 1459
@@ -202,7 +202,7 @@ Fortunately for us, Remix also has support for gist. This means that Remix can l
   "images": [
     {
       "image": [
-        "https://files.readme.io/11d7052-Screenshot_2020-11-27_at_10.16.47.png",
+        "/files/11d7052-Screenshot_2020-11-27_at_10.16.47.png",
         "Screenshot 2020-11-27 at 10.16.47.png",
         454,
         269,
@@ -231,7 +231,7 @@ Once that's done, hop over to the Kovan testnet inside Metamask extension, as se
   "images": [
     {
       "image": [
-        "https://files.readme.io/de9b81c-kovan.gif",
+        "/files/de9b81c-kovan.gif",
         "kovan.gif",
         640,
         530,
@@ -267,7 +267,7 @@ Remix should automatically detect the correct compiler version depending on the 
   "images": [
     {
       "image": [
-        "https://files.readme.io/99af570-Screenshot_2020-11-27_at_10.45.44.png",
+        "/files/99af570-Screenshot_2020-11-27_at_10.45.44.png",
         "Screenshot 2020-11-27 at 10.45.44.png",
         592,
         114,
@@ -297,7 +297,7 @@ Once deployed, an item will appear in the "Deployed Contracts" section underneat
   "images": [
     {
       "image": [
-        "https://files.readme.io/ca77c39-Screenshot_2020-11-27_at_10.56.56.png",
+        "/files/ca77c39-Screenshot_2020-11-27_at_10.56.56.png",
         "Screenshot 2020-11-27 at 10.56.56.png",
         618,
         302,

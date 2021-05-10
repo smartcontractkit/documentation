@@ -8,7 +8,7 @@ hidden: false
 metadata: 
   description: "Migrating to the latest version of Chainlink Price Feeds."
   image: 
-    0: "https://files.readme.io/01aaa2b-670379d-OpenGraph_V3.png"
+    0: "/files/OpenGraph_V3.png"
     1: "670379d-OpenGraph_V3.png"
     2: 1459
     3: 1459

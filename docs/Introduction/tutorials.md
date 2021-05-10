@@ -12,7 +12,7 @@ hidden: false
   "images": [
     {
       "image": [
-        "https://files.readme.io/4fb5856-a9d5ff5-a4c6c80-85d09b6-19facd8-banner.png",
+        "/files/a4c6c80-85d09b6-19facd8-banner.png",
         "a9d5ff5-a4c6c80-85d09b6-19facd8-banner.png",
         3246,
         731,

@@ -13,7 +13,7 @@ metadata:
   "images": [
     {
       "image": [
-        "https://files.readme.io/2a0ca3e-Create_a_Chainlinked_Project.png",
+        "/files/a4c6c80-85d09b6-19facd8-banner.png",
         "Create a Chainlinked Project.png",
         3246,
         731,

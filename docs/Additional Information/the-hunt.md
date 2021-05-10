@@ -29,7 +29,7 @@ First 4 tokens to find the passwords for:
   "images": [
     {
       "image": [
-        "https://files.readme.io/f5122c8-Chainlink_Knight.png",
+        "/files/f5122c8-Chainlink_Knight.png",
         "Chainlink_Knight.png",
         1428,
         1889,
@@ -48,7 +48,7 @@ First 4 tokens to find the passwords for:
   "images": [
     {
       "image": [
-        "https://files.readme.io/75337bf-Chainlink_Orc.png",
+        "/files/75337bf-Chainlink_Orc.png",
         "Chainlink_Orc.png",
         1428,
         1889,
@@ -66,7 +66,7 @@ First 4 tokens to find the passwords for:
   "images": [
     {
       "image": [
-        "https://files.readme.io/0d7cfd0-Chainlink_Witch.png",
+        "/files/0d7cfd0-Chainlink_Witch.png",
         "Chainlink_Witch.png",
         1428,
         1353,
@@ -84,7 +84,7 @@ First 4 tokens to find the passwords for:
   "images": [
     {
       "image": [
-        "https://files.readme.io/3612878-Chainlink_Elf.png",
+        "/files/3612878-Chainlink_Elf.png",
         "Chainlink_Elf.png",
         1428,
         1889,

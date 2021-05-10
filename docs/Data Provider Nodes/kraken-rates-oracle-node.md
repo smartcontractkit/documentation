@@ -8,7 +8,7 @@ whatsnext: {"Tiingo EOD Stock Price Oracle":"/docs/tiingo-eod-stock-price-oracle
 hidden: false
 metadata: 
   image: 
-    0: "https://files.readme.io/2713d5c-cl.png"
+    0: "/files/2713d5c-cl.png"
     1: "cl.png"
     2: 1459
     3: 1459
