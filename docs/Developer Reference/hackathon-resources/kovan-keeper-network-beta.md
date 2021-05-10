@@ -7,7 +7,7 @@ permalink: "docs/kovan-keeper-network-beta/"
 hidden: false
 metadata: 
   image: 
-    0: "https://files.readme.io/d5ac604-cl.png"
+    0: "/files/d5ac604-cl.png"
     1: "cl.png"
     2: 1459
     3: 1459
@@ -35,7 +35,7 @@ The logical view of the network looks like given below. There will be a central 
   "images": [
     {
       "image": [
-        "https://files.readme.io/79f4e61-image1.png",
+        "/files/79f4e61-image1.png",
         "image1.png",
         1140,
         826,

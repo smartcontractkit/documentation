@@ -8,7 +8,7 @@ hidden: false
 metadata: 
   description: "API reference for using Chainlink Price Feeds in smart contracts."
   image: 
-    0: "https://files.readme.io/fc85aa8-670379d-OpenGraph_V3.png"
+    0: "/files/OpenGraph_V3.png"
     1: "670379d-OpenGraph_V3.png"
     2: 1459
     3: 1459

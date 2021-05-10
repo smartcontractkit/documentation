@@ -8,7 +8,7 @@ whatsnext: {"GeoDB Oracle Node":"/docs/geodb-oracle-node/"}
 hidden: false
 metadata: 
   image: 
-    0: "https://files.readme.io/be9eb4e-cl.png"
+    0: "/files/be9eb4e-cl.png"
     1: "cl.png"
     2: 1459
     3: 1459

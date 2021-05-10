@@ -8,7 +8,7 @@ whatsnext: {"Migration Instructions to Flux Aggregator ":"/docs/migrating-to-flu
 hidden: false
 metadata: 
   image: 
-    0: "https://files.readme.io/fb73165-cl.png"
+    0: "/files/fb73165-cl.png"
     1: "cl.png"
     2: 1459
     3: 1459
