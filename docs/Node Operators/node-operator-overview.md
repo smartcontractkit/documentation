@@ -3,7 +3,7 @@ layout: nodes.liquid
 date: Last Modified
 title: "Overview"
 permalink: "docs/node-operator-overview/"
-whatsnext: {"Running a Chainlink Node":"/docs/running-a-chainlink-node/","Node Operator Email List":"https://link.us18.list-manage.com/subscribe?u=8969e6baa6d67e10213eff25b&id=e70d98a987/"}
+whatsnext: {"Running a Chainlink Node":"/docs/running-a-chainlink-node/"}
 hidden: false
 metadata: 
   title: "Node Operator Overview"
