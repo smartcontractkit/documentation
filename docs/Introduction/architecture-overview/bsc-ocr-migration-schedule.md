@@ -11,7 +11,7 @@ hidden: true
 > BSC Off-chain Reporting is planned to be migrated on 20 May 2010 at 16:30UTC. Service should not be interrupted during this process.
 
 |Pair|Aggregator|
-|:---|:---|:---|
+|:---|:---|
 |SXP / USD|0x5ba2B3A2a41141Aa55Fc72C40d6643aEE12BD0B6|
 |AUTO / USD|0x717AaA3e50dd2f97723A5C76fc4db713b8a1A86d|
 |ETH / USD|0xfC3069296a691250fFDf21fe51340fdD415a76ed|
