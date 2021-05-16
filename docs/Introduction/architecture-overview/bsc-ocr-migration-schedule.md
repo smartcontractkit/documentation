@@ -8,7 +8,7 @@ hidden: true
 ---
 > 🚧 BSC OCR Migration 🚧 
 >
-> BSC Off-chain Reporting is planned to be migrated on 20 May 2010 at 16:30UTC. Service should not be interrupted during this process.
+> BSC Off-chain Reporting is planned to be migrated on **20 May 2021 at 16:30UTC**. Service should not be interrupted during this process.
 
 |Pair|Aggregator|
 |:---|:---|
