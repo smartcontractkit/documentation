@@ -17,7 +17,7 @@ The `FluxAggregator` contract is responsible for aggregating data from multiple 
   "images": [
     {
       "image": [
-        "https://files.readme.io/32b02f2-FluxAggregator_Decision_Tree.png",
+        "/files/32b02f2-FluxAggregator_Decision_Tree.png",
         "FluxAggregator Decision Tree.png",
         2196,
         3096,

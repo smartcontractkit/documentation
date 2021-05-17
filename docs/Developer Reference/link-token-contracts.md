@@ -9,7 +9,7 @@ metadata:
   title: "LINK Token Contracts"
   description: "Addresses for the LINK token on supported networks."
   image: 
-    0: "https://files.readme.io/72d4bd9-link.png"
+    0: "/files/72d4bd9-link.png"
     1: "link.png"
     2: 1459
     3: 1459

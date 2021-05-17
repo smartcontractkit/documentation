@@ -82,7 +82,7 @@ On the Job Spec Detail page for the job, click the Run button. You should see a 
   "images": [
     {
       "image": [
-        "https://files.readme.io/8cfc185-Screenshot_from_2019-06-21_08-29-07.png",
+        "/files/8cfc185-Screenshot_from_2019-06-21_08-29-07.png",
         "Screenshot from 2019-06-21 08-29-07.png",
         1894,
         806,

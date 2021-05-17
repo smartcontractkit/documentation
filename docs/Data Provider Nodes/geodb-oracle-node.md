@@ -8,7 +8,7 @@ whatsnext: {"TheRundown Oracle Node":"/docs/therundown-oracle-node/"}
 hidden: false
 metadata: 
   image: 
-    0: "https://files.readme.io/070eb54-cl.png"
+    0: "/files/070eb54-cl.png"
     1: "cl.png"
     2: 1459
     3: 1459
@@ -20,7 +20,7 @@ GeoDB is a decentralized Big Data ecosystem that compensates data providers who 
 
 - Write and deploy your [Chainlink](../intermediates-tutorial/) contract using the network details below
 - Fund it with [LINK](../link-token-contracts/)
-- Call your [request method](#chainlink-examples)
+- Call your [request method](./#chainlink-examples)
 
 # Network Details
 

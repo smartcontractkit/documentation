@@ -35,12 +35,11 @@
         {% endif %}
 
         <!-- Syntax Highlight-->
-        <link href="/prism.css" rel="stylesheet" type="text/css">
-        <script src="/prism.js"></script>
-        <script src="/tab.js"></script>
-        <script src="/sul.js"></script>
-
-
+        <link rel="preload" href="/prism.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+        <noscript><link rel="stylesheet" href="/prism.css"></noscript>
+        <script src="/prism.js" defer></script>
+        <script src="/tab.js" defer></script>
+        <script src="/sul.js" defer></script>
         <link href="/docs.css" rel="stylesheet" type="text/css">
 
         <link href="https://assets-global.website-files.com/5f6b7190899f41fb70882d08/5fa97474da20bc75f63bfdc4_Chainlink-favicon-32.png" rel="shortcut icon" type="image/x-icon">
@@ -55,35 +54,7 @@
             gtag("config", "UA-128878871-16");
         </script>
 
-        <script>
-            // Detect highlighting
-            let lastEvent = 0;
-            const checkForHighlight = (event) => {
-                try {
-                    const selection = window.getSelection().toString();
-                    // Rate limit to 30s
-                    if(selection && Date.now() > (lastEvent + 1000 * 30)) {
-                        gtag('event','select_content',{'event_category': 'docs-engagement', label: selection.substring(0,30)});
-                        lastEvent = Date.now();
-                    }
-                } catch (e) {}
-            }
-            document.addEventListener('mouseup',checkForHighlight);
-
-            // Track remix deployments
-            document.addEventListener('DOMContentLoaded', () => {
-                [...document.getElementsByTagName('a')]
-                    .filter(x => x.href.startsWith('https://remix.ethereum.org/') && x.href.length > 27 )
-                    .map(x => {x.addEventListener('click',(event) => {
-                        console.log('sending to gtag!');
-                        gtag('event','deploy-to-remix',{event_category:'docs-engagement'});
-                    });});
-                [...document.getElementsByClassName('copy-to-clipboard-button')]
-                    .map(x => {x.addEventListener('click',(event) => {
-                        gtag('event','copy-code',{event_category:'docs-engagement'});
-                    });});
-            })
-        </script>
+        
 
 
     </head>
@@ -96,9 +67,10 @@
                     src="/chainlink-docs.svg"
                     loading="lazy" style="height:40px;width:176px;max-width:176px" alt="Chainlink Developers"></a>
                 <span style="flex-grow:1;"></span>
-                <div class="tab"><a href="/" {% if section == "smartContract" %} class="active" {% endif %}>Contract Developers</a></div>
-                <div class="tab"><a href="/chainlink-nodes/" {% unless section == "smartContract" %} class="active" {% endunless %}>Node Operators</a></div>
-
+                <div style="display:flex">
+                    <div class="tab"><a href="/" {% if section == "smartContract" %} class="active" {% endif %}>Contract Developers</a></div>
+                    <div class="tab"><a href="/chainlink-nodes/" {% unless section == "smartContract" %} class="active" {% endunless %}>Node Operators</a></div>
+                </div>
                 <span style="flex-grow:1;"></span>
                 
 
@@ -111,14 +83,7 @@
 
 
         <div id="page">
-        <section class="section-content" style="padding-top:0px;">
-            
-            <div class="corner-floated">
-                <div id="docsat"></div>
-                <script src="/docsat.js"></script>
-                <a href="https://github.com/smartcontractkit/documentation/edit/main/{{page.inputPath}}">Suggest Edits</a>
-                <!--   Last Modified: {{page.date}} -->
-            </div>
+        <section class="section-content" style="padding-top:0px;position:relative;">
 	        {{ content }}
         </section>
     </div>
@@ -275,22 +240,59 @@
                 </div>
             </div>
         </footer>
-        <script
-            src="https://d3e54v103j8qbb.cloudfront.net/js/jquery-3.5.1.min.dc5e7f18c8.js?site=5f6b7190899f41fb70882d08"
-            type="text/javascript" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0="
-            crossorigin="anonymous"></script>
+
 
         <script>
-            var links = document.links;
-            for (var i = 0, linksLength = links.length; i < linksLength; i++) {
-                if(!links[i].href.startsWith("javascript:")) {
-                    if (links[i].hostname != window.location.hostname) {
-                        links[i].target = '_blank';
-                    } 
+            
+            document.addEventListener('DOMContentLoaded', () => {
+                // Detect highlighting
+                let lastEvent = 0;
+                const checkForHighlight = (event) => {
+                    try {
+                        const selection = window.getSelection().toString();
+                        // Rate limit to 30s
+                        if(selection && Date.now() > (lastEvent + 1000 * 30)) {
+                            gtag('event','select_content',{'event_category': 'docs-engagement', label: selection.substring(0,30)});
+                            lastEvent = Date.now();
+                        }
+                    } catch (e) {}
                 }
-            }
-        </script>
+                document.addEventListener('mouseup',checkForHighlight);
 
+                // Track remix deployments
+                [...document.getElementsByTagName('a')]
+                    .filter(x => x.href.startsWith('https://remix.ethereum.org/') && x.href.length > 27 )
+                    .map(x => {x.addEventListener('click',(event) => {
+                        gtag('event','deploy-to-remix',{event_category:'docs-engagement'});
+                    });});
+                [...document.getElementsByClassName('copy-to-clipboard-button')]
+                    .map(x => {x.addEventListener('click',(event) => {
+                        gtag('event','copy-code',{event_category:'docs-engagement'});
+                    });});
+
+                    // Open all external links in a blank context
+                    const links = document.links;
+                    for (var i = 0, linksLength = links.length; i < linksLength; i++) {
+                        if(!links[i].href.startsWith("javascript:")) {
+                            if (links[i].hostname != window.location.hostname) {
+                                links[i].target = '_blank';
+                            } 
+                        }
+                    }
+
+                    // Add header anchor tags
+                    const headers = document.querySelectorAll('.article > h1:not(.page-title),.article > h2,.article > h3');
+                    [...headers].map(header => {
+                        const link = document.createElement('a');
+                        link.href = `#${header.id}`;
+                        link.classList.add('anchor');
+                        link.innerHTML = '<img src="/images/link.svg" alt="Link to this section">';
+                        header.appendChild(link);
+                    })
+            })
+
+
+        </script>
     </body>
 
 

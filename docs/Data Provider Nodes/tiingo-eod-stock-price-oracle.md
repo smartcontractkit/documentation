@@ -8,7 +8,7 @@ whatsnext: {"GeoDB Oracle Node":"/docs/geodb-oracle-node/"}
 hidden: false
 metadata: 
   image: 
-    0: "https://files.readme.io/be9eb4e-cl.png"
+    0: "/files/be9eb4e-cl.png"
     1: "cl.png"
     2: 1459
     3: 1459
@@ -20,7 +20,7 @@ Tiingo consists of a data research and analytics arm, a news aggregator, and a p
 
 - Write and deploy your [Chainlink](../intermediates-tutorial/)  contract using the network details below
 - Fund it with [LINK](../link-token-contracts/)
-- Call your [request method](#section-chainlink-examples)
+- Call your [request method](./#chainlink-examples)
 
 # Network Details
 

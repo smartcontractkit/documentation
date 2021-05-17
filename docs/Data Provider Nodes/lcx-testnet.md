@@ -8,7 +8,7 @@ whatsnext: {"Kraken Rates Oracle Node":"/docs/kraken-rates-oracle-node/"}
 hidden: false
 metadata: 
   image: 
-    0: "https://files.readme.io/b76c02e-cl.png"
+    0: "/files/OpenGraph_V3.png"
     1: "cl.png"
     2: 1459
     3: 1459
@@ -20,7 +20,7 @@ This Chainlink has a dedicated connection to <a href="https://www.lcx.com/Crypto
 
 - Write and deploy your [Chainlink](../intermediates-tutorial/)  contract using the network details below
 - Fund it with [LINK](../link-token-contracts/) (1 LINK is required per-request/)
-- Call your [request method](#section-chainlink-examples) 
+- Call your [request method](./#chainlink-examples) 
 
 # Network Details
 
@@ -100,9 +100,9 @@ contract LCXChainlink is ChainlinkClient {
 # Tasks
 
 - [LCX](../external-adapters/)
-- [Multiply](../adapters/#section-multiply)
-- [EthUint256](../adapters/#section-ethuint256)
-- [EthTx](../adapters/#section-ethtx)
+- [Multiply](../adapters/#multiply)
+- [EthUint256](../adapters/#ethuint256)
+- [EthTx](../adapters/#ethtx)
 
 # Request Parameters
 

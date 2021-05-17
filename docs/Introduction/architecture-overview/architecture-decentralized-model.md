@@ -9,7 +9,7 @@ metadata:
   title: "Chainlink Decentralised Data Model"
   description: "This page describes the decentralized architecture which enables Chainlink to aggregate data from multiple independent node operators."
   image: 
-    0: "https://files.readme.io/d49af32-670379d-OpenGraph_V3.png"
+    0: "/files/OpenGraph_V3.png"
     1: "670379d-OpenGraph_V3.png"
     2: 1459
     3: 1459
@@ -26,13 +26,13 @@ Each price feed is updated by multiple, independent Chainlink oracle operators. 
   "images": [
     {
       "image": [
-        "https://files.readme.io/bf08b31-5ef7eba-screenshot.png",
-        "5ef7eba-screenshot.png",
+        "/images/contract-devs/price-aggr.png",
+        "price-aggregator",
         3600,
         2400,
         "#fafafa"
       ],
-      "caption": "Screenshot of the <a href=\"https://feeds.chain.link/eth-usd\" target=\"_blank\">ETH/USD Price Feed</a>"
+      "caption": "Screenshot of the <a href=\"https://data.chain.link/eth-usd\" target=\"_blank\">ETH/USD Price Feed</a>"
     }
   ]
 }
@@ -68,7 +68,7 @@ A new aggregation round starts after a specified amount of time from the last up
   "images": [
     {
       "image": [
-        "https://files.readme.io/399e90d-Simple_Architecture_Diagram_2_V1.png",
+        "/files/399e90d-Simple_Architecture_Diagram_2_V1.png",
         "Simple Architecture Diagram_2 V1.png",
         3229,
         628,

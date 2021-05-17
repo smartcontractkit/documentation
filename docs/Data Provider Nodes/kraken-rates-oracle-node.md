@@ -8,7 +8,7 @@ whatsnext: {"Tiingo EOD Stock Price Oracle":"/docs/tiingo-eod-stock-price-oracle
 hidden: false
 metadata: 
   image: 
-    0: "https://files.readme.io/2713d5c-cl.png"
+    0: "/files/2713d5c-cl.png"
     1: "cl.png"
     2: 1459
     3: 1459
@@ -20,7 +20,7 @@ This Chainlink has a dedicated connection to <a href="https://blog.cfbenchmarks.
 
 - Write and deploy your [Chainlink](../intermediates-tutorial/)  contract using the network details below
 - Fund it with [LINK](../link-token-contracts/)
-- Call your [request method](#section-chainlink-examples) 
+- Call your [request method](./#chainlink-examples) 
 
 # Network Details
 
@@ -108,9 +108,9 @@ contract KrakenChainlink is ChainlinkClient {
 # Tasks
 
 - [Kraken](../external-adapters/)
-- [Multiply](../adapters/#section-multiply)
-- [EthUint256](../adapters/#section-ethuint256)
-- [EthTx](../adapters/#section-ethtx)
+- [Multiply](../adapters/#multiply)
+- [EthUint256](../adapters/#ethuint256)
+- [EthTx](../adapters/#ethtx)
 
 # Request Parameters
 

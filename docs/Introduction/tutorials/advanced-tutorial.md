@@ -9,12 +9,17 @@ whatsnext: {"Make a GET Request":"/docs/make-a-http-get-request/", "Make an Exis
 hidden: false
 metadata: 
   image: 
-    0: "https://files.readme.io/04b8e56-cl.png"
+    0: "/files/04b8e56-cl.png"
     1: "cl.png"
     2: 1459
     3: 1459
     4: "#dbe1f8"
 ---
+
+<p>
+  https://www.youtube.com/watch?v=ay4rXZhAefs
+</p>
+
 > 👍 Prerequisites
 >
 > This tutorial requires basic knowledge about Ethereum, smart contracts, and the Chainlink Request & Receive cycle. If you're unfamiliar with those concepts, follow the [Beginners](../beginners-tutorial/) or [Intermediates](../intermediates-tutorial/) tutorials.

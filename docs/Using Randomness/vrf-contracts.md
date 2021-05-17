@@ -8,7 +8,7 @@ hidden: false
 metadata: 
   title: "Chainlink VRF Contract Addresses"
   image: 
-    0: "https://files.readme.io/95f26ed-670379d-OpenGraph_V3.png"
+    0: "/files/OpenGraph_V3.png"
     1: "670379d-OpenGraph_V3.png"
     2: 1459
     3: 1459

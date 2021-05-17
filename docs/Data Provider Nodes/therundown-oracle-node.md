@@ -8,7 +8,7 @@ whatsnext: {"DNS Ownership Oracle":"/docs/dns-ownership-oracle/"}
 hidden: false
 metadata: 
   image: 
-    0: "https://files.readme.io/bf220ba-cl.png"
+    0: "/files/bf220ba-cl.png"
     1: "cl.png"
     2: 1459
     3: 1459
@@ -20,7 +20,7 @@ TheRundown is the leading platform for real-time odds from the most popular spor
 
 - Write and deploy your [Chainlink](../intermediates-tutorial/) contract using the network details below
 - Fund it with [LINK](../link-token-contracts/)
-- Call your [request method](#section-chainlink-examples)
+- Call your [request method](./#chainlink-examples)
 
 # Network Details
 

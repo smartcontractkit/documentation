@@ -62,7 +62,7 @@ To be proactive in detecting any issues before or when they occur, active monito
 - Ethereum client disk, RAM and CPU usage.
 
 Monitoring can be set up from the Docker container's output and fed into most major logging providers. For example, you can use Docker's docs to set up the logging driver for <a href="https://docs.docker.com/config/containers/logging/awslogs/" target="_blank">Amazon CloudWatch</a> and <a href="https://docs.docker.com/config/containers/logging/gcplogs/" target="_blank">Google Cloud Logging</a>. You will want to set the [
-JSON_CONSOLE](../configuration-variables/#section-json_console) configuration variable to `true` so that the output of the container is JSON-formatted for logging.
+JSON_CONSOLE](../configuration-variables/#json_console) configuration variable to `true` so that the output of the container is JSON-formatted for logging.
 [block:api-header]
 {
   "title": "Frequent Updates"
@@ -70,7 +70,7 @@ JSON_CONSOLE](../configuration-variables/#section-json_console) configuration va
 [/block]
 Due to the early nature of the software, it may be required to perform frequent updates to your Chainlink node. 
 
-On performing system maintenance to update the Chainlink node, follow [this](/docs/performing-system-maintenance/#section-failover-node-example) guide.
+On performing system maintenance to update the Chainlink node, follow [this](/docs/performing-system-maintenance/#failover-node-example) guide.
 [block:api-header]
 {
   "title": "Jobs and Config"
@@ -79,14 +79,14 @@ On performing system maintenance to update the Chainlink node, follow [this](/do
 The following are suggestions for job specifications and configuration settings for the node.
 
 [Job Specifications](../job-specifications/):
-- Include the address of your oracle contract address for all RunLog initiated jobs, as shown in the [Fulfilling Requests](../fulfilling-requests/#section-add-jobs-to-the-node) guide.
+- Include the address of your oracle contract address for all RunLog initiated jobs, as shown in the [Fulfilling Requests](../fulfilling-requests/#add-jobs-to-the-node) guide.
 - Override the global `MIN_INCOMING_CONFIRMATIONS` config by setting a `confirmations` field in jobs which perform off-chain payments to allow for greater security by making the node ensure the transaction is still valid after X blocks.
 
 [Configuration Variables](../configuration-variables/):
-- [MINIMUM_CONTRACT_PAYMENT](../configuration-variables/#section-minimum-contract-payment): ensure your required payment amount is high enough to meet the costs of responding on-chain.
-- [MIN_INCOMING_CONFIRMATIONS](../configuration-variables/#section-min-incoming-confirmations): this can be set to 0 for common data request jobs. See the bullet above on setting individual `confirmations` for specific jobs.
-- [LOG_TO_DISK](../configuration-variables/#section-log-to-disk): Set to `false` if you're using external log drivers which parse the output from Docker containers. This will save you disk space.
-- [JSON_CONSOLE](../configuration-variables/#section-json-console): Set to `true` if you're using external log drivers to parse the output of Docker containers. This will make it easier to parse individual fields of the log and set up alerts.
+- [MINIMUM_CONTRACT_PAYMENT](../configuration-variables/#minimum-contract-payment): ensure your required payment amount is high enough to meet the costs of responding on-chain.
+- [MIN_INCOMING_CONFIRMATIONS](../configuration-variables/#min-incoming-confirmations): this can be set to 0 for common data request jobs. See the bullet above on setting individual `confirmations` for specific jobs.
+- [LOG_TO_DISK](../configuration-variables/#log-to-disk): Set to `false` if you're using external log drivers which parse the output from Docker containers. This will save you disk space.
+- [JSON_CONSOLE](../configuration-variables/#json-console): Set to `true` if you're using external log drivers to parse the output of Docker containers. This will make it easier to parse individual fields of the log and set up alerts.
 [block:api-header]
 {
   "title": "Addresses"

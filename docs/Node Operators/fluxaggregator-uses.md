@@ -36,7 +36,7 @@ You can throw that into Remix and use the `At Address` with the address of the F
   "images": [
     {
       "image": [
-        "https://files.readme.io/48a267a-Screenshot_20200605_162024.png",
+        "/files/48a267a-Screenshot_20200605_162024.png",
         "Screenshot_20200605_162024.png",
         370,
         143,
