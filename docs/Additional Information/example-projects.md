@@ -9,6 +9,17 @@ hidden: false
 
 The following is a list of selected hackathon projects utilizing Chainlinked contracts.
 
+## Chainlink Spring 2021 Hackathon
+
+The <a href="https://chain.link/hackathon" target="_blank" rel="noreferrer, noopener">Chainlink Spring 2021 Hackathon</a>, read our <a href="https://blog.chain.link/chainlink-hackathon-winners-spring-2021/" target="_blank" > blog here! </a>
+
+|Name|Description|GitHub|
+|:---|:---|:---|
+|**deBridge**<br />🥇|Cross-chain defi primative|<a href="https://github.com/debridge-finance" target="_blank" rel="noreferrer, noopener">Go</a>|
+|**Vulcan Exchange**<br />🥇|Weather derivatives defi platform|<a href="https://github.com/Vulcan-Exchange?ref=block123" target="_blank" rel="noreferrer, noopener">Go</a>|
+|**DeFi Lending Insurance**<br />🥇|DeFi Lending Insurance|<a href="https://github.com/chainlink-hackathon2021-insurance/DeFi-Lending-Insurance" target="_blank" rel="noreferrer, noopener">Go</a>|
+|**Fract**<br />🥇|Dynamic NFT no-code UI creator|<a href="https://fraxio.herokuapp.com/" target="_blank" rel="noreferrer, noopener">Go</a>|
+
 ## ETH Global's ETHOnline 2020
 
 The <a href="https://ethglobal.online/" target="_blank" rel="noreferrer, noopener">ETH Online</a>, read our <a href="https://blog.chain.link/ethonline-2020-chainlink-hackathon-winners/" target="_blank" > blog here! </a>
