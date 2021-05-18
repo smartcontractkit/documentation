@@ -26,7 +26,13 @@ For implementation details, read [Introduction to Chainlink VRF](../chainlink-vr
 |VRF Coordinator|`0x3d2341ADb2D31f1c5530cDC622016af293177AE0`|
 |Key Hash|`0xf86195cf7690c55907b2b611ebb7343a6f649bff128701cc542f0569e2c549da`|
 |Fee|0.0001 LINK|
-
+[block:callout]
+{
+  "type": "success",
+  "body": "VRF responses are generated after 10 block confirmations on Polygon by default. Please [get in touch with us](https://chainlinkcommunity.typeform.com/to/OYQO67EF) if you require VRF responses to be generated after a higher number of block confirmations, based on what you feel is best for achieving secure finality times on Polygon.",
+  "title": "VRF Response Times on Polygon"
+}
+[/block]
 # Polygon (Matic) Mumbai Testnet
 
 |Item|Value|
