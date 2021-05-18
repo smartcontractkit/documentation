@@ -75,4 +75,4 @@ ___
 
 ## Maximizing security
 
-Chainlink VRF provides powerful security guarantees and is easy to integrate. However, smart contract security is a nuanced topic.
+Chainlink VRF provides powerful security guarantees and is easy to integrate. However, smart contract security is a nuanced topic. You can read about the [top security considerations for VRF](../vrf-security-considerations/).

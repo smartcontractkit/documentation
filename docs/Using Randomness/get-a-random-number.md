@@ -29,7 +29,7 @@ Note, the below values have to be configured correctly for VRF requests to work.
 
 > 🚧 Security Considerations
 >
-> If your contract could have multiple VRF requests in flight simultaneously, you must ensure that the order in which the VRF responses arrive cannot be used to manipulate your contract's user-significant behavior.
+> Be sure to look your contract over with [these security considerations](../vrf-security-considerations/) in mind!
 
 >❗️ Remember to fund your contract with LINK!
 >
