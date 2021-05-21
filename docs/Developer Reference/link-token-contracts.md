@@ -83,7 +83,7 @@ LINK is native to Ethereum, so to use LINK on other chains, it must be bridged. 
 
 > 📘 Important
 >
-> The LINK provided by the <a href="https://www.binance.org/en/bridge" target="_blank">Binance Bridge</a> is not ERC-677 compatible, so cannot be used with Chainlink oracles. However, it can be <a href="https://pegswap.surge.sh/" target="_blank">**converted to the official LINK token on BSC using Chainlink's PegSwap service**</a>. 
+> The LINK provided by the [Binance Bridge](https://www.binance.org/en/bridge) is not ERC-677 compatible, so cannot be used with Chainlink oracles. However, it can be [**converted to the official LINK token on BSC using Chainlink's PegSwap service**](https://pegswap.chain.link/). 
 
 |Parameter|Value|
 |:---|:---|
@@ -111,7 +111,7 @@ LINK is native to Ethereum, so to use LINK on other chains, it must be bridged. 
 
 > 📘 Important
 >
-> The LINK provided by the <a href="https://wallet.matic.network/bridge" target="_blank">Polygon (Matic) Bridge</a> is not ERC-677 compatible, so cannot be used with Chainlink oracles. However, it can be <a href="https://pegswap.surge.sh/" target="_blank">**converted to the official LINK token on Polygon (Matic) using Chainlink's PegSwap service**</a>
+> The LINK provided by the [Polygon (Matic) Bridge](https://wallet.matic.network/bridge) is not ERC-677 compatible, so cannot be used with Chainlink oracles. However, it can be [**converted to the official LINK token on Polygon (Matic) using Chainlink's PegSwap service**](https://pegswap.chain.link/)
 
 You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blank"> watch this video </a>. 
 
