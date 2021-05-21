@@ -25,6 +25,20 @@ We do not usually give time frames unless something is visibly near completion o
 Resources:
 *  <a href="https://github.com/smartcontractkit/chainlink/pulls" target="_blank">Pull Requests</a>
 
+## It was announced you are integrating with a specific blockchain but I do not see the documentation for it. What's going on?
+
+The announcement was probably a working announcement. There are two types of integration announcements:
+
+1\.  <a href="https://fantom.foundation/blog/fantom-collaborates-with-chainlink-to-integrate-chainlink-vrf/" target="_blank">Working Announcements</a>
+
+These announce that work has begun on an integration, but the integration is not yet ready to be used. You will not find documentation on the integration after these announcements.
+
+2\. <a href="https://www.binance.org/en/blog/chainlink-vrf-is-live-on-binance-smart-chain-bringing-verifiable-randomness-to-bsc-developers/" target="_blank">Integration Live Announcements</a>
+
+These announce that an integration is live and ready to be used. You can find the contract addresses in our docs for <a href="https://docs.chain.link/docs/reference-contracts/" target="_blank">Price Feeds</a> and <a href="https://docs.chain.link/docs/vrf-contracts/" target="_blank">Chainlink VRF</a> respectively.
+
+Often these announcements will posted by our integration partners.
+
 ## How many members does the team have?
 
 The team is visible <a href="https://chain.link/team/" target="_blank">on our website</a>. We also encourage community contributions to our <a href="https://github.com/smartcontractkit/chainlink" target="_blank">Github repository</a>.
