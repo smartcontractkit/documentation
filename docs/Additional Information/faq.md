@@ -122,7 +122,11 @@ Resources:
 
 ## How do I request a value that is greater than 32 bytes?
 
-Currently, the EthTX core adapter can only write values that are up to 32 bytes onto a blockchain. If the value is larger than 32 bytes, the data may need to be returned by making multiple requests.
+Currently, the EthTX core adapter can only write a single value no larger than 32 bytes onto a blockchain. If the value is larger than 32 bytes, the data may need to be returned by making multiple requests.
+
+## How can I get multiple values with a single request?
+
+Currently, the EthTX core adapter can only write a single value that is no larger than 32 bytes onto a blockchain. If multiple values are needed, the data may need to be returned by making multiple requests.
 
 # Token
 
