@@ -1,11 +1,16 @@
 ---
 layout: nodes.liquid
 date: Last Modified
-title: "Welcome to Chainlink Node Operation!"
+title: "Chainlink Node Documentation"
 ---
 
 <div>
   <div class="markdown-body">
+    <div class="cl-section-header">
+      <p>
+        Operating a Chainlink node allows you to be part of the Chainlink Network, helping developers build hybrid smart contracts, giving them access to real-world data and services.
+      </p>
+    </div>
     <div class="cl-featuredcard">
         <div>
           <img
