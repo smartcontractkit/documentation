@@ -221,7 +221,7 @@ Have a play around with the contract. This is what we'll use for the compiler.
 
 - [ ] An address to deploy from 
 
-Contracts are deployed by addresses on the network, so deploy our own we need an address. Not only that, but we need one which we can easily use with Remix. Fortunately, Metamask is just what is needed. Metamask allows anyone to create an address, store funds and interact with Ethereum compatible blockchains from a browser extension.
+Contracts are deployed by addresses on the network, so to deploy our own we need an address. Not only that, but we need one which we can easily use with Remix. Fortunately, Metamask is just what is needed. Metamask allows anyone to create an address, store funds and interact with Ethereum compatible blockchains from a browser extension.
 
 Head to the <a href="https://metamask.io/" target="_blank">Metamask website</a> to download, install and create an account.
 
