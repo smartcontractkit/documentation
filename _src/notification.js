@@ -5,7 +5,8 @@ document.addEventListener('DOMContentLoaded', () => {
   if (!state) {
     setTimeout(() => {
       notification.style['max-height'] = '100px';
-    }, 2500);
+    }, 1000);
+    // Change style to be fixed
     state = 'seen';
     localStorage[`notification-${key}`] = JSON.stringify(state);
   } else if (state === 'seen') {
