@@ -282,6 +282,12 @@ Since the contract is on testnet, as with Kovan ETH, we don't need to purchase _
 
 Use your Metamask address on the Kovan network to request LINK, then send 1 LINK to the contract address. This address can be found in Remix, under "Deployed Contracts" on the bottom left.
 
+Note, you should add the corresponding LINK token to your MetaMask account first:
+![metamask](/images/contract-devs/metamask-1.png)
+
+If you enounter any issues, make sure to check you copied the address of the correct network:
+![metamask](/images/contract-devs/metamask-2.png)
+
 # 7. Rolling the Dice!
 
 Opening the deployed contract tab in the bottom left, the function buttons are available. Find `rollDice` and click the caret to expand the parameter fields. Enter the seed (a series of characters of your choosing), and your Metamask address, and click roll!
