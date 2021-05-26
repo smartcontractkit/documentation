@@ -112,7 +112,7 @@ contract SportMonksChainlink is ChainlinkClient {
 #### Solidity Example
 `req.add("endpoint", "toss-results");`
 `req.add("round", "4th Match");`
-`red.add("season_id, "708");`
+`req.add("season_id", "708");`
 
 #### Outputs
 Returns a `string`: `home` or `away` encoded as `bytes32`
