@@ -8,6 +8,17 @@ PRs are welcome! We try to keep a clean commit history, so we'll follow a standa
 * Someone will review your PR
 * Your PR will be merged, amended, closed, or you'll be asked for changes
 
+## Standards
+* Commit messages
+    * Start with a present tense verb
+    * Keep your commit headline short but sufficient to understand the scope and focus of the change. 
+    * Changes are often formatted like `add doc X`, `fix page Y`, `improve docs for Z`.
+    * Example: "`update contract addresses for BSC`".
+* If you touch any infrastructure, make sure it builds with `yarn build`
+* Trust the autoformatter (prettier)
+* Make sure images are optimized and compressed
+* Keep images < 20kb whenever possible to keep the site fast and the repo small
+
 ## How to rebase a PR
 ```shell
 git fetch
@@ -37,7 +48,7 @@ squash 3eccd39 fix typos
 
 ### 2. Fix your commit message
 
-Next, comment or remove all of your commit messages and leave the one that describes your PR: `add doc X`, `fix page Y`, `improve docs for Z`. For example: `add contract addresses for X blockchain`.
+Next, comment or remove all of your commit messages and leave the one that describes your PR.
 
 ### 3. Force push to your branch
 
@@ -51,5 +62,3 @@ Here's a [complete example](https://twitter.com/stephenfluin/status/100990409507
 
 It's easier to use `git --amend` while working on your PR first. Avoiding multiple commits is much cleaner and easier than fixing them.
 
-## Other Standards
-* Trust the autoformatter (prettier)
