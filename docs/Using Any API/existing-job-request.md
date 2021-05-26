@@ -10,7 +10,7 @@ metadata:
   title: "Make an Existing Job Request"
   description: "Learn how to utilize existing Chainlink external adapters to make calls to APIs from smart contracts."
   image: 
-    0: "https://files.readme.io/cb2c0ec-670379d-OpenGraph_V3.png"
+    0: "/files/OpenGraph_V3.png"
     1: "670379d-OpenGraph_V3.png"
     2: 1459
     3: 1459

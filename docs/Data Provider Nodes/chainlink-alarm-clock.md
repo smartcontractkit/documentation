@@ -8,7 +8,7 @@ permalink: "docs/chainlink-alarm-clock/"
 hidden: false
 metadata: 
   image: 
-    0: "https://files.readme.io/807bfbc-cl.png"
+    0: "/files/807bfbc-cl.png"
     1: "cl.png"
     2: 1459
     3: 1459

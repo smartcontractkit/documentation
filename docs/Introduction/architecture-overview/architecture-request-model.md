@@ -9,7 +9,7 @@ hidden: false
 metadata: 
   title: "Chainlink Basic Request Model"
   image: 
-    0: "https://files.readme.io/0a7b57f-670379d-OpenGraph_V3.png"
+    0: "/files/OpenGraph_V3.png"
     1: "670379d-OpenGraph_V3.png"
     2: 1459
     3: 1459
@@ -23,7 +23,7 @@ All source code is open source and available in our <a href="https://github.com/
   "images": [
     {
       "image": [
-        "https://files.readme.io/881ade6-Simple_Architecture_Diagram_1_V1.png",
+        "/files/881ade6-Simple_Architecture_Diagram_1_V1.png",
         "Simple Architecture Diagram_1 V1.png",
         5066,
         1029,
@@ -84,7 +84,7 @@ Below is a UML diagram describing the contract structure of `ATestnetConsumer`, 
   "images": [
     {
       "image": [
-        "https://files.readme.io/8ac3fc1-69a048b-Consumer_UML.svg",
+        "/files/8ac3fc1-69a048b-Consumer_UML.svg",
         "69a048b-Consumer_UML.svg",
         4532,
         2879,

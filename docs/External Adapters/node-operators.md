@@ -13,7 +13,7 @@ To create a bridge on the node, you can navigate to the "Create Bridge" page in 
   "images": [
     {
       "image": [
-        "https://files.readme.io/43ac349-Screenshot_from_2018-12-07_06-37-27.png",
+        "/files/43ac349-Screenshot_from_2018-12-07_06-37-27.png",
         "Screenshot from 2018-12-07 06-37-27.png",
         1064,
         699,
@@ -108,7 +108,7 @@ There will be a big `Run` button on your job definition, just hit it to kick off
   "images": [
     {
       "image": [
-        "https://files.readme.io/b75c859-Screen_Shot_2021-02-19_at_11.44.44_AM.png",
+        "/files/b75c859-Screen_Shot_2021-02-19_at_11.44.44_AM.png",
         "Screen Shot 2021-02-19 at 11.44.44 AM.png",
         2372,
         396,

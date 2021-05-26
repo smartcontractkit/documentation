@@ -3,13 +3,13 @@ layout: nodes.liquid
 date: Last Modified
 title: "Running a Chainlink Node"
 permalink: "docs/running-a-chainlink-node/"
-whatsnext: {"Fulfilling Requests":"/docs/fulfilling-requests/", "Performing System Maintenance":"/docs/performing-system-maintenance/", "Miscellaneous":"/docs/miscellaneous/", "Best Security and Operating Practices":"/docs/best-security-practices/", "Node Operator Email List":"https://link.us18.list-manage.com/subscribe?u=8969e6baa6d67e10213eff25b&id=e70d98a987/"}
+whatsnext: {"Fulfilling Requests":"/docs/fulfilling-requests/", "Performing System Maintenance":"/docs/performing-system-maintenance/", "Miscellaneous":"/docs/miscellaneous/", "Best Security and Operating Practices":"/docs/best-security-practices/"}
 hidden: false
 metadata: 
   title: "Running a Chainlink Node"
   description: "Run your own Chainlink node using this guide which explains the requirements and basics for getting started."
   image: 
-    0: "https://files.readme.io/b6632ab-9d99262-670379d-OpenGraph_V3.png"
+    0: "/files/OpenGraph_V3.png"
     1: "9d99262-670379d-OpenGraph_V3.png"
     2: 1459
     3: 1459
@@ -27,7 +27,7 @@ Hardware requirements are light. The only heavy part is you'll need a blockchain
   "images": [
     {
       "image": [
-        "https://files.readme.io/ab5762f-end-to-end-diagram.png",
+        "/files/ab5762f-end-to-end-diagram.png",
         "end-to-end-diagram.png",
         1630,
         558,

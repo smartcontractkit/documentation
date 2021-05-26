@@ -8,7 +8,7 @@ whatsnext: {"DNS Ownership Oracle":"/docs/dns-ownership-oracle/"}
 hidden: false
 metadata: 
   image: 
-    0: "https://files.readme.io/bf220ba-cl.png"
+    0: "/files/bf220ba-cl.png"
     1: "cl.png"
     2: 1459
     3: 1459

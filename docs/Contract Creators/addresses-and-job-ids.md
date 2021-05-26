@@ -10,7 +10,7 @@ hidden: true
   "images": [
     {
       "image": [
-        "https://files.readme.io/5a589db-7b88b8d-sub-hero-chainlink-diagram.png",
+        "/files/5a589db-7b88b8d-sub-hero-chainlink-diagram.png",
         "7b88b8d-sub-hero-chainlink-diagram.png",
         1500,
         361,

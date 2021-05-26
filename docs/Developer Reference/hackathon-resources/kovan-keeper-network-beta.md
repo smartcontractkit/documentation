@@ -7,7 +7,7 @@ permalink: "docs/kovan-keeper-network-beta/"
 hidden: false
 metadata: 
   image: 
-    0: "https://files.readme.io/d5ac604-cl.png"
+    0: "/files/d5ac604-cl.png"
     1: "cl.png"
     2: 1459
     3: 1459
@@ -35,7 +35,7 @@ The logical view of the network looks like given below. There will be a central 
   "images": [
     {
       "image": [
-        "https://files.readme.io/79f4e61-image1.png",
+        "/files/79f4e61-image1.png",
         "image1.png",
         1140,
         826,
@@ -59,7 +59,7 @@ Below are the steps to register upkeep on the Chainlink registry that registered
     4. ‘checkData’ in Hex (as described in the interface above)
 3. We will register your upkeep in the registry and inform you of your “upkeepId”
 4. Next, you need to add funds to your upkeep, which is a two-step process
-    1. Approve the transfer using the ‘approve’ function on the Kovan LINK contract `{{variables.KOVAN_LINK_TOKEN}}`. Please use the Chainlink registry address <a href="https://kovan.etherscan.io/address/0xAaaD7966EBE0663b8C9C6f683FB9c3e66E03467F" target="_blank">`0xAaaD7966EBE0663b8C9C6f683FB9c3e66E03467F`</a> as ‘spender’ for this call.
+    1. Approve the transfer using the ‘approve’ function on the Kovan LINK contract `{{variables.KOVAN_LINK_TOKEN}}`. Please use the Chainlink registry address <a href="https://kovan.etherscan.io/address/0x42dD7716721ba279dA2f1F06F97025d739BD79a8" target="_blank">`0x42dD7716721ba279dA2f1F06F97025d739BD79a8`</a> as ‘spender’ for this call.
     2. Next, you need to fund your upkeep using the function `addFunds` on the Chainlink registry contract specified above. Use the `upkeepId` we provided before in the `id` field. Note that anyone is allowed to add funds to any upkeep so that you can use any account for this activity. 
     3. Use the `getUpkeep` function on the Chainlink registry to confirm that the funds have transferred & all the other details of the upkeep look fine. Get back to us if you see any issues.
 5. Your upkeep should start getting serviced.
@@ -122,4 +122,4 @@ interface KeeperCompatibleInterface {
 ```
 
 - The contract & other code is undergoing audit & reviews and will be shared once completed.
-- Chainlink Keeper Registry Contract: <a href="https://kovan.etherscan.io/address/0xAaaD7966EBE0663b8C9C6f683FB9c3e66E03467F#code" target="_blank">`0xAaaD7966EBE0663b8C9C6f683FB9c3e66E03467F`</a>
+- Chainlink Keeper Registry Contract: <a href="https://kovan.etherscan.io/address/0x42dD7716721ba279dA2f1F06F97025d739BD79a8#code" target="_blank">`0x42dD7716721ba279dA2f1F06F97025d739BD79a8`</a>

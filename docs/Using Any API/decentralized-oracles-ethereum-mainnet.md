@@ -16,7 +16,7 @@ For a comprehensive list of data providers, oracles, jobs, adapters, and more, v
   "images": [
     {
       "image": [
-        "https://files.readme.io/afe3efe-marketlink.jpg",
+        "/files/afe3efe-marketlink.jpg",
         "marketlink.jpg",
         113,
         113,

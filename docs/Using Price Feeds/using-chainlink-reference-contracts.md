@@ -10,7 +10,7 @@ metadata:
   title: "How to Use Chainlink Decentralized Price Feeds in Smart Contracts"
   description: "Add cryptocurrency price data to your smart contract. Chainlink price feeds include BTC/USD, BTC/ETH, ETH/USD and more!"
   image: 
-    0: "https://files.readme.io/d2484e7-670379d-OpenGraph_V3.png"
+    0: "/files/OpenGraph_V3.png"
     1: "670379d-OpenGraph_V3.png"
     2: 1459
     3: 1459
@@ -21,7 +21,7 @@ metadata:
   "images": [
     {
       "image": [
-        "https://files.readme.io/2306b8b-Decentralized_Oracles_V3.png",
+        "/files/2306b8b-Decentralized_Oracles_V3.png",
         "Decentralized Oracles V3.png",
         1558,
         352,

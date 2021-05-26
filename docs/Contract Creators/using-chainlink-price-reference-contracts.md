@@ -22,7 +22,7 @@ In this tutorial, we will teach you how to easily use these on-chain data points
   "images": [
     {
       "image": [
-        "https://files.readme.io/fc21723-Screenshot_2020-04-07_at_16.16.07.png",
+        "/files/fc21723-Screenshot_2020-04-07_at_16.16.07.png",
         "Screenshot 2020-04-07 at 16.16.07.png",
         1628,
         650,
@@ -497,7 +497,7 @@ This model will be the first ever self serving, fully sustainable and automated 
   "images": [
     {
       "image": [
-        "https://files.readme.io/4b62f1c-Screenshot_2020-04-07_at_16.19.07.png",
+        "/files/4b62f1c-Screenshot_2020-04-07_at_16.19.07.png",
         "Screenshot 2020-04-07 at 16.19.07.png",
         1740,
         656,
