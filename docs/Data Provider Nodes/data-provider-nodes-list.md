@@ -18,6 +18,7 @@ permalink: "docs/data-provider-nodes-list/"
 | Equities      | [Tiingo EOD Stock Price Oracle](../tiingo-eod-stock-price-oracle)         | Ethereum, Binance Smart Chain                |
 | Identity      | [CipherTrace DeFi Compli Oracle](../ciphertrace-defi-compli-oracle)       | Ethereum, Binance Smart Chain, Polygon       |
 | Location      | [GeoDB Oracle Node](../geodb-oracle-node)                                 | Ethereum, Binance Smart Chain                |
+| Real Estate   | [ProspectNow Real Estate Data Oracle](../prospectnow-data-oracle)         | Ethereum, Polygon                            |
 | Real Estate   | [SmartZip Real Estate AVM Oracle](../smartzip-awm-oracle)                 | Ethereum, Binance Smart Chain                |
 | Sports        | [Bookmaker Ratings Oracle](../bookmaker-ratings-oracle)                   | Ethereum, Binance Smart Chain                |
 | Sports        | [SportMonks Sports Data Oracle](../sport-monks-oracle)                    | Ethereum, Binance Smart Chain                |
