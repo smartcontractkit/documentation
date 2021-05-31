@@ -9,6 +9,20 @@ hidden: false
 
 The following is a list of selected hackathon projects utilizing Chainlinked contracts.
 
+## Hackathon Tutorials
+
+Further exploration into how some of the hackathon winners developed their entries.
+
+|Name|Description|Tutorial|
+|:---|:---|:---|
+|**Link My Ride**|A decentralized Tesla rental platform.|<a href="https://blog.chain.link/create-tesla-smart-contract-rental/" target="_blank" rel="noreferrer, noopener">Go</a>|
+|**Open Library Project**|A library platform for borrowing books on-chain.|<a href="https://blog.chain.link/rfid-blockchain-integration-with-chainlink-external-adapters/" target="_blank" rel="noreferrer, noopener">Go</a>|
+|**Marine Insurance**|Parametric insurance for the marine industry.|<a href="hhttps://blog.chain.link/build-a-marine-insurance-smart-contract-with-chainlink/" target="_blank" rel="noreferrer, noopener">Go</a>|
+|**Fruity Market**|Vending machine cryptocurrency payments.|<a href="https://blog.chain.link/cryptocurrency-vending-machine/" target="_blank" rel="noreferrer, noopener">Go</a>|
+|**Whiskey MarketMaker**|Craft whiskey crypto payments.|<a href="https://blog.chain.link/craft-whiskey-crypto-payments-with-chainlink-oracles/" target="_blank" rel="noreferrer, noopener">Go</a>|
+|**Digital Bridge**|Two factor authentication for smart contracts.|<a href="https://blog.chain.link/2fa-authentication-smart-contracts/" target="_blank" rel="noreferrer, noopener">Go</a>|
+|**Iroiro**|Fetch IPFS Data in Smart Contracts.|<a href="https://blog.chain.link/fetch-ipfs-api-data-token-distribution/" target="_blank" rel="noreferrer, noopener">Go</a>|
+
 ## Chainlink Spring 2021 Hackathon
 
 The <a href="https://chain.link/hackathon" target="_blank" rel="noreferrer, noopener">Chainlink Spring 2021 Hackathon</a>, read our <a href="https://blog.chain.link/chainlink-hackathon-winners-spring-2021/" target="_blank" > blog here! </a>
