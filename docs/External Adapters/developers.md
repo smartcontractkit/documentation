@@ -18,14 +18,17 @@ Once created, you can submit your adapter repo to <a href="https://market.link/p
 
 ### Requesting Data
 
-When an external adapter receives a request from the Chainlink node, the JSON payload must include the following objects:
+When an external adapter receives a request from the Chainlink node, the JSON payload will include the following objects:
 
--  `id` 
--  `data`
+-  `id` (may be null or absent)
+-  `data` (guaranteed to be present but may be empty)
+
+e.g.
 
 ```json
 {"id":"278c97ffadb54a5bbb93cfec5f7b5503","data":{}}
 ```
+
 
 If the node has a value defined for the Bridge Response URL, the payload will include a `"responseURL"` field that can be used to update responses via PATCH requests:
 
@@ -62,6 +65,8 @@ https://example.com/api/?parent=myParentValue&child=myChildValue
 ```
 
 ### Returning Data
+
+Returning data is only supported when Chainlink provides a non-null `id` with the request payload. This is only provided for certain job types.
 
 When the external adapter has a response payload, it must include the response payload with the given `jobRunID` back to the node. In the adapter itself, this is easily accomplished by mapping the value for the given `id` to a new field in the return data called `jobRunID`. You'll need at least:
 
