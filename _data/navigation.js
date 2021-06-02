@@ -162,6 +162,10 @@ module.exports = {
                 title: 'Huobi Eco Chain Price Feeds',
                 url: 'huobi-eco-chain-price-feeds',
               },
+              {
+                title: 'Avalanche Price Feeds',
+                url: 'avalanche-price-feeds',
+              },
             ],
           },
         ],

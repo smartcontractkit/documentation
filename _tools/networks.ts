@@ -74,4 +74,15 @@ export const NETWORKS = [
       },
     ],
   },
+  {
+    page: "avalanche-price-feeds",
+    title: "Avalanche Price Feeds",
+    networks: [
+      {
+        name: "Avalanche Testnet",
+        url: "https://testnet.avascan.info/blockchain/c/address/",
+        source: "directory-avalanche-fuji-testnet.json",
+      },
+    ],
+  }
 ];

@@ -37,19 +37,29 @@ section: smartContract
     dest = document.getElementById('feed-data');
     render = (data) => {
         let html = '';
-        for(let network of data["{{stub}}"].networks) {
-            html += `<h2 id="${network.name}">${network.name} <a class="anchor" href="#${network.name}"><img src="/images/link.svg" alt="Link to this section"></a></h2>`;
-            
-            let proxyList = '';
-            for(let proxy of network.proxies) {
-                proxyList += `<tr id="${network.name} ${proxy.pair}"><td><code>${proxy.pair}</code></td><td>${proxy.decimals}</td><td><a href="${network.url}${proxy.proxy}" target="_blank"><code>${proxy.proxy}</code></a></td></tr>`;
+        if(data["{{stub}}"]) {
+           
+            for(let network of data["{{stub}}"].networks) {
+                html += `<h2 id="${network.name}">${network.name} <a class="anchor" href="#${network.name}"><img src="/images/link.svg" alt="Link to this section"></a></h2>`;
+                
+                let proxyList = '';
+                for(let proxy of network.proxies) {
+                    proxyList += `<tr id="${network.name} ${proxy.pair}"><td><code>${proxy.pair}</code></td><td>${proxy.decimals}</td><td><a href="${network.url}${proxy.proxy}" target="_blank"><code>${proxy.proxy}</code></a></td></tr>`;
+                }
+                html += `<table><thead><tr><th>Pair</th><th>Dec</th><th>Proxy</th></tr></thead><tbody>${proxyList}</tbody></table>`;
             }
-            html += `<table><thead><tr><th>Pair</th><th>Dec</th><th>Proxy</th></tr></thead><tbody>${proxyList}</tbody></table>`;
+        } else {
+            html = `<em style="color:red;">Couldn't render the feed list, it may still be processing. Feeds are updated every half hour..</em>`;
         }
         dest.innerHTML = html;
     }
     
-    fetch('https://cl-docs-addresses.web.app/addresses.json')
+    let path = 'https://cl-docs-addresses.web.app/addresses.json';
+    if(window.location.host === 'localhost:4200') {
+        path = '/addresses/addresses.json';
+    }
+
+    fetch(path)
     .then(response => response.json())
     .then(json => {
         render(json);

@@ -36,4 +36,6 @@ module.exports = function (eleventyConfig) {
       return content;
     });
   }
+
+  eleventyConfig.setUseGitIgnore(false);
 };
