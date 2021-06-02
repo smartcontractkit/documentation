@@ -20,24 +20,22 @@ Once created, you can submit your adapter repo to <a href="https://market.link/p
 
 When an external adapter receives a request from the Chainlink node, the JSON payload will include the following objects:
 
--  `id` (may be null or absent)
--  `data` (guaranteed to be present but may be empty)
+- `data` (guaranteed to be present but may be empty)
+- `meta` (optional, depends on job type)
+- `responseURL` (optional, will be supplied if job supports asynchronous callbacks)
 
-e.g.
+#### Examples
 
 ```json
-{"id":"278c97ffadb54a5bbb93cfec5f7b5503","data":{}}
+{"data":{}}
 ```
 
-
-If the node has a value defined for the Bridge Response URL, the payload will include a `"responseURL"` field that can be used to update responses via PATCH requests:
+```json
+{"data":{}, "responseURL": "http://localhost:6688/v2/runs/278c97ffadb54a5bbb93cfec5f7b5503"}
+```
 
 ```json
-{
-  "id": "278c97ffadb54a5bbb93cfec5f7b5503",
-  "data": {},
-  "responseURL": "http://localhost:6688/v2/runs/278c97ffadb54a5bbb93cfec5f7b5503"
-}
+{"data":{"foo": 42}, "meta":{"bar": "baz"}}
 ```
 
 Additional data may be specified in the spec to be utilized by the adapter. This can be useful for requesting data from a REST endpoint where the keys and values can be specified by the requester. For example, if the REST endpoint supports the following:
@@ -50,7 +48,6 @@ Then the payload to the external adapter would need:
 
 ```json
 {
-  "id": "278c97ffadb54a5bbb93cfec5f7b5503",
   "data": {
     "parent": "myParentValue",
     "child": "myChildValue"
@@ -66,18 +63,12 @@ https://example.com/api/?parent=myParentValue&child=myChildValue
 
 ### Returning Data
 
-Returning data is only supported when Chainlink provides a non-null `id` with the request payload. This is only provided for certain job types.
-
-When the external adapter has a response payload, it must include the response payload with the given `jobRunID` back to the node. In the adapter itself, this is easily accomplished by mapping the value for the given `id` to a new field in the return data called `jobRunID`. You'll need at least:
-
-- `jobRunID`
-- `data`
+When the external adapter wants to return data immediately, it must include `data` in the returned JSON.
 
 An example of the response data can look like:
 
 ```json
 {
-  "jobRunID": "278c97ffadb54a5bbb93cfec5f7b5503",
   "data": {
     "symbol": "ETH-USD",
     "last": {
@@ -89,24 +80,57 @@ An example of the response data can look like:
 }
 ```
 
-You'll also notice some additional fields: `status`, `error`, and `pending`. An external adapter may mark the JobRun as pending if the answer needs to be returned at a specified time, or when a desired result is found. The `pending` field should also be set to `true` if this is the case. When the external adapter calls back to the node to update the JobRun, this should be done with an HTTP PATCH request.
-
 ### Returning Errors
 
-If the endpoint gave a known error, the error should be included in the external adapter's response back to the Chainlink node.
+If the endpoint gave a known error, the `error` field should be included in the external adapter's response back to the Chainlink node.
 
 An example of what the error response payload should look like:
 
 ```json
 {
-  "jobRunID": "278c97ffadb54a5bbb93cfec5f7b5503",
-  "data": {},
-  "status": "errored",
   "error": "The endpoint is under maintenance."
 }
 ```
 
-When an external adapter returns an error, the next task in the Job Spec is not executed.
+### Asynchronous callbacks
+
+Some job types support external callbacks. When supported, Chainlink will provide a non-null `responseURL` alongside the request payload.
+
+If the external adapter wants to return data immediately it can simply respond with data directly as normal.
+
+If the external adapter wants to use this URL to return data later, it may return a response like this:
+
+```json
+{
+    "pending": true
+}
+```
+
+In this case, the job run on Chainlink side will be put into a `pending` state, awaiting data which can be delivered at a later date.
+
+When the external adapter is ready, it should callback to the node to resume the JobRun using an HTTP PATCH request to the `responseURL` field.
+
+
+```json
+{
+  "data": {
+    "symbol": "ETH-USD",
+    "last": {
+      "price": 467.85,
+      "size": 0.01816561,
+      "timestamp": 1528926483463
+    }
+  }
+}
+```
+
+Or, for the error case:
+
+```json
+{
+  "error": "something went wrong"
+}
+```
 
 ### Example
 
