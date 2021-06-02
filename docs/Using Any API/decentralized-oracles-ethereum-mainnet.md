@@ -69,7 +69,7 @@ For Faucet details, please refer to [LINK Token Contracts](../link-token-contrac
   "body": "Currently, Rinkeby is in maintenance mode. Please use other environments (e.g. Kovan) to perform tests."
 }
 [/block]
-Rinkeby LINK address:  <a href="https://rinkeby.etherscan.io/address/0x01be23585060835e02b77ef475b0cc51aa1e0709" target="_blank">`0x01be23585060835e02b77ef475b0cc51aa1e0709`</a>
+Rinkeby LINK address:  <a href="https://rinkeby.etherscan.io/address/0x01BE23585060835E02B77ef475b0Cc51aA1e0709" target="_blank">`0x01BE23585060835E02B77ef475b0Cc51aA1e0709`</a>
 
 For Faucet details, please refer to [LINK Token Contracts](../link-token-contracts/).
 

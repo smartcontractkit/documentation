@@ -71,7 +71,7 @@ For implementation details, read [Introduction to Chainlink VRF](../chainlink-vr
 
 |Item|Value|
 |---|---|
-|LINK Token|`0x514910771af9ca656af840dff83e8264ecf986ca`|
+|LINK Token|`0x514910771AF9Ca656af840dff83E8264EcF986CA`|
 |VRF Coordinator|`0xf0d54349aDdcf704F77AE15b96510dEA15cb7952`|
 |Key Hash|`0xAA77729D3466CA35AE8D28B3BBAC7CC36A5031EFDC430821C02BC31A238AF445`|
 |Fee|2 LINK - initial fees on Ethereum are meant to cover the highest gas cost prices. To use VRF more efficiently, please [contact us](https://chainlinkcommunity.typeform.com/to/OYQO67EF)|
@@ -86,7 +86,7 @@ For implementation details, read [Introduction to Chainlink VRF](../chainlink-vr
 
 |Item|Value|
 |---|---|
-|LINK|`0xa36085f69e2889c224210f603d836748e7dc0088`|
+|LINK|`0xa36085F69e2889c224210F603D836748e7dC0088`|
 |VRF Coordinator|`0xdD3782915140c8f3b190B5D67eAc6dc5760C46E9 `|
 |Key Hash|`0x6c3699283bda56ad74f6b855546325b68d482e983852a7a82979cc4807b641f4 `|
 |Fee|0.1 LINK|
@@ -95,7 +95,7 @@ For implementation details, read [Introduction to Chainlink VRF](../chainlink-vr
 
 |Item|Value|
 |---|---|
-|LINK|`0x01be23585060835e02b77ef475b0cc51aa1e0709`|
+|LINK|`0x01BE23585060835E02B77ef475b0Cc51aA1e0709`|
 |VRF Coordinator|`0xb3dCcb4Cf7a26f6cf6B120Cf5A73875B7BBc655B `|
 |Key Hash|`0x2ed0feb3e7fd2022120aa84fab1945545a9f2ffc9076fd6156fa96eaff4c1311 `|
 |Fee|0.1 LINK|
