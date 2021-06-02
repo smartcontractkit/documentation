@@ -62,3 +62,14 @@ Here's a [complete example](https://twitter.com/stephenfluin/status/100990409507
 
 It's easier to use `git --amend` while working on your PR first. Avoiding multiple commits is much cleaner and easier than fixing them.
 
+## Adding a new chain feed
+Feed data for various chains comes from a private GitHub repository, processed regularly on the server via `process-feeds.yml` and published as JSON. This JSON is loaded by each of the `feed.liquid` based pages.
+
+To test a new feed locally, get access to the private repo, then clone it into `data-source`, and then run `yarn process`. 
+
+## Checking Links
+To check the site for broken links, [install `linkcheck`](https://github.com/filiph/linkcheck/), serve the site locally and point to the executable in the command below and run:
+
+```
+./path-to-link-check.exe :4200
+```

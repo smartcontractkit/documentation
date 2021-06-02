@@ -4,7 +4,7 @@ section: smartContract
 date: Last Modified
 title: "Contract Addresses"
 permalink: "docs/reference-contracts/"
-whatsnext: {"ENS":"/docs/ens/", "Ethereum Price Feeds":"/docs/ethereum-addresses/", "Binance Smart Chain Price Feeds":"/docs/binance-smart-chain-addresses/", "Polygon (Matic) Price Feeds":"/docs/matic-addresses/", "xDai Price Feeds":"/docs/xdai-price-feeds/", "Huobi Eco Chain Price Feeds":"/docs/huobi-eco-chain-price-feeds/"}
+whatsnext: {"ENS":"/docs/ens/", "Ethereum Price Feeds":"/docs/ethereum-addresses/", "Binance Smart Chain Price Feeds":"/docs/binance-smart-chain-addresses/", "Polygon (Matic) Price Feeds":"/docs/matic-addresses/", "xDai Price Feeds":"/docs/xdai-price-feeds/", "Huobi Eco Chain Price Feeds":"/docs/huobi-eco-chain-price-feeds/", "Avalanche Price Feeds":"/docs/avalanche-price-feeds/"}
 hidden: false
 metadata: 
   title: "Chainlink Price Feed Smart Contract Addresses"
@@ -45,3 +45,7 @@ For xDai Price Feed addresses, see [xDai Price Feeds](../xdai-price-feeds/).
 ## Huobi Eco Chain
 
 For HEC Price Feed Addresses, see [Huobi Eco Chain Price Feeds](../huobi-eco-chain-price-feeds/).
+
+## Avalanche
+
+For Avalanche Price Feed Addresses, see [Avalanche Price Feeds](../avalanche-price-feeds/).

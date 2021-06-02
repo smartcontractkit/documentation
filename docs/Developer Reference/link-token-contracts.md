@@ -174,3 +174,20 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 |Name|ChainLink Token on xDai|
 |Symbol|LINK|
 |Decimals|18|
+
+## Avalanche
+
+### Fuji Testnet
+
+> 🚰Avax Faucet
+>
+> Community Faucet: https://linkfaucet.protofire.io/fuji
+>
+
+|Parameter|Value|
+|:---|:---|
+|`ETH_CHAIN_ID`|`43113`|
+|Address|[`0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846`](https://testnet.avascan.info/blockchain/c/address/0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846)|
+|Name|ChainLink Token on Avalanche|
+|Symbol|LINK|
+|Decimals|18|

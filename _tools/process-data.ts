@@ -101,4 +101,6 @@ try {
 } catch (err) {
   // Doesn't matter if the directory already exists
 }
-fs.writeFileSync('address_dist/addresses.json',JSON.stringify(finalResult));
+const path = '_src/addresses/addresses.json';
+fs.writeFileSync(path,JSON.stringify(finalResult));
+console.log(`processed results written to ${path}`);
