@@ -1,6 +1,6 @@
 ---
 layout: feed.liquid
-title: "Alalanche Feeds"
+title: "Avalanche Feeds"
 stub: avalanche-price-feeds
 permalink: "docs/avalanche-price-feeds/"
 metadata: 
