@@ -52,7 +52,7 @@ Below are the steps to register upkeep on the Chainlink registry that registered
 1. First of all, create a contract that implements the interface as defined below. There are two main functions.
     1. `checkUpKeep`: This function will be called at regular intervals & the boolean return value decides if the contract needs to be serviced at this time or not. If the upkeep is required, you can also return bytes that will be passed to `performUpkeep` function.
     2. `performUpkeep`: This function is the actual upkeep that the contract wants servicing. This function is called only if `checkUpKeep` has returned true.
-2. Once you have deployed the above contract on Kovan, please send us the following details using <a href="https://forms.gle/6syh43t7WjMGqdTA6" target="_blank">this Google Form</a>.
+2. Once you have deployed the above contract on Kovan, please send us the following details on <a href="mailto: keeper@chain.link" target="_blank">keeper@chain.link</a>.
     1. Contract address implementing the upkeep interface
     2. Admin address - to cancel upkeep and withdraw remaining funds
     3. Gas limit needed for `performUpkeep`. Currently, there is a minimum limit of 2300 & a maximum limit of 2500000.
@@ -121,5 +121,4 @@ interface KeeperCompatibleInterface {
 }
 ```
 
-- The contract & other code is undergoing audit & reviews and will be shared once completed.
 - Chainlink Keeper Registry Contract: <a href="https://kovan.etherscan.io/address/0x42dD7716721ba279dA2f1F06F97025d739BD79a8#code" target="_blank">`0x42dD7716721ba279dA2f1F06F97025d739BD79a8`</a>
