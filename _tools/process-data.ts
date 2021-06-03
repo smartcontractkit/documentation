@@ -97,7 +97,7 @@ for (let page of targetData) {
 
 // Write the data to disk
 try {
-  fs.mkdirSync('address_dist')
+  fs.mkdirSync('_src/addresses')
 } catch (err) {
   // Doesn't matter if the directory already exists
 }
