@@ -11,9 +11,9 @@ Finage is a leading real-time stock, forex, and cryptocurrency data provider. Th
 
 # Steps For Using This Oracle
 
-- Write and deploy your [Chainlink](../example-walkthrough) contract using the network details below
-- Fund it with [LINK](../link-token-contracts)
-- Call your [request method](./#chainlink-examples)
+- Write and deploy your [Chainlink](..//intermediates-tutorial/) contract using the network details below
+- Fund it with [LINK](../link-token-contracts/)
+- Call your [request method](./#chainlink-examples/)
 
 # Network Details
 
