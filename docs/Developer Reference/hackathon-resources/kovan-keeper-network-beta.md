@@ -121,5 +121,4 @@ interface KeeperCompatibleInterface {
 }
 ```
 
-- The contract & other code is undergoing audit & reviews and will be shared once completed.
 - Chainlink Keeper Registry Contract: <a href="https://kovan.etherscan.io/address/0x42dD7716721ba279dA2f1F06F97025d739BD79a8#code" target="_blank">`0x42dD7716721ba279dA2f1F06F97025d739BD79a8`</a>
