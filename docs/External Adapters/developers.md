@@ -23,6 +23,7 @@ When an external adapter receives a request from the Chainlink node, the JSON pa
 - `data` (guaranteed to be present but may be empty)
 - `meta` (optional, depends on job type)
 - `responseURL` (optional, will be supplied if job supports asynchronous callbacks)
+- `id` (optional, can be nice to use for EA logging to help debug job runs)
 
 #### Examples
 
@@ -35,7 +36,7 @@ When an external adapter receives a request from the Chainlink node, the JSON pa
 ```
 
 ```json
-{"data":{"foo": 42}, "meta":{"bar": "baz"}}
+{"data":{"foo": 42}, "meta":{"bar": "baz"}, "id": "2d38ecdb-975c-4f99-801c-b916a429947c"}
 ```
 
 Additional data may be specified in the spec to be utilized by the adapter. This can be useful for requesting data from a REST endpoint where the keys and values can be specified by the requester. For example, if the REST endpoint supports the following:
@@ -98,7 +99,7 @@ Some job types support external callbacks. When supported, Chainlink will provid
 
 If the external adapter wants to return data immediately it can simply respond with data directly as normal.
 
-If the external adapter wants to use this URL to return data later, it may return a response like this:
+If the external adapter wants to use the response URL to send data later, it may initially return a response like this:
 
 ```json
 {
@@ -108,7 +109,7 @@ If the external adapter wants to use this URL to return data later, it may retur
 
 In this case, the job run on Chainlink side will be put into a `pending` state, awaiting data which can be delivered at a later date.
 
-When the external adapter is ready, it should callback to the node to resume the JobRun using an HTTP PATCH request to the `responseURL` field.
+When the external adapter is ready, it should callback to the node to resume the JobRun using an HTTP PATCH request to the `responseURL` field. This will resume the job on the Chainlink side.
 
 
 ```json
