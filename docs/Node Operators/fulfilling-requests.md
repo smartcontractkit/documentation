@@ -170,8 +170,9 @@ Once successful, you should have a new address for the deployed contract
   ]
 }
 [/block]
-You can get the address of your node when it starts or by visiting the Configuration page of the GUI.
+You can get the address of your node when it starts or by looking at one of the following places.
 
+1) Configurations page if on older Chainlink node versions
 [block:image]
 {
   "images": [
@@ -186,6 +187,26 @@ You can get the address of your node when it starts or by visiting the Configura
     }
   ]
 }
+
+[/block]
+
+2) Bottom of the Keys page in the Account addresses section if on newer versions of Chainlink.
+
+[block:image]
+{
+  "images": [
+    {
+      "image": [
+        "/files/node-address.png",
+        "Screenshot from 2021-06-04 06-04-21.png",
+        801,
+        170,
+        "#fafafa"
+      ]
+    }
+  ]
+}
+
 [/block]
 Once you call the `setFulfillmentPermission` function, Confirm it in Metamask and wait for it to confirm on the blockchain.
 
