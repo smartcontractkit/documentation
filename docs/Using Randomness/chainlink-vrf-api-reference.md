@@ -84,4 +84,4 @@ Since the ultimate input to the VRF is mixed with the block hash of the block in
 
 ## Maximizing security
 
-Chainlink VRF provides powerful security guarantees and is easy to integrate. However, smart contract security is a nuanced topic. If you have specific questions about your integration, please contact [vrf@chain.link](mailto:vrf@chain.link)
+Chainlink VRF provides powerful security guarantees and is easy to integrate. However, smart contract security is a nuanced topic.
