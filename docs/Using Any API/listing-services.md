@@ -25,7 +25,7 @@ Additionally, here are some independent listing services to help find Oracle Job
 
 * [Chainlink Market](https://market.link/)
 * [Chainlink Oracle Reputation](https://reputation.link/)
-* [CL Adapters]("https://chainlinkadapters.com/)
+* [CL Adapters](https://chainlinkadapters.com/)
 
 # Types of Data Available
 
