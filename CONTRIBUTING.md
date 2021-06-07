@@ -17,7 +17,7 @@ PRs are welcome! We try to keep a clean commit history, so we'll follow a standa
 * If you touch any infrastructure, make sure it builds with `yarn build`
 * Trust the autoformatter (prettier)
 * Make sure images are optimized and compressed
-* Keep images < 20kb whenever possible to keep the site fast and the repo small
+* Keep images < 20kb whenever possible to keep the site fast and the repo small (try [trimage](https://trimage.org/))
 
 ## How to rebase a PR
 ```shell
