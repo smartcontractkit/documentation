@@ -2,11 +2,12 @@
 layout: nodes.liquid
 section: smartContract
 date: Last Modified
-title: "Intermediates - Random Numbers"
+title: "Random Numbers Tutorial"
 permalink: "docs/intermediates-tutorial/"
 excerpt: "Using Chainlink VRF"
-whatsnext: {"Get a Random Number":"/docs/get-a-random-number/", "Advanced - API Calls":"/docs/advanced-tutorial/"}metadata: 
-  title: "Intermediates Tutorial"
+whatsnext: {"Get a Random Number":"/docs/get-a-random-number/", "API Calls tutorial":"/docs/advanced-tutorial/"}
+metadata: 
+  title: "Random Numbers Tutorial"
   description: "Learn how to use randomness in your smart contracts using Chainlink VRF."
   image: 
     0: "/files/2a242f1-link.png"
@@ -22,11 +23,11 @@ whatsnext: {"Get a Random Number":"/docs/get-a-random-number/", "Advanced - API 
 
 > 👍 Assumed knowledge
 >
-> This tutorial assumes some basic knowledge around Ethereum, and writing smart contracts. If you're brand new to smart contract development, we recommend working through our [Beginners Tutorial](../beginners-tutorial/) before this one.
+> This tutorial assumes some basic knowledge around Ethereum, and writing smart contracts. If you're brand new to smart contract development, we recommend working through our [The Basics tutorial](../beginners-tutorial/) before this one.
 
 Randomness is very difficult to generate on blockchains. The reason for this is because every node must come to the same conclusion, forming a consensus. There's no way to generate random numbers natively in smart contracts, which is unfortunate because they can be very useful for a wide range of applications. Fortunately, Chainlink provides [Chainlink VRF](../chainlink-vrf/), AKA Chainlink Verifiable Random Function.
 
-If you've walked through the [Beginners Tutorial](../beginners-tutorial/), you'll know how to write smart contracts, use [Chainlink Price Feeds](../using-chainlink-reference-contracts/), and how to deploy a contract to a testnet. If not, head there and come back once you've finished.
+If you've walked through the [The Basics tutorial](../beginners-tutorial/), you'll know how to write smart contracts, use [Chainlink Price Feeds](../using-chainlink-reference-contracts/), and how to deploy a contract to a testnet. If not, head there and come back once you've finished.
 
 In this tutorial, we go through:
 - The Chainlink request & receive cycle
@@ -233,7 +234,7 @@ See the full contract in Remix! (We've added a few helper functions in there whi
 
 # 5. Deployment
 
-Time to compile and deploy the contract! If you don't know how to deploy a contract to the Kovan testnet from Remix, follow **[the Beginner Tutorial](/docs/beginners-tutorial)**.
+Time to compile and deploy the contract! If you don't know how to deploy a contract to the Kovan testnet from Remix, follow **[The Basics tutorial](/docs/beginners-tutorial)**.
 
 This deployment is slightly different than the example from the beginners tutorial. In this tutorial, we have to pass in parameters to the constructor upon deployment.
 
