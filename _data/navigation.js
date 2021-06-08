@@ -175,6 +175,7 @@ module.exports = {
           { title: 'Get a Random Number', url: '/docs/get-a-random-number/' },
           { title: 'API Reference', url: '/docs/chainlink-vrf-api-reference/' },
           { title: 'Contract Addresses', url: '/docs/vrf-contracts/' },
+          { title: 'Best Practices', url: '/docs/chainlink-vrf-best-practices/' },
         ],
       },
       {
