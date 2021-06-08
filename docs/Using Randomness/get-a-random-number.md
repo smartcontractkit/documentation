@@ -97,18 +97,3 @@ contract RandomNumberConsumer is VRFConsumerBase {
 > 🚧 Maximum Gas for Callback
 >
 > If your `fulfillRandomness` function uses more than 200k gas, the transaction will fail.
-
-## Making the most out of VRF
-
-It's possible to get multiple numbers from a single VRF response: 
-
-```javascript
-function expand(uint256 randomValue, uint256 n) public pure returns (uint256[] memory expandedValues) {
-    expandedValues = new uint256[](n);
-    for (uint256 i = 0; i < n; i++) {
-        expandedValues[i] = uint256(keccak256(abi.encode(randomValue, i)));
-    }
-    return expandedValues;
-}
-
-```

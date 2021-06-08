@@ -180,6 +180,7 @@ module.exports = {
           { title: 'API Reference', url: '/docs/chainlink-vrf-api-reference/' },
           { title: 'Security Considerations', url: '/docs/vrf-security-considerations/' },
           { title: 'Contract Addresses', url: '/docs/vrf-contracts/' },
+          { title: 'Best Practices', url: '/docs/chainlink-vrf-best-practices/' },
         ],
       },
       {
