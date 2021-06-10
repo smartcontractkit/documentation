@@ -26,6 +26,12 @@ Chainlink VRF follows the [Request & Receive Data](../request-and-receive-data/)
 
 The contract should own enough LINK to pay the specified fee. The beginner walkthrough explains how to [fund your contract](../fund-your-contract/).
 
+Note, the below values have to be configured correctly for VRF requests to work. You can find the respective values for your network in the [VRF Contracts page](../vrf-contracts).
+- `LINK Token` - LINK token address on the corresponding network (Ethereum, Polygon, BSC, etc)
+- `VRF Coordinator` - address of the Chainlink VRF Coordinator
+- `Key Hash` - public key against which randomness is generated
+- `Fee` - fee required to fulfill a VRF request
+
 > 🚧 Security Considerations
 >
 > If your contract could have multiple VRF requests in flight simultaneously, you must ensure that the order in which the VRF responses arrive cannot be used to manipulate your contract's user-significant behavior.
