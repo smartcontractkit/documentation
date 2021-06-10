@@ -43,7 +43,9 @@ NOTE: Some env vars require a duration. A duration string is a possibly signed s
   - [CHAINLINK_TLS_REDIRECT](#chainlink_tls_redirect)
   - [TLS_CERT_PATH](#tls_cert_path)
   - [TLS_KEY_PATH](#tls_key_path)
-- [Gas price tuning](#gas-price-tuning)
+- [Gas controls](#gas-controls)
+  - [ETH_GAS_LIMIT_DEFAULT](#eth-gas-limit-default)
+  - [ETH_GAS_LIMIT_TRANSFER](#eth-gas-limit-transfer)
   - [ETH_GAS_BUMP_PERCENT](#eth_gas_bump_percent)
   - [ETH_GAS_BUMP_THRESHOLD](#eth_gas_bump_threshold)
   - [ETH_GAS_PRICE_DEFAULT](#eth_gas_price_default)
@@ -209,9 +211,21 @@ Location of the TLS certificate file. Example: `/home/$USER/.chainlink/tls/serve
 
 Location of the TLS private key file. Example: `/home/$USER/.chainlink/tls/server.key`
 
-# Gas price tuning
+# Gas controls
 
-Use this section to tune your node's gas pricing. In most cases, leaving these values at their defaults should give good results.
+Use this section to tune your node's gas limits and pricing. In most cases, leaving these values at their defaults should give good results.
+
+## ETH_GAS_LIMIT_DEFAULT
+
+- Default: 500000
+
+The default gas limit. This should not need to be changed in most cases. Certain applications (e.g. keeper) might override this with application-specific gas limits.
+
+## ETH_GAS_LIMIT_TRANSFER
+
+- Default: 21000
+
+The gas limit to be used for eth->eth transfers.
 
 ## ETH_GAS_BUMP_PERCENT
 
