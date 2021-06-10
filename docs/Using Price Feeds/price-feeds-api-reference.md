@@ -4,15 +4,10 @@ section: smartContract
 date: Last Modified
 title: "API Reference"
 permalink: "docs/price-feeds-api-reference/"
-hidden: false
 metadata: 
   description: "API reference for using Chainlink Price Feeds in smart contracts."
   image: 
     0: "/files/OpenGraph_V3.png"
-    1: "670379d-OpenGraph_V3.png"
-    2: 1459
-    3: 1459
-    4: "#dbe1f8"
 ---
 API reference for <a href="https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/src/v0.6/interfaces/AggregatorV3Interface.sol" target="_blank">`AggregatorV3Interface`</a>.
 

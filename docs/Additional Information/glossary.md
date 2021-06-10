@@ -3,7 +3,6 @@ layout: nodes.liquid
 date: Last Modified
 title: "Glossary"
 permalink: "docs/glossary/"
-hidden: false
 ---
 ### Adapter
 

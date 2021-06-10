@@ -4,7 +4,6 @@ section: smartContract
 date: Last Modified
 title: "Contract Addresses"
 permalink: "docs/decentralized-oracles-ethereum-mainnet/"
-hidden: false
 ---
 # Overview
 

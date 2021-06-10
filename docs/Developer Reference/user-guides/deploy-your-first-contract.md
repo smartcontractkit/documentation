@@ -5,7 +5,6 @@ date: Last Modified
 title: "Deploy your first contract"
 permalink: "docs/deploy-your-first-contract/"
 whatsnext: {"Fund your contract":"/docs/fund-your-contract/"}
-hidden: false
 ---
 
 <p>

@@ -8,21 +8,8 @@ metadata:
   title: "Overview for Smart Contract Developers Integrating Chainlink"
   description: "Developer documentation and user guides for building smart contracts with the goal of connecting them to off-chain data sources."
 ---
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "/files/a4c6c80-85d09b6-19facd8-banner.png",
-        "Create a Chainlinked Project.png",
-        3246,
-        731,
-        "#f7f8fd"
-      ]
-    }
-  ]
-}
-[/block]
+![Chainlink](/files/a4c6c80-85d09b6-19facd8-banner.png)
+
 Contract creators are developers who build smart contracts with the goal of connecting them to off-chain data sources.
 
 # Getting started

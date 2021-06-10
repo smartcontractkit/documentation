@@ -10,10 +10,6 @@ metadata:
   description: "This page describes the decentralized architecture which enables Chainlink to aggregate data from multiple independent node operators."
   image: 
     0: "/files/OpenGraph_V3.png"
-    1: "670379d-OpenGraph_V3.png"
-    2: 1459
-    3: 1459
-    4: "#dbe1f8"
 ---
 This page describes how data aggregation is applied to produce Chainlink Price Feeds.
 

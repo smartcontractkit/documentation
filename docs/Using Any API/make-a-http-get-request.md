@@ -5,16 +5,11 @@ date: Last Modified
 title: "Make a GET Request"
 permalink: "docs/make-a-http-get-request/"
 whatsnext: {"Make an Existing Job Request":"/docs/existing-job-request/", "API Reference":"/docs/chainlink-framework/", "Contract Addresses":"/docs/decentralized-oracles-ethereum-mainnet/"}
-hidden: false
 metadata: 
   title: "Make a GET Request"
   description: "Learn how to make a GET request to an API from a smart contract, using Chainlink."
   image: 
     0: "/files/930cbb7-link.png"
-    1: "link.png"
-    2: 1459
-    3: 1459
-    4: "#dbe1f8"
 ---
 This page explains how to make an HTTP GET request to an external API from a smart contract, using Chainlink's [Request & Receive Data](../request-and-receive-data/) cycle.
 

@@ -5,14 +5,9 @@ date: Last Modified
 title: "TheRundown Oracle Node"
 permalink: "docs/therundown-oracle-node/"
 whatsnext: {"DNS Ownership Oracle":"/docs/dns-ownership-oracle/"}
-hidden: false
 metadata: 
   image: 
     0: "/files/bf220ba-cl.png"
-    1: "cl.png"
-    2: 1459
-    3: 1459
-    4: "#dbe1f8"
 ---
 TheRundown is the leading platform for real-time odds from the most popular sportsbooks, sports and markets.
 

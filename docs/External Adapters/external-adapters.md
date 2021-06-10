@@ -4,7 +4,6 @@ date: Last Modified
 title: "Introduction"
 permalink: "docs/external-adapters/"
 whatsnext: {"External Adapters in Solidity":"/docs/contract-creators/", "Building External Adapters":"/docs/developers/", "Bridges: Adding External Adapters to Nodes":"/docs/node-operators/"}
-hidden: false
 ---
 External adapters are how Chainlink enables easy integration of custom computations and specialized APIs. External adapters are services which the core of the Chainlink node communicates via its API with a simple JSON specification. If you want a step by step, be sure to check out our [blog post](https://blog.chain.link/build-and-use-external-adapters/). 
 

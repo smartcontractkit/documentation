@@ -5,34 +5,17 @@ date: Last Modified
 title: "Basic Request Model"
 permalink: "docs/architecture-request-model/"
 whatsnext: {"Make a GET Request":"/docs/make-a-http-get-request/", "Decentralized Data Model":"/docs/architecture-decentralized-model/"}
-hidden: false
 metadata: 
   title: "Chainlink Basic Request Model"
   image: 
     0: "/files/OpenGraph_V3.png"
-    1: "670379d-OpenGraph_V3.png"
-    2: 1459
-    3: 1459
-    4: "#dbe1f8"
 ---
 # Contracts Overview
 
 All source code is open source and available in our <a href="https://github.com/smartcontractkit/chainlink" target="_blank">Github repository</a>.
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "/files/881ade6-Simple_Architecture_Diagram_1_V1.png",
-        "Simple Architecture Diagram_1 V1.png",
-        5066,
-        1029,
-        "#f6f7fc"
-      ]
-    }
-  ]
-}
-[/block]
+
+![Basic Request Model](/files/881ade6-Simple_Architecture_Diagram_1_V1.png)
+
 ## ChainlinkClient
 
 <a href="https://github.com/smartcontractkit/chainlink/blob/master/evm-contracts/src/v0.6/ChainlinkClient.sol" target="_blank">`ChainlinkClient`</a> is a parent contract that enables smart contracts to consume data from oracles. It's available in the Chainlink smart contract library which can be [installed using the latest package managers](../create-a-chainlinked-project/).

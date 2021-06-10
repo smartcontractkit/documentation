@@ -5,7 +5,6 @@ date: Last Modified
 title: "Acquire testnet LINK"
 permalink: "docs/acquire-link/"
 whatsnext: {"Deploy your first contract":"/docs/deploy-your-first-contract/"}
-hidden: false
 ---
 This page will show you how to obtain and add testnet LINK to MetaMask. If you already have testnet LINK, skip to [Deploy your first contract](../deploy-your-first-contract/).
 

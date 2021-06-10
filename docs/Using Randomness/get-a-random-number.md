@@ -5,15 +5,10 @@ date: Last Modified
 title: "Get a Random Number"
 permalink: "docs/get-a-random-number/"
 whatsnext: {"API Reference":"/docs/chainlink-vrf-api-reference/", "Contract Addresses":"/docs/vrf-contracts/"}
-hidden: false
 metadata: 
   description: "How to generate a random number inside a smart contract using Chainlink VRF."
   image: 
     0: "/files/OpenGraph_V3.png"
-    1: "670379d-OpenGraph_V3.png"
-    2: 1459
-    3: 1459
-    4: "#dbe1f8"
 ---
 This page explains how to get a random number inside a smart contract using Chainlink VRF.
 

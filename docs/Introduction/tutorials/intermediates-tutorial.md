@@ -5,17 +5,11 @@ date: Last Modified
 title: "Intermediates - Random Numbers"
 permalink: "docs/intermediates-tutorial/"
 excerpt: "Using Chainlink VRF"
-whatsnext: {"Get a Random Number":"/docs/get-a-random-number/", "Advanced - API Calls":"/docs/advanced-tutorial/"}
-hidden: false
-metadata: 
+whatsnext: {"Get a Random Number":"/docs/get-a-random-number/", "Advanced - API Calls":"/docs/advanced-tutorial/"}metadata: 
   title: "Intermediates Tutorial"
   description: "Learn how to use randomness in your smart contracts using Chainlink VRF."
   image: 
     0: "/files/2a242f1-link.png"
-    1: "link.png"
-    2: 1459
-    3: 1459
-    4: "#dbe1f8"
 ---
 
 <p>

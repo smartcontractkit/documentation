@@ -4,16 +4,11 @@ section: smartContract
 date: Last Modified
 title: "Developer Communications"
 permalink: "docs/developer-communications/"
-hidden: false
 metadata: 
   title: "Developer Communications"
   description: "We are committed to communicating these changes with you in advance. This page will provide information on our current communication channels and detail active notifications / upgrade plans with timelines."
   image: 
     0: "/files/OpenGraph_V3.png"
-    1: "670379d-OpenGraph_V3.png"
-    2: 1459
-    3: 1459
-    4: "#dbe1f8"
 ---
 # Stay up to date with the latest upgrades
 [block:callout]

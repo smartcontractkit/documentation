@@ -4,16 +4,11 @@ section: smartContract
 date: Last Modified
 title: "API Reference"
 permalink: "docs/chainlink-vrf-api-reference/"
-hidden: false
 metadata: 
   title: "Chainlink VRF API Reference"
   description: "API reference for VRFConsumerBase."
   image: 
     0: "/files/OpenGraph_V3.png"
-    1: "670379d-OpenGraph_V3.png"
-    2: 1459
-    3: 1459
-    4: "#dbe1f8"
 ---
 API reference for <a href="https://github.com/smartcontractkit/chainlink/blob/master/evm-contracts/src/v0.6/VRFConsumerBase.sol" target="_blank">`VRFConsumerBase`</a>.
 

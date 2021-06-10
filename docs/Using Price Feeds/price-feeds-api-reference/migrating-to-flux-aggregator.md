@@ -4,15 +4,10 @@ section: smartContract
 date: Last Modified
 title: "Migration Instructions"
 permalink: "docs/migrating-to-flux-aggregator/"
-hidden: false
 metadata: 
   description: "Migrating to the latest version of Chainlink Price Feeds."
   image: 
     0: "/files/OpenGraph_V3.png"
-    1: "670379d-OpenGraph_V3.png"
-    2: 1459
-    3: 1459
-    4: "#dbe1f8"
 ---
 The Chainlink price reference feeds are being upgraded to a new version as of August 2020. This new release includes many new features which help make price feeds more resistant to network congestion and introduce new functions which allow developers to better handle stale data.
 

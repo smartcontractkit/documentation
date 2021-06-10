@@ -3,7 +3,6 @@ layout: nodes.liquid
 date: Last Modified
 title: "FAQ"
 permalink: "docs/faq/"
-hidden: false
 metadata: 
   title: "Developer FAQ - Chainlink"
   description: "Find answers to common questions about developing on Chainlink."

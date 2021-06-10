@@ -5,23 +5,9 @@ date: Last Modified
 title: "Tutorials"
 permalink: "docs/tutorials/"
 whatsnext: {"Beginners - The Basics":"/docs/beginners-tutorial/", "Intermediates - Random Numbers":"/docs/intermediates-tutorial/", "Advanced - API Calls":"/docs/advanced-tutorial/"}
-hidden: false
 ---
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "/files/a4c6c80-85d09b6-19facd8-banner.png",
-        "a9d5ff5-a4c6c80-85d09b6-19facd8-banner.png",
-        3246,
-        731,
-        "#f7f8fd"
-      ]
-    }
-  ]
-}
-[/block]
+![Chainlink](/files/a4c6c80-85d09b6-19facd8-banner.png)
+
 We've compiled a series of tutorials designed to teach smart contracts basics and how to use them to consume data from the Chainlink oracle ecosystem. 
 
 #Beginners

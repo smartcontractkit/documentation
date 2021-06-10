@@ -4,7 +4,6 @@ section: smartContract
 date: Last Modified
 title: "Hackathon Resources"
 permalink: "docs/hackathon-resources/"
-hidden: false
 ---
 ### Hackathon & Project Resources
 

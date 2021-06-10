@@ -3,7 +3,6 @@ layout: nodes.liquid
 date: Last Modified
 title: "Example Projects"
 permalink: "docs/example-projects/"
-hidden: false
 ---
 # Hackathons
 

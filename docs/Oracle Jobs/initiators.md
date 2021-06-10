@@ -4,7 +4,6 @@ date: Last Modified
 title: "Initiators"
 permalink: "docs/initiators/"
 whatsnext: {"Introduction to External Initiators":"/docs/external-initiators-introduction/"}
-hidden: false
 ---
 [block:api-header]
 {

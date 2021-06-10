@@ -3,7 +3,6 @@ layout: nodes.liquid
 date: Last Modified
 title: "Bridges: Adding External Adapters to Nodes"
 permalink: "docs/node-operators/"
-hidden: false
 ---
 External adapters are added to the Chainlink node by creating a bridge type. Bridges define the task's name and URL of the external adapter. When a task type is received that is not one of the core adapters, the node will search for a bridge type with that name, utilizing the bridge to your external adapter. Bridge and task type names are case insensitive.
 

@@ -5,7 +5,6 @@ date: Last Modified
 title: "CipherTrace DeFi Compli Oracle"
 permalink: "docs/ciphertrace-defi-compli-oracle/"
 whatsnext: {"Bookmaker Ratings Oracle":"/docs/bookmaker-ratings-oracle/"}
-hidden: false
 ---
 CipherTrace, the industry standard in cryptocurrency intelligence, introduces DeFi Compli, a compliance solution enabling DEXs and DeFi applications to abide by the Office of Foreign Assets Control (OFAC) sanction requirements. This oracle delivers CipherTrace's source-signed compliance data directly on-chain to your smart contract.
 
