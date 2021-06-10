@@ -4,7 +4,6 @@ date: Last Modified
 title: "Configuration Variables"
 permalink: "docs/configuration-variables/"
 whatsnext: {"Enabling HTTPS Connections":"/docs/enabling-https-connections/"}
-hidden: false
 ---
 
 Recent versions of Chainlink ship with sensible defaults for most configuration variables.

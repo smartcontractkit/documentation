@@ -6,16 +6,11 @@ title: "Beginners - The Basics"
 permalink: "docs/beginners-tutorial/"
 excerpt: "Smart Contracts and Chainlink"
 whatsnext: {"Get the Latest Price":"/docs/get-the-latest-price/", "Deploy your first contract":"/docs/deploy-your-first-contract/", "Intermediates - Random Numbers":"/docs/intermediates-tutorial/"}
-hidden: false
 metadata: 
   title: "Beginners Tutorial"
   description: "Learn what smart contracts are, how to write them, and how to use Chainlink price feeds to deploy your very own Chainlink smart contract."
   image: 
     0: "/files/1a63254-link.png"
-    1: "link.png"
-    2: 1459
-    3: 1459
-    4: "#dbe1f8"
 ---
 
 <p>

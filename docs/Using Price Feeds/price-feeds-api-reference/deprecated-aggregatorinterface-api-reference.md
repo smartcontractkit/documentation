@@ -4,14 +4,9 @@ section: smartContract
 date: Last Modified
 title: "Deprecated API Reference"
 permalink: "docs/deprecated-aggregatorinterface-api-reference/"
-hidden: false
 metadata: 
   image: 
     0: "/files/OpenGraph_V3.png"
-    1: "670379d-OpenGraph_V3.png"
-    2: 1459
-    3: 1459
-    4: "#dbe1f8"
 ---
 > 🚧 Deprecated
 > 

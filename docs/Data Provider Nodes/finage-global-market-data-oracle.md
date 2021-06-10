@@ -4,7 +4,6 @@ section: smartContract
 date: Last Modified
 title: "Finage Global Market Data Oracle"
 permalink: "docs/finage-global-market-data-oracle/"
-hidden: false
 ---
 
 Finage is a leading real-time stock, forex, and cryptocurrency data provider. They offer market data for 60,000+ securities, and a broad selection of data such as financial statements, Ownership, News Sentiments, Earning Call Transcripts and Mergers and Acquisitions. This oracle will initially provide a given stock’s performance relative to its sector’s performance.

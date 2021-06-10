@@ -4,7 +4,6 @@ date: Last Modified
 title: "Fulfilling Requests"
 permalink: "docs/fulfilling-requests/"
 whatsnext: {"Performing System Maintenance":"/docs/performing-system-maintenance/", "Miscellaneous":"/docs/miscellaneous/", "Best Security and Operating Practices":"/docs/best-security-practices/"}
-hidden: false
 metadata: 
   title: "Chainlink Node Operators: Fulfilling Requests"
   description: "Deploy your own Oracle contract and add jobs to your node so that it can provide data to smart contracts."

@@ -5,14 +5,9 @@ date: Last Modified
 title: "Kraken Rates Oracle Node"
 permalink: "docs/kraken-rates-oracle-node/"
 whatsnext: {"Tiingo EOD Stock Price Oracle":"/docs/tiingo-eod-stock-price-oracle/"}
-hidden: false
 metadata: 
   image: 
     0: "/files/2713d5c-cl.png"
-    1: "cl.png"
-    2: 1459
-    3: 1459
-    4: "#dbe1f8"
 ---
 This Chainlink has a dedicated connection to <a href="https://blog.cfbenchmarks.com/rest-api/" target="_blank">Kraken's Prices</a> API. 
 

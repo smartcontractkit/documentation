@@ -4,15 +4,10 @@ section: smartContract
 date: Last Modified
 title: "Contract Addresses"
 permalink: "docs/vrf-contracts/"
-hidden: false
 metadata: 
   title: "Chainlink VRF Contract Addresses"
   image: 
     0: "/files/OpenGraph_V3.png"
-    1: "670379d-OpenGraph_V3.png"
-    2: 1459
-    3: 1459
-    4: "#dbe1f8"
 ---
 Chainlink VRF allows you to integrate provably-fair and verifiably random data in your smart contract. 
 

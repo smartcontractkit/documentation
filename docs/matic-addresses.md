@@ -6,9 +6,5 @@ metadata:
   description: "Chainlink Price Feeds on Matic Network"
   image: 
     0: "/files/OpenGraph_V3.png"
-    1: "670379d-OpenGraph_V3.png"
-    2: 1459
-    3: 1459
-    4: "#dbe1f8"
 ---
 (content rendered programatically by layout)

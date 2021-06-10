@@ -5,16 +5,11 @@ date: Last Modified
 title: "Make an Existing Job Request"
 permalink: "docs/existing-job-request/"
 whatsnext: {"Find Existing Jobs":"/docs/listing-services/", "API Reference":"/docs/chainlink-framework/", "Contract Addresses":"/docs/decentralized-oracles-ethereum-mainnet/"}
-hidden: false
 metadata: 
   title: "Make an Existing Job Request"
   description: "Learn how to utilize existing Chainlink external adapters to make calls to APIs from smart contracts."
   image: 
     0: "/files/OpenGraph_V3.png"
-    1: "670379d-OpenGraph_V3.png"
-    2: 1459
-    3: 1459
-    4: "#dbe1f8"
 ---
 Using an *existing* Oracle Job makes your smart contract code more succinct. This page explains how to retrieve the current weather temperature (in Kelvin) for a defined city using an existing Oracle job.
 

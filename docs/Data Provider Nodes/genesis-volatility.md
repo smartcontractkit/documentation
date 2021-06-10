@@ -5,7 +5,6 @@ date: Last Modified
 title: "Genesis Volatility Cryptocurrency Options Oracle"
 whatsnext: {"dxFeed Price Oracle":"/docs/dxfeed-oracle/"}
 permalink: "docs/genesis-volatility/"
-hidden: false
 ---
 Genesis Volatility is a leading provider of data analytics on the crypto derivatives market, covering the largest exchanges. This oracle will initially supply the 30 day constant maturity 30/20 delta skew for either BTC or ETH.
 

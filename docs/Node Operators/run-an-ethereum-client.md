@@ -4,7 +4,6 @@ date: Last Modified
 title: "Run an Ethereum Client"
 permalink: "docs/run-an-ethereum-client/"
 whatsnext: {"Running a Chainlink Node":"/docs/running-a-chainlink-node/"}
-hidden: false
 ---
 In order to run a Chainlink node, it must be able to connect to an Ethereum client with an active websocket connection. This is accomplished by running either <a href="https://geth.ethereum.org/" target="_blank" rel="noreferrer, noopener">Geth</a>, <a href="https://www.parity.io/" target="_blank" rel="noreferrer, noopener">Parity</a>, or using a 3rd party connection. The examples below show how to run Geth and Parity in their official Docker containers for each network that they support.
 

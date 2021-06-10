@@ -5,16 +5,11 @@ date: Last Modified
 title: "Contract Addresses"
 permalink: "docs/reference-contracts/"
 whatsnext: {"ENS":"/docs/ens/", "Ethereum Price Feeds":"/docs/ethereum-addresses/", "Binance Smart Chain Price Feeds":"/docs/binance-smart-chain-addresses/", "Polygon (Matic) Price Feeds":"/docs/matic-addresses/", "xDai Price Feeds":"/docs/xdai-price-feeds/", "Huobi Eco Chain Price Feeds":"/docs/huobi-eco-chain-price-feeds/", "Avalanche Price Feeds":"/docs/avalanche-price-feeds/"}
-hidden: false
 metadata: 
   title: "Chainlink Price Feed Smart Contract Addresses"
   description: "A list of addresses for Price Feed aggregator contracts on supported networks."
   image: 
     0: "/files/OpenGraph_V3.png"
-    1: "670379d-OpenGraph_V3.png"
-    2: 1459
-    3: 1459
-    4: "#dbe1f8"
 ---
 Chainlink Price Feed contracts are updated on a regular basis by multiple Chainlink nodes. For implementation details, read [Introduction to Price Feeds](../using-chainlink-reference-contracts/).
 

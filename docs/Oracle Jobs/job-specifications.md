@@ -4,7 +4,6 @@ date: Last Modified
 title: "Job Specifications"
 permalink: "docs/job-specifications/"
 whatsnext: {"Core Adapters":"/docs/adapters/", "Initiators":"/docs/initiators/"}
-hidden: false
 ---
 ## What is a job?
 

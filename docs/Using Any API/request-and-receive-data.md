@@ -5,32 +5,14 @@ date: Last Modified
 title: "Introduction to Using Any API"
 permalink: "docs/request-and-receive-data/"
 whatsnext: {"Make a GET Request":"/docs/make-a-http-get-request/","Make an Existing Job Request":"/docs/existing-job-request/", "API Reference":"/docs/chainlink-framework/", "Contract Addresses":"/docs/decentralized-oracles-ethereum-mainnet/"}
-hidden: false
 metadata: 
   title: "Request and Receive API Data with Chainlink"
   description: "Chainlink provides your smart contract with access to any external API. Learn how to integration any API into your smart contract."
   image: 
     0: "/files/bc12c34-link.png"
-    1: "link.png"
-    2: 1459
-    3: 1459
-    4: "#dbe1f8"
 ---
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "/files/8c35025-Request__Receive_Data.png",
-        "Request & Receive Data.png",
-        3246,
-        730,
-        "#f1f4fb"
-      ]
-    }
-  ]
-}
-[/block]
+![Chainlink Any API](/files/8c35025-Request__Receive_Data.png)
+
 # Call Any External API
 
 > 📘

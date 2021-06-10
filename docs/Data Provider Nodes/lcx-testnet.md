@@ -5,14 +5,9 @@ date: Last Modified
 title: "LCX (Testnet)"
 permalink: "docs/lcx-testnet/"
 whatsnext: {"Kraken Rates Oracle Node":"/docs/kraken-rates-oracle-node/"}
-hidden: false
 metadata: 
   image: 
     0: "/files/OpenGraph_V3.png"
-    1: "cl.png"
-    2: 1459
-    3: 1459
-    4: "#dbe1f8"
 ---
 This Chainlink has a dedicated connection to <a href="https://www.lcx.com/Cryptocurrency-Reference-Price-Services/" target="_blank">LCX's Cryptocurrency Reference Prices</a> API. This service offers reliable daily reference prices of the U.S. dollar price and Euro price of one Bitcoin and one Ethereum. 
 

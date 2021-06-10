@@ -3,7 +3,6 @@ layout: nodes.liquid
 date: Last Modified
 title: "FluxAggregator Uses"
 permalink: "docs/fluxaggregator-uses/"
-hidden: false
 ---
 This page outlines the uses of the FluxAggregator contract for the node operators that feed data into it.
 [block:api-header]

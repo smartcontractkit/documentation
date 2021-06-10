@@ -4,16 +4,11 @@ section: smartContract
 date: Last Modified
 title: "LINK Token Contracts"
 permalink: "docs/link-token-contracts/"
-hidden: false
 metadata: 
   title: "LINK Token Contracts"
   description: "Addresses for the LINK token on supported networks."
   image: 
     0: "/files/72d4bd9-link.png"
-    1: "link.png"
-    2: 1459
-    3: 1459
-    4: "#dbe1f8"
 ---
 LINK tokens are used to pay node operators for retrieving data for smart contracts and also for deposits placed by node operators as required by contract creators.
 

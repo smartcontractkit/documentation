@@ -5,32 +5,14 @@ date: Last Modified
 title: "Install Instructions"
 permalink: "docs/create-a-chainlinked-project/"
 whatsnext: {"Introduction to Price Feeds":"/docs/using-chainlink-reference-contracts/", "Introduction to Chainlink VRF":"/docs/chainlink-vrf/", "Introduction to Using Any API":"/docs/request-and-receive-data/"}
-hidden: false
 metadata: 
   title: "Getting Started with Chainlink for Smart Contract Developers"
   description: "Everything you need to know on how to create a new Chainlink project or update an existing one using the Chainlink Library for Solidity"
   image: 
     0: "/files/OpenGraph_V3.png"
-    1: "670379d-OpenGraph_V3.png"
-    2: 1459
-    3: 1459
-    4: "#dbe1f8"
 ---
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "/files/c6e99c5-Untitled_design_23.png",
-        "Untitled design (23).png",
-        800,
-        418,
-        "#c0b98b"
-      ]
-    }
-  ]
-}
-[/block]
+![Starter Kits](/files/c6e99c5-Untitled_design_23.png)
+
 This page explains how to install and use the [Chainlink Library](../chainlink-framework/) in your projects, either manually or via the user of the Chainlink Starter Kits.
 
 > 📘 

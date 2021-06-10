@@ -4,7 +4,6 @@ date: Last Modified
 title: "Core Adapters"
 permalink: "docs/adapters/"
 whatsnext: {"Introduction to External Adapters":"/docs/external-adapters/", "Initiators":"/docs/initiators/"}
-hidden: false
 ---
 Core adapters are the built-in functionality that every Chainlink node supports. Strung together, they act as tasks that need to be performed to complete a Job.
 
