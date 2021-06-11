@@ -44,9 +44,9 @@ section: smartContract
                 
                 let proxyList = '';
                 for(let proxy of network.proxies) {
-                    proxyList += `<tr id="${network.name} ${proxy.pair}"><td><code>${proxy.pair}</code></td><td>${proxy.decimals}</td><td><a href="${network.url}${proxy.proxy}" target="_blank"><code>${proxy.proxy}</code></a></td></tr>`;
+                    proxyList += `<tr id="${network.name} ${proxy.pair}"><td><code>${proxy.pair}</code></td><td>${proxy.deviationThreshold ? (proxy.deviationThreshold + '%') : 'N/A'}</td><td>${proxy.heartbeat ? proxy.heartbeat : 'N/A'}</td><td>${proxy.decimals}</td><td><a href="${network.url}${proxy.proxy}" target="_blank"><code>${proxy.proxy}</code></a></td></tr>`;
                 }
-                html += `<table><thead><tr><th>Pair</th><th>Dec</th><th>Proxy</th></tr></thead><tbody>${proxyList}</tbody></table>`;
+                html += `<table><thead><tr><th>Pair</th><th>Deviation</th><th>Heartbeat</th><th>Dec</th><th>Proxy</th></tr></thead><tbody>${proxyList}</tbody></table>`;
             }
         } else {
             html = `<em style="color:red;">Couldn't render the feed list, it may still be processing. Feeds are updated every half hour..</em>`;
