@@ -13,13 +13,7 @@ Not all env vars are documented here. Any env var that is undocumented is subjec
 
 To reiterate: _if you have an env var set that is not listed here, and you don't know exactly why you have it set, you should remove it!_
 
-The env variables listed here are explicitly supported and current as of Chainlink 0.10.6.
-
-NOTE: Some env vars require a duration. A duration string is a possibly signed sequence of decimal numbers, each with optional fraction and a unit suffix, such as "300ms", "-1.5h" or "2h45m". Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h". Some examples:
-
-`10ms`
-`1h15m`
-`42m30s`
+The env variables listed here are explicitly supported and current as of Chainlink 0.10.8.
 
 - [Essential env vars](#essential-env-vars)
   - [DATABASE_URL](#database_url)
@@ -48,11 +42,14 @@ NOTE: Some env vars require a duration. A duration string is a possibly signed s
   - [ETH_GAS_LIMIT_TRANSFER](#eth-gas-limit-transfer)
   - [ETH_GAS_BUMP_PERCENT](#eth_gas_bump_percent)
   - [ETH_GAS_BUMP_THRESHOLD](#eth_gas_bump_threshold)
+  - [ETH_GAS_BUMP_WEI](#eth_gas_bump_wei)
   - [ETH_GAS_PRICE_DEFAULT](#eth_gas_price_default)
   - [ETH_MAX_GAS_PRICE_WEI](#eth_max_gas_price_wei)
   - [ETH_MIN_GAS_PRICE_WEI](#eth_min_gas_price_wei)
   - [GAS_UPDATER_ENABLED](#gas_updater_enabled)
   - [GAS_UPDATER_TRANSACTION_PERCENTILE](#gas_updater_transaction_percentile)
+  - [ETH_GAS_LIMIT_DEFAULT](#eth_gas_limit_default)
+  - [ETH_GAS_LIMIT_TRANSFER](#eth_gas_limit_transfer)
 - [Other env vars](#other-env-vars)
   - [ADMIN_CREDENTIALS_FILE](#admin_credentials_file)
   - [ALLOW_ORIGINS](#allow_origins)
@@ -78,6 +75,10 @@ NOTE: Some env vars require a duration. A duration string is a possibly signed s
   - [ROOT](#root)
   - [SECURE_COOKIES](#secure_cookies)
   - [SESSION_TIMEOUT](#session_timeout)
+- [Advanced](#advanced)
+  - [ETH_MAX_IN_FLIGHT_TRANSACTIONS](#eth_max_in_flight_transactions)
+  - [ETH_MAX_QUEUED_TRANSACTIONS](#eth_max_queued_transactions)
+- [Misc notes](#misc-notes)
 
 # Essential env vars
 
@@ -107,9 +108,9 @@ This is the websocket address of the Ethereum client that the Chainlink node wil
 
 ## LINK_CONTRACT_ADDRESS
 
-- Default: `"0x514910771AF9Ca656af840dff83E8264EcF986CA"` (Ethereum mainnet)
+- Default: _automatic based on Chain ID_
 
-The address of the LINK token contract. Used for displaying the node account's LINK balance. This should be set based on your chain ID.
+The address of the LINK token contract. Used for displaying the node account's LINK balance. For supported chains, this is automatically set based on the given chain ID. For unsupported chains, you will need to supply it yourself.
 
 # Recommended env vars
 
@@ -295,6 +296,18 @@ Setting this number higher will cause Chainlink to select higher gas prices.
 
 Setting it lower will tend to set lower gas prices.
 
+## ETH_GAS_LIMIT_DEFAULT
+
+- Default: _automatically set based on Chain ID, typically 500000_
+
+The default gas limit for outgoing transactions. Some job types (e.g. keeper) may set their own gas limit unrelated to this value.
+
+## ETH_GAS_LIMIT_TRANSFER
+
+- Default: _automatically set based on Chain ID, typically 21000_
+
+The gas limit used for an ordinary eth->eth transfer.
+
 # Other env vars
 
 ## ADMIN_CREDENTIALS_FILE
@@ -420,11 +433,13 @@ Enables or disables the node writing to the `$ROOT/log.jsonl` file.
 
 The number of block confirmations to wait before kicking off a job run. Setting this to a lower value improves node response time at the expense of occasionally submitting duplicate transactions in the event of chain re-orgs (duplicate transactions are harmless but cost some eth).
 
+NOTE: The lowest value allowed here is 1, since setting to 0 would imply that logs are processed from the mempool before they are even mined into a block, which isn't possible with Chainlink's current architecture.
+
 ## MINIMUM_CONTRACT_PAYMENT
 
-- Default: `"1000000000000000000"`
+- Default: _automatically set based on Chain ID, typically 100000000000000 (0.0001 LINK) on all chains except mainnet, where it is 1 LINK_
 
-For jobs that use the EthTx adapter, this is the minimum payment amount in order for the node to accept and process the job. Since there are no decimals on the EVM, the value is represented like wei. This makes the default value 1 LINK.
+For jobs that use the EthTx adapter, this is the minimum payment amount in order for the node to accept and process the job. Since there are no decimals on the EVM, the value is represented like wei.
 [block:callout]
 {
   "type": "warning",
@@ -468,3 +483,36 @@ Requires the use of secure cookies for authentication. Set to false to enable st
 
 This value determines the amount of idle time to elapse before the GUI signs out users from their sessions.
 
+# Advanced
+
+Caution: only change these if you _really_ know what you are doing. Setting these wrongly can cause your node to get permanently stuck, requiring manual intervention to fix.
+
+## ETH_MAX_IN_FLIGHT_TRANSACTIONS
+
+- Default: 16
+
+Controls how many transactions are allowed to be "in-flight" i.e. broadcast but unconfirmed at any one time. You can consider this a form of transaction throttling.
+
+The default is set conservatively at 16 because this is a pessimistic minimum that both geth and parity will hold without evicting local transactions. If your node is falling behind and you need higher throughput, you can increase this setting, but you must make sure that your eth node is configured properly otherwise you can get nonce gapped.
+
+0 value disables the limit. Use with caution.
+
+## ETH_MAX_QUEUED_TRANSACTIONS
+
+- Default: _automatically set based on Chain ID, typically 250_
+
+The maximum number of unbroadcast transactions per key that are allowed to be enqueued before jobs will start failing and rejecting send of any further transactions. This represents a sanity limit and generally indicates a problem with your eth node (transactions are not getting mined).
+
+Do NOT blindly increase this value thinking it will fix things if you start hitting this limit because transactions are not getting mined, you will instead only make things worse.
+
+In deployments with very high burst rates, or on chains with large re-orgs, you _may_ consider increasing this.
+
+0 value disables any limit on queue size. Use with caution.
+
+# Misc notes
+
+NOTE: Some env vars require a duration. A duration string is a possibly signed sequence of decimal numbers, each with optional fraction and a unit suffix, such as "300ms", "-1.5h" or "2h45m". Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h". Some examples:
+
+`10ms`
+`1h15m`
+`42m30s`
