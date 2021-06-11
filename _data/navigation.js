@@ -4,12 +4,12 @@ module.exports = {
       {
         section: 'NODE OPERATORS',
         contents: [
-          { url: '/docs/node-operator-overview/', title: 'Overview/' },
+          { url: '/docs/node-operator-overview/', title: 'Overview' },
           {
             url: '/docs/running-a-chainlink-node/',
             title: 'Running a Chainlink Node',
           },
-          { url: '/docs/fulfilling-requests/', title: 'Fulfilling Requests/' },
+          { url: '/docs/fulfilling-requests/', title: 'Fulfilling Requests' },
           {
             url: '/docs/run-an-ethereum-client/',
             title: 'Run an Ethereum Client',
@@ -30,31 +30,31 @@ module.exports = {
             url: '/docs/enabling-https-connections/',
             title: 'Enabling HTTPS Connections',
           },
-          { url: '/docs/miscellaneous/', title: 'Miscellaneous/' },
+          { url: '/docs/miscellaneous/', title: 'Miscellaneous' },
           {
             url: '/docs/best-security-practices/',
             title: 'Best Security and Operating Practices',
           },
-          { url: '/docs/fluxaggregator-uses/', title: 'FluxAggregator Uses/' },
+          { url: '/docs/fluxaggregator-uses/', title: 'FluxAggregator Uses' },
         ],
       },
       {
         section: 'ORACLE JOBS',
         contents: [
-          { url: '/docs/job-specifications/', title: 'Job Specifications/' },
-          { url: '/docs/adapters/', title: 'Core Adapters/' },
-          { url: '/docs/initiators/', title: 'Initiators/' },
+          { url: '/docs/job-specifications/', title: 'Job Specifications' },
+          { url: '/docs/adapters/', title: 'Core Adapters' },
+          { url: '/docs/initiators/', title: 'Initiators' },
         ],
       },
       {
         section: 'EXTERNAL ADAPTERS',
         contents: [
-          { url: '/docs/external-adapters/', title: 'Introduction/' },
+          { url: '/docs/external-adapters/', title: 'Introduction' },
           {
             url: '/docs/contract-creators/',
             title: 'External Adapters in Solidity',
           },
-          { url: '/docs/developers/', title: 'Building External Adapters/' },
+          { url: '/docs/developers/', title: 'Building External Adapters' },
           {
             url: '/docs/node-operators/',
             title: 'Bridges: Adding External Adapters to Nodes',
