@@ -2,7 +2,7 @@
 layout: nodes.liquid
 section: smartContract
 date: Last Modified
-title: "Contract Addresses"
+title: "Chainlink VRF Contract Addresses"
 permalink: "docs/vrf-contracts/"
 metadata: 
   title: "Chainlink VRF Contract Addresses"

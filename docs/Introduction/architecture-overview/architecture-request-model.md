@@ -22,7 +22,7 @@ All source code is open source and available in our <a href="https://github.com/
 
 The client constructs and makes a request to a known Chainlink oracle through the `transferAndCall` function, implemented by the LINK token. This request contains encoded information that is required for the cycle to succeed. In the `ChainlinkClient` contract, this call is initiated with a call to `sendChainlinkRequestTo`.
 
-To build your own client contract using `ChainlinkClient`, see [Introduction to Using Any API](../request-and-receive-data/), or view the [API Reference](../chainlink-framework/) for the `ChainlinkClient` contract.
+To build your own client contract using `ChainlinkClient`, see [Introduction to Using Any API](../request-and-receive-data/), or view the [ChainlinkClient API Reference](../chainlink-framework/) for the `ChainlinkClient` contract.
 
 ## LINK Token
 
