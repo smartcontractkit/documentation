@@ -38,6 +38,7 @@ import "@chainlink/contracts/src/v0.6/ChainlinkClient.sol";
  * PLEASE DO NOT USE THIS CODE IN PRODUCTION.
  */
 contract APIConsumer is ChainlinkClient {
+    using Chainlink for Chainlink.Request;
   
     uint256 public volume;
     
