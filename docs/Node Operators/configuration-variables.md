@@ -67,7 +67,7 @@ The env variables listed here are explicitly supported and current as of Chainli
   - [LOG_SQL_MIGRATIONS](#log_sql_migrations)
   - [LOG_TO_DISK](#log_to_disk)
   - [MIN_INCOMING_CONFIRMATIONS](#min_incoming_confirmations)
-  - [MINIMUM_CONTRACT_PAYMENT](#minimum_contract_payment)
+  - [MINIMUM_CONTRACT_PAYMENT_LINK_JUELS](#minimum_contract_payment)
   - [OPERATOR_CONTRACT_ADDRESS](#operator_contract_address)
   - [ORM_MAX_IDLE_CONNS](#orm_max_idle_conns)
   - [ORM_MAX_OPEN_CONNS](#orm_max_open_conns)
@@ -434,7 +434,9 @@ The number of block confirmations to wait before kicking off a job run. Setting 
 
 NOTE: The lowest value allowed here is 1, since setting to 0 would imply that logs are processed from the mempool before they are even mined into a block, which isn't possible with Chainlink's current architecture.
 
-## MINIMUM_CONTRACT_PAYMENT
+## MINIMUM_CONTRACT_PAYMENT_LINK_JUELS
+
+NOTE: This was formerly called MINIMUM_CONTRACT_PAYMENT, it will be removed in a future release.
 
 - Default: _automatically set based on Chain ID, typically 100000000000000 (0.0001 LINK) on all chains except mainnet, where it is 1 LINK_
 
