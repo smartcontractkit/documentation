@@ -68,7 +68,7 @@ permalink: /
         <div>
           <h3>Automate and Maintain with Chainlink Keepers</h3>
           <p>
-            Chainlink Keepers provide smart contract developers, decentralized applications (dApps), and decentralized autonomous organizations (DAOs) with a highly reliable, decentralized, and cost-efficient method of automating smart contract functions and regular contract maintenance
+            Chainlink Keepers provide smart contract developers, decentralized applications (dApps), and decentralized autonomous organizations (DAOs) with a highly reliable, decentralized, and cost-efficient method of automating smart contract functions and regular contract maintenance.
           </p>
         </div>
         <a href="/docs/chainlink-keepers/introduction/" class="cl-button--ghost"

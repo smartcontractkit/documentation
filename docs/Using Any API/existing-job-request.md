@@ -40,6 +40,8 @@ import "@chainlink/contracts/src/v0.6/ChainlinkClient.sol";
  * PLEASE DO NOT USE THIS CODE IN PRODUCTION.
  */
 contract OpenWeatherConsumer is ChainlinkClient {
+    using Chainlink for Chainlink.Request;
+
     address private oracle;
     bytes32 private jobId;
     uint256 private fee;
