@@ -10,13 +10,7 @@ This page will show you how to obtain and add testnet LINK to MetaMask. If you a
 
 # Testnet LINK Faucet
 
-* Navigate to the Chainlink Kovan Faucet site: <a href="https://kovan.chain.link/" target="_blank" rel="noreferrer, noopener">https://kovan.chain.link</a>
-[block:callout]
-{
-  "type": "success",
-  "body": "You can also get testnet LINK from Rinkeby:\n[Rinkeby](https://rinkeby.chain.link/)"
-}
-[/block]
+* Navigate to the [Chainlink Rinkeby Faucet site](https://rinkeby.chain.link)
 
 [block:image]
 {
@@ -35,7 +29,7 @@ This page will show you how to obtain and add testnet LINK to MetaMask. If you a
 }
 [/block]
 * Open up MetaMask, click the Wallet account name at the top to copy the address to your clipboard.
-* Paste that address into the Chainlink Kovan Faucet address input field, solve the captcha, and click on `Send me 100 Test LINK` button.
+* Paste that address into the Chainlink Rinkeby Faucet address input field, solve the captcha, and click on `Send me 100 Test LINK` button.
 * You should see a green banner show up with the text: Your request was successful! View your transaction here.
 [block:image]
 {
@@ -54,15 +48,10 @@ This page will show you how to obtain and add testnet LINK to MetaMask. If you a
 [/block]
 * In order to see your LINK token balance in MetaMask, you will need to add the token.
 * In MetaMask click the hamburger button, and click on `Add Token` and then `Custom Token`.
-* On Kovan our LINK token address is: `0xa36085F69e2889c224210F603D836748e7dC0088`. Copy that address.
+* On Rinkeby our LINK token address is: `0x01BE23585060835E02B77ef475b0Cc51aA1e0709`. Copy that address.
 [block:code]
 {
   "codes": [
-    {
-      "code": "0xa36085F69e2889c224210F603D836748e7dC0088",
-      "language": "text",
-      "name": "Kovan LINK Token"
-    },
     {
       "code": "0x01BE23585060835E02B77ef475b0Cc51aA1e0709",
       "language": "text",

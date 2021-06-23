@@ -125,7 +125,7 @@ Chainlink price feeds are sources of data [aggregated from many independent Chai
 [/block]
 ## 6a. Using Chainlink price feeds
 
-The following code is from the [Get the Latest Price](../get-the-latest-price/) page. It describes a contract which obtains the latest ETH / USD price using the Kovan testnet.
+The following code is from the [Get the Latest Price](../get-the-latest-price/) page. It describes a contract which obtains the latest ETH / USD price using the Rinkeby testnet.
 
 ```javascript
 
@@ -138,12 +138,12 @@ contract PriceConsumerV3 {
     AggregatorV3Interface internal priceFeed;
 
     /**
-     * Network: Kovan
+     * Network: Rinkeby
      * Aggregator: ETH/USD
-     * Address: 0x9326BFA02ADD2366b30bacB125260Af641031331
+     * Address: 0x8A753747A1Fa494EC906cE90E9f37563A8AF630e
      */
     constructor() public {
-        priceFeed = AggregatorV3Interface(0x9326BFA02ADD2366b30bacB125260Af641031331);
+        priceFeed = AggregatorV3Interface(0x8A753747A1Fa494EC906cE90E9f37563A8AF630e);
     }
 
     /**
@@ -166,7 +166,7 @@ On the 3rd line, the code imports an interface called `AggregatorV3Interface`. A
 
 Interfaces make it easier for calling contracts to know what functions to call. For example, in this case, `AggregatorV3Interface` defines that all V3 Aggregators will have the function `latestRoundData`. We can see all of the functions that a V3 Aggregator exposes in the <a href="https://github.com/smartcontractkit/chainlink/blob/master/evm-contracts/src/v0.6/interfaces/AggregatorV3Interface.sol" target="_blank">`AggregatorV3Interface` file on Github.</a>
 
-Our contract is initialized with the hard-coded address of the ETH / USD Kovan price feed. Then in `getLatestPrice` it uses `latestRoundData` to obtain the most recent round of price data. We're interested in the price, so the function returns that.
+Our contract is initialized with the hard-coded address of the ETH / USD Rinkeby price feed. Then in `getLatestPrice` it uses `latestRoundData` to obtain the most recent round of price data. We're interested in the price, so the function returns that.
 
 # 7. How do I deploy to testnet?
 
@@ -220,7 +220,7 @@ Contracts are deployed by addresses on the network, so to deploy our own we need
 
 Head to the <a href="https://metamask.io/" target="_blank">Metamask website</a> to download, install and create an account.
 
-Once that's done, hop over to the Kovan testnet inside Metamask extension, as seen in the image below.
+Once that's done, hop over to the Rinkeby testnet inside Metamask extension, as seen in the image below.
 [block:image]
 {
   "images": [
@@ -236,7 +236,7 @@ Once that's done, hop over to the Kovan testnet inside Metamask extension, as se
   ]
 }
 [/block]
-We now have an address to deploy to the Kovan testnet from.
+We now have an address to deploy to the Rinkeby testnet from.
 
 - [x] An address to deploy from 
 
@@ -252,7 +252,7 @@ Connect your Metamask wallet and request ETH from one of the available faucets o
 
 ## 7d. Compiling
 
-We have all the pieces needed to deploy our price consumer to Kovan. To start the process we need to compile it first. Head back to the Remix tab.
+We have all the pieces needed to deploy our price consumer to Rinkeby. To start the process we need to compile it first. Head back to the Remix tab.
 
 Under the logo in the top left-hand corner, there's a vertical menu, made up of images. Hovering over each button shows a tooltip explaining what item is. The first is "File explorer", which shows us all the files loaded into Remix. The second is "Solidity compiler". Clicking this item takes us to a side menu where we can compile our contract.
 
@@ -304,4 +304,4 @@ Once deployed, an item will appear in the "Deployed Contracts" section underneat
 [/block]
 Click on the caret to see a list of all the functions available to call.
 
-Click "getLatestPrice", and voilà! The latest price appears just underneath the button. We have successfully deployed a smart contract, which uses Chainlink price feeds, to the Kovan Ethereum testnet!
+Click "getLatestPrice", and voilà! The latest price appears just underneath the button. We have successfully deployed a smart contract, which uses Chainlink price feeds, to the Rinkeby Ethereum testnet!

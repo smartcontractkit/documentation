@@ -74,7 +74,7 @@ Let's walk through a real example, where we retrieve 24 volume of the <a href="h
 
 4. [EthUint256](../adapters/#ethuint256) - formats the input into an integer and then converts it into Solidity's `uint256` format. Example: `0xc618a1e4`
 
-5. [EthTx](../adapters/#ethtx) - takes the given input, places it into the data field of the transaction, signs a transaction, and broadcasts it to the network. Example: [transaction result](https://kovan.etherscan.io/tx/0xf36ec811db8bde1245b6aa16bc052d4fbab287b220cf194bb91ae452f1fad084)
+5. [EthTx](../adapters/#ethtx) - takes the given input, places it into the data field of the transaction, signs a transaction, and broadcasts it to the network. Example: [transaction result](https://rinkeby.etherscan.io/tx/0xf36ec811db8bde1245b6aa16bc052d4fbab287b220cf194bb91ae452f1fad084)
 
 **Important: Some core adapters accept parameters to be passed to them to inform them how to run.** For example: [JsonParse](../adapters/#jsonparse) accepts a `path` parameter which informs the adapter where to find the data in the JSON object.
 
@@ -96,15 +96,15 @@ contract APIConsumer is ChainlinkClient {
     uint256 private fee;
     
     /**
-     * Network: Kovan
-     * Chainlink - 0x2f90A6D021db21e1B2A077c5a37B3C7E75D15b7e
-     * Chainlink - 29fa9aa13bf1468788b7cc4a500a45b8
+     * Network: Rinkeby
+     * Chainlink - 0x7AFe1118Ea78C1eae84ca8feE5C65Bc76CcF879e
+     * Chainlink - 6d1bfe27e7034b1d87b5270556b17277
      * Fee: 0.1 LINK
      */
     constructor() public {
         setPublicChainlinkToken();
-        oracle = 0x2f90A6D021db21e1B2A077c5a37B3C7E75D15b7e;
-        jobId = "29fa9aa13bf1468788b7cc4a500a45b8";
+        oracle = 0x7AFe1118Ea78C1eae84ca8feE5C65Bc76CcF879e;
+        jobId = "6d1bfe27e7034b1d87b5270556b17277";
         fee = 0.1 * 10 ** 18; // 0.1 LINK
     }
     

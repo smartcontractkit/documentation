@@ -231,7 +231,7 @@ See the full contract in Remix! (We've added a few helper functions in there whi
 
 # 5. Deployment
 
-Time to compile and deploy the contract! If you don't know how to deploy a contract to the Kovan testnet from Remix, follow **[the Beginner Tutorial](/docs/beginners-tutorial)**.
+Time to compile and deploy the contract! If you don't know how to deploy a contract to the Rinkeby testnet from Remix, follow **[the Beginner Tutorial](/docs/beginners-tutorial)**.
 
 This deployment is slightly different than the example from the beginners tutorial. In this tutorial, we have to pass in parameters to the constructor upon deployment.
 
@@ -266,15 +266,15 @@ These are the coordinator address, LINK address, key hash, and fee. Click deploy
   "body": "For a full reference of the addresses, key hashes and fees for each network, see [VRF Contracts](../vrf-contracts/)."
 }
 [/block]
-(Note: you should <a href="/docs/beginners-tutorial#7c-obtaining-testnet-eth" target="_blank">have some Kovan ETH in your Metamask account</a> to pay for the GAS).
+(Note: you should <a href="/docs/beginners-tutorial#7c-obtaining-testnet-eth" target="_blank">have some Rinkeby ETH in your Metamask account</a> to pay for the GAS).
 
 Once deployed, the contract is almost ready to go! However, it can't request anything yet, since it doesn't own LINK. If we hit `rollDice` with no LINK, the transaction will revert.
 
 # 6. Obtaining testnet LINK
 
-Since the contract is on testnet, as with Kovan ETH, we don't need to purchase _real_ LINK. Testnet LINK can be obtained by requesting from a [faucet](../link-token-contracts/).
+Since the contract is on testnet, as with Rinkeby ETH, we don't need to purchase _real_ LINK. Testnet LINK can be obtained by requesting from a [faucet](../link-token-contracts/).
 
-Use your Metamask address on the Kovan network to request LINK, then send 1 LINK to the contract address. This address can be found in Remix, under "Deployed Contracts" on the bottom left.
+Use your Metamask address on the Rinkeby network to request LINK, then send 1 LINK to the contract address. This address can be found in Remix, under "Deployed Contracts" on the bottom left.
 
 Note, you should add the corresponding LINK token to your MetaMask account first:
 ![metamask](/images/contract-devs/metamask-1.png)

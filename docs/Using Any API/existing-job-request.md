@@ -19,7 +19,7 @@ In [Make a GET Request](../make-a-http-get-request/), the example contract code 
 
 In this example, we're using a job found on the <a href="https://market.link/" target="_blank">Chainlink Market</a> that is pre-configured to perform these tasks. This means that our contract doesn't need to specify additional parameters for various adapters, it only needs the Oracle address and the Job ID. The remaining adapters are configured by the external adapter, in particular <a href="https://market.link/adapters/5ff8f621-102d-491d-b1c8-bbbe294e4620" target="_blank">weather_cl_ea</a>.
 
-This example uses the <a href="https://market.link/nodes/ef076e87-49f4-486b-9878-c4806781c7a0?start=1614168653&end=1614773453" target="_blank">Alpha Chain Kovan Oracle</a>, which runs the <a href="https://market.link/jobs/e10388e6-1a8a-4ff5-bad6-dd930049a65f?network=42" target="_blank">OpenWeather Data Job</a>.
+This example uses the <a href="https://market.link/nodes/ef076e87-49f4-486b-9878-c4806781c7a0?start=1614168653&end=1614773453" target="_blank">Alpha Chain Oracle</a>, which runs the <a href="https://market.link/jobs/e10388e6-1a8a-4ff5-bad6-dd930049a65f?network=42" target="_blank">OpenWeather Data Job</a>.
 
 >❗️ Remember to fund your contract with LINK!
 >
@@ -49,9 +49,9 @@ contract OpenWeatherConsumer is ChainlinkClient {
     uint256 public result;
     
     /**
-     * Network: Kovan
+     * Network: Rinkeby
      * Oracle: 
-     *      Name:           Alpha Chain - Kovan
+     *      Name:           Alpha Chain - Rinkeby
      *      Listing URL:    https://market.link/nodes/ef076e87-49f4-486b-9878-c4806781c7a0?start=1614168653&end=1614773453
      *      Address:        0xAA1DC356dc4B18f30C347798FD5379F3D77ABC5b
      * Job: 

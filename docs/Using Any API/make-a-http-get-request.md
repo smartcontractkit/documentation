@@ -28,7 +28,7 @@ Currently, any return value must fit within 32 bytes, if the value is bigger tha
     <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
 </div>
 
-```javascript Kovan
+```javascript Rinkeby
 pragma solidity ^0.6.0;
 
 import "@chainlink/contracts/src/v0.6/ChainlinkClient.sol";
@@ -47,15 +47,15 @@ contract APIConsumer is ChainlinkClient {
     uint256 private fee;
     
     /**
-     * Network: Kovan
-     * Oracle: 0x2f90A6D021db21e1B2A077c5a37B3C7E75D15b7e
-     * Job ID: 29fa9aa13bf1468788b7cc4a500a45b8
+     * Network: Rinkeby
+     * Oracle: 0xAA1DC356dc4B18f30C347798FD5379F3D77ABC5b
+     * Job ID: 235f8b1eeb364efc83c26d0bef2d0c01
      * Fee: 0.1 LINK
      */
     constructor() public {
         setPublicChainlinkToken();
-        oracle = 0x2f90A6D021db21e1B2A077c5a37B3C7E75D15b7e;
-        jobId = "29fa9aa13bf1468788b7cc4a500a45b8";
+        oracle = 0xAA1DC356dc4B18f30C347798FD5379F3D77ABC5b;
+        jobId = "235f8b1eeb364efc83c26d0bef2d0c01";
         fee = 0.1 * 10 ** 18; // (Varies by network and job)
     }
     

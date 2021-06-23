@@ -61,13 +61,6 @@ For Faucet details, please refer to [LINK Token Contracts](../link-token-contrac
 |[HttpGet](../adapters/#httpget)<br>[JsonParse](../adapters/#jsonparse)<br>[EthBool](../adapters/#ethbool)|`6d914edc36e14d6c880c9c55bda5bc04 `|`get` (string)<br>`path` (dot-delimited string or array of strings)|
 
 ## Rinkeby
-[block:callout]
-{
-  "type": "danger",
-  "title": "Maintanence",
-  "body": "Currently, Rinkeby is in maintenance mode. Please use other environments (e.g. Kovan) to perform tests."
-}
-[/block]
 Rinkeby LINK address:  <a href="https://rinkeby.etherscan.io/address/0x01BE23585060835E02B77ef475b0Cc51aA1e0709" target="_blank">`0x01BE23585060835E02B77ef475b0Cc51aA1e0709`</a>
 
 For Faucet details, please refer to [LINK Token Contracts](../link-token-contracts/).
