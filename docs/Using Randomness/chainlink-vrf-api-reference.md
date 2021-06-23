@@ -76,7 +76,3 @@ ___
 ## Maximizing security
 
 Chainlink VRF provides powerful security guarantees and is easy to integrate. However, smart contract security is a nuanced topic.
-
-## Seed Depreciation
-
-Since the ultimate input to the VRF is mixed with the block hash of the block in which the request is made, user-provided seeds have no impact on its economic security properties. They are only included for API compatibility with previous versions of this contract, hence it's depreciation. 
