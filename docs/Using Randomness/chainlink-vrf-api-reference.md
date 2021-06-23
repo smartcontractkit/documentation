@@ -16,16 +16,16 @@ API reference for <a href="https://github.com/smartcontractkit/chainlink/blob/ma
 
 ## Constructors
 
-|Name|Description|
-|---|---|
-|[constructor](#constructor)|Initialize your consumer contract.|
+| Name                        | Description                        |
+| --------------------------- | ---------------------------------- |
+| [constructor](#constructor) | Initialize your consumer contract. |
 
 ## Functions
 
-|Name|Description|
-|---|---|
-|[requestRandomness](#requestrandomness)|Make a request to the VRFCoordinator.|
-|[fulfillRandomness](#fulfillrandomness)|Called by VRFCoordinator when it receives a valid VRF proof.|
+| Name                                    | Description                                                  |
+| --------------------------------------- | ------------------------------------------------------------ |
+| [requestRandomness](#requestrandomness) | Make a request to the VRFCoordinator.                        |
+| [fulfillRandomness](#fulfillrandomness) | Called by VRFCoordinator when it receives a valid VRF proof. |
 
 ___
 
@@ -42,6 +42,7 @@ constructor(address _vrfCoordinator, address _link) public
 
 ___
 
+> Note: `_seed` has recently been depreciated.
 # Functions
 
 ## requestRandomness
@@ -49,13 +50,12 @@ ___
 Make a request to the VRF coordinator.
 
 ```javascript Solidity
-function requestRandomness(bytes32 _keyHash, uint256 _fee, uint256 _seed)
+function requestRandomness(bytes32 _keyHash, uint256 _fee)
     public returns (bytes32 requestId)
 ```
 
 * `_keyHash`: The public key against which randomness is generated. See [Chainlink VRF Addresses](../vrf-contracts/) for details.
 * `_fee`: The fee, in LINK, for the request. Specified by the oracle.
-* `_seed`: This is the seed from which output randomness is determined. Provided by you.
 * `RETURN`: The ID unique to a single request.
 
 ## fulfillRandomness
@@ -73,10 +73,10 @@ ___
 
 # Reference
 
-## Choosing A Seed
-
-Since the ultimate input to the VRF is mixed with the block hash of the block in which the request is made, user-provided seeds have no impact on its economic security properties. They are only included for API compatibility with previous versions of this contract.
-
 ## Maximizing security
 
 Chainlink VRF provides powerful security guarantees and is easy to integrate. However, smart contract security is a nuanced topic.
+
+## Seed Depreciation
+
+Since the ultimate input to the VRF is mixed with the block hash of the block in which the request is made, user-provided seeds have no impact on its economic security properties. They are only included for API compatibility with previous versions of this contract, hence it's depreciation. 
