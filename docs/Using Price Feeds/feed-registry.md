@@ -2,7 +2,7 @@
 layout: nodes.liquid
 section: smartContract
 date: Last Modified
-title: "Feed Registry (Preview)"
+title: "Feed Registry"
 permalink: "docs/feed-registry/"
 whatsnext: {"API Reference":"/docs/price-feeds-api-reference/", "Contract Addresses":"/docs/reference-contracts/"}
 metadata: 
@@ -11,6 +11,11 @@ metadata:
   image: 
     0: "/files/OpenGraph_V3.png"
 ---
+
+> 🚧 Open Alpha
+> 
+> Chainlink Feed Registry is in alpha. We're continuing to test the feature with users and improve the experience based on your feedback. Please do not yet use it in production.
+
 ![Feed Registry](/files/feed-registry.png)
 
 The Chainlink Feed Registry is an on-chain mapping of assets to feeds. It enables you to query Chainlink price feeds from a pair of asset and denomination addresses, without needing the price feed contract addresses. They enable smart contracts to retrieve the latest price of an asset in a single call.
@@ -41,7 +46,7 @@ contract PriceConsumer {
     FeedRegistryInterface internal registry;
 
     /**
-     * Network: Mainnet Preview
+     * Network: Mainnet Alpha Preview
      * Feed Registry: 0xd441F0B98BcF34749391A3879A94caA95ffDB74D
      */
     constructor() public {
