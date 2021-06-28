@@ -187,7 +187,7 @@ function version(address asset, address denomination) external view returns (uin
 
 # Denominations library
 
-A <a href="https://github.com/smartcontractkit/chainlink/blob/master/evm-contracts/src/v0.7/libraries/Denominations.sol" target="_blank">`Denominations`</a> Solidity library is available to help you query common asset and fiat denominations:
+A <a href="https://github.com/smartcontractkit/chainlink/blob/master/evm-contracts/src/v0.7/dev/Denominations.sol" target="_blank">`Denominations`</a> Solidity library is available to help you query common asset and fiat denominations:
 
 ```javascript Solidity
 pragma solidity ^0.7.0;
