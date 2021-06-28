@@ -2,7 +2,7 @@
 layout: nodes.liquid
 section: smartContract
 date: Last Modified
-title: "Feed Registry"
+title: "Feed Registry (Preview)"
 permalink: "docs/feed-registry/"
 whatsnext: {"API Reference":"/docs/price-feeds-api-reference/", "Contract Addresses":"/docs/reference-contracts/"}
 metadata: 
@@ -11,19 +11,24 @@ metadata:
   image: 
     0: "/files/OpenGraph_V3.png"
 ---
-![Feed Registry](/files/TODO.png)
+![Feed Registry](/files/feed-registry.png)
 
-The Chainlink Feed Registry is an on-chain mapping of assets to feeds. It enables you to query Chainlink price feeds from a pair of asset and denomination addresses. They enable smart contracts to retrieve the latest price of an asset in a single call.
+The Chainlink Feed Registry is an on-chain mapping of assets to feeds. It enables you to query Chainlink price feeds from a pair of asset and denomination addresses, without needing the price feed contract addresses. They enable smart contracts to retrieve the latest price of an asset in a single call.
 
 # Assets and Denominations
 
-TODO
+The Feed Registry maps feeds using `asset` and `denomination` address  pairs. For example, to get the LINK / USD feed, you supply:
+
+- `asset`: The LINK token address on that network
+- `denomination`: A `Denominations.USD` address, which is based on [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217).
+
+The Feed Registry fully supports the <a href="https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/src/v0.6/interfaces/AggregatorV3Interface.sol" target="_blank">`AggregatorV3Interface`</a> API, for multiple pairs and feeds.
 
 # Code Examples
 
 ## Solidity
 
-To consume price data from the feed registry, your smart contract should reference <a href="https://github.com/smartcontractkit/chainlink/blob/master/evm-contracts/src/v0.7/interfaces/FeedRegistryInterface.sol" target="_blank">`FeedRegistryInterface`</a>, which defines the external functions implemented by the Feed Registry.
+To consume price data from the Feed Registry, your smart contract should reference <a href="https://github.com/smartcontractkit/chainlink/blob/master/evm-contracts/src/v0.7/interfaces/FeedRegistryInterface.sol" target="_blank">`FeedRegistryInterface`</a>, which defines the external functions implemented by the Feed Registry.
 
 ```solidity Mainnet
 
@@ -36,7 +41,7 @@ contract PriceConsumer {
     FeedRegistryInterface internal registry;
 
     /**
-     * Network: Mainnet
+     * Network: Mainnet Preview
      * Feed Registry: 0xd441F0B98BcF34749391A3879A94caA95ffDB74D
      */
     constructor() public {
@@ -47,7 +52,14 @@ contract PriceConsumer {
      * Returns the latest price
      */
     function getThePrice(address asset, address, denomination) public view returns (int) {
-        return registry.latestAnswer(asset, denomination);
+        (
+            uint80 roundID, 
+            int price,
+            uint startedAt,
+            uint timeStamp,
+            uint80 answeredInRound
+        ) = registry.latestRoundData(asset, denomination);
+        return price;
     }
 }
 ```
@@ -65,12 +77,6 @@ API reference for <a href="https://github.com/smartcontractkit/chainlink/blob/ma
 |[getRoundData](#getrounddata)|Get data from a specific round.|
 |[latestRoundData](#latestrounddata)|Get data from the latest round.|
 |[version](#version)|The version representing the type of aggregator the proxy points to.|
-|[TODO](#)|TODO|
-|[TODO](#)|TODO|
-|[TODO](#)|TODO|
-|[TODO](#)|TODO|
-|[TODO](#)|TODO|
-|[TODO](#)|TODO|
 
 ___
 
@@ -178,3 +184,28 @@ function version(address asset, address denomination) external view returns (uin
 ### Return Values
 
 * `RETURN`: The version number.
+
+# Denominations library
+
+A <a href="https://github.com/smartcontractkit/chainlink/blob/master/evm-contracts/src/v0.7/libraries/Denominations.sol" target="_blank">`Denominations`</a> Solidity library is available to help you query common asset and fiat denominations:
+
+```javascript Solidity
+pragma solidity ^0.7.0;
+
+library Denominations {
+  address public constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+  address public constant BTC = 0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB;
+
+  // Fiat currencies follow https://en.wikipedia.org/wiki/ISO_4217
+  address public constant USD = address(840);
+  address public constant GBP = address(826);
+  address public constant EUR = address(978);
+  address public constant JPY = address(392);
+  address public constant KRW = address(410);
+  address public constant CNY = address(156);
+  address public constant AUD = address(36);
+  address public constant CAD = address(124);
+  address public constant CHF = address(756);
+  address public constant ARS = address(32);
+}
+```
