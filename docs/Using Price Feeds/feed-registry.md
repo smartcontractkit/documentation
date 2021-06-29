@@ -22,7 +22,7 @@ The Chainlink Feed Registry is an on-chain mapping of assets to feeds. It enable
 
 # Assets and Denominations
 
-The Feed Registry maps feeds using `asset` and `denomination` address pairs as keys. The Feed Registry fully supports the <a href="https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/src/v0.6/interfaces/AggregatorV3Interface.sol" target="_blank">`AggregatorV3Interface`</a> API, for multiple pairs and feeds. To get the latest LINK / USD round data, call: 
+The Feed Registry maps feeds using `asset` and `denomination` address pairs as keys. The Feed Registry fully supports the <a href="https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol" target="_blank">`AggregatorV3Interface`</a> API, for multiple pairs and feeds. To get the latest LINK / USD round data, call: 
 
 ```solidity Mainnet
 latestRoundData(address assset, address denomination)
@@ -48,10 +48,10 @@ latestRoundData(0x514910771AF9Ca656af840dff83E8264EcF986CA, 0xEeeeeEeeeEeEeeEeEe
 
 ## Denominations library
 
-A <a href="https://github.com/smartcontractkit/chainlink/blob/master/evm-contracts/src/v0.7/dev/Denominations.sol" target="_blank">`Denominations`</a> Solidity library is available for you to query common denominations:
+A <a href="https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/dev/Denominations.sol" target="_blank">`Denominations`</a> Solidity library is available for you to query common denominations:
 
 ```javascript Solidity
-pragma solidity ^0.7.0;
+pragma solidity ^0.8.0;
 
 library Denominations {
   address public constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
@@ -75,13 +75,13 @@ library Denominations {
 
 ## Solidity
 
-To consume price data from the Feed Registry, your smart contract should reference <a href="https://github.com/smartcontractkit/chainlink/blob/master/evm-contracts/src/v0.7/interfaces/FeedRegistryInterface.sol" target="_blank">`FeedRegistryInterface`</a>, which defines the external functions implemented by the Feed Registry.
+To consume price data from the Feed Registry, your smart contract should reference <a href="https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/interfaces/FeedRegistryInterface.sol" target="_blank">`FeedRegistryInterface`</a>, which defines the external functions implemented by the Feed Registry.
 
 ```solidity Mainnet
 
-pragma solidity ^0.6.7;
+pragma solidity ^0.8.0;
 
-import "@chainlink/contracts/src/v0.7/interfaces/FeedRegistryInterface.sol";
+import "@chainlink/contracts/src/v0.8/interfaces/FeedRegistryInterface.sol";
 
 contract PriceConsumer {
 
@@ -98,7 +98,7 @@ contract PriceConsumer {
     /**
      * Returns the latest price
      */
-    function getThePrice(address asset, address, denomination) public view returns (int) {
+    function getThePrice(address asset, address denomination) public view returns (int) {
         (
             uint80 roundID, 
             int price,
@@ -113,7 +113,7 @@ contract PriceConsumer {
 
 # API Reference
 
-API reference for <a href="https://github.com/smartcontractkit/chainlink/blob/master/evm-contracts/src/v0.7/interfaces/FeedRegistryInterface.sol" target="_blank">`FeedRegistryInterface`</a>.
+API reference for <a href="https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/interfaces/FeedRegistryInterface.sol" target="_blank">`FeedRegistryInterface`</a>.
 
 # Functions
 
