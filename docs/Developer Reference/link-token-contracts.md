@@ -12,7 +12,7 @@ metadata:
 ---
 LINK tokens are used to pay node operators for retrieving data for smart contracts and also for deposits placed by node operators as required by contract creators.
 
-The LINK token is an ERC677 token that inherits functionality from the ERC20 token standard and allows token transfers to contain a data payload. Read more about the <a href="https://github.com/ethereum/EIPs/issues/677" target="_blank" rel="noreferrer, noopener">ERC677 transferAndCall token standard</a>.
+The LINK token is an oERC677 token that inherits functionality from the ERC20 token standard and allows token transfers to contain a data payload. Read more about the <a href="https://github.com/ethereum/EIPs/issues/677" target="_blank" rel="noreferrer, noopener">ERC677 transferAndCall token standard</a>.
 
 # Ethereum
 
@@ -189,7 +189,7 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 
 ## Fantom
 
-### Opera Testnet
+### Fantom Testnet
 
 > 🚰Fantom Faucet
 >
