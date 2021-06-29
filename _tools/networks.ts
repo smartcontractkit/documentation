@@ -84,5 +84,16 @@ export const NETWORKS = [
         source: "directory-avalanche-fuji-testnet.json",
       },
     ],
-  }
+  },
+  {
+    page: "fantom-price-feeds",
+    title: "Fantom Testnet",
+    networks: [
+      {
+        name: "Fantom Testnet",
+        url: "https://explorer.testnet.fantom.network/address/",
+        source: "directory-fantom-testnet.json",
+      },
+    ],
+  },
 ];

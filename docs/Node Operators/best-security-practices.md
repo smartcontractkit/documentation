@@ -82,7 +82,7 @@ The following are suggestions for job specifications and configuration settings 
 - Override the global `MIN_INCOMING_CONFIRMATIONS` config by setting a `confirmations` field in jobs which perform off-chain payments to allow for greater security by making the node ensure the transaction is still valid after X blocks.
 
 [Configuration Variables](../configuration-variables/):
-- [MINIMUM_CONTRACT_PAYMENT](../configuration-variables/#minimum-contract-payment): ensure your required payment amount is high enough to meet the costs of responding on-chain.
+- [MINIMUM_CONTRACT_PAYMENT_LINK_JUELS](../configuration-variables/#minimum-contract-payment): ensure your required payment amount is high enough to meet the costs of responding on-chain.
 - [MIN_INCOMING_CONFIRMATIONS](../configuration-variables/#min-incoming-confirmations): this can be set to 0 for common data request jobs. See the bullet above on setting individual `confirmations` for specific jobs.
 - [LOG_TO_DISK](../configuration-variables/#log-to-disk): Set to `false` if you're using external log drivers which parse the output from Docker containers. This will save you disk space.
 - [JSON_CONSOLE](../configuration-variables/#json-console): Set to `true` if you're using external log drivers to parse the output of Docker containers. This will make it easier to parse individual fields of the log and set up alerts.

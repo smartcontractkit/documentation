@@ -164,6 +164,10 @@ module.exports = {
                 title: 'Avalanche Price Feeds',
                 url: '/docs/avalanche-price-feeds/',
               },
+              {
+                title: 'Fantom Price Feeds',
+                url: '/docs/fantom-price-feeds/',
+              },
             ],
           },
         ],
@@ -174,6 +178,7 @@ module.exports = {
           { title: 'Introduction to Chainlink VRF', url: '/docs/chainlink-vrf/' },
           { title: 'Get a Random Number', url: '/docs/get-a-random-number/' },
           { title: 'API Reference', url: '/docs/chainlink-vrf-api-reference/' },
+          { title: 'Security Considerations', url: '/docs/vrf-security-considerations/' },
           { title: 'Contract Addresses', url: '/docs/vrf-contracts/' },
           { title: 'Best Practices', url: '/docs/chainlink-vrf-best-practices/' },
         ],

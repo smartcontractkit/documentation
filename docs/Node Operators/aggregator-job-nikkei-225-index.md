@@ -97,4 +97,4 @@ If the test job has ran successfully, add the following job to your node, replac
 [/block]
 Once added, give the team the Job ID associated with the job above.
 
-Make sure that your `MINIMUM_CONTRACT_PAYMENT` environment variable is low enough to accept the payment amount from the aggregator contract on mainnet.
+Make sure that your `MINIMUM_CONTRACT_PAYMENT_LINK_JUELS` environment variable is low enough to accept the payment amount from the aggregator contract on mainnet.
