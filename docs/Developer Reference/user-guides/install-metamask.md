@@ -62,6 +62,6 @@ Go to: <a href="https://metamask.io" target="_blank" rel="noreferrer, noopener">
 }
 [/block]
 In order to obtain Kovan ETH, follow the steps below:
-* Go to the <a href="https://gitter.im/kovan-testnet/faucet#" target="_blank" rel="noreferrer, noopener">Kovan Ether Faucet</a>
-* Send a message with only your ETH address
-* Wait about a minute, then go back to the MetaMask extension to validate the balance. Now you have ETH to play with!
+* Go to the <a href="https://linkfaucet.protofire.io/kovan" target="_blank" rel="noreferrer, noopener">Kovan Ether Faucet</a>
+* Enter your wallet address into the text box.
+* Hit the button to get "Test ETH", wait a minute, and you'll see it in your wallet!
