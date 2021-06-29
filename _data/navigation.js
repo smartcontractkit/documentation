@@ -164,6 +164,10 @@ module.exports = {
                 title: 'Avalanche Price Feeds',
                 url: '/docs/avalanche-price-feeds/',
               },
+              {
+                title: 'Fantom Price Feeds',
+                url: '/docs/fantom-price-feeds/',
+              },
             ],
           },
         ],

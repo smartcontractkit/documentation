@@ -186,3 +186,20 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 |Name|ChainLink Token on Avalanche|
 |Symbol|LINK|
 |Decimals|18|
+
+## Fantom
+
+### Opera Testnet
+
+> 🚰Fantom Faucet
+>
+> Community Faucet: https://linkfaucet.protofire.io/fantomtestnet  
+>
+
+|Parameter|Value|
+|:---|:---|
+|`ETH_CHAIN_ID`|`4002`|
+|Address|[`0xfaFedb041c0DD4fA2Dc0d87a6B0979Ee6FA7af5F`](https://explorer.testnet.fantom.network/address/0xfaFedb041c0DD4fA2Dc0d87a6B0979Ee6FA7af5F)|
+|Name|ChainLink Token on Fantom|
+|Symbol|LINK|
+|Decimals|18|
