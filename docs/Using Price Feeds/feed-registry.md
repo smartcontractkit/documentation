@@ -14,7 +14,9 @@ metadata:
 
 > 🚧 Open Alpha
 > 
-> Chainlink Feed Registry is in alpha. We're continuing to test the feature with users and improve the experience based on your feedback. Please do not yet use it in production.
+> Chainlink Feed Registry is in alpha. We're continuing to test the feature with users and improve the experience based on your feedback. The registry contract is currently undergoing a security audit.
+>
+> The alpha registry will be decomissioned after the alpha period and replaced with a new registry at a new address. Please do not use it in production.
 
 ![Feed Registry](/files/feed-registry.png)
 
