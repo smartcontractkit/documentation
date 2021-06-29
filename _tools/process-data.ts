@@ -65,7 +65,7 @@ for (let page of targetData) {
         (contract.status === 'testnet-priority' ||
           contract.status === 'live') &&
         // Only include if the key does not exist or it's not true
-        !contract['docs-hidden']
+        !contract['docsHidden']
       ) {
         liveContracts[contractKey] = { decimals: contract.decimals };
         if (contract.v3Facade) {

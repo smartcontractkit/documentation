@@ -84,4 +84,4 @@ If the test job has ran successfully, add the following job to your node. Rename
 [/block]
 Once added, open a PR with the Job ID associated with the job above. Base this PR off the branch of the PR sent to you by the Chainlink team.
 
-Make sure that your `MINIMUM_CONTRACT_PAYMENT` environment variable is low enough to accept the payment amount from the aggregator contract on mainnet.
+Make sure that your `MINIMUM_CONTRACT_PAYMENT_LINK_JUELS` environment variable is low enough to accept the payment amount from the aggregator contract on mainnet.

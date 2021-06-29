@@ -92,7 +92,7 @@ Learn how to create a consumer contract to [Get the Latest Price](../get-the-lat
 
 Proxy contracts are on-chain proxies that store the most up-to-date Aggregator for a particular price feed. Using proxies enables the underlying Aggregator to be upgraded without any interruption of service for consuming contracts.
 
-See the <a href="https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/src/v0.6/AggregatorProxy.sol" target="_blank">`AggregatorProxy`</a> contract on Github.
+See the <a href="https://github.com/smartcontractkit/chainlink/blob/master/evm-contracts/src/v0.6/AggregatorProxy.sol" target="_blank">`AggregatorProxy`</a> contract on Github.
 
 ## Aggregators
 

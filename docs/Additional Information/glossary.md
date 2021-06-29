@@ -64,7 +64,7 @@ Available initiators are:
 - web
 - execagreement
 
-Currently only the `runlog` and `execagreement` can be used with payment to the node operator. These initiators will use the node configured [MINIMUM_CONTRACT_PAYMENT](../configuration-variables/#minimum_contract_payment), plus any additional payment if there is a bridge in the given [JobID](#jobid) or [SAID](#said) configured with a payment specified, to determine whether or not enough payment was sent along with the request.
+Currently only the `runlog` and `execagreement` can be used with payment to the node operator. These initiators will use the node configured [MINIMUM_CONTRACT_PAYMENT_LINK_JUELS](../configuration-variables/#minimum_contract_payment), plus any additional payment if there is a bridge in the given [JobID](#jobid) or [SAID](#said) configured with a payment specified, to determine whether or not enough payment was sent along with the request.
 
 ### Job
 
