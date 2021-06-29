@@ -16,7 +16,7 @@ metadata:
 [block:callout]
 {
   "type": "info",
-  "body": "Please [contact us](https://chainlinkcommunity.typeform.com/to/OYQO67EF) for more information.",
+  "body": "Please [contact us](https://chainlinkcommunity.typeform.com/to/OYQO67EF?page=docs-VRF) for more information.",
   "title": "Available now on mainnet"
 }
 [/block]
