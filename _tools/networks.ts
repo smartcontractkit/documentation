@@ -96,4 +96,15 @@ export const NETWORKS = [
       },
     ],
   },
+  {
+    page: "arbitrum-price-feeds",
+    title: "Arbitrum Price Feeds",
+    networks: [
+      {
+        name: "Arbitrum Rinkeby",
+        url: "https://rinkeby-explorer.arbitrum.io/address/",
+        source: "directory-arbitrum-rinkeby-1.json",
+      },
+    ],
+  }
 ];
