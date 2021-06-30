@@ -169,6 +169,10 @@ module.exports = {
                 title: 'Fantom Price Feeds',
                 url: '/docs/fantom-price-feeds/',
               },
+              {
+                title: 'Arbitrum Price Feeds',
+                url: '/docs/arbitrum-price-feeds/',
+              }
             ],
           },
         ],

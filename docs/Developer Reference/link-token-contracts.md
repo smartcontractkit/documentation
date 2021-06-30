@@ -203,3 +203,21 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 |Name|ChainLink Token on Fantom|
 |Symbol|LINK|
 |Decimals|18|
+
+## Arbitrum
+
+### Rinkeby Testnet
+
+> 🚰Arbitrum Faucet on Rinkeby
+>
+> Community Faucet: https://linkfaucet.protofire.io
+>
+> Supported bridge: https://bridge.arbitrum.io
+
+|Parameter|Value|
+|:---|:---|
+|`ETH_CHAIN_ID`|`421611`|
+|Address|[`0x615fBe6372676474d9e6933d310469c9b68e9726`](https://rinkeby-explorer.arbitrum.io/address/0x615fBe6372676474d9e6933d310469c9b68e9726)|
+|Name|ChainLink Token on Arbitrum Rinkeby|
+|Symbol|LINK|
+|Decimals|18|
