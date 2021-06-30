@@ -52,8 +52,49 @@ latestRoundData(0x514910771AF9Ca656af840dff83E8264EcF986CA, 0xEeeeeEeeeEeEeeEeEe
 
 A <a href="https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/dev/Denominations.sol" target="_blank">`Denominations`</a> Solidity library is available for you to query common denominations:
 
-```javascript Solidity
+
+```javascript Solidity 8
 pragma solidity ^0.8.0;
+
+library Denominations {
+  address public constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+  address public constant BTC = 0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB;
+
+  // Fiat currencies follow https://en.wikipedia.org/wiki/ISO_4217
+  address public constant USD = address(840);
+  address public constant GBP = address(826);
+  address public constant EUR = address(978);
+  address public constant JPY = address(392);
+  address public constant KRW = address(410);
+  address public constant CNY = address(156);
+  address public constant AUD = address(36);
+  address public constant CAD = address(124);
+  address public constant CHF = address(756);
+  address public constant ARS = address(32);
+}
+```
+```javascript Solidity 7
+pragma solidity ^0.7.0;
+
+library Denominations {
+  address public constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+  address public constant BTC = 0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB;
+
+  // Fiat currencies follow https://en.wikipedia.org/wiki/ISO_4217
+  address public constant USD = address(840);
+  address public constant GBP = address(826);
+  address public constant EUR = address(978);
+  address public constant JPY = address(392);
+  address public constant KRW = address(410);
+  address public constant CNY = address(156);
+  address public constant AUD = address(36);
+  address public constant CAD = address(124);
+  address public constant CHF = address(756);
+  address public constant ARS = address(32);
+}
+```
+```javascript Solidity 6
+pragma solidity ^0.6.0;
 
 library Denominations {
   address public constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
@@ -79,10 +120,8 @@ library Denominations {
 
 To consume price data from the Feed Registry, your smart contract should reference <a href="https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/interfaces/FeedRegistryInterface.sol" target="_blank">`FeedRegistryInterface`</a>, which defines the external functions implemented by the Feed Registry.
 
-```solidity Mainnet
+```javascript Solidity 8
 pragma solidity 0.8.6;
-
-import "https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/interfaces/FeedRegistryInterface.sol";
 
 import "@chainlink/contracts/src/v0.8/interfaces/FeedRegistryInterface.sol";
 
@@ -112,7 +151,70 @@ contract PriceConsumer {
         return price;
     }
 }
+```
+```javascript Solidity 7
+pragma solidity 0.7.6;
 
+import "@chainlink/contracts/src/v0.7/interfaces/FeedRegistryInterface.sol";
+
+contract PriceConsumer {
+
+    FeedRegistryInterface internal registry;
+
+    /**
+     * Network: Mainnet Alpha Preview
+     * Feed Registry: 0xd441F0B98BcF34749391A3879A94caA95ffDB74D
+     */
+    constructor() {
+        registry = FeedRegistryInterface(0xd441F0B98BcF34749391A3879A94caA95ffDB74D);
+    }
+
+    /**
+     * Returns the latest price
+     */
+    function getThePrice(address asset, address denomination) public view returns (int) {
+        (
+            uint80 roundID, 
+            int price,
+            uint startedAt,
+            uint timeStamp,
+            uint80 answeredInRound
+        ) = registry.latestRoundData(asset, denomination);
+        return price;
+    }
+}
+```
+```javascript Solidity 6
+pragma solidity 0.6.12;
+
+import "@chainlink/contracts/src/v0.6/interfaces/FeedRegistryInterface.sol";
+
+contract PriceConsumer {
+
+    FeedRegistryInterface internal registry;
+
+    /**
+     * Network: Mainnet Alpha Preview
+     * Feed Registry: 0xd441F0B98BcF34749391A3879A94caA95ffDB74D
+     */
+    constructor() public {
+        registry = FeedRegistryInterface(0xd441F0B98BcF34749391A3879A94caA95ffDB74D);
+    }
+
+    /**
+     * Returns the latest price
+     */
+    function getThePrice(address asset, address denomination) public view returns (int) {
+        (
+            uint80 roundID, 
+            int price,
+            uint startedAt,
+            uint timeStamp,
+            uint80 answeredInRound
+        ) = registry.latestRoundData(asset, denomination);
+        return price;
+    }
+}
 ```
 
 {% endmarkdown %}
@@ -130,7 +232,7 @@ contract PriceConsumer {
 
 ## Solidity Hardhat Project
 
-You can also find a working Feed Registry Hardhat project [here](https://github.com/smartcontractkit/feed-registry-example). Clone the repo and follow the setup instructions to run the example locally.
+You can find a working Feed Registry Hardhat project [here](https://github.com/smartcontractkit/feed-registry-example). Clone the repo and follow the setup instructions to run the example locally.
 
 ## Javascript
 ```javascript Mainnet
