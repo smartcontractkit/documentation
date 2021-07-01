@@ -20,7 +20,7 @@ metadata:
 [/block]
 Developers should subscribe to update notifications via any of the following channels:
 
-* <a href="http://eepurl.com/hbUYlz" target="_blank">Developer Email List</a>
+* <a href="https://mailchi.mp/chain.link/docs" target="_blank">Developer Email List</a>
 * <a href="https://discord.gg/qj9qarT" target="_blank">Discord Channel</a>
 * [On-chain registry](../ens/): To increase security, we will be utilizing ENS to provide an onchain registry of all feeds and their latest addresses. 
 
