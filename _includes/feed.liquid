@@ -25,7 +25,12 @@ section: smartContract
     tr:nth-child(2n) {
         background-color: rgb(251, 252, 253);
     }
-
+    .detail-hidden {
+        display: none;
+    }
+    input {
+        margin-right:8px;
+    }
 </style>
 
 
@@ -35,23 +40,30 @@ section: smartContract
 
 <script>
     dest = document.getElementById('feed-data');
+    let showExtraDetails = false;
     render = (data) => {
         let html = '';
         if(data["{{stub}}"]) {
            
             for(let network of data["{{stub}}"].networks) {
                 html += `<h2 id="${network.name}">${network.name} <a class="anchor" href="#${network.name}"><img src="/images/link.svg" alt="Link to this section"></a></h2>`;
+                html += `<label><input type="checkbox" class="extra" ${showExtraDetails ? 'checked="checked"' : ''}>Show Heartbeat and Derivation Details</input></label>`;
                 
                 let proxyList = '';
                 for(let proxy of network.proxies) {
-                    proxyList += `<tr id="${network.name} ${proxy.pair}"><td><code>${proxy.pair}</code></td><td>${proxy.decimals}</td><td><a href="${network.url}${proxy.proxy}" target="_blank"><code>${proxy.proxy}</code></a></td></tr>`;
+                    proxyList += `<tr id="${network.name} ${proxy.pair}"><td><code>${proxy.pair}</code></td><td ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.deviationThreshold ? (proxy.deviationThreshold + '%') : 'N/A'}</td><td ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.heartbeat ? proxy.heartbeat : 'N/A'}</td><td>${proxy.decimals}</td><td><a href="${network.url}${proxy.proxy}" target="_blank"><code>${proxy.proxy}</code></a></td></tr>`;
                 }
-                html += `<table><thead><tr><th>Pair</th><th>Dec</th><th>Proxy</th></tr></thead><tbody>${proxyList}</tbody></table>`;
+                html += `<table><thead><tr><th>Pair</th><th ${ showExtraDetails ? '' : 'class="detail-hidden"'}>Deviation</th><th ${ showExtraDetails ? '' : 'class="detail-hidden"'}>Heartbeat</th><th>Dec</th><th>Proxy</th></tr></thead><tbody>${proxyList}</tbody></table>`;
             }
         } else {
-            html = `<em style="color:red;">Couldn't render the feed list, it may still be processing. Feeds are updated every half hour..</em>`;
+            html = `<em style="color:red;">Couldn't render the feed list, it may still be processing. Feeds are updated about every half hour..</em>`;
         }
         dest.innerHTML = html;
+        dest.querySelectorAll('.extra').forEach((item) => item.addEventListener('change', () => {
+            showExtraDetails = event.target.checked;
+            render(data);
+            })
+        );
     }
     
     let path = 'https://cl-docs-addresses.web.app/addresses.json';

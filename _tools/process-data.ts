@@ -9,9 +9,15 @@ const targetData = NETWORKS;
 interface DataFile {
   contracts: {
     [key: string]: {
+      deviationThreshold: number;
+      heartbeat: string;
       decimals: number;
       v3Facade: string;
       status: 'dead' | 'live' | 'testnet-priority' | 'backup';
+      config?: {
+        maxContractValueAge: string;
+        relativeDeviationThresholdPPB: string;
+      }
     };
   };
   proxies: {
@@ -24,6 +30,8 @@ interface DataFile {
 
 interface ResultProxy {
   pair: string;
+  deviationThreshold: number;
+  heartbeat: string;
   decimals: number;
   proxy: string;
 }
@@ -58,7 +66,7 @@ for (let page of targetData) {
     const contents = load(network.source);
 
     // First find all the live contracts
-    const liveContracts: { [key: string]: { decimals: number } } = {};
+    const liveContracts: { [key: string]: { decimals: number, deviationThreshold: number, heartbeat: string } } = {};
     for (let contractKey of Object.keys(contents.contracts)) {
       const contract = contents.contracts[contractKey];
       if (
@@ -67,9 +75,18 @@ for (let page of targetData) {
         // Only include if the key does not exist or it's not true
         !contract['docsHidden']
       ) {
-        liveContracts[contractKey] = { decimals: contract.decimals };
+        let threshold;
+        if (threshold = Number.parseInt(contract.config?.relativeDeviationThresholdPPB, 10)) {
+          threshold = threshold / 10000000;
+        }
+        liveContracts[contractKey] = {
+
+          deviationThreshold: contract.deviationThreshold ? contract.deviationThreshold : threshold,
+          heartbeat: contract.heartbeat ? contract.heartbeat : contract.config?.maxContractValueAge,
+          decimals: contract.decimals
+        };
         if (contract.v3Facade) {
-          liveContracts[contract.v3Facade] = { decimals: contract.decimals };
+          liveContracts[contract.v3Facade] = { deviationThreshold: contract.deviationThreshold, heartbeat: contract.heartbeat, decimals: contract.decimals };
         }
       }
     }
@@ -81,6 +98,8 @@ for (let page of targetData) {
       if (liveContracts[proxy.aggregator]) {
         proxyList.push({
           pair: proxy.name,
+          deviationThreshold: liveContracts[proxy.aggregator].deviationThreshold,
+          heartbeat: liveContracts[proxy.aggregator].heartbeat,
           decimals: liveContracts[proxy.aggregator].decimals,
           proxy: proxyKey,
         });
