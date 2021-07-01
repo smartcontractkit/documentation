@@ -61,9 +61,9 @@ permalink: /
     <div class="cl-featuredcard">
       <div>
         <img
-          src="/images/contract-devs/keeper/network.png"
+          src="/images/contract-devs/keeper/icon-keepers.svg"
           class="cl-image-featured"
-          height="50" style="max-width:200px"
+          height="80" style="max-width:80px"
         />
         <div>
           <h3>Automate and Maintain with Chainlink Keepers</h3>
