@@ -210,7 +210,7 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 
 > 🚰Arbitrum Faucet on Rinkeby
 >
-> Community Faucet: https://linkfaucet.protofire.io
+> Community Faucet: https://linkfaucet.protofire.io/rinkebyarbitrum
 >
 > Supported bridge: https://bridge.arbitrum.io
 
