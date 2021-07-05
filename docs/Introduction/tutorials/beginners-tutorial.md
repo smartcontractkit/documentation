@@ -41,7 +41,7 @@ A valuable feature of smart contracts is that they can store and manage on-chain
 
 # 2. What language is a smart contract written in?
 
-The most popular language for writing smart contracts on Ethereum is <a href="https://docs.soliditylang.org/en/v0.6.7/" target="_blank">Solidity</a>. It was created by the Ethereum Foundation specifically for smart contract development and is constantly being updated.
+The most popular language for writing smart contracts on Ethereum is <a href="https://docs.soliditylang.org/en/v0.8.0/" target="_blank">Solidity</a>. It was created by the Ethereum Foundation specifically for smart contract development and is constantly being updated.
 
 If you've ever written Javascript or similar languages, Solidity should be easy to understand.
 
@@ -50,7 +50,7 @@ If you've ever written Javascript or similar languages, Solidity should be easy 
 The structure of a smart contract is similar to that of a _class_ in Javascript, with a few differences. Let's take a look at this `HelloWorld` example.
 
 ```javascript
-pragma solidity 0.6.6;
+pragma solidity 0.8.0;
 
 contract HelloWorld {
     string public message;
@@ -67,7 +67,7 @@ contract HelloWorld {
 
 ## 3a. Define the version `pragma solidity ...`
 
-The first thing that every solidity file must have is the Solidity version definition. The version HelloWorld.sol is using is 0.6.6, defined by `pragma solidity 0.6.6;`
+The first thing that every solidity file must have is the Solidity version definition. The version HelloWorld.sol is using is 0.8.0, defined by `pragma solidity 0.8.0;`
 
 You can see the latest versions of the Solidity compiler <a href="https://github.com/ethereum/solc-bin/blob/gh-pages/bin/list.txt" target="_blank">here</a>.
 
@@ -77,7 +77,7 @@ Next, the `HelloWorld` contract is defined by using the keyword `contract`. Thin
 
 ## 3c. State variables `string public ...`
 
-Again, like Javascript, contracts can have state variables and local variables. To find out more about all the types of variables you can use within Solidity, check out the <a href="https://docs.soliditylang.org/en/v0.6.7/" target="_blank">Solidity documentation</a>.
+Again, like Javascript, contracts can have state variables and local variables. To find out more about all the types of variables you can use within Solidity, check out the <a href="https://docs.soliditylang.org/en/v0.8.0/" target="_blank">Solidity documentation</a>.
 
 There are also different _modifiers_ you can use depending on what should have access to those variables.
 
@@ -129,9 +129,9 @@ The following code is from the [Get the Latest Price](../get-the-latest-price/) 
 
 ```javascript
 
-pragma solidity ^0.6.7;
+pragma solidity ^0.8.0;
 
-import "@chainlink/contracts/src/v0.6/interfaces/AggregatorV3Interface.sol";
+import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
 contract PriceConsumerV3 {
 
@@ -142,7 +142,7 @@ contract PriceConsumerV3 {
      * Aggregator: ETH/USD
      * Address: 0x9326BFA02ADD2366b30bacB125260Af641031331
      */
-    constructor() public {
+    constructor() {
         priceFeed = AggregatorV3Interface(0x9326BFA02ADD2366b30bacB125260Af641031331);
     }
 
@@ -188,7 +188,7 @@ We have the code. What we need next is a compiler.
 Fortunately for us, Remix also has support for gist. This means that Remix can load code from Github, and in this case, `PriceConsumerV3.sol` Click the button below to open a new tab, then once Remix has loaded, find the `gists` folder in the File Explorer on the left-hand side, and click on the file to open the code in the editor.
 
 <div class="remix-callout">
-  <a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&gist=0c5928a00094810d2ba01fd8d1083581" target="_blank" class="cl-button--ghost">Deploy this contract using Remix ↗</a>
+  <a href="https://remix.ethereum.org/#version=soljson-v0.8.0+commit.b8d736ae.js&optimize=false&evmVersion=null&gist=0c5928a00094810d2ba01fd8d1083581" target="_blank" class="cl-button--ghost">Deploy this contract using Remix ↗</a>
   <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
 </div>
 

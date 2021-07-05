@@ -83,9 +83,9 @@ Let's see what this looks like in a contract.
 ### Contract Example
 
 ```javascript
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
-import "@chainlink/contracts/src/v0.6/ChainlinkClient.sol";
+import "@chainlink/contracts/src/v0.8/dev/ChainlinkClient.sol";
 
 contract APIConsumer is ChainlinkClient {
   
@@ -101,7 +101,7 @@ contract APIConsumer is ChainlinkClient {
      * Chainlink - 29fa9aa13bf1468788b7cc4a500a45b8
      * Fee: 0.1 LINK
      */
-    constructor() public {
+    constructor() {
         setPublicChainlinkToken();
         oracle = 0x2f90A6D021db21e1B2A077c5a37B3C7E75D15b7e;
         jobId = "29fa9aa13bf1468788b7cc4a500a45b8";
@@ -141,7 +141,7 @@ contract APIConsumer is ChainlinkClient {
 ```
 
 <div class="remix-callout">
-  <a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&gist=8a173a65099261582a652ba18b7d96c1" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
+  <a href="https://remix.ethereum.org/#version=soljson-v0.8.0+commit.b8d736ae.js&optimize=false&evmVersion=null&gist=8a173a65099261582a652ba18b7d96c1" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
     <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
 </div>
 

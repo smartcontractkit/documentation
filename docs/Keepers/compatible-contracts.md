@@ -85,15 +85,15 @@ In most cases your `checkUpkeep` function should be marked as `view`, but someti
 The example below represents a simple counter contract. Each time `performUpkeep` is called, it increments its counter by one.
 
 <div class="remix-callout">
-    <a href="https://remix.ethereum.org/#version=soljson-v0.6.6+commit.6c089d02.js&optimize=false&evmVersion=null&gist=62587a7f0885c4cbdbd587ca0dc74a12" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
+    <a href="https://remix.ethereum.org/#version=soljson-v0.8.8+commit.6c089d02.js&optimize=false&evmVersion=null&gist=62587a7f0885c4cbdbd587ca0dc74a12" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
     <a href="../../deploy-your-first-contract/" title="">What is Remix?</a>
 </div>
 
 
 ```solidity
-pragma solidity ^0.6.7;
+pragma solidity ^0.8.0;
 
-import "@chainlink/contracts/src/v0.6/interfaces/AggregatorV3Interface.sol";
+import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
 interface KeeperCompatibleInterface {
     function checkUpkeep(bytes calldata checkData) external returns (bool upkeepNeeded, bytes memory performData);
@@ -114,7 +114,7 @@ contract Counter is KeeperCompatibleInterface {
     uint public lastTimeStamp;
 
     
-    constructor(uint updateInterval) public {
+    constructor(uint updateInterval) {
       interval = updateInterval;
       lastTimeStamp = block.timestamp;
 
@@ -122,7 +122,7 @@ contract Counter is KeeperCompatibleInterface {
     }
 
 
-    function checkUpkeep(bytes calldata checkData) external override returns (bool upkeepNeeded, bytes memory performData) {
+    function checkUpkeep(bytes calldata checkData) external view override returns (bool upkeepNeeded, bytes memory performData) {
         upkeepNeeded = (block.timestamp - lastTimeStamp) > interval;
 
         // We don't use the checkData in this example

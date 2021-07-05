@@ -95,9 +95,26 @@ contract DnsOwnershipChainlink is ChainlinkClient {
   
 }
 ```
+```javascript Solidity 8
+pragma solidity ^0.8.0;
+
+import "@chainlink/contracts/v0.8/dev/ChainlinkClient.sol";
+
+contract DnsOwnershipChainlink is ChainlinkClient {
+  
+  uint256 oraclePayment;
+  
+  constructor(uint256 _oraclePayment) {
+    setPublicChainlinkToken();
+    oraclePayment = _oraclePayment;
+  }
+  // Additional functions here:
+  
+}
+```
 
 <div class="remix-callout">
-  <a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&gist=df94f31ce2fc161f8b6032dbc6bfcc9c" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
+  <a href="https://remix.ethereum.org/#version=soljson-v0.8.0+commit.b8d736ae.js&optimize=false&evmVersion=null&gist=df94f31ce2fc161f8b6032dbc6bfcc9c" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
     <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
 </div>
 

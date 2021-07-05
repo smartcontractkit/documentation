@@ -26,14 +26,14 @@ This example uses the <a href="https://market.link/nodes/ef076e87-49f4-486b-9878
 > Making a job request will fail unless your deployed contract has enough LINK to pay for it. **Learn how to [Acquire testnet LINK](../acquire-link/) and [Fund your contract](../fund-your-contract/)**.
 
 <div class="remix-callout">
-    <a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&gist=e5f752fa134b49ef481da74ec1a453a6" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
+    <a href="https://remix.ethereum.org/#version=soljson-v0.8.0+commit.b8d736ae.js&optimize=false&evmVersion=null&gist=e5f752fa134b49ef481da74ec1a453a6" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
     <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
 </div>
 
 ```javascript
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
-import "@chainlink/contracts/src/v0.6/ChainlinkClient.sol";
+import "@chainlink/contracts/src/v0.8/dev/ChainlinkClient.sol";
 
 /**
  * THIS IS AN EXAMPLE CONTRACT WHICH USES HARDCODED VALUES FOR CLARITY.
@@ -60,7 +60,7 @@ contract OpenWeatherConsumer is ChainlinkClient {
      *      ID:             235f8b1eeb364efc83c26d0bef2d0c01
      *      Fee:            0.1 LINK
      */
-    constructor() public {
+    constructor() {
         setPublicChainlinkToken();
         oracle = 0xAA1DC356dc4B18f30C347798FD5379F3D77ABC5b;
         jobId = "235f8b1eeb364efc83c26d0bef2d0c01";

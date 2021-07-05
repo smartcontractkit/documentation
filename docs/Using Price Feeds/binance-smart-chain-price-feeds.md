@@ -27,10 +27,10 @@ To consume price data, your smart contract should reference <a href="https://git
 
 As long as the address provided is a Chainlink aggregator, your smart contract will be able to retrieve the latest price from it.
 
-```javascript Binance
-pragma solidity ^0.6.7;
+```solidity Binance
+pragma solidity ^0.8.0;
 
-import "@chainlink/contracts/src/v0.6/interfaces/AggregatorInterface.sol";
+import "@chainlink/contracts/src/v0.8/interfaces/AggregatorInterface.sol";
 
 contract PriceConsumer {
 
@@ -41,7 +41,7 @@ contract PriceConsumer {
      * Aggregator: BNB/USD
      * Address: 0x859AAa51961284C94d970B47E82b8771942F1980
      */
-	constructor() public {
+	constructor() {
     	priceFeed = AggregatorInterface(0x859AAa51961284C94d970B47E82b8771942F1980);
 	}
   
@@ -98,10 +98,10 @@ This section explains how to get historical price data for BNB using Chainlink P
 
 ## Solidity Contract
 
-```javascript Binance
-pragma solidity ^0.6.7;
+```solidity Binance
+pragma solidity ^0.8.0;
 
-import "@chainlink/contracts/src/v0.6/interfaces/AggregatorInterface.sol";
+import "@chainlink/contracts/src/v0.8/interfaces/AggregatorInterface.sol";
 
 contract PriceConsumer {
 
@@ -112,7 +112,7 @@ contract PriceConsumer {
      * Aggregator: BNB/USD
      * Address: 0x859AAa51961284C94d970B47E82b8771942F1980
      */
-	constructor() public {
+	constructor() {
     	priceFeed = AggregatorInterface(0x859AAa51961284C94d970B47E82b8771942F1980);
 	}
   
