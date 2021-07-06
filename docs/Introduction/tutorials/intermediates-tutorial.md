@@ -16,7 +16,7 @@ whatsnext: {"Get a Random Number":"/docs/get-a-random-number/", "Advanced - API 
   https://www.youtube.com/watch?v=JqZWariqh5s
 </p>
 
-> Note: The video uses a seed phrase to request randomness, this has been depreciated. Please use the code here. 
+> Note: The video uses a seed phrase to request randomness, this has been deprecated. Please use the code here. 
 
 # Introduction
 
