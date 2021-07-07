@@ -11,28 +11,25 @@ metadata:
     0: "/files/OpenGraph_V3.png"
 ---
 {% markdown %}
-> 🚧 Open Alpha
-> 
-> Chainlink Feed Registry is in alpha. We're continuing to test the feature with users and improve the experience based on your feedback. The registry contract is also undergoing a security audit.
->
-> Note that the alpha registry will be decomissioned after the alpha period and replaced with a new registry at a new address. Please do not use it in production.
 
 ![Feed Registry](/files/feed-registry.png)
 
-The Chainlink Feed Registry is an on-chain mapping of assets to feeds. It enables you to query Chainlink price feeds from a pair of asset and denomination addresses directly, without needing to know the feed contract addresses. They enable smart contracts to retrieve the latest price of an asset in a single call, from a single contract.
+The Chainlink Feed Registry is an on-chain mapping of assets to feeds. It enables you to query Chainlink price feeds from asset addresses directly, without needing to know the feed contract addresses. They enable smart contracts to retrieve the latest price of an asset in a single call, from a single contract.
 
-# Assets and Denominations
+# Base and Quote
 
-The Feed Registry maps feeds using `asset` and `denomination` address pairs as keys. The Feed Registry fully supports the <a href="https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol" target="_blank">`AggregatorV3Interface`</a> API, but with additional `asset` and `denomination` inputs to support multiple pairs and feeds. To get the latest LINK / USD round data from the registry, you call: 
+The Feed Registry maps feeds using `base` and `quote` address pairs as keys. The Feed Registry fully supports the [`AggregatorV3Interface`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol) API, but with additional `base` and `quote` inputs to support multiple pairs and feeds on a single contract. 
+
+To get the latest LINK / USD round data from the registry, call: 
 
 ```solidity Mainnet
-latestRoundData(address assset, address denomination)
+latestRoundData(address base, address quote)
 ```
 
 For example, to get the latest LINK / USD price:
 
-- `asset`: The LINK token address on that network e.g. `0x514910771AF9Ca656af840dff83E8264EcF986CA` for LINK on Ethereum mainnet
-- `denomination`: A `Denominations.USD` address (`0x0000000000000000000000000000000000000348`), which is based on [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217).
+- `base`: The LINK token address on that network e.g. `0x514910771AF9Ca656af840dff83E8264EcF986CA` for LINK on Ethereum mainnet
+- `quote`: A `Denominations.USD` address (`0x0000000000000000000000000000000000000348`), which is based on [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217).
 
 ```solidity Mainnet
 latestRoundData(0x514910771AF9Ca656af840dff83E8264EcF986CA, 0x0000000000000000000000000000000000000348)
@@ -43,8 +40,8 @@ latestRoundData(0xa36085f69e2889c224210f603d836748e7dc0088, 0x000000000000000000
 
 To get the latest LINK / ETH price on Ethereum:
 
-- `asset`: The LINK token address on that network e.g. `0x514910771AF9Ca656af840dff83E8264EcF986CA` for LINK on Ethereum mainnet
-- `denomination`: A `Denominations.ETH` address (`0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE`)
+- `base`: The LINK token address on that network e.g. `0x514910771AF9Ca656af840dff83E8264EcF986CA` for LINK on Ethereum mainnet
+- `quote`: A `Denominations.ETH` address (`0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE`)
 
 ```solidity Mainnet
 latestRoundData(0x514910771AF9Ca656af840dff83E8264EcF986CA, 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE)
@@ -55,10 +52,10 @@ latestRoundData(0xa36085f69e2889c224210f603d836748e7dc0088, 0xEeeeeEeeeEeEeeEeEe
 
 ## Denominations library
 
-A <a href="https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/Denominations.sol" target="_blank">`Denominations`</a> Solidity library is available for you to query common denominations:
+A [`Denominations`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/Denominations.sol) Solidity library is available for you to fetch currency identifiers which lack a canonical Ethereum address:
 
 
-```javascript Solidity 8
+```solidity
 pragma solidity ^0.8.0;
 
 library Denominations {
@@ -69,154 +66,73 @@ library Denominations {
   address public constant USD = address(840);
   address public constant GBP = address(826);
   address public constant EUR = address(978);
-  address public constant JPY = address(392);
-  address public constant KRW = address(410);
-  address public constant CNY = address(156);
-  address public constant AUD = address(36);
-  address public constant CAD = address(124);
-  address public constant CHF = address(756);
-  address public constant ARS = address(32);
+  
+  // ... other fiat currencies
 }
 ```
-```javascript Solidity 7
-pragma solidity ^0.7.0;
 
-library Denominations {
-  address public constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
-  address public constant BTC = 0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB;
+Import and use the library in your contract as follows:
 
-  // Fiat currencies follow https://en.wikipedia.org/wiki/ISO_4217
-  address public constant USD = address(840);
-  address public constant GBP = address(826);
-  address public constant EUR = address(978);
-  address public constant JPY = address(392);
-  address public constant KRW = address(410);
-  address public constant CNY = address(156);
-  address public constant AUD = address(36);
-  address public constant CAD = address(124);
-  address public constant CHF = address(756);
-  address public constant ARS = address(32);
-}
+```solidity
+import "@chainlink/contracts/src/v0.8/Denominations.sol";
+
+latestRoundData(Denominations.ETH, Denominations.USD);
 ```
-```javascript Solidity 6
-pragma solidity ^0.6.0;
 
-library Denominations {
-  address public constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
-  address public constant BTC = 0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB;
+Please be aware that fiat currency addresses are *hexadecimal* values of ISO 4217 codes. For example, in the case of USD which has ISO 4217 code of 840:
 
-  // Fiat currencies follow https://en.wikipedia.org/wiki/ISO_4217
-  address public constant USD = address(840);
-  address public constant GBP = address(826);
-  address public constant EUR = address(978);
-  address public constant JPY = address(392);
-  address public constant KRW = address(410);
-  address public constant CNY = address(156);
-  address public constant AUD = address(36);
-  address public constant CAD = address(124);
-  address public constant CHF = address(756);
-  address public constant ARS = address(32);
-}
+```
+address public constant USD = address(840); // "0x0000000000000000000000000000000000000348" in hex
 ```
 
 # Code Examples
 
 ## Solidity
 
-To consume price data from the Feed Registry, your smart contract should reference <a href="https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/interfaces/FeedRegistryInterface.sol" target="_blank">`FeedRegistryInterface`</a>, which defines the external functions implemented by the Feed Registry.
+To consume price data from the Feed Registry, your smart contract should reference [`FeedRegistryInterface`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/interfaces/FeedRegistryInterface.sol), which defines the external functions implemented by the Feed Registry.
 
-```javascript Solidity 8
+```solidity
 pragma solidity 0.8.6;
 
 import "@chainlink/contracts/src/v0.8/interfaces/FeedRegistryInterface.sol";
+import "@chainlink/contracts/src/v0.8/Denominations.sol";
 
 contract PriceConsumer {
-
     FeedRegistryInterface internal registry;
 
     /**
-     * Network: Mainnet Alpha Preview
-     * Feed Registry: 0xd441F0B98BcF34749391A3879A94caA95ffDB74D
+     * Network: Ethereum Kovan
+     * Feed Registry: 0xAa7F6f7f507457a1EE157fE97F6c7DB2BEec5cD0
      */
-    constructor() {
-        registry = FeedRegistryInterface(0xd441F0B98BcF34749391A3879A94caA95ffDB74D);
+    constructor(address _registry) {
+        registry = FeedRegistryInterface(_registry);
     }
 
     /**
-     * Returns the latest price
+     * Returns the ETH / USD price
      */
-    function getThePrice(address asset, address denomination) public view returns (int) {
+    function getEthUsdPrice() public view returns (int) {
         (
-            uint80 roundID, 
+            uint80 roundID,
             int price,
             uint startedAt,
             uint timeStamp,
             uint80 answeredInRound
-        ) = registry.latestRoundData(asset, denomination);
+        ) = registry.latestRoundData(Denominations.ETH, Denominations.USD);
         return price;
     }
-}
-```
-```javascript Solidity 7
-pragma solidity 0.7.6;
-
-import "@chainlink/contracts/src/v0.7/interfaces/FeedRegistryInterface.sol";
-
-contract PriceConsumer {
-
-    FeedRegistryInterface internal registry;
-
-    /**
-     * Network: Mainnet Alpha Preview
-     * Feed Registry: 0xd441F0B98BcF34749391A3879A94caA95ffDB74D
-     */
-    constructor() {
-        registry = FeedRegistryInterface(0xd441F0B98BcF34749391A3879A94caA95ffDB74D);
-    }
 
     /**
      * Returns the latest price
      */
-    function getThePrice(address asset, address denomination) public view returns (int) {
+    function getPrice(address base, address quote) public view returns (int) {
         (
             uint80 roundID, 
             int price,
             uint startedAt,
             uint timeStamp,
             uint80 answeredInRound
-        ) = registry.latestRoundData(asset, denomination);
-        return price;
-    }
-}
-```
-```javascript Solidity 6
-pragma solidity 0.6.12;
-
-import "@chainlink/contracts/src/v0.6/interfaces/FeedRegistryInterface.sol";
-
-contract PriceConsumer {
-
-    FeedRegistryInterface internal registry;
-
-    /**
-     * Network: Mainnet Alpha Preview
-     * Feed Registry: 0xd441F0B98BcF34749391A3879A94caA95ffDB74D
-     */
-    constructor() public {
-        registry = FeedRegistryInterface(0xd441F0B98BcF34749391A3879A94caA95ffDB74D);
-    }
-
-    /**
-     * Returns the latest price
-     */
-    function getThePrice(address asset, address denomination) public view returns (int) {
-        (
-            uint80 roundID, 
-            int price,
-            uint startedAt,
-            uint timeStamp,
-            uint80 answeredInRound
-        ) = registry.latestRoundData(asset, denomination);
+        ) = registry.latestRoundData(base, quote);
         return price;
     }
 }
@@ -244,12 +160,12 @@ contract PriceConsumer {
 
 ## Javascript
 ```javascript Mainnet
-const web3 = new Web3("https://mainnet.infura.io/v3/<infura_project_id>");
-const feedRegistryInterfaceABI = [{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"accessController","type":"address"},{"indexed":true,"internalType":"address","name":"sender","type":"address"}],"name":"AccessControllerSet","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"asset","type":"address"},{"indexed":true,"internalType":"address","name":"denomination","type":"address"},{"indexed":true,"internalType":"address","name":"latestAggregator","type":"address"},{"indexed":false,"internalType":"address","name":"previousAggregator","type":"address"},{"indexed":false,"internalType":"uint16","name":"nextPhaseId","type":"uint16"},{"indexed":false,"internalType":"address","name":"sender","type":"address"}],"name":"FeedConfirmed","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"asset","type":"address"},{"indexed":true,"internalType":"address","name":"denomination","type":"address"},{"indexed":true,"internalType":"address","name":"proposedAggregator","type":"address"},{"indexed":false,"internalType":"address","name":"currentAggregator","type":"address"},{"indexed":false,"internalType":"address","name":"sender","type":"address"}],"name":"FeedProposed","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"}],"name":"OwnershipTransferRequested","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"inputs":[],"name":"acceptOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"asset","type":"address"},{"internalType":"address","name":"denomination","type":"address"},{"internalType":"address","name":"aggregator","type":"address"}],"name":"confirmFeed","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"asset","type":"address"},{"internalType":"address","name":"denomination","type":"address"}],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"asset","type":"address"},{"internalType":"address","name":"denomination","type":"address"}],"name":"description","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"getAccessController","outputs":[{"internalType":"contract AccessControllerInterface","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"asset","type":"address"},{"internalType":"address","name":"denomination","type":"address"},{"internalType":"uint256","name":"roundId","type":"uint256"}],"name":"getAnswer","outputs":[{"internalType":"int256","name":"answer","type":"int256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"asset","type":"address"},{"internalType":"address","name":"denomination","type":"address"}],"name":"getCurrentPhaseId","outputs":[{"internalType":"uint16","name":"currentPhaseId","type":"uint16"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"asset","type":"address"},{"internalType":"address","name":"denomination","type":"address"}],"name":"getFeed","outputs":[{"internalType":"contract AggregatorV2V3Interface","name":"aggregator","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"asset","type":"address"},{"internalType":"address","name":"denomination","type":"address"},{"internalType":"uint80","name":"roundId","type":"uint80"}],"name":"getNextRoundId","outputs":[{"internalType":"uint80","name":"nextRoundId","type":"uint80"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"asset","type":"address"},{"internalType":"address","name":"denomination","type":"address"},{"internalType":"uint16","name":"phaseId","type":"uint16"}],"name":"getPhase","outputs":[{"components":[{"internalType":"uint16","name":"phaseId","type":"uint16"},{"internalType":"uint80","name":"startingAggregatorRoundId","type":"uint80"},{"internalType":"uint80","name":"endingAggregatorRoundId","type":"uint80"}],"internalType":"struct FeedRegistryInterface.Phase","name":"phase","type":"tuple"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"asset","type":"address"},{"internalType":"address","name":"denomination","type":"address"},{"internalType":"uint16","name":"phaseId","type":"uint16"}],"name":"getPhaseFeed","outputs":[{"internalType":"contract AggregatorV2V3Interface","name":"aggregator","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"asset","type":"address"},{"internalType":"address","name":"denomination","type":"address"},{"internalType":"uint16","name":"phaseId","type":"uint16"}],"name":"getPhaseRange","outputs":[{"internalType":"uint80","name":"startingRoundId","type":"uint80"},{"internalType":"uint80","name":"endingRoundId","type":"uint80"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"asset","type":"address"},{"internalType":"address","name":"denomination","type":"address"},{"internalType":"uint80","name":"roundId","type":"uint80"}],"name":"getPreviousRoundId","outputs":[{"internalType":"uint80","name":"previousRoundId","type":"uint80"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"asset","type":"address"},{"internalType":"address","name":"denomination","type":"address"}],"name":"getProposedFeed","outputs":[{"internalType":"contract AggregatorV2V3Interface","name":"proposedAggregator","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"asset","type":"address"},{"internalType":"address","name":"denomination","type":"address"},{"internalType":"uint80","name":"_roundId","type":"uint80"}],"name":"getRoundData","outputs":[{"internalType":"uint80","name":"roundId","type":"uint80"},{"internalType":"int256","name":"answer","type":"int256"},{"internalType":"uint256","name":"startedAt","type":"uint256"},{"internalType":"uint256","name":"updatedAt","type":"uint256"},{"internalType":"uint80","name":"answeredInRound","type":"uint80"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"asset","type":"address"},{"internalType":"address","name":"denomination","type":"address"},{"internalType":"uint80","name":"roundId","type":"uint80"}],"name":"getRoundFeed","outputs":[{"internalType":"contract AggregatorV2V3Interface","name":"aggregator","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"asset","type":"address"},{"internalType":"address","name":"denomination","type":"address"},{"internalType":"uint256","name":"roundId","type":"uint256"}],"name":"getTimestamp","outputs":[{"internalType":"uint256","name":"timestamp","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"aggregator","type":"address"}],"name":"isFeedEnabled","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"asset","type":"address"},{"internalType":"address","name":"denomination","type":"address"}],"name":"latestAnswer","outputs":[{"internalType":"int256","name":"answer","type":"int256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"asset","type":"address"},{"internalType":"address","name":"denomination","type":"address"}],"name":"latestRound","outputs":[{"internalType":"uint256","name":"roundId","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"asset","type":"address"},{"internalType":"address","name":"denomination","type":"address"}],"name":"latestRoundData","outputs":[{"internalType":"uint80","name":"roundId","type":"uint80"},{"internalType":"int256","name":"answer","type":"int256"},{"internalType":"uint256","name":"startedAt","type":"uint256"},{"internalType":"uint256","name":"updatedAt","type":"uint256"},{"internalType":"uint80","name":"answeredInRound","type":"uint80"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"asset","type":"address"},{"internalType":"address","name":"denomination","type":"address"}],"name":"latestTimestamp","outputs":[{"internalType":"uint256","name":"timestamp","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"asset","type":"address"},{"internalType":"address","name":"denomination","type":"address"},{"internalType":"address","name":"aggregator","type":"address"}],"name":"proposeFeed","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"asset","type":"address"},{"internalType":"address","name":"denomination","type":"address"},{"internalType":"uint80","name":"roundId","type":"uint80"}],"name":"proposedGetRoundData","outputs":[{"internalType":"uint80","name":"id","type":"uint80"},{"internalType":"int256","name":"answer","type":"int256"},{"internalType":"uint256","name":"startedAt","type":"uint256"},{"internalType":"uint256","name":"updatedAt","type":"uint256"},{"internalType":"uint80","name":"answeredInRound","type":"uint80"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"asset","type":"address"},{"internalType":"address","name":"denomination","type":"address"}],"name":"proposedLatestRoundData","outputs":[{"internalType":"uint80","name":"id","type":"uint80"},{"internalType":"int256","name":"answer","type":"int256"},{"internalType":"uint256","name":"startedAt","type":"uint256"},{"internalType":"uint256","name":"updatedAt","type":"uint256"},{"internalType":"uint80","name":"answeredInRound","type":"uint80"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"contract AccessControllerInterface","name":"_accessController","type":"address"}],"name":"setAccessController","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"to","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"typeAndVersion","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"pure","type":"function"},{"inputs":[{"internalType":"address","name":"asset","type":"address"},{"internalType":"address","name":"denomination","type":"address"}],"name":"version","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}];
-const addr = "0xd441F0B98BcF34749391A3879A94caA95ffDB74D";
+const web3 = new Web3("https://kovan.infura.io/v3/<infura_project_id>");
+const feedRegistryInterfaceABI = [{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"accessController","type":"address"},{"indexed":true,"internalType":"address","name":"sender","type":"address"}],"name":"AccessControllerSet","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"asset","type":"address"},{"indexed":true,"internalType":"address","name":"denomination","type":"address"},{"indexed":true,"internalType":"address","name":"latestAggregator","type":"address"},{"indexed":false,"internalType":"address","name":"previousAggregator","type":"address"},{"indexed":false,"internalType":"uint16","name":"nextPhaseId","type":"uint16"},{"indexed":false,"internalType":"address","name":"sender","type":"address"}],"name":"FeedConfirmed","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"asset","type":"address"},{"indexed":true,"internalType":"address","name":"denomination","type":"address"},{"indexed":true,"internalType":"address","name":"proposedAggregator","type":"address"},{"indexed":false,"internalType":"address","name":"currentAggregator","type":"address"},{"indexed":false,"internalType":"address","name":"sender","type":"address"}],"name":"FeedProposed","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"}],"name":"OwnershipTransferRequested","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"inputs":[],"name":"acceptOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"base","type":"address"},{"internalType":"address","name":"quote","type":"address"},{"internalType":"address","name":"aggregator","type":"address"}],"name":"confirmFeed","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"base","type":"address"},{"internalType":"address","name":"quote","type":"address"}],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"base","type":"address"},{"internalType":"address","name":"quote","type":"address"}],"name":"description","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"getAccessController","outputs":[{"internalType":"contract AccessControllerInterface","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"base","type":"address"},{"internalType":"address","name":"quote","type":"address"},{"internalType":"uint256","name":"roundId","type":"uint256"}],"name":"getAnswer","outputs":[{"internalType":"int256","name":"answer","type":"int256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"base","type":"address"},{"internalType":"address","name":"quote","type":"address"}],"name":"getCurrentPhaseId","outputs":[{"internalType":"uint16","name":"currentPhaseId","type":"uint16"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"base","type":"address"},{"internalType":"address","name":"quote","type":"address"}],"name":"getFeed","outputs":[{"internalType":"contract AggregatorV2V3Interface","name":"aggregator","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"base","type":"address"},{"internalType":"address","name":"quote","type":"address"},{"internalType":"uint80","name":"roundId","type":"uint80"}],"name":"getNextRoundId","outputs":[{"internalType":"uint80","name":"nextRoundId","type":"uint80"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"base","type":"address"},{"internalType":"address","name":"quote","type":"address"},{"internalType":"uint16","name":"phaseId","type":"uint16"}],"name":"getPhase","outputs":[{"components":[{"internalType":"uint16","name":"phaseId","type":"uint16"},{"internalType":"uint80","name":"startingAggregatorRoundId","type":"uint80"},{"internalType":"uint80","name":"endingAggregatorRoundId","type":"uint80"}],"internalType":"struct FeedRegistryInterface.Phase","name":"phase","type":"tuple"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"base","type":"address"},{"internalType":"address","name":"quote","type":"address"},{"internalType":"uint16","name":"phaseId","type":"uint16"}],"name":"getPhaseFeed","outputs":[{"internalType":"contract AggregatorV2V3Interface","name":"aggregator","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"base","type":"address"},{"internalType":"address","name":"quote","type":"address"},{"internalType":"uint16","name":"phaseId","type":"uint16"}],"name":"getPhaseRange","outputs":[{"internalType":"uint80","name":"startingRoundId","type":"uint80"},{"internalType":"uint80","name":"endingRoundId","type":"uint80"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"base","type":"address"},{"internalType":"address","name":"quote","type":"address"},{"internalType":"uint80","name":"roundId","type":"uint80"}],"name":"getPreviousRoundId","outputs":[{"internalType":"uint80","name":"previousRoundId","type":"uint80"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"base","type":"address"},{"internalType":"address","name":"quote","type":"address"}],"name":"getProposedFeed","outputs":[{"internalType":"contract AggregatorV2V3Interface","name":"proposedAggregator","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"base","type":"address"},{"internalType":"address","name":"quote","type":"address"},{"internalType":"uint80","name":"_roundId","type":"uint80"}],"name":"getRoundData","outputs":[{"internalType":"uint80","name":"roundId","type":"uint80"},{"internalType":"int256","name":"answer","type":"int256"},{"internalType":"uint256","name":"startedAt","type":"uint256"},{"internalType":"uint256","name":"updatedAt","type":"uint256"},{"internalType":"uint80","name":"answeredInRound","type":"uint80"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"base","type":"address"},{"internalType":"address","name":"quote","type":"address"},{"internalType":"uint80","name":"roundId","type":"uint80"}],"name":"getRoundFeed","outputs":[{"internalType":"contract AggregatorV2V3Interface","name":"aggregator","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"base","type":"address"},{"internalType":"address","name":"quote","type":"address"},{"internalType":"uint256","name":"roundId","type":"uint256"}],"name":"getTimestamp","outputs":[{"internalType":"uint256","name":"timestamp","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"aggregator","type":"address"}],"name":"isFeedEnabled","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"base","type":"address"},{"internalType":"address","name":"quote","type":"address"}],"name":"latestAnswer","outputs":[{"internalType":"int256","name":"answer","type":"int256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"base","type":"address"},{"internalType":"address","name":"quote","type":"address"}],"name":"latestRound","outputs":[{"internalType":"uint256","name":"roundId","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"base","type":"address"},{"internalType":"address","name":"quote","type":"address"}],"name":"latestRoundData","outputs":[{"internalType":"uint80","name":"roundId","type":"uint80"},{"internalType":"int256","name":"answer","type":"int256"},{"internalType":"uint256","name":"startedAt","type":"uint256"},{"internalType":"uint256","name":"updatedAt","type":"uint256"},{"internalType":"uint80","name":"answeredInRound","type":"uint80"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"base","type":"address"},{"internalType":"address","name":"quote","type":"address"}],"name":"latestTimestamp","outputs":[{"internalType":"uint256","name":"timestamp","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"base","type":"address"},{"internalType":"address","name":"quote","type":"address"},{"internalType":"address","name":"aggregator","type":"address"}],"name":"proposeFeed","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"base","type":"address"},{"internalType":"address","name":"quote","type":"address"},{"internalType":"uint80","name":"roundId","type":"uint80"}],"name":"proposedGetRoundData","outputs":[{"internalType":"uint80","name":"id","type":"uint80"},{"internalType":"int256","name":"answer","type":"int256"},{"internalType":"uint256","name":"startedAt","type":"uint256"},{"internalType":"uint256","name":"updatedAt","type":"uint256"},{"internalType":"uint80","name":"answeredInRound","type":"uint80"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"base","type":"address"},{"internalType":"address","name":"quote","type":"address"}],"name":"proposedLatestRoundData","outputs":[{"internalType":"uint80","name":"id","type":"uint80"},{"internalType":"int256","name":"answer","type":"int256"},{"internalType":"uint256","name":"startedAt","type":"uint256"},{"internalType":"uint256","name":"updatedAt","type":"uint256"},{"internalType":"uint80","name":"answeredInRound","type":"uint80"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"contract AccessControllerInterface","name":"_accessController","type":"address"}],"name":"setAccessController","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"to","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"typeAndVersion","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"pure","type":"function"},{"inputs":[{"internalType":"address","name":"base","type":"address"},{"internalType":"address","name":"quote","type":"address"}],"name":"version","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}]
+const addr = "0xAa7F6f7f507457a1EE157fE97F6c7DB2BEec5cD0";
 const feedRegistry = new web3.eth.Contract(feedRegistryInterfaceABI, addr);
 
-const LINK = '0x514910771AF9Ca656af840dff83E8264EcF986CA';
+const LINK = '0xa36085F69e2889c224210F603D836748e7dC0088';
 const USD = '0x0000000000000000000000000000000000000348';
 feedRegistry.methods.latestRoundData(LINK, USD).call()
     .then((roundData) => {
@@ -273,9 +189,19 @@ feedRegistry.methods.latestRoundData(LINK, USD).call()
 
 {% markdown %}
 
+# Contract Addresses 
+
+This section lists the blockchains that Chainlink Feed Registry are currently available on.
+
+|Network|Address|
+|---|---|
+|Ethereum Mainnet|[`0x47Fb2585D2C56Fe188D0E6ec628a38b74fCeeeDf`](https://etherscan.io/address/0x47Fb2585D2C56Fe188D0E6ec628a38b74fCeeeDf)|
+|Ethereum Kovan|[`0xAa7F6f7f507457a1EE157fE97F6c7DB2BEec5cD0`](https://kovan.etherscan.io/address/0xAa7F6f7f507457a1EE157fE97F6c7DB2BEec5cD0)|
+
+
 # API Reference
 
-API reference for <a href="https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/interfaces/FeedRegistryInterface.sol" target="_blank">`FeedRegistryInterface`</a>.
+API reference for [`FeedRegistryInterface`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/interfaces/FeedRegistryInterface.sol).
 
 # Functions
 
@@ -286,21 +212,30 @@ API reference for <a href="https://github.com/smartcontractkit/chainlink/blob/de
 |[getRoundData](#getrounddata)|Get data from a specific round.|
 |[latestRoundData](#latestrounddata)|Get data from the latest round.|
 |[version](#version)|The version representing the type of aggregator the proxy points to.|
-
+|[getFeed](#getfeed)| Returns the primary aggregator address of a base / quote pair.|
+|[getPhaseFeed](#getphasefeed)| Returns the aggregator address of a base / quote pair at a specified phase.|
+|[isFeedEnabled](#isfeedenabled)| Returns true if an aggregator is enabled as primary on the registry.|
+|[getPhase](#getphase)| Returns the raw starting and ending aggregator round ids of a base / quote pair.|
+|[getRoundFeed](#getroundfeed)| Returns the underlying aggregator address of a base / quote pair at a specified round.|
+|[getPhaseRange](#getphaserange)| Returns the starting and ending round ids of a base / quote pair at a specified phase.|
+|[getPreviousRoundId](#getpreviousroundid)| Returns the previous round id of a base / quote pair given a specified round.|
+|[getNextRoundId](#getnextroundid)| Returns the next round id of a base / quote pair given a specified round.|
+|[getCurrentPhaseId](#getcurrentphaseid)| Returns the current phase id of a base / quote pair.|
 ___
+
 
 ## decimals
 
 Get the number of decimals present in the response value.
 
-```javascript Solidity
-function decimals(address asset, address denomination) external view returns (uint8)
+```solidity
+function decimals(address base, address quote) external view returns (uint8)
 ```
 
 ### Parameters
 
-* `asset`: The asset address
-* `denomination`: The denomination address
+* `base`: The base asset address.
+* `quote`: The quote asset address.
 
 ### Return Values
 
@@ -310,14 +245,14 @@ function decimals(address asset, address denomination) external view returns (ui
 
 Get the description of the underlying aggregator that the proxy points to.
 
-```javascript Solidity
-function description(address asset, address denomination) external view returns (string memory)
+```solidity
+function description(address base, address quote) external view returns (string memory)
 ```
 
 ### Parameters
 
-* `asset`: The asset address
-* `denomination`: The denomination address
+* `base`: The base asset address.
+* `quote`: The quote asset address.
 
 ### Return Values
 
@@ -327,8 +262,8 @@ function description(address asset, address denomination) external view returns 
 
 Get data about a specific round, using the `roundId`.
 
-```javascript Solidity
-function getRoundData(address asset, address denomination, uint80 _roundId) external view 
+```solidity
+function getRoundData(address base, address quote, uint80 _roundId) external view 
     returns (
         uint80 roundId, 
         int256 answer, 
@@ -340,9 +275,9 @@ function getRoundData(address asset, address denomination, uint80 _roundId) exte
 
 ### Parameters
 
-* `asset`: The asset address
-* `denomination`: The denomination address
-* `roundId`: The round ID
+* `base`: The base asset address.
+* `quote`: The quote asset address.
+* `roundId`: The round ID.
 
 ### Return Values
 
@@ -356,8 +291,8 @@ function getRoundData(address asset, address denomination, uint80 _roundId) exte
 
 Get the price from the latest round.
 
-```javascript Solidity
-function latestRoundData(address asset, address denomination) external view 
+```solidity
+function latestRoundData(address base, address quote) external view 
     returns (
         uint80 roundId, 
         int256 answer, 
@@ -379,16 +314,265 @@ function latestRoundData(address asset, address denomination) external view
 
 The version representing the type of aggregator the proxy points to.
 
-```javascript Solidity
-function version(address asset, address denomination) external view returns (uint256)
+```solidity
+function version(address base, address quote) external view returns (uint256)
 ```
 
 ### Parameters
 
-* `asset`: The asset address
-* `denomination`: The denomination address
+* `base`: The base asset address.
+* `quote`: The quote asset address.
 
 ### Return Values
 
 * `RETURN`: The version number.
+
+## getFeed
+
+Returns the primary aggregator address of a base / quote pair. Note that on-chain contracts cannot read from aggregators directly, only through Feed Registry or Proxy contracts.
+
+```solidity
+function getFeed(
+    address base,
+    address quote
+  )
+    external
+    view
+    returns (
+      AggregatorV2V3Interface aggregator
+    );
+```
+
+### Parameters
+
+* `base`: The base asset address.
+* `quote`: The quote asset address.
+
+### Return Values
+
+* `aggregator`: The primary aggregator address.
+
+## getPhaseFeed
+
+Returns the underlying aggregator address of a base / quote pair at a specified phase. Note that on-chain contracts cannot read from aggregators directly, only through Feed Registry or Proxy contracts. 
+Phase ids start at `1`. You can get the current Phase by calling `getCurrentPhaseId()`.
+
+```solidity
+function getPhaseFeed(
+    address base,
+    address quote,
+    uint16 phaseId
+  )
+    external
+    view
+    returns (
+      AggregatorV2V3Interface aggregator
+    );
+```
+
+### Parameters
+
+* `base`: The base asset address.
+* `quote`: The quote asset address.
+* `phaseId`: The phase id.
+
+### Return Values
+
+* `aggregator`: The primary aggregator address at the specified phase.
+
+## isFeedEnabled
+
+Returns true if an aggregator is enabled as primary on the feed registry. This is useful to check if you should index events from an aggregator contract, because you want to only index events of primary aggregators.
+
+```solidity
+function isFeedEnabled(
+    address aggregator
+  )
+    external
+    view
+    returns (
+      bool
+    );
+```
+
+### Parameters
+
+* `aggregator`: The aggregator address
+
+### Return Values
+
+* `RETURN`: `true` if the supplied aggregator is a primary aggregator for any base / quote pair.
+
+## getPhase
+
+Returns the starting and ending aggregator round ids of a base / quote pair. 
+
+```solidity
+function getPhase(
+    address base,
+    address quote,
+    uint16 phaseId
+  )
+    external
+    view
+    returns (
+      Phase memory phase
+    );
+```
+
+Phases hold the following information:
+
+```solidity
+struct Phase {
+    uint16 phaseId;
+    uint80 startingAggregatorRoundId;
+    uint80 endingAggregatorRoundId;
+}
+```
+
+### Parameters
+
+* `base`: The base asset address.
+* `quote`: The quote asset address.
+* `phaseId`: The phase id.
+
+### Return Values
+
+* `RETURN`: `Phase` details of a base / quote pair.
+
+## getRoundFeed
+
+Returns the underlying aggregator address of a base / quote pair at a specified round. Note that on-chain contracts cannot read from aggregators directly, only through Feed Registry or Proxy contracts.
+
+```solidity
+  function getRoundFeed(
+    address base,
+    address quote,
+    uint80 roundId
+  )
+    external
+    view
+    returns (
+      AggregatorV2V3Interface aggregator
+    );
+```
+
+### Parameters
+
+* `base`: The base asset address.
+* `quote`: The quote asset address.
+* `roundId`: The round id.
+
+### Return Values
+
+* `aggregator`: The underlying aggregator address of a base / quote pair at the specified round.
+
+## getPhaseRange
+
+Returns the starting and ending round ids of a base / quote pair at a specified phase. 
+
+Please note that this `roundId` is calculated from the phase id and the underlying aggregator's round id. To get the raw aggregator round ids of a phase for indexing purposes, please use `getPhase()`.
+
+```solidity
+  function getPhaseRange(
+    address base,
+    address quote,
+    uint16 phaseId
+  )
+    external
+    view
+    returns (
+      uint80 startingRoundId,
+      uint80 endingRoundId
+    );
+```
+
+### Parameters
+
+* `base`: The base asset address.
+* `quote`: The quote asset address.
+* `phaseId`: The phase id.
+
+### Return Values
+
+* `startingRoundId`: The starting round id
+* `endingRoundId`: The ending round id
+
+## getPreviousRoundId
+
+Returns the previous round id of a base / quote pair given a specified round. Note that rounds are non-monotonic across phases.
+
+```solidity
+  function getPreviousRoundId(
+    address base,
+    address quote,
+    uint80 roundId
+  ) external
+    view
+    returns (
+      uint80 previousRoundId
+    );
+```
+
+### Parameters
+
+* `base`: The base asset address.
+* `quote`: The quote asset address.
+* `roundId`: The round id.
+
+### Return Values
+
+* `previousRoundId`: The previous round id of a base / quote pair.
+
+## getNextRoundId
+
+Returns the next round id of a base / quote pair given a specified round. Note that rounds are non-monotonic across phases.
+
+```solidity
+  function getNextRoundId(
+    address base,
+    address quote,
+    uint80 roundId
+  ) external
+    view
+    returns (
+      uint80 nextRoundId
+    );
+```
+
+### Parameters
+
+* `base`: The base asset address.
+* `quote`: The quote asset address.
+* `roundId`: The round id.
+
+### Return Values
+
+* `nextRoundId`: The next round id of a base / quote pair.
+
+## getCurrentPhaseId
+
+Returns the current phase id of a base / quote pair.
+
+```solidity
+function getCurrentPhaseId(
+  address base,
+  address quote
+)
+  external
+  view
+  returns (
+    uint16 currentPhaseId
+  );
+```
+
+### Parameters
+
+* `base`: The base asset address.
+* `quote`: The quote asset address.
+
+### Return Values
+
+* `phaseId`: The current phase id of a base / quote pair.
+
 {% endmarkdown %}
