@@ -37,7 +37,7 @@ The website will walk you through several steps.
     > 🚧 FUNDING NOTE
     > You should fund your contract with more LINK that you anticipate you will need. The network will not check or perform your Upkeep if your balance could be too low based on current exchange rates.
     >
-    > Your balance will be charged LINK based on a 20% premium over the gas cost to `performUpeep`. There's currently a ~80k gas overhead from the registry. The premium and overhead are not fixed and will change over time.
+    > Your balance will be charged LINK based on a 20% premium over the gas cost to `performUpkeep`. There's currently a ~80k gas overhead from the registry. The premium and overhead are not fixed and will change over time.
 
 
 
