@@ -80,7 +80,7 @@ export const NETWORKS = [
     networks: [
       {
         name: "Avalanche Testnet",
-        url: "https://testnet.avascan.info/blockchain/c/address/",
+        url: "https://cchain.explorer.avax-test.network/address/",
         source: "directory-avalanche-fuji-testnet.json",
       },
     ],
@@ -91,7 +91,7 @@ export const NETWORKS = [
     networks: [
       {
         name: "Fantom Testnet",
-        url: "https://explorer.testnet.fantom.network/address/",
+        url: "https://testnet.ftmscan.com/address/",
         source: "directory-fantom-testnet.json",
       },
     ],
