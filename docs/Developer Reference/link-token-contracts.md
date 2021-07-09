@@ -182,7 +182,7 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 |Parameter|Value|
 |:---|:---|
 |`ETH_CHAIN_ID`|`43113`|
-|Address|[`0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846`](https://testnet.avascan.info/blockchain/c/address/0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846)|
+|Address|[`0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846`](https://cchain.explorer.avax-test.network/address/0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846)|
 |Name|ChainLink Token on Avalanche|
 |Symbol|LINK|
 |Decimals|18|
@@ -199,7 +199,7 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 |Parameter|Value|
 |:---|:---|
 |`ETH_CHAIN_ID`|`4002`|
-|Address|[`0xfaFedb041c0DD4fA2Dc0d87a6B0979Ee6FA7af5F`](https://explorer.testnet.fantom.network/address/0xfaFedb041c0DD4fA2Dc0d87a6B0979Ee6FA7af5F)|
+|Address|[`0xfaFedb041c0DD4fA2Dc0d87a6B0979Ee6FA7af5F`](https://testnet.ftmscan.com/address/0xfaFedb041c0DD4fA2Dc0d87a6B0979Ee6FA7af5F)|
 |Name|ChainLink Token on Fantom|
 |Symbol|LINK|
 |Decimals|18|
