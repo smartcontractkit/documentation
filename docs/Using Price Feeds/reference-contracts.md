@@ -44,3 +44,11 @@ For HEC Price Feed Addresses, see [Huobi Eco Chain Price Feeds](../huobi-eco-cha
 ## Avalanche
 
 For Avalanche Price Feed Addresses, see [Avalanche Price Feeds](../avalanche-price-feeds/).
+
+## Fantom
+
+For Fantom Price Feed Addresses, see [Fantom Price Feeds](../fantom-price-feeds/).
+
+## Arbitrum
+
+For Arbitrum Price Feed Addresses, see [Arbitrum Price Feeds](../arbitrum-price-feeds/).
