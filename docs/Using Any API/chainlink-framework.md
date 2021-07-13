@@ -2,7 +2,7 @@
 layout: nodes.liquid
 section: smartContract
 date: Last Modified
-title: "API Reference"
+title: "ChainlinkClient API Reference"
 permalink: "docs/chainlink-framework/"
 ---
 API reference for <a href="https://github.com/smartcontractkit/chainlink/blob/master/evm-contracts/src/v0.6/ChainlinkClient.sol" target="_blank">`ChainlinkClient`</a>.

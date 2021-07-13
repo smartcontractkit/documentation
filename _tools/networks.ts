@@ -80,7 +80,7 @@ export const NETWORKS = [
     networks: [
       {
         name: "Avalanche Testnet",
-        url: "https://testnet.avascan.info/blockchain/c/address/",
+        url: "https://cchain.explorer.avax-test.network/address/",
         source: "directory-avalanche-fuji-testnet.json",
       },
     ],
@@ -91,9 +91,20 @@ export const NETWORKS = [
     networks: [
       {
         name: "Fantom Testnet",
-        url: "https://explorer.testnet.fantom.network/address/",
+        url: "https://testnet.ftmscan.com/address/",
         source: "directory-fantom-testnet.json",
       },
     ],
   },
+  {
+    page: "arbitrum-price-feeds",
+    title: "Arbitrum Price Feeds",
+    networks: [
+      {
+        name: "Arbitrum Rinkeby",
+        url: "https://rinkeby-explorer.arbitrum.io/address/",
+        source: "directory-arbitrum-rinkeby-1.json",
+      },
+    ],
+  }
 ];

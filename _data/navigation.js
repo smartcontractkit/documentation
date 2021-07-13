@@ -130,6 +130,7 @@ module.exports = {
           },
           { title: 'Get the Latest Price', url: '/docs/get-the-latest-price/' },
           { title: 'Historical Price Data', url: '/docs/historical-price-data/' },
+          { title: 'Feed Registry', url: '/docs/feed-registry/' },
           {
             title: 'API Reference',
             url: '/docs/price-feeds-api-reference/',
@@ -168,6 +169,10 @@ module.exports = {
                 title: 'Fantom Price Feeds',
                 url: '/docs/fantom-price-feeds/',
               },
+              {
+                title: 'Arbitrum Price Feeds',
+                url: '/docs/arbitrum-price-feeds/',
+              }
             ],
           },
         ],
@@ -258,11 +263,11 @@ module.exports = {
         contents: [
           {
             title: 'Introduction to Data Provider Nodes',
-            url: '/docs/data-provider-nodes'
+            url: '/docs/data-provider-nodes/'
           },
           {
             title: 'Data Provider Nodes List',
-            url: '/docs/data-provider-nodes-list'
+            url: '/docs/data-provider-nodes-list/'
           }
         ],
       },
