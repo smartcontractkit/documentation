@@ -263,11 +263,11 @@ module.exports = {
         contents: [
           {
             title: 'Introduction to Data Provider Nodes',
-            url: '/docs/data-provider-nodes'
+            url: '/docs/data-provider-nodes/'
           },
           {
             title: 'Data Provider Nodes List',
-            url: '/docs/data-provider-nodes-list'
+            url: '/docs/data-provider-nodes-list/'
           }
         ],
       },
