@@ -17,7 +17,7 @@ Once you have deployed a Keeper compatible contract, we need to register it with
     <a href="https://keeper.chain.link" class="cl-button--ghost solidity-tracked">Chainlink Keepers Website</a>
 </div>
 
-Once registerd, you can interact directly with the [registry contract](https://etherscan.io/address/0x109A81F1E0A35D4c1D0cae8aCc6597cd54b47Bc6#code) functions (`cancelUpkeep`, `addFunds`, etc).
+Once registered, you can interact directly with the [registry contract](https://etherscan.io/address/0x109A81F1E0A35D4c1D0cae8aCc6597cd54b47Bc6#code) functions (`cancelUpkeep`, `addFunds`, etc).
 
 The website will walk you through several steps.
 
@@ -37,7 +37,7 @@ The website will walk you through several steps.
     > 🚧 FUNDING NOTE
     > You should fund your contract with more LINK that you anticipate you will need. The network will not check or perform your Upkeep if your balance could be too low based on current exchange rates.
     >
-    > Your balance will be charged LINK based on a 20% premium over the gas cost to `performUpeep`. There's currently a ~80k gas overhead from the registry. The premium and overhead are not fixed and will change over time.
+    > Your balance will be charged LINK based on a 20% premium over the gas cost to `performUpkeep`. There's currently a ~80k gas overhead from the registry. The premium and overhead are not fixed and will change over time.
 
 
 
