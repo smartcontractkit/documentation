@@ -95,9 +95,9 @@ contract LCXChainlink is ChainlinkClient {
 # Tasks
 
 - [LCX](../external-adapters/)
-- [Multiply](../adapters/#multiply)
-- [EthUint256](../adapters/#ethuint256)
-- [EthTx](../adapters/#ethtx)
+- [Multiply](../core-adapters/#multiply)
+- [EthUint256](../core-adapters/#ethuint256)
+- [EthTx](../core-adapters/#ethtx)
 
 # Request Parameters
 

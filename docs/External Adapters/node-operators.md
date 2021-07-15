@@ -43,7 +43,7 @@ To add jobs which use the bridge, simply give their bridge name to the task type
 }
 ```
 
-Since `randomNumber` is not a [core adapter](../adapters/), it is an external adapter that each node on the request needs to have in order to fulfill the request. If you try to add a task type that does not exist already as a bridge, the job will fail to create.
+Since `randomNumber` is not a [core adapter](../core-adapters/), it is an external adapter that each node on the request needs to have in order to fulfill the request. If you try to add a task type that does not exist already as a bridge, the job will fail to create.
 
 You can also exclude extra parameters from the spec when creating the job. This will allow requesters the ability to specify them per-request:
 

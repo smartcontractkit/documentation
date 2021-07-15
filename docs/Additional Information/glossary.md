@@ -6,21 +6,21 @@ permalink: "docs/glossary/"
 ---
 ### Adapter
 
-An Adapter is a piece of software responsible for executing a specific piece of functionality. A Chainlink node comes with a number of Adapters built in, commonly known as Core Adapters, but can also be extended via [Bridges](./#bridge) to connect with user defined [External Adapters](./#external-adapter). Core Adapters offered by the Chainlink Node by default:
+An Adapter is a piece of software responsible for executing a specific piece of functionality. A Chainlink node comes with a number of Adapters built in, commonly known as Core Adapters, but can also be extended via [Bridges](/docs/node-operators/) to connect with user defined [External Adapters](./#external-adapter). Core Adapters offered by the Chainlink Node by default:
 
-- [Bridge](/docs/adapters/#bridge)
-- [Copy](/docs/adapters/#copy)
-- [EthBytes32](/docs/adapters/#ethbytes32)
-- [EthInt256](/docs/adapters/#ethint256)
-- [EthTx](/docs/adapters/#ethtx)
-- [EthUint256](/docs/adapters/#ethuint256)
-- [HTTPGet](/docs/adapters/#httpget)
-- [HTTPPost](/docs/adapters/#httppost)
-- [JSONParse](/docs/adapters/#jsonparse)
-- [Multiply](/docs/adapters/#multiply)
-- [NoOp](/docs/adapters/#noop)
-- [NoOpPend](/docs/adapters/#nooppend)
-- [Sleep](/docs/adapters/#sleep)
+- [Bridge](/docs/node-operators/)
+- [Copy](/docs/core-adapters/#copy)
+- [EthBytes32](/docs/core-adapters/#ethbytes32)
+- [EthInt256](/docs/core-adapters/#ethint256)
+- [EthTx](/docs/core-adapters/#ethtx)
+- [EthUint256](/docs/core-adapters/#ethuint256)
+- [HTTPGet](/docs/core-adapters/#httpget)
+- [HTTPPost](/docs/core-adapters/#httppost)
+- [JSONParse](/docs/core-adapters/#jsonparse)
+- [Multiply](/docs/core-adapters/#multiply)
+- [NoOp](/docs/core-adapters/#noop)
+- [NoOpPend](/docs/core-adapters/#nooppend)
+- [Sleep](/docs/core-adapters/#sleep)
 
 ### Answer
 
@@ -39,7 +39,7 @@ addExternalRequest`, that gives consuming contracts the ability to safely check 
 
 ### Encumbrance Parameters
 
-Encumbrance parameters are the part of a [service agreement](#service-agreement) that can be enforced on-chain. Information on encumbrance parameters can be found <a href="https://github.com/smartcontractkit/chainlink/wiki/Protocol-Information#encumbrance" target="_blank">on our Wiki</a>.
+Encumbrance parameters are the part of a [service agreement](#service-agreement) that can be enforced on-chain. Information on encumbrance parameters can be found <a href="https://github.com/smartcontractkit/chainlink/wiki/Service-Agreements-and-the-Coordinator-Contract" target="_blank">on our Wiki</a>.
 
 ### External Adapter
 
@@ -49,7 +49,7 @@ A Chainlink node communicates with external adapters by sending a POST request w
 
 ### Function Selector
 
-A [function selector](https://solidity.readthedocs.io/en/develop/abi-spec.html/#function-selector) specifies the function to be called in Ethereum. It is the first four bytes of the call data for a function call in an Ethereum transaction. Solidity contracts have a built-in helper method to access the function selector by using `this.myFunction.selector`, where `myFunction` is a non-overloaded function in the contract.
+A [function selector](https://docs.soliditylang.org/en/develop/abi-spec.html#function-selector) specifies the function to be called in Ethereum. It is the first four bytes of the call data for a function call in an Ethereum transaction. Solidity contracts have a built-in helper method to access the function selector by using `this.myFunction.selector`, where `myFunction` is a non-overloaded function in the contract.
 
 ### Initiator
 
@@ -64,7 +64,7 @@ Available initiators are:
 - web
 - execagreement
 
-Currently only the `runlog` and `execagreement` can be used with payment to the node operator. These initiators will use the node configured [MINIMUM_CONTRACT_PAYMENT_LINK_JUELS](../configuration-variables/#minimum_contract_payment), plus any additional payment if there is a bridge in the given [JobID](#jobid) or [SAID](#said) configured with a payment specified, to determine whether or not enough payment was sent along with the request.
+Currently only the `runlog` and `execagreement` can be used with payment to the node operator. These initiators will use the node configured [MINIMUM_CONTRACT_PAYMENT_LINK_JUELS](../configuration-variables/#minimum_contract_payment_link_juels), plus any additional payment if there is a bridge in the given [JobID](#jobid) or [SAID](#said) configured with a payment specified, to determine whether or not enough payment was sent along with the request.
 
 ### Job
 
@@ -91,7 +91,7 @@ Entity which connects computations on blockchains with off-chain resources. Typi
 
 ### Oracle Contract
 
-The on-chain component of an [Oracle](#oracle). The Oracle Contract is the interface through which [Consuming Contracts](#consumer-contract-) pass and receive data with off-chain resources.
+The on-chain component of an [Oracle](#oracle). The Oracle Contract is the interface through which [Consuming Contracts](#consumer-contract) pass and receive data with off-chain resources.
 
 ### Oracle Node
 
@@ -99,7 +99,7 @@ The off-chain component of an [Oracle](#oracle).
 
 ### Requester
 
-A Smart Contract or Externally Owned Account which requests data from an [Oracle](#oracle). The Requester does not have to be the same entity as the [Consumer](#consumer-contract-) but commonly is the same.
+A Smart Contract or Externally Owned Account which requests data from an [Oracle](#oracle). The Requester does not have to be the same entity as the [Consumer](#consumer-contract) but commonly is the same.
 
 ### Request Parameters
 
@@ -111,7 +111,7 @@ Short-hand for a [Job Run](#job-run), sometimes a [Task Run](#task-run).
 
 ### Run Result
 
-A Run Result is the result of executing a [Job Spec](#job-spec) or [Task Spec](#task-spec). A Run Result is made up of a JSON blob, a [Run Status](#run-status), and an optional error field. Run Results are stored on [Job Runs](#job-run) and [Task Runs](#task-runs).
+A Run Result is the result of executing a [Job Spec](#job-spec) or [Task Spec](#task-spec). A Run Result is made up of a JSON blob, a [Run Status](#run-status), and an optional error field. Run Results are stored on [Job Runs](#job-run) and [Task Runs](#task-run).
 
 ### Run Status
 
@@ -131,7 +131,7 @@ The ID associated with a given [Service Agreement](#service-agreement).
 
 ### Service Agreement
 
-The Service agreement consists of a [Job Spec](#job-spec) and a set of [encumbrance parameters](#encumbrance-parameters) that is shared among a creator and multiple Chainlink nodes. Information on service agreements can be found <a href="https://github.com/smartcontractkit/chainlink/wiki/Protocol-Information#service-agreements" target="_blank">on our Wiki</a>.
+The Service agreement consists of a [Job Spec](#job-spec) and a set of [encumbrance parameters](#encumbrance-parameters) that is shared among a creator and multiple Chainlink nodes. Information on service agreements can be found [on our Wiki](https://github.com/smartcontractkit/chainlink/wiki/Service-Agreements-and-the-Coordinator-Contract).
 
 ### Spec
 

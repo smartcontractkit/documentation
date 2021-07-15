@@ -5,7 +5,7 @@ date: Last Modified
 title: "ChainlinkClient API Reference"
 permalink: "docs/chainlink-framework/"
 ---
-API reference for <a href="https://github.com/smartcontractkit/chainlink/blob/master/evm-contracts/src/v0.6/ChainlinkClient.sol" target="_blank">`ChainlinkClient`</a>.
+API reference for <a href="https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.6/ChainlinkClient.sol" target="_blank">`ChainlinkClient`</a>.
 
 # Index
 
@@ -93,7 +93,7 @@ API reference for <a href="https://github.com/smartcontractkit/chainlink/blob/ma
 [block:parameters]
 {
   "data": {
-    "0-0": "**<a href=\"#LINK\">LINK</a>**",
+    "0-0": "**<a href=\"#link\">LINK</a>**",
     "0-1": "Helper uint256 to represent the divisibility of a LINK token. Equivalent to 10^18",
     "h-0": "Name",
     "h-1": "Description"
@@ -432,7 +432,7 @@ If your Oracle provider supports using ENS for rolling upgrades to their oracle 
 {
   "type": "warning",
   "title": "Updating oracle addresses",
-  "body": "If an oracle provider supports listing their oracle on ENS, that provides the added security of being able to update any issues that may arise. The tradeoff here is that by using their ENS record, you are allowing whoever controls that record and the corresponding code it points to. If your contract does this, you must either audit the updated code and make sure it matches <a href=\"https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/src/v0.4/Oracle.sol\" target=\"_blank\" rel=\"noreferrer, noopener\">Oracle.sol</a> or trust whoever can update the records."
+  "body": "If an oracle provider supports listing their oracle on ENS, that provides the added security of being able to update any issues that may arise. The tradeoff here is that by using their ENS record, you are allowing whoever controls that record and the corresponding code it points to. If your contract does this, you must either audit the updated code and make sure it matches <a href=\"https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.4/Oracle.sol\" target=\"_blank\" rel=\"noreferrer, noopener\">Oracle.sol</a> or trust whoever can update the records."
 }
 [/block]
 
@@ -465,7 +465,7 @@ This method only works after [useChainlinkWithENS](#usechainlinkwithens) has bee
 [block:callout]
 {
   "type": "warning",
-  "body": "If an oracle provider supports listing their oracle on ENS, that provides the added security of being able to update any issues that may arise. The tradeoff here is that by using their ENS record, you are allowing whoever controls that record and the corresponding code it points to. If your contract does this, you must either audit the updated code and make sure it matches <a href=\"https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/src/v0.4/Oracle.sol\" target=\"_blank\" rel=\"noreferrer, noopener\">Oracle.sol</a> or trust whoever can update the records.",
+  "body": "If an oracle provider supports listing their oracle on ENS, that provides the added security of being able to update any issues that may arise. The tradeoff here is that by using their ENS record, you are allowing whoever controls that record and the corresponding code it points to. If your contract does this, you must either audit the updated code and make sure it matches <a href=\"https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.4/Oracle.sol\" target=\"_blank\" rel=\"noreferrer, noopener\">Oracle.sol</a> or trust whoever can update the records.",
   "title": "Updating oracle addresses"
 }
 [/block]

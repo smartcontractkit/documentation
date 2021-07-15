@@ -86,7 +86,7 @@ Read our [blog post here](https://blog.chain.link/winners-of-the-chainlink-virtu
 |**Cerebus Wallet**<br />🥈|Two-factor authorization for crypto transactions using phone push notifications.|[Go](https://github.com/MikaelLazarev/cerberus)|
 |**Flyt**<br />🥉|Flight insurance.|[Go](https://github.com/robin-thomas/flyt)|
 |**Link Total Return Swap**|A Defi platform which enables Chainlink Node Operators to hedge against LINK price volatility.|[Go](https://github.com/securedatalinks/LinkTRS)|
-|**Smart Marketing Campaigns**|Use Google Analytics data to make payments to marketing agencies.|[Go](https://github.com/Pega88/chainlink-smart-marketing-campaigns)|
+|**Smart Marketing Campaigns**|Use Google Analytics data to make payments to marketing agencies.|[Go](https://coinlist.co/build/chainlink/projects/6106f616-f9d8-4fec-85d7-c9f98bf8bd9e)|
 |**Steam Trader**|Trustless trading of digital items.|[Go](https://github.com/brent-riva/Steam-Trader" rel="noreferrer, noopener">Go</a>|
 |**Contractor**|Constructor of smart contracts.|[Go](https://github.com/alekcangp/ChainLinkContractor)|
 |**Fiat Gateway**|Crypto Fiat Gateway on Ethereum using Chainlink Oracles|[Go](https://github.com/chatch/fiat-gateway)|
@@ -99,7 +99,7 @@ Read our [blog post here](https://blog.chain.link/showcasing-the-winners-of-the-
 |Name|Description|GitHub|
 |:---|:---|:---|
 |**Chainlink \u2661 Augur**<br />🥇|Create derivatives based on the valuations of startups.|[Go](https://github.com/jasperdg/flux-ethberlinzwei)|
-|**VollgasDAO**<br />🥈|Gas futures.|[Go](https://github.com/vollgasDao/vollGasDaoReact)|
+|**VollgasDAO**<br />🥈|Gas futures.|[Go](https://devpost.com/software/vollgas-futures)|
 |**Etherflare**<br />🥉|Reward white hat hackers.|[Go](https://github.com/EtherFlareGraph/etherflare)|
 
 ## ETHNewYork 2019

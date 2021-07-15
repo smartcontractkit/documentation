@@ -27,7 +27,7 @@ function requestMWAPrice(string _coin, string _market)
 
 ### Using the Copy adapter with an External Adapter
 
-The [Copy](../adapters/#copy) adapter allows for the same functionality of the [JsonParse](../adapters/#jsonparse)  adapter but for getting data from the external adapter's response.
+The [Copy](../core-adapters/#copy) adapter allows for the same functionality of the [JsonParse](../core-adapters/#jsonparse)  adapter but for getting data from the external adapter's response.
 
 For example, if an adapter returns JSON data like what is below:
 

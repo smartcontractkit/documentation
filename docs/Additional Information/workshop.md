@@ -10,7 +10,7 @@ permalink: "docs/workshop/"
 }
 [/block]
 Demo contract: <a href="https://remix.ethereum.org/#gist=070948b314a98bbab72fd8aafb9ca42a&optimize=true&version=soljson-v0.4.24+commit.e67f0147.js&evmVersion=null&appVersion=0.7.7" target="_blank">AliceAndBob.sol</a>
-Protocol Information: <a href="https://github.com/smartcontractkit/chainlink/wiki/Protocol-Information#service-agreements" target="_blank">Service Agreements</a>
+Protocol Information: <a href="https://github.com/smartcontractkit/chainlink/wiki/Service-Agreements-and-the-Coordinator-Contract" target="_blank">Service Agreements</a>
 [block:api-header]
 {
   "title": "ETHNYC Workshop 2019"
