@@ -2,7 +2,7 @@
 layout: nodes.liquid
 section: smartContract
 date: Last Modified
-title: "Contract Addresses"
+title: "Price Feeds Contract Addresses"
 permalink: "docs/reference-contracts/"
 whatsnext: {"ENS":"/docs/ens/", "Ethereum Price Feeds":"/docs/ethereum-addresses/", "Binance Smart Chain Price Feeds":"/docs/binance-smart-chain-addresses/", "Polygon (Matic) Price Feeds":"/docs/matic-addresses/", "xDai Price Feeds":"/docs/xdai-price-feeds/", "Huobi Eco Chain Price Feeds":"/docs/huobi-eco-chain-price-feeds/", "Avalanche Price Feeds":"/docs/avalanche-price-feeds/"}
 metadata: 

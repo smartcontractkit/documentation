@@ -2,7 +2,7 @@
 layout: nodes.liquid
 section: smartContract
 date: Last Modified
-title: "API Reference"
+title: "Chainlink VRF API Reference"
 permalink: "docs/chainlink-vrf-api-reference/"
 metadata: 
   title: "Chainlink VRF API Reference"

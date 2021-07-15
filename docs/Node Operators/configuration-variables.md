@@ -332,7 +332,7 @@ Specifies the addresses/URLs of allowed connections to the API on `CLIENT_NODE_U
 
 - Default: `"6688"`
 
-Port used for the [API Reference](../api-reference/) and GUI.
+Port used for the [Chainlink Node API Reference](../chainlink-node-api-reference/) and GUI.
 
 
 ## CLIENT_NODE_URL
