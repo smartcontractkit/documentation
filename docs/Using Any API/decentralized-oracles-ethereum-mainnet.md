@@ -54,11 +54,11 @@ For Faucet details, please refer to [LINK Token Contracts](../link-token-contrac
 
 |Adapters|Job ID|Parameters|
 |--------------------------------|----------------------------------|--------------------------------------------------------------|
-|[HttpGet](../adapters/#httpget)<br>[JsonParse](../adapters/#jsonparse)<br>[EthBytes32](../adapters/#ethbytes32)|`50fc4215f89443d185b061e5d7af9490 `|`get` (string)<br>`path` (dot-delimited string or array of strings)|
-|[HttpPost](../adapters/#httppost)<br>[JsonParse](../adapters/#jsonparse)<br>[EthBytes32](../adapters/#ethbytes32)|`b9fd06bb42dd444db1b944849cbffb11 `|`post` (string)<br>`path` (dot-delimited string or array of strings)|
-|[HttpGet](../adapters/#httpget)<br>[JsonParse](../adapters#jsonparse)<br>[Multiply](../adapters/#secion-multiply)<br>[EthInt256](../adapters/#ethint256)|`ad752d90098243f8a5c91059d3e5616c `|`get` (string)<br>`path` (dot-delimited string or array of strings)<br>`times` (int) (optional)|
-|[HttpGet](../adapters/#httpget)<br>[JsonParse](../adapters#jsonparse)<br>[Multiply](../adapters/#secion-multiply)<br>[EthUint256](../adapters/#ethuint256)|`29fa9aa13bf1468788b7cc4a500a45b8 `|`get` (string)<br>`path` (dot-delimited string or array of strings)<br>`times` (int) (optional)|
-|[HttpGet](../adapters/#httpget)<br>[JsonParse](../adapters/#jsonparse)<br>[EthBool](../adapters/#ethbool)|`6d914edc36e14d6c880c9c55bda5bc04 `|`get` (string)<br>`path` (dot-delimited string or array of strings)|
+|[HttpGet](../core-adapters/#httpget)<br>[JsonParse](../core-adapters/#jsonparse)<br>[EthBytes32](../core-adapters/#ethbytes32)|`50fc4215f89443d185b061e5d7af9490 `|`get` (string)<br>`path` (dot-delimited string or array of strings)|
+|[HttpPost](../core-adapters/#httppost)<br>[JsonParse](../core-adapters/#jsonparse)<br>[EthBytes32](../core-adapters/#ethbytes32)|`b9fd06bb42dd444db1b944849cbffb11 `|`post` (string)<br>`path` (dot-delimited string or array of strings)|
+|[HttpGet](../core-adapters/#httpget)<br>[JsonParse](../core-adapters#jsonparse)<br>[Multiply](../core-adapters/#multiply)<br>[EthInt256](../core-adapters/#ethint256)|`ad752d90098243f8a5c91059d3e5616c `|`get` (string)<br>`path` (dot-delimited string or array of strings)<br>`times` (int) (optional)|
+|[HttpGet](../core-adapters/#httpget)<br>[JsonParse](../core-adapters#jsonparse)<br>[Multiply](../core-adapters/#multiply)<br>[EthUint256](../core-adapters/#ethuint256)|`29fa9aa13bf1468788b7cc4a500a45b8 `|`get` (string)<br>`path` (dot-delimited string or array of strings)<br>`times` (int) (optional)|
+|[HttpGet](../core-adapters/#httpget)<br>[JsonParse](../core-adapters/#jsonparse)<br>[EthBool](../core-adapters/#ethbool)|`6d914edc36e14d6c880c9c55bda5bc04 `|`get` (string)<br>`path` (dot-delimited string or array of strings)|
 
 ## Rinkeby
 [block:callout]
@@ -78,8 +78,8 @@ For Faucet details, please refer to [LINK Token Contracts](../link-token-contrac
 
 |Adapters|Job ID|Parameters|
 |--------------------------------|----------------------------------|--------------------------------------------------------------|
-|[HttpGet](../adapters/#httpget)<br>[JsonParse](../adapters/#jsonparse)<br>[EthBytes32](../adapters/#ethbytes32)|`b0bde308282843d49a3a8d2dd2464af1`|`get` (string)<br>`path` (dot-delimited string or array of strings)|
-|[HttpPost](../adapters/#httppost)<br>[JsonParse](../adapters/#jsonparse)<br>[EthBytes32](../adapters/#ethbytes32)|`c28c092ad6f045c79bdbd54ebb42ce4d `|`post` (string)<br>`path` (dot-delimited string or array of strings)|
-|[HttpGet](../adapters/#httpget)<br>[JsonParse](../adapters#jsonparse)<br>[Multiply](../adapters/#secion-multiply)<br>[EthInt256](../adapters/#ethint256)|`c8084988f0b54520ba17945c4a2ab7bc `|`get` (string)<br>`path` (dot-delimited string or array of strings)<br>`times` (int) (optional)|
-|[HttpGet](../adapters/#httpget)<br>[JsonParse](../adapters#jsonparse)<br>[Multiply](../adapters/#secion-multiply)<br>[EthUint256](../adapters/#ethuint256)|`6d1bfe27e7034b1d87b5270556b17277 `|`get` (string)<br>`path` (dot-delimited string or array of strings)<br>`times` (int) (optional)|
-|[HttpGet](../adapters/#httpget)<br>[JsonParse](../adapters/#jsonparse)<br>[EthBool](../adapters/#ethbool)|`4ce9b71a1ac94abcad1ff9198e760b8c`|`get` (string)<br>`path` (dot-delimited string or array of strings)|
+|[HttpGet](../core-adapters/#httpget)<br>[JsonParse](../core-adapters/#jsonparse)<br>[EthBytes32](../core-adapters/#ethbytes32)|`b0bde308282843d49a3a8d2dd2464af1`|`get` (string)<br>`path` (dot-delimited string or array of strings)|
+|[HttpPost](../core-adapters/#httppost)<br>[JsonParse](../core-adapters/#jsonparse)<br>[EthBytes32](../core-adapters/#ethbytes32)|`c28c092ad6f045c79bdbd54ebb42ce4d `|`post` (string)<br>`path` (dot-delimited string or array of strings)|
+|[HttpGet](../core-adapters/#httpget)<br>[JsonParse](../core-adapters#jsonparse)<br>[Multiply](../core-adapters/#multiply)<br>[EthInt256](../core-adapters/#ethint256)|`c8084988f0b54520ba17945c4a2ab7bc `|`get` (string)<br>`path` (dot-delimited string or array of strings)<br>`times` (int) (optional)|
+|[HttpGet](../core-adapters/#httpget)<br>[JsonParse](../core-adapters#jsonparse)<br>[Multiply](../core-adapters/#multiply)<br>[EthUint256](../core-adapters/#ethuint256)|`6d1bfe27e7034b1d87b5270556b17277 `|`get` (string)<br>`path` (dot-delimited string or array of strings)<br>`times` (int) (optional)|
+|[HttpGet](../core-adapters/#httpget)<br>[JsonParse](../core-adapters/#jsonparse)<br>[EthBool](../core-adapters/#ethbool)|`4ce9b71a1ac94abcad1ff9198e760b8c`|`get` (string)<br>`path` (dot-delimited string or array of strings)|

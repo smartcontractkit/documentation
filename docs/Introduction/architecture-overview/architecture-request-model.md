@@ -18,7 +18,7 @@ All source code is open source and available in our <a href="https://github.com/
 
 ## ChainlinkClient
 
-<a href="https://github.com/smartcontractkit/chainlink/blob/master/evm-contracts/src/v0.6/ChainlinkClient.sol" target="_blank">`ChainlinkClient`</a> is a parent contract that enables smart contracts to consume data from oracles. It's available in the Chainlink smart contract library which can be [installed using the latest package managers](../create-a-chainlinked-project/).
+<a href="https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.6/ChainlinkClient.sol" target="_blank">`ChainlinkClient`</a> is a parent contract that enables smart contracts to consume data from oracles. It's available in the Chainlink smart contract library which can be [installed using the latest package managers](../create-a-chainlinked-project/).
 
 The client constructs and makes a request to a known Chainlink oracle through the `transferAndCall` function, implemented by the LINK token. This request contains encoded information that is required for the cycle to succeed. In the `ChainlinkClient` contract, this call is initiated with a call to `sendChainlinkRequestTo`.
 
@@ -32,7 +32,7 @@ Learn more about [ERC-677 and the LINK token](../link-token-contracts/).
 
 ## Oracle Contract
 
-<a href="https://github.com/smartcontractkit/chainlink/blob/master/evm-contracts/src/v0.6/Oracle.sol" target="_blank">`Oracle`</a> contracts are owned by oracle node operators, which run alongside off-chain oracle nodes. 
+<a href="https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.6/Oracle.sol" target="_blank">`Oracle`</a> contracts are owned by oracle node operators, which run alongside off-chain oracle nodes. 
 
 ### Request
 
@@ -44,7 +44,7 @@ The client contract that initiates this cycle must create a request with:
 
 To learn about how to find oracles to suit your needs, see [Find Existing Jobs](../listing-services/).
 
-Oracle contracts are responsible for handling on-chain requests made through the LINK token, by implementing `onTokenTransfer` as a <a href="https://github.com/smartcontractkit/chainlink/blob/master/evm-contracts/src/v0.6/LinkTokenReceiver.sol" target="_blank">`LinkTokenReceiver`</a>. Upon execution of this function, the oracle contract **emits an `OracleRequest` event** containing information about the request. This event is crucial, as it is monitored by the off-chain oracle node which acts upon it.
+Oracle contracts are responsible for handling on-chain requests made through the LINK token, by implementing `onTokenTransfer` as a <a href="https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.6/LinkTokenReceiver.sol" target="_blank">`LinkTokenReceiver`</a>. Upon execution of this function, the oracle contract **emits an `OracleRequest` event** containing information about the request. This event is crucial, as it is monitored by the off-chain oracle node which acts upon it.
 
 ### Fulfillment
 
