@@ -14,7 +14,7 @@ All tasks share a few common attributes:
 
 `index`: when a task has more than one input (or the pipeline overall needs to support more than one final output), and the ordering of the values matters, the index parameter can be used to specify that ordering.
 
-```toml
+```dot
 data_1 [type="http" method="get" url="https://chain.link/eth_usd"       index=0]
 data_2 [type="http" method="get" url="https://chain.link/eth_dominance" index=1]
 multiword_abi_encode [type="eth_abi_encode" method="fulfill(uint256,uint256)"]
@@ -47,7 +47,7 @@ A string containing the response body.
 
 **Example**
 
-```toml
+```dot
 my_bridge_task [type="bridge"
                 name="some_bridge"
                 requestData="{\\"foo\\": \\"bar\\"}"
@@ -82,7 +82,7 @@ Count: 0.
 
 A string containing the response body.
 
-```toml
+```dot
 my_http_task [type="http"
               method="put"
               url="http://chain.link"
@@ -111,7 +111,7 @@ The value at the provided keypath.
 
 **Example**
 
-```toml
+```dot
 my_json_task [type="jsonparse"
               path="data,price"]
 ```
@@ -138,7 +138,7 @@ The median of these inputs.
 
 **Example**
 
-```toml
+```dot
 my_median_task [type="median"
                 allowedFaults=3]
 ```
@@ -165,7 +165,7 @@ The result of the multiplication.
 
 **Example**
 
-```toml
+```dot
 my_multiply_task [type="multiply"
                   times=3]
 ```
