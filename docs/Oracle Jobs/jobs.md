@@ -6,8 +6,6 @@ permalink: "docs/jobs/"
 whatsnext: {"Tasks":"/docs/tasks/"}
 ---
 
-# Jobs
-
 ## What is a Job?
 
 NOTE: This page refers to the latest version of Chainlink jobs (otherwise known as TOML, or V2 jobs). For documentation on the legacy job format, see [V1 job specs](/docs/job-specifications).

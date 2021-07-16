@@ -6,8 +6,6 @@ permalink: "docs/tasks/"
 whatsnext: {"Introduction to External Adapters":"/docs/external-adapters/", "Jobs":"/docs/jobs/"}
 ---
 
-# Pipeline task types
-
 ## Shared attributes
 
 All tasks share a few common attributes:
