@@ -5,6 +5,15 @@ title: "Core Adapters"
 permalink: "docs/core-adapters/"
 whatsnext: {"Introduction to External Adapters":"/docs/external-adapters/", "Initiators":"/docs/initiators/"}
 ---
+
+# DEPRECATED
+
+NOTE: The style of adapter described below (otherwise known as a JSON adapter or V1 adapter) is deprecated and will be removed in Chainlink 1.0.0.
+
+Please refer to [V2 job tasks](/docs/tasks) instead.
+
+## Adapters
+
 Core adapters are the built-in functionality that every Chainlink node supports. Strung together, they act as tasks that need to be performed to complete a Job.
 
 Adapters that are prefixed with "Eth" refer to tasks that post data onto the chain. Here are some examples of the data types that adapters convert data to.
@@ -386,93 +395,3 @@ req.addUint("until", now + 1 hours);
   ]
 }
 ```
-
-## Resultcollect
-
-The core adapter will collect a response from another adapter for transmitting after the rest of the pipeline completes. 
-#### Parameters
-
-*None*
-
-#### Job Specification example
-
-
-```JSON
-{
-  "initiators": [
-    {
-      "type": "runlog"
-    }
-  ],
-  "tasks": [
-    {
-      "type": "httpget",
-      "params": {
-        "get": "https://min-api.cryptocompare.com/data/price?fsym=BTC&tsyms=USD,JPY,EUR"
-      }
-    },
-    {
-      "type": "jsonparse",
-      "params": {
-        "path": [
-          "USD"
-        ]
-      }
-    },
-    {
-      "type": "multiply",
-      "params": {
-        "times": 100
-      }
-    },
-    {
-      "jobSpecId": "bcf76dc27fd4484fab681d3f239cd2c3",
-      "type": "ethuint256"
-    },
-    {
-      "jobSpecId": "bcf76dc27fd4484fab681d3f239cd2c3",
-      "type": "resultcollect"
-    },
-    {
-      "type": "httpget",
-      "params": {
-        "get": "https://min-api.cryptocompare.com/data/price?fsym=BTC&tsyms=USD,JPY,EUR"
-      }
-    },
-    {
-      "type": "jsonparse",
-      "params": {
-        "path": [
-          "EUR"
-        ]
-      }
-    },
-    {
-      "type": "multiply",
-      "params": {
-        "times": 100
-      }
-    },
-    {
-      "jobSpecId": "bcf76dc27fd4484fab681d3f239cd2c3",
-      "type": "ethuint256"
-    },
-    {
-      "jobSpecId": "bcf76dc27fd4484fab681d3f239cd2c3",
-      "type": "resultcollect"
-    },
-    {
-      "type": "ethtx",
-      "confirmations": 1,
-      "params": {
-        "abiEncoding": [
-          "bytes32",
-          "bytes32",
-          "bytes32"
-        ]
-      }
-    }
-  ]
-}
-```
-

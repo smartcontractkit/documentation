@@ -6,6 +6,21 @@ permalink: "docs/initiators/"
 whatsnext: {"Introduction to External Initiators":"/docs/external-initiators-introduction/"}
 ---
 
+# DEPRECATED
+
+NOTE: Initiators are deprecated and will be removed in Chainlink 1.0.0.
+
+Please refer to [V2 jobs](/docs/jobs) instead.
+
+## Initiators
+
+[block:api-header]
+{
+  "title": "Cron"
+}
+[/block]
+The `Cron` initiator is a simple way to schedule recurring job runs, using <a href="https://en.wikipedia.org/wiki/Cron#Overview" target="_blank">standard cron syntax</a>.
+
 ## Cron
 
 The `Cron` initiator is a simple way to schedule recurring job runs, using [standard cron syntax](https://en.wikipedia.org/wiki/Cron#Overview).
@@ -194,5 +209,11 @@ NOTE: For convenience, there is a "Run" button in the operator web UI for the jo
     {
         "type": "web"
     }
+<<<<<<< HEAD
 ]
 ```
+=======
+  ]
+}
+[/block]
+>>>>>>> Update docs to deprecate V1 and add basic V2 job
