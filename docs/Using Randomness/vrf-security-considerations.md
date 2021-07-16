@@ -65,7 +65,7 @@ Otherwise, the cryptoeconomic security properties may be violated by an attacker
 
 If your fulfillRandomness implementation reverts, the VRF service will not attempt to call it a second time. Make sure your contract logic does not revert. Consider simply storing the randomness and taking more complex follow-on actions in separate contract calls made by you or your users.
 
-> ✅NOTE
+> ✅ NOTE
 > If your implementation does revert, you can independently re-send the fullfilment transaction to ensure that all requests issued by your contract are fulfilled, but the VRF service won't do so on your behalf.)
 
 ## Use `VRFConsumerBase` in your contract, to interact with the VRF service

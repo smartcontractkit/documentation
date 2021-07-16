@@ -604,7 +604,8 @@ Enables or disables the node writing to the `$ROOT/log.jsonl` file.
 
 The number of block confirmations to wait before kicking off a job run. Setting this to a lower value improves node response time at the expense of occasionally submitting duplicate transactions in the event of chain re-orgs (duplicate transactions are harmless but cost some eth).
 
-NOTE: The lowest value allowed here is 1, since setting to 0 would imply that logs are processed from the mempool before they are even mined into a block, which isn't possible with Chainlink's current architecture.
+> ⚠️ NOTE
+> The lowest value allowed here is 1, since setting to 0 would imply that logs are processed from the mempool before they are even mined into a block, which isn't possible with Chainlink's current architecture.
 
 ## ETH_NONCE_AUTO_SYNC
 
@@ -699,7 +700,8 @@ See eth_resender.go for more details
 
 ## MINIMUM_CONTRACT_PAYMENT_LINK_JUELS
 
-NOTE: This was formerly called MINIMUM_CONTRACT_PAYMENT, it will be removed in a future release.
+> ⚠️ NOTE
+> This was formerly called MINIMUM_CONTRACT_PAYMENT, it will be removed in a future release.
 
 - Default: _automatically set based on Chain ID, typically 100000000000000 (0.0001 LINK) on all chains except mainnet, where it is 1 LINK_
 
@@ -785,7 +787,8 @@ In deployments with very high burst rates, or on chains with large re-orgs, you 
 
 # Misc notes
 
-NOTE: Some env vars require a duration. A duration string is a possibly signed sequence of decimal numbers, each with optional fraction and a unit suffix, such as "300ms", "-1.5h" or "2h45m". Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h". Some examples:
+> ⚠️ NOTE
+> Some env vars require a duration. A duration string is a possibly signed sequence of decimal numbers, each with optional fraction and a unit suffix, such as "300ms", "-1.5h" or "2h45m". Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h". Some examples:
 
 `10ms`
 `1h15m`
