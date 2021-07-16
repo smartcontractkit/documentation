@@ -36,7 +36,7 @@ Note, the below values have to be configured correctly for VRF requests to work.
 > Requesting randomness will fail unless your deployed contract has enough LINK to pay for it. **Learn how to [Acquire testnet LINK](../acquire-link/) and [Fund your contract](../fund-your-contract/)**.
 
 <div class="remix-callout">
-    <a href="https://remix.ethereum.org/#version=soljson-v0.6.6+commit.6c089d02.js&optimize=false&evmVersion=null&gist=f47e4eae5f2ffa7868ef4ecd5bda9044&runs=200" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
+    <a href="https://remix.ethereum.org/#version=soljson-v0.6.6+commit.6c089d02.js&optimize=false&evmVersion=null&gist=81aaa1ef3897ec2812f314a3a79618d9&runs=200" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
     <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
 </div>
 
