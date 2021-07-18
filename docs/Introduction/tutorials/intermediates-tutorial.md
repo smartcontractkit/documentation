@@ -77,7 +77,7 @@ The contract will have the following functions:
 [/block]
 ## 4a. Importing `VRFConsumerBase`
 
-Chainlink maintains a <a href="https://github.com/smartcontractkit/chainlink/tree/develop/evm-contracts" target="_blank">library of contracts</a> that make consuming data from oracles easier. For Chainlink VRF, we use a contract called <a href="https://github.com/smartcontractkit/chainlink/blob/master/evm-contracts/src/v0.6/VRFConsumerBase.sol" target="_blank">`VRFConsumerBase`</a>, which needs to be imported and extended from.
+Chainlink maintains a <a href="https://github.com/smartcontractkit/chainlink/tree/develop/contracts" target="_blank">library of contracts</a> that make consuming data from oracles easier. For Chainlink VRF, we use a contract called <a href="https://github.com/smartcontractkit/chainlink/blob/master/evm-contracts/src/v0.6/VRFConsumerBase.sol" target="_blank">`VRFConsumerBase`</a>, which needs to be imported and extended from.
 
 ```javascript
 pragma solidity 0.6.6;
