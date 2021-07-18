@@ -2,8 +2,7 @@
 layout: nodes.liquid
 section: smartContract
 date: Last Modified
-title: 'Chainlink Keepers Best Practices'
-permalink: 'docs/chainlink-keepers/best-practices/'
+title: 'Chainlink Keepers Frequently Asked Questions'
 ---
 {% include keepers-beta %}
 
