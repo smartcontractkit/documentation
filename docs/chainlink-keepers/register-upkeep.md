@@ -3,23 +3,22 @@ layout: nodes.liquid
 section: smartContract
 date: Last Modified
 title: 'Register Keeper Upkeep for a Contract'
-permalink: 'docs/chainlink-keepers/register-upkeep/'
 whatsnext:
   {
-    'Overview of the Chainlink Keeper Network': '/docs/chainlink-keepers/overview/',
+    'Patterns and Best Practices': '/docs/chainlink-keepers/best-practices/',
   }
 ---
 {% include keepers-beta %}
 
-Once you have deployed a Keeper compatible contract, we need to register it with the Chainlink Keeper Network. You must do this via the [Chainlink Keepers Website](https://keeper.chain.link).
+Once you have deployed a Keeper compatible contract, we need to register it with the Chainlink Keeper Network. You must do this via the [Chainlink Keepers App](https://keeper.chain.link).
 
 <div class="remix-callout">
-    <a href="https://keeper.chain.link" class="cl-button--ghost solidity-tracked">Chainlink Keepers Website</a>
+    <a href="https://keeper.chain.link" class="cl-button--ghost solidity-tracked">Chainlink Keepers App</a>
 </div>
 
 Once registered, you can interact directly with the [registry contract](https://etherscan.io/address/0x109A81F1E0A35D4c1D0cae8aCc6597cd54b47Bc6#code) functions (`cancelUpkeep`, `addFunds`, etc).
 
-The website will walk you through several steps.
+The App will walk you through several steps.
 
 # 5 Steps to register and fund Upkeep on the Chainlink Keeper Network
 
@@ -52,7 +51,7 @@ The website will walk you through several steps.
 1. **Add funds to your Upkeep**
   Your contract was provided initial funding as part of the registration step, but once this runs out, you'll need to add more LINK to your Upkeep.
 
-  * Click `View Upkeep` or navigate back to the [home page of the Chainlink Keepers Website](https://keeper.chain.link) and click on your recently registered Upkeep
+  * Click `View Upkeep` or navigate back to the [home page of the Chainlink Keepers App](https://keeper.chain.link) and click on your recently registered Upkeep
   * Press `Add funds` button
   * Approve the LINK spend allowance
     ![approve-allowance](/images/contract-devs/keeper/keeper-approve-allowance.png)

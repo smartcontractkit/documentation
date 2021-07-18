@@ -193,6 +193,7 @@ module.exports = {
           { title: 'Introduction', url: '/docs/chainlink-keepers/introduction/' },
           { title: 'Making Compatible Contracts', url: '/docs/chainlink-keepers/compatible-contracts/' },
           { title: 'Register Upkeep for a Contract', url: '/docs/chainlink-keepers/register-upkeep/' },
+          { title: 'Patterns and Best Practices', url: '/docs/chainlink-keepers/best-practices/' },
           { title: 'Network Overview', url: '/docs/chainlink-keepers/overview/' },
         ],
       },

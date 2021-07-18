@@ -3,7 +3,6 @@ layout: nodes.liquid
 section: smartContract
 date: Last Modified
 title: 'Introduction to Chainlink Keepers'
-permalink: 'docs/chainlink-keepers/introduction/'
 whatsnext:
   {
     'Making Keeper Compatible Contracts': '/docs/chainlink-keepers/compatible-contracts/',
