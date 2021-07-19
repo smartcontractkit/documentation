@@ -15,6 +15,10 @@ For implementation details, read [Introduction to Chainlink VRF](../chainlink-vr
 
 # Polygon (Matic) Mainnet
 
+> 📘 Important
+>
+> The LINK provided by the [Polygon (Matic) Bridge](https://wallet.matic.network/bridge) is not ERC-677 compatible, so cannot be used with Chainlink oracles. However, it can be [**converted to the official LINK token on Polygon (Matic) using Chainlink's PegSwap service**](https://pegswap.chain.link/)
+
 |Item|Value|
 |---|---|
 |LINK Token|`0xb0897686c545045aFc77CF20eC7A532E3120E0F1`|

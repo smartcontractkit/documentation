@@ -42,7 +42,7 @@ module.exports = {
         section: 'ORACLE JOBS',
         contents: [
           { url: '/docs/job-specifications/', title: 'Job Specifications' },
-          { url: '/docs/adapters/', title: 'Core Adapters' },
+          { url: '/docs/core-adapters/', title: 'Core Adapters' },
           { url: '/docs/initiators/', title: 'Initiators' },
         ],
       },

@@ -49,7 +49,7 @@ Blockchains in the Polkadot ecosystem are built using Substrate. Substrate is a 
 
 [Front-end template](https://github.com/substrate-developer-hub/substrate-front-end-template/tree/v2.0.0-rc3)
 
-[Rust documentation](https://substrate.dev/rustdocs/v2.0.0-rc3)
+[Rust documentation](https://substrate.dev/rustdocs/latest)
 
 [Substrate GitHub](https://github.com/paritytech/substrate/tree/v2.0.0-rc3)
 
@@ -80,13 +80,13 @@ Blockchains in the Polkadot ecosystem are built using Substrate. Substrate is a 
 
 ## Useful [FRAME](https://substrate.dev/docs/en/knowledgebase/runtime/frame) Pallets
 
-[Multi-Signature Pallet](https://substrate.dev/rustdocs/v2.0.0-rc3/pallet_multisig/index.html)
+[Multi-Signature Pallet](https://substrate.dev/rustdocs/latest/pallet_multisig/index.html)
 
-[Proxy Pallet](https://substrate.dev/rustdocs/v2.0.0-rc3/pallet_proxy/index.html)
+[Proxy Pallet](https://substrate.dev/rustdocs/latest/pallet_proxy/index.html)
 
-[Identity Pallet](https://substrate.dev/rustdocs/v2.0.0-rc3/pallet_identity/index.html)
+[Identity Pallet](https://substrate.dev/rustdocs/latest/pallet_identity/index.html)
 
-[Utility Pallet](https://substrate.dev/rustdocs/v2.0.0-rc3/pallet_utility/index.html)
+[Utility Pallet](https://substrate.dev/rustdocs/latest/pallet_utility/index.html)
 
 Weekly office hours will be held during Parity’s Substrate Seminar live call, every Tuesday 2:00 - 3.30pm UTC. Sign up here: [https://www.crowdcast.io/e/substrate-seminar](https://www.crowdcast.io/e/substrate-seminar/register)
 

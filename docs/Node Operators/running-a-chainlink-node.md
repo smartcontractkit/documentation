@@ -12,7 +12,7 @@ metadata:
 ---
 In this section, we'll explain the requirements and basics for running your own Chainlink node.
 
-It's important to note that nodes can fulfill requests for open APIs out-of-the-box using our core [Adapters](../adapters/) without needing any additional configuration.
+It's important to note that nodes can fulfill requests for open APIs out-of-the-box using our core [Adapters](../core-adapters/) without needing any additional configuration.
 
 If you would like to provide data from an authenticated API, you can add an [external adapter](../external-adapters/) to enable connectivity through the Chainlink node.
 

@@ -81,7 +81,7 @@ title: "Welcome to Chainlink Node Operation!"
                 Explore tasks that need to be performed to complete defined job
               </p>
               <a
-                href="/docs/adapters"
+                href="/docs/core-adapters/"
                 class="cl-button--ghost"
                 >Learn More</a>
             </div>

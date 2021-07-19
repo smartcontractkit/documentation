@@ -4,7 +4,6 @@ section: smartContract
 date: Last Modified
 title: "DNS Ownership Oracle"
 permalink: "docs/dns-ownership-oracle/"
-whatsnext: {"WatchSignals Luxury Watch Price Oracle":"/docs/watchsignals/"}
 ---
 This oracle checks Google’s DNS service to determine if a given domain is owned by a given blockchain address.
 
@@ -103,9 +102,9 @@ contract DnsOwnershipChainlink is ChainlinkClient {
 
 # Tasks
 * <a href="https://market.link/adapters/9bfdd269-133c-44d4-9c67-b66cca770c0f" target="_blank">DNS Record Check</a>
-* [Copy](../adapters/#copy)
-* [EthBool](../adapters/#ethbool)
-* [EthTx](../adapters/#ethtx)
+* [Copy](../core-adapters/#copy)
+* [EthBool](../core-adapters/#ethbool)
+* [EthTx](../core-adapters/#ethtx)
 
 # Request Parameters
 ### `type`

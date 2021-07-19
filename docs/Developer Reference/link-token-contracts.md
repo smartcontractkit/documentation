@@ -124,7 +124,7 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 
 > 🚰Mumbai Faucet
 >
-> Testnet LINK and MATIC are available from <a href="https://faucet.matic.today" target="_blank" rel="noreferrer, noopener">the official matic faucet</a> and <a href="https://linkfaucet.protofire.io/mumbai" target="_blank" rel="noreferrer, noopener">the community faucet</a>.
+> Testnet LINK and MATIC are available from <a href="https://faucet.matic.network/" target="_blank" rel="noreferrer, noopener">the official matic faucet</a> and <a href="https://linkfaucet.protofire.io/mumbai" target="_blank" rel="noreferrer, noopener">the community faucet</a>.
 
 |Parameter|Value|
 |:---|:---|
@@ -210,7 +210,7 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 
 > 🚰Arbitrum Faucet on Rinkeby
 >
-> Community Faucet: https://linkfaucet.protofire.io
+> Community Faucet: https://linkfaucet.protofire.io/rinkebyarbitrum
 >
 > Supported bridge: https://bridge.arbitrum.io
 

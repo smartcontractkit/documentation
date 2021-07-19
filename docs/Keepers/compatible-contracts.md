@@ -11,9 +11,7 @@ whatsnext:
 ---
 {% include keepers-beta %}
 
-For a contract to be compatible with Chainlink Keepers, it must implement `checkUpkeep` and `performUpkeep` from the `KeeperCompatibleInterface`.
-
-You can read about the interface you need to implement, or jump directly to an example.
+Lets walk through how to make your contract keeper-compatible. While this will get you up and running quickly and showcase how easy it is to use, we highly recommend taking the time to fully understand and become a proficient user of Chainlink Keepers. We want you to take full advantage of the automation infrastructure we’ve built.
 
 1. [The Interface](#keepercompatibleinterface)
 1. [Example Contract](#example-contract)
@@ -29,10 +27,7 @@ You can read about the interface you need to implement, or jump directly to an e
 | [performUpkeep](#performupkeep) | Performs the work on the contract, if instructed by `checkUpkeep()`. |
 
 ### `checkUpkeep`
-
-Checks if the contract requires work to be done.
-
-This method does not actually need to be executable, and since it is only ever simulated by the Keeper node, it is acceptable to consume lots of gas. The data returned by the `checkUpkeep` simulation will be passed into this the `performUpkeep` as described later. To ensure that it is never called, you may want to add the [`cannotExecute`](#cannotexecute) modifier from `KeeperBase` to your implementation of this method.
+The Keeper node runs this method as an [`eth_call`](https://eth.wiki/json-rpc/API#eth_call) in order to determine if your contract requires some work to be done. If the off-chain simulation of your `checkUpkeep` confirms your predefined conditions are met, the Keeper will broadcast a transaction to the blockchain executing the `performUpkeep` method described below.
 
 > ⚠️ NOTE
 > Since `checkUpkeep` is only ever performed off-chain in simulation, for most cases it is best to treat this as a `view` function and not modify any state.
@@ -59,7 +54,12 @@ This method does not actually need to be executable, and since it is only ever s
 
 ### `performUpkeep`
 
-Performs work on the contract. Executed by a Keeper, via the registry. The data returned by the `checkUpkeep` simulation will be passed into this method to actually be executed.
+When your checkUpkeep returns `upkeepNeeded == true`, the Keeper node broadcasts a transaction to the blockchain to execute your contract code with `performData` as an input.
+
+> ⚠️ Important note
+> Ensure your `performUpkeep` is idempotent. Your `performUpkeep` should change state such that `checkUpkeep` will not return `true` for the same subset of work once said work is complete. Otherwise the Upkeep will remain eligible and result in multiple performances by the Keeper Network on the exactly same subset of work.
+
+
 
 ```solidity
   function performUpkeep(
@@ -71,16 +71,6 @@ Performs work on the contract. Executed by a Keeper, via the registry. The data 
 
 - `performData`: Data which was passed back from the `checkData` simulation. If it is encoded, it can easily be decoded into other types by calling `abi.decode`. This data should always be validated against the contract's current state.
 
-## Modifiers
-
-| Name                            | Description                                      |
-| ------------------------------- | ------------------------------------------------ |
-| [cannotExecute](#cannotexecute) | Checks if the contract requires work to be done. |
-
-### cannotExecute
-
-In most cases your `checkUpkeep` function should be marked as `view`, but sometimes it might not be possible if you want to use more advanced Solidity features like `DelegateCall` or assembly in your `checkUpkeep` function. Note that these functions cannot be the target of real transaction or state changes.
-
 # Example Contract
 The example below represents a simple counter contract. Each time `performUpkeep` is called, it increments its counter by one.
 
@@ -90,15 +80,12 @@ The example below represents a simple counter contract. Each time `performUpkeep
 </div>
 
 
+
 ```solidity
 pragma solidity ^0.6.7;
 
 import "@chainlink/contracts/src/v0.6/interfaces/AggregatorV3Interface.sol";
-
-interface KeeperCompatibleInterface {
-    function checkUpkeep(bytes calldata checkData) external returns (bool upkeepNeeded, bytes memory performData);
-    function performUpkeep(bytes calldata performData) external;
-}
+import "@chainlink/contracts/src/v0.6/interfaces/KeeperCompatibleInterface.sol";
 
 contract Counter is KeeperCompatibleInterface {
     /**
