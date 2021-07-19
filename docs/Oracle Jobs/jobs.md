@@ -10,7 +10,7 @@ whatsnext: {"Tasks":"/docs/tasks/"}
 
 NOTE: This page refers to the latest version of Chainlink jobs (otherwise known as TOML, or V2 jobs). For documentation on the legacy job format, see [V1 job specs](/docs/job-specifications).
 
-Chainlink nodes require jobs to be added in order to do anything useful. There are various job types, including:
+Chainlink nodes require jobs to be added to do anything useful, for example, generating verifiable randomness or posting asset price data on-chain. There are various job types, including:
 
 - `cron`
 - `directrequest`
