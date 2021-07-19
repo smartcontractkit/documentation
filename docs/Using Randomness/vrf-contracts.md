@@ -2,7 +2,7 @@
 layout: nodes.liquid
 section: smartContract
 date: Last Modified
-title: "Contract Addresses"
+title: "Chainlink VRF Contract Addresses"
 permalink: "docs/vrf-contracts/"
 metadata: 
   title: "Chainlink VRF Contract Addresses"
@@ -14,6 +14,10 @@ Chainlink VRF allows you to integrate provably-fair and verifiably random data i
 For implementation details, read [Introduction to Chainlink VRF](../chainlink-vrf/).
 
 # Polygon (Matic) Mainnet
+
+> 📘 Important
+>
+> The LINK provided by the [Polygon (Matic) Bridge](https://wallet.matic.network/bridge) is not ERC-677 compatible, so cannot be used with Chainlink oracles. However, it can be [**converted to the official LINK token on Polygon (Matic) using Chainlink's PegSwap service**](https://pegswap.chain.link/)
 
 |Item|Value|
 |---|---|

@@ -97,3 +97,7 @@ contract RandomNumberConsumer is VRFConsumerBase {
 > 🚧 Maximum Gas for Callback
 >
 > If your `fulfillRandomness` function uses more than 200k gas, the transaction will fail.
+
+## Getting More Randomness
+
+If you are looking for how to turn a single result into multiple random numbers, check out our guide on [Randomness Expansion](../chainlink-vrf-best-practices/#getting-multiple-random-numbers).
