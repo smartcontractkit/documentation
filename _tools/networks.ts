@@ -83,6 +83,11 @@ export const NETWORKS = [
         url: "https://cchain.explorer.avax-test.network/address/",
         source: "directory-avalanche-fuji-testnet.json",
       },
+      {
+        name: "Avalanche Mainnet",
+        url: "https://cchain.explorer.avax.network/address/",
+        source: "directory-avalanche-mainnet.json",
+      },
     ],
   },
   {
