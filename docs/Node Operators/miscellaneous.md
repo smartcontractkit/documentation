@@ -4,7 +4,6 @@ date: Last Modified
 title: "Miscellaneous"
 permalink: "docs/miscellaneous/"
 whatsnext: {"Best Security and Operating Practices":"/docs/best-security-practices/"}
-hidden: false
 ---
 [block:api-header]
 {
@@ -67,7 +66,7 @@ If no jobs have been added, you will receive the following output, otherwise, th
 [block:callout]
 {
   "type": "warning",
-  "body": "If using Docker, you will first need to follow the [Execute Commands Running Docker](#section-execute-commands-running-docker) guide to enter the running container."
+  "body": "If using Docker, you will first need to follow the [Execute Commands Running Docker](#execute-commands-running-docker) guide to enter the running container."
 }
 [/block]
 In order to change your password, you first need to log into the CLI by running:

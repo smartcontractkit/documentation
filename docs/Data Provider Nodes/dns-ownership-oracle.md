@@ -5,7 +5,6 @@ date: Last Modified
 title: "DNS Ownership Oracle"
 permalink: "docs/dns-ownership-oracle/"
 whatsnext: {"WatchSignals Luxury Watch Price Oracle":"/docs/watchsignals/"}
-hidden: false
 ---
 This oracle checks Google’s DNS service to determine if a given domain is owned by a given blockchain address.
 
@@ -13,7 +12,7 @@ This oracle checks Google’s DNS service to determine if a given domain is owne
 
 - Write and deploy your [Chainlink](../intermediates-tutorial/) contract using the network details below
 - Fund it with [LINK](../link-token-contracts/)
-- Call your [request method](#section-chainlink-examples)
+- Call your [request method](./#chainlink-examples)
 
 # Network Details
 

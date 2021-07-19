@@ -7,11 +7,7 @@ permalink: "docs/binance-smart-chain-price-feeds/"
 hidden: true
 metadata: 
   image: 
-    0: "https://files.readme.io/dbec14e-670379d-OpenGraph_V3.png"
-    1: "670379d-OpenGraph_V3.png"
-    2: 1459
-    3: 1459
-    4: "#dbe1f8"
+    0: "/files/OpenGraph_V3.png"
 ---
 # Introduction to Price Feeds
 

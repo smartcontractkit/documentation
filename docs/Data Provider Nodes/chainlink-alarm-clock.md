@@ -5,14 +5,9 @@ date: Last Modified
 title: "Chainlink Alarm Clock (Testnet)"
 whatsnext: {"LCX (Testnet)":"/docs/lcx-testnet/"}
 permalink: "docs/chainlink-alarm-clock/"
-hidden: false
 metadata: 
   image: 
-    0: "https://files.readme.io/807bfbc-cl.png"
-    1: "cl.png"
-    2: 1459
-    3: 1459
-    4: "#dbe1f8"
+    0: "/files/807bfbc-cl.png"
 ---
 You can use Chainlink to trigger a smart contract at a specified time. Using this Chainlink, you will create a request with a timestamp for the node to call back to your desired function. You can include additional logic in that function to perform additional computation.
 
@@ -20,7 +15,7 @@ You can use Chainlink to trigger a smart contract at a specified time. Using thi
 
 - Write and deploy your [Chainlinked](../intermediates-tutorial/)  contract using the network details below
 - Fund it with [LINK](../link-token-contracts/) (0.1 LINK is required per-request/)
-- Call your [request method](#section-chainlink-examples) 
+- Call your [request method](./#chainlink-examples) 
 
 # Chainlink Network Details
 

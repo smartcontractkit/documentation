@@ -3,7 +3,6 @@ layout: nodes.liquid
 date: Last Modified
 title: "FluxAggregator Uses"
 permalink: "docs/fluxaggregator-uses/"
-hidden: false
 ---
 This page outlines the uses of the FluxAggregator contract for the node operators that feed data into it.
 [block:api-header]
@@ -36,7 +35,7 @@ You can throw that into Remix and use the `At Address` with the address of the F
   "images": [
     {
       "image": [
-        "https://files.readme.io/48a267a-Screenshot_20200605_162024.png",
+        "/files/48a267a-Screenshot_20200605_162024.png",
         "Screenshot_20200605_162024.png",
         370,
         143,

@@ -5,15 +5,10 @@ date: Last Modified
 title: "Get a Random Number"
 permalink: "docs/get-a-random-number/"
 whatsnext: {"API Reference":"/docs/chainlink-vrf-api-reference/", "Contract Addresses":"/docs/vrf-contracts/"}
-hidden: false
 metadata: 
   description: "How to generate a random number inside a smart contract using Chainlink VRF."
   image: 
-    0: "https://files.readme.io/b7f753e-670379d-OpenGraph_V3.png"
-    1: "670379d-OpenGraph_V3.png"
-    2: 1459
-    3: 1459
-    4: "#dbe1f8"
+    0: "/files/OpenGraph_V3.png"
 ---
 This page explains how to get a random number inside a smart contract using Chainlink VRF.
 
@@ -26,16 +21,22 @@ Chainlink VRF follows the [Request & Receive Data](../request-and-receive-data/)
 
 The contract should own enough LINK to pay the specified fee. The beginner walkthrough explains how to [fund your contract](../fund-your-contract/).
 
+Note, the below values have to be configured correctly for VRF requests to work. You can find the respective values for your network in the [VRF Contracts page](../vrf-contracts).
+- `LINK Token` - LINK token address on the corresponding network (Ethereum, Polygon, BSC, etc)
+- `VRF Coordinator` - address of the Chainlink VRF Coordinator
+- `Key Hash` - public key against which randomness is generated
+- `Fee` - fee required to fulfill a VRF request
+
 > 🚧 Security Considerations
 >
-> If your contract could have multiple VRF requests in flight simultaneously, you must ensure that the order in which the VRF responses arrive cannot be used to manipulate your contract's user-significant behavior.
+> Be sure to look your contract over with [these security considerations](../vrf-security-considerations/) in mind!
 
 >❗️ Remember to fund your contract with LINK!
 >
 > Requesting randomness will fail unless your deployed contract has enough LINK to pay for it. **Learn how to [Acquire testnet LINK](../acquire-link/) and [Fund your contract](../fund-your-contract/)**.
 
 <div class="remix-callout">
-    <a href="https://remix.ethereum.org/#version=soljson-v0.6.6+commit.6c089d02.js&optimize=false&evmVersion=null&gist=536123b71478ad4442cfc4278e8de577" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
+    <a href="https://remix.ethereum.org/#version=soljson-v0.6.6+commit.6c089d02.js&optimize=false&evmVersion=null&gist=f47e4eae5f2ffa7868ef4ecd5bda9044&runs=200" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
     <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
 </div>
 
@@ -75,11 +76,11 @@ contract RandomNumberConsumer is VRFConsumerBase {
     }
     
     /** 
-     * Requests randomness from a user-provided seed
+     * Requests randomness 
      */
-    function getRandomNumber(uint256 userProvidedSeed) public returns (bytes32 requestId) {
+    function getRandomNumber() public returns (bytes32 requestId) {
         require(LINK.balanceOf(address(this)) >= fee, "Not enough LINK - fill contract with faucet");
-        return requestRandomness(keyHash, fee, userProvidedSeed);
+        return requestRandomness(keyHash, fee);
     }
 
     /**
@@ -97,17 +98,6 @@ contract RandomNumberConsumer is VRFConsumerBase {
 >
 > If your `fulfillRandomness` function uses more than 200k gas, the transaction will fail.
 
-## Making the most out of VRF
+## Getting More Randomness
 
-It's possible to get multiple numbers from a single VRF response: 
-
-```javascript
-function expand(uint256 randomValue, uint256 n) public pure returns (uint256[] memory expandedValues) {
-    expandedValues = new uint256[](n);
-    for (uint256 i = 0; i < n; i++) {
-        expandedValues[i] = uint256(keccak256(abi.encode(randomValue, i)));
-    }
-    return expandedValues;
-}
-
-```
+If you are looking for how to turn a single result into multiple random numbers, check out our guide on [Randomness Expansion](../chainlink-vrf-best-practices/#getting-multiple-random-numbers).

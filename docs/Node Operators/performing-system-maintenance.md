@@ -4,7 +4,6 @@ date: Last Modified
 title: "Performing System Maintenance"
 permalink: "docs/performing-system-maintenance/"
 whatsnext: {"Connecting to a Remote Database":"/docs/connecting-to-a-remote-database/"}
-hidden: false
 ---
 You may occasionally need to restart the system which the Chainlink node runs on. In order to be able to accomplish this without any downtime in regards to completing requests, you can perform the upgrade as a series of steps to pass access to the database to a new instance while the first instance is down.
 

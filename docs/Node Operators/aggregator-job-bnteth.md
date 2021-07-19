@@ -29,7 +29,7 @@ On the Job Spec Detail page for the job, click the Run button. You should see a 
   "images": [
     {
       "image": [
-        "https://files.readme.io/8cfc185-Screenshot_from_2019-06-21_08-29-07.png",
+        "/files/8cfc185-Screenshot_from_2019-06-21_08-29-07.png",
         "Screenshot from 2019-06-21 08-29-07.png",
         1894,
         806,
@@ -53,4 +53,4 @@ If the test job has ran successfully, add the following job to your node, replac
 [/block]
 Once added, open a PR with the Job ID associated with the job above.
 
-Make sure that your `MINIMUM_CONTRACT_PAYMENT` environment variable is low enough to accept the payment amount from the aggregator contract on mainnet.
+Make sure that your `MINIMUM_CONTRACT_PAYMENT_LINK_JUELS` environment variable is low enough to accept the payment amount from the aggregator contract on mainnet.

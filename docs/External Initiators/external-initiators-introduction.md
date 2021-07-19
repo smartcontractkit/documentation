@@ -4,7 +4,6 @@ date: Last Modified
 title: "Introduction"
 permalink: "docs/external-initiators-introduction/"
 whatsnext: {"Building External Initiators":"/docs/building-external-initiators/", "Adding External Initiators to Nodes":"/docs/external-initiators-in-nodes/"}
-hidden: false
 ---
 External initiators allow jobs in a node to be initiated depending on some external condition. The ability to create and add external initiators to Chainlink nodes enables blockchain agnostic cross-chain compatibility.
 

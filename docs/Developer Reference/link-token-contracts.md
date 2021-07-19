@@ -4,16 +4,11 @@ section: smartContract
 date: Last Modified
 title: "LINK Token Contracts"
 permalink: "docs/link-token-contracts/"
-hidden: false
 metadata: 
   title: "LINK Token Contracts"
   description: "Addresses for the LINK token on supported networks."
   image: 
-    0: "https://files.readme.io/72d4bd9-link.png"
-    1: "link.png"
-    2: 1459
-    3: 1459
-    4: "#dbe1f8"
+    0: "/files/72d4bd9-link.png"
 ---
 LINK tokens are used to pay node operators for retrieving data for smart contracts and also for deposits placed by node operators as required by contract creators.
 
@@ -36,7 +31,7 @@ The LINK token is an ERC677 token that inherits functionality from the ERC20 tok
 > 🚰Kovan Faucets
 >
 > Testnet LINK is available from https://kovan.chain.link/
-> Testnet ETH is available from https://faucet.kovan.network/
+> Testnet ETH is available from https://linkfaucet.protofire.io/kovan
 
 |Parameter|Value|
 |:---|:---|
@@ -83,7 +78,7 @@ LINK is native to Ethereum, so to use LINK on other chains, it must be bridged. 
 
 > 📘 Important
 >
-> The LINK provided by the <a href="https://www.binance.org/en/bridge" target="_blank">Binance Bridge</a> is not ERC-677 compatible, so cannot be used with Chainlink oracles. However, it can be <a href="https://pegswap.surge.sh/" target="_blank">**converted to the official LINK token on BSC using Chainlink's PegSwap service**</a>. 
+> The LINK provided by the [Binance Bridge](https://www.binance.org/en/bridge) is not ERC-677 compatible, so cannot be used with Chainlink oracles. However, it can be [**converted to the official LINK token on BSC using Chainlink's PegSwap service**](https://pegswap.chain.link/). 
 
 |Parameter|Value|
 |:---|:---|
@@ -111,7 +106,7 @@ LINK is native to Ethereum, so to use LINK on other chains, it must be bridged. 
 
 > 📘 Important
 >
-> The LINK provided by the <a href="https://wallet.matic.network/bridge" target="_blank">Polygon (Matic) Bridge</a> is not ERC-677 compatible, so cannot be used with Chainlink oracles. However, it can be <a href="https://pegswap.surge.sh/" target="_blank">**converted to the official LINK token on Polygon (Matic) using Chainlink's PegSwap service**</a>
+> The LINK provided by the [Polygon (Matic) Bridge](https://wallet.matic.network/bridge) is not ERC-677 compatible, so cannot be used with Chainlink oracles. However, it can be [**converted to the official LINK token on Polygon (Matic) using Chainlink's PegSwap service**](https://pegswap.chain.link/)
 
 You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blank"> watch this video </a>. 
 
@@ -172,5 +167,57 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 |`ETH_CHAIN_ID`|`100`|
 |Address|<a href="https://blockscout.com/poa/xdai/address/0xE2e73A1c69ecF83F464EFCE6A5be353a37cA09b2" target="_blank" rel="noreferrer, noopener">`0xE2e73A1c69ecF83F464EFCE6A5be353a37cA09b2`</a>|
 |Name|ChainLink Token on xDai|
+|Symbol|LINK|
+|Decimals|18|
+
+## Avalanche
+
+### Fuji Testnet
+
+> 🚰Avax Faucet
+>
+> Community Faucet: https://linkfaucet.protofire.io/fuji
+>
+
+|Parameter|Value|
+|:---|:---|
+|`ETH_CHAIN_ID`|`43113`|
+|Address|[`0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846`](https://cchain.explorer.avax-test.network/address/0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846)|
+|Name|ChainLink Token on Avalanche|
+|Symbol|LINK|
+|Decimals|18|
+
+## Fantom
+
+### Fantom Testnet
+
+> 🚰Fantom Faucet
+>
+> Community Faucet: https://linkfaucet.protofire.io/fantomtestnet  
+>
+
+|Parameter|Value|
+|:---|:---|
+|`ETH_CHAIN_ID`|`4002`|
+|Address|[`0xfaFedb041c0DD4fA2Dc0d87a6B0979Ee6FA7af5F`](https://testnet.ftmscan.com/address/0xfaFedb041c0DD4fA2Dc0d87a6B0979Ee6FA7af5F)|
+|Name|ChainLink Token on Fantom|
+|Symbol|LINK|
+|Decimals|18|
+
+## Arbitrum
+
+### Rinkeby Testnet
+
+> 🚰Arbitrum Faucet on Rinkeby
+>
+> Community Faucet: https://linkfaucet.protofire.io/rinkebyarbitrum
+>
+> Supported bridge: https://bridge.arbitrum.io
+
+|Parameter|Value|
+|:---|:---|
+|`ETH_CHAIN_ID`|`421611`|
+|Address|[`0x615fBe6372676474d9e6933d310469c9b68e9726`](https://rinkeby-explorer.arbitrum.io/address/0x615fBe6372676474d9e6933d310469c9b68e9726)|
+|Name|ChainLink Token on Arbitrum Rinkeby|
 |Symbol|LINK|
 |Decimals|18|

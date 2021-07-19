@@ -62,8 +62,10 @@ for (let page of targetData) {
     for (let contractKey of Object.keys(contents.contracts)) {
       const contract = contents.contracts[contractKey];
       if (
-        contract.status === 'testnet-priority' ||
-        contract.status === 'live'
+        (contract.status === 'testnet-priority' ||
+          contract.status === 'live') &&
+        // Only include if the key does not exist or it's not true
+        !contract['docsHidden']
       ) {
         liveContracts[contractKey] = { decimals: contract.decimals };
         if (contract.v3Facade) {
@@ -97,8 +99,10 @@ for (let page of targetData) {
 
 // Write the data to disk
 try {
-  fs.mkdirSync('address_dist')
+  fs.mkdirSync('_src/addresses');
 } catch (err) {
   // Doesn't matter if the directory already exists
 }
-fs.writeFileSync('address_dist/addresses.json',JSON.stringify(finalResult));
+const path = '_src/addresses/addresses.json';
+fs.writeFileSync(path, JSON.stringify(finalResult));
+console.log(`processed results written to ${path}`);

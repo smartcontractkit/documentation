@@ -5,7 +5,6 @@ date: Last Modified
 title: "User Guides"
 permalink: "docs/user-guides/"
 excerpt: "Getting started with Ethereum, Metamask and Smart Contracts"
-hidden: false
 ---
 Here are a few useful user guides for those just getting started with Ethereum, Web3, Metamask and Smart Contracts.
 

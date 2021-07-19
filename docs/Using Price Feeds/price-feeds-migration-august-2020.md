@@ -7,11 +7,7 @@ permalink: "docs/price-feeds-migration-august-2020/"
 hidden: true
 metadata: 
   image: 
-    0: "https://files.readme.io/e48953b-670379d-OpenGraph_V3.png"
-    1: "670379d-OpenGraph_V3.png"
-    2: 1459
-    3: 1459
-    4: "#dbe1f8"
+    0: "/files/OpenGraph_V3.png"
 ---
 Chainlink Price Feeds give smart contract developers a simple way to fetch current and historical asset prices. Asset prices are updated by decentralized oracle networks which aggregate results from high-quality data providers.
 

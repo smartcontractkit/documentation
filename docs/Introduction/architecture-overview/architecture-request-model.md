@@ -5,41 +5,24 @@ date: Last Modified
 title: "Basic Request Model"
 permalink: "docs/architecture-request-model/"
 whatsnext: {"Make a GET Request":"/docs/make-a-http-get-request/", "Decentralized Data Model":"/docs/architecture-decentralized-model/"}
-hidden: false
 metadata: 
   title: "Chainlink Basic Request Model"
   image: 
-    0: "https://files.readme.io/0a7b57f-670379d-OpenGraph_V3.png"
-    1: "670379d-OpenGraph_V3.png"
-    2: 1459
-    3: 1459
-    4: "#dbe1f8"
+    0: "/files/OpenGraph_V3.png"
 ---
 # Contracts Overview
 
 All source code is open source and available in our <a href="https://github.com/smartcontractkit/chainlink" target="_blank">Github repository</a>.
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "https://files.readme.io/881ade6-Simple_Architecture_Diagram_1_V1.png",
-        "Simple Architecture Diagram_1 V1.png",
-        5066,
-        1029,
-        "#f6f7fc"
-      ]
-    }
-  ]
-}
-[/block]
+
+![Basic Request Model](/files/881ade6-Simple_Architecture_Diagram_1_V1.png)
+
 ## ChainlinkClient
 
 <a href="https://github.com/smartcontractkit/chainlink/blob/master/evm-contracts/src/v0.6/ChainlinkClient.sol" target="_blank">`ChainlinkClient`</a> is a parent contract that enables smart contracts to consume data from oracles. It's available in the Chainlink smart contract library which can be [installed using the latest package managers](../create-a-chainlinked-project/).
 
 The client constructs and makes a request to a known Chainlink oracle through the `transferAndCall` function, implemented by the LINK token. This request contains encoded information that is required for the cycle to succeed. In the `ChainlinkClient` contract, this call is initiated with a call to `sendChainlinkRequestTo`.
 
-To build your own client contract using `ChainlinkClient`, see [Introduction to Using Any API](../request-and-receive-data/), or view the [API Reference](../chainlink-framework/) for the `ChainlinkClient` contract.
+To build your own client contract using `ChainlinkClient`, see [Introduction to Using Any API](../request-and-receive-data/), or view the [ChainlinkClient API Reference](../chainlink-framework/) for the `ChainlinkClient` contract.
 
 ## LINK Token
 
@@ -84,7 +67,7 @@ Below is a UML diagram describing the contract structure of `ATestnetConsumer`, 
   "images": [
     {
       "image": [
-        "https://files.readme.io/8ac3fc1-69a048b-Consumer_UML.svg",
+        "/files/8ac3fc1-69a048b-Consumer_UML.svg",
         "69a048b-Consumer_UML.svg",
         4532,
         2879,

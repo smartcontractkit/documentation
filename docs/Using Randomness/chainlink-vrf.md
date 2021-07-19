@@ -5,37 +5,18 @@ date: Last Modified
 title: "Introduction to Chainlink VRF"
 permalink: "docs/chainlink-vrf/"
 whatsnext: {"Get a Random Number":"/docs/get-a-random-number/", "API Reference":"/docs/chainlink-vrf-api-reference/", "Contract Addresses":"/docs/vrf-contracts/"}
-hidden: false
 metadata: 
   title: "Generate Random Numbers for Smart Contracts using Chainlink VRF"
   description: "Learn how to securely generate random numbers for your smart contract with Chainlink VRF (an RNG). This guide uses Solidity code examples."
   image: 
-    0: "https://files.readme.io/c5e90d5-670379d-OpenGraph_V3.png"
-    1: "670379d-OpenGraph_V3.png"
-    2: 1459
-    3: 1459
-    4: "#dbe1f8"
+    0: "/files/OpenGraph_V3.png"
 ---
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "https://files.readme.io/a4c6c80-85d09b6-19facd8-banner.png",
-        "85d09b6-19facd8-banner.png",
-        3246,
-        731,
-        "#f7f8fd"
-      ]
-    }
-  ]
-}
-[/block]
+![Chainlink](/files/a4c6c80-85d09b6-19facd8-banner.png)
 
 [block:callout]
 {
   "type": "info",
-  "body": "Please [contact us](https://chainlinkcommunity.typeform.com/to/OYQO67EF) for more information.",
+  "body": "Please [contact us](https://chainlinkcommunity.typeform.com/to/OYQO67EF?page=docs-VRF) for more information.",
   "title": "Available now on mainnet"
 }
 [/block]

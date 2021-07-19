@@ -5,7 +5,6 @@ date: Last Modified
 title: "Use your first contract!"
 permalink: "docs/use-your-first-contract/"
 whatsnext: {"Introduction to Price Feeds":"/docs/using-chainlink-reference-contracts/", "Introduction to Chainlink VRF":"/docs/chainlink-vrf/", "Introduction to Using Any API":"/docs/request-and-receive-data/"}
-hidden: false
 ---
 # Executing Functions
 
@@ -16,7 +15,7 @@ hidden: false
   "images": [
     {
       "image": [
-        "https://files.readme.io/ad5784b-remix.png",
+        "/files/ad5784b-remix.png",
         "remix.png",
         283,
         650,
@@ -56,7 +55,7 @@ hidden: false
   "images": [
     {
       "image": [
-        "https://files.readme.io/332bb9c-Screen_Shot_2020-09-08_at_9.21.52_AM.png",
+        "/files/332bb9c-Screen_Shot_2020-09-08_at_9.21.52_AM.png",
         "Screen Shot 2020-09-08 at 9.21.52 AM.png",
         1568,
         108,
@@ -73,7 +72,7 @@ hidden: false
   "images": [
     {
       "image": [
-        "https://files.readme.io/e00834f-metamask.png",
+        "/files/e00834f-metamask.png",
         "metamask.png",
         340,
         589,
@@ -89,7 +88,7 @@ hidden: false
   "images": [
     {
       "image": [
-        "https://files.readme.io/d28ea86-Screen_Shot_2020-09-08_at_9.22.21_AM.png",
+        "/files/d28ea86-Screen_Shot_2020-09-08_at_9.22.21_AM.png",
         "Screen Shot 2020-09-08 at 9.22.21 AM.png",
         1570,
         964,
@@ -106,7 +105,7 @@ hidden: false
   "images": [
     {
       "image": [
-        "https://files.readme.io/d24f0f2-remix.png",
+        "/files/d24f0f2-remix.png",
         "remix.png",
         454,
         116,

@@ -5,7 +5,6 @@ date: Last Modified
 title: "Acquire testnet LINK"
 permalink: "docs/acquire-link/"
 whatsnext: {"Deploy your first contract":"/docs/deploy-your-first-contract/"}
-hidden: false
 ---
 This page will show you how to obtain and add testnet LINK to MetaMask. If you already have testnet LINK, skip to [Deploy your first contract](../deploy-your-first-contract/).
 
@@ -24,7 +23,7 @@ This page will show you how to obtain and add testnet LINK to MetaMask. If you a
   "images": [
     {
       "image": [
-        "https://files.readme.io/42e03a2-faucet.png",
+        "/files/42e03a2-faucet.png",
         "faucet.png",
         510,
         493,
@@ -43,7 +42,7 @@ This page will show you how to obtain and add testnet LINK to MetaMask. If you a
   "images": [
     {
       "image": [
-        "https://files.readme.io/fcf1ffe-Screenshot_from_2018-11-28_10-57-26.png",
+        "/files/fcf1ffe-Screenshot_from_2018-11-28_10-57-26.png",
         "Screenshot from 2018-11-28 10-57-26.png",
         482,
         53,
@@ -78,7 +77,7 @@ This page will show you how to obtain and add testnet LINK to MetaMask. If you a
   "images": [
     {
       "image": [
-        "https://files.readme.io/7d69188-metamask.png",
+        "/files/7d69188-metamask.png",
         "metamask.png",
         340,
         577,
@@ -95,7 +94,7 @@ This page will show you how to obtain and add testnet LINK to MetaMask. If you a
   "images": [
     {
       "image": [
-        "https://files.readme.io/d30579b-metamask.png",
+        "/files/d30579b-metamask.png",
         "metamask.png",
         283,
         397,

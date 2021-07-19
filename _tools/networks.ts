@@ -74,4 +74,42 @@ export const NETWORKS = [
       },
     ],
   },
+  {
+    page: "avalanche-price-feeds",
+    title: "Avalanche Price Feeds",
+    networks: [
+      {
+        name: "Avalanche Testnet",
+        url: "https://cchain.explorer.avax-test.network/address/",
+        source: "directory-avalanche-fuji-testnet.json",
+      },
+      {
+        name: "Avalanche Mainnet",
+        url: "https://cchain.explorer.avax.network/address/",
+        source: "directory-avalanche-mainnet.json",
+      },
+    ],
+  },
+  {
+    page: "fantom-price-feeds",
+    title: "Fantom Testnet",
+    networks: [
+      {
+        name: "Fantom Testnet",
+        url: "https://testnet.ftmscan.com/address/",
+        source: "directory-fantom-testnet.json",
+      },
+    ],
+  },
+  {
+    page: "arbitrum-price-feeds",
+    title: "Arbitrum Price Feeds",
+    networks: [
+      {
+        name: "Arbitrum Rinkeby",
+        url: "https://rinkeby-explorer.arbitrum.io/address/",
+        source: "directory-arbitrum-rinkeby-1.json",
+      },
+    ],
+  }
 ];

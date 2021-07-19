@@ -2,19 +2,14 @@
 layout: nodes.liquid
 section: smartContract
 date: Last Modified
-title: "Contract Addresses"
+title: "Price Feeds Contract Addresses"
 permalink: "docs/reference-contracts/"
-whatsnext: {"ENS":"/docs/ens/", "Ethereum Price Feeds":"/docs/ethereum-addresses/", "Binance Smart Chain Price Feeds":"/docs/binance-smart-chain-addresses/", "Polygon (Matic) Price Feeds":"/docs/matic-addresses/", "xDai Price Feeds":"/docs/xdai-price-feeds/", "Huobi Eco Chain Price Feeds":"/docs/huobi-eco-chain-price-feeds/"}
-hidden: false
+whatsnext: {"ENS":"/docs/ens/", "Ethereum Price Feeds":"/docs/ethereum-addresses/", "Binance Smart Chain Price Feeds":"/docs/binance-smart-chain-addresses/", "Polygon (Matic) Price Feeds":"/docs/matic-addresses/", "xDai Price Feeds":"/docs/xdai-price-feeds/", "Huobi Eco Chain Price Feeds":"/docs/huobi-eco-chain-price-feeds/", "Avalanche Price Feeds":"/docs/avalanche-price-feeds/"}
 metadata: 
   title: "Chainlink Price Feed Smart Contract Addresses"
   description: "A list of addresses for Price Feed aggregator contracts on supported networks."
   image: 
-    0: "https://files.readme.io/a437a0a-670379d-OpenGraph_V3.png"
-    1: "670379d-OpenGraph_V3.png"
-    2: 1459
-    3: 1459
-    4: "#dbe1f8"
+    0: "/files/OpenGraph_V3.png"
 ---
 Chainlink Price Feed contracts are updated on a regular basis by multiple Chainlink nodes. For implementation details, read [Introduction to Price Feeds](../using-chainlink-reference-contracts/).
 
@@ -45,3 +40,15 @@ For xDai Price Feed addresses, see [xDai Price Feeds](../xdai-price-feeds/).
 ## Huobi Eco Chain
 
 For HEC Price Feed Addresses, see [Huobi Eco Chain Price Feeds](../huobi-eco-chain-price-feeds/).
+
+## Avalanche
+
+For Avalanche Price Feed Addresses, see [Avalanche Price Feeds](../avalanche-price-feeds/).
+
+## Fantom
+
+For Fantom Price Feed Addresses, see [Fantom Price Feeds](../fantom-price-feeds/).
+
+## Arbitrum
+
+For Arbitrum Price Feed Addresses, see [Arbitrum Price Feeds](../arbitrum-price-feeds/).

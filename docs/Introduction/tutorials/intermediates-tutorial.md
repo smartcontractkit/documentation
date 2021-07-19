@@ -5,22 +5,18 @@ date: Last Modified
 title: "Intermediates - Random Numbers"
 permalink: "docs/intermediates-tutorial/"
 excerpt: "Using Chainlink VRF"
-whatsnext: {"Get a Random Number":"/docs/get-a-random-number/", "Advanced - API Calls":"/docs/advanced-tutorial/"}
-hidden: false
-metadata: 
+whatsnext: {"Get a Random Number":"/docs/get-a-random-number/", "Advanced - API Calls":"/docs/advanced-tutorial/"}metadata: 
   title: "Intermediates Tutorial"
   description: "Learn how to use randomness in your smart contracts using Chainlink VRF."
   image: 
-    0: "https://files.readme.io/2a242f1-link.png"
-    1: "link.png"
-    2: 1459
-    3: 1459
-    4: "#dbe1f8"
+    0: "/files/2a242f1-link.png"
 ---
 
 <p>
   https://www.youtube.com/watch?v=JqZWariqh5s
 </p>
+
+> Note: The video uses a seed phrase to request randomness, this has been depreciated. Please use the code here. 
 
 # Introduction
 
@@ -76,12 +72,12 @@ The contract will have the following functions:
 {
   "type": "info",
   "title": "Open Full Contract",
-  "body": "To jump straight to the entire implementation, you can <a href=\"https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&gist=55c1263fcfc710f834aa38b7bbd21dc1\" target=\"_blank\" class=\"solidity-tracked\">open this contract in remix</a>."
+  "body": "To jump straight to the entire implementation, you can <a href=\"https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&gist=ce82aaafa96ce943ccf37e8a8b88c477\" target=\"_blank\" class=\"solidity-tracked\">open this contract in remix</a>."
 }
 [/block]
 ## 4a. Importing `VRFConsumerBase`
 
-Chainlink maintains a <a href="https://github.com/smartcontractkit/chainlink/tree/develop/evm-contracts" target="_blank">library of contracts</a> that make consuming data from oracles easier. For Chainlink VRF, we use a contract called <a href="https://github.com/smartcontractkit/chainlink/blob/master/evm-contracts/src/v0.6/VRFConsumerBase.sol" target="_blank">`VRFConsumerBase`</a>, which needs to be imported and extended from.
+Chainlink maintains a <a href="https://github.com/smartcontractkit/chainlink/tree/develop/contracts" target="_blank">library of contracts</a> that make consuming data from oracles easier. For Chainlink VRF, we use a contract called <a href="https://github.com/smartcontractkit/chainlink/blob/master/evm-contracts/src/v0.6/VRFConsumerBase.sol" target="_blank">`VRFConsumerBase`</a>, which needs to be imported and extended from.
 
 ```javascript
 pragma solidity 0.6.6;
@@ -153,10 +149,10 @@ event DiceRolled(bytes32 indexed requestId, address indexed roller);
 // { constructor } 
 // ...
 
-function rollDice(uint256 userProvidedSeed, address roller) public onlyOwner returns (bytes32 requestId) {
+function rollDice(address roller) public onlyOwner returns (bytes32 requestId) {
     require(LINK.balanceOf(address(this)) >= s_fee, "Not enough LINK to pay fee");
     require(s_results[roller] == 0, "Already rolled");
-    requestId = requestRandomness(s_keyHash, s_fee, userProvidedSeed);
+    requestId = requestRandomness(s_keyHash, s_fee);
     s_rollers[requestId] = roller;
     s_results[roller] = ROLL_IN_PROGRESS;
     emit DiceRolled(requestId, roller);
@@ -231,7 +227,7 @@ function getHouseName(uint256 id) private pure returns (string memory) {
 See the full contract in Remix! (We've added a few helper functions in there which should make using the contract easier and more flexible. Have a play around with it to understand all the internal workings).
 
 <div class="remix-callout">
-  <a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&gist=55c1263fcfc710f834aa38b7bbd21dc1" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
+  <a href="https://remix.ethereum.org/#version=soljson-v0.6.6+commit.6c089d02.js&optimize=false&evmVersion=null&gist=ce82aaafa96ce943ccf37e8a8b88c477&runs=200" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
     <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
 </div>
 
@@ -247,7 +243,7 @@ Once compiled, you'll see a menu that looks like this in the deploy pane:
   "images": [
     {
       "image": [
-        "https://files.readme.io/f6c0c2b-Screenshot_2020-12-18_at_16.23.19.png",
+        "/files/f6c0c2b-Screenshot_2020-12-18_at_16.23.19.png",
         "Screenshot 2020-12-18 at 16.23.19.png",
         796,
         304,
@@ -282,9 +278,15 @@ Since the contract is on testnet, as with Kovan ETH, we don't need to purchase _
 
 Use your Metamask address on the Kovan network to request LINK, then send 1 LINK to the contract address. This address can be found in Remix, under "Deployed Contracts" on the bottom left.
 
+Note, you should add the corresponding LINK token to your MetaMask account first:
+![metamask](/images/contract-devs/metamask-1.png)
+
+If you enounter any issues, make sure to check you copied the address of the correct network:
+![metamask](/images/contract-devs/metamask-2.png)
+
 # 7. Rolling the Dice!
 
-Opening the deployed contract tab in the bottom left, the function buttons are available. Find `rollDice` and click the caret to expand the parameter fields. Enter the seed (a series of characters of your choosing), and your Metamask address, and click roll!
+Opening the deployed contract tab in the bottom left, the function buttons are available. Find `rollDice` and click the caret to expand the parameter fields. Enter your Metamask address, and click roll!
 
 Wait a few minutes for your transaction to confirm, and the response to be sent back. You can try getting your house by clicking the `house` function button with your address. Once the response has been sent back, you'll be assigned a Game of Thrones house!
 

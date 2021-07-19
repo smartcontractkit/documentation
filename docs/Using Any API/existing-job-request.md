@@ -5,16 +5,11 @@ date: Last Modified
 title: "Make an Existing Job Request"
 permalink: "docs/existing-job-request/"
 whatsnext: {"Find Existing Jobs":"/docs/listing-services/", "API Reference":"/docs/chainlink-framework/", "Contract Addresses":"/docs/decentralized-oracles-ethereum-mainnet/"}
-hidden: false
 metadata: 
   title: "Make an Existing Job Request"
   description: "Learn how to utilize existing Chainlink external adapters to make calls to APIs from smart contracts."
   image: 
-    0: "https://files.readme.io/cb2c0ec-670379d-OpenGraph_V3.png"
-    1: "670379d-OpenGraph_V3.png"
-    2: 1459
-    3: 1459
-    4: "#dbe1f8"
+    0: "/files/OpenGraph_V3.png"
 ---
 Using an *existing* Oracle Job makes your smart contract code more succinct. This page explains how to retrieve the current weather temperature (in Kelvin) for a defined city using an existing Oracle job.
 
@@ -45,6 +40,8 @@ import "@chainlink/contracts/src/v0.6/ChainlinkClient.sol";
  * PLEASE DO NOT USE THIS CODE IN PRODUCTION.
  */
 contract OpenWeatherConsumer is ChainlinkClient {
+    using Chainlink for Chainlink.Request;
+
     address private oracle;
     bytes32 private jobId;
     uint256 private fee;
@@ -73,8 +70,8 @@ contract OpenWeatherConsumer is ChainlinkClient {
     /**
      * Initial request
      */
-    function requestEthereumPrice(string memory _city) public {
-        Chainlink.Request memory req = buildChainlinkRequest(jobId, address(this), this.fulfillEthereumPrice.selector);
+    function requestWeatherTemperature(string memory _city) public {
+        Chainlink.Request memory req = buildChainlinkRequest(jobId, address(this), this.fulfillWeatherTemperature.selector);
         req.add("city", _city);
         sendChainlinkRequestTo(oracle, req, fee);
     }
@@ -82,7 +79,7 @@ contract OpenWeatherConsumer is ChainlinkClient {
     /**
      * Callback function
      */
-    function fulfillEthereumPrice(bytes32 _requestId, uint256 _result) public recordChainlinkFulfillment(_requestId) {
+    function fulfillWeatherTemperature(bytes32 _requestId, uint256 _result) public recordChainlinkFulfillment(_requestId) {
         result = _result;
     }
 

@@ -4,16 +4,11 @@ section: smartContract
 date: Last Modified
 title: "Developer Communications"
 permalink: "docs/developer-communications/"
-hidden: false
 metadata: 
   title: "Developer Communications"
   description: "We are committed to communicating these changes with you in advance. This page will provide information on our current communication channels and detail active notifications / upgrade plans with timelines."
   image: 
-    0: "https://files.readme.io/34e5b55-670379d-OpenGraph_V3.png"
-    1: "670379d-OpenGraph_V3.png"
-    2: 1459
-    3: 1459
-    4: "#dbe1f8"
+    0: "/files/OpenGraph_V3.png"
 ---
 # Stay up to date with the latest upgrades
 [block:callout]
@@ -25,8 +20,7 @@ metadata:
 [/block]
 Developers should subscribe to update notifications via any of the following channels:
 
-* <a href="http://eepurl.com/hbUYlz" target="_blank">Developer Email List</a>
-* <a href="http://eepurl.com/hnh_5H" target="_blank">Node Operator Email List</a>
+* <a href="https://mailchi.mp/chain.link/docs" target="_blank">Developer Email List</a>
 * <a href="https://discord.gg/qj9qarT" target="_blank">Discord Channel</a>
 * [On-chain registry](../ens/): To increase security, we will be utilizing ENS to provide an onchain registry of all feeds and their latest addresses. 
 
