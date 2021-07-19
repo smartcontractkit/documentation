@@ -269,4 +269,4 @@ data_source_2 -> medianize_data
 medianize_data -> submit_to_ea
 ```
 
-![DAG Example](./dag_example.png)
+![DAG Example](dag_example.png)
