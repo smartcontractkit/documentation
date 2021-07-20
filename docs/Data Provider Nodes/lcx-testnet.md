@@ -4,7 +4,6 @@ section: smartContract
 date: Last Modified
 title: "LCX (Testnet)"
 permalink: "docs/lcx-testnet/"
-whatsnext: {"Kraken Rates Oracle Node":"/docs/kraken-rates-oracle-node/"}
 metadata: 
   image: 
     0: "/files/OpenGraph_V3.png"
@@ -95,9 +94,9 @@ contract LCXChainlink is ChainlinkClient {
 # Tasks
 
 - [LCX](../external-adapters/)
-- [Multiply](../adapters/#multiply)
-- [EthUint256](../adapters/#ethuint256)
-- [EthTx](../adapters/#ethtx)
+- [Multiply](../core-adapters/#multiply)
+- [EthUint256](../core-adapters/#ethuint256)
+- [EthTx](../core-adapters/#ethtx)
 
 # Request Parameters
 

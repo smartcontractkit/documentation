@@ -12,7 +12,7 @@ Finage is a leading real-time stock, forex, and cryptocurrency data provider. Th
 
 - Write and deploy your [Chainlink](..//intermediates-tutorial/) contract using the network details below
 - Fund it with [LINK](../link-token-contracts/)
-- Call your [request method](./#chainlink-examples/)
+- Call your [request method](./#chainlink-examples)
 
 # Network Details
 
@@ -97,10 +97,10 @@ contract FinageChainlink is ChainlinkClient {
 
 # Tasks
 * <a href="https://market.link/profile/adapters/687be1a9-f5f8-44f1-a9d8-81bab4fb4247/data-source" target="_blank">Finage Relative Stock Performance</a>
-* [Copy](../adapters/#copy)
-* [Multiply](../adapters/#multiply)
-* [EthInt256](../adapters/#ethint256)
-* [EthTx](../adapters/#ethtx)
+* [Copy](../core-adapters/#copy)
+* [Multiply](../core-adapters/#multiply)
+* [EthInt256](../core-adapters/#ethint256)
+* [EthTx](../core-adapters/#ethtx)
 
 # Request Parameters
 ### `symbol`

@@ -4,7 +4,6 @@ section: smartContract
 date: Last Modified
 title: "Kraken Rates Oracle Node"
 permalink: "docs/kraken-rates-oracle-node/"
-whatsnext: {"Tiingo EOD Stock Price Oracle":"/docs/tiingo-eod-stock-price-oracle/"}
 metadata: 
   image: 
     0: "/files/2713d5c-cl.png"
@@ -103,9 +102,9 @@ contract KrakenChainlink is ChainlinkClient {
 # Tasks
 
 - [Kraken](../external-adapters/)
-- [Multiply](../adapters/#multiply)
-- [EthUint256](../adapters/#ethuint256)
-- [EthTx](../adapters/#ethtx)
+- [Multiply](../core-adapters/#multiply)
+- [EthUint256](../core-adapters/#ethuint256)
+- [EthTx](../core-adapters/#ethtx)
 
 # Request Parameters
 

@@ -82,10 +82,10 @@ Resources:
 
 The Chainlink node can fulfill requests from open (unauthenticated) APIs out-of-the-box, without the need for [External Adapters](../external-adapters/) as long as you've added the [jobs in the Fulfilling Requests guide](../fulfilling-requests/#add-jobs-to-the-node). For these requests, requesters would supply the URL to the open API they wish each node to retrieve, and the Chainlink node will use its core adapters to fulfill the request.
 
-If you would like to provide access to an API which requires authentication, you will need to create a job specific for that API, either with an external adapter or by using the parameters of the [HttpGet adapter](../adapters/#httpget).
+If you would like to provide access to an API which requires authentication, you will need to create a job specific for that API, either with an external adapter or by using the parameters of the [HttpGet adapter](../core-adapters/#httpget).
 
 Resources:
-*  [Adapters](../adapters/#httpget)
+*  [Adapters](../core-adapters/#httpget)
 
 ##  Is there a list of external adapters available?
 
@@ -108,7 +108,7 @@ Resources:
 
 You can use our <a href="https://blog.chain.link/how-to-use-chainlink-with-truffle-2/" target="_blank">Truffle Box</a> to get started by unboxing a developer-focused template.
 
-If you already have a project started and would like to integrate Chainlink, you can [add Chainlink to your existing project](../create-a-chainlinked-project/#add-chainlink-to-your-existing-project) by using our `chainlink` NPM package.
+If you already have a project started and would like to integrate Chainlink, you can [add Chainlink to your existing project](../create-a-chainlinked-project/#install-into-existing-projects) by using our `chainlink` NPM package.
 
 Resources:
 *  [Create a Chainlinked Project](../create-a-chainlinked-project/) 

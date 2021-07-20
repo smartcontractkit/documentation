@@ -36,7 +36,7 @@ Developers should subscribe to update notifications via any of the following cha
 >
 > Please follow the [Migration Instructions](../migrating-to-flux-aggregator/)  and update to the latest [Price Feed Contracts](../reference-contracts/) to ensure your contracts always reference the most up to date aggregator. If you do not upgrade after the timeline in this document, your consumer contracts may not receive the most accurate price data.
 
-The update to [`FluxAggregator`](https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/src/v0.6/FluxAggregator.sol) adds congestion resilience capabilities and gas optimizations for reports involving median calculations over the previous version. 
+The update to [`FluxAggregator`](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.6/FluxAggregator.sol) adds congestion resilience capabilities and gas optimizations for reports involving median calculations over the previous version. 
 
 - A new function `latestRoundData` has been added. It returns `roundId`, `answer`, `startedAt`, `updatedAt`, and `answeredInRound`. This allows consumers of reference data to make decisions around if the data is acceptable in a single function call (ex: if answeredInRound < roundId could indicate stale data). 
 - A `description` view has been added. This shows the name of the price feed (e.g. ETH/USD). 

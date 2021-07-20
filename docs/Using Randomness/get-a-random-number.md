@@ -14,7 +14,7 @@ This page explains how to get a random number inside a smart contract using Chai
 
 # Random Number Consumer
 
-Chainlink VRF follows the [Request & Receive Data](../request-and-receive-data/) cycle. To consume randomness, your contract should inherit from <a href="https://github.com/smartcontractkit/chainlink/blob/master/evm-contracts/src/v0.6/VRFConsumerBase.sol" target="_blank">`VRFConsumerBase`</a> and define two required functions
+Chainlink VRF follows the [Request & Receive Data](../request-and-receive-data/) cycle. To consume randomness, your contract should inherit from <a href="https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.6/VRFConsumerBase.sol" target="_blank">`VRFConsumerBase`</a> and define two required functions
 
 1. `requestRandomness`, which makes the initial request for randomness.
 2. `fulfillRandomness`, which is the function that receives and does something with verified randomness.
@@ -36,7 +36,7 @@ Note, the below values have to be configured correctly for VRF requests to work.
 > Requesting randomness will fail unless your deployed contract has enough LINK to pay for it. **Learn how to [Acquire testnet LINK](../acquire-link/) and [Fund your contract](../fund-your-contract/)**.
 
 <div class="remix-callout">
-    <a href="https://remix.ethereum.org/#version=soljson-v0.6.6+commit.6c089d02.js&optimize=false&evmVersion=null&gist=f47e4eae5f2ffa7868ef4ecd5bda9044&runs=200" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
+    <a href="https://remix.ethereum.org/#version=soljson-v0.6.6+commit.6c089d02.js&optimize=false&evmVersion=null&gist=81aaa1ef3897ec2812f314a3a79618d9&runs=200" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
     <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
 </div>
 
@@ -97,3 +97,7 @@ contract RandomNumberConsumer is VRFConsumerBase {
 > 🚧 Maximum Gas for Callback
 >
 > If your `fulfillRandomness` function uses more than 200k gas, the transaction will fail.
+
+## Getting More Randomness
+
+If you are looking for how to turn a single result into multiple random numbers, check out our guide on [Randomness Expansion](../chainlink-vrf-best-practices/#getting-multiple-random-numbers).

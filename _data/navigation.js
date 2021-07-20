@@ -42,7 +42,7 @@ module.exports = {
         section: 'ORACLE JOBS',
         contents: [
           { url: '/docs/job-specifications/', title: 'Job Specifications' },
-          { url: '/docs/adapters/', title: 'Core Adapters' },
+          { url: '/docs/core-adapters/', title: 'Core Adapters' },
           { url: '/docs/initiators/', title: 'Initiators' },
         ],
       },
@@ -88,15 +88,15 @@ module.exports = {
             url: '/docs/tutorials/',
             children: [
               {
-                title: 'Beginners - The Basics',
+                title: 'The Basics',
                 url: '/docs/beginners-tutorial/',
               },
               {
-                title: 'Intermediates - Random Numbers',
+                title: 'Random Numbers',
                 url: '/docs/intermediates-tutorial/',
               },
               {
-                title: 'Advanced - API Calls',
+                title: 'API Calls',
                 url: '/docs/advanced-tutorial/',
               },
             ],
@@ -130,6 +130,7 @@ module.exports = {
           },
           { title: 'Get the Latest Price', url: '/docs/get-the-latest-price/' },
           { title: 'Historical Price Data', url: '/docs/historical-price-data/' },
+          { title: 'Feed Registry', url: '/docs/feed-registry/' },
           {
             title: 'API Reference',
             url: '/docs/price-feeds-api-reference/',
@@ -168,6 +169,10 @@ module.exports = {
                 title: 'Fantom Price Feeds',
                 url: '/docs/fantom-price-feeds/',
               },
+              {
+                title: 'Arbitrum Price Feeds',
+                url: '/docs/arbitrum-price-feeds/',
+              }
             ],
           },
         ],
@@ -224,6 +229,10 @@ module.exports = {
             title: 'Developer Communications',
             url: '/docs/developer-communications/',
           },
+          {
+            title: 'Data Provider Nodes',
+            url: '/docs/data-provider-nodes/'
+          },
           { title: 'Hackathon Resources', url: '/docs/hackathon-resources/' },
           {
             title: 'User Guides',
@@ -251,19 +260,6 @@ module.exports = {
               },
             ],
           },
-        ],
-      },
-      {
-        section: 'DATA PROVIDER NODES',
-        contents: [
-          {
-            title: 'Introduction to Data Provider Nodes',
-            url: '/docs/data-provider-nodes'
-          },
-          {
-            title: 'Data Provider Nodes List',
-            url: '/docs/data-provider-nodes-list'
-          }
         ],
       },
     ],

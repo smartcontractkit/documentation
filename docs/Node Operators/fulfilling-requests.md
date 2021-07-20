@@ -28,7 +28,7 @@ With your own Oracle contract, you can use your own node to fulfill requests. Th
   "title": "Deploy your own Oracle contract"
 }
 [/block]
-- Go to <a href="https://remix.ethereum.org/#gist=03a079b9055f42d993d0066d6f454c6f&optimize=true&version=soljson-v0.4.24+commit.e67f0147.js" target="_blank" rel="noreferrer, noopener">Remix</a> and expand the gist menu
+- Go to <a href="https://remix.ethereum.org/#gist=1d2cb55e777589e59847bc60ebabb005&optimize=true&version=soljson-v0.4.24+commit.e67f0147.js" target="_blank" rel="noreferrer, noopener">Remix</a> and expand the gist menu
 
 ![Remix File Explorer](/files/05f12f3-00eeef4-remix001.jpg)
 
@@ -170,23 +170,15 @@ Once successful, you should have a new address for the deployed contract
   ]
 }
 [/block]
-You can get the address of your node when it starts or by visiting the Configuration page of the GUI.
+You can get the address of your node when it starts or by looking at one of the following places.
 
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "/files/d2e5225-Screenshot_from_2018-12-17_08-23-16.png",
-        "Screenshot from 2018-12-17 08-23-16.png",
-        801,
-        170,
-        "#fafafa"
-      ]
-    }
-  ]
-}
-[/block]
+1. Bottom of the Keys page in the Account addresses section on recent versions of Chainlink.
+![Screenshot of account addresses](/images/node-operators/node-address.png)
+
+1. Configurations page on older Chainlink node versions
+![Screenshot of configuration page from 2018](/files/d2e5225-Screenshot_from_2018-12-17_08-23-16.png)
+
+
 Once you call the `setFulfillmentPermission` function, Confirm it in Metamask and wait for it to confirm on the blockchain.
 
 [block:api-header]

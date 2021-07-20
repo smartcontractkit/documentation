@@ -61,7 +61,7 @@ Also see [Create a Chainlinked Project](../create-a-chainlinked-project/) for ad
   "title": "Inherit the AggregatorInterface in Your Contract"
 }
 [/block]
-Import the <a href="https://github.com/smartcontractkit/chainlink/blob/master/evm-contracts/src/v0.4/interfaces/AggregatorInterface.sol" target="_blank" rel="noreferrer, noopener">AggregatorInterface.sol</a> contract into the source of the contract you want to consume reference data.
+Import the <a href="https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.4/interfaces/AggregatorInterface.sol" target="_blank" rel="noreferrer, noopener">AggregatorInterface.sol</a> contract into the source of the contract you want to consume reference data.
 [block:code]
 {
   "codes": [

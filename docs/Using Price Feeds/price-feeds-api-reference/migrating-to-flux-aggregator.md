@@ -13,9 +13,9 @@ The Chainlink price reference feeds are being upgraded to a new version as of Au
 
 ** "Will this break my code?" **
 
-No, the new contracts have been deployed with the aim of making the transition seamless for developers. The new <a href="https://github.com/smartcontractkit/chainlink/blob/master/evm-contracts/src/v0.6/AggregatorProxy.sol" target="_blank">`AggregatorProxy`</a> contract implements the legacy <a href="https://github.com/smartcontractkit/chainlink/blob/master/evm-contracts/src/v0.6/interfaces/AggregatorInterface.sol" target="_blank">`AggregatorInterface`</a> that your contracts use currently, so existing consumer contracts will not break and do not require additional code changes.
+No, the new contracts have been deployed with the aim of making the transition seamless for developers. The new <a href="https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/dev/AggregatorProxy.sol" target="_blank">`AggregatorProxy`</a> contract implements the legacy <a href="https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.6/interfaces/AggregatorInterface.sol" target="_blank">`AggregatorInterface`</a> that your contracts use currently, so existing consumer contracts will not break and do not require additional code changes.
 
-Additionally, the new contracts implement the <a href="https://github.com/smartcontractkit/chainlink/blob/master/evm-contracts/src/v0.6/interfaces/AggregatorV3Interface.sol" target="_blank">`AggregatorV3Interface`</a>, which defines new functions designed to improve your experience using price feeds.
+Additionally, the new contracts implement the <a href="https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.6/interfaces/AggregatorV3Interface.sol" target="_blank">`AggregatorV3Interface`</a>, which defines new functions designed to improve your experience using price feeds.
 
 **At a minimum, you should perform step 1 in the instructions below to update the address that your contracts reference.**
 

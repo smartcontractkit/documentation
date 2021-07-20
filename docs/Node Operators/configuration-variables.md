@@ -37,8 +37,8 @@ The env variables listed here are explicitly supported and current as of Chainli
   - [TLS_CERT_PATH](#tls_cert_path)
   - [TLS_KEY_PATH](#tls_key_path)
 - [Gas controls](#gas-controls)
-  - [ETH_GAS_LIMIT_DEFAULT](#eth-gas-limit-default)
-  - [ETH_GAS_LIMIT_TRANSFER](#eth-gas-limit-transfer)
+  - [ETH_GAS_LIMIT_DEFAULT](#eth_gas_limit_default)
+  - [ETH_GAS_LIMIT_TRANSFER](#eth_gas_limit_transfer)
   - [ETH_GAS_BUMP_PERCENT](#eth_gas_bump_percent)
   - [ETH_GAS_BUMP_THRESHOLD](#eth_gas_bump_threshold)
   - [ETH_GAS_BUMP_WEI](#eth_gas_bump_wei)
@@ -67,7 +67,7 @@ The env variables listed here are explicitly supported and current as of Chainli
   - [LOG_SQL_MIGRATIONS](#log_sql_migrations)
   - [LOG_TO_DISK](#log_to_disk)
   - [MIN_INCOMING_CONFIRMATIONS](#min_incoming_confirmations)
-  - [MINIMUM_CONTRACT_PAYMENT_LINK_JUELS](#minimum_contract_payment)
+  - [MINIMUM_CONTRACT_PAYMENT_LINK_JUELS](#minimum_contract_payment_link_juels)
   - [OPERATOR_CONTRACT_ADDRESS](#operator_contract_address)
   - [ORM_MAX_IDLE_CONNS](#orm_max_idle_conns)
   - [ORM_MAX_OPEN_CONNS](#orm_max_open_conns)
@@ -332,7 +332,7 @@ Specifies the addresses/URLs of allowed connections to the API on `CLIENT_NODE_U
 
 - Default: `"6688"`
 
-Port used for the [API Reference](../api-reference/) and GUI.
+Port used for the [Chainlink Node API Reference](../chainlink-node-api-reference/) and GUI.
 
 
 ## CLIENT_NODE_URL

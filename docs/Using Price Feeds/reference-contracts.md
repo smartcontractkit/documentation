@@ -2,7 +2,7 @@
 layout: nodes.liquid
 section: smartContract
 date: Last Modified
-title: "Contract Addresses"
+title: "Price Feeds Contract Addresses"
 permalink: "docs/reference-contracts/"
 whatsnext: {"ENS":"/docs/ens/", "Ethereum Price Feeds":"/docs/ethereum-addresses/", "Binance Smart Chain Price Feeds":"/docs/binance-smart-chain-addresses/", "Polygon (Matic) Price Feeds":"/docs/matic-addresses/", "xDai Price Feeds":"/docs/xdai-price-feeds/", "Huobi Eco Chain Price Feeds":"/docs/huobi-eco-chain-price-feeds/", "Avalanche Price Feeds":"/docs/avalanche-price-feeds/"}
 metadata: 
@@ -44,3 +44,11 @@ For HEC Price Feed Addresses, see [Huobi Eco Chain Price Feeds](../huobi-eco-cha
 ## Avalanche
 
 For Avalanche Price Feed Addresses, see [Avalanche Price Feeds](../avalanche-price-feeds/).
+
+## Fantom
+
+For Fantom Price Feed Addresses, see [Fantom Price Feeds](../fantom-price-feeds/).
+
+## Arbitrum
+
+For Arbitrum Price Feed Addresses, see [Arbitrum Price Feeds](../arbitrum-price-feeds/).

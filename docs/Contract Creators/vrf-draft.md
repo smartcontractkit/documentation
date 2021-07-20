@@ -29,10 +29,10 @@ This is enough background to get started implementing random data in your contra
 ---
 
 The latest versions of Solidity v0.6 contracts are available on GitHub:
-  * <a href="https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/src/v0.6/VRF.sol" target="_blank">VRF.sol</a>
-  * <a href="https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/src/v0.6/VRFConsumerBase.sol">VRFConsumerBase.sol</a>
-  * <a href="https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/src/v0.6/VRFCoordinator.sol" target="_blank">VRFCoordinator.sol</a>
-  * <a href="https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/src/v0.6/VRFRequestIDBase.sol" target="_blank">VRFRequestIDBase.sol</a>
+  * <a href="https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.6/VRF.sol" target="_blank">VRF.sol</a>
+  * <a href="https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.6/VRFConsumerBase.sol">VRFConsumerBase.sol</a>
+  * <a href="https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.6/VRFCoordinator.sol" target="_blank">VRFCoordinator.sol</a>
+  * <a href="https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.6/VRFRequestIDBase.sol" target="_blank">VRFRequestIDBase.sol</a>
 
 
 # Implementation

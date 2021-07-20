@@ -21,7 +21,7 @@ A smart contract has been deployed containing a mapping of every price feed mapp
 ---
 
 The latest versions of Solidity v0.6 contracts are available on GitHub:
-  * <a href="https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/src/v0.6/Flags.sol" target="_blank">Flags.sol</a>
+  * <a href="https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.6/Flags.sol" target="_blank">Flags.sol</a>
 
 
 # Live contracts
