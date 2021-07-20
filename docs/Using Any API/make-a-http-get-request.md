@@ -15,7 +15,7 @@ This page explains how to make an HTTP GET request to an external API from a sma
 
 # API Consumer
 
-To consume an API response, your contract should inherit from <a href="https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/src/v0.6/ChainlinkClient.sol" target="_blank">`ChainlinkClient`</a>. This contract exposes a struct called `Chainlink.Request`, which your contract should use to build the API request. The request should include the oracle address, the job id, the fee, adapter parameters, and the callback function signature.
+To consume an API response, your contract should inherit from <a href="https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.6/ChainlinkClient.sol" target="_blank">`ChainlinkClient`</a>. This contract exposes a struct called `Chainlink.Request`, which your contract should use to build the API request. The request should include the oracle address, the job id, the fee, adapter parameters, and the callback function signature.
 
 Currently, any return value must fit within 32 bytes, if the value is bigger than that multiple requests will need to be made.
 
@@ -143,7 +143,7 @@ The code example above returns an unsigned integer from the oracle response, but
 
 If you need to return a string, use `bytes32`. <a href="https://gist.github.com/alexroan/a8caf258218f4065894ecd8926de39e7" target="_blank">Here's one method</a> of converting `bytes32` to `string`. Currently any return value must fit within 32 bytes, if the value is bigger than that multiple requests will need to be made.
 
-The data type returned by a specific job depends on the [adapters](../adapters/) that it supports. Make sure to choose an oracle job that supports the data type that your contract needs to consume. 
+The data type returned by a specific job depends on the [adapters](../core-adapters/) that it supports. Make sure to choose an oracle job that supports the data type that your contract needs to consume. 
 
 # Choosing an Oracle Job without specifying the URL
 

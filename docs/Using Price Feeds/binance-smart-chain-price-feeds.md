@@ -23,7 +23,7 @@ This section explains how to get the latest price of BNB inside smart contracts 
 
 ## Solidity Contract
 
-To consume price data, your smart contract should reference <a href="https://github.com/smartcontractkit/chainlink/blob/master/evm-contracts/src/v0.6/interfaces/AggregatorInterface.sol" target="_blank">`AggregatorInterface`</a>, which defines the external functions implemented by Price Feeds.
+To consume price data, your smart contract should reference <a href="https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.6/interfaces/AggregatorInterface.sol" target="_blank">`AggregatorInterface`</a>, which defines the external functions implemented by Price Feeds.
 
 As long as the address provided is a Chainlink aggregator, your smart contract will be able to retrieve the latest price from it.
 
@@ -92,7 +92,7 @@ ___
 
 # Get Historical Price Data
 
-The most common use case for Price Feeds is to get the latest price. However, <a href="https://github.com/smartcontractkit/chainlink/blob/master/evm-contracts/src/v0.6/interfaces/AggregatorInterface.sol" target="_blank" rel="noreferrer, noopener">`AggregatorInterface`</a> also exposes functions which can be used to retrieve historical price data.
+The most common use case for Price Feeds is to get the latest price. However, <a href="https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.6/interfaces/AggregatorInterface.sol" target="_blank" rel="noreferrer, noopener">`AggregatorInterface`</a> also exposes functions which can be used to retrieve historical price data.
 
 This section explains how to get historical price data for BNB using Chainlink Price Feeds, on the Binance Smart Chain.
 
@@ -175,7 +175,7 @@ ___
 
 # API Reference
 
-API reference for <a href="https://github.com/smartcontractkit/chainlink/blob/master/evm-contracts/src/v0.6/interfaces/AggregatorInterface.sol" target="_blank" rel="noreferrer, noopener">`AggregatorInterface`</a>.
+API reference for <a href="https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.6/interfaces/AggregatorInterface.sol" target="_blank" rel="noreferrer, noopener">`AggregatorInterface`</a>.
 
 ## Functions
 

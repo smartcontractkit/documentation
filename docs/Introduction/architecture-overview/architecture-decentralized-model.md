@@ -15,7 +15,7 @@ This page describes how data aggregation is applied to produce Chainlink Price F
 
 # Price Aggregation
 
-Each price feed is updated by multiple, independent Chainlink oracle operators. Aggregation is handled on-chain by <a href="https://github.com/smartcontractkit/chainlink/blob/master/evm-contracts/src/v0.6/FluxAggregator.sol" target="_blank">`FluxAggregator`</a>.
+Each price feed is updated by multiple, independent Chainlink oracle operators. Aggregation is handled on-chain by <a href="https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.6/FluxAggregator.sol" target="_blank">`FluxAggregator`</a>.
 
 [block:image]
 {
@@ -78,7 +78,7 @@ All source code is open source and available in our <a href="https://github.com/
 
 ## Consumer
 
-A Consumer contract is any contract that uses Chainlink Price Feeds to consume asset price data. Consumer contracts simply reference the correct <a href="https://github.com/smartcontractkit/chainlink/blob/master/evm-contracts/src/v0.6/interfaces/AggregatorV3Interface.sol" target="_blank">`AggregatorV3Interface`</a> and call one of the exposed functions.
+A Consumer contract is any contract that uses Chainlink Price Feeds to consume asset price data. Consumer contracts simply reference the correct <a href="https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.6/interfaces/AggregatorV3Interface.sol" target="_blank">`AggregatorV3Interface`</a> and call one of the exposed functions.
 
 ```javascript
 ...
@@ -92,12 +92,12 @@ Learn how to create a consumer contract to [Get the Latest Price](../get-the-lat
 
 Proxy contracts are on-chain proxies that store the most up-to-date Aggregator for a particular price feed. Using proxies enables the underlying Aggregator to be upgraded without any interruption of service for consuming contracts.
 
-See the <a href="https://github.com/smartcontractkit/chainlink/blob/master/evm-contracts/src/v0.6/AggregatorProxy.sol" target="_blank">`AggregatorProxy`</a> contract on Github.
+See the <a href="https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/dev/AggregatorProxy.sol" target="_blank">`AggregatorProxy`</a> contract on Github.
 
 ## Aggregators
 
 Aggregators are the contracts that receive periodic price updates from multiple Oracles. They aggregate and store the current price on-chain so that consumers can obtain the latest price and act upon it within the same transaction.
 
-This data can be accessed by referencing the Price Feed address using the <a href="https://github.com/smartcontractkit/chainlink/blob/master/evm-contracts/src/v0.6/interfaces/AggregatorV3Interface.sol" target="_blank">`AggregatorV3Interface`</a> contract.
+This data can be accessed by referencing the Price Feed address using the <a href="https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.6/interfaces/AggregatorV3Interface.sol" target="_blank">`AggregatorV3Interface`</a> contract.
 
 To learn how to consume Price Feed data, see [Get the Latest Price](../get-the-latest-price/).
