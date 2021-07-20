@@ -28,7 +28,7 @@ With your own Oracle contract, you can use your own node to fulfill requests. Th
   "title": "Deploy your own Oracle contract"
 }
 [/block]
-- Go to <a href="https://remix.ethereum.org/#gist=03a079b9055f42d993d0066d6f454c6f&optimize=true&version=soljson-v0.4.24+commit.e67f0147.js" target="_blank" rel="noreferrer, noopener">Remix</a> and expand the gist menu
+- Go to <a href="https://remix.ethereum.org/#gist=1d2cb55e777589e59847bc60ebabb005&optimize=true&version=soljson-v0.4.24+commit.e67f0147.js" target="_blank" rel="noreferrer, noopener">Remix</a> and expand the gist menu
 
 ![Remix File Explorer](/files/05f12f3-00eeef4-remix001.jpg)
 

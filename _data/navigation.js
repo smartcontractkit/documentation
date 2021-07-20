@@ -88,15 +88,15 @@ module.exports = {
             url: '/docs/tutorials/',
             children: [
               {
-                title: 'Beginners - The Basics',
+                title: 'The Basics',
                 url: '/docs/beginners-tutorial/',
               },
               {
-                title: 'Intermediates - Random Numbers',
+                title: 'Random Numbers',
                 url: '/docs/intermediates-tutorial/',
               },
               {
-                title: 'Advanced - API Calls',
+                title: 'API Calls',
                 url: '/docs/advanced-tutorial/',
               },
             ],
@@ -229,6 +229,10 @@ module.exports = {
             title: 'Developer Communications',
             url: '/docs/developer-communications/',
           },
+          {
+            title: 'Data Provider Nodes',
+            url: '/docs/data-provider-nodes/'
+          },
           { title: 'Hackathon Resources', url: '/docs/hackathon-resources/' },
           {
             title: 'User Guides',
@@ -256,19 +260,6 @@ module.exports = {
               },
             ],
           },
-        ],
-      },
-      {
-        section: 'DATA PROVIDER NODES',
-        contents: [
-          {
-            title: 'Introduction to Data Provider Nodes',
-            url: '/docs/data-provider-nodes/'
-          },
-          {
-            title: 'Data Provider Nodes List',
-            url: '/docs/data-provider-nodes-list/'
-          }
         ],
       },
     ],

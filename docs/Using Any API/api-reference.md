@@ -161,7 +161,7 @@ setChainlinkToken(
 )
 ```
 
-Sets the stored address for the LINK token which is used to send requests to Oracles. There are different token addresses on different network. See [Addresses & Job IDs](../addresses-and-job-ids/) for the address of the LINK token on the network you're deploying to.
+Sets the stored address for the LINK token which is used to send requests to Oracles. There are different token addresses on different network. See [LINK Token Contracts](../link-token-contracts/) for the address of the LINK token on the network you're deploying to.
 [block:code]
 {
   "codes": [

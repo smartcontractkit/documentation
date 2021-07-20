@@ -2,11 +2,12 @@
 layout: nodes.liquid
 section: smartContract
 date: Last Modified
-title: "Intermediates - Random Numbers"
+title: "Random Numbers Tutorial"
 permalink: "docs/intermediates-tutorial/"
 excerpt: "Using Chainlink VRF"
-whatsnext: {"Get a Random Number":"/docs/get-a-random-number/", "Advanced - API Calls":"/docs/advanced-tutorial/"}metadata: 
-  title: "Intermediates Tutorial"
+whatsnext: {"Get a Random Number":"/docs/get-a-random-number/", "API Calls tutorial":"/docs/advanced-tutorial/"}
+metadata: 
+  title: "Random Numbers Tutorial"
   description: "Learn how to use randomness in your smart contracts using Chainlink VRF."
   image: 
     0: "/files/2a242f1-link.png"
@@ -22,11 +23,11 @@ whatsnext: {"Get a Random Number":"/docs/get-a-random-number/", "Advanced - API 
 
 > 👍 Assumed knowledge
 >
-> This tutorial assumes some basic knowledge around Ethereum, and writing smart contracts. If you're brand new to smart contract development, we recommend working through our [Beginners Tutorial](../beginners-tutorial/) before this one.
+> This tutorial assumes some basic knowledge around Ethereum, and writing smart contracts. If you're brand new to smart contract development, we recommend working through our [The Basics tutorial](../beginners-tutorial/) before this one.
 
 Randomness is very difficult to generate on blockchains. The reason for this is because every node must come to the same conclusion, forming a consensus. There's no way to generate random numbers natively in smart contracts, which is unfortunate because they can be very useful for a wide range of applications. Fortunately, Chainlink provides [Chainlink VRF](../chainlink-vrf/), AKA Chainlink Verifiable Random Function.
 
-If you've walked through the [Beginners Tutorial](../beginners-tutorial/), you'll know how to write smart contracts, use [Chainlink Price Feeds](../using-chainlink-reference-contracts/), and how to deploy a contract to a testnet. If not, head there and come back once you've finished.
+If you've walked through the [The Basics tutorial](../beginners-tutorial/), you'll know how to write smart contracts, use [Chainlink Price Feeds](../using-chainlink-reference-contracts/), and how to deploy a contract to a testnet. If not, head there and come back once you've finished.
 
 In this tutorial, we go through:
 - The Chainlink request & receive cycle
@@ -72,17 +73,17 @@ The contract will have the following functions:
 {
   "type": "info",
   "title": "Open Full Contract",
-  "body": "To jump straight to the entire implementation, you can <a href=\"https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&gist=ce82aaafa96ce943ccf37e8a8b88c477\" target=\"_blank\" class=\"solidity-tracked\">open this contract in remix</a>."
+  "body": "To jump straight to the entire implementation, you can <a href=\"https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&gist=b8a2c5d8cf36761f1938b24e45b1b474\" target=\"_blank\" class=\"solidity-tracked\">open this contract in remix</a>."
 }
 [/block]
 ## 4a. Importing `VRFConsumerBase`
 
-Chainlink maintains a <a href="https://github.com/smartcontractkit/chainlink/tree/develop/contracts" target="_blank">library of contracts</a> that make consuming data from oracles easier. For Chainlink VRF, we use a contract called <a href="https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.6/VRFConsumerBase.sol" target="_blank">`VRFConsumerBase`</a>, which needs to be imported and extended from.
+Chainlink maintains a <a href="https://github.com/smartcontractkit/chainlink/tree/master/contracts" target="_blank">library of contracts</a> that make consuming data from oracles easier. For Chainlink VRF, we use a contract called <a href="https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.6/VRFConsumerBase.sol" target="_blank">`VRFConsumerBase`</a>, which needs to be imported and extended from.
 
 ```javascript
-pragma solidity 0.6.6;
+pragma solidity 0.6.7;
 
-import "https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.6/VRFConsumerBase.sol";
+import "@chainlink/contracts/src/v0.6/VRFConsumerBase.sol";
 
 contract VRFD20 is VRFConsumerBase {
 
@@ -227,13 +228,13 @@ function getHouseName(uint256 id) private pure returns (string memory) {
 See the full contract in Remix! (We've added a few helper functions in there which should make using the contract easier and more flexible. Have a play around with it to understand all the internal workings).
 
 <div class="remix-callout">
-  <a href="https://remix.ethereum.org/#version=soljson-v0.6.6+commit.6c089d02.js&optimize=false&evmVersion=null&gist=ce82aaafa96ce943ccf37e8a8b88c477&runs=200" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
+  <a href="https://remix.ethereum.org/#version=soljson-v0.6.6+commit.6c089d02.js&optimize=false&evmVersion=null&gist=b8a2c5d8cf36761f1938b24e45b1b474&runs=200" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
     <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
 </div>
 
 # 5. Deployment
 
-Time to compile and deploy the contract! If you don't know how to deploy a contract to the Kovan testnet from Remix, follow **[the Beginner Tutorial](/docs/beginners-tutorial)**.
+Time to compile and deploy the contract! If you don't know how to deploy a contract to the Kovan testnet from Remix, follow **[The Basics tutorial](/docs/beginners-tutorial)**.
 
 This deployment is slightly different than the example from the beginners tutorial. In this tutorial, we have to pass in parameters to the constructor upon deployment.
 

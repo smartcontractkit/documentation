@@ -1,13 +1,18 @@
 ---
 layout: nodes.liquid
 section: smartContract
-title: 'Welcome to Chainlink Smart Contract Development!'
+title: "Chainlink Smart Contract Docs"
 date: Last Modified
 permalink: /
 ---
 
 <div>
   <div class="markdown-body">
+    <div class="cl-section-header">
+      <p>
+        Chainlink turns your smart contracts into hybrid smart contracts, giving them access to real-world data and services.
+      </p>
+    </div>
     <div class="cl-featuredcard">
       <div>
         <img

@@ -5,7 +5,7 @@ title: "Building External Initiators"
 permalink: "docs/building-external-initiators/"
 whatsnext: {"Adding External Initiators to Nodes":"/docs/external-initiators-in-nodes/"}
 ---
-We will be using the <a target="_blank" href="https://github.com/smartcontractkit/external-initiator">Chainlink external initiator</a> repo for reference. You can see some examples of existing initiators in the <a href="https://github.com/smartcontractkit/external-initiator/tree/master/blockchain" target="_blank">blockchain</a> folder, and a walkthrough of setting one up (not writing the code) <a href="https://www.youtube.com/watch?v=J8oJEp4qz5w" target="_blank">here</a>.
+We will be using the <a target="_blank" href="https://github.com/smartcontractkit/external-initiator">Chainlink external initiator</a> repo for reference. You can see some examples of existing initiators in the <a href="https://github.com/smartcontractkit/external-initiator/tree/master/blockchain" target="_blank">blockchain</a> folder.
 
 External initiators are simple web initiators that can be activated by any job instead of just one. To set one up, you need to have a service similar to an external adapter that sends an `HTTPPost` message runs API call to your chainlink node service. Here is a sample URL for a web job could look like:
 
