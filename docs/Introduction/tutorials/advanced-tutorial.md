@@ -2,7 +2,7 @@
 layout: nodes.liquid
 section: smartContract
 date: Last Modified
-title: "Advanced - API Calls"
+title: "API Calls Tutorial"
 permalink: "docs/advanced-tutorial/"
 excerpt: "Calling APIs from Smart Contracts"
 whatsnext: {"Make a GET Request":"/docs/make-a-http-get-request/", "Make an Existing Job Request":"/docs/existing-job-request/"}
@@ -17,7 +17,7 @@ metadata:
 
 > 👍 Prerequisites
 >
-> This tutorial requires basic knowledge about Ethereum, smart contracts, and the Chainlink Request & Receive cycle. If you're unfamiliar with those concepts, follow the [Beginners](../beginners-tutorial/) or [Intermediates](../intermediates-tutorial/) tutorials.
+> This tutorial requires basic knowledge about Ethereum, smart contracts, and the Chainlink Request & Receive cycle. If you're unfamiliar with those concepts, follow the [The Basics](../beginners-tutorial/) or [Random Numbers](../intermediates-tutorial/) tutorials.
 
 *By the end of the tutorial, you should know the following:*
 - How to request data from a public API in a smart contract
@@ -31,7 +31,7 @@ metadata:
 
 The request and receive cycle describes how a smart contract requests data from an oracle and receives the response in a separate transaction. If you need a refresher, check out the [Basic Request Model](../architecture-request-model/).
 
-In the [Intermediates tutorial](../intermediates-tutorial/), we request randomness from a VRF oracle, then await the response. The fulfilment function is already given to us from the `VRFConsumerBase` contract, so oracles already know where to send the response to. However, with API calls, our contract _defines_ which function it wants to receive the response to.
+In the [Random Numbers tutorial](../intermediates-tutorial/), we request randomness from a VRF oracle, then await the response. The fulfilment function is already given to us from the `VRFConsumerBase` contract, so oracles already know where to send the response to. However, with API calls, our contract _defines_ which function it wants to receive the response to.
 
 However, before we go into the implementation, let's first understand how Oracle jobs can get data on-chain.
 
