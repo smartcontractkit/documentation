@@ -21,7 +21,7 @@ metadata:
 
 Chainlink enables your contracts to access to *any* external data source, through our decentralized oracle network.
 
-Whether your contract requires sports results, the latest weather, or any other publicly available data, the <a href="https://github.com/smartcontractkit/chainlink/tree/master/evm-contracts" target="_blank">Chainlink contract library</a> provides the tools required for your contract to consume it.
+Whether your contract requires sports results, the latest weather, or any other publicly available data, the <a href="https://github.com/smartcontractkit/chainlink/tree/master/contracts" target="_blank">Chainlink contract library</a> provides the tools required for your contract to consume it.
 
 # Connect Your Smart Contracts to the Outside World
 

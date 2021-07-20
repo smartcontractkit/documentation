@@ -10,7 +10,7 @@ metadata:
   image: 
     0: "/files/OpenGraph_V3.png"
 ---
-API reference for <a href="https://github.com/smartcontractkit/chainlink/blob/master/evm-contracts/src/v0.6/VRFConsumerBase.sol" target="_blank">`VRFConsumerBase`</a>.
+API reference for <a href="https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.6/VRFConsumerBase.sol" target="_blank">`VRFConsumerBase`</a>.
 
 # Index
 

@@ -25,14 +25,16 @@ For implementation details, read [Introduction to Chainlink VRF](../chainlink-vr
 |VRF Coordinator|`0x3d2341ADb2D31f1c5530cDC622016af293177AE0`|
 |Key Hash|`0xf86195cf7690c55907b2b611ebb7343a6f649bff128701cc542f0569e2c549da`|
 |Fee|0.0001 LINK|
-[block:callout]
-{
-  "type": "success",
-  "body": "VRF responses are generated after 10 block confirmations on Polygon by default. Please [get in touch with us](https://chainlinkcommunity.typeform.com/to/OYQO67EF?page=docs-VRF) if you require VRF responses to be generated after a higher number of block confirmations, based on what you feel is best for achieving secure finality times on Polygon.",
-  "title": "VRF Response Times on Polygon"
-}
-[/block]
+
+> 📘 VRF Response Times on Polygon
+>
+> VRF responses are generated after 10 block confirmations on Polygon by default. Please [get in touch with us](https://chainlinkcommunity.typeform.com/to/OYQO67EF?page=docs-VRF) if you require VRF responses to be generated after a higher number of block confirmations, based on what you feel is best for achieving secure finality times on Polygon.
+
 # Polygon (Matic) Mumbai Testnet
+
+> 🚰Mumbai Faucet
+>
+> Testnet LINK and MATIC are available from <a href="https://faucet.matic.network/" target="_blank" rel="noreferrer, noopener">the official matic faucet</a> and <a href="https://linkfaucet.protofire.io/mumbai" target="_blank" rel="noreferrer, noopener">the community faucet</a>.
 
 |Item|Value|
 |---|---|
@@ -43,20 +45,26 @@ For implementation details, read [Introduction to Chainlink VRF](../chainlink-vr
 
 # Binance Smart Chain Mainnet
 
+> 📘 Important
+>
+> The LINK provided by the [Binance Bridge](https://www.binance.org/en/bridge) is not ERC-677 compatible, so cannot be used with Chainlink oracles. However, it can be [**converted to the official LINK token on BSC using Chainlink's PegSwap service**](https://pegswap.chain.link/).
+
 |Item|Value|
 |---|---|
 |LINK Token|`0x404460C6A5EdE2D891e8297795264fDe62ADBB75`|
 |VRF Coordinator|`0x747973a5A2a4Ae1D3a8fDF5479f1514F65Db9C31`|
 |Key Hash|`0xc251acd21ec4fb7f31bb8868288bfdbaeb4fbfec2df3735ddbd4f7dc8d60103c`|
 |Fee|0.2 LINK - initial fees on BSC are meant to cover the highest gas cost prices. To use VRF more efficiently, please [contact us](https://chainlinkcommunity.typeform.com/to/OYQO67EF?page=docs-VRF)|
-[block:callout]
-{
-  "type": "success",
-  "body": "For the most efficient consumption of Chainlink VRF on Binance Smart Chain, please contact us using [this form](https://chainlinkcommunity.typeform.com/to/OYQO67EF?page=docs-VRF) to create a payment channel, through which we can provide VRF to you at the cost of BSC network gas fees. You will only be paying in LINK for the gas costs incurred by the Chainlink node from calling your smart contract.",
-  "title": "Early Access"
-}
-[/block]
+
+> 📘 Early Access
+>
+> For the most efficient consumption of Chainlink VRF on Binance Smart Chain, please contact us using [this form](https://chainlinkcommunity.typeform.com/to/OYQO67EF?page=docs-VRF) to create a payment channel, through which we can provide VRF to you at the cost of BSC network gas fees. You will only be paying in LINK for the gas costs incurred by the Chainlink node from calling your smart contract.
+
 # Binance Smart Chain Testnet
+
+> 🚰BSC Faucet
+>
+> Testnet LINK is available from <a href="https://linkfaucet.protofire.io/bsctest" target="_blank" rel="noreferrer, noopener">the community faucet</a>.
 
 |Item|Value|
 |---|---|
@@ -74,14 +82,17 @@ For implementation details, read [Introduction to Chainlink VRF](../chainlink-vr
 |VRF Coordinator|`0xf0d54349aDdcf704F77AE15b96510dEA15cb7952`|
 |Key Hash|`0xAA77729D3466CA35AE8D28B3BBAC7CC36A5031EFDC430821C02BC31A238AF445`|
 |Fee|2 LINK - initial fees on Ethereum are meant to cover the highest gas cost prices. To use VRF more efficiently, please [contact us](https://chainlinkcommunity.typeform.com/to/OYQO67EF?page=docs-VRF)|
-[block:callout]
-{
-  "type": "success",
-  "body": "For the most efficient consumption of Chainlink VRF on Ethereum, please contact us using [this form](https://chainlinkcommunity.typeform.com/to/OYQO67EF?page=docs-VRF) to create a payment channel, through which we can provide VRF to you at the cost of Ethereum network gas fees. You will only be paying in LINK for the gas costs incurred by the Chainlink node from calling your smart contract.",
-  "title": "Early Access"
-}
-[/block]
+
+> 📘 Early Access
+>
+> For the most efficient consumption of Chainlink VRF on Ethereum, please contact us using [this form](https://chainlinkcommunity.typeform.com/to/OYQO67EF?page=docs-VRF) to create a payment channel, through which we can provide VRF to you at the cost of Ethereum network gas fees. You will only be paying in LINK for the gas costs incurred by the Chainlink node from calling your smart contract.
+
 # Kovan
+
+> 🚰Kovan Faucets
+>
+> Testnet LINK is available from https://kovan.chain.link/
+> Testnet ETH is available from https://linkfaucet.protofire.io/kovan
 
 |Item|Value|
 |---|---|
@@ -91,6 +102,11 @@ For implementation details, read [Introduction to Chainlink VRF](../chainlink-vr
 |Fee|0.1 LINK|
 
 # Rinkeby
+
+> 🚰Rinkeby Faucets
+>
+> Testnet LINK is available from https://rinkeby.chain.link/
+> Testnet ETH is available from https://faucet.rinkeby.io/
 
 |Item|Value|
 |---|---|

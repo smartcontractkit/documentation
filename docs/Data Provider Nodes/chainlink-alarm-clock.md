@@ -3,7 +3,6 @@ layout: nodes.liquid
 section: smartContract
 date: Last Modified
 title: "Chainlink Alarm Clock (Testnet)"
-whatsnext: {"LCX (Testnet)":"/docs/lcx-testnet/"}
 permalink: "docs/chainlink-alarm-clock/"
 metadata: 
   image: 
@@ -56,9 +55,9 @@ contract ChainlinkAlarmClock is ChainlinkClient {
 
 # Tasks
 
-- [Sleep](../adapters/#sleep)
-- [EthBool](../adapters/#ethbool)
-- [EthTx](../adapters/#ethtx)
+- [Sleep](../core-adapters/#sleep)
+- [EthBool](../core-adapters/#ethbool)
+- [EthTx](../core-adapters/#ethtx)
 
 # Request Parameters
 

@@ -9,7 +9,7 @@ metadata:
   image: 
     0: "/files/OpenGraph_V3.png"
 ---
-API reference for <a href="https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/src/v0.6/interfaces/AggregatorV3Interface.sol" target="_blank">`AggregatorV3Interface`</a>.
+API reference for <a href="https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.6/interfaces/AggregatorV3Interface.sol" target="_blank">`AggregatorV3Interface`</a>.
 
 # Functions
 
@@ -68,8 +68,7 @@ function getRoundData(uint80 _roundId) external view
 * `answer`: The price.
 * `startedAt`: Timestamp of when the round started.
 * `updatedAt`: Timestamp of when the round was updated.
-* `answeredInRound`: The round ID of the round in which the answer
-   * was computed.
+* `answeredInRound`: The round ID of the round in which the answer was computed.
 
 ## latestRoundData
 
@@ -92,8 +91,7 @@ function latestRoundData() external view
 * `answer`: The price.
 * `startedAt`: Timestamp of when the round started.
 * `updatedAt`: Timestamp of when the round was updated.
-* `answeredInRound`: The round ID of the round in which the answer
-   * was computed.
+* `answeredInRound`: The round ID of the round in which the answer was computed.
 
 ## version
 
