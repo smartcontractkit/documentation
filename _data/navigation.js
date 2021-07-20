@@ -229,6 +229,10 @@ module.exports = {
             title: 'Developer Communications',
             url: '/docs/developer-communications/',
           },
+          {
+            title: 'Data Provider Nodes',
+            url: '/docs/data-provider-nodes/'
+          },
           { title: 'Hackathon Resources', url: '/docs/hackathon-resources/' },
           {
             title: 'User Guides',
@@ -256,19 +260,6 @@ module.exports = {
               },
             ],
           },
-        ],
-      },
-      {
-        section: 'DATA PROVIDER NODES',
-        contents: [
-          {
-            title: 'Introduction to Data Provider Nodes',
-            url: '/docs/data-provider-nodes/'
-          },
-          {
-            title: 'Data Provider Nodes List',
-            url: '/docs/data-provider-nodes-list/'
-          }
         ],
       },
     ],
