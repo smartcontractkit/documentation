@@ -16,8 +16,8 @@ Gaining access to high quality randomness on-chain requires a solution like Chai
 * [Choose a safe block confirmation time, which will vary between blockchains](#choose-a-safe-block-confirmation-time-which-will-vary-between-blockchains)
 * [Do not re-request randomness, even if you don't get an answer right away](#do-not-re-request-randomness-even-if-you-dont-get-an-answer-right-away)
 * [Don't accept bids/bets/inputs after you have made a randomness request](#dont-accept-bidsbetsinputs-after-you-have-made-a-randomness-request)
-* [`fulfillRandomWords` must not revert](#fulfillrandomwords-must-not-revert)
-* [Use `VRFConsumerBase` in your contract, to interact with the VRF service](#use-vrfconsumerbasev2-in-your-contract-to-interact-with-the-vrf-service)
+* [The `fulfillRandomWords` function must not revert](#fulfillrandomwords-must-not-revert)
+* [Use `VRFConsumerBaseV2` in your contract to interact with the VRF service](#use-vrfconsumerbasev2-in-your-contract-to-interact-with-the-vrf-service)
 
 ## Use `requestId` to match randomness requests with their fulfillment in order
 
@@ -55,9 +55,10 @@ Doing so would give the VRF service provider the option to withhold a VRF fulfil
 Consider the example of a contract that mints a random NFT in response to a users' actions.
 
 The contract should:
-1. record whatever actions of the user may affect the generated NFT
-1. __stop accepting further user actions that may affect the generated NFT__ and issue a randomness request
-1. on randomness fulfillment, mint the NFT
+
+1. Record whatever actions of the user may affect the generated NFT.
+1. __Stop accepting further user actions that might affect the generated NFT__ and issue a randomness request.
+1. On randomness fulfillment, mint the NFT.
 
 Generally speaking, whenever an outcome in your contract depends on some user-supplied inputs and randomness, the contract should not accept any additional user-supplied inputs once the randomness request has been issued.
 

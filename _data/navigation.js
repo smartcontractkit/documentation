@@ -353,6 +353,10 @@ module.exports = {
             title: 'Contract Deployments',
             url: '/docs/vrf-deployments/'
           },
+          {
+            title: 'Migrating to VRF v2',
+            url: '/docs/migration-vrf-v1-v2/',
+          },
         ],
       },
       {

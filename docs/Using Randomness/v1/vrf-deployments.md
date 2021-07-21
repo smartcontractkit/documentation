@@ -78,7 +78,6 @@ For implementation details, read [Introduction to Chainlink VRF](../../chainlink
 |Key Hash|`0xcaf3c3727e033261d383b315559476f48034c13b18f8cafed4d871abe5049186 `|
 |Fee|0.1 LINK|
 
-
 # Ethereum Mainnet
 
 |Item|Value|
@@ -96,7 +95,7 @@ For implementation details, read [Introduction to Chainlink VRF](../../chainlink
 
 > 🚰Kovan Faucets
 >
-> Testnet LINK are available from https://kovan.chain.link:
+> Testnet LINK are available from https://faucets.chain.link/kovan
 > Testnet ETH are available from https://faucets.chain.link/kovan
 
 |Item|Value|
@@ -113,6 +112,7 @@ For implementation details, read [Introduction to Chainlink VRF](../../chainlink
 > Testnet LINK is available from https://faucets.chain.link/rinkeby
 > Testnet ETH is available from: https://faucets.chain.link/rinkeby
 > Backup Testnet ETH Faucets: https://rinkeby-faucet.com/, https://app.mycrypto.com/faucet
+>>>>>>> 539e5cfe (Add the VRF v2 launch documentation.)
 
 |Item|Value|
 |---|---|

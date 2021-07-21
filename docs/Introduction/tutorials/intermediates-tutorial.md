@@ -136,7 +136,7 @@ contract VRFD20 is VRFConsumerBase, ConfirmedOwner(msg.sender) {
 }
 ```
 
-As you can see, `VRFConsumerBase` needs to know the address of the vrfCoordinator, and the address of the LINK token. You can find these addresses [here](../vrf-deployments/v1/).
+As you can see, `VRFConsumerBase` needs to know the address of the vrfCoordinator, and the address of the LINK token. You can find these addresses in the [VRF v1 docs](../vrf-deployments/v1/).
 
 ## `rollDice` function
 
@@ -317,7 +317,7 @@ Click the caret arrow on the right hand side of **Deploy** to expand the paramet
 - `0x6c3699283bda56ad74f6b855546325b68d482e983852a7a82979cc4807b641f4`
 - `100000000000000000`
 
-These are the coordinator address, LINK address, key hash, and fee. For a full reference of the addresses, key hashes, and fees for each network, see [VRF Contracts](../vrf-deployments/v1/). Click deploy and use your Metamask account to confirm the transaction.
+These are the coordinator address, LINK address, key hash, and fee. For a full reference of the addresses, key hashes, and fees for each network, see [VRF v1 Contracts](../vrf-deployments/v1/). Click deploy and use your Metamask account to confirm the transaction.
 
 **Note**: You should [have some Kovan ETH](/docs/beginners-tutorial/#obtaining-testnet-eth) in your Metamask account to pay for the GAS.
 

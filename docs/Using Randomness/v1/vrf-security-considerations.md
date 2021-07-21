@@ -34,7 +34,7 @@ We recommend using the `requestID` to match randomness requests with their corre
 > ⚠️Customizing block confirmation time
 > [Reach out to customize your VRF block confirmation time](https://chainlinkcommunity.typeform.com/to/OYQO67EF) as this configuration must be done on the node side, and cannot be configured as part of a VRF request.
 
-In principle, miners/validators of your underlying blockchain could rewrite the chain's history to put a randomness request from your contract into a different block, which would result in a different VRF output. Note that this does not enable a miner to determine the random value in advance. It only enables them to get a fresh random value that may or not be to their advantage. By way of analogy, they can only re-roll the dice, not predetermine or predict which side it will land on.
+In principle, miners and validators of your underlying blockchain could rewrite the chain's history to put a randomness request from your contract into a different block, which would result in a different VRF output. Note that this does not enable a miner to determine the random value in advance. It only enables them to get a fresh random value that may or not be to their advantage. By way of analogy, they can only re-roll the dice, not predetermine or predict which side it will land on.
 
 You must choose an appropriate confirmation time for the randomness requests you make (i.e. how many blocks the the VRF service waits before writing a fulfillment to the chain) to make such rewrite attacks unprofitable in the context of your application and its value-at-risk.
 
@@ -69,9 +69,6 @@ Otherwise, the cryptoeconomic security properties may be violated by an attacker
 ## `fulfillRandomness` must not revert
 
 If your fulfillRandomness implementation reverts, the VRF service will not attempt to call it a second time. Make sure your contract logic does not revert. Consider simply storing the randomness and taking more complex follow-on actions in separate contract calls made by you or your users.
-
-> ✅ NOTE
-> If your implementation does revert, you can independently re-send the fullfilment transaction to ensure that all requests issued by your contract are fulfilled, but the VRF service won't do so on your behalf.)
 
 ## Use `VRFConsumerBase` in your contract, to interact with the VRF service
 
