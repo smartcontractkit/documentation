@@ -1,21 +1,21 @@
 ---
 layout: nodes.liquid
-section: smartContract
+section: legacy
 date: Last Modified
-title: "Introduction to Chainlink VRF"
-permalink: "docs/chainlink-vrf/"
-whatsnext: {"Get a Random Number":"/docs/get-a-random-number/", "Contract Addresses":"/docs/vrf-contracts/"}
+title: "Introduction to Chainlink VRF [v1]"
+permalink: "docs/chainlink-vrf/v1/"
+whatsnext: {"Get a Random Number":"/docs/get-a-random-number/v1/", "API Reference":"/docs/chainlink-vrf-api-reference/v1/", "Contract Addresses":"/docs/vrf-contracts/v1/"}
 metadata:
   title: "Generate Random Numbers for Smart Contracts using Chainlink VRF"
   description: "Learn how to securely generate random numbers for your smart contract with Chainlink VRF (an RNG). This guide uses Solidity code examples."
   image:
     0: "/files/OpenGraph_V3.png"
 ---
-![Chainlink](/files/a4c6c80-85d09b6-19facd8-banner.png)
+![Chainlink Abstract Banner](/files/a4c6c80-85d09b6-19facd8-banner.png)
 
-> ℹ️ You are viewing the VRF v2 guide.
+> 🚧 VRF v2 replaces and enhances VRF v1.
 >
-> If you are using v1, see the [VRF v1 guide](./v1).
+> See the [VRF v2 documentation](../) to learn more.
 
 # Generate Random Numbers in your Smart Contracts
 
@@ -24,7 +24,7 @@ Chainlink VRF (Verifiable Random Function) is a provably-fair and verifiable sou
 *  Random assignment of duties and resources (e.g. randomly assigning judges to cases)
 *  Choosing a representative sample for consensus mechanisms
 
-Learn how to write smart contracts that consume random numbers: [Get a Random Number](../get-a-random-number/).
+Learn how to write smart contracts that consume random numbers: [Get a Random Number](../../get-a-random-number/v1/).
 
 # On-chain Verification of Randomness
 
