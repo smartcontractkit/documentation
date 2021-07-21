@@ -1,17 +1,22 @@
 ---
 layout: nodes.liquid
-section: smartContract
+section: legacy
 date: Last Modified
-title: "Chainlink VRF Contract Addresses"
-permalink: "docs/vrf-contracts/"
+title: "Chainlink VRF Contract Addresses [v1]"
+permalink: "docs/vrf-deployments/v1/"
 metadata:
   title: "Chainlink VRF Contract Addresses"
   image:
     0: "/files/OpenGraph_V3.png"
 ---
+
+> 🚧 VRF v2 replaces and enhances VRF v1.
+>
+> See the [VRF v2 documentation](../) to learn more.
+
 Chainlink VRF allows you to integrate provably-fair and verifiably random data in your smart contract.
 
-For implementation details, read [Introduction to Chainlink VRF](../chainlink-vrf/).
+For implementation details, read [Introduction to Chainlink VRF](../../chainlink-vrf/v1).
 
 # Polygon (Matic) Mainnet
 
@@ -91,7 +96,7 @@ For implementation details, read [Introduction to Chainlink VRF](../chainlink-vr
 
 > 🚰Kovan Faucets
 >
-> Testnet LINK are available from https://faucets.chain.link/kovan
+> Testnet LINK are available from https://kovan.chain.link:
 > Testnet ETH are available from https://faucets.chain.link/kovan
 
 |Item|Value|
@@ -106,8 +111,7 @@ For implementation details, read [Introduction to Chainlink VRF](../chainlink-vr
 > 🚰Rinkeby Faucets
 >
 > Testnet LINK is available from https://faucets.chain.link/rinkeby
-> Testnet ETH is available from: https://faucets.chain.link/rinkeby
-> Backup Testnet ETH Faucets: https://rinkeby-faucet.com/, https://app.mycrypto.com/faucet 
+> Testnet ETH is available from https://faucet.rinkeby.io/
 
 |Item|Value|
 |---|---|
