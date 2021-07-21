@@ -4,7 +4,6 @@ section: smartContract
 date: Last Modified
 title: "Off-Chain Reporting"
 permalink: "docs/off-chain-reporting/"
-whatsnext: {"Migration Instructions to Flux Aggregator ":"/docs/migrating-to-flux-aggregator/"}
 metadata: 
   image: 
     0: "/files/fb73165-cl.png"
@@ -60,4 +59,4 @@ All nodes watch the blockchain for the final report to remove any single point o
 
 For smart contracts that currently consume price feeds, there will be no interruptions. Service will not be affected, and the functions described in the  [Price Feeds API Reference](../price-feeds-api-reference/) will continue to work.
 
-The upgrade will happen automatically so long as your contracts are requesting data from the proxy addresses as described in the [Price Feed Migration Instructions](../migrating-to-flux-aggregator) from August 2020 and listed both on our [Contract Addresses](../reference-contracts/) page and [ENS](../ens/).
+The upgrade will happen automatically so long as your contracts are requesting data from the proxy addresses from August 2020 and listed both on our [Contract Addresses](../reference-contracts/) page and [ENS](../ens/).

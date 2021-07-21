@@ -34,7 +34,7 @@ Developers should subscribe to update notifications via any of the following cha
 
 > ❗️ Required
 >
-> Please follow the [Migration Instructions](../migrating-to-flux-aggregator/)  and update to the latest [Price Feed Contracts](../reference-contracts/) to ensure your contracts always reference the most up to date aggregator. If you do not upgrade after the timeline in this document, your consumer contracts may not receive the most accurate price data.
+> Please update to the latest [Price Feed Contracts](../reference-contracts/) to ensure your contracts always reference the most up to date aggregator. If you do not upgrade after the timeline in this document, your consumer contracts may not receive the most accurate price data.
 
 The update to [`FluxAggregator`](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.6/FluxAggregator.sol) adds congestion resilience capabilities and gas optimizations for reports involving median calculations over the previous version. 
 
@@ -47,7 +47,7 @@ The update to [`FluxAggregator`](https://github.com/smartcontractkit/chainlink/b
 ### Migration timeline
 
 **24 Aug 2020: Upgrade Information Released**
-Please visit our [Migration Instructions](../migrating-to-flux-aggregator/) or go directly to the latest [Price Feed Contracts](../reference-contracts/) page to update today. 
+Please go to the latest [Price Feed Contracts](../reference-contracts/) page to update today.
 
 **1 Sep 2020: First Upgrade Notice**
 
