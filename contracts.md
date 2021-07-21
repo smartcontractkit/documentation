@@ -88,12 +88,10 @@ permalink: /
       />
       <h3>New to Ethereum and Smart Contracts?</h3>
       <p>
-        Build your first smart contract connected to off-chain data with our
-        Beginner's Walkthrough
+        Start learning about smart contracts and deploy your first smart contract
+        with our Beginner's guide.
       </p>
-      <a href="/docs/beginners-tutorial" class="keychainify-checked"
-        >Start Building</a
-      >
+      <a href="/docs/getting-started" class="cl-button--ghost">Start Learning</a>
     </div>
     <div class="cl-section">
       <div class="cl-box cl-box__lightblue cl-featuredcard">

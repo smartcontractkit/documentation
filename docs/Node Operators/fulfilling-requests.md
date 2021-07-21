@@ -4,7 +4,7 @@ date: Last Modified
 title: "Fulfilling Requests"
 permalink: "docs/fulfilling-requests/"
 whatsnext: {"Performing System Maintenance":"/docs/performing-system-maintenance/", "Miscellaneous":"/docs/miscellaneous/", "Best Security and Operating Practices":"/docs/best-security-practices/"}
-metadata: 
+metadata:
   title: "Chainlink Node Operators: Fulfilling Requests"
   description: "Deploy your own Oracle contract and add jobs to your node so that it can provide data to smart contracts."
 ---
@@ -14,7 +14,10 @@ With your own Oracle contract, you can use your own node to fulfill requests. Th
   "title": "Prerequisites"
 }
 [/block]
-- Going through the [Beginner Walkthrough](../beginners-tutorial) will help you obtain Testnet LINK and set up Metamask- [Run an Ethereum Client](../run-an-ethereum-client/) - [Running a Chainlink Node](../running-a-chainlink-node/)
+- Learn how to [Deploy a Contract](../first-contract/), which helps you set up MetaMask
+- [Acquire testnet LINK](../acquire-link/)
+- [Run an Ethereum Client](../run-an-ethereum-client/)
+- [Running a Chainlink Node](../running-a-chainlink-node/)
 [block:callout]
 {
   "type": "success",
@@ -194,7 +197,7 @@ Adding jobs to the node is easily accomplished via the GUI. We have example [Job
   "body": "Replace `YOUR_ORACLE_CONTRACT_ADDRESS` below with the address of your deployed oracle contract address from the previous steps. Note that this is different than the `ACCOUNT_ADDRESS` from your node."
 }
 [/block]
-If using Chainlink version `0.9.4` or above, you can add a `name` to your job spec. 
+If using Chainlink version `0.9.4` or above, you can add a `name` to your job spec.
 
 [block:code]
 {

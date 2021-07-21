@@ -2,14 +2,14 @@
 layout: nodes.liquid
 section: smartContract
 date: Last Modified
-title: "Random Numbers Tutorial"
+title: "Obtain Random Numbers"
 permalink: "docs/intermediates-tutorial/"
 excerpt: "Using Chainlink VRF"
-whatsnext: {"Get a Random Number":"/docs/get-a-random-number/", "API Calls tutorial":"/docs/advanced-tutorial/"}
-metadata: 
-  title: "Random Numbers Tutorial"
+whatsnext: {"Call Public APIs from a Contract":"/docs/advanced-tutorial/", "Learn about Chainlink Keepers":"/docs/chainlink-keepers/introduction/"}
+metadata:
+  title: "Obtain Random Numbers"
   description: "Learn how to use randomness in your smart contracts using Chainlink VRF."
-  image: 
+  image:
     0: "/files/2a242f1-link.png"
 ---
 
@@ -17,17 +17,17 @@ metadata:
   https://www.youtube.com/watch?v=JqZWariqh5s
 </p>
 
-> Note: The video uses a seed phrase to request randomness, this has been depreciated. Please use the code here. 
+> Note: This video uses a seed phrase to request randomness. Seed phrases are depreciated. Use the code in this exercise instead.
 
-# Introduction
+# Before you begin
 
-> 👍 Assumed knowledge
->
-> This tutorial assumes some basic knowledge around Ethereum, and writing smart contracts. If you're brand new to smart contract development, we recommend working through our [The Basics tutorial](../beginners-tutorial/) before this one.
+This tutorial assumes that you know how to create and deploy basic smart contracts. If you are new to smart contract development, complete the following tutorials first:
+- Learn how to [Deploy Your First Smart Contract](../first-contract/).
+- Learn how to [Add an Oracle to a Contract](../connect-to-oracles/)
+
+# Overview
 
 Randomness is very difficult to generate on blockchains. The reason for this is because every node must come to the same conclusion, forming a consensus. There's no way to generate random numbers natively in smart contracts, which is unfortunate because they can be very useful for a wide range of applications. Fortunately, Chainlink provides [Chainlink VRF](../chainlink-vrf/), AKA Chainlink Verifiable Random Function.
-
-If you've walked through the [The Basics tutorial](../beginners-tutorial/), you'll know how to write smart contracts, use [Chainlink Price Feeds](../using-chainlink-reference-contracts/), and how to deploy a contract to a testnet. If not, head there and come back once you've finished.
 
 In this tutorial, we go through:
 - The Chainlink request & receive cycle
@@ -141,13 +141,13 @@ As you can see, `VRFConsumerBase` needs to know the address of the vrfCoordinato
 uint256 private constant ROLL_IN_PROGRESS = 42;
 
 // ...
-// { variables we've already written } 
+// { variables we've already written }
 // ...
 
 event DiceRolled(bytes32 indexed requestId, address indexed roller);
 
 /// ...
-// { constructor } 
+// { constructor }
 // ...
 
 function rollDice(address roller) public onlyOwner returns (bytes32 requestId) {
@@ -234,7 +234,7 @@ See the full contract in Remix! (We've added a few helper functions in there whi
 
 # 5. Deployment
 
-Time to compile and deploy the contract! If you don't know how to deploy a contract to the Kovan testnet from Remix, follow **[The Basics tutorial](/docs/beginners-tutorial)**.
+Time to compile and deploy the contract! If you don't know how to deploy a contract to the Kovan testnet from Remix, learn how to [Deploy Your First Contract](/docs/first-contract/) before you proceed with the next steps.
 
 This deployment is slightly different than the example from the beginners tutorial. In this tutorial, we have to pass in parameters to the constructor upon deployment.
 
@@ -261,7 +261,7 @@ Click the caret arrow on the right hand side of "Deploy" to expand the parameter
 - `0x6c3699283bda56ad74f6b855546325b68d482e983852a7a82979cc4807b641f4`
 - `100000000000000000`
 
-These are the coordinator address, LINK address, key hash, and fee. Click deploy and use your Metamask account to confirm the transaction. 
+These are the coordinator address, LINK address, key hash, and fee. Click deploy and use your Metamask account to confirm the transaction.
 [block:callout]
 {
   "type": "info",
@@ -269,7 +269,7 @@ These are the coordinator address, LINK address, key hash, and fee. Click deploy
   "body": "For a full reference of the addresses, key hashes and fees for each network, see [VRF Contracts](../vrf-contracts/)."
 }
 [/block]
-(Note: you should <a href="/docs/beginners-tutorial#7c-obtaining-testnet-eth" target="_blank">have some Kovan ETH in your Metamask account</a> to pay for the GAS).
+(Note: You must <a href="/docs/first-contract#install-and-fund-metamask" target="_blank">have MetaMask funded with Kovan ETH</a> to pay for the GAS).
 
 Once deployed, the contract is almost ready to go! However, it can't request anything yet, since it doesn't own LINK. If we hit `rollDice` with no LINK, the transaction will revert.
 

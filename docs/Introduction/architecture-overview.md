@@ -5,9 +5,9 @@ date: Last Modified
 title: "Architecture Overview"
 permalink: "docs/architecture-overview/"
 whatsnext: {"Basic Request Model":"/docs/architecture-request-model/", "Decentralized Data Model":"/docs/architecture-decentralized-model/", "Off-Chain Reporting":"/docs/off-chain-reporting/"}
-metadata: 
+metadata:
   title: "Chainlink Architecture Overview"
-  image: 
+  image:
     0: "/files/OpenGraph_V3.png"
 ---
 ![Basic Request Model](/files/8c35025-Request__Receive_Data.png)
@@ -27,3 +27,11 @@ For a more robust and trustworthy answer, you can aggregate data from many oracl
 The [Decentralized Data Model](../architecture-decentralized-model/) describes how data is aggregated, and how consumer contracts can retrieve this data.
 
 To learn how to consume the price of ETH in your smart contract, see [Get the Latest Price](../get-the-latest-price/).
+
+# Off-Chain Reporting
+
+The OCR protocol allows nodes to aggregate their observations into a single report off-chain using a secure P2P network.
+
+Off-Chain Reporting (OCR) is the next Oracle network upgrade replacing the [`FluxAggregator` model](../architecture-decentralized-model/). It represents a significant step towards increasing the decentralization and scalability of Chainlink networks.
+
+To learn about the OCR protocol, see the [Off-Chain Reporting](../off-chain-reporting/) overview.

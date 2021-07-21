@@ -83,19 +83,27 @@ module.exports = {
         section: 'INTRODUCTION',
         contents: [
           {
-            title: 'Tutorials',
+            title: 'Beginner\'s Guide',
             url: '/docs/tutorials/',
             children: [
               {
-                title: 'The Basics',
-                url: '/docs/beginners-tutorial/',
+                title: 'Getting Started',
+                url: '/docs/getting-started/',
               },
               {
-                title: 'Random Numbers',
+                title: 'Deploy Your First Contract',
+                url: '/docs/first-contract/',
+              },
+              {
+                title: 'Connect Contracts to Oracles',
+                url: '/docs/connect-to-oracles/',
+              },
+              {
+                title: 'Obtain Random Numbers',
                 url: '/docs/intermediates-tutorial/',
               },
               {
-                title: 'API Calls',
+                title: 'Call Public APIs',
                 url: '/docs/advanced-tutorial/',
               },
             ],

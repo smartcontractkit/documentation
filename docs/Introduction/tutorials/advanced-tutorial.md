@@ -2,12 +2,12 @@
 layout: nodes.liquid
 section: smartContract
 date: Last Modified
-title: "API Calls Tutorial"
+title: "Call Public APIs"
 permalink: "docs/advanced-tutorial/"
-excerpt: "Calling APIs from Smart Contracts"
+excerpt: "Call public APIs"
 whatsnext: {"Make a GET Request":"/docs/make-a-http-get-request/", "Make an Existing Job Request":"/docs/existing-job-request/"}
-metadata: 
-  image: 
+metadata:
+  image:
     0: "/files/04b8e56-cl.png"
 ---
 
@@ -15,11 +15,14 @@ metadata:
   https://www.youtube.com/watch?v=ay4rXZhAefs
 </p>
 
-> 👍 Prerequisites
->
-> This tutorial requires basic knowledge about Ethereum, smart contracts, and the Chainlink Request & Receive cycle. If you're unfamiliar with those concepts, follow the [The Basics](../beginners-tutorial/) or [Random Numbers](../intermediates-tutorial/) tutorials.
+# Before you begin
 
-*By the end of the tutorial, you should know the following:*
+This tutorial assumes that you know how to create and deploy basic smart contracts. If you are new to smart contract development, learn how to [Write Your First Smart Contract](../first-contract/) before you start this exercise.
+
+# Overview
+
+By the end of the tutorial, you will learn the following information:
+
 - How to request data from a public API in a smart contract
 - Understand what Core Adapters and External Adapters are and how Oracle Jobs use them
 - Be able to find the Oracle Jobs and Adapters for your contract
@@ -31,7 +34,7 @@ metadata:
 
 The request and receive cycle describes how a smart contract requests data from an oracle and receives the response in a separate transaction. If you need a refresher, check out the [Basic Request Model](../architecture-request-model/).
 
-In the [Random Numbers tutorial](../intermediates-tutorial/), we request randomness from a VRF oracle, then await the response. The fulfilment function is already given to us from the `VRFConsumerBase` contract, so oracles already know where to send the response to. However, with API calls, our contract _defines_ which function it wants to receive the response to.
+In the [Random Numbers tutorial](../intermediates-tutorial/), we request randomness from a VRF oracle, then await the response. The fulfillment function is already given to us from the `VRFConsumerBase` contract, so oracles already know where to send the response to. However, with API calls, our contract _defines_ which function it wants to receive the response to.
 
 However, before we go into the implementation, let's first understand how Oracle jobs can get data on-chain.
 
@@ -51,7 +54,7 @@ Let's walk through a real example, where we retrieve 24 volume of the <a href="h
 
 ### Core Adapters Example
 
-1. [HttpGet](../core-adapters/#httpget) - Calls the API and returns the body of an HTTP GET result for [ETH/USD pair](https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETH&tsyms=USD).  Example: 
+1. [HttpGet](../core-adapters/#httpget) - Calls the API and returns the body of an HTTP GET result for [ETH/USD pair](https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETH&tsyms=USD).  Example:
 ```json
 {"RAW":
   {"ETH":
@@ -88,13 +91,13 @@ pragma solidity ^0.6.7;
 import "@chainlink/contracts/src/v0.6/ChainlinkClient.sol";
 
 contract APIConsumer is ChainlinkClient {
-  
+
     uint256 public volume;
-    
+
     address private oracle;
     bytes32 private jobId;
     uint256 private fee;
-    
+
     /**
      * Network: Kovan
      * Chainlink - 0x2f90A6D021db21e1B2A077c5a37B3C7E75D15b7e
@@ -107,32 +110,32 @@ contract APIConsumer is ChainlinkClient {
         jobId = "29fa9aa13bf1468788b7cc4a500a45b8";
         fee = 0.1 * 10 ** 18; // 0.1 LINK
     }
-    
+
     /**
      * Create a Chainlink request to retrieve API response, find the target
      * data, then multiply by 1000000000000000000 (to remove decimal places from data).
      */
-    function requestVolumeData() public returns (bytes32 requestId) 
+    function requestVolumeData() public returns (bytes32 requestId)
     {
         Chainlink.Request memory request = buildChainlinkRequest(jobId, address(this), this.fulfill.selector);
-        
+
         // Set the URL to perform the GET request on
         request.add("get", "https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETH&tsyms=USD");
-        
+
         // Set the path to find the desired data in the API response, where the response format is:
         request.add("path", "RAW.ETH.USD.VOLUME24HOUR");
-        
+
         // Multiply the result by 1000000000000000000 to remove decimals
         int timesAmount = 10**18;
         request.addInt("times", timesAmount);
-        
+
         // Sends the request
         return sendChainlinkRequestTo(oracle, request, fee);
     }
-    
+
     /**
      * Receive the response in the form of uint256
-     */ 
+     */
     function fulfill(bytes32 _requestId, uint256 _volume) public recordChainlinkFulfillment(_requestId)
     {
         volume = _volume;
@@ -152,7 +155,7 @@ Let's walk through what's happening here:
 [block:callout]
 {
   "type": "info",
-  "body": "Note, the calling contract should own enough LINK to pay the specified fee (by default 0.1 LINK). You can use [this tutorial](../fund-your-contract/) to fund your contract.",
+  "body": "Note, the calling contract should own enough LINK to pay the specified fee (by default 0.1 LINK). You can use [this tutorial](../first-contract#install-and-fund-metamask) to fund your contract.",
   "title": "LINK Required"
 }
 [/block]
@@ -187,7 +190,7 @@ function requestVolumeData() public returns (bytes32 requestId) {
     Chainlink.Request memory request = buildChainlinkRequest(jobId, address(this), this.fulfill.selector);
 
     // Extra parameters don't need to be defined here because they are already defined in the job
-        
+
     return sendChainlinkRequestTo(oracle, request, fee);
 }
 ```
