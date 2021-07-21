@@ -29,19 +29,19 @@ These parameters are the same for all VRF users. You can find the respective val
 Invalid key hashes will result in the request not being processed.  
 
 # Selecting a keyhash and minimum balances
-Each keyhash is associated with a maximum gas price used to fulfill a request. This maximum is important in the case of gas price spikes, 
-where the node may need to bump the gas price for timely fulfillment as it specifies an upper bound on the gas bumping. 
+Each keyhash is associated with a maximum gas price used to fulfill a request. This maximum is important in the case of gas price spikes,
+where the node may need to bump the gas price for timely fulfillment as it specifies an upper bound on the gas bumping.
 It also determines what the minimum subscription balance is in order to fulfill a request, computed as follows:
 
 $$ (max_gas_price * (callback_gas_limit + verification_gas)) / (eth_link_price) $$
 
 where the verification_gas has a safe probabilistic upper bound of 200k.
 
-So for example, say the eth_link_price is 0.02 ETH/LINK and we want to request 200k callback gas limit using a max gas price of 200gwei (by selecting the appropriate keyhash). 
+So for example, say the eth_link_price is 0.02 ETH/LINK and we want to request 200k callback gas limit using a max gas price of 200gwei (by selecting the appropriate keyhash).
 The minimum link balance required for that request to be fulfilled is ((200e9)(200000 + 200000))/0.01 = 8 LINK, which is the maximum possible payment for that single request.
-Should the request be fulfilled at a gas price lower than the maximum, which is quite likely in steady gas conditions, then amount billed will be much less than 8 LINK. 
-If you make a request when the subscription is underfunded, you can simply top up the subscription with LINK and the request will go through automatically as long as the request was made in the last 24 hours. 
-The full list of available keyhashes and their associated max gas prices can be found on the [VRF Deployments page](../vrf-deployments). 
+Should the request be fulfilled at a gas price lower than the maximum, which is quite likely in steady gas conditions, then amount billed will be much less than 8 LINK.
+If you make a request when the subscription is underfunded, you can simply top up the subscription with LINK and the request will go through automatically as long as the request was made in the last 24 hours.
+The full list of available keyhashes and their associated max gas prices can be found on the [VRF Deployments page](../vrf-deployments).
 
 # User Parameters
 These parameters are configurable based on the users needs.
