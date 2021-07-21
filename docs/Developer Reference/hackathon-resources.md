@@ -58,4 +58,3 @@ New? Start with [Beginners - The Basics](../beginners-tutorial/), and follow eve
 - [Matic Price Feeds](../matic-addresses/) 
 - [Binance Smart Chain Price Feeds](../binance-smart-chain-addresses/) 
 - [Conflux](https://github.com/Conflux-Network-Global/demo-cfx-chainlink)
-- [Polkadot and Substrate Resources](/docs/polkadot-and-substrate-resources)

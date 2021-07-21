@@ -18,7 +18,7 @@ Oracles jobs can be specialized even further by implementing the configuration u
 
 Chainlink has facilitated the launch of several oracle data services that allow dApps to access rich data from external data sources through provider-owned nodes. The full list of such provider nodes is available here:
 
-* [Data Provider Node List](https://docs.chain.link/docs/data-provider-nodes-list/)
+* [Data Provider Node List](../data-provider-nodes/#data-provider-nodes-list)
 
 Additionally, here are some independent listing services to help find Oracle Jobs that are pre-configured to call the APIs and endpoints you wish to access in your smart contracts:
 
