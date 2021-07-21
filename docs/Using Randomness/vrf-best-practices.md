@@ -4,12 +4,16 @@ section: smartContract
 date: Last Modified
 title: "VRF Best Practices"
 permalink: "docs/chainlink-vrf-best-practices/"
-metadata: 
+metadata:
   title: "Chainlink VRF API Reference"
   description: "Best pracices for using Chainlink VRF."
-  image: 
+  image:
     0: "/files/OpenGraph_V3.png"
 ---
+
+> ℹ️ You are viewing the VRF v2 guide.
+>
+> If you are using v1, see the [VRF v1 guide](./v1).
 
 Best are the practices for using Chainlink VRF.
 
@@ -20,39 +24,30 @@ If you need to generate a random number within a given range, you should use [mo
 ```solidity
 uint256 public randomResult;
 
-function fulfillRandomness(bytes32 requestId, uint256 randomness) internal override {
-    randomResult = (randomness % 50) + 1;
+function fulfillRandomness(uint256 requestId, uint256[] randomness) internal override {
+    // Assuming only one random word was requested.
+    randomResult = (randomness[0] % 50) + 1;
 }
 ```
 
 ## Getting multiple random numbers
 
-If you want to get multiple random numbers from a single VRF response, you should create an array where the `randomValue` is your original returned VRF number and `n` is the desired number of random numbers.
-
-```solidity
-function expand(uint256 randomValue, uint256 n) public pure returns (uint256[] memory expandedValues) {
-    expandedValues = new uint256[](n);
-    for (uint256 i = 0; i < n; i++) {
-        expandedValues[i] = uint256(keccak256(abi.encode(randomValue, i)));
-    }
-    return expandedValues;
-}
-```
+If you want to get multiple random numbers from a single VRF request, you can
+request this directly with the `numWords` argument described [here](../get-a-random-number/#user-parameters)
 
 ## Having multiple VRF requests in flight
 
 If you want to have multiple VRF requests in flight, you might want to create a mapping between the `requestId` and the address of the requester.
 
 ```solidity
-mapping(bytes32 => address) public requestIdToAddress;
+mapping(uint256 => address) public requestIdToAddress;
 
-function getRandomNumber() public returns (bytes32 requestId) {
-    require(LINK.balanceOf(address(this)) >= fee, "Not enough LINK - fill contract with faucet");
-    bytes32 requestId =  requestRandomness(keyHash, fee);
+function getRandomNumber() public {
+    uint256 requestId =  COORDINATOR.requestRandomWords(keyHash, subId, 10, 200000, 1);
     requestIdToAddress[requestId] = msg.sender;
 }
 
-function fulfillRandomness(bytes32 requestId, uint256 randomness) internal override {
+function fulfillRandomWords(uint256 requestId, uint256[] memory randomWords) internal override {
     address requestAddress = requestIdToAddress[requestId];
 }
 ```
@@ -60,17 +55,16 @@ function fulfillRandomness(bytes32 requestId, uint256 randomness) internal overr
 If you want to keep order when a request was made, you might want to use a mapping of `requestId` to the index/order of this request.
 
 ```solidity
-mapping(bytes32 => uint256) public requestIdToRequestNumberIndex;
+mapping(uint256 => uint256) public requestIdToRequestNumberIndex;
 uint256 public requestCounter;
 
-function getRandomNumber() public returns (bytes32 requestId) {
-    require(LINK.balanceOf(address(this)) >= fee, "Not enough LINK - fill contract with faucet");
-    bytes32 requestId =  requestRandomness(keyHash, fee);
+function getRandomNumber() public {
+    uint256 requestId =  COORDINATOR.requestRandomWords(keyHash, subId, 10, 200000, 1);
     requestIdToRequestNumberIndex[requestId] = requestCounter;
     requestCounter += 1;
 }
 
-function fulfillRandomness(bytes32 requestId, uint256 randomness) internal override {
+function fulfillRandomWords(bytes32 requestId, uint256 randomness) internal override {
     uint256 requestNumber = requestIdToRequestNumberIndex[requestId];
 }
 ```
@@ -78,11 +72,10 @@ function fulfillRandomness(bytes32 requestId, uint256 randomness) internal overr
 If you want to keep generated random numbers of several VRF requests, you might want to use a mapping of `requestId` to the returned random number.
 
 ```solidity
-mapping(bytes32 => uint256) public requestIdToRandomNumber;
+mapping(uint256 => uint256) public requestIdToRandomNumber;
 
-function getRandomNumber() public returns (bytes32 requestId) {
-    require(LINK.balanceOf(address(this)) >= fee, "Not enough LINK - fill contract with faucet");
-    return requestRandomness(keyHash, fee);
+function getRandomNumber() public {
+    COORDINATOR.requestRandomWords(keyHash, subId, 10, 200000, 1);
 }
 
 function fulfillRandomness(bytes32 requestId, uint256 randomness) internal override {

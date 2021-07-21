@@ -342,20 +342,16 @@ module.exports = {
             url: '/docs/get-a-random-number/'
           },
           {
-            title: 'API Reference',
-            url: '/docs/chainlink-vrf-api-reference/'
-          },
-          {
             title: 'Security Considerations',
             url: '/docs/vrf-security-considerations/',
           },
           {
-            title: 'Contract Addresses',
-            url: '/docs/vrf-contracts/'
-          },
-          {
             title: 'Best Practices',
             url: '/docs/chainlink-vrf-best-practices/',
+          },
+          {
+            title: 'Contract Deployments',
+            url: '/docs/vrf-deployments/'
           },
         ],
       },
@@ -521,6 +517,35 @@ module.exports = {
       },
     ],
     legacy: [
+      {
+        section: 'VRF v1 [DEPRECATED]',
+        contents: [
+          {
+            title: 'Introduction to Chainlink VRF',
+            url: '/docs/chainlink-vrf/v1/',
+          },
+          {
+            title: 'Get a Random Number',
+            url: '/docs/get-a-random-number/v1/'
+          },
+          {
+            title: 'Security Considerations',
+            url: '/docs/vrf-security-considerations/v1/',
+          },
+          {
+            title: 'Best Practices',
+            url: '/docs/chainlink-vrf-best-practices/v1/',
+          },
+          {
+            title: 'Contract Addresses',
+            url: '/docs/vrf-deployments/v1/'
+          },
+          {
+            title: 'API Reference',
+            url: '/docs/chainlink-vrf-api-reference/v1/'
+          },
+        ],
+      },
       {
         section: 'v1 JSON JOBS [REMOVED]',
         contents: [
