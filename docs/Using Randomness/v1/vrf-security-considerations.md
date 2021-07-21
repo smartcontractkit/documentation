@@ -1,14 +1,14 @@
 ---
 layout: nodes.liquid
-section: ethereum
+section: legacy
 date: Last Modified
-title: "VRF Security Considerations"
-permalink: "docs/vrf-security-considerations/"
+title: "VRF Security Considerations [v1]"
+permalink: "docs/vrf-security-considerations/v1/"
 ---
 
-> ℹ️ You are viewing the VRF v2 guide.
+> 🚧 VRF v2 replaces and enhances VRF v1.
 >
-> If you are using v1, see the [VRF v1 guide](./v1).
+> See the [VRF v2 documentation](/docs/vrf-security-considerations/) to learn more.
 
 Gaining access to high quality randomness on-chain requires a solution like Chainlink's VRF, but it also requires you to understand some of the ways that randonmess generation can be manipulated by miners/validators. Here are some of the top security considerations you should review in your project.
 
@@ -16,8 +16,8 @@ Gaining access to high quality randomness on-chain requires a solution like Chai
 * [Choose a safe block confirmation time, which will vary between blockchains](#choose-a-safe-block-confirmation-time-which-will-vary-between-blockchains)
 * [Do not re-request randomness, even if you don't get an answer right away](#do-not-re-request-randomness-even-if-you-dont-get-an-answer-right-away)
 * [Don't accept bids/bets/inputs after you have made a randomness request](#dont-accept-bidsbetsinputs-after-you-have-made-a-randomness-request)
-* [The `fulfillRandomWords` function must not revert](#fulfillrandomwords-must-not-revert)
-* [Use `VRFConsumerBaseV2` in your contract to interact with the VRF service](#use-vrfconsumerbasev2-in-your-contract-to-interact-with-the-vrf-service)
+* [`fulfillRandomness` must not revert](#fulfillrandomness-must-not-revert)
+* [Use `VRFConsumerBase` in your contract, to interact with the VRF service](#use-vrfconsumerbase-in-your-contract-to-interact-with-the-vrf-service)
 
 ## Use `requestId` to match randomness requests with their fulfillment in order
 
@@ -31,7 +31,10 @@ We recommend using the `requestID` to match randomness requests with their corre
 
 ## Choose a safe block confirmation time, which will vary between blockchains
 
-In principle, miners/validators of your underlying blockchain could rewrite the chain's history to put a randomness request from your contract into a different block, which would result in a different VRF output. Note that this does not enable a miner to determine the random value in advance. It only enables them to get a fresh random value that may or not be to their advantage. By way of analogy, they can only re-roll the dice, not predetermine or predict which side it will land on.
+> ⚠️Customizing block confirmation time
+> [Reach out to customize your VRF block confirmation time](https://chainlinkcommunity.typeform.com/to/OYQO67EF) as this configuration must be done on the node side, and cannot be configured as part of a VRF request.
+
+In principle, miners and validators of your underlying blockchain could rewrite the chain's history to put a randomness request from your contract into a different block, which would result in a different VRF output. Note that this does not enable a miner to determine the random value in advance. It only enables them to get a fresh random value that may or not be to their advantage. By way of analogy, they can only re-roll the dice, not predetermine or predict which side it will land on.
 
 You must choose an appropriate confirmation time for the randomness requests you make (i.e. how many blocks the the VRF service waits before writing a fulfillment to the chain) to make such rewrite attacks unprofitable in the context of your application and its value-at-risk.
 
@@ -42,7 +45,7 @@ On proof-of-stake blockchains (e.g. BSC, Polygon), what block confirmation time 
 For further details, take a look at the consensus documentation for the chain you want to use:
 - [Ethereum Consensus Mechanisms](https://ethereum.org/en/developers/docs/consensus-mechanisms/)
 - [Binance Consensus Docs](https://docs.binance.org/smart-chain/guides/concepts/consensus.html)
-- [Polygon Consensus Docs](https://docs.polygon.technology/docs/contribute/bor/consensus/)
+- [Polygon Consensus Docs](https://docs.matic.network/docs/contribute/bor/consensus/)
 
 Understanding the blockchains you build your application on is very important. You should take time to understand [chain reorganization](https://blog.ethereum.org/2015/08/08/chain-reorganisation-depth-expectations/) which will also result in a different VRF output, which could be exploited.
 
@@ -55,20 +58,20 @@ Doing so would give the VRF service provider the option to withhold a VRF fulfil
 Consider the example of a contract that mints a random NFT in response to a users' actions.
 
 The contract should:
-
-1. Record whatever actions of the user may affect the generated NFT.
-1. __Stop accepting further user actions that might affect the generated NFT__ and issue a randomness request.
-1. On randomness fulfillment, mint the NFT.
+1. record whatever actions of the user may affect the generated NFT
+1. __stop accepting further user actions that may affect the generated NFT__ and issue a randomness request
+1. on randomness fulfillment, mint the NFT
 
 Generally speaking, whenever an outcome in your contract depends on some user-supplied inputs and randomness, the contract should not accept any additional user-supplied inputs once the randomness request has been issued.
 
 Otherwise, the cryptoeconomic security properties may be violated by an attacker that can rewrite the chain.
 
-## `fulfillRandomWords` must not revert
+## `fulfillRandomness` must not revert
 
-If your fulfillRandomWords implementation reverts, the VRF service will not attempt to call it a second time. Make sure your contract logic does not revert. Consider simply storing the randomness and taking more complex follow-on actions in separate contract calls made by you or your users.
+If your fulfillRandomness implementation reverts, the VRF service will not attempt to call it a second time. Make sure your contract logic does not revert. Consider simply storing the randomness and taking more complex follow-on actions in separate contract calls made by you or your users.
 
-## Use `VRFConsumerBaseV2` in your contract, to interact with the VRF service
+## Use `VRFConsumerBase` in your contract, to interact with the VRF service
 
-`VRFConsumerBaseV2` includes a check to ensure the randomness is fulfilled by the `VRFCoordinatorV2`, it
-recommended that you inherit from it for this reason. Along the same lines, don't override `rawFulfillRandomness`.
+`VRFConsumerBase` tracks important state which needs to be synchronized with the `VRFCoordinator` state. Some users fold `VRFConsumerBase` into their own contracts, but this means taking on significant extra complexity, so we advise against doing so.
+
+Along the same lines, don't override `rawFulfillRandomness`.

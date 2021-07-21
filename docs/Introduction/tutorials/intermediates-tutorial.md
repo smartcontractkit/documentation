@@ -5,7 +5,7 @@ date: Last Modified
 title: "Random Numbers: Using Chainlink VRF"
 permalink: "docs/intermediates-tutorial/"
 excerpt: "Using Chainlink VRF"
-whatsnext: {"Get a Random Number":"/docs/get-a-random-number/", "API Reference":"/docs/chainlink-vrf-api-reference/", "Contract Addresses":"/docs/vrf-contracts/"}
+whatsnext: {"Get a Random Number":"/docs/get-a-random-number/", "Contract Addresses":"/docs/vrf-deployments/"}
 metadata:
   title: "Random Numbers: Using Chainlink VRF"
   description: "Learn how to use randomness in your smart contracts using Chainlink VRF."
@@ -101,7 +101,7 @@ uint256 private s_fee;
 ```
 
 
- 
+
 To keep track of addresses that roll the dice, the contract uses mappings. [Mappings](https://medium.com/upstate-interactive/mappings-in-solidity-explained-in-under-two-minutes-ecba88aff96e) are unique key-value pair data structures similar to hash tables in Java.
 
 ```solidity
@@ -150,7 +150,7 @@ As you can see, the `VRFConsumerBase` constructor requires both the VRF Coordina
 - VRF Coordinator address: 0xdD3782915140c8f3b190B5D67eAc6dc5760C46E9
 - LINK token address:                0xa36085F69e2889c224210F603D836748e7dC0088
 
-You can find the addresses for other networks in the [VRF contracts](../vrf-contracts/) page.
+You can find the addresses for other networks in the [VRF v1 docs](../vrf-deployments/v1/) page.
 
 ## `rollDice` function
 
@@ -363,9 +363,13 @@ Click the caret arrow on the right hand side of **Deploy** to expand the paramet
 
 Then click the `transact` button.
 
-These are the coordinator address, LINK address, key hash, and fee. For a full reference of the addresses, key hashes, and fees for each network, see [VRF Contracts](../vrf-contracts/). Click deploy and use your Metamask account to confirm the transaction.
+These are the coordinator address, LINK address, key hash, and fee. For a full reference of the addresses, key hashes, and fees for each network, see [VRF v1 Contracts](../vrf-deployments/v1/). Click deploy and use your Metamask account to confirm the transaction.
 
 **Note**: You should [have some Kovan ETH](/docs/deploy-your-first-contract/#install-and-fund-your-metamask-wallet) in your Metamask account to pay for the GAS.
+
+> 📘 Address, Key Hashes and more
+>
+> For a full reference of the addresses, key hashes and fees for each network, see [VRF Contracts](../vrf-deployments/v1/).
 
 At this point, your contract should be successfully deployed. However, it can't request anything yet since it doesn't own LINK. If you click `rollDice` with no LINK, the transaction will revert.
 

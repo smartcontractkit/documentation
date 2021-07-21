@@ -15,6 +15,11 @@ metadata:
 >
 > This guide requires basic knowledge about smart contracts. If you are new to smart contract development, read the [Consuming Data Feeds](/docs/consuming-data-feeds/) and [Random Numbers](/docs/intermediates-tutorial/) guides before you begin.
 
+<!-- TODO: Update this guide for VRF v2 -->
+> 🚧 This guide uses VRF v1
+>
+> This guide uses VRF v1 for demonstration purposes. The steps to implement VRF v2 are different. If you need to use VRF v2, see the current [Chainlink VRF](/docs/chainlink-vrf/) guide. However, the [VRF v1](/docs/chainlink-vrf/v1/) guide is still available.
+
 <p>
   https://www.youtube.com/watch?v=ay4rXZhAefs
 </p>
