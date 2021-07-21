@@ -3,7 +3,6 @@ layout: nodes.liquid
 date: Last Modified
 title: "Best Security and Operating Practices"
 permalink: "docs/best-security-practices/"
-whatsnext: {"FluxAggregator Uses":"/docs/fluxaggregator-uses/"}
 ---
 The following information provides a set of best security and operating practices that node operators need to utilize at a minimum to enhance the security and reliability of their infrastructure.
 [block:api-header]

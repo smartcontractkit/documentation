@@ -34,8 +34,7 @@ module.exports = {
           {
             url: '/docs/best-security-practices/',
             title: 'Best Security and Operating Practices',
-          },
-          { url: '/docs/fluxaggregator-uses/', title: 'FluxAggregator Uses' },
+          }
         ],
       },
       {
