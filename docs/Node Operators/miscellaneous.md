@@ -157,17 +157,17 @@ The Chainlink node can be supplied with files for the wallet password and API em
 {
   "codes": [
     {
-      "code": "echo \"user@example.com\" > ~/.chainlink-rinkeby/.api",
+      "code": "echo "user@example.com" > ~/.chainlink-rinkeby/.api",
       "language": "shell",
       "name": "Rinkeby"
     },
     {
-      "code": "echo \"user@example.com\" > ~/.chainlink-kovan/.api",
+      "code": "echo "user@example.com" > ~/.chainlink-kovan/.api",
       "language": "shell",
       "name": "Kovan"
     },
     {
-      "code": "echo \"user@example.com\" > ~/.chainlink/.api",
+      "code": "echo "user@example.com" > ~/.chainlink/.api",
       "language": "shell",
       "name": "Mainnet"
     }
@@ -179,17 +179,17 @@ Then add the password line by running:
 {
   "codes": [
     {
-      "code": "echo \"password\" >> ~/.chainlink-rinkeby/.api",
+      "code": "echo "password" >> ~/.chainlink-rinkeby/.api",
       "language": "shell",
       "name": "Rinkeby"
     },
     {
-      "code": "echo \"password\" >> ~/.chainlink-kovan/.api",
+      "code": "echo "password" >> ~/.chainlink-kovan/.api",
       "language": "shell",
       "name": "Kovan"
     },
     {
-      "code": "echo \"password\" >> ~/.chainlink/.api",
+      "code": "echo "password" >> ~/.chainlink/.api",
       "language": "shell",
       "name": "Mainnet"
     }
@@ -201,17 +201,17 @@ Create the password file by running the following:
 {
   "codes": [
     {
-      "code": "echo \"my_wallet_password\" > ~/.chainlink-rinkeby/.password",
+      "code": "echo "my_wallet_password" > ~/.chainlink-rinkeby/.password",
       "language": "shell",
       "name": "Rinkeby"
     },
     {
-      "code": "echo \"my_wallet_password\" > ~/.chainlink-kovan/.password",
+      "code": "echo "my_wallet_password" > ~/.chainlink-kovan/.password",
       "language": "shell",
       "name": "Kovan"
     },
     {
-      "code": "echo \"my_wallet_password\" > ~/.chainlink/.password",
+      "code": "echo "my_wallet_password" > ~/.chainlink/.password",
       "language": "shell",
       "name": null
     }

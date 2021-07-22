@@ -93,7 +93,7 @@ mkdir ~/.chainlink
 Run the following as a command to create an environment file and populate with variables specific to the network you're running on. For a full list of available configuration variables, click [here](../configuration-variables/).
 
 ```shell Rinkeby
-echo \"ROOT=/chainlink
+echo "ROOT=/chainlink
 LOG_LEVEL=debug
 ETH_CHAIN_ID=4
 MIN_OUTGOING_CONFIRMATIONS=2
@@ -101,10 +101,10 @@ LINK_CONTRACT_ADDRESS=0x01BE23585060835E02B77ef475b0Cc51aA1e0709
 CHAINLINK_TLS_PORT=0
 SECURE_COOKIES=false
 GAS_UPDATER_ENABLED=true
-ALLOW_ORIGINS=*\" > ~/.chainlink-rinkeby/.env
+ALLOW_ORIGINS=*" > ~/.chainlink-rinkeby/.env
 ```
 ```shell Kovan
-echo \"ROOT=/chainlink
+echo "ROOT=/chainlink
 LOG_LEVEL=debug
 ETH_CHAIN_ID=42
 MIN_OUTGOING_CONFIRMATIONS=2
@@ -112,16 +112,16 @@ LINK_CONTRACT_ADDRESS=0xa36085F69e2889c224210F603D836748e7dC0088
 CHAINLINK_TLS_PORT=0
 SECURE_COOKIES=false
 GAS_UPDATER_ENABLED=true
-ALLOW_ORIGINS=*\" > ~/.chainlink-kovan/.env
+ALLOW_ORIGINS=*" > ~/.chainlink-kovan/.env
 ```
 ```shell Mainnet
-echo \"ROOT=/chainlink
+echo "ROOT=/chainlink
 LOG_LEVEL=debug
 ETH_CHAIN_ID=1
 CHAINLINK_TLS_PORT=0
 SECURE_COOKIES=false
 GAS_UPDATER_ENABLED=true
-ALLOW_ORIGINS=*\" > ~/.chainlink/.env
+ALLOW_ORIGINS=*" > ~/.chainlink/.env
 ```
 
 ### Set your Ethereum Client URL
@@ -145,13 +145,13 @@ ETH_CONTAINER_IP=$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' $(
 Then run the following command to add the Ethereum client's URL to your environment file. If you are using an external Ethereum client, use the External tab below, and update `$ETH_CONTAINER_IP` to the websocket address used for connectivity.
 
 ```shell Rinkeby
-echo \"ETH_URL=ws://$ETH_CONTAINER_IP:8546\" >> ~/.chainlink-rinkeby/.env
+echo "ETH_URL=ws://$ETH_CONTAINER_IP:8546" >> ~/.chainlink-rinkeby/.env
 ```
 ```shell Kovan
-echo \"ETH_URL=ws://$ETH_CONTAINER_IP:8546\" >> ~/.chainlink-kovan/.env
+echo "ETH_URL=ws://$ETH_CONTAINER_IP:8546" >> ~/.chainlink-kovan/.env
 ```
 ```shell Mainnet
-echo \"ETH_URL=ws://$ETH_CONTAINER_IP:8546\" >> ~/.chainlink/.env
+echo "ETH_URL=ws://$ETH_CONTAINER_IP:8546" >> ~/.chainlink/.env
 ```
 
 ### Ethereum Client as an External Provider
@@ -159,13 +159,13 @@ echo \"ETH_URL=ws://$ETH_CONTAINER_IP:8546\" >> ~/.chainlink/.env
 If you are using an external provider for connectivity to the Ethereum blockchain or you are running an Ethereum client on a separate instance, you may use the command below for your network. Be sure to update the value for `CHANGEME` to the value given by your provider or the address and port of your separate instance.
 
 ```shell Rinkeby
-echo \"ETH_URL=CHANGEME\" >> ~/.chainlink-rinkeby/.env
+echo "ETH_URL=CHANGEME" >> ~/.chainlink-rinkeby/.env
 ```
 ```shell Kovan
-echo \"ETH_URL=CHANGEME\" >> ~/.chainlink-kovan/.env
+echo "ETH_URL=CHANGEME" >> ~/.chainlink-kovan/.env
 ```
 ```shell Mainnet
-echo \"ETH_URL=CHANGEME\" >> ~/.chainlink/.env
+echo "ETH_URL=CHANGEME" >> ~/.chainlink/.env
 ```
 
 [block:callout]
@@ -194,25 +194,25 @@ You will need to connect your Chainlink node with a remote PostgreSQL database. 
 [/block]
 
 ```shell Rinkeby
-echo \"DATABASE_URL=postgresql://$USERNAME:$PASSWORD@$SERVER:$PORT/$DATABASE\" >> ~/.chainlink-rinkeby/.env
+echo "DATABASE_URL=postgresql://$USERNAME:$PASSWORD@$SERVER:$PORT/$DATABASE" >> ~/.chainlink-rinkeby/.env
 ```
 ```shell Kovan
-echo \"DATABASE_URL=postgresql://$USERNAME:$PASSWORD@$SERVER:$PORT/$DATABASE\" >> ~/.chainlink-kovan/.env
+echo "DATABASE_URL=postgresql://$USERNAME:$PASSWORD@$SERVER:$PORT/$DATABASE" >> ~/.chainlink-kovan/.env
 ```
 ```shell Mainnet
-echo \"DATABASE_URL=postgresql://$USERNAME:$PASSWORD@$SERVER:$PORT/$DATABASE\" >> ~/.chainlink/.env
+echo "DATABASE_URL=postgresql://$USERNAME:$PASSWORD@$SERVER:$PORT/$DATABASE" >> ~/.chainlink/.env
 ```
 
 For a primary/secondary Chainlink node architecture, you may also want to set the `DATABASE_TIMEOUT` configuration as well. Setting `DATABASE_TIMEOUT` to 0 allows a secondary node to wait for the lock to be released on the database indefinitely.
 
 ```shell Rinkeby
-echo \"DATABASE_TIMEOUT=0\" >> ~/.chainlink-rinkeby/.env
+echo "DATABASE_TIMEOUT=0" >> ~/.chainlink-rinkeby/.env
 ```
 ```shell Kovan
-echo \"DATABASE_TIMEOUT=0\" >> ~/.chainlink-kovan/.env
+echo "DATABASE_TIMEOUT=0" >> ~/.chainlink-kovan/.env
 ```
 ```shell Mainnet
-echo \"DATABASE_TIMEOUT=0\" >> ~/.chainlink/.env
+echo "DATABASE_TIMEOUT=0" >> ~/.chainlink/.env
 ```
 
 ### Start the Chainlink Node

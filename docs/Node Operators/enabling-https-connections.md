@@ -62,7 +62,7 @@ Next, add the `TLS_CERT_PATH` and `TLS_KEY_PATH` environment variables to your `
 {
   "codes": [
     {
-      "code": "echo \"TLS_CERT_PATH=/chainlink/tls/server.crt\nTLS_KEY_PATH=/chainlink/tls/server.key\" >> .env",
+      "code": "echo "TLS_CERT_PATH=/chainlink/tls/server.crt\nTLS_KEY_PATH=/chainlink/tls/server.key" >> .env",
       "language": "shell"
     }
   ]
