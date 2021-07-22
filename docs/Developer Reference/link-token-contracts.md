@@ -172,6 +172,16 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 
 ## Avalanche
 
+### Fuji Mainnet
+
+|Parameter|Value|
+|:---|:---|
+|`ETH_CHAIN_ID`|`43114`|
+|Address|[`0x350a791Bfc2C21F9Ed5d10980Dad2e2638ffa7f6`](https://cchain.explorer.avax.network/address/0x350a791Bfc2C21F9Ed5d10980Dad2e2638ffa7f6)|
+|Name|ChainLink Token on Avalanche|
+|Symbol|LINK|
+|Decimals|18|
+
 ### Fuji Testnet
 
 > 🚰Avax Faucet
