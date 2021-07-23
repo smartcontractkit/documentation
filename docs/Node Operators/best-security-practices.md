@@ -101,4 +101,3 @@ Running a Chainlink node works well if you template out your infrastructure usin
 - <a href="https://github.com/Pega88/chainlink-gcp" target="_blank">Pega88's Kubernetes & Terraform setup</a>
 - <a href="https://github.com/securedatalinks/ChainlinkKubernetes" target="_blank">SDL Chainlink Kubernetes Deployment</a>
 - <a href="https://github.com/linkpoolio/terraform-provider-chainlink" target="_blank">LinkPool's Terraform Provider</a>
-- <a href="https://github.com/WilsonBillkia/bane" target="_blank">Ansible hardened Chainlink</a>
