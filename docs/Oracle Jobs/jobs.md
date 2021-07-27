@@ -68,7 +68,7 @@ type                = "directrequest"
 schemaVersion       = 1
 name                = "example eth request event spec"
 contractAddress     = "0x613a38AC1659769640aaE063C651F48E0250454C"
-externalJobID       = "0EEC7E1D-D0D2-476C-A1A8-72DFB6633F02"
+externalJobID       = "0EEC7E1D-D0D2-476C-A1A8-72DFB6633F02" # optional
 observationSource   = """
     ds1          [type=http method=GET url="http://example.com"]; 
     ds1_parse    [type=jsonparse path="USD"];
@@ -78,7 +78,6 @@ observationSource   = """
 ```
 
 - `contractAddress`: the Oracle or Operator contract to monitor for requests.
-- `jobID`: the unique, global ID of the job.
 
 ### Flux Monitor
 
