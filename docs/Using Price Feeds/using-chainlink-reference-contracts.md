@@ -11,7 +11,7 @@ metadata:
   image: 
     0: "/files/OpenGraph_V3.png"
 ---
-![Price Feeds](/files/2306b8b-Decentralized_Oracles_V3.png)
+![Chainlink Abstract Banner](/files/2306b8b-Decentralized_Oracles_V3.png)
 
 # Connect Your Smart Contracts to the Outside World
 

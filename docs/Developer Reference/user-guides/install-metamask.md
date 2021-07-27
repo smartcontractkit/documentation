@@ -18,22 +18,8 @@ This page will show you how to configure the MetaMask browser extension. If you 
 }
 [/block]
 MetaMask is a wallet that runs as a self-contained application inside your browser as an extension. It allows you to interact with Decentralized Applications or "dApps". MetaMask makes accessing the Ethereum & Testnet blockchains (Like Kovan) very easy and provides you with wallet addresses.
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "/files/bb28207-metamask.png",
-        "metamask.png",
-        340,
-        573,
-        "#f6efe9"
-      ],
-      "sizing": "smart"
-    }
-  ]
-}
-[/block]
+
+![Metamask Welcome Screen](/files/bb28207-metamask.png)
 
 [block:api-header]
 {
@@ -46,15 +32,6 @@ Go to: <a href="https://metamask.io" target="_blank" rel="noreferrer, noopener">
 * Create a new vault.
 * You will be presented with a 12-word mnemonic phrase; copy that phrase down in a very secure location that only you can access. 
 * Change the network selection from `Main Ethereum Network` to the `Kovan Test Network`.
-[block:image]
-{
-  "images": [
-    {
-      "image": []
-    }
-  ]
-}
-[/block]
 
 [block:api-header]
 {

@@ -11,7 +11,7 @@ metadata:
   image: 
     0: "/files/OpenGraph_V3.png"
 ---
-![Chainlink](/files/a4c6c80-85d09b6-19facd8-banner.png)
+![Chainlink Abstract Banner](/files/a4c6c80-85d09b6-19facd8-banner.png)
 
 [block:callout]
 {

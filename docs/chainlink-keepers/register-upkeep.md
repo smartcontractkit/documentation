@@ -23,10 +23,10 @@ The App will walk you through several steps.
 # 5 Steps to register and fund Upkeep on the Chainlink Keeper Network
 
 1. **Connect your wallet** with the button in the top right corner and choose a chain. The Chainlink Keeper Network currently supports Ethereum Mainnet or Kovan.
-  ![Metamask](/images/contract-devs/keeper/keeper-metamask.png)
+  ![Connect With Metamask](/images/contract-devs/keeper/keeper-metamask.png)
 
 1. **Click the `Register new upkeep` button**
-  ![Register New Upkeep](/images/contract-devs/keeper/keeper-register.png)
+  ![Click Register New Upkeep](/images/contract-devs/keeper/keeper-register.png)
 
 1. **Fill out the registration form**
     The information you provide will be publicly visible on the blockchain. Your email address will be encrypted.
@@ -38,15 +38,12 @@ The App will walk you through several steps.
     >
     > Your balance will be charged LINK based on a 20% premium over the gas cost to `performUpkeep`. There's currently a ~80k gas overhead from the registry. The premium and overhead are not fixed and will change over time.
 
-
-
     The gas limit of the example counter contract should be set to 200,000.
    
- 
 1. **Press `Register upkeep`** and confirm the transaction in MetaMask
   This will send a request to the Chainlink Keeper Network which will need to be manually approved.  This is a temporary step during the Beta, and requests are automatically approved on testnets, so you should be up and running in a matter of minutes.
 
-    ![success](/images/contract-devs/keeper/keeper-registration-submitted.png)
+    ![Upkeep Registration Success Message](/images/contract-devs/keeper/keeper-registration-submitted.png)
 
 1. **Add funds to your Upkeep**
   Your contract was provided initial funding as part of the registration step, but once this runs out, you'll need to add more LINK to your Upkeep.
@@ -54,11 +51,11 @@ The App will walk you through several steps.
   * Click `View Upkeep` or navigate back to the [home page of the Chainlink Keepers App](https://keeper.chain.link) and click on your recently registered Upkeep
   * Press `Add funds` button
   * Approve the LINK spend allowance
-    ![approve-allowance](/images/contract-devs/keeper/keeper-approve-allowance.png)
+    ![Approve LINK Spend Allowance](/images/contract-devs/keeper/keeper-approve-allowance.png)
   * Confirm LINK transfer by sending funds to the Chainlink Keeper Network Registry
-    ![confirm-transfer](/images/contract-devs/keeper/keeper-confirm-transfer.png)
+    ![Confirm LINK Transfer](/images/contract-devs/keeper/keeper-confirm-transfer.png)
   * Receive a success message and verify that the funds were added to the Upkeep
-    ![add-funds-upkeep](/images/contract-devs/keeper/keeper-add-funds.png)
+    ![Funds Added Successful Message](/images/contract-devs/keeper/keeper-add-funds.png)
 
 ## How funding works
 * Your balance will be reduced each time a Keeper executes your `performUpkeep` method.
@@ -66,8 +63,6 @@ The App will walk you through several steps.
 * If you want to automate adding funds, you can directly call the `addFunds()` function on the `KeeperRegistry` contract.
 * Anyone (not just the Upkeep owner) can call the `addFunds()` function
 * To withdraw funds, first cancel the Upkeep 
-
-
 
 # Congratulations!
 After you register your Upkeep, it has been approved, and you have added sufficient funds, the Chainlink Keeper Network will begin to simulate `checkUpkeep` calls, and execute your contract's `performUpkeep` as needed.

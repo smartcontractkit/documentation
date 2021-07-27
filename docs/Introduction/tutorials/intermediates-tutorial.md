@@ -239,21 +239,9 @@ Time to compile and deploy the contract! If you don't know how to deploy a contr
 This deployment is slightly different than the example from the beginners tutorial. In this tutorial, we have to pass in parameters to the constructor upon deployment.
 
 Once compiled, you'll see a menu that looks like this in the deploy pane:
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "/files/f6c0c2b-Screenshot_2020-12-18_at_16.23.19.png",
-        "Screenshot 2020-12-18 at 16.23.19.png",
-        796,
-        304,
-        "#343240"
-      ]
-    }
-  ]
-}
-[/block]
+
+![Remix Deployed Contract](/files/f6c0c2b-Screenshot_2020-12-18_at_16.23.19.png)
+
 Click the caret arrow on the right hand side of "Deploy" to expand the parameter fields, and paste the following values in:
 
 - `0xdD3782915140c8f3b190B5D67eAc6dc5760C46E9`
@@ -280,10 +268,10 @@ Since the contract is on testnet, as with Kovan ETH, we don't need to purchase _
 Use your Metamask address on the Kovan network to request LINK, then send 1 LINK to the contract address. This address can be found in Remix, under "Deployed Contracts" on the bottom left.
 
 Note, you should add the corresponding LINK token to your MetaMask account first:
-![metamask](/images/contract-devs/metamask-1.png)
+![Metamask Add Tokens Screens](/images/contract-devs/metamask-1.png)
 
 If you enounter any issues, make sure to check you copied the address of the correct network:
-![metamask](/images/contract-devs/metamask-2.png)
+![Metamask Verify Contracts Screen](/images/contract-devs/metamask-2.png)
 
 # 7. Rolling the Dice!
 

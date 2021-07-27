@@ -11,7 +11,7 @@ metadata:
   image: 
     0: "/files/OpenGraph_V3.png"
 ---
-![Starter Kits](/files/c6e99c5-Untitled_design_23.png)
+![Starter Kits Logos](/files/c6e99c5-Untitled_design_23.png)
 
 This page explains how to install and use the [Chainlink Library](../chainlink-framework/) in your projects, either manually or via the user of the Chainlink Starter Kits.
 

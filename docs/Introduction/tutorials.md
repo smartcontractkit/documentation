@@ -7,7 +7,7 @@ permalink: "docs/tutorials/"
 whatsnext: {"The Basics tutorial":"/docs/beginners-tutorial/", "Random Numbers tutorial":"/docs/intermediates-tutorial/", "API Calls tutorial":"/docs/advanced-tutorial/"}
 hidden: false
 ---
-![Chainlink](/files/a4c6c80-85d09b6-19facd8-banner.png)
+![Chainlink Abstract Banner](/files/a4c6c80-85d09b6-19facd8-banner.png)
 
 We've compiled a series of tutorials designed to teach smart contracts basics and how to use them to consume data from the Chainlink oracle ecosystem. 
 

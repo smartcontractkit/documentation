@@ -9,7 +9,7 @@ whatsnext:
   }
 ---
 
-![Chainlink Keeper Network](/images/contract-devs/generic-banner.png)
+![Chainlink Keeper Network Banner](/images/contract-devs/generic-banner.png)
 
 {% include keepers-beta %}
 

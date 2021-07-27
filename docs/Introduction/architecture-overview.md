@@ -10,7 +10,7 @@ metadata:
   image: 
     0: "/files/OpenGraph_V3.png"
 ---
-![Basic Request Model](/files/8c35025-Request__Receive_Data.png)
+![Request Model Banner](/files/8c35025-Request__Receive_Data.png)
 
 # Basic Request Model
 

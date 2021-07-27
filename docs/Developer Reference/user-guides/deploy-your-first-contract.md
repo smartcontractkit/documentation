@@ -24,86 +24,24 @@ Remix is a web IDE (integrated development environment) for creating, running, a
 [/block]
 * Navigate to Remix: <a href="https://remix.ethereum.org/#version=soljson-v0.6.0+commit.26b70077.js&optimize=false&gist=9b71e0718d0ad3f2f9a6b2e4018cac82&evmVersion=null" target="_blank" rel="noreferrer, noopener">https://remix.ethereum.org</a>
 * Remix opens up with an empty interface, or possible with a default contract
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "/files/8dbedba-Screen_Shot_2020-09-08_at_7.05.27_AM.png",
-        "Screen Shot 2020-09-08 at 7.05.27 AM.png",
-        2604,
-        1268,
-        "#2b2f43"
-      ]
-    }
-  ]
-}
-[/block]
+
+![Remix Welcome Screen](/files/8dbedba-Screen_Shot_2020-09-08_at_7.05.27_AM.png)
+
 * If you open remix for the first time, you should chose the **Environments** to **Solidity**
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "/files/7c7f098-remix.jpg",
-        "remix.jpg",
-        907,
-        634,
-        "#f5f6f7"
-      ],
-      "border": true
-    }
-  ]
-}
-[/block]
+
+![Remix Choose Solidity Environment](/files/7c7f098-remix.jpg)
+
 * Click the **gist** label on the left side menu and click on ATestnetConsumer.sol
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "/files/50b7476-remix.png",
-        "remix.png",
-        454,
-        264,
-        "#282a3c"
-      ]
-    }
-  ]
-}
-[/block]
+
+![Remix Open File Explorer](/files/50b7476-remix.png)
+
 * Click the `Solidity Compiler` button in the left side bar, it will show compile tab page.
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "/files/429ae12-remix.png",
-        "remix.png",
-        454,
-        350,
-        "#2d2f40"
-      ]
-    }
-  ]
-}
-[/block]
+
+![Remix Choose Solidity Compiler](/files/429ae12-remix.png)
+
 * Click `Compile ATestnetConsumer.sol` button in the upper left-hand of Remix.
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "/files/b8774fe-Screen_Shot_2020-09-08_at_7.10.07_AM.png",
-        "Screen Shot 2020-09-08 at 7.10.07 AM.png",
-        2578,
-        1248,
-        "#2b2d3f"
-      ]
-    }
-  ]
-}
-[/block]
+
+![Remix Click Compile](/files/b8774fe-Screen_Shot_2020-09-08_at_7.10.07_AM.png)
 
 [block:callout]
 {
@@ -113,37 +51,12 @@ Remix is a web IDE (integrated development environment) for creating, running, a
 [/block]
 * Now select the `Deploy & run transactions` tab in the left-hand of Remix.
 * Change your Environment to `Injected Web3` (if it is not already set) then click on `Deploy`.
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "/files/d5708a0-remix.png",
-        "remix.png",
-        340,
-        446,
-        "#343a41"
-      ]
-    }
-  ]
-}
-[/block]
+
+![Remix Deploy a Contract](/files/d5708a0-remix.png)
+
 * MetaMask will pop-up to confirm the transaction. Click on Confirm.
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "/files/d082799-metamask.png",
-        "metamask.png",
-        340,
-        597,
-        "#eaedf0"
-      ]
-    }
-  ]
-}
-[/block]
+
+![Metamask Confirm a Transaction Screen](/files/d082799-metamask.png)
 
 [block:callout]
 {
@@ -154,52 +67,15 @@ Remix is a web IDE (integrated development environment) for creating, running, a
 [/block]
 * A transaction link will be displayed at the bottom of Remix that displays deployment status. 
 It will take a few moments for the contract to be deployed. The Remix UI will update upon completion.
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "/files/8ff4abe-remix7.jpg",
-        "remix7.jpg",
-        1480,
-        184,
-        "#e8eaef"
-      ]
-    }
-  ]
-}
-[/block]
-* On the left side panel there is a section that displays the title of the contract (example `ATestnetConsumer at 0x123...890 (blockchain)`). 
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "/files/64722ed-remix8.jpg",
-        "remix8.jpg",
-        892,
-        226,
-        "#f4f5f9"
-      ]
-    }
-  ]
-}
-[/block]
+
+![Remix Transaction Confirmation Message](/files/8ff4abe-remix7.jpg)
+
+* On the left side panel there is a section that displays the title of the contract (example `ATestnetConsumer at 0x123...890 (blockchain)`).
+
+![Remix Deployed Contracts](/files/64722ed-remix8.jpg)
+
 * You can click on it to interact with your contract.
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "/files/85c4ddb-remix.png",
-        "remix.png",
-        283,
-        650,
-        "#3f3c48"
-      ],
-      "caption": "Orange labels are buttons which indicate the calling function will cost gas. Blue labels are buttons which simply read the state of the contract, and do not cost gas to call."
-    }
-  ]
-}
-[/block]
+
+![Remix Contract Interaction Screen](/files/85c4ddb-remix.png)
+
 * You can't do anything to this contract except read its state until you send LINK to it.
