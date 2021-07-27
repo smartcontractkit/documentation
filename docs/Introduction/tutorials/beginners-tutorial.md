@@ -107,22 +107,10 @@ Oracles provide a bridge between the real-world and on-chain smart contracts, by
 
 The most popular use for oracles is that of [Price Feeds](../using-chainlink-reference-contracts/) . DeFi platforms like <a href="https://aave.com/" target="_blank">AAVE</a> and <a href="https://www.synthetix.io/" target="_blank">Synthetix</a> use Chainlink price feed oracles to obtain accurate real-time asset prices in their smart contracts.
 
-Chainlink price feeds are sources of data [aggregated from many independent Chainlink node operators](../architecture-decentralized-model/). Each price feed has an on-chain address and functions that enable contracts to read from that address. For example, the <a href="https://feeds.chain.link/eth-usd" target="_blank">ETH / USD feed</a><IMAGE>.
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "/images/contract-devs/price-aggr.png",
-        "Price Aggregation",
-        3600,
-        2400,
-        "#fafafa"
-      ]
-    }
-  ]
-}
-[/block]
+Chainlink price feeds are sources of data [aggregated from many independent Chainlink node operators](../architecture-decentralized-model/). Each price feed has an on-chain address and functions that enable contracts to read from that address. For example, the <a href="https://feeds.chain.link/eth-usd" target="_blank">ETH / USD feed</a>.
+
+![Chainlink Feeds List](/images/contract-devs/price-aggr.png)
+
 ## 6a. Using Chainlink price feeds
 
 The following code is from the [Get the Latest Price](../get-the-latest-price/) page. It describes a contract which obtains the latest ETH / USD price using the Kovan testnet.
@@ -192,22 +180,8 @@ Fortunately for us, Remix also has support for gist. This means that Remix can l
   <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
 </div>
 
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "/files/11d7052-Screenshot_2020-11-27_at_10.16.47.png",
-        "Screenshot 2020-11-27 at 10.16.47.png",
-        454,
-        269,
-        "#303242"
-      ],
-      "sizing": "smart"
-    }
-  ]
-}
-[/block]
+![Remix Select PriceConsumerV3.sol](/files/11d7052-Screenshot_2020-11-27_at_10.16.47.png)
+
 Have a play around with the contract. This is what we'll use for the compiler.
 
 - [x] A Solidity compiler 
@@ -221,21 +195,9 @@ Contracts are deployed by addresses on the network, so to deploy our own we need
 Head to the <a href="https://metamask.io/" target="_blank">Metamask website</a> to download, install and create an account.
 
 Once that's done, hop over to the Kovan testnet inside Metamask extension, as seen in the image below.
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "/files/de9b81c-kovan.gif",
-        "kovan.gif",
-        640,
-        530,
-        "#f3ebe9"
-      ]
-    }
-  ]
-}
-[/block]
+
+![Metamask Select Kovan Screen](/files/de9b81c-kovan.gif)
+
 We now have an address to deploy to the Kovan testnet from.
 
 - [x] An address to deploy from 
@@ -257,21 +219,9 @@ We have all the pieces needed to deploy our price consumer to Kovan. To start th
 Under the logo in the top left-hand corner, there's a vertical menu, made up of images. Hovering over each button shows a tooltip explaining what item is. The first is "File explorer", which shows us all the files loaded into Remix. The second is "Solidity compiler". Clicking this item takes us to a side menu where we can compile our contract.
 
 Remix should automatically detect the correct compiler version depending on the version specified in the contract, and you should see a button that looks like this:
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "/files/99af570-Screenshot_2020-11-27_at_10.45.44.png",
-        "Screenshot 2020-11-27 at 10.45.44.png",
-        592,
-        114,
-        "#215069"
-      ]
-    }
-  ]
-}
-[/block]
+
+![Remix Click Complile PriceConsumerV3.sol](/files/99af570-Screenshot_2020-11-27_at_10.45.44.png)
+
 Click it, and you will see some details below it by scrolling down. There might be a few yellow warnings, but don't worry about that for now as long as they're not red.
 
 ## 7e. Deploying
@@ -287,21 +237,9 @@ Once that's done, check that the "CONTRACT" dropdown shows the name of our contr
 ## 7f. Get the price
 
 Once deployed, an item will appear in the "Deployed Contracts" section underneath the "Deploy" button. This is the deployed contract with all its address.
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "/files/ca77c39-Screenshot_2020-11-27_at_10.56.56.png",
-        "Screenshot 2020-11-27 at 10.56.56.png",
-        618,
-        302,
-        "#2c3042"
-      ]
-    }
-  ]
-}
-[/block]
+
+![Remix Deployed Contracts Section](/files/ca77c39-Screenshot_2020-11-27_at_10.56.56.png)
+
 Click on the caret to see a list of all the functions available to call.
 
 Click "getLatestPrice", and voilà! The latest price appears just underneath the button. We have successfully deployed a smart contract, which uses Chainlink price feeds, to the Kovan Ethereum testnet!

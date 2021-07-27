@@ -39,24 +39,14 @@ With your own Oracle contract, you can use your own node to fulfill requests. Th
   "body": "If you open Remix for the first time, you should chose the **Environments** to **Solidity**"
 }
 [/block]
-- Click on Oracle.sol. The contents of this file will be very minimal, since we only need to import the code hosted on Github.- On the Compile tab, click on the "Compile Oracle.sol" button near the left
+- Click on Oracle.sol. The contents of this file will be very minimal, since we only need to import the code hosted on Github.
+- On the Compile tab, click on the "Compile Oracle.sol" button near the left
 
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "/files/6aa5936-remix002.jpg",
-        "remix002.jpg",
-        836,
-        1382,
-        "#e9edf2"
-      ]
-    }
-  ]
-}
-[/block]
-- Change to the Run tab- Select Oracle from the drop-down in the left panel- Copy the line below for your network and paste it into the text field next to the Deploy button
+![Remix Select compile-Oracle.sol](/files/6aa5936-remix002.jpg)
+
+- Change to the Run tab
+- Select Oracle from the drop-down in the left panel
+- Copy the line below for your network and paste it into the text field next to the Deploy button
 
 [block:code]
 {
@@ -80,22 +70,9 @@ With your own Oracle contract, you can use your own node to fulfill requests. Th
 }
 [/block]
 
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "/files/b9d3620-remix004.jpg",
-        "remix004.jpg",
-        1216,
-        1716,
-        "#f4f4f5"
-      ]
-    }
-  ]
-}
-[/block]
-- Click DeployMetamask will prompt you to Confirm the Transaction
+![Remix Click Deploy Button](/files/b9d3620-remix004.jpg)
+
+- Click Deploy. Metamask will prompt you to Confirm the Transaction
 
 [block:callout]
 {
@@ -106,39 +83,11 @@ With your own Oracle contract, you can use your own node to fulfill requests. Th
 [/block]
 A link to Etherscan will display at the bottom, you can open that in a new tab to keep track of the transaction
 
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "/files/b6fe1ac-remix005.jpg",
-        "remix005.jpg",
-        1486,
-        174,
-        "#e9eaf0"
-      ]
-    }
-  ]
-}
-[/block]
+![Remix Pending Transaction Message](/files/b6fe1ac-remix005.jpg)
 
 Once successful, you should have a new address for the deployed contract
 
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "/files/6858cf3-remix006.jpg",
-        "remix006.jpg",
-        1072,
-        170,
-        "#f7f8fa"
-      ]
-    }
-  ]
-}
-[/block]
+![Remix Deployed Contract Address](/files/6858cf3-remix006.jpg)
 
 [block:callout]
 {
@@ -155,29 +104,15 @@ Once successful, you should have a new address for the deployed contract
 
 - In Remix, call the `setFulfillmentPermission` function with the address of your node, a comma, and the value `true`, as the input parameters. This will allow your node the ability to fulfill requests to your oracle contract.
 
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "/files/c6925db-remix007.jpg",
-        "remix007.jpg",
-        1302,
-        1542,
-        "#eae7e4"
-      ]
-    }
-  ]
-}
-[/block]
-You can get the address of your node when it starts or by looking at one of the following places.
+![Remix Click setFulfillmentPermission](/files/c6925db-remix007.jpg)
+
+You can get the address of your node when it starts or by visiting the Configuration page of the GUI.
 
 1. Bottom of the Keys page in the Account addresses section on recent versions of Chainlink.
-![Screenshot of account addresses](/images/node-operators/node-address.png)
+![Node UI Account Addresses](/images/node-operators/node-address.png)
 
 1. Configurations page on older Chainlink node versions
-![Screenshot of configuration page from 2018](/files/d2e5225-Screenshot_from_2018-12-17_08-23-16.png)
-
+![Node UI Configuration Account Address](/files/d2e5225-Screenshot_from_2018-12-17_08-23-16.png)
 
 Once you call the `setFulfillmentPermission` function, Confirm it in Metamask and wait for it to confirm on the blockchain.
 
@@ -229,57 +164,15 @@ If using Chainlink version `0.9.4` or above, you can add a `name` to your job sp
 [/block]
 - From the admin dashboard, click on New Job.
 
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "/files/25bb51c-Screenshot_from_2018-11-02_08-30-26.png",
-        "Screenshot from 2018-11-02 08-30-26.png",
-        123,
-        71,
-        "#edeef6"
-      ]
-    }
-  ]
-}
-[/block]
+![Node UI New Job Button](/files/25bb51c-Screenshot_from_2018-11-02_08-30-26.png)
 
 - Paste the job from above into the text field.
 
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "/files/ee412d6-Screenshot_from_2018-12-15_08-30-43.png",
-        "Screenshot from 2018-12-15 08-30-43.png",
-        1291,
-        823,
-        "#faf9fa"
-      ]
-    }
-  ]
-}
-[/block]
+![Node UI New Job Screen](/files/ee412d6-Screenshot_from_2018-12-15_08-30-43.png)
 
 - Click Create Job and you'll be notified of the new JobID creation. Take note of this JobID as you'll need it later.
 
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "/files/a7a2f0c-Screenshot_from_2018-11-02_08-42-22.png",
-        "Screenshot from 2018-11-02 08-42-22.png",
-        631,
-        54,
-        "#15bf5f"
-      ]
-    }
-  ]
-}
-[/block]
+![Node UI New Job Message](/files/a7a2f0c-Screenshot_from_2018-11-02_08-42-22.png)
 
 - Repeat this process for each of the jobs above.
 
@@ -303,56 +196,20 @@ If using Chainlink version `0.9.4` or above, you can add a `name` to your job sp
 }
 [/block]
 
-With the jobs added, you can now use your node to fulfill requests. This last section shows what requesters will do when they send requests to your node. It is also a way to test and make sure that your node is functioning correctly.- In Remix, create a new file named TestnetConsumer.sol and copy and paste the <a href="https://gist.githubusercontent.com/thodges-gh/8df9420393fb29b216d1832e037f2eff/raw/350addafcd19e984cdd4465921fbcbe7ce8500d4/ATestnetConsumer.sol" target="_blank" rel="noreferrer, noopener">TestnetConsumer.sol</a> contract into it.- Click "Start to compile".
+With the jobs added, you can now use your node to fulfill requests. This last section shows what requesters will do when they send requests to your node. It is also a way to test and make sure that your node is functioning correctly.
+- In Remix, create a new file named TestnetConsumer.sol and copy and paste the <a href="https://gist.githubusercontent.com/thodges-gh/8df9420393fb29b216d1832e037f2eff/raw/350addafcd19e984cdd4465921fbcbe7ce8500d4/ATestnetConsumer.sol" target="_blank" rel="noreferrer, noopener">TestnetConsumer.sol</a> contract into it.
+- Click "Start to compile".
 
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "/files/a8a5ecd-Screenshot_from_2019-05-16_15-39-05.png",
-        "Screenshot from 2019-05-16 15-39-05.png",
-        473,
-        433,
-        "#f0f2f8"
-      ]
-    }
-  ]
-}
-[/block]
-The contract should compile. You can now deploy it and fund it by sending some LINK to its address. See the [Fund your contract.](../fund-your-contract/) page for instructions on how to do that.- To create a request, input your oracle contract address and the JobID for the EthUint256 job into the `requestEthereumPrice` request method, separated by a comma.
+![Remix Click Compile](/files/a8a5ecd-Screenshot_from_2019-05-16_15-39-05.png)
 
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "/files/dfce3b0-Screenshot_from_2019-05-16_17-12-51.png",
-        "Screenshot from 2019-05-16 17-12-51.png",
-        831,
-        38,
-        "#eae7eb"
-      ]
-    }
-  ]
-}
-[/block]
+The contract should compile. You can now deploy it and fund it by sending some LINK to its address. See the [Fund your contract.](../fund-your-contract/) page for instructions on how to do that.
+- To create a request, input your oracle contract address and the JobID for the EthUint256 job into the `requestEthereumPrice` request method, separated by a comma.
+
+![Remix Click requestEthereumPrice](/files/dfce3b0-Screenshot_from_2019-05-16_17-12-51.png)
+
 - Click the request method button and you should see your node log the request coming in and its fulfillment.Once the transaction from the node is confirmed, you should see the value updated on your contract by clicking on the `currentPrice` button.
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "/files/6741635-Screenshot_from_2019-05-15_15-38-25.png",
-        "Screenshot from 2019-05-15 15-38-25.png",
-        228,
-        99,
-        "#eaebf2"
-      ]
-    }
-  ]
-}
-[/block]
+
+![Remix currentPrice Result](/files/6741635-Screenshot_from_2019-05-15_15-38-25.png)
 
 [block:api-header]
 {
@@ -360,20 +217,7 @@ The contract should compile. You can now deploy it and fund it by sending some L
 }
 [/block]
 To withdraw LINK from the Oracle contract, head to Remix and search for the "withdraw" function in the function list.
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "/files/f8ffdc0-c6925db-remix007.jpg",
-        "c6925db-remix007.jpg",
-        567,
-        672,
-        "#e9e2de"
-      ],
-      "caption": "withdraw function in Oracle contract."
-    }
-  ]
-}
-[/block]
+
+![Remix Click Withdraw Button](/files/f8ffdc0-c6925db-remix007.jpg)
+
 Paste the address you want to withdraw to, and the amount of LINK, then click "withdraw". Confirm the transaction in Metamask when the popup appears.

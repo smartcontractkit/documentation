@@ -14,7 +14,7 @@ metadata:
 
 All source code is open source and available in our <a href="https://github.com/smartcontractkit/chainlink" target="_blank">Github repository</a>.
 
-![Basic Request Model](/files/881ade6-Simple_Architecture_Diagram_1_V1.png)
+![Request Model Diagram](/files/881ade6-Simple_Architecture_Diagram_1_V1.png)
 
 ## ChainlinkClient
 
@@ -62,18 +62,4 @@ For more information on how to become a node operator, learn how to [run a Chain
 
 Below is a UML diagram describing the contract structure of `ATestnetConsumer`, a deployed example contract implementing `ChainlinkClient`.
 
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "/files/8ac3fc1-69a048b-Consumer_UML.svg",
-        "69a048b-Consumer_UML.svg",
-        4532,
-        2879,
-        "#ffffff"
-      ]
-    }
-  ]
-}
-[/block]
+![Consumer UMK Diagram](/files/8ac3fc1-69a048b-Consumer_UML.svg)

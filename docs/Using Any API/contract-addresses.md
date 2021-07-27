@@ -10,23 +10,8 @@ permalink: "docs/decentralized-oracles-ethereum-mainnet/"
 This page details example addresses and jobs that are supported by oracles on various networks, so you can test your implementation quickly and easily.
 
 For a comprehensive list of data providers, oracles, jobs, adapters, and more, visit <a href="https://market.link/" target="_blank">Chainlink Market</a>.
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "/files/afe3efe-marketlink.jpg",
-        "marketlink.jpg",
-        113,
-        113,
-        "#8a92d9"
-      ],
-      "caption": "<a href=\"https://market.link/\" target=\"_blank\">Chainlink Market</a>",
-      "sizing": "smart"
-    }
-  ]
-}
-[/block]
+
+![Chainlink Market Logo](/files/afe3efe-marketlink.jpg)
 # Mainnet
 
 > 🚧
