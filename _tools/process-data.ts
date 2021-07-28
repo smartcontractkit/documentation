@@ -1,4 +1,5 @@
 import * as fs from 'fs';
+import { exit } from 'process';
 import { NETWORKS } from './networks';
 
 const targetData = NETWORKS;
@@ -18,7 +19,8 @@ interface DataFile {
       config?: {
         maxContractValueAge: string;
         relativeDeviationThresholdPPB: string;
-      }
+      };
+      docsHidden?: boolean;
     };
   };
   proxies: {
@@ -37,12 +39,16 @@ interface ResultProxy {
   proxy: string;
 }
 
-function load(filename): DataFile {
-  return JSON.parse(
-    fs.readFileSync(`data-source/${filename}`, {
-      encoding: 'utf8',
-    })
-  );
+function load(filename: string): DataFile {
+  const file = `data-source/${filename}`;
+  const result = JSON.parse(fs.readFileSync(file, { encoding: 'utf8' }));
+  if (!result.contracts) {
+    console.error(
+      `It looks like you may have loaded an invalid or unexpectedly formatted data file.\nKey 'contracts' not found in File: ${file}`
+    );
+    exit(2);
+  }
+  return result;
 }
 
 /**
@@ -67,27 +73,45 @@ for (let page of targetData) {
     const contents = load(network.source);
 
     // First find all the live contracts
-    const liveContracts: { [key: string]: { decimals: number, deviationThreshold: number, heartbeat: string } } = {};
+    const liveContracts: {
+      [key: string]: {
+        decimals: number;
+        deviationThreshold: number;
+        heartbeat: string;
+      };
+    } = {};
     for (let contractKey of Object.keys(contents.contracts)) {
       const contract = contents.contracts[contractKey];
       if (
-        (contract.status === 'testnet-priority' ||
-          contract.status === 'live') &&
+        (contract.status === 'testnet-priority' || contract.status === 'live') &&
         // Only include if the key does not exist or it's not true
         !contract['docsHidden']
       ) {
-        let threshold;
-        if (threshold = Number.parseInt(contract.config?.relativeDeviationThresholdPPB, 10)) {
+        let threshold: number = 0;
+        // Handle Threshold defined in the config object
+        if (
+          contract.config &&
+          (threshold = Number.parseInt(
+            contract.config.relativeDeviationThresholdPPB ? contract.config.relativeDeviationThresholdPPB : '',
+            10
+          ))
+        ) {
           threshold = threshold / 10000000;
         }
-        liveContracts[contractKey] = {
 
+        // Set the threshold to deviationThreshold if it's specified (deviationThreshold or
+        // relativeDeviationThresholdPPB should be set)
+        liveContracts[contractKey] = {
           deviationThreshold: contract.deviationThreshold ? contract.deviationThreshold : threshold,
-          heartbeat: contract.heartbeat ? contract.heartbeat : contract.config?.maxContractValueAge,
-          decimals: contract.decimals
+          heartbeat: contract.heartbeat ? contract.heartbeat : contract.config?.maxContractValueAge || '',
+          decimals: contract.decimals,
         };
         if (contract.v3Facade) {
-          liveContracts[contract.v3Facade] = { deviationThreshold: contract.deviationThreshold, heartbeat: contract.heartbeat, decimals: contract.decimals };
+          liveContracts[contract.v3Facade] = {
+            deviationThreshold: contract.deviationThreshold,
+            heartbeat: contract.heartbeat,
+            decimals: contract.decimals,
+          };
         }
       }
     }
