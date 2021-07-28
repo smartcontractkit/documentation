@@ -40,7 +40,13 @@ server.stdout.on('data', (data) => {
       server.kill();
       checker.stdout.destroy();
       checker.kill();
-      exit(code);
+      let result;
+      if (code === null) {
+        result = undefined;
+      } else {
+        result = code;
+      }
+      exit(result);
     });
   }
 });
