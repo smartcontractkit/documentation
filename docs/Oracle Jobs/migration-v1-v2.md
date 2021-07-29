@@ -67,17 +67,10 @@ observationSource   = """
     decode_cbor  [type=cborparse data="$(decode_log.data)"];
     fetch [type=http method=get url="$(decode_cbor.url)"];
     parse [type=jsonparse path="$(decode_cbor.path)"];
-    encode_data [type=ethabiencode abi="(uint256 value)" data=<{ "value": $(parse) }>];
+    encode_data [type=ethabiencode abi="(uint256 value)" data="{\"value\": $(parse)}"];
     encode_tx [type=ethabiencode
             abi="fulfillOracleRequest(bytes32 requestId, uint256 payment, address callbackAddress, bytes4 callbackFunctionId, uint256 expiration, bytes32 data)"
-            data=<{
-                "requestId": $(decode_log.requestId),
-                "payment": $(decode_log.payment),
-                "callbackAddress": $(decode_log.callbackAddr),
-                "callbackFunctionId": $(decode_log.callbackFunctionId),
-                "expiration": $(decode_log.cancelExpiration),
-                "data": $(encode_data)
-            }>];
+            data="{\"requestId\": $(decode_log.requestId), \"payment\": $(decode_log.payment), \"callbackAddress\": $(decode_log.callbackAddr), \"callbackFunctionId\": $(decode_log.callbackFunctionId), \"expiration\": $(decode_log.cancelExpiration), \"data\": $(encode_data)}"
     submit [type=ethtx to="$(jobSpec.contractAddress)" data="$(encode_tx)"];
     decode_log -> decode_cbor -> fetch -> parse -> encode_data -> encode_tx -> submit;
 """
@@ -130,17 +123,10 @@ observationSource   = """
     ds       [type=http method=get url="https://bitstamp.net/api/ticker/"];
     parse    [type=jsonparse path="last"];
     multiply [type=multiply times=100];
-    encode_data [type=ethabiencode abi="(uint256 value)" data=<{ "value": $(multiply) }>];
+    encode_data [type=ethabiencode abi="(uint256 value)" data="{\"value\": $(multiply)}"];
     encode_tx [type=ethabiencode
             abi="fulfillOracleRequest(bytes32 requestId, uint256 payment, address callbackAddress, bytes4 callbackFunctionId, uint256 expiration, bytes32 data)"
-            data=<{
-                "requestId": $(decode_log.requestId),
-                "payment": $(decode_log.payment),
-                "callbackAddress": $(decode_log.callbackAddr),
-                "callbackFunctionId": $(decode_log.callbackFunctionId),
-                "expiration": $(decode_log.cancelExpiration),
-                "data": $(encode_data)
-            }>];
+            data="{\"requestId\": $(decode_log.requestId), \"payment\": $(decode_log.payment), \"callbackAddress\": $(decode_log.callbackAddr), \"callbackFunctionId\": $(decode_log.callbackFunctionId), \"expiration\": $(decode_log.cancelExpiration), \"data\": $(encode_data)}"
     submit [type=ethtx to="$(jobSpec.contractAddress)" data="$(encode_tx)"];
 
     ds -> parse -> multiply -> encode_data -> encode_tx -> submit;
