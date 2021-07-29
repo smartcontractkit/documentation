@@ -231,3 +231,15 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 |Name|ChainLink Token on Arbitrum Rinkeby|
 |Symbol|LINK|
 |Decimals|18|
+
+## Huobi Eco Chain
+
+### Mainnet
+
+|Parameter|Value|
+|:---|:---|
+|`ETH_CHAIN_ID`|`128`|
+|Address|[`0x9e004545c59D359F6B7BFB06a26390b087717b42`](https://hecoinfo.com/address/0x9e004545c59D359F6B7BFB06a26390b087717b42)|
+|Name|Heco-Peg LINK Token|
+|Symbol|LINK|
+|Decimals|18|
