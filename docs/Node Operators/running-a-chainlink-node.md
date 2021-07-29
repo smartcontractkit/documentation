@@ -26,11 +26,11 @@ To run a Chainlink node from source, use the [following instructions](https://gi
 
 # Using Docker
 
-It's recommended to run the Chainlink node with <a href="https://www.docker.com/" target="_blank" rel="noreferrer, noopener">Docker</a>. This is because we continuously build and deploy the code from our <a href="https://github.com/smartcontractkit/chainlink" target="_blank" rel="noreferrer, noopener">repository on Github</a>, which means you don't need a complete development environment to run a node.
+It's recommended to run the Chainlink node with [Docker](https://www.docker.com/). This is because we continuously build and deploy the code from our [repository on Github](https://github.com/smartcontractkit/chainlink), which means you don't need a complete development environment to run a node.
 
 ## Requirements
 
-- <a href="https://docs.docker.com/install/" target="_blank" rel="noreferrer, noopener">Docker-CE</a>. Quick instructions for setting up Docker is below:
+- [Docker-CE](https://docs.docker.com/install/). Quick instructions for setting up Docker is below:
 
 ```shell Amazon Linux 2
 sudo amazon-linux-extras install -y docker
@@ -93,7 +93,7 @@ mkdir ~/.chainlink
 Run the following as a command to create an environment file and populate with variables specific to the network you're running on. For a full list of available configuration variables, click [here](../configuration-variables/).
 
 ```shell Rinkeby
-echo \"ROOT=/chainlink
+echo "ROOT=/chainlink
 LOG_LEVEL=debug
 ETH_CHAIN_ID=4
 MIN_OUTGOING_CONFIRMATIONS=2
@@ -101,10 +101,10 @@ LINK_CONTRACT_ADDRESS=0x01BE23585060835E02B77ef475b0Cc51aA1e0709
 CHAINLINK_TLS_PORT=0
 SECURE_COOKIES=false
 GAS_UPDATER_ENABLED=true
-ALLOW_ORIGINS=*\" > ~/.chainlink-rinkeby/.env
+ALLOW_ORIGINS=*" > ~/.chainlink-rinkeby/.env
 ```
 ```shell Kovan
-echo \"ROOT=/chainlink
+echo "ROOT=/chainlink
 LOG_LEVEL=debug
 ETH_CHAIN_ID=42
 MIN_OUTGOING_CONFIRMATIONS=2
@@ -112,27 +112,23 @@ LINK_CONTRACT_ADDRESS=0xa36085F69e2889c224210F603D836748e7dC0088
 CHAINLINK_TLS_PORT=0
 SECURE_COOKIES=false
 GAS_UPDATER_ENABLED=true
-ALLOW_ORIGINS=*\" > ~/.chainlink-kovan/.env
+ALLOW_ORIGINS=*" > ~/.chainlink-kovan/.env
 ```
 ```shell Mainnet
-echo \"ROOT=/chainlink
+echo "ROOT=/chainlink
 LOG_LEVEL=debug
 ETH_CHAIN_ID=1
 CHAINLINK_TLS_PORT=0
 SECURE_COOKIES=false
 GAS_UPDATER_ENABLED=true
-ALLOW_ORIGINS=*\" > ~/.chainlink/.env
+ALLOW_ORIGINS=*" > ~/.chainlink/.env
 ```
 
 ### Set your Ethereum Client URL
 
-[block:callout]
-{
-  "type": "warning",
-  "body": "If you're using a 3rd party service to connect to the blockchain, skip to the [External Provider](#ethereum-client-as-an-external-provider) section to set the `ETH_URL` environment variable. We provide general guidance, but you will need to obtain the websocket connection string to add to your environment file.",
-  "title": "Using an external Ethereum client?"
-}
-[/block]
+> 🚧 Using an external Ethereum client?
+> 
+> If you're using a 3rd party service to connect to the blockchain, skip to the [External Provider](#ethereum-client-as-an-external-provider) section to set the `ETH_URL` environment variable. We provide general guidance, but you will need to obtain the websocket connection string to add to your environment file.
 
 ### Ethereum Client on the Same Machine
 
@@ -145,13 +141,13 @@ ETH_CONTAINER_IP=$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' $(
 Then run the following command to add the Ethereum client's URL to your environment file. If you are using an external Ethereum client, use the External tab below, and update `$ETH_CONTAINER_IP` to the websocket address used for connectivity.
 
 ```shell Rinkeby
-echo \"ETH_URL=ws://$ETH_CONTAINER_IP:8546\" >> ~/.chainlink-rinkeby/.env
+echo "ETH_URL=ws://$ETH_CONTAINER_IP:8546" >> ~/.chainlink-rinkeby/.env
 ```
 ```shell Kovan
-echo \"ETH_URL=ws://$ETH_CONTAINER_IP:8546\" >> ~/.chainlink-kovan/.env
+echo "ETH_URL=ws://$ETH_CONTAINER_IP:8546" >> ~/.chainlink-kovan/.env
 ```
 ```shell Mainnet
-echo \"ETH_URL=ws://$ETH_CONTAINER_IP:8546\" >> ~/.chainlink/.env
+echo "ETH_URL=ws://$ETH_CONTAINER_IP:8546" >> ~/.chainlink/.env
 ```
 
 ### Ethereum Client as an External Provider
@@ -159,22 +155,18 @@ echo \"ETH_URL=ws://$ETH_CONTAINER_IP:8546\" >> ~/.chainlink/.env
 If you are using an external provider for connectivity to the Ethereum blockchain or you are running an Ethereum client on a separate instance, you may use the command below for your network. Be sure to update the value for `CHANGEME` to the value given by your provider or the address and port of your separate instance.
 
 ```shell Rinkeby
-echo \"ETH_URL=CHANGEME\" >> ~/.chainlink-rinkeby/.env
+echo "ETH_URL=CHANGEME" >> ~/.chainlink-rinkeby/.env
 ```
 ```shell Kovan
-echo \"ETH_URL=CHANGEME\" >> ~/.chainlink-kovan/.env
+echo "ETH_URL=CHANGEME" >> ~/.chainlink-kovan/.env
 ```
 ```shell Mainnet
-echo \"ETH_URL=CHANGEME\" >> ~/.chainlink/.env
+echo "ETH_URL=CHANGEME" >> ~/.chainlink/.env
 ```
 
-[block:callout]
-{
-  "type": "warning",
-  "body": "Ganache is a mock testnet and it doesn't work with Chainlink because of that. To use the features of the network, you need to deploy your contract on a real environment: one of the testnets or mainnets. The full list of supported environments can be found [here](../link-token-contracts/).",
-  "title": "Running Chainlink Node on Ganache"
-}
-[/block]
+> 🚧 Running Chainlink Node on Ganache
+> 
+> Ganache is a mock testnet and it doesn't work with Chainlink because of that. To use the features of the network, you need to deploy your contract on a real environment: one of the testnets or mainnets. The full list of supported environments can be found [here](../link-token-contracts/).
 
 ### Set the Remote DATABASE_URL Config
 
@@ -186,33 +178,30 @@ You will need to connect your Chainlink node with a remote PostgreSQL database. 
 - `$PORT`: The port that the database is listening on
 - `$DATABASE`: The database to use for the Chainlink node (i.e. "postgres")
 
-[block:callout]
-{
-  "type": "warning",
-  "body": "If you're testing you can add `?sslmode=disable` to the end of your `DATABASE_URL`. However you should *never* do this on a production node."
-}
-[/block]
+> 🚧 Important
+> 
+> If you're testing you can add `?sslmode=disable` to the end of your `DATABASE_URL`. However you should *never* do this on a production node.
 
 ```shell Rinkeby
-echo \"DATABASE_URL=postgresql://$USERNAME:$PASSWORD@$SERVER:$PORT/$DATABASE\" >> ~/.chainlink-rinkeby/.env
+echo "DATABASE_URL=postgresql://$USERNAME:$PASSWORD@$SERVER:$PORT/$DATABASE" >> ~/.chainlink-rinkeby/.env
 ```
 ```shell Kovan
-echo \"DATABASE_URL=postgresql://$USERNAME:$PASSWORD@$SERVER:$PORT/$DATABASE\" >> ~/.chainlink-kovan/.env
+echo "DATABASE_URL=postgresql://$USERNAME:$PASSWORD@$SERVER:$PORT/$DATABASE" >> ~/.chainlink-kovan/.env
 ```
 ```shell Mainnet
-echo \"DATABASE_URL=postgresql://$USERNAME:$PASSWORD@$SERVER:$PORT/$DATABASE\" >> ~/.chainlink/.env
+echo "DATABASE_URL=postgresql://$USERNAME:$PASSWORD@$SERVER:$PORT/$DATABASE" >> ~/.chainlink/.env
 ```
 
 For a primary/secondary Chainlink node architecture, you may also want to set the `DATABASE_TIMEOUT` configuration as well. Setting `DATABASE_TIMEOUT` to 0 allows a secondary node to wait for the lock to be released on the database indefinitely.
 
 ```shell Rinkeby
-echo \"DATABASE_TIMEOUT=0\" >> ~/.chainlink-rinkeby/.env
+echo "DATABASE_TIMEOUT=0" >> ~/.chainlink-rinkeby/.env
 ```
 ```shell Kovan
-echo \"DATABASE_TIMEOUT=0\" >> ~/.chainlink-kovan/.env
+echo "DATABASE_TIMEOUT=0" >> ~/.chainlink-kovan/.env
 ```
 ```shell Mainnet
-echo \"DATABASE_TIMEOUT=0\" >> ~/.chainlink/.env
+echo "DATABASE_TIMEOUT=0" >> ~/.chainlink/.env
 ```
 
 ### Start the Chainlink Node
@@ -229,21 +218,14 @@ cd ~/.chainlink-kovan && docker run -p 6688:6688 -v ~/.chainlink-kovan:/chainlin
 cd ~/.chainlink && docker run -p 6688:6688 -v ~/.chainlink:/chainlink -it --env-file=.env smartcontract/chainlink:<version> local n
 ```
 
-[block:callout]
-{
-  "type": "info",
-  "title": "Local Database",
-  "body": "If you're running a local database you may need to add `--network host` to the end of the command above."
-}
-[/block]
+> 📘 Local Database
+> 
+> If you're running a local database you may need to add `--network host` to the end of the command above.
 
 The first time running the image, it will ask you for a password and confirmation. This will be your wallet password that you can use to unlock the keystore file generated for you. Then, you'll be prompted to enter an API Email and Password. This will be used to expose the API for the GUI interface, and will be used every time you log into your node. When running the node again, you can supply the `-p` option with a path to a text file containing the wallet key password, and a `-a` option, pointing to a text file containing the API email and password. Instructions on how to do that are [here](../miscellaneous/#use-password-and-api-files-on-startup).
 
-[block:callout]
-{
-  "type": "info",
-  "body": "You will need to send some ETH to your node's address in order for it to fulfill requests. You can view your node's ETH address when the node starts up or on the Configuration page of the GUI."
-}
-[/block]
+> 📘 Important
+> 
+> You will need to send some ETH to your node's address in order for it to fulfill requests. You can view your node's ETH address when the node starts up or on the Configuration page of the GUI.
 
-You can now connect to your Chainlink node's UI interface by navigating to <a href="http://localhost:6688" target="_blank" rel="noreferrer, noopener">http://localhost:6688</a>. If using a VPS, you can create a <a href="https://www.howtogeek.com/168145/how-to-use-ssh-tunneling/" target="_blank" rel="noreferrer, noopener">SSH tunnel</a> to your node for `6688:localhost:6688` to enable connectivity to the GUI. Typically this is done with `ssh -i $KEY $USER@$REMOTE-IP -L 6688:localhost:6688 -N`. A SSH tunnel is recommended over opening up ports specific to the Chainlink node to be public facing. See our [Best Security and Operating Practices](../best-security-practices/) page for more details on how to secure your node.
+You can now connect to your Chainlink node's UI interface by navigating to [http://localhost:6688](http://localhost:6688). If using a VPS, you can create a [SSH tunnel](https://www.howtogeek.com/168145/how-to-use-ssh-tunneling/) to your node for `6688:localhost:6688` to enable connectivity to the GUI. Typically this is done with `ssh -i $KEY $USER@$REMOTE-IP -L 6688:localhost:6688 -N`. A SSH tunnel is recommended over opening up ports specific to the Chainlink node to be public facing. See our [Best Security and Operating Practices](../best-security-practices/) page for more details on how to secure your node.

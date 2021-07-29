@@ -11,17 +11,12 @@ whatsnext: {"Fund your contract":"/docs/fund-your-contract/"}
   https://www.youtube.com/watch?v=JWJWT9cwFbo
 </p>
 
-[block:api-header]
-{
-  "title": "Introducing Remix"
-}
-[/block]
+## Introducing Remix
+
 Remix is a web IDE (integrated development environment) for creating, running, and debugging smart contracts in the browser. It is developed and maintained by the Ethereum foundation. Remix allows Solidity developers to write smart contracts without a development machine since everything required is included in the web interface. It allows for a simplified method of interacting with deployed contracts, without the need for a command line interface.
-[block:api-header]
-{
-  "title": "Create and deploy your first contract."
-}
-[/block]
+
+## Create and deploy your first contract
+
 * Navigate to Remix: <a href="https://remix.ethereum.org/#version=soljson-v0.6.0+commit.26b70077.js&optimize=false&gist=9b71e0718d0ad3f2f9a6b2e4018cac82&evmVersion=null" target="_blank" rel="noreferrer, noopener">https://remix.ethereum.org</a>
 * Remix opens up with an empty interface, or possible with a default contract
 
@@ -43,12 +38,10 @@ Remix is a web IDE (integrated development environment) for creating, running, a
 
 ![Remix Click Compile](/files/b8774fe-Screen_Shot_2020-09-08_at_7.10.07_AM.png)
 
-[block:callout]
-{
-  "type": "warning",
-  "body": "If you get errors after compiling, make sure your compiler is set to one of the **0.6.0** compilers. If you used the link to Remix within this guide above, this would have been set for you."
-}
-[/block]
+> 🚧
+> 
+> If you get errors after compiling, make sure your compiler is set to one of the **0.6.0** compilers. If you used the link to Remix within this guide above, this would have been set for you.
+
 * Now select the `Deploy & run transactions` tab in the left-hand of Remix.
 * Change your Environment to `Injected Web3` (if it is not already set) then click on `Deploy`.
 
@@ -58,13 +51,10 @@ Remix is a web IDE (integrated development environment) for creating, running, a
 
 ![Metamask Confirm a Transaction Screen](/files/d082799-metamask.png)
 
-[block:callout]
-{
-  "type": "warning",
-  "body": "If Metamask does not prompt you and instead displays the error below, you will need to disable \"Privacy Mode\" in Metamask. You can do this by clicking on your unique account icon at the top-right, then go to the Settings. Privacy Mode will be a switch near the bottom.\n&nbsp;\nThe error:\n> **Send transaction failed: invalid address . if you use an injected provider, please check it is properly unlocked.**",
-  "title": "Metamask doesn't pop up?"
-}
-[/block]
+> 🚧 Metamask doesn't pop up?
+> 
+> If Metamask does not prompt you and instead displays the error below, you will need to disable "Privacy Mode" in Metamask. You can do this by clicking on your unique account icon at the top-right, then go to the Settings. Privacy Mode will be a switch near the bottom. The error: **Send transaction failed: invalid address. If you use an injected provider, please check it is properly unlocked.**
+
 * A transaction link will be displayed at the bottom of Remix that displays deployment status. 
 It will take a few moments for the contract to be deployed. The Remix UI will update upon completion.
 

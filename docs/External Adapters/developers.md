@@ -135,17 +135,47 @@ Or, for the error case:
 ### Example
 
 Here is a complete example of a simple external adapter written as a serverless function. This external adapter takes two input fields, inserts the API key as a header, and returns the resulting payload to the node.
-[block:code]
-{
-  "codes": [
-    {
-      "code": "let request = require('request');\n\nexports.myExternalAdapter = (req, res) => {\n  const url = \"https://some-api.example.com/api\";\n  const coin = req.body.data.coin || \"\";\n  const market = req.body.data.market || \"\";\n  let requestObj = {\n    coin: coin,\n    market: market\n  };\n  let headerObj = {\n    \"API_KEY\": \"abcd-efgh-ijkl-mnop-qrst-uvwy\"\n  };\n  let options = {\n      url: url,\n      headers: headerObj,\n      qs: requestObj,\n      json: true\n  };\n\n  request(options, (error, response, body) => {\n    if (error || response.statusCode >= 400) {\n        let errorData = {\n            jobRunID: req.body.id,\n            status: \"errored\",\n            error: body\n        };\n        res.status(response.statusCode).send(errorData);\n    } else {\n      let returnData = {\n        jobRunID: req.body.id,\n        data: body\n      };\n      res.status(response.statusCode).send(returnData);\n    }\n  });\n};",
-      "language": "javascript",
-      "name": "External Adapter"
+
+```javascript External Adapter
+let request = require('request');
+
+exports.myExternalAdapter = (req, res) => {
+  const url = "https://some-api.example.com/api";
+  const coin = req.body.data.coin || "";
+  const market = req.body.data.market || "";
+  let requestObj = {
+    coin: coin,
+    market: market
+  };
+  let headerObj = {
+    "API_KEY": "abcd-efgh-ijkl-mnop-qrst-uvwy"
+  };
+  let options = {
+      url: url,
+      headers: headerObj,
+      qs: requestObj,
+      json: true
+  };
+
+  request(options, (error, response, body) => {
+    if (error || response.statusCode >= 400) {
+        let errorData = {
+            jobRunID: req.body.id,
+            status: "errored",
+            error: body
+        };
+        res.status(response.statusCode).send(errorData);
+    } else {
+      let returnData = {
+        jobRunID: req.body.id,
+        data: body
+      };
+      res.status(response.statusCode).send(returnData);
     }
-  ]
-}
-[/block]
+  });
+};
+```
+
 If given "ETH" as the value for `coin` and "USD" as the value for `market`, this external adapter will build the following URL for the request:
 
 ```
