@@ -8,6 +8,12 @@ metadata:
   image: 
     0: "/files/807bfbc-cl.png"
 ---
+
+> 🚧 Note
+> 
+> Chainlink Alarm Clock is is an outdated way of automating time-based requests. Please, consider using [Keepers](../chainlink-keepers/introduction/) instead.
+
+
 You can use Chainlink to trigger a smart contract at a specified time. Using this Chainlink, you will create a request with a timestamp for the node to call back to your desired function. You can include additional logic in that function to perform additional computation.
 
 # Steps For Using This Oracle
@@ -66,13 +72,11 @@ contract ChainlinkAlarmClock is ChainlinkClient {
 **Required**
 
 The timestamp for which the Chainlink node will wait to respond.
-[block:callout]
-{
-  "type": "warning",
-  "body": "Solidity 0.7.0 deprecated the now keyword. For contracts ^0.7.0, you must use `block.timestamp`",
-  "title": "`now` keyword"
-}
-[/block]
+
+> 🚧 `now` keyword"
+> 
+> Solidity 0.7.0 deprecated the now keyword. For contracts ^0.7.0, you must use `block.timestamp`
+
 #### Solidity example
 
 ```javascript

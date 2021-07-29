@@ -12,30 +12,33 @@ This page details example addresses and jobs that are supported by oracles on va
 For a comprehensive list of data providers, oracles, jobs, adapters, and more, visit <a href="https://market.link/" target="_blank">Chainlink Market</a>.
 
 ![Chainlink Market Logo](/files/afe3efe-marketlink.jpg)
+
 # Mainnet
 
-> 🚧
->
+> 🚧 Important
+> 
 > We strongly recommend that you deploy to a [testnet](#testnets) first, then move to mainnet.
-LINK address:  <a href="https://etherscan.io/token/0x514910771af9ca656af840dff83e8264ecf986ca" target="_blank" rel="noreferrer, noopener">`0x514910771af9ca656af840dff83e8264ecf986ca`</a>
+LINK address:  [`0x514910771af9ca656af840dff83e8264ecf986ca`](https://etherscan.io/token/0x514910771af9ca656af840dff83e8264ecf986ca)
 
-Head to <a href="https://market.link/" target="_blank">Chainlink Market</a> for the latest Node and Job details.
+Head to [Chainlink Market](https://market.link/) for the latest Node and Job details.
 
 # Testnets
 
 Each request on the test networks cost 0.1 LINK. Each oracle will wait for 3 confirmations before processing a request.
 
-These are examples which enable you to deploy and test quickly. Many more testnet oracle nodes and jobs can be found on <a href="https://market.link/" target="_blank">Chainlink Market</a>.
+These are examples which enable you to deploy and test quickly. Many more testnet oracle nodes and jobs can be found on [Chainlink Market](https://market.link/).
 
 ## Kovan
 
-Kovan LINK address:  <a href="https://kovan.etherscan.io/address/0xa36085F69e2889c224210F603D836748e7dC0088" target="_blank">`0xa36085F69e2889c224210F603D836748e7dC0088`</a>
+Kovan LINK address: [`0xa36085F69e2889c224210F603D836748e7dC0088`](https://kovan.etherscan.io/address/0xa36085F69e2889c224210F603D836748e7dC0088)
 
 For Faucet details, please refer to [LINK Token Contracts](../link-token-contracts/).
 
 |Chainlink Node Operator|Oracle Address|
 |-------------------------|--------------------------------------------|
-|<a href="https://chain.link" target="_blank">Chainlink</a>|<a href="https://kovan.etherscan.io/address/0x2f90A6D021db21e1B2A077c5a37B3C7E75D15b7e" target="_blank">`0x2f90A6D021db21e1B2A077c5a37B3C7E75D15b7e`</a>|
+|[Chainlink](https://chain.link)|[`0x2f90A6D021db21e1B2A077c5a37B3C7E75D15b7e`](https://kovan.etherscan.io/address/0x2f90A6D021db21e1B2A077c5a37B3C7E75D15b7e)|
+
+<br>
 
 |Adapters|Job ID|Parameters|
 |--------------------------------|----------------------------------|--------------------------------------------------------------|
@@ -46,20 +49,20 @@ For Faucet details, please refer to [LINK Token Contracts](../link-token-contrac
 |[HttpGet](../core-adapters/#httpget)<br>[JsonParse](../core-adapters/#jsonparse)<br>[EthBool](../core-adapters/#ethbool)|`6d914edc36e14d6c880c9c55bda5bc04 `|`get` (string)<br>`path` (dot-delimited string or array of strings)|
 
 ## Rinkeby
-[block:callout]
-{
-  "type": "danger",
-  "title": "Maintanence",
-  "body": "Currently, Rinkeby is in maintenance mode. Please use other environments (e.g. Kovan) to perform tests."
-}
-[/block]
-Rinkeby LINK address:  <a href="https://rinkeby.etherscan.io/address/0x01BE23585060835E02B77ef475b0Cc51aA1e0709" target="_blank">`0x01BE23585060835E02B77ef475b0Cc51aA1e0709`</a>
+
+> ❗️ Maintanence
+> 
+> Currently, Rinkeby is in maintenance mode. Please use other environments (e.g. Kovan) to perform tests.
+
+Rinkeby LINK address:  [`0x01BE23585060835E02B77ef475b0Cc51aA1e0709`](https://rinkeby.etherscan.io/address/0x01BE23585060835E02B77ef475b0Cc51aA1e0709)
 
 For Faucet details, please refer to [LINK Token Contracts](../link-token-contracts/).
 
 |Chainlink Node Operator|Oracle Address|
 |-------------------------|--------------------------------------------|
-|<a href="https://chain.link" target="_blank">Chainlink</a>|<a href="https://rinkeby.etherscan.io/address/0x7AFe1118Ea78C1eae84ca8feE5C65Bc76CcF879e" target="_blank">`0x7AFe1118Ea78C1eae84ca8feE5C65Bc76CcF879e`</a>|
+|[Chainlink](https://chain.link)|[`0x7AFe1118Ea78C1eae84ca8feE5C65Bc76CcF879e`](https://rinkeby.etherscan.io/address/0x7AFe1118Ea78C1eae84ca8feE5C65Bc76CcF879e)|
+
+<br>
 
 |Adapters|Job ID|Parameters|
 |--------------------------------|----------------------------------|--------------------------------------------------------------|

@@ -24,10 +24,6 @@ This guide explains how to fund your Solidity contract with LINK using the Remix
 
 ![Metamask Send Link Screen](/files/867073d-metamask.png)
 
-[block:callout]
-{
-  "type": "warning",
-  "body": "You may need to click **Fastest**, **Fast**, **Slow**, or **Advanced Options** after entering the **Amount** to update the gas limit for the token transfer to be successful.",
-  "title": "Transaction fee didn't update?"
-}
-[/block]
+> 🚧 Transaction fee didn't update?
+> 
+> You may need to click **Fastest**, **Fast**, **Slow**, or **Advanced Options** after entering the **Amount** to update the gas limit for the token transfer to be successful.

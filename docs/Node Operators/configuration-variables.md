@@ -441,12 +441,10 @@ NOTE: This was formerly called MINIMUM_CONTRACT_PAYMENT, it will be removed in a
 - Default: _automatically set based on Chain ID, typically 100000000000000 (0.0001 LINK) on all chains except mainnet, where it is 1 LINK_
 
 For jobs that use the EthTx adapter, this is the minimum payment amount in order for the node to accept and process the job. Since there are no decimals on the EVM, the value is represented like wei.
-[block:callout]
-{
-  "type": "warning",
-  "body": "Keep in mind, the Chainlink node currently responds with a 500,000 gas limit. Under pricing your node could mean it spends more in ETH (on gas) than it earns in LINK."
-}
-[/block]
+
+> 🚧 Note
+> 
+> Keep in mind, the Chainlink node currently responds with a 500,000 gas limit. Under pricing your node could mean it spends more in ETH (on gas) than it earns in LINK.
 
 ## OPERATOR_CONTRACT_ADDRESS
 

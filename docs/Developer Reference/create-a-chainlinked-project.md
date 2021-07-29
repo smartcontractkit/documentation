@@ -15,7 +15,7 @@ metadata:
 
 This page explains how to install and use the [Chainlink Library](../chainlink-framework/) in your projects, either manually or via the user of the Chainlink Starter Kits.
 
-> 📘 
+> 📘 Important
 >
 > If you're new to smart contract development and want a step-by-step guide, try out our [Beginner Walkthrough](../intermediates-tutorial/) 
 
@@ -28,31 +28,19 @@ If you already have a project, you can add Chainlink to it by using the followin
 ## NPM 
 
 Install using <a href="https://www.npmjs.com/" target="_blank" rel="noreferrer, noopener">NPM</a>
-[block:code]
-{
-  "codes": [
-    {
-      "code": "npm install @chainlink/contracts --save",
-      "language": "shell",
-      "name": "npm"
-    }
-  ]
-}
-[/block]
+
+```shell npm
+npm install @chainlink/contracts --save
+```
+
 ## Yarn
 
 Install using <a href="https://yarnpkg.com/" target="_blank" rel="noreferrer, noopener">Yarn</a>
-[block:code]
-{
-  "codes": [
-    {
-      "code": "yarn add @chainlink/contracts",
-      "language": "shell",
-      "name": "yarn"
-    }
-  ]
-}
-[/block]
+
+```shell yarn
+yarn add @chainlink/contracts
+```
+
 # Create a New Project
 
 If you're creating a new project from scratch, these commands will help you set up your project to interact with Chainlink tools and features via the use of our Starter Kits.

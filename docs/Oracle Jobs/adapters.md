@@ -16,12 +16,10 @@ Adapters that are prefixed with "Eth" refer to tasks that post data onto the cha
 | Bytes             | [EthBytes32](#ethbytes32) | bytes32            |
 | Boolean           | [EthBool](#ethbool)    | bool               |
 
-You can learn more about Solidity data types <a href="https://docs.soliditylang.org/en/v0.5.3/types.html" target="_blank">here</a>.
-[block:api-header]
-{
-  "title": "Compare"
-}
-[/block]
+You can learn more about Solidity data types [here](https://docs.soliditylang.org/en/v0.5.3/types.html).
+
+## Compare
+
 This core adapter compares a user-specified value with the value from the previous adapter's result.
 
 #### Parameters
@@ -41,11 +39,7 @@ This core adapter compares a user-specified value with the value from the previo
 req.addInt("value", 10000);
 req.add("operator", "gte");
 ```
-[block:api-header]
-{
-  "title": "Copy"
-}
-[/block]
+## Copy
 The core adapter walks the `copyPath` specified and returns the value found at that result. If returning JSON data from an [external adapter](../external-adapters/), you will need to use this adapter to parse the response.
 
 #### Parameters
@@ -104,68 +98,53 @@ You could get the `"value"` by:
 ```javascript
 req.add("copyPath", "endpoint.0.path");
 ```
-[block:api-header]
-{
-  "title": "EthBool"
-}
-[/block]
+## EthBool
+
 The core adapter reads the given Boolean value and then converts it into Solidity's `bool` format.
 
 #### Parameters
 
 _None taken._
-[block:api-header]
-{
-  "title": "EthBytes32"
-}
-[/block]
+
+## EthBytes32
+
 The core adapter formats its input into a string and then converts it into Solidity's `bytes32` format.
 
 #### Parameters
 
 _None taken._
-[block:api-header]
-{
-  "title": "EthInt256"
-}
-[/block]
+
+## EthInt256
+
 The core adapter formats its input into an integer and then converts it into Solidity's `int256` format.
 
 #### Parameters
 
 _None taken._
-[block:api-header]
-{
-  "title": "EthTx"
-}
-[/block]
-The core adapter takes the input given and places it into the data field of the transaction. It then signs an Ethereum transaction and broadcasts it to the network. The task is only completed once the transaction's confirmations equal the <a href="https://github.com/smartcontractkit/chainlink/wiki/Configuration-Variables#min_outgoing_confirmations" target="_blank">`MIN_OUTGOING_CONFIRMATIONS`</a> amount.
 
-If the transaction does not confirm by the time <a href="https://github.com/smartcontractkit/chainlink/wiki/Configuration-Variables#eth_gas_bump_threshold" target="_blank">`ETH_GAS_BUMP_THRESHOLD`</a> number of blocks have passed since initially broadcasting, then it bumps the gas price of the transaction by <a href="https://github.com/smartcontractkit/chainlink/wiki/Configuration-Variables#eth_gas_bump_wei" target="_blank">`ETH_GAS_BUMP_WEI`</a>.
+## EthTx
+
+The core adapter takes the input given and places it into the data field of the transaction. It then signs an Ethereum transaction and broadcasts it to the network. The task is only completed once the transaction's confirmations equal the [`MIN_OUTGOING_CONFIRMATIONS`](https://github.com/smartcontractkit/chainlink/wiki/Configuration-Variables#min_outgoing_confirmations) amount.
+
+If the transaction does not confirm by the time [`ETH_GAS_BUMP_THRESHOLD`](https://github.com/smartcontractkit/chainlink/wiki/Configuration-Variables#eth_gas_bump_threshold) number of blocks have passed since initially broadcasting, then it bumps the gas price of the transaction by [`ETH_GAS_BUMP_WEI`](https://github.com/smartcontractkit/chainlink/wiki/Configuration-Variables#eth_gas_bump_wei).
 
 #### Parameters
 
 - `address`: the address of the Ethereum account which the transaction will be sent to.
-- `functionSelector`: **(optional)** the <a href="https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI#function-selector" target="_blank">function selector</a> of the contract which the transaction will invoke. `functionSelector` is placed before `dataPrefix` and the adapter's input in the data field of the transaction.
+- `functionSelector`: **(optional)** the [function selector](https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI#function-selector) of the contract which the transaction will invoke. `functionSelector` is placed before `dataPrefix` and the adapter's input in the data field of the transaction.
 - `dataPrefix`: **(optional)** data which will be prepended before the adapter's input, but after the `functionSelector` in the transaction's data field.
 - `value`: **(optional)** data to send to the function, will append after the `dataPrefix` payload if it's included. Will automatically come from the previous task.
 
-[block:api-header]
-{
-  "title": "EthUint256"
-}
-[/block]
+## EthUint256
+
 The core adapter formats its input into an integer and then converts it into Solidity's `uint256` format.
 
 #### Parameters
 
 _None taken._
 
-[block:api-header]
-{
-  "title": "HttpGet"
-}
-[/block]
+## HttpGet
+
 The core adapter will report the body of a successful `GET` request to the specified `get`, or return an error if the response status code is greater than or equal to 400.
 
 #### Parameters
@@ -206,11 +185,9 @@ req.add("extPath", "price/BTC/USD");
 NOTE: For security, since the URL may come from an untrusted source, HTTPGet imposes some restrictions on which IPs may be fetched. Local network and multicast IPs are disallowed by default and attempting to connect will result in an error.
 
 If you really must access one of these IPs, you can use the `HTTPGetWithUnrestrictedNetworkAccess` adapter instead.
-[block:api-header]
-{
-  "title": "HttpPost"
-}
-[/block]
+
+## HttpPost
+
 The core adapter will report the body of a successful `POST` request to the specified `post`, or return an error if the response status code is greater than or equal to 400.
 
 #### Parameters
@@ -252,11 +229,9 @@ req.add("extPath", "price/BTC/USD");
 NOTE: For security, since the URL may come from an untrusted source, HTTPPost imposes some restrictions on which IPs may be fetched. Local network and multicast IPs are disallowed by default and attempting to connect will result in an error.
 
 If you really must access one of these IPs, you can use the `HTTPPostWithUnrestrictedNetworkAccess` adapter instead.
-[block:api-header]
-{
-  "title": "JsonParse"
-}
-[/block]
+
+## JsonParse
+
 The core adapter walks the `path` specified and returns the value found at that result. If returning JSON data from the [HttpGet](../core-adapters/#httpget) or [HttpPost](../core-adapters/#httppost) adapters, you must use this adapter to parse the response.
 
 #### Parameters
@@ -268,7 +243,7 @@ The core adapter walks the `path` specified and returns the value found at that 
 For the stringified JSON:
 
 ```json
-"{\"RAW\": {\"ETH\": {\"USD\": {\"LASTMARKET\": \"_someValue\"}}}}"
+{"RAW": {"ETH": {"USD": {"LASTMARKET": "_someValue"}}}}
 ```
 
 You would use the following for an array of strings:
@@ -330,11 +305,9 @@ The above example parses the 4th object of the following JSON response and retur
     }
 ]
 ```
-[block:api-header]
-{
-  "title": "Multiply"
-}
-[/block]
+
+## Multiply
+
 The core adapter parses the input into a float and then multiplies it by the `times` field.
 
 #### Parameters
@@ -346,31 +319,25 @@ The core adapter parses the input into a float and then multiplies it by the `ti
 ```javascript
 run.addInt("times", 100);
 ```
-[block:api-header]
-{
-  "title": "NoOp"
-}
-[/block]
+
+## NoOp
+
 The core adapter performs no operations, simply passing the input on as output. Commonly used for testing.
 
 #### Parameters
 
 _None taken._
-[block:api-header]
-{
-  "title": "NoOpPend"
-}
-[/block]
+
+## NoOpPend
+
 The core adapter performs no operations, and marks its task run pending. Commonly used for testing.
 
 #### Parameters
 
 _None taken._
-[block:api-header]
-{
-  "title": "Quotient"
-}
-[/block]
+
+## Quotient
+
 Quotient
 
 The core adapter gives the result of x / y where x is a specified value (dividend) and y is the input value (result).
@@ -380,19 +347,15 @@ This can be useful for inverting outputs, e.g. if your API only offers a USD/ETH
 #### Parameters
 
 - `dividend`: the number which is divided by the result
-[block:api-header]
-{
-  "title": "Sleep"
-}
-[/block]
+
+## Sleep
+
 The core adapter will pause the current task pipeline for the given duration. 
-[block:callout]
-{
-  "type": "warning",
-  "title": "ENABLE_EXPERIMENTAL_ADAPTERS",
-  "body": "You must set `ENABLE_EXPERIMENTAL_ADAPTERS=true` in order to use the sleep adapter"
-}
-[/block]
+
+> 🚧 ENABLE_EXPERIMENTAL_ADAPTERS
+> 
+> You must set `ENABLE_EXPERIMENTAL_ADAPTERS=true` in order to use the sleep adapter
+
 #### Parameters
 
 - `until`: the UNIX timestamp of when the job should stop sleeping and resume at the next task in the pipeline.

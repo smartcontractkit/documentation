@@ -149,13 +149,11 @@ Let's walk through what's happening here:
 1. Constructor - Setup the contract with the Oracle address, Job ID, and LINK fee that the oracle charges for the job
 2. `requestVolumeData` - This builds and sends a request, which includes the fulfilment functions selector, to the oracle. Notice how it adds the `get`, `path` and `times` parameters. These are read by the Adapters in the job to perform the tasks correctly. `get` is used by [HttpGet](../core-adapters/#httpget), `path` is used by [JsonParse](../core-adapters/#jsonparse) and `times` is used by [Multiply](../core-adapters/#multiply).
 3. `fulfill` - Where the result is sent once the Oracle job is complete
-[block:callout]
-{
-  "type": "info",
-  "body": "Note, the calling contract should own enough LINK to pay the specified fee (by default 0.1 LINK). You can use [this tutorial](../fund-your-contract/) to fund your contract.",
-  "title": "LINK Required"
-}
-[/block]
+
+> 📘 Important
+> 
+> The calling contract should own enough LINK to pay the specified fee (by default 0.1 LINK). You can use [this tutorial](../fund-your-contract/) to fund your contract.
+
 This was an example of a basic HTTP GET request. However, it requires defining the API URL directly in the smart contract. This can, in fact, be extracted and configured on the Job level inside the Oracle.
 
 ## 1d. External Adapters

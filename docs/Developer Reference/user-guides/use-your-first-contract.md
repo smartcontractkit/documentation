@@ -16,27 +16,16 @@ whatsnext: {"Introduction to Price Feeds":"/docs/using-chainlink-reference-contr
 * In our example contract there are 3 functions that you can use to request external data from Chainlink. `requestEthereumChange`, `requestEthereumLastMarket` and `requestEthereumPrice`
 * For this example we will use `requestEthereumPrice`.
 * In the input field to the right of `requestEthereumPrice`, copy the text below to request the price of ETH in United States Dollars. The first parameter is the oracle contract address, and the second parameter is the Job ID. You will need to include the quotes.
-[block:code]
-{
-  "codes": [
-    {
-      "code": "\"0x2f90A6D021db21e1B2A077c5a37B3C7E75D15b7e\", \"29fa9aa13bf1468788b7cc4a500a45b8\"",
-      "language": "text",
-      "name": "requestEthereumPrice"
-    },
-    {
-      "code": "\"0x2f90A6D021db21e1B2A077c5a37B3C7E75D15b7e\",\"ad752d90098243f8a5c91059d3e5616c\"",
-      "language": "text",
-      "name": "requestEthereumChange"
-    },
-    {
-      "code": "\"0x2f90A6D021db21e1B2A077c5a37B3C7E75D15b7e\",\"50fc4215f89443d185b061e5d7af9490\"",
-      "language": "text",
-      "name": "requestEthereumLastMarket"
-    }
-  ]
-}
-[/block]
+
+```text requestEthereumPrice
+"0x2f90A6D021db21e1B2A077c5a37B3C7E75D15b7e", "29fa9aa13bf1468788b7cc4a500a45b8
+```
+```text requestEthereumChange
+"0x2f90A6D021db21e1B2A077c5a37B3C7E75D15b7e","ad752d90098243f8a5c91059d3e5616c"
+```
+```text requestEthereumLastMarket
+"0x2f90A6D021db21e1B2A077c5a37B3C7E75D15b7e","50fc4215f89443d185b061e5d7af9490"
+```
 
 * Click on the `requestEthereumPrice` button.
 

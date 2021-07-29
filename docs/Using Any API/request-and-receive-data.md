@@ -15,7 +15,7 @@ metadata:
 
 # Call Any External API
 
-> 📘
+> 📘 Note
 > 
 > If your smart contracts need access to price data, try using [Chainlink Price Feeds](../using-chainlink-reference-contracts/).
 

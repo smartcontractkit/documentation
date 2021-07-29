@@ -11,12 +11,10 @@ This page will show you how to obtain and add testnet LINK to MetaMask. If you a
 # Testnet LINK Faucet
 
 * Navigate to the Chainlink Kovan Faucet site: <a href="https://kovan.chain.link/" target="_blank" rel="noreferrer, noopener">https://kovan.chain.link</a>
-[block:callout]
-{
-  "type": "success",
-  "body": "You can also get testnet LINK from Rinkeby:\n[Rinkeby](https://rinkeby.chain.link/)"
-}
-[/block]
+
+> 👍 Note
+> 
+> You can also get testnet LINK from: [Rinkeby](https://rinkeby.chain.link/)
 
 ![Link Kovan Faucet](/files/42e03a2-faucet.png)
 
@@ -30,22 +28,12 @@ This page will show you how to obtain and add testnet LINK to MetaMask. If you a
 * In MetaMask click the hamburger button, and click on `Add Token` and then `Custom Token`.
 * On Kovan our LINK token address is: `0xa36085F69e2889c224210F603D836748e7dC0088`. Copy that address.
 
-[block:code]
-{
-  "codes": [
-    {
-      "code": "0xa36085F69e2889c224210F603D836748e7dC0088",
-      "language": "text",
-      "name": "Kovan LINK Token"
-    },
-    {
-      "code": "0x01BE23585060835E02B77ef475b0Cc51aA1e0709",
-      "language": "text",
-      "name": "Rinkeby LINK Token"
-    }
-  ]
-}
-[/block]
+```text Kovan LINK Token
+0xa36085F69e2889c224210F603D836748e7dC0088
+```
+```text Rinkeby LINK Token
+0x01BE23585060835E02B77ef475b0Cc51aA1e0709
+```
 
 * Paste the token contract address into MetaMask in the Token Address input. The token symbol and decimals of precision will auto-populate. Click Next.
 
