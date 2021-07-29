@@ -9,12 +9,12 @@ Core adapters are the built-in functionality that every Chainlink node supports.
 
 Adapters that are prefixed with "Eth" refer to tasks that post data onto the chain. Here are some examples of the data types that adapters convert data to.
 
-| Name              | Core Adapter    | Ethereum Data Type |
-|-------------------|------------|--------------------|
-| Signed Integers   | [EthInt256](#ethint256)  | int256             |
+| Name              | Core Adapter              | Ethereum Data Type |
+| ----------------- | ------------------------- | ------------------ |
+| Signed Integers   | [EthInt256](#ethint256)   | int256             |
 | Unsigned Integers | [EthUint256](#ethuint256) | uint256            |
 | Bytes             | [EthBytes32](#ethbytes32) | bytes32            |
-| Boolean           | [EthBool](#ethbool)    | bool               |
+| Boolean           | [EthBool](#ethbool)       | bool               |
 
 You can learn more about Solidity data types [here](https://docs.soliditylang.org/en/v0.5.3/types.html).
 
@@ -386,3 +386,93 @@ req.addUint("until", now + 1 hours);
   ]
 }
 ```
+
+## Resultcollect
+
+The core adapter will collect a response from another adapter for transmitting after the rest of the pipeline completes. 
+#### Parameters
+
+*None*
+
+#### Job Specification example
+
+
+```JSON
+{
+  "initiators": [
+    {
+      "type": "runlog"
+    }
+  ],
+  "tasks": [
+    {
+      "type": "httpget",
+      "params": {
+        "get": "https://min-api.cryptocompare.com/data/price?fsym=BTC&tsyms=USD,JPY,EUR"
+      }
+    },
+    {
+      "type": "jsonparse",
+      "params": {
+        "path": [
+          "USD"
+        ]
+      }
+    },
+    {
+      "type": "multiply",
+      "params": {
+        "times": 100
+      }
+    },
+    {
+      "jobSpecId": "bcf76dc27fd4484fab681d3f239cd2c3",
+      "type": "ethuint256"
+    },
+    {
+      "jobSpecId": "bcf76dc27fd4484fab681d3f239cd2c3",
+      "type": "resultcollect"
+    },
+    {
+      "type": "httpget",
+      "params": {
+        "get": "https://min-api.cryptocompare.com/data/price?fsym=BTC&tsyms=USD,JPY,EUR"
+      }
+    },
+    {
+      "type": "jsonparse",
+      "params": {
+        "path": [
+          "EUR"
+        ]
+      }
+    },
+    {
+      "type": "multiply",
+      "params": {
+        "times": 100
+      }
+    },
+    {
+      "jobSpecId": "bcf76dc27fd4484fab681d3f239cd2c3",
+      "type": "ethuint256"
+    },
+    {
+      "jobSpecId": "bcf76dc27fd4484fab681d3f239cd2c3",
+      "type": "resultcollect"
+    },
+    {
+      "type": "ethtx",
+      "confirmations": 1,
+      "params": {
+        "abiEncoding": [
+          "bytes32",
+          "bytes32",
+          "bytes32"
+        ]
+      }
+    }
+  ]
+}
+```
+

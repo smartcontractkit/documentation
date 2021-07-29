@@ -4,7 +4,7 @@ section: smartContract
 date: Last Modified
 title: "Make a GET Request"
 permalink: "docs/make-a-http-get-request/"
-whatsnext: {"Make an Existing Job Request":"/docs/existing-job-request/", "API Reference":"/docs/chainlink-framework/", "Contract Addresses":"/docs/decentralized-oracles-ethereum-mainnet/"}
+whatsnext: {"Make an Existing Job Request":"/docs/existing-job-request/", "API Reference":"/docs/chainlink-framework/", "Contract Addresses":"/docs/decentralized-oracles-ethereum-mainnet/", "Multi-Variable Responses":"/docs/multi-variable-responses/"}
 metadata: 
   title: "Make a GET Request"
   description: "Learn how to make a GET request to an API from a smart contract, using Chainlink."
@@ -28,7 +28,7 @@ Currently, any return value must fit within 32 bytes, if the value is bigger tha
     <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
 </div>
 
-```javascript Kovan
+```solidity Kovan
 pragma solidity ^0.6.0;
 
 import "@chainlink/contracts/src/v0.6/ChainlinkClient.sol";
