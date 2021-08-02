@@ -53,7 +53,7 @@ Note that in V1, the job ID is randomly generated at creation time. In V2 it can
 
 
 ```toml
-type                = "directrequest"
+ype                = "directrequest"
 schemaVersion       = 1
 name                = "Get > Bytes32"
 contractAddress     = "0x613a38AC1659769640aaE063C651F48E0250454C"
@@ -66,10 +66,10 @@ observationSource   = """
     decode_cbor  [type=cborparse data="$(decode_log.data)"];
     fetch [type=http method=get url="$(decode_cbor.url)"];
     parse [type=jsonparse path="$(decode_cbor.path)"];
-    encode_data [type=ethabiencode abi="(uint256 value)" data="{\"value\": $(parse)}"];
+    encode_data [type=ethabiencode abi="(uint256 value)" data="{\\"value\\": $(parse)}"];
     encode_tx [type=ethabiencode
             abi="fulfillOracleRequest(bytes32 requestId, uint256 payment, address callbackAddress, bytes4 callbackFunctionId, uint256 expiration, bytes32 data)"
-            data="{\"requestId\": $(decode_log.requestId), \"payment\": $(decode_log.payment), \"callbackAddress\": $(decode_log.callbackAddr), \"callbackFunctionId\": $(decode_log.callbackFunctionId), \"expiration\": $(decode_log.cancelExpiration), \"data\": $(encode_data)}"
+            data="{\\"requestId\\": $(decode_log.requestId), \\"payment\\": $(decode_log.payment), \\"callbackAddress\\": $(decode_log.callbackAddr), \\"callbackFunctionId\\": $(decode_log.callbackFunctionId), \\"expiration\\": $(decode_log.cancelExpiration), \\"data\\": $(encode_data)}"]
     submit [type=ethtx to="$(jobSpec.contractAddress)" data="$(encode_tx)"];
     decode_log -> decode_cbor -> fetch -> parse -> encode_data -> encode_tx -> submit;
 """
