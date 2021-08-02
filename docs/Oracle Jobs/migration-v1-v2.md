@@ -2,8 +2,7 @@
 layout: nodes.liquid
 date: Last Modified
 title: "Jobs"
-permalink: "docs/jobs/"
-whatsnext: {"Tasks":"/docs/tasks/"}
+permalink: "docs/v1-v2-migration/"
 ---
 
 ## Comparison between V1 and V2 jobs

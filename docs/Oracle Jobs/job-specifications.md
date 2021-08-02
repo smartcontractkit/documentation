@@ -10,7 +10,7 @@ whatsnext: {"Core Adapters":"/docs/core-adapters/", "Initiators":"/docs/initiato
 
 NOTE: The style of job spec described below (otherwise known as JSON specs or V1 specs) is deprecated and support for it will be removed in Chainlink 1.0.0. If you are still running this type of job, you should migrate them to V2 specs.
 
-Please refer to the [V2 jobs page](/docs/jobs) for guidance on how to do this.
+Please refer to the [V2 jobs migration page](/docs/v1-v2-migration) for guidance on how to do this.
 
 ## What is a job?
 
