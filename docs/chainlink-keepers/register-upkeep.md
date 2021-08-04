@@ -64,6 +64,13 @@ The App will walk you through several steps.
 * Anyone (not just the Upkeep owner) can call the `addFunds()` function
 * To withdraw funds, first cancel the Upkeep 
 
+## Maintaining a minimum balance
+To ensure the Chainlink Keepers are compensated for performance, there is an expected minimum balance on each Upkeep. If your funds drop below this amount, the Upkeep will not be performed.
+
+The minimum balance is calculated using the current fast gas price, the Gas Limit you entered for your Upkeep, and the max gas multiplier (see `gasCeilingMultiplier` in [configuration of the registry](/docs/chainlink-keepers/overview/#configuration)).
+
+It is recommended that you maintain a balance that is a multiple (3-5x) of the minimum balance to account for gas price fluctuations.
+
 # Congratulations!
 After you register your Upkeep, it has been approved, and you have added sufficient funds, the Chainlink Keeper Network will begin to simulate `checkUpkeep` calls, and execute your contract's `performUpkeep` as needed.
 
