@@ -30,6 +30,13 @@ The env variables listed here are explicitly supported and current as of Chainli
   - [P2P_LISTEN_IP](#p2p_listen_ip)
   - [P2P_LISTEN_PORT](#p2p_listen_port)
   - [P2P_PEER_ID](#p2p_peer_id)
+- [Keeper](#keeper)
+  - [KEEPER_DEFAULT_TRANSACTION_QUEUE_DEPTH](#keeper_default_transaction_queue_depth)
+  - [KEEPER_MAXIMUM_GRACE_PERIOD](#keeper_maximum_grace_period)
+  - [KEEPER_MINIMUM_REQUIRED_CONFIRMATIONS](#keeper_minimum_required_confirmations)
+  - [KEEPER_REGISTRY_CHECK_GAS_OVERHEAD](#keeper_registry_check_gas_overhead)
+  - [KEEPER_REGISTRY_PERFORM_GAS_OVERHEAD](#keeper_registry_perform_gas_overhead)
+  - [KEEPER_REGISTRY_SYNC_INTERVAL](#keeper_registry_sync_interval)
 - [TLS](#tls)
   - [CHAINLINK_TLS_HOST](#chainlink_tls_host)
   - [CHAINLINK_TLS_PORT](#chainlink_tls_port)
@@ -38,18 +45,31 @@ The env variables listed here are explicitly supported and current as of Chainli
   - [TLS_KEY_PATH](#tls_key_path)
 - [Gas controls](#gas-controls)
   - [ETH_GAS_LIMIT_DEFAULT](#eth_gas_limit_default)
+  - [ETH_GAS_LIMIT_MULTIPLIER](#eth_gas_limit_multiplier)
   - [ETH_GAS_LIMIT_TRANSFER](#eth_gas_limit_transfer)
   - [ETH_GAS_BUMP_PERCENT](#eth_gas_bump_percent)
   - [ETH_GAS_BUMP_THRESHOLD](#eth_gas_bump_threshold)
+  - [ETH_GAS_BUMP_TX_DEPTH](#eth_gas_bump_tx_depth)
   - [ETH_GAS_BUMP_WEI](#eth_gas_bump_wei)
   - [ETH_GAS_PRICE_DEFAULT](#eth_gas_price_default)
   - [ETH_MAX_GAS_PRICE_WEI](#eth_max_gas_price_wei)
   - [ETH_MIN_GAS_PRICE_WEI](#eth_min_gas_price_wei)
+  - [GAS_ESTIMATOR_MODE](#gas_estimator_mode)
+  - [BLOCK_HISTORY_ESTIMATOR_BATCH_SIZE](#block_history_estimator_batch_size)
+  - [BLOCK_HISTORY_ESTIMATOR_BLOCK_DELAY](#block_history_estimator_block_delay)
+  - [BLOCK_HISTORY_ESTIMATOR_BLOCK_HISTORY_SIZE](#block_history_estimator_block_history_size)
+  - [BLOCK_HISTORY_ESTIMATOR_TRANSACTION_PERCENTILE](#block_history_estimator_transaction_percentile)
   - [GAS_UPDATER_ENABLED](#gas_updater_enabled)
   - [GAS_UPDATER_TRANSACTION_PERCENTILE](#gas_updater_transaction_percentile)
-  - [ETH_GAS_LIMIT_DEFAULT](#eth_gas_limit_default)
-  - [ETH_GAS_LIMIT_TRANSFER](#eth_gas_limit_transfer)
 - [Other env vars](#other-env-vars)
+  - [ENABLE_EXPERIMENTAL_ADAPTERS](#enable_experimental_adapters)
+  - [ENABLE_LEGACY_JOB_PIPELINE](#enable_legacy_job_pipeline)
+  - [BALANCE_MONITOR_ENABLED](#balance_monitor_enabled)
+  - [FEATURE_CRON_V2](#feature_cron_v2)
+  - [FEATURE_EXTERNAL_INITIATORS](#feature_external_initiators)
+  - [FEATURE_FLUX_MONITOR](#feature_flux_monitor)
+  - [FEATURE_FLUX_MONITOR_V2](#feature_flux_monitor_v2)
+  - [FEATURE_WEBHOOK_V2](#feature_webhook_v2)
   - [ADMIN_CREDENTIALS_FILE](#admin_credentials_file)
   - [ALLOW_ORIGINS](#allow_origins)
   - [CHAINLINK_PORT](#chainlink_port)
@@ -57,6 +77,7 @@ The env variables listed here are explicitly supported and current as of Chainli
   - [DATABASE_BACKUP_FREQUENCY](#database_backup_frequency)
   - [DATABASE_BACKUP_MODE](#database_backup_mode)
   - [DATABASE_BACKUP_URL](#database_backup_url)
+  - [DATABASE_BACKUP_DIR](#database_backup_dir)
   - [ETH_DISABLED](#eth_disabled)
   - [EXPLORER_URL](#explorer_url)
   - [EXPLORER_ACCESS_KEY](#explorer_access_key)
@@ -67,7 +88,20 @@ The env variables listed here are explicitly supported and current as of Chainli
   - [LOG_SQL_MIGRATIONS](#log_sql_migrations)
   - [LOG_TO_DISK](#log_to_disk)
   - [MIN_INCOMING_CONFIRMATIONS](#min_incoming_confirmations)
+  - [ETH_NONCE_AUTO_SYNC](#eth_nonce_auto_sync)
+  - [ETH_FINALITY_DEPTH](#eth_finality_depth)
+  - [ETH_HEAD_TRACKER_HISTORY_DEPTH](#eth_head_tracker_history_depth)
+  - [ETH_HEAD_TRACKER_MAX_BUFFER_SIZE](#eth_head_tracker_max_buffer_size)
+  - [ETH_HEAD_TRACKER_SAMPLING_INTERVAL](#eth_head_tracker_sampling_interval)
+  - [BLOCK_BACKFILL_DEPTH](#block_backfill_depth)
+  - [BLOCK_BACKFILL_SKIP](#block_backfill_skip)
+  - [ETH_LOG_BACKFILL_BATCH_SIZE](#eth_log_backfill_batch_size)
+  - [ETH_TX_REAPER_INTERVAL](#eth_tx_reaper_interval)
+  - [ETH_TX_REAPER_THRESHOLD](#eth_tx_reaper_threshold)
+  - [ETH_TX_RESEND_AFTER_THRESHOLD](#eth_tx_resend_after_threshold)
   - [MINIMUM_CONTRACT_PAYMENT_LINK_JUELS](#minimum_contract_payment_link_juels)
+  - [MINIMUM_REQUEST_EXPIRATION](#minimum_request_expiration)
+  - [MINIMUM_SERVICE_DURATION](#minimum_service_duration)
   - [OPERATOR_CONTRACT_ADDRESS](#operator_contract_address)
   - [ORM_MAX_IDLE_CONNS](#orm_max_idle_conns)
   - [ORM_MAX_OPEN_CONNS](#orm_max_open_conns)
@@ -177,6 +211,48 @@ The port to listen on. If left blank, chainlink will randomly select a different
 
 The default peer ID to use for OCR jobs. If unspecified, uses the first available peer ID.
 
+# Keeper
+
+## KEEPER_DEFAULT_TRANSACTION_QUEUE_DEPTH
+
+- Default: `"1"`
+
+Controls the queue size for DropOldestStrategy in Keeper.
+
+Set to 0 to use SendEvery strategy instead.
+
+## KEEPER_MAXIMUM_GRACE_PERIOD
+
+- Default: `"100"`
+
+The maximum number of blocks that a keeper will wait after performing an upkeep before it resumes checking that upkeep
+
+## KEEPER_MINIMUM_REQUIRED_CONFIRMATIONS
+
+- Default: `"12"`
+
+THe minimum number of confirmations that a keeper registry log
+needs before it is handled by the RegistrySynchronizer.
+
+## KEEPER_REGISTRY_CHECK_GAS_OVERHEAD
+
+- Default: `"200000"`
+
+The amount of extra gas to provide checkUpkeep() calls
+to account for the gas consumed by the keeper registry.
+
+## KEEPER_REGISTRY_PERFORM_GAS_OVERHEAD
+
+- Default: `"150000"`
+
+The amount of extra gas to provide performUpkeep() calls to account for the gas consumed by the keeper registry
+
+## KEEPER_REGISTRY_SYNC_INTERVAL
+
+- Default: `"30m"`
+
+The interval in which the RegistrySynchronizer performs a full sync of the keeper registry contract it is tracking.
+
 # TLS
 
 This section applies if you want to enable TLS security on your chainlink node.
@@ -217,15 +293,27 @@ Use this section to tune your node's gas limits and pricing. In most cases, leav
 
 ## ETH_GAS_LIMIT_DEFAULT
 
-- Default: 500000
+- Default: _automatically set based on Chain ID, typically 500000_
 
-The default gas limit. This should not need to be changed in most cases. Certain applications (e.g. keeper) might override this with application-specific gas limits.
+The default gas limit for outgoing transactions. This should not need to be changed in most cases.
+Some job types (e.g. keeper) may set their own gas limit unrelated to this value.
+
+## ETH_GAS_LIMIT_MULTIPLIER
+
+- Default: `"1.0"`
+
+A factor by which a transaction's GasLimit is
+multiplied before transmission. So if the value is 1.1, and the GasLimit for
+a transaction is 10, 10% will be added before transmission.
+
+This factor is always applied, so includes Optimism L2 transactions which
+uses a default gas limit of 1 and is also applied to EthGasLimitDefault.
 
 ## ETH_GAS_LIMIT_TRANSFER
 
-- Default: 21000
+- Default: _automatically set based on Chain ID, typically 21000_
 
-The gas limit to be used for eth->eth transfers.
+The gas limit used for an ordinary eth->eth transfer.
 
 ## ETH_GAS_BUMP_PERCENT
 
@@ -237,7 +325,13 @@ The percentage by which to bump gas on a transaction that has exceeded `ETH_GAS_
 
 - Default: _automatic based on chain ID_
 
-Chainlink can configured to automatically bump gas on transactions that have been stuck waiting in the mempool for at least this many blocks. Set to 0 to disable gas bumping completely.
+Chainlink can be configured to automatically bump gas on transactions that have been stuck waiting in the mempool for at least this many blocks. Set to 0 to disable gas bumping completely.
+
+## ETH_GAS_BUMP_TX_DEPTH
+
+- Default: `"10"`
+
+The number of transactions to gas bump starting from oldest. Set to 0 for no limit (i.e. bump all).
 
 ## ETH_GAS_BUMP_WEI
 
@@ -275,11 +369,49 @@ ETH_GAS_BUMP_THRESHOLD=0
 GAS_UPDATER_ENABLED=false
 ```
 
+## GAS_ESTIMATOR_MODE
+
+- Default: _automatic, based on chain ID_
+
+Controls what type of gas estimator is used. Possible values are: "BlockHistory" and "FixedPrice".
+
+## BLOCK_HISTORY_ESTIMATOR_BATCH_SIZE
+
+- Default: _automatic, based on chain ID, typically 4_
+
+Sets the maximum number of blocks to fetch in one batch in the block history estimator.
+If the env var GAS_UPDATER_BATCH_SIZE is set to 0, it defaults to ETH_RPC_DEFAULT_BATCH_SIZE.
+
+## BLOCK_HISTORY_ESTIMATOR_BLOCK_HISTORY_SIZE
+
+- Default: _automatic, based on chain ID_
+
+Controls the number of past blocks to keep in memory to use as a basis for calculating a percentile gas price.
+
+## BLOCK_HISTORY_ESTIMATOR_BLOCK_DELAY
+
+- Default: _automatic, based on chain ID_
+
+Controls the number of blocks that the block history estimator trails behind head.
+E.g. if this is set to 3, and we receive block 10, block history estimator will fetch block 7.
+
+CAUTION: You might be tempted to set this to 0 to use the latest possible
+block, but it is possible to receive a head BEFORE that block is actually
+available from the connected node via RPC. In this case you will get false
+"zero" blocks that are missing transactions.
+
+## BLOCK_HISTORY_ESTIMATOR_TRANSACTION_PERCENTILE
+
+- Default: `"60"`
+
+This is the percentile gas price to choose. E.g. if the past transaction history contains four transactions with gas prices:
+[100, 200, 300, 400], picking 25 for this number will give a value of 200.
+
 ## GAS_UPDATER_ENABLED
 
-- Default: _automatic based chain ID_
+- Default: _automatic, based on chain ID_
 
-On by default for most chains. When enabled, dynamically adjusts default gas price based on heuristics from mined blocks.
+(Deprecated) On by default for most chains. When enabled, dynamically adjusts default gas price based on heuristics from mined blocks.
 
 ## GAS_UPDATER_TRANSACTION_PERCENTILE
 
@@ -287,7 +419,7 @@ On by default for most chains. When enabled, dynamically adjusts default gas pri
 
 Must be in range 0-100.
 
-Only has an effect if gas updater is enabled. Specifies percentile gas price to choose. E.g. if the block history contains four transactions with gas prices `[100, 200, 300, 400]` then picking 25 for this number will give a value of 200. If the calculated gas price is higher than `ETH_GAS_PRICE_DEFAULT` then the higher price will be used as the base price for new transactions.
+(Deprecated) Only has an effect if gas updater is enabled. Specifies percentile gas price to choose. E.g. if the block history contains four transactions with gas prices `[100, 200, 300, 400]` then picking 25 for this number will give a value of 200. If the calculated gas price is higher than `ETH_GAS_PRICE_DEFAULT` then the higher price will be used as the base price for new transactions.
 
 Think of this number as an indicator of how aggressive you want your node to price its transactions.
 
@@ -295,20 +427,56 @@ Setting this number higher will cause Chainlink to select higher gas prices.
 
 Setting it lower will tend to set lower gas prices.
 
-## ETH_GAS_LIMIT_DEFAULT
-
-- Default: _automatically set based on Chain ID, typically 500000_
-
-The default gas limit for outgoing transactions. Some job types (e.g. keeper) may set their own gas limit unrelated to this value.
-
-## ETH_GAS_LIMIT_TRANSFER
-
-- Default: _automatically set based on Chain ID, typically 21000_
-
-The gas limit used for an ordinary eth->eth transfer.
-
 # Other env vars
 
+## ENABLE_EXPERIMENTAL_ADAPTERS
+
+- Default: `"false"`
+
+Enables experimental adapters.
+
+## ENABLE_LEGACY_JOB_PIPELINE
+
+- Default: `"true"`
+
+Enables the legacy job pipeline
+
+## BALANCE_MONITOR_ENABLED
+
+- Default: `"true"`
+
+Enables Balance Monitor feature.
+
+## FEATURE_CRON_V2
+
+- Default: `"true"`
+
+Enables the Cron v2 feature.
+
+## FEATURE_EXTERNAL_INITIATORS
+
+- Default: `"false"`
+
+Enables the External Initiator feature.
+
+## FEATURE_FLUX_MONITOR
+
+- Default: `"true"`
+
+Enables the Flux Monitor job type.
+
+## FEATURE_FLUX_MONITOR_V2
+
+- Default: `"true"`
+
+Enables the Flux Monitor v2 job type.
+
+## FEATURE_WEBHOOK_V2
+
+- Default: `"false"`
+
+Enables the Webhook v2 job type.
+  
 ## ADMIN_CREDENTIALS_FILE
 
 - Default: `$CHAINLINK_ROOT/apicredentials`
@@ -364,6 +532,10 @@ Set the mode for automatic database backups. Can be one of `none`, `lite`, `full
 ## DATABASE_BACKUP_URL
 
 If specified, the automatic database backup will pull from this URL rather than the main `DATABASE_URL`. It is recommended to set this value to a read replica if you have one to avoid excessive load on the main database.
+
+## DATABASE_BACKUP_DIR
+
+Configures the directory for saving the backup file, if it's to be different from default one located in the ROOT directory
 
 ## ETH_DISABLED
 
@@ -434,6 +606,97 @@ The number of block confirmations to wait before kicking off a job run. Setting 
 
 NOTE: The lowest value allowed here is 1, since setting to 0 would imply that logs are processed from the mempool before they are even mined into a block, which isn't possible with Chainlink's current architecture.
 
+## ETH_NONCE_AUTO_SYNC
+
+- Default: `"true"`
+
+Enables/disables running the NonceSyncer on application start
+
+## ETH_FINALITY_DEPTH
+
+- Default: _automatically set based on Chain ID, typically 50_
+
+The number of blocks after which an ethereum transaction is considered "final"
+BlocksConsideredFinal determines how deeply we look back to ensure that transactions are confirmed onto the longest chain
+There is not a large performance penalty to setting this relatively high (on the order of hundreds)
+
+It is practically limited by the number of heads we store in the database and should be less than this with a comfortable margin.
+If a transaction is mined in a block more than this many blocks ago, and is reorged out, we will NOT retransmit this transaction and undefined behaviour can occur including gaps in the nonce sequence that require manual intervention to fix.
+Therefore, this number represents a number of blocks we consider large enough that no re-org this deep will ever feasibly happen.
+
+## ETH_HEAD_TRACKER_HISTORY_DEPTH
+
+- Default: _automatically set based on Chain ID, typically 100_
+
+Tracks the top N block numbers to keep in the `heads` database table.
+Note that this can easily result in MORE than N records since in the case of re-orgs we keep multiple heads for a particular block height.
+This number should be at least as large as `ETH_FINALITY_DEPTH`.
+There may be a small performance penalty to setting this to something very large (10,000+)
+
+## ETH_HEAD_TRACKER_MAX_BUFFER_SIZE
+
+- Default: `"3"`
+
+The maximum number of heads that may be
+buffered in front of the head tracker before older heads start to be
+dropped. You may think of it as something like the maximum permittable "lag"
+for the head tracker before we start dropping heads to keep up.
+
+## ETH_HEAD_TRACKER_SAMPLING_INTERVAL
+
+- Default: _automatically set based on Chain ID, typically 1s_
+
+The minumum amout of time between delivering new heads to different services of Chainlink node.
+
+## BLOCK_BACKFILL_DEPTH
+
+- Default: `"10"`
+
+It specifies the number of blocks before the current head that the log broadcaster will try to re-consume logs from, e.g. after adding a new job
+
+## BLOCK_BACKFILL_SKIP
+
+- Default: `"false"`
+
+It enables skipping of very long log backfills - for example in a situation when the node is started after being offline for a long time.
+This might be useful on fast chains and if only recent chain events are relevant
+
+## ETH_LOG_BACKFILL_BATCH_SIZE
+
+- Default: `"100"`
+
+Controls the batch size for calling FilterLogs when backfilling missing or recent logs
+
+## ETH_TX_REAPER_INTERVAL
+
+- Default: `"1h"`
+
+Controls how often the eth tx reaper should run, used to delete old confirmed/fatally_errored transaction records from the database.
+
+## ETH_TX_REAPER_THRESHOLD
+
+- Default: `"24h"`
+
+Represents how long any confirmed/fatally_errored eth_txes will hang around in the database.
+If the eth_tx is confirmed but still below ETH_FINALITY_DEPTH it will not be deleted even if it was created at a time older than this value.
+
+EXAMPLE:
+With: `EthTxReaperThreshold=1h` and `EthFinalityDepth=50`
+If current head is 142, any eth_tx confirmed in block 91 or below will be reaped as long as its created_at was more than EthTxReaperThreshold ago
+
+Set to 0 to disable eth_tx reaping
+
+## ETH_TX_RESEND_AFTER_THRESHOLD
+
+- Default: _automatically set based on Chain ID, typically 1m_
+
+Controls how long the ethResender will wait before
+re-sending the latest eth_tx_attempt. This is designed a as a fallback to
+protect against the eth nodes dropping txes (it has been anecdotally
+observed to happen), networking issues or txes being ejected from the mempool.
+
+See eth_resender.go for more details
+
 ## MINIMUM_CONTRACT_PAYMENT_LINK_JUELS
 
 NOTE: This was formerly called MINIMUM_CONTRACT_PAYMENT, it will be removed in a future release.
@@ -445,6 +708,18 @@ For jobs that use the EthTx adapter, this is the minimum payment amount in order
 > 🚧 Note
 > 
 > Keep in mind, the Chainlink node currently responds with a 500,000 gas limit. Under pricing your node could mean it spends more in ETH (on gas) than it earns in LINK.
+
+## MINIMUM_REQUEST_EXPIRATION
+
+- Default: `"300"`
+
+The minimum allowed request expiration for a Service Agreement.
+
+## MINIMUM_SERVICE_DURATION
+
+- Default: `"0s"`
+
+The shortest duration from now that a service is allowed to run.
 
 ## OPERATOR_CONTRACT_ADDRESS
 
