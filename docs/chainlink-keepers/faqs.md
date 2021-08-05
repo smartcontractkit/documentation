@@ -4,9 +4,6 @@ section: smartContract
 date: Last Modified
 title: 'Chainlink Keepers Frequently Asked Questions'
 ---
-
-{% include keepers-beta %}
-
 ## Why should I use Chainlink Keepers?
 
 There's lots of reasons we think Chainlink Keepers are great.

@@ -8,8 +8,6 @@ whatsnext:
     'Patterns and Best Practices': '/docs/chainlink-keepers/best-practices/',
   }
 ---
-{% include keepers-beta %}
-
 Once you have deployed a Keeper compatible contract, we need to register it with the Chainlink Keeper Network. You must do this via the [Chainlink Keepers App](https://keepers.chain.link).
 
 <div class="remix-callout">

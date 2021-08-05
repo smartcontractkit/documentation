@@ -8,9 +8,6 @@ whatsnext:
     'Network Overview': '/docs/chainlink-keepers/overview/',
   }
 ---
-
-{% include keepers-beta %}
-
 Chainlink Keepers are a powerful tool for smart contract automation. These are some useful patterns and best practices that you can employ within your Keeper-compatible smart contract.
 
 It is important to understand the gas limits for on-chain execution and off-chain computation when developing your Keeper-compatible smart contract - you can review that in [How Chainlink Keepers Work](../overview/).
