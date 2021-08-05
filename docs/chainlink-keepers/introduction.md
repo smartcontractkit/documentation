@@ -8,10 +8,7 @@ whatsnext:
     'Making Keeper Compatible Contracts': '/docs/chainlink-keepers/compatible-contracts/',
   }
 ---
-
 ![Chainlink Keeper Network Banner](/images/contract-devs/generic-banner.png)
-
-{% include keepers-beta %}
 
 A major limitation of smart contracts is that they can't trigger or initiate their own functions at arbitrary times or under arbitrary conditions. State change will only occur when a transaction is initiated by another account (such as user, oracle, or contract).
 

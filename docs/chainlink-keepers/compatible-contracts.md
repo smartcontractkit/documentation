@@ -8,8 +8,6 @@ whatsnext:
     'Register for Upkeep': '/docs/chainlink-keepers/register-upkeep/',
   }
 ---
-{% include keepers-beta %}
-
 Lets walk through how to make your contract keeper-compatible. While this will get you up and running quickly and showcase how easy it is to use, we highly recommend taking the time to fully understand and become a proficient user of Chainlink Keepers. We want you to take full advantage of the automation infrastructure we’ve built.
 
 1. [The Interface](#keepercompatibleinterface)
