@@ -48,5 +48,5 @@ We strongly recommend to start by testing your Keeper-compatible contracts on te
 1. Fund your upkeep on mainnet
 1. Confirm the first performance of your Upkeep
 
-> ⚠️ Open Beta Note
+> ⚠️ Registration Onboarding Note
 > Your registrations on testnet will be auto approved immediately. To help us streamline the process of onboarding your use case on mainnet, please fill out the optional details (and form) during testnet registration so our onboarding team can expect your use case on mainnet. Mainnet registrations will be reviewed by our onboarding team before being approved. We are working towards a fully self-serve model.
