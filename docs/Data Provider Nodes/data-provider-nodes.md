@@ -14,7 +14,7 @@ Data provider nodes allow customizable, on-demand API calls and the ability to d
 # Data Provider Nodes List
 
 | Data Category | Name                                                                                                                        | Supported Blockchains                        |
-|:------------- |:--------------------------------------------------------------------------------------------------------------------------- |:-------------------------------------------- |
+| :------------ | :-------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------- |
 | Collectibles  | [WatchSignals Luxury Watch Price Oracle](https://market.link/data-providers/f76be519-e41e-48a0-9430-47319eda0f43)           | Ethereum, Binance Smart Chain                |
 | Crypto        | [Genesis Volatility Cryptocurrency Options Oracle](https://market.link/data-providers/9a9dfca2-6a47-4d12-a095-2224beec8c41) | Ethereum, Binance Smart Chain, Polygon, xDAI |
 | Crypto        | [Kraken Rates Oracle Node](../kraken-rates-oracle-node)                                                                     | Ethereum                                     |
@@ -29,6 +29,7 @@ Data provider nodes allow customizable, on-demand API calls and the ability to d
 | Real Estate   | [SmartZip Real Estate AVM Oracle](https://market.link/data-providers/7c5a6a8c-5008-4f5f-8914-6264f45bff61)                  | Ethereum, Binance Smart Chain                |
 | Sports        | [Bookmaker Ratings Oracle](https://market.link/data-providers/3620ffd3-d6be-4ede-961c-9f9fd91a5b84)                         | Ethereum, Binance Smart Chain                |
 | Sports        | [SportMonks Sports Data Oracle](https://market.link/data-providers/fa1019e0-e0bc-4538-8b7a-3f490d28423b)                    | Ethereum, Binance Smart Chain                |
-| Sports        | [SportsDataIO Oracle](https://market.link/data-providers/5fcd7b71-33aa-4679-bc70-75d3ebe01c04)                              | Ethereum, Polygon                |
+| Sports        | [SportsDataIO Oracle](https://market.link/data-providers/5fcd7b71-33aa-4679-bc70-75d3ebe01c04)                              | Ethereum, Polygon                            |
 | Sports        | [TheRunDown Oracle Node](https://market.link/data-providers/098c3c5e-811d-4b8a-b2e3-d1806909c7d7)                           | Ethereum, Polygon                            |
 | Time          | [Chainlink Alarm Clock (Testnet)](../chainlink-alarm-clock)                                                                 | Ethereum                                     |
+| Weather       | [Google Weather Oracle](../google-weather)                                                                                  | Ethereum                                     |
