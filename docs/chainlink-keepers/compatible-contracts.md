@@ -24,7 +24,7 @@ Lets walk through how to make your contract keeper-compatible. While this will g
 | [performUpkeep](#performupkeep) | Performs the work on the contract, if instructed by `checkUpkeep()`. |
 
 ### `checkUpkeep`
-The Keeper node runs this method as an [`eth_call`](https://eth.wiki/json-rpc/API#eth_call) in order to determine if your contract requires some work to be done. If the off-chain simulation of your `checkUpkeep` confirms your predefined conditions are met, the Keeper will broadcast a transaction to the blockchain executing the `performUpkeep` method described below.
+The Keeper node runs this method at every new block as an [`eth_call`](https://eth.wiki/json-rpc/API#eth_call) in order to determine if your contract requires some work to be done. If the off-chain simulation of your `checkUpkeep` confirms your predefined conditions are met, the Keeper will broadcast a transaction to the blockchain executing the `performUpkeep` method described below.
 
 > ⚠️ Important Note
 > The check that is run is subject to the `checkGasLimit` in the [configuration of the registry](/docs/chainlink-keepers/overview/#configuration).
