@@ -7,7 +7,7 @@ permalink: "docs/google-weather/"
 ---
 
 
-You can use Chainlink to digest weather information using [Google Cloud Public Datasets](https://cloud.google.com/public-datasets). We have a sample brownie repo showing how to interact with the contracts available in our [gcp-weather brownie repo](https://github.com/PatrickAlphaC/gcp-weather).
+You can use Chainlink to digest weather information using [Google Cloud Public Datasets](https://cloud.google.com/public-datasets). We have a sample brownie repo showing how to interact with the contracts available in our [gcp-weather brownie repo](https://github.com/PatrickAlphaC/gcp-weather). More information on this oracle can be found in the following [Google Cloud article](https://medium.com/google-cloud/hedging-against-bad-weather-with-cloud-datasets-and-blockchain-oracles-7ba3e0150304).
 
 ## Parameters and External Adapters Details
 
@@ -55,7 +55,7 @@ You will need to use the following LINK token address, oracle address, and JobSp
 
 # Create your Chainlinked contract
 
-Import `ChainlinkClient.sol` into your contract so you can inherit the `ChainlinkClient` behavior. Below is a sample that can call the hail, rain, and average temperature jobs. 
+Import `ChainlinkClient.sol` into your contract so you can inherit the `ChainlinkClient` behavior. Below is a sample that can call the hail, rain, and average temperature jobs to fetch weather data from Bergen, Norway. 
 
 ```solidity
 // SPDX-License-Identifier: MIT
@@ -176,7 +176,7 @@ contract Weather is ChainlinkClient {
 
 # Jobs
 
-## Rain
+## Rain (Bergen, Norway)
 
 ### Tasks
 
@@ -206,7 +206,7 @@ contract Weather is ChainlinkClient {
 3. `ethuint256`: Turns the result into a `uint256`
 4. `ethTx`: Sends the TX to the blockchain
 
-## Hail
+## Hail (Bergen, Norway)
 
 ### Tasks
 
@@ -271,7 +271,7 @@ contract Weather is ChainlinkClient {
 2. `ethuint256`: Turns the result into a `uint256`
 3. `ethTx`: Sends the TX to the blockchain
 
-## Average Temperature
+## Average Temperature (Bergen, Norway)
 
 ### Tasks
 
@@ -337,7 +337,7 @@ contract Weather is ChainlinkClient {
 3. `ethuint256`: Turns the result into a `uint256`
 4. `ethTx`: Sends the TX to the blockchain
 
-## Generic
+## Generic (Any Location)
 
 ### Tasks
 
