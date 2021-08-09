@@ -40,8 +40,46 @@ module.exports = {
       {
         section: 'ORACLE JOBS',
         contents: [
-          { url: '/docs/jobs/', title: 'Jobs' },
-          { url: '/docs/tasks/', title: 'Tasks' },
+          {
+            url: '/docs/jobs/migration-v1-v2',
+            title: 'Migrating to v2 jobs',
+          },
+          {
+            url: '/docs/jobs/',
+            title: 'Job Types',
+            children: [
+              { url: '/docs/jobs/job-types/cron/', title: 'Cron' },
+              { url: '/docs/jobs/job-types/direct-request/', title: 'Direct Request' },
+              { url: '/docs/jobs/job-types/flux-monitor/', title: 'Flux Monitor' },
+              { url: '/docs/jobs/job-types/keeper/', title: 'Keeper' },
+              { url: '/docs/jobs/job-types/offchain-reporting/', title: 'Off-chain Reporting' },
+              { url: '/docs/jobs/job-types/webhook/', title: 'Webhook' },
+            ],
+          },
+          {
+            url: '/docs/jobs/task-types/',
+            title: 'Task Types',
+            children: [
+              { url: '/docs/jobs/task-types/http/', title: 'HTTP' },
+              { url: '/docs/jobs/task-types/bridge/', title: 'Bridge' },
+              { url: '/docs/jobs/task-types/jsonparse/', title: 'JSON Parse' },
+              { url: '/docs/jobs/task-types/cborparse/', title: 'CBOR Parse' },
+              { url: '/docs/jobs/task-types/eth-abi-decode/', title: 'ETH ABI Decode' },
+              { url: '/docs/jobs/task-types/eth-abi-decode-log/', title: 'ETH ABI Decode Log' },
+              { url: '/docs/jobs/task-types/eth-abi-encode/', title: 'ETH ABI Encode' },
+              { url: '/docs/jobs/task-types/eth-call/', title: 'ETH Call' },
+              { url: '/docs/jobs/task-types/eth-tx/', title: 'ETH Tx' },
+
+              { url: '/docs/jobs/task-types/multiply/', title: 'Multiply' },
+              { url: '/docs/jobs/task-types/divide/', title: 'Divide' },
+
+              { url: '/docs/jobs/task-types/any/', title: 'Any' },
+              { url: '/docs/jobs/task-types/mean/', title: 'Mean' },
+              { url: '/docs/jobs/task-types/median/', title: 'Median' },
+              { url: '/docs/jobs/task-types/mode/', title: 'Mode' },
+              { url: '/docs/jobs/task-types/sum/', title: 'Sum' },
+            ],
+          },
         ],
       },
       {
