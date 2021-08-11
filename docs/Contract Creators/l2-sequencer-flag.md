@@ -78,21 +78,21 @@ A raised flag will determine that the feed wasn't updated in "T" time and its da
 
 ## Contract Addresses
 
+> 📘 Note
+>
+> These contract addresses are on L2, and should therefore only be read from L2.
+
 ### Mainnet Contracts
 
 | Name                              | Address                                    |
 | --------------------------------- |:------------------------------------------ |
-| Ethereum Healthcheck Proxy Feed   | 0x32EaFC72772821936BCc9b8A32dC394fEFcDBfD9 |
 | Arbitrum Mainnet Flags Contract   | 0x3C14e07Edd0dC67442FA96f1Ec6999c57E810a83 |
-| Ethereum Validator Proxy Contract | 0x7D6E163930A7A66078c1497072404F9bC4841502 |
 
 ### Rinkeby Contracts
 
 | Name                             | Address                                    |
 | -------------------------------- |:------------------------------------------ |
-| Rinkeby Healthcheck Proxy Feed   | 0xdFf51aFa762b5b4A34fa284D9b071193e2994162 |
 | Arbitrum Rinkeby Flags Contract  | 0x491B1dDA0A8fa069bbC1125133A975BF4e85a91b |
-| Rinkeby Validator Proxy Contract | 0xEFEBaBEca82491f9aaCD8417A04E6D7C4E686cb7 |
 
 > 📘 Note
 > 
