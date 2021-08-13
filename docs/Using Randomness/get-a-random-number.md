@@ -101,3 +101,7 @@ contract RandomNumberConsumer is VRFConsumerBase {
 ## Getting More Randomness
 
 If you are looking for how to turn a single result into multiple random numbers, check out our guide on [Randomness Expansion](../chainlink-vrf-best-practices/#getting-multiple-random-numbers).
+
+## Network Congestion and Responsiveness
+
+Network congestion can occur on all blockchains from time to time, which may result in transactions taking longer to get included in a block. During times of network congestion, VRF nodes will continue responding to requests, but depending on the level of congestion it can take several minutes to fulfill your randomness requests. It is important you account for this in your use case and set expectations accordingly.
