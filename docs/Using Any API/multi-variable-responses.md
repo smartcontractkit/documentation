@@ -34,12 +34,8 @@ pragma solidity ^0.8.0;
 import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
 
 /**
-<<<<<<< HEAD
  * @notice DO NOT USE THIS CODE IN PRODUCTION. 
  * This is an example contract to show to use the multi-variable respnoses. 
-=======
- * @notice DO NOT USE THIS CODE IN PRODUCTION. This is an example contract. 
->>>>>>> 27088ab (added multi-word and large responses)
  */
 contract MultiWord is ChainlinkClient {
   using Chainlink for Chainlink.Request;
