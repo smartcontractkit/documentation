@@ -237,6 +237,10 @@ module.exports = {
                 title: 'Arbitrum Price Feeds',
                 url: '/docs/arbitrum-price-feeds/',
               },
+              {
+                title: 'Harmony Price Feeds',
+                url: '/docs/harmony-price-feeds/',
+              },
             ],
           },
         ],

@@ -116,5 +116,16 @@ export const NETWORKS = [
         source: "directory-arbitrum-rinkeby-1.json",
       },
     ],
+  },
+  {
+    page: "harmony-price-feeds",
+    title: "Harmony Price Feeds",
+    networks: [
+      {
+        name: "Harmony Testnet",
+        url: "https://explorer.testnet.harmony.one/#/address/",
+        source: "directory-harmony-testnet-shard-0.json",
+      },
+    ],
   }
 ];
