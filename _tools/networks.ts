@@ -95,6 +95,11 @@ export const NETWORKS = [
     title: "Fantom Testnet",
     networks: [
       {
+        name: "Fantom Mainnet",
+        url: "https://ftmscan.com/address/",
+        source: "directory-fantom-mainnet.json",
+      },
+      {
         name: "Fantom Testnet",
         url: "https://testnet.ftmscan.com/address/",
         source: "directory-fantom-testnet.json",
@@ -114,6 +119,17 @@ export const NETWORKS = [
         name: "Arbitrum Rinkeby",
         url: "https://rinkeby-explorer.arbitrum.io/address/",
         source: "directory-arbitrum-rinkeby-1.json",
+      },
+    ],
+  },
+  {
+    page: "harmony-price-feeds",
+    title: "Harmony Price Feeds",
+    networks: [
+      {
+        name: "Harmony Testnet",
+        url: "https://explorer.testnet.harmony.one/#/address/",
+        source: "directory-harmony-testnet-shard-0.json",
       },
     ],
   }
