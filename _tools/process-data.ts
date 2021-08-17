@@ -95,7 +95,7 @@ for (let page of targetData) {
     const proxyList: ResultProxy[] = [];
     for (let proxyKey of Object.keys(contents.proxies)) {
       const proxy = contents.proxies[proxyKey];
-      if (liveContracts[proxy.aggregator]) {
+      if (liveContracts[proxy.aggregator] && !proxy.name.includes("Healthcheck")) {
         proxyList.push({
           pair: proxy.name,
           deviationThreshold: liveContracts[proxy.aggregator].deviationThreshold,

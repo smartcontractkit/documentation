@@ -172,7 +172,7 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 
 ## Avalanche
 
-### Fuji Mainnet
+### Mainnet
 
 |Parameter|Value|
 |:---|:---|

@@ -24,12 +24,12 @@ Currently, any return value must fit within 32 bytes, if the value is bigger tha
 > Making a GET request will fail unless your deployed contract has enough LINK to pay for it. **Learn how to [Acquire testnet LINK](../acquire-link/) and [Fund your contract](../fund-your-contract/)**.
 
 <div class="remix-callout">
-    <a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&gist=8a28f5ee239b7815b935d883f1239904" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
+    <a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&gist=f34df6df7b05b9df593c8ef1e21c0265" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
     <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
 </div>
 
 ```solidity Kovan
-pragma solidity ^0.6.0;
+pragma solidity ^0.6.7;
 
 import "@chainlink/contracts/src/v0.6/ChainlinkClient.sol";
 
@@ -48,14 +48,15 @@ contract APIConsumer is ChainlinkClient {
     
     /**
      * Network: Kovan
-     * Oracle: 0x2f90A6D021db21e1B2A077c5a37B3C7E75D15b7e
-     * Job ID: 29fa9aa13bf1468788b7cc4a500a45b8
+     * Oracle: 0xc57B33452b4F7BB189bB5AfaE9cc4aBa1f7a4FD8 (Chainlink Devrel   
+     * Node)
+     * Job ID: d5270d1c311941d0b08bead21fea7747
      * Fee: 0.1 LINK
      */
     constructor() public {
         setPublicChainlinkToken();
-        oracle = 0x2f90A6D021db21e1B2A077c5a37B3C7E75D15b7e;
-        jobId = "29fa9aa13bf1468788b7cc4a500a45b8";
+        oracle = 0xc57B33452b4F7BB189bB5AfaE9cc4aBa1f7a4FD8;
+        jobId = "d5270d1c311941d0b08bead21fea7747";
         fee = 0.1 * 10 ** 18; // (Varies by network and job)
     }
     

@@ -1,10 +1,9 @@
 ---
 layout: feed.liquid
-title: "Arbitrum Feeds"
-stub: arbitrum-price-feeds
-permalink: "docs/arbitrum-price-feeds/"
+title: "Harmony Feeds"
+stub: harmony-price-feeds
+permalink: "docs/harmony-price-feeds/"
 metadata: 
-  l2healthflag: true
   image: 
     0: "https://files.readme.io/8dc5d76-cl.png"
     1: "cl.png"
