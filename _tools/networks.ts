@@ -95,6 +95,11 @@ export const NETWORKS = [
     title: "Fantom Testnet",
     networks: [
       {
+        name: "Fantom Mainnet",
+        url: "https://ftmscan.com/address/",
+        source: "directory-fantom-mainnet.json",
+      },
+      {
         name: "Fantom Testnet",
         url: "https://testnet.ftmscan.com/address/",
         source: "directory-fantom-testnet.json",
