@@ -7,7 +7,7 @@ permalink: "docs/tutorials/"
 whatsnext: {"Read Getting Started":"/docs/getting-started/", "Deploy Your First Smart Contract":"/docs/first-contract/", "Connect Contracts to Oracles":"/docs/connect-to-oracles/"}
 hidden: false
 ---
-![Chainlink](/files/a4c6c80-85d09b6-19facd8-banner.png)
+![Chainlink Abstract Banner](/files/a4c6c80-85d09b6-19facd8-banner.png)
 
 Welcome to the smart contract beginner's guide. This guide provides a list of resources for people who want to understand how all of these different technologies work together, how to deploy smart contracts, and how Chainlink oracle networks provide off-chain data to smart contracts.
 

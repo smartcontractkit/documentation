@@ -3,16 +3,12 @@ layout: nodes.liquid
 section: smartContract
 date: Last Modified
 title: 'Introduction to Chainlink Keepers'
-permalink: 'docs/chainlink-keepers/introduction/'
 whatsnext:
   {
     'Making Keeper Compatible Contracts': '/docs/chainlink-keepers/compatible-contracts/',
   }
 ---
-
-![Chainlink Keeper Network](/images/contract-devs/generic-banner.png)
-
-{% include keepers-beta %}
+![Chainlink Keeper Network Banner](/images/contract-devs/generic-banner.png)
 
 A major limitation of smart contracts is that they can't trigger or initiate their own functions at arbitrary times or under arbitrary conditions. State change will only occur when a transaction is initiated by another account (such as user, oracle, or contract).
 
@@ -52,5 +48,5 @@ We strongly recommend to start by testing your Keeper-compatible contracts on te
 1. Fund your upkeep on mainnet
 1. Confirm the first performance of your Upkeep
 
-> ⚠️ Open Beta Note
+> ⚠️ Registration Onboarding Note
 > Your registrations on testnet will be auto approved immediately. To help us streamline the process of onboarding your use case on mainnet, please fill out the optional details (and form) during testnet registration so our onboarding team can expect your use case on mainnet. Mainnet registrations will be reviewed by our onboarding team before being approved. We are working towards a fully self-serve model.

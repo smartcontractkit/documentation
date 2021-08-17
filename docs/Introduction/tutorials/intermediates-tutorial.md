@@ -19,6 +19,7 @@ metadata:
 
 > Note: This video uses a seed phrase to request randomness. Seed phrases are depreciated. Use the code in this exercise instead.
 
+
 # Before you begin
 
 This tutorial assumes that you know how to create and deploy basic smart contracts. If you are new to smart contract development, complete the following tutorials first:
@@ -44,13 +45,11 @@ Randomness, on the other hand, cannot be reference data. If the result of random
 # 2. Using LINK
 
 In return for providing this service of generating a random number, Oracles need to be paid in [LINK](../link-token-contracts/). This is paid by the contract that requests the randomness, and payment occurs during the request.
-[block:callout]
-{
-  "type": "info",
-  "title": "ERC-677 Token Standard",
-  "body": "LINK conforms to the ERC-677 token standard, and extension of ERC-20. This standard is what enables data to be encoded in token transfers. This is integral to the Request and Receive cycle. <a href=\"https://github.com/ethereum/EIPs/issues/677\" target=\"_blank\">Click here</a> to learn more about ERC-677."
-}
-[/block]
+
+> 📘 ERC-677 Token Standard
+> 
+> LINK conforms to the ERC-677 token standard, and extension of ERC-20. This standard is what enables data to be encoded in token transfers. This is integral to the Request and Receive cycle. [Click here](https://github.com/ethereum/EIPs/issues/677) to learn more about ERC-677.
+
 # 3. Interacting with Chainlink Oracles
 
 As mentioned in the previous tutorial, smart contracts have all the capabilities that wallets have, in that they are able to own and interact with tokens. The contract that requests randomness from Chainlink VRF must have a LINK balance equivalent to, or greater than the cost of making the request, in order to pay for it.
@@ -69,13 +68,11 @@ The contract will have the following functions:
 - `rollDice`: This submits a randomness request to Chainlink VRF
 - `fulfillRandomness`: The function that is used by the Oracle to send the result back to
 - `house`: To see the assigned house of an address
-[block:callout]
-{
-  "type": "info",
-  "title": "Open Full Contract",
-  "body": "To jump straight to the entire implementation, you can <a href=\"https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&gist=b8a2c5d8cf36761f1938b24e45b1b474\" target=\"_blank\" class=\"solidity-tracked\">open this contract in remix</a>."
-}
-[/block]
+
+> 📘 Open Full Contract
+> 
+> To jump straight to the entire implementation, you can [open this contract](https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&gist=b8a2c5d8cf36761f1938b24e45b1b474) in remix</a>.
+
 ## 4a. Importing `VRFConsumerBase`
 
 Chainlink maintains a <a href="https://github.com/smartcontractkit/chainlink/tree/master/contracts" target="_blank">library of contracts</a> that make consuming data from oracles easier. For Chainlink VRF, we use a contract called <a href="https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.6/VRFConsumerBase.sol" target="_blank">`VRFConsumerBase`</a>, which needs to be imported and extended from.
@@ -239,37 +236,15 @@ Time to compile and deploy the contract! If you don't know how to deploy a contr
 This deployment is slightly different than the example from the beginners tutorial. In this tutorial, we have to pass in parameters to the constructor upon deployment.
 
 Once compiled, you'll see a menu that looks like this in the deploy pane:
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "/files/f6c0c2b-Screenshot_2020-12-18_at_16.23.19.png",
-        "Screenshot 2020-12-18 at 16.23.19.png",
-        796,
-        304,
-        "#343240"
-      ]
-    }
-  ]
-}
-[/block]
+
+![Remix Deployed Contract](/files/f6c0c2b-Screenshot_2020-12-18_at_16.23.19.png)
+
 Click the caret arrow on the right hand side of "Deploy" to expand the parameter fields, and paste the following values in:
 
 - `0xdD3782915140c8f3b190B5D67eAc6dc5760C46E9`
 - `0xa36085f69e2889c224210f603d836748e7dc0088 `
 - `0x6c3699283bda56ad74f6b855546325b68d482e983852a7a82979cc4807b641f4`
 - `100000000000000000`
-
-These are the coordinator address, LINK address, key hash, and fee. Click deploy and use your Metamask account to confirm the transaction.
-[block:callout]
-{
-  "type": "info",
-  "title": "Address, Key Hashes and more",
-  "body": "For a full reference of the addresses, key hashes and fees for each network, see [VRF Contracts](../vrf-contracts/)."
-}
-[/block]
-(Note: You must <a href="/docs/first-contract#install-and-fund-metamask" target="_blank">have MetaMask funded with Kovan ETH</a> to pay for the GAS).
 
 Once deployed, the contract is almost ready to go! However, it can't request anything yet, since it doesn't own LINK. If we hit `rollDice` with no LINK, the transaction will revert.
 
@@ -280,10 +255,10 @@ Since the contract is on testnet, as with Kovan ETH, we don't need to purchase _
 Use your Metamask address on the Kovan network to request LINK, then send 1 LINK to the contract address. This address can be found in Remix, under "Deployed Contracts" on the bottom left.
 
 Note, you should add the corresponding LINK token to your MetaMask account first:
-![metamask](/images/contract-devs/metamask-1.png)
+![Metamask Add Tokens Screens](/images/contract-devs/metamask-1.png)
 
 If you enounter any issues, make sure to check you copied the address of the correct network:
-![metamask](/images/contract-devs/metamask-2.png)
+![Metamask Verify Contracts Screen](/images/contract-devs/metamask-2.png)
 
 # 7. Rolling the Dice!
 

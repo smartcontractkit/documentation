@@ -172,7 +172,7 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 
 ## Avalanche
 
-### Fuji Mainnet
+### Mainnet
 
 |Parameter|Value|
 |:---|:---|
@@ -229,5 +229,17 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 |`ETH_CHAIN_ID`|`421611`|
 |Address|[`0x615fBe6372676474d9e6933d310469c9b68e9726`](https://rinkeby-explorer.arbitrum.io/address/0x615fBe6372676474d9e6933d310469c9b68e9726)|
 |Name|ChainLink Token on Arbitrum Rinkeby|
+|Symbol|LINK|
+|Decimals|18|
+
+## Huobi Eco Chain
+
+### Mainnet
+
+|Parameter|Value|
+|:---|:---|
+|`ETH_CHAIN_ID`|`128`|
+|Address|[`0x9e004545c59D359F6B7BFB06a26390b087717b42`](https://hecoinfo.com/address/0x9e004545c59D359F6B7BFB06a26390b087717b42)|
+|Name|Heco-Peg LINK Token|
 |Symbol|LINK|
 |Decimals|18|

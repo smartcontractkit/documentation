@@ -10,6 +10,6 @@ metadata:
   image: 
     0: "/files/OpenGraph_V3.png"
 ---
-![Chainlink Node](/files/ab5762f-end-to-end-diagram.png)
+![Chainlink Node Diagram](/files/ab5762f-end-to-end-diagram.png)
 
 Running a Chainlink node allows you to provide external data directly to smart contracts. In this section, we'll explain how to configure your own Chainlink node and become a node operator.

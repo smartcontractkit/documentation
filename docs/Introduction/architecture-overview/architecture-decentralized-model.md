@@ -17,22 +17,8 @@ This page describes how data aggregation is applied to produce Chainlink Price F
 
 Each price feed is updated by multiple, independent Chainlink oracle operators. Aggregation is handled on-chain by <a href="https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.6/FluxAggregator.sol" target="_blank">`FluxAggregator`</a>.
 
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "/images/contract-devs/price-aggr.png",
-        "price-aggregator",
-        3600,
-        2400,
-        "#fafafa"
-      ],
-      "caption": "Screenshot of the <a href=\"https://data.chain.link/eth-usd\" target=\"_blank\">ETH/USD Price Feed</a>"
-    }
-  ]
-}
-[/block]
+![Chainlink Feeds List](/images/contract-devs/price-aggr.png)
+
 ## Shared Data Resource
 
 Each price feed is built and funded by the community of users who rely on accurate, up-to-date price data in their smart contracts. As more users rely on and contribute to a price feed, the quality of the price feed improves. For this reason, each price feed has its own properties depending on the needs of its community of users.
@@ -59,21 +45,8 @@ A new aggregation round starts after a specified amount of time from the last up
 
 # Contracts Overview
 
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "/files/399e90d-Simple_Architecture_Diagram_2_V1.png",
-        "Simple Architecture Diagram_2 V1.png",
-        3229,
-        628,
-        "#f8f9fc"
-      ]
-    }
-  ]
-}
-[/block]
+![Contracts Architecture Diagram](/files/399e90d-Simple_Architecture_Diagram_2_V1.png)
+
 All source code is open source and available in our <a href="https://github.com/smartcontractkit/chainlink" target="_blank">Github repository</a>.
 
 ## Consumer

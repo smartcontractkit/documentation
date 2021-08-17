@@ -5,6 +5,14 @@ title: "Job Specifications"
 permalink: "docs/job-specifications/"
 whatsnext: {"Core Adapters":"/docs/core-adapters/", "Initiators":"/docs/initiators/"}
 ---
+
+# DEPRECATED
+
+> ⚠️ NOTE
+> The style of job spec described below (otherwise known as JSON specs or v1 specs) is deprecated and support for it will be removed in Chainlink 1.0.0. If you are still running this type of job, you should migrate them to v2 specs.
+> 
+> Please refer to the [v2 jobs migration page](/docs/jobs/migration-v1-v2) for guidance on how to do this.
+
 ## What is a job?
 
 Job specifications, or specs, contain the sequential tasks that the node must perform to produce a final result. Chainlink jobs are divided into 2 segments.
