@@ -161,6 +161,10 @@ module.exports = {
                 title: 'API Calls',
                 url: '/docs/advanced-tutorial/',
               },
+              {
+                title: 'Developer Tutorials',
+                url: '/docs/developer-tutorials/',
+              },
             ],
           },
           {
