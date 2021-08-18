@@ -162,8 +162,8 @@ module.exports = {
                 url: '/docs/advanced-tutorial/',
               },
               {
-                title: 'Developer Tutorials',
-                url: '/docs/developer-tutorials/',
+                title: 'Other Tutorials',
+                url: '/docs/other-tutorials/',
               },
             ],
           },
