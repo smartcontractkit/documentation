@@ -91,7 +91,7 @@ contract FinageChainlink is ChainlinkClient {
 ```
 
 <div class="remix-callout">
-    <a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&gist=cc8945da2f2a8dab019402525df0f5bc" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
+    <a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&url=https://docs.chain.link/samples/DataProviders/Finage.sol" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
     <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
 </div>
 
@@ -114,7 +114,7 @@ The examples below show how to create a request for the Chainlink node.
 
 ### `requestData` function
 
-```javascript
+```solidity
 function requestData
 (
   address _oracle,
@@ -131,7 +131,7 @@ function requestData
 ```
 ### `fulfill` function
 
-```javascript
+```solidity
 int256 public data;
 
 function fulfill(bytes32 _requestId, int256 _data)
