@@ -76,7 +76,7 @@ When your checkUpkeep returns `upkeepNeeded == true`, the Keeper node broadcasts
 The example below represents a simple counter contract. Each time `performUpkeep` is called, it increments its counter by one.
 
 <div class="remix-callout">
-    <a href="https://remix.ethereum.org/#version=soljson-v0.6.6+commit.6c089d02.js&optimize=false&evmVersion=null&url=https://docs.chain.link/samples/Keepers/KeepersCounter.sol" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
+    <a href="https://remix.ethereum.org/#version=soljson-v0.6.6+commit.6c089d02.js&optimize=false&evmVersion=null&url=https://github.com/smartcontractkit/documentation/blob/main/_includes/samples/Keepers/KeepersCounter.sol" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
     <a href="../../deploy-your-first-contract/" title="">What is Remix?</a>
 </div>
 
