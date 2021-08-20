@@ -72,13 +72,13 @@ The contract will have the following functions:
 
 > 📘 Open Full Contract
 > 
-> To jump straight to the entire implementation, you can [open this contract](https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&gist=b8a2c5d8cf36761f1938b24e45b1b474) in remix</a>.
+> To jump straight to the entire implementation, you can [open this contract](https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&url=https://docs.chain.link/samples/VRF/VRFD20.sol) in remix</a>.
 
 ## 4a. Importing `VRFConsumerBase`
 
 Chainlink maintains a <a href="https://github.com/smartcontractkit/chainlink/tree/master/contracts" target="_blank">library of contracts</a> that make consuming data from oracles easier. For Chainlink VRF, we use a contract called <a href="https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.6/VRFConsumerBase.sol" target="_blank">`VRFConsumerBase`</a>, which needs to be imported and extended from.
 
-```javascript
+```solidity
 pragma solidity 0.6.7;
 
 import "@chainlink/contracts/src/v0.6/VRFConsumerBase.sol";
@@ -92,7 +92,7 @@ contract VRFD20 is VRFConsumerBase {
 
 The contract will store a number of things. Firstly, it needs to store variables which tell the oracle what it is requesting. Each oracle job has a unique Key Hash, which is used to identify tasks that it should perform. The contract will store the Key Hash that identifies Chainlink VRF, and the fee amount, to use in the request.
 
-```javascript
+```solidity
 bytes32 private s_keyHash;
 uint256 private s_fee;
 ```
@@ -101,7 +101,7 @@ These will be initialized in the constructor.
 
 For the contract to keep track of addresses that roll the dice, the contract will need to use mappings. <a href="https://medium.com/upstate-interactive/mappings-in-solidity-explained-in-under-two-minutes-ecba88aff96e" target="_blank">Mappings</a> are unique `key => value` pair data structures that act like hash tables.
 
-```javascript
+```solidity
 mapping(bytes32 => address) private s_rollers;
 mapping(address => uint256) private s_results;
 ```
@@ -113,7 +113,7 @@ mapping(address => uint256) private s_results;
 
 As mentioned, the fee and the key hash must be set on construction. To use `VRFConsumerBase` properly, we also need to pass certain values into its constructor.
 
-```javascript
+```solidity
 constructor(address vrfCoordinator, address link, bytes32 keyHash, uint256 fee)
     public
     VRFConsumerBase(vrfCoordinator, link)
@@ -135,7 +135,7 @@ As you can see, `VRFConsumerBase` needs to know the address of the vrfCoordinato
 4. Store the `requestId` and roller address.
 5. Emit an event to signal that the die is rolling.
 
-```javascript
+```solidity
 uint256 private constant ROLL_IN_PROGRESS = 42;
 
 // ...
@@ -170,7 +170,7 @@ It should:
 2. Assign the transformed value to the address in the `s_results` mapping variable.
 3. Emit a `DiceLanded` event.
 
-```javascript
+```solidity
 // ...
 
 event DiceRolled(bytes32 indexed requestId, address indexed roller);
@@ -189,7 +189,7 @@ function fulfillRandomness(bytes32 requestId, uint256 randomness) internal overr
 
 Finally, the `house` function returns the house of an address.
 
-```javascript
+```solidity
 function house(address player) public view returns (string memory) {
     require(s_results[player] != 0, "Dice not rolled");
     require(s_results[player] != ROLL_IN_PROGRESS, "Roll in progress");
@@ -226,7 +226,7 @@ function getHouseName(uint256 id) private pure returns (string memory) {
 See the full contract in Remix! (We've added a few helper functions in there which should make using the contract easier and more flexible. Have a play around with it to understand all the internal workings).
 
 <div class="remix-callout">
-  <a href="https://remix.ethereum.org/#version=soljson-v0.6.6+commit.6c089d02.js&optimize=false&evmVersion=null&gist=b8a2c5d8cf36761f1938b24e45b1b474&runs=200" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
+  <a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&url=https://docs.chain.link/samples/VRF/VRFD20.sol" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
     <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
 </div>
 
