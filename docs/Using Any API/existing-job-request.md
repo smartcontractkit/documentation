@@ -26,7 +26,7 @@ This example uses the <a href="https://market.link/nodes/ef076e87-49f4-486b-9878
 > Making a job request will fail unless your deployed contract has enough LINK to pay for it. **Learn how to [Acquire testnet LINK](../acquire-link/) and [Fund your contract](../fund-your-contract/)**.
 
 <div class="remix-callout">
-    <a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&url=https://docs.chain.link/samples/APIRequests/OpenWeatherConsumer.sol" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
+    <a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&url=https://github.com/smartcontractkit/documentation/blob/main/_includes/samples/APIRequests/OpenWeatherConsumer.sol" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
     <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
 </div>
 

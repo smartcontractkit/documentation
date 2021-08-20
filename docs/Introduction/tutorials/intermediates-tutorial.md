@@ -72,7 +72,7 @@ The contract will have the following functions:
 
 > 📘 Open Full Contract
 > 
-> To jump straight to the entire implementation, you can [open this contract](https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&url=https://docs.chain.link/samples/VRF/VRFD20.sol) in remix</a>.
+> To jump straight to the entire implementation, you can [open this contract](https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&url=https://github.com/smartcontractkit/documentation/blob/main/_includes/samples/VRF/VRFD20.sol) in remix</a>.
 
 ## 4a. Importing `VRFConsumerBase`
 
@@ -226,7 +226,7 @@ function getHouseName(uint256 id) private pure returns (string memory) {
 See the full contract in Remix! (We've added a few helper functions in there which should make using the contract easier and more flexible. Have a play around with it to understand all the internal workings).
 
 <div class="remix-callout">
-  <a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&url=https://docs.chain.link/samples/VRF/VRFD20.sol" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
+  <a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&url=https://github.com/smartcontractkit/documentation/blob/main/_includes/samples/VRF/VRFD20.sol" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
     <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
 </div>
 
