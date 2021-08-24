@@ -115,7 +115,7 @@ contract MyClient is ChainlinkClient {
         requestOracleData(req, _payment); // MWR API.
     }
 
-    function fulfill(bytes32 requestID, uint256 ethusd, uint256 etheur, uint256 ethjpy) public {
+    function fulfill(bytes32 requestID, uint256 usd, uint256 eur, uint256 jpy) public {
         // ...
     }
 }
