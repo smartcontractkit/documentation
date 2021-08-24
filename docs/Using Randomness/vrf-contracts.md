@@ -34,7 +34,7 @@ For implementation details, read [Introduction to Chainlink VRF](../chainlink-vr
 
 > 🚰Mumbai Faucet
 >
-> Testnet LINK and MATIC are available from <a href="https://faucet.matic.network/" target="_blank" rel="noreferrer, noopener">the official matic faucet</a> and <a href="https://linkfaucet.protofire.io/mumbai" target="_blank" rel="noreferrer, noopener">the community faucet</a>.
+> Testnet LINK and MATIC are available from <a href="https://faucet.matic.network/" target="_blank" rel="noreferrer, noopener">the official matic faucet</a> and <a href="https://faucets.chain.link/mumbai" target="_blank" rel="noreferrer, noopener">the community faucet</a>.
 
 |Item|Value|
 |---|---|
@@ -64,7 +64,7 @@ For implementation details, read [Introduction to Chainlink VRF](../chainlink-vr
 
 > 🚰BSC Faucet
 >
-> Testnet LINK is available from <a href="https://linkfaucet.protofire.io/bsctest" target="_blank" rel="noreferrer, noopener">the community faucet</a>.
+> Testnet LINK is available from <a href="https://faucets.chain.link/bsctest" target="_blank" rel="noreferrer, noopener">the community faucet</a>.
 
 |Item|Value|
 |---|---|

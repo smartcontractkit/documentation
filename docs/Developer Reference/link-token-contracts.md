@@ -90,7 +90,7 @@ LINK is native to Ethereum, so to use LINK on other chains, it must be bridged. 
 
 > 🚰BSC Faucet
 >
-> Testnet LINK is available from <a href="https://linkfaucet.protofire.io/bsctest" target="_blank" rel="noreferrer, noopener">the community faucet</a>.
+> Testnet LINK is available from <a href="https://faucets.chain.link/chapel" target="_blank" rel="noreferrer, noopener">the community faucet</a>.
 
 |Parameter|Value|
 |:---|:---|
@@ -122,7 +122,7 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 
 > 🚰Mumbai Faucet
 >
-> Testnet LINK and MATIC are available from <a href="https://faucet.matic.network/" target="_blank" rel="noreferrer, noopener">the official matic faucet</a> and <a href="https://linkfaucet.protofire.io/mumbai" target="_blank" rel="noreferrer, noopener">the community faucet</a>.
+> Testnet LINK and MATIC are available from <a href="https://faucet.matic.network/" target="_blank" rel="noreferrer, noopener">the official matic faucet</a> and <a href="https://faucets.chain.link/mumbai" target="_blank" rel="noreferrer, noopener">the community faucet</a>.
 
 |Parameter|Value|
 |:---|:---|
@@ -184,7 +184,7 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 
 > 🚰Avax Faucet
 >
-> Community Faucet: https://linkfaucet.protofire.io/fuji
+> Community Faucet: https://faucets.chain.link/fuji
 >
 
 |Parameter|Value|
@@ -201,7 +201,7 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 
 > 🚰Fantom Faucet
 >
-> Community Faucet: https://linkfaucet.protofire.io/fantomtestnet  
+> Community Faucet: https://faucets.chain.link//fantomtestnet  
 >
 
 |Parameter|Value|
@@ -218,7 +218,7 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 
 > 🚰Arbitrum Faucet on Rinkeby
 >
-> Community Faucet: https://linkfaucet.protofire.io/rinkebyarbitrum
+> Community Faucet: https://faucets.chain.link/rinkebyarbitrum
 >
 > Supported bridge: https://bridge.arbitrum.io
 
