@@ -32,7 +32,7 @@ pollTimerPeriod   = "1m"
 pollTimerDisabled = false
 
 drumbeatEnabled  = true
-drumbeatSchedule = "* */20 * * * *"
+drumbeatSchedule = "CRON_TZ=UTC * */20 * * * *"
 
 observationSource = """
     // data source 1
@@ -63,7 +63,7 @@ See [shared fields](/docs/jobs/#shared-fields).
 - `idleTimerPeriod`: the amount of time (after the successful completion of a round) after which a new round will be automatically initiated, regardless of any observed off-chain deviation.
 - `idleTimerDisabled`: whether the idle timer is used to trigger new rounds.
 - `drumbeatEnabled`: whether the drumbeat is used to trigger new rounds.
-- `drumbeatSchedule`: the cron schedule of the drumbeat. This field supports the same syntax as the cron job type (see the [cron library documentation](https://pkg.go.dev/github.com/robfig/cron?utm_source=godoc) for details).
+- `drumbeatSchedule`: the cron schedule of the drumbeat. This field supports the same syntax as the cron job type (see the [cron library documentation](https://pkg.go.dev/github.com/robfig/cron?utm_source=godoc) for details). CRON_TZ is required.
 - `pollTimerPeriod`: the frequency with which the off-chain data source is checked for deviation against the previously submitted on-chain answer.
 - `pollTimerDisabled`: whether the occasional deviation check is used to trigger new rounds.
 - **Notes:**
