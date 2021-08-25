@@ -218,7 +218,7 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 
 > 🚰Arbitrum Faucet on Rinkeby
 >
-> Community Faucet: https://faucets.chain.link/rinkebyarbitrum
+> Community Faucet: https://faucets.chain.link/arb-rinkeby
 >
 > Supported bridge: https://bridge.arbitrum.io
 
