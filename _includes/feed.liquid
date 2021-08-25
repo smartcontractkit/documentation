@@ -3,7 +3,11 @@ layout: ./nodes.liquid
 section: smartContract
 ---
 
-<p>For implementation instructions, please refer to <a href="../get-the-latest-price/">Get the Latest Price</a>.</p>
+{% if metadata.solanafeeds %}
+    <p>The program address for this feed is publicly available in the <a href="https://explorer.solana.com/address/2yqG9bzKHD59MxD9q7ExLvnDhNycB3wkvKXFQSpBoiaE?cluster=devnet">Solana Devnet Explorer</a>.</p>
+{% else %}
+    <p>For implementation instructions, please refer to <a href="../get-the-latest-price/">Get the Latest Price</a>.</p>
+{% endif %}
 
 <p>For LINK token and Faucet details, please refer to <a href="../link-token-contracts/">LINK Token Contracts</a>.</p>
 
@@ -13,7 +17,6 @@ section: smartContract
     table {
         border-collapse: collapse;
         width:100%;
-
     }
     th, td {
         border: 1px solid #dfe2e5;
@@ -35,7 +38,7 @@ section: smartContract
 
 {% if metadata.l2healthflag %}
     <rdme-callout theme="warn">
-        <p>It`s recommended to use <a href="/docs/l2-sequencer-flag/">L2 Sequencer Health Flag</a> 
+        <p>It`s recommended to use <a href="/docs/l2-sequencer-flag/">L2 Sequencer Health Flag</a>
         for all of the contracts on Arbitrum network!
         </p>
     </rdme-callout>
@@ -51,14 +54,12 @@ section: smartContract
     render = (data) => {
         let html = '';
         if(data["{{stub}}"]) {
-           
             for(let network of data["{{stub}}"].networks) {
                 html += `<h2 id="${network.name}">${network.name} <a class="anchor" href="#${network.name}"><img src="/images/link.svg" alt="Link to this section"></a></h2>`;
                 html += `<label><input type="checkbox" class="extra" ${showExtraDetails ? 'checked="checked"' : ''}>Show Heartbeat and Deviation Details</input></label>`;
-                
                 let proxyList = '';
                 for(let proxy of network.proxies) {
-                    proxyList += `<tr id="${network.name} ${proxy.pair}"><td><code>${proxy.pair}</code></td><td ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.deviationThreshold ? (proxy.deviationThreshold + '%') : 'N/A'}</td><td ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.heartbeat ? proxy.heartbeat : 'N/A'}</td><td>${proxy.decimals}</td><td><a href="${network.url}${proxy.proxy}" target="_blank"><code>${proxy.proxy}</code></a></td></tr>`;
+                    proxyList += `<tr id="${network.name} ${proxy.pair}"><td><code>${proxy.pair}</code></td><td ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.deviationThreshold ? (proxy.deviationThreshold + '%') : 'N/A'}</td><td ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.heartbeat ? proxy.heartbeat : 'N/A'}</td><td>${proxy.decimals}</td><td><a href="${network.url}${proxy.proxy}${network.url_params}" target="_blank"><code>${proxy.proxy}</code></a></td></tr>`;
                 }
                 html += `<table><thead><tr><th>Pair</th><th ${ showExtraDetails ? '' : 'class="detail-hidden"'}>Deviation</th><th ${ showExtraDetails ? '' : 'class="detail-hidden"'}>Heartbeat</th><th>Dec</th><th>Proxy</th></tr></thead><tbody>${proxyList}</tbody></table>`;
             }
@@ -72,16 +73,13 @@ section: smartContract
             })
         );
     }
-    
     let path = 'https://cl-docs-addresses.web.app/addresses.json';
     if(window.location.host === 'localhost:4200') {
         path = '/addresses/addresses.json';
     }
-
     fetch(path)
     .then(response => response.json())
     .then(json => {
         render(json);
     });
-    
 </script>

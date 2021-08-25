@@ -245,6 +245,10 @@ module.exports = {
                 title: 'Harmony Price Feeds',
                 url: '/docs/harmony-price-feeds/',
               },
+              {
+                title: 'Solana Price Feeds',
+                url: '/docs/solana-price-feeds/',
+              },
             ],
           },
         ],

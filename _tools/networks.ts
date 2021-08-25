@@ -6,16 +6,19 @@ export const NETWORKS = [
       {
         name: "Ethereum Mainnet",
         url: "https://etherscan.io/address/",
+        url_params: "",
         source: "directory.json",
       },
       {
         name: "Kovan Testnet",
         url: "https://kovan.etherscan.io/address/",
+        url_params: "",
         source: "directory-kovan.json",
       },
       {
         name: "Rinkeby Testnet",
         url: "https://rinkeby.etherscan.io/address/",
+        url_params: "",
         source: "directory-rinkeby.json",
       },
     ],
@@ -27,11 +30,13 @@ export const NETWORKS = [
       {
         name: "BSC Mainnet",
         url: "https://bscscan.com/address/",
+        url_params: "",
         source: "directory-bsc-mainnet.json",
       },
       {
         name: "BSC Testnet",
         url: "https://testnet.bscscan.com/address/",
+        url_params: "",
         source: "directory-bsc-testnet.json",
       },
     ],
@@ -43,11 +48,13 @@ export const NETWORKS = [
       {
         name: "Polygon Mainnet",
         url: "https://explorer-mainnet.maticvigil.com/address/",
+        url_params: "",
         source: "directory-matic-mainnet.json",
       },
       {
         name: "Mumbai Testnet",
         url: "https://explorer-mumbai.maticvigil.com/address/",
+        url_params: "",
         source: "directory-matic-testnet.json",
       },
     ],
@@ -59,6 +66,7 @@ export const NETWORKS = [
       {
         name: "xDai Mainnet",
         url: "https://blockscout.com/poa/xdai/address/",
+        url_params: "",
         source: "directory-xdai-mainnet.json",
       },
     ],
@@ -70,6 +78,7 @@ export const NETWORKS = [
       {
         name: "Huobi Mainnet",
         url: "https://hecoinfo.com/address/",
+        url_params: "",
         source: "directory-heco-mainnet.json",
       },
     ],
@@ -81,11 +90,13 @@ export const NETWORKS = [
       {
         name: "Avalanche Mainnet",
         url: "https://cchain.explorer.avax.network/address/",
+        url_params: "",
         source: "directory-avalanche-mainnet.json",
       },
       {
         name: "Avalanche Testnet",
         url: "https://cchain.explorer.avax-test.network/address/",
+        url_params: "",
         source: "directory-avalanche-fuji-testnet.json",
       },
     ],
@@ -97,11 +108,13 @@ export const NETWORKS = [
       {
         name: "Fantom Mainnet",
         url: "https://ftmscan.com/address/",
+        url_params: "",
         source: "directory-fantom-mainnet.json",
       },
       {
         name: "Fantom Testnet",
         url: "https://testnet.ftmscan.com/address/",
+        url_params: "",
         source: "directory-fantom-testnet.json",
       },
     ],
@@ -113,11 +126,13 @@ export const NETWORKS = [
       {
         name: "Arbitrum Mainnet",
         url: "https://explorer.arbitrum.io/address/",
+        url_params: "",
         source: "directory-ethereum-mainnet-arbitrum-1.json",
       },
       {
         name: "Arbitrum Rinkeby",
         url: "https://rinkeby-explorer.arbitrum.io/address/",
+        url_params: "",
         source: "directory-arbitrum-rinkeby-1.json",
       },
     ],
@@ -129,7 +144,20 @@ export const NETWORKS = [
       {
         name: "Harmony Testnet",
         url: "https://explorer.testnet.harmony.one/#/address/",
+        url_params: "",
         source: "directory-harmony-testnet-shard-0.json",
+      },
+    ],
+  },
+  {
+    page: "solana-price-feeds",
+    title: "Solana Price Feeds",
+    networks: [
+      {
+        name: "Solana Devnet",
+        url: "https://explorer.solana.com/address/",
+        url_params: "?cluster=devnet",
+        source: "directory-solana-devnet.json",
       },
     ],
   }
