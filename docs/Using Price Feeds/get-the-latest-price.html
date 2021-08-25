@@ -2,29 +2,41 @@
 layout: nodes.liquid
 section: smartContract
 date: Last Modified
-title: "Get the Latest Price"
+title: "Consuming Price Feeds"
 permalink: "docs/get-the-latest-price/"
 whatsnext: {"Historical Price Data":"/docs/historical-price-data/", "Price Feeds API Reference":"/docs/price-feeds-api-reference/", "Price Feeds Contract Addresses":"/docs/reference-contracts/"}
-metadata: 
-  title: "Get the Latest Price of an Asset"
-  description: "How to use Chainlink Price Feeds to retrieve the latest price of ETH in your smart contracts."
-  image: 
+metadata:
+  title: "Consuming Price Feeds"
+  description: "How to use Chainlink Price Feeds in your smart contracts."
+  image:
     0: "/files/OpenGraph_V3.png"
 ---
  {% markdown %}
-This page explains how to get the latest price of Ethereum (ETH) inside smart contracts, using the [ETH/USD Price Feed](https://kovan.etherscan.io/address/0x9326BFA02ADD2366b30bacB125260Af641031331) on the Kovan testnet.
+
+Price data feeds are available on the following networks:
+- EVM-compatible networks: [Ethereum](/docs/ethereum-addresses/), [Binance Smart Chain](/docs/binance-smart-chain-addresses/), [Polygon](/docs/matic-addresses/), [xDai](/docs/xdai-price-feeds/), [Huobi Eco Chain](/docs/huobi-eco-chain-price-feeds/), [Avalanche](/docs/avalanche-price-feeds/), [Fantom](/docs/fantom-price-feeds/), [Arbitrum](/docs/arbitrum-price-feeds/), [Harmony](/docs/harmony-price-feeds/)
+- Other networks: [Solana](/docs/solana-price-feeds/)
 
 > 📘 Note
-> 
+>
 > The full list of price feeds for each network are available from [Price Feed Contracts](../reference-contracts/).
 
-# Code Examples
+## Code Examples
 
 > 📘 New Feed Registry
 > You can now use the [Feed Registry](../feed-registry/) to reference price feed assets by name or currency identifier instead of pair/proxy address.
 
+## Ethereum network examples
 
-## Solidity
+You can get the latest price of Ethereum (ETH) inside smart contracts. For development and testing, use the [ETH/USD Price Feed](https://kovan.etherscan.io/address/0x9326BFA02ADD2366b30bacB125260Af641031331) on the Kovan testnet.
+
+You can consume price feed data using examples from one of the following languages:
+
+- [Solidity](#solidity)
+- [Javascript](#javascript)
+- [Python](#python)
+
+### Solidity
 
 To consume price data, your smart contract should reference [`AggregatorV3Interface`](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.6/interfaces/AggregatorV3Interface.sol), which defines the external functions implemented by Price Feeds.
 
@@ -43,7 +55,8 @@ To consume price data, your smart contract should reference [`AggregatorV3Interf
 
 The `latestRoundData` function returns five values representing information about the latest price data. See [Price Feeds API Reference](../price-feeds-api-reference/) for more details.
 
-## Javascript
+### Javascript
+
 ```javascript Kovan
 {% include samples/PriceFeeds/PriceConsumerV3.js %}
 ```
@@ -62,7 +75,7 @@ The `latestRoundData` function returns five values representing information abou
 </div>
  {% markdown %}
 
-## Python
+### Python
 
 ```python Kovan
 {% include samples/PriceFeeds/PriceConsumerV3.py %}
@@ -74,12 +87,12 @@ The `latestRoundData` function returns five values representing information abou
     </div>
 </div>
 
-# How Do Price Feeds Get Their Data?
+## How Do Price Feeds Get Their Data?
 
 Price Feeds are aggregated from many data sources by a decentralized set of independent Node Operators. The [Decentralized Data Model](../architecture-decentralized-model/) describes this in detail.
 
-# More Aggregator Functions
+## More Aggregator Functions
 
 Getting the latest price is not the only data that can be retrieved from aggregators. You can also retrieve historical price data. To find out more, move on to [Historical Price Data](../historical-price-data/).
 
- {% endmarkdown %}
+{% endmarkdown %}

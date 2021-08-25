@@ -13,6 +13,7 @@ interface DataFile {
       heartbeat: string;
       decimals: number;
       v3Facade: string;
+      name: string;
       status: 'dead' | 'live' | 'testnet-priority' | 'backup';
       config?: {
         maxContractValueAge: string;
@@ -53,6 +54,7 @@ const finalResult: {
     networks: {
       name: string;
       url: string;
+      url_params: string;
       proxies: ResultProxy[];
     }[];
   };
@@ -93,24 +95,38 @@ for (let page of targetData) {
 
     // Then make a list of only the proxies that are live
     const proxyList: ResultProxy[] = [];
-    for (let proxyKey of Object.keys(contents.proxies)) {
-      const proxy = contents.proxies[proxyKey];
-      if (liveContracts[proxy.aggregator] && !proxy.name.includes("Healthcheck")) {
+    if (contents.proxies) {
+      for (let proxyKey of Object.keys(contents.proxies)) {
+        const proxy = contents.proxies[proxyKey];
+        if (liveContracts[proxy.aggregator] && !proxy.name.includes("Healthcheck")) {
+          proxyList.push({
+            pair: proxy.name,
+            deviationThreshold: liveContracts[proxy.aggregator].deviationThreshold,
+            heartbeat: liveContracts[proxy.aggregator].heartbeat,
+            decimals: liveContracts[proxy.aggregator].decimals,
+            proxy: proxyKey.startsWith("sol-") ? proxyKey.replace("sol-", "") : proxyKey,
+          });
+        }
+      }
+    } else {
+      for (let contractKey of Object.keys(contents.contracts)) {
+        const contract = contents.contracts[contractKey];
         proxyList.push({
-          pair: proxy.name,
-          deviationThreshold: liveContracts[proxy.aggregator].deviationThreshold,
-          heartbeat: liveContracts[proxy.aggregator].heartbeat,
-          decimals: liveContracts[proxy.aggregator].decimals,
-          proxy: proxyKey,
+          pair: contract.name,
+          deviationThreshold: liveContracts[contractKey].deviationThreshold,
+          heartbeat: liveContracts[contractKey].heartbeat,
+          decimals: liveContracts[contractKey].decimals,
+          proxy: contractKey.startsWith("sol-") ? contractKey.replace("sol-", "") : contractKey,
         });
       }
     }
-
     // Save the data into our final output
     proxyList.sort((a, b) => (a.pair < b.pair ? -1 : 1));
+
     finalResult[page.page].networks.push({
       name: network.name,
       url: network.url,
+      url_params: network.url_params,
       proxies: proxyList,
     });
   }
