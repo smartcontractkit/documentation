@@ -201,7 +201,7 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 
 > 🚰Fantom Faucet
 >
-> Testnet LINK is available from https://faucets.chain.link//fantomtestnet  
+> Testnet LINK is available from https://faucets.chain.link/fantom-testnet  
 >
 
 |Parameter|Value|
