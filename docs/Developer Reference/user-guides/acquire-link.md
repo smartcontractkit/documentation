@@ -14,7 +14,7 @@ This page will show you how to obtain and add testnet LINK to MetaMask. If you a
 
 > 👍 Note
 > 
-> You can also get testnet LINK from: [Rinkeby](https://faucets.chain.link/rinkeby)
+> You can also get testnet LINK on other chains (e.g. Rinkeby) from <a href="https://faucets.chain.link" target="_blank" rel="noreferrer, noopener">https://faucets.chain.link</a>
 
 ![Link Kovan Faucet](/files/faucet.png)
 
