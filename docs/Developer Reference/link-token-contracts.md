@@ -218,7 +218,7 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 
 > 🚰Arbitrum Faucet on Rinkeby
 >
-> Testnet LINK is available from https://faucets.chain.link/arb-rinkeby
+> Testnet LINK is available from https://faucets.chain.link/arbitrum-rinkeby
 >
 > Supported bridge: https://bridge.arbitrum.io
 
