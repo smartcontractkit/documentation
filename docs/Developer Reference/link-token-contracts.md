@@ -90,7 +90,7 @@ LINK is native to Ethereum, so to use LINK on other chains, it must be bridged. 
 
 > 🚰BSC Faucet
 >
-> Testnet LINK is available from https://faucets.chain.link/bsc-testnet
+> Testnet LINK is available from https://faucets.chain.link/chapel
 
 |Parameter|Value|
 |:---|:---|
