@@ -54,7 +54,6 @@ const finalResult: {
     networks: {
       name: string;
       url: string;
-      url_params: string;
       proxies: ResultProxy[];
     }[];
   };
@@ -126,7 +125,6 @@ for (let page of targetData) {
     finalResult[page.page].networks.push({
       name: network.name,
       url: network.url,
-      url_params: network.url_params,
       proxies: proxyList,
     });
   }
