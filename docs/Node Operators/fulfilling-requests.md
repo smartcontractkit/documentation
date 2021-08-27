@@ -22,7 +22,7 @@ With your own Oracle contract, you can use your own node to fulfill requests. Th
 
 ## Deploy your own Oracle contract
 
-- Go to [Remix](https://remix.ethereum.org/#optimize=true&version=soljson-v0.4.24+commit.e67f0147.js&url=https://github.com/smartcontractkit/documentation/blob/main/_includes/samples/NodeOperators/Oracle.sol) and expand the gist menu
+- Go to [Remix](https://remix.ethereum.org/#optimize=true&version=soljson-v0.4.24+commit.e67f0147.js&url=https://docs.chain.link/samples/NodeOperators/Oracle.sol) and expand the gist menu
 
 ![Remix File Explorer](/files/05f12f3-00eeef4-remix001.jpg)
 
@@ -262,7 +262,7 @@ If using Chainlink version `0.9.4` or above, you can add a `name` to your job sp
 >
 > If you're going through this guide on Ethereum mainnet, the TestnetConsumer.sol contract will still work. However, understand that you're sending real LINK to yourself. **Be sure to practice on the test networks multiple times before attempting to run a node on mainnet.**
 
-With the jobs added, you can now use your node to fulfill requests. This last section shows what requesters will do when they send requests to your node. It is also a way to test and make sure that your node is functioning correctly.- In Remix, create a new file named TestnetConsumer.sol and copy and paste the [TestnetConsumer.sol](https://github.com/smartcontractkit/documentation/blob/main/_includes/samples/APIRequests/ATestnetConsumer.sol) contract into it.- Click "Start to compile".
+With the jobs added, you can now use your node to fulfill requests. This last section shows what requesters will do when they send requests to your node. It is also a way to test and make sure that your node is functioning correctly.- In Remix, create a new file named TestnetConsumer.sol and copy and paste the [TestnetConsumer.sol](https://docs.chain.link/samples/APIRequests/ATestnetConsumer.sol) contract into it.- Click "Start to compile".
 
 ![Remix Click Compile](/files/a8a5ecd-Screenshot_from_2019-05-16_15-39-05.png)
 
