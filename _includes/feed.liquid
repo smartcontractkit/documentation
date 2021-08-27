@@ -59,9 +59,28 @@ section: smartContract
                 html += `<label><input type="checkbox" class="extra" ${showExtraDetails ? 'checked="checked"' : ''}>Show Heartbeat and Deviation Details</input></label>`;
                 let proxyList = '';
                 for(let proxy of network.proxies) {
-                    proxyList += `<tr id="${network.name} ${proxy.pair}"><td><code>${proxy.pair}</code></td><td ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.deviationThreshold ? (proxy.deviationThreshold + '%') : 'N/A'}</td><td ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.heartbeat ? proxy.heartbeat : 'N/A'}</td><td>${proxy.decimals}</td><td><a href="${network.url}${proxy.proxy}${network.url_params}" target="_blank"><code>${proxy.proxy}</code></a></td></tr>`;
+                    proxyList += `
+                    <tr id="${network.name} ${proxy.pair}">
+                        <td><code>${proxy.pair}</code></td>
+                        <td ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.deviationThreshold ? (proxy.deviationThreshold + '%') : 'N/A'}</td>
+                        <td ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.heartbeat ? proxy.heartbeat : 'N/A'}</td>
+                        <td>${proxy.decimals}</td>
+                        <td><a href="${network.url.replace('%s',proxy.proxy)}"><code>${proxy.proxy}</code></a></td>
+                    </tr>`;
                 }
-                html += `<table><thead><tr><th>Pair</th><th ${ showExtraDetails ? '' : 'class="detail-hidden"'}>Deviation</th><th ${ showExtraDetails ? '' : 'class="detail-hidden"'}>Heartbeat</th><th>Dec</th><th>Proxy</th></tr></thead><tbody>${proxyList}</tbody></table>`;
+                html += `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Pair</th>
+                            <th ${ showExtraDetails ? '' : 'class="detail-hidden"'}>Deviation</th>
+                            <th ${ showExtraDetails ? '' : 'class="detail-hidden"'}>Heartbeat</th>
+                            <th>Dec</th>
+                            <th>Proxy</th>
+                        </tr>
+                    </thead>
+                    <tbody>${proxyList}</tbody>
+                </table>`;
             }
         } else {
             html = `<em style="color:red;">Couldn't render the feed list, it may still be processing. Feeds are updated about every half hour..</em>`;
@@ -73,6 +92,8 @@ section: smartContract
             })
         );
     }
+    // If you are developing locally, use a local version of this file, 
+    // Otherwise pull from the cron-generated web version
     let path = 'https://cl-docs-addresses.web.app/addresses.json';
     if(window.location.host === 'localhost:4200') {
         path = '/addresses/addresses.json';
