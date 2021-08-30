@@ -36,7 +36,7 @@ JobID:  982105d690504c5d9ce374d040c08654
 
 Import `ChainlinkClient.sol` into your contract so you can inherit the `ChainlinkClient` behavior.
 
-```javascript
+```solidity
 pragma solidity ^0.4.24;
 
 import "chainlink/contracts/ChainlinkClient.sol";
@@ -55,7 +55,7 @@ contract ChainlinkAlarmClock is ChainlinkClient {
 ```
 
 <div class="remix-callout">
-  <a href="https://remix.ethereum.org/#gist=e71aab73726c5a2f99ee00c1a70cfef8&optimize=true&version=soljson-v0.6.12+commit.27d51765.js&evmVersion=null&runs=200" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
+  <a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&url=https://docs.chain.link/samples/DataProviders/AlarmClock.sol" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
     <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
 </div>
 
@@ -87,7 +87,7 @@ req.addUint("until", now + 5 minutes);
 
 This example shows how to create the request for the Chainlink node:
 
-```javascript
+```solidity
 function delayStart
 (
   address _oracle,
@@ -104,7 +104,7 @@ function delayStart
 
 This example shows the callback method:
 
-```javascript
+```solidity
 function fulfill(bytes32 _requestId)
   public
   recordChainlinkFulfillment(_requestId)

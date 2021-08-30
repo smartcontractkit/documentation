@@ -49,7 +49,7 @@ If you've ever written Javascript or similar languages, Solidity should be easy 
 
 The structure of a smart contract is similar to that of a _class_ in Javascript, with a few differences. Let's take a look at this `HelloWorld` example.
 
-```javascript
+```solidity
 pragma solidity 0.6.7;
 
 contract HelloWorld {
@@ -115,39 +115,8 @@ Chainlink price feeds are sources of data [aggregated from many independent Chai
 
 The following code is from the [Get the Latest Price](../get-the-latest-price/) page. It describes a contract which obtains the latest ETH / USD price using the Kovan testnet.
 
-```javascript
-
-pragma solidity ^0.6.7;
-
-import "@chainlink/contracts/src/v0.6/interfaces/AggregatorV3Interface.sol";
-
-contract PriceConsumerV3 {
-
-    AggregatorV3Interface internal priceFeed;
-
-    /**
-     * Network: Kovan
-     * Aggregator: ETH/USD
-     * Address: 0x9326BFA02ADD2366b30bacB125260Af641031331
-     */
-    constructor() public {
-        priceFeed = AggregatorV3Interface(0x9326BFA02ADD2366b30bacB125260Af641031331);
-    }
-
-    /**
-     * Returns the latest price
-     */
-    function getLatestPrice() public view returns (int) {
-        (
-            uint80 roundID, 
-            int price,
-            uint startedAt,
-            uint timeStamp,
-            uint80 answeredInRound
-        ) = priceFeed.latestRoundData();
-        return price;
-    }
-}
+```solidity
+{% include samples/PriceFeeds/PriceConsumerV3.sol %}
 ```
 
 On the 3rd line, the code imports an interface called `AggregatorV3Interface`. An interface is another concept that will be familiar to programmers of other languages. Interfaces define functions without their implementation, leaving inheriting contracts to define the actual implementation themselves.
@@ -176,7 +145,7 @@ We have the code. What we need next is a compiler.
 Fortunately for us, Remix also has support for gist. This means that Remix can load code from Github, and in this case, `PriceConsumerV3.sol` Click the button below to open a new tab, then once Remix has loaded, find the `gists` folder in the File Explorer on the left-hand side, and click on the file to open the code in the editor.
 
 <div class="remix-callout">
-  <a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&gist=a90779ce7087be3379a2b5cee0ea2858" target="_blank" class="cl-button--ghost">Deploy this contract using Remix ↗</a>
+  <a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&url=https://docs.chain.link/samples/PriceFeeds/PriceConsumerV3.sol" target="_blank" class="cl-button--ghost">Deploy this contract using Remix ↗</a>
   <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
 </div>
 

@@ -24,85 +24,12 @@ To consume an API with multiple responses, your contract should inherit from [Ch
 > 
 
 <div class="remix-callout">
-    <a href="https://remix.ethereum.org/#optimize=false&evmVersion=null&gist=dcf554e03223427aa4c7aef099d98429&runs=200&version=soljson-v0.8.6+commit.11564f7e.js" target="_blank" class="cl-button--ghost solidity-tracked">Deploy a Multi-Word Contract Example in Remix ↗</a>
+    <a href="https://remix.ethereum.org/#optimize=false&evmVersion=null&runs=200&version=soljson-v0.8.6+commit.11564f7e.js&url=https://docs.chain.link/samples/APIRequests/MultiWordConsumer.sol" target="_blank" class="cl-button--ghost solidity-tracked">Deploy a Multi-Word Contract Example in Remix ↗</a>
     <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
 </div>
 
 ```solidity Kovan
-pragma solidity ^0.8.0;
-
-import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
-
-/**
- * @notice DO NOT USE THIS CODE IN PRODUCTION. 
- * This is an example contract to show to use the multi-variable respnoses. 
- */
-contract MultiWord is ChainlinkClient {
-  using Chainlink for Chainlink.Request;
-
-  // variable bytes returned in a signle oracle response
-  bytes public data;
-
-  // multiple params returned in a single oracle response
-  uint256 public usd;
-  uint256 public eur;
-  uint256 public jpy;
-
-  /**
-   * @notice Initialize the link token and target oracle
-   * @dev The oracle address must be an Operator contract for multiword response
-   */
-  constructor(
-    address link,
-    address oracle
-  ) {
-    setChainlinkToken(link);
-    setChainlinkOracle(oracle);
-  }
-
-
-  /**
-   * @notice Request mutiple parameters from the oracle in a single transaction
-   * @param specId bytes32 representation of the jobId in the Oracle
-   * @param payment uint256 cost of request in LINK (JUELS)
-   */
-  function requestMultipleParameters(
-    bytes32 specId,
-    uint256 payment
-  )
-    public
-  {
-    Chainlink.Request memory req = buildChainlinkRequest(specId, address(this), this.fulfillMultipleParameters.selector);
-    req.addUint("times", 10000);
-    requestOracleData(req, payment);
-  }
-
-  event RequestMultipleFulfilled(
-    bytes32 indexed requestId,
-    uint256 indexed usd,
-    uint256 indexed eur,
-    uint256 jpy
-  );
-
-  /**
-   * @notice Fulfillment function for multiple parameters in a single request
-   * @dev This is called by the oracle. recordChainlinkFulfillment must be used.
-   */
-  function fulfillMultipleParameters(
-    bytes32 requestId,
-    uint256 usdResponse,
-    uint256 eurResponse,
-    uint256 jpyResponse
-  )
-    public
-    recordChainlinkFulfillment(requestId)
-  {
-    emit RequestMultipleFulfilled(requestId, usdResponse, eurResponse, jpyResponse);
-    usd = usdResponse;
-    eur = eurResponse;
-    jpy = jpyResponse;
-  }
-}
+{% include samples/APIRequests/MultiWordConsumer.sol %}
 ```
 
 > 📘 Note

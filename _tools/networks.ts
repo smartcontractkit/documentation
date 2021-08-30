@@ -5,17 +5,17 @@ export const NETWORKS = [
     networks: [
       {
         name: "Ethereum Mainnet",
-        url: "https://etherscan.io/address/",
+        url: "https://etherscan.io/address/%s",
         source: "directory.json",
       },
       {
         name: "Kovan Testnet",
-        url: "https://kovan.etherscan.io/address/",
+        url: "https://kovan.etherscan.io/address/%s",
         source: "directory-kovan.json",
       },
       {
         name: "Rinkeby Testnet",
-        url: "https://rinkeby.etherscan.io/address/",
+        url: "https://rinkeby.etherscan.io/address/%s",
         source: "directory-rinkeby.json",
       },
     ],
@@ -26,12 +26,12 @@ export const NETWORKS = [
     networks: [
       {
         name: "BSC Mainnet",
-        url: "https://bscscan.com/address/",
+        url: "https://bscscan.com/address/%s",
         source: "directory-bsc-mainnet.json",
       },
       {
         name: "BSC Testnet",
-        url: "https://testnet.bscscan.com/address/",
+        url: "https://testnet.bscscan.com/address/%s",
         source: "directory-bsc-testnet.json",
       },
     ],
@@ -42,12 +42,12 @@ export const NETWORKS = [
     networks: [
       {
         name: "Polygon Mainnet",
-        url: "https://explorer-mainnet.maticvigil.com/address/",
+        url: "https://explorer-mainnet.maticvigil.com/address/%s",
         source: "directory-matic-mainnet.json",
       },
       {
         name: "Mumbai Testnet",
-        url: "https://explorer-mumbai.maticvigil.com/address/",
+        url: "https://explorer-mumbai.maticvigil.com/address/%s",
         source: "directory-matic-testnet.json",
       },
     ],
@@ -58,7 +58,7 @@ export const NETWORKS = [
     networks: [
       {
         name: "xDai Mainnet",
-        url: "https://blockscout.com/poa/xdai/address/",
+        url: "https://blockscout.com/poa/xdai/address/%s",
         source: "directory-xdai-mainnet.json",
       },
     ],
@@ -69,7 +69,7 @@ export const NETWORKS = [
     networks: [
       {
         name: "Huobi Mainnet",
-        url: "https://hecoinfo.com/address/",
+        url: "https://hecoinfo.com/address/%s",
         source: "directory-heco-mainnet.json",
       },
     ],
@@ -80,12 +80,12 @@ export const NETWORKS = [
     networks: [
       {
         name: "Avalanche Mainnet",
-        url: "https://cchain.explorer.avax.network/address/",
+        url: "https://cchain.explorer.avax.network/address/%s",
         source: "directory-avalanche-mainnet.json",
       },
       {
         name: "Avalanche Testnet",
-        url: "https://cchain.explorer.avax-test.network/address/",
+        url: "https://cchain.explorer.avax-test.network/address/%s",
         source: "directory-avalanche-fuji-testnet.json",
       },
     ],
@@ -96,12 +96,12 @@ export const NETWORKS = [
     networks: [
       {
         name: "Fantom Mainnet",
-        url: "https://ftmscan.com/address/",
+        url: "https://ftmscan.com/address/%s",
         source: "directory-fantom-mainnet.json",
       },
       {
         name: "Fantom Testnet",
-        url: "https://testnet.ftmscan.com/address/",
+        url: "https://testnet.ftmscan.com/address/%s",
         source: "directory-fantom-testnet.json",
       },
     ],
@@ -112,12 +112,12 @@ export const NETWORKS = [
     networks: [
       {
         name: "Arbitrum Mainnet",
-        url: "https://explorer.arbitrum.io/address/",
+        url: "https://explorer.arbitrum.io/address/%s",
         source: "directory-ethereum-mainnet-arbitrum-1.json",
       },
       {
         name: "Arbitrum Rinkeby",
-        url: "https://rinkeby-explorer.arbitrum.io/address/",
+        url: "https://rinkeby-explorer.arbitrum.io/address/%s",
         source: "directory-arbitrum-rinkeby-1.json",
       },
     ],
@@ -128,8 +128,19 @@ export const NETWORKS = [
     networks: [
       {
         name: "Harmony Testnet",
-        url: "https://explorer.testnet.harmony.one/#/address/",
+        url: "https://explorer.testnet.harmony.one/#/address/%s",
         source: "directory-harmony-testnet-shard-0.json",
+      },
+    ],
+  },
+  {
+    page: "solana-price-feeds",
+    title: "Solana Price Feeds",
+    networks: [
+      {
+        name: "Solana Devnet",
+        url: "https://explorer.solana.com/address/%s?cluster=devnet",
+        source: "directory-solana-devnet.json",
       },
     ],
   }

@@ -5,10 +5,10 @@ date: Last Modified
 title: "Price Feeds Contract Addresses"
 permalink: "docs/reference-contracts/"
 whatsnext: {"ENS":"/docs/ens/", "Ethereum Price Feeds":"/docs/ethereum-addresses/", "Binance Smart Chain Price Feeds":"/docs/binance-smart-chain-addresses/", "Polygon (Matic) Price Feeds":"/docs/matic-addresses/", "xDai Price Feeds":"/docs/xdai-price-feeds/", "Huobi Eco Chain Price Feeds":"/docs/huobi-eco-chain-price-feeds/", "Avalanche Price Feeds":"/docs/avalanche-price-feeds/"}
-metadata: 
+metadata:
   title: "Chainlink Price Feed Smart Contract Addresses"
   description: "A list of addresses for Price Feed aggregator contracts on supported networks."
-  image: 
+  image:
     0: "/files/OpenGraph_V3.png"
 ---
 Chainlink Price Feed contracts are updated on a regular basis by multiple Chainlink nodes. For implementation details, read [Introduction to Price Feeds](../using-chainlink-reference-contracts/).
@@ -52,3 +52,11 @@ For Fantom Price Feed Addresses, see [Fantom Price Feeds](../fantom-price-feeds/
 ## Arbitrum
 
 For Arbitrum Price Feed Addresses, see [Arbitrum Price Feeds](../arbitrum-price-feeds/).
+
+## Harmony
+
+For Harmony Price Feed Addresses, see [Harmony Price Feeds](../harmony-price-feeds/).
+
+## Solana
+
+For Solana Price Feed Addresses, see [Solana Price Feeds](../solana-price-feeds/).
