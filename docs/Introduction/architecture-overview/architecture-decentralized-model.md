@@ -25,7 +25,7 @@ Each price feed is built and funded by the community of users who rely on accura
 
 ## Decentralized Oracle Network
 
-Each price feed is updated by a decentralized oracle network. Each oracle operator is rewarded for publishing price data. The number of oracles contributing to each feed varies. For example, in the ETH/USD Price Feed, there are 31 oracles.
+Each price feed is updated by a decentralized oracle network. Each oracle operator is rewarded for publishing price data. The number of oracles contributing to each feed varies. For example, you can see the number of oracles in the ETH/USD Price Feed at [data.chain.link](https://data.chain.link/ethereum/mainnet/crypto-usd/eth-usd).
 
 In order for an update to take place, the price feed contract must receive responses from a minimum number of oracles. For example, 21 / 31 oracles. Otherwise, the latest answer will not be updated.
 
