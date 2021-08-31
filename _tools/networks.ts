@@ -143,5 +143,16 @@ export const NETWORKS = [
         source: "directory-solana-devnet.json",
       },
     ],
+  },
+  {
+    page: "optimism-price-feeds",
+    title: "Optimism Price Feeds",
+    networks: [
+      {
+        name: "Ethereum Mainnet",
+        url: "https://optimistic.etherscan.io/address/%s",
+        source: "directory-ethereum-mainnet-optimism-1.json",
+      },
+    ],
   }
 ];
