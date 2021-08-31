@@ -249,6 +249,10 @@ module.exports = {
                 title: 'Solana Price Feeds',
                 url: '/docs/solana-price-feeds/',
               },
+              {
+                title: 'Optimism Price Feeds',
+                url: '/docs/optimism-price-feeds/',
+              },
             ],
           },
         ],
