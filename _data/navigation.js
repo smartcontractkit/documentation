@@ -161,6 +161,10 @@ module.exports = {
                 title: 'API Calls',
                 url: '/docs/advanced-tutorial/',
               },
+              {
+                title: 'Other Tutorials',
+                url: '/docs/other-tutorials/',
+              },
             ],
           },
           {
@@ -240,6 +244,14 @@ module.exports = {
               {
                 title: 'Harmony Price Feeds',
                 url: '/docs/harmony-price-feeds/',
+              },
+              {
+                title: 'Solana Price Feeds',
+                url: '/docs/solana-price-feeds/',
+              },
+              {
+                title: 'Optimism Price Feeds',
+                url: '/docs/optimism-price-feeds/',
               },
             ],
           },

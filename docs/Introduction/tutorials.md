@@ -9,7 +9,7 @@ hidden: false
 ---
 ![Chainlink Abstract Banner](/files/a4c6c80-85d09b6-19facd8-banner.png)
 
-We've compiled a series of tutorials designed to teach smart contracts basics and how to use them to consume data from the Chainlink oracle ecosystem. 
+We've compiled a series of tutorials designed to teach smart contracts basics and how to use them to consume data from the Chainlink oracle ecosystem.
 
 # The Basics Tutorial
 
@@ -25,6 +25,12 @@ Try out the [Random Numbers tutorial](../intermediates-tutorial/) on consuming r
 
 # API Calls Tutorial
 
-Learn more about how the Chainlink Request and Receive cycle works under the hood, and how you can utilise this powerful software to feed data to your smart contracts.
+Learn more about how the Chainlink Request and Receive cycle works under the hood, and how you can use this powerful software to feed data to your smart contracts.
 
 Try the [API Calls tutorial](../advanced-tutorial/).
+
+# Other Tutorials
+
+Learn from other examples of how you can use Chainlink Oracles.
+
+See the list of [other tutorials](../other-tutorials/) that are available.
