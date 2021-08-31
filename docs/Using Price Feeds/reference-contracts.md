@@ -60,3 +60,7 @@ For Harmony Price Feed Addresses, see [Harmony Price Feeds](../harmony-price-fee
 ## Solana
 
 For Solana Price Feed Addresses, see [Solana Price Feeds](../solana-price-feeds/).
+
+## Optimism
+
+For Omtimism Price Feed Addresses, see [Optimism Price Feeds](../optimism-price-feeds/).
