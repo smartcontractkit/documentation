@@ -112,7 +112,7 @@ export const NETWORKS = [
     networks: [
       {
         name: "Arbitrum Mainnet",
-        url: "https://explorer.arbitrum.io/address/%s",
+        url: "https://arbiscan.io/address/%s",
         source: "directory-ethereum-mainnet-arbitrum-1.json",
       },
       {
