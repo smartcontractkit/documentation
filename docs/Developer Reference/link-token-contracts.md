@@ -255,13 +255,3 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 |Name|ChainLink Token on Optimism Mainnet|
 |Symbol|LINK|
 |Decimals|18|
-
-### Kovan Testnet
-
-|Parameter|Value|
-|:---|:---|
-|`ETH_CHAIN_ID`|`69`|
-|Address|[`0x4911b761993b9c8c0d14Ba2d86902AF6B0074F5B`](https://kovan-optimistic.etherscan.io/address/0x4911b761993b9c8c0d14Ba2d86902AF6B0074F5B)|
-|Name|ChainLink Token on Optimism Kovan|
-|Symbol|LINK|
-|Decimals|18|
