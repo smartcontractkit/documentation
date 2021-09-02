@@ -5,16 +5,26 @@ title: "Core Adapters"
 permalink: "docs/core-adapters/"
 whatsnext: {"Introduction to External Adapters":"/docs/external-adapters/", "Initiators":"/docs/initiators/"}
 ---
+
+# DEPRECATED
+
+> ⚠️ NOTE
+> The style of adapter described below (otherwise known as a JSON adapter or v1 adapter) is deprecated and will be removed in Chainlink 1.0.0.
+> 
+> Please refer to [v2 job tasks](/docs/tasks) instead.
+
+## Adapters
+
 Core adapters are the built-in functionality that every Chainlink node supports. Strung together, they act as tasks that need to be performed to complete a Job.
 
 Adapters that are prefixed with "Eth" refer to tasks that post data onto the chain. Here are some examples of the data types that adapters convert data to.
 
-| Name              | Core Adapter    | Ethereum Data Type |
-|-------------------|------------|--------------------|
-| Signed Integers   | [EthInt256](#ethint256)  | int256             |
+| Name              | Core Adapter              | Ethereum Data Type |
+| ----------------- | ------------------------- | ------------------ |
+| Signed Integers   | [EthInt256](#ethint256)   | int256             |
 | Unsigned Integers | [EthUint256](#ethuint256) | uint256            |
 | Bytes             | [EthBytes32](#ethbytes32) | bytes32            |
-| Boolean           | [EthBool](#ethbool)    | bool               |
+| Boolean           | [EthBool](#ethbool)       | bool               |
 
 You can learn more about Solidity data types [here](https://docs.soliditylang.org/en/v0.5.3/types.html).
 
@@ -182,7 +192,8 @@ req.add("extPath", "price/BTC/USD");
 }
 ```
 
-NOTE: For security, since the URL may come from an untrusted source, HTTPGet imposes some restrictions on which IPs may be fetched. Local network and multicast IPs are disallowed by default and attempting to connect will result in an error.
+> ⚠️ NOTE
+> For security, since the URL may come from an untrusted source, HTTPGet imposes some restrictions on which IPs may be fetched. Local network and multicast IPs are disallowed by default and attempting to connect will result in an error.
 
 If you really must access one of these IPs, you can use the `HTTPGetWithUnrestrictedNetworkAccess` adapter instead.
 
@@ -226,7 +237,8 @@ req.add("extPath", "price/BTC/USD");
 }
 ```
 
-NOTE: For security, since the URL may come from an untrusted source, HTTPPost imposes some restrictions on which IPs may be fetched. Local network and multicast IPs are disallowed by default and attempting to connect will result in an error.
+> ⚠️ NOTE
+> For security, since the URL may come from an untrusted source, HTTPPost imposes some restrictions on which IPs may be fetched. Local network and multicast IPs are disallowed by default and attempting to connect will result in an error.
 
 If you really must access one of these IPs, you can use the `HTTPPostWithUnrestrictedNetworkAccess` adapter instead.
 

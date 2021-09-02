@@ -40,6 +40,69 @@ module.exports = {
       {
         section: 'ORACLE JOBS',
         contents: [
+          {
+            url: '/docs/jobs/migration-v1-v2',
+            title: 'Migrating to v2 Jobs',
+          },
+          {
+            url: '/docs/jobs/',
+            title: 'Jobs',
+            children: [
+              { url: '/docs/jobs/types/cron/', title: 'Cron' },
+              {
+                url: '/docs/jobs/types/direct-request/',
+                title: 'Direct Request',
+              },
+              {
+                url: '/docs/jobs/types/flux-monitor/',
+                title: 'Flux Monitor',
+              },
+              { url: '/docs/jobs/types/keeper/', title: 'Keeper' },
+              {
+                url: '/docs/jobs/types/offchain-reporting/',
+                title: 'Off-chain Reporting',
+              },
+              { url: '/docs/jobs/types/webhook/', title: 'Webhook' },
+            ],
+          },
+          {
+            url: '/docs/tasks/',
+            title: 'Tasks',
+            children: [
+              { url: '/docs/jobs/task-types/http/', title: 'HTTP' },
+              { url: '/docs/jobs/task-types/bridge/', title: 'Bridge' },
+              { url: '/docs/jobs/task-types/jsonparse/', title: 'JSON Parse' },
+              { url: '/docs/jobs/task-types/cborparse/', title: 'CBOR Parse' },
+              {
+                url: '/docs/jobs/task-types/eth-abi-decode/',
+                title: 'ETH ABI Decode',
+              },
+              {
+                url: '/docs/jobs/task-types/eth-abi-decode-log/',
+                title: 'ETH ABI Decode Log',
+              },
+              {
+                url: '/docs/jobs/task-types/eth-abi-encode/',
+                title: 'ETH ABI Encode',
+              },
+              { url: '/docs/jobs/task-types/eth-call/', title: 'ETH Call' },
+              { url: '/docs/jobs/task-types/eth-tx/', title: 'ETH Tx' },
+
+              { url: '/docs/jobs/task-types/multiply/', title: 'Multiply' },
+              { url: '/docs/jobs/task-types/divide/', title: 'Divide' },
+
+              { url: '/docs/jobs/task-types/any/', title: 'Any' },
+              { url: '/docs/jobs/task-types/mean/', title: 'Mean' },
+              { url: '/docs/jobs/task-types/median/', title: 'Median' },
+              { url: '/docs/jobs/task-types/mode/', title: 'Mode' },
+              { url: '/docs/jobs/task-types/sum/', title: 'Sum' },
+            ],
+          },
+        ],
+      },
+      {
+        section: 'v1 JSON JOBS [DEPRECATED]',
+        contents: [
           { url: '/docs/job-specifications/', title: 'Job Specifications' },
           { url: '/docs/core-adapters/', title: 'Core Adapters' },
           { url: '/docs/initiators/', title: 'Initiators' },
@@ -97,6 +160,10 @@ module.exports = {
               {
                 title: 'API Calls',
                 url: '/docs/advanced-tutorial/',
+              },
+              {
+                title: 'Other Tutorials',
+                url: '/docs/other-tutorials/',
               },
             ],
           },
@@ -174,6 +241,18 @@ module.exports = {
                 title: 'Arbitrum Price Feeds',
                 url: '/docs/arbitrum-price-feeds/',
               },
+              {
+                title: 'Harmony Price Feeds',
+                url: '/docs/harmony-price-feeds/',
+              },
+              {
+                title: 'Solana Price Feeds',
+                url: '/docs/solana-price-feeds/',
+              },
+              {
+                title: 'Optimism Price Feeds',
+                url: '/docs/optimism-price-feeds/',
+              },
             ],
           },
         ],
@@ -238,6 +317,14 @@ module.exports = {
           {
             title: 'Make an Existing Job Request',
             url: '/docs/existing-job-request/',
+          },
+          {
+            title: 'Multi-Variable Responses',
+            url: '/docs/multi-variable-responses/',
+          },
+          {
+            title: 'Large Responses',
+            url: '/docs/large-responses/',
           },
           { title: 'Find Existing Jobs', url: '/docs/listing-services/' },
           { title: 'API Reference', url: '/docs/chainlink-framework/' },

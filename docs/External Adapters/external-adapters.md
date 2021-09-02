@@ -1,7 +1,7 @@
 ---
 layout: nodes.liquid
 date: Last Modified
-title: "Introduction"
+title: "External Adapters Introduction"
 permalink: "docs/external-adapters/"
 whatsnext: {"External Adapters in Solidity":"/docs/contract-creators/", "Building External Adapters":"/docs/developers/", "Bridges: Adding External Adapters to Nodes":"/docs/node-operators/"}
 ---
