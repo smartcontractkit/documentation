@@ -149,7 +149,7 @@ export const NETWORKS = [
     title: "Optimism Price Feeds",
     networks: [
       {
-        name: "Ethereum Mainnet",
+        name: "Optimism Mainnet",
         url: "https://optimistic.etherscan.io/address/%s",
         source: "directory-ethereum-mainnet-optimism-1.json",
       },
