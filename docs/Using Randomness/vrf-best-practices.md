@@ -86,7 +86,7 @@ function getRandomNumber() public returns (bytes32 requestId) {
 }
 
 function fulfillRandomness(bytes32 requestId, uint256 randomness) internal override {
-    uint256 requestNumber = requestIdToRequestNumberIndex[requestId];
+    requestIdToRandomNumber[requestId] = randomness;
 }
 ```
 
