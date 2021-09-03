@@ -220,7 +220,7 @@ cd ~/.chainlink && docker run -p 6688:6688 -v ~/.chainlink:/chainlink -it --env-
 
 > 📘 Local Database
 > 
-> If you're running a local database you may need to add `--network host` to the end of the command above.
+> If you're running a local database you may need to add the `--network host` flag to the command above.
 
 The first time running the image, it will ask you for a password and confirmation. This will be your wallet password that you can use to unlock the keystore file generated for you. Then, you'll be prompted to enter an API Email and Password. This will be used to expose the API for the GUI interface, and will be used every time you log into your node. When running the node again, you can supply the `-p` option with a path to a text file containing the wallet key password, and a `-a` option, pointing to a text file containing the API email and password. Instructions on how to do that are [here](../miscellaneous/#use-password-and-api-files-on-startup).
 
