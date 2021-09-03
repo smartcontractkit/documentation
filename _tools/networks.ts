@@ -153,6 +153,11 @@ export const NETWORKS = [
         url: "https://optimistic.etherscan.io/address/%s",
         source: "directory-ethereum-mainnet-optimism-1.json",
       },
+      {
+        name: "Optimism Kovan",
+        url: "https://kovan-optimistic.etherscan.io/address/%s",
+        source: "directory-ethereum-testnet-kovan-optimism-1.json",
+      },
     ],
   }
 ];
