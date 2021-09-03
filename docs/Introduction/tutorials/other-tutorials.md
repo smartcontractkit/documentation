@@ -2,9 +2,9 @@
 layout: nodes.liquid
 section: smartContract
 date: Last Modified
-title: "Developer Tutorials"
-permalink: "docs/developer-tutorials/"
----	
+title: "Other Tutorials"
+permalink: "docs/other-tutorials/"
+---
 
 ## Price Feeds Tutorials
 | Name                                                                                                                                               | Type     | Difficulty |
@@ -25,6 +25,7 @@ permalink: "docs/developer-tutorials/"
 |:------------------------------------------------------------------------------------------------------- |:-------- |:---------- |
 | [How to Get a Random Number on Polygon](https://blog.chain.link/how-to-get-a-random-number-on-polygon/) | DeFi     | Medium     |
 | [Build Your Own Dynamic NFT With Hardhat](https://blog.chain.link/dynamic-nft-hardhat/)                 | NFT      | Advanced   |
+| [Build, Deploy, and Sell Your Own Dynamic NFT](https://blog.chain.link/build-deploy-and-sell-your-own-dynamic-nft/)                | NFT | Advanced |
 | [How to Build a Blockchain Lottery](https://blog.chain.link/how-to-build-a-blockchain-lottery-2/)       | Gambling | Advanced   |
 
 ## API Requests Tutorials
@@ -38,7 +39,6 @@ permalink: "docs/developer-tutorials/"
 | [Fetch IPFS Data in Smart Contracts Using a Chainlink External Adapter](https://blog.chain.link/fetch-ipfs-api-data-token-distribution/)                       | Audius               | Medium     |
 | [How to Connect a Two-Factor Authentication (2FA) API to a Smart Contract With Chainlink](https://blog.chain.link/2fa-authentication-smart-contracts/)         | Security             | Medium     |
 | [Build a Marine Insurance Smart Contract With Chainlink](https://blog.chain.link/build-a-marine-insurance-smart-contract-with-chainlink/)                      | Insurance            | Medium     |
-| [Build, Deploy, and Sell Your Own Dynamic NFT](https://blog.chain.link/build-deploy-and-sell-your-own-dynamic-nft/)                                            | NFT                  | Advanced   |
 | [How to Build a Parametric Insurance Smart Contract](https://blog.chain.link/parametric-insurance-smart-contract/)                                             | Insurance            | Advanced   |
 | [Connect a Smart Contract to the Twitter API](https://blog.chain.link/connect-smart-contract-to-twitter-api/)                                                  | Social Media         | Advanced   |
 | [Build an RFID Blockchain Integration With Chainlink External Adapters](https://blog.chain.link/rfid-blockchain-integration-with-chainlink-external-adapters/) | Identification       | Advanced   |
