@@ -194,7 +194,12 @@ module.exports = {
             title: 'Introduction to Price Feeds',
             url: '/docs/using-chainlink-reference-contracts/',
           },
-          { title: 'Get the Latest Price', url: '/docs/get-the-latest-price/' },
+          { title: 'Get the Latest Price (EVM)',
+            url: '/docs/get-the-latest-price/'
+          },
+          { title: 'Get the Latest Price (Solana)',
+            url: '/docs/get-the-latest-price-solana/'
+          },
           {
             title: 'Historical Price Data',
             url: '/docs/historical-price-data/',
