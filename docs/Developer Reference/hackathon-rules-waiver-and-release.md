@@ -42,9 +42,6 @@ If you feel uncomfortable or think there may be a potential violation of the cod
 
 
 ##### **Event Rules & Conditions**
-
-
-
 1. The following rules & conditions (the “Rules”) apply to this Chainlink hackathon (the “Event"). By clicking the “I Accept” button, you acknowledge that you have read these Rules, understand them, and agree to be bound as follows: 
 1. You assume full responsibility for any damage or injury caused by you in your participation in the Event (whether to persons or property, and whether to yourself or others) and release SmartContract Chainlink Limited SEZC (and its affiliates) (“Chainlink”), the Event, the organizers of the Event (the “Organizers”), all sponsors of the Event (“Sponsors”), the Event volunteers and the Event staff, (collectively, the “Releasees”) from any liability therefore. **YOU ARE AWARE THAT YOUR PARTICIPATION IN THE EVENT IS SOLELY AT YOUR OWN RISK, AND THAT THE RELEASE HEREIN IS INTENDED TO REFLECT THAT UNDERSTANDING**
 1. You will own any developments that you create during the Event, and all right, title and interest in those developments, including the intellectual property rights therein, shall belong to you. However, you acknowledge that during the course of the Event, you may obtain access to products, developments, information and other materials belonging to Chainlink, other participants of the Event, the Sponsors and/or other third parties (“Third Party Materials”), and that nothing in this Agreement is deemed to transfer any ownership, right, title or interest in such Third Party Materials to you. Your only rights to the Third Party Materials shall be those expressly granted to you by the owner(s) of the Third Party Materials. Specifically, any APIs or other software provided to you by the Sponsors are subject to the subscription terms and software licenses associated with such APIs or other software.
