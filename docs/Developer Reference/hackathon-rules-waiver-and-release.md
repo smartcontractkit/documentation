@@ -13,9 +13,6 @@ This event is a community hackathon intended for collaboration and learning in t
 ##### **The Code**
 
 The spirit of The Code is to prohibit activities including but not limited to:
-
-
-
 * Comments that others find offensive
 * Cheating or taking unfair advantage of other participants’ work or efforts
 * Any activity related to harassing, demeaning, mocking, or intimidating others, especially this behavior as it relates to characteristics such as:
