@@ -36,17 +36,16 @@ For Faucet details, please refer to [LINK Token Contracts](../link-token-contrac
 
 |Chainlink Node Operator|Oracle Address|
 |-------------------------|--------------------------------------------|
-|[Chainlink](https://chain.link)|[`0x2f90A6D021db21e1B2A077c5a37B3C7E75D15b7e`](https://kovan.etherscan.io/address/0x2f90A6D021db21e1B2A077c5a37B3C7E75D15b7e)|
+|[Chainlink](https://chain.link)|[`0xc57B33452b4F7BB189bB5AfaE9cc4aBa1f7a4FD8`](https://kovan.etherscan.io/address/0xc57B33452b4F7BB189bB5AfaE9cc4aBa1f7a4FD8)|
 
 <br>
 
 |Adapters|Job ID|Parameters|
 |--------------------------------|----------------------------------|--------------------------------------------------------------|
-|[HttpGet](../core-adapters/#httpget)<br>[JsonParse](../core-adapters/#jsonparse)<br>[EthBytes32](../core-adapters/#ethbytes32)|`50fc4215f89443d185b061e5d7af9490 `|`get` (string)<br>`path` (dot-delimited string or array of strings)|
-|[HttpPost](../core-adapters/#httppost)<br>[JsonParse](../core-adapters/#jsonparse)<br>[EthBytes32](../core-adapters/#ethbytes32)|`b9fd06bb42dd444db1b944849cbffb11 `|`post` (string)<br>`path` (dot-delimited string or array of strings)|
-|[HttpGet](../core-adapters/#httpget)<br>[JsonParse](../core-adapters#jsonparse)<br>[Multiply](../core-adapters/#multiply)<br>[EthInt256](../core-adapters/#ethint256)|`ad752d90098243f8a5c91059d3e5616c `|`get` (string)<br>`path` (dot-delimited string or array of strings)<br>`times` (int) (optional)|
-|[HttpGet](../core-adapters/#httpget)<br>[JsonParse](../core-adapters#jsonparse)<br>[Multiply](../core-adapters/#multiply)<br>[EthUint256](../core-adapters/#ethuint256)|`29fa9aa13bf1468788b7cc4a500a45b8 `|`get` (string)<br>`path` (dot-delimited string or array of strings)<br>`times` (int) (optional)|
-|[HttpGet](../core-adapters/#httpget)<br>[JsonParse](../core-adapters/#jsonparse)<br>[EthBool](../core-adapters/#ethbool)|`6d914edc36e14d6c880c9c55bda5bc04 `|`get` (string)<br>`path` (dot-delimited string or array of strings)|
+|[HttpGet](../core-adapters/#httpget)<br>[JsonParse](../core-adapters/#jsonparse)<br>[EthBytes32](../core-adapters/#ethbytes32)|`7401f318127148a894c00c292e486ffd `|`get` (string)<br>`path` (dot-delimited string or array of strings)|
+|[HttpGet](../core-adapters/#httpget)<br>[JsonParse](../core-adapters#jsonparse)<br>[Multiply](../core-adapters/#multiply)<br>[EthInt256](../core-adapters/#ethint256)|`83ba9ddc927946198fbd0bf1bd8a8c25 `|`get` (string)<br>`path` (dot-delimited string or array of strings)<br>`times` (int) (optional)|
+|[HttpGet](../core-adapters/#httpget)<br>[JsonParse](../core-adapters#jsonparse)<br>[Multiply](../core-adapters/#multiply)<br>[EthUint256](../core-adapters/#ethuint256)|`d5270d1c311941d0b08bead21fea7747 `|`get` (string)<br>`path` (dot-delimited string or array of strings)<br>`times` (int) (optional)|
+|[HttpGet](../core-adapters/#httpget)<br>[JsonParse](../core-adapters/#jsonparse)<br>[EthBool](../core-adapters/#ethbool)|`bc746611ebee40a3989bbe49e12a02b9 `|`get` (string)<br>`path` (dot-delimited string or array of strings)|
 
 ## Rinkeby
 
