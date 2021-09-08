@@ -34,7 +34,7 @@ These announce that work has begun on an integration, but the integration is not
 
 2\. <a href="https://www.binance.org/en/blog/chainlink-vrf-is-live-on-binance-smart-chain-bringing-verifiable-randomness-to-bsc-developers/" target="_blank">Integration Live Announcements</a>
 
-These announce that an integration is live and ready to be used. You can find the contract addresses in our docs for <a href="https://docs.chain.link/docs/reference-contracts/" target="_blank">Price Feeds</a> and <a href="https://docs.chain.link/docs/vrf-contracts/" target="_blank">Chainlink VRF</a> respectively.
+These announce that an integration is live and ready to be used. You can find the contract addresses in our docs for <a href="https://docs.chain.link/docs/reference-contracts/" target="_blank">Data Feeds</a> and <a href="https://docs.chain.link/docs/vrf-contracts/" target="_blank">Chainlink VRF</a> respectively.
 
 Often these announcements will posted by our integration partners.
 
@@ -154,7 +154,7 @@ Resources:
 
 Any wallet that handles ERC20 tokens should work fine. The ERC677 token standard that the LINK token implements still retains all functionality of ERC20 tokens.
 
-# Price Feeds
+# Data Feeds
 
 ## What is a phase?
 
@@ -164,7 +164,7 @@ A phase indicates the underlying aggregator implementation has been updated. Pha
 
 They do, in the best-case scenario. However, a round can time out if it doesn't reach consensus, so that would technically be a timed out round, which carries over the answer from the previous round. Though roundIds can seemingly jump significantly when the phaseId is updated, because of how that combination of phaseId+roundId is stored in the proxy.
 
-## What is the difference between the price feed properties updatedAt and answeredInRound?
+## What is the difference between the data feed properties updatedAt and answeredInRound?
 
 updatedAt is the timestamp of an answered round while answeredInRound is the round it was updated in. 
 
@@ -172,7 +172,7 @@ updatedAt is the timestamp of an answered round while answeredInRound is the rou
 
 You can check answeredInRound against the current roundId. If answeredInRound is less than roundId, the answer is being carried over. If answeredInRound is equal to roundId, then the answer is fresh.
 
-## Can the price feed read revert?  
+## Can the data feed read revert?  
 
 A read can revert if the caller is requesting details of a round that was invalid (perhaps, not being answered yet), which basically is just relevant to a roundId which is greater than a uint32 or 0. It hasn't happened yet, however you can prevent this from happening if you add a check on the roundId.
 

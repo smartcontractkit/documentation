@@ -1,6 +1,6 @@
 ---
 layout: feed.liquid
-title: "Huobi Eco Chain Price Feeds"
+title: "Huobi Eco Chain Data Feeds"
 stub: huobi-eco-chain-price-feeds
 metadata: 
   image: 

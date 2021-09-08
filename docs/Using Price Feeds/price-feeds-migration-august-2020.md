@@ -2,18 +2,18 @@
 layout: nodes.liquid
 section: smartContract
 date: Last Modified
-title: "Price Feeds August 2020"
+title: "Data Feeds August 2020"
 permalink: "docs/price-feeds-migration-august-2020/"
 hidden: true
 metadata: 
   image: 
     0: "/files/OpenGraph_V3.png"
 ---
-Chainlink Price Feeds give smart contract developers a simple way to fetch current and historical asset prices. Asset prices are updated by decentralized oracle networks which aggregate results from high-quality data providers.
+Chainlink Data Feeds give smart contract developers a simple way to fetch current and historical asset prices. Asset prices are updated by decentralized oracle networks which aggregate results from high-quality data providers.
 
 > 📘 Upgrade to New Contracts
 >
-> Chainlink is constantly upgrading how price feed data is updated and aggregated on-chain.  Users should point to the new addresses in order to automatically support the latest releases for price feeds.
+> Chainlink is constantly upgrading how data feed data is updated and aggregated on-chain.  Users should point to the new addresses in order to automatically support the latest releases for data feeds.
 
 # Contract Migration
 
