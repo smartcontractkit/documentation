@@ -4,7 +4,7 @@ section: smartContract
 date: Last Modified
 title: "Install Instructions"
 permalink: "docs/create-a-chainlinked-project/"
-whatsnext: {"Introduction to Price Feeds":"/docs/using-chainlink-reference-contracts/", "Introduction to Chainlink VRF":"/docs/chainlink-vrf/", "Introduction to Using Any API":"/docs/request-and-receive-data/"}
+whatsnext: {"Introduction to Data Feeds":"/docs/using-chainlink-reference-contracts/", "Introduction to Chainlink VRF":"/docs/chainlink-vrf/", "Introduction to Using Any API":"/docs/request-and-receive-data/"}
 metadata: 
   title: "Getting Started with Chainlink for Smart Contract Developers"
   description: "Everything you need to know on how to create a new Chainlink project or update an existing one using the Chainlink Library for Solidity"
@@ -109,7 +109,7 @@ ___
 
 Once you have the Chainlink library installed, you can leverage the Chainlink ecosystem. 
 
-If you're interested in retrieving up to date crypto prices in your contracts, learn more about our [Price Feeds](../using-chainlink-reference-contracts/). 
+If you're interested in retrieving up to date crypto prices in your contracts, learn more about our [Data Feeds](../using-chainlink-reference-contracts/). 
 
 If you need to consume randomness in your contracts, learn about [Chainlink VRF](../chainlink-vrf/). 
 
