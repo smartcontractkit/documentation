@@ -1,0 +1,20 @@
+name: Check Docs and Site Links
+
+on:
+  schedule:
+    - cron: '30 8 * * *'
+
+jobs:
+  check-links:
+    name: Regularly check links
+    runs-on: ubuntu-latest
+    steps:
+      # Version 2.0.19 of linkcheck
+      - name: Check docs links with linkcheck
+        uses: filiph/linkcheck@361180ff3ed7feb076d8094fb345238ef035a0c3
+        with:
+          arguments: https://docs.chain.link/ -e
+      - name: Check chain.link with linkcheck
+        uses: filiph/linkcheck@361180ff3ed7feb076d8094fb345238ef035a0c3
+        with:
+          arguments: https://chain.link -e
