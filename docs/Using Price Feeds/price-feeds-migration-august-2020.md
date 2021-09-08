@@ -13,7 +13,7 @@ Chainlink Data Feeds give smart contract developers a simple way to fetch curren
 
 > 📘 Upgrade to New Contracts
 >
-> Chainlink is constantly upgrading how data feed data is updated and aggregated on-chain.  Users should point to the new addresses in order to automatically support the latest releases for data feeds.
+> Chainlink often improves the way that data is updated and aggregated in a data feed on-chain.  Users should point to the new addresses in order to automatically support the latest releases for data feeds.
 
 # Contract Migration
 

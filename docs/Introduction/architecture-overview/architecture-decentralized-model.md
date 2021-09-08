@@ -31,7 +31,7 @@ Each oracle in the set publishes data during an aggregation round. That data is 
 
 ## Aggregation Parameters
 
-Each aggregation round is triggered based on one or more aggregation parameters. Whichever condition is met first will trigger update to the data
+Each aggregation round is triggered based on one or more aggregation parameters. Whichever condition is met first will trigger an update to the data.
 
 ### Deviation Threshold
 
