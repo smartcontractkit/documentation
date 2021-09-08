@@ -24,7 +24,7 @@ The L2 Sequencer Health Flag consists of three actors:
 
 ## Checking the Sequencer Status
 
-If you have contracts that rely on Layer 2 Chainlink Price Feeds, you should add an extra check for each of your contracts. To implement, use the following sample:
+If you have contracts that rely on Layer 2 Chainlink Data Feeds, you should add an extra check for each of your contracts. To implement, use the following sample:
 
 ```solidity
 pragma solidity ^0.6.0;
@@ -74,7 +74,7 @@ contract OCRPriceConsumer {
 > 
 > Flag should be checked using `address(bytes20(bytes32(uint256(keccak256("chainlink.flags.arbitrum-seq-offline")) - 1)))` which translates into `0xa438451D6458044c3c8CD2f6f31c91ac882A6d91`
 
-A raised flag will determine that the feed wasn't updated in "T" time and its data can be considered stale. In other words, the Sequencer went offline and your contract shouldn't perform any critical operations. When the Sequencer comes back up again and the Layer 2 Chainlink Price Feeds are updated, you can continue using your contracts as usual.
+A raised flag will determine that the feed wasn't updated in "T" time and its data can be considered stale. In other words, the Sequencer went offline and your contract shouldn't perform any critical operations. When the Sequencer comes back up again and the Layer 2 Chainlink Data Feeds are updated, you can continue using your contracts as usual.
 
 ## Contract Addresses
 

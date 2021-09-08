@@ -93,7 +93,7 @@ The `fluxmonitor` initiator performs 3 functions:
 2. Using that aggregated result to determine if an on-chain update needs to be made (as defined by a threshold)
 3. Updates on-chain values based on a heartbeat
 
-The `fluxmonitor` is the current  initiator used by the [Chainlink Price Feeds](https://feeds.chain.link/)
+The `fluxmonitor` is the current  initiator used by the [Chainlink Data Feeds](https://feeds.chain.link/)
 
 ### FluxMonitor Parameters
 
