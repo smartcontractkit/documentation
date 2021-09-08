@@ -963,12 +963,12 @@ function addBytes(
 Add a CBOR bytes type value to the run request parameters.
 
 ```javascript example
-function requestEmojiPopularity(bytes _unicode)
+function requestEmojiPopularity(address _address)
   public
 {
   Chainlink.Request memory req = buildChainlinkRequest(jobId, this, this.fulfill.selector);
   
-  req.addBytes("emojiUnicode", _unicode);
+  req.addBytes(_address, abi.encodePacked(address(this)));
   
   sendChainlinkRequest(req, LINK * 1);
 }
@@ -984,11 +984,11 @@ contract MyContract is ChainlinkClient {
     setChainlinkOracle(_oracle);
   }
 
-  function requestEmojiPopularity(bytes _unicode) public {
+  function requestEmojiPopularity(address _address_) public {
     Chainlink.Request memory req = buildChainlinkRequest(JOB_ID, this, this.myCallback.selector);
     
     // specify templated fields in a job specification       
-    req.addBytes("emojiUnicode", _unicode);
+    req.addBytes(_address, abi.encodePacked(address(this)));
 
     sendChainlinkRequest(req, PAYMENT);
   }
