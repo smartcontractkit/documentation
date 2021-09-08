@@ -4,7 +4,7 @@ section: smartContract
 date: Last Modified
 title: "Use your first contract!"
 permalink: "docs/use-your-first-contract/"
-whatsnext: {"Introduction to Price Feeds":"/docs/using-chainlink-reference-contracts/", "Introduction to Chainlink VRF":"/docs/chainlink-vrf/", "Introduction to Using Any API":"/docs/request-and-receive-data/"}
+whatsnext: {"Introduction to Data Feeds":"/docs/using-chainlink-reference-contracts/", "Introduction to Chainlink VRF":"/docs/chainlink-vrf/", "Introduction to Using Any API":"/docs/request-and-receive-data/"}
 ---
 # Executing Functions
 

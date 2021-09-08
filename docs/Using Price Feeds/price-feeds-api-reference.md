@@ -2,10 +2,10 @@
 layout: nodes.liquid
 section: smartContract
 date: Last Modified
-title: "Price Feeds API Reference"
+title: "Data Feeds API Reference"
 permalink: "docs/price-feeds-api-reference/"
 metadata: 
-  description: "API reference for using Chainlink Price Feeds in smart contracts."
+  description: "API reference for using Chainlink Data Feeds in smart contracts."
   image: 
     0: "/files/OpenGraph_V3.png"
 ---
