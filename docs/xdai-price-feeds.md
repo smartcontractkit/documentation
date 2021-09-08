@@ -1,6 +1,6 @@
 ---
 layout: feed.liquid
-title: "xDai Price Feeds"
+title: "xDai Data Feeds"
 stub: xdai-price-feeds
 metadata: 
   image: 

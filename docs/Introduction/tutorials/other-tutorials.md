@@ -6,18 +6,18 @@ title: "Other Tutorials"
 permalink: "docs/other-tutorials/"
 ---
 
-## Price Feeds Tutorials
+## Data Feeds Tutorials
 | Name                                                                                                                                               | Type     | Difficulty |
 |:-------------------------------------------------------------------------------------------------------------------------------------------------- |:-------- |:---------- |
 | [How to Calculate Price Volatility for DeFi Variance Swaps](https://blog.chain.link/how-to-calculate-price-volatility-for-defi-variance-swaps/)    | DeFi     | Advanced   |
 | [Build a dApp on xDai Chain With Secure Data Feeds](https://blog.chain.link/build-a-dapp-on-xdai-chain-with-secure-data-feeds/)                    | DeFi     | Medium     |
 | [Craft Whiskey Crypto Payments With Chainlink Oracles](https://blog.chain.link/craft-whiskey-crypto-payments-with-chainlink-oracles/)              | Payments | Advanced   |
-| [Convert a Vending Machine to Accept Cryptocurrency Payments Using Chainlink Price Feeds](https://blog.chain.link/cryptocurrency-vending-machine/) | Payments | Advanced   |
+| [Convert a Vending Machine to Accept Cryptocurrency Payments Using Chainlink Data Feeds](https://blog.chain.link/cryptocurrency-vending-machine/) | Payments | Advanced   |
 | [Build a dApp on Binance Smart Chain With Secure Data Feeds](https://blog.chain.link/build-a-dapp-on-binance-smart-chain-with-secure-data-feeds/)  | DeFi     | Medium     |
 | [How to Use Chainlink With Hardhat](https://blog.chain.link/using-chainlink-with-hardhat/)                                                         | DeFi     | Medium     |
 | [Develop a DeFi Project Using Python](https://blog.chain.link/develop-python-defi-project/)                                                        | DeFi     | Medium     |
-| [Build a DeFi Call Option Exchange With Chainlink Price Feeds](https://blog.chain.link/defi-call-option-exchange-in-solidity/)                     | DeFi     | Advanced   |
-| [Build a DeFi Yield Farming dApp Using Chainlink Price Feeds](https://blog.chain.link/build-defi-yield-farming-application-with-chainlink/)        | DeFi     | Advanced   |
+| [Build a DeFi Call Option Exchange With Chainlink Data Feeds](https://blog.chain.link/defi-call-option-exchange-in-solidity/)                     | DeFi     | Advanced   |
+| [Build a DeFi Yield Farming dApp Using Chainlink Data Feeds](https://blog.chain.link/build-defi-yield-farming-application-with-chainlink/)        | DeFi     | Advanced   |
 
 
 ## VRF Tutorials
