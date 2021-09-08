@@ -188,10 +188,10 @@ module.exports = {
         ],
       },
       {
-        section: 'USING PRICE FEEDS',
+        section: 'USING DATA FEEDS',
         contents: [
           {
-            title: 'Introduction to Price Feeds',
+            title: 'Introduction to Data Feeds',
             url: '/docs/using-chainlink-reference-contracts/',
           },
           { title: 'Get the Latest Price (EVM)',
@@ -215,43 +215,43 @@ module.exports = {
             children: [
               { title: 'ENS', url: '/docs/ens/' },
               {
-                title: 'Ethereum Price Feeds',
+                title: 'Ethereum Data Feeds',
                 url: '/docs/ethereum-addresses/',
               },
               {
-                title: 'Binance Smart Chain Price Feeds',
+                title: 'Binance Smart Chain Data Feeds',
                 url: '/docs/binance-smart-chain-addresses/',
               },
               {
-                title: 'Polygon (Matic) Price Feeds',
+                title: 'Polygon (Matic) Data Feeds',
                 url: '/docs/matic-addresses/',
               },
               {
-                title: 'xDai Price Feeds',
+                title: 'xDai Data Feeds',
                 url: '/docs/xdai-price-feeds/',
               },
               {
-                title: 'Huobi Eco Chain Price Feeds',
+                title: 'Huobi Eco Chain Data Feeds',
                 url: '/docs/huobi-eco-chain-price-feeds/',
               },
               {
-                title: 'Avalanche Price Feeds',
+                title: 'Avalanche Data Feeds',
                 url: '/docs/avalanche-price-feeds/',
               },
               {
-                title: 'Fantom Price Feeds',
+                title: 'Fantom Data Feeds',
                 url: '/docs/fantom-price-feeds/',
               },
               {
-                title: 'Arbitrum Price Feeds',
+                title: 'Arbitrum Data Feeds',
                 url: '/docs/arbitrum-price-feeds/',
               },
               {
-                title: 'Harmony Price Feeds',
+                title: 'Harmony Data Feeds',
                 url: '/docs/harmony-price-feeds/',
               },
               {
-                title: 'Solana Price Feeds',
+                title: 'Solana Data Feeds',
                 url: '/docs/solana-price-feeds/',
               },
               {

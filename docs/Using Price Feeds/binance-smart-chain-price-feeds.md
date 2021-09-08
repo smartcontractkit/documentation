@@ -2,28 +2,28 @@
 layout: nodes.liquid
 section: smartContract
 date: Last Modified
-title: "Binance Smart Chain Price Feeds"
+title: "Binance Smart Chain Data Feeds"
 permalink: "docs/binance-smart-chain-price-feeds/"
 hidden: true
 metadata: 
   image: 
     0: "/files/OpenGraph_V3.png"
 ---
-# Introduction to Price Feeds
+# Introduction to Data Feeds
 
-Chainlink Price Feeds are the quickest way to connect your smart contracts to the real-world market prices of assets. They enable smart contracts to retrieve the latest price of an asset in a single call.
+Chainlink Data Feeds are the quickest way to connect your smart contracts to the real-world market prices of assets. They enable smart contracts to retrieve the latest price of an asset in a single call.
 
-Often, smart contracts need to act upon prices of assets in real-time. This is especially true in <a href="https://defi.chain.link/" target="_blank">DeFi</a>. For example, <a href="https://www.synthetix.io/" target="_blank">Synthetix</a> use Price Feeds to determine prices on their derivatives platform. Lending and Borrowing platforms like <a href="https://aave.com/" target="_blank">AAVE</a> use Price Feeds to ensure the total value of the collateral.
+Often, smart contracts need to act upon prices of assets in real-time. This is especially true in <a href="https://defi.chain.link/" target="_blank">DeFi</a>. For example, <a href="https://www.synthetix.io/" target="_blank">Synthetix</a> use Data Feeds to determine prices on their derivatives platform. Lending and Borrowing platforms like <a href="https://aave.com/" target="_blank">AAVE</a> use Data Feeds to ensure the total value of the collateral.
 
 ___
 
 # Get the Latest Price
 
-This section explains how to get the latest price of BNB inside smart contracts using Chainlink Price Feeds, on the Binance Smart Chain.
+This section explains how to get the latest price of BNB inside smart contracts using Chainlink Data Feeds, on the Binance Smart Chain.
 
 ## Solidity Contract
 
-To consume price data, your smart contract should reference <a href="https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.6/interfaces/AggregatorInterface.sol" target="_blank">`AggregatorInterface`</a>, which defines the external functions implemented by Price Feeds.
+To consume price data, your smart contract should reference <a href="https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.6/interfaces/AggregatorInterface.sol" target="_blank">`AggregatorInterface`</a>, which defines the external functions implemented by Data Feeds.
 
 As long as the address provided is a Chainlink aggregator, your smart contract will be able to retrieve the latest price from it.
 
@@ -92,9 +92,9 @@ ___
 
 # Get Historical Price Data
 
-The most common use case for Price Feeds is to get the latest price. However, <a href="https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.6/interfaces/AggregatorInterface.sol" target="_blank" rel="noreferrer, noopener">`AggregatorInterface`</a> also exposes functions which can be used to retrieve historical price data.
+The most common use case for Data Feeds is to get the latest price. However, <a href="https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.6/interfaces/AggregatorInterface.sol" target="_blank" rel="noreferrer, noopener">`AggregatorInterface`</a> also exposes functions which can be used to retrieve historical price data.
 
-This section explains how to get historical price data for BNB using Chainlink Price Feeds, on the Binance Smart Chain.
+This section explains how to get historical price data for BNB using Chainlink Data Feeds, on the Binance Smart Chain.
 
 ## Solidity Contract
 
@@ -182,7 +182,7 @@ API reference for <a href="https://github.com/smartcontractkit/chainlink/blob/ma
 |Name|Description|
 |---|---|
 |[latestAnswer](#latestanswer)|Get the latest price.|
-|[latestTimestamp](#latesttimestamp)|Get the time that the price feed was last updated.|
+|[latestTimestamp](#latesttimestamp)|Get the time that the data feed was last updated.|
 |[latestRound](#latestround)|Get the round id.|
 |[getAnswer](#getanswer)|Get the price from a specific round.|
 |[getTimestamp](#gettimestamp)|Get the timestamp of a specific round.|
@@ -199,7 +199,7 @@ function latestAnswer() external view returns (int256)
 
 ### latestTimestamp
 
-Get the time that the price feed was last updated.
+Get the time that the data feed was last updated.
 
 ```javascript Solidity
 function latestTimestamp() external view returns (uint256)
@@ -274,7 +274,7 @@ ___
 
 # Contract Addresses
 
-Chainlink price feed contracts are updated on a regular basis by multiple Chainlink nodes. This section lists the contract addresses for Price Feeds on the Binance Smart Chain.
+Chainlink data feed contracts are updated on a regular basis by multiple Chainlink nodes. This section lists the contract addresses for Data Feeds on the Binance Smart Chain.
 
 |Name|Address|
 |:---|:---|
