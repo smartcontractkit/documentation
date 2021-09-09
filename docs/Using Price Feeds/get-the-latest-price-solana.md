@@ -2,12 +2,12 @@
 layout: nodes.liquid
 section: smartContract
 date: Last Modified
-title: "Consuming Price Feeds (Solana)"
+title: "Consuming Data Feeds (Solana)"
 permalink: "docs/get-the-latest-price-solana/"
-whatsnext: {"Historical Price Data":"/docs/historical-price-data/", "Price Feeds API Reference":"/docs/price-feeds-api-reference/", "Price Feeds Contract Addresses":"/docs/reference-contracts/"}
+whatsnext: {"Historical Price Data":"/docs/historical-price-data/", "Data Feeds API Reference":"/docs/price-feeds-api-reference/", "Data Feed Contract Addresses":"/docs/reference-contracts/"}
 metadata:
-  title: "Consuming Price Feeds (Solana)"
-  description: "How to use Chainlink Price Feeds in your smart contracts."
+  title: "Consuming Data Feeds (Solana)"
+  description: "How to use Chainlink Data Feeds in your Solana programs."
   image:
     0: "/files/OpenGraph_V3.png"
 ---
@@ -16,24 +16,24 @@ Price data feeds are available on the following networks:
 - **Solana network**
 - [EVM-compatible networks](../get-the-latest-price/)
 
-The full list of price data feeds for each network is available on the [Price Feed Contracts](../reference-contracts/) page.
+The full list of price data feeds for each network is available on the [Data Feed Contracts](../reference-contracts/) page.
 
-Chainlink Price Feeds are live on the [Solana Devnet](https://explorer.solana.com/?cluster=devnet) with sub-second updates. Chainlink’s Solana deployment has no dependencies on external blockchain networks such as Ethereum. To learn more about the Solana programming model, see the [Solana Documentation](https://docs.solana.com/developing/programming-model/overview).
+Chainlink Data Feeds are live on the [Solana Devnet](https://explorer.solana.com/?cluster=devnet) with sub-second updates. Chainlink’s Solana deployment has no dependencies on external blockchain networks such as Ethereum. To learn more about the Solana programming model, see the [Solana Documentation](https://docs.solana.com/developing/programming-model/overview).
 
-To get the full list of Chainlink Price Feeds running on the Solana Devnet, see the [Solana Feeds](/docs/solana-price-feeds/) page.
+To get the full list of Chainlink Data Feeds running on the Solana Devnet, see the [Solana Feeds](/docs/solana-price-feeds/) page.
 
 You can view the program ID that owns these feeds in the [Solana Devnet Explorer](https://explorer.solana.com/address/2yqG9bzKHD59MxD9q7ExLvnDhNycB3wkvKXFQSpBoiaE?cluster=devnet).
 
 > 📘 Note
 >
-> This guide shows you how to deploy and retrieve price data using the Solana network. If you need to use EVM-compatible networks, see [Consuming Price Feeds (EVM)](../get-the-latest-price/).
+> This guide shows you how to deploy and retrieve data using the Solana network. If you need to use EVM-compatible networks, see [Consuming Data Feeds (EVM)](../get-the-latest-price/).
 
 ## Overview
 
 Solana supports on-chain programs in the [Rust](https://docs.solana.com/developing/on-chain-programs/developing-rust) or [C](https://docs.solana.com/developing/on-chain-programs/developing-c) languages. This guide demonstrates the following tasks:
 
 - Write and deploy programs to the Solana Devnet using Rust.
-- Retrieve price data using the [Solana Web3 JavaScript API](https://www.npmjs.com/package/@solana/web3.js) with Node and Yarn.
+- Retrieve data using the [Solana Web3 JavaScript API](https://www.npmjs.com/package/@solana/web3.js) with Node and Yarn.
 
 In Solana, storage and smart contract logic are separate. Programs store all the logic similar to an EVM smart contract. The accounts store all the data. Solana programs are stateless, so you don't always need to deploy your program to the network to test it. Compared to Solidity, the combination of an account and a program is equivalent to a smart contract on an EVM chain. State and logic are separate in Solana. This example shows you how to work with a program that you deploy, but you can refactor the client section to work with a program ID of your choice.
 
@@ -45,7 +45,7 @@ This guide requires the following tools:
   - [Rust](https://www.rust-lang.org/tools/install)
   - [The Solana CLI](https://docs.solana.com/cli/install-solana-cli-tools#use-solanas-install-tool)
   - [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
-- Call the deployed program to read from the [SOL / USD price data feed](https://explorer.solana.com/address/FmAmfoyPXiA8Vhhe6MZTr3U6rZfEZ1ctEHay1ysqCqcf?cluster=devnet):
+- Call the deployed program to read the data feed for the [SOL / USD price](https://explorer.solana.com/address/FmAmfoyPXiA8Vhhe6MZTr3U6rZfEZ1ctEHay1ysqCqcf?cluster=devnet):
   - [Node.js 12 or higher](https://nodejs.org/en/download/)
   - [Yarn](https://classic.yarnpkg.com/en/docs/install/)
 
@@ -139,15 +139,15 @@ After you deploy the program, you can use it to retrieve data from a feed. The c
 
 You can view the Rust code and Typescript for this example on GitHub. See the [chainlink-solana-demo](https://github.com/smartcontractkit/chainlink-solana-demo) repository. The example code has a few main components:
 
-- The [client Typescript files](https://github.com/smartcontractkit/chainlink-solana-demo/tree/main/client/src) that establish a connection to the deployed program, determine the fees associated with retrieving the feed data, handle serialization and deserialization of data, and report the returned price from the specified price data feed. In this case, the script tells your deployed Solana program to retrieve the price of SOL / USD from [FmAmfoyPXiA8Vhhe6MZTr3U6rZfEZ1ctEHay1ysqCqcf](https://explorer.solana.com/address/FmAmfoyPXiA8Vhhe6MZTr3U6rZfEZ1ctEHay1ysqCqcf?cluster=devnet).
-- The [`./src/lib.rs`](https://github.com/smartcontractkit/chainlink-solana-demo/blob/main/src/lib.rs) file that defines the on-chain program for retrieving price data from a specified [Solana Price Feed](../solana-price-feeds/). This program also imports some methods from the main [smartcontractkit/chainlink-solana](https://github.com/smartcontractkit/chainlink-solana) repository.
+- The [client Typescript files](https://github.com/smartcontractkit/chainlink-solana-demo/tree/main/client/src) that establish a connection to the deployed program, determine the fees associated with retrieving the feed data, handle serialization and deserialization of data, and report the returned price from the specified data feed. In this case, the script tells your deployed Solana program to retrieve the price of SOL / USD from [FmAmfoyPXiA8Vhhe6MZTr3U6rZfEZ1ctEHay1ysqCqcf](https://explorer.solana.com/address/FmAmfoyPXiA8Vhhe6MZTr3U6rZfEZ1ctEHay1ysqCqcf?cluster=devnet).
+- The [`./src/lib.rs`](https://github.com/smartcontractkit/chainlink-solana-demo/blob/main/src/lib.rs) file that defines the on-chain program for retrieving price data from a specified [Solana Data Feed](../solana-price-feeds/). This program also imports some methods from the main [smartcontractkit/chainlink-solana](https://github.com/smartcontractkit/chainlink-solana) repository.
 - The program imports some dependencies from the [chainlink-solana](https://github.com/smartcontractkit/chainlink-solana) repository.
 
 The example code operates using the following process:
 
 1. The client [`main.ts`](https://github.com/smartcontractkit/chainlink-solana-demo/blob/main/client/src/main.ts) script defines the process for connecting to the cluster, establishing fee payment, and verifying that your Solana program deployed correctly. The script also calls `getPrice` and `reportPrice` in the [`hello_world.ts`](https://github.com/smartcontractkit/chainlink-solana-demo/blob/main/client/src/hello_world.ts) file.
 
-1. The `getPrice` function defines `const priceFeedAccount` to specify which price data feed to use. Then, it creates `const instruction` with a formatted [transaction](https://docs.solana.com/terminology#transaction) that your deployed Solana program can process. The script sends that instruction and waits for the transaction to confirm that it is complete.
+1. The `getPrice` function defines `const priceFeedAccount` to specify which data feed to use. Then, it creates `const instruction` with a formatted [transaction](https://docs.solana.com/terminology#transaction) that your deployed Solana program can process. The script sends that instruction and waits for the transaction to confirm that it is complete.
 
     ```Typescript
     export async function getPrice(): Promise<void> {
@@ -183,7 +183,7 @@ The example code operates using the following process:
         let accounts_iter = &mut accounts.iter();
         // This is the account of our our account
         let my_account = next_account_info(accounts_iter)?;
-        // This is the account of the price feed data
+        // This is the account of the data feed for prices
         let feed_account = next_account_info(accounts_iter)?;
 
         const DECIMALS: u32 = 9;
