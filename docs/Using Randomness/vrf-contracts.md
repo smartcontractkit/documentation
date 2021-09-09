@@ -104,7 +104,8 @@ For implementation details, read [Introduction to Chainlink VRF](../chainlink-vr
 
 > 🚰Rinkeby Faucets
 >
-> Testnet LINK/ETH is available from https://faucets.chain.link/rinkeby
+> Testnet LINK is available from https://faucets.chain.link/rinkeby
+> Testnet ETH is available from https://faucet.rinkeby.io/
 
 |Item|Value|
 |---|---|
