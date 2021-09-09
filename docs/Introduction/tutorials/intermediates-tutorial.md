@@ -29,7 +29,7 @@ metadata:
 
 Randomness is very difficult to generate on blockchains. The reason for this is because every node must come to the same conclusion, forming a consensus. There's no way to generate random numbers natively in smart contracts, which is unfortunate because they can be very useful for a wide range of applications. Fortunately, Chainlink provides [Chainlink VRF](../chainlink-vrf/), AKA Chainlink Verifiable Random Function.
 
-If you've walked through the [The Basics tutorial](../beginners-tutorial/), you'll know how to write smart contracts, use [Chainlink Price Feeds](../using-chainlink-reference-contracts/), and how to deploy a contract to a testnet. If not, head there and come back once you've finished.
+If you've walked through the [The Basics tutorial](../beginners-tutorial/), you'll know how to write smart contracts, use [Chainlink Data Feeds](../using-chainlink-reference-contracts/), and how to deploy a contract to a testnet. If not, head there and come back once you've finished.
 
 In this tutorial, we go through:
 - The Chainlink request & receive cycle
@@ -39,7 +39,7 @@ In this tutorial, we go through:
 
 # 1. Request & Receive
 
-The previous tutorial went through how to consume Chainlink Price Feeds, which consists of reference data posted on-chain by oracles. This data is stored in a contract and can be referenced by consumers until the price is updated by the oracle.
+The previous tutorial went through how to consume Chainlink Data Feeds, which consists of reference data posted on-chain by oracles. This data is stored in a contract and can be referenced by consumers until the oracle updates the data again.
 
 Randomness, on the other hand, cannot be reference data. If the result of randomness is stored on-chain, any actor could see the value and predict the outcome. Instead, randomness must be requested from an oracle, which generates a number and a cryptographic proof then returns that result to the contract that requested it. This sequence is what's known as the [Request and Receive](../architecture-request-model/) cycle.
 
@@ -72,7 +72,7 @@ The contract will have the following functions:
 
 > 📘 Open Full Contract
 > 
-> To jump straight to the entire implementation, you can [open this contract](https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&url=https://github.com/smartcontractkit/documentation/blob/main/_includes/samples/VRF/VRFD20.sol) in remix</a>.
+> To jump straight to the entire implementation, you can [open this contract](https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&url=https://docs.chain.link/samples/VRF/VRFD20.sol) in remix</a>.
 
 ## 4a. Importing `VRFConsumerBase`
 
@@ -226,7 +226,7 @@ function getHouseName(uint256 id) private pure returns (string memory) {
 See the full contract in Remix! (We've added a few helper functions in there which should make using the contract easier and more flexible. Have a play around with it to understand all the internal workings).
 
 <div class="remix-callout">
-  <a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&url=https://github.com/smartcontractkit/documentation/blob/main/_includes/samples/VRF/VRFD20.sol" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
+  <a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&url=https://docs.chain.link/samples/VRF/VRFD20.sol" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
     <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
 </div>
 

@@ -4,10 +4,10 @@ section: smartContract
 date: Last Modified
 title: "LINK Token Contracts"
 permalink: "docs/link-token-contracts/"
-metadata: 
+metadata:
   title: "LINK Token Contracts"
   description: "Addresses for the LINK token on supported networks."
-  image: 
+  image:
     0: "/files/72d4bd9-link.png"
 ---
 LINK tokens are used to pay node operators for retrieving data for smart contracts and also for deposits placed by node operators as required by contract creators.
@@ -77,7 +77,7 @@ LINK is native to Ethereum, so to use LINK on other chains, it must be bridged. 
 
 > 📘 Important
 >
-> The LINK provided by the [Binance Bridge](https://www.binance.org/en/bridge) is not ERC-677 compatible, so cannot be used with Chainlink oracles. However, it can be [**converted to the official LINK token on BSC using Chainlink's PegSwap service**](https://pegswap.chain.link/). 
+> The LINK provided by the [Binance Bridge](https://www.binance.org/en/bridge) is not ERC-677 compatible, so cannot be used with Chainlink oracles. However, it can be [**converted to the official LINK token on BSC using Chainlink's PegSwap service**](https://pegswap.chain.link/).
 
 |Parameter|Value|
 |:---|:---|
@@ -107,7 +107,7 @@ LINK is native to Ethereum, so to use LINK on other chains, it must be bridged. 
 >
 > The LINK provided by the [Polygon (Matic) Bridge](https://wallet.matic.network/bridge) is not ERC-677 compatible, so cannot be used with Chainlink oracles. However, it can be [**converted to the official LINK token on Polygon (Matic) using Chainlink's PegSwap service**](https://pegswap.chain.link/)
 
-You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blank"> watch this video </a>. 
+You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blank"> watch this video </a>.
 
 ### Mainnet
 
@@ -240,5 +240,27 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 |`ETH_CHAIN_ID`|`128`|
 |Address|[`0x9e004545c59D359F6B7BFB06a26390b087717b42`](https://hecoinfo.com/address/0x9e004545c59D359F6B7BFB06a26390b087717b42)|
 |Name|Heco-Peg LINK Token|
+|Symbol|LINK|
+|Decimals|18|
+
+## Optimism
+
+### Mainnet
+
+|Parameter|Value|
+|:---|:---|
+|`ETH_CHAIN_ID`|`10`|
+|Address|[`0x350a791Bfc2C21F9Ed5d10980Dad2e2638ffa7f6`](https://optimistic.etherscan.io/address/0x350a791Bfc2C21F9Ed5d10980Dad2e2638ffa7f6)|
+|Name|ChainLink Token on Optimism Mainnet|
+|Symbol|LINK|
+|Decimals|18|
+
+### Kovan Testnet
+
+|Parameter|Value|
+|:---|:---|
+|`ETH_CHAIN_ID`|`69`|
+|Address|[`0x4911b761993b9c8c0d14Ba2d86902AF6B0074F5B`](https://kovan-optimistic.etherscan.io/address/0x4911b761993b9c8c0d14Ba2d86902AF6B0074F5B)|
+|Name|ChainLink Token on Optimism Kovan|
 |Symbol|LINK|
 |Decimals|18|

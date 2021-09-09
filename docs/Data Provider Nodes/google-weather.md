@@ -62,7 +62,7 @@ Import `ChainlinkClient.sol` into your contract so you can inherit the `Chainlin
 ```
 
 <div class="remix-callout">
-  <a href="https://remix.ethereum.org/#version=soljson-v0.6.12+commit.27d51765.js&optimize=false&evmVersion=null&runs=200&url=https://github.com/smartcontractkit/documentation/blob/main/_includes/samples/DataProviders/GoogleWeather.sol" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
+  <a href="https://remix.ethereum.org/#version=soljson-v0.6.12+commit.27d51765.js&optimize=false&evmVersion=null&runs=200&url=https://docs.chain.link/samples/DataProviders/GoogleWeather.sol" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
     <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
 </div>
 

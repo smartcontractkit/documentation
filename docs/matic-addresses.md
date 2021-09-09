@@ -1,9 +1,9 @@
 ---
 layout: feed.liquid
-title: "Polygon (Matic) Price Feeds"
+title: "Polygon (Matic) Data Feeds"
 stub: matic-addresses
 metadata: 
-  description: "Chainlink Price Feeds on Matic Network"
+  description: "Chainlink Data Feeds on Matic Network"
   image: 
     0: "/files/OpenGraph_V3.png"
 ---

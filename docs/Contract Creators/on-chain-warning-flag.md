@@ -13,9 +13,9 @@ hidden: true
 # Background
 ---
 
-Price feed consumers need strong monitoring around the Chainlink reference contracts they’re using. The goal of this feature is to provide the ability for smart contracts to check the state of a reference contract and depending on the result, the user could decide to disable (even automatically) functionality such as exchange or liquidations at the smart contract level for their respective DApp. 
+Data feed consumers need strong monitoring around the Chainlink reference contracts they’re using. The goal of this feature is to provide the ability for smart contracts to check the state of a reference contract and depending on the result, the user could decide to disable (even automatically) functionality such as exchange or liquidations at the smart contract level for their respective DApp. 
 
-A smart contract has been deployed containing a mapping of every price feed mapped to a state. The state will be a boolean marking whether a reference contract address is in a warning state depending on the behavior of the price feed. This state will initially be set by the Chainlink team which benefits from a strong monitoring capability and 24/7 coverage. Later on, it’s intended to decentralize this process in order to allow for automation as well as governance to take over the setting of the flag. 
+A smart contract has been deployed containing a mapping of every data feed mapped to a state. The state will be a boolean marking whether a reference contract address is in a warning state depending on the behavior of the data feed. This state will initially be set by the Chainlink team which benefits from a strong monitoring capability and 24/7 coverage. Later on, it’s intended to decentralize this process in order to allow for automation as well as governance to take over the setting of the flag. 
 
 # Code
 ---
