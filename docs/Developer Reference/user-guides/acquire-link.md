@@ -10,19 +10,21 @@ This page will show you how to obtain and add testnet LINK to MetaMask. If you a
 
 # Testnet LINK Faucet
 
-* Navigate to the Chainlink Kovan Faucet site: <a href="https://kovan.chain.link/" target="_blank" rel="noreferrer, noopener">https://kovan.chain.link</a>
+* Go to the Chainlink Kovan Faucet site: https://faucets.chain.link/kovan
 
 > 👍 Note
 > 
-> You can also get testnet LINK from: [Rinkeby](https://rinkeby.chain.link/)
+> You can also get testnet LINK on other test networks, such as Rinkeby, from https://faucets.chain.link.
 
-![Link Kovan Faucet](/files/42e03a2-faucet.png)
+![Link Kovan Faucet](/files/faucet.png)
 
 * Open up MetaMask, click the Wallet account name at the top to copy the address to your clipboard.
-* Paste that address into the Chainlink Kovan Faucet address input field, solve the captcha, and click on `Send me 100 Test LINK` button.
-* You should see a green banner show up with the text: Your request was successful! View your transaction here.
+* Paste that address into the Chainlink Kovan Faucet address input field, solve the captcha, and click the `Send request` button.
+* You should see a modal show up with the text 'Transaction in progress'.
+* Once the transaction is confirmed on-chain, the modal will show 'Request complete', along with the transaction hash of your request.
 
-![Successful Faucet Request Message](/files/fcf1ffe-Screenshot_from_2018-11-28_10-57-26.png)
+
+![Successful Faucet Request Message](/files/faucet-success.png)
 
 * In order to see your LINK token balance in MetaMask, you will need to add the token.
 * In MetaMask click the hamburger button, and click on `Add Token` and then `Custom Token`.
