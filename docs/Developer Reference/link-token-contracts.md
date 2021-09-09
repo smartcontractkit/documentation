@@ -30,7 +30,7 @@ The LINK token is an ERC677 token that inherits functionality from the ERC20 tok
 
 > 🚰Kovan Faucets
 >
-> Testnet LINK/ETH is available from https://faucets.chain.link/kovan
+> Testnet LINK and ETH are available from https://faucets.chain.link/kovan
 
 |Parameter|Value|
 |:---|:---|
@@ -123,7 +123,7 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 
 > 🚰Mumbai Faucet
 >
-> Testnet LINK and MATIC are available from <a href="https://faucet.matic.network/" target="_blank" rel="noreferrer, noopener">the official matic faucet</a> and https://faucets.chain.link/mumbai
+> Testnet LINK and MATIC are available from [the official Matic faucet](https://faucet.polygon.technology/) and https://faucets.chain.link/mumbai.
 
 |Parameter|Value|
 |:---|:---|

@@ -34,7 +34,7 @@ For implementation details, read [Introduction to Chainlink VRF](../chainlink-vr
 
 > 🚰Mumbai Faucet
 >
-> Testnet LINK and MATIC are available from <a href="https://faucet.matic.network/" target="_blank" rel="noreferrer, noopener">the official matic faucet</a> and https://faucets.chain.link/mumbai
+> Testnet LINK and MATIC are available from [the official Matic faucet](https://faucet.polygon.technology/) and https://faucets.chain.link/mumbai.
 
 |Item|Value|
 |---|---|
@@ -91,7 +91,7 @@ For implementation details, read [Introduction to Chainlink VRF](../chainlink-vr
 
 > 🚰Kovan Faucets
 >
-> Testnet LINK/ETH is available from https://faucets.chain.link/kovan
+> Testnet LINK and ETH are available from https://faucets.chain.link/kovan
 
 |Item|Value|
 |---|---|
