@@ -30,6 +30,6 @@ Go to: <a href="https://metamask.io" target="_blank" rel="noreferrer, noopener">
 ## Fund your address with Ether
 
 In order to obtain Kovan ETH, follow the steps below:
-* Go to the <a href="https://linkfaucet.protofire.io/kovan" target="_blank" rel="noreferrer, noopener">Kovan Ether Faucet</a>
+* Go to the [Kovan Ether Faucet](https://faucets.chain.link/kovan).
 * Enter your wallet address into the text box.
 * Hit the button to get "Test ETH", wait a minute, and you'll see it in your wallet!

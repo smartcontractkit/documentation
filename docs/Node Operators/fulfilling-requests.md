@@ -10,100 +10,96 @@ metadata:
 ---
 With your own Oracle contract, you can use your own node to fulfill requests. This guide will show you how to deploy your own Oracle contract and add jobs to your node so that it can provide data to smart contracts.
 
-## Prerequisites
+## Requirements
 
-- Going through the [Beginner Walkthrough](../beginners-tutorial) will help you obtain Testnet LINK and set up Metamask- [Run an Ethereum Client](../run-an-ethereum-client/) - [Running a Chainlink Node](../running-a-chainlink-node/)
+Before you begin this guide, complete the following tasks to make sure you have all of the tools that you need:
 
-> 👍 Make sure to fund your node address!
->
-> In the `keys` tab, you'll see at the bottom `Account Addresses`. The address of your node is the `regular` one.
->
-> IN OLDER VERSIONS: Go to `configuration` in your node. You'll see `ACCOUNT_ADDRESS`. This is the address of your node. Send this address ETH. You can find testnet ETH on various [faucets](../link-token-contracts/). If you don't see `ACCOUNT_ADDRESS` there, check the 'Keys' tab and scroll down
+- Complete the [Beginner Walkthrough](../beginners-tutorial) to obtain Testnet LINK and set up MetaMask.
+- Configure an Ethereum client with an active websocket connection. Either [Run an Ethereum Client](../run-an-ethereum-client/) yourself or use an [External Service](../run-an-ethereum-client/#external-services) that your Chainlink Node can access.
+- [Run a Chainlink Node](../running-a-chainlink-node/) and connect it to a [supported database](../connecting-to-a-remote-database/).
+- Fund the Ethereum address that your Chainlink node uses. You can find the address in the node Operator GUI under the **Keys** tab. The address of the node is the `Regular` type. You can obtain test ETH from several [faucets](../link-token-contracts/).
+    - For Chainlink nodes versioned 0.9.6 and earlier, find the Ethereum address in the **Configuration** tab in the `ACCOUNT_ADDRESS` field.
 
 ## Address Types
 
 Your node works with several different types of addresses. Each address type has a specific function:
-- Node address: This is the address of your Chainlink node wallet. The node requires native blockchain tokens at all times to respond to requests. For this example, the node uses ETH. When you start a Chainlink node, it automatically generates this address. You can find this address in the Node's GUI under `ACCOUNT_ADDRESS`.
-- Oracle contract address: This is the address for contracts like `Operator.sol` or `Oracle.sol` that are deployed to a blockchain. Do not fund these addresses with native blockchain tokens such as ETH. When you make API call requests, the funds pass through this contract to interact with your Chainlink node. This will be the address that smart contract developers point to when they choose a node for an API call. You can find this address in the Node's GUI under `YOUR_ORACLE_CONTRACT_ADDRESS`.
-- Admin wallet address: This is the address that owns your `Operator.sol` or `Oracle.sol` contract addresses. If you're on OCR, this is the wallet address that receives LINK tokens.
+- **Node address:** This is the address for your Chainlink node wallet. The node requires native blockchain tokens at all times to respond to requests. For this example, the node uses ETH. When you start a Chainlink node, it automatically generates this address. You can find this address in the Node's GUI under `ACCOUNT_ADDRESS`.
+- **Oracle contract address:** This is the address for contracts like `Operator.sol` or `Oracle.sol` that are deployed to a blockchain. Do not fund these addresses with native blockchain tokens such as ETH. When you make API call requests, the funds pass through this contract to interact with your Chainlink node. This will be the address that smart contract developers point to when they choose a node for an API call. You can find this address in the Node's GUI under `YOUR_ORACLE_CONTRACT_ADDRESS`.
+- **Admin wallet address:** This is the address that owns your `Operator.sol` or `Oracle.sol` contract addresses. If you're on OCR, this is the wallet address that receives LINK tokens.
 
 ## Deploy your own Oracle contract
 
-- Go to [Remix](https://remix.ethereum.org/#optimize=true&version=soljson-v0.4.24+commit.e67f0147.js&url=https://docs.chain.link/samples/NodeOperators/Oracle.sol) and expand the gist menu
+1. Go to Remix and [open the `Oracle.sol` smart contract](https://remix.ethereum.org/#optimize=true&version=soljson-v0.4.24+commit.e67f0147.js&url=https://docs.chain.link/samples/NodeOperators/Oracle.sol).
 
-![Remix File Explorer](/files/05f12f3-00eeef4-remix001.jpg)
+    ![The Remix file explorer showing Oracle.sol.](/files/05f12f3-00eeef4-remix001.jpg)
 
-> 📘 Important
->
-> If you open Remix for the first time, you should chose the **Environments** to **Solidity**
+1. Click the `Oracle.sol` file. The contents of this file will be very minimal.
 
-- Click on Oracle.sol. The contents of this file will be very minimal, since we only need to import the code hosted on Github.- On the Compile tab, click on the "Compile Oracle.sol" button near the left
+1. On the **Compile** tab, click the **Compile** button for `Oracle.sol`. Remix automatically selects the compiler version and language from the `pragma` line unless you select a specific version manually.
 
-![Remix Select compile-Oracle.sol](/files/6aa5936-remix002.jpg)
+    ![The Compile tab showing the Compile button.](/files/6aa5936-remix002.jpg)
 
-- Change to the Run tab
-- Select Oracle from the drop-down in the left panel
-- Copy the line below for your network and paste it into the text field next to the Deploy button
+1. On the **Deploy and Run** tab, configure the following settings:
 
-``` text Rinkeby
-0x01BE23585060835E02B77ef475b0Cc51aA1e0709
-```
-``` text Kovan
-0xa36085F69e2889c224210F603D836748e7dC0088
-```
-``` text Mainnet
-0x514910771AF9Ca656af840dff83E8264EcF986CA
-```
+    - Select "Injected Web3" as your **Environment**. The Javascript VM environment cannot access your oracle node.
+    - Select the "Oracle" contract from the **Contract** menu.
+    - Copy the address for the network you are using and paste it into the `address_link` field next to the **Deploy** button. Use one of the following network addresses:
 
-![Remix Click Deploy Button](/files/b9d3620-remix004.jpg)
+      ``` text Rinkeby
+      0x01BE23585060835E02B77ef475b0Cc51aA1e0709
+      ```
+      ``` text Kovan
+      0xa36085F69e2889c224210F603D836748e7dC0088
+      ```
+      ``` text Mainnet
+      0x514910771AF9Ca656af840dff83E8264EcF986CA
+      ```
 
-- Click Deploy. Metamask will prompt you to Confirm the Transaction
+    ![The Deploy & Run transaction window showing Injected Web 3 selected and the address for your MetaMask wallet.](/files/b9d3620-remix004.jpg)
 
-> 🚧 Metamask doesn't pop up?
->
-> If Metamask does not prompt you and instead displays the error below, you will need to disable "Privacy Mode" in Metamask. You can do this by clicking on your unique account icon at the top-right, then go to the Settings. Privacy Mode will be a switch near the bottom.
->
-> The error: **Send transaction failed: invalid address. If you use an injected provider, please check it is properly unlocked.**
+1. Click **Deploy**. MetaMask prompts you to confirm the transaction.
 
-A link to Etherscan will display at the bottom, you can open that in a new tab to keep track of the transaction
+    > 🚧 MetaMask doesn't pop up?
+    >
+    > If MetaMask does not prompt you and instead displays the error below, disable "Privacy Mode" in MetaMask. You can do this by clicking on your unique account icon at the top-right, then go to the Settings. Privacy Mode will be a switch near the bottom.
+    >
+    > Error: **Send transaction failed: Invalid address. If you use an injected provider, please check it is properly unlocked.**
 
-![Remix Pending Transaction Message](/files/b6fe1ac-remix005.jpg)
+1. After you deploy the contract, a link to Etherscan displays at the bottom. Open that link in a new tab to keep track of the transaction.
 
-Once successful, you should have a new address for the deployed contract
+    ![Remix Pending Transaction Message](/files/b6fe1ac-remix005.jpg)
 
-![Remix Deployed Contract Address](/files/6858cf3-remix006.jpg)
+1. If the transaction is successful, a new address displays in the **Deployed Contracts** section.
 
-> 📘 Important
->
-> Keep note of the Oracle contract's address, you will need it for your consuming contract later.
+    ![Screenshot showing the newly deployed contract.](/files/6858cf3-remix006.jpg)
+
+1. Keep note of the Oracle contract address. You need it later for your consuming contract.
 
 ## Add your node to the Oracle contract
 
-- In Remix, call the `setFulfillmentPermission` function with the address of your node, a comma, and the value `true`, as the input parameters. This will allow your node the ability to fulfill requests to your oracle contract.
+Find the address for your Chainlink node and add it to the Oracle contract.
 
-![Remix Click setFulfillmentPermission](/files/c6925db-remix007.jpg)
+1. In the Chainlink Operator GUI for your node, find and copy the node address:
 
-You can get the address of your node when it starts or by visiting the Configuration page of the GUI.
+    - **Version 0.9.7 and newer:** Find the address at the bottom of the **Keys** page in the Account addresses section.
+      ![Node UI Account Addresses](/images/node-operators/node-address.png)
 
-1. Bottom of the Keys page in the Account addresses section on recent versions of Chainlink.
-![Node UI Account Addresses](/images/node-operators/node-address.png)
+    - **Version 0.9.6 and earlier:** Find the address on the **Configurations** page.
+      ![Node UI Configuration Account Address](/files/d2e5225-Screenshot_from_2018-12-17_08-23-16.png)
 
-1. Configurations page on older Chainlink node versions
-![Node UI Configuration Account Address](/files/d2e5225-Screenshot_from_2018-12-17_08-23-16.png)
+1. In Remix, call the `setFulfillmentPermission` function with the address of your node, a comma, and the value `true`, as the input parameters. This allows your node to fulfill requests to your oracle contract.
 
-Once you call the `setFulfillmentPermission` function, Confirm it in Metamask and wait for it to confirm on the blockchain.
+    ![A screenshot showing all of the fields for the deployed contract in Remix.](/files/c6925db-remix007.jpg)
+
+1. Click the `setFulfillmentPermission` function to run it. Approve the transaction in MetaMask and wait for it to confirm on the blockchain.
 
 ## Add jobs to the node
 
-Adding jobs to the node is easily accomplished via the GUI. We have example [Job Specifications](../job-specifications/) below.
-
-> ❗️ Required
->
-> Replace `YOUR_ORACLE_CONTRACT_ADDRESS` below with the address of your deployed oracle contract address from the previous steps. Note that this is different than the `ACCOUNT_ADDRESS` from your node.
+You can add jobs to your Chainlink node in the Chainlink Operator GUI. Use the example [Job Specifications](../job-specifications/) below.
 
 If using Chainlink version `0.9.4` or above, you can add a `name` to your job spec.
 
-```json EthBytes32 (GET)
+```json Bytes32 (GET)
 {
   "name": "Get > Bytes32",
   "initiators": [
@@ -130,7 +126,7 @@ If using Chainlink version `0.9.4` or above, you can add a `name` to your job sp
   ]
 }
 ```
-```json EthBytes32 (POST)
+```json Bytes32 (POST)
 {
   "name": "POST > Bytes32",
   "initiators": [
@@ -157,7 +153,7 @@ If using Chainlink version `0.9.4` or above, you can add a `name` to your job sp
   ]
 }
 ```
-```json EthInt256
+```json Int256
 {
   "name": "Get > Int256",
   "initiators": [
@@ -187,7 +183,7 @@ If using Chainlink version `0.9.4` or above, you can add a `name` to your job sp
   ]
 }
 ```
-```json EthUint256
+```json Uint256
 {
   "name": "Get > Uint256",
   "initiators": [
@@ -217,7 +213,7 @@ If using Chainlink version `0.9.4` or above, you can add a `name` to your job sp
   ]
 }
 ```
-```json EthBool
+```json Bool
 {
   "name": "Get > Bool",
   "initiators": [
@@ -244,48 +240,58 @@ If using Chainlink version `0.9.4` or above, you can add a `name` to your job sp
   ]
 }
 ```
+1. In the Chainlink Operator GUI on the **Jobs** tab, click **New Job**.
 
-- From the admin dashboard, click on New Job.
+    ![The new job button.](/files/25bb51c-Screenshot_from_2018-11-02_08-30-26.png)
 
-![Node UI New Job Button](/files/25bb51c-Screenshot_from_2018-11-02_08-30-26.png)
+1. Paste the job specification from above into the text field.
 
-- Paste the job from above into the text field.
+    ![The new job page with JSON for a new job pasted.](/files/ee412d6-Screenshot_from_2018-12-15_08-30-43.png)
 
-![Node UI New Job Screen](/files/ee412d6-Screenshot_from_2018-12-15_08-30-43.png)
+1. Replace `YOUR_ORACLE_CONTRACT_ADDRESS` with the address of your deployed oracle contract address from the previous steps. This address is different than the `ACCOUNT_ADDRESS` from your Chainlink node.
 
-- Click Create Job and you'll be notified of the new JobID creation. Take note of this JobID as you'll need it later.
+1. Click **Create Job**. If the node creates the job successfully, a notice with the job ID appears. Take note of this job ID. You need it later.
 
-![Node UI New Job Message](/files/a7a2f0c-Screenshot_from_2018-11-02_08-42-22.png)
+    ![A screenshot showing that the job is created successfully.](/files/a7a2f0c-Screenshot_from_2018-11-02_08-42-22.png)
 
-- Repeat this process for each of the jobs above.
+1. Repeat this process for each of the remaining jobs above until all of the jobs are added.
 
-> 📘 Note
->
-> The address for the jobs will auto-populate with the zero-address. This means the Chainlink node will listen to your Job ID from any address. You can also specify an address in the params object of the RunLog initiator for your oracle contract.
+The address for each job auto-populates with the zero-address. This means the Chainlink node will listen to your job ID from any address. You can also specify an address in the `params` object of the `RunLog` initiator for your oracle contract.
 
 ## Create a request to your node
 
-> 📘 Important
->
-> If you're going through this guide on Ethereum mainnet, the TestnetConsumer.sol contract will still work. However, understand that you're sending real LINK to yourself. **Be sure to practice on the test networks multiple times before attempting to run a node on mainnet.**
+> 📘 If you're going through this guide on Ethereum mainnet, the `TestnetConsumer.sol` contract will still work. However, understand that you're sending real LINK to yourself. **Be sure to practice on the test networks multiple times before attempting to run a node on mainnet.**
 
-With the jobs added, you can now use your node to fulfill requests. This last section shows what requesters will do when they send requests to your node. It is also a way to test and make sure that your node is functioning correctly.- In Remix, create a new file named TestnetConsumer.sol and copy and paste the [TestnetConsumer.sol](https://docs.chain.link/samples/APIRequests/ATestnetConsumer.sol) contract into it.- Click "Start to compile".
+After you add jobs to your node, you can use the node to fulfill requests. This section shows what requesters do when they send requests to your node. It is also a way to test and make sure that your node is functioning correctly.
 
-![Remix Click Compile](/files/a8a5ecd-Screenshot_from_2019-05-16_15-39-05.png)
+1. Open [TestnetConsumer.sol in Remix](https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/ATestnetConsumer.sol).
 
-The contract should compile. You can now deploy it and fund it by sending some LINK to its address. See the [Fund your contract.](../fund-your-contract/) page for instructions on how to do that.
-- To create a request, input your oracle contract address and the JobID for the EthUint256 job into the `requestEthereumPrice` request method, separated by a comma.
+1. On the **Compiler** tab, click the **Compile** button for `TestnetConsumer.sol`.
 
-![Remix Click requestEthereumPrice](/files/dfce3b0-Screenshot_from_2019-05-16_17-12-51.png)
+    ![Screenshot of TestnetConsumer.sol with the compile button.](/files/a8a5ecd-Screenshot_from_2019-05-16_15-39-05.png)
 
-- Click the request method button and you should see your node log the request coming in and its fulfillment.Once the transaction from the node is confirmed, you should see the value updated on your contract by clicking on the `currentPrice` button.
+1. On the **Deploy and Run** tab, configure the following settings:
 
-![Remix currentPrice Result](/files/6741635-Screenshot_from_2019-05-15_15-38-25.png)
+    - Select "Injected Web3" as your environment.
+    - Select "ATestnetConsumer" from the **Contract** menu.
+    - Copy the address for the network you are using and paste it into the `address_link` field next to the **Deploy** button.
+
+1. Click **Deploy**. MetaMask prompts you to confirm the transaction.
+
+1. Fund the contract by sending LINK to the contract's address. See the [Fund your contract](../fund-your-contract/) page for instructions. The address for the `ATestnetConsumer` contract is on the list of your deployed contracts in Remix.
+
+1. After you fund the contract, create a request. Input your oracle contract address and the job ID for the `Get > Uint256` job into the `requestEthereumPrice` request method. Separate the contract address and the job ID by a comma.
+
+    ![Screenshot of the requestEthereumPrice field with an address filled in.](/files/dfce3b0-Screenshot_from_2019-05-16_17-12-51.png)
+
+1. Click the request method button and you should see your node log the request coming in and its fulfillment. After the transaction from the node is confirmed, you should see the value updated on your contract by clicking on the `currentPrice` button.
+
+    ![A screenshot of the currentPrice button](/files/6741635-Screenshot_from_2019-05-15_15-38-25.png)
 
 ## Withdrawing LINK
 
-To withdraw LINK from the Oracle contract, head to Remix and search for the "withdraw" function in the function list.
+You can withdraw LINK from the Oracle contract. In Remix under the list of deployed contracts, click on your Oracle contract and find the `withdraw` function in the function list. Note that the testnet consumer contract also has a `withdraw` function that is different.
 
 ![Remix Click Withdraw Button](/files/f8ffdc0-c6925db-remix007.jpg)
 
-Paste the address you want to withdraw to, and the amount of LINK, then click "withdraw". Confirm the transaction in Metamask when the popup appears.
+Paste the address you want to withdraw to, and specify the amount of LINK that you want to withdraw. Then, click `withdraw`. Confirm the transaction in MetaMask when the popup appears.

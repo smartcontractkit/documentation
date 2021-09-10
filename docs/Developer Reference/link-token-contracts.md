@@ -30,8 +30,7 @@ The LINK token is an ERC677 token that inherits functionality from the ERC20 tok
 
 > 🚰Kovan Faucets
 >
-> Testnet LINK is available from https://kovan.chain.link/
-> Testnet ETH is available from https://linkfaucet.protofire.io/kovan
+> Testnet LINK and ETH are available from https://faucets.chain.link/kovan
 
 |Parameter|Value|
 |:---|:---|
@@ -45,7 +44,7 @@ The LINK token is an ERC677 token that inherits functionality from the ERC20 tok
 
 > 🚰Rinkeby Faucets
 >
-> Testnet LINK is available from https://rinkeby.chain.link/
+> Testnet LINK is available from https://faucets.chain.link/rinkeby
 > Testnet ETH is available from https://faucet.rinkeby.io/
 
 |Parameter|Value|
@@ -92,7 +91,7 @@ LINK is native to Ethereum, so to use LINK on other chains, it must be bridged. 
 
 > 🚰BSC Faucet
 >
-> Testnet LINK is available from <a href="https://linkfaucet.protofire.io/bsctest" target="_blank" rel="noreferrer, noopener">the community faucet</a>.
+> Testnet LINK is available from https://faucets.chain.link/chapel
 
 |Parameter|Value|
 |:---|:---|
@@ -124,7 +123,7 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 
 > 🚰Mumbai Faucet
 >
-> Testnet LINK and MATIC are available from <a href="https://faucet.matic.network/" target="_blank" rel="noreferrer, noopener">the official matic faucet</a> and <a href="https://linkfaucet.protofire.io/mumbai" target="_blank" rel="noreferrer, noopener">the community faucet</a>.
+> Testnet LINK and MATIC are available from [the official Matic faucet](https://faucet.polygon.technology/) and https://faucets.chain.link/mumbai.
 
 |Parameter|Value|
 |:---|:---|
@@ -186,7 +185,7 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 
 > 🚰Avax Faucet
 >
-> Community Faucet: https://linkfaucet.protofire.io/fuji
+> Testnet LINK is available from https://faucets.chain.link/fuji
 >
 
 |Parameter|Value|
@@ -203,7 +202,7 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 
 > 🚰Fantom Faucet
 >
-> Community Faucet: https://linkfaucet.protofire.io/fantomtestnet  
+> Testnet LINK is available from https://faucets.chain.link/fantom-testnet  
 >
 
 |Parameter|Value|
@@ -220,7 +219,7 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 
 > 🚰Arbitrum Faucet on Rinkeby
 >
-> Community Faucet: https://linkfaucet.protofire.io/rinkebyarbitrum
+> Testnet LINK is available from https://faucets.chain.link/arbitrum-rinkeby
 >
 > Supported bridge: https://bridge.arbitrum.io
 
