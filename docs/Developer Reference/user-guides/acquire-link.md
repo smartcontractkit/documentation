@@ -10,11 +10,11 @@ This page will show you how to obtain and add testnet LINK to MetaMask. If you a
 
 # Testnet LINK Faucet
 
-* Go to the Chainlink Kovan Faucet site: https://kovan.chain.link
+* Go to the Chainlink Kovan Faucet site: https://faucets.chain.link/kovan
 
 > 👍 Note
 > 
-> You can also get testnet LINK on other test networks, such as Rinkeby, from https://faucets.chain.link/rinkeby.
+> You can also get testnet LINK on other test networks, such as Rinkeby, from https://faucets.chain.link.
 
 ![Link Kovan Faucet](/files/faucet.png)
 
