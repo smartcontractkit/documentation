@@ -26,10 +26,9 @@ permalink: /
             contracts.
           </p>
         </div>
-        <a
-          href="/docs/using-chainlink-reference-contracts"
-          class="cl-button--ghost"
-          >Learn More
+        <a href="/docs/using-chainlink-reference-contracts"
+          class="cl-button--ghost">
+          Learn More
         </a>
       </div>
       <div>
@@ -58,8 +57,8 @@ permalink: /
             library.
           </p>
         </div>
-        <a href="/docs/request-and-receive-data" class="cl-button--ghost"
-          >Learn More
+        <a href="/docs/request-and-receive-data" class="cl-button--ghost">
+          Learn More
         </a>
       </div>
     </div>
@@ -76,8 +75,8 @@ permalink: /
             Chainlink Keepers provide smart contract developers, decentralized applications (dApps), and decentralized autonomous organizations (DAOs) with a highly reliable, decentralized, and cost-efficient method of automating smart contract functions and regular contract maintenance.
           </p>
         </div>
-        <a href="/docs/chainlink-keepers/introduction/" class="cl-button--ghost"
-          >Learn More
+        <a href="/docs/chainlink-keepers/introduction/" class="cl-button--ghost">
+          Learn More
         </a>
       </div>
     </div>
@@ -91,9 +90,9 @@ permalink: /
         Build your first smart contract connected to off-chain data with our
         Beginner's Walkthrough
       </p>
-      <a href="/docs/beginners-tutorial" class="keychainify-checked"
-        >Start Building</a
-      >
+      <a href="/docs/beginners-tutorial" class="keychainify-checked">
+        Start Building
+      </a>
     </div>
     <div class="cl-section">
       <div class="cl-box cl-box__lightblue cl-featuredcard">
@@ -105,9 +104,9 @@ permalink: /
               off-chain data and smart contracts.
             </p>
           </div>
-          <a href="/docs/architecture-overview" class="cl-button--ghost"
-            >Architecture</a
-          >
+          <a href="/docs/architecture-overview" class="cl-button--ghost">
+            Architecture
+          </a>
         </div>
         <div>
           <div>
@@ -120,9 +119,9 @@ permalink: /
           <a
             href="https://market.link/"
             class="cl-button--ghost"
-            target="_blank"
-            >Chainlink Market ↗</a
-          >
+            target="_blank">
+              Chainlink Market ↗
+            </a>
         </div>
       </div>
     </div>
@@ -133,8 +132,7 @@ permalink: /
           <a
             href="https://explorer.chain.link/"
             target="_blank"
-            class="fill-div"
-          >
+            class="fill-div">
             <img
               src="https://uploads-ssl.webflow.com/5e444500cbc42eeb5198206f/5e711676c0d8d9ee70422688_Explorer.svg"
               class="cl-image-featured"
@@ -146,8 +144,8 @@ permalink: /
           <a
             href="https://www.npmjs.com/package/@chainlink/contracts"
             target="_blank"
-            class="fill-div"
-            ><img
+            class="fill-div">
+            <img
               src="https://uploads-ssl.webflow.com/5e444500cbc42eeb5198206f/5e711675d22595473f1c0c20_Contract.svg"
               class="cl-image-featured"
             />
@@ -158,8 +156,8 @@ permalink: /
           <a
             href="https://www.npmjs.com/package/@chainlink/test-helpers"
             target="_blank"
-            class="fill-div"
-            ><img
+            class="fill-div">
+            <img
               src="https://uploads-ssl.webflow.com/5e444500cbc42eeb5198206f/5e7116765b27d4521f92bac6_Tester.svg"
               class="cl-image-featured"
             />
@@ -169,5 +167,4 @@ permalink: /
       </div>
     </div>
   </div>
-  {% include still-questions %}
 </div>
