@@ -30,7 +30,8 @@ The LINK token is an ERC677 token that inherits functionality from the ERC20 tok
 
 > 🚰Kovan Faucets
 >
-> Testnet LINK and ETH are available from https://faucets.chain.link/kovan
+> Testnet LINK are available from https://kovan.chain.link:
+> Testnet ETH are available from https://faucets.chain.link/kovan
 
 |Parameter|Value|
 |:---|:---|

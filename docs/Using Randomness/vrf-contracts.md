@@ -91,7 +91,8 @@ For implementation details, read [Introduction to Chainlink VRF](../chainlink-vr
 
 > 🚰Kovan Faucets
 >
-> Testnet LINK and ETH are available from https://faucets.chain.link/kovan
+> Testnet LINK are available from https://kovan.chain.link:
+> Testnet ETH are available from https://faucets.chain.link/kovan
 
 |Item|Value|
 |---|---|
