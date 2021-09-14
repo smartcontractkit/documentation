@@ -308,7 +308,7 @@
                         const selection = window.getSelection().toString();
                         // Rate limit to 30s
                         if(selection && Date.now() > (lastEvent + 1000 * 30)) {
-                            gtag('event','select_content',{'event_category': 'docs-engagement', label: selection.substring(0,30)});
+                            dataLayer.push('event','select_content',{'event_category': 'docs-engagement', label: selection.substring(0,30)});
                             lastEvent = Date.now();
                         }
                     } catch (e) {}
@@ -319,11 +319,11 @@
                 [...document.getElementsByTagName('a')]
                     .filter(x => x.href.startsWith('https://remix.ethereum.org/') && x.href.length > 27 )
                     .map(x => {x.addEventListener('click',(event) => {
-                        gtag('event','deploy-to-remix',{event_category:'docs-engagement'});
+                        dataLayer.push('event','deploy-to-remix',{event_category:'docs-engagement'});
                     });});
                 [...document.getElementsByClassName('copy-to-clipboard-button')]
                     .map(x => {x.addEventListener('click',(event) => {
-                        gtag('event','copy-code',{event_category:'docs-engagement'});
+                        dataLayer.push('event','copy-code',{event_category:'docs-engagement'});
                     });});
 
                     // Open all external links in a blank context
