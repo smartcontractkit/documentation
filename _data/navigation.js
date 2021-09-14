@@ -255,7 +255,7 @@ module.exports = {
                 url: '/docs/solana-price-feeds/',
               },
               {
-                title: 'Optimism Price Feeds',
+                title: 'Optimism Data Feeds',
                 url: '/docs/optimism-price-feeds/',
               },
             ],

@@ -146,7 +146,7 @@ export const NETWORKS = [
   },
   {
     page: "optimism-price-feeds",
-    title: "Optimism Price Feeds",
+    title: "Optimism Data Feeds",
     networks: [
       {
         name: "Optimism Mainnet",

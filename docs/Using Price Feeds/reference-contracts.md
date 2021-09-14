@@ -5,10 +5,10 @@ date: Last Modified
 title: "Data Feeds Contract Addresses"
 permalink: "docs/reference-contracts/"
 whatsnext: {"ENS":"/docs/ens/", "Ethereum Data Feeds":"/docs/ethereum-addresses/", "Binance Smart Chain Data Feeds":"/docs/binance-smart-chain-addresses/", "Polygon (Matic) Data Feeds":"/docs/matic-addresses/", "xDai Data Feeds":"/docs/xdai-price-feeds/", "Huobi Eco Chain Data Feeds":"/docs/huobi-eco-chain-price-feeds/", "Avalanche Data Feeds":"/docs/avalanche-price-feeds/"}
-metadata: 
+metadata:
   title: "Chainlink Data Feed Smart Contract Addresses"
   description: "A list of addresses for Data Feed aggregator contracts on supported networks."
-  image: 
+  image:
     0: "/files/OpenGraph_V3.png"
 ---
 Chainlink Data Feed contracts are updated on a regular basis by multiple Chainlink nodes. For implementation details, read [Introduction to Data Feeds](../using-chainlink-reference-contracts/).
@@ -59,8 +59,8 @@ For Harmony Data Feed Addresses, see [Harmony Data Feeds](../harmony-price-feeds
 
 ## Solana
 
-For Solana Price Feed Addresses, see [Solana Price Feeds](../solana-price-feeds/).
+For Solana Data Feed Addresses, see [Solana Data Feeds](../solana-price-feeds/).
 
 ## Optimism
 
-For Omtimism Price Feed Addresses, see [Optimism Price Feeds](../optimism-price-feeds/).
+For Omtimism Data Feed Addresses, see [Optimism Data Feeds](../optimism-price-feeds/).
