@@ -44,7 +44,7 @@ See [shared fields](/docs/jobs/#shared-fields).
 - `$(jobRun.logTopics)`: the log's topics (`indexed` fields).
 - `$(jobRun.logData)`: the log's data (non-`indexed` fields).
 
-**Single Word Example**
+**Single-Word Example**
 
 First, let's assume that a user makes a request to the oracle using the following contract:
 
@@ -63,7 +63,7 @@ contract MyClient is ChainlinkClient {
 }
 ```
 
-Its called a "single word" response because aside from the requestID, the fulfill callback only receives a single word argument (the `uint256 answer`) .A direct request job using the following pipeline could be used to fulfill this request:
+This is a single-word response because aside from the `requestID`, the fulfill callback receives only a single-word argument in the `uint256 answer`. You can fulfill this request with a direct request job using the following pipeline:
 
 ```dot
 // First, we parse the request log and the CBOR payload inside of it
@@ -80,7 +80,7 @@ fetch [type="http" url="$(decode_cbor.fetchURL)" method="get"]
 parse [type="jsonparse" path="$(decode_cbor.jsonPath)" data="$(fetch)"]
 
 // Finally, we send a response on-chain.
-// Note single word responses automatically populate
+// Note that single-word responses automatically populate
 // the requestId. 
 encode_response [type=ethabiencode
                  abi="(uint256 data)"
@@ -100,9 +100,9 @@ encode_tx       [type=ethabiencode
 submit_tx  [type=ethtx to="0x613a38AC1659769640aaE063C651F48E0250454C" data="$(encode_tx)"]
 ```
 
-**Multi word example**
+**Multi-Word Example**
 
-Say a user wants to obtain the ETH price quoted against 3 different fiat currencies. If they were only using single word DR jobs, it would require 3 different requests. To make that more efficient they use multi word responses as shown below to do it all in a single request.
+Assume that a user wants to obtain the ETH price quoted against three different fiat currencies. If they use only a single-word DR job, it would require three different requests. To make that more efficient, they can use multi-word responses to do it all in a single request as shown in the following example:
 
 ```sol
 contract MyClient is ChainlinkClient {
