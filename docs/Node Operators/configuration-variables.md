@@ -123,7 +123,7 @@ The env variables listed here are explicitly supported and current as of Chainli
 
 - Default: _none_
 
-The PostgreSQL URI to connect to your database. See the [Running a Chainlink Node](../running-a-chainlink-node/#set-the-remote-database_url-config) for an example.
+The PostgreSQL URI to connect to your database. See the [Running a Chainlink Node](../running-a-chainlink-node/#create-an-environment-file) for an example.
 
 ## ETH_CHAIN_ID
 
@@ -353,7 +353,7 @@ Can be used with the `chainlink setgasprice` to be updated while the node is sti
 
 - Default: _automatic based on chain ID_
 
-Chainlink will never pay more than this for a transaction. 
+Chainlink will never pay more than this for a transaction.
 
 ## ETH_MIN_GAS_PRICE_WEI
 
@@ -469,7 +469,7 @@ Enables the Flux Monitor v2 job type.
 - Default: `"false"`
 
 Enables the Webhook v2 job type.
-  
+
 ## ADMIN_CREDENTIALS_FILE
 
 - Default: `$CHAINLINK_ROOT/apicredentials`
@@ -719,7 +719,7 @@ See eth_resender.go for more details
 For jobs that use the EthTx adapter, this is the minimum payment amount in order for the node to accept and process the job. Since there are no decimals on the EVM, the value is represented like wei.
 
 > 🚧 Note
-> 
+>
 > Keep in mind, the Chainlink node currently responds with a 500,000 gas limit. Under pricing your node could mean it spends more in ETH (on gas) than it earns in LINK.
 
 ## MINIMUM_REQUEST_EXPIRATION
@@ -778,7 +778,7 @@ Caution: only change these if you _really_ know what you are doing. Setting thes
 
 - Default: 16
 
-Controls how many transactions are allowed to be "in-flight" i.e. broadcast but unconfirmed at any one time. You can consider this a form of transaction throttling.
+Controls how many transactions are allowed to be "in-flight" i.e. broadcast but unconfirmed at any one time. Consider this to be a form of transaction throttling.
 
 The default is set conservatively at 16 because this is a pessimistic minimum that both geth and parity will hold without evicting local transactions. If your node is falling behind and you need higher throughput, you can increase this setting, but you must make sure that your eth node is configured properly otherwise you can get nonce gapped.
 

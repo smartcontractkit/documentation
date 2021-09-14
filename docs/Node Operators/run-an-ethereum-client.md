@@ -53,7 +53,7 @@ docker start -i eth
 
 Return to [Running a Chainlink Node](../running-a-chainlink-node/).
 
-## Parity 
+## Parity
 
 [OpenEthereum's Documentation](https://openethereum.github.io/index)
 
@@ -62,7 +62,7 @@ Return to [Running a Chainlink Node](../running-a-chainlink-node/).
 Download the latest version:
 
 ```
-openethereum/openethereum:stable
+docker pull openethereum/openethereum:latest
 ```
 
 Create a local directory to persist the data:
