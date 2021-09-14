@@ -63,7 +63,7 @@ contract MyClient is ChainlinkClient {
 }
 ```
 
-A direct request job using the following pipeline could be used to fulfill this request:
+Its called a "single word" response because aside from the requestID, the fulfill callback only receives a single word argument (the `uint256 answer`) .A direct request job using the following pipeline could be used to fulfill this request:
 
 ```dot
 // First, we parse the request log and the CBOR payload inside of it
@@ -101,6 +101,8 @@ submit_tx  [type=ethtx to="0x613a38AC1659769640aaE063C651F48E0250454C" data="$(e
 ```
 
 **Multi word example**
+
+Say a user wants to obtain the ETH price quoted against 3 different fiat currencies. If they were only using single word DR jobs, it would require 3 different requests. To make that more efficient they use multi word responses as shown below to do it all in a single request.
 
 ```sol
 contract MyClient is ChainlinkClient {
