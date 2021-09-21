@@ -29,18 +29,19 @@ The Chainlink Keeper Network is a decentralized solution where independent Keepe
 
 ### Supported Blockchain Networks
 
-Chainlink Keepers are currently available on Kovan and ETH mainnet. If you are interested in using Keepers but need it on a different blockchain or network, please reach out to us and [let us know](https://forms.gle/WadxnzzjHPtta5Zd9).
+Chainlink Keepers are currently available on Kovan and ETH mainnet. If you are interested in using Keepers but need it on a different blockchain or network, reach out to us and [let us know](https://forms.gle/WadxnzzjHPtta5Zd9).
 
 > 📘 Making sure your Upkeeps execute when you expect
 > Our goal is to ensure flawless execution of your Upkeeps. To get the most out of Chainlink Keepers, we recommend you review these docs in full - understand their capabilities, usage patterns, best practices, and how to maintain the health of your upkeep.
 
 ## Onboarding Steps
 
-We strongly recommend to start by testing your Keeper-compatible contracts on testnet before moving to mainnet. At any point during your testing process, please [reach out to us](https://forms.gle/WadxnzzjHPtta5Zd9) if you have questions that have not been addressed, or take a look at our [Keepers Frequently Asked Questions](../faqs/).
+Start by testing your Keeper-compatible contracts on testnet before moving to mainnet. If you have questions, take a look at our [Keepers Frequently Asked Questions](../faqs/) page or [reach out to us](https://forms.gle/WadxnzzjHPtta5Zd9).
 
 1. Create a [Keeper compatible contract](../compatible-contracts/)
 1. Deploy your contract onto a supported testnet
 1. Get [LINK](../../link-token-contracts/#kovan) on the testnet
+1. Many token bridges give you ERC-20 LINK tokens. Use PegSwap to [convert Chainlink tokens (LINK) to be ERC-677 compatible](https://pegswap.chain.link/).
 1. [Register your Upkeep](../register-upkeep/) on testnet
 1. Test, iterate, and finalize your Keeper compatible contract
 1. Deploy your fully tested contract onto mainnet
