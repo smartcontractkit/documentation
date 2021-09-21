@@ -43,7 +43,7 @@ JobID: `f3daed2990114e98906aaf21c4172da3`
 
 Import `ChainlinkClient.sol` into your contract so you can inherit the Chainlink behavior.
 
-```javascript Solidity 4
+```solidity Solidity 4
 pragma solidity ^0.4.24;
 
 import "@chainlink/contracts/v0.4/ChainlinkClient.sol";
@@ -60,7 +60,7 @@ contract DnsOwnershipChainlink is ChainlinkClient {
   
 }
 ```
-```javascript Solidity 5
+```solidity Solidity 5
 pragma solidity ^0.5.0;
 
 import "@chainlink/contracts/v0.5/ChainlinkClient.sol";
@@ -77,7 +77,7 @@ contract DnsOwnershipChainlink is ChainlinkClient {
   
 }
 ```
-```javascript Solidity 6
+```solidity Solidity 6
 pragma solidity ^0.6.0;
 
 import "@chainlink/contracts/v0.6/ChainlinkClient.sol";
@@ -96,7 +96,7 @@ contract DnsOwnershipChainlink is ChainlinkClient {
 ```
 
 <div class="remix-callout">
-  <a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&gist=df94f31ce2fc161f8b6032dbc6bfcc9c" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
+  <a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&url=https://docs.chain.link/samples/DataProviders/DnsOwnership.sol" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
     <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
 </div>
 
@@ -126,7 +126,7 @@ The examples below show how to create a request for the Chainlink node.
 
 ### `requestProof` function
 
-```javascript
+```solidity
 function requestProof
 (
   address _oracle,
@@ -147,7 +147,7 @@ function requestProof
 ```
 ### `fulfill` function
 
-```javascript
+```solidity
 bool public proof;
 
 function fulfill(bytes32 _requestId, bool _proof)

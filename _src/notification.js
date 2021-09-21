@@ -4,10 +4,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const key = notification.getAttribute('key');
 
     // Dates are parsed as UTC, so let's offset them to match Eastern Time
-    const start = Date.parse(notification.getAttribute('start') || 0) - 4 * 60 * 60 * 1000;
+    const start = Date.parse(notification.getAttribute('start') || 0) + 4 * 60 * 60 * 1000;
     const end =
       (Date.parse(notification.getAttribute('end')) || Date.now()) +
-      1000 * 60 * 60 * 24 - 4 * 60 * 60 * 1000;
+      1000 * 60 * 60 * 24 + 4 * 60 * 60 * 1000;
     const now = Date.now();
     if (start < now && now < end) {
       let state = JSON.parse(localStorage[`notification-${key}`] || 'false');

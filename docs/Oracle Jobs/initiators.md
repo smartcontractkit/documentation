@@ -6,6 +6,22 @@ permalink: "docs/initiators/"
 whatsnext: {"Introduction to External Initiators":"/docs/external-initiators-introduction/"}
 ---
 
+# DEPRECATED
+
+> ⚠️ NOTE
+> Initiators are deprecated and will be removed in Chainlink 1.0.0.
+> 
+> Please refer to [v2 jobs](/docs/jobs) instead.
+
+## Initiators
+
+[block:api-header]
+{
+  "title": "Cron"
+}
+[/block]
+The `Cron` initiator is a simple way to schedule recurring job runs, using <a href="https://en.wikipedia.org/wiki/Cron#Overview" target="_blank">standard cron syntax</a>.
+
 ## Cron
 
 The `Cron` initiator is a simple way to schedule recurring job runs, using [standard cron syntax](https://en.wikipedia.org/wiki/Cron#Overview).
@@ -77,7 +93,7 @@ The `fluxmonitor` initiator performs 3 functions:
 2. Using that aggregated result to determine if an on-chain update needs to be made (as defined by a threshold)
 3. Updates on-chain values based on a heartbeat
 
-The `fluxmonitor` is the current  initiator used by the [Chainlink Price Feeds](https://feeds.chain.link/)
+The `fluxmonitor` is the current  initiator used by the [Chainlink Data Feeds](https://feeds.chain.link/)
 
 ### FluxMonitor Parameters
 
@@ -181,7 +197,8 @@ A new run created by a `RunLog` is automatically given the parameters needed for
 
 The `Web` initiator enables jobs to be triggered via web requests, specifically `POST`s to `/v2/specs/:jobID/runs`. Requests coming in to create new job runs must be authenticated by cookie.
 
-NOTE: For convenience, there is a "Run" button in the operator web UI for the job which will trigger a job run.
+> ℹℹ NOTE
+> For convenience, there is a "Run" button in the operator web UI for the job which will trigger a job run.
 
 ### Web Parameters
 

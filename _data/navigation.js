@@ -34,11 +34,74 @@ module.exports = {
           {
             url: '/docs/best-security-practices/',
             title: 'Best Security and Operating Practices',
-          }
+          },
         ],
       },
       {
         section: 'ORACLE JOBS',
+        contents: [
+          {
+            url: '/docs/jobs/migration-v1-v2',
+            title: 'Migrating to v2 Jobs',
+          },
+          {
+            url: '/docs/jobs/',
+            title: 'Jobs',
+            children: [
+              { url: '/docs/jobs/types/cron/', title: 'Cron' },
+              {
+                url: '/docs/jobs/types/direct-request/',
+                title: 'Direct Request',
+              },
+              {
+                url: '/docs/jobs/types/flux-monitor/',
+                title: 'Flux Monitor',
+              },
+              { url: '/docs/jobs/types/keeper/', title: 'Keeper' },
+              {
+                url: '/docs/jobs/types/offchain-reporting/',
+                title: 'Off-chain Reporting',
+              },
+              { url: '/docs/jobs/types/webhook/', title: 'Webhook' },
+            ],
+          },
+          {
+            url: '/docs/tasks/',
+            title: 'Tasks',
+            children: [
+              { url: '/docs/jobs/task-types/http/', title: 'HTTP' },
+              { url: '/docs/jobs/task-types/bridge/', title: 'Bridge' },
+              { url: '/docs/jobs/task-types/jsonparse/', title: 'JSON Parse' },
+              { url: '/docs/jobs/task-types/cborparse/', title: 'CBOR Parse' },
+              {
+                url: '/docs/jobs/task-types/eth-abi-decode/',
+                title: 'ETH ABI Decode',
+              },
+              {
+                url: '/docs/jobs/task-types/eth-abi-decode-log/',
+                title: 'ETH ABI Decode Log',
+              },
+              {
+                url: '/docs/jobs/task-types/eth-abi-encode/',
+                title: 'ETH ABI Encode',
+              },
+              { url: '/docs/jobs/task-types/eth-call/', title: 'ETH Call' },
+              { url: '/docs/jobs/task-types/eth-tx/', title: 'ETH Tx' },
+
+              { url: '/docs/jobs/task-types/multiply/', title: 'Multiply' },
+              { url: '/docs/jobs/task-types/divide/', title: 'Divide' },
+
+              { url: '/docs/jobs/task-types/any/', title: 'Any' },
+              { url: '/docs/jobs/task-types/mean/', title: 'Mean' },
+              { url: '/docs/jobs/task-types/median/', title: 'Median' },
+              { url: '/docs/jobs/task-types/mode/', title: 'Mode' },
+              { url: '/docs/jobs/task-types/sum/', title: 'Sum' },
+            ],
+          },
+        ],
+      },
+      {
+        section: 'v1 JSON JOBS [DEPRECATED]',
         contents: [
           { url: '/docs/job-specifications/', title: 'Job Specifications' },
           { url: '/docs/core-adapters/', title: 'Core Adapters' },
@@ -98,6 +161,10 @@ module.exports = {
                 title: 'API Calls',
                 url: '/docs/advanced-tutorial/',
               },
+              {
+                title: 'Other Tutorials',
+                url: '/docs/other-tutorials/',
+              },
             ],
           },
           {
@@ -121,14 +188,22 @@ module.exports = {
         ],
       },
       {
-        section: 'USING PRICE FEEDS',
+        section: 'USING DATA FEEDS',
         contents: [
           {
-            title: 'Introduction to Price Feeds',
+            title: 'Introduction to Data Feeds',
             url: '/docs/using-chainlink-reference-contracts/',
           },
-          { title: 'Get the Latest Price', url: '/docs/get-the-latest-price/' },
-          { title: 'Historical Price Data', url: '/docs/historical-price-data/' },
+          { title: 'Get the Latest Price (EVM)',
+            url: '/docs/get-the-latest-price/'
+          },
+          { title: 'Get the Latest Price (Solana)',
+            url: '/docs/get-the-latest-price-solana/'
+          },
+          {
+            title: 'Historical Price Data',
+            url: '/docs/historical-price-data/',
+          },
           { title: 'Feed Registry', url: '/docs/feed-registry/' },
           {
             title: 'API Reference',
@@ -140,38 +215,49 @@ module.exports = {
             children: [
               { title: 'ENS', url: '/docs/ens/' },
               {
-                title: 'Ethereum Price Feeds',
+                title: 'Ethereum Data Feeds',
                 url: '/docs/ethereum-addresses/',
               },
               {
-                title: 'Binance Smart Chain Price Feeds',
-                url:
-                  '/docs/binance-smart-chain-addresses/',
+                title: 'Binance Smart Chain Data Feeds',
+                url: '/docs/binance-smart-chain-addresses/',
               },
               {
-                title: 'Polygon (Matic) Price Feeds',
+                title: 'Polygon (Matic) Data Feeds',
                 url: '/docs/matic-addresses/',
               },
               {
-                title: 'xDai Price Feeds',
+                title: 'xDai Data Feeds',
                 url: '/docs/xdai-price-feeds/',
               },
               {
-                title: 'Huobi Eco Chain Price Feeds',
+                title: 'Huobi Eco Chain Data Feeds',
                 url: '/docs/huobi-eco-chain-price-feeds/',
               },
               {
-                title: 'Avalanche Price Feeds',
+                title: 'Avalanche Data Feeds',
                 url: '/docs/avalanche-price-feeds/',
               },
               {
-                title: 'Fantom Price Feeds',
+                title: 'Fantom Data Feeds',
                 url: '/docs/fantom-price-feeds/',
               },
               {
-                title: 'Arbitrum Price Feeds',
+                title: 'Arbitrum Data Feeds',
                 url: '/docs/arbitrum-price-feeds/',
-              }
+              },
+              {
+                title: 'Harmony Data Feeds',
+                url: '/docs/harmony-price-feeds/',
+              },
+              {
+                title: 'Solana Data Feeds',
+                url: '/docs/solana-price-feeds/',
+              },
+              {
+                title: 'Optimism Data Feeds',
+                url: '/docs/optimism-price-feeds/',
+              },
             ],
           },
         ],
@@ -179,22 +265,47 @@ module.exports = {
       {
         section: 'USING RANDOMNESS',
         contents: [
-          { title: 'Introduction to Chainlink VRF', url: '/docs/chainlink-vrf/' },
+          {
+            title: 'Introduction to Chainlink VRF',
+            url: '/docs/chainlink-vrf/',
+          },
           { title: 'Get a Random Number', url: '/docs/get-a-random-number/' },
           { title: 'API Reference', url: '/docs/chainlink-vrf-api-reference/' },
-          { title: 'Security Considerations', url: '/docs/vrf-security-considerations/' },
+          {
+            title: 'Security Considerations',
+            url: '/docs/vrf-security-considerations/',
+          },
           { title: 'Contract Addresses', url: '/docs/vrf-contracts/' },
-          { title: 'Best Practices', url: '/docs/chainlink-vrf-best-practices/' },
+          {
+            title: 'Best Practices',
+            url: '/docs/chainlink-vrf-best-practices/',
+          },
         ],
       },
       {
         section: 'USING CHAINLINK KEEPERS',
         contents: [
-          { title: 'Introduction', url: '/docs/chainlink-keepers/introduction/' },
-          { title: 'Making Compatible Contracts', url: '/docs/chainlink-keepers/compatible-contracts/' },
-          { title: 'Register Upkeep for a Contract', url: '/docs/chainlink-keepers/register-upkeep/' },
-          { title: 'Patterns and Best Practices', url: '/docs/chainlink-keepers/best-practices/' },
-          { title: 'Network Overview', url: '/docs/chainlink-keepers/overview/' },
+          {
+            title: 'Introduction',
+            url: '/docs/chainlink-keepers/introduction/',
+          },
+          {
+            title: 'Making Compatible Contracts',
+            url: '/docs/chainlink-keepers/compatible-contracts/',
+          },
+          {
+            title: 'Register Upkeep for a Contract',
+            url: '/docs/chainlink-keepers/register-upkeep/',
+          },
+          {
+            title: 'Patterns and Best Practices',
+            url: '/docs/chainlink-keepers/best-practices/',
+          },
+          {
+            title: 'Network Overview',
+            url: '/docs/chainlink-keepers/overview/',
+          },
+          { title: 'FAQs', url: '/docs/chainlink-keepers/faqs/' },
         ],
       },
       {
@@ -204,10 +315,21 @@ module.exports = {
             title: 'Introduction to Using Any API',
             url: '/docs/request-and-receive-data/',
           },
-          { title: 'Make a GET Request', url: '/docs/make-a-http-get-request/' },
+          {
+            title: 'Make a GET Request',
+            url: '/docs/make-a-http-get-request/',
+          },
           {
             title: 'Make an Existing Job Request',
             url: '/docs/existing-job-request/',
+          },
+          {
+            title: 'Multi-Variable Responses',
+            url: '/docs/multi-variable-responses/',
+          },
+          {
+            title: 'Large Responses',
+            url: '/docs/large-responses/',
           },
           { title: 'Find Existing Jobs', url: '/docs/listing-services/' },
           { title: 'API Reference', url: '/docs/chainlink-framework/' },
@@ -231,7 +353,7 @@ module.exports = {
           },
           {
             title: 'Data Provider Nodes',
-            url: '/docs/data-provider-nodes/'
+            url: '/docs/data-provider-nodes/',
           },
           { title: 'Hackathon Resources', url: '/docs/hackathon-resources/' },
           {
@@ -264,4 +386,4 @@ module.exports = {
       },
     ],
   },
-}
+};

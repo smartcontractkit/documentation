@@ -8,12 +8,10 @@ whatsnext:
     'Patterns and Best Practices': '/docs/chainlink-keepers/best-practices/',
   }
 ---
-{% include keepers-beta %}
-
-Once you have deployed a Keeper compatible contract, we need to register it with the Chainlink Keeper Network. You must do this via the [Chainlink Keepers App](https://keeper.chain.link).
+Once you have deployed a Keeper compatible contract, we need to register it with the Chainlink Keeper Network. You must do this via the [Chainlink Keepers App](https://keepers.chain.link).
 
 <div class="remix-callout">
-    <a href="https://keeper.chain.link" class="cl-button--ghost solidity-tracked">Chainlink Keepers App</a>
+    <a href="https://keepers.chain.link" class="cl-button--ghost solidity-tracked">Chainlink Keepers App</a>
 </div>
 
 Once registered, you can interact directly with the [registry contract](https://etherscan.io/address/0x109A81F1E0A35D4c1D0cae8aCc6597cd54b47Bc6#code) functions (`cancelUpkeep`, `addFunds`, etc).
@@ -48,7 +46,7 @@ The App will walk you through several steps.
 1. **Add funds to your Upkeep**
   Your contract was provided initial funding as part of the registration step, but once this runs out, you'll need to add more LINK to your Upkeep.
 
-  * Click `View Upkeep` or navigate back to the [home page of the Chainlink Keepers App](https://keeper.chain.link) and click on your recently registered Upkeep
+  * Click `View Upkeep` or navigate back to the [home page of the Chainlink Keepers App](https://keepers.chain.link) and click on your recently registered Upkeep
   * Press `Add funds` button
   * Approve the LINK spend allowance
     ![Approve LINK Spend Allowance](/images/contract-devs/keeper/keeper-approve-allowance.png)
@@ -63,6 +61,13 @@ The App will walk you through several steps.
 * If you want to automate adding funds, you can directly call the `addFunds()` function on the `KeeperRegistry` contract.
 * Anyone (not just the Upkeep owner) can call the `addFunds()` function
 * To withdraw funds, first cancel the Upkeep 
+
+## Maintaining a minimum balance
+To ensure the Chainlink Keepers are compensated for performance, there is an expected minimum balance on each Upkeep. If your funds drop below this amount, the Upkeep will not be performed.
+
+The minimum balance is calculated using the current fast gas price, the Gas Limit you entered for your Upkeep, and the max gas multiplier (see `gasCeilingMultiplier` in [configuration of the registry](/docs/chainlink-keepers/overview/#configuration)).
+
+It is recommended that you maintain a balance that is a multiple (3-5x) of the minimum balance to account for gas price fluctuations.
 
 # Congratulations!
 After you register your Upkeep, it has been approved, and you have added sufficient funds, the Chainlink Keeper Network will begin to simulate `checkUpkeep` calls, and execute your contract's `performUpkeep` as needed.
