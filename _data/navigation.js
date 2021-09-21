@@ -210,6 +210,10 @@ module.exports = {
             url: '/docs/price-feeds-api-reference/',
           },
           {
+            title: 'Best Practices',
+            url: '/docs/data-feeds-best-practices/',
+          },
+          {
             title: 'Contract Addresses',
             url: '/docs/reference-contracts/',
             children: [
