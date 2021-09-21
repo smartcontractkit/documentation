@@ -98,6 +98,8 @@ encode_tx       [type=ethabiencode
                   }>]
 
 submit_tx  [type=ethtx to="0x613a38AC1659769640aaE063C651F48E0250454C" data="$(encode_tx)"]
+
+decode_log -> decode_cbor -> fetch -> parse -> encode_response -> encode_tx -> submit_tx
 ```
 
 **Multi-Word Example**
