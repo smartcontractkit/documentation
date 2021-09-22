@@ -10,7 +10,7 @@ Chainlink is an open-source project licensed [under the MIT license](https://git
 [insert YT video here]
 
 # What It Means to Contribute
-To contribute to the Chainlink project means you as a developer or community member contribute your time and effort to help improve and grow Chainlink via various methods such as:
+When you contribute to the Chainlink project, you as a developer or community member contribute your time and effort to help improve and grow Chainlink. Your contribution can be from various methods:
 - Build and maintain the Chainlink software and tools
 - Improving and maintaining the documentation, including translations into other languages
 - Creating Chainlink focused content (blog posts, tutorials, videos etc)
