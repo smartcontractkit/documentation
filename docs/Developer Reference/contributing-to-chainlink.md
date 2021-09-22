@@ -22,7 +22,7 @@ When you contribute to the Chainlink project, you as a developer or community me
 
 # Why Should You Contribute
 
-[Open source software](https://en.wikipedia.org/wiki/Open-source_software) is a model that brings multiple benefits for both the project as well as the contributors. As a developer or community member, contributing to Chainlink helps you to gain valuable skills and experience, improve the software you and many others rely on and use, as well as grow your personal brand in the community which can lead to future employment opportunities. On top of these awesome things, contributing to open source is fun,  gives you a real sense of community involvement, and gives you a real personal sense of satisfaction knowing that you're part of something bigger, that's helping to build something that will enable a fairer, more transparent and efficient new world.
+[Open source software](https://en.wikipedia.org/wiki/Open-source_software) is a model that brings multiple benefits for both the project and the contributors. As a developer or community member, contributing to Chainlink helps you to gain valuable skills and experience, improve the software that you use, and grow your personal brand in the community which can lead to future employment opportunities. On top of these awesome things, contributing to open source is fun.  It can give you a sense of community involvement, and gives you a personal sense of satisfaction knowing that you're part of an effort to build something that will enable a fairer, more transparent, and efficient new world.
 
 # Ways to Contribute
 
