@@ -27,10 +27,10 @@ When you contribute to the Chainlink project, you as a developer or community me
 # Ways to Contribute
 
 ## Contributing to Software and Tooling
-The most direct way you can contribute to Chainlink is to contribute to the core code, or the various tooling found in our [GitHub repository](https://github.com/smartcontractkit/). Contributing to code or code-based tools can generally be split into a few different categories:
+The most direct way you can contribute to Chainlink is to contribute to the core code or the various tooling found in our [GitHub repository](https://github.com/smartcontractkit/). Contributing to code or code-based tools can generally be split into a few different categories:
 - Raising an issue
 - Requesting a new feature
-- Submitting a Pull Request (PR) for a fix, improvement or new tool
+- Submitting a Pull Request (PR) for a fix, improvement, or new tool
 
 
 ### Raising an Issue
@@ -48,7 +48,7 @@ When you first create an issue, you will be asked to categorize it. This will th
 
 ![Selecting the new issue category](/files/new-issue-category.png)
 
-Once you select a category, you will be given the opportunity to enter in the details for the issue. Please include as much detail as possible. This includes a thorough description, environment and software version details, and detailed steps on how to reproduce the issue. The more thorough you are here, the better the chances someone will be able to pick up the issue and resolve it.
+Once you select a category, you will be given the opportunity to enter the details for the issue. Please include as much detail as possible. This includes a thorough description, environment and software version details, and detailed steps on how to reproduce the issue. The more thorough you are here, the better the chances someone will be able to pick up the issue and resolve it.
 
 Once the issue has been successfully created, someone should respond within a day or two and acknowledge the issue has been received, and they will then tag the issue with an appropriate label. You should then monitor the state of the open issue for any questions or updates.
 
@@ -106,15 +106,15 @@ To become a community advocate, you can apply via the [community advocates web p
 ## Running a Chainlink Focused Developer Bootcamp
 In June 2021, the very first [Chainlink Developer Bootcamp](http://chain.link/bootcamp) was [virtually hosted](https://blog.chain.link/smart-contract-developer-bootcamp-on-demand/) by the Chainlink Labs team. If you're passionate about educating others on smart contracts and Chainlink, you can contribute by running your own virtual or in-person developer Bootcamp in your city. You can also contribute by translating and running the developer Bootcamp in another language. Before running your own Bootcamp, we encourage you to first [reach out to the team](mailto:developer-relations@chainlinklabs.com) so we can make sure you have the support you need.
 
-## Running an In-Person Meetup or Watch-Party
-If you're passionate about helping to grow the awareness and adoption of Chainlink, you can contribute by running an in-person meetup or watch party for a Chainlink event such as [Smartcon](https://www.smartcontractsummit.io/). Meetups are a great way to meet others also passionate about how hybrid smart contracts can create an economically fair world.
+## Running an In-Person Meetup or Watch Party
+If you're passionate about helping to grow the awareness and adoption of Chainlink, you can contribute by running an in-person meetup or watch party for a Chainlink event such as [SmartCon](https://www.smartcontractsummit.io/). Meetups are a great way to meet others also passionate about how hybrid smart contracts can create an economically fair world.
 
-If you're interested in running an in-person meetup or watch-party, feel free to [reach out to the team](mailto:community@smartcontract.com) so we can make sure you have the support you need.
+If you're interested in running an in-person meetup or watch party, feel free to [reach out to the team](mailto:community@smartcontract.com) so we can make sure you have the support you need.
 
 ## Participate in a Hackathon
-Chainlink runs hackathons multiple times per year, and often sponsors other hackathons across the blockchain ecosystem. Participating in a hackathon that Chainlink is a part of is a great way for learning how to use Chainlink, and also a great way to showcase your skills to the Chainlink team as well as the wider community. Hackathons are also a very popular place for recruiting talent into the blockchain ecosystem.
+Chainlink runs hackathons multiple times per year and often sponsors other hackathons across the blockchain ecosystem. Participating in a hackathon that Chainlink is a part of is a great way for learning how to use Chainlink, and also a great way to showcase your skills to the Chainlink team as well as the wider community. Hackathons are also a very popular place for recruiting talent into the blockchain ecosystem.
 
-To stay up to date on the hackathons Chainlink is running or sponsoring, keep an eye out on official Chainlink social media channels, and sign up to our [developer newsletter](https://docs.chain.link/docs/developer-communications/).
+To stay up to date on the hackathons Chainlink is running or sponsoring, keep an eye out on official Chainlink social media channels, and sign up for our [developer newsletter](https://docs.chain.link/docs/developer-communications/).
 
 ## Applying for a Grant
 The [Chainlink grant program](https://chain.link/community/grants) encourages the community to focus on the creation of critical developer tooling, the addition of high-quality data, and the launching of key services around the Chainlink Network. Grant categories include community, integration, bug bounty, research, and social impact grants. If you believe you have a great idea that fits into one of these categories, you can apply for a grant. If successful, you will receive the funding and support needed to successfully build and implement it.
