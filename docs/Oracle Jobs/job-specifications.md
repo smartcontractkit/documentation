@@ -60,7 +60,7 @@ Here is an example of a spec:
 }
 ```
 
-This example shows the two main components of a spec: initiators and tasks. [Initiators](../glossary/#initiator) determine how the spec will start. [Tasks](../glossary/#task-spec) are the individual steps that the Chainlink node follows to process data in order to produce a result.
+This example shows the two main components of a spec: initiators and tasks. Initiators determine how the spec will start. [Tasks](../glossary/#task-spec) are the individual steps that the Chainlink node follows to process data in order to produce a result.
 
 In the example above, we see that the only initiator is a RunLog. This means that the spec can only be started when a specific event log is emitted from a specified address. The specified address will be the address of the oracle contract on Ropsten, which manages requests from contracts and responses from Chainlink nodes.
 

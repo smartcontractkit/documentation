@@ -4,147 +4,107 @@ date: Last Modified
 title: "Glossary"
 permalink: "docs/glossary/"
 ---
-### Adapter
 
-An Adapter is a piece of software responsible for executing a specific piece of functionality. A Chainlink node comes with a number of Adapters built in, commonly known as Core Adapters, but can also be extended via [Bridges](/docs/node-operators/) to connect with user defined [External Adapters](./#external-adapter). Core Adapters offered by the Chainlink Node by default:
+## Answer
 
-- [Bridge](/docs/node-operators/)
-- [Copy](/docs/core-adapters/#copy)
-- [EthBytes32](/docs/core-adapters/#ethbytes32)
-- [EthInt256](/docs/core-adapters/#ethint256)
-- [EthTx](/docs/core-adapters/#ethtx)
-- [EthUint256](/docs/core-adapters/#ethuint256)
-- [HTTPGet](/docs/core-adapters/#httpget)
-- [HTTPPost](/docs/core-adapters/#httppost)
-- [JSONParse](/docs/core-adapters/#jsonparse)
-- [Multiply](/docs/core-adapters/#multiply)
-- [NoOp](/docs/core-adapters/#noop)
-- [NoOpPend](/docs/core-adapters/#nooppend)
-- [Sleep](/docs/core-adapters/#sleep)
+The result produced from an oracle service, after all safety checks and aggregations have been performed.
 
-### Answer
+## Bridge
 
-The result produced from an oracle service, after all safety checks and aggregations have been performed. 
+Bridge is the connection between a Chainlink node and an [External Adapter](https://docs.chain.link/docs/contract-creators/). The External Adapter runs as a separate [service](https://en.wikipedia.org/wiki/Service-oriented_architecture), and a Bridge facilitates communication between the node and one of these adapters.
 
-### Bridge
+If you would like to add a new External Adapter to your node, you create a new Bridge either in the GUI or the CLI. Within the Chainlink node, a bridge must have a unique name, but can share the same URL with other bridges. You can also set a different number of default confirmations for each bridge, and an additional payment amount. Once the bridge is added to the node, its name can then be used as a task type in [Jobs](https://docs.chain.link/docs/jobs/).
 
-Bridge is the connection between a Chainlink node and an [External Adapter](#external-adapter). The External Adapter runs as a separate [service](https://en.wikipedia.org/wiki/Service-oriented_architecture), and a Bridge facilitates communication between the node and one of these adapters. 
+## Consumer (Contract)
 
-If you would like to add a new External Adapter to your node, you create a new Bridge either in the GUI or the CLI. Within the Chainlink node, a bridge must have a unique name, but can share the same URL with other bridges. You can also set a different number of default confirmations for each bridge, and an additional payment amount. Once the bridge is added to the node, its name can then be used as a task type in [Job Specifications](../job-specifications/).
+Recipient of an [Answer](https://docs.chain.link/docs/glossary/#answer) provided by an [Oracle](https://docs.chain.link/docs/glossary/#oracle). The Consumer is commonly a contract, and is also commonly the same [entity that requested the Answer](https://docs.chain.link/docs/glossary/#requester), but does not have to be. We have a helper function,  addExternalRequest, that gives consuming contracts the ability to safely check answers it receives without requesting them itself.
 
-### Consumer (Contract)
+## Encumbrance Parameters
 
-Recipient of an [Answer](#answer) provided by an [Oracle](#oracle). The Consumer is commonly a contract, and is also commonly the same [entity that requested the Answer](#requester), but does not have to be. We have a helper function, `
-addExternalRequest`, that gives consuming contracts the ability to safely check answers it receives without requesting them itself.
+Encumbrance parameters are the part of a [service agreement](https://docs.chain.link/docs/glossary/#service-agreement) that can be enforced on-chain. Information on encumbrance parameters can be found [on our Wiki](https://github.com/smartcontractkit/chainlink/wiki/Protocol-Information#encumbrance).
 
-### Encumbrance Parameters
-
-Encumbrance parameters are the part of a [service agreement](#service-agreement) that can be enforced on-chain. Information on encumbrance parameters can be found <a href="https://github.com/smartcontractkit/chainlink/wiki/Service-Agreements-and-the-Coordinator-Contract" target="_blank">on our Wiki</a>.
-
-### External Adapter
+## External Adapter
 
 [External adapters](https://github.com/smartcontractkit/chainlink/wiki/External-Adapters) are what make Chainlink easily extensible, providing simple integration of custom computations and specialized APIs.
 
-A Chainlink node communicates with external adapters by sending a POST request with a JSON data payload. More information can be found on the external adapter [developers](../developers/) page.
+A Chainlink node communicates with external adapters by sending a POST request with a JSON data payload. More information can be found on the external adapter [developers](https://docs.chain.link/docs/developers/) page.
 
-### Function Selector
+## Function Selector
 
-A [function selector](https://docs.soliditylang.org/en/develop/abi-spec.html#function-selector) specifies the function to be called in Ethereum. It is the first four bytes of the call data for a function call in an Ethereum transaction. Solidity contracts have a built-in helper method to access the function selector by using `this.myFunction.selector`, where `myFunction` is a non-overloaded function in the contract.
+A [function selector](https://solidity.readthedocs.io/en/develop/abi-spec.html/#function-selector) specifies the function to be called in Ethereum. It is the first four bytes of the call data for a function call in an Ethereum transaction. Solidity contracts have a built-in helper method to access the function selector by using this.myFunction.selector, where myFunction is a non-overloaded function in the contract.
 
-### Initiator
+## JobID
 
-Triggers the execution of a [Job Spec](#job-spec). 
+The ID associated with a given [Job](https://docs.chain.link/docs/jobs/). This will be unique per-node, even with the same contents within the spec itself.
 
-Available initiators are:
+## Job Run
 
-- runlog
-- cron
-- ethlog
-- runat
-- web
-- execagreement
+The Job Run is the artifact documenting the outcome of executing a [Job](https://docs.chain.link/docs/jobs/). The Job Run is made up of one set of [Request Parameters](https://docs.chain.link/docs/glossary/#request-parameters), a [TaskRun](https://docs.chain.link/docs/glossary/#task-run) for each [Task Spec](https://docs.chain.link/docs/glossary/#task-spec) in the Job, and a [Run Result](https://docs.chain.link/docs/glossary/#run-result) representing the ultimate outcome of the Job Run.
 
-Currently only the `runlog` and `execagreement` can be used with payment to the node operator. These initiators will use the node configured [MINIMUM_CONTRACT_PAYMENT_LINK_JUELS](../configuration-variables/#minimum_contract_payment_link_juels), plus any additional payment if there is a bridge in the given [JobID](#jobid) or [SAID](#said) configured with a payment specified, to determine whether or not enough payment was sent along with the request.
+## Job Spec
 
-### Job
+The [Job Specification](https://docs.chain.link/docs/jobs/) is the specification of a piece of work to be completed by an Oracle Node. The job Spec consists of multiple [shared fields](https://docs.chain.link/docs/jobs/#shared-fields), including the job's name, type, schema version, etc.
 
-Short-hand for a [Job Spec](#job-spec).
+## Oracle
 
-### JobID
+Entity which connects computations on blockchains with off-chain resources. Typically made up of two components: the [Oracle Node](https://docs.chain.link/docs/glossary/#oracle-node) (off-chain) and the [Oracle Contract](https://docs.chain.link/docs/glossary/#oracle-contract) (on-chain).
 
-The ID associated to a given [Job Spec](#job-spec). This will be unique per-node, even with the same contents within the spec itself.
+## Oracle Contract
 
-### Job Run
+The on-chain component of an [Oracle](https://docs.chain.link/docs/glossary/#oracle). The Oracle Contract is the interface through which [Consuming Contracts](https://docs.chain.link/docs/glossary/#consumer-contract) pass and receive data with off-chain resources.
 
-The Job Run is the artifact documenting the outcome of executing a [Job Spec](#job-spec). The Job Run is made up of one set of [Request Parameters](#request-parameters), a [TaskRun](#task-run) for each [Task Spec](#task-spec) in the Job Spec, and a [Run Result](#run-result) representing the ultimate outcome of the Job Run.
+## Oracle Node
 
-### Job Spec
+The off-chain component of an [Oracle](https://docs.chain.link/docs/glossary/#oracle).
 
-The [Job Specification](../job-specifications/) is the specification of a piece of work to be completed by an Oracle Node. The Job Spec is made up of two main parts:
+## Requester
 
-1. The [Initiator](#initiator) list, `initiators`, lists out all of the ways a Job Spec can be triggered to execute.
-2. The [Task](#task-spec) list, `tasks`, which specifies all of the  the computation steps to perform when executing a Job Spec. The Task list is sometimes referred to as the Job Pipeline because all of the Tasks' operations are performed in order, with the result being fed into the next task. 
+A Smart Contract or Externally Owned Account which requests data from an [Oracle](https://docs.chain.link/docs/glossary/#oracle). The Requester does not have to be the same entity as the [Consumer](https://docs.chain.link/docs/glossary/#consumer-contract) but commonly is the same.
 
-### Oracle 
+## Request Parameters
 
-Entity which connects computations on blockchains with off-chain resources. Typically made up of two components: the [Oracle Node](#oracle-node) (off-chain) and the [Oracle Contract](#oracle-contract) (on-chain).
+When a [Job Run](https://docs.chain.link/docs/glossary/#job-run) is requested, the full definition of all [Task Specs](https://hackmd.io/Yz-jZTLbSZ6FzG9ZhafjYA#task-spec) may be filled in. The [Requester](https://hackmd.io/Yz-jZTLbSZ6FzG9ZhafjYA#requester) can specify the rest of the Job Spec definition when requesting a Job Run by passing a JSON payload with the request. The JSON will be merged with each Task Spec before executing each [Task Run](https://docs.chain.link/docs/glossary/#task-run).
 
-### Oracle Contract
+## Run
 
-The on-chain component of an [Oracle](#oracle). The Oracle Contract is the interface through which [Consuming Contracts](#consumer-contract) pass and receive data with off-chain resources.
+Short-hand for a [Job Run](https://docs.chain.link/docs/glossary/#job-run), sometimes a [Task Run](https://docs.chain.link/docs/glossary/#task-run).
 
-### Oracle Node
+## Run Result
 
-The off-chain component of an [Oracle](#oracle).
+A Run Result is the result of executing a [Job Spec](https://docs.chain.link/docs/glossary/#job-spec) or [Task Spec](https://docs.chain.link/docs/glossary/#task-spec). A Run Result is made up of a JSON blob, a [Run Status](https://docs.chain.link/docs/glossary/#run-status), and an optional error field. Run Results are stored on [Job Runs](https://docs.chain.link/docs/glossary/#job-run) and [Task Runs](https://docs.chain.link/docs/glossary/#task-run).
 
-### Requester
+## Run Status
 
-A Smart Contract or Externally Owned Account which requests data from an [Oracle](#oracle). The Requester does not have to be the same entity as the [Consumer](#consumer-contract) but commonly is the same.
+Each [Job Run](https://docs.chain.link/docs/glossary/#job-run) and [Task Run](https://docs.chain.link/docs/glossary/#task-run) has a status field indicating its current progress. The Run Status can be in one of the [following states](https://godoc.org/github.com/smartcontractkit/chainlink/core/store/models/#pkg-constants):
 
-### Request Parameters
+* Unstarted
+* In Progress
+* Pending Confirmations
+* Pending Bridge
+* Pending Sleep
+* Errored
+* Completed
 
-When a [Job Run](#job-run) is requested, the full definition of all [Task Specs](#task-spec) may be filled in. The [Requester](#requester) can specify the rest of the Job Spec definition when requesting a Job Run by passing a JSON payload with the request. The JSON will be merged with each Task Spec before executing each [Task Run](#task-run).
+## SAID
 
-### Run
+The ID associated with a given [Service Agreement](https://docs.chain.link/docs/glossary/#service-agreement).
 
-Short-hand for a [Job Run](#job-run), sometimes a [Task Run](#task-run).
+## Service Agreement
 
-### Run Result
+The Service agreement consists of a [Job Spec](https://docs.chain.link/docs/glossary/#job-spec) and a set of [encumbrance parameters](https://docs.chain.link/docs/glossary/#encumbrance-parameters) that is shared among a creator and multiple Chainlink nodes. Information on service agreements can be found [on our Wiki](https://github.com/smartcontractkit/chainlink/wiki/Protocol-Information#service-agreements).
 
-A Run Result is the result of executing a [Job Spec](#job-spec) or [Task Spec](#task-spec). A Run Result is made up of a JSON blob, a [Run Status](#run-status), and an optional error field. Run Results are stored on [Job Runs](#job-run) and [Task Runs](#task-run).
+## Spec
 
-### Run Status
+Another short-hand for a [Job Spec](https://docs.chain.link/docs/glossary/#job-spec).
 
-Each [Job Run](#job-run) and [Task Run](#task-run) has a status field indicating its current progress. The Run Status can be in one of the [following states](https://godoc.org/github.com/smartcontractkit/chainlink/core/store/models/#pkg-constants):
+## Task
 
-- Unstarted
-- In Progress
-- Pending Confrimations
-- Pending Bridge
-- Pending Sleep
-- Errored
-- Completed
+A Task is a piece of software responsible for executing a specific piece of functionality. A Chainlink node comes with a number of built-in Tasks. For more details, refer to [Tasks docs](https://docs.chain.link/docs/tasks/).
 
-### SAID
+## Task Spec
 
-The ID associated with a given [Service Agreement](#service-agreement).
+The Task Spec is the definition for an individual task to be performed within the [job specification](https://docs.chain.link/docs/glossary/#job-spec) by a specific adapter. The Task Spec always includes a type field which specifies which job will execute it. Optionally, a Task Spec can specify additional params which will be passed on to its adapter, and confirmations which specify how many confirmations a [Task Run](https://docs.chain.link/docs/glossary/#task-run) needs before executing.
 
-### Service Agreement
+## Task Run
 
-The Service agreement consists of a [Job Spec](#job-spec) and a set of [encumbrance parameters](#encumbrance-parameters) that is shared among a creator and multiple Chainlink nodes. Information on service agreements can be found [on our Wiki](https://github.com/smartcontractkit/chainlink/wiki/Service-Agreements-and-the-Coordinator-Contract).
-
-### Spec
-
-Another short-hand for a [Job Spec](#job-spec).
-
-### Task
-
-Short-hand for a [Task Spec](#task-spec).
-
-### Task Spec
-
-The Task Spec is the definition for an individual task to be performed within the [job specification](../job-specifications/) by a specific adapter. The Task Spec always includes a `type` field which specifies which [adapter](#adapter) will execute it. Optionally, a Task Spec can specify additional `params` which will be passed on to its adapter, and `confirmations` which specify how many confirmations a [Task Run](#task-run) needs before executing.
-
-### Task Run
-
-The result of the individual [Task Spec](#task-spec)'s execution. A Task Run includes the Task Spec that it used for input and the [Run Result](#run-result) which was the output of the execution.
+The result of the individual [Task Spec](https://docs.chain.link/docs/glossary/#task-spec)’s execution. A Task Run includes the Task Spec that it used for input and the [Run Result](https://docs.chain.link/docs/glossary/#run-result) which was the output of the execution.

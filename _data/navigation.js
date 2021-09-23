@@ -46,6 +46,14 @@ module.exports = {
             url: '/docs/miscellaneous/',
             title: 'Miscellaneous'
           },
+          { 
+            url: '/docs/node-operators-faq/', 
+            title: 'FAQs' 
+          },
+          { 
+            url: '/docs/glossary/', 
+            title: 'Glossary' 
+          },
         ],
       },
       {
@@ -457,9 +465,13 @@ module.exports = {
             title: 'Data Provider Nodes',
             url: '/docs/data-provider-nodes/',
           },
-          {
-            title: 'Hackathon Resources',
-            url: '/docs/hackathon-resources/'
+          { 
+            title: 'Hackathon Resources', 
+            url: '/docs/hackathon-resources/' 
+          },
+          { 
+            url: '/docs/contract-developers-faq/', 
+            title: 'FAQs' 
           },
           {
             title: 'User Guides',

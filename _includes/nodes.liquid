@@ -9,9 +9,15 @@ layout: ./main.liquid
         <button class="menu" onclick="document.getElementsByTagName('navigation')[0].classList.remove('open')"><svg style="width:24px;height:24px" viewBox="0 0 24 24">
             <path fill="currentColor" d="M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16Z" />
         </svg></button>
+
         {% unless section %}
         {% assign section = "nodeOperator" %}
         {% endunless %}
+
+        <!-- Assign a Contract Developers tab when the FAQ page is opened -->
+        {% if page.url == "/docs/contract-developers-faq/" %}
+        {% assign section = "smartContract" %}
+        {% endif %}
 
         {% for group in navigation.navigation[section] %}
             <div>
@@ -24,14 +30,8 @@ layout: ./main.liquid
                         {% endfor %}
                     {% else %}
                         <a href="{{destination.url}}" title="{{ page.url}} contains {{destination.url}}" {% if page.url == destination.url%} class="active"{% endif %}>{{destination.title}}</a>
-    
-
                     {% endif %}
-
-                    
-
                 {% endfor %}
-
             </div>
         {% endfor %}
 
