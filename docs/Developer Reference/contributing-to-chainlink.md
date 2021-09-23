@@ -77,7 +77,7 @@ The [Chainlink documentation](https://docs.chain.link/) is the go-to place for d
 - Improving the readability of pages
 - Fixing typos or grammar errors
 - Adding new guides or tutorials that you would find useful
-- Translating the documentation into other languages.
+- Translating the documentation into other languages
 
 The process for contributing to the documentation follows the process defined earlier in the [Submitting a Pull Request](#submitting-a-pull-request) section. Each page also has a 'Suggest Edits' link on the top right, and will directly take you to the page in the [documentation repository](https://github.com/smartcontractkit/documentation), where you can then create a new PR with the suggested changes. If creating a PR for the documentation, please read the [contributing guidelines](https://github.com/smartcontractkit/documentation/blob/main/CONTRIBUTING.md).
 
