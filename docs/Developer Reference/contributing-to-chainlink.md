@@ -112,7 +112,7 @@ If you're passionate about helping to grow the awareness and adoption of Chainli
 If you're interested in running an in-person meetup or watch party, feel free to [reach out to the team](mailto:community@smartcontract.com) so we can make sure you have the support you need.
 
 ## Participate in a Hackathon
-Chainlink runs hackathons multiple times per year and often sponsors other hackathons across the blockchain ecosystem. Participating in a hackathon that Chainlink is a part of is a great way for learning how to use Chainlink, and also a great way to showcase your skills to the Chainlink team as well as the wider community. Hackathons are also a very popular place for recruiting talent into the blockchain ecosystem.
+Chainlink runs hackathons multiple times per year and often sponsors other hackathons across the blockchain ecosystem. Participating in a hackathon that Chainlink is a part of is a great way to learn how to use Chainlink. It is also a great way to showcase your skills to the Chainlink team and the wider community. Hackathons are a popular place for recruiting talent into the blockchain ecosystem.
 
 To stay up to date on the hackathons Chainlink is running or sponsoring, keep an eye out on official Chainlink social media channels, and sign up for our [developer newsletter](https://docs.chain.link/docs/developer-communications/).
 
