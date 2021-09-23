@@ -114,7 +114,7 @@ If you're interested in running an in-person meetup or watch party, feel free to
 ## Participate in a Hackathon
 Chainlink runs hackathons multiple times per year and often sponsors other hackathons across the blockchain ecosystem. Participating in a hackathon that Chainlink is a part of is a great way to learn how to use Chainlink. It is also a great way to showcase your skills to the Chainlink team and the wider community. Hackathons are a popular place for recruiting talent into the blockchain ecosystem.
 
-To stay up to date on the hackathons Chainlink is running or sponsoring, keep an eye out on official Chainlink social media channels, and sign up for our [developer newsletter](https://docs.chain.link/docs/developer-communications/).
+To stay up to date on the hackathons that Chainlink is running or sponsoring, keep an eye out on the official Chainlink social media channels, and sign up for our [developer newsletter](https://docs.chain.link/docs/developer-communications/).
 
 ## Applying for a Grant
 The [Chainlink grant program](https://chain.link/community/grants) encourages the community to focus on the creation of critical developer tooling, the addition of high-quality data, and the launching of key services around the Chainlink Network. Grant categories include community, integration, bug bounty, research, and social impact grants. If you believe you have a great idea that fits into one of these categories, you can apply for a grant. If successful, you will receive the funding and support needed to successfully build and implement it.
