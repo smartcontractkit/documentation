@@ -54,7 +54,7 @@ After you create the issue, someone should respond within a day or two and ackno
 
 
 ### Requesting a new Feature
-Thought of an improvement or awesome new feature that you think should be implemented into Chainlink? Requesting a new feature is the best way to bring it to the attention of the team and the wider community. You can request new features by creating a new GitHub issue in the correct repository, being sure to tag the issue with the [FEAT] prefix (Feature request). This should be done as per the process described above in the [Requesting a new feature](#requesting-a-new-feature) section.  You should try to include as much detail as possible into your feature request, including any benefits, risks, or considerations that you can think of. Once the feature request has been created, someone should respond within a couple of days to acknowledge that it has been received, and will be considered.
+Have you thought of an improvement or an awesome new feature that you think should be implemented into Chainlink? Request a new feature to bring it to the attention of the team and the wider community. You can request new features by creating a new GitHub issue in the correct repository and tagging that issue with the [FEAT] prefix (Feature request). This is the same process as [Requesting a new feature](#requesting-a-new-feature) section. Provide as much detail as possible in your feature request, including any benefits, risks, or considerations that you can think of.
 
 #### Voting on new features
 
