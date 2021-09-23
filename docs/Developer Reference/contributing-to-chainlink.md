@@ -98,7 +98,7 @@ Chainlink Developer Experts are smart contract and blockchain developers with de
 
 
 ## Joining the Chainlink Community Advocate program
-The [Chainlink Community Advocate Program](https://blog.chain.link/expanding-the-chainlink-community-advocate-program/) is a program designed to help accelerate the awareness and adoption of Chainlink. Chainlink community advocates are passionate members of the Chainlink community that help to achieve this by running virtual and in-person meetups, connecting with partners and sponsors, creating various content, work directly with the teams that are making Chainlink-powered smart contracts, as well as other tasks related to growing awareness and adoption of Chainlink. Many Advocates have gone on to have rewarding careers in the blockchain industry and working on Chainlink specifically.
+The [Chainlink Community Advocate Program](https://blog.chain.link/expanding-the-chainlink-community-advocate-program/) is a program designed to help accelerate the awareness and adoption of Chainlink. Chainlink community advocates are passionate members of the Chainlink community that help to achieve this by running virtual and in-person meetups, connecting with partners and sponsors, creating content, and working directly with the teams that are making Chainlink-powered smart contracts. Many Advocates have gone on to have rewarding careers in the blockchain industry, and some of them work on Chainlink specifically.
 
 To become a community advocate, you can apply via the [community advocates web page](https://chain.link/community/advocates).
 
