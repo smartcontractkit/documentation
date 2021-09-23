@@ -73,7 +73,7 @@ If you're new to contributing to open-source software or Chainlink, we've tagged
 All code changes must follow the [style guide] (https://github.com/smartcontractkit/chainlink/wiki/Code-Style-Guide), All PRs must be in an appropriately named branch with a format like 'feat/feature-description' or 'devel/issue-description'. After you submit a PR, you should get a response by a team member within a day or two acknowledging that the PR has been received. After that, monitor the PR for any additional questions or updates that come up while the team and the community review the changes.
 
 ## Contributing to the documentation
-The [Chainlink documentation](https://docs.chain.link/) is the go-to place for developers wanting to learn how to use Chainlink. The documentation is [open source](https://github.com/smartcontractkit/documentation), allowing for other developers and community members to contribute to adding or improving it. You can contribute to the Chainlink documentation in various ways:
+The [Chainlink documentation](https://docs.chain.link/) is the go-to place for developers who want to learn how to build applications using Chainlink and Chainlink nodes. The documentation is [open source](https://github.com/smartcontractkit/documentation), allowing for other developers and community members to contribute to adding or improving it. You can contribute to the Chainlink documentation in various ways:
 - Improving the readability of pages
 - Fixing typos or grammar errors
 - Adding new guides or tutorials that you would find useful
