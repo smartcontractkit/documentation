@@ -12,7 +12,7 @@ Not all env vars are documented here. Any env var that is undocumented is subjec
 
 To reiterate: _if you have an env var set that is not listed here, and you don't know exactly why you have it set, you should remove it!_
 
-The env variables listed here are explicitly supported and current as of Chainlink 0.10.8.
+The env variables listed here are explicitly supported and current as of Chainlink 0.10.14.
 
 - [Essential env vars](#essential-env-vars)
   - [DATABASE_URL](#database_url)
@@ -59,8 +59,6 @@ The env variables listed here are explicitly supported and current as of Chainli
   - [BLOCK_HISTORY_ESTIMATOR_BLOCK_DELAY](#block_history_estimator_block_delay)
   - [BLOCK_HISTORY_ESTIMATOR_BLOCK_HISTORY_SIZE](#block_history_estimator_block_history_size)
   - [BLOCK_HISTORY_ESTIMATOR_TRANSACTION_PERCENTILE](#block_history_estimator_transaction_percentile)
-  - [GAS_UPDATER_ENABLED](#gas_updater_enabled)
-  - [GAS_UPDATER_TRANSACTION_PERCENTILE](#gas_updater_transaction_percentile)
 - [Other env vars](#other-env-vars)
   - [ENABLE_EXPERIMENTAL_ADAPTERS](#enable_experimental_adapters)
   - [ENABLE_LEGACY_JOB_PIPELINE](#enable_legacy_job_pipeline)
@@ -366,21 +364,25 @@ ETH_MAX_GAS_PRICE_WEI=100
 ETH_MIN_GAS_PRICE_WEI=100
 ETH_GAS_PRICE_DEFAULT=100
 ETH_GAS_BUMP_THRESHOLD=0
-GAS_UPDATER_ENABLED=false
+GAS_ESTIMATOR_MODE="FixedPrice"
 ```
 
 ## GAS_ESTIMATOR_MODE
 
 - Default: _automatic, based on chain ID_
 
-Controls what type of gas estimator is used. Possible values are: "BlockHistory" and "FixedPrice".
+Controls what type of gas estimator is used. Possible values are: "BlockHistory", "Optimism" and "FixedPrice".
+
+- FixedPrice uses the configured values for gas price
+- BlockHistory dynamically adjusts default gas price based on heuristics from mined blocks.
+- Optimism is a special mode only for use with the Optimism blockchain
 
 ## BLOCK_HISTORY_ESTIMATOR_BATCH_SIZE
 
 - Default: _automatic, based on chain ID, typically 4_
 
 Sets the maximum number of blocks to fetch in one batch in the block history estimator.
-If the env var GAS_UPDATER_BATCH_SIZE is set to 0, it defaults to ETH_RPC_DEFAULT_BATCH_SIZE.
+If the env var BLOCK_HISTORY_ESTIMATOR_BATCH_SIZE is set to 0, it defaults to ETH_RPC_DEFAULT_BATCH_SIZE.
 
 ## BLOCK_HISTORY_ESTIMATOR_BLOCK_HISTORY_SIZE
 
@@ -404,22 +406,9 @@ available from the connected node via RPC. In this case you will get false
 
 - Default: `"60"`
 
-This is the percentile gas price to choose. E.g. if the past transaction history contains four transactions with gas prices:
-[100, 200, 300, 400], picking 25 for this number will give a value of 200.
-
-## GAS_UPDATER_ENABLED
-
-- Default: _automatic, based on chain ID_
-
-(Deprecated) On by default for most chains. When enabled, dynamically adjusts default gas price based on heuristics from mined blocks.
-
-## GAS_UPDATER_TRANSACTION_PERCENTILE
-
-- Default: `"60"`
-
 Must be in range 0-100.
 
-(Deprecated) Only has an effect if gas updater is enabled. Specifies percentile gas price to choose. E.g. if the block history contains four transactions with gas prices `[100, 200, 300, 400]` then picking 25 for this number will give a value of 200. If the calculated gas price is higher than `ETH_GAS_PRICE_DEFAULT` then the higher price will be used as the base price for new transactions.
+Only has an effect if gas updater is enabled. Specifies percentile gas price to choose. E.g. if the block history contains four transactions with gas prices `[100, 200, 300, 400]` then picking 25 for this number will give a value of 200. If the calculated gas price is higher than `ETH_GAS_PRICE_DEFAULT` then the higher price will be used as the base price for new transactions.
 
 Think of this number as an indicator of how aggressive you want your node to price its transactions.
 
