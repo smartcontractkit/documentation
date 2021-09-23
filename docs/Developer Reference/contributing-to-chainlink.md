@@ -94,7 +94,7 @@ Some examples of the content generated from the community:
 
 
 ## Becoming a Developer Expert
-Chainlink Developer Experts are smart contract and blockchain developers with deep experience building with Chainlink who are passionate about sharing their technical knowledge with the world. As a developer expert, you will receive recognition in the community, previews of new Chainlink features, exclusive access to Chainlink events, and opportunities to level up your technical and soft skills. You can apply to become a developer expert via the [Chainlink Developer Experts page](https://chain.link/developers/experts).
+Chainlink Developer Experts are smart contract and blockchain developers with deep experience building applications using Chainlink. They are passionate about sharing their technical knowledge with the world. As a developer expert, you will receive recognition in the community, previews of new Chainlink features, exclusive access to Chainlink events, and opportunities to level up your technical and soft skills. You can apply to become a developer expert on the [Chainlink Developer Experts page](https://chain.link/developers/experts).
 
 
 ## Joining the Chainlink Community Advocate program
