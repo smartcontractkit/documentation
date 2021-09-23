@@ -34,7 +34,7 @@ The most direct way you can contribute to Chainlink is to contribute to the core
 
 
 ### Raising an Issue
-During the course of using Chainlink software or tools, you may encounter errors or unexpected behavior that leads you to believe the software isn't behaving correctly. You can bring this to the attention of the Chainlink Labs team as well as the wider developer community by raising an issue in the project’s GitHub repository. All issues can be found via the 'Issues' tab.
+During the course of using Chainlink software or tools, you might encounter errors or unexpected behavior that leads you to believe the software isn't behaving correctly. You can bring this to the attention of the Chainlink Labs team as well as the wider developer community by raising an issue in the project’s GitHub repository. The 'Issues' tab lists all of the open issues for the repository.
 
 Once an issue has been raised and tagged, it will be seen by the Chainlink Labs team as well as the wider community, which will give it the visibility required for someone to investigate and if required, perform the necessary actions to resolve the issue.
 
