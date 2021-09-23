@@ -64,7 +64,7 @@ Sometimes a new feature is put to a vote to decide if it's something that the te
 
 ### Submitting a Pull Request
 
-Submitting a [pull request (PR)](https://docs.github.com/en/github/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests) is one of the best ways you can contribute to Chainlink. PRs can be submitted for various reasons, such as fixing an identified issue, adding a feature or improvement to the project, or even adding an entirely new repository to the Chainlink source code for some new tool or feature.
+The best way to contribute to Chainlink is to submit a [pull request (PR)](https://docs.github.com/en/github/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests). PRs can be submitted for various reasons, such as fixing an identified issue, adding a feature or improvement to the project, or even adding an entirely new repository to the Chainlink source code for a new tool or feature.
 
 If you're looking for something to pick up and create a PR for, you can search through Chainlinks repositories to find open issues, approved feature requests, or you can take a look at the current priorities for development listed on the Chainlink [Pivotal Tracker](https://www.pivotaltracker.com/n/projects/2129823).
 
