@@ -38,7 +38,7 @@ During the course of using Chainlink software or tools, you might encounter erro
 
 After an issue is raised and tagged, the Chainlink Labs team and the wider community can address it. This gives the issue the visibility required for someone to investigate it and resolve the issue.
 
-When you first create an issue, you will be asked to categorize it. This will then prefix the issue name to give viewers an indication of what category the issue relates to:
+When you first create an issue, you must also categorize it. This prefixes the issue name to give viewers an indication of what category the issue relates to:
 - [NODE]: The issue relates to the core node software
 - [DEVEL]: The issue is a result of working on code found in the current repository
 - [FEAT]: The issue relates to a new feature request
