@@ -109,7 +109,7 @@ In June 2021, the Chainlink Labs team [virtually hosted](https://blog.chain.link
 ## Running an In-Person Meetup or Watch Party
 If you're passionate about helping to grow the awareness and adoption of Chainlink, you can contribute by running an in-person meetup or watch party for a Chainlink event such as [SmartCon](https://www.smartcontractsummit.io/). Meetups are a great way to meet others also passionate about how hybrid smart contracts can create an economically fair world.
 
-If you're interested in running an in-person meetup or watch party, feel free to [reach out to the team](mailto:community@smartcontract.com) so we can make sure you have the support you need.
+If you're interested in running an in-person meetup or watch party, [reach out to the team](mailto:community@smartcontract.com) so we can make sure you have the support that you need.
 
 ## Participate in a Hackathon
 Chainlink runs hackathons multiple times per year and often sponsors other hackathons across the blockchain ecosystem. Participating in a hackathon that Chainlink is a part of is a great way to learn how to use Chainlink. It is also a great way to showcase your skills to the Chainlink team and the wider community. Hackathons are a popular place for recruiting talent into the blockchain ecosystem.
