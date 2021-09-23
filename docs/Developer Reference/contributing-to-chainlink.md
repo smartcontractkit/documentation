@@ -48,7 +48,7 @@ When you first create an issue, you must also categorize it. This prefixes the i
 
 ![Selecting the new issue category](/files/new-issue-category.png)
 
-Once you select a category, you will be given the opportunity to enter the details for the issue. Please include as much detail as possible. This includes a thorough description, environment and software version details, and detailed steps on how to reproduce the issue. The more thorough you are here, the better the chances someone will be able to pick up the issue and resolve it.
+After you select a category, enter the details for the issue. Include as much detail about the issue as possible. Provide a thorough description, environment, and software version details. Also provide detailed steps that describe how to reproduce the issue. The more thorough you make your description, the better the chances are that someone will be able to pick up the issue and resolve it.
 
 Once the issue has been successfully created, someone should respond within a day or two and acknowledge the issue has been received, and they will then tag the issue with an appropriate label. You should then monitor the state of the open issue for any questions or updates.
 
