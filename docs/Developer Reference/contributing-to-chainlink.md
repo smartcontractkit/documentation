@@ -54,7 +54,7 @@ After you create the issue, someone should respond within a day or two and ackno
 
 
 ### Requesting a new Feature
-Have you thought of an improvement or an awesome new feature that you think should be implemented into Chainlink? Request a new feature to bring it to the attention of the team and the wider community. You can request new features by creating a new GitHub issue in the correct repository and tagging that issue with the [FEAT] prefix (Feature request). This is the same process as [Requesting a new feature](#requesting-a-new-feature) section. Provide as much detail as possible in your feature request, including any benefits, risks, or considerations that you can think of.
+Have you thought of an improvement or an awesome new feature that you think should be implemented into Chainlink? Request a new feature to bring it to the attention of the team and the wider community. You can request new features by creating a new GitHub issue in the correct repository and tagging that issue with the [FEAT] prefix (Feature request). The process for doing this is covered in the [Raising an Issue](#raising-an-issue) section. Provide as much detail as possible in your feature request, including any benefits, risks, or considerations that you can think of.
 
 #### Voting on new features
 
@@ -73,7 +73,7 @@ If you're new to contributing to open-source software or Chainlink, we've tagged
 All code changes must follow the [style guide] (https://github.com/smartcontractkit/chainlink/wiki/Code-Style-Guide), All PRs must be in an appropriately named branch with a format like 'feat/feature-description' or 'devel/issue-description'. After you submit a PR, you should get a response by a team member within a day or two acknowledging that the PR has been received. After that, monitor the PR for any additional questions or updates that come up while the team and the community review the changes.
 
 ## Contributing to the documentation
-The [Chainlink documentation](https://docs.chain.link/) is the go-to place for developers who want to learn how to build applications using Chainlink and Chainlink nodes. The documentation is [open source](https://github.com/smartcontractkit/documentation), allowing for other developers and community members to contribute to adding or improving it. You can contribute to the Chainlink documentation in various ways:
+The [Chainlink documentation](https://docs.chain.link/) is the go-to place for developers who want to learn how to build applications using Chainlink, and node operators wanting useful information on running a Chainlink node. The documentation is [open source](https://github.com/smartcontractkit/documentation), allowing for other developers and community members to contribute to adding or improving it. You can contribute to the Chainlink documentation in various ways:
 - Improving the readability of pages
 - Fixing typos or grammar errors
 - Adding new guides or tutorials that you would find useful
