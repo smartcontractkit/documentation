@@ -68,7 +68,7 @@ The best way to contribute to Chainlink is to submit a [pull request (PR)](https
 
 If you're looking for something to pick up and create a PR for, you can search through the Chainlink repositories to find open issues, and approved feature requests. Alternatively, you can take a look at the current priorities for development listed on the Chainlink [Pivotal Tracker](https://www.pivotaltracker.com/n/projects/2129823).
 
-If you're new to contributing to open-source software or Chainlink, we've tagged some [good first issues](https://github.com/smartcontractkit/chainlink/issues?q=is%3Aissue+label%3A%22good+first+issue%22) against the main node software and smart contracts that you can try and tackle. Each major repository in the Chainlink GitHub should also have some good first issues tagged for developers to be able to take on.
+If you're new to contributing to open-source software or Chainlink, we've tagged some [good first issues](https://github.com/smartcontractkit/chainlink/issues?q=is%3Aissue+label%3A%22good+first+issue%22) against the main node software and smart contracts that you can tackle. Each major repository in the Chainlink GitHub should also have some good first issues tagged for developers to be able to take on.
 
 All code changes should try to follow the [style guide] (https://github.com/smartcontractkit/chainlink/wiki/Code-Style-Guide), and all PRs should be in a branch appropriately named (ie feat/feature-description, or devel/issue-description) Once you submit a PR, you should get a response by a team member within a day or two acknowledging that the PR has been received. After that, be sure to monitor the PR for any additional questions or updates that come up while the PR gets reviewed by the team and the wider community.
 
