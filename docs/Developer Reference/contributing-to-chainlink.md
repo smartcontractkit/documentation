@@ -120,7 +120,3 @@ To stay up to date on the hackathons that Chainlink is running or sponsoring, ke
 The [Chainlink grant program](https://chain.link/community/grants) encourages the community to focus on the creation of critical developer tooling, the addition of high-quality data, and the launching of key services around the Chainlink Network. Grant categories include community, integration, bug bounty, research, and social impact grants. If you believe you have a great idea that fits into one of these categories, you can apply for a grant. If successful, you will receive the funding and support needed to successfully build and implement it.
 
 For more information about the grant program, go to the [Chainlink Grants web page](https://chain.link/community/grants).
-
-
-
-
