@@ -85,7 +85,7 @@ If you want to translate the documentation into a new language that is not yet s
 
 
 ## Creating Community Content
-Chainlink has a strong, vibrant community of developers and community advocates. Community members often create Chainlink-focused content in various forms and have them published for the wider community on various platforms as a way to increase knowledge and awareness of Chainlink solutions across the wider community, as well as building up their own personal skills and brand in the community.
+Chainlink has a strong and vibrant community of developers and community advocates. Community members often create Chainlink-focused content in various forms and publish it for the wider community on various platforms. This increases knowledge and awareness of Chainlink solutions across the wider community and builds the contributor's personal skills and brand in the community.
 
 Some examples of the content generated from the community:
 - Document your experience in using Chainlink as part of your project
