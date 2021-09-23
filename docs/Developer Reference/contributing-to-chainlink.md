@@ -81,7 +81,7 @@ The [Chainlink documentation](https://docs.chain.link/) is the go-to place for d
 
 The process for contributing to the documentation follows the process defined earlier in the [Submitting a Pull Request](#submitting-a-pull-request) section. Each page also has a 'Suggest Edits' link on the top right, and will directly take you to the page in the [documentation repository](https://github.com/smartcontractkit/documentation), where you can create a new PR with the suggested changes. Before you create a PR for the documentation, read the [contributing guidelines](https://github.com/smartcontractkit/documentation/blob/main/CONTRIBUTING.md).
 
-If you wish to translate the documentation into a new language not yet supported, feel free to [reach out to the team](mailto:developer-relations@chainlinklabs.com) beforehand, so we can make sure you get the support you need.
+If you want to translate the documentation into a new language that is not yet supported, feel free to [reach out to the team](mailto:developer-relations@chainlinklabs.com) beforehand, so we can make sure you get the support you need.
 
 
 ## Creating Community Content
