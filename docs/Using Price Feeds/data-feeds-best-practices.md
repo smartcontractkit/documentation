@@ -14,7 +14,7 @@ Chainlink Price Feeds can be used in combination to derive denominated price pai
 
 In the event you require a denomination other than what is provided, two price feeds can be used to derive the pair you need. For example, if you needed an BTC / EUR price, you could take the BTC / USD feed and the EUR / USD feed and derive BTC / EUR using <a href="https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/utils/math/SafeMath.sol" target="_blank">OpenZeppelin's SafeMath</a> division.
 
-![Request Model Diagram](/files/price-feed-conversion-equation.gif)
+![Request Model Diagram](/images/price-feed-conversion-equation.gif)
 
 
 ```solidity
