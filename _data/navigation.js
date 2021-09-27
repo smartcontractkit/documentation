@@ -210,7 +210,7 @@ module.exports = {
             url: '/docs/price-feeds-api-reference/',
           },
           {
-            title: 'Best Practices',
+            title: 'Best Practices for Data Feeds',
             url: '/docs/data-feeds-best-practices/',
           },
           {
