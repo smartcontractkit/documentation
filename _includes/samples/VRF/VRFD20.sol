@@ -1,17 +1,15 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.6.6;
+pragma solidity 0.8.7;
 
-import "@chainlink/contracts/src/v0.6/VRFConsumerBase.sol";
-import "@chainlink/contracts/src/v0.6/Owned.sol";
+import "@chainlink/contracts/src/v0.8/VRFConsumerBase.sol";
+import "@chainlink/contracts/src/v0.8/ConfirmedOwner.sol";
 
 /**
  * @notice A Chainlink VRF consumer which uses randomness to mimic the rolling
  * of a 20 sided die
  * @dev This is only an example implementation and not necessarily suitable for mainnet.
  */
-contract VRFD20 is VRFConsumerBase, Owned {
-    using SafeMathChainlink for uint256;
-
+contract VRFD20 is VRFConsumerBase, ConfirmedOwner(msg.sender) {
     uint256 private constant ROLL_IN_PROGRESS = 42;
 
     bytes32 private s_keyHash;
@@ -37,7 +35,6 @@ contract VRFD20 is VRFConsumerBase, Owned {
      * @param fee uint256 fee to pay the VRF oracle
      */
     constructor(address vrfCoordinator, address link, bytes32 keyHash, uint256 fee)
-        public
         VRFConsumerBase(vrfCoordinator, link)
     {
         s_keyHash = keyHash;
@@ -76,7 +73,7 @@ contract VRFD20 is VRFConsumerBase, Owned {
      * @param randomness The random result returned by the oracle
      */
     function fulfillRandomness(bytes32 requestId, uint256 randomness) internal override {
-        uint256 d20Value = randomness.mod(20).add(1);
+        uint256 d20Value = (randomness % 20) + 1;
         s_results[s_rollers[requestId]] = d20Value;
         emit DiceLanded(requestId, d20Value);
     }
@@ -168,6 +165,6 @@ contract VRFD20 is VRFConsumerBase, Owned {
             "Glover",
             "Karstark"
         ];
-        return houseNames[id.sub(1)];
+        return houseNames[id - 1];
     }
 }

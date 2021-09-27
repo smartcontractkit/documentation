@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.6.7;
+pragma solidity ^0.8.7;
 
-import "@chainlink/contracts/src/v0.6/ChainlinkClient.sol";
-import "@chainlink/contracts/src/v0.6/Owned.sol";
+import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
+import "@chainlink/contracts/src/v0.8/ConfirmedOwner.sol";
 
-contract FinageChainlink is ChainlinkClient, Ownable {
+contract FinageChainlink is ChainlinkClient, ConfirmedOwner {
+    using Chainlink for Chainlink.Request;
+    
     uint256 oraclePayment;
     int256 public data;
     /**
@@ -18,7 +20,7 @@ contract FinageChainlink is ChainlinkClient, Ownable {
      *      ID:             955810d193e144abb85ae2edea65344d
      *      Fee:            0.1 LINK (100000000000000000)
      */
-    constructor(uint256 _oraclePayment) public {
+    constructor(uint256 _oraclePayment) ConfirmedOwner(msg.sender) {
       setPublicChainlinkToken();
       oraclePayment = _oraclePayment;
     }
