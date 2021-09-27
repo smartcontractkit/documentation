@@ -13,7 +13,7 @@ Data provider nodes allow customizable, on-demand API calls and the ability to d
 
 > 🚧 Using single provider data nodes on production networks
 > 
-> When running an application on production networks, it is recommended to use nodes that utilize multiple data providers. Using a single source provider runs the risk of using incorrect data should the provider experience an issue.
+> When running a production application, be aware of the risks and implications of using a single data source for production networks; any error or omission in the provider's data may cause a potential negative impact on your application and its users.
 
 # Data Provider Nodes List
 
