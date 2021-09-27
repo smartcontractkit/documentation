@@ -5,14 +5,14 @@
  */
  
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.7;
 
-import "https://raw.githubusercontent.com/smartcontractkit/chainlink/develop/evm-contracts/src/v0.6/ChainlinkClient.sol";
+import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
 
 contract AlarmClockSample is ChainlinkClient {
-  
-    bool public alarmDone;
+    using Chainlink for Chainlink.Request;
     
+    bool public alarmDone;
     address private oracle;
     bytes32 private jobId;
     uint256 private fee;
@@ -23,7 +23,7 @@ contract AlarmClockSample is ChainlinkClient {
      * Job ID: Chainlink - 982105d690504c5d9ce374d040c08654
      * Fee: 0.1 LINK
      */
-    constructor() public {
+    constructor() {
         setPublicChainlinkToken();
         oracle = 0xAA1DC356dc4B18f30C347798FD5379F3D77ABC5b;
         jobId = "982105d690504c5d9ce374d040c08654";
