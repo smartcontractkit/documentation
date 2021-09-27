@@ -7,6 +7,10 @@ permalink: "docs/best-practices-aws/"
 
 You can deploy a Chainlink node on the AWS Cloud using [AWS Quick Start](https://aws.amazon.com/quickstart) to deploy a highly available and secure Chainlink node on the AWS Cloud.
 
+<div class="callout">
+    <a href="https://aws.amazon.com/quickstart/architecture/chainlink-node/" class="cl-button--ghost solidity-tracked">Deploy a Chainlink Node on AWS ↗</a>
+</div>
+
 ## Created resources
 
 The Quick Start creates the following public resources:
@@ -51,7 +55,6 @@ For more information, visit [Manage Service Limits](https://aws.amazon.com/premi
 
 **Do not run as the root user:**
 The operations on the Chainlink node do not require the root user so it is recommended to use the default user or run as a non-root user.
-
 
 **Protect your AWS account:**
 As a best security practice, [rotate programmatic system credentials](https://aws.amazon.com/blogs/security/how-to-rotate-access-keys-for-iam-users/) and [cryptographic keys](https://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html).
