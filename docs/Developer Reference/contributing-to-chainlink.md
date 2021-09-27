@@ -64,9 +64,7 @@ Sometimes a new feature is put to a vote to decide if it's something that the te
 
 ### Submitting a Pull Request
 
-The best way to contribute to Chainlink is to submit a [pull request (PR)](https://docs.github.com/en/github/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests). PRs can be submitted for various reasons, such as fixing an identified issue, adding a feature or improvement to the project, or even adding an entirely new repository to the Chainlink source code for a new tool or feature.
-
-If you're looking for something to pick up and create a PR for, you can search through the Chainlink repositories to find open issues, and approved feature requests. Alternatively, you can take a look at the current priorities for development listed on the Chainlink [Pivotal Tracker](https://www.pivotaltracker.com/n/projects/2129823).
+The best way to contribute to Chainlink is to submit a [pull request (PR)](https://docs.github.com/en/github/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests). PRs can be submitted for various reasons, such as fixing an identified issue, adding a feature or improvement to the project, or even adding an entirely new repository to the Chainlink source code for a new tool or feature. If you're looking for something to pick up and create a PR for, you can search through the Chainlink repositories to find open issues, and approved feature requests.
 
 If you're new to contributing to open-source software or Chainlink, we've tagged some [good first issues](https://github.com/smartcontractkit/chainlink/issues?q=is%3Aissue+label%3A%22good+first+issue%22) against the main node software and smart contracts that you can tackle. Each major repository in the Chainlink GitHub should also have some good first issues tagged for developers to be able to take on.
 
