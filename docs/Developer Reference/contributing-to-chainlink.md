@@ -11,15 +11,15 @@ Chainlink is an open-source project licensed [under the MIT license](https://git
 
 # What It Means to Contribute
 When you contribute to the Chainlink project, you as a developer or community member contribute your time and effort to help improve and grow Chainlink. Your contribution can be from various methods:
--[ Building and maintaining the Chainlink software and tools](https://docs.chain.link/docs/contributing-to-chainlink/#contributing-to-software-and-tooling)
-- [Improving and maintaining the documentation, including translations into other languages](https://docs.chain.link/docs/contributing-to-chainlink/#contributing-to-the-documentation)
-- [Creating Chainlink focused content (blog posts, tutorials, videos etc)](https://docs.chain.link/docs/contributing-to-chainlink/#creating-community-content)
-- [Becoming a developer expert](https://docs.chain.link/docs/contributing-to-chainlink/#becoming-a-developer-expert)
-- [Becoming a community advocate](https://docs.chain.link/docs/contributing-to-chainlink/#joining-the-chainlink-community-advocate-program)
-- [Running a Chainlink focused developer Bootcamp (in person or online)](https://docs.chain.link/docs/contributing-to-chainlink/#running-a-chainlink-focused-developer-bootcamp)
-- [Running an in-person meetup or watch party](https://docs.chain.link/docs/contributing-to-chainlink/#running-an-in-person-meetup-or-watch-party)
-- [Participate in a hackathon](https://docs.chain.link/docs/contributing-to-chainlink/#participate-in-a-hackathon)
-- [Applying for a grant](https://docs.chain.link/docs/contributing-to-chainlink/#applying-for-a-grant)
+- [Building and maintaining the Chainlink software and tools](#contributing-to-software-and-tooling)
+- [Improving and maintaining the documentation, including translations into other languages](#contributing-to-the-documentation)
+- [Creating Chainlink focused content (blog posts, tutorials, videos etc)](#creating-community-content)
+- [Becoming a developer expert](#becoming-a-developer-expert)
+- [Becoming a community advocate](#joining-the-chainlink-community-advocate-program)
+- [Running a Chainlink focused developer Bootcamp (in person or online)](#running-a-chainlink-focused-developer-bootcamp)
+- [Running an in-person meetup or watch party](#running-an-in-person-meetup-or-watch-party)
+- [Participate in a hackathon](#participate-in-a-hackathon)
+- [Applying for a grant](#applying-for-a-grant)
 
 # Why Should You Contribute
 
