@@ -4,12 +4,16 @@ module.exports = {
       {
         section: 'NODE OPERATORS',
         contents: [
-          { url: '/docs/node-operator-overview/', title: 'Overview' },
+          {
+            url: '/docs/node-operator-overview/',
+            title: 'Overview' },
           {
             url: '/docs/running-a-chainlink-node/',
             title: 'Running a Chainlink Node',
           },
-          { url: '/docs/fulfilling-requests/', title: 'Fulfilling Requests' },
+          {
+            url: '/docs/fulfilling-requests/',
+            title: 'Fulfilling Requests' },
           {
             url: '/docs/run-an-ethereum-client/',
             title: 'Run an Ethereum Client',
@@ -30,10 +34,17 @@ module.exports = {
             url: '/docs/enabling-https-connections/',
             title: 'Enabling HTTPS Connections',
           },
-          { url: '/docs/miscellaneous/', title: 'Miscellaneous' },
           {
             url: '/docs/best-security-practices/',
             title: 'Best Security and Operating Practices',
+          },
+          {
+            url: '/docs/best-practices-aws/',
+            title: 'Best Practices for Nodes on AWS',
+          },
+          {
+            url: '/docs/miscellaneous/',
+            title: 'Miscellaneous'
           },
         ],
       },
@@ -48,7 +59,10 @@ module.exports = {
             url: '/docs/jobs/',
             title: 'Jobs',
             children: [
-              { url: '/docs/jobs/types/cron/', title: 'Cron' },
+              {
+                url: '/docs/jobs/types/cron/',
+                title: 'Cron'
+              },
               {
                 url: '/docs/jobs/types/direct-request/',
                 title: 'Direct Request',
@@ -57,22 +71,40 @@ module.exports = {
                 url: '/docs/jobs/types/flux-monitor/',
                 title: 'Flux Monitor',
               },
-              { url: '/docs/jobs/types/keeper/', title: 'Keeper' },
+              {
+                url: '/docs/jobs/types/keeper/',
+                title: 'Keeper'
+              },
               {
                 url: '/docs/jobs/types/offchain-reporting/',
                 title: 'Off-chain Reporting',
               },
-              { url: '/docs/jobs/types/webhook/', title: 'Webhook' },
+              {
+                url: '/docs/jobs/types/webhook/',
+                title: 'Webhook'
+              },
             ],
           },
           {
             url: '/docs/tasks/',
             title: 'Tasks',
             children: [
-              { url: '/docs/jobs/task-types/http/', title: 'HTTP' },
-              { url: '/docs/jobs/task-types/bridge/', title: 'Bridge' },
-              { url: '/docs/jobs/task-types/jsonparse/', title: 'JSON Parse' },
-              { url: '/docs/jobs/task-types/cborparse/', title: 'CBOR Parse' },
+              {
+                url: '/docs/jobs/task-types/http/',
+                title: 'HTTP'
+              },
+              {
+                url: '/docs/jobs/task-types/bridge/',
+                title: 'Bridge'
+              },
+              {
+                url: '/docs/jobs/task-types/jsonparse/',
+                title: 'JSON Parse'
+              },
+              {
+                url: '/docs/jobs/task-types/cborparse/',
+                title: 'CBOR Parse'
+              },
               {
                 url: '/docs/jobs/task-types/eth-abi-decode/',
                 title: 'ETH ABI Decode',
@@ -85,17 +117,43 @@ module.exports = {
                 url: '/docs/jobs/task-types/eth-abi-encode/',
                 title: 'ETH ABI Encode',
               },
-              { url: '/docs/jobs/task-types/eth-call/', title: 'ETH Call' },
-              { url: '/docs/jobs/task-types/eth-tx/', title: 'ETH Tx' },
+              {
+                url: '/docs/jobs/task-types/eth-call/',
+                title: 'ETH Call'
+              },
+              {
+                url: '/docs/jobs/task-types/eth-tx/',
+                title: 'ETH Tx'
+              },
+              {
+                url: '/docs/jobs/task-types/multiply/',
+                title: 'Multiply'
+              },
+              {
+                url: '/docs/jobs/task-types/divide/',
+                title: 'Divide'
+              },
 
-              { url: '/docs/jobs/task-types/multiply/', title: 'Multiply' },
-              { url: '/docs/jobs/task-types/divide/', title: 'Divide' },
-
-              { url: '/docs/jobs/task-types/any/', title: 'Any' },
-              { url: '/docs/jobs/task-types/mean/', title: 'Mean' },
-              { url: '/docs/jobs/task-types/median/', title: 'Median' },
-              { url: '/docs/jobs/task-types/mode/', title: 'Mode' },
-              { url: '/docs/jobs/task-types/sum/', title: 'Sum' },
+              {
+                url: '/docs/jobs/task-types/any/',
+                title: 'Any'
+              },
+              {
+                url: '/docs/jobs/task-types/mean/',
+                title: 'Mean'
+              },
+              {
+                url: '/docs/jobs/task-types/median/',
+                title: 'Median'
+              },
+              {
+                url: '/docs/jobs/task-types/mode/',
+                title: 'Mode'
+              },
+              {
+                url: '/docs/jobs/task-types/sum/',
+                title: 'Sum'
+              },
             ],
           },
         ],
@@ -103,20 +161,35 @@ module.exports = {
       {
         section: 'v1 JSON JOBS [DEPRECATED]',
         contents: [
-          { url: '/docs/job-specifications/', title: 'Job Specifications' },
-          { url: '/docs/core-adapters/', title: 'Core Adapters' },
-          { url: '/docs/initiators/', title: 'Initiators' },
+          {
+            url: '/docs/job-specifications/',
+            title: 'Job Specifications'
+          },
+          {
+            url: '/docs/core-adapters/',
+            title: 'Core Adapters'
+          },
+          {
+            url: '/docs/initiators/',
+            title: 'Initiators'
+          },
         ],
       },
       {
         section: 'EXTERNAL ADAPTERS',
         contents: [
-          { url: '/docs/external-adapters/', title: 'Introduction' },
+          {
+            url: '/docs/external-adapters/',
+            title: 'Introduction'
+          },
           {
             url: '/docs/contract-creators/',
             title: 'External Adapters in Solidity',
           },
-          { url: '/docs/developers/', title: 'Building External Adapters' },
+          {
+            url: '/docs/developers/',
+            title: 'Building External Adapters'
+          },
           {
             url: '/docs/node-operators/',
             title: 'Bridges: Adding External Adapters to Nodes',
@@ -194,17 +267,22 @@ module.exports = {
             title: 'Introduction to Data Feeds',
             url: '/docs/using-chainlink-reference-contracts/',
           },
-          { title: 'Get the Latest Price (EVM)',
+          {
+            title: 'Get the Latest Price (EVM)',
             url: '/docs/get-the-latest-price/'
           },
-          { title: 'Get the Latest Price (Solana)',
+          {
+            title: 'Get the Latest Price (Solana)',
             url: '/docs/get-the-latest-price-solana/'
           },
           {
             title: 'Historical Price Data',
             url: '/docs/historical-price-data/',
           },
-          { title: 'Feed Registry', url: '/docs/feed-registry/' },
+          {
+            title: 'Feed Registry',
+            url: '/docs/feed-registry/'
+          },
           {
             title: 'API Reference',
             url: '/docs/price-feeds-api-reference/',
@@ -213,7 +291,10 @@ module.exports = {
             title: 'Contract Addresses',
             url: '/docs/reference-contracts/',
             children: [
-              { title: 'ENS', url: '/docs/ens/' },
+              {
+                title: 'ENS',
+                url: '/docs/ens/'
+              },
               {
                 title: 'Ethereum Data Feeds',
                 url: '/docs/ethereum-addresses/',
@@ -269,13 +350,22 @@ module.exports = {
             title: 'Introduction to Chainlink VRF',
             url: '/docs/chainlink-vrf/',
           },
-          { title: 'Get a Random Number', url: '/docs/get-a-random-number/' },
-          { title: 'API Reference', url: '/docs/chainlink-vrf-api-reference/' },
+          {
+            title: 'Get a Random Number',
+            url: '/docs/get-a-random-number/'
+          },
+          {
+            title: 'API Reference',
+            url: '/docs/chainlink-vrf-api-reference/'
+          },
           {
             title: 'Security Considerations',
             url: '/docs/vrf-security-considerations/',
           },
-          { title: 'Contract Addresses', url: '/docs/vrf-contracts/' },
+          {
+            title: 'Contract Addresses',
+            url: '/docs/vrf-contracts/'
+          },
           {
             title: 'Best Practices',
             url: '/docs/chainlink-vrf-best-practices/',
@@ -305,7 +395,10 @@ module.exports = {
             title: 'Network Overview',
             url: '/docs/chainlink-keepers/overview/',
           },
-          { title: 'FAQs', url: '/docs/chainlink-keepers/faqs/' },
+          {
+            title: 'FAQs',
+            url: '/docs/chainlink-keepers/faqs/'
+          },
         ],
       },
       {
@@ -331,8 +424,14 @@ module.exports = {
             title: 'Large Responses',
             url: '/docs/large-responses/',
           },
-          { title: 'Find Existing Jobs', url: '/docs/listing-services/' },
-          { title: 'API Reference', url: '/docs/chainlink-framework/' },
+          {
+            title: 'Find Existing Jobs',
+            url: '/docs/listing-services/'
+          },
+          {
+            title: 'API Reference',
+            url: '/docs/chainlink-framework/'
+          },
           {
             title: 'Contract Addresses',
             url: '/docs/decentralized-oracles-ethereum-mainnet/',
@@ -346,7 +445,10 @@ module.exports = {
             title: 'Install Instructions',
             url: '/docs/create-a-chainlinked-project/',
           },
-          { title: 'LINK Token Contracts', url: '/docs/link-token-contracts/' },
+          {
+            title: 'LINK Token Contracts',
+            url: '/docs/link-token-contracts/'
+          },
           {
             title: 'Developer Communications',
             url: '/docs/developer-communications/',
@@ -355,7 +457,10 @@ module.exports = {
             title: 'Data Provider Nodes',
             url: '/docs/data-provider-nodes/',
           },
-          { title: 'Hackathon Resources', url: '/docs/hackathon-resources/' },
+          {
+            title: 'Hackathon Resources',
+            url: '/docs/hackathon-resources/'
+          },
           {
             title: 'User Guides',
             url: '/docs/user-guides/',
