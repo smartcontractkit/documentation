@@ -80,6 +80,9 @@ The env variables listed here are explicitly supported and current as of Chainli
   - [EXPLORER_URL](#explorer_url)
   - [EXPLORER_ACCESS_KEY](#explorer_access_key)
   - [EXPLORER_SECRET](#explorer_secret)
+  - [TELEMETRY_INGRESS_URL](#telemetry_ingress_url)
+  - [TELEMETRY_INGRESS_SERVER_PUB_KEY](#telemetry_ingress_server_pub_key)
+  - [TELEMETRY_INGRESS_LOGGING](#telemetry_ingress_logging)
   - [JSON_CONSOLE](#json_console)
   - [LOG_LEVEL](#log_level)
   - [LOG_SQL](#log_sql)
@@ -549,6 +552,24 @@ The access key for authenticating with the Explorer.
 - Default: _none_
 
 The secret for authenticating with the Explorer.
+
+## TELEMETRY_INGRESS_URL
+
+- Default: _none_
+
+The URL to connect to for sending telemetry.
+
+## TELEMETRY_INGRESS_SERVER_PUB_KEY
+
+- Default: _none_
+
+The public key of the telemetry server.
+
+## TELEMETRY_INGRESS_LOGGING
+
+- Default: `"false"`
+
+Toggles verbose logging of the raw telemetry messages being sent.
 
 ## JSON_CONSOLE
 

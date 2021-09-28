@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.6.0;
+pragma solidity ^0.8.7;
 
-import "@chainlink/contracts/src/v0.6/ChainlinkClient.sol";
-import "@chainlink/contracts/src/v0.6/vendor/Ownable.sol";
+import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
+import "@chainlink/contracts/src/v0.8/ConfirmedOwner.sol";
 
-contract ATestnetConsumer is ChainlinkClient, Ownable {
-  uint256 constant private ORACLE_PAYMENT = 1 * LINK;
+contract ATestnetConsumer is ChainlinkClient, ConfirmedOwner {
+  using Chainlink for Chainlink.Request;
 
+  uint256 constant private ORACLE_PAYMENT = 1 * LINK_DIVISIBILITY;
   uint256 public currentPrice;
   int256 public changeDay;
   bytes32 public lastMarket;
@@ -26,7 +27,7 @@ contract ATestnetConsumer is ChainlinkClient, Ownable {
     bytes32 indexed market
   );
 
-  constructor() public Ownable() {
+  constructor() ConfirmedOwner(msg.sender){
     setPublicChainlinkToken();
   }
 

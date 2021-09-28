@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.7;
 
-import "@chainlink/contracts/src/v0.6/interfaces/AggregatorV3Interface.sol";
-import "@chainlink/contracts/src/v0.6/interfaces/FlagsInterface.sol";
+import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
+import "@chainlink/contracts/src/v0.8/interfaces/FlagsInterface.sol";
 
 contract ArbitrumPriceConsumer {
 	// Identifier of the Sequencer offline flag on the Flags contract 
@@ -16,7 +16,7 @@ contract ArbitrumPriceConsumer {
      * Agg Address: 0x5f0423B1a6935dc5596e7A24d98532b67A0AeFd8
      * Flags Address: 0x491B1dDA0A8fa069bbC1125133A975BF4e85a91b
      */
-    constructor() public {
+    constructor() {
         priceFeed = AggregatorV3Interface(0x5f0423B1a6935dc5596e7A24d98532b67A0AeFd8);
         chainlinkFlags = FlagsInterface(0x491B1dDA0A8fa069bbC1125133A975BF4e85a91b);
     }
