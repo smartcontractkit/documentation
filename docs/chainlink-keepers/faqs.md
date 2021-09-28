@@ -40,4 +40,4 @@ We are not accepting new Keepers at this time, but be sure to sign up for our [m
 
 ## Why do I need to register my Upkeep?
 
-Registering an Upkeep with the Chainlink Keepers App notifies the Keeper Network about your contract, and allows you to fund the it so your work is performed continuously. As part of the registration, we’re requesting some information that will help us to deliver the optimal experience for your use case as we continue to improve the product.
+Registering an Upkeep with the Chainlink Keepers App notifies the Keeper Network about your contract, and allows you to fund it so your work is performed continuously. As part of the registration, we’re requesting some information that will help us to deliver the optimal experience for your use case as we continue to improve the product.
