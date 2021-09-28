@@ -457,10 +457,8 @@ module.exports = {
             title: 'Data Provider Nodes',
             url: '/docs/data-provider-nodes/',
           },
-          {
-            title: 'Hackathon Resources',
-            url: '/docs/hackathon-resources/'
-          },
+          { title: 'Hackathon Resources', url: '/docs/hackathon-resources/' },
+          { title: 'Contributing to Chainlink', url: '/docs/contributing-to-chainlink/' },
           {
             title: 'User Guides',
             url: '/docs/user-guides/',
