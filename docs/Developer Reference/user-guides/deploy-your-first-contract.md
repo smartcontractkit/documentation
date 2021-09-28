@@ -17,7 +17,8 @@ Remix is a web IDE (integrated development environment) for creating, running, a
 
 ## Create and deploy your first contract
 
-* Navigate to Remix: <a href="https://remix.ethereum.org/#version=soljson-v0.6.0+commit.26b70077.js&optimize=false&gist=9b71e0718d0ad3f2f9a6b2e4018cac82&evmVersion=null" target="_blank" rel="noreferrer, noopener">https://remix.ethereum.org</a>
+* Navigate to Remix: <a href="https://remix.ethereum.org/#version=soljson-v0.6.0+commit.26b70077.js&optimize=false&evmVersion=null&url=https://docs.chain.link/samples/APIRequests/ATestnetConsumer.sol" target="_blank" rel="noreferrer, noopener">https://remix.ethereum.org</a>
+
 * Remix opens up with an empty interface, or possible with a default contract
 
 ![Remix Welcome Screen](/files/8dbedba-Screen_Shot_2020-09-08_at_7.05.27_AM.png)

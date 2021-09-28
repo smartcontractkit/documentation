@@ -42,7 +42,7 @@ JobID: contact `dataproviders@chain.link` for details
 
 Import `ChainlinkClient.sol` into your contract so you can inherit the Chainlink behavior.
 
-```javascript Solidity 4
+```solidity Solidity 4
 pragma solidity ^0.4.24;
 
 import "@chainlink/contracts/v0.4/ChainlinkClient.sol";
@@ -59,7 +59,7 @@ contract KrakenChainlink is ChainlinkClient {
   
 }
 ```
-```javascript Solidity 5
+```solidity Solidity 5
 pragma solidity ^0.5.0;
 
 import "@chainlink/contracts/v0.5/ChainlinkClient.sol";
@@ -76,7 +76,7 @@ contract KrakenChainlink is ChainlinkClient {
   
 }
 ```
-```javascript Solidity 6
+```solidity Solidity 6
 pragma solidity ^0.6.0;
 
 import "@chainlink/contracts/v0.6/ChainlinkClient.sol";
@@ -95,7 +95,7 @@ contract KrakenChainlink is ChainlinkClient {
 ```
 
 <div class="remix-callout">
-  <a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&gist=a619c568fc457f13877c2bbf066b510a" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
+  <a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&url=https://docs.chain.link/samples/DataProviders/Kraken.sol" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
     <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
 </div>
 
@@ -116,7 +116,7 @@ Use the `index` parameter to request the desired index from Kraken.
 
 To obtain KXBTUSD index, use the `DEFI_KXBTUSD` identifier.
 
-```javascript
+```solidity
 req.add("index", "DEFI_KXBTUSD");
 ```
 
@@ -146,7 +146,7 @@ The amount to multiply the result by (since Solidity does not handle decimals).
 
 #### Solidity example
 
-```javascript
+```solidity
 req.addInt("times", 100);
 ```
 
@@ -154,7 +154,7 @@ req.addInt("times", 100);
 
 The examples below show how to create a request for the Chainlink node.
 
-```javascript
+```solidity
 function requestPrice
 (
   address _oracle,
@@ -173,7 +173,7 @@ function requestPrice
 
 Here is an example of the fulfill method:
 
-```javascript
+```solidity
 uint256 public currentPrice;
 
 function fulfill(bytes32 _requestId, uint256 _price)

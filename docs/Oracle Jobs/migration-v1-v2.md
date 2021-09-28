@@ -140,9 +140,9 @@ observationSource   = """
                       "expiration": $(decode_log.cancelExpiration),
                       "data": $(encode_data)
                   }>]
-    submit       [type=ethtx to="$(jobSpec.contractAddress)" data="$(encode_tx)"]
+    submit_tx    [type=ethtx to="0x613a38AC1659769640aaE063C651F48E0250454C" data="$(encode_tx)"]
 
-    decode_log -> decode_cbor -> fetch -> parse -> encode_data -> encode_tx -> submit
+    decode_log -> decode_cbor -> fetch -> parse -> encode_data -> encode_tx -> submit_tx
 """
 ```
 
@@ -208,9 +208,9 @@ observationSource   = """
                      "expiration": $(decode_log.cancelExpiration),
                      "data": $(encode_data)
                  }>]
-    send_tx     [type=ethtx to="$(jobSpec.contractAddress)" data="$(encode_tx)"]
+    submit_tx [type=ethtx to="0x613a38AC1659769640aaE063C651F48E0250454C" data="$(encode_tx)"]
 
-    decode_log -> fetch -> parse -> multiply -> encode_data -> encode_tx -> send_tx
+    decode_log -> fetch -> parse -> multiply -> encode_data -> encode_tx -> submit_tx
 """
 ```
 

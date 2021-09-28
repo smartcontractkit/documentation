@@ -55,6 +55,6 @@ New? Start with [Beginners - The Basics](../beginners-tutorial/), and follow eve
 
 ## Blockchain Specific
 
-- [Matic Price Feeds](../matic-addresses/) 
-- [Binance Smart Chain Price Feeds](../binance-smart-chain-addresses/) 
+- [Matic Data Feeds](../matic-addresses/) 
+- [Binance Smart Chain Data Feeds](../binance-smart-chain-addresses/) 
 - [Conflux](https://github.com/Conflux-Network-Global/demo-cfx-chainlink)

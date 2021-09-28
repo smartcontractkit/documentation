@@ -23,8 +23,8 @@ title: "Chainlink Node Documentation"
           </div>
           <a
             href="/docs/running-a-chainlink-node"
-            class="cl-button--ghost"
-            >Learn More
+            class="cl-button--ghost">
+              Learn More
           </a>
         </div>
       <div>
@@ -40,8 +40,8 @@ title: "Chainlink Node Documentation"
           </div>
           <a
             href="/docs/fulfilling-requests"
-            class="cl-button--ghost"
-            >Learn More
+            class="cl-button--ghost">
+              Learn More
           </a>
         </div>
         <div>
@@ -58,8 +58,8 @@ title: "Chainlink Node Documentation"
           </div>
           <a
             href="/docs/node-operators"
-            class="cl-button--ghost"
-            >Learn More
+            class="cl-button--ghost">
+              Learn More
           </a>
       </div>
     </div>
@@ -74,9 +74,9 @@ title: "Chainlink Node Documentation"
       </p>
       <a
         href="/chainlink-nodes/"
-        class="keychainify-checked"
-        >Learn More</a
-      >
+        class="keychainify-checked">
+          Learn More
+        </a>
     </div>
     <div class="cl-section">
       <div class="cl-box cl-box__lightblue cl-featuredcard">
@@ -87,8 +87,9 @@ title: "Chainlink Node Documentation"
               </p>
               <a
                 href="/docs/core-adapters/"
-                class="cl-button--ghost"
-                >Learn More</a>
+                class="cl-button--ghost">
+                  Learn More
+              </a>
             </div>
             <div>
               <h3>Core Initiators</h3>
@@ -97,9 +98,9 @@ title: "Chainlink Node Documentation"
               </p>
               <a
                 href="/docs/initiators"
-                class="cl-button--ghost"
-                >Learn More</a
-              >
+                class="cl-button--ghost">
+                  Learn More
+                </a>
             </div>
           </div>
     </div>
@@ -108,23 +109,10 @@ title: "Chainlink Node Documentation"
       <div style="display:flex">
           <div class="cl-productcard">
             <a
-              href="https://explorer.chain.link/"
-              target="_blank"
-              class="fill-div"
-            >
-              <img
-                src="https://uploads-ssl.webflow.com/5e444500cbc42eeb5198206f/5e711676c0d8d9ee70422688_Explorer.svg"
-                class="cl-image-featured"
-              />
-              <h3>Chainlink Explorer ↗</h3>
-            </a>
-          </div>
-          <div class="cl-productcard">
-            <a
               href="https://market.link"
               target="_blank"
-              class="fill-div"
-              ><img
+              class="fill-div">
+              <img
                 src="https://uploads-ssl.webflow.com/5e444500cbc42eeb5198206f/5e711675d22595473f1c0c20_Contract.svg"
                 class="cl-image-featured"
               />
@@ -135,8 +123,8 @@ title: "Chainlink Node Documentation"
             <a
               href="https://reputation.link/"
               target="_blank"
-              class="fill-div"
-              ><img
+              class="fill-div">
+              <img
                 src="https://uploads-ssl.webflow.com/5e444500cbc42eeb5198206f/5e711677c777c0bd0c747109_Nodes.svg"
                 class="cl-image-featured"
               />
@@ -146,5 +134,4 @@ title: "Chainlink Node Documentation"
       </div>
     </div>
   </div>
-  {% include still-questions %}
 </div>

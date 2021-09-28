@@ -6,7 +6,7 @@ title: "ENS"
 permalink: "docs/ens/"
 excerpt: "Ethereum Name Service"
 metadata: 
-  description: "How Chainlink uses the Ethereum Name Service for Price Feed contract addresses."
+  description: "How Chainlink uses the Ethereum Name Service for Data Feed contract addresses."
   image: 
     0: "/files/7c891b4-link.png"
 ---
@@ -16,7 +16,7 @@ metadata:
 <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.3.0/web3.min.js" integrity="sha512-ppuvbiAokEJLjOUQ24YmpP7tTaLRgzliuldPRZ01ul6MhRC+B8LzcVkXmUsDee7ne9chUfApa9/pWrIZ3rwTFQ==" crossorigin="anonymous"></script>
 <script src="/ens.js"></script>
 
-Chainlink is moving to the <a href="https://docs.ens.domains/" target="_blank">Ethereum Name Service (ENS)</a> as the source of truth for Price Feed addresses. ENS is a distributed, open, and extensible naming system based on the Ethereum blockchain, which eliminates the need to copy or type long addresses. Instead, addresses can be obtained in deployed contracts or, alternatively,  using off-chain scripts that read the state of the blockchain.
+Chainlink is moving to the <a href="https://docs.ens.domains/" target="_blank">Ethereum Name Service (ENS)</a> as the source of truth for Data Feed addresses. ENS is a distributed, open, and extensible naming system based on the Ethereum blockchain, which eliminates the need to copy or type long addresses. Instead, addresses can be obtained in deployed contracts or, alternatively,  using off-chain scripts that read the state of the blockchain.
 
 <div>
 <div>
@@ -159,7 +159,7 @@ Chainlink is moving to the <a href="https://docs.ens.domains/" target="_blank">E
   {% markdown %}
   # Naming Structure
 
-Chainlink price feeds fall under the `data.eth` naming suffix. To obtain a specific feed address, prefix this with the assets in the feed, separated by a dash (-).
+Chainlink data feeds fall under the `data.eth` naming suffix. To obtain a specific feed address, prefix this with the assets in the feed, separated by a dash (-).
 
 |Pair|ENS Domain Name|
 |:---|:---|
@@ -203,16 +203,10 @@ When a new aggregator is deployed for a specific feed, it is first proposed, and
 
 The example below uses Javascript Web3 library to interact with ENS. See the <a href="https://docs.ens.domains/dapp-developer-guide/resolving-names" target="_blank">ENS documentation</a> for the full list of languages and libraries libraries that support ENS.
 
-This example logs the address of the ETH / USD price feed on the Ethereum mainnet.
+This example logs the address of the data feed on the Ethereum mainnet for ETH / USD prices.
 
 ```javascript
-const Web3 = require("web3");
-
-const web3 = new Web3("https://mainnet.infura.io/v3/<api_key>");
-web3.eth.ens.getAddress('eth-usd.data.eth')
-  .then((address) => {
-    console.log(address)
-  })
+{% include samples/PriceFeeds/ENSConsumer.js %}
 ```
 
 ## Solidity
@@ -225,38 +219,7 @@ Also, instead of using readable string names like `eth-usd.data.eth`, resolvers 
 
 "ETH / USD" hash: `0xf599f4cd075a34b92169cf57271da65a7a936c35e3f31e854447fbb3e7eb736d`
 
-```javascript
-pragma solidity ^0.6.0;
-
-// ENS Registry Contract
-interface ENS {
-    function resolver(bytes32 node) external view returns (Resolver);
-}
-
-// Chainlink Resolver
-interface Resolver {
-    function addr(bytes32 node) external view returns (address);
-}
-
-// Consumer contract
-contract ENSConsumer {
-    ENS ens;
-
-    // ENS registry address: 0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e
-    constructor(address ensAddress) public {
-        ens = ENS(ensAddress);
-    }
-    
-    // Use ID Hash instead of readable name
-    // ETH / USD hash: 0xf599f4cd075a34b92169cf57271da65a7a936c35e3f31e854447fbb3e7eb736d
-    function resolve(bytes32 node) public view returns(address) {
-        Resolver resolver = ens.resolver(node);
-        return resolver.addr(node);
-    }
-}
+```solidity
+{% include samples/PriceFeeds/ENSConsumer.sol %}
 ```
 {% endmarkdown %}
-  
-  
-  
-  
