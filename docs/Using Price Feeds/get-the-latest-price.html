@@ -89,6 +89,23 @@ This example uses [Web3.py](https://web3py.readthedocs.io/en/stable/) to retriev
     </div>
 </div>
 
+## Getting a different price denomination
+
+Chainlink Data Feeds for asset prices can be used in combination to derive denominated price pairs in other currencies.
+
+If you require a denomination other than what is provided, you can use two feeds to derive the pair that you need. For example, if you needed an BTC / EUR price, you could take the BTC / USD feed and the EUR / USD feed and derive BTC / EUR using [OpenZeppelin's SafeMath](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/utils/math/SafeMath.sol) division.
+
+![Request Model Diagram](/images/price-feed-conversion-equation.gif)
+
+
+```solidity
+using SafeMath for uint256;
+
+function derivedPrice(uint256 priceBTCUSD, uint256 priceEURUSD) public view returns (uint256) {
+    return div(priceBTCUSD, priceEURUSD);
+}
+```
+
 ## How Do Data Feeds Get Their Data?
 
 Data Feeds are aggregated from many data sources by a decentralized set of independent Node Operators. The [Decentralized Data Model](../architecture-decentralized-model/) describes this in detail.

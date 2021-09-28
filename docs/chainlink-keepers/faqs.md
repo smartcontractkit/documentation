@@ -28,7 +28,7 @@ Chainlink Keepers check blocks to determine if predefined conditions are met. If
 
 ## What gas price does the Keeper use to trigger the function?
 
-Keepers will select an optimal gas price based on the transactions within the last several blocks upon initial submission. It will continue to monitor the transaction and perform gas “bumping” - replacing the transaction with an updated (higher) gas price - at preset block intervals until it observes the corresponding transaction event..
+Keepers will select an optimal gas price based on the transactions within the last several blocks upon initial submission. It will continue to monitor the transaction and perform gas “bumping” - replacing the transaction with an updated (higher) gas price - at preset block intervals until it observes the corresponding transaction event.
 
 ## What is the cost structure?
 
