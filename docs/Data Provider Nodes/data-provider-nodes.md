@@ -11,6 +11,10 @@ Chainlink has facilitated the launch of several new oracle data services that al
 
 Data provider nodes allow customizable, on-demand API calls and the ability to deliver different data points on each request. This enables use cases where each requestor requires a different piece of data.
 
+> 🚧 Using single provider data nodes on production networks
+> 
+> When you run a production application, be aware of the risks and implications of using a single data source for production networks. Any error or omission in the provider's data might negatively impact your application and its users.
+
 # Data Provider Nodes List
 
 | Data Category      | Name                                                                                                                        | Supported Blockchains                        |

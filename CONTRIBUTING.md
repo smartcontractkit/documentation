@@ -73,3 +73,20 @@ To check the site for broken links, [install `linkcheck`](https://github.com/fil
 ```
 ./path-to-link-check.exe :4200
 ```
+
+## Adding or updating code samples
+
+The main code samples are stored in `/_includes/samples` directory. If you need to edit or add new code samples, do it in the corresponding nested folder. If Chainlink introduces a new product or feature, create a new folder and place your code sample there.
+
+To embed a code sample in the documentation, use the following format:
+
+```solidity Kovan
+{% include samples/APIRequests/APIConsumer.sol %}
+```
+
+Note, you have to include only samples that represent the main Chainlink products. The following code shoudn't be included in `/_includes/samples` directory:
+- JSON or TOML descriptions and outputs
+- API functions
+- Code samples that are broken down into smaller pieces
+- Shell, bash, or text commands
+- Tables, blocks, or similar markdown structures

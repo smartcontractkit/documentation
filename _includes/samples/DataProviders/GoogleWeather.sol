@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.6.8;
+pragma solidity ^0.8.7;
 
-import "@chainlink/contracts/src/v0.6/ChainlinkClient.sol";
+import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
 
 contract Weather is ChainlinkClient {
     using Chainlink for Chainlink.Request;
@@ -25,7 +25,7 @@ contract Weather is ChainlinkClient {
         bytes32 _totalRainJobId,
         bytes32 _hailJobId,
         uint256 _fee
-    ) public {
+    ) {
         setChainlinkToken(_link);
         setChainlinkOracle(_oracle);
         avgTempJobId = _avgTempJobId;

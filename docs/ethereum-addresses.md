@@ -1,9 +1,9 @@
 ---
 layout: feed.liquid
-title: "Ethereum Price Feeds"
+title: "Ethereum Data Feeds"
 stub: ethereum-addresses
 metadata: 
-  description: "Chainlink Price Feeds on Ethereum Blockchains"
+  description: "Chainlink Data Feeds on Ethereum Blockchains"
   image: 
     0: "/files/OpenGraph_V3.png"
 

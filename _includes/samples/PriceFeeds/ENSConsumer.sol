@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.7;
 
 // ENS Registry Contract
 interface ENS {
@@ -16,7 +16,7 @@ contract ENSConsumer {
     ENS ens;
 
     // ENS registry address: 0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e
-    constructor(address ensAddress) public {
+    constructor(address ensAddress) {
         ens = ENS(ensAddress);
     }
     
