@@ -234,4 +234,4 @@ In addition to the main functions of this example, several smaller components ar
 
 If you want to experiment with the code yourself to learn how it works, see this [example code on GitHub](https://github.com/smartcontractkit/chainlink-solana-demo/).
 
-To learn more about Solana, see the [Solana Documentation](https://docs.solana.com/).
+To learn more about Solana, head to the [Solana Documentation](https://docs.solana.com/), as well as our blog post on [How to Build and Deploy a Solana Smart Contract](https://blog.chain.link/how-to-build-and-deploy-a-solana-smart-contract/)
