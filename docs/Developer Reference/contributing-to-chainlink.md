@@ -7,7 +7,9 @@ permalink: "docs/contributing-to-chainlink/"
 ---
 Chainlink is an open-source project licensed [under the MIT license](https://github.com/smartcontractkit/chainlink/blob/master/LICENSE), and we encourage contributions from all developers and community members.
 
-[insert YT video here]
+<p>
+https://www.youtube.com/watch?v=nerpcSPN4kE
+<p>
 
 # What It Means to Contribute
 When you contribute to the Chainlink project, you as a developer or community member contribute your time and effort to help improve and grow Chainlink. Your contribution can be from various methods:
