@@ -17,7 +17,7 @@ Check to see if you missed any code, documentation, blog, or video on the topic 
 
 Often someone else has asked the same question that you're asking. If you copy and paste the error into the Google or web search bar, there is a good chance that you will find some helpful material from someone else who has already found the solution to your question.
 
-## 3. Make an issue on the github or code repository
+## 3. Open an issue on the github or code repository
 
 This is only applicable if you're working with a certain set of code. For example, if you're having an issue working with the [Chainlink Hardhat Starter kit](https://github.com/smartcontractkit/hardhat-starter-kit), maybe you can make an issue on the repo explaining exactly what's going on. 
 
