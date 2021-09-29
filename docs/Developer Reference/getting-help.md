@@ -15,7 +15,7 @@ Check to see if you missed any code, documentation, blog, or video on the topic 
 
 ## 2. Do a web search for the specific error or situation you're in. 
 
-Often times, someone else has asked the question that you're asking. If you copy paste the error into the google or web search bar, there is a good chance that some helpful material will come up. 
+Often someone else has asked the same question that you're asking. If you copy and paste the error into the Google or web search bar, there is a good chance that you will find some helpful material from someone else who has already found the solution to your question.
 
 ## 3. Make an issue on the github or code repository
 
