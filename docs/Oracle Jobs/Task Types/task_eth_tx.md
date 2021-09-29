@@ -27,7 +27,7 @@ encode_tx    [type="ethabiencode"
               data=<{ "data": $(upkeep_data) }>]
 
 submit_tx    [type="ethtx"
-               contract="0xa36085F69e2889c224210F603D836748e7dC0088"
+               to="0xa36085F69e2889c224210F603D836748e7dC0088"
                data="$(encode_tx)"]
 
 encode_tx -> submit_tx
