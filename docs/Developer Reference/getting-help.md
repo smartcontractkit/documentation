@@ -40,7 +40,7 @@ Here is an example of a not-so-well-formatted question:
 > Here is my code
 > pragma solidity 0.6.7; contract HelloWorld { string public message; constructor(string memory initialMessage) {message = initialMessage; }
 
-Here is that same question, formatted much better:
+Here is that same question with better formatting:
 
 > Title: Remix Solidity Compile Error - Source File Requires Different Compiler Version
 > I'm [following this guide](https://docs.chain.link/docs/beginners-tutorial/), and I'm unable to compile my solidity code in [Remix](https://remix.ethereum.org/). 
