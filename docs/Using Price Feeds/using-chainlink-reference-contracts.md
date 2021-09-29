@@ -5,10 +5,10 @@ date: Last Modified
 title: "Introduction to Data Feeds"
 permalink: "docs/using-chainlink-reference-contracts/"
 whatsnext: {"Get the Latest Price":"/docs/get-the-latest-price/", "API Reference":"/docs/price-feeds-api-reference/", "Contract Addresses":"/docs/reference-contracts/"}
-metadata: 
+metadata:
   title: "How to Use Chainlink Decentralized Data Feeds in Smart Contracts"
   description: "Add cryptocurrency price data to your smart contract. Chainlink data feeds include BTC/USD, BTC/ETH, ETH/USD and more!"
-  image: 
+  image:
     0: "/files/OpenGraph_V3.png"
 ---
 ![Chainlink Abstract Banner](/files/2306b8b-Decentralized_Oracles_V3.png)
@@ -16,6 +16,10 @@ metadata:
 # Connect Your Smart Contracts to the Outside World
 
 Chainlink Data Feeds are the quickest way to connect your smart contracts to the real-world market prices of assets. They enable smart contracts to retrieve the latest price of an asset in a single call.
+
+> 🚧 Pricing Data
+>
+> If your application consumes pricing data, make sure each asset pair has enough liquidity so you can rely on the quality of that pricing data. Asset pairs with low liquidity are vulnerable to price manipulation. If your application depends on pricing data for asset pairs with low liquidity, it is equally vulnerable to manipulation.
 
 # Retrieve the Latest Asset Prices
 
