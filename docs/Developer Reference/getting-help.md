@@ -19,7 +19,7 @@ Often someone else has asked the same question that you're asking. If you copy a
 
 ## 3. Open an issue on the github or code repository
 
-This is only applicable if you're working with a certain set of code. For example, if you're having an issue working with the [Chainlink Hardhat Starter kit](https://github.com/smartcontractkit/hardhat-starter-kit), maybe you can make an issue on the repo explaining exactly what's going on. 
+This is only applicable if you're working with a certain set of code. For example, if you're having an issue working with the [Chainlink Hardhat Starter kit](https://github.com/smartcontractkit/hardhat-starter-kit), open an issue on the repo explaining exactly what's going on and someone might have the answer that you need.
 
 When writing issues, remember to:
 - Keep titles short
