@@ -72,7 +72,7 @@ Here is that same question with better formatting:
 > 
 > ```
 
-It's often recommended to come up with a [minimum reproducible example](https://stackoverflow.com/help/minimal-reproducible-example) to help others understand your issue. This way, they can help you get an answer quickly. Remember, its a community run platform!
+It's best to create a [minimum reproducible example](https://stackoverflow.com/help/minimal-reproducible-example) to help others understand your issue. This way, they can help you get an answer quickly. Remember, its a community run platform!
 
 Don't get discouraged if your question gets downvoted or removed, this just means you need to format your question a little differently next time!
 
