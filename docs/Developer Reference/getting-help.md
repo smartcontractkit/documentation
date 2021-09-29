@@ -23,7 +23,7 @@ This is only applicable if you're working with a certain set of code. For exampl
 
 When writing issues, remember to:
 - Keep titles short
-- Remain clear and concise
+- Be clear and concise about the issue that you are encountering
 - Format your message ([using 3 backticks](https://discuss.codecademy.com/t/using-backticks-to-format-your-code/3697) will help format your code)
 - Always add any and all associated code
 - Please don't use screenshots, those *generally* make it harder!
