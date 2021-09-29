@@ -7,7 +7,7 @@ permalink: "docs/getting-help/"
 ---
 ### Where do I go to get help and support? 
 
-If you run into issues and the available documentation, videos, and code repositories are not able to assist you, the best way to get help is to follow this support escalation process. Start with step 1, and continue to the next till you reach a solution. Note, sometimes, you might be asking a question that is too theoretical, or hasn't been solved, so you might not always get what you're looking for!
+If you run into issues and the available documentation, videos, and code repositories are not able to assist you, the best way to get help is to follow the support escalation process in this document. Sometimes you might have a question that is too theoretical or hasn't been solved, so you might not always get what you're looking for!
 
 ## 1. Double check the documentation
 
