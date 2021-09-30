@@ -24,15 +24,15 @@ This is only applicable if you're working with a certain set of code. For exampl
 When writing issues, remember to:
 - Keep titles short
 - Be clear and concise about the issue that you are encountering
-- Format your message ([using 3 backticks](https://discuss.codecademy.com/t/using-backticks-to-format-your-code/3697) will help format your code)
+- Format your issue description. Use [three backticks (```)](https://discuss.codecademy.com/t/using-backticks-to-format-your-code/3697) to format format your code or log output.
 - Always add any and all associated code
-- Please don't use screenshots, those *generally* make it harder!
+- Don't use screenshots. Screenshots are not searchable and generally make it harder to understand your issue.
 
 ## 4. Ask a question on [Stack Overflow](https://stackoverflow.com/questions/ask?tags=chainlink) or [Stack Exchange Ethereum](https://ethereum.stackexchange.com/)
 
-This is where the majority of people will end up, and is one of the most helpful resources out there. Stack Overflow is meant to be living documentation, so please do your best to make a [thoughtful, easy to triage question](https://stackoverflow.com/help/how-to-ask). This will make it much easier for people to help debug your issue, and make sure it doesn't get removed from the site. Remember, we want to make this question **searchable** so others who run into the same issue can also get their question solved. You could use really any forum based site you like if you prefer another site over Stack Overflow. 
+This is where most people will end up and is one of the most helpful resources out there. Stack Overflow is living documentation, so do your best to make a [thoughtful and easy to triage question](https://stackoverflow.com/help/how-to-ask). This will make it much easier for people to help debug your issue and ensure it doesn't get removed from the site. Remember, we want to make this question **searchable** so others who run into the same issue can also get their question solved. You could use any forum-based site you like if you prefer another site over Stack Overflow. 
 
-Here is an example of a not-so-well-formatted question:
+Here is an example of a poorly formatted question:
 
 > Title: Please help
 > I'm following this guide, and my code is breaking, what's going on? 
@@ -78,4 +78,4 @@ Don't get discouraged if your question gets downvoted or removed. This just mean
 
 ## 5. Ask the community 
 
-And lastly, you can always just in the [discord](https://discord.gg/2YHSAey) and see if there is a community member who might be able to help you out. One of the best ways to ask the community, is to drop a link to your stackoverflow question, issue, or forum where you're asking a Chainlink question. Remember, these are community members, and they are helping because they are wonderful kind individuals!
+And lastly, you can always ask the question in the [discord](https://discord.gg/2YHSAey) and see if there is a community member who might be able to help you out. One of the best ways to ask the community is to drop a link to your Stack Overflow question, issue, or the forum where you're asking a Chainlink question. Remember, these are community members, and they are helping because they are wonderful and kind individuals!
