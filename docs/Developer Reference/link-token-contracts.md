@@ -199,6 +199,16 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 
 ## Fantom
 
+### Fantom Mainnet
+
+|Parameter|Value|
+|:---|:---|
+|`ETH_CHAIN_ID`|`250`|
+|Address|[`0x6F43FF82CCA38001B6699a8AC47A2d0E66939407`](https://ftmscan.com/address/0x6F43FF82CCA38001B6699a8AC47A2d0E66939407)|
+|Name|ChainLink Token on Fantom|
+|Symbol|LINK|
+|Decimals|18|
+
 ### Fantom Testnet
 
 > 🚰Fantom Faucet

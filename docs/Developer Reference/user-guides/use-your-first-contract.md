@@ -35,7 +35,7 @@ whatsnext: {"Introduction to Data Feeds":"/docs/using-chainlink-reference-contra
 
 ![Metamask Transaction Confirmation Message](/files/e00834f-metamask.png)
 
-* Once the transaction confirms, you can visit the <a href="https://kovan.explorer.chain.link/" target="_blank" rel="noreferrer, noopener">Kovan Chainlink Explorer</a> in order to view the status of your request. Search for either the address of your contract or your requesting transaction ID and you should see an update from the Chainlink node. You can refresh the page to keep up-to-date with the status, and when the response is confirmed, you can view the result in your contract.
+* The transaction confirmation will take some time. When the response is confirmed, you can view the result in your contract.
 
 ![Remix Click currentPrice](/files/d28ea86-Screen_Shot_2020-09-08_at_9.22.21_AM.png)
 
