@@ -43,7 +43,7 @@ Your node works with several different types of addresses. Each address type has
 
     - Select "Injected Web3" as your **Environment**. The Javascript VM environment cannot access your oracle node.
     - Select the "Oracle" contract from the **Contract** menu.
-    - Copy the address for the network you are using and paste it into the `address_link` field next to the **Deploy** button. Use one of the following network addresses:
+    - Copy the LINK token contract address for the network you are using and paste it into the `address_link` field next to the **Deploy** button. Use one of the following network addresses:
 
       ``` text Rinkeby
       0x01BE23585060835E02B77ef475b0Cc51aA1e0709

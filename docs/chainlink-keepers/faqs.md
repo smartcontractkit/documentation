@@ -28,7 +28,7 @@ Chainlink Keepers check blocks to determine if predefined conditions are met. If
 
 ## What gas price does the Keeper use to trigger the function?
 
-Keepers will select an optimal gas price based on the transactions within the last several blocks upon initial submission. It will continue to monitor the transaction and perform gas “bumping” - replacing the transaction with an updated (higher) gas price - at preset block intervals until it observes the corresponding transaction event..
+Keepers will select an optimal gas price based on the transactions within the last several blocks upon initial submission. It will continue to monitor the transaction and perform gas “bumping” - replacing the transaction with an updated (higher) gas price - at preset block intervals until it observes the corresponding transaction event.
 
 ## What is the cost structure?
 
@@ -40,4 +40,4 @@ We are not accepting new Keepers at this time, but be sure to sign up for our [m
 
 ## Why do I need to register my Upkeep?
 
-Registering an Upkeep with the Chainlink Keepers App notifies the Keeper Network about your contract, and allows you to fund the it so your work is performed continuously. As part of the registration, we’re requesting some information that will help us to deliver the optimal experience for your use case as we continue to improve the product.
+Registering an Upkeep with the Chainlink Keepers App notifies the Keeper Network about your contract, and allows you to fund it so your work is performed continuously. As part of the registration, we’re requesting some information that will help us to deliver the optimal experience for your use case as we continue to improve the product.

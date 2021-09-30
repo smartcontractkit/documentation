@@ -46,7 +46,7 @@ The LINK token is an ERC677 token that inherits functionality from the ERC20 tok
 > 🚰Rinkeby Faucets
 >
 > Testnet LINK is available from https://faucets.chain.link/rinkeby
-> Testnet ETH is available from one of these addresses. If one is currently offline, try the other: https://faucet.rinkeby.io/, https://app.mycrypto.com/faucet 
+> Testnet ETH is available from one of these addresses. If one is currently offline, try the other: https://faucet.rinkeby.io/, https://app.mycrypto.com/faucet
 
 |Parameter|Value|
 |:---|:---|
@@ -198,6 +198,16 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 |Decimals|18|
 
 ## Fantom
+
+### Fantom Mainnet
+
+|Parameter|Value|
+|:---|:---|
+|`ETH_CHAIN_ID`|`250`|
+|Address|[`0x6F43FF82CCA38001B6699a8AC47A2d0E66939407`](https://ftmscan.com/address/0x6F43FF82CCA38001B6699a8AC47A2d0E66939407)|
+|Name|ChainLink Token on Fantom|
+|Symbol|LINK|
+|Decimals|18|
 
 ### Fantom Testnet
 

@@ -109,18 +109,6 @@ title: "Chainlink Node Documentation"
       <div style="display:flex">
           <div class="cl-productcard">
             <a
-              href="https://explorer.chain.link/"
-              target="_blank"
-              class="fill-div">
-              <img
-                src="https://uploads-ssl.webflow.com/5e444500cbc42eeb5198206f/5e711676c0d8d9ee70422688_Explorer.svg"
-                class="cl-image-featured"
-              />
-              <h3>Chainlink Explorer ↗</h3>
-            </a>
-          </div>
-          <div class="cl-productcard">
-            <a
               href="https://market.link"
               target="_blank"
               class="fill-div">
