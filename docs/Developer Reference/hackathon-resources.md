@@ -21,7 +21,7 @@ Be sure to check the docs above for remix examples!
 
 ## Support Communications 
 
-Always refer back to the [getting help](/docs/getting-help) page for how to get support. 
+Always refer back to the [getting help](/docs/getting-help) page for the latest information about how to get support. 
 
 - [Getting Help](/docs/getting-help))
 - [Stack Overflow](https://stackoverflow.com/questions/tagged/chainlink)

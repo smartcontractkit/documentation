@@ -13,7 +13,7 @@ If you run into issues and the available documentation, videos, and code reposit
 
 Check to see if you missed any code, documentation, blog, or video on the topic or issue you're looking for. There are typically a few different resources on a topic if one doesn't answer exactly what you're looking for. You can also use the documentation search bar to look up things as well. 
 
-## 2. Do a web search for the specific error or situation you're in. 
+## 2. Do a web search for the specific error or situation you're in
 
 Often someone else has asked the same question that you're asking. If you copy and paste the error into the Google or web search bar, there is a good chance that you will find some helpful material from someone else who has already found the solution to your question.
 
