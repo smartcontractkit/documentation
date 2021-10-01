@@ -177,7 +177,7 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 |Parameter|Value|
 |:---|:---|
 |`ETH_CHAIN_ID`|`43114`|
-|Address|[`0x350a791Bfc2C21F9Ed5d10980Dad2e2638ffa7f6`](https://cchain.explorer.avax.network/address/0x350a791Bfc2C21F9Ed5d10980Dad2e2638ffa7f6)|
+|Address|[`0x5947BB275c521040051D82396192181b413227A3`](https://cchain.explorer.avax.network/address/0x5947BB275c521040051D82396192181b413227A3)|
 |Name|ChainLink Token on Avalanche|
 |Symbol|LINK|
 |Decimals|18|
