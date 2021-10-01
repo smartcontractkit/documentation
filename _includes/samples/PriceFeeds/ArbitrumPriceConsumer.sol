@@ -4,6 +4,10 @@ pragma solidity ^0.8.7;
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/FlagsInterface.sol";
 
+/**
+ * Find information on LINK Token Contracts here: https://docs.chain.link/docs/link-token-contracts/
+ */
+
 contract ArbitrumPriceConsumer {
 	// Identifier of the Sequencer offline flag on the Flags contract 
     address constant private FLAG_ARBITRUM_SEQ_OFFLINE = address(bytes20(bytes32(uint256(keccak256("chainlink.flags.arbitrum-seq-offline")) - 1)));
