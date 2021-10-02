@@ -56,8 +56,8 @@ The env variables listed here are explicitly supported and current as of Chainli
   - [ETH_MIN_GAS_PRICE_WEI](#eth_min_gas_price_wei)
   - [GAS_ESTIMATOR_MODE](#gas_estimator_mode)
   - [BLOCK_HISTORY_ESTIMATOR_BATCH_SIZE](#block_history_estimator_batch_size)
-  - [BLOCK_HISTORY_ESTIMATOR_BLOCK_DELAY](#block_history_estimator_block_delay)
   - [BLOCK_HISTORY_ESTIMATOR_BLOCK_HISTORY_SIZE](#block_history_estimator_block_history_size)
+  - [BLOCK_HISTORY_ESTIMATOR_BLOCK_DELAY](#block_history_estimator_block_delay)
   - [BLOCK_HISTORY_ESTIMATOR_TRANSACTION_PERCENTILE](#block_history_estimator_transaction_percentile)
 - [Other env vars](#other-env-vars)
   - [ENABLE_EXPERIMENTAL_ADAPTERS](#enable_experimental_adapters)
@@ -112,6 +112,7 @@ The env variables listed here are explicitly supported and current as of Chainli
 - [Advanced](#advanced)
   - [ETH_MAX_IN_FLIGHT_TRANSACTIONS](#eth_max_in_flight_transactions)
   - [ETH_MAX_QUEUED_TRANSACTIONS](#eth_max_queued_transactions)
+  - [DEFAULT_HTTP_TIMEOUT](#default_http_timeout)
 - [Misc notes](#misc-notes)
 
 # Essential env vars
@@ -794,6 +795,12 @@ Do NOT blindly increase this value thinking it will fix things if you start hitt
 In deployments with very high burst rates, or on chains with large re-orgs, you _may_ consider increasing this.
 
 0 value disables any limit on queue size. Use with caution.
+
+## DEFAULT_HTTP_TIMEOUT
+
+- Default: 15s
+
+The default timeout for HTTP requests.
 
 # Misc notes
 
