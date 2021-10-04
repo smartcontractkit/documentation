@@ -24,7 +24,7 @@ This is only applicable if you're working with a certain set of code. For exampl
 When writing issues, remember to:
 - Keep titles short
 - Be clear and concise about the issue that you are encountering
-- Format your issue description. Use [three backticks (```)](https://discuss.codecademy.com/t/using-backticks-to-format-your-code/3697) to format format your code or log output.
+- Format your issue description. Use [three backticks (```)](https://www.freecodecamp.org/news/how-to-format-code-in-markdown/#code-blocks) to format your code or log output.
 - Always add any and all associated code
 - Don't use screenshots. Screenshots are not searchable and generally make it harder to understand your issue.
 
