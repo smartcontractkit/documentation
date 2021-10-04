@@ -17,7 +17,7 @@ Check to see if you missed any code, documentation, blog, or video on the topic 
 
 Often someone else has asked the same question that you're asking. If you copy and paste the error into the Google or web search bar, there is a good chance that you will find some helpful material from someone else who has already found the solution to your question.
 
-## 3. Open an issue on the github or code repository
+## 3. Open an issue on GitHub or the code repository
 
 This is only applicable if you're working with a certain set of code. For example, if you're having an issue working with the [Chainlink Hardhat Starter kit](https://github.com/smartcontractkit/hardhat-starter-kit), open an issue on the repo explaining exactly what's going on and someone might have the answer that you need.
 
@@ -72,10 +72,10 @@ Here is that same question with better formatting:
 > 
 > ```
 
-It's best to create a [minimum reproducible example](https://stackoverflow.com/help/minimal-reproducible-example) to help others understand your issue. This way, they can help you get an answer quickly. Remember, its a community run platform!
+It's best to create a [minimum reproducible example](https://stackoverflow.com/help/minimal-reproducible-example) to help others understand your issue. This way, they can help you get an answer quickly. Remember, its a community-run platform!
 
 Don't get discouraged if your question gets downvoted or removed. This just means you need to format your question a little differently next time!
 
 ## 5. Ask the community 
 
-And lastly, you can always ask the question in the [discord](https://discord.gg/2YHSAey) and see if there is a community member who might be able to help you out. One of the best ways to ask the community is to drop a link to your Stack Overflow question, issue, or the forum where you're asking a Chainlink question. Remember, these are community members, and they are helping because they are wonderful and kind individuals!
+And lastly, you can always ask the question in the [Discord](https://discord.gg/2YHSAey) and see if there is a community member who might be able to help you out. One of the best ways to ask the community is to drop a link to your Stack Overflow question, issue, or the forum where you're asking a Chainlink question. Remember, these are community members, and they are helping because they are wonderful and kind individuals!
