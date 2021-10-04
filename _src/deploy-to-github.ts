@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Rewrite Remix URLs with current hostname
     // eg https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFD20.sol
 
-    for (let item of document.links) {
+    for (let item of Array.from(document.links)) {
       if (item.href.startsWith('https://remix.ethereum.org')) {
         item.setAttribute('href', item.href.replace('docs.chain.link', host));
       }
