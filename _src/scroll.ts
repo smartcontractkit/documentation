@@ -1,22 +1,23 @@
 const fixNavHeight = () => {
-  if (document.querySelector('navigation')) {
+  const nav = document.querySelector<HTMLElement>('navigation')
+  if (nav) {
     const remainingVisibleTopBar =
-      document.querySelector('navigation').getBoundingClientRect().top -
+      nav.getBoundingClientRect().top -
       window.scrollY;
     if (remainingVisibleTopBar > 0) {
-      document.querySelector('navigation').style[
+      nav.style[
         'height'
       ] = `calc( 100vh - ${remainingVisibleTopBar}px)`;
     } else {
-      document.querySelector('navigation').style['height'] = '';
+      nav.style['height'] = '';
     }
   }
 };
 document.addEventListener('DOMContentLoaded', () => {
-  const element = document.querySelector('navigation .active');
+  const element = document.querySelector<HTMLElement>('navigation .active');
   if (element) {
-    if (element.scrollIntoViewIfNeeded) {
-      element.scrollIntoViewIfNeeded();
+    if ((<any>element).scrollIntoViewIfNeeded) {
+      (<any>element).scrollIntoViewIfNeeded();
     } else {
       element.scrollIntoView();
     }
