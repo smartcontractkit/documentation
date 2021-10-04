@@ -5,8 +5,8 @@
   "private": true,
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "serve": "NODE_ENV=development npx @11ty/eleventy --serve --port=4200",
-    "build": "rm -rf _site && npx @11ty/eleventy",
+    "serve": "NODE_ENV=development concurrently \"watchify _src/index.ts -p [ tsify ] -o _src/index.js\" \"npx @11ty/eleventy --serve --port=4200\"",
+    "build": "browserify _src/index.ts -t [ uglifyify ] -p [ tsify ] -o _src/index.js && rm -rf _site && npx @11ty/eleventy",
     "deploy": "yarn build && firebase deploy",
     "process": "yarn ts-node _tools/process-data.ts",
     "linkcheck": "yarn ts-node _tools/linkcheck.ts"
@@ -22,6 +22,8 @@
     "@readme/markdown": "^6.30.3",
     "@readme/variable": "^13.5.1",
     "@types/node": "^16.7.13",
+    "browserify": "^17.0.0",
+    "concurrently": "^6.3.0",
     "dart-linkcheck": "^2.0.15",
     "date-fns": "^2.23.0",
     "eleventy-plugin-youtube-embed": "^1.6.4",
@@ -30,7 +32,10 @@
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "ts-node": "^10.2.1",
-    "typescript": "^4.4.2"
+    "tsify": "^5.0.4",
+    "typescript": "^4.4.2",
+    "uglifyify": "^5.0.2",
+    "watchify": "^4.0.0"
   },
   "engines": {
     "node": ">=14"
