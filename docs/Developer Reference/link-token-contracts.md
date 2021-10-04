@@ -30,7 +30,7 @@ The LINK token is an ERC677 token that inherits functionality from the ERC20 tok
 
 > 🚰Kovan Faucets
 >
-> Testnet LINK are available from https://kovan.chain.link:
+> Testnet LINK are available from https://faucets.chain.link/kovan
 > Testnet ETH are available from https://faucets.chain.link/kovan
 
 |Parameter|Value|
@@ -46,7 +46,7 @@ The LINK token is an ERC677 token that inherits functionality from the ERC20 tok
 > 🚰Rinkeby Faucets
 >
 > Testnet LINK is available from https://faucets.chain.link/rinkeby
-> Testnet ETH is available from one of these addresses. If one is currently offline, try the other: https://faucet.rinkeby.io/, https://app.mycrypto.com/faucet 
+> Testnet ETH is available from one of these addresses. If one is currently offline, try the other: https://faucet.rinkeby.io/, https://app.mycrypto.com/faucet
 
 |Parameter|Value|
 |:---|:---|
@@ -177,7 +177,7 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 |Parameter|Value|
 |:---|:---|
 |`ETH_CHAIN_ID`|`43114`|
-|Address|[`0x350a791Bfc2C21F9Ed5d10980Dad2e2638ffa7f6`](https://cchain.explorer.avax.network/address/0x350a791Bfc2C21F9Ed5d10980Dad2e2638ffa7f6)|
+|Address|[`0x5947BB275c521040051D82396192181b413227A3`](https://cchain.explorer.avax.network/address/0x5947BB275c521040051D82396192181b413227A3)|
 |Name|ChainLink Token on Avalanche|
 |Symbol|LINK|
 |Decimals|18|
@@ -198,6 +198,16 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 |Decimals|18|
 
 ## Fantom
+
+### Fantom Mainnet
+
+|Parameter|Value|
+|:---|:---|
+|`ETH_CHAIN_ID`|`250`|
+|Address|[`0x6F43FF82CCA38001B6699a8AC47A2d0E66939407`](https://ftmscan.com/address/0x6F43FF82CCA38001B6699a8AC47A2d0E66939407)|
+|Name|ChainLink Token on Fantom|
+|Symbol|LINK|
+|Decimals|18|
 
 ### Fantom Testnet
 
