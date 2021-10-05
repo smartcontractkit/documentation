@@ -82,7 +82,7 @@ The [Chainlink documentation](https://docs.chain.link/) is the go-to place for d
 
 The process for contributing to the documentation follows the process defined earlier in the [Submitting a Pull Request](#submitting-a-pull-request) section. Each page also has a 'Suggest Edits' link on the top right, and will directly take you to the page in the [documentation repository](https://github.com/smartcontractkit/documentation), where you can create a new PR with the suggested changes. Before you create a PR for the documentation, read the [contributing guidelines](https://github.com/smartcontractkit/documentation/blob/main/CONTRIBUTING.md).
 
-If you want to translate the documentation into a new language that is not yet supported, feel free to [reach out to the team](mailto:developer-relations@chainlinklabs.com) beforehand, so we can make sure you get the support you need.
+If you want to translate the documentation into a new language that is not yet supported, feel free to [reach out to the team](mailto:devrel@smartcontract.com) beforehand, so we can make sure you get the support you need.
 
 
 ## Creating Community Content
@@ -105,7 +105,7 @@ To become a community advocate, you can apply via the [community advocates web p
 
 
 ## Running a Chainlink Focused Developer Bootcamp
-In June 2021, the Chainlink Labs team [virtually hosted](https://blog.chain.link/smart-contract-developer-bootcamp-on-demand/) the first [Chainlink Developer Bootcamp](http://chain.link/bootcamp). If you're passionate about educating others about smart contracts and Chainlink, you can contribute by running your own developer Bootcamp. You can also contribute by translating an existing Bootcamp and running it in another language. Before you run your own Bootcamp, [reach out to the team](mailto:developer-relations@chainlinklabs.com) so we can make sure you have the support that you need.
+In June 2021, the Chainlink Labs team [virtually hosted](https://blog.chain.link/smart-contract-developer-bootcamp-on-demand/) the first [Chainlink Developer Bootcamp](http://chain.link/bootcamp). If you're passionate about educating others about smart contracts and Chainlink, you can contribute by running your own developer Bootcamp. You can also contribute by translating an existing Bootcamp and running it in another language. Before you run your own Bootcamp, [reach out to the team](mailto:devrel@smartcontract.com) so we can make sure you have the support that you need.
 
 ## Running an In-Person Meetup or Watch Party
 If you're passionate about helping to grow the awareness and adoption of Chainlink, you can contribute by running an in-person meetup or watch party for a Chainlink event such as [SmartCon](https://www.smartcontractsummit.io/). Meetups are a great way to meet others also passionate about how hybrid smart contracts can create an economically fair world.
