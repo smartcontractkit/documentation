@@ -107,6 +107,8 @@ The env variables listed here are explicitly supported and current as of Chainli
   - [ORM_MAX_IDLE_CONNS](#orm_max_idle_conns)
   - [ORM_MAX_OPEN_CONNS](#orm_max_open_conns)
   - [ROOT](#root)
+  - [RPID](#rpid)
+  - [RPOrigin](#rpo_origin)
   - [SECURE_COOKIES](#secure_cookies)
   - [SESSION_TIMEOUT](#session_timeout)
 - [Advanced](#advanced)
@@ -353,7 +355,7 @@ Can be used with the `chainlink setgasprice` to be updated while the node is sti
 
 - Default: _automatic based on chain ID_
 
-Chainlink will never pay more than this for a transaction. 
+Chainlink will never pay more than this for a transaction.
 
 ## ETH_MIN_GAS_PRICE_WEI
 
@@ -469,7 +471,7 @@ Enables the Flux Monitor v2 job type.
 - Default: `"false"`
 
 Enables the Webhook v2 job type.
-  
+
 ## ADMIN_CREDENTIALS_FILE
 
 - Default: `$CHAINLINK_ROOT/apicredentials`
@@ -719,7 +721,7 @@ See eth_resender.go for more details
 For jobs that use the EthTx adapter, this is the minimum payment amount in order for the node to accept and process the job. Since there are no decimals on the EVM, the value is represented like wei.
 
 > 🚧 Note
-> 
+>
 > Keep in mind, the Chainlink node currently responds with a 500,000 gas limit. Under pricing your node could mean it spends more in ETH (on gas) than it earns in LINK.
 
 ## MINIMUM_REQUEST_EXPIRATION
@@ -757,6 +759,18 @@ Maximum number of open database connections from the ORM. Reducing this can help
 - Default: `"~/.chainlink"`
 
 This is the directory where the `log.jsonl` file resides. `log.jsonl` is the log as written by the Chainlink node, depending on the `LOG_LEVEL` specified by the environment variable's value.
+
+## RPID
+
+- Default: _none_
+
+Both `RPID` and `RPOrigin` must be set to enabled security key MFA for logging in to the Operator UI. The RPID value should be the FQDN of where the Operator UI is served. When serving locally, the value should be `localhost`.
+
+## RPOrigin
+
+- Default: _none_
+
+Both `RPID` and `RPOrigin` must be set to enabled security key MFA for logging in to the Operator UI. The RPOrigin value should be the origin URL where WebAuthn requests initiate, including scheme and port. When serving locally, the value should be `http://localhost:6688/`
 
 ## SECURE_COOKIES
 
