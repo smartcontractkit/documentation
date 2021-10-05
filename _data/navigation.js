@@ -454,6 +454,10 @@ module.exports = {
             url: '/docs/developer-communications/',
           },
           {
+            title: 'Getting Help',
+            url: '/docs/getting-help/',
+          },
+          {
             title: 'Data Provider Nodes',
             url: '/docs/data-provider-nodes/',
           },
