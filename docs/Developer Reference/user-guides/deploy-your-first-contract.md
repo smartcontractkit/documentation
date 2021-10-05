@@ -17,7 +17,7 @@ Remix is a web IDE (integrated development environment) for creating, running, a
 
 ## Create and deploy your first contract
 
-* Navigate to Remix: <a href="https://remix.ethereum.org/#version=soljson-v0.6.0+commit.26b70077.js&optimize=false&evmVersion=null&url=https://docs.chain.link/samples/APIRequests/ATestnetConsumer.sol" target="_blank" rel="noreferrer, noopener">https://remix.ethereum.org</a>
+* Navigate to Remix: <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/ATestnetConsumer.sol" target="_blank" rel="noreferrer, noopener">https://remix.ethereum.org</a>
 
 * Remix opens up with an empty interface, or possible with a default contract
 
@@ -40,7 +40,7 @@ Remix is a web IDE (integrated development environment) for creating, running, a
 ![Remix Click Compile](/files/b8774fe-Screen_Shot_2020-09-08_at_7.10.07_AM.png)
 
 > 🚧
-> 
+>
 > If you get errors after compiling, make sure your compiler is set to one of the **0.6.0** compilers. If you used the link to Remix within this guide above, this would have been set for you.
 
 * Now select the `Deploy & run transactions` tab in the left-hand of Remix.
@@ -53,10 +53,10 @@ Remix is a web IDE (integrated development environment) for creating, running, a
 ![Metamask Confirm a Transaction Screen](/files/d082799-metamask.png)
 
 > 🚧 Metamask doesn't pop up?
-> 
+>
 > If Metamask does not prompt you and instead displays the error below, you will need to disable "Privacy Mode" in Metamask. You can do this by clicking on your unique account icon at the top-right, then go to the Settings. Privacy Mode will be a switch near the bottom. The error: **Send transaction failed: invalid address. If you use an injected provider, please check it is properly unlocked.**
 
-* A transaction link will be displayed at the bottom of Remix that displays deployment status. 
+* A transaction link will be displayed at the bottom of Remix that displays deployment status.
 It will take a few moments for the contract to be deployed. The Remix UI will update upon completion.
 
 ![Remix Transaction Confirmation Message](/files/8ff4abe-remix7.jpg)

@@ -28,7 +28,7 @@ The Keeper node runs this method as an [`eth_call`](https://eth.wiki/json-rpc/AP
 
 > ⚠️ Important Note
 > The check that is run is subject to the `checkGasLimit` in the [configuration of the registry](/docs/chainlink-keepers/overview/#configuration).
-> 
+>
 > Since `checkUpkeep` is only ever performed off-chain in simulation, for most cases it is best to treat this as a `view` function and not modify any state.
 
 ```solidity
@@ -57,7 +57,7 @@ When your checkUpkeep returns `upkeepNeeded == true`, the Keeper node broadcasts
 
 > ⚠️ Important note
 > The Upkeep that is performed is subject to the `callGasLimit` in the [configuration of the registry](/docs/chainlink-keepers/overview/#configuration).
-> 
+>
 > Ensure your `performUpkeep` is idempotent. Your `performUpkeep` should change state such that `checkUpkeep` will not return `true` for the same subset of work once said work is complete. Otherwise the Upkeep will remain eligible and result in multiple performances by the Keeper Network on the exactly same subset of work.
 
 
@@ -76,7 +76,7 @@ When your checkUpkeep returns `upkeepNeeded == true`, the Keeper node broadcasts
 The example below represents a simple counter contract. Each time `performUpkeep` is called, it increments its counter by one.
 
 <div class="remix-callout">
-    <a href="https://remix.ethereum.org/#version=soljson-v0.6.6+commit.6c089d02.js&optimize=false&evmVersion=null&url=https://docs.chain.link/samples/Keepers/KeepersCounter.sol" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
+    <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/Keepers/KeepersCounter.sol" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
     <a href="../../deploy-your-first-contract/" title="">What is Remix?</a>
 </div>
 

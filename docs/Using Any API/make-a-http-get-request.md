@@ -5,10 +5,10 @@ date: Last Modified
 title: "Make a GET Request"
 permalink: "docs/make-a-http-get-request/"
 whatsnext: {"Make an Existing Job Request":"/docs/existing-job-request/", "API Reference":"/docs/chainlink-framework/", "Contract Addresses":"/docs/decentralized-oracles-ethereum-mainnet/", "Multi-Variable Responses":"/docs/multi-variable-responses/"}
-metadata: 
+metadata:
   title: "Make a GET Request"
   description: "Learn how to make a GET request to an API from a smart contract, using Chainlink."
-  image: 
+  image:
     0: "/files/930cbb7-link.png"
 ---
 This page explains how to make an HTTP GET request to an external API from a smart contract, using Chainlink's [Request & Receive Data](../request-and-receive-data/) cycle.
@@ -24,7 +24,7 @@ Currently, any return value must fit within 32 bytes, if the value is bigger tha
 > Making a GET request will fail unless your deployed contract has enough LINK to pay for it. **Learn how to [Acquire testnet LINK](../acquire-link/) and [Fund your contract](../fund-your-contract/)**.
 
 <div class="remix-callout">
-    <a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&url=https://docs.chain.link/samples/APIRequests/APIConsumer.sol" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
+    <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/APIConsumer.sol" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
     <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
 </div>
 
@@ -36,7 +36,7 @@ If the LINK address for targeted blockchain is not [publicly available](../link-
 
 # Choosing an Oracle and JobId
 
-The `oracle` keyword refers to a specific Chainlink node that a contract makes an API call from, and the `jobId` refers to a specific job for that node to run. Each job is unique and returns different types of data. 
+The `oracle` keyword refers to a specific Chainlink node that a contract makes an API call from, and the `jobId` refers to a specific job for that node to run. Each job is unique and returns different types of data.
 
 For example, a job that returns a `bytes32` variable from an API would have a different `jobId` than a job that retrieved the same data, but in the form of a `uint256` variable.
 
@@ -44,7 +44,7 @@ For example, a job that returns a `bytes32` variable from an API would have a di
 
 # Supported APIs
 
-The `APIConsumer` in the example above is flexible enough to call any public API, so long as the URL in the "get" adapter parameter is correct, and the format of the response is known. 
+The `APIConsumer` in the example above is flexible enough to call any public API, so long as the URL in the "get" adapter parameter is correct, and the format of the response is known.
 
 ## Response Data
 
@@ -73,7 +73,7 @@ The code example above returns an unsigned integer from the oracle response, but
 
 If you need to return a string, use `bytes32`. <a href="https://gist.github.com/alexroan/a8caf258218f4065894ecd8926de39e7" target="_blank">Here's one method</a> of converting `bytes32` to `string`. Currently any return value must fit within 32 bytes, if the value is bigger than that multiple requests will need to be made.
 
-The data type returned by a specific job depends on the [adapters](../core-adapters/) that it supports. Make sure to choose an oracle job that supports the data type that your contract needs to consume. 
+The data type returned by a specific job depends on the [adapters](../core-adapters/) that it supports. Make sure to choose an oracle job that supports the data type that your contract needs to consume.
 
 # Choosing an Oracle Job without specifying the URL
 

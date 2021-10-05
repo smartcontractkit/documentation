@@ -4,17 +4,17 @@ section: smartContract
 date: Last Modified
 title: "LCX (Testnet)"
 permalink: "docs/lcx-testnet/"
-metadata: 
-  image: 
+metadata:
+  image:
     0: "/files/OpenGraph_V3.png"
 ---
-This Chainlink has a dedicated connection to <a href="https://www.lcx.com/Cryptocurrency-Reference-Price-Services/" target="_blank">LCX's Cryptocurrency Reference Prices</a> API. This service offers reliable daily reference prices of the U.S. dollar price and Euro price of one Bitcoin and one Ethereum. 
+This Chainlink has a dedicated connection to <a href="https://www.lcx.com/Cryptocurrency-Reference-Price-Services/" target="_blank">LCX's Cryptocurrency Reference Prices</a> API. This service offers reliable daily reference prices of the U.S. dollar price and Euro price of one Bitcoin and one Ethereum.
 
 # Steps for using this oracle
 
 - Write and deploy your [Chainlink](../intermediates-tutorial/)  contract using the network details below
 - Fund it with [LINK](../link-token-contracts/) (1 LINK is required per-request/)
-- Call your [request method](./#chainlink-examples) 
+- Call your [request method](./#chainlink-examples)
 
 # Network Details
 
@@ -22,12 +22,12 @@ You will need to use the following LINK token address, oracle address, and Job I
 
 #### Rinkeby
 LINK Token address: {{variables.RINKEBY_LINK_TOKEN}}
-Oracle address: {{variables.RINKEBY_CHAINLINK_ORACLE}} 
+Oracle address: {{variables.RINKEBY_CHAINLINK_ORACLE}}
 JobID: eb3b27aac93e4bf68406f164b86b049e
 
 #### Kovan
 LINK Token address: {{variables.KOVAN_LINK_TOKEN}}
-Oracle address: {{variables.KOVAN_CHAINLINK_ORACLE}} 
+Oracle address: {{variables.KOVAN_CHAINLINK_ORACLE}}
 JobID: 81c63592d97a4485b1d1339b3578e07f
 
 # Create your contract
@@ -40,15 +40,15 @@ pragma solidity ^0.4.24;
 import "@chainlink/contracts/src/v0.4/ChainlinkClient.sol";
 
 contract LCXChainlink is ChainlinkClient {
-  
+
   uint256 oraclePayment;
-  
+
   constructor(uint256 _oraclePayment) public {
     setPublicChainlinkToken();
     oraclePayment = _oraclePayment;
   }
   // Additional functions here:
-  
+
 }
 ```
 ```solidity Solidity 5
@@ -57,15 +57,15 @@ pragma solidity ^0.5.0;
 import "@chainlink/contracts/src/v0.5/ChainlinkClient.sol";
 
 contract LCXChainlink is ChainlinkClient {
-  
+
   uint256 oraclePayment;
-  
+
   constructor(uint256 _oraclePayment) public {
     setPublicChainlinkToken();
     oraclePayment = _oraclePayment;
   }
   // Additional functions here:
-  
+
 }
 ```
 ```solidity Solidity 6
@@ -74,20 +74,20 @@ pragma solidity ^0.6.0;
 import "@chainlink/contracts/src/v0.6/ChainlinkClient.sol";
 
 contract LCXChainlink is ChainlinkClient {
-  
+
   uint256 oraclePayment;
-  
+
   constructor(uint256 _oraclePayment) public {
     setPublicChainlinkToken();
     oraclePayment = _oraclePayment;
   }
   // Additional functions here:
-  
+
 }
 ```
 
 <div class="remix-callout">
-  <a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&url=https://docs.chain.link/samples/DataProviders/LCX.sol" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
+  <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/DataProviders/LCX.sol" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
     <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
 </div>
 
@@ -104,7 +104,7 @@ contract LCXChainlink is ChainlinkClient {
 
 **Required**
 
-The symbol for the cryptocurrency. 
+The symbol for the cryptocurrency.
 
 Must be ETH or BTC
 

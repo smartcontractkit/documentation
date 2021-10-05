@@ -6,8 +6,8 @@ title: "API Calls Tutorial"
 permalink: "docs/advanced-tutorial/"
 excerpt: "Calling APIs from Smart Contracts"
 whatsnext: {"Make a GET Request":"/docs/make-a-http-get-request/", "Make an Existing Job Request":"/docs/existing-job-request/"}
-metadata: 
-  image: 
+metadata:
+  image:
     0: "/files/04b8e56-cl.png"
 ---
 
@@ -51,7 +51,7 @@ Let's walk through a real example, where we retrieve 24 volume of the <a href="h
 
 ### Core Adapters Example
 
-1. [HttpGet](../core-adapters/#httpget) - Calls the API and returns the body of an HTTP GET result for [ETH/USD pair](https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETH&tsyms=USD).  Example: 
+1. [HttpGet](../core-adapters/#httpget) - Calls the API and returns the body of an HTTP GET result for [ETH/USD pair](https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETH&tsyms=USD).  Example:
 ```json
 {"RAW":
   {"ETH":
@@ -87,7 +87,7 @@ Let's see what this looks like in a contract.
 ```
 
 <div class="remix-callout">
-  <a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&url=https://docs.chain.link/samples/APIRequests/APIConsumer.sol" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
+  <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/APIConsumer.sol" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
     <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
 </div>
 
@@ -97,7 +97,7 @@ Let's walk through what's happening here:
 3. `fulfill` - Where the result is sent once the Oracle job is complete
 
 > 📘 Important
-> 
+>
 > The calling contract should own enough LINK to pay the specified fee (by default 0.1 LINK). You can use [this tutorial](../fund-your-contract/) to fund your contract.
 
 This was an example of a basic HTTP GET request. However, it requires defining the API URL directly in the smart contract. This can, in fact, be extracted and configured on the Job level inside the Oracle.
@@ -131,7 +131,7 @@ function requestVolumeData() public returns (bytes32 requestId) {
     Chainlink.Request memory request = buildChainlinkRequest(jobId, address(this), this.fulfill.selector);
 
     // Extra parameters don't need to be defined here because they are already defined in the job
-        
+
     return sendChainlinkRequestTo(oracle, request, fee);
 }
 ```
