@@ -37,6 +37,7 @@ The env variables listed here are explicitly supported and current as of Chainli
   - [KEEPER_REGISTRY_CHECK_GAS_OVERHEAD](#keeper_registry_check_gas_overhead)
   - [KEEPER_REGISTRY_PERFORM_GAS_OVERHEAD](#keeper_registry_perform_gas_overhead)
   - [KEEPER_REGISTRY_SYNC_INTERVAL](#keeper_registry_sync_interval)
+  - [KEEPER_REGISTRY_SYNC_UPKEEP_QUEUE_SIZE](#keeper_registry_sync_upkeep_queue_size)
 - [TLS](#tls)
   - [CHAINLINK_TLS_HOST](#chainlink_tls_host)
   - [CHAINLINK_TLS_PORT](#chainlink_tls_port)
@@ -254,6 +255,12 @@ The amount of extra gas to provide performUpkeep() calls to account for the gas 
 - Default: `"30m"`
 
 The interval in which the RegistrySynchronizer performs a full sync of the keeper registry contract it is tracking.
+
+## KEEPER_REGISTRY_SYNC_UPKEEP_QUEUE_SIZE
+
+- Default: `"10"`
+
+The maximum number of upkeeps that can be synced in parallel.
 
 # TLS
 
