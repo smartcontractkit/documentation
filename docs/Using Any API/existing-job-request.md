@@ -5,10 +5,10 @@ date: Last Modified
 title: "Make an Existing Job Request"
 permalink: "docs/existing-job-request/"
 whatsnext: {"Find Existing Jobs":"/docs/listing-services/", "API Reference":"/docs/chainlink-framework/", "Contract Addresses":"/docs/decentralized-oracles-ethereum-mainnet/"}
-metadata: 
+metadata:
   title: "Make an Existing Job Request"
   description: "Learn how to utilize existing Chainlink external adapters to make calls to APIs from smart contracts."
-  image: 
+  image:
     0: "/files/OpenGraph_V3.png"
 ---
 Using an *existing* Oracle Job makes your smart contract code more succinct. This page explains how to retrieve the current weather temperature (in Kelvin) for a defined city using an existing Oracle job.
@@ -26,7 +26,7 @@ This example uses the <a href="https://market.link/nodes/ef076e87-49f4-486b-9878
 > Making a job request will fail unless your deployed contract has enough LINK to pay for it. **Learn how to [Acquire testnet LINK](../acquire-link/) and [Fund your contract](../fund-your-contract/)**.
 
 <div class="remix-callout">
-    <a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&url=https://docs.chain.link/samples/APIRequests/OpenWeatherConsumer.sol" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
+    <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/OpenWeatherConsumer.sol" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
     <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
 </div>
 

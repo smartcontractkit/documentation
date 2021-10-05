@@ -6,10 +6,10 @@ title: "Random Numbers Tutorial"
 permalink: "docs/intermediates-tutorial/"
 excerpt: "Using Chainlink VRF"
 whatsnext: {"Get a Random Number":"/docs/get-a-random-number/", "API Calls tutorial":"/docs/advanced-tutorial/"}
-metadata: 
+metadata:
   title: "Random Numbers Tutorial"
   description: "Learn how to use randomness in your smart contracts using Chainlink VRF."
-  image: 
+  image:
     0: "/files/2a242f1-link.png"
 ---
 
@@ -18,8 +18,8 @@ metadata:
 </p>
 
 > 🚧 Note
-> 
-> The video uses a seed phrase to request randomness, this has been depreciated. Please use the code here. 
+>
+> The video uses a seed phrase to request randomness, this has been depreciated. Please use the code here.
 
 # Introduction
 
@@ -48,7 +48,7 @@ Randomness, on the other hand, cannot be reference data. If the result of random
 In return for providing this service of generating a random number, Oracles need to be paid in [LINK](../link-token-contracts/). This is paid by the contract that requests the randomness, and payment occurs during the request.
 
 > 📘 ERC-677 Token Standard
-> 
+>
 > LINK conforms to the ERC-677 token standard, and extension of ERC-20. This standard is what enables data to be encoded in token transfers. This is integral to the Request and Receive cycle. [Click here](https://github.com/ethereum/EIPs/issues/677) to learn more about ERC-677.
 
 # 3. Interacting with Chainlink Oracles
@@ -71,12 +71,12 @@ The contract will have the following functions:
 - `house`: To see the assigned house of an address
 
 > 📘 Open Full Contract
-> 
-> To jump straight to the entire implementation, you can [open this contract](https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&url=https://docs.chain.link/samples/VRF/VRFD20.sol) in remix</a>.
+>
+> To jump straight to the entire implementation, you can [open this contract](https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFD20.sol) in remix</a>.
 
 ## 4a. Importing `VRFConsumerBase`
 
-Chainlink maintains a <a href="https://github.com/smartcontractkit/chainlink/tree/master/contracts" target="_blank">library of contracts</a> that make consuming data from oracles easier. For Chainlink VRF, we use a contract called <a href="https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.6/VRFConsumerBase.sol" target="_blank">`VRFConsumerBase`</a>, which needs to be imported and extended from.
+Chainlink maintains a <a href="https://github.com/smartcontractkit/chainlink/tree/master/contracts" target="_blank">library of contracts</a> that make consuming data from oracles easier. For Chainlink VRF, we use a contract called <a href="https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/VRFConsumerBase.sol" target="_blank">`VRFConsumerBase`</a>, which needs to be imported and extended from.
 
 ```solidity
 pragma solidity 0.6.7;
@@ -139,13 +139,13 @@ As you can see, `VRFConsumerBase` needs to know the address of the vrfCoordinato
 uint256 private constant ROLL_IN_PROGRESS = 42;
 
 // ...
-// { variables we've already written } 
+// { variables we've already written }
 // ...
 
 event DiceRolled(bytes32 indexed requestId, address indexed roller);
 
 /// ...
-// { constructor } 
+// { constructor }
 // ...
 
 function rollDice(address roller) public onlyOwner returns (bytes32 requestId) {
@@ -226,7 +226,7 @@ function getHouseName(uint256 id) private pure returns (string memory) {
 See the full contract in Remix! (We've added a few helper functions in there which should make using the contract easier and more flexible. Have a play around with it to understand all the internal workings).
 
 <div class="remix-callout">
-  <a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&url=https://docs.chain.link/samples/VRF/VRFD20.sol" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
+  <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFD20.sol" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
     <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
 </div>
 
@@ -247,10 +247,10 @@ Click the caret arrow on the right hand side of "Deploy" to expand the parameter
 - `0x6c3699283bda56ad74f6b855546325b68d482e983852a7a82979cc4807b641f4`
 - `100000000000000000`
 
-These are the coordinator address, LINK address, key hash, and fee. Click deploy and use your Metamask account to confirm the transaction. 
+These are the coordinator address, LINK address, key hash, and fee. Click deploy and use your Metamask account to confirm the transaction.
 
 > 📘 Address, Key Hashes and more
-> 
+>
 > For a full reference of the addresses, key hashes and fees for each network, see [VRF Contracts](../vrf-contracts/).
 
 (Note: you should <a href="/docs/beginners-tutorial#7c-obtaining-testnet-eth" target="_blank">have some Kovan ETH in your Metamask account</a> to pay for the GAS).
