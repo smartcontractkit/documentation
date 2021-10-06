@@ -760,17 +760,17 @@ Maximum number of open database connections from the ORM. Reducing this can help
 
 This is the directory where the `log.jsonl` file resides. `log.jsonl` is the log as written by the Chainlink node, depending on the `LOG_LEVEL` specified by the environment variable's value.
 
-## RPID
+## MFA_RPID
 
 - Default: _none_
 
-Both `RPID` and `RPOrigin` must be set to enabled security key MFA for logging in to the Operator UI. The RPID value should be the FQDN of where the Operator UI is served. When serving locally, the value should be `localhost`.
+Both `MFA_RPID` and `MFA_RPORIGIN` must be set to enabled security key MFA/2FA for logging in to the Operator UI. The MFA_RPID value should be the FQDN of where the Operator UI is served. When serving locally, the value should be `localhost`.
 
-## RPOrigin
+## MFA_RPORIGIN
 
 - Default: _none_
 
-Both `RPID` and `RPOrigin` must be set to enabled security key MFA for logging in to the Operator UI. The RPOrigin value should be the origin URL where WebAuthn requests initiate, including scheme and port. When serving locally, the value should be `http://localhost:6688/`
+Both `RPID` and `MFA_RPORIGIN` must be set to enabled security key MFA/2FA for logging in to the Operator UI. The MFA_RPORIGIN value should be the origin URL where WebAuthn requests initiate, including scheme and port. When serving locally, the value should be `http://localhost:6688/`
 
 ## SECURE_COOKIES
 
