@@ -107,8 +107,8 @@ The env variables listed here are explicitly supported and current as of Chainli
   - [ORM_MAX_IDLE_CONNS](#orm_max_idle_conns)
   - [ORM_MAX_OPEN_CONNS](#orm_max_open_conns)
   - [ROOT](#root)
-  - [RPID](#rpid)
-  - [RPOrigin](#rpo_origin)
+  - [MFA_RPID](#mfa_rpid)
+  - [MFA_RPORIGIN](#mfa_rporigin)
   - [SECURE_COOKIES](#secure_cookies)
   - [SESSION_TIMEOUT](#session_timeout)
 - [Advanced](#advanced)
@@ -711,6 +711,18 @@ observed to happen), networking issues or txes being ejected from the mempool.
 
 See eth_resender.go for more details
 
+## MFA_RPID
+
+- Default: _none_
+
+Both `MFA_RPID` and `MFA_RPORIGIN` must be set to enabled security key MFA/2FA for logging in to the Operator UI. The MFA_RPID value should be the FQDN of where the Operator UI is served. When serving locally, the value should be `localhost`.
+
+## MFA_RPORIGIN
+
+- Default: _none_
+
+Both `RPID` and `MFA_RPORIGIN` must be set to enabled security key MFA/2FA for logging in to the Operator UI. The MFA_RPORIGIN value should be the origin URL where WebAuthn requests initiate, including scheme and port. When serving locally, the value should be `http://localhost:6688/`
+
 ## MINIMUM_CONTRACT_PAYMENT_LINK_JUELS
 
 > ⚠️ NOTE
@@ -759,18 +771,6 @@ Maximum number of open database connections from the ORM. Reducing this can help
 - Default: `"~/.chainlink"`
 
 This is the directory where the `log.jsonl` file resides. `log.jsonl` is the log as written by the Chainlink node, depending on the `LOG_LEVEL` specified by the environment variable's value.
-
-## MFA_RPID
-
-- Default: _none_
-
-Both `MFA_RPID` and `MFA_RPORIGIN` must be set to enabled security key MFA/2FA for logging in to the Operator UI. The MFA_RPID value should be the FQDN of where the Operator UI is served. When serving locally, the value should be `localhost`.
-
-## MFA_RPORIGIN
-
-- Default: _none_
-
-Both `RPID` and `MFA_RPORIGIN` must be set to enabled security key MFA/2FA for logging in to the Operator UI. The MFA_RPORIGIN value should be the origin URL where WebAuthn requests initiate, including scheme and port. When serving locally, the value should be `http://localhost:6688/`
 
 ## SECURE_COOKIES
 
