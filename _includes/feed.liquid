@@ -65,9 +65,14 @@ section: smartContract
                 html += `<label><input type="checkbox" class="extra" ${showExtraDetails ? 'checked="checked"' : ''}>Show Heartbeat and Deviation Details</input></label>`;
                 let proxyList = '';
                 for(let proxy of network.proxies) {
+                    {% comment %} Add notice about specific index price feeds {% endcomment %}
+                    let indexnotice  = '';
+                    if(proxy.pair == 'DPI / ETH' || proxy.pair == 'DPI / USD') {
+                      indexnotice  = '<p><small>(Values from this feed use an index price calculation made up of liquid pairs)</small></p>';
+                    }
                     proxyList += `
                     <tr id="${network.name} ${proxy.pair}">
-                        <td><code>${proxy.pair}</code></td>
+                        <td><code>${proxy.pair}</code>${indexnotice}</td>
                         <td ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.deviationThreshold ? (proxy.deviationThreshold + '%') : 'N/A'}</td>
                         <td ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.heartbeat ? proxy.heartbeat : 'N/A'}</td>
                         <td>${proxy.decimals}</td>
