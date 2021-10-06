@@ -15,10 +15,10 @@ To consume an API with a large responses, your contract should inherit from [Cha
 >❗️ Remember to fund your contract with LINK!
 >
 > Making a GET request will fail unless your deployed contract has enough LINK to pay for it. **Learn how to [Acquire testnet LINK](../acquire-link/) and [Fund your contract](../fund-your-contract/)**.
-> 
+>
 
 <div class="remix-callout">
-    <a href="https://remix.ethereum.org/#optimize=false&evmVersion=null&runs=200&version=soljson-v0.8.6+commit.11564f7e.js&url=https://docs.chain.link/samples/APIRequests/GenericBigWord.sol" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
+    <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/GenericBigWord.sol" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
     <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
 </div>
 
@@ -27,13 +27,13 @@ To consume an API with a large responses, your contract should inherit from [Cha
 ```
 
 > 📘 Job Spec
-> The job spec for the Chainlink node in this example can be [found here](../example-job-spec-large/). 
+> The job spec for the Chainlink node in this example can be [found here](../example-job-spec-large/).
 
 If the LINK address for targeted blockchain is not [publicly available](../link-token-contracts/) yet, replace [setPublicChainlinkToken(/)](../chainlink-framework/#setpublicchainlinktoken) with [setChainlinkToken(_address)](../chainlink-framework/#setchainlinktoken) in the constructor, where `_address` is a corresponding LINK token contract.
 
 # Choosing an Oracle and JobId
 
-The `oracle` keyword refers to a specific Chainlink node that a contract makes an API call from, and the `specId` refers to a specific job for that node to run. Each job is unique and returns different types of data. 
+The `oracle` keyword refers to a specific Chainlink node that a contract makes an API call from, and the `specId` refers to a specific job for that node to run. Each job is unique and returns different types of data.
 
 For example, a job that returns a `bytes32` variable from an API would have a different `specId` than a job that retrieved the same data, but in the form of a `uint256` variable.
 

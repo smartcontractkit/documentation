@@ -4,13 +4,13 @@ section: smartContract
 date: Last Modified
 title: "Chainlink Alarm Clock (Testnet)"
 permalink: "docs/chainlink-alarm-clock/"
-metadata: 
-  image: 
+metadata:
+  image:
     0: "/files/807bfbc-cl.png"
 ---
 
 > 🚧 Note
-> 
+>
 > Chainlink Alarm Clock is is an outdated way of automating time-based requests. Please, consider using [Keepers](../chainlink-keepers/introduction/) instead.
 
 
@@ -20,7 +20,7 @@ You can use Chainlink to trigger a smart contract at a specified time. Using thi
 
 - Write and deploy your [Chainlinked](../intermediates-tutorial/)  contract using the network details below
 - Fund it with [LINK](../link-token-contracts/) (0.1 LINK is required per-request/)
-- Call your [request method](./#chainlink-examples) 
+- Call your [request method](./#chainlink-examples)
 
 # Chainlink Network Details
 
@@ -50,12 +50,12 @@ contract ChainlinkAlarmClock is ChainlinkClient {
     oraclePayment = _oraclePayment;
   }
   // Additional functions here:
-  
+
 }
 ```
 
 <div class="remix-callout">
-  <a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&url=https://docs.chain.link/samples/DataProviders/AlarmClock.sol" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
+  <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/DataProviders/AlarmClock.sol" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
     <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
 </div>
 
@@ -74,7 +74,7 @@ contract ChainlinkAlarmClock is ChainlinkClient {
 The timestamp for which the Chainlink node will wait to respond.
 
 > 🚧 `now` keyword"
-> 
+>
 > Solidity 0.7.0 deprecated the now keyword. For contracts ^0.7.0, you must use `block.timestamp`
 
 #### Solidity example

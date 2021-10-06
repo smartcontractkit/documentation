@@ -10,7 +10,7 @@ This page will show you how to obtain and add testnet LINK to MetaMask. If you a
 
 # Testnet LINK Faucet
 
-* Go to the Chainlink Kovan Faucet site: https://kovan.chain.link
+* Go to the Chainlink Kovan Faucet site: https://faucets.chain.link/kovan
 
 > 👍 Note
 > 

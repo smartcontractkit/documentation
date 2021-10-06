@@ -29,7 +29,7 @@ Your node works with several different types of addresses. Each address type has
 
 ## Deploy your own Oracle contract
 
-1. Go to Remix and [open the `Oracle.sol` smart contract](https://remix.ethereum.org/#optimize=true&version=soljson-v0.4.24+commit.e67f0147.js&url=https://docs.chain.link/samples/NodeOperators/Oracle.sol).
+1. Go to Remix and [open the `Oracle.sol` smart contract](https://remix.ethereum.org/#url=https://docs.chain.link/samples/NodeOperators/Oracle.sol).
 
     ![The Remix file explorer showing Oracle.sol.](/files/05f12f3-00eeef4-remix001.jpg)
 

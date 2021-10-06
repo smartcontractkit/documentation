@@ -11,7 +11,7 @@ You can use Chainlink to digest weather information using [Google Cloud Public D
 
 ## Parameters and External Adapters Details
 
-These jobs are using a custom external adapter. Please see the [Google weather external adapter](https://github.com/smartcontractkit/external-adapters-js/tree/develop/packages/composites/google-weather) to see information about parameters that can be used with these jobs. 
+These jobs are using a custom external adapter. Please see the [Google weather external adapter](https://github.com/smartcontractkit/external-adapters-js/tree/develop/packages/composites/google-weather) to see information about parameters that can be used with these jobs.
 
 # Chainlink Network Details
 
@@ -49,20 +49,20 @@ You will need to use the following LINK token address, oracle address, and JobSp
 # Steps For Using This Oracle
 
 - Write and deploy your [Chainlinked](../intermediates-tutorial/)  contract using the network details above.
-- Fund it with [LINK](../link-token-contracts/) 
+- Fund it with [LINK](../link-token-contracts/)
 - Call your request method
 
 
 # Create your Chainlinked contract
 
-Import `ChainlinkClient.sol` into your contract so you can inherit the `ChainlinkClient` behavior. Below is a sample that can call the hail, rain, and average temperature jobs to fetch weather data from Bergen, Norway. 
+Import `ChainlinkClient.sol` into your contract so you can inherit the `ChainlinkClient` behavior. Below is a sample that can call the hail, rain, and average temperature jobs to fetch weather data from Bergen, Norway.
 
 ```solidity
 {% include samples/DataProviders/GoogleWeather.sol %}
 ```
 
 <div class="remix-callout">
-  <a href="https://remix.ethereum.org/#version=soljson-v0.6.12+commit.27d51765.js&optimize=false&evmVersion=null&runs=200&url=https://docs.chain.link/samples/DataProviders/GoogleWeather.sol" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
+  <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/DataProviders/GoogleWeather.sol" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
     <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
 </div>
 
@@ -251,4 +251,4 @@ Import `ChainlinkClient.sol` into your contract so you can inherit the `Chainlin
 |     ✅     |  `field`   |                                                                          Which column to fetch data from                                                                           | [Data available](https://github.com/smartcontractkit/external-adapters-js/tree/develop/packages/composites/google-weather#data-available) |             |
 |           |  `units`   | What unit system to return the result in ([conversions](https://github.com/smartcontractkit/external-adapters-js/tree/develop/packages/composites/google-weather#unit-conversion)) |                                                           `imperial`, `metric`                                                            | `imperial`  |
 
-Please see the [Google weather external adapter](https://github.com/smartcontractkit/external-adapters-js/tree/develop/packages/composites/google-weather) to see information about parameters that can be used with these jobs. 
+Please see the [Google weather external adapter](https://github.com/smartcontractkit/external-adapters-js/tree/develop/packages/composites/google-weather) to see information about parameters that can be used with these jobs.
