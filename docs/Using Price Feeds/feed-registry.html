@@ -4,10 +4,10 @@ section: smartContract
 date: Last Modified
 title: "Feed Registry"
 permalink: "docs/feed-registry/"
-metadata: 
+metadata:
   title: "How to Use Chainlink Feed Registry"
   description: "The Chainlink Feed Registry is an on-chain mapping of assets to feeds. It allows users and DeFi protocols to query Chainlink data feeds from a given pair of asset and denomination addresses."
-  image: 
+  image:
     0: "/files/OpenGraph_V3.png"
 ---
 {% markdown %}
@@ -70,7 +70,7 @@ To consume price data from the Feed Registry, your smart contract should referen
 
 <div class="row cl-button-container">
     <div class="col-xs-12 col-md-12">
-      <a href="https://remix.ethereum.org/#optimize=false&runs=200&evmVersion=null&version=soljson-v0.8.6+commit.11564f7e.js&url=https://docs.chain.link/samples/FeedRegistry/PriceConsumer.sol" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
+      <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/FeedRegistry/PriceConsumer.sol" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
     </div>
     <div class="col-xs-12 col-md-12">
       <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
@@ -82,7 +82,7 @@ To consume price data from the Feed Registry, your smart contract should referen
 ## Solidity Hardhat Example
 
 > 📘 Note
-> 
+>
 > You can find a working Feed Registry Hardhat project [here](https://github.com/smartcontractkit/feed-registry-example). Clone the repo and follow the setup instructions to run the example locally.
 
 
@@ -106,7 +106,7 @@ To consume price data from the Feed Registry, your smart contract should referen
 
 {% markdown %}
 
-# Contract Addresses 
+# Contract Addresses
 
 This section lists the blockchains that Chainlink Feed Registry are currently available on.
 
@@ -180,12 +180,12 @@ function description(address base, address quote) external view returns (string 
 Get data about a specific round, using the `roundId`.
 
 ```solidity
-function getRoundData(address base, address quote, uint80 _roundId) external view 
+function getRoundData(address base, address quote, uint80 _roundId) external view
     returns (
-        uint80 roundId, 
-        int256 answer, 
-        uint256 startedAt, 
-        uint256 updatedAt, 
+        uint80 roundId,
+        int256 answer,
+        uint256 startedAt,
+        uint256 updatedAt,
         uint80 answeredInRound
     )
 ```
@@ -209,12 +209,12 @@ function getRoundData(address base, address quote, uint80 _roundId) external vie
 Get the price from the latest round.
 
 ```solidity
-function latestRoundData(address base, address quote) external view 
+function latestRoundData(address base, address quote) external view
     returns (
-        uint80 roundId, 
-        int256 answer, 
-        uint256 startedAt, 
-        uint256 updatedAt, 
+        uint80 roundId,
+        int256 answer,
+        uint256 startedAt,
+        uint256 updatedAt,
         uint80 answeredInRound
     )
 ```
@@ -271,7 +271,7 @@ function getFeed(
 
 ## getPhaseFeed
 
-Returns the underlying aggregator address of a base / quote pair at a specified phase. Note that on-chain contracts cannot read from aggregators directly, only through Feed Registry or Proxy contracts. 
+Returns the underlying aggregator address of a base / quote pair at a specified phase. Note that on-chain contracts cannot read from aggregators directly, only through Feed Registry or Proxy contracts.
 Phase ids start at `1`. You can get the current Phase by calling `getCurrentPhaseId()`.
 
 ```solidity
@@ -322,7 +322,7 @@ function isFeedEnabled(
 
 ## getPhase
 
-Returns the starting and ending aggregator round ids of a base / quote pair. 
+Returns the starting and ending aggregator round ids of a base / quote pair.
 
 ```solidity
 function getPhase(
@@ -386,7 +386,7 @@ Returns the underlying aggregator address of a base / quote pair at a specified 
 
 ## getPhaseRange
 
-Returns the starting and ending round ids of a base / quote pair at a specified phase. 
+Returns the starting and ending round ids of a base / quote pair at a specified phase.
 
 Please note that this `roundId` is calculated from the phase id and the underlying aggregator's round id. To get the raw aggregator round ids of a phase for indexing purposes, please use `getPhase()`.
 

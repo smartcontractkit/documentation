@@ -18,7 +18,7 @@ Finage is a leading real-time stock, forex, and cryptocurrency data provider. Th
 
 #### Ethereum Mainnet
 Payment Amount: 1 LINK  
-LINK Token Address: `{{variables.MAINNET_LINK_TOKEN}}` 
+LINK Token Address: `{{variables.MAINNET_LINK_TOKEN}}`
 Oracle Address: `0xE98dFc0C36408b54326Fa11235D573574B1e8eC3`  
 JobID: `3e478404a3ca4cf5abd2820efe7c1913`  
 
@@ -44,15 +44,15 @@ pragma solidity ^0.4.24;
 import "@chainlink/contracts/v0.4/ChainlinkClient.sol";
 
 contract FinageChainlink is ChainlinkClient {
-  
+
   uint256 oraclePayment;
-  
+
   constructor(uint256 _oraclePayment) public {
     setPublicChainlinkToken();
     oraclePayment = _oraclePayment;
   }
   // Additional functions here:
-  
+
 }
 ```
 ```solidity Solidity 5
@@ -61,15 +61,15 @@ pragma solidity ^0.5.0;
 import "@chainlink/contracts/v0.5/ChainlinkClient.sol";
 
 contract FinageChainlink is ChainlinkClient {
-  
+
   uint256 oraclePayment;
-  
+
   constructor(uint256 _oraclePayment) public {
     setPublicChainlinkToken();
     oraclePayment = _oraclePayment;
   }
   // Additional functions here:
-  
+
 }
 ```
 ```solidity Solidity 6
@@ -78,20 +78,20 @@ pragma solidity ^0.6.0;
 import "@chainlink/contracts/v0.6/ChainlinkClient.sol";
 
 contract FinageChainlink is ChainlinkClient {
-  
+
   uint256 oraclePayment;
-  
+
   constructor(uint256 _oraclePayment) public {
     setPublicChainlinkToken();
     oraclePayment = _oraclePayment;
   }
   // Additional functions here:
-  
+
 }
 ```
 
 <div class="remix-callout">
-    <a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&url=https://docs.chain.link/samples/DataProviders/Finage.sol" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
+    <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/DataProviders/Finage.sol" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
     <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
 </div>
 
