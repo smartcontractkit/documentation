@@ -18,6 +18,7 @@ permalink: "docs/other-tutorials/"
 | [Develop a DeFi Project Using Python](https://blog.chain.link/develop-python-defi-project/)                                                        | DeFi     | Medium     |
 | [Build a DeFi Call Option Exchange With Chainlink Data Feeds](https://blog.chain.link/defi-call-option-exchange-in-solidity/)                     | DeFi     | Advanced   |
 | [Build a DeFi Yield Farming dApp Using Chainlink Data Feeds](https://blog.chain.link/build-defi-yield-farming-application-with-chainlink/)        | DeFi     | Advanced   |
+| [Build and Deploy an Avalanche Smart Contract](https://blog.chain.link/how-to-build-and-deploy-an-avalanche-smart-contract/)                      | DeFi     | Beginner   |
 
 
 ## VRF Tutorials
