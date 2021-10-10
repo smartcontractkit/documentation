@@ -15,7 +15,7 @@ Best are the practices for using Chainlink VRF.
 
 ## Getting a random number within a range
 
-If you need to generate a random number within a given range, you should use [modulo](https://docs.soliditylang.org/en/v0.6.0/types.html) to define the limits of your range. Below you can see how to get a random number between 1 and 50.
+If you need to generate a random number within a given range, you should use [modulo](https://docs.soliditylang.org/en/v0.6.0/types.html) to define the limits of your range. Below you can see how to get a random number in a range from 1 to 50.
 
 ```solidity
 uint256 public randomResult;
