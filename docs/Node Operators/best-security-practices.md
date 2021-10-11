@@ -13,7 +13,7 @@ To run a Chainlink node, the Operator UI port does not need to be open on the in
 **Minimum Requirements:**
 - SSH (port 22 or changed from the default) is open, and access to the node is granted via SSH tunnelling. This is done typically by adding `-L 6688:localhost:6688` to your SSH command.
 - Access to the Ethereum client that the Chainlink node uses is restricted to solely the Chainlink node. This includes ports 8545 and 8546, but excludes 30303 for P2P traffic.
- 
+
 **Recommended:**
 - The use of a VPN restricts access to only those who are signed into the VPN in order to access internal resources. For example, this can be achieved by using something like [OpenVPN Access Server](https://openvpn.net/vpn-server/).
 - With the use of the VPN, all traffic between Chainlink nodes and Ethereum clients is routed internally rather than over the internet. For example, all servers are placed in an internal subnet range such as `10.0.0.0/16` and use these IP addresses for communicating.
@@ -25,7 +25,7 @@ To ensure there is very minimal downtime, failover capabilities are required on 
 
 **Minimum Requirements:**
 - Chainlink nodes are using a PostgreSQL database that are not on the same servers as the Chainlink nodes.
-- At least two Chainlink nodes are running at any one time, with both of them pointing to the same database to ensure failover if one fails. 
+- At least two Chainlink nodes are running at any one time, with both of them pointing to the same database to ensure failover if one fails.
 
 **Ethereum-specific:**
 - Ethereum client websocket connectivity is fronted by a load balancer, used by the Chainlink nodes. [Here is an example on how to set up a load balancer](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/tutorial-target-ecs-containers.html).
@@ -56,7 +56,7 @@ JSON_CONSOLE](../configuration-variables/#json_console) configuration variable t
 
 ## Frequent Updates
 
-Due to the early nature of the software, it may be required to perform frequent updates to your Chainlink node. 
+Due to the early nature of the software, it may be required to perform frequent updates to your Chainlink node.
 
 On performing system maintenance to update the Chainlink node, follow [this](/docs/performing-system-maintenance/#failover-node-example) guide.
 
@@ -64,7 +64,7 @@ On performing system maintenance to update the Chainlink node, follow [this](/do
 
 The following are suggestions for job specifications and configuration settings for the node.
 
-[Job Specifications](../job-specifications/):
+[Job Specifications](../jobs/):
 - Include the address of your oracle contract address for all RunLog initiated jobs, as shown in the [Fulfilling Requests](../fulfilling-requests/#add-jobs-to-the-node) guide.
 - Override the global `MIN_INCOMING_CONFIRMATIONS` config by setting a `confirmations` field in jobs which perform off-chain payments to allow for greater security by making the node ensure the transaction is still valid after X blocks.
 

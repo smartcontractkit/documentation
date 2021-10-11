@@ -9,12 +9,13 @@ Executes a job upon receipt of an explicit request made by a user. The request i
 
 **Spec format**
 
-```jpv2
+```toml
 type                = "directrequest"
 schemaVersion       = 1
 name                = "example eth request event spec"
 contractAddress     = "0x613a38AC1659769640aaE063C651F48E0250454C"
-externalJobID       = "0EEC7E1D-D0D2-476C-A1A8-72DFB6633F02" # optional
+# Optional externalJobID: Automatically generated if unspecified
+externalJobID       = "0EEC7E1D-D0D2-476C-A1A8-72DFB6633F02"
 observationSource   = """
     ds          [type=http method=GET url="http://example.com"]
     ds_parse    [type=jsonparse path="USD"]
@@ -65,7 +66,7 @@ contract MyClient is ChainlinkClient {
 
 This is a single-word response because aside from the `requestID`, the fulfill callback receives only a single-word argument in the `uint256 answer`. You can fulfill this request with a direct request job using the following pipeline:
 
-```dot
+```toml
 // First, we parse the request log and the CBOR payload inside of it
 decode_log  [type="ethabidecodelog"
              data="$(jobRun.logData)"
@@ -76,26 +77,20 @@ decode_cbor [type="cborparse"
              data="$(decode_log.cborPayload)"]
 
 // Then, we use the decoded request parameters to make an HTTP fetch
-fetch [type="http" url="$(decode_cbor.fetchURL)" method="get"]
+fetch [type=http method=GET url="$(decode_cbor.fetchURL)"]
 parse [type="jsonparse" path="$(decode_cbor.jsonPath)" data="$(fetch)"]
 
 // Finally, we send a response on-chain.
 // Note that single-word responses automatically populate
-// the requestId. 
+// the requestId.
 encode_response [type=ethabiencode
                  abi="(uint256 data)"
                  data=<{"data": $(parse) }>]
-                 
+
 encode_tx       [type=ethabiencode
                  abi="fulfillOracleRequest(bytes32 requestId, uint256 payment, address callbackAddress, bytes4 callbackFunctionId, uint256 expiration, bytes32 data)"
-                 data=<{
-                     "requestId": $(decode_log.requestId),
-                     "payment": $(decode_log.payment),
-                     "callbackAddress": $(decode_log.callbackAddr),
-                     "callbackFunctionId": $(decode_log.callbackFunctionId),
-                     "expiration": $(decode_log.cancelExpiration),
-                     "data": $(encode_mwr)
-                  }>]
+                 data=<{"requestId": $(decode_log.requestId), "payment": $(decode_log.payment), "callbackAddress": $(decode_log.callbackAddr), "callbackFunctionId": $(decode_log.callbackFunctionId), "expiration": $(decode_log.cancelExpiration), "data": $(encode_mwr)}>
+                 ]
 
 submit_tx  [type=ethtx to="0x613a38AC1659769640aaE063C651F48E0250454C" data="$(encode_tx)"]
 
@@ -125,7 +120,7 @@ contract MyClient is ChainlinkClient {
 }
 ```
 
-```jpv2
+```toml
 type                = "directrequest"
 schemaVersion       = 1
 name                = "example eth request event spec"
@@ -166,19 +161,12 @@ observationSource   = """
     // MWR API does NOT auto populate the requestID.
     encode_mwr [type=ethabiencode
                 abi="(bytes32 requestId, uint256 usd, uint256 eur, uint256 jpy)"
-                data=<{
-                    "requestId": $(decode_log.requestId),
-                    "usd": $(usd_multiply),
-                    "eur": $(eur_multiply),
-                    "jpy": $(jpy_multiply)}>]
+                data=<{"requestId": $(decode_log.requestId), "usd": $(usd_multiply), "eur": $(eur_multiply), "jpy": $(jpy_multiply)}>
+                ]
     encode_tx  [type=ethabiencode
                 abi="fulfillOracleRequest2(bytes32 requestId, uint256 payment, address callbackAddress, bytes4 callbackFunctionId, uint256 expiration, bytes calldata data)"
-                data=<{"requestId": $(decode_log.requestId),
-                       "payment":   $(decode_log.payment),
-                       "callbackAddress": $(decode_log.callbackAddr),
-                       "callbackFunctionId": $(decode_log.callbackFunctionId),
-                       "expiration": $(decode_log.cancelExpiration),
-                       "data": $(encode_mwr)}>]
+                data=<{"requestId": $(decode_log.requestId), "payment":   $(decode_log.payment), "callbackAddress": $(decode_log.callbackAddr), "callbackFunctionId": $(decode_log.callbackFunctionId), "expiration": $(decode_log.cancelExpiration), "data": $(encode_mwr)}>
+                ]
     submit_tx  [type=ethtx to="0x613a38AC1659769640aaE063C651F48E0250454C" data="$(encode_tx)" minConfirmations="2"]
 
     encode_mwr -> encode_tx -> submit_tx

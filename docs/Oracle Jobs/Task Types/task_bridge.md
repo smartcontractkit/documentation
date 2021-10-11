@@ -22,10 +22,6 @@ A string containing the response body.
 ```dot
 my_bridge_task [type="bridge"
                 name="some_bridge"
-                requestData=<{
-                    "foo": $(foo),
-                    "bar": $(bar),
-                    "jobID": 123
-                }>]
+                requestData=<{"foo": $(foo), "bar": $(bar), "jobID": 123}>
+                ]
 ```
-

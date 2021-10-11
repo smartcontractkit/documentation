@@ -13,7 +13,7 @@ Keeper jobs occasionally poll a smart contract method that expresses whether som
 
 **Spec format**
 
-```jpv2
+```toml
 type            = "keeper"
 schemaVersion   = 1
 name            = "example keeper spec"

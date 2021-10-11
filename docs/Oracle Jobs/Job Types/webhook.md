@@ -7,11 +7,11 @@ permalink: "docs/jobs/types/webhook/"
 
 Webhook jobs can be initiated by HTTP request, either by a user or external initiator.
 
-> Note: You'll need `FEATURE_WEBHOOK_V2=true` in your `.env` file. 
+> Note: You'll need `FEATURE_WEBHOOK_V2=true` in your `.env` file.
 
 This is an example webhook job:
 
-```jpv2
+```toml
 type            = "webhook"
 schemaVersion   = 1
 externalInitiators = [

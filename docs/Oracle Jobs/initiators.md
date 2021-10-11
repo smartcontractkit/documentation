@@ -8,19 +8,12 @@ whatsnext: {"Introduction to External Initiators":"/docs/external-initiators-int
 
 # DEPRECATED
 
-> ⚠️ NOTE
-> Initiators are deprecated and will be removed in Chainlink 1.0.0.
-> 
-> Please refer to [v2 jobs](/docs/jobs) instead.
+> ❗️ v1 Jobs are deprecated
+> The initiators for v1 Jobs are deprecated and will be removed for Chainlink nodes running version 1.0.0 and later. Use [v2 job types](/docs/jobs) instead.
+>
+> See the [v2 jobs migration page](/docs/jobs/migration-v1-v2) to learn how to migrate to v2 jobs.
 
 ## Initiators
-
-[block:api-header]
-{
-  "title": "Cron"
-}
-[/block]
-The `Cron` initiator is a simple way to schedule recurring job runs, using <a href="https://en.wikipedia.org/wiki/Cron#Overview" target="_blank">standard cron syntax</a>.
 
 ## Cron
 
@@ -98,13 +91,13 @@ The `fluxmonitor` is the current  initiator used by the [Chainlink Data Feeds](h
 ### FluxMonitor Parameters
 
 - `address`: The smart contract address to push updates to.
-- `feeds`: A list of `bridges`, also known as external adapters. 
+- `feeds`: A list of `bridges`, also known as external adapters.
 - `requestData`: The data to send in the call to the bridge/external adapter.
-- `threshold`: Threshold percentage to trigger an update on. 
+- `threshold`: Threshold percentage to trigger an update on.
 - `absoluteThreshold`: To trigger a new on-chain report, the absolute difference in the feed value must change by at least this value. If 0, make no change.
 - `precision`: Number of decimals
-- `pollTimer`: Takes a `period` object with how often to poll the off-chain resources. 
-- `idleTimer`: The main heartbeat. If no change to the off-chain resource, trigger an update every `idleTimer` interval. 
+- `pollTimer`: Takes a `period` object with how often to poll the off-chain resources.
+- `idleTimer`: The main heartbeat. If no change to the off-chain resource, trigger an update every `idleTimer` interval.
 
 ### Example
 

@@ -13,7 +13,7 @@ Every OCR cluster requires at least one bootstrap node as a kind of "rallying po
 
 **Spec format**
 
-```jpv2
+```toml
 type               = "offchainreporting"
 schemaVersion      = 1
 contractAddress    = "0x27548a32b9aD5D64c5945EaE9Da5337bc3169D15"
@@ -42,11 +42,11 @@ See [shared fields](/docs/jobs/#shared-fields).
 
 #### Oracle node
 
-Oracle nodes, on the other hand, are responsible for submitting answers. 
+Oracle nodes, on the other hand, are responsible for submitting answers.
 
 **Spec format**
 
-```jpv2
+```toml
 type               = "offchainreporting"
 schemaVersion      = 1
 name               = "OCR: ETH/USD"
@@ -107,4 +107,3 @@ See [shared fields](/docs/jobs/#shared-fields).
 - `$(jobSpec.externalJobID)`: the globally-unique job ID for this job. Used to coordinate between node operators in certain cases.
 - `$(jobSpec.name)`: the local name of the job.
 - `$(jobRun.meta)`: a map of metadata that can be sent to a bridge, etc.
-

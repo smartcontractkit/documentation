@@ -44,7 +44,7 @@ API reference for [`ChainlinkClient`](https://github.com/smartcontractkit/chainl
 ## Constants
 
 > 🚧 Namechange Between Versions
-> 
+>
 > From Solidity v0.7 onwards, this constant is renamed to `LINK_DIVISIBILITY`.
 
 
@@ -89,10 +89,10 @@ contract MyContract is ChainlinkClient {
   bytes32 constant JOB_ID = bytes32("493610cff14346f786f88ed791ab7704");
   uint256 constant PAYMENT = 1 * LINK;
   uint256 latestPrice;
-  
+
   constructor(address _link, address _oracle) public {
     setChainlinkToken(_link);
-    
+
     // record an oracle in storage for convenience
     //   so that you don't have to specify it on every request
     setChainlinkOracle(_oracle);
@@ -101,7 +101,7 @@ contract MyContract is ChainlinkClient {
   function requestPrice() public {
     sendChainlinkRequest(buildChainlinkRequest(JOB_ID, this, this.myCallback.selector), PAYMENT);
   }
-  
+
   function myCallback(bytes32 _requestId, uint256 _price) public {
     validateChainlinkCallback(_requestId); // always validate callbacks
     latestPrice = _price;
@@ -131,19 +131,19 @@ contract MyContract is ChainlinkClient {
   bytes32 constant JOB_ID = bytes32("493610cff14346f786f88ed791ab7704");
   uint256 constant PAYMENT = 1 * LINK;
   uint256 latestPrice;
-  
+
   constructor(address _link, address _oracle) public {
     // set the address of the Chainlink token
     //   because it is different on different networks
     setChainlinkToken(_link);
-    
+
     setChainlinkOracle(_oracle);
   }
 
   function requestPrice() public {
     sendChainlinkRequest(buildChainlinkRequest(JOB_ID, this, this.myCallback.selector), PAYMENT);
   }
-  
+
   function myCallback(bytes32 _requestId, uint256 _price) public {
     validateChainlinkCallback(_requestId); // always validate callbacks
     latestPrice = _price;
@@ -175,7 +175,7 @@ contract MyContract is ChainlinkClient {
   bytes32 constant JOB_ID = bytes32("493610cff14346f786f88ed791ab7704");
   uint256 constant PAYMENT = 1 * LINK;
   uint256 latestPrice;
-  
+
   constructor(address _link, address _oracle) public {
     // If the address passed in for _link is zero
     if(_link == address(0)) {
@@ -185,14 +185,14 @@ contract MyContract is ChainlinkClient {
       // Otherwise set the address to what was passed in
       setChainlinkToken(_link);
     }
-    
+
     setChainlinkOracle(_oracle);
   }
 
   function requestPrice() public {
     sendChainlinkRequest(buildChainlinkRequest(JOB_ID, this, this.myCallback.selector), PAYMENT);
   }
-  
+
   function myCallback(bytes32 _requestId, uint256 _price) public {
     validateChainlinkCallback(_requestId); // always validate callbacks
     latestPrice = _price;
@@ -210,7 +210,7 @@ function buildChainlinkRequest(
 ) returns (Chainlink.Request memory request)
 ```
 
-Instantiates a Request from the Chainlink contract. A [Request](#chainlinkrequest) is a struct which contains the necessary parameters to be sent to the oracle contract. The `buildChainlinkRequest` function takes an ID, which can be a [Job ID](../job-specifications/), a callback address to receive the resulting data, and a callback function signature to call on the callback address.
+Instantiates a Request from the Chainlink contract. A [Request](#chainlinkrequest) is a struct which contains the necessary parameters to be sent to the oracle contract. The `buildChainlinkRequest` function takes an ID, which can be a [Job ID](../jobs/), a callback address to receive the resulting data, and a callback function signature to call on the callback address.
 
 ```javascript example
 function requestPrice()
@@ -235,7 +235,7 @@ contract MyContract is ChainlinkClient {
   bytes32 constant JOB_ID = bytes32("493610cff14346f786f88ed791ab7704");
   uint256 constant PAYMENT = 1 * LINK;
   uint256 latestPrice;
-  
+
   constructor(address _link, address _oracle) public {
     setChainlinkToken(_link);
     setChainlinkOracle(_oracle);
@@ -246,11 +246,11 @@ contract MyContract is ChainlinkClient {
     //   below by specifying the address of this contract and the function
     //   selector of the myCallback
     Chainlink.Request memory req = buildChainlinkRequest(JOB_ID, this, this.myCallback.selector);
-    
+
     // send the request you just built
     sendChainlinkRequest(req, PAYMENT);
   }
-  
+
   function myCallback(bytes32 _requestId, uint256 _price) public {
     validateChainlinkCallback(_requestId); // always validate callbacks
     latestPrice = _price;
@@ -290,7 +290,7 @@ contract MyContract is ChainlinkClient {
   uint256 constant PAYMENT = 1 * LINK;
   bytes32 latestRequestId;
   uint256 latestPrice;
-  
+
   constructor(address _link, address _oracle) public {
     setChainlinkToken(_link);
     setChainlinkOracle(_oracle);
@@ -298,18 +298,18 @@ contract MyContract is ChainlinkClient {
 
   function requestPrice() public {
     Chainlink.Request memory req = buildChainlinkRequest(JOB_ID, this, this.myCallback.selector);
-    
+
     // send the request you just built
     // optionally, save the request ID if you need to differentiate
     //   between different requests that you've made
     latestRequestId = sendChainlinkRequest(req, PAYMENT);
   }
 
-  
+
   function myCallback(bytes32 _requestId, uint256 _price) public {
     validateChainlinkCallback(_requestId); // always validate callbacks
 
-    if (_requestId == latestRequestId) { // use the saved request ID 
+    if (_requestId == latestRequestId) { // use the saved request ID
       latestPrice = _price;
     }
   }
@@ -355,21 +355,21 @@ contract MyContract is ChainlinkClient, RateCalculator {
     bytes32("c179a8180e034cf5a341488406c32827")
   ];
   uint256[3] public latestPriceAverage;
-  
+
   constructor(address _link) {
     setChainlinkToken(_link);
   }
-  
+
   function requestPrice() public {
     Chainlink.Request memory req;
     for (uint i = 0; i < oracles.length; i++) {
       req = buildChainlinkRequest(jobIds[i], this, this.myCallback.selector);
-      
+
       // request a rate from each oracle in the list
       sendChainlinkRequestTo(oracles[i], req, PAYMENT);
     }
   }
-  
+
   function myCallback(bytes32 _requestId, uint256 _price) public {
     validateChainlinkCallback(_requestId); // always validate callbacks
 
@@ -408,7 +408,7 @@ contract MyContract is ChainlinkClient {
   bytes32 constant JOB_ID = bytes32("493610cff14346f786f88ed791ab7704");
   uint256 constant PAYMENT = 1 * LINK;
   uint256 latestPrice;
-  
+
   constructor(address _link, address _oracle) public {
     setChainlinkToken(_link);
     setChainlinkOracle(_oracle);
@@ -417,20 +417,20 @@ contract MyContract is ChainlinkClient {
   function requestPrice() public {
     sendChainlinkRequest(buildChainlinkRequest(JOB_ID, this, this.myCallback.selector), PAYMENT);
   }
-  
+
   function myCallback(bytes32 _requestId, uint256 _price) public {
     // validateChainlinkCallback should always be called in the callback of a
     //   Chainlink request, this authenticates the caller and ensures
     //   a response has not already been received
     validateChainlinkCallback(_requestId);
-    
+
     latestPrice = _price;
   }
 }
 ```
 
 > 🚧 Do not call multiple times
-> 
+>
 > Do not call `validateChainlinkCallback` multiple times. The nature of validating the callback is to ensure the response is only received once and not replayed. Calling a second time with the same method ID will trigger a revert. Similarly, your callback should validate using either `validateChainlinkCallback` or `recordChainlinkFulfillment`, not both.
 
 ## addChainlinkExternalRequest
@@ -454,7 +454,7 @@ function expectResponseFor(bytes32 _requestId)
 ```javascript in context
 contract MyContract is ChainlinkClient, Ownable {
   uint256 latestPrice;
-  
+
   constructor(address _link, address _oracle) public {
     setChainlinkToken(_link);
     setChainlinkOracle(_oracle);
@@ -466,19 +466,19 @@ contract MyContract is ChainlinkClient, Ownable {
   {
     addChainlinkExternalRequest(chainlinkOracleAddress(), _requestId);
   }
-  
+
   function myCallback(bytes32 _requestId, uint256 _price) public {
     // validation only passes if the request was previoulsy added
     //   through expectResponseFor
     validateChainlinkCallback(_requestId); // always validate callbacks
-    
+
     latestPrice = _price;
   }
 }
 ```
 
 > 🚧 Be careful adding external requests
-> 
+>
 > Being able to change a request means that you can change the data fed into a contract. Permissioning someone to make external requests can allow them to change the outcome of your contract. You should be sure to make sure that they are a trusted to do so. If they are not trusted to do so, you should put the request making logic on-chain where it is auditable and tamperproof.
 
 ## cancelChainlinkRequest
@@ -515,32 +515,32 @@ contract MyContract is ChainlinkClient, Ownable {
   bytes32 jobId;
   uint256 expiration;
   uint256 latestPrice;
-  
+
   constructor(address _link, address _oracle, bytes32 _jobId) public {
     setChainlinkToken(_link);
     setChainlinkOracle(_oracle);
     jobId = _jobId;
   }
-  
+
   function requestPrice() public {
     sendChainlinkRequest(buildChainlinkRequest(jobId, this, this.myCallback.selector), PAYMENT);
     expiration = block.timestamp + 5 minutes;
   }
-  
+
   function myCallback(bytes32 _requestId, uint256 _price) public {
     // validation only passes if the request was previoulsy added
     //   through expectResponseFor
     validateChainlinkCallback(_requestId); // always validate callbacks
-    
+
     latestPrice = _price;
   }
-  
+
   function myCancelationMethod(bytes32 _requestId, bytes4 _callbackFunc) public {
     // cancellation must be called from the callback address specified in the request
     cancelChainlinkRequest(_requestId, PAYMENT, _callbackFunc, expiration);
     // the LINK paid for the request is transfered back to the cancelling address
   }
-  
+
   // You may want a way to handle the LINK returned when a request is cancelled.
   //   withdrawLINK is an example of a method that allows the owner to withdraw the LINK.
   function withdrawLINK() public onlyOwner {
@@ -576,14 +576,14 @@ contract MyContract is ChainlinkClient, Ownable {
   bytes32 constant JOB_ID = bytes32("493610cff14346f786f88ed791ab7704");
   uint256 constant PAYMENT = 1 * LINK;
   uint256 latestPrice;
-  
+
   constructor(address _ens, bytes32 _node) public {
     // setting the Oracle and LINK token address via ENS records
     //   allows them to be updated later to addresses
     //   that the oracle provider chooses
     useChainlinkWithENS(_ens, _node);
   }
-  
+
   function updateOracleAddressToLatest()
     public
     onlyOwner
@@ -599,7 +599,7 @@ contract MyContract is ChainlinkClient, Ownable {
   function requestPrice() public {
     sendChainlinkRequest(buildChainlinkRequest(JOB_ID, this, this.myCallback.selector), PAYMENT);
   }
-  
+
   function myCallback(bytes32 _requestId, uint256 _price) public {
     validateChainlinkCallback(_requestId); // always validate callbacks
     latestPrice = _price;
@@ -608,7 +608,7 @@ contract MyContract is ChainlinkClient, Ownable {
 ```
 
 > 🚧 Updating oracle addresses
-> 
+>
 > If an oracle provider supports listing their oracle on ENS, that provides the added security of being able to update any issues that may arise. The tradeoff here is that by using their ENS record, you are allowing whoever controls that record and the corresponding code it points to. If your contract does this, you must either audit the updated code and make sure it matches [Oracle.sol](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.4/Oracle.sol) or trust whoever can update the records.
 
 ## updateChainlinkOracleWithENS
@@ -631,14 +631,14 @@ contract MyContract is ChainlinkClient, Ownable {
   bytes32 constant JOB_ID = bytes32("493610cff14346f786f88ed791ab7704");
   uint256 constant PAYMENT = 1 * LINK;
   uint256 latestPrice;
-  
+
   constructor(address _ens, bytes32 _node) public {
     // setting the Oracle and LINK token address via ENS records
     //   allows them to be updated later to addresses
     //   that the oracle provider chooses
     useChainlinkWithENS(_ens, _node);
   }
-  
+
   function updateOracleAddressToLatest()
     public
     onlyOwner
@@ -654,7 +654,7 @@ contract MyContract is ChainlinkClient, Ownable {
   function requestPrice() public {
     sendChainlinkRequest(buildChainlinkRequest(JOB_ID, this, this.myCallback.selector), PAYMENT);
   }
-  
+
   function myCallback(bytes32 _requestId, uint256 _price) public {
     validateChainlinkCallback(_requestId); // always validate callbacks
     latestPrice = _price;
@@ -663,7 +663,7 @@ contract MyContract is ChainlinkClient, Ownable {
 ```
 
 > 🚧 Updating oracle addresses
-> 
+>
 > If an oracle provider supports listing their oracle on ENS, that provides the added security of being able to update any issues that may arise. The tradeoff here is that by using their ENS record, you are allowing whoever controls that record and the corresponding code it points to. If your contract does this, you must either audit the updated code and make sure it matches [Oracle.sol](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.4/Oracle.sol) or trust whoever can update the records.
 
 ## chainlinkTokenAddress
@@ -677,7 +677,7 @@ The `chainlinkTokenAddress` function is a helper used to return the stored addre
 ```javascript example
 function withdrawLink() public {
   LinkTokenInterface link = LinkTokenInterface(chainlinkTokenAddress());
-  
+
   require(link.transfer(msg.sender, link.balanceOf(address(this))), "Unable to transfer");
 }
 ```
@@ -686,7 +686,7 @@ contract MyContract is ChainlinkClient, Ownable {
   bytes32 constant JOB_ID = bytes32("493610cff14346f786f88ed791ab7704");
   uint256 constant PAYMENT = 1 * LINK;
   uint256 latestPrice;
-  
+
   constructor(address _link, address _oracle) public {
     setChainlinkToken(_link);
     setChainlinkOracle(_oracle);
@@ -695,16 +695,16 @@ contract MyContract is ChainlinkClient, Ownable {
   function requestPrice() public {
     sendChainlinkRequest(buildChainlinkRequest(JOB_ID, this, this.myCallback.selector), PAYMENT);
   }
-  
+
   function myCallback(bytes32 _requestId, uint256 _price) public {
     // validateChainlinkCallback should always be called in the callback of a
     //   Chainlink request, this authenticates the caller and ensures
     //   a response has not already been received
     validateChainlinkCallback(_requestId);
-    
+
     latestPrice = _price;
   }
-  
+
   // You may want a way to handle the LINK returned when a request is cancelled.
   //   withdrawLINK is an example of a method that allows the owner to withdraw the LINK.
   function withdrawLINK() public onlyOwner {
@@ -727,7 +727,7 @@ function getOracle() public view returns (address) {
 ```javascript in context
 contract MyContract is ChainlinkClient, Ownable {
   uint256 latestPrice;
-  
+
   constructor(address _link, address _oracle) public {
     setChainlinkToken(_link);
     setChainlinkOracle(_oracle);
@@ -737,7 +737,7 @@ contract MyContract is ChainlinkClient, Ownable {
     // use oracle address getter to avoid having to pass in the address
     addChainlinkExternalRequest(chainlinkOracleAddress(), _requestId);
   }
-  
+
   function myCallback(bytes32 _requestId, uint256 _price) public {
     validateChainlinkCallback(_requestId); // always validate callbacks
     latestPrice = _price;
@@ -782,7 +782,7 @@ Emitted when [cancelChainlinkRequest](#cancelchainlinkrequest) is called. Includ
 ## LINK
 
 > 🚧 Namechange Between Versions
-> 
+>
 > From Solidity v0.7 onwards, this constant is renamed to `LINK_DIVISIBILITY`.
 
 `LINK` is a uint256 constant to represent one whole unit of the LINK token (1000000000000000000). It can be used with another value to specify payment in an easy-to-read format, instead of hardcoding magic numbers.
@@ -793,12 +793,12 @@ uint256 constant private ORACLE_PAYMENT = 100 * LINK;
 ```javascript in context
 contract MyContract is ChainlinkClient {
   bytes32 constant JOB_ID = "493610cff14346f786f88ed791ab7704";
-  
+
   // PAYMENT is made to be explicitly 0.1 LINK by dividing by 10
   uint256 constant PAYMENT = LINK / 10;
-  
+
   uint256 latestPrice;
-  
+
   constructor(address _link, address _oracle) public {
     setChainlinkToken(_link);
     setChainlinkOracle(_oracle);
@@ -807,7 +807,7 @@ contract MyContract is ChainlinkClient {
   function requestPrice() public {
     sendChainlinkRequest(buildChainlinkRequest(JOB_ID, this, this.myCallback.selector), PAYMENT);
   }
-  
+
   function myCallback(bytes32 _requestId, uint256 _price) public {
     validateChainlinkCallback(_requestId); // always validate callbacks
     latestPrice = _price;
@@ -836,7 +836,7 @@ contract MyContract is ChainlinkClient {
   bytes32 constant JOB_ID = bytes32("493610cff14346f786f88ed791ab7704");
   uint256 constant PAYMENT = 1 * LINK;
   uint256 latestPrice;
-  
+
   constructor(address _link, address _oracle) public {
     setChainlinkToken(_link);
     setChainlinkOracle(_oracle);
@@ -845,7 +845,7 @@ contract MyContract is ChainlinkClient {
   function requestPrice() public {
     sendChainlinkRequest(buildChainlinkRequest(JOB_ID, this, this.myCallback.selector), PAYMENT);
   }
-  
+
   function myCallback(bytes32 _requestId, uint256 _price)
     public
     // validates request in a modifier if that's your preferred style
@@ -877,7 +877,7 @@ The Chainlink protocol aims to be flexible and not restrict application develope
 The request's ID is generated by hashing the sender's address and the request's nonce. This scheme ensures that only the requester can generate their request ID, and no other contract can trigger a response from an oracle with that ID. New requests whose IDs match an unfulfilled request ID will not be accepted by the oracle.
 
 > 🚧 Intended for memory
-> 
+>
 > The Request object was intended to be stored in memory. If you have a reason to persist the struct in storage, it is recommended that you do so by copying each attribute over and explicitly copying the bytes in the buffer.
 
 ## Attributes
@@ -917,9 +917,9 @@ function requestEthereumPrice()
   public
 {
   Chainlink.Request memory req = buildChainlinkRequest(jobId, this, this.fulfill.selector);
-  
+
   req.add("get", "https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD,EUR,JPY");
-  
+
   sendChainlinkRequest(req, LINK * 1);
 }
 ```
@@ -928,7 +928,7 @@ contract MyContract is ChainlinkClient {
   bytes32 constant JOB_ID = bytes32("493610cff14346f786f88ed791ab7704");
   uint256 constant PAYMENT = 1 * LINK;
   uint256 latestPrice;
-  
+
   constructor(address _link, address _oracle) public {
     setChainlinkToken(_link);
     setChainlinkOracle(_oracle);
@@ -936,13 +936,13 @@ contract MyContract is ChainlinkClient {
 
   function requestPrice() public {
     Chainlink.Request memory req = buildChainlinkRequest(JOB_ID, this, this.myCallback.selector);
-    
+
     // specify templated fields in a job specification
     req.add("get", "https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD,EUR,JPY");
 
     sendChainlinkRequest(req, PAYMENT);
   }
-  
+
   function myCallback(bytes32 _requestId, uint256 _price) public {
     validateChainlinkCallback(_requestId); // always validate callbacks
     latestPrice = _price;
@@ -967,9 +967,9 @@ function requestEmojiPopularity(bytes _unicode)
   public
 {
   Chainlink.Request memory req = buildChainlinkRequest(jobId, this, this.fulfill.selector);
-  
+
   req.addBytes("emojiUnicode", _unicode);
-  
+
   sendChainlinkRequest(req, LINK * 1);
 }
 ```
@@ -978,7 +978,7 @@ contract MyContract is ChainlinkClient {
   bytes32 constant JOB_ID = bytes32("493610cff14346f786f88ed791ab7704");
   uint256 constant PAYMENT = 1 * LINK;
   uint256 latestPlace;
-  
+
   constructor(address _link, address _oracle) public {
     setChainlinkToken(_link);
     setChainlinkOracle(_oracle);
@@ -986,13 +986,13 @@ contract MyContract is ChainlinkClient {
 
   function requestEmojiPopularity(bytes _unicode) public {
     Chainlink.Request memory req = buildChainlinkRequest(JOB_ID, this, this.myCallback.selector);
-    
+
     // specify templated fields in a job specification       
     req.addBytes("emojiUnicode", _unicode);
 
     sendChainlinkRequest(req, PAYMENT);
   }
-  
+
   function myCallback(bytes32 _requestId, uint256 _place) public {
     validateChainlinkCallback(_requestId); // always validate callbacks
     latestPlace = _place;
@@ -1017,9 +1017,9 @@ function requestPrice()
   public
 {
   Chainlink.Request memory req = buildChainlinkRequest(jobId, this, this.fulfill.selector);
-  
+
   req.addInt("times", 100);
-  
+
   sendChainlinkRequest(req, LINK * 1);
 }
 ```
@@ -1028,7 +1028,7 @@ contract MyContract is ChainlinkClient {
   bytes32 constant JOB_ID = bytes32("493610cff14346f786f88ed791ab7704");
   uint256 constant PAYMENT = 1 * LINK;
   uint256 latestPrice;
-  
+
   constructor(address _link, address _oracle) public {
     setChainlinkToken(_link);
     setChainlinkOracle(_oracle);
@@ -1036,13 +1036,13 @@ contract MyContract is ChainlinkClient {
 
   function requestPrice() public {
     Chainlink.Request memory req = buildChainlinkRequest(JOB_ID, this, this.myCallback.selector);
-    
+
     // specify templated fields in a job specification
     req.addInt("times", 100);
 
     sendChainlinkRequest(req, PAYMENT);
   }
-  
+
   function myCallback(bytes32 _requestId, uint256 _price) public {
     validateChainlinkCallback(_requestId); // always validate callbacks
     latestPrice = _price;
@@ -1067,9 +1067,9 @@ function requestPrice()
   public
 {
   Chainlink.Request memory req = buildChainlinkRequest(jobId, this, this.fulfill.selector);
-  
+
   req.addUint("times", 100);
-  
+
   sendChainlinkRequest(req, LINK * 1);
 }
 ```
@@ -1078,7 +1078,7 @@ contract MyContract is ChainlinkClient {
   bytes32 constant JOB_ID = bytes32("493610cff14346f786f88ed791ab7704");
   uint256 constant PAYMENT = 1 * LINK;
   uint256 latestPrice;
-  
+
   constructor(address _link, address _oracle) public {
     setChainlinkToken(_link);
     setChainlinkOracle(_oracle);
@@ -1086,13 +1086,13 @@ contract MyContract is ChainlinkClient {
 
   function requestPrice() public {
     Chainlink.Request memory req = buildChainlinkRequest(JOB_ID, this, this.myCallback.selector);
-    
+
     // specify templated fields in a job specification
     req.addUint("times", 100);
 
     sendChainlinkRequest(req, PAYMENT);
   }
-  
+
   function myCallback(bytes32 _requestId, uint256 _price) public {
     validateChainlinkCallback(_requestId); // always validate callbacks
     latestPrice = _price;
@@ -1120,7 +1120,7 @@ function requestPrice(string _currency)
   string[] memory path = new string[](2);
   path[0] = _currency;
   path[1] = "recent";
-    
+
   // specify templated fields in a job specification
   req.addStringArray("path", path);
 
@@ -1132,7 +1132,7 @@ contract MyContract is ChainlinkClient {
   bytes32 constant JOB_ID = bytes32("493610cff14346f786f88ed791ab7704");
   uint256 constant PAYMENT = 1 * LINK;
   uint256 latestPrice;
-  
+
   constructor(address _link, address _oracle) public {
     setChainlinkToken(_link);
     setChainlinkOracle(_oracle);
@@ -1143,13 +1143,13 @@ contract MyContract is ChainlinkClient {
     string[] memory path = new string[](2);
     path[0] = _currency;
     path[1] = "recent";
-    
+
     // specify templated fields in a job specification
     req.addStringArray("path", path);
 
     sendChainlinkRequest(req, PAYMENT);
   }
-  
+
   function myCallback(bytes32 _requestId, uint256 _price) public {
     validateChainlinkCallback(_requestId); // always validate callbacks
     latestPrice = _price;
@@ -1173,7 +1173,7 @@ function requestPrice(bytes _cbor)
   public
 {
   Chainlink.Request memory req = buildChainlinkRequest(JOB_ID, this, this.myCallback.selector);
-    
+
   req.setBuffer(_cbor);
 
   sendChainlinkRequest(req, PAYMENT);
@@ -1184,7 +1184,7 @@ contract MyContract is ChainlinkClient {
   bytes32 constant JOB_ID = bytes32("493610cff14346f786f88ed791ab7704");
   uint256 constant PAYMENT = 1 * LINK;
   uint256 latestPrice;
-  
+
   constructor(address _link, address _oracle) public {
     setChainlinkToken(_link);
     setChainlinkOracle(_oracle);
@@ -1192,13 +1192,13 @@ contract MyContract is ChainlinkClient {
 
   function requestPrice(bytes _cbor) public {
     Chainlink.Request memory req = buildChainlinkRequest(JOB_ID, this, this.myCallback.selector);
-    
+
     // send a request payload that was encoded off-chain then sent on-chain
     req.setBuffer(_cbor);
 
     sendChainlinkRequest(req, PAYMENT);
   }
-  
+
   function myCallback(bytes32 _requestId, uint256 _price) public {
     validateChainlinkCallback(_requestId); // always validate callbacks
     latestPrice = _price;
@@ -1207,5 +1207,5 @@ contract MyContract is ChainlinkClient {
 ```
 
 > 🚧 Be careful setting the request buffer directly
-> 
+>
 > Moving the CBOR encoding logic off-chain can save some gas, but it also opens up the opportunity for people to encode parameters that not all parties agreed to. Be sure that whoever is permissioned to call `setBuffer` is trusted or auditable.

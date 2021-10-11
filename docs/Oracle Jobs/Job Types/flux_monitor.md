@@ -15,7 +15,7 @@ The Flux Monitor job type is for continually-updating data feeds that aggregate 
 
 **Spec format**
 
-```jpv2
+```toml
 type              = "fluxmonitor"
 schemaVersion     = 1
 name              = "example flux monitor spec"

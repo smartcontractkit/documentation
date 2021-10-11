@@ -9,7 +9,7 @@ Executes a job on a schedule. Does not rely on any kind of external trigger.
 
 **Spec format**
 
-```jpv2
+```toml
 type            = "cron"
 schemaVersion   = 1
 schedule        = "CRON_TZ=UTC * */20 * * * *"
