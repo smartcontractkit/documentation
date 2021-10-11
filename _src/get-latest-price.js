@@ -1,8 +1,8 @@
 function getLatestPrice() {
-  document.getElementById('get-price-field').value = 'loading...';
+  document.getElementById('get-price-field').value = 'loading...'
   const web3 = new Web3(
     'https://kovan.infura.io/v3/34ed41c4cf28406885f032930d670036'
-  );
+  )
   const aggregatorV3InterfaceABI = [
     {
       inputs: [],
@@ -51,14 +51,14 @@ function getLatestPrice() {
       stateMutability: 'view',
       type: 'function',
     },
-  ];
-  const addr = '0x9326BFA02ADD2366b30bacB125260Af641031331';
-  const priceFeed = new web3.eth.Contract(aggregatorV3InterfaceABI, addr);
+  ]
+  const addr = '0x9326BFA02ADD2366b30bacB125260Af641031331'
+  const priceFeed = new web3.eth.Contract(aggregatorV3InterfaceABI, addr)
 
   priceFeed.methods
     .latestRoundData()
     .call()
     .then((roundData) => {
-      document.getElementById('get-price-field').value = roundData.answer;
-    });
+      document.getElementById('get-price-field').value = roundData.answer
+    })
 }
