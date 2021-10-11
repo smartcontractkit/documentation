@@ -8,10 +8,10 @@ whatsnext: {"Introduction to External Adapters":"/docs/external-adapters/", "Ini
 
 # DEPRECATED
 
-> ⚠️ NOTE
-> The style of adapter described below (otherwise known as a JSON adapter or v1 adapter) is deprecated and will be removed in Chainlink 1.0.0.
-> 
-> Please refer to [v2 job tasks](/docs/tasks) instead.
+> ❗️ v1 Jobs are deprecated
+> The adapters or JSON adapters for v1 Jobs are deprecated and will be removed for Chainlink nodes running version 1.0.0 and later. Use [v2 job tasks](/docs/tasks) instead.
+>
+> See the [v2 jobs migration page](/docs/jobs/migration-v1-v2) to learn how to migrate to v2 jobs.
 
 ## Adapters
 
@@ -362,10 +362,10 @@ This can be useful for inverting outputs, e.g. if your API only offers a USD/ETH
 
 ## Sleep
 
-The core adapter will pause the current task pipeline for the given duration. 
+The core adapter will pause the current task pipeline for the given duration.
 
 > 🚧 ENABLE_EXPERIMENTAL_ADAPTERS
-> 
+>
 > You must set `ENABLE_EXPERIMENTAL_ADAPTERS=true` in order to use the sleep adapter
 
 #### Parameters

@@ -21,13 +21,10 @@ A string containing the response body.
 **Example**
 
 ```dot
-my_http_task [type="http"
-              method="put"
+my_http_task [type=http
+              method=PUT
               url="http://chain.link"
-              requestData=<{
-                  "foo": $(foo),
-                  "bar": $(bar),
-                  "jobID": 123
-              }>
-              allowUnrestrictedNetworkAccess=true]
+              requestData=<{"foo": $(foo), "bar": $(bar), "jobID": 123}>
+              allowUnrestrictedNetworkAccess=true
+              ]
 ```

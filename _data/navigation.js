@@ -90,6 +90,10 @@ module.exports = {
             title: 'Tasks',
             children: [
               {
+                url: '/docs/jobs/task-types/pipelines/',
+                title: 'Job Pipelines'
+              },
+              {
                 url: '/docs/jobs/task-types/http/',
                 title: 'HTTP'
               },

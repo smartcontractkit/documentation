@@ -3,7 +3,7 @@ layout: nodes.liquid
 date: Last Modified
 title: "FAQ"
 permalink: "docs/faq/"
-metadata: 
+metadata:
   title: "Developer FAQ - Chainlink"
   description: "Find answers to common questions about developing on Chainlink."
 ---
@@ -56,7 +56,7 @@ Resources:
 You can set up a node to run on a test network or the Ethereum mainnet right now. The node will not be able to participate in fulfilling service agreement requests yet, but will in the near future. However, it can be used to fulfill requests sent to your oracle contract address and you can add external adapters to it for extending its functionality.
 
 Resources:
-*  [Running a Chainlink Node](../running-a-chainlink-node/) 
+*  [Running a Chainlink Node](../running-a-chainlink-node/)
 
 ## How much LINK to run a node?
 
@@ -66,14 +66,14 @@ Requesters may specify an amount of LINK that all nodes must deposit as a penalt
 
 ## Can I use a local Chainlink node with Ganache?
 
-No. Ganache is a mock testnet and it doesn't work with Chainlink because of that. To use the features of the network, you need to deploy your contract on a real environment: one of the testnets or mainnets. The full list of supported environments can be found [here](../link-token-contracts/). 
+No. Ganache is a mock testnet and it doesn't work with Chainlink because of that. To use the features of the network, you need to deploy your contract on a real environment: one of the testnets or mainnets. The full list of supported environments can be found [here](../link-token-contracts/).
 
 ## What are the hardware requirements for a Chainlink node?
 
 The hardware requirements of the Chainlink node are very minimal to operate. It should run with 1 core and 1 GB of RAM, though you may want to up the RAM to 2 GB for better reliability. However, connectivity to an Ethereum client is required for communication with the blockchain. If you decide to run your own Ethereum client, you will want to run that on a separate machine. Hardware requirements of Ethereum clients may change over time.
 
 Resources:
-*  [Running a Chainlink Node](../running-a-chainlink-node/) 
+*  [Running a Chainlink Node](../running-a-chainlink-node/)
 *  <a href="https://github.com/smartcontractkit/chainlink/wiki/Development-Setup-Guide" target="_blank">Development Setup Guide</a>
 *  <a href="https://ethereum.stackexchange.com/a/27369" target="_blank">StackExchange Answer</a>
 *  <a href="https://ethereum.stackexchange.com/questions/tagged/hardware" target="_blank">All Ethereum Hardware Questions</a>
@@ -82,10 +82,7 @@ Resources:
 
 The Chainlink node can fulfill requests from open (unauthenticated) APIs out-of-the-box, without the need for [External Adapters](../external-adapters/) as long as you've added the [jobs in the Fulfilling Requests guide](../fulfilling-requests/#add-jobs-to-the-node). For these requests, requesters would supply the URL to the open API they wish each node to retrieve, and the Chainlink node will use its core adapters to fulfill the request.
 
-If you would like to provide access to an API which requires authentication, you will need to create a job specific for that API, either with an external adapter or by using the parameters of the [HttpGet adapter](../core-adapters/#httpget).
-
-Resources:
-*  [Adapters](../core-adapters/#httpget)
+If you would like to provide access to an API which requires authentication, you will need to create a job specific for that API, either with an external adapter or by using the parameters of the [HTTP task](/docs/jobs/task-types/http/).
 
 ##  Is there a list of external adapters available?
 
@@ -111,8 +108,8 @@ You can use our <a href="https://blog.chain.link/how-to-use-chainlink-with-truff
 If you already have a project started and would like to integrate Chainlink, you can [add Chainlink to your existing project](../create-a-chainlinked-project/#install-into-existing-projects) by using our `chainlink` NPM package.
 
 Resources:
-*  [Create a Chainlinked Project](../create-a-chainlinked-project/) 
-*  [Example Walkthrough](../intermediates-tutorial/) 
+*  [Create a Chainlinked Project](../create-a-chainlinked-project/)
+*  [Example Walkthrough](../intermediates-tutorial/)
 *  <a href="https://blog.chain.link/how-to-use-chainlink-with-truffle-2/" target="_blank">How to use Chainlink with Truffle</a>
 
 ## Can Chainlink be used to connect to <*some blockchain/API*>?
@@ -120,7 +117,7 @@ Resources:
 Yes, the Chainlink node can connect to most APIs out-of-the-box. Some APIs require authentication by providing request headers for the operator's API key, which the Chainlink node supports. Additionally, external adapters allow for connectivity to any resource as long as the adapter conforms to a minimal JSON specification for communicating to and from the Chainlink node.
 
 Resources:
-*  [External Adapters](../external-adapters/) 
+*  [External Adapters](../external-adapters/)
 <a href="https://blog.chain.link/chainlink-external-adapters-explained/">Chainlink External Adapters Explained</a>
 
 ## How do I select Chainlink nodes for my requests?
@@ -128,8 +125,8 @@ Resources:
 You can use the <a href="https://market.link/" target="_blank">Chainlink Market</a> to select nodes for your requests. Then with the node's oracle contract address and Job ID, you will use the [`sendChainlinkRequestTo`](../chainlink-framework/#sendchainlinkrequestto)  method to create requests to oracles.
 
 Resources:
-*  [Create a Chainlinked Project](../create-a-chainlinked-project/) 
-*  [Example Walkthrough](../intermediates-tutorial/) 
+*  [Create a Chainlinked Project](../create-a-chainlinked-project/)
+*  [Example Walkthrough](../intermediates-tutorial/)
 *  <a href="https://market.link/" target="_blank">Chainlink Market</a>
 *  [Chainlink Contract Reference](../chainlink-framework/#sendchainlinkrequestto)
 
@@ -166,7 +163,7 @@ They do, in the best-case scenario. However, a round can time out if it doesn't 
 
 ## What is the difference between the data feed properties updatedAt and answeredInRound?
 
-updatedAt is the timestamp of an answered round while answeredInRound is the round it was updated in. 
+updatedAt is the timestamp of an answered round while answeredInRound is the round it was updated in.
 
 ## How can I check if the answer to a round is being carried over from a previous round?
 

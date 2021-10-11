@@ -4,39 +4,47 @@ date: Last Modified
 title: "Migrating to v2 Jobs"
 permalink: "docs/jobs/migration-v1-v2/"
 ---
-There have been two types of jobs supported by Chainlink nodes prior to [version 1.0.0](https://github.com/smartcontractkit/chainlink/blob/develop/docs/CHANGELOG.md). There are [v1 jobs](/docs/job-specifications/) (also known as JSON jobs) and [v2 jobs](/docs/jobs/) (also known as TOML jobs). 
 
-The original v1 jobs **are now deprecated**, and developers should migrate to v2 jobs as soon as possible. v2 jobs are much more powerful, supporting advanced capabilities like running tasks in parallel.
+Chainlink nodes support two versions of jobs:
+
+- v1 jobs in JSON format
+- v2 jobs in TOML format
 
 ## Comparison between v1 and v2 jobs
 
-v1 jobs were intended for extremely targeted use cases, and as such, they opted for simplicity in the job spec over explictness.
+v1 jobs were intended for extremely targeted use cases, so they opted for simplicity in the job spec over explicitness.
 
-v2 jobs were designed with an awareness of the rapid expansion of functionality supported by the Chainlink node, as well as the ever-increasing complexity of jobs. As such, they prefer explicitness.
+The v2 Job Specs support expanding functionality in Chainlink nodes and prefer explicitness, so they are are much more powerful and support advanced capabilities like running tasks in parallel. This change provides the following benefits to node operators:
+
+- Support increased job complexity
+- Better performance
+- Easier scaling
+- Ability to run more off-chain computing
+- Reliability
+- Easier support
+- Improved security
 
 ### DAG dependencies and variables
 
-v2 jobs require the author to specify dependencies using [DOT syntax](https://en.wikipedia.org/wiki/DOT_(graph_description_language)). If a task needs data produced by another task, this must be explicitly specified using DOT.
+v2 jobs require the author to specify dependencies using [DOT syntax](https://en.wikipedia.org/wiki/DOT_(graph_description_language)). If a task needs data produced by another task, this must be specified using DOT.
 
-Additionally, to facilitate explicitness, v2 jobs require the author to specify inputs to tasks using `$(variable)` syntax.
+To facilitate explicitness, v2 jobs require the author to specify inputs to tasks using `$(variable)` syntax. For example, if an `http` task feeds data into a `jsonparse` task, it must be specified like the following example:
 
-For example, if an `http` task should feed data into a `jsonparse` task, it should be specified as such:
+```toml
+fetch [type=http method=GET url="http://chain.link/price_feeds/ethusd"]
 
-```jpv2dot
-fetch [type=http method=get url="http://chain.link/price_feeds/ethusd"]
-
-# This task consumes the output of the 'fetch' task in its 'data' parameter
+// This task consumes the output of the 'fetch' task in its 'data' parameter
 parse [type=jsonparse path="data,result" data="$(fetch)"]
 
-# This is the specification of the dependency
+// This is the specification of the dependency
 fetch -> parse
 ```
 
-The output of each task is stored in the variable corresponding to that task's name (the portion of each task definition before the opening `[` bracket). In some cases, tasks return complex values (i.e., maps or arrays).  Using dot access syntax, you can access the elements of these values. For example:
+Task names must be defined before their opening `[` bracket. In this example, the name of the task is `fetch`. The output of each task is stored in the variable corresponding to the name of the task. In some cases, tasks return complex values like maps or arrays. By using dot access syntax, you can access the elements of these values. For example:
 
-```jpv2dot
+```toml
 // Assume that this task returns the following object:
-//   { "ethusd": 123.45, "btcusd": 678.90 }
+//  { "ethusd": 123.45, "btcusd": 678.90 }
 parse [type=jsonparse path="data" data="$(fetch)"]
 
 // Now, we want to send the ETH/USD price to one bridge and the BTC/USD price to another:
@@ -51,21 +59,18 @@ parse -> submit_btcusd
 
 Some tasks, like the `bridge` tasks above, require you to specify a JSON object. Because the keys of JSON objects must be enclosed in double quotes, you must use the alternative `<` angle bracket `>` quotes. Angle brackets also enable multi-line strings, which can be useful when a JSON object parameter is large:
 
-```jpv2dot
+```toml
 submit_btcusd [type="bridge"
                name="btcusd"
-               requestData=<{
-                   "value": $(foo),
-                   "price": $(bar),
-                   "timestamp": $(baz)
-               }>]
+               requestData=<{"value": $(foo), "price": $(bar), "timestamp": $(baz)}>
+               ]
 ```
 
 
 ### Misc. notes
 
-- Each job type provides a particular set of variables to its pipeline.  See the documentation for each job type to understand which variables are provided.
-- Each task type provides a certain kind of output variable to other tasks that consume it.  See the documentation for each task type to understand their output types.
+- Each job type provides a particular set of variables to its pipeline. See the documentation for each job type to understand which variables are provided.
+- Each task type provides a certain kind of output variable to other tasks that consume it. See the documentation for each task type to understand their output types.
 
 ---
 
@@ -75,10 +80,10 @@ submit_btcusd [type="bridge"
 
 **v1 spec**
 
-This spec relies on CBOR encoded on-chain values for the `httpget` URL and `jsonparse` path.
+This spec relies on CBOR-encoded on-chain values for the `httpget` URL and `jsonparse` path.
 
 ```js
-{ 
+{
   "name": "Get > Bytes32",
   "initiators": [
     {
@@ -106,20 +111,18 @@ This spec relies on CBOR encoded on-chain values for the `httpget` URL and `json
 ```
 
 Notes:
-- In v1, the job ID is randomly generated at creation time. In v2 it can either be automatically generated or manually specified. 
-- The `ethbytes32` task (any all of the other ABI encoding tasks) is now encapsulated within the `ethabiencode` task with much more flexibility. Please see [the docs for this task](/docs/jobs/task-types/eth-abi-encode/).
-
-
+- In v1, the job ID is randomly generated at creation time. In v2 jobs, the job ID can be manually specified or the Chainlink node will automatically generated it.
+- In v2, the `ethbytes32` task and all of the other ABI encoding tasks are now encapsulated in the `ethabiencode` task with much more flexibility. See the [ETH ABI Encode task](/docs/jobs/task-types/eth-abi-encode/) page to learn more.
 
 **Equivalent v2 spec:**
 
-
-```jpv2
+```toml
 type                = "directrequest"
 schemaVersion       = 1
 name                = "Get > Bytes32"
 contractAddress     = "0x613a38AC1659769640aaE063C651F48E0250454C"
-externalJobID       = "0EEC7E1D-D0D2-476C-A1A8-72DFB6633F47" # OPTIONAL - if left unspecified, a random value will be automatically generated
+# Optional externalJobID: Automatically generated if unspecified
+# externalJobID       = "0EEC7E1D-D0D2-476C-A1A8-72DFB6633F47"
 observationSource   = """
     decode_log   [type=ethabidecodelog
                   abi="OracleRequest(bytes32 indexed specId, address requester, bytes32 requestId, uint256 payment, address callbackAddr, bytes4 callbackFunctionId, uint256 cancelExpiration, uint256 dataVersion, bytes data)"
@@ -127,19 +130,13 @@ observationSource   = """
                   topics="$(jobRun.logTopics)"]
 
     decode_cbor  [type=cborparse data="$(decode_log.data)"]
-    fetch        [type=http method=get url="$(decode_cbor.url)"]
-    parse        [type=jsonparse path="$(decode_cbor.path)"]
+    fetch        [type=http method=GET url="$(decode_cbor.url)"]
+    parse        [type=jsonparse path="$(decode_cbor.path)" data="$(fetch)"]
     encode_data  [type=ethabiencode abi="(uint256 value)" data=<{ "value": $(parse) }>]
     encode_tx    [type=ethabiencode
                   abi="fulfillOracleRequest(bytes32 requestId, uint256 payment, address callbackAddress, bytes4 callbackFunctionId, uint256 expiration, bytes32 data)"
-                  data=<{
-                      "requestId": $(decode_log.requestId),
-                      "payment": $(decode_log.payment),
-                      "callbackAddress": $(decode_log.callbackAddr),
-                      "callbackFunctionId": $(decode_log.callbackFunctionId),
-                      "expiration": $(decode_log.cancelExpiration),
-                      "data": $(encode_data)
-                  }>]
+                  data=<{"requestId": $(decode_log.requestId), "payment": $(decode_log.payment), "callbackAddress": $(decode_log.callbackAddr), "callbackFunctionId": $(decode_log.callbackFunctionId), "expiration": $(decode_log.cancelExpiration), "data": $(encode_data)}>
+                  ]
     submit_tx    [type=ethtx to="0x613a38AC1659769640aaE063C651F48E0250454C" data="$(encode_tx)"]
 
     decode_log -> decode_cbor -> fetch -> parse -> encode_data -> encode_tx -> submit_tx
@@ -180,14 +177,15 @@ observationSource   = """
 }
 ```
 
-**v2 spec:**
+**Equivalent v2 spec:**
 
-```jpv2
+```toml
 type                = "directrequest"
 schemaVersion       = 1
 name                = "Get > Bytes32"
 contractAddress     = "0x613a38AC1659769640aaE063C651F48E0250454C"
-externalJobID       = "0EEC7E1D-D0D2-476C-A1A8-72DFB6633F47"
+# Optional externalJobID: Automatically generated if unspecified
+# externalJobID       = "0EEC7E1D-D0D2-476C-A1A8-72DFB6633F47"
 observationSource   = """
     decode_log   [type=ethabidecodelog
                   abi="OracleRequest(bytes32 indexed specId, address requester, bytes32 requestId, uint256 payment, address callbackAddr, bytes4 callbackFunctionId, uint256 cancelExpiration, uint256 dataVersion, bytes data)"
@@ -200,14 +198,8 @@ observationSource   = """
     encode_data [type=ethabiencode abi="(uint256 value)" data=<{ "value": $(multiply) }>]
     encode_tx   [type=ethabiencode
                  abi="fulfillOracleRequest(bytes32 requestId, uint256 payment, address callbackAddress, bytes4 callbackFunctionId, uint256 expiration, bytes32 data)"
-                 data=<{
-                     "requestId": $(decode_log.requestId),
-                     "payment": $(decode_log.payment),
-                     "callbackAddress": $(decode_log.callbackAddr),
-                     "callbackFunctionId": $(decode_log.callbackFunctionId),
-                     "expiration": $(decode_log.cancelExpiration),
-                     "data": $(encode_data)
-                 }>]
+                 data=<{"requestId": $(decode_log.requestId), "payment": $(decode_log.payment), "callbackAddress": $(decode_log.callbackAddr), "callbackFunctionId": $(decode_log.callbackFunctionId), "expiration": $(decode_log.cancelExpiration), "data": $(encode_data)}>
+                 ]
     submit_tx [type=ethtx to="0x613a38AC1659769640aaE063C651F48E0250454C" data="$(encode_tx)"]
 
     decode_log -> fetch -> parse -> multiply -> encode_data -> encode_tx -> submit_tx
@@ -221,7 +213,7 @@ observationSource   = """
 ```js
 {
     "initiators": [
-        { 
+        {
             "type": "cron",
             "params": { "schedule": "CRON_TZ=UTC * */20 * * * *" }
         }
@@ -249,13 +241,14 @@ observationSource   = """
 }
 ```
 
-**v2 spec:**
+**Equivalent v2 spec:**
 
-```jpv2
+```toml
 type            = "cron"
 schemaVersion   = 1
 schedule        = "CRON_TZ=UTC * */20 * * * *"
-externalJobID   = "0EEC7E1D-D0D2-476C-A1A8-72DFB6633F46"
+# Optional externalJobID: Automatically generated if unspecified
+# externalJobID   = "0EEC7E1D-D0D2-476C-A1A8-72DFB6633F46"
 observationSource   = """
     fetch       [type=http method=GET url="https://example.com/api"]
     parse       [type=jsonparse data="$(fetch)" path="data,price"]
@@ -283,12 +276,13 @@ observationSource   = """
 }
 ```
 
-**v2 spec:**
+**Equivalent v2 spec:**
 
-```jpv2
+```toml
 type            = "webhook"
 schemaVersion   = 1
-externalJobID   = "0EEC7E1D-D0D2-476C-A1A8-72DFB6633F46"
+# Optional externalJobID: Automatically generated if unspecified
+# externalJobID   = "0EEC7E1D-D0D2-476C-A1A8-72DFB6633F46"
 observationSource   = """
     multiply       [type=multiply input="$(jobRun.requestBody)" times=100]
     send_to_bridge [type=bridge name="custombridge" requestData="$(multiply)"]

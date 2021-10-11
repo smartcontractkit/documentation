@@ -23,9 +23,6 @@ A byte array.
 ```dot
 encode [type="ethabiencode"
         abi="fulfillRequest(bytes32 requestID, uint256 answer)"
-        data=<{
-            "requestID": $(foo),
-            "answer": $(bar)
-        }>]
+        data=<{"requestID": $(foo), "answer": $(bar)}>
+        ]
 ```
-

@@ -21,8 +21,10 @@ You will need to specify two headers:
 
 ## JSON jobs (DEPRECATED)
 
-> ⚠️ NOTE
-> The documentation below refers to JSON (aka [v1 jobs](/docs/job-specifications/)) and will be removed in Chainlink 1.0.0.
+> ❗️ v1 Jobs are deprecated
+> The initiators for v1 Jobs are deprecated and will be removed for Chainlink nodes running version 1.0.0 and later. Use [v2 jobs](/docs/jobs) instead.
+>
+> See the [v2 jobs migration page](/docs/jobs/migration-v1-v2) to learn how to migrate to v2 jobs.
 
 We will be using the <a href="https://github.com/smartcontractkit/external-initiator">Chainlink external initiator</a> repo for reference. You can see some examples of existing initiators in the <a href="https://github.com/smartcontractkit/external-initiator/tree/master/blockchain" >blockchain</a> folder.
 
@@ -31,9 +33,9 @@ External initiators are simple web initiators that can be activated by any job i
 ```
 curl -b cookiefile -X POST -H "Content-Type: application/json" --data '{"myKey":"myVal"}' http://localhost:6688/v2/specs/%s/runs
 ```
-Where `%s` is the jobId. 
+Where `%s` is the jobId.
 
-External initiators make the same API call, with 2 added headers: 
+External initiators make the same API call, with 2 added headers:
 1. "X-Chainlink-EA-AccessKey"
 1. "X-Chainlink-EA-Secret"
 

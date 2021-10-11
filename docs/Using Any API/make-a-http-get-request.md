@@ -73,7 +73,7 @@ The code example above returns an unsigned integer from the oracle response, but
 
 If you need to return a string, use `bytes32`. <a href="https://gist.github.com/alexroan/a8caf258218f4065894ecd8926de39e7" target="_blank">Here's one method</a> of converting `bytes32` to `string`. Currently any return value must fit within 32 bytes, if the value is bigger than that multiple requests will need to be made.
 
-The data type returned by a specific job depends on the [adapters](../core-adapters/) that it supports. Make sure to choose an oracle job that supports the data type that your contract needs to consume.
+The data type returned by a specific job depends on the [tasks](/docs/tasks/) that it supports. Make sure to choose an oracle job that supports the data type that your contract needs to consume.
 
 # Choosing an Oracle Job without specifying the URL
 

@@ -41,4 +41,3 @@ This task will return a map with the following schema:
     ]
 }
 ```
-
