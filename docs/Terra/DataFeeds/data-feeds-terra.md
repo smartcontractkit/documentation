@@ -1,10 +1,11 @@
 ---
 layout: feed.liquid
-title: "Solana Feeds"
-stub: solana-price-feeds
-permalink: "docs/solana-price-feeds/"
+section: nonEvm
+title: "Terra Feeds"
+stub: data-feeds-terra
+permalink: "docs/terra/data-feeds-terra/"
 metadata:
-  solanafeeds: true
+  ecosystem: terra
   image:
     0: "https://files.readme.io/8dc5d76-cl.png"
     1: "cl.png"
