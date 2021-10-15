@@ -1,41 +1,31 @@
 ---
 layout: nodes.liquid
-section: smartContract
+section: nonEvm
 date: Last Modified
-title: "Consuming Data Feeds (Solana)"
-permalink: "docs/get-the-latest-price-solana/"
-whatsnext: {"Historical Price Data":"/docs/historical-price-data/", "Data Feeds API Reference":"/docs/price-feeds-api-reference/", "Data Feed Contract Addresses":"/docs/reference-contracts/"}
+title: "Using Data Feeds (Solana)"
+permalink: "docs/solana/using-data-feeds-solana/"
 metadata:
-  title: "Consuming Data Feeds (Solana)"
+  title: "Using Data Feeds (Solana)"
   description: "How to use Chainlink Data Feeds in your Solana programs."
-  image:
-    0: "/files/OpenGraph_V3.png"
 ---
 
+Chainlink Data Feeds are the quickest way to connect your smart contracts to the real-world market prices of assets. For example, one use for data feeds is to enable smart contracts to retrieve the latest pricing data of an asset in a single call.
+
 Price data feeds are available on the following networks:
-- **Solana network**
-- [EVM-compatible networks](../get-the-latest-price/)
+- **Solana**
+- [Terra](/docs/terra/using-data-feeds-terra/)
+- [EVM-compatible networks](/docs/get-the-latest-price/)
 
-The full list of price data feeds for each network is available on the [Data Feed Contracts](../reference-contracts/) page.
-
-Chainlink Data Feeds are live on the [Solana Devnet](https://explorer.solana.com/?cluster=devnet) with sub-second updates. Chainlink’s Solana deployment has no dependencies on external blockchain networks such as Ethereum. To learn more about the Solana programming model, see the [Solana Documentation](https://docs.solana.com/developing/programming-model/overview).
-
-To get the full list of Chainlink Data Feeds running on the Solana Devnet, see the [Solana Feeds](/docs/solana-price-feeds/) page.
-
-You can view the program ID that owns these feeds in the [Solana Devnet Explorer](https://explorer.solana.com/address/2yqG9bzKHD59MxD9q7ExLvnDhNycB3wkvKXFQSpBoiaE?cluster=devnet).
-
-> 📘 Note
->
-> This guide shows you how to deploy and retrieve data using the Solana network. If you need to use EVM-compatible networks, see [Consuming Data Feeds (EVM)](../get-the-latest-price/).
+This guide applies specifically to using data feeds on the [Solana network](https://solana.com/). To get the full list of Chainlink Data Feeds running on the Solana Devnet, see the [Solana Feeds](/docs/solana/data-feeds-solana/) page. You can view the program ID that owns these feeds in the [Solana Devnet Explorer](https://explorer.solana.com/address/2yqG9bzKHD59MxD9q7ExLvnDhNycB3wkvKXFQSpBoiaE?cluster=devnet).
 
 ## Overview
 
-Solana supports on-chain programs in the [Rust](https://docs.solana.com/developing/on-chain-programs/developing-rust) or [C](https://docs.solana.com/developing/on-chain-programs/developing-c) languages. This guide demonstrates the following tasks:
+This guide demonstrates the following tasks:
 
-- Write and deploy programs to the Solana Devnet using Rust.
+- Write and deploy programs to the [Solana Devnet](https://explorer.solana.com/?cluster=devnet) using Rust.
 - Retrieve data using the [Solana Web3 JavaScript API](https://www.npmjs.com/package/@solana/web3.js) with Node and Yarn.
 
-In Solana, storage and smart contract logic are separate. Programs store all the logic similar to an EVM smart contract. The accounts store all the data. Solana programs are stateless, so you don't always need to deploy your program to the network to test it. Compared to Solidity, the combination of an account and a program is equivalent to a smart contract on an EVM chain. State and logic are separate in Solana. This example shows you how to work with a program that you deploy, but you can refactor the client section to work with a program ID of your choice.
+This example shows you how to work with a program that you deploy, but you can refactor the client section to work with a program ID of your choice.
 
 ## Requirements
 
@@ -140,7 +130,7 @@ After you deploy the program, you can use it to retrieve data from a feed. The c
 You can view the Rust code and Typescript for this example on GitHub. See the [chainlink-solana-demo](https://github.com/smartcontractkit/chainlink-solana-demo) repository. The example code has a few main components:
 
 - The [client Typescript files](https://github.com/smartcontractkit/chainlink-solana-demo/tree/main/client/src) that establish a connection to the deployed program, determine the fees associated with retrieving the feed data, handle serialization and deserialization of data, and report the returned price from the specified data feed. In this case, the script tells your deployed Solana program to retrieve the price of SOL / USD from [FmAmfoyPXiA8Vhhe6MZTr3U6rZfEZ1ctEHay1ysqCqcf](https://explorer.solana.com/address/FmAmfoyPXiA8Vhhe6MZTr3U6rZfEZ1ctEHay1ysqCqcf?cluster=devnet).
-- The [`./src/lib.rs`](https://github.com/smartcontractkit/chainlink-solana-demo/blob/main/src/lib.rs) file that defines the on-chain program for retrieving price data from a specified [Solana Data Feed](../solana-price-feeds/). This program also imports some methods from the main [smartcontractkit/chainlink-solana](https://github.com/smartcontractkit/chainlink-solana) repository.
+- The [`./src/lib.rs`](https://github.com/smartcontractkit/chainlink-solana-demo/blob/main/src/lib.rs) file that defines the on-chain program for retrieving price data from a specified [Solana Data Feed](/docs/solana/data-feeds-solana/). This program also imports some methods from the main [smartcontractkit/chainlink-solana](https://github.com/smartcontractkit/chainlink-solana) repository.
 - The program imports some dependencies from the [chainlink-solana](https://github.com/smartcontractkit/chainlink-solana) repository.
 
 The example code operates using the following process:
