@@ -2,11 +2,11 @@
 layout: nodes.liquid
 section: smartContract
 date: Last Modified
-title: "Consuming Data Feeds (Solana)"
+title: "Using Data Feeds (Solana)"
 permalink: "docs/get-the-latest-price-solana/"
 whatsnext: {"Historical Price Data":"/docs/historical-price-data/", "Data Feeds API Reference":"/docs/price-feeds-api-reference/", "Data Feed Contract Addresses":"/docs/reference-contracts/"}
 metadata:
-  title: "Consuming Data Feeds (Solana)"
+  title: "Using Data Feeds (Solana)"
   description: "How to use Chainlink Data Feeds in your Solana programs."
   image:
     0: "/files/OpenGraph_V3.png"
@@ -14,6 +14,7 @@ metadata:
 
 Price data feeds are available on the following networks:
 - **Solana network**
+- [Terra network](../get-the-latest-price-terra/)
 - [EVM-compatible networks](../get-the-latest-price/)
 
 The full list of price data feeds for each network is available on the [Data Feed Contracts](../reference-contracts/) page.
@@ -26,7 +27,7 @@ You can view the program ID that owns these feeds in the [Solana Devnet Explorer
 
 > 📘 Note
 >
-> This guide shows you how to deploy and retrieve data using the Solana network. If you need to use EVM-compatible networks, see [Consuming Data Feeds (EVM)](../get-the-latest-price/).
+> This guide shows you how to deploy and retrieve data using the Solana network. If you need to use a different network, see [Consuming Data Feeds (EVM)](../get-the-latest-price/) or [Consuming Data Feeds (Terra)](../get-the-latest-price-terra/).
 
 ## Overview
 

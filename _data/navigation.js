@@ -272,12 +272,16 @@ module.exports = {
             url: '/docs/using-chainlink-reference-contracts/',
           },
           {
-            title: 'Get the Latest Price (EVM)',
+            title: 'Using Data Feeds (EVM)',
             url: '/docs/get-the-latest-price/'
           },
           {
-            title: 'Get the Latest Price (Solana)',
+            title: 'Using Data Feeds (Solana)',
             url: '/docs/get-the-latest-price-solana/'
+          },
+          {
+            title: 'Using Data Feeds (Terra)',
+            url: '/docs/get-the-latest-price-terra/'
           },
           {
             title: 'Historical Price Data',
@@ -342,6 +346,10 @@ module.exports = {
               {
                 title: 'Optimism Data Feeds',
                 url: '/docs/optimism-price-feeds/',
+              },
+              {
+                title: 'Terra Data Feeds',
+                url: '/docs/terra-data-feeds/',
               },
             ],
           },

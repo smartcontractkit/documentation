@@ -159,5 +159,16 @@ export const NETWORKS = [
         source: "directory-ethereum-testnet-kovan-optimism-1.json",
       },
     ],
+  },
+  {
+    page: "terra-data-feeds",
+    title: "Terra Data Feeds",
+    networks: [
+      {
+        name: "Terra Bombay Testnet",
+        url: "https://finder.terra.money/bombay-12/address/%s",
+        source: "directory-terra-testnet-bombay.json",
+      },
+    ],
   }
 ];
