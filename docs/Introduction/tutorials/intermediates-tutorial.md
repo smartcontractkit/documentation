@@ -49,7 +49,7 @@ In return for providing this service of generating a random number, Oracles need
 
 > 📘 ERC-677 Token Standard
 >
-> LINK conforms to the ERC-677 token standard, and extension of ERC-20. This standard is what enables data to be encoded in token transfers. This is integral to the Request and Receive cycle. [Click here](https://github.com/ethereum/EIPs/issues/677) to learn more about ERC-677.
+> LINK conforms to the ERC-677 token standard, an extension of ERC-20. This standard is what enables data to be encoded in token transfers. This is integral to the Request and Receive cycle. [Click here](https://github.com/ethereum/EIPs/issues/677) to learn more about ERC-677.
 
 # 3. Interacting with Chainlink Oracles
 
