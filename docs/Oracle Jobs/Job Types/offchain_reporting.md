@@ -73,7 +73,7 @@ observationSource = """
 
     // data source 2
     ds2          [type=http method=GET url="https://chain.link/eth_usd"
-                  requestData=<{"hi": "hello"}>]
+                  requestData="{\\"hi\\": \\"hello\\"}"]
     ds2_parse    [type=jsonparse path="three,four"]
     ds2_multiply [type=multiply times=100]
 

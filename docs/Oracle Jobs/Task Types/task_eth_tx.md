@@ -24,7 +24,7 @@ The hash of the transaction attempt that eventually succeeds (after potentially 
 ```dot
 encode_tx    [type="ethabiencode"
               abi="performUpkeep(bytes performData)"
-              data=<{ "data": $(upkeep_data) }>]
+              data="{ \\"data\\": $(upkeep_data) }"]
 
 submit_tx    [type="ethtx"
                to="0xa36085F69e2889c224210F603D836748e7dC0088"
@@ -32,4 +32,3 @@ submit_tx    [type="ethtx"
 
 encode_tx -> submit_tx
 ```
-

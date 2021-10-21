@@ -45,8 +45,8 @@ Task names must be defined before their opening `[` bracket. In this example, th
 parse [type=jsonparse path="data" data="$(fetch)"]
 
 // Now, we want to send the ETH/USD price to one bridge and the BTC/USD price to another:
-submit_ethusd [type="bridge" name="ethusd" requestData=<{ "data": { "value": $(parse.ethusd) }}>]
-submit_btcusd [type="bridge" name="btcusd" requestData=<{ "data": { "value": $(parse.btcusd) }}>]
+submit_ethusd [type="bridge" name="ethusd" requestData="{ \\"data\\": { \\"value\\": $(parse.ethusd) }}"]
+submit_btcusd [type="bridge" name="btcusd" requestData="{ \\"data\\": { \\"value\\": $(parse.btcusd) }}"]
 
 parse -> submit_ethusd
 parse -> submit_btcusd
@@ -59,7 +59,7 @@ Some tasks, like the `bridge` tasks above, require you to specify a JSON object.
 ```toml
 submit_btcusd [type="bridge"
                name="btcusd"
-               requestData=<{"data":{"value": $(foo), "price": $(bar), "timestamp": $(baz)}}>
+               requestData="{\\"data\\":{\\"value\\": $(foo), \\"price\\": $(bar), \\"timestamp\\": $(baz)}}"
                ]
 ```
 
@@ -129,10 +129,10 @@ observationSource   = """
     decode_cbor  [type=cborparse data="$(decode_log.data)"]
     fetch        [type=http method=GET url="$(decode_cbor.url)"]
     parse        [type=jsonparse path="$(decode_cbor.path)" data="$(fetch)"]
-    encode_data  [type=ethabiencode abi="(uint256 value)" data=<{ "value": $(parse) }>]
+    encode_data  [type=ethabiencode abi="(uint256 value)" data="{ \\"value\\": $(parse) }"]
     encode_tx    [type=ethabiencode
                   abi="fulfillOracleRequest(bytes32 requestId, uint256 payment, address callbackAddress, bytes4 callbackFunctionId, uint256 expiration, bytes32 data)"
-                  data=<{"requestId": $(decode_log.requestId), "payment": $(decode_log.payment), "callbackAddress": $(decode_log.callbackAddr), "callbackFunctionId": $(decode_log.callbackFunctionId), "expiration": $(decode_log.cancelExpiration), "data": $(encode_data)}>
+                  data="{\\"requestId\\": $(decode_log.requestId), \\"payment\\": $(decode_log.payment), \\"callbackAddress\\": $(decode_log.callbackAddr), \\"callbackFunctionId\\": $(decode_log.callbackFunctionId), \\"expiration\\": $(decode_log.cancelExpiration), \\"data\\": $(encode_data)}"
                   ]
     submit_tx    [type=ethtx to="0x613a38AC1659769640aaE063C651F48E0250454C" data="$(encode_tx)"]
 
@@ -192,10 +192,10 @@ observationSource   = """
     fetch       [type=http method=get url="https://bitstamp.net/api/ticker/"]
     parse       [type=jsonparse data="$(fetch)" path="last"]
     multiply    [type=multiply input="$(parse)" times=100]
-    encode_data [type=ethabiencode abi="(uint256 value)" data=<{ "value": $(multiply) }>]
+    encode_data [type=ethabiencode abi="(uint256 value)" data="{ \\"value\\": $(multiply) }"]
     encode_tx   [type=ethabiencode
                  abi="fulfillOracleRequest(bytes32 requestId, uint256 payment, address callbackAddress, bytes4 callbackFunctionId, uint256 expiration, bytes32 data)"
-                 data=<{"requestId": $(decode_log.requestId), "payment": $(decode_log.payment), "callbackAddress": $(decode_log.callbackAddr), "callbackFunctionId": $(decode_log.callbackFunctionId), "expiration": $(decode_log.cancelExpiration), "data": $(encode_data)}>
+                 data="{\\"requestId\\": $(decode_log.requestId), \\"payment\\": $(decode_log.payment), \\"callbackAddress\\": $(decode_log.callbackAddr), \\"callbackFunctionId\\": $(decode_log.callbackFunctionId), \\"expiration\\": $(decode_log.cancelExpiration), \\"data\\": $(encode_data)}"
                  ]
     submit_tx [type=ethtx to="0x613a38AC1659769640aaE063C651F48E0250454C" data="$(encode_tx)"]
 
@@ -252,7 +252,7 @@ observationSource   = """
     multiply    [type=multiply input="$(parse)" times=100]
     encode_tx   [type=ethabiencode
                  abi="submit(uint256 value)"
-                 data=<{ "value": $(multiply) }>]
+                 data="{ \\"value\\": $(multiply) }"]
     submit_tx   [type=ethtx to="0x859AAa51961284C94d970B47E82b8771942F1980" data="$(encode_tx)"]
 
     fetch -> parse -> multiply -> encode_tx -> submit_tx
@@ -282,7 +282,7 @@ schemaVersion   = 1
 # externalJobID   = "0EEC7E1D-D0D2-476C-A1A8-72DFB6633F46"
 observationSource   = """
     multiply       [type=multiply input="$(jobRun.requestBody)" times=100]
-    send_to_bridge [type=bridge name="custombridge" requestData=<{ "data": { "value": $(multiply) }}>]
+    send_to_bridge [type=bridge name="custombridge" requestData="{ \\"data\\": { \\"value\\": $(multiply) }}"]
 
     multiply -> send_to_bridge
 """

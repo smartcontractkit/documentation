@@ -37,12 +37,12 @@ drumbeatSchedule = "CRON_TZ=UTC * */20 * * * *"
 observationSource = """
     // data source 1
     ds1 [type=http method=GET url="https://pricesource1.com"
-         requestData=<{"coin": "ETH", "market": "USD"}>]
+         requestData="{\\"coin\\": \\"ETH\\", \\"market\\": \\"USD\\"}"]
     ds1_parse [type=jsonparse path="data,result"]
 
     // data source 2
     ds2 [type=http method=GET url="https://pricesource2.com"
-         requestData=<{"coin": "ETH", "market": "USD"}>]
+         requestData="{\\"coin\\": \\"ETH\\", \\"market\\": \\"USD\\"}"]
     ds2_parse [type=jsonparse path="data,result"]
 
     ds1 -> ds1_parse -> medianized_answer

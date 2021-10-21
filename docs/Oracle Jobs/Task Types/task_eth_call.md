@@ -21,7 +21,7 @@ An ABI-encoded byte array containing the return value of the contract function.
 ```dot
 encode_call  [type="ethabiencode"
               abi="checkUpkeep(bytes data)"
-              data=<{ "data": $(upkeep_data) }>]
+              data="{ \\"data\\": $(upkeep_data) }"]
 
 call          [type="ethcall"
                contract="0xa36085F69e2889c224210F603D836748e7dC0088"
@@ -33,4 +33,3 @@ decode_result [type="ethabidecode"
 
 encode_call -> call -> decode_result
 ```
-
