@@ -5,10 +5,7 @@ title: "Migrating to v2 Jobs"
 permalink: "docs/jobs/migration-v1-v2/"
 ---
 
-Chainlink nodes support two versions of jobs:
-
-- v1 jobs in JSON format
-- v2 jobs in TOML format
+Chainlink nodes with version 1.0.0 and later support v2 jobs in TOML format. Support for v1 jobs in JSON format is removed.
 
 ## Comparison between v1 and v2 jobs
 

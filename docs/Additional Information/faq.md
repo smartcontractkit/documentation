@@ -80,7 +80,7 @@ Resources:
 
 ## Do I need to have access to APIs in order to provide data?
 
-The Chainlink node can fulfill requests from open (unauthenticated) APIs out-of-the-box, without the need for [External Adapters](../external-adapters/) as long as you've added the [jobs in the Fulfilling Requests guide](../fulfilling-requests/#add-jobs-to-the-node). For these requests, requesters would supply the URL to the open API they wish each node to retrieve, and the Chainlink node will use its core adapters to fulfill the request.
+The Chainlink node can fulfill requests from open (unauthenticated) APIs out-of-the-box, without the need for [External Adapters](../external-adapters/) as long as you've added the [jobs in the Fulfilling Requests guide](../fulfilling-requests/#add-a-job-to-the-node). For these requests, requesters would supply the URL to the open API they wish each node to retrieve, and the Chainlink node will use its core adapters to fulfill the request.
 
 If you would like to provide access to an API which requires authentication, you will need to create a job specific for that API, either with an external adapter or by using the parameters of the [HTTP task](/docs/jobs/task-types/http/).
 

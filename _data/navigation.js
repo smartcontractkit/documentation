@@ -163,23 +163,6 @@ module.exports = {
         ],
       },
       {
-        section: 'v1 JSON JOBS [DEPRECATED]',
-        contents: [
-          {
-            url: '/docs/job-specifications/',
-            title: 'Job Specifications'
-          },
-          {
-            url: '/docs/core-adapters/',
-            title: 'Core Adapters'
-          },
-          {
-            url: '/docs/initiators/',
-            title: 'Initiators'
-          },
-        ],
-      },
-      {
         section: 'EXTERNAL ADAPTERS',
         contents: [
           {
@@ -492,6 +475,25 @@ module.exports = {
                 url: '/docs/use-your-first-contract/',
               },
             ],
+          },
+        ],
+      },
+    ],
+    legacy: [
+      {
+        section: 'v1 JSON JOBS [REMOVED]',
+        contents: [
+          {
+            url: '/docs/job-specifications/',
+            title: 'Job Specifications'
+          },
+          {
+            url: '/docs/core-adapters/',
+            title: 'Core Adapters'
+          },
+          {
+            url: '/docs/initiators/',
+            title: 'Initiators'
           },
         ],
       },
