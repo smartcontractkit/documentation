@@ -21,7 +21,7 @@ externalInitiators = [
 observationSource   = """
     parse_request  [type=jsonparse path="data,result" data="$(jobRun.requestBody)"]
     multiply       [type=multiply input="$(parse_request)" times="100"]
-    send_to_bridge [type=bridge name="my_bridge" requestData=<{ "result": $(multiply) }>]
+    send_to_bridge [type=bridge name="my_bridge" requestData="{ \\"result\\": $(multiply) }"]
 
     parse_request -> multiply -> send_to_bridge
 """

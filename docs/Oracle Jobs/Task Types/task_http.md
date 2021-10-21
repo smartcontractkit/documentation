@@ -24,7 +24,7 @@ A string containing the response body.
 my_http_task [type=http
               method=PUT
               url="http://chain.link"
-              requestData=<{"foo": $(foo), "bar": $(bar), "jobID": 123}>
+              requestData="{\\"foo\\": $(foo), \\"bar\\": $(bar), \\"jobID\\": 123}"
               allowUnrestrictedNetworkAccess=true
               ]
 ```

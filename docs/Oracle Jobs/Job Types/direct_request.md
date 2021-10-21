@@ -85,11 +85,11 @@ parse [type="jsonparse" path="$(decode_cbor.jsonPath)" data="$(fetch)"]
 // the requestId.
 encode_response [type=ethabiencode
                  abi="(uint256 data)"
-                 data=<{"data": $(parse) }>]
+                 data="{\\"data\\": $(parse) }"]
 
 encode_tx       [type=ethabiencode
                  abi="fulfillOracleRequest(bytes32 requestId, uint256 payment, address callbackAddress, bytes4 callbackFunctionId, uint256 expiration, bytes32 data)"
-                 data=<{"requestId": $(decode_log.requestId), "payment": $(decode_log.payment), "callbackAddress": $(decode_log.callbackAddr), "callbackFunctionId": $(decode_log.callbackFunctionId), "expiration": $(decode_log.cancelExpiration), "data": $(encode_mwr)}>
+                 data="{\\"requestId\\": $(decode_log.requestId), \\"payment\\": $(decode_log.payment), \\"callbackAddress\\": $(decode_log.callbackAddr), \\"callbackFunctionId\\": $(decode_log.callbackFunctionId), \\"expiration\\": $(decode_log.cancelExpiration), \\"data\\": $(encode_mwr)}"
                  ]
 
 submit_tx  [type=ethtx to="0x613a38AC1659769640aaE063C651F48E0250454C" data="$(encode_tx)"]
@@ -161,11 +161,11 @@ observationSource   = """
     // MWR API does NOT auto populate the requestID.
     encode_mwr [type=ethabiencode
                 abi="(bytes32 requestId, uint256 usd, uint256 eur, uint256 jpy)"
-                data=<{"requestId": $(decode_log.requestId), "usd": $(usd_multiply), "eur": $(eur_multiply), "jpy": $(jpy_multiply)}>
+                data="{\\"requestId\\": $(decode_log.requestId), \\"usd\\": $(usd_multiply), \\"eur\\": $(eur_multiply), \\"jpy\\": $(jpy_multiply)}"
                 ]
     encode_tx  [type=ethabiencode
                 abi="fulfillOracleRequest2(bytes32 requestId, uint256 payment, address callbackAddress, bytes4 callbackFunctionId, uint256 expiration, bytes calldata data)"
-                data=<{"requestId": $(decode_log.requestId), "payment":   $(decode_log.payment), "callbackAddress": $(decode_log.callbackAddr), "callbackFunctionId": $(decode_log.callbackFunctionId), "expiration": $(decode_log.cancelExpiration), "data": $(encode_mwr)}>
+                data="{\\"requestId\\": $(decode_log.requestId), \\"payment\\":   $(decode_log.payment), \\"callbackAddress\\": $(decode_log.callbackAddr), \\"callbackFunctionId\\": $(decode_log.callbackFunctionId), \\"expiration\\": $(decode_log.cancelExpiration), \\"data\\": $(encode_mwr)}"
                 ]
     submit_tx  [type=ethtx to="0x613a38AC1659769640aaE063C651F48E0250454C" data="$(encode_tx)" minConfirmations="2"]
 
