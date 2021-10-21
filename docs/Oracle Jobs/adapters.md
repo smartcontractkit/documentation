@@ -1,15 +1,16 @@
 ---
 layout: nodes.liquid
+section: legacy
 date: Last Modified
-title: "Core Adapters"
+title: "Core Adapters [v1]"
 permalink: "docs/core-adapters/"
 whatsnext: {"Introduction to External Adapters":"/docs/external-adapters/", "Initiators":"/docs/initiators/"}
 ---
 
-# DEPRECATED
+# REMOVED
 
-> ❗️ v1 Jobs are deprecated
-> The adapters or JSON adapters for v1 Jobs are deprecated and will be removed for Chainlink nodes running version 1.0.0 and later. Use [v2 job tasks](/docs/tasks) instead.
+> ❗️ v1 Jobs are removed
+> The adapters or JSON adapters for v1 Jobs are removed for Chainlink nodes running version 1.0.0 and later. Use [v2 job tasks](/docs/tasks) instead.
 >
 > See the [v2 jobs migration page](/docs/jobs/migration-v1-v2) to learn how to migrate to v2 jobs.
 

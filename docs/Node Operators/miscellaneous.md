@@ -57,7 +57,7 @@ If no jobs have been added, you will receive the following output, otherwise, th
 ## Change your API password
 
 > 🚧 Note
-> 
+>
 > If using Docker, you will first need to follow the [Execute Commands Running Docker](#execute-commands-running-docker) guide to enter the running container.
 
 In order to change your password, you first need to log into the CLI by running:
@@ -125,7 +125,7 @@ Then make your changes and use the longer `docker run` command again.
 The Chainlink node can be supplied with files for the wallet password and API email and password (on separate lines) on startup so that you don't need to enter credentials when starting the node. Following the pattern established in [Running a Chainlink Node](../running-a-chainlink-node/), you can create an API file by running the following:
 
 > 🚧 Important
-> 
+>
 > Change the values within the quotes to something unique for your node.
 
 ```shell Rinkeby
@@ -188,5 +188,5 @@ If there is already a key in your database and you want to import another key, y
 ## Full example in detached mode
 
 ```shell
-cd ~/.chainlink-kovan && docker run --restart=always  -p 6688:6688 -d --name kovan-primary -v ~/.chainlink-kovan:/chainlink -it --env-file=.env smartcontract/chainlink:0.9.4 local n -p /chainlink/.password
+cd ~/.chainlink-kovan && docker run --restart=always  -p 6688:6688 -d --name kovan-primary -v ~/.chainlink-kovan:/chainlink -it --env-file=.env smartcontract/chainlink:1.0.0 local n -p /chainlink/.password
 ```

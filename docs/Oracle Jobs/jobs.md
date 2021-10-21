@@ -7,7 +7,7 @@ permalink: "docs/jobs/"
 
 > ✅ NOTE
 >
-> This page describes v2 Chainlink jobs. In the Operator UI interface, these are called TOML jobs. The v1 jobs are deprecated and will be removed in Chainlink nodes versioned 1.0.0 and later. To learn how to migrate your v1 jobs to v2 jobs, see [Migrating to v2 Jobs](../jobs/migration-v1-v2/). If you still need to use v1 jobs on older versions of Chainlink nodes, see the [v1 Jobs](../job-specifications/) documentation.
+> This page describes v2 Chainlink jobs. In the Operator UI interface, these are called TOML jobs. The v1 jobs are removed in Chainlink nodes versioned 1.0.0 and later. To learn how to migrate your v1 jobs to v2 jobs, see [Migrating to v2 Jobs](../jobs/migration-v1-v2/). If you still need to use v1 jobs on older versions of Chainlink nodes, see the [v1 Jobs](../job-specifications/) documentation.
 
 ## What is a Job?
 

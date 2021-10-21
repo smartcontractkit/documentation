@@ -1,15 +1,16 @@
 ---
 layout: nodes.liquid
+section: legacy
 date: Last Modified
-title: "Job Specifications"
+title: "Job Specifications [v1]"
 permalink: "docs/job-specifications/"
 whatsnext: {"Core Adapters":"/docs/core-adapters/", "Initiators":"/docs/initiators/"}
 ---
 
-# DEPRECATED
+# REMOVED
 
-> ❗️ v1 Jobs are deprecated
-> The v1 job spec or JSON spec is deprecated and will be removed for Chainlink nodes running version 1.0.0 and later. If you are still running this type of job, migrate them to v2 specs.
+> ❗️ v1 Jobs are removed
+> The v1 job spec or JSON spec removed for Chainlink nodes running version 1.0.0 and later. If you are still running this type of job, migrate them to v2 specs.
 >
 > See the [v2 jobs migration page](/docs/jobs/migration-v1-v2) to learn how to migrate to v2 jobs.
 

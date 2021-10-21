@@ -3,7 +3,7 @@ layout: nodes.liquid
 date: Last Modified
 title: "Fulfilling Requests"
 permalink: "docs/fulfilling-requests/"
-whatsnext: {"Performing System Maintenance":"/docs/performing-system-maintenance/", "Miscellaneous":"/docs/miscellaneous/", "Best Security and Operating Practices":"/docs/best-security-practices/"}
+whatsnext: {"Performing System Maintenance":"/docs/performing-system-maintenance/", "v2 Jobs":"/docs/jobs/", "Best Security and Operating Practices":"/docs/best-security-practices/"}
 metadata:
   title: "Chainlink Node Operators: Fulfilling Requests"
   description: "Deploy your own Oracle contract and add jobs to your node so that it can provide data to smart contracts."
@@ -18,26 +18,19 @@ Before you begin this guide, complete the following tasks to make sure you have 
 - Configure an Ethereum client with an active websocket connection. Either [Run an Ethereum Client](../run-an-ethereum-client/) yourself or use an [External Service](../run-an-ethereum-client/#external-services) that your Chainlink Node can access.
 - [Run a Chainlink Node](../running-a-chainlink-node/) and connect it to a [supported database](../connecting-to-a-remote-database/).
 - Fund the Ethereum address that your Chainlink node uses. You can find the address in the node Operator GUI under the **Keys** tab. The address of the node is the `Regular` type. You can obtain test ETH from several [faucets](../link-token-contracts/).
-    - For Chainlink nodes versioned 0.9.6 and earlier, find the Ethereum address in the **Configuration** tab in the `ACCOUNT_ADDRESS` field.
 
 ## Address Types
 
 Your node works with several different types of addresses. Each address type has a specific function:
-- **Node address:** This is the address for your Chainlink node wallet. The node requires native blockchain tokens at all times to respond to requests. For this example, the node uses ETH. When you start a Chainlink node, it automatically generates this address. You can find this address in the Node's GUI under `ACCOUNT_ADDRESS`.
-- **Oracle contract address:** This is the address for contracts like `Operator.sol` or `Oracle.sol` that are deployed to a blockchain. Do not fund these addresses with native blockchain tokens such as ETH. When you make API call requests, the funds pass through this contract to interact with your Chainlink node. This will be the address that smart contract developers point to when they choose a node for an API call. You can find this address in the Node's GUI under `YOUR_ORACLE_CONTRACT_ADDRESS`.
+- **Node address:** This is the address for your Chainlink node wallet. The node requires native blockchain tokens at all times to respond to requests. For this example, the node uses ETH. When you start a Chainlink node, it automatically generates this address. You can find this address on the Node Operator GUI under Keys > Account addresses.
+- **Oracle contract address:** This is the address for contracts like `Operator.sol` or `Oracle.sol` that are deployed to a blockchain. Do not fund these addresses with native blockchain tokens such as ETH. When you make API call requests, the funds pass through this contract to interact with your Chainlink node. This will be the address that smart contract developers point to when they choose a node for an API call.
 - **Admin wallet address:** This is the address that owns your `Operator.sol` or `Oracle.sol` contract addresses. If you're on OCR, this is the wallet address that receives LINK tokens.
 
 ## Deploy your own Oracle contract
 
-1. Go to Remix and [open the `Oracle.sol` smart contract](https://remix.ethereum.org/#url=https://docs.chain.link/samples/NodeOperators/Oracle.sol).
-
-    ![The Remix file explorer showing Oracle.sol.](/files/05f12f3-00eeef4-remix001.jpg)
-
-1. Click the `Oracle.sol` file. The contents of this file will be very minimal.
+1. Go to Remix and [open the `Oracle.sol` smart contract](https://remix.ethereum.org/#url=https://docs.chain.link/samples/NodeOperators/Oracle.sol). The contents of this file will be very minimal.
 
 1. On the **Compile** tab, click the **Compile** button for `Oracle.sol`. Remix automatically selects the compiler version and language from the `pragma` line unless you select a specific version manually.
-
-    ![The Compile tab showing the Compile button.](/files/6aa5936-remix002.jpg)
 
 1. On the **Deploy and Run** tab, configure the following settings:
 
@@ -79,13 +72,8 @@ Your node works with several different types of addresses. Each address type has
 
 Find the address for your Chainlink node and add it to the Oracle contract.
 
-1. In the Chainlink Operator GUI for your node, find and copy the node address:
-
-    - **Version 0.9.7 and newer:** Find the address at the bottom of the **Keys** page in the Account addresses section.
+1. In the Chainlink Operator GUI for your node, find and copy the address at the bottom of the **Keys** page in the Account addresses section.
       ![Node UI Account Addresses](/images/node-operators/node-address.png)
-
-    - **Version 0.9.6 and earlier:** Find the address on the **Configurations** page.
-      ![Node UI Configuration Account Address](/files/d2e5225-Screenshot_from_2018-12-17_08-23-16.png)
 
 1. In Remix, call the `setFulfillmentPermission` function with the address of your node, a comma, and the value `true`, as the input parameters. This allows your node to fulfill requests to your oracle contract.
 
@@ -93,182 +81,41 @@ Find the address for your Chainlink node and add it to the Oracle contract.
 
 1. Click the `setFulfillmentPermission` function to run it. Approve the transaction in MetaMask and wait for it to confirm on the blockchain.
 
-## Add jobs to the node
+## Add a job to the node
 
-You can add jobs to your Chainlink node in the Chainlink Operator GUI. Use the example [Job Specifications](../job-specifications/) below.
+You can add jobs to your Chainlink node in the Chainlink Operator GUI. The [TestnetConsumer.sol](https://github.com/smartcontractkit/documentation/blob/main/_includes/samples/APIRequests/ATestnetConsumer.sol) consumer contract expects the price value in `Uint256`. Use the following [Job](../jobs/) example:
 
-If using Chainlink version `0.9.4` or above, you can add a `name` to your job spec.
+```toml TOML Uint256
+{% include samples/NodeOperators/jobs/get-uint256.toml %}
+```
 
-```json Bytes32 (GET)
-{
-  "name": "Get > Bytes32",
-  "initiators": [
-    {
-      "type": "runlog",
-      "params": {
-        "address": "YOUR_ORACLE_CONTRACT_ADDRESS"
-      }
-    }
-  ],
-  "tasks": [
-    {
-      "type": "httpget"
-    },
-    {
-      "type": "jsonparse"
-    },
-    {
-      "type": "ethbytes32"
-    },
-    {
-      "type": "ethtx"
-    }
-  ]
-}
-```
-```json Bytes32 (POST)
-{
-  "name": "POST > Bytes32",
-  "initiators": [
-    {
-      "type": "runlog",
-      "params": {
-        "address": "YOUR_ORACLE_CONTRACT_ADDRESS"
-      }
-    }
-  ],
-  "tasks": [
-    {
-      "type": "httpget"
-    },
-    {
-      "type": "jsonparse"
-    },
-    {
-      "type": "ethbytes32"
-    },
-    {
-      "type": "ethtx"
-    }
-  ]
-}
-```
-```json Int256
-{
-  "name": "Get > Int256",
-  "initiators": [
-    {
-      "type": "runlog",
-      "params": {
-        "address": "YOUR_ORACLE_CONTRACT_ADDRESS"
-      }
-    }
-  ],
-  "tasks": [
-    {
-      "type": "httpget"
-    },
-    {
-      "type": "jsonparse"
-    },
-    {
-      "type": "multiply"
-    },
-    {
-      "type": "ethint256"
-    },
-    {
-      "type": "ethtx"
-    }
-  ]
-}
-```
-```json Uint256
-{
-  "name": "Get > Uint256",
-  "initiators": [
-    {
-      "type": "runlog",
-      "params": {
-        "address": "YOUR_ORACLE_CONTRACT_ADDRESS"
-      }
-    }
-  ],
-  "tasks": [
-    {
-      "type": "httpget"
-    },
-    {
-      "type": "jsonparse"
-    },
-    {
-      "type": "multiply"
-    },
-    {
-      "type": "ethuint256"
-    },
-    {
-      "type": "ethtx"
-    }
-  ]
-}
-```
-```json Bool
-{
-  "name": "Get > Bool",
-  "initiators": [
-    {
-      "type": "runlog",
-      "params": {
-        "address": "YOUR_ORACLE_CONTRACT_ADDRESS"
-      }
-    }
-  ],
-  "tasks": [
-    {
-      "type": "httpget"
-    },
-    {
-      "type": "jsonparse"
-    },
-    {
-      "type": "ethbool"
-    },
-    {
-      "type": "ethtx"
-    }
-  ]
-}
-```
 1. In the Chainlink Operator GUI on the **Jobs** tab, click **New Job**.
 
-    ![The new job button.](/files/25bb51c-Screenshot_from_2018-11-02_08-30-26.png)
+    ![The new job button.](/images/node-operators/new-job-button.png)
 
 1. Paste the job specification from above into the text field.
 
-    ![The new job page with JSON for a new job pasted.](/files/ee412d6-Screenshot_from_2018-12-15_08-30-43.png)
+    ![The new job page with TOML format for a new job pasted.](/images/node-operators/new-job-toml.png)
 
-1. Replace `YOUR_ORACLE_CONTRACT_ADDRESS` with the address of your deployed oracle contract address from the previous steps. This address is different than the `ACCOUNT_ADDRESS` from your Chainlink node.
+1. Replace `YOUR_ORACLE_CONTRACT_ADDRESS` with the address of your deployed oracle contract address from the previous steps. This address not the same as the `ACCOUNT_ADDRESS` from your Chainlink node.
 
-1. Click **Create Job**. If the node creates the job successfully, a notice with the job ID appears. Take note of this job ID. You need it later.
+1. Click **Create Job**. If the node creates the job successfully, a notice with the job number appears.
 
-    ![A screenshot showing that the job is created successfully.](/files/a7a2f0c-Screenshot_from_2018-11-02_08-42-22.png)
+    ![A screenshot showing that the job is created successfully.](/images/node-operators/job-created.png)
 
-1. Repeat this process for each of the remaining jobs above until all of the jobs are added.
+1. Click the job number to view the job details. You can also find the job listed on the **Jobs** tab in the Node Operators UI.
 
-The address for each job auto-populates with the zero-address. This means the Chainlink node will listen to your job ID from any address. You can also specify an address in the `params` object of the `RunLog` initiator for your oracle contract.
+1. In the job **Definition** tab, find the `externalJobID` value. Save this value because you will need it later to tell your consumer contract what job ID to request from your node.
 
 ## Create a request to your node
 
 > 📘 If you're going through this guide on Ethereum mainnet, the `TestnetConsumer.sol` contract will still work. However, understand that you're sending real LINK to yourself. **Be sure to practice on the test networks multiple times before attempting to run a node on mainnet.**
 
-After you add jobs to your node, you can use the node to fulfill requests. This section shows what requesters do when they send requests to your node. It is also a way to test and make sure that your node is functioning correctly.
+After you add jobs to your node, you can use the node to fulfill requests. This section shows what a requester does when they send requests to your node. It is also a way to test and make sure that your node is functioning correctly.
 
 1. Open [TestnetConsumer.sol in Remix](https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/ATestnetConsumer.sol).
 
 1. On the **Compiler** tab, click the **Compile** button for `TestnetConsumer.sol`.
-
-    ![Screenshot of TestnetConsumer.sol with the compile button.](/files/a8a5ecd-Screenshot_from_2019-05-16_15-39-05.png)
 
 1. On the **Deploy and Run** tab, configure the following settings:
 
@@ -280,13 +127,43 @@ After you add jobs to your node, you can use the node to fulfill requests. This 
 
 1. Fund the contract by sending LINK to the contract's address. See the [Fund your contract](../fund-your-contract/) page for instructions. The address for the `ATestnetConsumer` contract is on the list of your deployed contracts in Remix.
 
-1. After you fund the contract, create a request. Input your oracle contract address and the job ID for the `Get > Uint256` job into the `requestEthereumPrice` request method. Separate the contract address and the job ID by a comma.
+1. After you fund the contract, create a request. Input your oracle contract address and the job ID for the `Get > Uint256` job into the `requestEthereumPrice` request method **without dashes**. The job ID is the `externalJobID` parameter, which you can find on your job's definition page in the Node Operators UI.
 
-    ![Screenshot of the requestEthereumPrice field with an address filled in.](/files/dfce3b0-Screenshot_from_2019-05-16_17-12-51.png)
+    ![Screenshot of the requestEthereumPrice function with the oracle address and job ID specified.](/images/node-operators/request-price-function.png)
 
-1. Click the request method button and you should see your node log the request coming in and its fulfillment. After the transaction from the node is confirmed, you should see the value updated on your contract by clicking on the `currentPrice` button.
+1. Click the **transact** button for the `requestEthereumPrice` function and approve the transaction in Metamask. The `requestEthereumPrice` function asks the node to retrieve `uint256` data specifically from [https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD](https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD).
+
+1. After the transaction processes, you can see the details for the complete the job run the **Runs** page in the Node Operators UI.
+
+1. In Remix, click the `currentPrice` variable to see the current price updated on your consumer contract.
 
     ![A screenshot of the currentPrice button](/files/6741635-Screenshot_from_2019-05-15_15-38-25.png)
+
+## Retrieving other types of data
+
+Now that you have a working consumer contract, you can use that same `ATestnetConsumer` contract to obtain other types of data. The [TestnetConsumer.sol](https://github.com/smartcontractkit/documentation/blob/main/_includes/samples/APIRequests/ATestnetConsumer.sol) consumer contract has a `requestEthereumLastMarket` function that requests more detailed data from [https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETH&tsyms=USD](https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETH&tsyms=USD). Returning this type of data requires another job.
+
+```toml TOML Bytes32
+{% include samples/NodeOperators/jobs/get-bytes32.toml %}
+```
+
+1. Add the `Get > Bytes32` job to your node like you did for the first job.
+
+1. In the new job's definition page, find the `externalJobID`.
+
+1. Input your oracle contract address and the job ID for the `Get > Bytes32` job into the `requestEthereumPrice` request method **without dashes**.
+
+    ![Screenshot of the requestEthereumLastMarket function with the oracle address and job ID specified.](/images/node-operators/request-lastmarket-function.png)
+
+1. Click the **transact** button for the `requestEthereumLastMarket` function and approve the transaction in Metamask.
+
+1. After the transaction processes, you can see the details for the complete the job run the **Runs** page in the Node Operators UI.
+
+1. In Remix, click the `lastMarket` variable. The value is in bytes that you can convert to a string outside of the smart contract later.
+
+    ![A screenshot of the lastMarket button](/images/node-operators/lastMarket-variable.png)
+
+Jobs can do more than just retrieve data and put it on chain. You can write your own jobs to accomplish various tasks. See the [v2 Jobs](/docs/jobs/) page to learn more.
 
 ## Withdrawing LINK
 

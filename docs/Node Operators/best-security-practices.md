@@ -65,7 +65,7 @@ On performing system maintenance to update the Chainlink node, follow [this](/do
 The following are suggestions for job specifications and configuration settings for the node.
 
 [Job Specifications](../jobs/):
-- Include the address of your oracle contract address for all RunLog initiated jobs, as shown in the [Fulfilling Requests](../fulfilling-requests/#add-jobs-to-the-node) guide.
+- Include the address of your oracle contract address for all RunLog initiated jobs, as shown in the [Fulfilling Requests](../fulfilling-requests/#add-a-job-to-the-node) guide.
 - Override the global `MIN_INCOMING_CONFIRMATIONS` config by setting a `confirmations` field in jobs which perform off-chain payments to allow for greater security by making the node ensure the transaction is still valid after X blocks.
 
 [Configuration Variables](../configuration-variables/):

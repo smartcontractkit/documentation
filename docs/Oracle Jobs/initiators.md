@@ -1,15 +1,16 @@
 ---
 layout: nodes.liquid
+section: legacy
 date: Last Modified
-title: "Initiators"
+title: "Initiators [v1]"
 permalink: "docs/initiators/"
 whatsnext: {"Introduction to External Initiators":"/docs/external-initiators-introduction/"}
 ---
 
-# DEPRECATED
+# REMOVED
 
-> ❗️ v1 Jobs are deprecated
-> The initiators for v1 Jobs are deprecated and will be removed for Chainlink nodes running version 1.0.0 and later. Use [v2 job types](/docs/jobs) instead.
+> ❗️ v1 Jobs are removed
+> The initiators for v1 Jobs are removed for Chainlink nodes running version 1.0.0 and later. Use [v2 job types](/docs/jobs) instead.
 >
 > See the [v2 jobs migration page](/docs/jobs/migration-v1-v2) to learn how to migrate to v2 jobs.
 

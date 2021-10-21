@@ -6,7 +6,7 @@ permalink: "docs/glossary/"
 ---
 ### Adapter
 
-> ❗️The adapters or JSON adapters for v1 Jobs are deprecated and will be removed for Chainlink nodes running version 1.0.0 and later. Use [v2 job tasks](/docs/tasks) instead.
+> ❗️The adapters or JSON adapters for v1 Jobs are removed for Chainlink nodes running version 1.0.0 and later. Use [v2 job tasks](/docs/tasks) instead.
 
 An Adapter or [Task](#task) is a piece of software responsible for executing a specific piece of functionality. A Chainlink node comes with a number of Adapters built-in, commonly known as Core Adapters, but can also be extended via [Bridges](/docs/node-operators/) to connect with user-defined [External Adapters](#external-adapter).
 
@@ -41,7 +41,7 @@ A [function selector](https://docs.soliditylang.org/en/develop/abi-spec.html#fun
 
 ### Initiator
 
-> ❗️The initiators for v1 Jobs are deprecated and will be removed for Chainlink nodes running version 1.0.0 and later. Use the [v2 job types](/docs/jobs) instead.
+> ❗️The initiators for v1 Jobs are removed for Chainlink nodes running version 1.0.0 and later. Use the [v2 job types](/docs/jobs) instead.
 
 Triggers the execution of a [Job Spec](#job-spec).
 
