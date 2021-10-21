@@ -48,8 +48,8 @@ Task names must be defined before their opening `[` bracket. In this example, th
 parse [type=jsonparse path="data" data="$(fetch)"]
 
 // Now, we want to send the ETH/USD price to one bridge and the BTC/USD price to another:
-submit_ethusd [type="bridge" name="ethusd" requestData=<{ "value": $(parse.ethusd) }>]
-submit_btcusd [type="bridge" name="btcusd" requestData=<{ "value": $(parse.btcusd) }>]
+submit_ethusd [type="bridge" name="ethusd" requestData=<{ "data": { "value": $(parse.ethusd) }}>]
+submit_btcusd [type="bridge" name="btcusd" requestData=<{ "data": { "value": $(parse.btcusd) }}>]
 
 parse -> submit_ethusd
 parse -> submit_btcusd
@@ -62,7 +62,7 @@ Some tasks, like the `bridge` tasks above, require you to specify a JSON object.
 ```toml
 submit_btcusd [type="bridge"
                name="btcusd"
-               requestData=<{"value": $(foo), "price": $(bar), "timestamp": $(baz)}>
+               requestData=<{"data":{"value": $(foo), "price": $(bar), "timestamp": $(baz)}}>
                ]
 ```
 
@@ -285,7 +285,7 @@ schemaVersion   = 1
 # externalJobID   = "0EEC7E1D-D0D2-476C-A1A8-72DFB6633F46"
 observationSource   = """
     multiply       [type=multiply input="$(jobRun.requestBody)" times=100]
-    send_to_bridge [type=bridge name="custombridge" requestData="$(multiply)"]
+    send_to_bridge [type=bridge name="custombridge" requestData=<{ "data": { "value": $(multiply) }}>]
 
     multiply -> send_to_bridge
 """
