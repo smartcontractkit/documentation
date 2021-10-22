@@ -46,7 +46,7 @@ The LINK token is an ERC677 token that inherits functionality from the ERC20 tok
 > 🚰Rinkeby Faucets
 >
 > Testnet LINK is available from https://faucets.chain.link/rinkeby
-> Testnet ETH is available from one of these addresses. If one is currently offline, try the other: https://faucet.rinkeby.io/, https://app.mycrypto.com/faucet
+> Testnet ETH is available from one of these addresses. If one is currently offline, try the other: https://rinkeby-faucet.com/, https://app.mycrypto.com/faucet
 
 |Parameter|Value|
 |:---|:---|
