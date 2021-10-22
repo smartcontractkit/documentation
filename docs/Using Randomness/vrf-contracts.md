@@ -4,12 +4,12 @@ section: smartContract
 date: Last Modified
 title: "Chainlink VRF Contract Addresses"
 permalink: "docs/vrf-contracts/"
-metadata: 
+metadata:
   title: "Chainlink VRF Contract Addresses"
-  image: 
+  image:
     0: "/files/OpenGraph_V3.png"
 ---
-Chainlink VRF allows you to integrate provably-fair and verifiably random data in your smart contract. 
+Chainlink VRF allows you to integrate provably-fair and verifiably random data in your smart contract.
 
 For implementation details, read [Introduction to Chainlink VRF](../chainlink-vrf/).
 
@@ -106,7 +106,7 @@ For implementation details, read [Introduction to Chainlink VRF](../chainlink-vr
 > 🚰Rinkeby Faucets
 >
 > Testnet LINK is available from https://faucets.chain.link/rinkeby
-> Testnet ETH is available from https://faucet.rinkeby.io/
+> Testnet ETH is available from https://rinkeby-faucet.com/ and https://app.mycrypto.com/faucet
 
 |Item|Value|
 |---|---|
