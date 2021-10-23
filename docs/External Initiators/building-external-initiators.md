@@ -31,7 +31,7 @@ We will be using the <a href="https://github.com/smartcontractkit/external-initi
 External initiators are simple web initiators that can be activated by any job instead of just one. To set one up, you need to have a service similar to an external adapter that sends an `HTTPPost` message runs API call to your chainlink node service. Here is a sample URL for a web job could look like:
 
 ```
-curl -b cookiefile -X POST -H "Content-Type: application/json" --data '{"myKey":"myVal"}' http://localhost:6688/v2/specs/%s/runs
+curl -b cookiefile -X POST -H "Content-Type: application/json" --data '{"myKey":"myVal"}' http://localhost:6688/v2/jobs/%s/runs
 ```
 Where `%s` is the jobId.
 
