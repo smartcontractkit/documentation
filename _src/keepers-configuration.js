@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     'https://mainnet.infura.io/v3/34ed41c4cf28406885f032930d670036'
   );
   console.log(web3);
-  const addr = '0x109A81F1E0A35D4c1D0cae8aCc6597cd54b47Bc6';
+  const addr = '0x7b3EC232b08BD7b4b3305BE0C044D907B2DF960B';
   const abi = [
     {
       inputs: [
