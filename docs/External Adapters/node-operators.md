@@ -4,91 +4,73 @@ date: Last Modified
 title: "Bridges: Adding External Adapters to Nodes"
 permalink: "docs/node-operators/"
 ---
-External adapters are added to the Chainlink node by creating a bridge type. Bridges define the task's name and URL of the external adapter. When a task type is received that is not one of the core adapters, the node will search for a bridge type with that name, utilizing the bridge to your external adapter. Bridge and task type names are case insensitive.
+External adapters are added to a Chainlink node by creating a [Bridge](https://docs.chain.link/docs/jobs/task-types/bridge/) type. Bridges define the task's name and URL of the external adapter. When a task type is received that is not one of the core adapters, the node will search for a bridge type with that name, utilizing the bridge to your external adapter. Bridge and task type names are case insensitive.
 
-To create a bridge on the node, you can navigate to the "Create Bridge" page in the GUI. From there, you will specify a Name, URL, and optionally the number of Confirmations for the bridge.
+To create a bridge on the node, you can navigate to the "Create Bridge" page in the GUI. From there, you will specify a name, URL, and optionally the minimum contract payment and number of confirmations for the bridge.
 
-![Node UI New Bridge Screen](/files/43ac349-Screenshot_from_2018-12-07_06-37-27.png)
+![Node UI New Bridge Screen](/files/ea-new-bridge.png)
 
-The Bridge Name should be unique to the local node, and the Bridge URL should be the URL of your external adapter, whether local or on a separate machine.
+The bridge name should be unique to the local node, and the bridge URL should be the URL of your external adapter, whether local or on a separate machine.
 
-To add jobs which use the bridge, simply give their bridge name to the task type, as shown below for the `randomNumber` type.
+To add jobs which use the bridge, simply add a [Bridge](https://docs.chain.link/docs/jobs/task-types/bridge/) task to your job, as shown by the `bridge` type defined below, on the line defined as 'fetch'.
 
-```json
-{
-  "initiators": [
-    { "type": "runLog" }
-  ],
-  "tasks": [
-    { "type": "randomNumber" },
-    { "type": "copy",
-      "params": {"copyPath": ["details", "current"]}},
-    { "type": "multiply",
-      "params": {"times": 100 }},
-    { "type": "ethuint256" },
-    { "type": "ethtx" }
-  ]
-}
+```toml
+type = "directrequest"
+schemaVersion = 1
+name = "Soccer-Data-EA
+contractAddress = "0xA74F1E1Bb6204B9397Dac33AE970E68F8aBC7651"
+maxTaskDuration = "0s"
+observationSource = """
+    decode_log   [type=ethabidecodelog
+                  abi="OracleRequest(bytes32 indexed specId, address requester, bytes32 requestId, uint256 payment, address callbackAddr, bytes4 callbackFunctionId, uint256 cancelExpiration, uint256 dataVersion, bytes data)"
+                  data="$(jobRun.logData)"
+                  topics="$(jobRun.logTopics)"]
+
+    decode_cbor  [type=cborparse data="$(decode_log.data)"]
+    fetch        [type=bridge name=soccer-data requestData="{\\"id\\": $(jobSpec.externalJobID), \\"data\\": { \\"playerId\\": $(decode_cbor.playerId)}}"]
+    parse        [type=jsonparse path="data,0,Games" data="$(fetch)"]
+    encode_data  [type=ethabiencode abi="(uint256 value)" data=<{ "value": $(parse) }>]
+    encode_tx    [type=ethabiencode
+                  abi="fulfillOracleRequest(bytes32 requestId, uint256 payment, address callbackAddress, bytes4 callbackFunctionId, uint256 expiration, bytes32 data)"
+                  data=<{"requestId": $(decode_log.requestId), "payment": $(decode_log.payment), "callbackAddress": $(decode_log.callbackAddr), "callbackFunctionId": $(decode_log.callbackFunctionId), "expiration": $(decode_log.cancelExpiration), "data": $(encode_data)}>
+                 ]
+    submit_tx    [type=ethtx to="0xA74F1E1Bb6204B9397Dac33AE970E68F8aBC7651" data="$(encode_tx)"]
+
+    decode_log -> decode_cbor -> fetch -> parse -> encode_data -> encode_tx -> submit_tx
+"""
 ```
 
-Since `randomNumber` is not a [core adapter](../core-adapters/), it is an external adapter that each node on the request needs to have in order to fulfill the request. If you try to add a task type that does not exist already as a bridge, the job will fail to create.
-
-You can also exclude extra parameters from the spec when creating the job. This will allow requesters the ability to specify them per-request:
-
-```json
-{
-  "initiators": [
-    { "type": "runLog" }
-  ],
-  "tasks": [
-    { "type": "randomNumber" },
-    { "type": "copy" },
-    { "type": "multiply" },
-    { "type": "ethuint256" },
-    { "type": "ethtx" }
-  ]
-}
-```
+Since `soccer-data` is not a [core task](../tasks/), it is an external adapter that each node on the request needs to have in order to fulfill the request. If you try to add a task type that does not exist already as a bridge, the job will fail to create.
 
 ## Testing External Adapters and Bridges
 
-The easiest way to test to see if you're external adapter is working, is to use a web job. You can read more about the [web initiator here](/docs/initiators/#web).
+The easiest way to test to see if your external adapter is working, is to use a [Webhook Job](https://docs.chain.link/docs/jobs/types/webhook/).
 
-Let's say you have an external adapter called `weather-cl-ea` and it's registered in the `bridges` tab. It takes 1 parameter: `city:boston`, and in solidity, you'd pass the parameter with: 
+Let's say you have an external adapter called `soccer-data` and it's registered in the `bridges` section. It takes 1 parameter: `playerId`, and in solidity, you'd pass the parameter with:
 ```javascript
-request.add("city","boston")
+request.add("playerId","12345678")
 ```
-How can we test the adapter on our node?
+How can you test the adapter on your node?
 
-The easiest way is to setup a web job and manually add the parameter. 
+The easiest way is to setup a [Webhook Job](https://docs.chain.link/docs/jobs/types/webhook/) that uses the external adapter, and manually set the parameter.
 
-```json
-{
-  "name": "weather-cl-ea BOSTON",
-  "initiators": [
-    {
-      "type": "web"
-    }
-  ],
-  "tasks": [
-    {
-      "type": "weather_cl_ea",
-      "params": {
-        "city": "boston"
-      }
-    }
-  ]
-}
-``` 
+```toml
+type = "webhook"
+schemaVersion = 1
+name = "Soccer-Data-EA-Web"
+observationSource = """
+fetch        [type=bridge name="soccer-data" requestData="{\\"id\\": \\"0\\", \\"data\\": { \\"playerId\\": \\"12345678\\"}}"]
+
+    fetch
+"""
+```
 
 Adding the following:
 ```json
-"params": {
-        "city": "boston"
-      }
+requestData="{\\"id\\": \\"0\\", \\"data\\": { \\"playerId\\": \\"12345678\\"}}"
 ```
-Manually sets the parameters, and is equivalent to using `request.add` as shown above, or adding the data in the `--d` if you're using [curl](https://curl.se/).
+Manually sets the parameter, and is equivalent to using `request.add` as shown above, or adding the data with the `--d` flag if you're using [curl](https://curl.se/).
 
-There will be a big `Run` button on your job definition, just hit it to kick off the job.
+There will be a big `Run` button on your job definition, which you can use to kick off the job.
 
-![Node UI Click Run](/files/b75c859-Screen_Shot_2021-02-19_at_11.44.44_AM.png)
+![Node UI Click Run](/files/webhook-run.png)
