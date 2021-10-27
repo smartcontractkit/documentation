@@ -106,7 +106,8 @@ For implementation details, read [Introduction to Chainlink VRF](../chainlink-vr
 > 🚰Rinkeby Faucets
 >
 > Testnet LINK is available from https://faucets.chain.link/rinkeby
-> Testnet ETH is available from https://rinkeby-faucet.com/ and https://app.mycrypto.com/faucet
+> Testnet ETH is available from: https://faucets.chain.link/rinkeby
+> Backup Testnet ETH Faucets: https://faucet.rinkeby.io/, https://rinkeby-faucet.com/, https://app.mycrypto.com/faucet 
 
 |Item|Value|
 |---|---|
