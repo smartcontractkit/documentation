@@ -253,7 +253,7 @@ These are the coordinator address, LINK address, key hash, and fee. Click deploy
 >
 > For a full reference of the addresses, key hashes and fees for each network, see [VRF Contracts](../vrf-contracts/).
 
-(Note: you should <a href="/docs/beginners-tutorial#7c-obtaining-testnet-eth" target="_blank">have some Kovan ETH in your Metamask account</a> to pay for the GAS).
+(Note: you should <a href="/docs/beginners-tutorial/#obtaining-testnet-eth" target="_blank">have some Kovan ETH in your Metamask account</a> to pay for the GAS).
 
 Once deployed, the contract is almost ready to go! However, it can't request anything yet, since it doesn't own LINK. If we hit `rollDice` with no LINK, the transaction will revert.
 

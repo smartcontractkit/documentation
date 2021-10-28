@@ -6,7 +6,7 @@ title: "Other Tutorials"
 permalink: "docs/other-tutorials/"
 ---
 
-## Data Feeds Tutorials
+## Data Feeds Applications
 | Name                                                                                                                                               | Type     | Difficulty |
 |:-------------------------------------------------------------------------------------------------------------------------------------------------- |:-------- |:---------- |
 | [How to Calculate Price Volatility for DeFi Variance Swaps](https://blog.chain.link/how-to-calculate-price-volatility-for-defi-variance-swaps/)    | DeFi     | Advanced   |
@@ -21,7 +21,7 @@ permalink: "docs/other-tutorials/"
 | [Build and Deploy an Avalanche Smart Contract](https://blog.chain.link/how-to-build-and-deploy-an-avalanche-smart-contract/)                      | DeFi     | Beginner   |
 
 
-## VRF Tutorials
+## VRF Applications
 | Name                                                                                                    | Type     | Difficulty |
 |:------------------------------------------------------------------------------------------------------- |:-------- |:---------- |
 | [How to Get a Random Number on Polygon](https://blog.chain.link/how-to-get-a-random-number-on-polygon/) | DeFi     | Medium     |
@@ -29,7 +29,7 @@ permalink: "docs/other-tutorials/"
 | [Build, Deploy, and Sell Your Own Dynamic NFT](https://blog.chain.link/build-deploy-and-sell-your-own-dynamic-nft/)                | NFT | Advanced |
 | [How to Build a Blockchain Lottery](https://blog.chain.link/how-to-build-a-blockchain-lottery-2/)       | Gambling | Advanced   |
 
-## API Requests Tutorials
+## API Requests Applications
 
 | Name                                                                                                                                                           | Type                 | Difficulty |
 | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |:-------------------- |:---------- |
