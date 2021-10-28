@@ -1,7 +1,10 @@
 /** This example code is designed to quickly deploy an example contract using Remix.
  *  If you have never used Remix, try our example walkthrough: https://docs.chain.link/docs/example-walkthrough
- *  You will need testnet ETH and LINK.
- *     - Kovan LINK and ETH faucet: https://faucets.chain.link/kovan
+ */
+
+/**
+ * Request testnet LINK and ETH here: https://faucets.chain.link/
+ * Find information on LINK Token Contracts and get the latest ETH and LINK faucets here: https://docs.chain.link/docs/link-token-contracts/
  */
  
 // SPDX-License-Identifier: MIT
