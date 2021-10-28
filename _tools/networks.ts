@@ -134,7 +134,7 @@ export const NETWORKS = [
     ],
   },
   {
-    page: "solana-price-feeds",
+    page: "data-feeds-solana",
     title: "Solana Data Feeds",
     networks: [
       {
@@ -157,6 +157,17 @@ export const NETWORKS = [
         name: "Optimism Kovan",
         url: "https://kovan-optimistic.etherscan.io/address/%s",
         source: "directory-ethereum-testnet-kovan-optimism-1.json",
+      },
+    ],
+  },
+  {
+    page: "data-feeds-terra",
+    title: "Terra Data Feeds",
+    networks: [
+      {
+        name: "Terra Bombay Testnet",
+        url: "https://finder.terra.money/bombay-12/address/%s",
+        source: "directory-terra-testnet-bombay.json",
       },
     ],
   }

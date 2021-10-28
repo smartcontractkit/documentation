@@ -3,13 +3,17 @@ layout: ./nodes.liquid
 section: smartContract
 ---
 
-{% if metadata.solanafeeds %}
-    <p>To learn how to implement these feeds, see the <a href="../get-the-latest-price-solana/">Solana Examples for Consuming Data Feeds</a>.</p>
-    <p>To learn how to obtain SOL tokens on the Solana Devnet, see the <a href="https://docs.solana.com/cli/transfer-tokens#airdrop-some-tokens-to-get-started">Solana Documentation</a>.</p>
-{% else %}
-    <p>To learn how to implement these feeds, see the <a href="../get-the-latest-price/">Ethereum Examples for Consuming Data Feeds</a>.</p>
-    <p>For LINK token and Faucet details, see the <a href="../link-token-contracts/">LINK Token Contracts</a> page.</p>
-{% endif %}
+{% case metadata.ecosystem %}
+  {% when "terra" %}
+     <p>To learn how to implement these feeds, see the <a href="/docs/terra/using-data-feeds-terra/">Terra Examples for Consuming Data Feeds</a>.</p>
+     <p>To obtain tokens on the Terra Bombay Testnet, see the <a href="https://faucet.terra.money/">Terra Testnet Faucet</a>. For these feeds, use the <strong>Bombay-12</strong> testnet.</p>
+  {% when "solana" %}
+     <p>To learn how to implement these feeds, see the <a href="/docs/solana/using-data-feeds-solana/">Solana Examples for Consuming Data Feeds</a>.</p>
+     <p>To learn how to obtain SOL tokens on the Solana Devnet, see the <a href="https://docs.solana.com/cli/transfer-tokens#airdrop-some-tokens-to-get-started">Solana Documentation</a>.</p>
+  {% else %}
+     <p>To learn how to implement these feeds, see the <a href="/docs/get-the-latest-price/">Ethereum Examples for Consuming Data Feeds</a>.</p>
+     <p>For LINK token and Faucet details, see the <a href="/docs/link-token-contracts/">LINK Token Contracts</a> page.</p>
+{% endcase %}
 
 <p>Note, off-chain equity and ETF assets are only traded during standard market hours (9:30 am - 4 pm ET M-F). Using these feeds outside of those windows is not recommended.</p>
 
@@ -36,19 +40,18 @@ section: smartContract
     }
 </style>
 
-{% if metadata.l2healthflag == "arbitrum" %}
-    <rdme-callout theme="warn">
-        <p>It`s recommended to use <a href="/docs/l2-sequencer-flag/">L2 Sequencer Health Flag</a>
-        for all of the contracts on Arbitrum network!
-        </p>
-    </rdme-callout>
-{% endif %}
-{% if metadata.l2healthflag == "optimism" %}
-    <rdme-callout theme="warn">
-        <p>Optimism uses an optimistic rollup protocol, but there is no L2 Sequencer Health Flag available at this time.
-        </p>
-    </rdme-callout>
-{% endif %}
+{% case metadata.l2healthflag %}
+  {% when "arbitrum" %}
+     <rdme-callout theme="warn">
+         <p>It`s recommended to use <a href="/docs/l2-sequencer-flag/">L2 Sequencer Health Flag</a>
+         for all of the contracts on Arbitrum network!
+         </p>
+     </rdme-callout>
+  {% when "optimism" %}
+     <rdme-callout theme="warn">
+         <p>Optimism uses an optimistic rollup protocol, but there is no L2 Sequencer Health Flag available at this time.</p>
+     </rdme-callout>
+{% endcase %}
 
 <div id="feed-data">
     Loading feeds...

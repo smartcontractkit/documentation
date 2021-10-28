@@ -14,7 +14,7 @@ After you deploy a Keeper-compatible contract, you must register it with the Cha
     <a href="https://keepers.chain.link" class="cl-button--ghost solidity-tracked">Chainlink Keepers App</a>
 </div>
 
-After you register, you can interact directly with the [registry contract](https://etherscan.io/address/0x109A81F1E0A35D4c1D0cae8aCc6597cd54b47Bc6#code) functions such as `cancelUpkeep` and `addFunds`.
+After you register, you can interact directly with the [registry contract](https://etherscan.io/address/0x7b3EC232b08BD7b4b3305BE0C044D907B2DF960B#code) functions such as `cancelUpkeep` and `addFunds`.
 
 # Register and fund Upkeep on the Chainlink Keeper Network
 

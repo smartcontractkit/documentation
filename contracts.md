@@ -1,7 +1,7 @@
 ---
 layout: nodes.liquid
 section: smartContract
-title: "Chainlink Smart Contract Docs"
+title: "Chainlink Documentation"
 date: Last Modified
 permalink: /
 ---

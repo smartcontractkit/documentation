@@ -255,12 +255,16 @@ module.exports = {
             url: '/docs/using-chainlink-reference-contracts/',
           },
           {
-            title: 'Get the Latest Price (EVM)',
+            title: 'Using Data Feeds (EVM)',
             url: '/docs/get-the-latest-price/'
           },
           {
-            title: 'Get the Latest Price (Solana)',
-            url: '/docs/get-the-latest-price-solana/'
+            title: 'Using Data Feeds (Solana)',
+            url: '/docs/solana/using-data-feeds-solana/'
+          },
+          {
+            title: 'Using Data Feeds (Terra)',
+            url: '/docs/terra/using-data-feeds-terra/'
           },
           {
             title: 'Historical Price Data',
@@ -320,11 +324,15 @@ module.exports = {
               },
               {
                 title: 'Solana Data Feeds',
-                url: '/docs/solana-price-feeds/',
+                url: '/docs/solana/data-feeds-solana/',
               },
               {
                 title: 'Optimism Data Feeds',
                 url: '/docs/optimism-price-feeds/',
+              },
+              {
+                title: 'Terra Data Feeds',
+                url: '/docs/terra/data-feeds-terra/',
               },
             ],
           },
@@ -475,6 +483,43 @@ module.exports = {
                 url: '/docs/use-your-first-contract/',
               },
             ],
+          },
+        ],
+      },
+    ],
+    nonEvm: [
+      {
+        section: 'SOLANA',
+        contents: [
+          {
+            title: 'Overview',
+            url: '/docs/solana/',
+          },
+          {
+            title: 'Using Data Feeds',
+            url: '/docs/solana/using-data-feeds-solana/',
+          },
+          {
+            title: 'Contract Addresses',
+            url: '/docs/solana/data-feeds-solana/',
+          },
+
+        ],
+      },
+      {
+        section: 'TERRA',
+        contents: [
+          {
+            title: 'Overview',
+            url: '/docs/terra/',
+          },
+          {
+            title: 'Using Data Feeds',
+            url: '/docs/terra/using-data-feeds-terra/',
+          },
+          {
+            title: 'Contract Addresses',
+            url: '/docs/terra/data-feeds-terra/',
           },
         ],
       },

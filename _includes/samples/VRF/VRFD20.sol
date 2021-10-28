@@ -9,6 +9,12 @@ import "@chainlink/contracts/src/v0.8/ConfirmedOwner.sol";
  * of a 20 sided die
  * @dev This is only an example implementation and not necessarily suitable for mainnet.
  */
+
+/**
+ * Request testnet LINK and ETH here: https://faucets.chain.link/
+ * Find information on LINK Token Contracts and get the latest ETH and LINK faucets here: https://docs.chain.link/docs/link-token-contracts/
+ */
+ 
 contract VRFD20 is VRFConsumerBase, ConfirmedOwner(msg.sender) {
     uint256 private constant ROLL_IN_PROGRESS = 42;
 

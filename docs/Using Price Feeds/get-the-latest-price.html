@@ -2,36 +2,36 @@
 layout: nodes.liquid
 section: smartContract
 date: Last Modified
-title: "Consuming Data Feeds (EVM)"
+title: "Using Data Feeds (EVM)"
 permalink: "docs/get-the-latest-price/"
 whatsnext: {"Historical Price Data":"/docs/historical-price-data/", "Data Feeds API Reference":"/docs/price-feeds-api-reference/", "Data Feeds Contract Addresses":"/docs/reference-contracts/"}
 metadata:
-  title: "Consuming Data Feeds (EVM)"
+  title: "Using Data Feeds (EVM)"
   description: "How to use Chainlink Data Feeds in your smart contracts."
   image:
     0: "/files/OpenGraph_V3.png"
 ---
 {% markdown %}
 
+Chainlink Data Feeds are the quickest way to connect your smart contracts to the real-world market prices of assets. For example, one use for data feeds is to enable smart contracts to retrieve the latest pricing data of an asset in a single call.
+
 Data feeds are available on the following networks:
 - **EVM-compatible networks**
-- [Solana network](../get-the-latest-price-solana/)
+- [Solana](/docs/solana/using-data-feeds-solana/)
+- [Terra](/docs/terra/using-data-feeds-terra/)
+
+This guide applies specifically to using data feeds on EVM-compatible networks.
 
 You can use smart contracts to get asset prices on EVM-compatible networks. These examples show you how to get the price of Ethereum (ETH) on the Ethereum network, but you can modify the examples to work on other EVM-compatible networks as well. The list of data feeds for each network are available on the [Data Feed Contracts](../reference-contracts/) page. For development, use testnet data feeds such as the [ETH/USD Feed](https://kovan.etherscan.io/address/0x9326BFA02ADD2366b30bacB125260Af641031331) on the Kovan testnet.
 
 > 📘 New Feed Registry
 > You can use the [Feed Registry](../feed-registry/) to reference data feed assets by name or currency identifier instead of by pair/proxy address.
 
-
 You can write smart contracts that consume data feeds using several languages, but this guide shows you the following examples:
 
 - [Solidity](#solidity)
 - [Javascript](#javascript) with [web3.js](https://web3js.readthedocs.io/)
 - [Python](#python) with [Web3.py](https://web3py.readthedocs.io/en/stable/)
-
-> 📘 Note
->
-> This guide shows you how to deploy and interact with data feeds using EVM networks. To learn how to use Solana networks, see [Solana networks](../get-the-latest-price-solana/).
 
 ## Solidity
 
@@ -91,6 +91,67 @@ This example uses [Web3.py](https://web3py.readthedocs.io/en/stable/) to retriev
     <a href="https://repl.it/@alexroan/GetLatestPriceWeb3PY" class="cl-button--ghost python-tracked">Run this python ↗</a>
     </div>
 </div>
+
+## Getting a different price denomination
+
+Chainlink Data Feeds can be used in combination to derive denominated price pairs in other currencies.
+
+If you require a denomination other than what is provided, you can use two data feeds to derive the pair that you need. For example, if you needed a BTC / EUR price, you could take the BTC / USD feed and the EUR / USD feed and derive BTC / EUR using division.
+
+![Request Model Diagram](/images/price-feed-conversion-equation.gif)
+
+> 🚧 Important
+> 
+> If you are using a Solidity version before 0.8.0 use [OpenZeppelin's SafeMath](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/utils/math/SafeMath.sol).
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.7;
+
+import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
+/**
+ * THIS EXAMPLE USES UN-AUDITED CODE.
+ * Network: Kovan
+ * Base: BTC/USD
+ * Base Address: 0x6135b13325bfC4B00278B4abC5e20bbce2D6580e
+ * Quote: EUR/USD
+ * Quote Address: 0x0c15Ab9A0DB086e062194c273CC79f41597Bbf13
+ * Decimals: 8
+ */
+
+contract PriceConverter {
+    function getDerivedPrice(address _base, address _quote, uint8 _decimals)
+        public
+        view
+        returns (int256)
+    {
+        require(_decimals > uint8(0) && _decimals <= uint8(18), "Invalid _decimals");
+        int256 decimals = int256(10 ** uint256(_decimals));
+        ( , int256 basePrice, , , ) = AggregatorV3Interface(_base).latestRoundData();
+        uint8 baseDecimals = AggregatorV3Interface(_base).decimals();
+        basePrice = scalePrice(basePrice, baseDecimals, _decimals);
+
+        ( , int256 quotePrice, , , ) = AggregatorV3Interface(_quote).latestRoundData();
+        uint8 quoteDecimals = AggregatorV3Interface(_quote).decimals();
+        quotePrice = scalePrice(quotePrice, quoteDecimals, _decimals);
+
+        return basePrice * decimals / quotePrice;
+    }
+    
+    function scalePrice(int256 _price, uint8 _priceDecimals, uint8 _decimals)
+        internal
+        pure
+        returns (int256)
+    {
+        if (_priceDecimals < _decimals) {
+            return _price * int256(10 ** uint256(_decimals - _priceDecimals));
+        } else if (_priceDecimals > _decimals) {
+            return _price / int256(10 ** uint256(_priceDecimals - _decimals));
+        }
+        return _price;
+    }
+}
+```
 
 ## How Do Data Feeds Get Their Data?
 
