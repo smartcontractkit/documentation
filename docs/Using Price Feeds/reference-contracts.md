@@ -8,6 +8,9 @@ metadata:
   title: "Data Feeds Contract Addresses"
   description: "A list of links to data feed addresses for Data Feed aggregator contracts on supported networks."
 ---
+
+{% include data-quality.md %}
+
 Chainlink Data Feed contracts are updated on a regular basis by multiple Chainlink nodes. For implementation details, read [Introduction to Data Feeds](../using-chainlink-reference-contracts/). Chainlink is a blockchain agnostic technology. This page lists the blockchain networks that Chainlink Data Feeds are currently live on, and the details of where to access them.
 
 > 📘 LINK token on multiple chains
