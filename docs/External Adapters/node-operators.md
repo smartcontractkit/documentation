@@ -17,7 +17,7 @@ To add jobs that use the bridge, add a [Bridge Task](/docs/jobs/task-types/bridg
 ```toml
 type = "directrequest"
 schemaVersion = 1
-name = "Soccer-Data-EA
+name = "Soccer-Data-EA"
 contractAddress = "0xA74F1E1Bb6204B9397Dac33AE970E68F8aBC7651"
 maxTaskDuration = "0s"
 observationSource = """
