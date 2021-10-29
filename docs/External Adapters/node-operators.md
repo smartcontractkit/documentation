@@ -10,7 +10,7 @@ To create a bridge on the node, go to the **Create Bridge** tab in the Node Oper
 
 ![Node UI New Bridge Screen](/files/ea-new-bridge.png)
 
-The bridge name should be unique to the local node, and the bridge URL should be the URL of your external adapter, whether local or on a separate machine.
+The bridge name must be unique to the local node. The bridge URL is the URL of your external adapter, which can be local or on a separate machine.
 
 To add jobs which use the bridge, simply add a [Bridge](https://docs.chain.link/docs/jobs/task-types/bridge/) task to your job, as shown by the `bridge` type defined below, on the line defined as 'fetch'.
 
