@@ -12,7 +12,7 @@ To create a bridge on the node, go to the **Create Bridge** tab in the Node Oper
 
 The bridge name must be unique to the local node. The bridge URL is the URL of your external adapter, which can be local or on a separate machine.
 
-To add jobs which use the bridge, simply add a [Bridge](https://docs.chain.link/docs/jobs/task-types/bridge/) task to your job, as shown by the `bridge` type defined below, on the line defined as 'fetch'.
+To add jobs that use the bridge, add a [Bridge Task](/docs/jobs/task-types/bridge/) to your job. The `bridge` task defined in the example below is defined as 'fetch' and the name of the bridge is `soccer-data`.
 
 ```toml
 type = "directrequest"
