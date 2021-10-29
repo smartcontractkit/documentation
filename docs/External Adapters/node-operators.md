@@ -6,7 +6,7 @@ permalink: "docs/node-operators/"
 ---
 You can add external adapters to a Chainlink node by creating a bridge in the Node Operators Interface. Each bridge must have a unique name and a URL for the external adapter. If a job has a [Bridge Task](/docs/jobs/task-types/bridge/), the node searches for a bridge by name and uses that bridge as your external adapter. Bridge names are case insensitive.
 
-To create a bridge on the node, go to the **Create Bridge** tab in the Node Operators Interface. Specify a name for the bridge, the URL for your external adapter, and optionally specify the minimum contract payment and number of confirmations for the bridge.
+To create a bridge on the node, go to the **Create Bridge** tab in the Node Operators Interface. Specify a name for the bridge, the URL for your external adapter, and optionally specify the minimum contract payment and number of confirmations for the bridge. Minimum contract payment is a fee paid in LINK for the Chainlink node making a call to the external adapter via the bridge. This fee is in addition to the fee specified at the global node level for processing job requests.
 
 ![Node UI New Bridge Screen](/files/ea-new-bridge.png)
 
@@ -40,7 +40,7 @@ observationSource = """
 """
 ```
 
-Since `soccer-data` is not a [core task](../tasks/), it is an external adapter that each node on the request needs to have in order to fulfill the request. If you try to add a task type that does not exist already as a bridge, the job will fail to create.
+Since `soccer-data` is a bridge task, each node that has this job defined needs to have a bridge defined with the name `soccer-data` in order to sucessfully fulfill the request.
 
 ## Testing External Adapters and Bridges
 
@@ -54,6 +54,8 @@ How can you test the adapter on your node?
 
 The easiest way is to setup a [Webhook Job](https://docs.chain.link/docs/jobs/types/webhook/) that uses the external adapter, and manually set the parameter.
 
+> Note: You may need to set the [configuration variable](https://docs.chain.link/docs/configuration-variables/) `FEATURE_WEBHOOK_V2=true` in your `.env` file.
+
 ```toml
 type = "webhook"
 schemaVersion = 1
@@ -65,11 +67,12 @@ fetch        [type=bridge name="soccer-data" requestData="{\\"id\\": \\"0\\", \\
 """
 ```
 
-Adding the following:
+Adding the following into the TOML spec manually sets the parameters passed into the bridge task, and is equivalent to using `request.add` as shown above, or adding the data with the `--d` flag if you're using [curl](https://curl.se/).
+
 ```json
 requestData="{\\"id\\": \\"0\\", \\"data\\": { \\"playerId\\": \\"12345678\\"}}"
 ```
-Manually sets the parameter, and is equivalent to using `request.add` as shown above, or adding the data with the `--d` flag if you're using [curl](https://curl.se/).
+
 
 There will be a big `Run` button on your job definition, which you can use to kick off the job.
 
