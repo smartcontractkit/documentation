@@ -4,7 +4,7 @@ date: Last Modified
 title: "Bridges: Adding External Adapters to Nodes"
 permalink: "docs/node-operators/"
 ---
-External adapters are added to a Chainlink node by creating a [Bridge](https://docs.chain.link/docs/jobs/task-types/bridge/) type. Bridges define the task's name and URL of the external adapter. When a task type is received that is not one of the core adapters, the node will search for a bridge type with that name, utilizing the bridge to your external adapter. Bridge and task type names are case insensitive.
+You can add external adapters to a Chainlink node by creating a bridge in the Node Operators Interface. Each bridge must have a unique name and a URL for the external adapter. If a job has a [Bridge Task](/docs/jobs/task-types/bridge/), the node searches for a bridge by name and uses that bridge as your external adapter. Bridge names are case insensitive.
 
 To create a bridge on the node, you can navigate to the "Create Bridge" page in the GUI. From there, you will specify a name, URL, and optionally the minimum contract payment and number of confirmations for the bridge.
 
