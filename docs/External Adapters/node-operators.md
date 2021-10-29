@@ -44,7 +44,7 @@ Since `soccer-data` is not a [core task](../tasks/), it is an external adapter t
 
 ## Testing External Adapters and Bridges
 
-The easiest way to test to see if your external adapter is working, is to use a [Webhook Job](https://docs.chain.link/docs/jobs/types/webhook/).
+The easiest way to test if your external adapter is working is to use a [Webhook Job](/docs/jobs/types/webhook/).
 
 Let's say you have an external adapter called `soccer-data` and it's registered in the `bridges` section. It takes 1 parameter: `playerId`, and in solidity, you'd pass the parameter with:
 ```javascript
