@@ -20,9 +20,9 @@ All tasks share a few common attributes:
 
 `index`: when a task has more than one input (or the pipeline overall needs to support more than one final output), and the ordering of the values matters, the index parameter can be used to specify that ordering.
 
-```dot
-data_1 [type=http method=GET url="https://chain.link/eth_usd"       index=0]
-data_2 [type=http method=GET url="https://chain.link/eth_dominance" index=1]
+```jpv2
+data_1 [type="http" method=GET url="https://chain.link/eth_usd"       index=0]
+data_2 [type="http" method=GET url="https://chain.link/eth_dominance" index=1]
 multiword_abi_encode [type="eth_abi_encode" method="fulfill(uint256,uint256)"]
 
 data_1 -> multiword_abi_encode

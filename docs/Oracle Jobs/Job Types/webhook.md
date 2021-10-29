@@ -11,7 +11,7 @@ Webhook jobs can be initiated by HTTP request, either by a user or external init
 
 This is an example webhook job:
 
-```toml
+```jpv2
 type            = "webhook"
 schemaVersion   = 1
 externalInitiators = [
@@ -19,9 +19,9 @@ externalInitiators = [
   { name = "my-external-initiator-2", spec = "{}" }
 ]
 observationSource   = """
-    parse_request  [type=jsonparse path="data,result" data="$(jobRun.requestBody)"]
-    multiply       [type=multiply input="$(parse_request)" times="100"]
-    send_to_bridge [type=bridge name="my_bridge" requestData="{ \\"result\\": $(multiply) }"]
+    parse_request  [type="jsonparse" path="data,result" data="$(jobRun.requestBody)"]
+    multiply       [type="multiply" input="$(parse_request)" times="100"]
+    send_to_bridge [type="bridge" name="my_bridge" requestData="{ \\"result\\": $(multiply) }"]
 
     parse_request -> multiply -> send_to_bridge
 """

@@ -52,7 +52,7 @@ The "path" adapter parameter depends on where the target data exists in the resp
 
 If an API responds with a complex JSON object, the "path" parameter would need to specify where to retrieve the desired data, using a dot delimited string for nested objects. For example, take the following response:
 
-```JSON
+```json
 {
    "Prices":{
         "USD":243.33
