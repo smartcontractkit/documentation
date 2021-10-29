@@ -18,6 +18,8 @@ Price data feeds are available on the following networks:
 
 This guide applies specifically to using data feeds on the [Terra network](https://www.terra.money/). To get the full list of Chainlink Data Feeds running on the Terra Devnet, see the [Terra Feeds](/docs/terra/data-feeds-terra/) page.
 
+{% include data-quality.md %}
+
 ## Overview
 
 This guide demonstrates the following tasks:
