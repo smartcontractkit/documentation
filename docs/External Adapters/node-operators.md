@@ -29,7 +29,7 @@ observationSource = """
     decode_cbor  [type=cborparse data="$(decode_log.data)"]
     fetch        [type=bridge name=soccer-data requestData="{\\"id\\": $(jobSpec.externalJobID), \\"data\\": { \\"playerId\\": $(decode_cbor.playerId)}}"]
     parse        [type=jsonparse path="data,0,Games" data="$(fetch)"]
-    encode_data  [type=ethabiencode abi="(uint256 value)" data=<{ "value": $(parse) }>]
+    encode_data  [type=ethabiencode abi="(uint256 value)" data="{ \\"value\\": $(parse) }"]
     encode_tx    [type=ethabiencode
                   abi="fulfillOracleRequest(bytes32 requestId, uint256 payment, address callbackAddress, bytes4 callbackFunctionId, uint256 expiration, bytes32 data)"
                   data="{\\"requestId\\": $(decode_log.requestId), \\"payment\\": $(decode_log.payment), \\"callbackAddress\\": $(decode_log.callbackAddr), \\"callbackFunctionId\\": $(decode_log.callbackFunctionId), \\"expiration\\": $(decode_log.cancelExpiration), \\"data\\": $(encode_data)}"
