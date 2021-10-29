@@ -6,7 +6,7 @@ permalink: "docs/node-operators/"
 ---
 You can add external adapters to a Chainlink node by creating a bridge in the Node Operators Interface. Each bridge must have a unique name and a URL for the external adapter. If a job has a [Bridge Task](/docs/jobs/task-types/bridge/), the node searches for a bridge by name and uses that bridge as your external adapter. Bridge names are case insensitive.
 
-To create a bridge on the node, you can navigate to the "Create Bridge" page in the GUI. From there, you will specify a name, URL, and optionally the minimum contract payment and number of confirmations for the bridge.
+To create a bridge on the node, go to the **Create Bridge** tab in the Node Operators Interface. Specify a name for the bridge, the URL for your external adapter, and optionally specify the minimum contract payment and number of confirmations for the bridge.
 
 ![Node UI New Bridge Screen](/files/ea-new-bridge.png)
 
