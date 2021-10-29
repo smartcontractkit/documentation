@@ -1,0 +1,48 @@
+type = "directrequest"
+schemaVersion = 1
+name = "AP Election Race ID"
+contractAddress = "0xf4316Eb1584B3CF547E091Acd7003c116E07577b"
+maxTaskDuration = "0s"
+observationSource = """
+    decode_log   [type="ethabidecodelog"
+                  abi="OracleRequest(bytes32 indexed specId, address requester, bytes32 requestId, uint256 payment, address callbackAddr, bytes4 callbackFunctionId, uint256 cancelExpiration, uint256 dataVersion, bytes data)"
+                  data="$(jobRun.logData)"
+                  topics="$(jobRun.logTopics)"]
+    decodecbor  [type="cborparse" data="$(decode_log.data)"]
+
+    apelection  [type="bridge" name="ap-election" requestData="{\\"data\\": {\\"date\\": $(decodecbor.date), \\"statePostal\\": $(decodecbor.statePostal), \\"raceID\\": $(decodecbor.raceId), \\"resultsType\\": $(decodecbor.resultsType)}}"]
+
+    decode_log -> decodecbor -> apelection
+
+    winner_first_name    [type=jsonparse path="data,winnerFirstName"]
+    winner_last_name    [type=jsonparse path="data,winnerLastName"]
+    winner_vote_count    [type=jsonparse path="data,winnerVoteCount"]
+    winner_candidate_id  [type=jsonparse path="data,winnerCandidateId"]
+    winner_party [type=jsonparse path="data,winnerParty"]
+    candidates [type=jsonparse path="data,candidates"]
+
+    apelection -> winner_first_name 
+    apelection -> winner_last_name
+    apelection -> winner_vote_count
+    apelection -> winner_candidate_id
+    apelection -> winner_party
+    apelection -> candidates
+
+    winner_first_name -> encode_mwr
+    winner_last_name -> encode_mwr
+    winner_vote_count -> encode_mwr
+    winner_candidate_id -> encode_mwr
+    winner_party -> encode_mwr
+    candidates -> encode_mwr
+
+    encode_mwr [type=ethabiencode abi="(bytes32 _requestId, uint256 _voteCount, bytes32 _firstName, bytes32 _lastName, bytes32 _candidateId, bytes32 _party, bytes[] calldata _candidates)"
+            data="{\\"_requestId\\": $(decode_log.requestId),\\"_voteCount\\": $(winner_vote_count),\\"_firstName\\": $(winner_first_name),\\"_lastName\\": $(winner_last_name), \\"_candidateId\\": $(winner_candidate_id),\\"_party\\": $(winner_party),\\"_candidates\\": $(candidates)}"]
+
+    encode_tx [type=ethabiencode
+            abi="fulfillOracleRequest2(bytes32 requestId, uint256 payment, address callbackAddress, bytes4 callbackFunctionId, uint256 expiration, bytes calldata data)"
+            data="{\\"requestId\\": $(decode_log.requestId), \\"payment\\": $(decode_log.payment), \\"callbackAddress\\": $(decode_log.callbackAddr), \\"callbackFunctionId\\": $(decode_log.callbackFunctionId), \\"expiration\\": $(decode_log.cancelExpiration), \\"data\\": $(encode_mwr)}"]
+
+    submit [type=ethtx to="0xf4316Eb1584B3CF547E091Acd7003c116E07577b" data="$(encode_tx)" gasLimit="5000000"]
+    encode_mwr -> encode_tx -> submit
+"""
+externalJobID = "2e37b836-2f47-4fce-9dd0-19fa195a8627"
