@@ -43,7 +43,7 @@ This guide requires the following tools:
 
 Confirm that the necessary requirements are installed:
 
-```sh
+```shell
 rustc --version
 cargo --version
 rustup target list --installed
@@ -68,7 +68,7 @@ After you complete these steps, you should see the LUNA balance for your wallet 
 
 Use `git clone` to clone the example code:
 
-```sh
+```shell
 git clone https://github.com/smartcontractkit/chainlink-terra-feeds-demo.git && cd ./chainlink-terra-feeds-demo
 ```
 
@@ -79,19 +79,19 @@ The example data feed consumer contract is in `.contracts/consumer`.
 1. From the base of the cloned repository, run `cargo wasm` to
 produce the `./target/wasm32-unknown-unknown/release/consumer.wasm` build file:
 
-   ```sh
+   ```shell
    cargo wasm
    ```
 
 1. Run `cargo schema` in the `./contracts/consumer` directory to generate the schema files. These files expose the schema for the expected messages to the clients.
 
-   ```sh
+   ```shell
    (cd ./contracts/consumer && cargo schema)
    ```
 
 1. From the base of the cloned repository, run the `workspace-optimizer` Rust optimizer to ensure the smallest output size and create a reproducible build process. The optimizer runs in a Docker container and creates an `/artifacts` directory with the compiled and optimized output of the contract:
 
-   ```sh
+   ```shell
    docker run --rm -v "$(pwd)":/code \
    --mount type=volume,source="$(basename "$(pwd)")_cache",target=/code/target \
    --mount type=volume,source=registry_cache,target=/usr/local/cargo/registry \
@@ -100,25 +100,25 @@ produce the `./target/wasm32-unknown-unknown/release/consumer.wasm` build file:
 
 1. Install the [Terra.js](https://terra-money.github.io/terra.js/#installation) package.
 
-   ```sh
+   ```shell
    npm install @terra-money/terra.js
    ```
 
 1. Export your wallet seed phrase to the `TERRA_SEED` environment variable. The script uses the seed phrase to determine the wallet key that you want to use to deploy and call the smart contract.
 
-   ```sh
+   ```shell
    export TERRA_SEED="YOUR SEED PHRASE"
    ```
 
 1. From the base of the cloned repository, use NodeJS to run the `readLatestPrice.mjs` to deploy, instantiate, and execute the contract.
 
-   ```sh
+   ```shell
    node ./scripts/readLatestPrice.mjs
    ```
 
 If the script is successful, it prints the current price from the of [LUNA/USD feed](https://finder.terra.money/bombay-12/address/terra1u475ps69rmhpf4f4gx2pc74l7tlyu4hkj4wp9d).
 
-```
+```json
 {
   round_data_response: {
     round_id: 39516,
@@ -141,7 +141,7 @@ You can view the Rust code and scripts for this example on GitHub. See the [chai
 
 The `./scripts/readLatestPrice.mjs` script completes each of the steps to deploy, instantiate, and execute the `consumer.wasm` compiled smart contract. The `run()` function deploys and instantiates the `consumer.wasm` smart contract. Then, the script uses an [`LCDClient`](https://terra-money.github.io/terra-sdk-python/guides/lcdclient.html) object from [Terra.js](https://terra-money.github.io/terra.js/#installation) to call the `get_latest_round_data` function on the aggregator contract and retrieve the price data.
 
-```js
+```javascript
 async function run() {
   console.log("Deploying Price Consumer Contract");
 

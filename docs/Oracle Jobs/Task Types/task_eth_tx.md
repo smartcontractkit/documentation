@@ -21,7 +21,7 @@ The hash of the transaction attempt that eventually succeeds (after potentially 
 
 **Example**
 
-```dot
+```jpv2
 encode_tx    [type="ethabiencode"
               abi="performUpkeep(bytes performData)"
               data="{ \\"data\\": $(upkeep_data) }"]

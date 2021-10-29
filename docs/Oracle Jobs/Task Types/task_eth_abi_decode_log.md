@@ -27,7 +27,7 @@ A map containing the decoded values.
 
 **Example**
 
-```dot
+```jpv2
 decode [type="ethabidecodelog"
         abi="NewRound(uint256 indexed roundId, address indexed startedBy, uint256 startedAt)"
         data="$(jobRun.logData)"
@@ -36,7 +36,7 @@ decode [type="ethabidecodelog"
 
 This task will return a map with the following schema:
 
-```js
+```json
 {
     "roundId": ...,   // a number
     "startedBy": ..., // an address

@@ -16,7 +16,7 @@ Accepts multiple numerical inputs and returns the mode (most common) of them. If
 
 A map containing two keys:
 
-```js
+```json
 {
     "results": [ ... ], // An array containing all of the values that occurred the maximum number of times
     "occurrences": ..., // The number of times those values occurred
@@ -25,7 +25,7 @@ A map containing two keys:
 
 **Example**
 
-```dot
+```jpv2
 my_median_task [type="median"
                 values=<[ $(fetch1), $(fetch2), $(fetch3), $(fetch4), $(fetch5), $(fetch6), $(fetch7), $(fetch8) ]>
                 allowedFaults=3]
@@ -33,7 +33,7 @@ my_median_task [type="median"
 
 Given a `values` array containing `[ 2, 5, 2, "foo", "foo" "bar", "foo", 2 ]`, the task will return:
 
-```js
+```json
 {
     "results": [ 2, "foo" ],
     "occurrences": 3

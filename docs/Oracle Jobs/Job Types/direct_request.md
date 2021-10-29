@@ -9,7 +9,7 @@ Executes a job upon receipt of an explicit request made by a user. The request i
 
 **Spec format**
 
-```toml
+```jpv2
 type                = "directrequest"
 schemaVersion       = 1
 name                = "example eth request event spec"
@@ -17,9 +17,9 @@ contractAddress     = "0x613a38AC1659769640aaE063C651F48E0250454C"
 # Optional externalJobID: Automatically generated if unspecified
 externalJobID       = "0EEC7E1D-D0D2-476C-A1A8-72DFB6633F02"
 observationSource   = """
-    ds          [type=http method=GET url="http://example.com"]
-    ds_parse    [type=jsonparse path="USD"]
-    ds_multiply [type=multiply times=100]
+    ds          [type="http" method=GET url="http://example.com"]
+    ds_parse    [type="jsonparse" path="USD"]
+    ds_multiply [type="multiply" times=100]
 
     ds -> ds_parse -> ds_multiply
 """
@@ -49,7 +49,7 @@ See [shared fields](/docs/jobs/#shared-fields).
 
 First, let's assume that a user makes a request to the oracle using the following contract:
 
-```sol
+```solidity
 contract MyClient is ChainlinkClient {
     function doRequest(uint256 _payment) public {
         Chainlink.Request memory req = buildChainlinkRequest(specId, address(this), this.fulfill.selector);
@@ -66,7 +66,7 @@ contract MyClient is ChainlinkClient {
 
 This is a single-word response because aside from the `requestID`, the fulfill callback receives only a single-word argument in the `uint256 answer`. You can fulfill this request with a direct request job using the following pipeline:
 
-```toml
+```jpv2
 // First, we parse the request log and the CBOR payload inside of it
 decode_log  [type="ethabidecodelog"
              data="$(jobRun.logData)"
@@ -77,22 +77,22 @@ decode_cbor [type="cborparse"
              data="$(decode_log.cborPayload)"]
 
 // Then, we use the decoded request parameters to make an HTTP fetch
-fetch [type=http method=GET url="$(decode_cbor.fetchURL)"]
+fetch [type="http" method=GET url="$(decode_cbor.fetchURL)"]
 parse [type="jsonparse" path="$(decode_cbor.jsonPath)" data="$(fetch)"]
 
 // Finally, we send a response on-chain.
 // Note that single-word responses automatically populate
 // the requestId.
-encode_response [type=ethabiencode
+encode_response [type="ethabiencode"
                  abi="(uint256 data)"
                  data="{\\"data\\": $(parse) }"]
 
-encode_tx       [type=ethabiencode
+encode_tx       [type="ethabiencode"
                  abi="fulfillOracleRequest(bytes32 requestId, uint256 payment, address callbackAddress, bytes4 callbackFunctionId, uint256 expiration, bytes32 data)"
                  data="{\\"requestId\\": $(decode_log.requestId), \\"payment\\": $(decode_log.payment), \\"callbackAddress\\": $(decode_log.callbackAddr), \\"callbackFunctionId\\": $(decode_log.callbackFunctionId), \\"expiration\\": $(decode_log.cancelExpiration), \\"data\\": $(encode_mwr)}"
                  ]
 
-submit_tx  [type=ethtx to="0x613a38AC1659769640aaE063C651F48E0250454C" data="$(encode_tx)"]
+submit_tx  [type="ethtx" to="0x613a38AC1659769640aaE063C651F48E0250454C" data="$(encode_tx)"]
 
 decode_log -> decode_cbor -> fetch -> parse -> encode_response -> encode_tx -> submit_tx
 ```
@@ -101,7 +101,7 @@ decode_log -> decode_cbor -> fetch -> parse -> encode_response -> encode_tx -> s
 
 Assume that a user wants to obtain the ETH price quoted against three different fiat currencies. If they use only a single-word DR job, it would require three different requests. To make that more efficient, they can use multi-word responses to do it all in a single request as shown in the following example:
 
-```sol
+```solidity
 contract MyClient is ChainlinkClient {
     function doRequest(uint256 _payment) public {
         Chainlink.Request memory req = buildChainlinkRequest(specId, address(this), this.fulfill.selector);
@@ -120,18 +120,18 @@ contract MyClient is ChainlinkClient {
 }
 ```
 
-```toml
+```jpv2
 type                = "directrequest"
 schemaVersion       = 1
 name                = "example eth request event spec"
 contractAddress     = "0x613a38AC1659769640aaE063C651F48E0250454C"
 externalJobID       = "0EEC7E1D-D0D2-476C-A1A8-72DFB6633F47"
 observationSource   = """
-    decode_log   [type=ethabidecodelog
+    decode_log   [type="ethabidecodelog"
                   abi="OracleRequest(bytes32 indexed specId, address requester, bytes32 requestId, uint256 payment, address callbackAddr, bytes4 callbackFunctionId, uint256 cancelExpiration, uint256 dataVersion, bytes data)"
                   data="$(jobRun.logData)"
                   topics="$(jobRun.logTopics)"]
-    decode_cbor  [type=cborparse data="$(decode_log.data)"]
+    decode_cbor  [type="cborparse" data="$(decode_log.data)"]
 
     decode_log -> decode_cbor
 
@@ -139,19 +139,19 @@ observationSource   = """
     decode_cbor -> eur
     decode_cbor -> jpy
 
-    usd          [type=http method=GET url="$(decode_cbor.urlUSD)" allowunrestrictednetworkaccess="true"]
-    usd_parse    [type=jsonparse path="$(decode_cbor.pathUSD)"]
-    usd_multiply [type=multiply value="$(usd_parse)", times="100"]
+    usd          [type="http" method=GET url="$(decode_cbor.urlUSD)" allowunrestrictednetworkaccess="true"]
+    usd_parse    [type="jsonparse" path="$(decode_cbor.pathUSD)"]
+    usd_multiply [type="multiply" value="$(usd_parse)", times="100"]
     usd -> usd_parse -> usd_multiply
 
-    eur          [type=http method=GET url="$(decode_cbor.urlEUR)" allowunrestrictednetworkaccess="true"]
-    eur_parse    [type=jsonparse path="$(decode_cbor.pathEUR)"]
-    eur_multiply [type=multiply value="$(eur_parse)", times="100"]
+    eur          [type="http" method=GET url="$(decode_cbor.urlEUR)" allowunrestrictednetworkaccess="true"]
+    eur_parse    [type="jsonparse" path="$(decode_cbor.pathEUR)"]
+    eur_multiply [type="multiply" value="$(eur_parse)", times="100"]
     eur -> eur_parse -> eur_multiply
 
-    jpy          [type=http method=GET url="$(decode_cbor.urlJPY)" allowunrestrictednetworkaccess="true"]
-    jpy_parse    [type=jsonparse path="$(decode_cbor.pathJPY)"]
-    jpy_multiply [type=multiply value="$(jpy_parse)", times="100"]
+    jpy          [type="http" method=GET url="$(decode_cbor.urlJPY)" allowunrestrictednetworkaccess="true"]
+    jpy_parse    [type="jsonparse" path="$(decode_cbor.pathJPY)"]
+    jpy_multiply [type="multiply" value="$(jpy_parse)", times="100"]
     jpy -> jpy_parse -> jpy_multiply
 
     usd_multiply -> encode_mwr
@@ -159,15 +159,15 @@ observationSource   = """
     jpy_multiply -> encode_mwr
 
     // MWR API does NOT auto populate the requestID.
-    encode_mwr [type=ethabiencode
+    encode_mwr [type="ethabiencode"
                 abi="(bytes32 requestId, uint256 usd, uint256 eur, uint256 jpy)"
                 data="{\\"requestId\\": $(decode_log.requestId), \\"usd\\": $(usd_multiply), \\"eur\\": $(eur_multiply), \\"jpy\\": $(jpy_multiply)}"
                 ]
-    encode_tx  [type=ethabiencode
+    encode_tx  [type="ethabiencode"
                 abi="fulfillOracleRequest2(bytes32 requestId, uint256 payment, address callbackAddress, bytes4 callbackFunctionId, uint256 expiration, bytes calldata data)"
                 data="{\\"requestId\\": $(decode_log.requestId), \\"payment\\":   $(decode_log.payment), \\"callbackAddress\\": $(decode_log.callbackAddr), \\"callbackFunctionId\\": $(decode_log.callbackFunctionId), \\"expiration\\": $(decode_log.cancelExpiration), \\"data\\": $(encode_mwr)}"
                 ]
-    submit_tx  [type=ethtx to="0x613a38AC1659769640aaE063C651F48E0250454C" data="$(encode_tx)" minConfirmations="2"]
+    submit_tx  [type="ethtx" to="0x613a38AC1659769640aaE063C651F48E0250454C" data="$(encode_tx)" minConfirmations="2"]
 
     encode_mwr -> encode_tx -> submit_tx
 """
