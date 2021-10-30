@@ -100,17 +100,6 @@ permalink: /
           <div>
             <h3>Chainlink Architecture Overview</h3>
             <p>
-              Build your first smart contract connected to off-chain data feeds. 
-            </p>
-          </div>
-          <a href="/docs/beginners-tutorial" class="cl-button--ghost">
-            Start Building
-          </a>
-        </div>
-        <div>
-          <div>
-            <h3>Chainlink Architecture Overview</h3>
-            <p>
               Discover how the Chainlink ecosystem bridges the gap between
               off-chain data and smart contracts.
             </p>
