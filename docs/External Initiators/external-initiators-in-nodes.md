@@ -5,6 +5,9 @@ title: "Adding External Initiators to Nodes"
 permalink: "docs/external-initiators-in-nodes/"
 ---
 
+> ⚠️ NOTE
+> External initiators are disabled on nodes by default. Set the `FEATURE_EXTERNAL_INITIATORS=true` [configuration variable](/docs/configuration-variables/#feature_external_initiators) to enable this feature.
+
 ## Creating an external initiator
 
 To create an external initiator you must use the remote API. You can do this yourself, like so:
@@ -33,7 +36,7 @@ POST <URL> -d {"jobId": <job external UUID>, "type": <name of external initiator
 On deletion:
 
 ```
-DELETE <URL>/<job external UUID> 
+DELETE <URL>/<job external UUID>
 ```
 
 You can use the chainlink client for convenience to access this API.
@@ -54,7 +57,7 @@ This will give you the environment variables you need to run your external initi
 
 Be sure to save these values, since the secrets cannot be shown again.
 
-You now can use `ei_name` as an initiator in your jobspec. 
+You now can use `ei_name` as an initiator in your jobspec.
 
 Set a new `.env` file, and add the respective values
 
@@ -70,9 +73,9 @@ At the time of writing, the output should be in order. For example, in from the 
 
 Start your EI.
 
-Whatever code you used to run your external initiator, pass it the new headers created for the access headers, and then start your service. An easy way to do this is by having it read from the `.env` file you just created. Check out the <a href="https://github.com/Conflux-Network-Global/demo-cfx-chainlink" target="_blank">Conflux External initiator</a> for an example. 
+Whatever code you used to run your external initiator, pass it the new headers created for the access headers, and then start your service. An easy way to do this is by having it read from the `.env` file you just created. Check out the <a href="https://github.com/Conflux-Network-Global/demo-cfx-chainlink" target="_blank">Conflux External initiator</a> for an example.
 
-You'll want to test that your job is running properly. Meeting the criteria of your EI and then checking to see if a sample job kicks off is the best way to test this. 
+You'll want to test that your job is running properly. Meeting the criteria of your EI and then checking to see if a sample job kicks off is the best way to test this.
 
 To try a real-life example, feel free to follow along with the <a href="https://www.youtube.com/watch?v=J8oJEp4qz5w">Conflux EI demo</a>.
 
