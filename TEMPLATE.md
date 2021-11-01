@@ -10,9 +10,9 @@ metadata:
   image:
     0: "insert image here"
 ---
-*This doc is meant to be used as a template for creating a tutorial doc. Users should emulate the structure of this document when creating their own templates. The content of this doc comes from beginners-tutorial.md.*
+*This doc is meant to be used as a template for creating a tutorial doc. Contributors should emulate the structure of this document when creating new pages. The content of this doc comes from beginners-tutorial.md.*
 
-*Prerequisites should have its own block at the beginning of the tutorial. Make sure to tell the user what knowledge they should already have and where to go if they need previous reading. Make sure to direct them to other docs pages.*
+*Prerequisites should have its own block at the beginning of the tutorial. Tell the user what tools are required, what knowledge they should already have, and where to go if they need previous reading. Provide links to the other docs pages.*
 > 👍 Prerequisites
 >
 > This tutorial requires .... If you're unfamiliar with these concepts, follow ...
@@ -33,7 +33,7 @@ metadata:
 
 # Overview <!-- omit in toc -->
 
-*Write 1-4 sentences on what this tutorial covers. Focus on the end result of the tutorial and the overarching concepts a user will learn about/implement. Throughout the entire piece, make sure to use second person singular (you). This should be consistent throughout the entire document, but exceptions can be made. Avoid passive voice as well. Remember, anyone reading the tutorial should interpret it as a source of truth. Make sure to write in a voice which is factual and objective.*
+*Write 1-4 sentences on what this tutorial covers. Focus on the end result of the tutorial and the overarching concepts a user will learn and implement. Throughout the entire document, use second person singular (you). This should be consistent throughout the entire document, but exceptions can be made. Avoid passive voice as well. Remember, anyone reading the tutorial should interpret it as a source of truth. Make sure to write in a voice which is factual and objective.*
 
 *Example:*
 In this tutorial, you will write and deploy a Chainlink smart contract to an Ethereum testnet.
@@ -65,7 +65,7 @@ Smart contracts can connect to real-world market prices of assets to produce pow
 
 # 3. What does a smart contract look like?
 
-*For code samples, be thorough. Redundancy is better than assuming the user have sufficient knowledge on a certain topic. Create markdown code samples wherever  applicable. Make sure to give context as to what each code sample is doing.*
+*For code samples, be thorough. Redundancy is better than assuming the user have sufficient knowledge on a certain topic. Create markdown code samples wherever  applicable. Provide a detailed explanation about what each code sample does.*
 
 The structure of a smart contract is similar to that of a _class_ in Javascript, with a few differences. Let's take a look at this `HelloWorld` example.
 
@@ -100,14 +100,14 @@ This means that the code is written for Solidity version 0.7.0, or a newer versi
 
 ...
 
-*As a final step, make sure to include further reading with relevant blog posts. Additionally, make sure to link users to other-tutorials.md. Example:*
+*As a final step, include further reading with relevant blog posts and link users to other tutorials. Example:*
 
 # 4. Further Reading
 
-To read more about data feeds, read our blog posts:
+To learn more about data feeds, read the Data Feed blog posts:
 
 - [Build a dApp on xDai Chain With Secure Data Feeds](https://blog.chain.link/build-a-dapp-on-xdai-chain-with-secure-data-feeds/)
 - [Build a dApp on Binance Smart Chain With Secure Data Feeds](https://blog.chain.link/build-a-dapp-on-binance-smart-chain-with-secure-data-feeds/)
 - [The 3 Levels of Data Aggregation in Chainlink Price Feeds](https://blog.chain.link/levels-of-data-aggregation-in-chainlink-price-feeds/)
 
-To explore more applications of data feeds, check out our [other tutorials](/docs/other-tutorials/#data-feeds-applications).
+To explore more applications for data feeds, check out our [other tutorials](/docs/other-tutorials/#data-feeds-applications).
