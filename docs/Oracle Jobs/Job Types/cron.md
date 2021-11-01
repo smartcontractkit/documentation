@@ -9,15 +9,15 @@ Executes a job on a schedule. Does not rely on any kind of external trigger.
 
 **Spec format**
 
-```toml
+```jpv2
 type            = "cron"
 schemaVersion   = 1
 schedule        = "CRON_TZ=UTC * */20 * * * *"
 externalJobID       = "0EEC7E1D-D0D2-476C-A1A8-72DFB6633F01"
 observationSource   = """
-    fetch    [type=http method=GET url="https://chain.link/ETH-USD"]
-    parse    [type=jsonparse path="data,price"]
-    multiply [type=multiply times=100]
+    fetch    [type="http" method=GET url="https://chain.link/ETH-USD"]
+    parse    [type="jsonparse" path="data,price"]
+    multiply [type="multiply" times=100]
 
     fetch -> parse -> multiply
 """

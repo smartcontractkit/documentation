@@ -11,15 +11,15 @@ Pipelines are composed of tasks arranged in a DAG (directed acyclic graph). Pipe
 
 Each node in the graph is a task with a user-specified ID and a set of configuration parameters and attributes:
 
-```dot
-my_fetch_task [type=http method=GET url="https://chain.link/eth_usd"]
+```jpv2
+my_fetch_task [type="http" method=GET url="https://chain.link/eth_usd"]
 ```
 
 The edges between tasks define how data flows from one task to the next. Some tasks can have multiple inputs, such as `median`. Other tasks are limited to 0 (`http`) or 1 (`jsonparse`).
 
-```dot
-data_source_1  [type=http method=GET url="https://chain.link/eth_usd"]
-data_source_2  [type=http method=GET url="https://coingecko.com/eth_usd"]
+```jpv2
+data_source_1  [type="http" method=GET url="https://chain.link/eth_usd"]
+data_source_2  [type="http" method=GET url="https://coingecko.com/eth_usd"]
 medianize_data [type="median"]
 submit_to_ea   [type="bridge" name="my_bridge"]
 

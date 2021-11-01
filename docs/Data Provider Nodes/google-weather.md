@@ -75,25 +75,26 @@ Import `ChainlinkClient.sol` into your contract so you can inherit the `Chainlin
 
 1. `gcp-weather`: Makes a call to the google weather dataset
    1. Parameters:
-```JSON
+```json
 {
-        "geoJson": {
-          "type": "FeatureCollection",
-          "features": [
-            {
-              "type": "Feature",
-              "geometry": {
-                "type": "Point",
-                "coordinates": [
-                  5.325622558593749,
-                  60.3887552979679
-                ]
-              },
-              "properties": {
-              }
-            }
+  "geoJson": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            5.325622558593749,
+            60.3887552979679
           ]
+        },
+        "properties": {
         }
+      }
+    ]
+  }
+}
 ```
 2. `multiply`: Multiples the output - set to `1000000000000000000`
 3. `ethuint256`: Turns the result into a `uint256`
@@ -105,61 +106,62 @@ Import `ChainlinkClient.sol` into your contract so you can inherit the `Chainlin
 
 1. `gcp-weather`: Makes a call to the google weather dataset
    1. Parameters
-```JSON
+```json
 {
-        "geoJson": {
-          "type": "FeatureCollection",
-          "features": [
+  "geoJson": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
             {
-              "type": "Feature",
-              "geometry": {
-                "type": "Polygon",
-                "coordinates": [
-                  {
-                    "0": [
-                      5.2796173095703125,
-                      60.40673218057448
-                    ],
-                    "1": [
-                      5.164947509765625,
-                      60.383665698324926
-                    ],
-                    "2": [
-                      5.17730712890625,
-                      60.211509994185604
-                    ],
-                    "3": [
-                      5.401153564453124,
-                      60.27694067255946
-                    ],
-                    "4": [
-                      5.6188201904296875,
-                      60.436558668419984
-                    ],
-                    "5": [
-                      5.526123046875,
-                      60.42842688461354
-                    ],
-                    "6": [
-                      5.3002166748046875,
-                      60.5387098888639
-                    ],
-                    "7": [
-                      5.238418579101562,
-                      60.4951151199491
-                    ],
-                    "8": [
-                      5.2796173095703125,
-                      60.40673218057448
-                    ]
-                  }
-                ]
-              },
-              "properties": {
-              }
+              "0": [
+                5.2796173095703125,
+                60.40673218057448
+              ],
+              "1": [
+                5.164947509765625,
+                60.383665698324926
+              ],
+              "2": [
+                5.17730712890625,
+                60.211509994185604
+              ],
+              "3": [
+                5.401153564453124,
+                60.27694067255946
+              ],
+              "4": [
+                5.6188201904296875,
+                60.436558668419984
+              ],
+              "5": [
+                5.526123046875,
+                60.42842688461354
+              ],
+              "6": [
+                5.3002166748046875,
+                60.5387098888639
+              ],
+              "7": [
+                5.238418579101562,
+                60.4951151199491
+              ],
+              "8": [
+                5.2796173095703125,
+                60.40673218057448
+              ]
             }
           ]
+        },
+        "properties": {
         }
+      }
+    ]
+  }
+}
 ```
 2. `ethuint256`: Turns the result into a `uint256`
 3. `ethTx`: Sends the TX to the blockchain
@@ -170,61 +172,62 @@ Import `ChainlinkClient.sol` into your contract so you can inherit the `Chainlin
 
 1. `gcp-weather`: Makes a call to the google weather dataset
    1. Parameters:
-```JSON
+```json
 {
-        "geoJson": {
-          "type": "FeatureCollection",
-          "features": [
+  "geoJson": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
             {
-              "type": "Feature",
-              "geometry": {
-                "type": "Polygon",
-                "coordinates": [
-                  {
-                    "0": [
-                      5.2796173095703125,
-                      60.40673218057448
-                    ],
-                    "1": [
-                      5.164947509765625,
-                      60.383665698324926
-                    ],
-                    "2": [
-                      5.17730712890625,
-                      60.211509994185604
-                    ],
-                    "3": [
-                      5.401153564453124,
-                      60.27694067255946
-                    ],
-                    "4": [
-                      5.6188201904296875,
-                      60.436558668419984
-                    ],
-                    "5": [
-                      5.526123046875,
-                      60.42842688461354
-                    ],
-                    "6": [
-                      5.3002166748046875,
-                      60.5387098888639
-                    ],
-                    "7": [
-                      5.238418579101562,
-                      60.4951151199491
-                    ],
-                    "8": [
-                      5.2796173095703125,
-                      60.40673218057448
-                    ]
-                  }
-                ]
-              },
-              "properties": {
-              }
+              "0": [
+                5.2796173095703125,
+                60.40673218057448
+              ],
+              "1": [
+                5.164947509765625,
+                60.383665698324926
+              ],
+              "2": [
+                5.17730712890625,
+                60.211509994185604
+              ],
+              "3": [
+                5.401153564453124,
+                60.27694067255946
+              ],
+              "4": [
+                5.6188201904296875,
+                60.436558668419984
+              ],
+              "5": [
+                5.526123046875,
+                60.42842688461354
+              ],
+              "6": [
+                5.3002166748046875,
+                60.5387098888639
+              ],
+              "7": [
+                5.238418579101562,
+                60.4951151199491
+              ],
+              "8": [
+                5.2796173095703125,
+                60.40673218057448
+              ]
             }
           ]
+        },
+        "properties": {
         }
+      }
+    ]
+  }
+}
 ```
 2. `multiply`: Multiples the output - set to `1000000000000000000`
 3. `ethuint256`: Turns the result into a `uint256`

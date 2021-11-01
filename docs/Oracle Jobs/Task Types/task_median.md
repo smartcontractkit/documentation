@@ -18,7 +18,7 @@ The median of the values in the `values` array.
 
 **Example**
 
-```dot
+```jpv2
 my_median_task [type="median"
                 values=<[ $(fetch1), $(fetch2), $(fetch3) ]>
                 allowedFaults=1]
