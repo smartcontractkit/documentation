@@ -222,7 +222,7 @@ module.exports = {
                 url: '/docs/advanced-tutorial/',
               },
               {
-                title: 'Other Tutorials',
+                title: 'Other Resources',
                 url: '/docs/other-tutorials/',
               },
             ],

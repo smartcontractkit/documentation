@@ -11,7 +11,7 @@ metadata:
     0: "/files/04b8e56-cl.png"
 ---
 
-> 👍 Requirements:
+> 👍 Requirements
 >
 > This tutorial requires basic knowledge about Ethereum, smart contracts, and the Chainlink Request & Receive cycle. If you're unfamiliar with those concepts, follow the [The Basics](../beginners-tutorial/) and [Random Numbers](../intermediates-tutorial/) tutorials.
 
@@ -33,8 +33,6 @@ In this tutorial you will learn how to request data from a public API in a smart
 + [6. Further Reading](#6-further-reading)
 
 # 1. How does the request and receive cycle work for API calls?
-
-## 1a. Request & Receive Recap
 
 The request and receive cycle describes how a smart contract requests data from an oracle and receives the response in a separate transaction. If you need a refresher, check out the [Basic Request Model](../architecture-request-model/).
 
