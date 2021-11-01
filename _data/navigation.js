@@ -5,8 +5,8 @@ module.exports = {
         section: 'NODE OPERATORS',
         contents: [
           {
-            url: '/docs/node-operator-overview/',
-            title: 'Overview' },
+            url: '/docs/node-versions/',
+            title: 'Node Versions' },
           {
             url: '/docs/running-a-chainlink-node/',
             title: 'Running a Chainlink Node',

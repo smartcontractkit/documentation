@@ -23,7 +23,7 @@ metadata:
 
 > 🚧 Note
 >
-> The video uses a seed phrase to request randomness, this has been depreciated. Please use the code here.
+> The video uses a seed phrase to request randomness, this has been deprecated. Please use the code here.
 
 # Overview <!-- omit in toc -->
 
