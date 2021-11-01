@@ -13,7 +13,7 @@ metadata:
     0: "/files/2a242f1-link.png"
 ---
 
-> 👍 Prerequisites
+> 👍 Requirements
 >
 > This tutorial assumes some basic knowledge around Ethereum and writing and deploying smart contracts. If you're brand new to smart contract development, we recommend working through our [The Basics: Data Feeds](../beginners-tutorial/) tutorial before this one.
 
