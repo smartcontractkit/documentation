@@ -7,10 +7,8 @@ whatsnext: {"Bridges: Adding External Adapters to Nodes":"/docs/node-operators/"
 ---
 Developers of external adapters will need to know how the Chainlink node requests data from it, and how the data should be formatted for a response. External adapters can be written in any language, and even run on separate machines, to include serverless functions.
 
-Here are some project templates to get started:
+Here is our external adapters monorepo which contains many examples to help get you started:
 
-* <a href="https://github.com/thodges-gh/CL-EA-NodeJS-Template" target="_blank">NodeJS Template</a>
-* <a href="https://github.com/thodges-gh/CL-EA-Python-Template" target="_blank">Python Template</a>
 * <a href="https://github.com/smartcontractkit/external-adapters-js" target="_blank">Official Chainlink External Adapter Monorepo (NodeJS)</a>
 
 Once created, you can submit your adapter repo to <a href="https://market.link/profile/adapters" target="_blank">Chainlink Market</a>, so node operators can find and start using it.
