@@ -31,10 +31,23 @@ In this tutorial, you will learn about hybrid smart contracts. You will then cre
 + [1. What is a smart contract? What is a hybrid smart contract?](#1-what-is-a-smart-contract-what-is-a-hybrid-smart-contract)
 + [2. What language is a smart contract written in?](#2-what-language-is-a-smart-contract-written-in)
 + [3. What does a smart contract look like?](#3-what-does-a-smart-contract-look-like)
+  + [Define the Version of Solidity](#define-the-version-of-solidity)
+  + [Start your Contract](#start-your-contract)
+  + [Variables](#variables)
+  + [The Constructor](#the-constructor)
+  + [Using Functions](#using-functions)
 + [4. What does "deploying" mean?](#4-what-does-deploying-mean)
 + [5. What are oracles? Why are they important?](#5-what-are-oracles-why-are-they-important)
 + [6. How do smart contracts use oracles?](#6-how-do-smart-contracts-use-oracles)
+  + [Information about Interfaces](#information-about-interfaces)
+  + [Using Chainlink Data Feeds](#using-chainlink-data-feeds)
 + [7. How do I deploy to testnet?](#7-how-do-i-deploy-to-testnet)
+  + [The Remix IDE](#the-remix-ide)
+  + [Metamask Wallet](#metamask-wallet)
+  + [Obtaining testnet ETH](#obtaining-testnet-eth)
+  + [Compiling your Smart Contract](#compiling-your-smart-contract)
+  + [Deploying](#deploying)
+  + [Get the Price](#get-the-price)
 + [8. Further Reading](#8-further-reading)
 
 # 1. What is a smart contract? What is a hybrid smart contract?
@@ -303,4 +316,4 @@ To read more about data feeds, read our blog posts:
 - [Build a dApp on Binance Smart Chain With Secure Data Feeds](https://blog.chain.link/build-a-dapp-on-binance-smart-chain-with-secure-data-feeds/)
 - [The 3 Levels of Data Aggregation in Chainlink Price Feeds](https://blog.chain.link/levels-of-data-aggregation-in-chainlink-price-feeds/)
 
-To explore more applications of data feeds, check out our [other tutorials](/docs/other-tutorials/#data-feeds-applications).
+To explore more applications of data feeds, check out our [other tutorials](../other-tutorials/#data-feeds).

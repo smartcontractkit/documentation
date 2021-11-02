@@ -28,7 +28,14 @@ In this tutorial you will learn how to request data from a public API in a smart
 + [1. How does the request and receive cycle work for API calls?](#1-how-does-the-request-and-receive-cycle-work-for-api-calls)
 + [2. What are initiators?](#2-what-are-initiators)
 + [3. What are Adapters?](#3-what-are-adapters)
+  + [Core Adapters](#core-adapters)
+  + [Contract Example](#contract-example)
+  + [External Adapters](#external-adapters)
 + [4. How can I use Adapters in my own contract?](#4-how-can-i-use-adapters-in-my-own-contract)
+  + [Variables](#variables)
+  + [Constructor](#constructor)
+  + [`requestData` Function](#requestdata-function)
+  + [Callback Function](#callback-function)
 + [5. How do I deploy to testnet?](#5-how-do-i-deploy-to-testnet)
 + [6. Further Reading](#6-further-reading)
 
@@ -282,4 +289,4 @@ To read more about connecting smart contracts to external APIs, read our blog po
 - [Connect a Tesla Vehicle API to a Smart Contract](https://blog.chain.link/create-tesla-smart-contract-rental/)
 - [OAuth and API Authentication in Smart Contracts](https://blog.chain.link/oauth-and-api-authentication-in-smart-contracts-2/)
 
-To explore more applications of external API requests, check out our [other tutorials](/docs/other-tutorials/#api-requests-applications).
+To explore more applications of external API requests, check out our [other tutorials](/docs/other-tutorials/#api-requests).
