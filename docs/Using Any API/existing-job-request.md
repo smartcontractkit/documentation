@@ -19,8 +19,7 @@ In [Make a GET Request](../make-a-http-get-request/), the example contract code 
 
 This example uses an existing job that is pre-configured to make requests to get [AP Election data](https://developer.ap.org/ap-elections-api/). 
 
-> 📘 Job Spec
-> The job spec for the Chainlink node in this example can be [found here](https://github.com/smartcontractkit/documentation/_includes/samples/APIRequests/ap-election-job.md).
+You can find the job spec for this example on [GitHub](https://github.com/smartcontractkit/documentation/tree/main/_includes/samples/APIRequests/ap-election-job.toml).
 
 
 >❗️ Remember to fund your contract with LINK!
