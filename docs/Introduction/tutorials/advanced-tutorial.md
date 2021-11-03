@@ -53,7 +53,7 @@ Before creating any code, you should understand how Oracle jobs can get data on-
 
 # 3. What are Adapters?
 
-Each oracle job has a configured set of tasks it needs to carry out when it is run. These tasks are defined by the [**Adapters**](../core-adapters/) they support. Adapters are split into two subcategories:
+Each oracle job has a configured set of tasks it must complete when it is run. These tasks are defined by the [**Adapters**](../core-adapters/) they support. Adapters are split into two subcategories:
 
 - **Core Adapters** - These are adapters that come built-in to each node. (examples: HttpGet, EthUint256, etc)
 - **External Adapters** - These are custom adapters built by node operators and community members, which perform specific tasks like calling a particular endpoint with a specific set of parameters (like authentication secrets that shouldn't be publicly visible smart contracts).
