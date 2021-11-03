@@ -22,7 +22,7 @@ A map containing the decoded values.
 
 **Example**
 
-```dot
+```jpv2
 decode [type="ethabidecode"
         abi="bytes32 requestID, uint256 price, address[] oracles"
         data="$(eth_call_result)"]
@@ -30,7 +30,7 @@ decode [type="ethabidecode"
 
 This task will return a map with the following schema:
 
-```js
+```json
 {
     "requestID": ..., // [32]byte value
     "price": ...,     // a number

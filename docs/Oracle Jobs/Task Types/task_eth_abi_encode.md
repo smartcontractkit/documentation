@@ -20,7 +20,7 @@ A byte array.
 
 **Example**
 
-```dot
+```jpv2
 encode [type="ethabiencode"
         abi="fulfillRequest(bytes32 requestID, uint256 answer)"
         data="{\\"requestID\\": $(foo), \\"answer\\": $(bar)}"

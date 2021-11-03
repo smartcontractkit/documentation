@@ -5,8 +5,8 @@ module.exports = {
         section: 'NODE OPERATORS',
         contents: [
           {
-            url: '/docs/node-operator-overview/',
-            title: 'Overview' },
+            url: '/docs/node-versions/',
+            title: 'Node Versions' },
           {
             url: '/docs/running-a-chainlink-node/',
             title: 'Running a Chainlink Node',
@@ -455,6 +455,10 @@ module.exports = {
           {
             title: 'Data Provider Nodes',
             url: '/docs/data-provider-nodes/',
+          },
+          {
+            title: 'Selecting Data Feeds',
+            url: '/docs/selecting-data-feeds/',
           },
           { title: 'Hackathon Resources', url: '/docs/hackathon-resources/' },
           { title: 'Contributing to Chainlink', url: '/docs/contributing-to-chainlink/' },

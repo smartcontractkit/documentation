@@ -21,7 +21,7 @@ A randomly-selected value from the set of inputs.
 
 **Example**
 
-```dot
+```jpv2
 fetch1   [type="http" ...]
 fetch2   [type="http" ...]
 fetch3   [type="http" ...]

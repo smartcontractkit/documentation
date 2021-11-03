@@ -18,7 +18,7 @@ The sum of the values in the `values` array.
 
 **Example**
 
-```dot
+```jpv2
 my_sum_task [type="sum"
              values=<[ $(fetch1), $(fetch2), $(fetch3) ]>
              allowedFaults=1]

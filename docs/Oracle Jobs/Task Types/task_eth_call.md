@@ -18,7 +18,7 @@ An ABI-encoded byte array containing the return value of the contract function.
 
 **Example**
 
-```dot
+```jpv2
 encode_call  [type="ethabiencode"
               abi="checkUpkeep(bytes data)"
               data="{ \\"data\\": $(upkeep_data) }"]

@@ -31,7 +31,7 @@ The result of the division.
 
 **Example**
 
-```dot
+```jpv2
 my_divide_task [type="divide"
                 input="$(json_parse_result)"
                 divisor="3"

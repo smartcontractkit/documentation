@@ -15,7 +15,7 @@ The Flux Monitor job type is for continually-updating data feeds that aggregate 
 
 **Spec format**
 
-```toml
+```jpv2
 type              = "fluxmonitor"
 schemaVersion     = 1
 name              = "example flux monitor spec"
@@ -36,14 +36,14 @@ drumbeatSchedule = "CRON_TZ=UTC * */20 * * * *"
 
 observationSource = """
     // data source 1
-    ds1 [type=http method=GET url="https://pricesource1.com"
+    ds1 [type="http" method=GET url="https://pricesource1.com"
          requestData="{\\"coin\\": \\"ETH\\", \\"market\\": \\"USD\\"}"]
-    ds1_parse [type=jsonparse path="data,result"]
+    ds1_parse [type="jsonparse" path="data,result"]
 
     // data source 2
-    ds2 [type=http method=GET url="https://pricesource2.com"
+    ds2 [type="http" method=GET url="https://pricesource2.com"
          requestData="{\\"coin\\": \\"ETH\\", \\"market\\": \\"USD\\"}"]
-    ds2_parse [type=jsonparse path="data,result"]
+    ds2_parse [type="jsonparse" path="data,result"]
 
     ds1 -> ds1_parse -> medianized_answer
     ds2 -> ds2_parse -> medianized_answer

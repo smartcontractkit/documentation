@@ -26,16 +26,16 @@ Jobs are represented by TOML specifications.
 
 The following is an example `cron` job spec. This is a simple spec that you can add to a node:
 
-```toml
+```jpv2
 type            = "cron"
 schemaVersion   = 1
 schedule        = "CRON_TZ=UTC 0 0 1 1 *"
 # Optional externalJobID: Automatically generated if unspecified
 # externalJobID   = "0EEC7E1D-D0D2-476C-A1A8-72DFB6633F46"
 observationSource   = """
-ds          [type=http method=GET url="https://chain.link/ETH-USD"];
-ds_parse    [type=jsonparse path="data,price"];
-ds_multiply [type=multiply times=100];
+ds          [type="http" method=GET url="https://chain.link/ETH-USD"];
+ds_parse    [type="jsonparse" path="data,price"];
+ds_multiply [type="multiply" times=100];
 ds -> ds_parse -> ds_multiply;
 """
 ```
