@@ -6,7 +6,7 @@ title: "Other Resources"
 permalink: "docs/other-tutorials/"
 ---
 
-Welcome to the Resources page. We've compiled a list of helpful links and pages you might need to help you out throughout your learning journey. If you're new to Chainlink, we suggest starting with [The Basics](../beginners-tutorial/) tutorial and working through the rest of our tutorial series to better understand the products and services Chainlink offers. This page contains more resources, inspiration, and outreach information to further your learning.
+Welcome to the Resources page. This is list of links and pages you might need to help you out throughout your learning journey. If you're new to Chainlink, start with [The Basics](../beginners-tutorial/) tutorial and work through the rest of the tutorial series to better understand the products and services Chainlink offers. This page contains more resources, inspiration, and outreach information to further your learning.
 
 **Table of Contents**
 
@@ -31,7 +31,7 @@ We're constantly uploading new videos to our [YouTube](https://www.youtube.com/c
 - [Chainlink Engineering Tutorials](https://www.youtube.com/playlist?list=PLVP9aGDn-X0QwJVbQvuKr-zrh2_DV5M6J)
 
 ## Application Projects
-Below is a list of applications of Chainlink's products and services. We've sorted them by difficulty and type to help you navigate and search for projects you may find interesting. We're always posting about new ways to use Chainlink so make to visit our [blog](https://blog.chain.link/) to stay up to date with our latest posts.
+Below is a list of applications of Chainlink's products and services sorted by difficulty and type to help you navigate and search for projects that you might find interesting. See the [Chainlink Blog](https://blog.chain.link/) to stay up to date with new ways to use Chainlink.
 
 ### Data Feeds
 | Name                                                                                                                                               | Type     | Difficulty |
@@ -75,7 +75,7 @@ Below is a list of applications of Chainlink's products and services. We've sort
 
 ## Starter Kits
 
-Our Starter Kits help jumpstart your full stack development process. Currently, we have starter kits for Brownie (Python), Truffle (Javascript), and Hardhat (Javascript). Be sure to visit our [Engineering Tutorials](https://www.youtube.com/playlist?list=PLVP9aGDn-X0QwJVbQvuKr-zrh2_DV5M6J) playlist to learn more about each kit and how to use it. 
+Our Starter Kits help jumpstart your full stack development process. You can get starter kits for Brownie (Python), Truffle (Javascript), and Hardhat (Javascript). See the [Engineering Tutorials](https://www.youtube.com/playlist?list=PLVP9aGDn-X0QwJVbQvuKr-zrh2_DV5M6J) playlist to learn more about each kit and how to use it. 
 
 - [Chainlink Brownie Starter Kit (Python)](https://github.com/smartcontractkit/chainlink-mix)
 - [Chainlink Truffle Starter Kit (Javascript)](https://github.com/smartcontractkit/truffle-starter-kit)
@@ -83,7 +83,7 @@ Our Starter Kits help jumpstart your full stack development process. Currently, 
 
 ## More Inspiration
 
-Looking for more ways to use Chainlink? Here are some resources that discuss Chainlink's use cases as well as the winning projects we've had in our previous hackathons. We've also added a link to our Marketplace where you can find our latest data provider nodes and explore our network. 
+Looking for more ways to use Chainlink? Here are some resources that discuss Chainlink's use cases as well as the winning projects we've had in our previous hackathons. There is also link to the Marketplace where you can find the latest data provider nodes and explore the network. 
 
 - [77 Use Cases by Chainlink](https://blog.chain.link/44-ways-to-enhance-your-smart-contract-with-chainlink/)
 - [Past Hackathon Winning Projects](/docs/example-projects)
@@ -91,7 +91,7 @@ Looking for more ways to use Chainlink? Here are some resources that discuss Cha
 
 # Outreach
 
-The Chainlink community is some of the most inviting groups of engineers. We are always looking to help users expand their knowledge on Chainlink and solve related issues. Always refer back to the [Getting Help](/docs/getting-help) page for the latest information about how to get support.
+The Chainlink community is an inviting group of engineers that is always looking to help users expand their knowledge on Chainlink and solve related issues. Refer back to the [Getting Help](/docs/getting-help) page for the latest information about how to get support.
 
 ## Get Support
 - [Stack Overflow](https://stackoverflow.com/questions/tagged/chainlink)
