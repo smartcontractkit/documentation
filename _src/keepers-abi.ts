@@ -1,10 +1,4 @@
-document.addEventListener('DOMContentLoaded', () => {
-  const web3 = new Web3(
-    'https://mainnet.infura.io/v3/34ed41c4cf28406885f032930d670036'
-  );
-  console.log(web3);
-  const addr = '0x7b3EC232b08BD7b4b3305BE0C044D907B2DF960B';
-  const abi = [
+export const abi = [
     {
       inputs: [
         { internalType: 'address', name: 'link', type: 'address' },
@@ -629,25 +623,3 @@ document.addEventListener('DOMContentLoaded', () => {
       type: 'function',
     },
   ];
-
-  const contract = new web3.eth.Contract(abi, addr);
-
-  contract.methods
-    .getConfig()
-    .call()
-    .then((configs) => {
-      configs['paymentPremiumPPB'] =
-        Math.round(parseInt(configs['paymentPremiumPPB'], 10) / 10000000);
-      renderConfigs(configs);
-    });
-});
-const renderConfigs = (configs) => {
-  for (let key of Object.keys(configs)) {
-    const node = document.getElementById(`show-${key}`);
-    if (node) {
-      node.innerHTML = new Number(configs[key]).toLocaleString();
-    } else {
-        console.log('show-' + key,'not found');
-    }
-  }
-};
