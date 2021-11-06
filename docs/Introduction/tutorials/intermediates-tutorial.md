@@ -15,7 +15,7 @@ metadata:
 
 > 👍 Requirements
 >
-> This tutorial assumes some basic knowledge around Ethereum and writing and deploying smart contracts. If you're brand new to smart contract development, we recommend working through our [The Basics: Data Feeds](../beginners-tutorial/) tutorial before this one.
+> This tutorial assumes that you have basic knowledge about Ethereum and writing and deploying smart contracts. If you are new to smart contract development, start with [The Basics: Data Feeds](../beginners-tutorial/) tutorial before starting this tutorial.
 
 <p>
   https://www.youtube.com/watch?v=JqZWariqh5s
@@ -48,15 +48,15 @@ Randomness is very difficult to generate on blockchains. This is because every n
 
 The [previous tutorial](../beginners-tutorial/) explained how to consume Chainlink Data Feeds which consist of reference data posted on-chain by oracles. This data is stored in a contract and can be referenced by consumers until the oracle updates the data again.
 
-Randomness, on the other hand, cannot be reference data. If the result of randomness is stored on-chain, any actor could retrieve the value and predict the outcome. Instead, randomness must be requested from an oracle, which generates a number and a cryptographic proof then returns that result to the contract that requested it. This sequence is what's known as the **[Request and Receive cycle](../architecture-request-model/)**.
+Randomness, on the other hand, cannot be reference data. If the result of randomness is stored on-chain, any actor could retrieve the value and predict the outcome. Instead, randomness must be requested from an oracle, which generates a number and a cryptographic proof. Then, the oracle returns that result to the contract that requested it. This sequence is known as the **[Request and Receive cycle](../architecture-request-model/)**.
 
 # 3. What is the payment process for generating a random number?
 
-In return for providing the service of generating a random number, oracles need to be paid in [**LINK**](../link-token-contracts/). This is paid by the contract which requests the randomness, and payment occurs during the request. 
+In return for providing the service of generating a random number, oracles are paid in [**LINK**](../link-token-contracts/). The contract that requests the randomness pays for the service during the request. 
 
 LINK conforms to the ERC-677 token standard which is an extension of ERC-20. This standard is what enables data to be encoded in token transfers. This is integral to the Request and Receive cycle. [Click here](https://github.com/ethereum/EIPs/issues/677) to learn more about ERC-677.
 
-Smart contracts have all the capabilities that wallets have in that they are able to own and interact with tokens. The contract which requests randomness from Chainlink VRF must have a LINK balance equivalent to, or greater than, the cost of making the request in order to pay and fulfill the service.
+Smart contracts have all the capabilities that wallets have in that they are able to own and interact with tokens. The contract that requests randomness from Chainlink VRF must have a LINK balance greater than or equal to the cost to make the request in order to pay and fulfill the service.
 
 For example, if the current price of Chainlink VRF is 0.1 LINK, the requesting contract must hold at least 0.1 LINK to pay for the request. Once the request transaction has completed, the oracle begins the process of generating the random number and sending the result back.
 
@@ -73,11 +73,11 @@ The contract will have the following functions:
 - `fulfillRandomness`: The function that is used by the Oracle to send the result back to
 - `house`: To see the assigned house of an address
 
-**Note**:To jump straight to the entire implementation, you can [open this contract](https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFD20.sol) in remix.
+**Note**:To jump straight to the entire implementation, you can [open the VRFD20.sol contract](https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFD20.sol) in remix.
 
 ## Importing `VRFConsumerBase`
 
-Chainlink maintains a [library of contracts](https://github.com/smartcontractkit/chainlink/tree/master/contracts) that make consuming data from oracles easier. For Chainlink VRF, you will use a contract called [`VRFConsumerBase`](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/VRFConsumerBase.sol) which needs to be imported and extended from the contract you create.
+Chainlink maintains a [library of contracts](https://github.com/smartcontractkit/chainlink/tree/master/contracts) that make consuming data from oracles easier. For Chainlink VRF, you will use a contract named [`VRFConsumerBase`](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/VRFConsumerBase.sol) which needs to be imported and extended from the contract you create.
 
 ```solidity
 pragma solidity 0.6.7;
@@ -91,7 +91,7 @@ contract VRFD20 is VRFConsumerBase {
 
 ## Contract variables
 
-The contract will contain multiple objects. Each oracle job has a unique Key Hash which is used to identify tasks that it should perform. The contract will store the Key Hash that identifies Chainlink VRF and the fee amount to use in the request.
+The contract will contain multiple objects. Each oracle job has a unique key hash that identifies the tasks that it should perform. The contract will store the Key Hash that identifies Chainlink VRF and the fee amount to use in the request.
 
 ```solidity
 bytes32 private s_keyHash;
@@ -110,7 +110,7 @@ mapping(address => uint256) private s_results;
 
 ## Initializing the contract
 
-The fee and the key hash must be initialized in the constructor of our contract. To use `VRFConsumerBase` properly you must also pass certain values into its constructor.
+The fee and the key hash must be initialized in the constructor of the contract. To use `VRFConsumerBase` properly you must also pass certain values into its constructor.
 
 ```solidity
 pragma solidity 0.8.7;
