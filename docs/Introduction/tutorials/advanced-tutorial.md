@@ -28,7 +28,14 @@ In this tutorial you will learn how to request data from a public API in a smart
 + [1. How does the request and receive cycle work for API calls?](#1-how-does-the-request-and-receive-cycle-work-for-api-calls)
 + [2. What are initiators?](#2-what-are-initiators)
 + [3. What are Adapters?](#3-what-are-adapters)
+  + [Core Adapters](#core-adapters)
+  + [Contract Example](#contract-example)
+  + [External Adapters](#external-adapters)
 + [4. How can I use Adapters in my own contract?](#4-how-can-i-use-adapters-in-my-own-contract)
+  + [Variables](#variables)
+  + [Constructor](#constructor)
+  + [`requestData` Function](#requestdata-function)
+  + [Callback Function](#callback-function)
 + [5. How do I deploy to testnet?](#5-how-do-i-deploy-to-testnet)
 + [6. Further Reading](#6-further-reading)
 
@@ -106,7 +113,7 @@ Here is a breakdown of each component of this contract:
 2. `requestVolumeData` functions: This builds and sends a request - which includes the fulfillment functions selector - to the oracle. Notice how it adds the `get`, `path` and `times` parameters. These are read by the Adapters in the job to perform the tasks correctly. `get` is used by [HttpGet](../core-adapters/#httpget), `path` is used by [JsonParse](../core-adapters/#jsonparse) and `times` is used by [Multiply](../core-adapters/#multiply).
 3. `fulfill` function- This is where the result is sent upon the Oracle Job's completion.
 
-**Note:** The calling contract should own enough LINK to pay the specified fee (by default 0.1 LINK). You can use [this tutorial](../fund-your-contract/) to fund your contract.
+**Note:** The calling contract should own enough LINK to pay the [specified fee](https://market.link/data-providers/d66c1ec8-2504-4696-ab22-6825044049f7/integrations) (by default 0.1 LINK). You can use [this tutorial](../fund-your-contract/) to fund your contract.
 
 This is an example of a basic HTTP GET request. However, it requires defining the API URL directly in the smart contract. This can, in fact, be extracted and configured on the Job level inside the Oracle.
 
