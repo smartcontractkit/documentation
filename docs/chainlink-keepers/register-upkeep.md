@@ -14,7 +14,7 @@ whatsnext:
 
 # Overview <!-- omit in toc -->
 
-This guide will explain how to register a Keeper-compatible contract with the Chainlink Keeper Network. To find more information on deploying a Keeper-compatible contract, refer to [Making Compatible Contracts](../compatible-contracts.md). Registration of contracts can be completed using the Chainlink Keepers App:
+This guide will explain how to register a Keeper-compatible contract with the Chainlink Keeper Network. To find more information on deploying a Keeper-compatible contract, refer to [Making Compatible Contracts](../compatible-contracts). Registration of contracts can be completed using the Chainlink Keepers App:
 
 <div class="remix-callout">
     <a href="https://keepers.chain.link" class="cl-button--ghost solidity-tracked">Chainlink Keepers App</a>
