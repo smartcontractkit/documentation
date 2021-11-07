@@ -23,6 +23,9 @@ This guide explains how to make smart contracts **Keeper-compatible**. You will 
     + [`cannotExecute`](#cannotexecute)
   + [`performUpkeep` Function](#performupkeep-function)
     + [`performData`](#performdata-1)
+    + [`cannotExecute`](#cannotexecute-1)
+  + [`performUpkeep` Function](#performupkeep-function-1)
+    + [`performData`](#performdata-2)
 + [Example Contract](#example-contract)
 
 
@@ -90,6 +93,34 @@ You can also pass arbitrary `bytes` through the `checkData` argument as part of 
   **Example**: You could support multiple types of Upkeep within a single contract and pass a function selector through the `checkData` function.
 
 ### `performUpkeep`
+
+Consider validating the conditions that might trigger `performUpkeep` before work is performed:
+
+- **When triggering is not harmful**: Sometimes actions must be performed when conditions are met, but performing actions when conditions are not met is still acceptable. Condition checks within `performUpkeep` might not be required, but it can still be a good practice to short circuit expensive and unnecessary on-chain processing when it is not required.
+
+    It might be desirable to call `performUpkeep` when the `checkUpkeep` conditions haven't yet been tested by Chainlink Keepers, so any specific checks that you perform are entirely use case specific.
+
+- **Trigger ONLY when conditions are met**: Some actions must be performed only when specific conditions are met. Check all of the preconditions within `performUpkeep` to ensure that state change occurs only when necessary.
+
+    In this pattern, it is undesirable for the state change to occur until the next time the Upkeep is checked by the network and the conditions are met. It is a best practice to stop any state change or effects by performing the same checks or similar checks that you use in `checkUpkeep`. These checks validate the conditions before doing the work.
+
+    **Example**: If you have a contract where you create a timer in `checkUpkeep` that is designed to add to a balance on a weekly basis, validate the condition to ensure third-party calls to your `performUpkeep` method do not transfer funds in a way that you do not intend.
+
+### `performData`
+
+The response from `checkUpkeep` is passed to the `performUpkeep` function as `performData`. This allows you to perform complex and costly simulations with no gas cost. Then you can identify the subset of actions that you are ready to take based on the conditions that are met.
+
+```solidity Rinkeby
+{% include samples/Keepers/performData.sol %}
+```
+
+### Modifiers <!-- omit in toc -->
+
+### `cannotExecute`
+
+In most cases your `checkUpkeep` method should be marked as `view`. This might not always be possible if you want to use more advanced Solidity features like [`DelegateCall`](https://docs.soliditylang.org/en/latest/introduction-to-smart-contracts.html#delegatecall-callcode-and-libraries). It is a best practice to import the [`KeeperBase.sol`](https://github.com/smartcontractkit/keeper/blob/master/contracts/KeeperBase.sol) interface and use the `cannotExecute` modifier to ensure that the method can be used only for simulation purposes. For more information on Chainlink Keepers smart contacts, see the [Network Overview](../overview/).
+
+## `performUpkeep` Function
 
 Consider validating the conditions that might trigger `performUpkeep` before work is performed:
 
