@@ -10,44 +10,50 @@ whatsnext:
 ---
 ![Chainlink Keeper Network Banner](/images/contract-devs/generic-banner.png)
 
-A major limitation of smart contracts is that they can't trigger or initiate their own functions at arbitrary times or under arbitrary conditions. State change will only occur when a transaction is initiated by another account (such as user, oracle, or contract).
+# Overview
 
-To solve this problem, blockchain projects can:
+Smart contracts alone can't trigger or initiate their own functions at arbitrary times or under arbitrary conditions. State change will only occur when a transaction is initiated by another account (such as user, oracle, or contract).
 
-1. Create highly reliable infrastructure trigger smart contract functions - centralized and expensive to build/maintain,
-1. Outsource it to a 3rd party - often centralized and a single point of failure
-1. Use an open market solution - decentralized, but can come with complex incentive alignment, the potential for competitive bots that increase the cost of execution, and difficulties ensuring reliability
-1. Use the Chainlink Keeper Network
+To resolve this issue, blockchain projects can:
 
-Chainlink Keepers provide users with a decentralized network of nodes that are incentivized to perform all registered jobs (Upkeeps) without competing with one another, allowing you to focus on critical smart contract functionality. [Learn how the network works.](../overview)
+1. Create highly reliable infrastructure trigger smart contract functions. This is centralized and often expensive to build and maintain.
+2. Outsource it to a third party. This option is also centralized and creates a single point of failure.
+3. Use an open market solution. This option is decentralized, but comes with complex incentive alignment, the potential for competitive bots that increase the cost of execution, and difficulties in ensuring reliability.
+4. Use the **Chainlink Keeper** Network
 
-An example Decentralized Finance (DeFi) use would be to detect the fulfillment of a condition that triggers the execution of trades. Tasks like this generally can't be automated on-chain and must be handled by an off-chain service due to smart contracts' inability to self-execute.
 
-The Chainlink Keeper Network is a decentralized solution where independent Keeper nodes are incentivized to check and perform Upkeep correctly.
+Chainlink Keepers provide users with a decentralized network of nodes that are incentivized to perform all registered jobs (or *Upkeeps*) without competing with each other. The network has many benefits, including the ability to:
 
-## Getting Started
+- provide developers with hyper-reliable, decentralized smart contract automation
+- offer expandable computation allowing developers to build more advanced dApps at lower costs
+- be flexible and highly programmable
 
-### Supported Blockchain Networks
+We highly recommend reading the [Network Overview](../overview) page to learn how these networks work.
+
+# Getting Started
+
+Our goal is to ensure flawless execution of Upkeeps when expected. To get the most out of Chainlink Keepers, we recommend you review these docs in full: [understand Keepers' capabilities](../overview), [usage patterns](../best-practices), [best practices](../best-practices), and how to [maintain the health of your upkeep](../register-upkeep).
+
+## Supported Blockchain Networks
 
 Chainlink Keepers are currently available on Kovan and ETH mainnet. If you are interested in using Keepers but need it on a different blockchain or network, reach out to us and [let us know](https://forms.gle/WadxnzzjHPtta5Zd9).
 
-> 📘 Making sure your Upkeeps execute when you expect
-> Our goal is to ensure flawless execution of your Upkeeps. To get the most out of Chainlink Keepers, we recommend you review these docs in full - understand their capabilities, usage patterns, best practices, and how to maintain the health of your upkeep.
-
 ## Onboarding Steps
 
-Start by testing your Keeper-compatible contracts on testnet before moving to mainnet. If you have questions, take a look at our [Keepers Frequently Asked Questions](../faqs/) page or [reach out to us](https://forms.gle/WadxnzzjHPtta5Zd9).
+Below are the steps needed to create a Keeper compatible contract and register Upkeep for the contract. You should test Keeper-compatible contracts on testnet before moving to mainnet. 
 
 1. Create a [Keeper compatible contract](../compatible-contracts/)
-1. Deploy your contract onto a supported testnet
-1. Get [LINK](../../link-token-contracts/#kovan) on the testnet
-1. Many token bridges give you ERC-20 LINK tokens. Use PegSwap to [convert Chainlink tokens (LINK) to be ERC-677 compatible](https://pegswap.chain.link/).
-1. [Register your Upkeep](../register-upkeep/) on testnet
-1. Test, iterate, and finalize your Keeper compatible contract
-1. Deploy your fully tested contract onto mainnet
-1. [Register your Upkeep](../register-upkeep/) on mainnet
-1. Fund your upkeep on mainnet
-1. Confirm the first performance of your Upkeep
+2. Deploy your contract onto a supported testnet
+3. Get [LINK](../../link-token-contracts/#kovan) on the testnet
+4. Many token bridges give you ERC-20 LINK tokens. Use PegSwap to [convert Chainlink tokens (LINK) to be ERC-677 compatible](https://pegswap.chain.link/).
+5. [Register your Upkeep](../register-upkeep/) on testnet
+6. Test, iterate, and finalize your Keeper compatible contract
+7. Deploy your fully tested contract onto mainnet
+8. [Register your Upkeep](../register-upkeep/) on mainnet
+9. Fund your upkeep on mainnet
+10. Confirm the first performance of your Upkeep
 
 > ⚠️ Registration Onboarding Note
 > Your registrations on testnet will be auto approved immediately. To help us streamline the process of onboarding your use case on mainnet, please fill out the optional details (and form) during testnet registration so our onboarding team can expect your use case on mainnet. Mainnet registrations will be reviewed by our onboarding team before being approved. We are working towards a fully self-serve model.
+
+If you have questions, take a look at our [Keepers Frequently Asked Questions](../faqs/) page or [reach out to us](https://forms.gle/WadxnzzjHPtta5Zd9).

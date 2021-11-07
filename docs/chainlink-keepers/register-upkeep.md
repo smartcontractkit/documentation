@@ -8,7 +8,13 @@ whatsnext:
     'Patterns and Best Practices': '/docs/chainlink-keepers/best-practices/',
   }
 ---
-After you deploy a Keeper-compatible contract, you must register it with the Chainlink Keeper Network. You can do this via the [Chainlink Keepers App](https://keepers.chain.link).
+
+> ⚠️ Design Patterns and Best Practices
+> When registering and funding Keeper-compatible contracts, please refer to [Design Patterns and Best Practices](../best-practices) to understand usage patterns and best practices you can employ within Keeper-compatible smart contracts.
+
+# Overview <!-- omit in toc -->
+
+This guide will explain how to register a Keeper-compatible contract with the Chainlink Keeper Network. To find more information on deploying a Keeper-compatible contract, refer to [Making Compatible Contracts](../compatible-contracts.md). Registration of contracts can be completed using the Chainlink Keepers App:
 
 <div class="remix-callout">
     <a href="https://keepers.chain.link" class="cl-button--ghost solidity-tracked">Chainlink Keepers App</a>
@@ -16,7 +22,14 @@ After you deploy a Keeper-compatible contract, you must register it with the Cha
 
 After you register, you can interact directly with the [registry contract](https://etherscan.io/address/0x7b3EC232b08BD7b4b3305BE0C044D907B2DF960B#code) functions such as `cancelUpkeep` and `addFunds`.
 
-# Register and fund Upkeep on the Chainlink Keeper Network
+**Table of Contents**
++ [Register Contract](#register-contract)
++ [Fund Upkeep](#fund-upkeep)
++ [How Funding Works](#how-funding-works)
++ [Maintain a Minimum Balance](#maintain-a-minimum-balance)
++ [Registration Completion](#registration-completion)
+
+# Register Contract
 
 1. **Connect your wallet** with the button in the top right corner and choose a chain. The Chainlink Keeper Network currently supports Ethereum Mainnet or Kovan.
   ![Connect With Metamask](/images/contract-devs/keeper/keeper-metamask.png)
@@ -36,6 +49,8 @@ After you register, you can interact directly with the [registry contract](https
 
     The gas limit of the example counter contract should be set to 200,000.
 
+# Fund Upkeep
+
 1. **Press `Register upkeep`** and confirm the transaction in MetaMask
   This will send a request to the Chainlink Keeper Network which will need to be manually approved.  This is a temporary step during the Beta, and requests are automatically approved on testnets, so you should be up and running in a matter of minutes.
 
@@ -53,7 +68,7 @@ After you register, you can interact directly with the [registry contract](https
   * Receive a success message and verify that the funds were added to the Upkeep
     ![Funds Added Successful Message](/images/contract-devs/keeper/keeper-add-funds.png)
 
-## How funding works
+# How Funding Works
 
 * Your balance is reduced each time a Keeper executes your `performUpkeep` method.
 * There is no cost for `checkUpkeep` calls.
@@ -61,16 +76,16 @@ After you register, you can interact directly with the [registry contract](https
 * Anyone can call the `addFunds()` function, not just the Upkeep owner.
 * To withdraw funds, cancel the Upkeep.
 
-## Maintaining a minimum balance
+# Maintain a Minimum Balance
 To ensure that the Chainlink Keepers are compensated for performance, there is an expected minimum balance on each Upkeep. If your funds drop below this amount, the Upkeep will not be performed.
 
 The minimum balance is calculated using the current fast gas price, the Gas Limit you entered for your Upkeep, and the max gas multiplier (see `gasCeilingMultiplier` in [configuration of the registry](../overview/#configuration)).
 
 It is recommended that you maintain a balance that is a multiple (3-5x) of the minimum balance to account for gas price fluctuations.
 
-## Congratulations!
-After you register your Upkeep, it has been approved, and you have added sufficient funds, the Chainlink Keeper Network will begin to simulate `checkUpkeep` calls and execute your contract's `performUpkeep` function as needed.
+# Registration Completion
+After you register your Upkeep and it has been approved with sufficient funds, the Chainlink Keeper Network will begin to simulate `checkUpkeep` calls and execute your contract's `performUpkeep` function as needed.
 
-You have now built and registered a Keeper Compatible contract with the Chainlink Keeper Network. Wohoo!
+You have now successfully built and registered a Keeper Compatible contract with the Chainlink Keeper Network.
 
 <!-- Once we know how developers get stuck, add a next step about troubleshooting -->
