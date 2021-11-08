@@ -7,7 +7,7 @@ permalink: "docs/intermediates-tutorial/"
 excerpt: "Using Chainlink VRF"
 whatsnext: {"Get a Random Number":"/docs/get-a-random-number/", "API Calls tutorial":"/docs/advanced-tutorial/"}
 metadata:
-  title: "Random Numbers Tutorial"
+  title: "Random Numbers: Using Chainlink VRF"
   description: "Learn how to use randomness in your smart contracts using Chainlink VRF."
   image:
     0: "/files/2a242f1-link.png"
@@ -35,6 +35,12 @@ In this tutorial, you will learn about generating randomness on blockchains. Thi
 + [2. What is the Request and Receive cycle?](#2-what-is-the-request-and-receive-cycle)
 + [3. What is the payment process for generating a random number?](#3-what-is-the-payment-process-for-generating-a-random-number)
 + [4. How can I use Chainlink VRF?](#4-how-can-i-use-chainlink-vrf)
+  + [Importing `VRFConsumerBase`](#importing-vrfconsumerbase)
+  + [Contract variables](#contract-variables)
+  + [Initializing the contract](#initializing-the-contract)
+  + [`rollDice` function](#rolldice-function)
+  + [`fulfillRandomness` function](#fulfillrandomness-function)
+  + [`house` function](#house-function)
 + [5. How do I deploy to testnet?s](#5-how-do-i-deploy-to-testnets)
 + [6. How do I obtain testnet LINK?](#6-how-do-i-obtain-testnet-link)
 + [7. How do I test `rollDice`?](#7-how-do-i-test-rolldice)
