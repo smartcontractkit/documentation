@@ -34,8 +34,8 @@ This guide will explain how to make smart contracts **Keeper-compatible**. You w
 
 | Function Name                   | Description                                                          |
 | ------------------------------- | -------------------------------------------------------------------- |
-| [checkUpkeep](#checkupkeep)     | Checks if the contract requires work to be done.                     |
-| [performUpkeep](#performupkeep) | Performs the work on the contract, if instructed by `checkUpkeep()`. |
+| [checkUpkeep](#checkupkeep-function)     | Checks if the contract requires work to be done.                     |
+| [performUpkeep](#performupkeep-function) | Performs the work on the contract, if instructed by `checkUpkeep()`. |
 
 ## `checkUpkeep` Function
 The Keeper node runs this method as an [`eth_call`](https://eth.wiki/json-rpc/API#eth_call) in order to determine if your contract requires some work to be done. If the off-chain simulation of your `checkUpkeep` confirms your predefined conditions are met, the Keeper will broadcast a transaction to the blockchain executing the `performUpkeep` method described below.
