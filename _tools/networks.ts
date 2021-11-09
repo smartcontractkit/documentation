@@ -170,5 +170,16 @@ export const NETWORKS = [
         source: "directory-terra-testnet-bombay.json",
       },
     ],
+  },
+  {
+    page: "data-feeds-moonriver",
+    title: "Moonriver Data Feeds",
+    networks: [
+      {
+        name: "Moonriver Mainnet",
+        url: "https://moonriver.moonscan.io/address/%s",
+        source: "directory-kusama-mainnet-moonriver.json",
+      },
+    ],
   }
 ];

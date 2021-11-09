@@ -334,6 +334,10 @@ module.exports = {
                 title: 'Terra Data Feeds',
                 url: '/docs/terra/data-feeds-terra/',
               },
+              {
+                title: 'Moonriver Data Feeds',
+                url: '/docs/data-feeds-moonriver/',
+              },
             ],
           },
         ],
