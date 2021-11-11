@@ -32,7 +32,7 @@ We highly recommend reading the [Network Overview](../overview) page to learn ho
 
 # Getting Started
 
-Our goal is to ensure flawless execution of Upkeeps when expected. To get the most out of Chainlink Keepers, we recommend you review these docs in full: [understand Keepers' capabilities](../overview), [usage patterns](../best-practices), [best practices](../best-practices), and how to [maintain the health of your upkeep](../register-upkeep).
+Our goal is to ensure flawless execution of Upkeeps when expected. To get the most out of Chainlink Keepers, we recommend you review these docs in full: [how to create a Keepers-compatible contract](../compatible-contracts), usage patterns, best practices, and how to [maintain the health of your upkeep](../register-upkeep).
 
 ## Supported Blockchain Networks
 

@@ -5,7 +5,7 @@ date: Last Modified
 title: 'Register Keeper Upkeep for a Contract'
 whatsnext:
   {
-    'Patterns and Best Practices': '/docs/chainlink-keepers/best-practices/',
+    'FAQs': '/docs/chainlink-keepers/faqs/',
   }
 ---
 
