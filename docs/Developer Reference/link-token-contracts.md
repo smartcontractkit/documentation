@@ -178,7 +178,7 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 |Parameter|Value|
 |:---|:---|
 |`ETH_CHAIN_ID`|`43114`|
-|Address|[`0x5947BB275c521040051D82396192181b413227A3`](https://cchain.explorer.avax.network/address/0x5947BB275c521040051D82396192181b413227A3)|
+|Address|[`0x5947BB275c521040051D82396192181b413227A3`](https://snowtrace.io/address/0x5947BB275c521040051D82396192181b413227A3)|
 |Name|ChainLink Token on Avalanche|
 |Symbol|LINK|
 |Decimals|18|
@@ -193,7 +193,7 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 |Parameter|Value|
 |:---|:---|
 |`ETH_CHAIN_ID`|`43113`|
-|Address|[`0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846`](https://cchain.explorer.avax-test.network/address/0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846)|
+|Address|[`0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846`](https://testnet.snowtrace.io/address/0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846)|
 |Name|ChainLink Token on Avalanche|
 |Symbol|LINK|
 |Decimals|18|

@@ -80,12 +80,12 @@ export const NETWORKS = [
     networks: [
       {
         name: "Avalanche Mainnet",
-        url: "https://cchain.explorer.avax.network/address/%s",
+        url: "https://snowtrace.io/address/%s",
         source: "directory-avalanche-mainnet.json",
       },
       {
         name: "Avalanche Testnet",
-        url: "https://cchain.explorer.avax-test.network/address/%s",
+        url: "https://testnet.snowtrace.io/address/%s",
         source: "directory-avalanche-fuji-testnet.json",
       },
     ],
