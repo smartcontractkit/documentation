@@ -36,7 +36,7 @@ Our goal is to ensure flawless execution of Upkeeps when expected. To get the mo
 
 ## Supported Blockchain Networks
 
-Chainlink Keepers are currently available on Kovan and ETH mainnet. If you are interested in using Keepers but need it on a different blockchain or network, reach out to us and [let us know](https://forms.gle/WadxnzzjHPtta5Zd9).
+Chainlink Keepers are currently available on Kovan and ETH testnet and mainnet. If you are interested in using Keepers but need it on a different blockchain or network, reach out to us and [let us know](https://forms.gle/WadxnzzjHPtta5Zd9).
 
 ## Onboarding Steps
 

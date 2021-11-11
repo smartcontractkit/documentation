@@ -9,9 +9,6 @@ whatsnext:
   }
 ---
 
-> ⚠️ Design Patterns and Best Practices
-> When registering and funding Keeper-compatible contracts, please refer to [Design Patterns and Best Practices](../best-practices) to understand usage patterns and best practices you can employ within Keeper-compatible smart contracts.
-
 # Overview <!-- omit in toc -->
 
 This guide will explain how to register a Keeper-compatible contract with the Chainlink Keeper Network. To find more information on deploying a Keeper-compatible contract, refer to [Making Compatible Contracts](../compatible-contracts). Registration of contracts can be completed using the Chainlink Keepers App:
@@ -28,8 +25,13 @@ After you register, you can interact directly with the [registry contract](https
 + [How Funding Works](#how-funding-works)
 + [Maintain a Minimum Balance](#maintain-a-minimum-balance)
 + [Registration Completion](#registration-completion)
++ [Useful Patterns](#useful-patterns)
+  + [Gas Limits](#gas-limits)
+  + [Testing](#testing)
 
 # Register Contract
+
+Registering an Upkeep with the Chainlink Keepers App notifies the Keeper Network about your contract, and allows you to fund it so your work is performed continuously. As part of the registration, we’re requesting some information that will help us to deliver the optimal experience for your use case as we continue to improve the product.
 
 1. **Connect your wallet** with the button in the top right corner and choose a chain. The Chainlink Keeper Network currently supports Ethereum Mainnet or Kovan.
   ![Connect With Metamask](/images/contract-devs/keeper/keeper-metamask.png)
@@ -42,19 +44,19 @@ After you register, you can interact directly with the [registry contract](https
 
      Make sure you have LINK to fund your Upkeep with. Learn how to [acquire testnet LINK](/docs/acquire-link/).
 
-    > 🚧 FUNDING NOTE
+    > ❗️ Funding Upkeep
     > You should fund your contract with more LINK that you anticipate you will need. The network will not check or perform your Upkeep if your balance could be too low based on current exchange rates.
     >
-    > Your balance will be charged LINK based on a 20% premium over the gas cost to `performUpkeep`. There's currently a ~80k gas overhead from the registry. The premium and overhead are not fixed and will change over time.
+    > Your balance will be charged LINK based on a 20% premium over the gas cost to `performUpkeep`. Gas costs include the gas required for your Keeper-compatible contract to complete execution and an 80k overhead from the `KeeperRegistry` itself. The premium and overhead are not fixed and will change over time.
 
     The gas limit of the example counter contract should be set to 200,000.
 
-# Fund Upkeep
-
-1. **Press `Register upkeep`** and confirm the transaction in MetaMask
+2. **Press `Register upkeep`** and confirm the transaction in MetaMask
   This will send a request to the Chainlink Keeper Network which will need to be manually approved.  This is a temporary step during the Beta, and requests are automatically approved on testnets, so you should be up and running in a matter of minutes.
 
     ![Upkeep Registration Success Message](/images/contract-devs/keeper/keeper-registration-submitted.png)
+
+# Fund Upkeep
 
 1. **Add funds to your Upkeep**
   Your contract was provided initial funding as part of the registration step, but once this runs out, you'll need to add more LINK to your Upkeep.
@@ -88,4 +90,20 @@ After you register your Upkeep and it has been approved with sufficient funds, t
 
 You have now successfully built and registered a Keeper Compatible contract with the Chainlink Keeper Network.
 
-<!-- Once we know how developers get stuck, add a next step about troubleshooting -->
+# Useful Patterns
+
+These patterns are not mutually exclusive. Review and make use of the patterns that make sense for your use case.
+
+## Gas Limits
+
+> ❗️ Gas Limits
+>
+> The `KeeperRegistry` enforces a cap for gas used both on-chain and off-chain. See the [Keepers Network Overview](../overview/) for details. The caps are configurable and might change based on user feedback. Be sure that you understand these limits if your use case requires a large amount of gas.
+
+When developing your keeper-compatible smart contracts, it is critical to understand the gas limits you are working with on the KeeperRegistry. There is a `check` gas limit and a `call` gas limit that your contract must adhere to in order to operate successfully. See the [Keepers Network Overview](../overview/) to learn the current configuration.
+
+## Testing
+
+As with all smart contract testing, it is important to test the boundaries of your smart contract in order to ensure it operates as intended. Similarly, it is important to make sure your Keeper-compatible contract operates within the parameters of the `KeeperRegistry`.
+
+Test all of your mission-critical contracts, and stress-test the contract to confirm the performance and correct operation of your use case under load and adversarial conditions. The Chainlink Keeper Network will continue to operate under stress, but so should your contract. [Reach out](https://forms.gle/WadxnzzjHPtta5Zd9) to us if you need help, have questions, or feedback for improvement.

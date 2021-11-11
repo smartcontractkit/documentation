@@ -9,15 +9,13 @@ whatsnext:
   }
 ---
 
-> ⚠️ Design Patterns and Best Practices
-> When creating Keeper-compatible contracts, please refer to [Design Patterns and Best Practices](../best-practices) to understand usage patterns and best practices you can employ within Keeper-compatible smart contracts.
-
 # Overview <!-- omit in toc -->
 This guide will explain how to make smart contracts **Keeper-compatible**. You will learn about the `KeeperCompatibleInterface` and its functions. We have provided an example contract for reference. This purpose of this guide is to showcase the convenience Keepers brings to developers. To take full advantage of the Keepers automation infrastructure, we highly recommend reading all documentation and understanding all the features of Chainlink Keepers.
 
 **Table of Contents**
 
-+ [`KeeperCompatibleInterface`](#keepercompatibleinterface)
+
++ [Functions](#functions)
   + [`checkUpkeep` Function](#checkupkeep-function)
     + [`checkData`](#checkdata)
     + [`performUpkeep`](#performupkeep)
@@ -28,9 +26,7 @@ This guide will explain how to make smart contracts **Keeper-compatible**. You w
 + [Example Contract](#example-contract)
 
 
-# `KeeperCompatibleInterface`
-
-## Functions <!-- omit in toc -->
+# Functions
 
 | Function Name                   | Description                                                          |
 | ------------------------------- | -------------------------------------------------------------------- |
