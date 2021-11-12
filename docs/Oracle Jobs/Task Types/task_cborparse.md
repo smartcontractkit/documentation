@@ -17,7 +17,7 @@ A map containing the request parameters. Parameters can be individually accessed
 
 **Example**
 
-```toml
+```jpv2
 // First, we parse the request log and the CBOR payload inside of it
 decode_log  [type="ethabidecodelog"
              data="$(jobRun.logData)"
@@ -28,7 +28,7 @@ decode_cbor [type="cborparse"
              data="$(decode_log.cborPayload)"]
 
 // Then, we use the decoded request parameters to make an HTTP fetch
-fetch [type=http url="$(decode_cbor.fetchURL)" method=GET]
+fetch [type="http" url="$(decode_cbor.fetchURL)" method=GET]
 parse [type="jsonparse" path="$(decode_cbor.jsonPath)" data="$(fetch)"]
 
 // ... etc ...

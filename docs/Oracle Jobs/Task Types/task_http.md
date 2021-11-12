@@ -20,8 +20,8 @@ A string containing the response body.
 
 **Example**
 
-```dot
-my_http_task [type=http
+```jpv2
+my_http_task [type="http"
               method=PUT
               url="http://chain.link"
               requestData="{\\"foo\\": $(foo), \\"bar\\": $(bar), \\"jobID\\": 123}"

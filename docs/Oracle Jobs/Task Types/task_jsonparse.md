@@ -21,7 +21,7 @@ The value at the provided keypath.
 
 **Example**
 
-```dot
+```jpv2
 my_json_task [type="jsonparse"
               data="$(http_fetch_result)"
               path="data,0,price"]

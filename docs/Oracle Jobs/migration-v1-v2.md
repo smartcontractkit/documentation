@@ -27,11 +27,11 @@ v2 jobs require the author to specify dependencies using [DOT syntax](https://en
 
 To facilitate explicitness, v2 jobs require the author to specify inputs to tasks using `$(variable)` syntax. For example, if an `http` task feeds data into a `jsonparse` task, it must be specified like the following example:
 
-```toml
-fetch [type=http method=GET url="http://chain.link/price_feeds/ethusd"]
+```jpv2
+fetch [type="http" method=GET url="http://chain.link/price_feeds/ethusd"]
 
 // This task consumes the output of the 'fetch' task in its 'data' parameter
-parse [type=jsonparse path="data,result" data="$(fetch)"]
+parse [type="jsonparse" path="data,result" data="$(fetch)"]
 
 // This is the specification of the dependency
 fetch -> parse
@@ -39,10 +39,10 @@ fetch -> parse
 
 Task names must be defined before their opening `[` bracket. In this example, the name of the task is `fetch`. The output of each task is stored in the variable corresponding to the name of the task. In some cases, tasks return complex values like maps or arrays. By using dot access syntax, you can access the elements of these values. For example:
 
-```toml
+```jpv2
 // Assume that this task returns the following object:
 //  { "ethusd": 123.45, "btcusd": 678.90 }
-parse [type=jsonparse path="data" data="$(fetch)"]
+parse [type="jsonparse" path="data" data="$(fetch)"]
 
 // Now, we want to send the ETH/USD price to one bridge and the BTC/USD price to another:
 submit_ethusd [type="bridge" name="ethusd" requestData="{ \\"data\\": { \\"value\\": $(parse.ethusd) }}"]
@@ -56,7 +56,7 @@ parse -> submit_btcusd
 
 Some tasks, like the `bridge` tasks above, require you to specify a JSON object. Because the keys of JSON objects must be enclosed in double quotes, you must use the alternative `<` angle bracket `>` quotes. Angle brackets also enable multi-line strings, which can be useful when a JSON object parameter is large:
 
-```toml
+```jpv2
 submit_btcusd [type="bridge"
                name="btcusd"
                requestData="{\\"data\\":{\\"value\\": $(foo), \\"price\\": $(bar), \\"timestamp\\": $(baz)}}"
@@ -79,7 +79,7 @@ submit_btcusd [type="bridge"
 
 This spec relies on CBOR-encoded on-chain values for the `httpget` URL and `jsonparse` path.
 
-```js
+```json
 {
   "name": "Get > Bytes32",
   "initiators": [
@@ -113,7 +113,7 @@ Notes:
 
 **Equivalent v2 spec:**
 
-```toml
+```jpv2
 type                = "directrequest"
 schemaVersion       = 1
 name                = "Get > Bytes32"
@@ -121,20 +121,20 @@ contractAddress     = "0x613a38AC1659769640aaE063C651F48E0250454C"
 # Optional externalJobID: Automatically generated if unspecified
 # externalJobID       = "0EEC7E1D-D0D2-476C-A1A8-72DFB6633F47"
 observationSource   = """
-    decode_log   [type=ethabidecodelog
+    decode_log   [type="ethabidecodelog"
                   abi="OracleRequest(bytes32 indexed specId, address requester, bytes32 requestId, uint256 payment, address callbackAddr, bytes4 callbackFunctionId, uint256 cancelExpiration, uint256 dataVersion, bytes data)"
                   data="$(jobRun.logData)"
                   topics="$(jobRun.logTopics)"]
 
-    decode_cbor  [type=cborparse data="$(decode_log.data)"]
-    fetch        [type=http method=GET url="$(decode_cbor.url)"]
-    parse        [type=jsonparse path="$(decode_cbor.path)" data="$(fetch)"]
-    encode_data  [type=ethabiencode abi="(uint256 value)" data="{ \\"value\\": $(parse) }"]
-    encode_tx    [type=ethabiencode
+    decode_cbor  [type="cborparse" data="$(decode_log.data)"]
+    fetch        [type="http" method=GET url="$(decode_cbor.url)"]
+    parse        [type="jsonparse" path="$(decode_cbor.path)" data="$(fetch)"]
+    encode_data  [type="ethabiencode" abi="(uint256 value)" data="{ \\"value\\": $(parse) }"]
+    encode_tx    [type="ethabiencode"
                   abi="fulfillOracleRequest(bytes32 requestId, uint256 payment, address callbackAddress, bytes4 callbackFunctionId, uint256 expiration, bytes32 data)"
                   data="{\\"requestId\\": $(decode_log.requestId), \\"payment\\": $(decode_log.payment), \\"callbackAddress\\": $(decode_log.callbackAddr), \\"callbackFunctionId\\": $(decode_log.callbackFunctionId), \\"expiration\\": $(decode_log.cancelExpiration), \\"data\\": $(encode_data)}"
                   ]
-    submit_tx    [type=ethtx to="0x613a38AC1659769640aaE063C651F48E0250454C" data="$(encode_tx)"]
+    submit_tx    [type="ethtx" to="0x613a38AC1659769640aaE063C651F48E0250454C" data="$(encode_tx)"]
 
     decode_log -> decode_cbor -> fetch -> parse -> encode_data -> encode_tx -> submit_tx
 """
@@ -144,29 +144,43 @@ observationSource   = """
 
 **v1 spec:**
 
-```js
+```json
 {
   "initiators": [
     {
       "type": "RunLog",
-      "params": { "address": "0x51DE85B0cD5B3684865ECfEedfBAF12777cd0Ff8" }
+      "params": {
+        "address": "0x51DE85B0cD5B3684865ECfEedfBAF12777cd0Ff8"
+      }
     }
   ],
   "tasks": [
     {
       "type": "HTTPGet",
-      "params": { "get": "https://bitstamp.net/api/ticker/" }
+      "params": {
+        "get": "https://bitstamp.net/api/ticker/"
+      }
     },
     {
       "type": "JSONParse",
-      "params": { "path": [ "last" ] }
+      "params": {
+        "path": [
+          "last"
+        ]
+      }
     },
     {
       "type": "Multiply",
-      "params": { "times": 100 }
+      "params": {
+        "times": 100
+      }
     },
-    { "type": "EthUint256" },
-    { "type": "EthTx" }
+    {
+      "type": "EthUint256"
+    },
+    {
+      "type": "EthTx"
+    }
   ],
   "startAt": "2020-02-09T15:13:03Z",
   "endAt": null,
@@ -176,7 +190,7 @@ observationSource   = """
 
 **Equivalent v2 spec:**
 
-```toml
+```jpv2
 type                = "directrequest"
 schemaVersion       = 1
 name                = "Get > Bytes32"
@@ -184,20 +198,20 @@ contractAddress     = "0x613a38AC1659769640aaE063C651F48E0250454C"
 # Optional externalJobID: Automatically generated if unspecified
 # externalJobID       = "0EEC7E1D-D0D2-476C-A1A8-72DFB6633F47"
 observationSource   = """
-    decode_log   [type=ethabidecodelog
+    decode_log   [type="ethabidecodelog"
                   abi="OracleRequest(bytes32 indexed specId, address requester, bytes32 requestId, uint256 payment, address callbackAddr, bytes4 callbackFunctionId, uint256 cancelExpiration, uint256 dataVersion, bytes data)"
                   data="$(jobRun.logData)"
                   topics="$(jobRun.logTopics)"]
 
-    fetch       [type=http method=get url="https://bitstamp.net/api/ticker/"]
-    parse       [type=jsonparse data="$(fetch)" path="last"]
-    multiply    [type=multiply input="$(parse)" times=100]
-    encode_data [type=ethabiencode abi="(uint256 value)" data="{ \\"value\\": $(multiply) }"]
-    encode_tx   [type=ethabiencode
+    fetch       [type="http" method=get url="https://bitstamp.net/api/ticker/"]
+    parse       [type="jsonparse" data="$(fetch)" path="last"]
+    multiply    [type="multiply" input="$(parse)" times=100]
+    encode_data [type="ethabiencode" abi="(uint256 value)" data="{ \\"value\\": $(multiply) }"]
+    encode_tx   [type="ethabiencode"
                  abi="fulfillOracleRequest(bytes32 requestId, uint256 payment, address callbackAddress, bytes4 callbackFunctionId, uint256 expiration, bytes32 data)"
                  data="{\\"requestId\\": $(decode_log.requestId), \\"payment\\": $(decode_log.payment), \\"callbackAddress\\": $(decode_log.callbackAddr), \\"callbackFunctionId\\": $(decode_log.callbackFunctionId), \\"expiration\\": $(decode_log.cancelExpiration), \\"data\\": $(encode_data)}"
                  ]
-    submit_tx [type=ethtx to="0x613a38AC1659769640aaE063C651F48E0250454C" data="$(encode_tx)"]
+    submit_tx [type="ethtx" to="0x613a38AC1659769640aaE063C651F48E0250454C" data="$(encode_tx)"]
 
     decode_log -> fetch -> parse -> multiply -> encode_data -> encode_tx -> submit_tx
 """
@@ -207,53 +221,64 @@ observationSource   = """
 
 **v1 spec:**
 
-```js
+```json
 {
-    "initiators": [
-        {
-            "type": "cron",
-            "params": { "schedule": "CRON_TZ=UTC * */20 * * * *" }
-        }
-    ],
-    "tasks": [
-        {
-            "type": "HttpGet",
-            "params": { "get": "https://example.com/api" }
-        },
-        {
-            "type": "JsonParse",
-            "params": { "path": [ "data", "price" ] }
-        },
-        {
-            "type": "Multiply",
-            "params": { "times": 100 }
-        },
-        {
-            "type": "EthUint256"
-        },
-        {
-            "type": "EthTx"
-        }
-    ]
+  "initiators": [
+    {
+      "type": "cron",
+      "params": {
+        "schedule": "CRON_TZ=UTC * */20 * * * *"
+      }
+    }
+  ],
+  "tasks": [
+    {
+      "type": "HttpGet",
+      "params": {
+        "get": "https://example.com/api"
+      }
+    },
+    {
+      "type": "JsonParse",
+      "params": {
+        "path": [
+          "data",
+          "price"
+        ]
+      }
+    },
+    {
+      "type": "Multiply",
+      "params": {
+        "times": 100
+      }
+    },
+    {
+      "type": "EthUint256"
+    },
+    {
+      "type": "EthTx"
+    }
+  ]
 }
 ```
 
 **Equivalent v2 spec:**
 
-```toml
+```jpv2
 type            = "cron"
 schemaVersion   = 1
 schedule        = "CRON_TZ=UTC * */20 * * * *"
 # Optional externalJobID: Automatically generated if unspecified
 # externalJobID   = "0EEC7E1D-D0D2-476C-A1A8-72DFB6633F46"
 observationSource   = """
-    fetch       [type=http method=GET url="https://example.com/api"]
-    parse       [type=jsonparse data="$(fetch)" path="data,price"]
-    multiply    [type=multiply input="$(parse)" times=100]
-    encode_tx   [type=ethabiencode
+    fetch       [type="http" method=GET url="https://example.com/api"]
+    parse       [type="jsonparse" data="$(fetch)" path="data,price"]
+    multiply    [type="multiply" input="$(parse)" times=100]
+    encode_tx   [type="ethabiencode"
                  abi="submit(uint256 value)"
                  data="{ \\"value\\": $(multiply) }"]
-    submit_tx   [type=ethtx to="0x859AAa51961284C94d970B47E82b8771942F1980" data="$(encode_tx)"]
+    submit_tx   [type="ethtx" to="0x859AAa51961284C94d970B47E82b8771942F1980" data="$(encode_tx)"]
 
     fetch -> parse -> multiply -> encode_tx -> submit_tx
 """
@@ -263,26 +288,37 @@ observationSource   = """
 
 **v1 spec:**
 
-```js
+```json
 {
-    "initiators": [{"type": "web"}],
-    "tasks": [
-        {"type": "multiply", "params": {"times": 100}},
-        {"type": "custombridge"}
-    ]
+  "initiators": [
+    {
+      "type": "web"
+    }
+  ],
+  "tasks": [
+    {
+      "type": "multiply",
+      "params": {
+        "times": 100
+      }
+    },
+    {
+      "type": "custombridge"
+    }
+  ]
 }
 ```
 
 **Equivalent v2 spec:**
 
-```toml
+```jpv2
 type            = "webhook"
 schemaVersion   = 1
 # Optional externalJobID: Automatically generated if unspecified
 # externalJobID   = "0EEC7E1D-D0D2-476C-A1A8-72DFB6633F46"
 observationSource   = """
-    multiply       [type=multiply input="$(jobRun.requestBody)" times=100]
-    send_to_bridge [type=bridge name="custombridge" requestData="{ \\"data\\": { \\"value\\": $(multiply) }}"]
+    multiply       [type="multiply" input="$(jobRun.requestBody)" times=100]
+    send_to_bridge [type="bridge" name="custombridge" requestData="{ \\"data\\": { \\"value\\": $(multiply) }}"]
 
     multiply -> send_to_bridge
 """

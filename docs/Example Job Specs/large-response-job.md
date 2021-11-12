@@ -7,7 +7,7 @@ permalink: "docs/example-job-spec-large/"
 
 This is an example v1 job spec for returning multiple responses in 1 Chainlink API Call. 
 
-```JSON
+```json
 {
   "name": "large-word",
   "initiators": [

@@ -13,7 +13,7 @@ Every OCR cluster requires at least one bootstrap node as a kind of "rallying po
 
 **Spec format**
 
-```toml
+```jpv2
 type               = "offchainreporting"
 schemaVersion      = 1
 contractAddress    = "0x27548a32b9aD5D64c5945EaE9Da5337bc3169D15"
@@ -46,7 +46,7 @@ Oracle nodes, on the other hand, are responsible for submitting answers.
 
 **Spec format**
 
-```toml
+```jpv2
 type               = "offchainreporting"
 schemaVersion      = 1
 name               = "OCR: ETH/USD"
@@ -67,15 +67,15 @@ contractConfigTrackerPollInterval = "1m"
 contractConfigConfirmations = 3
 observationSource = """
     // data source 1
-    ds1          [type=bridge name=eth_usd]
-    ds1_parse    [type=jsonparse path="one,two"]
-    ds1_multiply [type=multiply times=100]
+    ds1          [type="bridge" name=eth_usd]
+    ds1_parse    [type="jsonparse" path="one,two"]
+    ds1_multiply [type="multiply" times=100]
 
     // data source 2
-    ds2          [type=http method=GET url="https://chain.link/eth_usd"
+    ds2          [type="http" method=GET url="https://chain.link/eth_usd"
                   requestData="{\\"hi\\": \\"hello\\"}"]
-    ds2_parse    [type=jsonparse path="three,four"]
-    ds2_multiply [type=multiply times=100]
+    ds2_parse    [type="jsonparse" path="three,four"]
+    ds2_multiply [type="multiply" times=100]
 
     ds1 -> ds1_parse -> ds1_multiply -> answer
     ds2 -> ds2_parse -> ds2_multiply -> answer
