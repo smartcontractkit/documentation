@@ -11,7 +11,7 @@ whatsnext:
 
 # Overview <!-- omit in toc -->
 
-This guide will explain how to register a Keeper-compatible contract with the Chainlink Keeper Network. To find more information on deploying a Keeper-compatible contract, refer to [Making Compatible Contracts](../compatible-contracts). Registration of contracts can be completed using the Chainlink Keepers App:
+This guide explains how to register a Keeper-compatible contract with the Chainlink Keeper Network. To find more information about deploying a Keeper-compatible contract, see the [Making Compatible Contracts](../compatible-contracts) page. Register your contracts in the Chainlink Keepers App:
 
 <div class="remix-callout">
     <a href="https://keepers.chain.link" class="cl-button--ghost solidity-tracked">Chainlink Keepers App</a>
@@ -31,7 +31,7 @@ After you register, you can interact directly with the [registry contract](https
 
 # Register Contract
 
-Registering an Upkeep with the Chainlink Keepers App notifies the Keeper Network about your contract, and allows you to fund it so your work is performed continuously. As part of the registration, we’re requesting some information that will help us to deliver the optimal experience for your use case as we continue to improve the product.
+Registering an Upkeep with the Chainlink Keepers App notifies the Keeper Network about your contract and allows you to fund it so your work is performed continuously. As part of the registration, we’re requesting some information that will help us to deliver the optimal experience for your use case as we continue to improve the product.
 
 1. **Connect your wallet** with the button in the top right corner and choose a chain. The Chainlink Keeper Network currently supports Ethereum Mainnet or Kovan.
   ![Connect With Metamask](/images/contract-devs/keeper/keeper-metamask.png)
@@ -51,7 +51,7 @@ Registering an Upkeep with the Chainlink Keepers App notifies the Keeper Network
 
     The gas limit of the example counter contract should be set to 200,000.
 
-2. **Press `Register upkeep`** and confirm the transaction in MetaMask
+1. **Click `Register upkeep`** and confirm the transaction in MetaMask
   This will send a request to the Chainlink Keeper Network which will need to be manually approved.  This is a temporary step during the Beta, and requests are automatically approved on testnets, so you should be up and running in a matter of minutes.
 
     ![Upkeep Registration Success Message](/images/contract-devs/keeper/keeper-registration-submitted.png)
@@ -86,7 +86,7 @@ The minimum balance is calculated using the current fast gas price, the Gas Limi
 It is recommended that you maintain a balance that is a multiple (3-5x) of the minimum balance to account for gas price fluctuations.
 
 # Registration Completion
-After you register your Upkeep and it has been approved with sufficient funds, the Chainlink Keeper Network will begin to simulate `checkUpkeep` calls and execute your contract's `performUpkeep` function as needed.
+After you register your Upkeep and it is approved with sufficient funds, the Chainlink Keeper Network starts to simulate `checkUpkeep` calls and execute your contract's `performUpkeep` function as needed.
 
 You have now successfully built and registered a Keeper Compatible contract with the Chainlink Keeper Network.
 
@@ -100,7 +100,7 @@ These patterns are not mutually exclusive. Review and make use of the patterns t
 >
 > The `KeeperRegistry` enforces a cap for gas used both on-chain and off-chain. See the [Keepers Network Overview](../overview/) for details. The caps are configurable and might change based on user feedback. Be sure that you understand these limits if your use case requires a large amount of gas.
 
-When developing your keeper-compatible smart contracts, it is critical to understand the gas limits you are working with on the KeeperRegistry. There is a `check` gas limit and a `call` gas limit that your contract must adhere to in order to operate successfully. See the [Keepers Network Overview](../overview/) to learn the current configuration.
+When developing your keeper-compatible smart contracts, you must understand the gas limits that you are working with on the KeeperRegistry. There is a `check` gas limit and a `call` gas limit that your contract must adhere to in order to operate successfully. See the [Keepers Network Overview](../overview/) to learn the current configuration.
 
 ## Testing
 

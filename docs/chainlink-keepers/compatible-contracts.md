@@ -10,7 +10,7 @@ whatsnext:
 ---
 
 # Overview <!-- omit in toc -->
-This guide will explain how to make smart contracts **Keeper-compatible**. You will learn about the `KeeperCompatibleInterface` and its functions. We have provided an example contract for reference. This purpose of this guide is to showcase the convenience Keepers brings to developers. To take full advantage of the Keepers automation infrastructure, we highly recommend reading all documentation and understanding all the features of Chainlink Keepers.
+This guide explains how to make smart contracts **Keeper-compatible**. You will learn about the `KeeperCompatibleInterface` and its functions with an example contract. The guide showcases the convenience that Keepers provide to developers. To take full advantage of the Keepers automation infrastructure, read all of the documentation to understand the features of Chainlink Keepers.
 
 **Table of Contents**
 
@@ -73,7 +73,7 @@ If you use `checkData` and `performData`, you create a highly flexible off-chain
 
 ### `checkData`
 
-You can pass information into your `checkUpkeep` function from your [Upkeep Registration](../register-upkeep/) in order to execute different code paths for validation. You can also use the value in your computation to determine if your Keeper conditions have been met.
+You can pass information into your `checkUpkeep` function from your [Upkeep Registration](../register-upkeep/) to execute different code paths for validation. You can also use the value in your computation to determine if your Keeper conditions have been met.
 
 ```solidity Rinkeby
 {% include samples/Keepers/checkData.sol %}
@@ -85,7 +85,7 @@ You can also pass arbitrary `bytes` through the `checkData` argument as part of 
 
   **Example**: You could create an Upkeep for each subset of addresses that you want to service. The ranges could be 0 to 49, 50 to 99, and 100 to 149.
 
-- **Managing code paths**: pass in data to your `checkUpkeep` to make your contract logic go down different code paths. This can be used in creative ways based on your use case needs.
+- **Managing code paths**: Pass in data to your `checkUpkeep` to make your contract logic go down different code paths. This can be used in creative ways based on your use case needs.
 
   **Example**: You could support multiple types of Upkeep within a single contract, and pass a function selector through the `checkData` function.
 
@@ -115,7 +115,7 @@ The response from `checkUpkeep` is passed to the `performUpkeep` function as `pe
 
 ### `cannotExecute`
 
-In most cases your `checkUpkeep` method should be marked as `view`. Sometimes this might not be possible as in the case of wanting to use more advanced Solidity features like [`DelegateCall`](https://docs.soliditylang.org/en/latest/introduction-to-smart-contracts.html#delegatecall-callcode-and-libraries). It is a best practice to import the [`KeeperBase.sol`](https://github.com/smartcontractkit/keeper/blob/master/contracts/KeeperBase.sol) interface and use the `cannotExecute` modifier to ensure that the method can be used only for simulation purposes. For more information on Chainlink Keepers smart contacts, see the [Network Overview](../overview/).
+In most cases your `checkUpkeep` method should be marked as `view`. This might not always be possible if you want to use more advanced Solidity features like [`DelegateCall`](https://docs.soliditylang.org/en/latest/introduction-to-smart-contracts.html#delegatecall-callcode-and-libraries). It is a best practice to import the [`KeeperBase.sol`](https://github.com/smartcontractkit/keeper/blob/master/contracts/KeeperBase.sol) interface and use the `cannotExecute` modifier to ensure that the method can be used only for simulation purposes. For more information on Chainlink Keepers smart contacts, see the [Network Overview](../overview/).
 
 ## `performUpkeep` Function
 
@@ -163,6 +163,6 @@ The example below represents a simple counter contract. Each time `performUpkeep
 ```
 
 > ❗️ **WARNING**
-> Do **NOT** attempt to send LINK to your contract as you may with [VRF](../../get-a-random-number/). With Chainlink Keepers, contracts are funded via the registry rather than within your contract.
+> Do **NOT** attempt to send LINK to your contract like you do with [VRF](../../get-a-random-number/). For Chainlink Keepers, contracts are funded via the registry rather than within your contract.
 
-Once deployed, your contract doesn't automatically begin to receive Upkeep after deployment. It must be registered. See [Register for Upkeep](../register-upkeep/) for next steps.
+After you deploy your contract, it does not automatically begin to receive Upkeep. You must register the contract. See [Register for Upkeep](../register-upkeep/) for next steps.
