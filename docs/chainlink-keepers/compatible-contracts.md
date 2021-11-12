@@ -87,7 +87,7 @@ You can also pass arbitrary `bytes` through the `checkData` argument as part of 
 
 - **Managing code paths**: Pass in data to your `checkUpkeep` to make your contract logic go down different code paths. This can be used in creative ways based on your use case needs.
 
-  **Example**: You could support multiple types of Upkeep within a single contract, and pass a function selector through the `checkData` function.
+  **Example**: You could support multiple types of Upkeep within a single contract and pass a function selector through the `checkData` function.
 
 ### `performUpkeep`
 
@@ -95,7 +95,7 @@ Consider validating the conditions that might trigger `performUpkeep` before wor
 
 - **When triggering is not harmful**: Sometimes actions must be performed when conditions are met, but performing actions when conditions are not met is still acceptable. Condition checks within `performUpkeep` might not be required, but it can still be a good practice to short circuit expensive and unnecessary on-chain processing when it is not required.
 
-    Calling `performUpkeep` when the `checkUpkeep` conditions haven't yet been tested by Chainlink Keepers might be desirable in some cases, so any specific checks that you perform are entirely use case specific.
+    It might be desirable to call `performUpkeep` when the `checkUpkeep` conditions haven't yet been tested by Chainlink Keepers, so any specific checks that you perform are entirely use case specific.
 
 - **Trigger ONLY when conditions are met**: Some actions must be performed only when specific conditions are met. Check all of the preconditions within `performUpkeep` to ensure that state change occurs only when necessary.
 
