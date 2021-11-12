@@ -55,7 +55,7 @@ contract APElection is ChainlinkClient {
         request.add("date", "2021-11-02");
         request.add("raceId", "12111");
         request.add("statePostal", "FL");
-        request.add("resultsType", "t"); // Replace with l for live results.  
+        request.add("resultsType", "l"); // Replace with l for live results.  
         return sendChainlinkRequestTo(oracle, request, fee);
     }
 
