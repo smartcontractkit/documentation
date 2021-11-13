@@ -36,6 +36,12 @@ This page will show you how to obtain and add testnet LINK to MetaMask. If you a
 ```text Rinkeby LINK Token
 0x01BE23585060835E02B77ef475b0Cc51aA1e0709
 ```
+```text Polygon Mumbai Testnet LINK Token
+0x326C977E6efc84E512bB9C30f76E30c160eD06FB
+```
+```text Polygon Mainnet LINK Token
+0xb0897686c545045aFc77CF20eC7A532E3120E0F1
+```
 
 * Paste the token contract address into MetaMask in the Token Address input. The token symbol and decimals of precision will auto-populate. Click Next.
 
