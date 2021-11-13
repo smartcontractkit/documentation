@@ -36,17 +36,6 @@ Your node works with several different types of addresses. Each address type has
 
     - Select "Injected Web3" as your **Environment**. The Javascript VM environment cannot access your oracle node.
     - Select the "Oracle" contract from the **Contract** menu.
-    - Copy the LINK token contract address for the network you are using and paste it into the `address_link` field next to the **Deploy** button. Use one of the following network addresses:
-
-      ``` text Rinkeby
-      0x01BE23585060835E02B77ef475b0Cc51aA1e0709
-      ```
-      ``` text Kovan
-      0xa36085F69e2889c224210F603D836748e7dC0088
-      ```
-      ``` text Mainnet
-      0x514910771AF9Ca656af840dff83E8264EcF986CA
-      ```
 
     ![The Deploy & Run transaction window showing Injected Web 3 selected and the address for your MetaMask wallet.](/files/b9d3620-remix004.jpg)
 
