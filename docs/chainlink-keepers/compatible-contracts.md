@@ -111,8 +111,6 @@ The response from `checkUpkeep` is passed to the `performUpkeep` function as `pe
 {% include samples/Keepers/performData.sol %}
 ```
 
-### Modifiers <!-- omit in toc -->
-
 ### `cannotExecute`
 
 In most cases your `checkUpkeep` method should be marked as `view`. This might not always be possible if you want to use more advanced Solidity features like [`DelegateCall`](https://docs.soliditylang.org/en/latest/introduction-to-smart-contracts.html#delegatecall-callcode-and-libraries). It is a best practice to import the [`KeeperBase.sol`](https://github.com/smartcontractkit/keeper/blob/master/contracts/KeeperBase.sol) interface and use the `cannotExecute` modifier to ensure that the method can be used only for simulation purposes. For more information on Chainlink Keepers smart contacts, see the [Network Overview](../overview/).
@@ -140,7 +138,7 @@ Below is the parameter of the `performUpkeep` function. Click the value to learn
 | ------------------------------- | -------------------------------------------------------------------- |
 | [`performData`](#performdata-1)                   | Data which was passed back from the `checkData` simulation. If it is encoded, it can easily be decoded into other types by calling `abi.decode`. This data should always be validated against the contract's current state. |
 
-### `performData` 
+### `performData`
 
 You can perform complex and broad off-chain computation, then execute on-chain state changes on a subset that meet your conditions. This can be done by passing the appropriate inputs within `performData` based on the results from your `checkUpkeep`. This pattern can greatly reduce your on-chain gas usage by narrowing the scope of work intelligently in your own Solidity code.
 
