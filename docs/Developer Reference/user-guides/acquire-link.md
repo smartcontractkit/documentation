@@ -28,15 +28,7 @@ This page will show you how to obtain and add testnet LINK to MetaMask. If you a
 
 * In order to see your LINK token balance in MetaMask, you will need to add the token.
 * In MetaMask click the hamburger button, and click on `Add Token` and then `Custom Token`.
-* On Kovan our LINK token address is: `0xa36085F69e2889c224210F603D836748e7dC0088`. Copy that address.
-
-```text Kovan LINK Token
-0xa36085F69e2889c224210F603D836748e7dC0088
-```
-```text Rinkeby LINK Token
-0x01BE23585060835E02B77ef475b0Cc51aA1e0709
-```
-
+* On Kovan our LINK token address is: `0xa36085F69e2889c224210F603D836748e7dC0088`. Copy that address. If you need the address for a different testnet, see the [LINK Token Contracts](/docs/link-token-contracts/) page.
 * Paste the token contract address into MetaMask in the Token Address input. The token symbol and decimals of precision will auto-populate. Click Next.
 
 ![Metamask Custom Tokens Screen](/files/7d69188-metamask.png)
