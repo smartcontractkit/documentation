@@ -4,7 +4,7 @@ section: legacy
 date: Last Modified
 title: "Get a Random Number [v1]"
 permalink: "docs/get-a-random-number/v1/"
-whatsnext: {"API Reference":"/docs/chainlink-vrf-api-reference/v1/", "Contract Addresses":"/docs/vrf-contracts/v1/"}
+whatsnext: {"API Reference":"/docs/chainlink-vrf-api-reference/v1/", "Contract Addresses":"/docs/vrf-deployments/v1/"}
 metadata:
   description: "How to generate a random number inside a smart contract using Chainlink VRF."
   image:
@@ -26,7 +26,7 @@ Chainlink VRF follows the [Request & Receive Data](../../request-and-receive-dat
 
 The contract should own enough LINK to pay the specified fee. The beginner walkthrough explains how to [fund your contract](../../fund-your-contract/).
 
-Note, the below values have to be configured correctly for VRF requests to work. You can find the respective values for your network in the [VRF Contracts page](../../vrf-contracts/v1).
+Note, the below values have to be configured correctly for VRF requests to work. You can find the respective values for your network in the [VRF Contracts page](../../vrf-deployments/v1).
 - `LINK Token` - LINK token address on the corresponding network (Ethereum, Polygon, BSC, etc)
 - `VRF Coordinator` - address of the Chainlink VRF Coordinator
 - `Key Hash` - public key against which randomness is generated

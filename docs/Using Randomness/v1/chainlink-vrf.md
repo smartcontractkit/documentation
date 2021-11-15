@@ -4,7 +4,7 @@ section: legacy
 date: Last Modified
 title: "Introduction to Chainlink VRF [v1]"
 permalink: "docs/chainlink-vrf/v1/"
-whatsnext: {"Get a Random Number":"/docs/get-a-random-number/v1/", "API Reference":"/docs/chainlink-vrf-api-reference/v1/", "Contract Addresses":"/docs/vrf-contracts/v1/"}
+whatsnext: {"Get a Random Number":"/docs/get-a-random-number/v1/", "API Reference":"/docs/chainlink-vrf-api-reference/v1/", "Contract Addresses":"/docs/vrf-deployments/v1/"}
 metadata:
   title: "Generate Random Numbers for Smart Contracts using Chainlink VRF"
   description: "Learn how to securely generate random numbers for your smart contract with Chainlink VRF (an RNG). This guide uses Solidity code examples."

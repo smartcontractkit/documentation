@@ -546,7 +546,7 @@ module.exports = {
           },
           {
             title: 'Contract Addresses',
-            url: '/docs/vrf-contracts/v1/'
+            url: '/docs/vrf-deployments/v1/'
           },
           {
             title: 'API Reference',

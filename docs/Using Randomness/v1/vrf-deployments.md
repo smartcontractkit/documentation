@@ -3,7 +3,7 @@ layout: nodes.liquid
 section: legacy
 date: Last Modified
 title: "Chainlink VRF Contract Addresses [v1]"
-permalink: "docs/vrf-contracts/v1/"
+permalink: "docs/vrf-deployments/v1/"
 metadata:
   title: "Chainlink VRF Contract Addresses"
   image:

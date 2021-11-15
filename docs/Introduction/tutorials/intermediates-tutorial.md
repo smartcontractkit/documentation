@@ -123,7 +123,7 @@ constructor(address vrfCoordinator, address link, bytes32 keyHash, uint256 fee)
 }
 ```
 
-As you can see, `VRFConsumerBase` needs to know the address of the vrfCoordinator, and the address of the LINK token. Both of which are [available in the docs](../vrf-contracts/).
+As you can see, `VRFConsumerBase` needs to know the address of the vrfCoordinator, and the address of the LINK token. Both of which are [available in the docs](../vrf-deployments/v1/).
 
 ## 4d. `rollDice` function
 
@@ -251,7 +251,7 @@ These are the coordinator address, LINK address, key hash, and fee. Click deploy
 
 > 📘 Address, Key Hashes and more
 >
-> For a full reference of the addresses, key hashes and fees for each network, see [VRF Contracts](../vrf-contracts/).
+> For a full reference of the addresses, key hashes and fees for each network, see [VRF Contracts](../vrf-deployments/v1/).
 
 (Note: you should <a href="/docs/beginners-tutorial/#obtaining-testnet-eth" target="_blank">have some Kovan ETH in your Metamask account</a> to pay for the GAS).
 
