@@ -4,7 +4,7 @@ section: smartContract
 date: Last Modified
 title: "Introduction to Chainlink VRF"
 permalink: "docs/chainlink-vrf/"
-whatsnext: {"Get a Random Number":"/docs/get-a-random-number/", "Contract Addresses":"/docs/vrf-contracts/"}
+whatsnext: {"Get a Random Number":"/docs/get-a-random-number/", "Contract Addresses":"/docs/vrf-deployments/"}
 metadata:
   title: "Generate Random Numbers for Smart Contracts using Chainlink VRF"
   description: "Learn how to securely generate random numbers for your smart contract with Chainlink VRF (an RNG). This guide uses Solidity code examples."
@@ -28,6 +28,6 @@ Learn how to write smart contracts that consume random numbers: [Get a Random Nu
 
 # On-chain Verification of Randomness
 
-Chainlink VRF enables smart contracts to access randomness without compromising on security or usability. With every new request for randomness, Chainlink VRF generates a random number and cryptographic proof of how that number was determined. The proof is published and verified on-chain before it can be used by any consuming applications. This process ensures that the results cannot be tampered with nor manipulated by anyone, including oracle operators, miners, users and even smart contract developers.
+Chainlink VRF enables smart contracts to access randomness without compromising on security or usability. With every new request for randomness, Chainlink VRF generates a random number and cryptographic proof of how that number was determined. The proof is published and verified on-chain before it can be used by any consuming applications. This process ensures that results cannot be tampered with nor manipulated by any single entity, includinkj:g oracle operators, miners, users and even smart contract developers.
 
 Read more about Chainlink VRF in [our announcement post](https://blog.chain.link/verifiable-random-functions-vrf-random-number-generation-rng-feature/).

@@ -358,8 +358,8 @@ module.exports = {
             url: '/docs/chainlink-vrf-best-practices/',
           },
           {
-            title: 'Contract Addresses',
-            url: '/docs/vrf-contracts/'
+            title: 'Contract Deployments',
+            url: '/docs/vrf-deployments/'
           },
         ],
       },
