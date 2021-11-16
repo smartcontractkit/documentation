@@ -4,10 +4,10 @@ section: smartContract
 date: Last Modified
 title: "LINK Token Contracts"
 permalink: "docs/link-token-contracts/"
-metadata: 
+metadata:
   title: "LINK Token Contracts"
   description: "Addresses for the LINK token on supported networks."
-  image: 
+  image:
     0: "/files/72d4bd9-link.png"
 ---
 LINK tokens are used to pay node operators for retrieving data for smart contracts and also for deposits placed by node operators as required by contract creators.
@@ -30,8 +30,8 @@ The LINK token is an ERC677 token that inherits functionality from the ERC20 tok
 
 > 🚰Kovan Faucets
 >
-> Testnet LINK is available from https://kovan.chain.link/
-> Testnet ETH is available from https://linkfaucet.protofire.io/kovan
+> Testnet LINK are available from https://faucets.chain.link/kovan
+> Testnet ETH are available from https://faucets.chain.link/kovan
 
 |Parameter|Value|
 |:---|:---|
@@ -45,8 +45,9 @@ The LINK token is an ERC677 token that inherits functionality from the ERC20 tok
 
 > 🚰Rinkeby Faucets
 >
-> Testnet LINK is available from https://rinkeby.chain.link/
-> Testnet ETH is available from https://faucet.rinkeby.io/
+> Testnet LINK is available from https://faucets.chain.link/rinkeby
+> Testnet ETH is available from: https://faucets.chain.link/rinkeby
+> Backup Testnet ETH Faucets: https://faucet.rinkeby.io/, https://rinkeby-faucet.com/, https://app.mycrypto.com/faucet 
 
 |Parameter|Value|
 |:---|:---|
@@ -78,7 +79,7 @@ LINK is native to Ethereum, so to use LINK on other chains, it must be bridged. 
 
 > 📘 Important
 >
-> The LINK provided by the [Binance Bridge](https://www.binance.org/en/bridge) is not ERC-677 compatible, so cannot be used with Chainlink oracles. However, it can be [**converted to the official LINK token on BSC using Chainlink's PegSwap service**](https://pegswap.chain.link/). 
+> The LINK provided by the [Binance Bridge](https://www.binance.org/en/bridge) is not ERC-677 compatible, so cannot be used with Chainlink oracles. However, it can be [**converted to the official LINK token on BSC using Chainlink's PegSwap service**](https://pegswap.chain.link/).
 
 |Parameter|Value|
 |:---|:---|
@@ -92,7 +93,7 @@ LINK is native to Ethereum, so to use LINK on other chains, it must be bridged. 
 
 > 🚰BSC Faucet
 >
-> Testnet LINK is available from <a href="https://linkfaucet.protofire.io/bsctest" target="_blank" rel="noreferrer, noopener">the community faucet</a>.
+> Testnet LINK is available from https://faucets.chain.link/chapel
 
 |Parameter|Value|
 |:---|:---|
@@ -108,7 +109,7 @@ LINK is native to Ethereum, so to use LINK on other chains, it must be bridged. 
 >
 > The LINK provided by the [Polygon (Matic) Bridge](https://wallet.matic.network/bridge) is not ERC-677 compatible, so cannot be used with Chainlink oracles. However, it can be [**converted to the official LINK token on Polygon (Matic) using Chainlink's PegSwap service**](https://pegswap.chain.link/)
 
-You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blank"> watch this video </a>. 
+You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blank"> watch this video </a>.
 
 ### Mainnet
 
@@ -124,7 +125,7 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 
 > 🚰Mumbai Faucet
 >
-> Testnet LINK and MATIC are available from <a href="https://faucet.matic.network/" target="_blank" rel="noreferrer, noopener">the official matic faucet</a> and <a href="https://linkfaucet.protofire.io/mumbai" target="_blank" rel="noreferrer, noopener">the community faucet</a>.
+> Testnet LINK and MATIC are available from [the official Matic faucet](https://faucet.polygon.technology/) and https://faucets.chain.link/mumbai.
 
 |Parameter|Value|
 |:---|:---|
@@ -172,12 +173,12 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 
 ## Avalanche
 
-### Fuji Mainnet
+### Mainnet
 
 |Parameter|Value|
 |:---|:---|
 |`ETH_CHAIN_ID`|`43114`|
-|Address|[`0x350a791Bfc2C21F9Ed5d10980Dad2e2638ffa7f6`](https://cchain.explorer.avax.network/address/0x350a791Bfc2C21F9Ed5d10980Dad2e2638ffa7f6)|
+|Address|[`0x5947BB275c521040051D82396192181b413227A3`](https://snowtrace.io/address/0x5947BB275c521040051D82396192181b413227A3)|
 |Name|ChainLink Token on Avalanche|
 |Symbol|LINK|
 |Decimals|18|
@@ -186,24 +187,34 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 
 > 🚰Avax Faucet
 >
-> Community Faucet: https://linkfaucet.protofire.io/fuji
+> Testnet LINK is available from https://faucets.chain.link/fuji
 >
 
 |Parameter|Value|
 |:---|:---|
 |`ETH_CHAIN_ID`|`43113`|
-|Address|[`0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846`](https://cchain.explorer.avax-test.network/address/0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846)|
+|Address|[`0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846`](https://testnet.snowtrace.io/address/0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846)|
 |Name|ChainLink Token on Avalanche|
 |Symbol|LINK|
 |Decimals|18|
 
 ## Fantom
 
+### Fantom Mainnet
+
+|Parameter|Value|
+|:---|:---|
+|`ETH_CHAIN_ID`|`250`|
+|Address|[`0x6F43FF82CCA38001B6699a8AC47A2d0E66939407`](https://ftmscan.com/address/0x6F43FF82CCA38001B6699a8AC47A2d0E66939407)|
+|Name|ChainLink Token on Fantom|
+|Symbol|LINK|
+|Decimals|18|
+
 ### Fantom Testnet
 
 > 🚰Fantom Faucet
 >
-> Community Faucet: https://linkfaucet.protofire.io/fantomtestnet  
+> Testnet LINK is available from https://faucets.chain.link/fantom-testnet  
 >
 
 |Parameter|Value|
@@ -220,7 +231,7 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 
 > 🚰Arbitrum Faucet on Rinkeby
 >
-> Community Faucet: https://linkfaucet.protofire.io/rinkebyarbitrum
+> Testnet LINK is available from https://faucets.chain.link/arbitrum-rinkeby
 >
 > Supported bridge: https://bridge.arbitrum.io
 
@@ -229,5 +240,39 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 |`ETH_CHAIN_ID`|`421611`|
 |Address|[`0x615fBe6372676474d9e6933d310469c9b68e9726`](https://rinkeby-explorer.arbitrum.io/address/0x615fBe6372676474d9e6933d310469c9b68e9726)|
 |Name|ChainLink Token on Arbitrum Rinkeby|
+|Symbol|LINK|
+|Decimals|18|
+
+## Huobi Eco Chain
+
+### Mainnet
+
+|Parameter|Value|
+|:---|:---|
+|`ETH_CHAIN_ID`|`128`|
+|Address|[`0x9e004545c59D359F6B7BFB06a26390b087717b42`](https://hecoinfo.com/address/0x9e004545c59D359F6B7BFB06a26390b087717b42)|
+|Name|Heco-Peg LINK Token|
+|Symbol|LINK|
+|Decimals|18|
+
+## Optimism
+
+### Mainnet
+
+|Parameter|Value|
+|:---|:---|
+|`ETH_CHAIN_ID`|`10`|
+|Address|[`0x350a791Bfc2C21F9Ed5d10980Dad2e2638ffa7f6`](https://optimistic.etherscan.io/address/0x350a791Bfc2C21F9Ed5d10980Dad2e2638ffa7f6)|
+|Name|ChainLink Token on Optimism Mainnet|
+|Symbol|LINK|
+|Decimals|18|
+
+### Kovan Testnet
+
+|Parameter|Value|
+|:---|:---|
+|`ETH_CHAIN_ID`|`69`|
+|Address|[`0x4911b761993b9c8c0d14Ba2d86902AF6B0074F5B`](https://kovan-optimistic.etherscan.io/address/0x4911b761993b9c8c0d14Ba2d86902AF6B0074F5B)|
+|Name|ChainLink Token on Optimism Kovan|
 |Symbol|LINK|
 |Decimals|18|

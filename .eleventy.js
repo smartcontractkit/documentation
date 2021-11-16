@@ -13,6 +13,8 @@ module.exports = function (eleventyConfig) {
   eleventyConfig.addPlugin(embedYouTube);
   eleventyConfig.addPassthroughCopy({ _src: '/' });
 
+  eleventyConfig.addPassthroughCopy( {"_includes/samples": "samples"} );
+
   // Allow us to put rendered markdown in HTML
   eleventyConfig.addPairedShortcode('markdown', (content) => {
     return rdmd.html(content);

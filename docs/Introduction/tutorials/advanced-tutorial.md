@@ -6,8 +6,8 @@ title: "API Calls Tutorial"
 permalink: "docs/advanced-tutorial/"
 excerpt: "Calling APIs from Smart Contracts"
 whatsnext: {"Make a GET Request":"/docs/make-a-http-get-request/", "Make an Existing Job Request":"/docs/existing-job-request/"}
-metadata: 
-  image: 
+metadata:
+  image:
     0: "/files/04b8e56-cl.png"
 ---
 
@@ -51,7 +51,7 @@ Let's walk through a real example, where we retrieve 24 volume of the <a href="h
 
 ### Core Adapters Example
 
-1. [HttpGet](../core-adapters/#httpget) - Calls the API and returns the body of an HTTP GET result for [ETH/USD pair](https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETH&tsyms=USD).  Example: 
+1. [HttpGet](../core-adapters/#httpget) - Calls the API and returns the body of an HTTP GET result for [ETH/USD pair](https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETH&tsyms=USD).  Example:
 ```json
 {"RAW":
   {"ETH":
@@ -82,66 +82,12 @@ Let's see what this looks like in a contract.
 
 ### Contract Example
 
-```javascript
-pragma solidity ^0.6.7;
-
-import "@chainlink/contracts/src/v0.6/ChainlinkClient.sol";
-
-contract APIConsumer is ChainlinkClient {
-  
-    uint256 public volume;
-    
-    address private oracle;
-    bytes32 private jobId;
-    uint256 private fee;
-    
-    /**
-     * Network: Kovan
-     * Chainlink - 0x2f90A6D021db21e1B2A077c5a37B3C7E75D15b7e
-     * Chainlink - 29fa9aa13bf1468788b7cc4a500a45b8
-     * Fee: 0.1 LINK
-     */
-    constructor() public {
-        setPublicChainlinkToken();
-        oracle = 0x2f90A6D021db21e1B2A077c5a37B3C7E75D15b7e;
-        jobId = "29fa9aa13bf1468788b7cc4a500a45b8";
-        fee = 0.1 * 10 ** 18; // 0.1 LINK
-    }
-    
-    /**
-     * Create a Chainlink request to retrieve API response, find the target
-     * data, then multiply by 1000000000000000000 (to remove decimal places from data).
-     */
-    function requestVolumeData() public returns (bytes32 requestId) 
-    {
-        Chainlink.Request memory request = buildChainlinkRequest(jobId, address(this), this.fulfill.selector);
-        
-        // Set the URL to perform the GET request on
-        request.add("get", "https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETH&tsyms=USD");
-        
-        // Set the path to find the desired data in the API response, where the response format is:
-        request.add("path", "RAW.ETH.USD.VOLUME24HOUR");
-        
-        // Multiply the result by 1000000000000000000 to remove decimals
-        int timesAmount = 10**18;
-        request.addInt("times", timesAmount);
-        
-        // Sends the request
-        return sendChainlinkRequestTo(oracle, request, fee);
-    }
-    
-    /**
-     * Receive the response in the form of uint256
-     */ 
-    function fulfill(bytes32 _requestId, uint256 _volume) public recordChainlinkFulfillment(_requestId)
-    {
-        volume = _volume;
-    }
-}
+```solidity
+{% include samples/APIRequests/APIConsumer.sol %}
 ```
 
 <div class="remix-callout">
-  <a href="https://remix.ethereum.org/#version=soljson-v0.6.7+commit.b8d736ae.js&optimize=false&evmVersion=null&gist=8a28f5ee239b7815b935d883f1239904" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
+  <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/APIConsumer.sol" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
     <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
 </div>
 
@@ -149,13 +95,11 @@ Let's walk through what's happening here:
 1. Constructor - Setup the contract with the Oracle address, Job ID, and LINK fee that the oracle charges for the job
 2. `requestVolumeData` - This builds and sends a request, which includes the fulfilment functions selector, to the oracle. Notice how it adds the `get`, `path` and `times` parameters. These are read by the Adapters in the job to perform the tasks correctly. `get` is used by [HttpGet](../core-adapters/#httpget), `path` is used by [JsonParse](../core-adapters/#jsonparse) and `times` is used by [Multiply](../core-adapters/#multiply).
 3. `fulfill` - Where the result is sent once the Oracle job is complete
-[block:callout]
-{
-  "type": "info",
-  "body": "Note, the calling contract should own enough LINK to pay the specified fee (by default 0.1 LINK). You can use [this tutorial](../fund-your-contract/) to fund your contract.",
-  "title": "LINK Required"
-}
-[/block]
+
+> 📘 Important
+>
+> The calling contract should own enough LINK to pay the specified fee (by default 0.1 LINK). You can use [this tutorial](../fund-your-contract/) to fund your contract.
+
 This was an example of a basic HTTP GET request. However, it requires defining the API URL directly in the smart contract. This can, in fact, be extracted and configured on the Job level inside the Oracle.
 
 ## 1d. External Adapters
@@ -182,12 +126,12 @@ If all the parameters are defined within the Oracle job, the only thing a smart 
 
 This makes for a much more succinct smart contract, where the `requestVolumeData` function from the [code example above](#contract-example) would look more like this:
 
-```javascript
+```solidity
 function requestVolumeData() public returns (bytes32 requestId) {
     Chainlink.Request memory request = buildChainlinkRequest(jobId, address(this), this.fulfill.selector);
 
     // Extra parameters don't need to be defined here because they are already defined in the job
-        
+
     return sendChainlinkRequestTo(oracle, request, fee);
 }
 ```

@@ -1,7 +1,7 @@
 ---
 layout: nodes.liquid
 date: Last Modified
-title: "Chainlink Node Documentation"
+title: "Chainlink Node Docs"
 ---
 
 <div>
@@ -9,6 +9,8 @@ title: "Chainlink Node Documentation"
     <div class="cl-section-header">
       <p>
         Operating a Chainlink node allows you to be part of the Chainlink Network, helping developers build hybrid smart contracts, giving them access to real-world data and services.
+        <p>
+        Learn more about Chainlink nodes with our step‑by‑step tutorials and documentation:
       </p>
     </div>
     <div class="cl-featuredcard">
@@ -23,8 +25,8 @@ title: "Chainlink Node Documentation"
           </div>
           <a
             href="/docs/running-a-chainlink-node"
-            class="cl-button--ghost"
-            >Learn More
+            class="cl-button--ghost">
+              Learn More
           </a>
         </div>
       <div>
@@ -40,8 +42,8 @@ title: "Chainlink Node Documentation"
           </div>
           <a
             href="/docs/fulfilling-requests"
-            class="cl-button--ghost"
-            >Learn More
+            class="cl-button--ghost">
+              Learn More
           </a>
         </div>
         <div>
@@ -58,8 +60,8 @@ title: "Chainlink Node Documentation"
           </div>
           <a
             href="/docs/node-operators"
-            class="cl-button--ghost"
-            >Learn More
+            class="cl-button--ghost">
+              Learn More
           </a>
       </div>
     </div>
@@ -74,9 +76,9 @@ title: "Chainlink Node Documentation"
       </p>
       <a
         href="/chainlink-nodes/"
-        class="keychainify-checked"
-        >Learn More</a
-      >
+        class="keychainify-checked">
+          Learn More
+        </a>
     </div>
     <div class="cl-section">
       <div class="cl-box cl-box__lightblue cl-featuredcard">
@@ -87,8 +89,9 @@ title: "Chainlink Node Documentation"
               </p>
               <a
                 href="/docs/core-adapters/"
-                class="cl-button--ghost"
-                >Learn More</a>
+                class="cl-button--ghost">
+                  Learn More
+              </a>
             </div>
             <div>
               <h3>Core Initiators</h3>
@@ -97,54 +100,32 @@ title: "Chainlink Node Documentation"
               </p>
               <a
                 href="/docs/initiators"
-                class="cl-button--ghost"
-                >Learn More</a
-              >
+                class="cl-button--ghost">
+                  Learn More
+                </a>
             </div>
           </div>
     </div>
     <div class="cl-section cl-section--tools">
       <h3>Explore Chainlink Node Tools</h3>
       <div style="display:flex">
-          <div class="cl-productcard">
-            <a
-              href="https://explorer.chain.link/"
-              target="_blank"
-              class="fill-div"
-            >
+        <a class="cl-productcard" href="https://market.link" target="_blank">
+          <div>
               <img
-                src="https://uploads-ssl.webflow.com/5e444500cbc42eeb5198206f/5e711676c0d8d9ee70422688_Explorer.svg"
-                class="cl-image-featured"
-              />
-              <h3>Chainlink Explorer ↗</h3>
-            </a>
-          </div>
-          <div class="cl-productcard">
-            <a
-              href="https://market.link"
-              target="_blank"
-              class="fill-div"
-              ><img
                 src="https://uploads-ssl.webflow.com/5e444500cbc42eeb5198206f/5e711675d22595473f1c0c20_Contract.svg"
-                class="cl-image-featured"
               />
               <h3>Chainlink Market ↗</h3>
-            </a>
           </div>
-          <div class="cl-productcard">
-            <a
-              href="https://reputation.link/"
-              target="_blank"
-              class="fill-div"
-              ><img
+        </a>
+        <a class="cl-productcard" href="https://reputation.link/" target="_blank">
+          <div>
+              <img
                 src="https://uploads-ssl.webflow.com/5e444500cbc42eeb5198206f/5e711677c777c0bd0c747109_Nodes.svg"
-                class="cl-image-featured"
               />
               <h3>Chainlink Oracle Reputation ↗</h3>
-            </a>
-        </div>
+          </div>
+        </a>
       </div>
     </div>
   </div>
-  {% include still-questions %}
 </div>

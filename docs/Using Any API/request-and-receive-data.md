@@ -15,9 +15,9 @@ metadata:
 
 # Call Any External API
 
-> 📘
+> 📘 Note
 > 
-> If your smart contracts need access to price data, try using [Chainlink Price Feeds](../using-chainlink-reference-contracts/).
+> If your smart contracts need access to price data, try using [Chainlink Data Feeds](../using-chainlink-reference-contracts/).
 
 Chainlink enables your contracts to access to *any* external data source, through our decentralized oracle network.
 

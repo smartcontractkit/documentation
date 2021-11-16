@@ -4,17 +4,23 @@ section: smartContract
 date: Last Modified
 title: "Chainlink Alarm Clock (Testnet)"
 permalink: "docs/chainlink-alarm-clock/"
-metadata: 
-  image: 
+metadata:
+  image:
     0: "/files/807bfbc-cl.png"
 ---
+
+> 🚧 Note
+>
+> Chainlink Alarm Clock is is an outdated way of automating time-based requests. Please, consider using [Keepers](../chainlink-keepers/introduction/) instead.
+
+
 You can use Chainlink to trigger a smart contract at a specified time. Using this Chainlink, you will create a request with a timestamp for the node to call back to your desired function. You can include additional logic in that function to perform additional computation.
 
 # Steps For Using This Oracle
 
 - Write and deploy your [Chainlinked](../intermediates-tutorial/)  contract using the network details below
 - Fund it with [LINK](../link-token-contracts/) (0.1 LINK is required per-request/)
-- Call your [request method](./#chainlink-examples) 
+- Call your [request method](./#chainlink-examples)
 
 # Chainlink Network Details
 
@@ -30,7 +36,7 @@ JobID:  982105d690504c5d9ce374d040c08654
 
 Import `ChainlinkClient.sol` into your contract so you can inherit the `ChainlinkClient` behavior.
 
-```javascript
+```solidity
 pragma solidity ^0.4.24;
 
 import "chainlink/contracts/ChainlinkClient.sol";
@@ -44,12 +50,12 @@ contract ChainlinkAlarmClock is ChainlinkClient {
     oraclePayment = _oraclePayment;
   }
   // Additional functions here:
-  
+
 }
 ```
 
 <div class="remix-callout">
-  <a href="https://remix.ethereum.org/#gist=e71aab73726c5a2f99ee00c1a70cfef8&optimize=true&version=soljson-v0.6.12+commit.27d51765.js&evmVersion=null&runs=200" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
+  <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/DataProviders/AlarmClock.sol" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
     <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
 </div>
 
@@ -66,13 +72,11 @@ contract ChainlinkAlarmClock is ChainlinkClient {
 **Required**
 
 The timestamp for which the Chainlink node will wait to respond.
-[block:callout]
-{
-  "type": "warning",
-  "body": "Solidity 0.7.0 deprecated the now keyword. For contracts ^0.7.0, you must use `block.timestamp`",
-  "title": "`now` keyword"
-}
-[/block]
+
+> 🚧 `now` keyword"
+>
+> Solidity 0.7.0 deprecated the now keyword. For contracts ^0.7.0, you must use `block.timestamp`
+
 #### Solidity example
 
 ```javascript
@@ -83,7 +87,7 @@ req.addUint("until", now + 5 minutes);
 
 This example shows how to create the request for the Chainlink node:
 
-```javascript
+```solidity
 function delayStart
 (
   address _oracle,
@@ -100,7 +104,7 @@ function delayStart
 
 This example shows the callback method:
 
-```javascript
+```solidity
 function fulfill(bytes32 _requestId)
   public
   recordChainlinkFulfillment(_requestId)

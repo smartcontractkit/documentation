@@ -4,12 +4,12 @@ section: smartContract
 date: Last Modified
 title: "Chainlink VRF Contract Addresses"
 permalink: "docs/vrf-contracts/"
-metadata: 
+metadata:
   title: "Chainlink VRF Contract Addresses"
-  image: 
+  image:
     0: "/files/OpenGraph_V3.png"
 ---
-Chainlink VRF allows you to integrate provably-fair and verifiably random data in your smart contract. 
+Chainlink VRF allows you to integrate provably-fair and verifiably random data in your smart contract.
 
 For implementation details, read [Introduction to Chainlink VRF](../chainlink-vrf/).
 
@@ -34,7 +34,7 @@ For implementation details, read [Introduction to Chainlink VRF](../chainlink-vr
 
 > 🚰Mumbai Faucet
 >
-> Testnet LINK and MATIC are available from <a href="https://faucet.matic.network/" target="_blank" rel="noreferrer, noopener">the official matic faucet</a> and <a href="https://linkfaucet.protofire.io/mumbai" target="_blank" rel="noreferrer, noopener">the community faucet</a>.
+> Testnet LINK and MATIC are available from [the official Matic faucet](https://faucet.polygon.technology/) and https://faucets.chain.link/mumbai.
 
 |Item|Value|
 |---|---|
@@ -64,7 +64,7 @@ For implementation details, read [Introduction to Chainlink VRF](../chainlink-vr
 
 > 🚰BSC Faucet
 >
-> Testnet LINK is available from <a href="https://linkfaucet.protofire.io/bsctest" target="_blank" rel="noreferrer, noopener">the community faucet</a>.
+> Testnet LINK is available from https://faucets.chain.link/bsctest
 
 |Item|Value|
 |---|---|
@@ -91,8 +91,8 @@ For implementation details, read [Introduction to Chainlink VRF](../chainlink-vr
 
 > 🚰Kovan Faucets
 >
-> Testnet LINK is available from https://kovan.chain.link/
-> Testnet ETH is available from https://linkfaucet.protofire.io/kovan
+> Testnet LINK are available from https://faucets.chain.link/kovan
+> Testnet ETH are available from https://faucets.chain.link/kovan
 
 |Item|Value|
 |---|---|
@@ -105,8 +105,9 @@ For implementation details, read [Introduction to Chainlink VRF](../chainlink-vr
 
 > 🚰Rinkeby Faucets
 >
-> Testnet LINK is available from https://rinkeby.chain.link/
-> Testnet ETH is available from https://faucet.rinkeby.io/
+> Testnet LINK is available from https://faucets.chain.link/rinkeby
+> Testnet ETH is available from: https://faucets.chain.link/rinkeby
+> Backup Testnet ETH Faucets: https://faucet.rinkeby.io/, https://rinkeby-faucet.com/, https://app.mycrypto.com/faucet 
 
 |Item|Value|
 |---|---|

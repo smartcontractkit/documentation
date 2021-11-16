@@ -5,16 +5,16 @@ date: Last Modified
 title: "Basic Request Model"
 permalink: "docs/architecture-request-model/"
 whatsnext: {"Make a GET Request":"/docs/make-a-http-get-request/", "Decentralized Data Model":"/docs/architecture-decentralized-model/"}
-metadata: 
+metadata:
   title: "Chainlink Basic Request Model"
-  image: 
+  image:
     0: "/files/OpenGraph_V3.png"
 ---
 # Contracts Overview
 
 All source code is open source and available in our <a href="https://github.com/smartcontractkit/chainlink" target="_blank">Github repository</a>.
 
-![Basic Request Model](/files/881ade6-Simple_Architecture_Diagram_1_V1.png)
+![Request Model Diagram](/files/881ade6-Simple_Architecture_Diagram_1_V1.png)
 
 ## ChainlinkClient
 
@@ -32,7 +32,7 @@ Learn more about [ERC-677 and the LINK token](../link-token-contracts/).
 
 ## Oracle Contract
 
-<a href="https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.6/Oracle.sol" target="_blank">`Oracle`</a> contracts are owned by oracle node operators, which run alongside off-chain oracle nodes. 
+<a href="https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.6/Oracle.sol" target="_blank">`Oracle`</a> contracts are owned by oracle node operators, which run alongside off-chain oracle nodes.
 
 ### Request
 
@@ -52,28 +52,14 @@ For fulfillment, the oracle contract has a `fulfillOracleRequest` function which
 
 ## Off-Chain Oracle Node
 
-The off-chain oracle node is responsible for listening for events emitted by its corresponding on-chain smart contract. Once it detects an `OracleRequest` event, it uses the data emitted to perform a job. 
+The off-chain oracle node is responsible for listening for events emitted by its corresponding on-chain smart contract. Once it detects an `OracleRequest` event, it uses the data emitted to perform a job.
 
 The most common job type for a Node is to make a GET request to an API, retrieve some data from it, parse the response, convert the result into blockchain compatible data, then submit it in a transaction back to the oracle contract, using the `fulfillOracleRequest` function.
 
-For more information on how to become a node operator, learn how to [run a Chainlink node](../node-operator-overview/).
+For more information on how to become a node operator, learn how to [run a Chainlink node](/docs/running-a-chainlink-node/).
 
 # Consumer UML
 
 Below is a UML diagram describing the contract structure of `ATestnetConsumer`, a deployed example contract implementing `ChainlinkClient`.
 
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "/files/8ac3fc1-69a048b-Consumer_UML.svg",
-        "69a048b-Consumer_UML.svg",
-        4532,
-        2879,
-        "#ffffff"
-      ]
-    }
-  ]
-}
-[/block]
+![Consumer UMK Diagram](/files/8ac3fc1-69a048b-Consumer_UML.svg)

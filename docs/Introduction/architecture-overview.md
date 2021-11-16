@@ -10,7 +10,7 @@ metadata:
   image: 
     0: "/files/OpenGraph_V3.png"
 ---
-![Basic Request Model](/files/8c35025-Request__Receive_Data.png)
+![Request Model Banner](/files/8c35025-Request__Receive_Data.png)
 
 # Basic Request Model
 
@@ -22,7 +22,7 @@ To learn how to make a GET request using a single oracle, see [Make a GET Reques
 
 # Decentralized Data Model
 
-For a more robust and trustworthy answer, you can aggregate data from many oracles. With on-chain aggregation, data is aggregated from a decentralized network of independent oracle nodes. This architecture is applied to Chainlink Price Feeds, which aggregate asset price data.
+For a more robust and trustworthy answer, you can aggregate data from many oracles. With on-chain aggregation, data is aggregated from a decentralized network of independent oracle nodes. This architecture is applied to Chainlink Data Feeds, which can aggregate data such as asset price data.
 
 The [Decentralized Data Model](../architecture-decentralized-model/) describes how data is aggregated, and how consumer contracts can retrieve this data.
 
