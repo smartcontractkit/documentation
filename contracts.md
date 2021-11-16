@@ -89,7 +89,7 @@ permalink: /
           <div>
             <h3>New to Ethereum and Smart Contracts?</h3>
             <p>
-              Build your first smart contract connected to off-chain data feeds. 
+              Build your first smart contract connected to off-chain data feeds.
             </p>
           </div>
           <a href="/docs/beginners-tutorial" class="cl-button--ghost">
@@ -112,30 +112,22 @@ permalink: /
       <div class="cl-section cl-section--tools">
         <h3>Explore Chainlink Developer Tools</h3>
         <div style="display: flex;">
-          <div class="cl-productcard">
-            <a
-              href="https://www.npmjs.com/package/@chainlink/contracts"
-              target="_blank"
-              class="fill-div">
-              <img
-                src="https://uploads-ssl.webflow.com/5e444500cbc42eeb5198206f/5e711675d22595473f1c0c20_Contract.svg"
-                class="cl-image-featured"
-              />
-              <h3>Contracts ↗</h3>
-            </a>
-          </div>
-          <div class="cl-productcard">
-            <a
-              href="https://www.npmjs.com/package/@chainlink/test-helpers"
-              target="_blank"
-              class="fill-div">
-              <img
-                src="https://uploads-ssl.webflow.com/5e444500cbc42eeb5198206f/5e7116765b27d4521f92bac6_Tester.svg"
-                class="cl-image-featured"
-              />
-              <h3>Test Helpers ↗</h3>
-            </a>
-          </div>
+          <a class="cl-productcard" href="https://www.npmjs.com/package/@chainlink/contracts" target="_blank">
+            <div>
+                <img
+                  src="https://uploads-ssl.webflow.com/5e444500cbc42eeb5198206f/5e711675d22595473f1c0c20_Contract.svg"
+                />
+                <h3>Contracts ↗</h3>
+            </div>
+          </a>
+          <a class="cl-productcard" href="https://www.npmjs.com/package/@chainlink/test-helpers" target="_blank">
+            <div>
+                <img
+                  src="https://uploads-ssl.webflow.com/5e444500cbc42eeb5198206f/5e7116765b27d4521f92bac6_Tester.svg"
+                />
+                <h3>Test Helpers ↗</h3>
+            </div>
+          </a>
         </div>
       </div>
     </div>
