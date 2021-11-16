@@ -526,7 +526,7 @@ module.exports = {
     ],
     legacy: [
       {
-        section: 'VRF v1',
+        section: 'VRF v1 [DEPRECATED]',
         contents: [
           {
             title: 'Introduction to Chainlink VRF',
