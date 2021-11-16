@@ -79,6 +79,19 @@ Your node applies configuration settings using following hierarchy:
   - [LOG_FILE_MAX_AGE](#log_file_max_age)
   - [LOG_FILE_MAX_BACKUPS](#log_file_max_backups)
   - [LOG_UNIX_TS](#log_unix_ts)
+- [Nurse service (auto-pprof)](#nurse-service-auto-pprof)
+  - [AUTO_PPROF_ENABLED](#auto_pprof_enabled)
+  - [AUTO_PPROF_PROFILE_ROOT](#auto_pprof_profile_root)
+  - [AUTO_PPROF_POLL_INTERVAL](#auto_pprof_poll_interval)
+  - [AUTO_PPROF_GATHER_DURATION](#auto_pprof_gather_duration)
+  - [AUTO_PPROF_GATHER_TRACE_DURATION](#auto_pprof_gather_trace_duration)
+  - [AUTO_PPROF_MAX_PROFILE_SIZE](#auto_pprof_max_profile_size)
+  - [AUTO_PPROF_CPU_PROFILE_RATE](#auto_pprof_cpu_profile_rate)
+  - [AUTO_PPROF_MEM_PROFILE_RATE](#auto_pprof_mem_profile_rate)
+  - [AUTO_PPROF_BLOCK_PROFILE_RATE](#auto_pprof_block_profile_rate)
+  - [AUTO_PPROF_MUTEX_PROFILE_FRACTION](#auto_pprof_mutex_profile_fraction)
+  - [AUTO_PPROF_MEM_THRESHOLD](#auto_pprof_mem_threshold)
+  - [AUTO_PPROF_GOROUTINE_THRESHOLD](#auto_pprof_goroutine_threshold)
 - [Chainlink Web Server](#chainlink-web-server)
   - [ALLOW_ORIGINS](#allow_origins)
   - [AUTHENTICATED_RATE_LIMIT](#authenticated_rate_limit)
@@ -528,6 +541,61 @@ Determines the maximum number of old log files to retain. Keeping this config wi
 - Default: `"false"`
 
 Previous versions of Chainlink nodes wrote JSON logs with a unix timestamp. As of v1.1.0 and up, the default has changed to use ISO8601 timestamps for better readability. Setting `LOG_UNIX_TS=true` will enable the old behavior.
+
+## Nurse service (auto-pprof)
+
+The Chainlink node is equipped with an internal "nurse" service that can perform automatic `pprof` profiling when the certain resource thresholds are exceeded (currently, memory and goroutine count). These profiles are saved to disk to facilitate fine-grained debugging of performance-related issues. Generally speaking, if you notice that your node has begun to accumulate profiles, you should forward them to the Chainlink team.
+
+To learn more about these profiles, read the [Profiling Go programs with pprof](https://jvns.ca/blog/2017/09/24/profiling-go-with-pprof/) guide.
+
+### AUTO_PPROF_ENABLED
+
+Set to `true` to enable the automatic profiling service. Defaults to `false`.
+
+### AUTO_PPROF_PROFILE_ROOT
+
+The location on disk where pprof profiles will be stored. Defaults to `$CHAINLINK_ROOT`.
+
+### AUTO_PPROF_POLL_INTERVAL
+
+The interval at which the node's resources are checked. Defaults to `10s`.
+
+### AUTO_PPROF_GATHER_DURATION
+
+The duration for which profiles are gathered when profiling is kicked off. Defaults to `10s`.
+
+### AUTO_PPROF_GATHER_TRACE_DURATION
+
+The duration for which traces are gathered when profiling is kicked off. This is separately configurable because traces are significantly larger than other types of profiles. Defaults to `5s`.
+
+### AUTO_PPROF_MAX_PROFILE_SIZE
+
+The maximum amount of disk space that profiles may consume before profiling is disabled. Defaults to `100mb`.
+
+### AUTO_PPROF_CPU_PROFILE_RATE
+
+See https://pkg.go.dev/runtime#SetCPUProfileRate. Defaults to `1`.
+
+### AUTO_PPROF_MEM_PROFILE_RATE
+
+See https://pkg.go.dev/runtime#pkg-variables. Defaults to `1`.
+
+### AUTO_PPROF_BLOCK_PROFILE_RATE
+
+See https://pkg.go.dev/runtime#SetBlockProfileRate. Defaults to `1`.
+
+### AUTO_PPROF_MUTEX_PROFILE_FRACTION
+
+See https://pkg.go.dev/runtime#SetMutexProfileFraction. Defaults to `1`.
+
+### AUTO_PPROF_MEM_THRESHOLD
+
+The maximum amount of memory the node can actively consume before profiling begins. Defaults to `4gb`.
+
+### AUTO_PPROF_GOROUTINE_THRESHOLD
+
+The maximum number of actively-running goroutines the node can spawn before profiling begins. Defaults to `5000`.
+
 
 ## Chainlink Web Server
 
@@ -1174,7 +1242,7 @@ GAS_ESTIMATOR_MODE="FixedPrice"
 
 ### ETH_NONCE_AUTO_SYNC
 
-- Default: `"true"`
+- Default: `"false"`
 
 Chainlink nodes will automatically try to sync its local nonce with the remote chain on startup and fast forward if necessary. This is almost always safe but can be disabled in exceptional cases by setting this value to false.
 
@@ -1565,3 +1633,10 @@ It is not recommended to change this unless you know what you are doing.
 `10ms`
 `1h15m`
 `42m30s`
+
+> ⚠️ NOTE
+> Some configuration variables require a file size. A file size string is an unsigned integer (123) or a float (12.3) followed by a unit suffix. Valid file size units are "b", "kb", "mb", "gb", and "tb". If the unit is omitted, it is assumed to be "b" (bytes). Capitalization does not matter. Some examples:
+
+`123gb`
+`1.2TB`
+`12345`
