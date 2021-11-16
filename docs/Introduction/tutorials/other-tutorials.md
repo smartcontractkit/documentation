@@ -2,7 +2,7 @@
 layout: nodes.liquid
 section: smartContract
 date: Last Modified
-title: "Other Resources"
+title: "Learning Resources"
 permalink: "docs/other-tutorials/"
 ---
 
@@ -13,7 +13,10 @@ Welcome to the Resources page. This is list of links and pages you might need to
 + [Supplementary Materials](#supplementary-materials)
   + [Video Tutorials](#video-tutorials)
   + [Application Projects](#application-projects)
+  + [Game Resources](#game-resources)
+  + [Coding Bootcamps](#coding-bootcamps)
   + [Starter Kits](#starter-kits)
+  + [External Tutorials](#external-tutorials)
   + [More Inspiration](#more-inspiration)
 + [Outreach](#outreach)
   + [Get Support](#get-support)
@@ -29,6 +32,12 @@ We're constantly uploading new videos to our [YouTube](https://www.youtube.com/c
 - [Two-Minute Explainers](https://www.youtube.com/playlist?list=PLVP9aGDn-X0Q3qBME3T9sBMw66xPsglMA)
 - [Chainlink Developer Workshops](https://www.youtube.com/playlist?list=PLVP9aGDn-X0SPHromvpiGvoNDpH7YErmf)
 - [Chainlink Engineering Tutorials](https://www.youtube.com/playlist?list=PLVP9aGDn-X0QwJVbQvuKr-zrh2_DV5M6J)
+- [Solidity, Blockchain, and Smart Contract Python Course](https://www.youtube.com/watch?v=M576WGiDBdQ)
+- [Chainlink Engineering YouTube](https://www.youtube.com/playlist?list=PLVP9aGDn-X0QwJVbQvuKr-zrh2_DV5M6J)
+- [Dapp University](https://www.youtube.com/watch?v=YLmMNocc1ys)
+- [Austin Griffith](https://www.youtube.com/watch?v=ffU96UhlA0A)
+- [Patrick Collins](https://www.youtube.com/watch?v=p36tXHX1JD8)
+- [Nader Dabit](https://www.youtube.com/watch?v=nS9xP1hxg3w)
 
 ## Application Projects
 Below is a list of applications of Chainlink's products and services sorted by difficulty and type to help you navigate and search for projects that you might find interesting. See the [Chainlink Blog](https://blog.chain.link/) to stay up to date with new ways to use Chainlink.
@@ -73,13 +82,30 @@ Below is a list of applications of Chainlink's products and services sorted by d
 | [How to Connect a Tesla Vehicle API to a Smart Contract Via a Chainlink External Adapter](https://blog.chain.link/create-tesla-smart-contract-rental/)         | Transportation       | Advanced   |
 | [OAuth and API Authentication in Smart Contracts](https://blog.chain.link/oauth-and-api-authentication-in-smart-contracts-2/)                                                                                                                                                               |  Security                    |  Advanced          |
 
+## Game Resources
+
+- [CryptoZombies](https://cryptozombies.io/)
+- [DamnVulnerableDefi](https://damnvulnerabledefi.xyz/challenges/8.html)
+- [Ethernaut](https://ethernaut.openzeppelin.com/)
+
+## Coding Bootcamps
+
+- [ChainShot](https://www.chainshot.com/courses)
+- [Consensys Bootcamp](https://consensys.net/academy/bootcamp/)
+- [Ivan On Tech](https://academy.moralis.io/courses/chainlink-101)
+
 ## Starter Kits
 
-Our Starter Kits help jumpstart your full stack development process. You can get starter kits for Brownie (Python), Truffle (Javascript), and Hardhat (Javascript). See the [Engineering Tutorials](https://www.youtube.com/playlist?list=PLVP9aGDn-X0QwJVbQvuKr-zrh2_DV5M6J) playlist to learn more about each kit and how to use it. 
+Our Starter Kits help jumpstart your full stack development process. You can get starter kits for Brownie (Python), Truffle (Javascript), and Hardhat (Javascript). See the [Engineering Tutorials](https://www.youtube.com/playlist?list=PLVP9aGDn-X0QwJVbQvuKr-zrh2_DV5M6J) playlist to learn more about each kit and how to use them. 
 
 - [Chainlink Brownie Starter Kit (Python)](https://github.com/smartcontractkit/chainlink-mix)
 - [Chainlink Truffle Starter Kit (Javascript)](https://github.com/smartcontractkit/truffle-starter-kit)
 - [Chainlink Hardhat Starter Kit (Javascript)](https://github.com/smartcontractkit/hardhat-starter-kit)
+
+## External Tutorials
+
+- [Ethereum Developers](https://ethereum.org/en/developers/tutorials/)
+- [useWeb3](https://www.useweb3.xyz/)
 
 ## More Inspiration
 
