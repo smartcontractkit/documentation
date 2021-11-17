@@ -383,10 +383,6 @@ module.exports = {
             url: '/docs/chainlink-keepers/register-upkeep/',
           },
           {
-            title: 'Patterns and Best Practices',
-            url: '/docs/chainlink-keepers/best-practices/',
-          },
-          {
             title: 'Network Overview',
             url: '/docs/chainlink-keepers/overview/',
           },
