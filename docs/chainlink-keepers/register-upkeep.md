@@ -50,7 +50,7 @@ Registering an Upkeep with the Chainlink Keepers App notifies the Keeper Network
     > ❗️ Funding Upkeep
     > You should fund your contract with more LINK that you anticipate you will need. The network will not check or perform your Upkeep if your balance could be too low based on current exchange rates.
     >
-    > Your balance is charged LINK to run `performUpkeep`. Gas costs include the gas required for your Keeper-compatible contract to complete execution and an 80k overhead from the `KeeperRegistry` itself. The premium and overhead are not fixed and will change over time. See the [Network Configuration](/docs/chainlink-keepers/overview/#configuration) section to find the base LINK premium and the percentage premium for your specific network.
+    > Your balance is charged LINK to run `performUpkeep`. Gas costs include the gas required for your Keeper-compatible contract to complete execution and an 80k overhead from the `KeeperRegistry` itself. The premium and overhead are not fixed and will change over time. See the [Network Configuration](/docs/chainlink-keepers/overview/#configuration) section to find the gas premium for your specific network.
 
     The gas limit of the example counter contract should be set to 200,000.
 
