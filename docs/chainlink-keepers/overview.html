@@ -5,12 +5,13 @@ date: Last Modified
 title: 'Keepers Network Overview'
 networks:
   {
-    'Ethereum Mainnet': 'ethereum',
+    'Ethereum Mainnet': {'id': 'ethereum', 'ppb_base': 0},
+    'Polygon Mainnet': {'id': 'polygon', 'ppb_base': 0.1},
   }
 ---
 {% markdown %}
 
-The Chainlink Keeper Network provides options for smart contracts to outsource regular maintenance tasks in a trust minimized & decentralized manner. The network aims to provide a protocol for incentivization & governance for the keeper ecosystem.
+The Chainlink Keeper Network provides options for smart contracts to outsource regular maintenance tasks in a trust minimized and decentralized manner. The network aims to provide a protocol for incentivization and governance within the Keeper ecosystem.
 
 There are three main actors in the network:
 
@@ -18,25 +19,24 @@ There are three main actors in the network:
 - **Keepers**: Chainlink nodes that execute registered Upkeeps.
 - **Registry**: The contract through which anyone can create and manage Upkeeps, and node operators can perform Upkeeps.
 
-The diagram below describes the architecture of the Keeper network. It is responsible for governing the actors on the network and compensating Keepers for performing successful Upkeeps. Through it, clients can register for Upkeep and node operators can register as Keepers.
+The diagram below describes the architecture of the Keeper network. It is responsible for governing the actors on the network and compensating Keepers for performing successful Upkeeps. Clients can register for Upkeep and node operators can register as Keepers.
 
 ![keeper-overview](/images/contract-devs/keeper/keeper-overview.png)
 
 ## Keeper Contracts
-These are the important contracts to be aware of. You can find these in the [Chainlink public repository](https://github.com/smartcontractkit/chainlink).
+There are several contracts to be aware of. You can find these in the [Chainlink repository](https://github.com/smartcontractkit/chainlink/tree/develop/contracts/src/v0.7).
 
-* `KeeperBase` - enables the use of the `cannotExecute` modifier. Import if you have a need for this modifier. See the [`cannotExecute` modifier](/docs/chainlink-keepers/compatible-contracts#cannotexecute).
-* `KeeperCompatibleInterface` - the interface to be implemented in order to make your contract keeper-compatible. Import for type safety.
-* `KeeperCompatible` - imports both `KeeperBase.sol` & `KeeperCompatibleInterface.sol`
-* `KeeperRegistry` - the registry contract that tracks all registered Upkeeps and the Keepers that can perform them.
-* `UpkeepRegistrationRequest` - the registration contract that allows users to register/configure their Upkeep with the associated KeeperRegistry.
++ [`KeeperCompatible.sol`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/KeeperCompatible.sol): Imports the following contracts:
+  + [`KeeperBase.sol`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/KeeperBase.sol): Enables the use of the `cannotExecute` modifier. Import if you have a need for this modifier. See the [`cannotExecute` modifier](/docs/chainlink-keepers/compatible-contracts#cannotexecute) for details.
+  + [`KeeperCompatibleInterface.sol`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/interfaces/KeeperCompatibleInterface.sol): The interface to be implemented in order to make your contract Keeper-compatible. Import for type safety.
++ [`KeeperRegistry.sol`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/KeeperRegistry.sol): The registry contract that tracks all registered Upkeeps and the Keepers that can perform them.
++ `UpkeepRegistrationRequest.sol`: The registration contract that allows users to register/configure their Upkeep with the associated KeeperRegistry.
 
 ## Chainlink Keepers Economics
 Chainlink Keepers do not compete with one another, but rather work together to ensure all registered Upkeeps are performed. This makes costs more predictable upfront, enabling you to estimate costs based on the expected gas consumption.
 
 ### Funding
-The network is designed to perform your work even under conditions where gas prices spike. In order to ensure appropriate payment to the Keepers, your LINK balance must exceed the maximum amount that could be paid for performance. This maximum amount is calculated using [Chainlink’s on-chain fast gas feed](https://data.chain.link/ethereum/mainnet/gas/fast-gas-gwei) and a gas ceiling multiplier (see [configuration](#configuration)) that places a ceiling on payments to the Keeper.
-
+The network is designed to perform your work even under conditions where gas prices spike. In order to ensure appropriate payment to the Keepers, your LINK balance must exceed the maximum amount that could be paid for performance. This maximum amount is calculated using [Chainlink’s on-chain fast gas feed](https://data.chain.link/ethereum/mainnet/gas/fast-gas-gwei) and a gas ceiling multiplier that places a ceiling on payments to the Keeper. See the [configuration](#configuration) section for information about the gas ceiling multiplier.
 
 ### Payments
 When a Keeper performs your Upkeep, the Keeper Registry will deduct from your Upkeep’s LINK balance and allocate it to the Keeper’s address. The amount deducted includes a premium on top of the transaction fee paid by the Keeper and uses our up to date data feeds for exchange rate conversion. See payment premium below.
@@ -47,28 +47,34 @@ Chainlink Keeper nodes select the gas price dynamically based on the prices of t
 If the Keeper node does not see the `performUpkeep` transaction get confirmed within the next few blocks, it will automatically replace the transaction and bump the gas price. This will repeat until the transaction is confirmed.
 
 ## Keepers Turn Taking
-Our Keepers take responsibility for your Upkeep in turns. The registered Upkeeps are broken into buckets based on the number of Keepers on the network, and at the end of each turn the buckets rotate from one Keeper to the next. So even if a Keeper goes down, we have built in redundancy and your Upkeep will be performed by the next one in line.
+Our Keepers take responsibility for your Upkeep in turns. Each turn is counted in blocks. The registered Upkeeps are broken into buckets based on the number of Keepers on the network. At the end of each turn the buckets rotate from one Keeper to the next. Even if a Keeper goes down, we have built in redundancy and your Upkeep will be performed by the next Keeper in line.
 
-The duration of a turn - the number of blocks a Keeper is responsible for a given bucket of Upkeeps - is configured within the KeeperRegistry. See below for the current block count per turn.
+The Upkeeps in each bucket are processed in order for the duration of a turn. The KeeperRegistry contract defines the number of blocks in each turn. See the [Configuration](#configuration) section to find the current block count per turn for your network.
 
 Once a Keeper has performed an Upkeep, it cannot do so again until another Keeper on the network has subsequently performed the same Upkeep. This protects against a faulty or malicious Keeper from taking repeated action on a given Upkeep.
 
 ## Configuration
 These configurations may change as we grow our users and the network as a whole.
+
+Keeper Registry contract: [0x7b3EC232b08BD7b4b3305BE0C044D907B2DF960B](https://etherscan.io/address/0x7b3EC232b08BD7b4b3305BE0C044D907B2DF960B)
+
 {% endmarkdown %}
+
 {% for network in networks %}
 
 {% markdown %}
+
 ### {{network[0]}}
-* **Payment Premium (paymentPremiumPPB)** - <span id="show-{{network[1]}}-paymentPremiumPPB"></span>%
+
+* **Payment Premium (paymentPremiumPPB)** - {{network[1].ppb_base}} LINK + <span id="show-{{network[1].id}}-paymentPremiumPPB"></span>% gas premium
     This premium is applied on top of the gas cost paid by the Keeper to perform your Upkeep
-* **Block Count Per Turn (blockCountPerTurn)** - <span id="show-{{network[1]}}-blockCountPerTurn"></span>
+* **Block Count Per Turn (blockCountPerTurn)** - <span id="show-{{network[1].id}}-blockCountPerTurn"></span>
     The number of blocks in each turn before the Upkeep is rotated to the next Keeper
-* **Check Gas Limit (checkGasLimit)** - <span id="show-{{network[1]}}-checkGasLimit"></span>
+* **Check Gas Limit (checkGasLimit)** - <span id="show-{{network[1].id}}-checkGasLimit"></span>
     The maximum amount of gas that can be used by your checkUpkeep for off-chain computation.
-* **Call Gas Limit (callGasLimit)** - <span>2,500,000</span> <!-- @TODO render this programatically after August 2021. <span id="show-callGasLimit"></span> -->
+* **Call Gas Limit (callGasLimit)**: <span>2,500,000</span> <!-- @TODO render this programatically. <span id="show-callGasLimit"></span> -->
     The maximum amount of gas that can be used by the client contract’s performUpkeep for the on-chain transaction. You can set an upper limit on your Upkeep during registration, but this number must not exceed the call gas limit on the KeeperRegistry.
-* **Gas Ceiling Multiplier (gasCeilingMultiplier)** - <span id="show-{{network[1]}}-gasCeilingMultiplier"></span>
+* **Gas Ceiling Multiplier (gasCeilingMultiplier)** - <span id="show-{{network[1].id}}-gasCeilingMultiplier"></span>
     Establishes a ceiling for the maximum price based on the on-chain fast gas feed.
 
 {% endmarkdown %}
