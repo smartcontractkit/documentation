@@ -121,10 +121,9 @@ This is an example of a basic HTTP GET request. However, it requires defining th
 
 Here are some examples of external adapters:
 
-1. Market data: [AlphaChain](https://market.link/adapters/c3a722dd-fb6c-413f-923c-e53d2df26620?network=1)
-2. Real-world events: [SportsData](https://market.link/adapters/e7874f1a-2c35-4624-9a7a-644ce9d89ea4?network=1), [COVID Tracker](https://market.link/adapters/f423d46b-1bfb-4cad-9038-7934eef353eb?network=1)
-3. Social media proofs: [MUBC Retweet Verifier](https://market.link/adapters/8fba59b1-f639-4d0a-9b01-7adff9b74442?network=1)
-4. Cryptocurrency aggregators: [Coingecko](https://market.link/adapters/e43efb14-55b5-4adc-a807-f6f1c035f415?network=1), [CoinAPI](https://market.link/adapters/f4d69a08-f3dd-46e7-b4b8-3d2fb620c033?network=1)
+1. Real-world events: [Google Weather Data](https://market.link/adapters/654b3417-c381-4764-8cb7-4e8d552a9d95), [Associated Press](https://market.link/adapters/cee0cc56-43a2-40e1-9014-3905c2534caa)
+2. Social media proofs: [MUBC Retweet Verifier](https://market.link/adapters/8fba59b1-f639-4d0a-9b01-7adff9b74442?network=1)
+3. Cryptocurrency aggregators: [CoinAPI](https://market.link/adapters/f4d69a08-f3dd-46e7-b4b8-3d2fb620c033?network=1)
 
 These external adapters, along with many others, can be found on [Chainlink Market](https://market.link/search/all?network=42).
 
