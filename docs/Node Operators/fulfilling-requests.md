@@ -124,7 +124,7 @@ After you add jobs to your node, you can use the node to fulfill requests. This 
 
 1. Click **Deploy**. MetaMask prompts you to confirm the transaction.
 
-1. Ensure that your Chainlink Node is sufficiently funded with Ethers to execute the callbacks to your oracle contract.
+1. Ensure that your Chainlink Node is sufficiently funded with ETH to execute the callbacks to your oracle contract.
 
 1. Fund the contract by sending LINK to the contract's address. See the [Fund your contract](../fund-your-contract/) page for instructions. The address for the `ATestnetConsumer` contract is on the list of your deployed contracts in Remix.
 
