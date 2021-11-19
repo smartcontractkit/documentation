@@ -55,7 +55,7 @@ Registering an Upkeep with the Chainlink Keepers App notifies the Keeper Network
     The gas limit of the example counter contract should be set to 200,000.
 
 1. **Click `Register upkeep`** and confirm the transaction in MetaMask
-  This sends a request to the Chainlink Keeper Network which will need to be manually approved. This is a temporary step during the Beta, and requests are automatically approved on testnets, so you should be up and running in a matter of minutes.
+  This sends a request to the Chainlink Keeper Network that will need to be manually approved. On testnets, requests are automatically approved.
 
     ![Upkeep Registration Success Message](/images/contract-devs/keeper/keeper-registration-submitted.png)
 
