@@ -9,7 +9,7 @@ whatsnext:
   }
 ---
 
-# Overview <!-- omit in toc -->
+# Overview
 
 This guide explains how to register a Keeper-compatible contract with the Chainlink Keeper Network. To find more information about deploying a Keeper-compatible contract, see the [Making Compatible Contracts](../compatible-contracts) page. Register your contracts in the Chainlink Keepers App:
 
