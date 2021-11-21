@@ -21,7 +21,7 @@ The LINK token is an ERC677 token that inherits functionality from the ERC20 tok
 |Parameter|Value|
 |:---|:---|
 |`ETH_CHAIN_ID`|`1`|
-|Address|<a href="https://etherscan.io/token/0x514910771af9ca656af840dff83e8264ecf986ca" target="_blank" rel="noreferrer, noopener">`0x514910771af9ca656af840dff83e8264ecf986ca`</a>|
+|Address|<a href="https://etherscan.io/token/0xB45A7510EaaD1Ef02CFaD55C67c0EA084CDD40d2" target="_blank" rel="noreferrer, noopener">`0xB45A7510EaaD1Ef02CFaD55C67c0EA084CDD40d2`</a>|
 |Name|ChainLink Token|
 |Symbol|LINK|
 |Decimals|18|
@@ -36,7 +36,7 @@ The LINK token is an ERC677 token that inherits functionality from the ERC20 tok
 |Parameter|Value|
 |:---|:---|
 |`ETH_CHAIN_ID`|`42`|
-|Address|<a href="https://kovan.etherscan.io/token/0xa36085F69e2889c224210F603D836748e7dC0088" target="_blank" rel="noreferrer, noopener">`0xa36085F69e2889c224210F603D836748e7dC0088`</a>|
+|Address|<a href="https://kovan.etherscan.io/token/0xB45A7510EaaD1Ef02CFaD55C67c0EA084CDD40d2" target="_blank" rel="noreferrer, noopener">`0xa36085F69e2889c224210F603D836748e7dC0088`</a>|
 |Name|ChainLink Token|
 |Symbol|LINK|
 |Decimals|18|
@@ -84,7 +84,7 @@ LINK is native to Ethereum, so to use LINK on other chains, it must be bridged. 
 |Parameter|Value|
 |:---|:---|
 |`ETH_CHAIN_ID`|`56`|
-|Address|<a href="https://bscscan.com/token/0x404460c6a5ede2d891e8297795264fde62adbb75" target="_blank" rel="noreferrer, noopener">`0x404460c6a5ede2d891e8297795264fde62adbb75`</a>|
+|Address|<a href="https://bscscan.com/token/0x12bb890508c125661e03b09ec06e404bc9289040" target="_blank" rel="noreferrer, noopener">`0x12bb890508c125661e03b09ec06e404bc9289040`</a>|
 |Name|ChainLink Token|
 |Symbol|LINK|
 |Decimals|18|
