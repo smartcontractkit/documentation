@@ -45,7 +45,7 @@ Each oracle in the set publishes data during an aggregation round. That data is 
 
 ## Aggregation Parameters
 
-Currently, the **Deviation Threshold** and **Heartbeat Threshold** are parameters that can trigger price feeds to update during an aggregation round. Each aggregation round is triggered based on one or these parameters. Whichever condition is met first will trigger an update to the data.
+The **Deviation Threshold** and **Heartbeat Threshold** are parameters that can trigger price feeds to update during an aggregation round. Each aggregation round triggers based on one of these parameters. The first condition that is met triggers an update to the data.
 
 ### Deviation Threshold
 
