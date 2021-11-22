@@ -5,8 +5,8 @@ date: Last Modified
 title: 'Keepers Network Overview'
 networks:
   {
-    'Ethereum Mainnet': {'id': 'ethereum', 'ppb_base': 0},
-    'Polygon Mainnet': {'id': 'polygon', 'ppb_base': 0.1},
+    'Ethereum Mainnet': 'ethereum',
+    'Polygon Mainnet': 'polygon',
   }
 ---
 {% markdown %}
@@ -66,18 +66,34 @@ Keeper Registry contract: [0x7b3EC232b08BD7b4b3305BE0C044D907B2DF960B](https://e
 
 ### {{network[0]}}
 
-* **Payment Premium (paymentPremiumPPB)** - <span id="show-{{network[1].id}}-paymentPremiumPPB"></span>% gas premium
+* **Payment Premium (paymentPremiumPPB)** - <span id="show-{{network[1]}}-paymentPremiumPPB"></span>% gas premium
     This premium is applied on top of the gas cost paid by the Keeper to perform your Upkeep
-* **Block Count Per Turn (blockCountPerTurn)** - <span id="show-{{network[1].id}}-blockCountPerTurn"></span>
+* **Block Count Per Turn (blockCountPerTurn)** - <span id="show-{{network[1]}}-blockCountPerTurn"></span>
     The number of blocks in each turn before the Upkeep is rotated to the next Keeper
-* **Check Gas Limit (checkGasLimit)** - <span id="show-{{network[1].id}}-checkGasLimit"></span>
+* **Check Gas Limit (checkGasLimit)** - <span id="show-{{network[1]}}-checkGasLimit"></span>
     The maximum amount of gas that can be used by your checkUpkeep for off-chain computation.
 * **Call Gas Limit (callGasLimit)**: <span>2,500,000</span> <!-- @TODO render this programatically. <span id="show-callGasLimit"></span> -->
     The maximum amount of gas that can be used by the client contract’s performUpkeep for the on-chain transaction. You can set an upper limit on your Upkeep during registration, but this number must not exceed the call gas limit on the KeeperRegistry.
-* **Gas Ceiling Multiplier (gasCeilingMultiplier)** - <span id="show-{{network[1].id}}-gasCeilingMultiplier"></span>
+* **Gas Ceiling Multiplier (gasCeilingMultiplier)** - <span id="show-{{network[1]}}-gasCeilingMultiplier"></span>
     Establishes a ceiling for the maximum price based on the on-chain fast gas feed.
 
 {% endmarkdown %}
 {% endfor %}
+
+{% markdown %}
+### Binance Smart Chain
+
+* **Payment Premium (paymentPremiumPPB)** - <span>30</span>% gas premium
+    This premium is applied on top of the gas cost paid by the Keeper to perform your Upkeep
+* **Block Count Per Turn (blockCountPerTurn)** - <span>10</span>
+    The number of blocks in each turn before the Upkeep is rotated to the next Keeper
+* **Check Gas Limit (checkGasLimit)** - <span>6,500,000</span>
+    The maximum amount of gas that can be used by your checkUpkeep for off-chain computation.
+* **Call Gas Limit (callGasLimit)**: <span>5,000,000</span> <!-- @TODO render this programatically. <span id="show-callGasLimit"></span> -->
+    The maximum amount of gas that can be used by the client contract’s performUpkeep for the on-chain transaction. You can set an upper limit on your Upkeep during registration, but this number must not exceed the call gas limit on the KeeperRegistry.
+* **Gas Ceiling Multiplier (gasCeilingMultiplier)** - <span>3</span>
+    Establishes a ceiling for the maximum price based on the on-chain fast gas feed.
+{% endmarkdown %}
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.3.0/web3.min.js" integrity="sha512-ppuvbiAokEJLjOUQ24YmpP7tTaLRgzliuldPRZ01ul6MhRC+B8LzcVkXmUsDee7ne9chUfApa9/pWrIZ3rwTFQ==" crossorigin="anonymous"></script>
 <script src="/keepers-configuration.js"></script>
