@@ -6,7 +6,7 @@ title: "Learning Resources"
 permalink: "docs/other-tutorials/"
 ---
 
-Welcome to the Resources page. This is list of links and pages you might need to help you out throughout your learning journey. If you're new to Chainlink, start with [The Basics](../beginners-tutorial/) tutorial and work through the rest of the tutorial series to better understand the products and services Chainlink offers. This page contains more resources, inspiration, and outreach information to further your learning.
+Welcome to the Resources page. This is a list of links and pages that you might need to help you throughout your learning journey. If you're new to Chainlink, start with [The Basics](../beginners-tutorial/) tutorial and work through the rest of the tutorial series to better understand the products and services Chainlink offers. This page contains more resources, inspiration, and outreach information to further your learning.
 
 **Table of Contents**
 
@@ -27,7 +27,7 @@ Welcome to the Resources page. This is list of links and pages you might need to
 
 ## Video Tutorials
 
-We're constantly uploading new videos to our [YouTube](https://www.youtube.com/c/chainlink) channel. Here are some direct links to playlists that may be helpful if you're starting your Chainlink learning journey or if you're looking for interesting ways to apply Chainlink to your own project:
+We're constantly uploading new videos to our [YouTube](https://www.youtube.com/c/chainlink) channel. Here are some direct links to playlists that may be helpful if you're starting your Chainlink learning journey or if you're looking for interesting ways to apply Chainlink to your project:
 
 - [Two-Minute Explainers](https://www.youtube.com/playlist?list=PLVP9aGDn-X0Q3qBME3T9sBMw66xPsglMA)
 - [Chainlink Developer Workshops](https://www.youtube.com/playlist?list=PLVP9aGDn-X0SPHromvpiGvoNDpH7YErmf)
@@ -96,7 +96,7 @@ Below is a list of applications of Chainlink's products and services sorted by d
 
 ## Starter Kits
 
-Our Starter Kits help jumpstart your full stack development process. You can get starter kits for Brownie (Python), Truffle (Javascript), and Hardhat (Javascript). See the [Engineering Tutorials](https://www.youtube.com/playlist?list=PLVP9aGDn-X0QwJVbQvuKr-zrh2_DV5M6J) playlist to learn more about each kit and how to use them. 
+Our Starter Kits help jumpstart your full-stack development process. You can get starter kits for Brownie (Python), Truffle (Javascript), and Hardhat (Javascript). See the [Engineering Tutorials](https://www.youtube.com/playlist?list=PLVP9aGDn-X0QwJVbQvuKr-zrh2_DV5M6J) playlist to learn more about each kit and how to use them. 
 
 - [Chainlink Brownie Starter Kit (Python)](https://github.com/smartcontractkit/chainlink-mix)
 - [Chainlink Truffle Starter Kit (Javascript)](https://github.com/smartcontractkit/truffle-starter-kit)
@@ -109,7 +109,7 @@ Our Starter Kits help jumpstart your full stack development process. You can get
 
 ## More Inspiration
 
-Looking for more ways to use Chainlink? Here are some resources that discuss Chainlink's use cases as well as the winning projects we've had in our previous hackathons. There is also link to the Marketplace where you can find the latest data provider nodes and explore the network. 
+Looking for more ways to use Chainlink? Here are some resources that discuss Chainlink's use cases as well as the winning projects we've had in our previous hackathons. There is also a link to the Marketplace where you can find the latest data provider nodes and explore the network. 
 
 - [77 Use Cases by Chainlink](https://blog.chain.link/44-ways-to-enhance-your-smart-contract-with-chainlink/)
 - [Past Hackathon Winning Projects](/docs/example-projects)

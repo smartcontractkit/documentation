@@ -21,7 +21,7 @@ metadata:
 
 # Overview
 
-In this tutorial you will learn how to request data from a public API in a smart contract. This includes understanding what Core adapters and External adapters are and how Oracle Jobs use them. You will also learn how to find the Oracle Jobs and Adapters for your contract and how to request data from an Oracle Job.
+In this tutorial, you will learn how to request data from a public API in a smart contract. This includes understanding what Core adapters and External adapters are and how Oracle Jobs use them. You will also learn how to find the Oracle Jobs and Adapters for your contract and how to request data from an Oracle Job.
 
 **Table of Contents**
 
@@ -43,7 +43,7 @@ In this tutorial you will learn how to request data from a public API in a smart
 
 The request and receive cycle describes how a smart contract requests data from an oracle and receives the response in a separate transaction. If you need a refresher, check out the [Basic Request Model](../architecture-request-model/).
 
-In the [Random Numbers](../intermediates-tutorial/) tutorial, you requested randomness from a VRF oracle, then await the response. The fulfilment function is already given to us from the `VRFConsumerBase` contract, so oracles already know where to send the response to. However, with API calls, the contract itself *defines* which function it wants to receive the response to.
+In the [Random Numbers](../intermediates-tutorial/) tutorial, you requested randomness from a VRF oracle, then await the response. The fulfillment function is already given to us from the `VRFConsumerBase` contract, so oracles already know where to send the response to. However, with API calls, the contract itself *defines* which function it wants to receive the response to.
 
 Before creating any code, you should understand how Oracle jobs can get data on-chain.
 
@@ -148,9 +148,9 @@ function requestVolumeData() public returns (bytes32 requestId) {
 
 # 4. How can I use Adapters in my own contract?
 
-You will now create a smart contract can get sports data using the [SportsDataIO](https://market.link/data-providers/d66c1ec8-2504-4696-ab22-6825044049f7/integrations) oracle job found on Chainlink Market, without having to specify the URL inside the contract.
+Create a smart contract that can get sports data using the [SportsDataIO](https://market.link/data-providers/d66c1ec8-2504-4696-ab22-6825044049f7/integrations) oracle job found on Chainlink Market, without having to specify the URL inside the contract.
 
-To consume an API response, your contract should inherit from `ChainlinkClient`. This contract exposes a struct called `Chainlink.Request` which your contract should use to build the API request.
+To consume an API response, your contract should inherit from `ChainlinkClient`. This contract exposes a struct called `Chainlink.Request` that your contract should use to build the API request.
 
 ```solidity
 pragma solidity ^0.8.7;
@@ -180,7 +180,7 @@ contract sportContract is ChainlinkClient {
 ```
 
 ## Constructor
-In the constructor, you should sets up the contract with the Oracle address, Job ID, and LINK fee that the oracle charges for the job.
+In the constructor, set up the contract with the Oracle address, Job ID, and LINK fee that the oracle charges for the job.
 
 ```solidity
 pragma solidity ^0.8.7;
@@ -236,7 +236,7 @@ contract sportContract is ChainlinkClient {
 
 The last component of your contract should be the `fulfill` function. This is where the sports data is sent upon the Oracle Job's completion. The [SportsDataIO](https://market.link/data-providers/d66c1ec8-2504-4696-ab22-6825044049f7/integrations) job page specifies that the request returns a `bytes32` packed `string`. You should add a `data` variable to your contract to store this result.
 
-**Note:** Currently, any return value must fit within 32 bytes, if the value is bigger than that multiple requests will need to be made.
+**Note:** Currently, any return value must fit within 32 bytes. If the value is bigger than that, you must make multiple requests.
 
 ```solidity
 pragma solidity ^0.8.7;
@@ -277,7 +277,7 @@ Your contract is complete and ready to be compiled and deployed. You can see a c
 </div>
 <br>
 
-If you don't know how to deploy a contract to the Kovan testnet from Remix, follow [The Basics](/docs/beginners-tutorial) tutorial. In order to make a job request you *must* have enough LINK to pay for it. Learn how to [acquire testnet LINK](../acquire-link/) and [fund your contract](../fund-your-contract/). Once these steps are completed, you should be able to get sports data.
+If you don't know how to deploy a contract to the Kovan testnet from Remix, follow [The Basics](/docs/beginners-tutorial) tutorial. To make a job request, you *must* have enough LINK to pay for it. Learn how to [acquire testnet LINK](../acquire-link/) and [fund your contract](../fund-your-contract/). Once these steps are completed, you should be able to get sports data.
 
 
 # 6. Further Reading
