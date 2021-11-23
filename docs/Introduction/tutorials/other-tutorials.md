@@ -10,7 +10,7 @@ Welcome to the Resources page. This is list of links and pages you might need to
 
 **Table of Contents**
 
-+ [# Smart Contract Learning Materials](#smart-contract-learning-materials)
++ [Smart Contract Learning Materials](#smart-contract-learning-materials)
   + [Video Tutorials](#video-tutorials)
   + [Application Projects](#application-projects)
   + [Game Resources](#game-resources)

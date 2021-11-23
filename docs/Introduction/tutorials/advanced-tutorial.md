@@ -19,7 +19,7 @@ metadata:
   https://www.youtube.com/watch?v=ay4rXZhAefs
 </p>
 
-# Overview <!-- omit in toc -->
+# Overview
 
 In this tutorial you will learn how to request data from a public API in a smart contract. This includes understanding what Core adapters and External adapters are and how Oracle Jobs use them. You will also learn how to find the Oracle Jobs and Adapters for your contract and how to request data from an Oracle Job.
 
