@@ -83,7 +83,7 @@ Find the address for your Chainlink node and add it to the Oracle contract.
 
 ## Add a job to the node
 
-You can add jobs to your Chainlink node in the Chainlink Operator GUI. The [TestnetConsumer.sol](https://github.com/smartcontractkit/documentation/blob/main/_includes/samples/APIRequests/ATestnetConsumer.sol) consumer contract expects the price value in `Uint256`. Use the following [Job](../jobs/) example:
+You can add jobs to your Chainlink node in the Chainlink Operator GUI. The [ATestnetConsumer.sol](https://github.com/smartcontractkit/documentation/blob/main/_includes/samples/APIRequests/ATestnetConsumer.sol) consumer contract expects the price value in `Uint256`. Use the following [Job](../jobs/) example:
 
 ```jpv2 Uint256
 {% include samples/NodeOperators/jobs/get-uint256.toml %}
@@ -97,7 +97,7 @@ You can add jobs to your Chainlink node in the Chainlink Operator GUI. The [Test
 
     ![The new job page with TOML format for a new job pasted.](/images/node-operators/new-job-toml.png)
 
-1. Replace `YOUR_ORACLE_CONTRACT_ADDRESS` with the address of your deployed oracle contract address from the previous steps. This address not the same as the `ACCOUNT_ADDRESS` from your Chainlink node.
+1. Replace `YOUR_ORACLE_CONTRACT_ADDRESS` with the address of your deployed oracle contract address from the previous steps. Replace `YOUR_ORACLE_CONTRACT_ADDRESS` for both the attribute `contractAddress` and also attribute `to` for the `submit_tx` step in the `observationSource` part of the job specification. This address not the same as the `ACCOUNT_ADDRESS` from your Chainlink node.
 
 1. Click **Create Job**. If the node creates the job successfully, a notice with the job number appears.
 
@@ -109,21 +109,22 @@ You can add jobs to your Chainlink node in the Chainlink Operator GUI. The [Test
 
 ## Create a request to your node
 
-> 📘 If you're going through this guide on Ethereum mainnet, the `TestnetConsumer.sol` contract will still work. However, understand that you're sending real LINK to yourself. **Be sure to practice on the test networks multiple times before attempting to run a node on mainnet.**
+> 📘 If you're going through this guide on Ethereum mainnet, the `ATestnetConsumer.sol` contract will still work. However, understand that you're sending real LINK to yourself. **Be sure to practice on the test networks multiple times before attempting to run a node on mainnet.**
 
 After you add jobs to your node, you can use the node to fulfill requests. This section shows what a requester does when they send requests to your node. It is also a way to test and make sure that your node is functioning correctly.
 
-1. Open [TestnetConsumer.sol in Remix](https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/ATestnetConsumer.sol).
+1. Open [ATestnetConsumer.sol in Remix](https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/ATestnetConsumer.sol).
 
-1. On the **Compiler** tab, click the **Compile** button for `TestnetConsumer.sol`.
+1. On the **Compiler** tab, click the **Compile** button for `ATestnetConsumer.sol`.
 
 1. On the **Deploy and Run** tab, configure the following settings:
 
     - Select "Injected Web3" as your environment.
     - Select "ATestnetConsumer" from the **Contract** menu.
-    - Copy the address for the network you are using and paste it into the `address_link` field next to the **Deploy** button.
 
 1. Click **Deploy**. MetaMask prompts you to confirm the transaction.
+
+1. Ensure that your Chainlink Node is sufficiently funded with ETH to execute the callbacks to your oracle contract.
 
 1. Fund the contract by sending LINK to the contract's address. See the [Fund your contract](../fund-your-contract/) page for instructions. The address for the `ATestnetConsumer` contract is on the list of your deployed contracts in Remix.
 
@@ -141,7 +142,7 @@ After you add jobs to your node, you can use the node to fulfill requests. This 
 
 ## Retrieving other types of data
 
-Now that you have a working consumer contract, you can use that same `ATestnetConsumer` contract to obtain other types of data. The [TestnetConsumer.sol](https://github.com/smartcontractkit/documentation/blob/main/_includes/samples/APIRequests/ATestnetConsumer.sol) consumer contract has a `requestEthereumLastMarket` function that requests more detailed data from [https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETH&tsyms=USD](https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETH&tsyms=USD). Returning this type of data requires another job.
+Now that you have a working consumer contract, you can use that same `ATestnetConsumer` contract to obtain other types of data. The [ATestnetConsumer.sol](https://github.com/smartcontractkit/documentation/blob/main/_includes/samples/APIRequests/ATestnetConsumer.sol) consumer contract has a `requestEthereumLastMarket` function that requests more detailed data from [https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETH&tsyms=USD](https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETH&tsyms=USD). Returning this type of data requires another job.
 
 ```jpv2 Bytes32
 {% include samples/NodeOperators/jobs/get-bytes32.toml %}

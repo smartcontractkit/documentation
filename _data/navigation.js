@@ -220,11 +220,7 @@ module.exports = {
               {
                 title: 'API Calls',
                 url: '/docs/advanced-tutorial/',
-              },
-              {
-                title: 'Other Tutorials',
-                url: '/docs/other-tutorials/',
-              },
+              }
             ],
           },
           {
@@ -245,6 +241,10 @@ module.exports = {
               },
             ],
           },
+          {
+            title: 'Learning Resources',
+            url: '/docs/other-tutorials/',
+          }
         ],
       },
       {
