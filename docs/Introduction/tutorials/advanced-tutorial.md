@@ -282,7 +282,7 @@ If you don't know how to deploy a contract to the Kovan testnet from Remix, foll
 
 # 6. Further Reading
 
-To read more about connecting smart contracts to external APIs, read our blog posts:
+To learn more about connecting smart contracts to external APIs, read our blog posts:
 
 - [Connect a Smart Contract to the Twitter API](https://blog.chain.link/connect-smart-contract-to-twitter-api/)
 - [Connect a Tesla Vehicle API to a Smart Contract](https://blog.chain.link/create-tesla-smart-contract-rental/)
