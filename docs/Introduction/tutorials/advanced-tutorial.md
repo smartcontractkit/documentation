@@ -66,7 +66,7 @@ If a job needs to make a GET request to an API, find a specific unsigned integer
 - [EthUint256](../core-adapters/#ethuint256) converts the data to Ethereum compatible data type (uint256)
 - [EthTx](../core-adapters/#ethtx) submits the transaction to the chain, completing the cycle.
 
-Let's walk through a real example, where you will retrieve 24 volume of the [ETH/USD pair](https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETH&tsyms=USD) from the cryptocompare API.
+Let's walk through a real example, where you will retrieve 24 volumes of the [ETH/USD pair](https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETH&tsyms=USD) from the cryptocompare API.
 
 1. [HttpGet](../core-adapters/#httpget) calls the API and returns the body of an HTTP GET result for [ETH/USD pair](https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETH&tsyms=USD).  Example:
 ```json
