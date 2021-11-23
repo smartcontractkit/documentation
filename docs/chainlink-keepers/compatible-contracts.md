@@ -42,14 +42,14 @@ The Keeper node runs this method as an [`eth_call`](https://eth.wiki/json-rpc/AP
 > Since `checkUpkeep` is only ever performed off-chain in simulation, for most cases it is best to treat this as a `view` function and not modify any state.
 
 ```solidity
-  function checkUpkeep(
-    bytes calldata checkData
-  )
-    external
-    returns (
-        bool upkeepNeeded,
-        bytes memory performData
-    );
+function checkUpkeep(
+  bytes calldata checkData
+)
+  external
+  returns (
+    bool upkeepNeeded,
+    bytes memory performData
+  );
 ```
 <br>
 Below are the parameters and return values of the `checkUpkeep` function. Click each value to learn more about its design patterns and best practices:
@@ -76,7 +76,7 @@ If you use `checkData` and `performData`, you create a highly flexible off-chain
 You can pass information into your `checkUpkeep` function from your [Upkeep Registration](../register-upkeep/) to execute different code paths for validation. You can also use the value in your computation to determine if your Keeper conditions have been met.
 
 ```solidity Rinkeby
-{% include samples/Keepers/checkData.sol %}
+{% include snippets/Keepers/checkData.sol %}
 ```
 
 You can also pass arbitrary `bytes` through the `checkData` argument as part of your Upkeep registration. You can use `checkData` to pass in a fixed set of inputs into your `checkUpkeep` function, which can be used to modify the behavior of your application within the constraints of your smart contract logic such as:
@@ -108,7 +108,7 @@ Consider validating the conditions that might trigger `performUpkeep` before wor
 The response from `checkUpkeep` is passed to the `performUpkeep` function as `performData`. This allows you to perform complex and costly simulations with no gas cost. Then you can identify the subset of actions that you are ready to take based on the conditions that are met.
 
 ```solidity Rinkeby
-{% include samples/Keepers/performData.sol %}
+{% include snippets/Keepers/performData.sol %}
 ```
 
 ### `cannotExecute`
@@ -125,9 +125,9 @@ When your checkUpkeep returns `upkeepNeeded == true`, the Keeper node broadcasts
 > Ensure your `performUpkeep` is *idempotent*. Your `performUpkeep` should change state such that `checkUpkeep` will not return `true` for the same subset of work once said work is complete. Otherwise the Upkeep will remain eligible and result in multiple performances by the Keeper Network on the exactly same subset of work.
 
 ```solidity
-  function performUpkeep(
-    bytes calldata performData
-  ) external;
+function performUpkeep(
+  bytes calldata performData
+) external;
 ```
 
 ### Parameters <!-- omit in toc -->
@@ -148,7 +148,7 @@ You can perform complex and broad off-chain computation, then execute on-chain s
 
 - **Identify the subset of states that must be updated**: If your contract maintains complicated objects such as arrays and structs, or stores a lot of data, you should read through your storage objects within your `checkUpkeep` and run your proprietary logic to determine if they require updates or maintenance. After that is complete, you can pass the known list of objects that require updates through the `performData` function.
 
-# Example Contract
+## Example Contract
 The example below represents a simple counter contract. Each time `performUpkeep` is called, it increments its counter by one.
 
 <div class="remix-callout">
