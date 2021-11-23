@@ -28,7 +28,7 @@ metadata:
 
 > 🚧 Note
 >
-> The video uses a seed phrase to request randomness. This feature has been deprecated. Please refer to the code in this tutorial for the most up to date procedures.
+> The video uses a seed phrase to request randomness. This feature is deprecated. Refer to the code in this tutorial for the most up to date procedures.
 
 
 # Overview <!-- omit in toc -->

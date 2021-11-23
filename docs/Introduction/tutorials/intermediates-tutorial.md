@@ -23,7 +23,7 @@ metadata:
 
 > 🚧 Note
 >
-> The video uses a seed phrase to request randomness, this has been deprecated. Please use the code here.
+> The video uses a seed phrase to request randomness. This feature is deprecated. Refer to the code in this tutorial for the most up to date procedures.
 
 # Overview <!-- omit in toc -->
 
@@ -52,19 +52,19 @@ Randomness is very difficult to generate on blockchains. This is because every n
 
 # 2. What is the Request and Receive cycle?
 
-The [previous tutorial](../beginners-tutorial/) explained how to consume Chainlink Data Feeds which consist of reference data posted on-chain by oracles. This data is stored in a contract and can be referenced by consumers until the oracle updates the data again.
+The [previous tutorial](../beginners-tutorial/) explained how to consume Chainlink Data Feeds, which consist of reference data posted on-chain by oracles. This data is stored in a contract and can be referenced by consumers until the oracle updates the data again.
 
 Randomness, on the other hand, cannot be reference data. If the result of randomness is stored on-chain, any actor could retrieve the value and predict the outcome. Instead, randomness must be requested from an oracle, which generates a number and a cryptographic proof. Then, the oracle returns that result to the contract that requested it. This sequence is known as the **[Request and Receive cycle](../architecture-request-model/)**.
 
 # 3. What is the payment process for generating a random number?
 
-In return for providing the service of generating a random number, oracles are paid in [**LINK**](../link-token-contracts/). The contract that requests the randomness pays for the service during the request. 
+In return for providing the service of generating a random number, oracles are paid in [**LINK**](../link-token-contracts/). The contract that requests the randomness must pay for the service during the request. 
 
 LINK conforms to the ERC-677 token standard which is an extension of ERC-20. This standard is what enables data to be encoded in token transfers. This is integral to the Request and Receive cycle. [Click here](https://github.com/ethereum/EIPs/issues/677) to learn more about ERC-677.
 
 Smart contracts have all the capabilities that wallets have in that they are able to own and interact with tokens. The contract that requests randomness from Chainlink VRF must have a LINK balance greater than or equal to the cost to make the request in order to pay and fulfill the service.
 
-For example, if the current price of Chainlink VRF is 0.1 LINK, the requesting contract must hold at least 0.1 LINK to pay for the request. Once the request transaction has completed, the oracle begins the process of generating the random number and sending the result back.
+For example, if the current price of Chainlink VRF is 0.1 LINK, the requesting contract must hold at least 0.1 LINK to pay for the request. Once the request transaction is complete, the oracle generates the random number and sends the result back.
 
 # 4. How can I use Chainlink VRF?
 
@@ -76,14 +76,14 @@ When rolling the die, it will accept an `address` variable to track which addres
 
 The contract will have the following functions:
 - `rollDice`: This submits a randomness request to Chainlink VRF
-- `fulfillRandomness`: The function that is used by the Oracle to send the result back to
+- `fulfillRandomness`: The function that the Oracle uses to send the result back
 - `house`: To see the assigned house of an address
 
 **Note**:To jump straight to the entire implementation, you can [open the VRFD20.sol contract](https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFD20.sol) in remix.
 
 ## Importing `VRFConsumerBase`
 
-Chainlink maintains a [library of contracts](https://github.com/smartcontractkit/chainlink/tree/master/contracts) that make consuming data from oracles easier. For Chainlink VRF, you will use a contract named [`VRFConsumerBase`](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/VRFConsumerBase.sol) which needs to be imported and extended from the contract you create.
+Chainlink maintains a [library of contracts](https://github.com/smartcontractkit/chainlink/tree/master/contracts) that make consuming data from oracles easier. For Chainlink VRF, you will use a contract named [`VRFConsumerBase`](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/VRFConsumerBase.sol) that must be imported and extended from the contract that you create.
 
 ```solidity
 pragma solidity 0.6.7;
@@ -112,11 +112,11 @@ mapping(address => uint256) private s_results;
 ```
 
 - `s_rollers` stores a mapping between the `requestID` (returned when a request is made), and the address of the roller. This is so the contract can keep track of who to assign the result to when it comes back.
-- `s_results` stores the roller, and the result of the dice roll.
+- `s_results` stores the roller and the result of the dice roll.
 
 ## Initializing the contract
 
-The fee and the key hash must be initialized in the constructor of the contract. To use `VRFConsumerBase` properly you must also pass certain values into its constructor.
+The fee and the key hash must be initialized in the constructor of the contract. To use `VRFConsumerBase` properly, you must also pass certain values into its constructor.
 
 ```solidity
 pragma solidity 0.8.7;
@@ -153,7 +153,7 @@ The `rollDice` function will complete the following tasks:
 4. Store the `requestId` and roller address.
 5. Emit an event to signal that the die is rolling.
 
-You must add a `ROLL_IN_PROGRESS` variable to signify that the die has been rolled but the result is not yet returned and a `DiceRolled` event to the contract.
+You must add a `ROLL_IN_PROGRESS` variable to signify that the die has been rolled but the result is not yet returned. Also add a `DiceRolled` event to the contract.
 
 ```solidity
 pragma solidity 0.8.7;
@@ -300,7 +300,7 @@ contract VRFD20 is VRFConsumerBase, ConfirmedOwner(msg.sender) {
 }
 ```
 
-You have now completed all necessary functions to generate randomness and assign the user a *Game of Thrones* house. We've added a few helper functions in there which should make using the contract easier and more flexible. You can deploy and interact with the complete contract in Remix:
+You have now completed all necessary functions to generate randomness and assign the user a *Game of Thrones* house. We've added a few helper functions in there to make using the contract easier and more flexible. You can deploy and interact with the complete contract in Remix:
 
 <div class="remix-callout">
   <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFD20.sol" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
@@ -322,7 +322,7 @@ Click the caret arrow on the right hand side of **Deploy** to expand the paramet
 - `0x6c3699283bda56ad74f6b855546325b68d482e983852a7a82979cc4807b641f4`
 - `100000000000000000`
 
-These are the coordinator address, LINK address, key hash, and fee. For a full reference of the addresses, key hashes and fees for each network, see [VRF Contracts](../vrf-contracts/). Click deploy and use your Metamask account to confirm the transaction.
+These are the coordinator address, LINK address, key hash, and fee. For a full reference of the addresses, key hashes, and fees for each network, see [VRF Contracts](../vrf-contracts/). Click deploy and use your Metamask account to confirm the transaction.
 
 **Note**: You should [have some Kovan ETH](/docs/beginners-tutorial/#obtaining-testnet-eth) in your Metamask account to pay for the GAS.
 
@@ -337,7 +337,7 @@ Use your Metamask address on the Kovan network to request LINK and send 1 LINK t
 **Note**: You should add the corresponding LINK token to your MetaMask account first:
 ![Metamask Add Tokens Screens](/images/contract-devs/metamask-1.png)
 
-If you enounter any issues, make sure to check you copied the address of the correct network:
+If you encounter any issues, make sure to check you copied the address of the correct network:
 ![Metamask Verify Contracts Screen](/images/contract-devs/metamask-2.png)
 
 # 7. How do I test `rollDice`?
