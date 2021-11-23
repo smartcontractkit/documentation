@@ -7,10 +7,10 @@ document.addEventListener('DOMContentLoaded', () => {
       abi,
       '0x7b3EC232b08BD7b4b3305BE0C044D907B2DF960B'
     ),
-    // polygon: new new Web3('https://polygon-mainnet.g.alchemy.com/v2/vn3HPO5qapvV6DMx4Wp6izedOAIKuDxN').eth.Contract(
-    //   abi,
-    //   '0x7b3EC232b08BD7b4b3305BE0C044D907B2DF960B'
-    // ),
+    polygon: new new Web3('https://polygon-mainnet.g.alchemy.com/v2/vn3HPO5qapvV6DMx4Wp6izedOAIKuDxN').eth.Contract(
+      abi,
+      '0x7b3EC232b08BD7b4b3305BE0C044D907B2DF960B'
+    ),
   };
 
 
