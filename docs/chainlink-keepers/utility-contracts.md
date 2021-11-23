@@ -12,7 +12,7 @@ whatsnext:
 # Overview
 This guide explains the use cases for Keeper utility contracts and specifically for the [`EthBalanceMonitor` contract](https://github.com/smartcontractkit/upkeep-contracts/blob/master/contracts/upkeeps/EthBalanceMonitor.sol). This Keeper contract monitors and funds Ethereum addresses that developers might need to top up frequently based on a configurable threshold. As a result, nodes are funded automatically.
 
-Once the contract is deployed, developers can go to [keepers.chain.link](https://keepers.chain.link/) to register Upkeep and run the contract. To take full advantage of the Keepers automation infrastructure, read all of the documentation to understand the features of Chainlink Keepers.
+After deploying the contract, developers can go to [keepers.chain.link](https://keepers.chain.link/) to register Upkeep and run the contract. To take full advantage of the Keepers automation infrastructure, read all of the documentation to understand the features of Chainlink Keepers.
 
 **Table of Contents**
 + [`EthBalanceMonitor` Overview](#ethbalancemonitor-overview)
@@ -23,7 +23,7 @@ Once the contract is deployed, developers can go to [keepers.chain.link](https:
   + [`topUp` Function](#topup-function)
 
 # `EthBalanceMonitor` Overview
-`EthBalanceMonitor` is ownable, pausable, and Keeper-compatible. Each of these components are explained in more detail:
+`EthBalanceMonitor` is ownable, pausable, and Keeper-compatible:
 
 - **Ownable**: The contract has an owner address, and provides basic authorization control functions. This simplifies the implementation of *user permissions* and allows for transer of ownership.
 - **Pausable**: This feature allows the contract to implement a pause and unpause mechanism that the contract owner can trigger.
@@ -33,7 +33,7 @@ Once the contract is deployed, developers can go to [keepers.chain.link](https:
 > Aside from certain features listed below, only owners can withdraw funds and pause or unpause the contract. If the contract is paused or unpaused, it will affect `checkUpkeep`, `performUpkeep`, and `topUp` functions.
 
 # Functions
-Functions denoted with an asterisk (`*`) denote features that only the owner can change. Click on each function to learn more about its parameters and design patterns:
+Functions with an asterisk (`*`) denote features that only the owner can change. Click on each function to learn more about its parameters and design patterns:
 
 | Function Name                   | Description                                                          |
 | ------------------------------- | -------------------------------------------------------------------- |
