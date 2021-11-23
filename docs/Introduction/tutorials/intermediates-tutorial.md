@@ -25,7 +25,7 @@ metadata:
 >
 > The video uses a seed phrase to request randomness. This feature is deprecated. Refer to the code in this tutorial for the most up to date procedures.
 
-# Overview <!-- omit in toc -->
+# Overview
 
 In this tutorial, you will learn about generating randomness on blockchains. This includes learning how to implement a Request and Receive cycle with Chainlink oracles and how to consume random numbers with Chainlink VRF in smart contracts.
 
@@ -60,7 +60,7 @@ Randomness, on the other hand, cannot be reference data. If the result of random
 
 In return for providing the service of generating a random number, oracles are paid in [**LINK**](../link-token-contracts/). The contract that requests the randomness must pay for the service during the request. 
 
-LINK conforms to the ERC-677 token standard which is an extension of ERC-20. This standard is what enables data to be encoded in token transfers. This is integral to the Request and Receive cycle. [Click here](https://github.com/ethereum/EIPs/issues/677) to learn more about ERC-677.
+LINK conforms to the ERC-677 token standard, which is an extension of ERC-20. This standard is what enables data to be encoded in token transfers. This is integral to the Request and Receive cycle. [Click here](https://github.com/ethereum/EIPs/issues/677) to learn more about ERC-677.
 
 Smart contracts have all the capabilities that wallets have in that they are able to own and interact with tokens. The contract that requests randomness from Chainlink VRF must have a LINK balance greater than or equal to the cost to make the request in order to pay and fulfill the service.
 
@@ -330,7 +330,7 @@ At this point, your contract should be successfully deployed. However, it can't 
 
 # 6. How do I obtain testnet LINK?
 
-Since the contract is on testnet, as with Kovan ETH, you don't need to purchase *real* LINK. Testnet LINK can be requested and obtained from a [faucet](../link-token-contracts/).
+Because the contract is on testnet, as with Kovan ETH, you don't need to purchase *real* LINK. You can request and obtain Testnet LINK from a [faucet](../link-token-contracts/).
 
 Use your Metamask address on the Kovan network to request LINK and send 1 LINK to the contract address. This address can be found in Remix under **Deployed Contracts** on the bottom left.
 
@@ -342,7 +342,7 @@ If you encounter any issues, make sure to check you copied the address of the co
 
 # 7. How do I test `rollDice`?
 
-Upon opening the deployed contract tab in the bottom left, the function buttons are now available. Find `rollDice` and click the caret to expand the parameter fields. Enter your Metamask address, and click 'roll'.
+After you open the deployed contract tab in the bottom left, the function buttons are available. Find `rollDice` and click the caret to expand the parameter fields. Enter your Metamask address, and click 'roll'.
 
 You will have to wait a few minutes for your transaction to confirm and the response to be sent back. You can get your house by clicking the `house` function button with your address. Once the response has been sent back, you'll be assigned a *Game of Thrones* house!
 
@@ -354,4 +354,4 @@ To read more about generating random numbers in Solidity, read our blog posts:
 - [How to Build Dynamic NFTs on Polygon](https://blog.chain.link/how-to-build-dynamic-nfts-on-polygon/)
 - [Chainlink VRF Now Live on Ethereum Mainnet](https://blog.chain.link/chainlink-vrf-now-live-on-ethereum-mainnet/)
 
-To explore more applications of Chainlink VRF, check out our [other tutorials](/docs/other-tutorials/#vrf-applications).
+To explore more applications of Chainlink VRF, check out our [other tutorials](/docs/other-tutorials/#vrf).
