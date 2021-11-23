@@ -49,7 +49,7 @@ Before creating any code, you should understand how Oracle jobs can get data on-
 
 # 2. What are initiators?
 
-[**Initiators**](../initiators/) are what start, or initiate, a job inside an Oracle. In the case of a Request and Receive job, the [RunLog](/docs/initiators/#runlog) initiator monitors the blockchain for a request from a smart contract. Once it catches a request, it initiates the job. This runs the adapters (both core and external) that the job is configured to run eventually returning the response to the requesting contract.
+[**Initiators**](../initiators/) are what start, or initiate, a job inside an Oracle. In the case of a Request and Receive job, the [RunLog](/docs/initiators/#runlog) initiator monitors the blockchain for a request from a smart contract. Once it catches a request, it initiates the job. This runs the adapters (both core and external) that the job is configured to run and eventually returns the response to the requesting contract.
 
 # 3. What are Adapters?
 
