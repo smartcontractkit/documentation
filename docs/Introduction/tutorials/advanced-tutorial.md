@@ -111,7 +111,7 @@ Let's see what this looks like in a contract:
 Here is a breakdown of each component of this contract:
 1. Constructor: This sets up the contract with the Oracle address, Job ID, and LINK fee that the oracle charges for the job.
 2. `requestVolumeData` functions: This builds and sends a request - which includes the fulfillment functions selector - to the oracle. Notice how it adds the `get`, `path` and `times` parameters. These are read by the Adapters in the job to perform the tasks correctly. `get` is used by [HttpGet](../core-adapters/#httpget), `path` is used by [JsonParse](../core-adapters/#jsonparse) and `times` is used by [Multiply](../core-adapters/#multiply).
-3. `fulfill` function- This is where the result is sent upon the Oracle Job's completion.
+3. `fulfill` function: This is where the result is sent upon the Oracle Job's completion.
 
 **Note:** The calling contract should own enough LINK to pay the [specified fee](https://market.link/data-providers/d66c1ec8-2504-4696-ab22-6825044049f7/integrations) (by default 0.1 LINK). You can use [this tutorial](../fund-your-contract/) to fund your contract.
 
