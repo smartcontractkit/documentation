@@ -105,6 +105,29 @@ Return to [Running a Chainlink Node](../running-a-chainlink-node/).
 
 The following services offer Ethereum clients with websockets connectivity known to work with the Chainlink node.
 
+## [GetBlock](https://getblock.io/)
+
+Example connection setting.
+
+```text Rinkeby
+ETH_URL=wss://eth.getblock.io/rinkeby/
+```
+```text Kovan
+ETH_URL=wss://eth.getblock.io/kovan/
+```
+```text Ropsten
+ETH_URL=wss://eth.getblock.io/ropsten/
+```
+```text Goerli
+ETH_URL=wss://eth.getblock.io/goerli/
+```
+```text Sepolia
+ETH_URL=wss://eth.getblock.io/sepolia/
+```
+```text Mainnet
+ETH_URL=wwss://eth.getblock.io/mainnet/
+```
+
 ## [Chainstack](https://support.chainstack.com/hc/en-us/articles/900001664463-Setting-up-a-Chainlink-node-with-an-Ethereum-node-provided-by-Chainstack)
 
 Example connection setting
