@@ -9,7 +9,7 @@ whatsnext:
   }
 ---
 
-# Overview <!-- omit in toc -->
+# Overview
 This guide explains how to make smart contracts **Keeper-compatible**. You will learn about the `KeeperCompatibleInterface` and its functions with an example contract. The guide showcases the convenience that Keepers provide to developers. To take full advantage of the Keepers automation infrastructure, read all of the documentation to understand the features of Chainlink Keepers.
 
 **Table of Contents**
@@ -54,14 +54,14 @@ function checkUpkeep(
 <br>
 Below are the parameters and return values of the `checkUpkeep` function. Click each value to learn more about its design patterns and best practices:
 
-### Parameters <!-- omit in toc -->
+### Parameters
 
 | Name                  | Description                                                          |
 | ------------------------------- | -------------------------------------------------------------------- |
 | [`checkData`](#checkdata)                     | Data passed to the contract when checking for Upkeep. Specified in the Upkeep registration so it is always the same for a registered Upkeep. |
 | [`performUpkeep`](#performupkeep)                 | Performs the work on the contract, if instructed by `checkUpkeep()`. |
 
-### Return Values <!-- omit in toc -->
+### Return Values
 
 | Name                   | Description                                                          |
 | ------------------------------- | -------------------------------------------------------------------- |
@@ -130,7 +130,7 @@ function performUpkeep(
 ) external;
 ```
 
-### Parameters <!-- omit in toc -->
+### Parameters
 
 Below is the parameter of the `performUpkeep` function. Click the value to learn more about its design patterns and best practices:
 
