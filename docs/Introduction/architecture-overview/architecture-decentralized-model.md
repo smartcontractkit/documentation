@@ -11,7 +11,20 @@ metadata:
   image: 
     0: "/files/OpenGraph_V3.png"
 ---
-This page describes how data aggregation is applied to produce Chainlink Data Feeds.
+
+# Overview
+
+This page describes how data aggregation is applied to produce Chainlink Data Feeds and provides more insight as to how price feeds are updated.
+
+**Table of Contents**
++ [Data Aggregation](#data-aggregation)
+  + [Shared Data Resource](#shared-data-resource)
+  + [Decentralized Oracle Network](#decentralized-oracle-network)
+  + [Aggregation Parameters](#aggregation-parameters)
++ [Contracts Overview](#contracts-overview)
+  + [Consumer](#consumer)
+  + [Proxy](#proxy)
+  + [Aggregators](#aggregators)
 
 # Data Aggregation
 
@@ -31,7 +44,7 @@ Each oracle in the set publishes data during an aggregation round. That data is 
 
 ## Aggregation Parameters
 
-Each aggregation round is triggered based on one or more aggregation parameters. Whichever condition is met first will trigger an update to the data.
+The **Deviation Threshold** and **Heartbeat Threshold** are parameters that can trigger price feeds to update during an aggregation round. Each aggregation round triggers based on one of these parameters. The first condition that is met triggers an update to the data.
 
 ### Deviation Threshold
 
