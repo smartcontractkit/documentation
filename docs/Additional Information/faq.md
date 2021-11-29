@@ -70,7 +70,7 @@ No. Ganache is a mock testnet and it doesn't work with Chainlink because of that
 
 ## What are the hardware requirements for a Chainlink node?
 
-The hardware requirements of the Chainlink node are very minimal to operate. It should run with 1 core and 1 GB of RAM, though you may want to up the RAM to 2 GB for better reliability. However, connectivity to an Ethereum client is required for communication with the blockchain. If you decide to run your own Ethereum client, you will want to run that on a separate machine. Hardware requirements of Ethereum clients may change over time.
+To run a Chainlink node, you will need a machine with at least 2 cores and 4 GB of RAM. Connectivity to an Ethereum client is also required for communication with the blockchain. If you decide to run your own Ethereum client, you will want to run that on a separate machine. Hardware requirements of Ethereum clients may change over time.
 
 Resources:
 *  [Running a Chainlink Node](../running-a-chainlink-node/)
