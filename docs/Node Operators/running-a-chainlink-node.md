@@ -16,7 +16,7 @@ It's important to note that nodes can fulfill requests for open APIs out-of-the-
 
 If you would like to provide data from an authenticated API, you can add an [external adapter](../external-adapters/) to enable connectivity through the Chainlink node.
 
-Hardware requirements are light. The only heavy part is you'll need a blockchain node connection. If you use a 3rd party (defined below), you can use a machine with as little as 10GB of storage and 2GB of RAM.
+Hardware requirements are light. The only heavy part is you'll need a blockchain node connection. If you use a 3rd party (defined below), you can use a machine with as little as 10GB of storage and 4GB of RAM.
 
 ![Chainlink Node Diagram](/files/ab5762f-end-to-end-diagram.png)
 
