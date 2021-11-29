@@ -22,7 +22,7 @@ metadata:
 </p>
 
 
-# Overview <!-- omit in toc -->
+# Overview
 
 In this tutorial, you will learn about hybrid smart contracts. You will then create a hybrid smart contract using Chainlink's Data Feeds and deploy this contract to an Ethereum testnet.
 
