@@ -90,3 +90,13 @@ Note, you have to include only samples that represent the main Chainlink product
 - Code samples that are broken down into smaller pieces
 - Shell, bash, or text commands
 - Tables, blocks, or similar markdown structures
+
+## Style Guide
+- **Bold** key terms or any terms the user must absolutely know when reading a doc.
+- *Italicize* terms for emphasis but only when necessary.
+- When referring to dropdown menus or a sequence of dropdown events, bold the relevant entities. Example: Go to **Menu Name** > **Option**. Do not use quotes.
+- Use markdown over HTML wherever possible.
+- When writing an additional note, start it with **Note:**.
+- Use color highlighting when you add warnings, requirements, notes of deprecation/service removal. For guidance on using color highlighting, see https://rdmd.readme.io/docs/callouts.
+- For a comprehensive guide on how to write tutorials, use our [template guide](/TEMPLATE.md).
+- Use a consistent voice. When writing documentation, avoid first person plural (we) and opt for second person singular (you). Avoid passive voice.

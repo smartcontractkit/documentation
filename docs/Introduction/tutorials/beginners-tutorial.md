@@ -303,4 +303,4 @@ To read more about data feeds, read our blog posts:
 - [Build a dApp on Binance Smart Chain With Secure Data Feeds](https://blog.chain.link/build-a-dapp-on-binance-smart-chain-with-secure-data-feeds/)
 - [The 3 Levels of Data Aggregation in Chainlink Price Feeds](https://blog.chain.link/levels-of-data-aggregation-in-chainlink-price-feeds/)
 
-To explore more applications of data feeds, check out our [other tutorials](/docs/other-tutorials/#data-feeds-applications).
+To explore more applications of data feeds, check out our [other tutorials](../other-tutorials/#data-feeds).
