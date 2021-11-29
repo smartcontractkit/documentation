@@ -11,6 +11,8 @@ metadata:
   image:
     0: "/files/OpenGraph_V3.png"
 ---
+# Overview
+
 Using an *existing* Oracle Job makes your smart contract code more succinct. This page explains how to retrieve the winners of various elections based on the date, state, and race ID.
 
 # AP Election Data Consumer

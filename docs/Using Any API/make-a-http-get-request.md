@@ -4,7 +4,7 @@ section: ethereum
 date: Last Modified
 title: "Make a GET Request"
 permalink: "docs/make-a-http-get-request/"
-whatsnext: {"Make an Existing Job Request":"/docs/existing-job-request/", "API Reference":"/docs/chainlink-framework/", "Contract Addresses":"/docs/decentralized-oracles-ethereum-mainnet/", "Multi-Variable Responses":"/docs/multi-variable-responses/"}
+whatsnext: {"Make an Existing Job Request":"/docs/existing-job-request/", "Multi-Variable Responses":"/docs/multi-variable-responses/"}
 metadata:
   title: "Make a GET Request"
   description: "Learn how to make a GET request to an API from a smart contract, using Chainlink."
@@ -14,14 +14,14 @@ metadata:
 
 # Overview <!-- omit in toc -->
 
-This guide explains how to make an HTTP GET request to an external API from a smart contract, using Chainlink's [Request & Receive Data](../request-and-receive-data/) cycle. 
+This guide explains how to make an HTTP GET request to an external API from a smart contract, using Chainlink's [Request & Receive Data](../request-and-receive-data/) cycle. External adapters are services which the core of the Chainlink node communicates via its API with a simple JSON specification. Refer to [External Adapters Introduction](../external-adapters/) for more information on external adapters and how to build them.
 
 + [API Consumer Example](#api-consumer-example)
 + [Choosing an Oracle and JobId](#choosing-an-oracle-and-jobid)
 + [Supported APIs](#supported-apis)
   + [Response Data](#response-data)
   + [Response Types](#response-types)
-+ [Choosing an Oracle Job without specifying the URL](#choosing-an-oracle-job-without-specifying-the-url)
++ [Existing Job Requests](#existing-job-requests)
 
 # API Consumer Example
 
@@ -33,7 +33,7 @@ Smart contracts should inherit from [`ChainlinkClient`](https://github.com/smart
 - Task parameters
 - Callback function signature
 
->❗️ Fund your contract with LINK!
+>❗️ Note on Funding Contracts
 >
 > Making a GET request will fail unless your deployed contract has enough LINK to pay for it. **Learn how to [Acquire testnet LINK](../acquire-link/) and [Fund your contract](../fund-your-contract/)**.
 
@@ -60,7 +60,7 @@ Here is a breakdown of each component of the contract:
 
 # Choosing an Oracle and JobId
 
-The *`oracle`* keyword refers to a specific Chainlink node that a contract makes an API call from. The *`jobId`* refers to a specific job for that node to run. Each job is unique and returns different types of data.
+`oracle` refers to a specific Chainlink node that a contract makes an API call from. `jobId` refers to a specific job for that node to run. Each job is unique and returns different types of data.
 
 For example, a job that returns a `bytes32` variable from an API would have a different `jobId` than a job that retrieved the same data, but in the form of a `uint256` variable.
 
@@ -99,8 +99,8 @@ If you need to return a string, use `bytes32`. Here's [one method](https://gist.
 
 The data type returned by a specific job depends on the [tasks](/docs/tasks/) that it supports. Make sure to choose an oracle job that supports the data type that your contract needs to consume.
 
-# Choosing an Oracle Job without specifying the URL
+# Existing Job Requests
 
-If your contract is calling a public API endpoint, an Oracle job may already exist for it. If so, it could mean you do not need to add the URL, or other adapter parameters into the request, since the job already configured to return the desired data. This makes your smart contract code more succinct. To see an example of a contract using an existing job which calls the [CoinGecko API](https://www.coingecko.com/en/api#explore-api), see [Make an Existing Job Request](../existing-job-request/).
+If your contract is calling a public API endpoint, an Oracle job may already exist for it. If so, it could mean you do not need to add the URL, or other adapter parameters into the request, since the job already configured to return the desired data. This makes your smart contract code more succinct. To see an example of a contract using an existing job which calls the [AP Election data](https://developer.ap.org/ap-elections-api/), see [Make an Existing Job Request](../existing-job-request/).
 
 For more information about the functions in `ChainlinkClient`, visit [ChainlinkClient API Reference](../chainlink-framework/).
