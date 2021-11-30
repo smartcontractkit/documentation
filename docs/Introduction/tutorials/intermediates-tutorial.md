@@ -2,7 +2,7 @@
 layout: nodes.liquid
 section: smartContract
 date: Last Modified
-title: "Random Numbers Tutorial"
+title: "Random Numbers: Using Chainlink VRF"
 permalink: "docs/intermediates-tutorial/"
 excerpt: "Using Chainlink VRF"
 whatsnext: {"Get a Random Number":"/docs/get-a-random-number/", "API Calls tutorial":"/docs/advanced-tutorial/"}
@@ -31,17 +31,12 @@ In this tutorial, you will learn about generating randomness on blockchains. Thi
 
 **Table of Contents**
 
++ [Overview](#overview)
 + [1. How is randomness generated on blockchains? What is Chainlink VRF?](#1-how-is-randomness-generated-on-blockchains-what-is-chainlink-vrf)
 + [2. What is the Request and Receive cycle?](#2-what-is-the-request-and-receive-cycle)
 + [3. What is the payment process for generating a random number?](#3-what-is-the-payment-process-for-generating-a-random-number)
 + [4. How can I use Chainlink VRF?](#4-how-can-i-use-chainlink-vrf)
-  + [Importing `VRFConsumerBase`](#importing-vrfconsumerbase)
-  + [Contract variables](#contract-variables)
-  + [Initializing the contract](#initializing-the-contract)
-  + [`rollDice` function](#rolldice-function)
-  + [`fulfillRandomness` function](#fulfillrandomness-function)
-  + [`house` function](#house-function)
-+ [5. How do I deploy to testnet?s](#5-how-do-i-deploy-to-testnets)
++ [5. How do I deploy to testnet?](#5-how-do-i-deploy-to-testnet)
 + [6. How do I obtain testnet LINK?](#6-how-do-i-obtain-testnet-link)
 + [7. How do I test `rollDice`?](#7-how-do-i-test-rolldice)
 + [8. Further Reading](#8-further-reading)
@@ -307,7 +302,7 @@ You have now completed all necessary functions to generate randomness and assign
     <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
 </div>
 
-# 5. How do I deploy to testnet?s
+# 5. How do I deploy to testnet?
 
 You will now deploy your completed contract. This deployment is slightly different than the example in the [The Basics: Using Data Feeds](/docs/beginners-tutorial/#7-how-do-i-deploy-to-testnet) tutorial. In our case, you will have to pass in parameters to the constructor upon deployment.
 
