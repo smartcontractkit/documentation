@@ -28,6 +28,7 @@ Chainlink Data Feed contracts are updated on a regular basis by multiple Chainli
   - [Arbitrum Data Feeds](../arbitrum-price-feeds/)
   - [Harmony Data Feeds](../harmony-price-feeds/)
   - [Optimism Data Feeds](../optimism-price-feeds/)
+  - [Moonriver Data Feeds](../data-feeds-moonriver/)
 - Non-EVM networks
   - [Solana Data Feeds](/docs/solana/data-feeds-solana/)
   - [Terra Data Feeds](/docs/terra/data-feeds-terra/)

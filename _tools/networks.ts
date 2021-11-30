@@ -42,12 +42,12 @@ export const NETWORKS = [
     networks: [
       {
         name: "Polygon Mainnet",
-        url: "https://explorer-mainnet.maticvigil.com/address/%s",
+        url: "https://polygonscan.com/address/%s",
         source: "directory-matic-mainnet.json",
       },
       {
         name: "Mumbai Testnet",
-        url: "https://explorer-mumbai.maticvigil.com/address/%s",
+        url: "https://mumbai.polygonscan.com/address/%s",
         source: "directory-matic-testnet.json",
       },
     ],

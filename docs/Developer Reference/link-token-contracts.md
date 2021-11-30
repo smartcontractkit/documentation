@@ -47,7 +47,7 @@ The LINK token is an ERC677 token that inherits functionality from the ERC20 tok
 >
 > Testnet LINK is available from https://faucets.chain.link/rinkeby
 > Testnet ETH is available from: https://faucets.chain.link/rinkeby
-> Backup Testnet ETH Faucets: https://rinkeby-faucet.com/, https://app.mycrypto.com/faucet 
+> Backup Testnet ETH Faucets: https://rinkeby-faucet.com/, https://app.mycrypto.com/faucet
 
 |Parameter|Value|
 |:---|:---|
@@ -107,7 +107,7 @@ LINK is native to Ethereum, so to use LINK on other chains, it must be bridged. 
 
 > 📘 Important
 >
-> The LINK provided by the [Polygon (Matic) Bridge](https://wallet.matic.network/bridge) is not ERC-677 compatible, so cannot be used with Chainlink oracles. However, it can be [**converted to the official LINK token on Polygon (Matic) using Chainlink's PegSwap service**](https://pegswap.chain.link/)
+> The LINK provided by the [Polygon (Matic) Bridge](https://wallet.polygon.technology/bridge) is not ERC-677 compatible, so cannot be used with Chainlink oracles. However, it can be [**converted to the official LINK token on Polygon (Matic) using Chainlink's PegSwap service**](https://pegswap.chain.link/)
 
 You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blank"> watch this video </a>.
 
@@ -116,7 +116,7 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 |Parameter|Value|
 |:---|:---|
 |`ETH_CHAIN_ID`|`137`|
-|Address|<a href="https://explorer.matic.network/address/0xb0897686c545045afc77cf20ec7a532e3120e0f1" target="_blank" rel="noreferrer, noopener">`0xb0897686c545045afc77cf20ec7a532e3120e0f1`</a>|
+|Address|<a href="https://polygonscan.com/address/0xb0897686c545045afc77cf20ec7a532e3120e0f1" target="_blank" rel="noreferrer, noopener">`0xb0897686c545045afc77cf20ec7a532e3120e0f1`</a>|
 |Name|ChainLink Token|
 |Symbol|LINK|
 |Decimals|18|
@@ -130,7 +130,7 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 |Parameter|Value|
 |:---|:---|
 |`ETH_CHAIN_ID`|`80001`|
-|Address|<a href="https://explorer-mumbai.maticvigil.com/address/0x326C977E6efc84E512bB9C30f76E30c160eD06FB" target="_blank" rel="noreferrer, noopener">`0x326C977E6efc84E512bB9C30f76E30c160eD06FB `</a>|
+|Address|<a href="https://mumbai.polygonscan.com/address/0x326C977E6efc84E512bB9C30f76E30c160eD06FB" target="_blank" rel="noreferrer, noopener">`0x326C977E6efc84E512bB9C30f76E30c160eD06FB `</a>|
 |Name|ChainLink Token|
 |Symbol|LINK|
 |Decimals|18|

@@ -255,16 +255,8 @@ module.exports = {
             url: '/docs/using-chainlink-reference-contracts/',
           },
           {
-            title: 'Using Data Feeds (EVM)',
+            title: 'Using Data Feeds',
             url: '/docs/get-the-latest-price/'
-          },
-          {
-            title: 'Using Data Feeds (Solana)',
-            url: '/docs/solana/using-data-feeds-solana/'
-          },
-          {
-            title: 'Using Data Feeds (Terra)',
-            url: '/docs/terra/using-data-feeds-terra/'
           },
           {
             title: 'Historical Price Data',
@@ -323,20 +315,16 @@ module.exports = {
                 url: '/docs/harmony-price-feeds/',
               },
               {
-                title: 'Solana Data Feeds',
-                url: '/docs/solana/data-feeds-solana/',
-              },
-              {
                 title: 'Optimism Data Feeds',
                 url: '/docs/optimism-price-feeds/',
               },
               {
-                title: 'Terra Data Feeds',
-                url: '/docs/terra/data-feeds-terra/',
-              },
-              {
                 title: 'Moonriver Data Feeds',
                 url: '/docs/data-feeds-moonriver/',
+              },
+              {
+                title: 'Non-EVM Data Feeds ↗',
+                url: '/non-evm/',
               },
             ],
           },
@@ -508,7 +496,7 @@ module.exports = {
             url: '/docs/solana/using-data-feeds-solana/',
           },
           {
-            title: 'Contract Addresses',
+            title: 'Solana Data Feeds',
             url: '/docs/solana/data-feeds-solana/',
           },
 
@@ -526,7 +514,7 @@ module.exports = {
             url: '/docs/terra/using-data-feeds-terra/',
           },
           {
-            title: 'Contract Addresses',
+            title: 'Terra Data Feeds',
             url: '/docs/terra/data-feeds-terra/',
           },
         ],
