@@ -28,6 +28,7 @@ In this tutorial, you will learn about hybrid smart contracts. You will then cre
 
 **Table of Contents**
 
++ [Overview](#overview)
 + [1. What is a smart contract? What is a hybrid smart contract?](#1-what-is-a-smart-contract-what-is-a-hybrid-smart-contract)
 + [2. What language is a smart contract written in?](#2-what-language-is-a-smart-contract-written-in)
 + [3. What does a smart contract look like?](#3-what-does-a-smart-contract-look-like)
@@ -49,7 +50,7 @@ Smart contracts can connect to real-world market prices of assets to produce pow
 
 The most popular language for writing smart contracts on Ethereum is [Solidity](https://docs.soliditylang.org/en/v0.8.7/). It was created by the Ethereum Foundation specifically for smart contract development and is constantly being updated.
 
-If you've ever written Javascript, Java, or other object-oriented scripting languages, Solidity should be easy to understand. Similar to object-oriented langauges, Solidity is considered to be a *contract*-oriented language.
+If you've ever written Javascript, Java, or other object-oriented scripting languages, Solidity should be easy to understand. Similar to object-oriented languages, Solidity is considered to be a *contract*-oriented language.
 
 # 3. What does a smart contract look like?
 
@@ -145,7 +146,7 @@ contract HelloWorld {
 
 **Deploying** a smart contract is the process of pushing the code to the blockchain, at which point it resides with an on-chain address. Once it's deployed, the code cannot be changed and is said to be *immutable*.
 
-As long as the address is known, its functions can be called through an interface, on [Etherscan](https://etherscan.io/), or through a library like [web3js](https://web3js.readthedocs.io/en/v1.3.0/), [web3py](https://web3py.readthedocs.io/), [ethers](https://docs.ethers.io/v5/), and more. Contracts can also be written to interact with other contracts on the blockchain.
+As long as the address is known, its functions can be called through an interface, on [Etherscan](https://etherscan.io/), or through a library like [web3js](https://web3js.readthedocs.io/), [web3py](https://web3py.readthedocs.io/), [ethers](https://docs.ethers.io), and more. Contracts can also be written to interact with other contracts on the blockchain.
 
 # 5. What are oracles? Why are they important?
 
@@ -175,7 +176,7 @@ interface numberComparison {
 
 contract Test is numberComparison {
     
-   constructor() public {}
+   constructor() {}
    
    function isSameNum(uint a, uint b) external view returns(bool){
       if (a == b) {
@@ -214,13 +215,13 @@ You should have the code. What you need next is a compiler.
 
 [Remix](https://remix.ethereum.org/) is an online IDE which enables anyone to write, compile and deploy smart contracts from the browser.
 
-Fortunately for us, Remix also has support for gist. This means that Remix can load code from Github, and in this case, `PriceConsumerV3.sol` Click the button below to open a new tab, then once Remix has loaded, find the `gists` folder in the File Explorer on the left-hand side, and click on the file to open the code in the editor.
+Fortunately for us, Remix also has support for samples. This means that Remix can load code from Github, and in this case, `PriceConsumerV3.sol` Click the button below to open a new tab, then once Remix has loaded, find the **docs.chain.link** > **samples** > **PriceFeeds** folder in the File Explorer on the left-hand side, and click on the file to open the code in the editor.
 
 <div class="remix-callout">
   <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/PriceFeeds/PriceConsumerV3.sol" target="_blank" class="cl-button--ghost">Deploy this contract using Remix ↗</a>
 </div>
 
-![Remix Select PriceConsumerV3.sol](/files/11d7052-Screenshot_2020-11-27_at_10.16.47.png)
+![Remix Select PriceConsumerV3.sol](/files/beginner-tutorial-remix-snapshot.png)
 
 Get familiar with the layout of Remix and play around with the contract. This is what you'll use for the compiler.
 
@@ -283,7 +284,7 @@ This screen might seem a little more intimidating, but do not fret. This is wher
 
 Click **ENVIRONMENT**. the selected value should currently be **Javascript VM**. Instead, select **Injected Web3**. This should trigger a Metamask notification asking for permission to connect. Accept it, and your address should be automatically loaded into the **ACCOUNT** menu below **ENVIRONMENT**.
 
-Once that's done, check that the **CONTRACT** menu displays the name of your contract, then click **Deploy**. Another Metamask notification will pop up asking for permission, and detailing how much GAS it will cost in testnet ETH. Confirm the transaction and await confirmation! This may take a few seconds depending on the network, so be patient.
+Once that's done, check that the **CONTRACT** menu displays the name of your contract. In many cases, Remix defaults to deploying the first contract which appears alphabetically in the menu; to prevent errors, select the correct contract, then click **Deploy**. Another Metamask notification will pop up asking for permission, and detailing how much GAS it will cost in testnet ETH. Confirm the transaction and await confirmation! This may take a few seconds depending on the network, so be patient.
 
 ## Get the Price
 
