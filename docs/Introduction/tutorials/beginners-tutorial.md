@@ -155,7 +155,7 @@ Interfaces define functions without their implementation, leaving inheriting con
   <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/Tutorials/Test.sol" target="_blank" class="cl-button--ghost">Deploy this contract using Remix ↗</a>
 </div>
 
-For this example, `override` is necessary to use in the `Test` contract function since it is overriding the base function contained in the `numberComparison` interface. `pure` is also used in this example: since the `isSameNum` function in the `Test` contract does not return a storage variable, the contract uses `pure` instead of `view`.  
+For this example, `override` is necessary in the `Test` contract function because it overrides the base function contained in the `numberComparison` interface. The contract uses `pure` instead of `view` because the `isSameNum` function in the `Test` contract does not return a storage variable. 
 
 ## Using Chainlink Data Feeds
 
