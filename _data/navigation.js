@@ -1,12 +1,79 @@
 module.exports = {
   navigation: {
+    gettingStarted: [
+      {
+        section: 'Getting Started',
+        contents: [
+          {
+            title: 'Install, configure & fund MetaMask',
+            url: '/docs/install-metamask/',
+          },
+          {
+            title: 'Acquire testnet LINK',
+            url: '/docs/acquire-link/',
+          },
+          {
+            title: 'Deploy your first contract',
+            url: '/docs/deploy-your-first-contract/',
+          },
+          {
+            title: 'Fund your contract',
+            url: '/docs/fund-your-contract/',
+          },
+          {
+            title: 'Use your first contract!',
+            url: '/docs/use-your-first-contract/',
+          },
+        ],
+      },
+      {
+        section: 'Beginner Contracts',
+        contents: [
+          {
+            title: 'Use a Data Feed',
+            url: '/docs/beginners-tutorial/',
+          },
+          {
+            title: 'Random Numbers',
+            url: '/docs/intermediates-tutorial/',
+          },
+          {
+            title: 'API Calls',
+            url: '/docs/advanced-tutorial/',
+          }
+        ],
+      },
+      {
+        section: 'Resources',
+        contents: [
+          {
+            title: 'Learning Resources',
+            url: '/docs/other-tutorials/',
+          },
+        ],
+      },
+      {
+        section: 'Next Steps',
+        contents: [
+          {
+            title: 'Architecture Overview ↗',
+            url: '/docs/architecture-overview/',
+          },
+          {
+            title: 'Run a Chainlink Node ↗',
+            url: '/chainlink-nodes/',
+          },
+        ],
+      },
+    ],
     nodeOperator: [
       {
         section: 'NODE OPERATORS',
         contents: [
           {
             url: '/docs/node-versions/',
-            title: 'Node Versions' },
+            title: 'Node Versions',
+          },
           {
             url: '/docs/running-a-chainlink-node/',
             title: 'Running a Chainlink Node',
@@ -203,26 +270,17 @@ module.exports = {
     ],
     smartContract: [
       {
-        section: 'INTRODUCTION',
+        section: 'Beginners',
         contents: [
           {
-            title: 'Tutorials',
-            url: '/docs/tutorials/',
-            children: [
-              {
-                title: 'The Basics',
-                url: '/docs/beginners-tutorial/',
-              },
-              {
-                title: 'Random Numbers',
-                url: '/docs/intermediates-tutorial/',
-              },
-              {
-                title: 'API Calls',
-                url: '/docs/advanced-tutorial/',
-              }
-            ],
+            title: 'Getting Started Guide ↗',
+            url: '/getting-started/',
           },
+        ],
+      },
+      {
+        section: 'Conceptual Overview',
+        contents: [
           {
             title: 'Architecture Overview',
             url: '/docs/architecture-overview/',
@@ -241,10 +299,6 @@ module.exports = {
               },
             ],
           },
-          {
-            title: 'Learning Resources',
-            url: '/docs/other-tutorials/',
-          }
         ],
       },
       {
@@ -321,10 +375,6 @@ module.exports = {
               {
                 title: 'Moonriver Data Feeds',
                 url: '/docs/data-feeds-moonriver/',
-              },
-              {
-                title: 'Non-EVM Data Feeds ↗',
-                url: '/non-evm/',
               },
             ],
           },
@@ -426,7 +476,7 @@ module.exports = {
         ],
       },
       {
-        section: 'DEVELOPER REFERENCE',
+        section: 'Resources',
         contents: [
           {
             title: 'Install Instructions',
@@ -452,56 +502,18 @@ module.exports = {
             title: 'Selecting Data Feeds',
             url: '/docs/selecting-data-feeds/',
           },
-          { title: 'Hackathon Resources', url: '/docs/hackathon-resources/' },
-          { title: 'Contributing to Chainlink', url: '/docs/contributing-to-chainlink/' },
           {
-            title: 'User Guides',
-            url: '/docs/user-guides/',
-            children: [
-              {
-                title: 'Install, configure & fund MetaMask',
-                url: '/docs/install-metamask/',
-              },
-              {
-                title: 'Acquire testnet LINK',
-                url: '/docs/acquire-link/',
-              },
-              {
-                title: 'Deploy your first contract',
-                url: '/docs/deploy-your-first-contract/',
-              },
-              {
-                title: 'Fund your contract',
-                url: '/docs/fund-your-contract/',
-              },
-              {
-                title: 'Use your first contract!',
-                url: '/docs/use-your-first-contract/',
-              },
-            ],
+            title: 'Hackathon Resources',
+            url: '/docs/hackathon-resources/',
+          },
+          {
+            title: 'Contributing to Chainlink',
+            url: '/docs/contributing-to-chainlink/'
           },
         ],
       },
     ],
-    nonEvm: [
-      {
-        section: 'SOLANA',
-        contents: [
-          {
-            title: 'Overview',
-            url: '/docs/solana/',
-          },
-          {
-            title: 'Using Data Feeds',
-            url: '/docs/solana/using-data-feeds-solana/',
-          },
-          {
-            title: 'Solana Data Feeds',
-            url: '/docs/solana/data-feeds-solana/',
-          },
-
-        ],
-      },
+    terra: [
       {
         section: 'TERRA',
         contents: [
@@ -517,6 +529,26 @@ module.exports = {
             title: 'Terra Data Feeds',
             url: '/docs/terra/data-feeds-terra/',
           },
+        ],
+      },
+    ],
+    solana: [
+      {
+        section: 'Solana',
+        contents: [
+          {
+            title: 'Overview',
+            url: '/docs/solana/',
+          },
+          {
+            title: 'Using Data Feeds',
+            url: '/docs/solana/using-data-feeds-solana/',
+          },
+          {
+            title: 'Solana Data Feeds',
+            url: '/docs/solana/data-feeds-solana/',
+          },
+
         ],
       },
     ],

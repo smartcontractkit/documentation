@@ -1,6 +1,6 @@
 ---
 layout: nodes.liquid
-section: nonEvm
+section: solana
 date: Last Modified
 title: "Solana on Chainlink"
 permalink: "docs/solana/"

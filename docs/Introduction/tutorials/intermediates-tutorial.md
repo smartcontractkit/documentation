@@ -1,6 +1,6 @@
 ---
 layout: nodes.liquid
-section: smartContract
+section: gettingStarted
 date: Last Modified
 title: "Random Numbers: Using Chainlink VRF"
 permalink: "docs/intermediates-tutorial/"
@@ -53,7 +53,7 @@ Randomness, on the other hand, cannot be reference data. If the result of random
 
 # 3. What is the payment process for generating a random number?
 
-In return for providing the service of generating a random number, oracles are paid in [**LINK**](../link-token-contracts/). The contract that requests the randomness must pay for the service during the request. 
+In return for providing the service of generating a random number, oracles are paid in [**LINK**](../link-token-contracts/). The contract that requests the randomness must pay for the service during the request.
 
 LINK conforms to the ERC-677 token standard, which is an extension of ERC-20. This standard is what enables data to be encoded in token transfers. This is integral to the Request and Receive cycle. [Click here](https://github.com/ethereum/EIPs/issues/677) to learn more about ERC-677.
 
@@ -63,7 +63,7 @@ For example, if the current price of Chainlink VRF is 0.1 LINK, the requesting c
 
 # 4. How can I use Chainlink VRF?
 
-To see a basic implementation of Chainlink VRF, see [Get a Random Number](../get-a-random-number/). In this section, you will create an application that uses Chainlink VRF to generate randomness. The contract used in this application will have a [*Game of Thrones*](https://en.wikipedia.org/wiki/Game_of_Thrones) theme. 
+To see a basic implementation of Chainlink VRF, see [Get a Random Number](../get-a-random-number/). In this section, you will create an application that uses Chainlink VRF to generate randomness. The contract used in this application will have a [*Game of Thrones*](https://en.wikipedia.org/wiki/Game_of_Thrones) theme.
 
 The contract will request randomness from Chainlink VRF. The result of the randomness will transform into a number between 1 and 20, mimicking the rolling of a 20 sided die. Each number represents a *Game of Thrones* house. If the dies land on the value 1, the user is assigned house Targaryan, 2 for Lannister, and so on. A full list of houses can be found [here](https://gameofthrones.fandom.com/wiki/Great_House).
 

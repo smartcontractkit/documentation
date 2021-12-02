@@ -2,6 +2,7 @@ module.exports = function (eleventyConfig) {
   const rdmd = require('@readme/markdown');
   const format = require('date-fns/format');
   const htmlmin = require('html-minifier');
+  const eleventyNavigationPlugin = require("@11ty/eleventy-navigation");
 
   const embedYouTube = require('eleventy-plugin-youtube-embed');
   eleventyConfig.setLibrary('md', { render: rdmd.html });
@@ -40,4 +41,7 @@ module.exports = function (eleventyConfig) {
   }
 
   eleventyConfig.setUseGitIgnore(false);
+
+  eleventyConfig.addPlugin(eleventyNavigationPlugin);
+
 };

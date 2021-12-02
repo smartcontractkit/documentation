@@ -1,6 +1,6 @@
 ---
 layout: nodes.liquid
-section: smartContract
+section: gettingStarted
 date: Last Modified
 title: "Learning Resources"
 permalink: "docs/other-tutorials/"
@@ -96,7 +96,7 @@ Below is a list of applications of Chainlink's products and services sorted by d
 
 ## Starter Kits
 
-Our Starter Kits help jumpstart your full-stack development process. You can get starter kits for Brownie (Python), Truffle (Javascript), and Hardhat (Javascript). See the [Engineering Tutorials](https://www.youtube.com/playlist?list=PLVP9aGDn-X0QwJVbQvuKr-zrh2_DV5M6J) playlist to learn more about each kit and how to use them. 
+Our Starter Kits help jumpstart your full-stack development process. You can get starter kits for Brownie (Python), Truffle (Javascript), and Hardhat (Javascript). See the [Engineering Tutorials](https://www.youtube.com/playlist?list=PLVP9aGDn-X0QwJVbQvuKr-zrh2_DV5M6J) playlist to learn more about each kit and how to use them.
 
 - [Chainlink Brownie Starter Kit (Python)](https://github.com/smartcontractkit/chainlink-mix)
 - [Chainlink Truffle Starter Kit (Javascript)](https://github.com/smartcontractkit/truffle-starter-kit)
@@ -109,7 +109,7 @@ Our Starter Kits help jumpstart your full-stack development process. You can get
 
 ## More Inspiration
 
-Looking for more ways to use Chainlink? Here are some resources that discuss Chainlink's use cases as well as the winning projects we've had in our previous hackathons. There is also a link to the Marketplace where you can find the latest data provider nodes and explore the network. 
+Looking for more ways to use Chainlink? Here are some resources that discuss Chainlink's use cases as well as the winning projects we've had in our previous hackathons. There is also a link to the Marketplace where you can find the latest data provider nodes and explore the network.
 
 - [77 Use Cases by Chainlink](https://blog.chain.link/44-ways-to-enhance-your-smart-contract-with-chainlink/)
 - [Past Hackathon Winning Projects](/docs/example-projects)
