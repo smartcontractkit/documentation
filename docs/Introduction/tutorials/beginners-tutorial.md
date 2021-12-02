@@ -70,7 +70,7 @@ The first thing that every Solidity file must have is the Solidity version defin
 You can see the latest versions of the Solidity compiler [here](https://github.com/ethereum/solc-bin/blob/gh-pages/bin/list.txt/?target=_blank). You may also notice Solidity files containing definitions with multiple versions of Solidity:
 
 ```solidity
-{% include snippets/Tutorials/beginner-pragma.sol %}
+pragma solidity >=0.7.0 <0.9.0;
 ```
 This means that the code is written for Solidity version 0.7.0, or a newer version of the language up to, but not including version 0.9.0. In short, `pragma` is used to instruct the compiler as how to treat the code.
 
@@ -79,7 +79,9 @@ This means that the code is written for Solidity version 0.7.0, or a newer versi
 Next, the `HelloWorld` contract is defined by using the keyword `contract`. Think of this as being similar to declaring `class` in Javascript. The implementation of `HelloWorld` is inside this definition, denoted with curly braces.
 
 ```solidity
-{% include snippets/Tutorials/beginner-start-contract.sol %}
+contract HelloWorld {
+
+}
 ```
 
 ## Variables 
@@ -89,7 +91,10 @@ Again, like Javascript, contracts can have state variables and local variables. 
 *Modifiers* are used to change the level of access to these variables. Here are some examples of state variables with different modifiers:
 
 ```solidity
-{% include snippets/Tutorials/beginner-variables.sol %}
+string public message;
+uint256 internal internalVar;
+uint8 private privateVar;
+bool external isTrue;
 ```
 
 ## The Constructor
@@ -99,7 +104,9 @@ Another familiar concept to programmers is the **constructor**. It is called upo
 In `HelloWorld`, the constructor takes in a `string` as a parameter and sets the `message` state variable to that string.
 
 ```solidity
-{% include snippets/Tutorials/beginner-constructor.sol %}
+constructor(string memory initialMessage) {
+  message = initialMessage;
+}
 ```
 
 ## Using Functions
@@ -107,7 +114,13 @@ In `HelloWorld`, the constructor takes in a `string` as a parameter and sets the
 **Functions** are used to access and modify the state of the contract, and call functions on external contracts. `HelloWorld` has a function called `updateMessage`, which updates the current message stored in the state.
 
 ```solidity
-{% include snippets/Tutorials/beginner-functions.sol %}
+constructor(string memory initialMessage) {
+  message = initialMessage;
+}
+
+function updateMessage(string memory newMessage) public {
+  message = newMessage;
+}
 ```
 
 # 4. What does "deploying" mean?
