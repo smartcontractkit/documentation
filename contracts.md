@@ -109,13 +109,16 @@ landing: true
         </a>
       </div>
     </div>
+
+    <h2>
+
     <div class="cl-servicecard">
       <div>
         <img
           src="https://uploads-ssl.webflow.com/5e444500cbc42eeb5198206f/5e7898724c71bddf6749df17_DeFi2.svg"
           class="cl-image-featured"
         />
-        <h2 class="cl-servicecard-h2">Data Feeds</h2>
+        <h2 class="cl-servicecard-h2">EVM Chains</h2>
         <p>
           Retrieve the latest prices and data points of assets in your smart
           contracts.
@@ -144,7 +147,7 @@ landing: true
           src="https://uploads-ssl.webflow.com/5e444500cbc42eeb5198206f/5e7898724c71bd62c149df16_Example.svg"
           class="cl-image-featured"
         />
-        <h2 class="cl-servicecard-h2">Verifiable Random Numbers (VRF)</h2>
+        <h2 class="cl-servicecard-h2">Solana</h2>
         <p>
           Use Chainlink VRF to consume randomness in your smart contracts.
         </p>
