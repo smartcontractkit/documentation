@@ -95,7 +95,7 @@ contract HelloWorld {
 }
 ```
 
-## Variables 
+## Variables
 
 Again, like Javascript, contracts can have state variables and local variables. **State variables** are variables with values that are permanently stored in contract storage. The values of **local variables**, however, are present only until the function is executing. There are also different types of variables you can use within Solidity, such as `string`, `uint256`, etc. Check out the [Solidity documentation](https://docs.soliditylang.org/en/v0.8.7/) to learn more about the different kinds of variables and types.
 
@@ -119,7 +119,7 @@ pragma solidity 0.8.7;
 
 contract HelloWorld {
   constructor(string memory initialMessage) {
-        message = initialMessage;
+        string memory message = initialMessage;
   }
 }
 ```
@@ -133,16 +133,16 @@ pragma solidity 0.8.7;
 
 contract HelloWorld {
   constructor(string memory initialMessage) {
-        message = initialMessage;
+        string memory message = initialMessage;
   }
 
-  function updateMessage(string memory newMessage) public {
-        message = newMessage;
+  function updateMessage(string memory newMessage) public pure {
+        string memory message = newMessage;
     }
 }
 ```
 
-# 4. What does "deploying" mean? 
+# 4. What does "deploying" mean?
 
 **Deploying** a smart contract is the process of pushing the code to the blockchain, at which point it resides with an on-chain address. Once it's deployed, the code cannot be changed and is said to be *immutable*.
 
@@ -154,7 +154,7 @@ As long as the address is known, its functions can be called through an interfac
 
 Oracles play an extremely important role in facilitating the full potential of smart contract utility. Without a reliable connection to real-world conditions, smart contracts are unable to effectively serve the real-world.
 
-# 6. How do smart contracts use oracles? 
+# 6. How do smart contracts use oracles?
 
 Oracles are most popularly used with [*Data Feeds*](../using-chainlink-reference-contracts/). DeFi platforms like [AAVE](https://aave.com/) and [Synthetix](https://www.synthetix.io/) use Chainlink data feed oracles to obtain accurate real-time asset prices in their smart contracts.
 
@@ -163,7 +163,8 @@ Chainlink data feeds are sources of data [aggregated from many independent Chain
 ![Chainlink Feeds List](/images/contract-devs/price-aggr.png)
 
 ## Information about Interfaces
-Before using data feeds, it's important to understand how interfaces work in Solidity. An **interface** is another concept that will be familiar to programmers of other languages. 
+
+Before using data feeds, it's important to understand how interfaces work in Solidity. An **interface** is another concept that will be familiar to programmers of other languages.
 
 Interfaces define functions without their implementation, leaving inheriting contracts to define the actual implementation themselves. This makes it easier to know what functions to call in a contract. Here's an example of an interface:
 
@@ -175,10 +176,10 @@ interface numberComparison {
 }
 
 contract Test is numberComparison {
-    
+
    constructor() {}
-   
-   function isSameNum(uint a, uint b) external view returns(bool){
+
+   function isSameNum(uint a, uint b) override external pure returns(bool){
       if (a == b) {
         return true;
       } else {
@@ -211,7 +212,7 @@ There are a few things that are needed to deploy a contract to a testnet:
 
 You should have the code. What you need next is a compiler.
 
-## The Remix IDE 
+## The Remix IDE
 
 [Remix](https://remix.ethereum.org/) is an online IDE which enables anyone to write, compile and deploy smart contracts from the browser.
 
