@@ -28,6 +28,7 @@ In this tutorial, you will learn about hybrid smart contracts. You will then cre
 
 **Table of Contents**
 
++ [Overview](#overview)
 + [1. What is a smart contract? What is a hybrid smart contract?](#1-what-is-a-smart-contract-what-is-a-hybrid-smart-contract)
 + [2. What language is a smart contract written in?](#2-what-language-is-a-smart-contract-written-in)
 + [3. What does a smart contract look like?](#3-what-does-a-smart-contract-look-like)
@@ -49,27 +50,18 @@ Smart contracts can connect to real-world market prices of assets to produce pow
 
 The most popular language for writing smart contracts on Ethereum is [Solidity](https://docs.soliditylang.org/en/v0.8.7/). It was created by the Ethereum Foundation specifically for smart contract development and is constantly being updated.
 
-If you've ever written Javascript, Java, or other object-oriented scripting languages, Solidity should be easy to understand. Similar to object-oriented langauges, Solidity is considered to be a *contract*-oriented language.
+If you've ever written Javascript, Java, or other object-oriented scripting languages, Solidity should be easy to understand. Similar to object-oriented languages, Solidity is considered to be a *contract*-oriented language.
 
 # 3. What does a smart contract look like?
 
 The structure of a smart contract is similar to that of a class in Javascript, with a few differences. Let's take a look at this `HelloWorld` example.
 
 ```solidity
-pragma solidity 0.8.7;
-
-contract HelloWorld {
-    string public message;
-
-    constructor(string memory initialMessage) {
-        message = initialMessage;
-    }
-
-    function updateMessage(string memory newMessage) public {
-        message = newMessage;
-    }
-}
+{% include samples/Tutorials/HelloWorld.sol %}
 ```
+<div class="remix-callout">
+  <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/Tutorials/HelloWorld.sol" target="_blank" class="cl-button--ghost">Deploy this contract using Remix ↗</a>
+</div>
 
 ## Define the Version of Solidity
 
@@ -87,8 +79,6 @@ This means that the code is written for Solidity version 0.7.0, or a newer versi
 Next, the `HelloWorld` contract is defined by using the keyword `contract`. Think of this as being similar to declaring `class` in Javascript. The implementation of `HelloWorld` is inside this definition, denoted with curly braces.
 
 ```solidity
-pragma solidity 0.8.7;
-
 contract HelloWorld {
 
 }
@@ -114,12 +104,8 @@ Another familiar concept to programmers is the **constructor**. It is called upo
 In `HelloWorld`, the constructor takes in a `string` as a parameter and sets the `message` state variable to that string.
 
 ```solidity
-pragma solidity 0.8.7;
-
-contract HelloWorld {
-  constructor(string memory initialMessage) {
-        message = initialMessage;
-  }
+constructor(string memory initialMessage) {
+  message = initialMessage;
 }
 ```
 
@@ -128,24 +114,20 @@ contract HelloWorld {
 **Functions** are used to access and modify the state of the contract, and call functions on external contracts. `HelloWorld` has a function called `updateMessage`, which updates the current message stored in the state.
 
 ```solidity
-pragma solidity 0.8.7;
+constructor(string memory initialMessage) {
+  message = initialMessage;
+}
 
-contract HelloWorld {
-  constructor(string memory initialMessage) {
-        message = initialMessage;
-  }
-
-  function updateMessage(string memory newMessage) public {
-        message = newMessage;
-    }
+function updateMessage(string memory newMessage) public {
+  message = newMessage;
 }
 ```
 
-# 4. What does "deploying" mean? 
+# 4. What does "deploying" mean?
 
 **Deploying** a smart contract is the process of pushing the code to the blockchain, at which point it resides with an on-chain address. Once it's deployed, the code cannot be changed and is said to be *immutable*.
 
-As long as the address is known, its functions can be called through an interface, on [Etherscan](https://etherscan.io/), or through a library like [web3js](https://web3js.readthedocs.io/en/v1.3.0/), [web3py](https://web3py.readthedocs.io/), [ethers](https://docs.ethers.io/v5/), and more. Contracts can also be written to interact with other contracts on the blockchain.
+As long as the address is known, its functions can be called through an interface, on [Etherscan](https://etherscan.io/), or through a library like [web3js](https://web3js.readthedocs.io/), [web3py](https://web3py.readthedocs.io/), [ethers](https://docs.ethers.io), and more. Contracts can also be written to interact with other contracts on the blockchain.
 
 # 5. What are oracles? Why are they important?
 
@@ -153,7 +135,7 @@ As long as the address is known, its functions can be called through an interfac
 
 Oracles play an extremely important role in facilitating the full potential of smart contract utility. Without a reliable connection to real-world conditions, smart contracts are unable to effectively serve the real-world.
 
-# 6. How do smart contracts use oracles? 
+# 6. How do smart contracts use oracles?
 
 Oracles are most popularly used with [*Data Feeds*](../using-chainlink-reference-contracts/). DeFi platforms like [AAVE](https://aave.com/) and [Synthetix](https://www.synthetix.io/) use Chainlink data feed oracles to obtain accurate real-time asset prices in their smart contracts.
 
@@ -167,25 +149,13 @@ Before using data feeds, it's important to understand how interfaces work in Sol
 Interfaces define functions without their implementation, leaving inheriting contracts to define the actual implementation themselves. This makes it easier to know what functions to call in a contract. Here's an example of an interface:
 
 ```solidity
-pragma solidity 0.8.7;
-
-interface numberComparison {
-   function isSameNum(uint a, uint b) external view returns(bool);
-}
-
-contract Test is numberComparison {
-    
-   constructor() public {}
-   
-   function isSameNum(uint a, uint b) external view returns(bool){
-      if (a == b) {
-        return true;
-      } else {
-        return false;
-      }
-   }
-}
+{% include samples/Tutorials/Test.sol %}
 ```
+<div class="remix-callout">
+  <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/Tutorials/Test.sol" target="_blank" class="cl-button--ghost">Deploy this contract using Remix ↗</a>
+</div>
+
+For this example, `override` is necessary in the `Test` contract function because it overrides the base function contained in the `numberComparison` interface. The contract uses `pure` instead of `view` because the `isSameNum` function in the `Test` contract does not return a storage variable. 
 
 ## Using Chainlink Data Feeds
 
@@ -210,17 +180,17 @@ There are a few things that are needed to deploy a contract to a testnet:
 
 You should have the code. What you need next is a compiler.
 
-## The Remix IDE 
+## The Remix IDE
 
 [Remix](https://remix.ethereum.org/) is an online IDE which enables anyone to write, compile and deploy smart contracts from the browser.
 
-Fortunately for us, Remix also has support for gist. This means that Remix can load code from Github, and in this case, `PriceConsumerV3.sol` Click the button below to open a new tab, then once Remix has loaded, find the `gists` folder in the File Explorer on the left-hand side, and click on the file to open the code in the editor.
+Fortunately for us, Remix also has support for samples. This means that Remix can load code from Github, and in this case, `PriceConsumerV3.sol` Click the button below to open a new tab, then once Remix has loaded, find the **docs.chain.link** > **samples** > **PriceFeeds** folder in the File Explorer on the left-hand side, and click on the file to open the code in the editor.
 
 <div class="remix-callout">
   <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/PriceFeeds/PriceConsumerV3.sol" target="_blank" class="cl-button--ghost">Deploy this contract using Remix ↗</a>
 </div>
 
-![Remix Select PriceConsumerV3.sol](/files/11d7052-Screenshot_2020-11-27_at_10.16.47.png)
+![Remix Select PriceConsumerV3.sol](/files/beginner-tutorial-remix-snapshot.png)
 
 Get familiar with the layout of Remix and play around with the contract. This is what you'll use for the compiler.
 
@@ -283,7 +253,7 @@ This screen might seem a little more intimidating, but do not fret. This is wher
 
 Click **ENVIRONMENT**. the selected value should currently be **Javascript VM**. Instead, select **Injected Web3**. This should trigger a Metamask notification asking for permission to connect. Accept it, and your address should be automatically loaded into the **ACCOUNT** menu below **ENVIRONMENT**.
 
-Once that's done, check that the **CONTRACT** menu displays the name of your contract, then click **Deploy**. Another Metamask notification will pop up asking for permission, and detailing how much GAS it will cost in testnet ETH. Confirm the transaction and await confirmation! This may take a few seconds depending on the network, so be patient.
+Once that's done, check that the **CONTRACT** menu displays the name of your contract. In many cases, Remix defaults to deploying the first contract which appears alphabetically in the menu; to prevent errors, select the correct contract, then click **Deploy**. Another Metamask notification will pop up asking for permission, and detailing how much GAS it will cost in testnet ETH. Confirm the transaction and await confirmation! This may take a few seconds depending on the network, so be patient.
 
 ## Get the Price
 

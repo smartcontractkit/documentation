@@ -4,7 +4,7 @@
   "description": "",
   "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "npx hardhat compile",
     "serve": "NODE_ENV=development concurrently \"watchify _src/index.ts -p [ tsify ] -o _src/index.js\" \"watchify _src/keepers-configuration.ts -p [ tsify ] -o _src/keepers-configuration.js\" \"npx @11ty/eleventy --serve --port=4200\"",
     "build": "browserify _src/index.ts -t [ uglifyify ] -p [ tsify ] -o _src/index.js && browserify _src/keepers-configuration.ts -t [ uglifyify ] -p [ tsify ] -o _src/keepers-configuration.js && rm -rf _site && npx @11ty/eleventy",
     "deploy": "yarn build && firebase deploy",
@@ -19,6 +19,9 @@
   "license": "MIT",
   "dependencies": {
     "@11ty/eleventy": "^0.12.1",
+    "@chainlink/contracts": "^0.2.2",
+    "@nomiclabs/hardhat-ethers": "^2.0.2",
+    "@nomiclabs/hardhat-waffle": "^2.0.1",
     "@readme/markdown": "^6.30.3",
     "@readme/variable": "^13.5.1",
     "@types/node": "^16.7.13",
@@ -28,6 +31,7 @@
     "date-fns": "^2.23.0",
     "eleventy-plugin-youtube-embed": "^1.6.4",
     "firebase-tools": "^9.17.0",
+    "hardhat": "^2.7.0",
     "html-minifier": "^4.0.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
