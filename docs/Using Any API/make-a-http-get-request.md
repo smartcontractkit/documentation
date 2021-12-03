@@ -19,8 +19,6 @@ This guide explains how to make an HTTP GET request to an external API from a sm
 + [API Consumer Example](#api-consumer-example)
 + [Choosing an Oracle and JobId](#choosing-an-oracle-and-jobid)
 + [Supported APIs](#supported-apis)
-  + [Response Data](#response-data)
-  + [Response Types](#response-types)
 + [Existing Job Requests](#existing-job-requests)
 
 # API Consumer Example
@@ -95,7 +93,7 @@ The code example above returns an unsigned integer from the oracle response, but
 * **`bool`** - True or False values
 * **`bytes32`** - Strings and byte values
 
-If you need to return a string, use `bytes32`. Here's [one method](https://gist.github.com/alexroan/a8caf258218f4065894ecd8926de39e7)of converting `bytes32` to `string`. Currently, any return value must fit within 32 bytes. If the value is bigger than that multiple requests will need to be made.
+If you need to return a string, use `bytes32`. Here's [one method](https://gist.github.com/alexroan/a8caf258218f4065894ecd8926de39e7) of converting `bytes32` to `string`. Currently, any return value must fit within 32 bytes. If the value is bigger than that multiple requests will need to be made.
 
 The data type returned by a specific job depends on the [tasks](/docs/tasks/) that it supports. Make sure to choose an oracle job that supports the data type that your contract needs to consume.
 

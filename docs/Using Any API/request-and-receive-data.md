@@ -29,9 +29,15 @@ We understand making smart contracts compatible with off-chain data adds to the 
 
 Chainlink’s decentralized oracle network provides smart contracts with the ability to push and pull data, facilitating the interoperability between on-chain and off-chain applications.
 
+## Requesting Off-chain Data
+
 Outlined below are multiple ways developers can connect smart contracts to off-chain data feeds. Click on each request type to learn more:
 
 | Request Type                  | Description                                                          |
 | ------------------------------- | -------------------------------------------------------------------- |
 | [HTTP GET Request](../make-a-http-get-request/)                | This is a request to an external API from a smart contract, using Chainlink's [Request & Receive Data](../advanced-tutorial/) cycle. This type of request can receive [multi-variable](../multi-variable-responses/) or [large](../large-responses/) responses. |
 | [Existing Job Request ](../existing-job-request/)                | This is a request which uses an *existing* Oracle Job to retrieve off-chain data.|
+
+## Building External Adapters
+
+To learn more about building external adapters and adding them to nodes, refer to the [External Adapters](../external-adapters/) documentation.
