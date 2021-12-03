@@ -71,7 +71,7 @@ A simple example subscription with only one consumer who is also the subscriptio
 In this example, the subscription for multiple consumers is managed by an external account. Steps to set up this configuration:
 
 1. Create a subscription with `createSubscription()`. Make a note of the subscriptionId emitted in the `SubscriptionCreated` log. TODO: metamask screen shots
-1. Deploy your applications which expose a `setSubscriptionId(uint64 subId)` like `VRFConsumerExternalSubOwner` does and record all their addresses.
+1. Deploy your applications which accept a subscription ID like `VRFExternalSubOwnerExample.requestRandomWords` does and record all their addresses.
 1. Register all the applications `addConsumer(uint64 subId, address consumer)` . TODO: metamask screen shots
 1. Fund the subscription with `LINKTOKEN.transferAndCall(address(COORDINATOR), amount, abi.encode(subId));`
 
