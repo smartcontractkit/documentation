@@ -72,6 +72,8 @@ Registering an Upkeep with the Chainlink Keepers App notifies the Keeper Network
     ![Confirm LINK Transfer](/images/contract-devs/keeper/keeper-confirm-transfer.png)
   * Receive a success message and verify that the funds were added to the Upkeep
     ![Funds Added Successful Message](/images/contract-devs/keeper/keeper-add-funds.png)
+    
+  Note: Funds added to your upkeep will not be available for use by the Keeper Network until the minimum number of block confirmations have passed. This differs from chain to chain.
 
 # How Funding Works
 
