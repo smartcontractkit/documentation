@@ -112,7 +112,7 @@ contract MyClient is ChainlinkClient {
         req.add("pathEUR", "data");
         req.add("urlJPY", "https://datafeed.xyz/ethjpy");
         req.add("pathJPY", "data");
-        requestOracleData(req, _payment); // MWR API.
+        sendChainlinkRequest(req, _payment); // MWR API.
     }
 
     function fulfill(bytes32 requestID, uint256 usd, uint256 eur, uint256 jpy) public {
