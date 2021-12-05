@@ -1,6 +1,6 @@
 ---
 layout: nodes.liquid
-section: smartContract
+section: ethereum
 date: Last Modified
 title: "Introduction to Using Any API"
 permalink: "docs/request-and-receive-data/"

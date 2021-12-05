@@ -1,6 +1,6 @@
 ---
 layout: nodes.liquid
-section: smartContract
+section: ethereum
 date: Last Modified
 title: "Kraken Rates Oracle Node"
 permalink: "docs/kraken-rates-oracle-node/"

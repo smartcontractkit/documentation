@@ -1,6 +1,6 @@
 ---
 layout: nodes.liquid
-section: smartContract
+section: gettingStarted
 date: Last Modified
 title: "Install, configure & fund MetaMask"
 permalink: "docs/install-metamask/"
@@ -20,11 +20,11 @@ MetaMask is a wallet that runs as a self-contained application inside your brows
 
 ## Install & Configure
 
-Go to: <a href="https://metamask.io" target="_blank" rel="noreferrer, noopener">metamask.io</a> and install the browser extension in Chrome or Firefox. 
+Go to: <a href="https://metamask.io" target="_blank" rel="noreferrer, noopener">metamask.io</a> and install the browser extension in Chrome or Firefox.
 
 * After installing the MetaMask extension, open the extension by clicking on the MetaMask Fox icon. If prompted to use the New Look, do so.
 * Create a new vault.
-* You will be presented with a 12-word mnemonic phrase; copy that phrase down in a very secure location that only you can access. 
+* You will be presented with a 12-word mnemonic phrase; copy that phrase down in a very secure location that only you can access.
 * Change the network selection from `Main Ethereum Network` to the `Kovan Test Network`.
 
 ## Fund your address with Ether

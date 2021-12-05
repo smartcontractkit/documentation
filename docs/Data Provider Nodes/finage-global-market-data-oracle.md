@@ -1,6 +1,6 @@
 ---
 layout: nodes.liquid
-section: smartContract
+section: ethereum
 date: Last Modified
 title: "Finage Global Market Data Oracle"
 permalink: "docs/finage-global-market-data-oracle/"

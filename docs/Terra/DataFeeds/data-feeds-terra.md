@@ -1,6 +1,6 @@
 ---
 layout: feed.liquid
-section: nonEvm
+section: terra
 title: "Terra Feeds"
 stub: data-feeds-terra
 permalink: "docs/terra/data-feeds-terra/"

@@ -1,9 +1,9 @@
 ---
 layout: nodes.liquid
-section: nonEvm
-title: "Chainlink Documentation (Non-EVM)"
+section: solana
+title: "Chainlink on Solana"
 date: Last Modified
-permalink: /non-evm/
+permalink: /solana/
 ---
 
 <div>
@@ -19,27 +19,14 @@ permalink: /non-evm/
     <div class="cl-featuredcard">
       <div>
         <img
-          src="/images/logos/solana.svg"
-          style="max-width:60px;"
+          src="/images/solana/solana-banner.png"
+          class="cl-image-featured" style="max-width:600px"
         />
         <h3>Use Data Feeds on Solana</h3>
         <p>
           Solana is a high-throughput blockchain. You can use Chainlink Data Feeds on the Solana network to connect your smart contracts to the real-world market prices of assets.
         </p>
         <a href="/docs/solana/using-data-feeds-solana/" class="cl-button--ghost">Data feeds on Solana</a>
-      </div>
-    </div>
-    <div class="cl-featuredcard">
-      <div>
-        <img
-          src="/images/logos/terra.svg"
-          style="max-width:60px;"
-        />
-        <h3>Use Data Feeds on Terra</h3>
-        <p>
-          Terra is an application-specific blockchain built on the Cosmos SDK and Tendermint consensus. You can use Chainlink Data Feeds on the Terra network to connect your smart contracts to the real-world market prices of assets.
-        </p>
-        <a href="/docs/terra/using-data-feeds-terra/" class="cl-button--ghost">Data feeds on Terra</a>
       </div>
     </div>
     <div class="cl-section">
@@ -50,10 +37,10 @@ permalink: /non-evm/
       <h3>New to Smart Contracts?</h3>
       <p>
         Start with the Ethereum network and build your first smart contract connected to off-chain data in our
-        Beginner's Walkthrough.
+        Getting Started Guide.
       </p>
-      <a href="/docs/beginners-tutorial" class="keychainify-checked">
-        Start Building
+      <a href="/getting-started/" class="keychainify-checked">
+        Getting Started Guide
       </a>
     </div>
   </div>

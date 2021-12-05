@@ -1,6 +1,6 @@
 ---
 layout: nodes.liquid
-section: nonEvm
+section: solana
 date: Last Modified
 title: "Using Data Feeds (Solana)"
 permalink: "docs/solana/using-data-feeds-solana/"

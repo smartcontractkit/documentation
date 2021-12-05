@@ -1,6 +1,6 @@
 ---
 layout: nodes.liquid
-section: smartContract
+section: ethereum
 date: Last Modified
 title: "Hackathon Resources"
 permalink: "docs/hackathon-resources/"
@@ -37,7 +37,7 @@ Always refer back to the [getting help](/docs/getting-help) page for the latest 
 
 Be sure to check the documentation in the links above for in depth-descriptions of everything.
 
-New? Start with [Beginners - The Basics](../beginners-tutorial/), and follow everything in [Tutorials](../tutorials/)
+New? See the [Getting Started Guide](/getting-started/).
 - [Beginners - The Basics](../beginners-tutorial/)
 - [Step-by-step guide to working with smart contracts](/docs/intermediates-tutorial)
 - [Video Tutorials](https://www.youtube.com/playlist?list=PLVP9aGDn-X0QwJVbQvuKr-zrh2_DV5M6J)

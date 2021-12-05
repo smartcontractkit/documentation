@@ -1,6 +1,6 @@
 ---
 layout: nodes.liquid
-section: smartContract
+section: ethereum
 date: Last Modified
 title: "Chainlink VRF Contract Addresses"
 permalink: "docs/vrf-contracts/"

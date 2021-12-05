@@ -1,6 +1,6 @@
 ---
 layout: nodes.liquid
-section: smartContract
+section: gettingStarted
 date: Last Modified
 title: "Acquire testnet LINK"
 permalink: "docs/acquire-link/"
@@ -13,7 +13,7 @@ This page will show you how to obtain and add testnet LINK to MetaMask. If you a
 * Go to the Chainlink Kovan Faucet site: https://faucets.chain.link/kovan
 
 > 👍 Note
-> 
+>
 > You can also get testnet LINK on other test networks, such as Rinkeby, from https://faucets.chain.link/rinkeby.
 
 ![Link Kovan Faucet](/files/faucet.png)

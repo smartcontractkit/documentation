@@ -1,10 +1,12 @@
 ---
 layout: nodes.liquid
-section: smartContract
-title: "Chainlink Smart Contract Docs"
+section: ethereum
+title: "Chainlink on Ethereum Chains"
 date: Last Modified
-permalink: /
+permalink: /ethereum/
 ---
+
+<!-- TODO: Replace this content with new content for the Ethereum Chains landing page. -->
 
 <div>
   <div class="markdown-body">
