@@ -60,6 +60,22 @@ module.exports = {
             url: '/docs/architecture-overview/',
           },
           {
+            title: 'Data Feeds ↗',
+            url: '/docs/using-chainlink-reference-contracts/',
+          },
+          {
+            title: 'Chainlink VRF ↗',
+            url: '/docs/chainlink-vrf/',
+          },
+          {
+            title: 'Chainlink Keepers ↗',
+            url: '/docs/chainlink-keepers/introduction/',
+          },
+          {
+            title: 'Using Any API ↗',
+            url: '/docs/request-and-receive-data/',
+          },
+          {
             title: 'Run a Chainlink Node ↗',
             url: '/chainlink-nodes/',
           },
@@ -123,6 +139,10 @@ module.exports = {
             url: '/docs/link-token-contracts/'
           },
           {
+            title: 'Using ENS with Chainlink',
+            url: '/docs/ens/'
+          },
+          {
             title: 'Developer Communications',
             url: '/docs/developer-communications/',
           },
@@ -178,10 +198,6 @@ module.exports = {
             url: '/docs/reference-contracts/',
             children: [
               {
-                title: 'ENS',
-                url: '/docs/ens/'
-              },
-              {
                 title: 'Ethereum Data Feeds',
                 url: '/docs/ethereum-addresses/',
               },
@@ -229,6 +245,15 @@ module.exports = {
           },
         ],
       },
+      {
+        section: 'Other',
+        contents: [
+          {
+            title: 'Ethereum Home ↗',
+            url: '/ethereum/',
+          },
+        ],
+      },
     ],
     ethereumVRF: [
       {
@@ -260,6 +285,15 @@ module.exports = {
           },
         ],
       },
+      {
+        section: 'Other',
+        contents: [
+          {
+            title: 'Ethereum Home ↗',
+            url: '/ethereum/',
+          },
+        ],
+      },
     ],
     ethereumKeepers: [
       {
@@ -288,6 +322,15 @@ module.exports = {
           {
             title: 'FAQs',
             url: '/docs/chainlink-keepers/faqs/'
+          },
+        ],
+      },
+      {
+        section: 'Other',
+        contents: [
+          {
+            title: 'Ethereum Home ↗',
+            url: '/ethereum/',
           },
         ],
       },
@@ -330,15 +373,29 @@ module.exports = {
           },
         ],
       },
+      {
+        section: 'Other',
+        contents: [
+          {
+            title: 'Ethereum Home ↗',
+            url: '/ethereum/',
+          },
+        ],
+      },
     ],
     terra: [
       {
-        section: 'TERRA',
+        section: 'Terra',
         contents: [
           {
             title: 'Overview',
             url: '/docs/terra/',
           },
+        ],
+      },
+      {
+        section: 'Data Feeds',
+        contents: [
           {
             title: 'Using Data Feeds',
             url: '/docs/terra/using-data-feeds-terra/',
@@ -358,6 +415,11 @@ module.exports = {
             title: 'Overview',
             url: '/docs/solana/',
           },
+        ],
+      },
+      {
+        section: 'Data Feeds',
+        contents: [
           {
             title: 'Using Data Feeds',
             url: '/docs/solana/using-data-feeds-solana/',
@@ -366,7 +428,6 @@ module.exports = {
             title: 'Solana Data Feeds',
             url: '/docs/solana/data-feeds-solana/',
           },
-
         ],
       },
     ],
@@ -375,47 +436,48 @@ module.exports = {
         section: 'NODE OPERATORS',
         contents: [
           {
-            url: '/docs/node-versions/',
             title: 'Node Versions',
+            url: '/docs/node-versions/',
           },
           {
-            url: '/docs/running-a-chainlink-node/',
             title: 'Running a Chainlink Node',
+            url: '/docs/running-a-chainlink-node/',
           },
           {
+            title: 'Fulfilling Requests',
             url: '/docs/fulfilling-requests/',
-            title: 'Fulfilling Requests' },
-          {
-            url: '/docs/run-an-ethereum-client/',
-            title: 'Run an Ethereum Client',
           },
           {
-            url: '/docs/performing-system-maintenance/',
+            title: 'Run an Ethereum Client',
+            url: '/docs/run-an-ethereum-client/',
+          },
+          {
             title: 'Performing System Maintenance',
+            url: '/docs/performing-system-maintenance/',
           },
           {
             url: '/docs/connecting-to-a-remote-database/',
             title: 'Connecting to a Remote Database',
           },
           {
-            url: '/docs/configuration-variables/',
             title: 'Configuration Variables',
+            url: '/docs/configuration-variables/',
           },
           {
-            url: '/docs/enabling-https-connections/',
             title: 'Enabling HTTPS Connections',
+            url: '/docs/enabling-https-connections/',
           },
           {
-            url: '/docs/best-security-practices/',
             title: 'Best Security and Operating Practices',
+            url: '/docs/best-security-practices/',
           },
           {
-            url: '/docs/best-practices-aws/',
             title: 'Best Practices for Nodes on AWS',
+            url: '/docs/best-practices-aws/',
           },
           {
+            title: 'Miscellaneous',
             url: '/docs/miscellaneous/',
-            title: 'Miscellaneous'
           },
         ],
       },
@@ -423,36 +485,36 @@ module.exports = {
         section: 'ORACLE JOBS',
         contents: [
           {
-            url: '/docs/jobs/migration-v1-v2',
             title: 'Migrating to v2 Jobs',
+            url: '/docs/jobs/migration-v1-v2/',
           },
           {
-            url: '/docs/jobs/',
             title: 'Jobs',
+            url: '/docs/jobs/',
             children: [
               {
+                title: 'Cron',
                 url: '/docs/jobs/types/cron/',
-                title: 'Cron'
               },
               {
-                url: '/docs/jobs/types/direct-request/',
                 title: 'Direct Request',
+                url: '/docs/jobs/types/direct-request/',
               },
               {
-                url: '/docs/jobs/types/flux-monitor/',
                 title: 'Flux Monitor',
+                url: '/docs/jobs/types/flux-monitor/',
               },
               {
+                title: 'Keeper',
                 url: '/docs/jobs/types/keeper/',
-                title: 'Keeper'
               },
               {
-                url: '/docs/jobs/types/offchain-reporting/',
                 title: 'Off-chain Reporting',
+                url: '/docs/jobs/types/offchain-reporting/',
               },
               {
+                title: 'Webhook',
                 url: '/docs/jobs/types/webhook/',
-                title: 'Webhook'
               },
             ],
           },
@@ -461,73 +523,73 @@ module.exports = {
             title: 'Tasks',
             children: [
               {
+                title: 'Job Pipelines',
                 url: '/docs/jobs/task-types/pipelines/',
-                title: 'Job Pipelines'
               },
               {
+                title: 'HTTP',
                 url: '/docs/jobs/task-types/http/',
-                title: 'HTTP'
               },
               {
+                title: 'Bridge',
                 url: '/docs/jobs/task-types/bridge/',
-                title: 'Bridge'
               },
               {
+                title: 'JSON Parse',
                 url: '/docs/jobs/task-types/jsonparse/',
-                title: 'JSON Parse'
               },
               {
+                title: 'CBOR Parse',
                 url: '/docs/jobs/task-types/cborparse/',
-                title: 'CBOR Parse'
               },
               {
-                url: '/docs/jobs/task-types/eth-abi-decode/',
                 title: 'ETH ABI Decode',
+                url: '/docs/jobs/task-types/eth-abi-decode/',
               },
               {
-                url: '/docs/jobs/task-types/eth-abi-decode-log/',
                 title: 'ETH ABI Decode Log',
+                url: '/docs/jobs/task-types/eth-abi-decode-log/',
               },
               {
-                url: '/docs/jobs/task-types/eth-abi-encode/',
                 title: 'ETH ABI Encode',
+                url: '/docs/jobs/task-types/eth-abi-encode/',
               },
               {
+                title: 'ETH Call',
                 url: '/docs/jobs/task-types/eth-call/',
-                title: 'ETH Call'
               },
               {
+                title: 'ETH Tx',
                 url: '/docs/jobs/task-types/eth-tx/',
-                title: 'ETH Tx'
               },
               {
+                title: 'Multiply',
                 url: '/docs/jobs/task-types/multiply/',
-                title: 'Multiply'
               },
               {
+                title: 'Divide',
                 url: '/docs/jobs/task-types/divide/',
-                title: 'Divide'
               },
 
               {
+                title: 'Any',
                 url: '/docs/jobs/task-types/any/',
-                title: 'Any'
               },
               {
+                title: 'Mean',
                 url: '/docs/jobs/task-types/mean/',
-                title: 'Mean'
               },
               {
+                title: 'Median',
                 url: '/docs/jobs/task-types/median/',
-                title: 'Median'
               },
               {
+                title: 'Mode',
                 url: '/docs/jobs/task-types/mode/',
-                title: 'Mode'
               },
               {
+                title: 'Sum',
                 url: '/docs/jobs/task-types/sum/',
-                title: 'Sum'
               },
             ],
           },
@@ -537,20 +599,20 @@ module.exports = {
         section: 'EXTERNAL ADAPTERS',
         contents: [
           {
+            title: 'Introduction',
             url: '/docs/external-adapters/',
-            title: 'Introduction'
           },
           {
-            url: '/docs/contract-creators/',
             title: 'External Adapters in Solidity',
+            url: '/docs/contract-creators/',
           },
           {
+            title: 'Building External Adapters',
             url: '/docs/developers/',
-            title: 'Building External Adapters'
           },
           {
-            url: '/docs/node-operators/',
             title: 'Bridges: Adding External Adapters to Nodes',
+            url: '/docs/node-operators/',
           },
         ],
       },
@@ -558,16 +620,16 @@ module.exports = {
         section: 'EXTERNAL INITIATORS',
         contents: [
           {
-            url: '/docs/external-initiators-introduction/',
             title: 'Introduction',
+            url: '/docs/external-initiators-introduction/',
           },
           {
-            url: '/docs/building-external-initiators/',
             title: 'Building External Initiators',
+            url: '/docs/building-external-initiators/',
           },
           {
-            url: '/docs/external-initiators-in-nodes/',
             title: 'Adding External Initiators to Nodes',
+            url: '/docs/external-initiators-in-nodes/',
           },
         ],
       },
@@ -577,16 +639,16 @@ module.exports = {
         section: 'v1 JSON JOBS [REMOVED]',
         contents: [
           {
+            title: 'Job Specifications',
             url: '/docs/job-specifications/',
-            title: 'Job Specifications'
           },
           {
+            title: 'Core Adapters',
             url: '/docs/core-adapters/',
-            title: 'Core Adapters'
           },
           {
+            title: 'Initiators',
             url: '/docs/initiators/',
-            title: 'Initiators'
           },
         ],
       },

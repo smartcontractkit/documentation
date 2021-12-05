@@ -1,6 +1,6 @@
 ---
 layout: nodes.liquid
-section: ethereum
+section: ethereumVRF
 date: Last Modified
 title: "VRF Best Practices"
 permalink: "docs/chainlink-vrf-best-practices/"
