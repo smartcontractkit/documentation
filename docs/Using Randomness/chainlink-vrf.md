@@ -1,6 +1,6 @@
 ---
 layout: nodes.liquid
-section: ethereum
+section: ethereumVRF
 date: Last Modified
 title: "Introduction to Chainlink VRF"
 permalink: "docs/chainlink-vrf/"

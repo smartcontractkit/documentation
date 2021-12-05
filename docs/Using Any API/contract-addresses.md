@@ -1,6 +1,6 @@
 ---
 layout: nodes.liquid
-section: ethereum
+section: ethereumAnyAPI
 date: Last Modified
 title: "Contract Addresses"
 permalink: "docs/decentralized-oracles-ethereum-mainnet/"

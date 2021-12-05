@@ -1,10 +1,10 @@
 ---
 layout: feed.liquid
 title: "Binance Smart Chain Data Feeds"
+section: "ethereumDataFeeds"
+permalink: "/docs/binance-smart-chain-addresses/"
 stub: binance-smart-chain-addresses-price
-metadata: 
+metadata:
   description: "Chainlink Data Feeds on Binance Smart Chain"
-  image: 
-    0: "/files/OpenGraph_V3.png"
 ---
 (content rendered programatically by layout)
