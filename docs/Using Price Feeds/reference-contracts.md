@@ -1,6 +1,6 @@
 ---
 layout: nodes.liquid
-section: ethereum
+section: "ethereumDataFeeds"
 date: Last Modified
 title: "Data Feeds Contract Addresses"
 permalink: "docs/reference-contracts/"

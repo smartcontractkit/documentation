@@ -1,13 +1,11 @@
 ---
 layout: nodes.liquid
-section: ethereum
+section: "ethereumDataFeeds"
 date: Last Modified
 title: "Data Feeds API Reference"
 permalink: "docs/price-feeds-api-reference/"
-metadata: 
+metadata:
   description: "API reference for using Chainlink Data Feeds in smart contracts."
-  image: 
-    0: "/files/OpenGraph_V3.png"
 ---
 API reference for <a href="https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.6/interfaces/AggregatorV3Interface.sol" target="_blank">`AggregatorV3Interface`</a>.
 
@@ -48,12 +46,12 @@ function description() external view returns (string memory)
 Get data about a specific round, using the `roundId`.
 
 ```javascript Solidity
-function getRoundData(uint80 _roundId) external view 
+function getRoundData(uint80 _roundId) external view
     returns (
-        uint80 roundId, 
-        int256 answer, 
-        uint256 startedAt, 
-        uint256 updatedAt, 
+        uint80 roundId,
+        int256 answer,
+        uint256 startedAt,
+        uint256 updatedAt,
         uint80 answeredInRound
     )
 ```
@@ -75,12 +73,12 @@ function getRoundData(uint80 _roundId) external view
 Get the price from the latest round.
 
 ```javascript Solidity
-function latestRoundData() external view 
+function latestRoundData() external view
     returns (
-        uint80 roundId, 
-        int256 answer, 
-        uint256 startedAt, 
-        uint256 updatedAt, 
+        uint80 roundId,
+        int256 answer,
+        uint256 startedAt,
+        uint256 updatedAt,
         uint80 answeredInRound
     )
 ```

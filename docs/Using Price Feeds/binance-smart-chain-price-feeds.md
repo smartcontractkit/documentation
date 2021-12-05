@@ -1,13 +1,10 @@
 ---
 layout: nodes.liquid
-section: ethereum
+section: "ethereumDataFeeds"
 date: Last Modified
 title: "Binance Smart Chain Data Feeds"
 permalink: "docs/binance-smart-chain-price-feeds/"
 hidden: true
-metadata: 
-  image: 
-    0: "/files/OpenGraph_V3.png"
 ---
 # Introduction to Data Feeds
 
@@ -35,7 +32,7 @@ import "@chainlink/contracts/src/v0.6/interfaces/AggregatorInterface.sol";
 contract PriceConsumer {
 
 	AggregatorInterface internal priceFeed;
-  
+
 	/**
      * Network: Binance Smart Chain
      * Aggregator: BNB/USD
@@ -44,7 +41,7 @@ contract PriceConsumer {
 	constructor() public {
     	priceFeed = AggregatorInterface(0x859AAa51961284C94d970B47E82b8771942F1980);
 	}
-  
+
   	/**
    	 * Returns the latest price
    	 */
@@ -106,7 +103,7 @@ import "@chainlink/contracts/src/v0.6/interfaces/AggregatorInterface.sol";
 contract PriceConsumer {
 
 	AggregatorInterface internal priceFeed;
-  
+
 	/**
      * Network: Binance Smart Chain
      * Aggregator: BNB/USD
@@ -115,7 +112,7 @@ contract PriceConsumer {
 	constructor() public {
     	priceFeed = AggregatorInterface(0x859AAa51961284C94d970B47E82b8771942F1980);
 	}
-  
+
     /**
      * Returns historical data from previous update rounds
      */

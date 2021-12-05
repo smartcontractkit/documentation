@@ -1,6 +1,6 @@
 ---
 layout: nodes.liquid
-section: ethereum
+section: ethereumAnyAPI
 date: Last Modified
 title: "Make an Existing Job Request"
 permalink: "docs/existing-job-request/"

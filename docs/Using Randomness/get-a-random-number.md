@@ -1,6 +1,6 @@
 ---
 layout: nodes.liquid
-section: ethereum
+section: ethereumVRF
 date: Last Modified
 title: "Get a Random Number"
 permalink: "docs/get-a-random-number/"

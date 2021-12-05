@@ -1,6 +1,6 @@
 ---
 layout: nodes.liquid
-section: ethereum
+section: "ethereumDataFeeds"
 date: Last Modified
 title: "Introduction to Data Feeds"
 permalink: "docs/using-chainlink-reference-contracts/"

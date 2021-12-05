@@ -1,9 +1,9 @@
 ---
 layout: feed.liquid
-title: "Fantom Feeds"
+title: "xDai Data Feeds"
 section: "ethereumDataFeeds"
-stub: fantom-price-feeds
-permalink: "docs/fantom-price-feeds/"
+permalink: "/docs/xdai-price-feeds/"
+stub: xdai-price-feeds
 date: Last Modified
 ---
 (content rendered programatically by layout)
