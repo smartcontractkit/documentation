@@ -1,6 +1,6 @@
 ---
 layout: nodes.liquid
-section: smartContract
+section: ethereum
 date: Last Modified
 title: "Data Feeds API Reference"
 permalink: "docs/price-feeds-api-reference/"

@@ -1,6 +1,6 @@
 ---
 layout: nodes.liquid
-section: smartContract
+section: gettingStarted
 date: Last Modified
 title: "API Calls: Using Any API"
 permalink: "docs/advanced-tutorial/"
@@ -263,7 +263,7 @@ contract sportContract is ChainlinkClient {
 
 # 5. How do I deploy to testnet?
 
-Your contract is complete and ready to be compiled and deployed. You can see a complete version of the contract in Remix: 
+Your contract is complete and ready to be compiled and deployed. You can see a complete version of the contract in Remix:
 
 <div class="remix-callout">
   <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/sportContract.sol" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>

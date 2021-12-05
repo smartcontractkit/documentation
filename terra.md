@@ -1,9 +1,9 @@
 ---
 layout: nodes.liquid
-section: nonEvm
-title: "Chainlink Documentation (Non-EVM)"
+section: terra
+title: "Chainlink on Terra"
 date: Last Modified
-permalink: /non-evm/
+permalink: /terra/
 ---
 
 <div>
@@ -15,19 +15,6 @@ permalink: /non-evm/
       <p>
         Chainlink services are now available on networks outside of the Ethereum EVM ecosystem. These services run natively on their respective networks and have no dependencies on other blockchains.
       </p>
-    </div>
-    <div class="cl-featuredcard">
-      <div>
-        <img
-          src="/images/solana/solana-banner.png"
-          class="cl-image-featured" style="max-width:600px"
-        />
-        <h3>Use Data Feeds on Solana</h3>
-        <p>
-          Solana is a high-throughput blockchain. You can use Chainlink Data Feeds on the Solana network to connect your smart contracts to the real-world market prices of assets.
-        </p>
-        <a href="/docs/solana/using-data-feeds-solana/" class="cl-button--ghost">Data feeds on Solana</a>
-      </div>
     </div>
     <div class="cl-featuredcard">
       <div>
@@ -50,10 +37,10 @@ permalink: /non-evm/
       <h3>New to Smart Contracts?</h3>
       <p>
         Start with the Ethereum network and build your first smart contract connected to off-chain data in our
-        Beginner's Walkthrough.
+        Getting Started Guide.
       </p>
-      <a href="/docs/beginners-tutorial" class="keychainify-checked">
-        Start Building
+      <a href="/getting-started/" class="keychainify-checked">
+        Getting Started Guide
       </a>
     </div>
   </div>

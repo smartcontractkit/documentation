@@ -1,11 +1,11 @@
 ---
 layout: nodes.liquid
-section: smartContract
+section: ethereum
 date: Last Modified
 title: "Data Provider Nodes"
 permalink: "docs/data-provider-nodes/"
 ---
-# Introduction to Data Provider Nodes
+# Overview
 
 Chainlink has facilitated the launch of several new oracle data services that allow dApps to access rich data from external data sources. These oracles expand the types of data available on Chainlink and include data and use cases that do not fit into the traditional Chainlink feed model.
 

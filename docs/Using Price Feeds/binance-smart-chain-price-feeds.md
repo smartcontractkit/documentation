@@ -1,6 +1,6 @@
 ---
 layout: nodes.liquid
-section: smartContract
+section: ethereum
 date: Last Modified
 title: "Binance Smart Chain Data Feeds"
 permalink: "docs/binance-smart-chain-price-feeds/"

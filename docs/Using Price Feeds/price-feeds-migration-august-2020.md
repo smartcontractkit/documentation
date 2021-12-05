@@ -1,6 +1,6 @@
 ---
 layout: nodes.liquid
-section: smartContract
+section: ethereum
 date: Last Modified
 title: "Data Feeds August 2020"
 permalink: "docs/price-feeds-migration-august-2020/"

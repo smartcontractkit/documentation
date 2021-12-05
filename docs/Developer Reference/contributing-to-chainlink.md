@@ -1,6 +1,6 @@
 ---
 layout: nodes.liquid
-section: smartContract
+section: ethereum
 date: Last Modified
 title: "Contributing to Chainlink"
 permalink: "docs/contributing-to-chainlink/"

@@ -1,6 +1,6 @@
 ---
 layout: nodes.liquid
-section: smartContract
+section: gettingStarted
 date: Last Modified
 title: "Fund your contract"
 permalink: "docs/fund-your-contract/"
@@ -8,7 +8,7 @@ whatsnext: {"Use your first contract!":"/docs/use-your-first-contract/"}
 ---
 This guide explains how to fund your Solidity contract with LINK using the Remix IDE.
 
-# Retrieveing the contract address 
+# Retrieveing the contract address
 
 * Deploy your contract and wait until you see a new contract in the `Deployed Contracts` section.
 * Copy the contract address to your clipboard using the copy icon located near the contract title on the left side panel.
@@ -25,5 +25,5 @@ This guide explains how to fund your Solidity contract with LINK using the Remix
 ![Metamask Send Link Screen](/files/867073d-metamask.png)
 
 > 🚧 Transaction fee didn't update?
-> 
+>
 > You may need to click **Fastest**, **Fast**, **Slow**, or **Advanced Options** after entering the **Amount** to update the gas limit for the token transfer to be successful.
