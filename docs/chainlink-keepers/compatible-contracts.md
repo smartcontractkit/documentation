@@ -1,6 +1,6 @@
 ---
 layout: nodes.liquid
-section: smartContract
+section: ethereumKeepers
 date: Last Modified
 title: 'Making Keeper-compatible Contracts'
 whatsnext:

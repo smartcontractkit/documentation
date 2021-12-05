@@ -1,6 +1,6 @@
 ---
 layout: nodes.liquid
-section: smartContract
+section: gettingStarted
 date: Last Modified
 title: "The Basics: Using Hybrid Smart Contracts"
 permalink: "docs/beginners-tutorial/"
@@ -84,7 +84,7 @@ contract HelloWorld {
 }
 ```
 
-## Variables 
+## Variables
 
 Again, like Javascript, contracts can have state variables and local variables. **State variables** are variables with values that are permanently stored in contract storage. The values of **local variables**, however, are present only until the function is executing. There are also different types of variables you can use within Solidity, such as `string`, `uint256`, etc. Check out the [Solidity documentation](https://docs.soliditylang.org/en/v0.8.7/) to learn more about the different kinds of variables and types.
 
@@ -144,7 +144,7 @@ Chainlink data feeds are sources of data [aggregated from many independent Chain
 ![Chainlink Feeds List](/images/contract-devs/price-aggr.png)
 
 ## Information about Interfaces
-Before using data feeds, it's important to understand how interfaces work in Solidity. An **interface** is another concept that will be familiar to programmers of other languages. 
+Before using data feeds, it's important to understand how interfaces work in Solidity. An **interface** is another concept that will be familiar to programmers of other languages.
 
 Interfaces define functions without their implementation, leaving inheriting contracts to define the actual implementation themselves. This makes it easier to know what functions to call in a contract. Here's an example of an interface:
 
@@ -155,7 +155,7 @@ Interfaces define functions without their implementation, leaving inheriting con
   <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/Tutorials/Test.sol" target="_blank" class="cl-button--ghost">Deploy this contract using Remix ↗</a>
 </div>
 
-For this example, `override` is necessary in the `Test` contract function because it overrides the base function contained in the `numberComparison` interface. The contract uses `pure` instead of `view` because the `isSameNum` function in the `Test` contract does not return a storage variable. 
+For this example, `override` is necessary in the `Test` contract function because it overrides the base function contained in the `numberComparison` interface. The contract uses `pure` instead of `view` because the `isSameNum` function in the `Test` contract does not return a storage variable.
 
 ## Using Chainlink Data Feeds
 

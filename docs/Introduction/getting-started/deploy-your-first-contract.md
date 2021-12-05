@@ -1,6 +1,6 @@
 ---
 layout: nodes.liquid
-section: smartContract
+section: gettingStarted
 date: Last Modified
 title: "Deploy your first contract"
 permalink: "docs/deploy-your-first-contract/"

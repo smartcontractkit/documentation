@@ -1,6 +1,6 @@
 ---
 layout: nodes.liquid
-section: nonEvm
+section: terra
 date: Last Modified
 title: "Using Data Feeds (Terra)"
 permalink: "docs/terra/using-data-feeds-terra/"

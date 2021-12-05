@@ -1,6 +1,6 @@
 ---
 layout: nodes.liquid
-section: smartContract
+section: ethereum
 date: Last Modified
 title: "FlightAware Chainlink (Testnet)"
 permalink: "docs/flightaware-chainlink-testnet/"

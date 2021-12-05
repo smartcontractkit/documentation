@@ -1,6 +1,6 @@
 ---
 layout: nodes.liquid
-section: smartContract
+section: ethereum
 date: Last Modified
 title: "Get a Random Number"
 permalink: "docs/get-a-random-number/"

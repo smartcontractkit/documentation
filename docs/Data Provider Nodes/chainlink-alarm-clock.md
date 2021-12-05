@@ -1,6 +1,6 @@
 ---
 layout: nodes.liquid
-section: smartContract
+section: ethereum
 date: Last Modified
 title: "Chainlink Alarm Clock (Testnet)"
 permalink: "docs/chainlink-alarm-clock/"

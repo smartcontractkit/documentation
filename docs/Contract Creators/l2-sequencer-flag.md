@@ -1,6 +1,6 @@
 ---
 layout: nodes.liquid
-section: smartContract
+section: ethereum
 date: Last Modified
 title: "L2 Sequencer Health Flag"
 permalink: "docs/l2-sequencer-flag/"

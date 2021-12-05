@@ -1,6 +1,6 @@
 ---
 layout: nodes.liquid
-section: smartContract
+section: ethereum
 date: Last Modified
 title: "Make a GET Request"
 permalink: "docs/make-a-http-get-request/"
