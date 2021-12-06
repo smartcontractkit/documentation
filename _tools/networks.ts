@@ -42,12 +42,12 @@ export const NETWORKS = [
     networks: [
       {
         name: "Polygon Mainnet",
-        url: "https://explorer-mainnet.maticvigil.com/address/%s",
+        url: "https://polygonscan.com/address/%s",
         source: "directory-matic-mainnet.json",
       },
       {
         name: "Mumbai Testnet",
-        url: "https://explorer-mumbai.maticvigil.com/address/%s",
+        url: "https://mumbai.polygonscan.com/address/%s",
         source: "directory-matic-testnet.json",
       },
     ],
@@ -168,6 +168,17 @@ export const NETWORKS = [
         name: "Terra Bombay Testnet",
         url: "https://finder.terra.money/bombay-12/address/%s",
         source: "directory-terra-testnet-bombay.json",
+      },
+    ],
+  },
+  {
+    page: "data-feeds-moonriver",
+    title: "Moonriver Data Feeds",
+    networks: [
+      {
+        name: "Moonriver Mainnet",
+        url: "https://moonriver.moonscan.io/address/%s",
+        source: "directory-kusama-mainnet-moonriver.json",
       },
     ],
   }

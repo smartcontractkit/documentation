@@ -17,9 +17,17 @@ metadata:
 
 The most common use case for Data Feeds is to [Get the Latest Price](../get-the-latest-price/). However, <a href="https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol" target="_blank" rel="noreferrer, noopener">`AggregatorV3Interface`</a> also exposes functions which can be used to retrieve price data of a previous round ID.
 
-> 📘 Decentralized Data Model
->
-> The [Decentralized Data Model](../architecture-decentralized-model/) describes how Data Feeds are aggregated from many data sources and published on-chain.
+There are two parameters that can cause Chainlink nodes to update:
+
+| Name                   | Description                                                          |
+| ------------------------------- | -------------------------------------------------------------------- |
+|  Deviation Threshold     | Chainlink nodes are monitoring prices of assets off-chain. The deviation of the real-world price of an asset beyond a certain interval triggers all the nodes to update.                  |
+|  Heartbeat Threshold | If the price stays within the deviation parameters, it will only trigger an update every *X* minutes / hours. |
+
+
+You can find these parameters at [data.chain.link](https://data.chain.link/) on an example like [ETH / USD](https://data.chain.link/ethereum/mainnet/crypto-usd/eth-usd).
+
+To learn more about how price feeds update, see the [Decentralized Data Model](../architecture-decentralized-model/#aggregation-parameters) page.
 
 # Historical Rounds
 

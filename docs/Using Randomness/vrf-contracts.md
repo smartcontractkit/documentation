@@ -17,7 +17,7 @@ For implementation details, read [Introduction to Chainlink VRF](../chainlink-vr
 
 > 📘 Important
 >
-> The LINK provided by the [Polygon (Matic) Bridge](https://wallet.matic.network/bridge) is not ERC-677 compatible, so cannot be used with Chainlink oracles. However, it can be [**converted to the official LINK token on Polygon (Matic) using Chainlink's PegSwap service**](https://pegswap.chain.link/)
+> The LINK provided by the [Polygon (Matic) Bridge](https://wallet.polygon.technology/bridge) is not ERC-677 compatible, so cannot be used with Chainlink oracles. However, it can be [**converted to the official LINK token on Polygon (Matic) using Chainlink's PegSwap service**](https://pegswap.chain.link/)
 
 |Item|Value|
 |---|---|
@@ -107,7 +107,7 @@ For implementation details, read [Introduction to Chainlink VRF](../chainlink-vr
 >
 > Testnet LINK is available from https://faucets.chain.link/rinkeby
 > Testnet ETH is available from: https://faucets.chain.link/rinkeby
-> Backup Testnet ETH Faucets: https://rinkeby-faucet.com/, https://app.mycrypto.com/faucet 
+> Backup Testnet ETH Faucets: https://rinkeby-faucet.com/, https://app.mycrypto.com/faucet
 
 |Item|Value|
 |---|---|
