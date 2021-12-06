@@ -3,7 +3,7 @@ layout: nodes.liquid
 section: smartContract
 date: Last Modified
 title: "Migrating to VRF v2"
-permalink: "docs/migration-vrf-v1-v2/"
+permalink: "docs/chainlink-vrf/migration-vrf-v1-v2/"
 ---
 
 > ℹ️ You are viewing the VRF v2 guide.

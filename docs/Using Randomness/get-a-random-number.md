@@ -49,56 +49,11 @@ Configure the following parameters to meet the needs of your application:
 - `uint32 callbackGasLimit` - How much gas you would like in your callback to do work with the random words provided. It must be less than the coordinators `maxGasLimit`.
 - `uint16 numWords` - How many random words you would like in your request. If you are able to make use of several random words in the same callback, you can achieve significant gas savings.
 
-# Example Configurations
+# Example Contract
 
-How you manage the subscription is up to you and depends on your randomness needs.
+<!-- TODO: Add a simple example with individual steps required. -->
 
-- [Single consumer and subscription owner](#single-consumer-and-subscription-owner)
-- [Multiple consumers with an external subscription owner](#multiple-consumers-with-an-external-subscription-owner)
 
-## Single consumer and subscription owner
-
-In this example, there is only one consumer who is also the subscription owner. It also sets the request config to be static, so each request uses the same parameters.
-
-<div class="remix-callout">
-    <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFSingleConsumerExample.sol" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
-    <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
-</div>
-
-```solidity Kovan
-{% include samples/VRF/VRFSingleConsumerExample.sol %}
-```
-
-## Multiple consumers with an external subscription owner
-
-In this example, the an external account manages the subscription for multiple consumers. Set up this configuration using the following process:
-
-1. Create a subscription with `createSubscription()`. Make a note of the subscriptionId emitted in the `SubscriptionCreated` log. <!--TODO: metamask screen shots-->
-1. Deploy your applications which accept a subscription ID like `VRFExternalSubOwnerExample.requestRandomWords` does and record all their addresses.
-1. Register all the applications `addConsumer(uint64 subId, address consumer)` . <!--TODO: metamask screen shots-->
-1. Fund the subscription with `LINKTOKEN.transferAndCall(address(COORDINATOR), amount, abi.encode(subId));`
-
-<div class="remix-callout">
-    <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFExternalSubOwnerExample.sol" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
-    <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
-</div>
-
-```solidity Kovan
-{% include samples/VRF/VRFExternalSubOwnerExample.sol %}
-```
-
-## Advanced
-
-The above examples are by no means the only way to make use of the VRF. The subscription can be managed dynamically with the following steps:
-
-- Change the consumer set with `addConsumer(uint64 subId, address consumer)`/`removeConsumer(uint64 subId, address consumer)`.
-  - There are a maximum of 100 consumers per subscription. If you need more than 100 consumers, use multiple subscriptions.
-- Transfer the subscription ownership with `requestSubscriptionOwnerTransfer(uint64 subId, address newOwner)`/`acceptSubscriptionOwnerTransfer(uint64 subId)`.
-- Top up the subscription balance with `LINKTOKEN.transferAndCall(address(COORDINATOR), amount, abi.encode(subId));`. Any address can fund a subscription.
-- View the subscription with `getSubscription(uint64 subId)`.
-- Cancel the subscription with `cancelSubscription(uint64 subId)`.
-
-The full coordinator interface is available [here](https://github.com/smartcontractkit/chainlink/blob/bbc471860883f302ea90425346c7a51a0e867a24/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol). You can use the subscription management functions however you see fit.
 
 > 🚧 Security Considerations
 >

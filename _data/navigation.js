@@ -342,6 +342,10 @@ module.exports = {
             url: '/docs/get-a-random-number/'
           },
           {
+            title: 'Example Contracts',
+            url: '/docs/chainlink-vrf/example-contracts/'
+          },
+          {
             title: 'Security Considerations',
             url: '/docs/vrf-security-considerations/',
           },
@@ -355,7 +359,7 @@ module.exports = {
           },
           {
             title: 'Migrating to VRF v2',
-            url: '/docs/migration-vrf-v1-v2/',
+            url: '/docs/chainlink-vrf/migration-vrf-v1-v2/',
           },
         ],
       },
