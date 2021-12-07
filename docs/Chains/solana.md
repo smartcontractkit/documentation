@@ -2,6 +2,7 @@
 layout: nodes.liquid
 section: solana
 title: "Chainlink on Solana"
+logo: "/images/logos/solana.svg"
 date: Last Modified
 permalink: /solana/
 ---
@@ -13,7 +14,7 @@ permalink: /solana/
         Chainlink turns your smart contracts into hybrid smart contracts, giving them access to real-world data and services.
       </p>
       <p>
-        Chainlink services are now available on networks outside of the Ethereum EVM ecosystem. These services run natively on their respective networks and have no dependencies on other blockchains.
+        The following products are available for {{title}}:
       </p>
     </div>
     <div class="cl-featuredcard">
