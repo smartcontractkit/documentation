@@ -56,7 +56,7 @@ module.exports = {
         section: 'Next Steps',
         contents: [
           {
-            title: 'Architecture Overview ↗',
+            title: 'Chainlink Architecture ↗',
             url: '/docs/architecture-overview/',
           },
           {
@@ -87,7 +87,7 @@ module.exports = {
         section: 'Overview',
         contents: [
           {
-            title: 'Architecture Overview',
+            title: 'Chainlink Architecture',
             url: '/docs/architecture-overview/',
             children: [
               {
