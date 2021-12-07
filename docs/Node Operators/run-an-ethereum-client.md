@@ -1,5 +1,6 @@
 ---
 layout: nodes.liquid
+section: nodeOperator
 date: Last Modified
 title: "Run an Ethereum Client"
 permalink: "docs/run-an-ethereum-client/"
@@ -53,7 +54,7 @@ docker start -i eth
 
 Return to [Running a Chainlink Node](../running-a-chainlink-node/).
 
-## Parity 
+## Parity
 
 [OpenEthereum's Documentation](https://openethereum.github.io/index)
 

@@ -1,5 +1,6 @@
 ---
 layout: nodes.liquid
+section: nodeOperator
 date: Last Modified
 title: "Connecting to a Remote Database"
 permalink: "docs/connecting-to-a-remote-database/"

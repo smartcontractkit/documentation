@@ -1,5 +1,6 @@
 ---
 layout: nodes.liquid
+section: nodeOperator
 date: Last Modified
 title: "Migrating to v2 Jobs"
 permalink: "docs/jobs/migration-v1-v2/"

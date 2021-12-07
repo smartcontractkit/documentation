@@ -1,6 +1,6 @@
 ---
 layout: nodes.liquid
-section: ethereumAnyAPI
+section: ethereum
 date: Last Modified
 title: "Find Existing Jobs"
 permalink: "docs/listing-services/"

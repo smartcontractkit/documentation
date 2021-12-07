@@ -1,5 +1,6 @@
 ---
 layout: nodes.liquid
+section: nodeOperator
 date: Last Modified
 title: "ETH Call Task"
 permalink: "docs/jobs/task-types/eth-call/"

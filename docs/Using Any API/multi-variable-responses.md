@@ -1,6 +1,6 @@
 ---
 layout: nodes.liquid
-section: ethereumAnyAPI
+section: ethereum
 date: Last Modified
 title: "Multi-Variable Responses"
 permalink: "docs/multi-variable-responses/"

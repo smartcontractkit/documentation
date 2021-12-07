@@ -1,10 +1,14 @@
 ---
 layout: nodes.liquid
-section: "ethereumDataFeeds"
-date: Last Modified
+section: ethereum
 title: "Binance Smart Chain Data Feeds"
 permalink: "docs/binance-smart-chain-price-feeds/"
 hidden: true
+metadata:
+  description: "Chainlink Data Feeds on Binance Smart Chain"
+  image:
+    0: "/files/OpenGraph_V3.png"
+date: Last Modified
 ---
 # Introduction to Data Feeds
 

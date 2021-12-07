@@ -1,5 +1,6 @@
 ---
 layout: nodes.liquid
+section: nodeOperator
 date: Last Modified
 title: "ETH ABI Decode Log Task"
 permalink: "docs/jobs/task-types/eth-abi-decode-log/"

@@ -1,6 +1,6 @@
 ---
 layout: nodes.liquid
-section: ethereumKeepers
+section: ethereum
 date: Last Modified
 title: 'Chainlink Keepers Frequently Asked Questions'
 ---

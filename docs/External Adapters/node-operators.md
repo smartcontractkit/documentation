@@ -1,5 +1,6 @@
 ---
 layout: nodes.liquid
+section: nodeOperator
 date: Last Modified
 title: "Bridges: Adding External Adapters to Nodes"
 permalink: "docs/node-operators/"
