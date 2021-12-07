@@ -24,447 +24,313 @@ landing: true
     <div class="cl-chaincard">
       <div>
         <a href="/ethereum/">
-          <div class = "cl-chaincard-logos">
+          <div class = "cl-chaincard-logo">
             <img src="/images/logos/ethereum.svg" loading="lazy" />
+            <h2 class="cl-chaincard-h2">Ethereum</h2>
           </div>
         </a>
-        <h2 class="cl-chaincard-h2">Ethereum</h2>
-        <div class="cl-chaincard-link">
-          <a href="/ethereum/">
-            Overview
-          </a>
-          <img src="/images/misc/arrow-right.svg"
-            loading="lazy"
-          />
-        </div>
-        <div class="cl-chaincard-link">
-          <a href="/docs/using-chainlink-reference-contracts/">
-            Data Feeds
-          </a>
-          <img src="/images/misc/arrow-right.svg"
-            loading="lazy"
-          />
-        </div>
-        <div class="cl-chaincard-link">
-          <a href="/docs/chainlink-vrf/">
-            Randomness (VRF)
-          </a>
-          <img src="/images/misc/arrow-right.svg"
-            loading="lazy"
-          />
-        </div>
-        <div class="cl-chaincard-link">
-          <a href="/docs/chainlink-keepers/introduction/">
-            Chainlink Keepers
-          </a>
-          <img src="/images/misc/arrow-right.svg"
-            loading="lazy"
-          />
-        </div>
-        <div class="cl-chaincard-link">
-          <a href="/docs/request-and-receive-data/">
-            Connect Any API
-          </a>
-          <img src="/images/misc/arrow-right.svg"
-            loading="lazy"
-          />
-        </div>
+        <ul class="cl-chaincard-links">
+          <li>
+            <a href="/docs/using-chainlink-reference-contracts/">
+              Data Feeds
+              <img src="/images/misc/arrow-right.svg" loading="lazy" />
+            </a>
+          </li>
+          <li>
+            <a href="/docs/chainlink-vrf/">
+              Randomness (VRF)
+              <img src="/images/misc/arrow-right.svg" loading="lazy" />
+            </a>
+          </li>
+          <li>
+            <a href="/docs/chainlink-keepers/introduction/">
+              Chainlink Keepers
+              <img src="/images/misc/arrow-right.svg" loading="lazy" />
+            </a>
+          </li>
+          <li>
+            <a href="/docs/request-and-receive-data/">
+              Connect Any API
+              <img src="/images/misc/arrow-right.svg" loading="lazy" />
+            </a>
+          </li>
+        </ul>
       </div>
       <div>
         <a href="/binance/">
-          <div class = "cl-chaincard-logos">
+          <div class = "cl-chaincard-logo">
             <img src="/images/logos/binance.svg" loading="lazy" />
+            <h2 class="cl-chaincard-h2">Binance Smart Chain</h2>
           </div>
         </a>
-        <h2 class="cl-chaincard-h2">Binance Smart Chain</h2>
-        <div class="cl-chaincard-link">
-          <a href="/binance/">
-            Overview
-          </a>
-          <img src="/images/misc/arrow-right.svg"
-            loading="lazy"
-          />
-        </div>
-        <div class="cl-chaincard-link">
-          <a href="/docs/using-chainlink-reference-contracts/">
-            Data Feeds
-          </a>
-          <img src="/images/misc/arrow-right.svg"
-            loading="lazy"
-          />
-        </div>
-        <div class="cl-chaincard-link">
-          <a href="/docs/chainlink-vrf/">
-            Randomness (VRF)
-          </a>
-          <img src="/images/misc/arrow-right.svg"
-            loading="lazy"
-          />
-        </div>
-        <div class="cl-chaincard-link">
-          <a href="/docs/chainlink-keepers/introduction/">
-            Chainlink Keepers
-          </a>
-          <img src="/images/misc/arrow-right.svg"
-            loading="lazy"
-          />
-        </div>
-        <div class="cl-chaincard-link">
-          <a href="/docs/request-and-receive-data/">
-            Connect Any API
-          </a>
-          <img src="/images/misc/arrow-right.svg"
-            loading="lazy"
-          />
-        </div>
+        <ul class="cl-chaincard-links">
+          <li>
+            <a href="/docs/using-chainlink-reference-contracts/">
+              Data Feeds
+              <img src="/images/misc/arrow-right.svg" loading="lazy" />
+            </a>
+          </li>
+          <li>
+            <a href="/docs/chainlink-vrf/">
+              Randomness (VRF)
+              <img src="/images/misc/arrow-right.svg" loading="lazy" />
+            </a>
+          </li>
+          <li>
+            <a href="/docs/chainlink-keepers/introduction/">
+              Chainlink Keepers
+              <img src="/images/misc/arrow-right.svg" loading="lazy" />
+            </a>
+          </li>
+          <li>
+            <a href="/docs/request-and-receive-data/">
+              Connect Any API
+              <img src="/images/misc/arrow-right.svg" loading="lazy" />
+            </a>
+          </li>
+        </ul>
       </div>
       <div>
         <a href="/polygon/">
-          <div class = "cl-chaincard-logos">
+          <div class = "cl-chaincard-logo">
             <img src="/images/logos/polygon.svg" loading="lazy" />
+            <h2 class="cl-chaincard-h2">Polygon</h2>
           </div>
         </a>
-        <h2 class="cl-chaincard-h2">Polygon</h2>
-        <div class="cl-chaincard-link">
-          <a href="/polygon/">
-            Overview
-          </a>
-          <img src="/images/misc/arrow-right.svg"
-            loading="lazy"
-          />
-        </div>
-        <div class="cl-chaincard-link">
-          <a href="/docs/using-chainlink-reference-contracts/">
-            Data Feeds
-          </a>
-          <img src="/images/misc/arrow-right.svg"
-            loading="lazy"
-          />
-        </div>
-        <div class="cl-chaincard-link">
-          <a href="/docs/chainlink-vrf/">
-            Randomness (VRF)
-          </a>
-          <img src="/images/misc/arrow-right.svg"
-            loading="lazy"
-          />
-        </div>
-        <div class="cl-chaincard-link">
-          <a href="/docs/chainlink-keepers/introduction/">
-            Chainlink Keepers
-          </a>
-          <img src="/images/misc/arrow-right.svg"
-            loading="lazy"
-          />
-        </div>
-        <div class="cl-chaincard-link">
-          <a href="/docs/request-and-receive-data/">
-            Connect Any API
-          </a>
-          <img src="/images/misc/arrow-right.svg"
-            loading="lazy"
-          />
-        </div>
+        <ul class="cl-chaincard-links">
+          <li>
+            <a href="/docs/using-chainlink-reference-contracts/">
+              Data Feeds
+              <img src="/images/misc/arrow-right.svg" loading="lazy" />
+            </a>
+          </li>
+          <li>
+            <a href="/docs/chainlink-vrf/">
+              Randomness (VRF)
+              <img src="/images/misc/arrow-right.svg" loading="lazy" />
+            </a>
+          </li>
+          <li>
+            <a href="/docs/chainlink-keepers/introduction/">
+              Chainlink Keepers
+              <img src="/images/misc/arrow-right.svg" loading="lazy" />
+            </a>
+          </li>
+          <li>
+            <a href="/docs/request-and-receive-data/">
+              Connect Any API
+              <img src="/images/misc/arrow-right.svg" loading="lazy" />
+            </a>
+          </li>
+        </ul>
       </div>
       <div>
         <a href="/xdai/">
-          <div class = "cl-chaincard-logos">
+          <div class = "cl-chaincard-logo">
             <img src="/images/logos/xdai.svg" loading="lazy" />
+            <h2 class="cl-chaincard-h2">xDai</h2>
           </div>
         </a>
-        <h2 class="cl-chaincard-h2">xDai</h2>
-        <div class="cl-chaincard-link">
-          <a href="/xdai/">
-            Overview
-          </a>
-          <img src="/images/misc/arrow-right.svg"
-            loading="lazy"
-          />
-        </div>
-        <div class="cl-chaincard-link">
+        <ul class="cl-chaincard-links">
+          <li>
           <a href="/docs/using-chainlink-reference-contracts/">
             Data Feeds
-          </a>
-          <img src="/images/misc/arrow-right.svg"
-            loading="lazy"
-          />
-        </div>
-        <div class="cl-chaincard-link">
+              <img src="/images/misc/arrow-right.svg" loading="lazy" />
+            </a>
+          </li>
+          <li>
           <a href="/docs/request-and-receive-data/">
             Connect Any API
-          </a>
-          <img src="/images/misc/arrow-right.svg"
-            loading="lazy"
-          />
-        </div>
+              <img src="/images/misc/arrow-right.svg" loading="lazy" />
+            </a>
+          </li>
+        </ul>
       </div>
       <div>
         <a href="/huobi/">
-          <div class = "cl-chaincard-logos">
+          <div class = "cl-chaincard-logo">
             <img src="/images/logos/huobi.svg" loading="lazy" />
+            <h2 class="cl-chaincard-h2">Huobi</h2>
           </div>
         </a>
-        <h2 class="cl-chaincard-h2">Huobi</h2>
-        <div class="cl-chaincard-link">
-          <a href="/huobi/">
-            Overview
-          </a>
-          <img src="/images/misc/arrow-right.svg"
-            loading="lazy"
-          />
-        </div>
-        <div class="cl-chaincard-link">
+        <ul class="cl-chaincard-links">
+          <li>
           <a href="/docs/using-chainlink-reference-contracts/">
             Data Feeds
-          </a>
-          <img src="/images/misc/arrow-right.svg"
-            loading="lazy"
-          />
-        </div>
-        <div class="cl-chaincard-link">
+              <img src="/images/misc/arrow-right.svg" loading="lazy" />
+            </a>
+          </li>
+          <li>
           <a href="/docs/request-and-receive-data/">
             Connect Any API
-          </a>
-          <img src="/images/misc/arrow-right.svg"
-            loading="lazy"
-          />
-        </div>
+              <img src="/images/misc/arrow-right.svg" loading="lazy" />
+            </a>
+          </li>
+        </ul>
       </div>
       <div>
         <a href="/avalanche/">
-          <div class = "cl-chaincard-logos">
+          <div class = "cl-chaincard-logo">
             <img src="/images/logos/avalanche.svg" loading="lazy" />
+            <h2 class="cl-chaincard-h2">Avalanche</h2>
           </div>
         </a>
-        <h2 class="cl-chaincard-h2">Avalanche</h2>
-        <div class="cl-chaincard-link">
-          <a href="/avalanche/">
-            Overview
-          </a>
-          <img src="/images/misc/arrow-right.svg"
-            loading="lazy"
-          />
-        </div>
-        <div class="cl-chaincard-link">
-          <a href="/docs/using-chainlink-reference-contracts/">
-            Data Feeds
-          </a>
-          <img src="/images/misc/arrow-right.svg"
-            loading="lazy"
-          />
-        </div>
-        <div class="cl-chaincard-link">
-          <a href="/docs/request-and-receive-data/">
-            Connect Any API
-          </a>
-          <img src="/images/misc/arrow-right.svg"
-            loading="lazy"
-          />
-        </div>
+        <ul class="cl-chaincard-links">
+          <li>
+            <a href="/docs/using-chainlink-reference-contracts/">
+              Data Feeds
+              <img src="/images/misc/arrow-right.svg" loading="lazy" />
+            </a>
+          </li>
+          <li>
+            <a href="/docs/request-and-receive-data/">
+              Connect Any API
+              <img src="/images/misc/arrow-right.svg" loading="lazy" />
+            </a>
+          </li>
+        </ul>
       </div>
       <div>
         <a href="/fantom/">
-          <div class = "cl-chaincard-logos">
+          <div class = "cl-chaincard-logo">
             <img src="/images/logos/fantom.svg" loading="lazy" />
+            <h2 class="cl-chaincard-h2">Fantom</h2>
           </div>
         </a>
-        <h2 class="cl-chaincard-h2">Fantom</h2>
-        <div class="cl-chaincard-link">
-          <a href="/fantom/">
-            Overview
-          </a>
-          <img src="/images/misc/arrow-right.svg"
-            loading="lazy"
-          />
-        </div>
-        <div class="cl-chaincard-link">
+        <ul class="cl-chaincard-links">
+          <li>
           <a href="/docs/using-chainlink-reference-contracts/">
             Data Feeds
-          </a>
-          <img src="/images/misc/arrow-right.svg"
-            loading="lazy"
-          />
-        </div>
-        <div class="cl-chaincard-link">
+              <img src="/images/misc/arrow-right.svg" loading="lazy" />
+            </a>
+          </li>
+          <li>
           <a href="/docs/request-and-receive-data/">
             Connect Any API
-          </a>
-          <img src="/images/misc/arrow-right.svg"
-            loading="lazy"
-          />
-        </div>
+              <img src="/images/misc/arrow-right.svg" loading="lazy" />
+            </a>
+          </li>
+        </ul>
       </div>
       <div>
         <a href="/arbitrum/">
-          <div class = "cl-chaincard-logos">
+          <div class = "cl-chaincard-logo">
             <img src="/images/logos/arbitrum.svg" loading="lazy" />
+            <h2 class="cl-chaincard-h2">Arbitrum</h2>
           </div>
         </a>
-        <h2 class="cl-chaincard-h2">Arbitrum</h2>
-        <div class="cl-chaincard-link">
-          <a href="/arbitrum/">
-            Overview
-          </a>
-          <img src="/images/misc/arrow-right.svg"
-            loading="lazy"
-          />
-        </div>
-        <div class="cl-chaincard-link">
-          <a href="/docs/using-chainlink-reference-contracts/">
-            Data Feeds
-          </a>
-          <img src="/images/misc/arrow-right.svg"
-            loading="lazy"
-          />
-        </div>
-        <div class="cl-chaincard-link">
-          <a href="/docs/request-and-receive-data/">
-            Connect Any API
-          </a>
-          <img src="/images/misc/arrow-right.svg"
-            loading="lazy"
-          />
-        </div>
+        <ul class="cl-chaincard-links">
+          <li>
+            <a href="/docs/using-chainlink-reference-contracts/">
+              Data Feeds
+              <img src="/images/misc/arrow-right.svg" loading="lazy" />
+            </a>
+          </li>
+          <li>
+            <a href="/docs/request-and-receive-data/">
+              Connect Any API
+              <img src="/images/misc/arrow-right.svg" loading="lazy" />
+            </a>
+          </li>
+        </ul>
       </div>
       <div>
         <a href="/harmony/">
-          <div class = "cl-chaincard-logos">
+          <div class = "cl-chaincard-logo">
             <img src="/images/logos/harmony.svg" loading="lazy" />
+            <h2 class="cl-chaincard-h2">Harmony</h2>
           </div>
         </a>
-        <h2 class="cl-chaincard-h2">Harmony</h2>
-        <div class="cl-chaincard-link">
-          <a href="/harmony/">
-            Overview
-          </a>
-          <img src="/images/misc/arrow-right.svg"
-            loading="lazy"
-          />
-        </div>
-        <div class="cl-chaincard-link">
-          <a href="/docs/using-chainlink-reference-contracts/">
-            Data Feeds
-          </a>
-          <img src="/images/misc/arrow-right.svg"
-            loading="lazy"
-          />
-        </div>
-        <div class="cl-chaincard-link">
-          <a href="/docs/request-and-receive-data/">
-            Connect Any API
-          </a>
-          <img src="/images/misc/arrow-right.svg"
-            loading="lazy"
-          />
-        </div>
+        <ul class="cl-chaincard-links">
+          <li>
+            <a href="/docs/using-chainlink-reference-contracts/">
+              Data Feeds
+              <img src="/images/misc/arrow-right.svg" loading="lazy" />
+            </a>
+          </li>
+          <li>
+            <a href="/docs/request-and-receive-data/">
+              Connect Any API
+              <img src="/images/misc/arrow-right.svg" loading="lazy" />
+            </a>
+          </li>
+        </ul>
       </div>
       <div>
-        <div class = "cl-chaincard-logos">
-          <img src="/images/logos/solana.svg" loading="lazy" />
-        </div>
-        <h2 class="cl-chaincard-h2">Solana</h2>
-        <div class="cl-chaincard-link">
-          <a href="/docs/solana/">
-            Overview
-          </a>
-          <img src="/images/misc/arrow-right.svg"
-            loading="lazy"
-          />
-        </div>
-        <div class="cl-chaincard-link">
-          <a href="/docs/solana/using-data-feeds-solana/">
-            Data Feeds
-          </a>
-          <img src="/images/misc/arrow-right.svg"
-            loading="lazy"
-          />
-        </div>
+        <a href="/solana/">
+          <div class = "cl-chaincard-logo">
+            <img src="/images/logos/solana.svg" loading="lazy" />
+            <h2 class="cl-chaincard-h2">Solana</h2>
+          </div>
+        </a>
+        <ul class="cl-chaincard-links">
+          <li>
+            <a href="/docs/solana/using-data-feeds-solana/">
+              Data Feeds
+              <img src="/images/misc/arrow-right.svg" loading="lazy" />
+            </a>
+          </li>
+        </ul>
       </div>
       <div>
-        <div class = "cl-chaincard-logos">
-          <img src="/images/logos/terra.svg" loading="lazy" />
-        </div>
-        <h2 class="cl-chaincard-h2">Terra</h2>
-        <div class="cl-chaincard-link">
-          <a href="/docs/terra/">
-            Overview
-          </a>
-          <img src="/images/misc/arrow-right.svg"
-            loading="lazy"
-          />
-        </div>
-        <div class="cl-chaincard-link">
-          <a href="/docs/terra/using-data-feeds-terra/">
-            Data Feeds
-          </a>
-          <img src="/images/misc/arrow-right.svg"
-            loading="lazy"
-          />
-        </div>
+        <a href="/terra/">
+          <div class = "cl-chaincard-logo">
+            <img src="/images/logos/terra.svg" loading="lazy" />
+            <h2 class="cl-chaincard-h2">Terra</h2>
+          </div>
+        </a>
+        <ul class="cl-chaincard-links">
+          <li>
+            <a href="/docs/terra/using-data-feeds-terra/">
+              Data Feeds
+              <img src="/images/misc/arrow-right.svg" loading="lazy" />
+            </a>
+          </li>
+        </ul>
       </div>
       <div>
         <a href="/optimism/">
-          <div class = "cl-chaincard-logos">
-            <!--<img src="/images/logos/optimism.svg" loading="lazy" />-->
+          <div class = "cl-chaincard-logo">
+            <img src="/images/logos/optimism-uniswap.svg" loading="lazy" />
+            <h2 class="cl-chaincard-h2">Optimism</h2>
           </div>
         </a>
-        <h2 class="cl-chaincard-h2">Optimism</h2>
-        <div class="cl-chaincard-link">
-          <a href="/optimism/">
-            Overview
-          </a>
-          <img src="/images/misc/arrow-right.svg"
-            loading="lazy"
-          />
-        </div>
-        <div class="cl-chaincard-link">
-          <a href="/docs/using-chainlink-reference-contracts/">
-            Data Feeds
-          </a>
-          <img src="/images/misc/arrow-right.svg"
-            loading="lazy"
-          />
-        </div>
-        <div class="cl-chaincard-link">
-          <a href="/docs/request-and-receive-data/">
-            Connect Any API
-          </a>
-          <img src="/images/misc/arrow-right.svg"
-            loading="lazy"
-          />
-        </div>
+        <ul class="cl-chaincard-links">
+          <li>
+            <a href="/docs/using-chainlink-reference-contracts/">
+              Data Feeds
+              <img src="/images/misc/arrow-right.svg" loading="lazy" />
+            </a>
+          </li>
+          <li>
+            <a href="/docs/request-and-receive-data/">
+              Connect Any API
+              <img src="/images/misc/arrow-right.svg" loading="lazy" />
+            </a>
+          </li>
+        </ul>
       </div>
       <div>
         <a href="/moonriver/">
-          <div class = "cl-chaincard-logos">
-            <!--<img src="/images/logos/moonriver.svg" loading="lazy" />-->
+          <div class = "cl-chaincard-logo">
+            <img src="/images/logos/moonriver.png" loading="lazy" />
+            <h2 class="cl-chaincard-h2">Moonriver</h2>
           </div>
         </a>
-        <h2 class="cl-chaincard-h2">Moonriver</h2>
-        <div class="cl-chaincard-link">
-          <a href="/moonriver/">
-            Overview
-          </a>
-          <img src="/images/misc/arrow-right.svg"
-            loading="lazy"
-          />
-        </div>
-        <div class="cl-chaincard-link">
-          <a href="/docs/using-chainlink-reference-contracts/">
-            Data Feeds
-          </a>
-          <img src="/images/misc/arrow-right.svg"
-            loading="lazy"
-          />
-        </div>
-        <div class="cl-chaincard-link">
-          <a href="/docs/request-and-receive-data/">
-            Connect Any API
-          </a>
-          <img src="/images/misc/arrow-right.svg"
-            loading="lazy"
-          />
-        </div>
+        <ul class="cl-chaincard-links">
+          <li>
+            <a href="/docs/using-chainlink-reference-contracts/">
+              Data Feeds
+              <img src="/images/misc/arrow-right.svg" loading="lazy" />
+            </a>
+          </li>
+          <li>
+            <a href="/docs/request-and-receive-data/">
+              Connect Any API
+              <img src="/images/misc/arrow-right.svg" loading="lazy" />
+            </a>
+          </li>
+        </ul>
       </div>
     </div>
     <div align="center">
