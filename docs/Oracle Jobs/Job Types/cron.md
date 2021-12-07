@@ -1,5 +1,6 @@
 ---
 layout: nodes.liquid
+section: nodeOperator
 date: Last Modified
 title: "Cron Jobs"
 permalink: "docs/jobs/types/cron/"

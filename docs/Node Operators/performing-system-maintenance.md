@@ -1,5 +1,6 @@
 ---
 layout: nodes.liquid
+section: nodeOperator
 date: Last Modified
 title: "Performing System Maintenance"
 permalink: "docs/performing-system-maintenance/"
@@ -14,7 +15,7 @@ Whether you use Docker or the binary to run the node, the database file will nee
 ## Maintenance and Image Update Example
 
 > 📘 Note
-> 
+>
 > This example uses Docker to run the Chainlink node, see the [Running a Chainlink Node](../running-a-chainlink-node/) page for instructions on how to set it up.
 
 First, pull the latest Docker image for your desired tag based on release version (latest is used in this example):
@@ -72,7 +73,7 @@ docker kill jovial_shirley
 
 The output returns the name "jovial_shirley" (or what your container's name was) and if you look at the log of your second container, you'll notice that it has taken over.
 
-At this point, you're now running the latest image on your secondary container. If you have any system maintenance to perform on your primary machine, you may do so now. 
+At this point, you're now running the latest image on your secondary container. If you have any system maintenance to perform on your primary machine, you may do so now.
 
 Next, you will simply need to run the container again with the local port 6688 in order to go back to normal operations.
 
@@ -91,7 +92,7 @@ You should see the same `[INFO]` message that the node is waiting for lock on th
 ## Failover Node Example
 
 > 📘 Note
-> 
+>
 > This example uses Docker to run the Chainlink node, see the [Running a Chainlink Node](../running-a-chainlink-node/) page for instructions on how to set it up.
 
 You may want to run multiple instances of the Chainlink node on the same machine, so that if one instance goes down, the secondary instance can automatically pick up requests. Building off the concepts in the previous example, we'll use Docker to have primary and a secondary containers referencing the same database file.

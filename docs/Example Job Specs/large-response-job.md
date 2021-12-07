@@ -1,5 +1,6 @@
 ---
 layout: nodes.liquid
+section: nodeOperator
 date: Last Modified
 title: 'MultiWord Example Job Spec'
 permalink: "docs/example-job-spec-large/"

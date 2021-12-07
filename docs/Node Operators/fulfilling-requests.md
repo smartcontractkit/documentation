@@ -1,5 +1,6 @@
 ---
 layout: nodes.liquid
+section: nodeOperator
 date: Last Modified
 title: "Fulfilling Requests"
 permalink: "docs/fulfilling-requests/"

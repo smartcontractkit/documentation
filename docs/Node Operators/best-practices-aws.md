@@ -1,5 +1,6 @@
 ---
 layout: nodes.liquid
+section: nodeOperator
 date: Last Modified
 title: "Best Practices for Deploying Nodes on AWS"
 permalink: "docs/best-practices-aws/"

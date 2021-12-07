@@ -1,6 +1,6 @@
 ---
 layout: nodes.liquid
-section: ethereumKeepers
+section: ethereum
 date: Last Modified
 title: 'Introduction to Chainlink Keepers'
 whatsnext:
