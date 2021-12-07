@@ -1,5 +1,6 @@
 ---
 layout: nodes.liquid
+section: nodeOperator
 date: Last Modified
 title: "Adding External Initiators to Nodes"
 permalink: "docs/external-initiators-in-nodes/"

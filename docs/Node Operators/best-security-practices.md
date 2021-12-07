@@ -1,5 +1,6 @@
 ---
 layout: nodes.liquid
+section: nodeOperator
 date: Last Modified
 title: "Best Security and Operating Practices"
 permalink: "docs/best-security-practices/"

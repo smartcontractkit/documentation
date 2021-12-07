@@ -1,10 +1,14 @@
 ---
 layout: nodes.liquid
-section: "ethereumDataFeeds"
+section: ethereum
 date: Last Modified
 title: "Data Feeds August 2020"
 permalink: "docs/price-feeds-migration-august-2020/"
 hidden: true
+metadata:
+  description: "Chainlink Data Feeds on Ethereum"
+  image:
+    0: "/files/OpenGraph_V3.png"
 ---
 Chainlink Data Feeds give smart contract developers a simple way to fetch current and historical asset prices. Asset prices are updated by decentralized oracle networks which aggregate results from high-quality data providers.
 

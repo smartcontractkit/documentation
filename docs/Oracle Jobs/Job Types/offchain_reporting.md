@@ -1,5 +1,6 @@
 ---
 layout: nodes.liquid
+section: nodeOperator
 date: Last Modified
 title: "Offchain Reporting Jobs"
 permalink: "docs/jobs/types/offchain-reporting/"

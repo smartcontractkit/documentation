@@ -1,6 +1,6 @@
 ---
 layout: nodes.liquid
-section: ethereumKeepers
+section: ethereum
 date: Last Modified
 title: 'Register Keeper Upkeep for a Contract'
 whatsnext:

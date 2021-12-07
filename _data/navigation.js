@@ -107,23 +107,195 @@ module.exports = {
         ],
       },
       {
-        section: 'Services',
+        section: 'USING DATA FEEDS',
         contents: [
           {
-            title: 'Data Feeds ↗',
+            title: 'Introduction to Data Feeds',
             url: '/docs/using-chainlink-reference-contracts/',
           },
           {
-            title: 'Chainlink VRF ↗',
+            title: 'Using Data Feeds',
+            url: '/docs/get-the-latest-price/'
+          },
+          {
+            title: 'Historical Price Data',
+            url: '/docs/historical-price-data/',
+          },
+          {
+            title: 'Feed Registry',
+            url: '/docs/feed-registry/',
+            filters: ['ethereum'],
+          },
+          {
+            title: 'API Reference',
+            url: '/docs/price-feeds-api-reference/',
+          },
+          {
+            title: 'Contract Addresses',
+            url: '/docs/reference-contracts/',
+            children: [
+              {
+                title: 'Ethereum Data Feeds',
+                url: '/docs/ethereum-addresses/',
+                filters: ['ethereum'],
+              },
+              {
+                title: 'Binance Smart Chain Data Feeds',
+                url: '/docs/binance-smart-chain-addresses/',
+                filters: ['binance'],
+              },
+              {
+                title: 'Polygon (Matic) Data Feeds',
+                url: '/docs/matic-addresses/',
+                filters: ['polygon'],
+              },
+              {
+                title: 'xDai Data Feeds',
+                url: '/docs/xdai-price-feeds/',
+                filters: ['xdai'],
+              },
+              {
+                title: 'Huobi Eco Chain Data Feeds',
+                url: '/docs/huobi-eco-chain-price-feeds/',
+                filters: ['huobi'],
+              },
+              {
+                title: 'Avalanche Data Feeds',
+                url: '/docs/avalanche-price-feeds/',
+                filters: ['avalanche'],
+              },
+              {
+                title: 'Fantom Data Feeds',
+                url: '/docs/fantom-price-feeds/',
+                filters: ['fantom'],
+              },
+              {
+                title: 'Arbitrum Data Feeds',
+                url: '/docs/arbitrum-price-feeds/',
+                filters: ['arbitrum'],
+              },
+              {
+                title: 'Harmony Data Feeds',
+                url: '/docs/harmony-price-feeds/',
+                filters: ['arbitrum'],
+              },
+              {
+                title: 'Optimism Data Feeds',
+                url: '/docs/optimism-price-feeds/',
+                filters: ['optimism'],
+              },
+              {
+                title: 'Moonriver Data Feeds',
+                url: '/docs/data-feeds-moonriver/',
+                filters: ['moonriver'],
+              },
+            ],
+          },
+        ],
+      },
+      {
+        section: 'USING RANDOMNESS',
+        filters: [
+          'ethereum',
+          'binance',
+          'polygon',
+        ],
+        contents: [
+          {
+            title: 'Introduction to Chainlink VRF',
             url: '/docs/chainlink-vrf/',
           },
           {
-            title: 'Chainlink Keepers ↗',
+            title: 'Get a Random Number',
+            url: '/docs/get-a-random-number/'
+          },
+          {
+            title: 'API Reference',
+            url: '/docs/chainlink-vrf-api-reference/'
+          },
+          {
+            title: 'Security Considerations',
+            url: '/docs/vrf-security-considerations/',
+          },
+          {
+            title: 'Contract Addresses',
+            url: '/docs/vrf-contracts/'
+          },
+          {
+            title: 'Best Practices',
+            url: '/docs/chainlink-vrf-best-practices/',
+          },
+        ],
+      },
+      {
+        section: 'USING ANY API',
+        filters: ['ethereum'],
+        contents: [
+          {
+            title: 'Introduction to Using Any API',
+            url: '/docs/request-and-receive-data/',
+          },
+          {
+            title: 'Make a GET Request',
+            url: '/docs/make-a-http-get-request/',
+          },
+          {
+            title: 'Make an Existing Job Request',
+            url: '/docs/existing-job-request/',
+          },
+          {
+            title: 'Multi-Variable Responses',
+            url: '/docs/multi-variable-responses/',
+          },
+          {
+            title: 'Large Responses',
+            url: '/docs/large-responses/',
+          },
+          {
+            title: 'Find Existing Jobs',
+            url: '/docs/listing-services/'
+          },
+          {
+            title: 'API Reference',
+            url: '/docs/chainlink-framework/'
+          },
+          {
+            title: 'Contract Addresses',
+            url: '/docs/decentralized-oracles-ethereum-mainnet/',
+          },
+        ],
+      },
+      {
+        section: 'USING CHAINLINK KEEPERS',
+        filters: [
+          'ethereum',
+          'binance',
+          'polygon',
+        ],
+        contents: [
+          {
+            title: 'Introduction',
             url: '/docs/chainlink-keepers/introduction/',
           },
           {
-            title: 'Using Any API ↗',
-            url: '/docs/request-and-receive-data/',
+            title: 'Making Compatible Contracts',
+            url: '/docs/chainlink-keepers/compatible-contracts/',
+          },
+          {
+            title: 'Register Upkeep for a Contract',
+            url: '/docs/chainlink-keepers/register-upkeep/',
+          },
+          {
+            title: 'Utility Contracts',
+            url: '/docs/chainlink-keepers/utility-contracts/'
+          },
+          {
+            title: 'Network Overview',
+            url: '/docs/chainlink-keepers/overview/',
+          },
+          {
+            title: 'FAQs',
+            url: '/docs/chainlink-keepers/faqs/'
           },
         ],
       },
@@ -165,220 +337,6 @@ module.exports = {
           {
             title: 'Contributing to Chainlink',
             url: '/docs/contributing-to-chainlink/'
-          },
-        ],
-      },
-    ],
-    ethereumDataFeeds: [
-      {
-        section: 'USING DATA FEEDS',
-        contents: [
-          {
-            title: 'Introduction to Data Feeds',
-            url: '/docs/using-chainlink-reference-contracts/',
-          },
-          {
-            title: 'Using Data Feeds',
-            url: '/docs/get-the-latest-price/'
-          },
-          {
-            title: 'Historical Price Data',
-            url: '/docs/historical-price-data/',
-          },
-          {
-            title: 'Feed Registry',
-            url: '/docs/feed-registry/'
-          },
-          {
-            title: 'API Reference',
-            url: '/docs/price-feeds-api-reference/',
-          },
-          {
-            title: 'Contract Addresses',
-            url: '/docs/reference-contracts/',
-            children: [
-              {
-                title: 'Ethereum Data Feeds',
-                url: '/docs/ethereum-addresses/',
-              },
-              {
-                title: 'Binance Smart Chain Data Feeds',
-                url: '/docs/binance-smart-chain-addresses/',
-              },
-              {
-                title: 'Polygon (Matic) Data Feeds',
-                url: '/docs/matic-addresses/',
-              },
-              {
-                title: 'xDai Data Feeds',
-                url: '/docs/xdai-price-feeds/',
-              },
-              {
-                title: 'Huobi Eco Chain Data Feeds',
-                url: '/docs/huobi-eco-chain-price-feeds/',
-              },
-              {
-                title: 'Avalanche Data Feeds',
-                url: '/docs/avalanche-price-feeds/',
-              },
-              {
-                title: 'Fantom Data Feeds',
-                url: '/docs/fantom-price-feeds/',
-              },
-              {
-                title: 'Arbitrum Data Feeds',
-                url: '/docs/arbitrum-price-feeds/',
-              },
-              {
-                title: 'Harmony Data Feeds',
-                url: '/docs/harmony-price-feeds/',
-              },
-              {
-                title: 'Optimism Data Feeds',
-                url: '/docs/optimism-price-feeds/',
-              },
-              {
-                title: 'Moonriver Data Feeds',
-                url: '/docs/data-feeds-moonriver/',
-              },
-            ],
-          },
-        ],
-      },
-      {
-        section: 'Other',
-        contents: [
-          {
-            title: 'Ethereum Home ↗',
-            url: '/ethereum/',
-          },
-        ],
-      },
-    ],
-    ethereumVRF: [
-      {
-        section: 'USING RANDOMNESS',
-        contents: [
-          {
-            title: 'Introduction to Chainlink VRF',
-            url: '/docs/chainlink-vrf/',
-          },
-          {
-            title: 'Get a Random Number',
-            url: '/docs/get-a-random-number/'
-          },
-          {
-            title: 'API Reference',
-            url: '/docs/chainlink-vrf-api-reference/'
-          },
-          {
-            title: 'Security Considerations',
-            url: '/docs/vrf-security-considerations/',
-          },
-          {
-            title: 'Contract Addresses',
-            url: '/docs/vrf-contracts/'
-          },
-          {
-            title: 'Best Practices',
-            url: '/docs/chainlink-vrf-best-practices/',
-          },
-        ],
-      },
-      {
-        section: 'Other',
-        contents: [
-          {
-            title: 'Ethereum Home ↗',
-            url: '/ethereum/',
-          },
-        ],
-      },
-    ],
-    ethereumKeepers: [
-      {
-        section: 'USING CHAINLINK KEEPERS',
-        contents: [
-          {
-            title: 'Introduction',
-            url: '/docs/chainlink-keepers/introduction/',
-          },
-          {
-            title: 'Making Compatible Contracts',
-            url: '/docs/chainlink-keepers/compatible-contracts/',
-          },
-          {
-            title: 'Register Upkeep for a Contract',
-            url: '/docs/chainlink-keepers/register-upkeep/',
-          },
-          {
-            title: 'Utility Contracts',
-            url: '/docs/chainlink-keepers/utility-contracts/'
-          },
-          {
-            title: 'Network Overview',
-            url: '/docs/chainlink-keepers/overview/',
-          },
-          {
-            title: 'FAQs',
-            url: '/docs/chainlink-keepers/faqs/'
-          },
-        ],
-      },
-      {
-        section: 'Other',
-        contents: [
-          {
-            title: 'Ethereum Home ↗',
-            url: '/ethereum/',
-          },
-        ],
-      },
-    ],
-    ethereumAnyAPI: [
-      {
-        section: 'USING ANY API',
-        contents: [
-          {
-            title: 'Introduction to Using Any API',
-            url: '/docs/request-and-receive-data/',
-          },
-          {
-            title: 'Make a GET Request',
-            url: '/docs/make-a-http-get-request/',
-          },
-          {
-            title: 'Make an Existing Job Request',
-            url: '/docs/existing-job-request/',
-          },
-          {
-            title: 'Multi-Variable Responses',
-            url: '/docs/multi-variable-responses/',
-          },
-          {
-            title: 'Large Responses',
-            url: '/docs/large-responses/',
-          },
-          {
-            title: 'Find Existing Jobs',
-            url: '/docs/listing-services/'
-          },
-          {
-            title: 'API Reference',
-            url: '/docs/chainlink-framework/'
-          },
-          {
-            title: 'Contract Addresses',
-            url: '/docs/decentralized-oracles-ethereum-mainnet/',
-          },
-        ],
-      },
-      {
-        section: 'Other',
-        contents: [
-          {
-            title: 'Ethereum Home ↗',
-            url: '/ethereum/',
           },
         ],
       },

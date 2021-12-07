@@ -1,5 +1,6 @@
 ---
 layout: nodes.liquid
+section: nodeOperator
 date: Last Modified
 title: "Flux Monitor Jobs"
 permalink: "docs/jobs/types/flux-monitor/"

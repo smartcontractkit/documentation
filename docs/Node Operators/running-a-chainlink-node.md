@@ -1,5 +1,6 @@
 ---
 layout: nodes.liquid
+section: nodeOperator
 date: Last Modified
 title: "Running a Chainlink Node"
 permalink: "docs/running-a-chainlink-node/"

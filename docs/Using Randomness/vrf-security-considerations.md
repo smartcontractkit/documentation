@@ -1,6 +1,6 @@
 ---
 layout: nodes.liquid
-section: ethereumVRF
+section: ethereum
 date: Last Modified
 title: "VRF Security Considerations"
 permalink: "docs/vrf-security-considerations/"

@@ -1,5 +1,6 @@
 ---
 layout: nodes.liquid
+section: nodeOperator
 date: Last Modified
 title: "Mode Task"
 permalink: "docs/jobs/task-types/mode/"
