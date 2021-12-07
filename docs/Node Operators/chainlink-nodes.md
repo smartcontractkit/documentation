@@ -2,6 +2,7 @@
 layout: nodes.liquid
 date: Last Modified
 title: "Chainlink Node Docs"
+permalink: /chainlink-nodes/
 ---
 
 <div>

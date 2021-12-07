@@ -1,7 +1,8 @@
 ---
 layout: nodes.liquid
 section: ethereum
-title: "Chainlink on Ethereum Chains"
+title: "Chainlink on Ethereum"
+logo: "/images/logos/ethereum.svg"
 date: Last Modified
 permalink: /ethereum/
 ---
@@ -15,7 +16,7 @@ permalink: /ethereum/
         Chainlink turns your smart contracts into hybrid smart contracts, giving them access to real-world data and services while maintaining the security and reliability guarantees inherent to blockchain technology.
       </p>
       <p>
-        Learn more about Chainlink's products and services with our step‑by‑step tutorials and documentation:
+        The following products are available for {{title}}:
       </p>
     </div>
     <div class="cl-featuredcard">
