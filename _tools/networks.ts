@@ -127,6 +127,11 @@ export const NETWORKS = [
     title: "Harmony Data Feeds",
     networks: [
       {
+        name: "Harmony Mainnet",
+        url: "https://explorer.harmony.one/#/address/%s",
+        source: "directory-harmony-mainnet-0.json",
+      },
+      {
         name: "Harmony Testnet",
         url: "https://explorer.testnet.harmony.one/#/address/%s",
         source: "directory-harmony-testnet-shard-0.json",
