@@ -109,7 +109,7 @@ This spec relies on CBOR-encoded on-chain values for the `httpget` URL and `json
 ```
 
 Notes:
-- In v1, the job ID is randomly generated at creation time. In v2 jobs, the job ID can be manually specified or the Chainlink node will automatically generated it.
+- In v1, the job ID is randomly generated at creation time. In v2 jobs, the job ID can be manually specified or the Chainlink node will automatically generate it.
 - In v2, the `ethbytes32` task and all of the other ABI encoding tasks are now encapsulated in the `ethabiencode` task with much more flexibility. See the [ETH ABI Encode task](/docs/jobs/task-types/eth-abi-encode/) page to learn more.
 
 **Equivalent v2 spec:**
