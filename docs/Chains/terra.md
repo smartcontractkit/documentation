@@ -2,7 +2,6 @@
 layout: nodes.liquid
 section: terra
 title: "Chainlink on Terra"
-logo: "/images/logos/terra.svg"
 date: Last Modified
 permalink: /terra/
 ---

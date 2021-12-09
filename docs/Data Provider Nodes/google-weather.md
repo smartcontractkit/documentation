@@ -48,7 +48,7 @@ You will need to use the following LINK token address, oracle address, and JobSp
 
 # Steps For Using This Oracle
 
-- Write and deploy your [Chainlinked](../intermediates-tutorial/)  contract using the network details above.
+- Write and deploy your contract using the network details above.
 - Fund it with [LINK](../link-token-contracts/)
 - Call your request method
 

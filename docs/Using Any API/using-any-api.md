@@ -1,9 +1,9 @@
 ---
 layout: nodes.liquid
-section: gettingStarted
+section: ethereum
 date: Last Modified
-title: "API Calls: Using Any API"
-permalink: "docs/advanced-tutorial/"
+title: "Using Any API"
+permalink: "docs/using-any-api/"
 excerpt: "Calling APIs from Smart Contracts"
 whatsnext: {"Make a GET Request":"/docs/make-a-http-get-request/", "Make an Existing Job Request":"/docs/existing-job-request/"}
 metadata:
@@ -13,7 +13,7 @@ metadata:
 
 > 👍 Requirements
 >
-> This tutorial requires basic knowledge about Ethereum, smart contracts, and the Chainlink Request & Receive cycle. If you're unfamiliar with those concepts, follow the [The Basics](../beginners-tutorial/) and [Random Numbers](../intermediates-tutorial/) tutorials.
+> This guide requires basic knowledge about smart contracts. If you are new to smart contract development, read the [Getting Started Guide](/getting-started/) before you start this guide.
 
 <p>
   https://www.youtube.com/watch?v=ay4rXZhAefs
@@ -37,7 +37,7 @@ In this tutorial, you will learn how to request data from a public API in a smar
 
 The request and receive cycle describes how a smart contract requests data from an oracle and receives the response in a separate transaction. If you need a refresher, check out the [Basic Request Model](../architecture-request-model/).
 
-In the [Random Numbers](../intermediates-tutorial/) tutorial, you requested randomness from a VRF oracle, then await the response. The fulfillment function is already given to us from the `VRFConsumerBase` contract, so oracles already know where to send the response to. However, with API calls, the contract itself *defines* which function it wants to receive the response to.
+With API calls, the contract itself *defines* which function it wants to receive the response to.
 
 Before creating any code, you should understand how Oracle jobs can get data on-chain.
 

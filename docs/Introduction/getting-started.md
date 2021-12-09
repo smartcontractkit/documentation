@@ -14,6 +14,8 @@ Chainlink turns your smart contracts into hybrid smart contracts, giving them ac
 2. [Acquire testnet LINK](/docs/acquire-link/).
 3. [Deploy](/docs/deploy-your-first-contract/), [fund](/docs/fund-your-contract/), and [use your first smart contract](/docs/use-your-first-contract/).
 
+<!-- Temp fix until we reorganize the content. -->
+<!--
 ## Build you first application.
 
 Pick a topic and build your first application using Chainlink with our step‑by‑step tutorials. If you're a beginner, we recommend starting with our [Data Feeds](/docs/beginners-tutorial/) tutorial.
@@ -54,6 +56,7 @@ Pick a topic and build your first application using Chainlink with our step‑by
         </a>
     </div>
 </div>
+-->
 
 ## Dive deeper into Chainlink product and services.
 
@@ -137,4 +140,3 @@ Find all the right resources to get the most out of Chainlink.
     </a>
 </div>
 </div>
-
