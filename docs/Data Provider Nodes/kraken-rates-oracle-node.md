@@ -12,7 +12,7 @@ This Chainlink has a dedicated connection to <a href="https://blog.cfbenchmarks.
 
 # Steps for using this oracle
 
-- Write and deploy your [Chainlink](../intermediates-tutorial/)  contract using the network details below
+- Write and deploy your contract using the network details below
 - Fund it with [LINK](../link-token-contracts/)
 - Call your [request method](./#chainlink-examples)
 

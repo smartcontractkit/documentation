@@ -5,7 +5,7 @@ date: Last Modified
 title: "The Basics: Using Hybrid Smart Contracts"
 permalink: "docs/beginners-tutorial/"
 excerpt: "Smart Contracts and Chainlink"
-whatsnext: {"Get the Latest Price":"/docs/get-the-latest-price/", "Deploy your First Contract":"/docs/deploy-your-first-contract/", "Random Numbers Tutorial":"/docs/intermediates-tutorial/"}
+whatsnext: {"Get the Latest Price":"/docs/get-the-latest-price/", "Random Numbers Guide":"/docs/get-a-random-number/"}
 metadata:
   title: "The Basics Tutorial"
   description: "Learn what smart contracts are, how to write them, and how to use Chainlink data feeds to deploy your very own Chainlink smart contract."

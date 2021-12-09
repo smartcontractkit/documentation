@@ -1,11 +1,11 @@
 ---
 layout: nodes.liquid
-section: gettingStarted
+section: ethereum
 date: Last Modified
-title: "Random Numbers: Using Chainlink VRF"
-permalink: "docs/intermediates-tutorial/"
+title: "Using Chainlink VRF"
+permalink: "docs/get-a-random-number/"
 excerpt: "Using Chainlink VRF"
-whatsnext: {"Get a Random Number":"/docs/get-a-random-number/", "API Calls tutorial":"/docs/advanced-tutorial/"}
+whatsnext: {"VRF Example Contracts":"/docs/vrf-example-contracts/", "API Reference":"/docs/chainlink-vrf-api-reference/", "Contract Addresses":"/docs/vrf-contracts/"}
 metadata:
   title: "Random Numbers: Using Chainlink VRF"
   description: "Learn how to use randomness in your smart contracts using Chainlink VRF."
@@ -15,7 +15,7 @@ metadata:
 
 > 👍 Requirements
 >
-> This tutorial assumes that you have basic knowledge about Ethereum and writing and deploying smart contracts. If you are new to smart contract development, start with [The Basics: Data Feeds](../beginners-tutorial/) tutorial before starting this tutorial.
+> This guide assumes that you have basic knowledge about writing and deploying smart contracts. If you are new to smart contract development, read the [Getting Started Guide](/getting-started/) before you start this guide.
 
 <p>
   https://www.youtube.com/watch?v=JqZWariqh5s
@@ -27,7 +27,7 @@ metadata:
 
 # Overview
 
-In this tutorial, you will learn about generating randomness on blockchains. This includes learning how to implement a Request and Receive cycle with Chainlink oracles and how to consume random numbers with Chainlink VRF in smart contracts.
+In this guide, you will learn about generating randomness on blockchains. This includes learning how to implement a Request and Receive cycle with Chainlink oracles and how to consume random numbers with Chainlink VRF in smart contracts.
 
 **Table of Contents**
 

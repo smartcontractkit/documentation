@@ -5,10 +5,10 @@ date: Last Modified
 title: "Install Instructions"
 permalink: "docs/create-a-chainlinked-project/"
 whatsnext: {"Introduction to Data Feeds":"/docs/using-chainlink-reference-contracts/", "Introduction to Chainlink VRF":"/docs/chainlink-vrf/", "Introduction to Using Any API":"/docs/request-and-receive-data/"}
-metadata: 
+metadata:
   title: "Getting Started with Chainlink for Smart Contract Developers"
   description: "Everything you need to know on how to create a new Chainlink project or update an existing one using the Chainlink Library for Solidity"
-  image: 
+  image:
     0: "/files/OpenGraph_V3.png"
 ---
 ![Starter Kits Logos](/files/c6e99c5-Untitled_design_23.png)
@@ -17,7 +17,7 @@ This page explains how to install and use the [Chainlink Library](../chainlink-f
 
 > 📘 Important
 >
-> If you're new to smart contract development and want a step-by-step guide, try out our [Beginner Walkthrough](../intermediates-tutorial/) 
+> If you're new to smart contract development and want a step-by-step guide, try out our [Getting Started Guide](/getting-started/) 
 
 # Install into Existing Projects
 
@@ -25,7 +25,7 @@ Chainlink is supported by <a href="http://hardhat.org" target="_blank">Hardhat</
 
 If you already have a project, you can add Chainlink to it by using the following package managers.
 
-## NPM 
+## NPM
 
 Install using <a href="https://www.npmjs.com/" target="_blank" rel="noreferrer, noopener">NPM</a>
 
@@ -107,11 +107,11 @@ ___
 
 # Using Chainlink Contracts
 
-Once you have the Chainlink library installed, you can leverage the Chainlink ecosystem. 
+Once you have the Chainlink library installed, you can leverage the Chainlink ecosystem.
 
-If you're interested in retrieving up to date crypto prices in your contracts, learn more about our [Data Feeds](../using-chainlink-reference-contracts/). 
+If you're interested in retrieving up to date crypto prices in your contracts, learn more about our [Data Feeds](../using-chainlink-reference-contracts/).
 
-If you need to consume randomness in your contracts, learn about [Chainlink VRF](../chainlink-vrf/). 
+If you need to consume randomness in your contracts, learn about [Chainlink VRF](../chainlink-vrf/).
 
 And if you want your contracts to retrieve data from off-chain APIs, learn about [Using Any API](../request-and-receive-data/).
 

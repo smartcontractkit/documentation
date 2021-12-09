@@ -18,7 +18,7 @@ You can use Chainlink to trigger a smart contract at a specified time. Using thi
 
 # Steps For Using This Oracle
 
-- Write and deploy your [Chainlinked](../intermediates-tutorial/)  contract using the network details below
+- Write and deploy your contract using the network details below
 - Fund it with [LINK](../link-token-contracts/) (0.1 LINK is required per-request/)
 - Call your [request method](./#chainlink-examples)
 

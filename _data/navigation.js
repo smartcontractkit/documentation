@@ -21,33 +21,20 @@ module.exports = {
             url: '/docs/fund-your-contract/',
           },
           {
-            title: 'Use your first contract!',
+            title: 'Use your first contract',
             url: '/docs/use-your-first-contract/',
           },
-        ],
-      },
-      {
-        section: 'Beginner Contracts',
-        contents: [
           {
-            title: 'Use a Data Feed',
+            title: 'Learn how smart contracts work',
             url: '/docs/beginners-tutorial/',
           },
-          {
-            title: 'Random Numbers',
-            url: '/docs/intermediates-tutorial/',
-          },
-          {
-            title: 'API Calls',
-            url: '/docs/advanced-tutorial/',
-          }
         ],
       },
       {
         section: 'Resources',
         contents: [
           {
-            title: 'Learning Resources',
+            title: 'Videos and Tutorials',
             url: '/docs/other-tutorials/',
           },
         ],
@@ -124,7 +111,6 @@ module.exports = {
           {
             title: 'Feed Registry',
             url: '/docs/feed-registry/',
-            filters: ['ethereum'],
           },
           {
             title: 'API Reference',
@@ -137,57 +123,47 @@ module.exports = {
               {
                 title: 'Ethereum Data Feeds',
                 url: '/docs/ethereum-addresses/',
-                filters: ['ethereum'],
               },
               {
                 title: 'Binance Smart Chain Data Feeds',
                 url: '/docs/binance-smart-chain-addresses/',
-                filters: ['binance'],
               },
               {
                 title: 'Polygon (Matic) Data Feeds',
                 url: '/docs/matic-addresses/',
-                filters: ['polygon'],
               },
               {
                 title: 'xDai Data Feeds',
                 url: '/docs/xdai-price-feeds/',
-                filters: ['xdai'],
               },
               {
                 title: 'Huobi Eco Chain Data Feeds',
                 url: '/docs/huobi-eco-chain-price-feeds/',
-                filters: ['huobi'],
               },
               {
                 title: 'Avalanche Data Feeds',
                 url: '/docs/avalanche-price-feeds/',
-                filters: ['avalanche'],
               },
               {
                 title: 'Fantom Data Feeds',
                 url: '/docs/fantom-price-feeds/',
-                filters: ['fantom'],
               },
               {
                 title: 'Arbitrum Data Feeds',
                 url: '/docs/arbitrum-price-feeds/',
-                filters: ['arbitrum'],
               },
               {
                 title: 'Harmony Data Feeds',
                 url: '/docs/harmony-price-feeds/',
-                filters: ['arbitrum'],
               },
               {
                 title: 'Optimism Data Feeds',
                 url: '/docs/optimism-price-feeds/',
-                filters: ['optimism'],
               },
               {
                 title: 'Moonriver Data Feeds',
                 url: '/docs/data-feeds-moonriver/',
-                filters: ['moonriver'],
+
               },
             ],
           },
@@ -195,19 +171,19 @@ module.exports = {
       },
       {
         section: 'USING RANDOMNESS',
-        filters: [
-          'ethereum',
-          'binance',
-          'polygon',
-        ],
+
         contents: [
           {
             title: 'Introduction to Chainlink VRF',
             url: '/docs/chainlink-vrf/',
           },
           {
-            title: 'Get a Random Number',
+            title: 'Using Chainlink VRF',
             url: '/docs/get-a-random-number/'
+          },
+          {
+            title: 'Example Contracts',
+            url: '/docs/vrf-example-contracts/',
           },
           {
             title: 'API Reference',
@@ -229,11 +205,14 @@ module.exports = {
       },
       {
         section: 'USING ANY API',
-        filters: ['ethereum'],
         contents: [
           {
             title: 'Introduction to Using Any API',
             url: '/docs/request-and-receive-data/',
+          },
+          {
+            title: 'Using Any API',
+            url: '/docs/using-any-api/',
           },
           {
             title: 'Make a GET Request',
@@ -267,11 +246,6 @@ module.exports = {
       },
       {
         section: 'USING CHAINLINK KEEPERS',
-        filters: [
-          'ethereum',
-          'binance',
-          'polygon',
-        ],
         contents: [
           {
             title: 'Introduction',

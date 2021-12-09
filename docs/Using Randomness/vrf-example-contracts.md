@@ -2,26 +2,27 @@
 layout: nodes.liquid
 section: ethereum
 date: Last Modified
-title: "Get a Random Number"
-permalink: "docs/get-a-random-number/"
+title: "Example Contracts"
+permalink: "docs/vrf-example-contracts/"
 whatsnext: {"API Reference":"/docs/chainlink-vrf-api-reference/", "Contract Addresses":"/docs/vrf-contracts/"}
 metadata:
   description: "How to generate a random number inside a smart contract using Chainlink VRF."
   image:
     0: "/files/OpenGraph_V3.png"
 ---
-This page explains how to get a random number inside a smart contract using Chainlink VRF.
+This page shows examples for how to get a random number inside a smart contract using Chainlink VRF.
 
-# Random Number Consumer
+# Overview
 
-Chainlink VRF follows the [Request & Receive Data](../request-and-receive-data/) cycle. To consume randomness, your contract should inherit from <a href="https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/VRFConsumerBase.sol" target="_blank">`VRFConsumerBase`</a> and define two required functions
+Chainlink VRF follows the [Request & Receive Data](../request-and-receive-data/) cycle. To consume randomness, your contract should inherit from [`VRFConsumerBase`](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/VRFConsumerBase.sol) and define two required functions:
 
-1. `requestRandomness`, which makes the initial request for randomness.
-2. `fulfillRandomness`, which is the function that receives and does something with verified randomness.
+- `requestRandomness`, which makes the initial request for randomness.
+- `fulfillRandomness`, which is the function that receives and does something with verified randomness.
 
 The contract should own enough LINK to pay the specified fee. The beginner walkthrough explains how to [fund your contract](../fund-your-contract/).
 
 Note, the below values have to be configured correctly for VRF requests to work. You can find the respective values for your network in the [VRF Contracts page](../vrf-contracts).
+
 - `LINK Token` - LINK token address on the corresponding network (Ethereum, Polygon, BSC, etc)
 - `VRF Coordinator` - address of the Chainlink VRF Coordinator
 - `Key Hash` - public key against which randomness is generated

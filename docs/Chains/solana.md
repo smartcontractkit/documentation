@@ -2,7 +2,6 @@
 layout: nodes.liquid
 section: solana
 title: "Chainlink on Solana"
-logo: "/images/logos/solana.svg"
 date: Last Modified
 permalink: /solana/
 ---

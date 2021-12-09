@@ -1,5 +1,6 @@
 ---
 layout: nodes.liquid
+section: nodeOperator
 date: Last Modified
 title: "Chainlink Node Docs"
 permalink: /chainlink-nodes/
@@ -16,54 +17,74 @@ permalink: /chainlink-nodes/
     </div>
     <div class="cl-featuredcard">
         <div>
-          <img
-            src="https://uploads-ssl.webflow.com/5e444500cbc42eeb5198206f/5e7898724c71bddf6749df17_DeFi2.svg"
-            class="cl-image-featured"
-          />
           <div>
-            <h3>Set Up a Chainlink Node</h3>
+            <img
+              src="https://uploads-ssl.webflow.com/5e444500cbc42eeb5198206f/5e7898724c71bddf6749df17_DeFi2.svg"
+              class="cl-image-featured"
+            />
+            <h4>Set Up a Chainlink Node</h4>
             <p>Install and Run your own node on a local machine or remote server.</p>
+            <a href="/docs/running-a-chainlink-node">
+              <div class="arrowed-text">
+                  Learn More
+                  <img class="cta-learnmore-arrow" src="/images/misc/navigation-arrow-right.svg" loading="lazy" alt="Right arrow">
+              </div>
+            </a>
           </div>
-          <a
-            href="/docs/running-a-chainlink-node"
-            class="cl-button--ghost">
-              Learn More
-          </a>
         </div>
       <div>
-          <img
-            src="https://uploads-ssl.webflow.com/5e444500cbc42eeb5198206f/5e7898724c71bd62c149df16_Example.svg"
-            class="cl-image-featured"
-          />
           <div>
-          <h3>Fulfill Your First Job Request</h3>
-          <p>
-            Deploy an Oracle contract and make job requests to your node.
-          </p>
+            <img
+              src="https://uploads-ssl.webflow.com/5e444500cbc42eeb5198206f/5e7898724c71bd62c149df16_Example.svg"
+              class="cl-image-featured"
+            />
+            <h4>Fulfill Your First Job Request</h4>
+            <p>
+              Deploy an Oracle contract and make job requests to your node.
+            </p>
+            <a href="/docs/fulfilling-requests">
+              <div class="arrowed-text">
+                  Learn More
+                  <img class="cta-learnmore-arrow" src="/images/misc/navigation-arrow-right.svg" loading="lazy" alt="Right arrow">
+              </div>
+            </a>
           </div>
-          <a
-            href="/docs/fulfilling-requests"
-            class="cl-button--ghost">
-              Learn More
-          </a>
         </div>
         <div>
-          <img
-            src="https://uploads-ssl.webflow.com/5e444500cbc42eeb5198206f/5e7894ddbc6262c7a18da684_RequestSmall.svg"
-            class="cl-image-featured"
-            height="50"
-          />
           <div>
-          <h3>Add External Adapters to Your Node</h3>
-          <p>
-            Bring high-quality data and premium web APIs to contract developers.
-          </p>
+            <img
+              src="https://uploads-ssl.webflow.com/5e444500cbc42eeb5198206f/5e7894ddbc6262c7a18da684_RequestSmall.svg"
+              class="cl-image-featured"
+              height="50"
+            />
+            <h4>Add External Adapters to Your Node</h4>
+            <p>
+              Bring high-quality data and premium web APIs to contract developers.
+            </p>
+            <a href="/docs/node-operators">
+              <div class="arrowed-text">
+                  Learn More
+                  <img class="cta-learnmore-arrow" src="/images/misc/navigation-arrow-right.svg" loading="lazy" alt="Right arrow">
+              </div>
+            </a>
           </div>
-          <a
-            href="/docs/node-operators"
-            class="cl-button--ghost">
-              Learn More
-          </a>
+      </div>
+    </div>
+    <div class="cl-featuredcard">
+      <div>
+        <div class="card-icon-wrapper">
+          <img
+            src="https://uploads-ssl.webflow.com/5e444500cbc42eeb5198206f/5e789d70c115820a2354f2cc_ChainlinkProject.svg"
+            class="cl-image-featured"
+          />
+        </div>
+        <h3>New to Chainlink Nodes?</h3>
+        <p>
+          Learn the best security and operating practices for node operators
+        </p>
+        <a href="/docs/best-security-practices/" class="cl-button--ghost">
+          Getting Started Guide
+        </a>
       </div>
     </div>
     <div class="cl-section">
@@ -73,39 +94,13 @@ permalink: /chainlink-nodes/
       />
       <h3>New to Chainlinks Nodes?</h3>
       <p>
-        Learn the best security and operating practices for node operators
+        Learn the best practices for securely operating nodes.
       </p>
       <a
-        href="/chainlink-nodes/"
+        href="/docs/best-security-practices/"
         class="keychainify-checked">
           Learn More
         </a>
-    </div>
-    <div class="cl-section">
-      <div class="cl-box cl-box__lightblue cl-featuredcard">
-            <div>
-              <h3>Core Adapters</h3>
-              <p>
-                Explore tasks that need to be performed to complete defined job
-              </p>
-              <a
-                href="/docs/core-adapters/"
-                class="cl-button--ghost">
-                  Learn More
-              </a>
-            </div>
-            <div>
-              <h3>Core Initiators</h3>
-              <p>
-                Find types of conditions that initiate job requests
-              </p>
-              <a
-                href="/docs/initiators"
-                class="cl-button--ghost">
-                  Learn More
-                </a>
-            </div>
-          </div>
     </div>
     <div class="cl-section cl-section--tools">
       <h3>Explore Chainlink Node Tools</h3>

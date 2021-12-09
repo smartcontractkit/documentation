@@ -9,7 +9,7 @@ This oracle checks Google’s DNS service to determine if a given domain is owne
 
 # Steps For Using This Oracle
 
-- Write and deploy your [Chainlink](../intermediates-tutorial/) contract using the network details below
+- Write and deploy your contract using the network details below
 - Fund it with [LINK](../link-token-contracts/)
 - Call your [request method](./#chainlink-examples)
 
