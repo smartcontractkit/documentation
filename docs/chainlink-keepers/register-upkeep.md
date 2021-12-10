@@ -24,7 +24,6 @@ After you register, you can interact directly with the [registry contract](https
 + [Fund Upkeep](#fund-upkeep)
 + [How Funding Works](#how-funding-works)
 + [Maintain a Minimum Balance](#maintain-a-minimum-balance)
-+ [Registration Completion](#registration-completion)
 + [Useful Patterns](#useful-patterns)
   + [Gas Limits](#gas-limits)
   + [Testing](#testing)
@@ -59,6 +58,13 @@ Registering an Upkeep with the Chainlink Keepers App notifies the Keeper Network
 
     ![Upkeep Registration Success Message](/images/contract-devs/keeper/keeper-registration-submitted.png)
 
+> 📘 Registration Complete
+> 
+> You have now successfully built and registered a Keeper Compatible contract with the Chainlink Keeper Network.
+> 
+> Your Upkeep will start being serviced after a predefined block confirmation time. 
+> Number of block confirmations may differ from chain to chain.
+
 # Fund Upkeep
 
 1. **Add funds to your Upkeep**
@@ -72,8 +78,12 @@ Registering an Upkeep with the Chainlink Keepers App notifies the Keeper Network
     ![Confirm LINK Transfer](/images/contract-devs/keeper/keeper-confirm-transfer.png)
   * Receive a success message and verify that the funds were added to the Upkeep
     ![Funds Added Successful Message](/images/contract-devs/keeper/keeper-add-funds.png)
+<<<<<<< HEAD
 
   Note: Funds added to your upkeep will not be available for use by the Keeper Network until the minimum number of block confirmations have passed. This differs from chain to chain.
+=======
+ 
+>>>>>>> c829f5a7 (Updated Registration Completion section)
 
 # How Funding Works
 
@@ -89,11 +99,6 @@ To ensure that the Chainlink Keepers are compensated for performance, there is a
 The minimum balance is calculated using the current fast gas price, the Gas Limit you entered for your Upkeep, and the max gas multiplier. To find the latest value for the `gasCeilingMultiplier`, see the [Registry Configuration](../overview/#configuration) section on the Network Overview page.
 
 To account for gas price fluctuations, maintain a balance that is 3 to 5 times the minimum balance.
-
-# Registration Completion
-After you register your Upkeep and it is approved with sufficient funds, the Chainlink Keeper Network starts to simulate `checkUpkeep` calls and execute your contract's `performUpkeep` function as needed.
-
-You have now successfully built and registered a Keeper Compatible contract with the Chainlink Keeper Network.
 
 # Useful Patterns
 
