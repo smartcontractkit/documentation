@@ -8,3 +8,4 @@ import './notification.ts';
 import './subscribe.ts';
 import './scroll.ts';
 import './deploy-to-github.ts';
+import './navigator.ts';

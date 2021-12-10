@@ -1,75 +1,150 @@
 ---
 layout: ./main.liquid
 ---
+<style>
+    .selectBox {
+        display: inline-block;
+        margin: 0 8px;
+        color: white;
+    }
+
+    .selectBox select {
+        background-color: #1a2b6b;
+        color: white;
+        padding: 12px;
+        width: 250px;
+        border: none;
+        /* font-size: 20px; */
+        box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
+        -webkit-appearance: button;
+        appearance: button;
+        outline: none;
+    }
+
+    /* .selectBox::before {
+        content: "\f13a";
+        font-family: FontAwesome;
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 20%;
+        height: 100%;
+        text-align: center;
+        
+    line-height: 45px;
+    color: rgba(255, 255, 255, 0.5);
+    background-color: rgba(255, 255, 255, 0.1);
+    pointer-events: none;
+    }
+
+    */
+    /* .selectBox:hover::before {
+        color: rgba(255, 255, 255, 0.6);
+        background-color: rgba(255, 255, 255, 0.2);
+    } */
+
+    .selectBox select option {
+        padding: 30px;
+    }
+</style>
+{% unless section = "nodeOperator" %}
+
+<div style="background-color:#a0b3f2;color:black;padding:0 8px">
+    <a href="/">Home</a> &gt; <div class="selectBox">
+        <select id="navigator-chain">
+            <option value="ethereum">Ethereum Chains</option>
+            <option value="solana">Solana</option>
+            <option value="terra">Terra</option>
+            <option value="terra">Node Operators</option>
+        </select>
+    </div>
+    &gt;
+    <div class="selectBox">
+        <select id="navigator-product">
+            <option value="all">All Products</option>
+            <option value="feeds">Data Feeds</option>
+            <option value="vrf">Verfiiable Random Function (VRF)</option>
+            <option value="keepers">Keepers</option>
+            <option value="anyapi">Any API</option>
+        </select>
+    </div>
+</div>
+{% endunless %}
 <div class="nav-content">
-    <button class="nomenu" onclick="document.getElementsByTagName('navigation')[0].classList.add('open')">Select a Page <svg style="width:24px;height:24px" viewBox="0 0 24 24">
-        <path fill="currentColor" d="M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16Z" />
-    </svg></button>
-    <navigation>
-        <button class="menu" onclick="document.getElementsByTagName('navigation')[0].classList.remove('open')"><svg style="width:24px;height:24px" viewBox="0 0 24 24">
+    <button class="nomenu" onclick="document.getElementsByTagName('navigation')[0].classList.add('open')">Select a Page
+        <svg style="width:24px;height:24px" viewBox="0 0 24 24">
             <path fill="currentColor" d="M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16Z" />
         </svg></button>
+    <navigation>
+        <button class="menu" onclick="document.getElementsByTagName('navigation')[0].classList.remove('open')"><svg
+                style="width:24px;height:24px" viewBox="0 0 24 24">
+                <path fill="currentColor" d="M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16Z" />
+            </svg></button>
         {% unless section %}
         {% assign section = "nodeOperator" %}
         {% endunless %}
 
         {% for group in navigation.navigation[section] %}
-            <div>
-                <span class="nav-header">{{group.section}}</span>
-                {% for destination in group.contents %}
-                    {% if destination.children %}
-                        <a href="{{destination.url}}" class="expandable {% if page.url == destination.url%} active{% endif %}">{{destination.title}}</a>
-                        {% for child in destination.children %}
-                            <a href="{{child.url}}" style="padding-left: 32px;" {% if page.url == child.url%} class="active" {% endif %}>{{child.title}}</a>
-                        {% endfor %}
-                    {% else %}
-                        <a href="{{destination.url}}" title="{{ page.url}} contains {{destination.url}}" {% if page.url == destination.url%} class="active"{% endif %}>{{destination.title}}</a>
+        <div>
+            <span class="nav-header">{{group.section}}</span>
+            {% for destination in group.contents %}
+            {% if destination.children %}
+            <a href="{{destination.url}}"
+                class="expandable {% if page.url == destination.url%} active{% endif %}">{{destination.title}}</a>
+            {% for child in destination.children %}
+            <a href="{{child.url}}" style="padding-left: 32px;" {% if page.url==child.url%} class="active" {% endif
+                %}>{{child.title}}</a>
+            {% endfor %}
+            {% else %}
+            <a href="{{destination.url}}" title="{{ page.url}} contains {{destination.url}}" {% if
+                page.url==destination.url%} class="active" {% endif %}>{{destination.title}}</a>
 
 
-                    {% endif %}
+            {% endif %}
 
 
 
-                {% endfor %}
+            {% endfor %}
 
-            </div>
+        </div>
         {% endfor %}
 
     </navigation>
     <div class="article">
         <!--{% include banner %}-->
         {% if title %}
-            <div class="title">
-                {% if logo %}
-                  <img src="{{logo}}" class="page-logo" \>
-                {% endif %}
-                <h1 class="page-title">{{title}}</h1>
-                <div class="corner-floated">
-                    <div id="docsat"></div>
-                    <script src="/docsat.js"></script>
-                    <a href="https://github.com/smartcontractkit/documentation/edit/main/{{page.inputPath}}">Suggest Edits</a>
-                    <!--   Last Modified: {{page.date}} -->
-                </div>
+        <div class="title">
+            {% if logo %}
+            <img src="{{logo}}" class="page-logo" \>
+            {% endif %}
+            <h1 class="page-title">{{title}}</h1>
+            <div class="corner-floated">
+                <div id="docsat"></div>
+                <script src="/docsat.js"></script>
+                <a href="https://github.com/smartcontractkit/documentation/edit/main/{{page.inputPath}}">Suggest
+                    Edits</a>
+                <!--   Last Modified: {{page.date}} -->
             </div>
-            <hr style="border:0;border-top:1px solid #EEE">
+        </div>
+        <hr style="border:0;border-top:1px solid #EEE">
         {% endif %}
 
         {{content}}
         {% if whatsnext %}
-           <div class="nextSteps">
-            <hr/>
-                <h2>What's Next</h2>
-                <table>
-                    <tbody>
-                      {% for page in whatsnext %}
-                        <tr>
-                            <td>
-                                <a href="{{page[1]}}">› {{page[0]}}</a>
-                            </td>
-                        </tr>
-                     {% endfor %}
-                </table>
-            </div>
+        <div class="nextSteps">
+            <hr />
+            <h2>What's Next</h2>
+            <table>
+                <tbody>
+                    {% for page in whatsnext %}
+                    <tr>
+                        <td>
+                            <a href="{{page[1]}}">› {{page[0]}}</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+            </table>
+        </div>
         {% endif %}
     </div>
 </div>
