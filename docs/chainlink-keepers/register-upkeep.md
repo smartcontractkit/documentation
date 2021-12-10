@@ -62,7 +62,7 @@ Registering an Upkeep with the Chainlink Keepers App notifies the Keeper Network
 > 
 > You have now successfully built and registered a Keeper Compatible contract with the Chainlink Keeper Network.
 > 
-> Your Upkeep will start being serviced after a predefined block confirmation time. 
+> Your Upkeep will start being serviced after a predefined block confirmation time - less than 10 mins. 
 > Number of block confirmations may differ from chain to chain.
 
 # Fund Upkeep
