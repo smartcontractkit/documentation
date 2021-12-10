@@ -5,6 +5,10 @@ date: Last Modified
 title: "Hackathon Resources"
 permalink: "docs/hackathon-resources/"
 ---
+> 👍 Note on Resources
+>
+> For a comprehensive list of resources, refer to the [Learning Resources](../other-tutorials/) page.
+
 ### Hackathon & Project Resources
 
 If you're looking to just start jumping into stuff, here is a directory that can help you out.
