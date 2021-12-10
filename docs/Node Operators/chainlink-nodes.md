@@ -80,27 +80,12 @@ permalink: /chainlink-nodes/
         </div>
         <h3>New to Chainlink Nodes?</h3>
         <p>
-          Learn the best security and operating practices for node operators
+          Learn the best practices for node operators to enhance the security and reliability of your infrastructure.
         </p>
         <a href="/docs/best-security-practices/" class="cl-button--ghost">
-          Getting Started Guide
+          Security and Operation Best Practices
         </a>
       </div>
-    </div>
-    <div class="cl-section">
-      <img
-        src="https://uploads-ssl.webflow.com/5e444500cbc42eeb5198206f/5e789d70c115820a2354f2cc_ChainlinkProject.svg"
-        class="cl-image-featured"
-      />
-      <h3>New to Chainlinks Nodes?</h3>
-      <p>
-        Learn the best practices for securely operating nodes.
-      </p>
-      <a
-        href="/docs/best-security-practices/"
-        class="keychainify-checked">
-          Learn More
-        </a>
     </div>
     <div class="cl-section cl-section--tools">
       <h3>Explore Chainlink Node Tools</h3>

@@ -277,7 +277,11 @@ module.exports = {
         section: 'Resources',
         contents: [
           {
-            title: 'Install Instructions',
+            title: 'Videos and Tutorials',
+            url: '/docs/other-tutorials/',
+          },
+          {
+            title: 'Framework Install Instructions',
             url: '/docs/create-a-chainlinked-project/',
           },
           {
@@ -400,7 +404,7 @@ module.exports = {
             url: '/docs/enabling-https-connections/',
           },
           {
-            title: 'Best Security and Operating Practices',
+            title: 'Security and Operation Best Practices',
             url: '/docs/best-security-practices/',
           },
           {

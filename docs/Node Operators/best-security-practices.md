@@ -2,10 +2,10 @@
 layout: nodes.liquid
 section: nodeOperator
 date: Last Modified
-title: "Best Security and Operating Practices"
+title: "Security and Operation Best Practices"
 permalink: "docs/best-security-practices/"
 ---
-The following information provides a set of best security and operating practices that node operators need to utilize at a minimum to enhance the security and reliability of their infrastructure.
+The following information provides a set of security and operation best practices that node operators need to use at a minimum to enhance the security and reliability of their infrastructure.
 
 ## Restricting Access
 

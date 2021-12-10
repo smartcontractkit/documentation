@@ -29,19 +29,19 @@ permalink: /solana/
         <a href="/docs/solana/using-data-feeds-solana/" class="cl-button--ghost">Data feeds on Solana</a>
       </div>
     </div>
-    <div class="cl-section">
-      <img
-        src="https://uploads-ssl.webflow.com/5e444500cbc42eeb5198206f/5e789d70c115820a2354f2cc_ChainlinkProject.svg"
-        class="cl-image-featured"
-      />
-      <h3>New to Smart Contracts?</h3>
-      <p>
-        Start with the Ethereum network and build your first smart contract connected to off-chain data in our
-        Getting Started Guide.
-      </p>
-      <a href="/getting-started/" class="keychainify-checked">
-        Getting Started Guide
-      </a>
+    <div class="cl-featuredcard">
+      <div>
+        <div class="card-icon-wrapper">
+          <img src="/images/misc/5f96ab4b4db522072b7ff30c_book-bookmark.svg" class="cl-image-featured"></img>
+        </div>
+        <h2>New to Chainlink and Smart Contracts?</h2>
+        <p>
+          Learn the basics in the Getting Started Guide. Build your first smart contract on Ethereum.
+        </p>
+        <a href="/getting-started/" class="cl-button--ghost">
+          Getting Started Guide
+        </a>
+      </div>
     </div>
   </div>
 </div>

@@ -2,7 +2,7 @@
 layout: nodes.liquid
 section: ethereum
 date: Last Modified
-title: "Install Instructions"
+title: "Framework Install Instructions"
 permalink: "docs/create-a-chainlinked-project/"
 whatsnext: {"Introduction to Data Feeds":"/docs/using-chainlink-reference-contracts/", "Introduction to Chainlink VRF":"/docs/chainlink-vrf/", "Introduction to Using Any API":"/docs/request-and-receive-data/"}
 metadata:
@@ -17,7 +17,7 @@ This page explains how to install and use the [Chainlink Library](../chainlink-f
 
 > 📘 Important
 >
-> If you're new to smart contract development and want a step-by-step guide, try out our [Getting Started Guide](/getting-started/) 
+> If you're new to smart contract development and want a step-by-step guide, try out our [Getting Started Guide](/getting-started/)
 
 # Install into Existing Projects
 
