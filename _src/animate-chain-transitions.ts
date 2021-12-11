@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Fade the current to the next every interval
         let currentFader = 0;
-    
+
         setInterval(() => {
             let nextFader = currentFader + 1;
             if(nextFader >= fader.children.length) {
@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
             (<HTMLElement>fader.children[currentFader]).style.opacity = '0';
             (<HTMLElement>fader.children[nextFader]).style.opacity = '1';
             currentFader = nextFader;
-        }, 5000);
+        }, 2500);
     }
-    
+
 });
