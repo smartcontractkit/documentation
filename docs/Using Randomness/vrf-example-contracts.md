@@ -36,14 +36,14 @@ Note, the below values have to be configured correctly for VRF requests to work.
 >
 > Requesting randomness will fail unless your deployed contract has enough LINK to pay for it. **Learn how to [Acquire testnet LINK](../acquire-link/) and [Fund your contract](../fund-your-contract/)**.
 
-<div class="remix-callout">
-    <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/RandomNumberConsumer.sol" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
-    <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
-</div>
-
 ```solidity Kovan
 {% include samples/VRF/RandomNumberConsumer.sol %}
 ```
+
+<div class="remix-callout">
+    <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/RandomNumberConsumer.sol" target="_blank">Deploy using Remix</a>
+    <a href="../deploy-your-first-contract/">What is Remix?</a>
+</div>
 
 > 🚧 Maximum Gas for Callback
 >

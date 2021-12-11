@@ -17,12 +17,6 @@ metadata:
 
 Chainlink Data Feeds are the quickest way to connect your smart contracts to the real-world market prices of assets. For example, one use for data feeds is to enable smart contracts to retrieve the latest pricing data of an asset in a single call.
 
-Data feeds are available on the following networks:
-
-- [EVM-compatible networks](/docs/get-the-latest-price/)
-- [Solana](/docs/solana/using-data-feeds-solana/)
-- [Terra](/docs/terra/using-data-feeds-terra/)
-
 # Retrieve the Latest Asset Prices
 
 Often, smart contracts need to act upon prices of assets in real-time. This is especially true in <a href="https://defi.chain.link/" target="_blank">DeFi</a>.

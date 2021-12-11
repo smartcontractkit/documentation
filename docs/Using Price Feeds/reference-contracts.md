@@ -17,7 +17,7 @@ Chainlink Data Feed contracts are updated on a regular basis by multiple Chainli
 >
 > See the [LINK Token Contracts](../link-token-contracts/) page for the details of LINK on each blockchain.
 
-- EVM-compatible networks
+- Ethereum Chains
   - [Ethereum Data Feeds](../ethereum-addresses/)
   - [Binance Smart Chain Data Feeds](../binance-smart-chain-addresses/)
   - [Polygon (Matic) Data Feeds](../matic-addresses/)
@@ -29,6 +29,6 @@ Chainlink Data Feed contracts are updated on a regular basis by multiple Chainli
   - [Harmony Data Feeds](../harmony-price-feeds/)
   - [Optimism Data Feeds](../optimism-price-feeds/)
   - [Moonriver Data Feeds](../data-feeds-moonriver/)
-- Non-EVM networks
+- Other chains
   - [Solana Data Feeds](/docs/solana/data-feeds-solana/)
   - [Terra Data Feeds](/docs/terra/data-feeds-terra/)

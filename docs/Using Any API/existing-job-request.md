@@ -27,8 +27,8 @@ You can find the job spec for this example on [GitHub](https://github.com/smartc
 > Making a job request will fail unless your deployed contract has enough LINK to pay for it. **Learn how to [Acquire testnet LINK](../acquire-link/) and [Fund your contract](../fund-your-contract/)**.
 
 <div class="remix-callout">
-    <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/APElection.sol" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
-    <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
+    <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/APElection.sol" target="_blank" >Deploy using Remix</a>
+    <a href="../deploy-your-first-contract/" >What is Remix?</a>
 </div>
 
 ```solidity

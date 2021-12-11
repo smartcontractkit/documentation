@@ -11,11 +11,6 @@ metadata:
 
 Chainlink Data Feeds are the quickest way to connect your smart contracts to the real-world market prices of assets. For example, one use for data feeds is to enable smart contracts to retrieve the latest pricing data of an asset in a single call.
 
-Price data feeds are available on the following networks:
-- **Terra**
-- [Solana](/docs/solana/using-data-feeds-solana/)
-- [EVM-compatible networks](/docs/get-the-latest-price/)
-
 This guide applies specifically to using data feeds on the [Terra network](https://www.terra.money/). To get the full list of Chainlink Data Feeds running on the Terra Devnet, see the [Terra Feeds](/docs/terra/data-feeds-terra/) page.
 
 {% include data-quality.md %}

@@ -98,8 +98,8 @@ Let's see what this looks like in a contract:
 ```
 
 <div class="remix-callout">
-  <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/APIConsumer.sol" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
-    <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
+  <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/APIConsumer.sol" target="_blank" >Deploy using Remix</a>
+  <a href="../deploy-your-first-contract/" >What is Remix?</a>
 </div>
 
 Here is a breakdown of each component of this contract:
@@ -266,10 +266,9 @@ contract sportContract is ChainlinkClient {
 Your contract is complete and ready to be compiled and deployed. You can see a complete version of the contract in Remix:
 
 <div class="remix-callout">
-  <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/sportContract.sol" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
-    <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
+  <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/sportContract.sol" target="_blank" >Deploy using Remix</a>
+  <a href="../deploy-your-first-contract/" >What is Remix?</a>
 </div>
-<br>
 
 If you don't know how to deploy a contract to the Kovan testnet from Remix, follow [The Basics](/docs/beginners-tutorial) tutorial. To make a job request, you *must* have enough LINK to pay for it. Learn how to [acquire testnet LINK](../acquire-link/) and [fund your contract](../fund-your-contract/). Once these steps are completed, you should be able to get sports data.
 

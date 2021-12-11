@@ -84,7 +84,7 @@ The LINK token is an ERC677 token that inherits functionality from the ERC20 tok
 
 --------------------
 
-# Other EVM Compatible Chains
+# Other Ethereum Chains
 
 LINK is native to Ethereum, so to use LINK on other chains, it must be bridged. <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blank">This guide</a> explains how to bridge and swap tokens to other chains.
 

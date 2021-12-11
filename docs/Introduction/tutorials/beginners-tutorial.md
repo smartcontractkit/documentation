@@ -59,15 +59,17 @@ The structure of a smart contract is similar to that of a class in Javascript, w
 ```solidity
 {% include samples/Tutorials/HelloWorld.sol %}
 ```
+
 <div class="remix-callout">
-  <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/Tutorials/HelloWorld.sol" target="_blank" class="cl-button--ghost">Deploy this contract using Remix ↗</a>
+  <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/Tutorials/HelloWorld.sol" target="_blank" >Deploy using Remix</a>
+  <a href="../deploy-your-first-contract/" >What is Remix?</a>
 </div>
 
 ## Define the Version of Solidity
 
 The first thing that every Solidity file must have is the Solidity version definition. The version HelloWorld.sol is using is 0.8.7, defined by `pragma solidity 0.8.7;`
 
-You can see the latest versions of the Solidity compiler [here](https://github.com/ethereum/solc-bin/blob/gh-pages/bin/list.txt/?target=_blank). You may also notice Solidity files containing definitions with multiple versions of Solidity:
+You can see the latest versions of the Solidity compiler [here](https://github.com/ethereum/solc-bin/blob/gh-pages/bin/list.txt/?target=_blank). You might also notice Solidity files containing definitions with multiple versions of Solidity:
 
 ```solidity
 pragma solidity >=0.7.0 <0.9.0;
@@ -152,7 +154,8 @@ Interfaces define functions without their implementation, leaving inheriting con
 {% include samples/Tutorials/Test.sol %}
 ```
 <div class="remix-callout">
-  <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/Tutorials/Test.sol" target="_blank" class="cl-button--ghost">Deploy this contract using Remix ↗</a>
+  <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/Tutorials/Test.sol" target="_blank">Deploy using Remix</a>
+  <a href="../deploy-your-first-contract/" >What is Remix?</a>
 </div>
 
 For this example, `override` is necessary in the `Test` contract function because it overrides the base function contained in the `numberComparison` interface. The contract uses `pure` instead of `view` because the `isSameNum` function in the `Test` contract does not return a storage variable.
@@ -187,7 +190,8 @@ You should have the code. What you need next is a compiler.
 Fortunately for us, Remix also has support for samples. This means that Remix can load code from Github, and in this case, `PriceConsumerV3.sol` Click the button below to open a new tab, then once Remix has loaded, find the **docs.chain.link** > **samples** > **PriceFeeds** folder in the File Explorer on the left-hand side, and click on the file to open the code in the editor.
 
 <div class="remix-callout">
-  <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/PriceFeeds/PriceConsumerV3.sol" target="_blank" class="cl-button--ghost">Deploy this contract using Remix ↗</a>
+  <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/PriceFeeds/PriceConsumerV3.sol" target="_blank">Deploy using Remix</a>
+  <a href="../deploy-your-first-contract/" >What is Remix?</a>
 </div>
 
 ![Remix Select PriceConsumerV3.sol](/files/beginner-tutorial-remix-snapshot.png)
@@ -243,7 +247,7 @@ Remix should automatically detect the correct compiler version depending on the 
 
 ![Remix Click Complile PriceConsumerV3.sol](/files/99af570-Screenshot_2020-11-27_at_10.45.44.png)
 
-Click it, and you will see some details below it by scrolling down. There might be a few yellow warnings, but don't worry about those for now. If the warnings are red, revisit your code and troubleshoot any bugs or errors which may be present.
+Click it, and you will see some details below it by scrolling down. There might be a few yellow warnings, but don't worry about those for now. If the warnings are red, revisit your code and troubleshoot any bugs or errors which might be present.
 
 ## Deploying
 
@@ -253,7 +257,7 @@ This screen might seem a little more intimidating, but do not fret. This is wher
 
 Click **ENVIRONMENT**. the selected value should currently be **Javascript VM**. Instead, select **Injected Web3**. This should trigger a Metamask notification asking for permission to connect. Accept it, and your address should be automatically loaded into the **ACCOUNT** menu below **ENVIRONMENT**.
 
-Once that's done, check that the **CONTRACT** menu displays the name of your contract. In many cases, Remix defaults to deploying the first contract which appears alphabetically in the menu; to prevent errors, select the correct contract, then click **Deploy**. Another Metamask notification will pop up asking for permission, and detailing how much GAS it will cost in testnet ETH. Confirm the transaction and await confirmation! This may take a few seconds depending on the network, so be patient.
+Once that's done, check that the **CONTRACT** menu displays the name of your contract. In many cases, Remix defaults to deploying the first contract which appears alphabetically in the menu; to prevent errors, select the correct contract, then click **Deploy**. Another Metamask notification will pop up asking for permission, and detailing how much GAS it will cost in testnet ETH. Confirm the transaction and await confirmation! This might take a few seconds depending on the network, so be patient.
 
 ## Get the Price
 

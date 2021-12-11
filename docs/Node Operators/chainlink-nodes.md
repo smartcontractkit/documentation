@@ -95,7 +95,7 @@ permalink: /chainlink-nodes/
               <img
                 src="https://uploads-ssl.webflow.com/5e444500cbc42eeb5198206f/5e711675d22595473f1c0c20_Contract.svg"
               />
-              <h3>Chainlink Market ↗</h3>
+              <h3>Chainlink Market</h3>
           </div>
         </a>
         <a class="cl-productcard" href="https://reputation.link/" target="_blank">
@@ -103,7 +103,7 @@ permalink: /chainlink-nodes/
               <img
                 src="https://uploads-ssl.webflow.com/5e444500cbc42eeb5198206f/5e711677c777c0bd0c747109_Nodes.svg"
               />
-              <h3>Chainlink Oracle Reputation ↗</h3>
+              <h3>Chainlink Oracle Reputation</h3>
           </div>
         </a>
       </div>

@@ -87,8 +87,8 @@ contract LCXChainlink is ChainlinkClient {
 ```
 
 <div class="remix-callout">
-  <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/DataProviders/LCX.sol" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
-    <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
+  <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/DataProviders/LCX.sol" target="_blank" >Deploy using Remix</a>
+  <a href="../deploy-your-first-contract/" >What is Remix?</a>
 </div>
 
 # Tasks

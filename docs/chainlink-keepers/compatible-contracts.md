@@ -151,14 +151,14 @@ You can perform complex and broad off-chain computation, then execute on-chain s
 ## Example Contract
 The example below represents a simple counter contract. Each time `performUpkeep` is called, it increments its counter by one.
 
-<div class="remix-callout">
-    <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/Keepers/KeepersCounter.sol" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
-    <a href="../../deploy-your-first-contract/" title="">What is Remix?</a>
-</div>
-
 ```solidity
 {% include samples/Keepers/KeepersCounter.sol %}
 ```
+
+<div class="remix-callout">
+    <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/Keepers/KeepersCounter.sol" >Deploy using Remix</a>
+    <a href="../../deploy-your-first-contract/" >What is Remix?</a>
+</div>
 
 > ❗️ **WARNING**
 > Do **NOT** attempt to send LINK to your contract like you do with [VRF](../../get-a-random-number/). For Chainlink Keepers, contracts are funded via the registry rather than within your contract.
