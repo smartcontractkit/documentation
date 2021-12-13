@@ -6,137 +6,164 @@ date: Last Modified
 permalink: /getting-started/
 ---
 
-## Start your journey with Chainlink.
-
-Chainlink turns your smart contracts into hybrid smart contracts, giving them access to real-world data and services while maintaining the security and reliability guarantees inherent to blockchain technology. To get started with Chainlink:
-
-1. Learn how to [set up install and fund Metamask](/docs/install-metamask).
-2. [Acquire testnet LINK](/docs/acquire-link/).
-3. [Deploy](/docs/deploy-your-first-contract/), [fund](/docs/fund-your-contract/), and [use your first smart contract](/docs/use-your-first-contract/).
-
-<!-- Temp fix until we reorganize the content. -->
-<!--
-## Build you first application.
-
-Pick a topic and build your first application using Chainlink with our step‑by‑step tutorials. If you're a beginner, we recommend starting with our [Data Feeds](/docs/beginners-tutorial/) tutorial.
-
-<div class="cl-featuredcard">
-    <div>
+<div>
+  <div class="markdown-body">
+    <div class="cl-section-header">
+      <h2>Start your journey with Chainlink</h2>
+      <p>
+        Chainlink turns your smart contracts into hybrid smart contracts, giving them access to real-world data and services while maintaining the security and reliability guarantees inherent to blockchain technology.
+      </p>
+    </div>
+    <div class="cl-featuredcard">
+      <div>
         <div>
-            <h3>Get Data Feeds in your Smart Contracts</h3>
-            <p>
-            Retrieve the latest prices and data points of assets in your smart
-            contracts.
-            </p>
+          <div class="card-icon-wrapper">
+            <img
+              src="/images/misc/5f96ab4b4db522072b7ff30c_book-bookmark.svg"
+              class="cl-image-featured"
+            />
+          </div>
+          <h4>Read the Overview</h4>
+          <p>
+            Learn the basic concepts and components of smart contracts.
+          </p>
+          <a href="/docs/conceptual-overview/">
+            <div class="arrowed-text">
+                Learn More
+                <img class="cta-learnmore-arrow" src="/images/misc/navigation-arrow-right.svg" loading="lazy" alt="Right arrow">
+            </div>
+          </a>
         </div>
-        <a href="/docs/beginners-tutorial"
-            class="cl-button--ghost">
-            Learn More
+      </div>
+      <div>
+        <div>
+          <div class="card-icon-wrapper">
+            <img
+              src="/images/misc/5f75cc9f74f7124d70ad4f0a_file-code-check.svg"
+              class="cl-image-featured"
+            />
+          </div>
+          <h4>Deploy a smart contract</h4>
+          <p>
+            Learn the basics by deploying your first smart contract.
+          </p>
+          <a href="/docs/deploy-your-first-contract/">
+            <div class="arrowed-text">
+                Learn More
+                <img class="cta-learnmore-arrow" src="/images/misc/navigation-arrow-right.svg" loading="lazy" alt="Right arrow">
+            </div>
+          </a>
+        </div>
+      </div>
+      <div>
+        <div>
+          <div class="card-icon-wrapper">
+            <img
+              src="/images/misc/5f8825a8a76298e280868970_refresh-money.svg"
+              class="cl-image-featured"
+            />
+          </div>
+          <h4>Get Asset Prices</h4>
+          <p>
+            Learn how to consume Chainlink Data Feeds in your smart contracts.
+          </p>
+          <a href="/docs/consuming-data-feeds/">
+            <div class="arrowed-text">
+                Learn More
+                <img class="cta-learnmore-arrow" src="/images/misc/navigation-arrow-right.svg" loading="lazy" alt="Right arrow">
+            </div>
+          </a>
+        </div>
+      </div>
+      <div>
+        <div>
+          <div class="card-icon-wrapper">
+            <img
+              src="/images/misc/5f771e39793e0f78a75547bf_board-game-dice.svg"
+              class="cl-image-featured"
+            />
+          </div>
+          <h4>Generate Randomness</h4>
+          <p>
+            Learn how to get verifiable random numbers on-chain.
+          </p>
+          <a href="/docs/get-a-random-number/">
+            <div class="arrowed-text">
+                Learn More
+                <img class="cta-learnmore-arrow" src="/images/misc/navigation-arrow-right.svg" loading="lazy" alt="Right arrow">
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="cl-featuredcard">
+      <div>
+        <div class="card-icon-wrapper">
+          <img src="/images/misc/5f75b5e6e24b376ed9ab5c1e_programming-browser.svg" class="cl-image-featured"></img>
+        </div>
+        <h2>Already familiar with smart contract basics?</h2>
+        <p>
+          Dive deeper into Chainlink product and services on Ethereum chains.
+        </p>
+        <a href="/ethereum/" class="cl-button--ghost">
+          Chainlink on Ethereum Chains
         </a>
+      </div>
     </div>
-    <div>
-        <div>
-            <h3>Generate Verifiable Random Numbers (VRF)</h3>
-            <p>
-            Use Chainlink VRF to consume randomness in your smart contracts.
-            </p>
+    <div class="cl-section">
+      <div class="cl-section cl-section--tools">
+        <h3>Explore Additional Resources</h3>
+        <p>Find all the right resources to get the most out of Chainlink.</p>
+        <div style="display: flex;">
+          <a class="cl-productcard" href="/docs/architecture-overview/" target="_blank">
+            <div>
+                <img
+                  src="/images/misc/5f85d14b6782933bd5a70060_decentralized.svg"
+                  width="150px"
+                />
+                <h3>Architecture Overview</h3>
+            </div>
+          </a>
+          <a class="cl-productcard" href="/docs/architecture-overview/" target="_blank">
+            <div>
+                <img
+                  src="/images/misc/5f75e7d3f8ef05758ce8c1f5_bulb.svg"
+                  width="150px"
+                />
+                <h3>Videos and Tutorials</h3>
+            </div>
+          </a>
+          <a class="cl-productcard" href="/docs/other-tutorials/" target="_blank">
+            <div>
+                <img
+                  src="/images/misc/61163fe987f45b67ab88bcfe_common-file-text-chainlink.svg"
+                  width="150px"
+                />
+                <h3>Chainlink Blog</h3>
+            </div>
+          </a>
+          <a class="cl-productcard" href="https://blog.chain.link/" target="_blank">
+            <div>
+                <img
+                  src="/images/misc/help_avatar.svg"
+                  width="150px"
+                />
+                <h3>Get Support</h3>
+            </div>
+          </a>
+          <a class="cl-productcard" href="https://chain.link/community" target="_blank">
+            <div>
+                <img
+                  src="/images/misc/5f75ccd99b524261854d093d_multiple-users-network.svg"
+                  width="150px"
+                />
+                <h3>Join the Community</h3>
+            </div>
+          </a>
         </div>
-        <a href="/docs/intermediates-tutorial" class="cl-button--ghost">Learn More </a>
+      </div>
     </div>
-    <div>
-        <div>
-            <h3>Call External APIs from Smart Contracts</h3>
-            <p>
-            Request &amp; Receive data from any API using the Chainlink contract
-            library.
-            </p>
-        </div>
-        <a href="/docs/advanced-tutorial" class="cl-button--ghost">
-            Learn More
-        </a>
-    </div>
+  </div>
 </div>
--->
 
-## Dive deeper into Chainlink product and services.
-
-Comprehensive tools and docs for all of Chainlink's products and services.
-
-<div class="cl-box cl-box__lightblue cl-featuredcard">
-    <div>
-        <a href="/docs/using-chainlink-reference-contracts">
-        <div>
-        <h3>Data Feeds</h3>
-        <p>
-            Connect your smart contract to off-chain data feeds.
-        </p>
-        </div>
-        </a>
-    </div>
-    <div>
-        <a href="/docs/chainlink-vrf">
-        <div>
-        <h3>Chainlink VRF</h3>
-        <p>
-            Consume randomness in your smart contracts.
-        </p>
-        </div>        
-        </a>
-    </div>
-    <div>
-        <a href="/docs/chainlink-keepers/introduction">
-        <div>
-        <h3>Chainlink Keepers</h3>
-        <p>
-            Automate smart contract functions and regular contract maintenance.
-        </p>
-        </div>
-        </a>
-    </div>
-    <div>
-        <a href="/docs/request-and-receive-data">
-        <div>
-        <h3>Using Any API</h3>
-        <p>
-            Connect your smart contract to off-chain data feeds.
-        </p>
-        </div>        
-        </a>
-    </div>
-</div>
-<p>
-</p>
 Need to run your own Chainlink node? Read the <a href="../chainlink-nodes">Node Operator's Guide</a> to learn about starting and maintaining Chainlink Nodes.
-
-## Find the resources you need.
-Find all the right resources to get the most out of Chainlink.
-
-<div class="cl-section cl-section--tools">
-<div style="display: flex;">
-    <a class="cl-productcard" href="/docs/architecture-overview/" target="_blank">
-    <div>
-        <h3>Architecture Overview</h3>
-    </div>
-    </a>
-    <a class="cl-productcard" href="/docs/other-tutorials/#video-tutorials" target="_blank">
-    <div>
-        <h3>Video Tutorials</h3>
-    </div>
-    </a>
-    <a class="cl-productcard" href="https://blog.chain.link/" target="_blank">
-    <div>
-        <h3>Chainlink Blog</h3>
-    </div>
-    </a>
-    <a class="cl-productcard" href="/docs/other-tutorials/#get-support" target="_blank">
-    <div>
-        <h3>Get Support</h3>
-    </div>
-    </a>
-    <a class="cl-productcard" href="/docs/other-tutorials/#join-the-community" target="_blank">
-    <div>
-        <h3>Join the Community</h3>
-    </div>
-    </a>
-</div>
-</div>

@@ -270,7 +270,7 @@ Your contract is complete and ready to be compiled and deployed. You can see a c
   <a href="../deploy-your-first-contract/" >What is Remix?</a>
 </div>
 
-If you don't know how to deploy a contract to the Kovan testnet from Remix, follow [The Basics](/docs/beginners-tutorial) tutorial. To make a job request, you *must* have enough LINK to pay for it. Learn how to [acquire testnet LINK](../acquire-link/) and [fund your contract](../fund-your-contract/). Once these steps are completed, you should be able to get sports data.
+If you don't know how to deploy a contract to the Kovan testnet from Remix, follow getting started guide for [Deploying Your First Smart Contract](/docs/deploy-your-first-contract/). To make a job request, you *must* have enough LINK to pay for it. Learn how to [acquire testnet LINK](/docs/acquire-link/) and [fund your contract](/docs/fund-your-contract/). Once these steps are completed, you should be able to get sports data.
 
 
 # 6. Further Reading

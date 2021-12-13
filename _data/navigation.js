@@ -5,28 +5,28 @@ module.exports = {
         section: 'Getting Started',
         contents: [
           {
-            title: 'Install, configure & fund MetaMask',
-            url: '/docs/install-metamask/',
+            title: 'Conceptual Overview',
+            url: '/docs/conceptual-overview/',
+          },
+          {
+            title: 'Deploy Your First Contract',
+            url: '/docs/deploy-your-first-contract/',
+          },
+          {
+            title: 'Consuming Data Feeds',
+            url: '/docs/consuming-data-feeds/',
+          },
+          {
+            title: 'Get Random Numbers',
+            url: '/docs/get-a-random-number/'
           },
           {
             title: 'Acquire testnet LINK',
             url: '/docs/acquire-link/',
           },
           {
-            title: 'Deploy your first contract',
-            url: '/docs/deploy-your-first-contract/',
-          },
-          {
-            title: 'Fund your contract',
+            title: 'Fund Your Contracts',
             url: '/docs/fund-your-contract/',
-          },
-          {
-            title: 'Use your first contract',
-            url: '/docs/use-your-first-contract/',
-          },
-          {
-            title: 'Learn how smart contracts work',
-            url: '/docs/beginners-tutorial/',
           },
         ],
       },
@@ -42,6 +42,10 @@ module.exports = {
       {
         section: 'Next Steps',
         contents: [
+          {
+            title: 'Request Public API Data ↗',
+            url: '/docs/using-any-api/',
+          },
           {
             title: 'Chainlink Architecture ↗',
             url: '/docs/architecture-overview/',
@@ -94,7 +98,7 @@ module.exports = {
         ],
       },
       {
-        section: 'USING DATA FEEDS',
+        section: 'DATA FEEDS',
         contents: [
           {
             title: 'Introduction to Data Feeds',
@@ -115,6 +119,10 @@ module.exports = {
           {
             title: 'API Reference',
             url: '/docs/price-feeds-api-reference/',
+          },
+          {
+            title: 'Using ENS with Data Feeds',
+            url: '/docs/ens/'
           },
           {
             title: 'Contract Addresses',
@@ -178,12 +186,8 @@ module.exports = {
             url: '/docs/chainlink-vrf/',
           },
           {
-            title: 'Using Chainlink VRF',
-            url: '/docs/get-a-random-number/'
-          },
-          {
             title: 'Example Contracts',
-            url: '/docs/vrf-example-contracts/',
+            url: '/docs/get-a-random-number/',
           },
           {
             title: 'API Reference',
@@ -204,7 +208,7 @@ module.exports = {
         ],
       },
       {
-        section: 'USING ANY API',
+        section: 'Connect to any API',
         contents: [
           {
             title: 'Introduction to Using Any API',
@@ -245,10 +249,10 @@ module.exports = {
         ],
       },
       {
-        section: 'USING CHAINLINK KEEPERS',
+        section: 'CHAINLINK KEEPERS',
         contents: [
           {
-            title: 'Introduction',
+            title: 'Introduction to Keepers',
             url: '/docs/chainlink-keepers/introduction/',
           },
           {
@@ -287,10 +291,6 @@ module.exports = {
           {
             title: 'LINK Token Contracts',
             url: '/docs/link-token-contracts/'
-          },
-          {
-            title: 'Using ENS with Chainlink',
-            url: '/docs/ens/'
           },
           {
             title: 'Developer Communications',

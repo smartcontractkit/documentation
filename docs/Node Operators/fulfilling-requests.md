@@ -15,7 +15,7 @@ With your own Oracle contract, you can use your own node to fulfill requests. Th
 
 Before you begin this guide, complete the following tasks to make sure you have all of the tools that you need:
 
-- Complete the [Beginner Walkthrough](../beginners-tutorial) to obtain Testnet LINK and set up MetaMask.
+- [Set up MetaMask](/docs/deploy-your-first-contract/#install-and-fund-your-metamask-wallet) and [obtain testnet LINK](/docs/acquire-link/).
 - Configure an Ethereum client with an active websocket connection. Either [Run an Ethereum Client](../run-an-ethereum-client/) yourself or use an [External Service](../run-an-ethereum-client/#external-services) that your Chainlink Node can access.
 - [Run a Chainlink Node](../running-a-chainlink-node/) and connect it to a [supported database](../connecting-to-a-remote-database/).
 - Fund the Ethereum address that your Chainlink node uses. You can find the address in the node Operator GUI under the **Keys** tab. The address of the node is the `Regular` type. You can obtain test ETH from several [faucets](../link-token-contracts/).

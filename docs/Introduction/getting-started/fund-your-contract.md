@@ -2,25 +2,29 @@
 layout: nodes.liquid
 section: gettingStarted
 date: Last Modified
-title: "Fund your contract"
+title: "Fund Your Contracts"
 permalink: "docs/fund-your-contract/"
-whatsnext: {"Use your first contract!":"/docs/use-your-first-contract/"}
 ---
-This guide explains how to fund your Solidity contract with LINK using the Remix IDE.
 
-# Retrieveing the contract address
+Some smart contracts require funding at their addresses so they can operate without you having to call functions manually and pay for the transactions through MetaMask. This guide explains how to fund Solidity contracts with LINK or ETH using the Remix IDE.
 
-* Deploy your contract and wait until you see a new contract in the `Deployed Contracts` section.
-* Copy the contract address to your clipboard using the copy icon located near the contract title on the left side panel.
+## Retrieve the contract address
+
+1. In Remix, deploy your contract and wait until you see a new contract in the **Deployed Contracts** section.
+1. On the left side panel, use the **Copy** button located near the contract title to copy the contract address to your clipboard.
 
 ![Remix Copy Deployed Contract Address](/files/25d2c8e-Screen_Shot_2020-09-08_at_7.15.50_AM.png)
 
-# Sending LINK
+## Send funds to your contract
 
-* Open MetaMask; click the hamburger (☰) button at the top-left corner.
-* Click on the LINK token, then press `Next`.
-* Paste your contract's address in the recipient field and enter a value for the amount to send (e.g. 10 LINK).
-* Click `Confirm` and wait until the transaction is processed.
+1. Open MetaMask.
+1. Select the network that you want to send funds on. For example, select the Kovan testnet.
+1. Click the **Send** button to initiate a transaction.
+1. Paste your contract address in the address field.
+1. In the **Asset** drop down menu, select the type of asset that you need to send to your contract. For example, you can send LINK. If LINK is not listed, follow the guide to [Acquire testnet LINK](/docs/acquire-link/).
+1. In the **Ammount** field, enter the amount of LINK that you want to send.
+1. Click **Next** to review the transaction details and the Gas cost.
+1. If the transaction details are correct, click **Confirm** and wait for the transaction to process.
 
 ![Metamask Send Link Screen](/files/867073d-metamask.png)
 

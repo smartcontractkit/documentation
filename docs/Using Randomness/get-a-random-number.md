@@ -3,7 +3,7 @@ layout: nodes.liquid
 section: ethereum
 date: Last Modified
 title: "Example Contracts"
-permalink: "docs/vrf-example-contracts/"
+permalink: "docs/get-a-random-number/"
 whatsnext: {"API Reference":"/docs/chainlink-vrf-api-reference/", "Contract Addresses":"/docs/vrf-contracts/"}
 metadata:
   description: "How to generate a random number inside a smart contract using Chainlink VRF."

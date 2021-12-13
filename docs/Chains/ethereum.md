@@ -6,8 +6,6 @@ date: Last Modified
 permalink: /ethereum/
 ---
 
-<!-- TODO: Replace this content with new content for the Ethereum Chains landing page. -->
-
 <div>
   <div class="markdown-body">
     <div class="cl-section-header">
@@ -27,7 +25,7 @@ permalink: /ethereum/
             Retrieve the latest prices and data points of assets in your smart
             contracts.
           </p>
-          <a href="/docs/using-chainlink-reference-contracts">
+          <a href="/docs/using-chainlink-reference-contracts/">
             <div class="arrowed-text">
                 Learn More
                 <img class="cta-learnmore-arrow" src="/images/misc/navigation-arrow-right.svg" loading="lazy" alt="Right arrow">
@@ -45,7 +43,7 @@ permalink: /ethereum/
           <p>
             Use Chainlink VRF to consume randomness in your smart contracts.
           </p>
-          <a href="/docs/chainlink-vrf">
+          <a href="/docs/chainlink-vrf/">
             <div class="arrowed-text">
                 Learn More
                 <img class="cta-learnmore-arrow" src="/images/misc/navigation-arrow-right.svg" loading="lazy" alt="Right arrow">
@@ -65,7 +63,7 @@ permalink: /ethereum/
             Request &amp; Receive data from any API using the Chainlink contract
             library.
           </p>
-          <a href="/docs/request-and-receive-data">
+          <a href="/docs/request-and-receive-data/">
             <div class="arrowed-text">
                 Learn More
                 <img class="cta-learnmore-arrow" src="/images/misc/navigation-arrow-right.svg" loading="lazy" alt="Right arrow">
@@ -100,7 +98,7 @@ permalink: /ethereum/
           Chainlink Keepers provide smart contract developers, decentralized applications (dApps), and decentralized autonomous organizations (DAOs) with a highly reliable, decentralized, and cost-efficient method of automating smart contract functions and regular contract maintenance.
         </p>
         <a href="/docs/chainlink-keepers/introduction/" class="cl-button--ghost">
-          Getting Started Guide
+          Learn More
         </a>
       </div>
     </div>
