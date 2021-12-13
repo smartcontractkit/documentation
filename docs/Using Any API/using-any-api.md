@@ -37,7 +37,7 @@ In this tutorial, you will learn how to request data from a public API in a smar
 
 The request and receive cycle describes how a smart contract requests data from an oracle and receives the response in a separate transaction. If you need a refresher, check out the [Basic Request Model](../architecture-request-model/).
 
-With API calls, the contract itself *defines* which function it wants to receive the response to.
+For contracts that use [Chainlink VRF](/docs/chainlink-vrf/), you request randomness from a VRF oracle and then await the response. The fulfillment function is already given to us from the `VRFConsumerBase` contract, so oracles already know where to send the response to. However, with API calls, the contract itself *defines* which function it wants to receive the response to.
 
 Before creating any code, you should understand how Oracle jobs can get data on-chain.
 
@@ -99,7 +99,7 @@ Let's see what this looks like in a contract:
 
 <div class="remix-callout">
   <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/APIConsumer.sol" target="_blank" >Deploy using Remix</a>
-  <a href="../deploy-your-first-contract/" >What is Remix?</a>
+  <a href="/docs/conceptual-overview/#what-is-remix" >What is Remix?</a>
 </div>
 
 Here is a breakdown of each component of this contract:
@@ -267,7 +267,7 @@ Your contract is complete and ready to be compiled and deployed. You can see a c
 
 <div class="remix-callout">
   <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/sportContract.sol" target="_blank" >Deploy using Remix</a>
-  <a href="../deploy-your-first-contract/" >What is Remix?</a>
+  <a href="/docs/conceptual-overview/#what-is-remix" >What is Remix?</a>
 </div>
 
 If you don't know how to deploy a contract to the Kovan testnet from Remix, follow getting started guide for [Deploying Your First Smart Contract](/docs/deploy-your-first-contract/). To make a job request, you *must* have enough LINK to pay for it. Learn how to [acquire testnet LINK](/docs/acquire-link/) and [fund your contract](/docs/fund-your-contract/). Once these steps are completed, you should be able to get sports data.

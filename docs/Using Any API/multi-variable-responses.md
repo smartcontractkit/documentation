@@ -25,7 +25,7 @@ To consume an API with multiple responses, your contract should inherit from [Ch
 
 <div class="remix-callout">
     <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/MultiWordConsumer.sol" target="_blank" >Deploy a Multi-Word Contract Example in Remix</a>
-    <a href="../deploy-your-first-contract/" >What is Remix?</a>
+    <a href="/docs/conceptual-overview/#what-is-remix" >What is Remix?</a>
 </div>
 
 ```solidity Kovan

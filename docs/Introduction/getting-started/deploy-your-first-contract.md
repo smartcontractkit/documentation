@@ -69,7 +69,7 @@ Your first contract is a simple `HelloWorld.sol` example. This example shows you
 
     <div class="remix-callout">
       <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/Tutorials/HelloWorld.sol" target="_blank">Open the example contract in Remix</a>
-      <a href="../deploy-your-first-contract/" >What is Remix?</a>
+      <a href="/docs/conceptual-overview/#what-is-remix" >What is Remix?</a>
     </div>
 
 1. Because the code is already written, you can start the compile step. On the left side of Remix, click the **Solidity Compiler** tab to view the compiler settings.

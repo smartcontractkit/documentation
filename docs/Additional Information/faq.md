@@ -109,7 +109,7 @@ If you already have a project started and would like to integrate Chainlink, you
 
 Resources:
 *  [Create a Chainlinked Project](../create-a-chainlinked-project/)
-*  [Example Walkthrough](/docs/get-a-random-number/)
+*  [Example Walkthrough](/docs/intermediates-tutorial/)
 *  <a href="https://blog.chain.link/how-to-use-chainlink-with-truffle-2/" target="_blank">How to use Chainlink with Truffle</a>
 
 ## Can Chainlink be used to connect to <*some blockchain/API*>?
@@ -126,7 +126,7 @@ You can use the <a href="https://market.link/" target="_blank">Chainlink Market<
 
 Resources:
 *  [Create a Chainlinked Project](../create-a-chainlinked-project/)
-*  [Example Walkthrough](/docs/get-a-random-number/)
+*  [Example Walkthrough](/docs/intermediates-tutorial/)
 *  <a href="https://market.link/" target="_blank">Chainlink Market</a>
 *  [Chainlink Contract Reference](../chainlink-framework/#sendchainlinkrequestto)
 

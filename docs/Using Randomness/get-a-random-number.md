@@ -42,7 +42,7 @@ Note, the below values have to be configured correctly for VRF requests to work.
 
 <div class="remix-callout">
     <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/RandomNumberConsumer.sol" target="_blank">Deploy using Remix</a>
-    <a href="../deploy-your-first-contract/">What is Remix?</a>
+    <a href="/docs/conceptual-overview/#what-is-remix">What is Remix?</a>
 </div>
 
 > 🚧 Maximum Gas for Callback

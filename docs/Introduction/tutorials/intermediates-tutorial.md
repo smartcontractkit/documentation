@@ -297,7 +297,7 @@ contract VRFD20 is VRFConsumerBase, ConfirmedOwner(msg.sender) {
 
 <div class="remix-callout">
   <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFD20.sol" target="_blank" >Deploy using Remix</a>
-  <a href="../deploy-your-first-contract/" >What is Remix?</a>
+  <a href="/docs/conceptual-overview/#what-is-remix" >What is Remix?</a>
 </div>
 
 You have now completed all necessary functions to generate randomness and assign the user a *Game of Thrones* house. We've added a few helper functions in there to make using the contract easier and more flexible. You can deploy and interact with the complete contract in Remix.

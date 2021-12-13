@@ -59,7 +59,7 @@ The structure of a smart contract is similar to that of a class in Javascript, w
 
 <div class="remix-callout">
   <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/Tutorials/HelloWorld.sol" target="_blank" >Deploy using Remix</a>
-  <a href="../deploy-your-first-contract/" >What is Remix?</a>
+  <a href="/docs/conceptual-overview/#what-is-remix" >What is Remix?</a>
 </div>
 
 ### Solidity versions
@@ -131,7 +131,7 @@ An **interface** is another concept that is familiar to programmers of other lan
 ```
 <div class="remix-callout">
   <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/Tutorials/Test.sol" target="_blank">Deploy using Remix</a>
-  <a href="../deploy-your-first-contract/" >What is Remix?</a>
+  <a href="/docs/conceptual-overview/#what-is-remix" >What is Remix?</a>
 </div>
 
 For this example, `override` is necessary in the `Test` contract function because it overrides the base function contained in the `numberComparison` interface. The contract uses `pure` instead of `view` because the `isSameNum` function in the `Test` contract does not return a storage variable.

@@ -157,7 +157,7 @@ The example below represents a simple counter contract. Each time `performUpkeep
 
 <div class="remix-callout">
     <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/Keepers/KeepersCounter.sol" >Deploy using Remix</a>
-    <a href="../../deploy-your-first-contract/" >What is Remix?</a>
+    <a href="/docs/conceptual-overview/#what-is-remix" >What is Remix?</a>
 </div>
 
 > ❗️ **WARNING**
