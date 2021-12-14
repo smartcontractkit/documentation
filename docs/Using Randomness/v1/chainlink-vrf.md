@@ -15,7 +15,7 @@ metadata:
 
 > 🚧 VRF v2 replaces and enhances VRF v1.
 >
-> See the [VRF v2 documentation](../) to learn more.
+> See the [VRF v2 documentation](/docs/chainlink-vrf/) to learn more.
 
 # Generate Random Numbers in your Smart Contracts
 
@@ -24,7 +24,7 @@ Chainlink VRF (Verifiable Random Function) is a provably-fair and verifiable sou
 *  Random assignment of duties and resources (e.g. randomly assigning judges to cases)
 *  Choosing a representative sample for consensus mechanisms
 
-Learn how to write smart contracts that consume random numbers: [Get a Random Number](../../get-a-random-number/v1/).
+Learn how to write smart contracts that consume random numbers: [Get a Random Number](/docs/get-a-random-number/v1/).
 
 # On-chain Verification of Randomness
 

@@ -33,7 +33,7 @@ In this example, there is only one consumer who is also the subscription owner. 
 
 <div class="remix-callout">
     <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFSingleConsumerExample.sol" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
-    <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
+    <a href="/docs/deploy-your-first-contract/" title="">What is Remix?</a>
 </div>
 
 ```solidity Kovan
@@ -51,7 +51,7 @@ In this example, the an external account manages the subscription for multiple c
 
 <div class="remix-callout">
     <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFExternalSubOwnerExample.sol" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
-    <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
+    <a href="/docs/deploy-your-first-contract/" title="">What is Remix?</a>
 </div>
 
 ```solidity Kovan
@@ -73,8 +73,8 @@ The full coordinator interface is available [here](https://github.com/smartcontr
 
 > 🚧 Security Considerations
 >
-> Be sure to look your contract over with [these security considerations](../vrf-security-considerations/) in mind!
+> Be sure to look your contract over with [these security considerations](/docs/vrf-security-considerations/) in mind!
 
 >❗️ Remember to fund your subscription with LINK!
 >
-> Your randomness request will not complete unless your subscription has enough LINK to pay for it. **Learn how to [Acquire testnet LINK](../acquire-link/)**.
+> Your randomness request will not complete unless your subscription has enough LINK to pay for it. **Learn how to [Acquire testnet LINK](/docs/acquire-link/)**.

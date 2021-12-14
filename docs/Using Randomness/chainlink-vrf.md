@@ -24,7 +24,7 @@ Chainlink VRF (Verifiable Random Function) is a provably-fair and verifiable sou
 *  Random assignment of duties and resources. For example, randomly assigning judges to cases.
 *  Choosing a representative sample for consensus mechanisms.
 
-Learn how to write smart contracts that consume random numbers: [Get a Random Number](../get-a-random-number/).
+Learn how to write smart contracts that consume random numbers: [Get a Random Number](/docs/get-a-random-number/).
 
 # Supported networks
 

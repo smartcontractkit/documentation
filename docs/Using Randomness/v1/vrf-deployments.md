@@ -12,11 +12,11 @@ metadata:
 
 > 🚧 VRF v2 replaces and enhances VRF v1.
 >
-> See the [VRF v2 documentation](../) to learn more.
+> See the [VRF v2 documentation](/docs/vrf-deployments/) to learn more.
 
 Chainlink VRF allows you to integrate provably-fair and verifiably random data in your smart contract.
 
-For implementation details, read [Introduction to Chainlink VRF](../../chainlink-vrf/v1).
+For implementation details, read [Introduction to Chainlink VRF](/docs/chainlink-vrf/v1).
 
 # Polygon (Matic) Mainnet
 

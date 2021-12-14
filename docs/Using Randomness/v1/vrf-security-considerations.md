@@ -8,7 +8,7 @@ permalink: "docs/vrf-security-considerations/v1/"
 
 > 🚧 VRF v2 replaces and enhances VRF v1.
 >
-> See the [VRF v2 documentation](../) to learn more.
+> See the [VRF v2 documentation](/docs/vrf-security-considerations/) to learn more.
 
 Gaining access to high quality randomness on-chain requires a solution like Chainlink's VRF, but it also requires you to understand some of the ways that randonmess generation can be manipulated by miners/validators. Here are some of the top security considerations you should review in your project.
 

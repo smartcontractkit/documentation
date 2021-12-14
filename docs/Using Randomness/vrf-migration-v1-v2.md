@@ -24,7 +24,7 @@ permalink: "docs/chainlink-vrf/migration-vrf-v1-v2/"
 
 # Updating your applications to use VRF v2
 
-To modify your existing smart contract code to work with VRF v2, complete the following changes. See the [Get a Random Number](/docs/get-a-random-number/#example-configurations) guide for an example.
+To modify your existing smart contract code to work with VRF v2, complete the following changes. See the [Get a Random Number](/docs/get-a-random-number/#example-contract) guide for an example.
 
 - Set up and fund a subscription. <!-- TODO: Add URL and url text -->
 
@@ -32,7 +32,7 @@ To modify your existing smart contract code to work with VRF v2, complete the fo
 
 - Import the [`VRFCoordinatorV2Interface.sol`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol) interface. This interface includes the new `requestRandomWords` function.
 
-- Add a `VRFConsumerBaseV2` constructor as shown in the [Get a Random Number](/docs/get-a-random-number/#example-configurations) example.
+- Add a `VRFConsumerBaseV2` constructor as shown in the [Get a Random Number](/docs/get-a-random-number/#example-contract) example.
 
 - Change `requestRandomness` function calls to `requestRandomWords`. The `requestRandomWords` function requires several additional parameters.
 

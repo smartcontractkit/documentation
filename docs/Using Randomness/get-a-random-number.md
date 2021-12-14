@@ -17,11 +17,11 @@ metadata:
 
 This page explains how to get a random number inside a smart contract using Chainlink VRF.
 
-Chainlink VRF is subscription-based. The subscription owner manages the subscription LINK balance as well as the set of addresses (consumers) that are allowed to use that balance for VRF requests. The requests follow the [Request & Receive Data](../request-and-receive-data/) cycle. Upon fulfillment, the gas used to fulfill the request is calculated, converted to link using an ETH/LINK feed, and charged to the subscription including a flat per-request fee. To learn more about the fee structure, see the [VRF Deployments page](../vrf-deployments).
+Chainlink VRF is subscription-based. The subscription owner manages the subscription LINK balance as well as the set of addresses (consumers) that are allowed to use that balance for VRF requests. The requests follow the [Request & Receive Data](/docs/request-and-receive-data/) cycle. Upon fulfillment, the gas used to fulfill the request is calculated, converted to link using an ETH/LINK feed, and charged to the subscription including a flat per-request fee. To learn more about the fee structure, see the [VRF Deployments page](/docs/vrf-deployments).
 
 # Static Parameters
 
-Static parameters are the same for all VRF users. You can find the values for your network in the [VRF Deployments page](../vrf-deployments).
+Static parameters are the same for all VRF users. You can find the values for your network in the [VRF Deployments page](/docs/vrf-deployments).
 
 - `address link` - LINK token address on the corresponding network.
 - `address vrfCoordinator` - Address of the Chainlink VRF Coordinator.
@@ -39,7 +39,7 @@ As an example, assume that the ETH to LINK price is 0.02 ETH/LINK and you reques
 
 If the request is fulfilled at a gas price lower than the maximum, which is likely in steady gas conditions, then the amount billed will be much less than 8 LINK. If you make a request when the subscription is underfunded, top up the subscription with LINK and the request will go through automatically as long as the request was made in the last 24 hours.
 
-You can find the full list of available key hashes and their associated max gas prices on the [VRF Deployments page](../vrf-deployments).
+You can find the full list of available key hashes and their associated max gas prices on the [VRF Deployments page](/docs/vrf-deployments).
 
 # User Parameters
 
@@ -57,8 +57,8 @@ Configure the following parameters to meet the needs of your application:
 
 > 🚧 Security Considerations
 >
-> Be sure to look your contract over with [these security considerations](../vrf-security-considerations/) in mind!
+> Be sure to look your contract over with [these security considerations](/docs/vrf-security-considerations/) in mind!
 
 >❗️ Remember to fund your subscription with LINK!
 >
-> Your randomness request will not complete unless your subscription has enough LINK to pay for it. **Learn how to [Acquire testnet LINK](../acquire-link/)**.
+> Your randomness request will not complete unless your subscription has enough LINK to pay for it. **Learn how to [Acquire testnet LINK](/docs/acquire-link/)**.
