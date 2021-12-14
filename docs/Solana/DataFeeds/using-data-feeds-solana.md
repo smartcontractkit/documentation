@@ -16,7 +16,7 @@ Price data feeds are available on the following networks:
 - [Terra](/docs/terra/using-data-feeds-terra/)
 - [EVM-compatible networks](/docs/get-the-latest-price/)
 
-This guide applies specifically to using data feeds on the [Solana network](https://solana.com/). To get the full list of Chainlink Data Feeds running on the Solana Devnet, see the [Solana Feeds](/docs/solana/data-feeds-solana/) page. You can view the program ID that owns these feeds in the [Solana Devnet Explorer](https://explorer.solana.com/address/2yqG9bzKHD59MxD9q7ExLvnDhNycB3wkvKXFQSpBoiaE?cluster=devnet).
+This guide applies specifically to using data feeds on the [Solana network](https://solana.com/). To get the full list of Chainlink Data Feeds running on the Solana Devnet, see the [Solana Feeds](/docs/solana/data-feeds-solana/) page. You can view the program ID that owns these feeds in the [Solana Devnet Explorer](https://solscan.io/account/2yqG9bzKHD59MxD9q7ExLvnDhNycB3wkvKXFQSpBoiaE?cluster=devnet).
 
 {% include data-quality.md %}
 
@@ -24,7 +24,7 @@ This guide applies specifically to using data feeds on the [Solana network](http
 
 This guide demonstrates the following tasks:
 
-- Write and deploy programs to the [Solana Devnet](https://explorer.solana.com/?cluster=devnet) using Rust.
+- Write and deploy programs to the [Solana Devnet](https://solscan.io/?cluster=devnet) using Rust.
 - Retrieve data using the [Solana Web3 JavaScript API](https://www.npmjs.com/package/@solana/web3.js) with Node and Yarn.
 
 This example shows you how to work with a program that you deploy, but you can refactor the client section to work with a program ID of your choice.
@@ -37,7 +37,7 @@ This guide requires the following tools:
   - [Rust](https://www.rust-lang.org/tools/install)
   - [The Solana CLI](https://docs.solana.com/cli/install-solana-cli-tools#use-solanas-install-tool)
   - [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
-- Call the deployed program to read the data feed for the [SOL / USD price](https://explorer.solana.com/address/FmAmfoyPXiA8Vhhe6MZTr3U6rZfEZ1ctEHay1ysqCqcf?cluster=devnet):
+- Call the deployed program to read the data feed for the [SOL / USD price](https://solscan.io/account/FmAmfoyPXiA8Vhhe6MZTr3U6rZfEZ1ctEHay1ysqCqcf?cluster=devnet):
   - [Node.js 12 or higher](https://nodejs.org/en/download/)
   - [Yarn](https://classic.yarnpkg.com/en/docs/install/)
 
@@ -102,7 +102,7 @@ This guide requires the following tools:
     Program Id: AZRurZi6N2VTPpFJZ8DB45rCBn2MsBBYaHJfuAS7Tm4v
     ```
 
-1. Copy the program ID and look it up in the [Solana Devnet Explorer](https://explorer.solana.com/?cluster=devnet).
+1. Copy the program ID and look it up in the [Solana Devnet Explorer](https://solscan.io/?cluster=devnet).
 
 ## Call a deployed program
 
@@ -131,7 +131,7 @@ After you deploy the program, you can use it to retrieve data from a feed. The c
 
 You can view the Rust code and Typescript for this example on GitHub. See the [chainlink-solana-demo](https://github.com/smartcontractkit/chainlink-solana-demo) repository. The example code has a few main components:
 
-- The [client Typescript files](https://github.com/smartcontractkit/chainlink-solana-demo/tree/main/client/src) that establish a connection to the deployed program, determine the fees associated with retrieving the feed data, handle serialization and deserialization of data, and report the returned price from the specified data feed. In this case, the script tells your deployed Solana program to retrieve the price of SOL / USD from [FmAmfoyPXiA8Vhhe6MZTr3U6rZfEZ1ctEHay1ysqCqcf](https://explorer.solana.com/address/FmAmfoyPXiA8Vhhe6MZTr3U6rZfEZ1ctEHay1ysqCqcf?cluster=devnet).
+- The [client Typescript files](https://github.com/smartcontractkit/chainlink-solana-demo/tree/main/client/src) that establish a connection to the deployed program, determine the fees associated with retrieving the feed data, handle serialization and deserialization of data, and report the returned price from the specified data feed. In this case, the script tells your deployed Solana program to retrieve the price of SOL / USD from [FmAmfoyPXiA8Vhhe6MZTr3U6rZfEZ1ctEHay1ysqCqcf](https://solscan.io/account/FmAmfoyPXiA8Vhhe6MZTr3U6rZfEZ1ctEHay1ysqCqcf?cluster=devnet).
 - The [`./src/lib.rs`](https://github.com/smartcontractkit/chainlink-solana-demo/blob/main/src/lib.rs) file that defines the on-chain program for retrieving price data from a specified [Solana Data Feed](/docs/solana/data-feeds-solana/). This program also imports some methods from the main [smartcontractkit/chainlink-solana](https://github.com/smartcontractkit/chainlink-solana) repository.
 - The program imports some dependencies from the [chainlink-solana](https://github.com/smartcontractkit/chainlink-solana) repository.
 

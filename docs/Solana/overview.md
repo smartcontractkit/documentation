@@ -17,7 +17,7 @@ In Solana, storage and smart contract logic are separate. Programs store all the
 
 The following Chainlink services are available on the Solana network:
 
-- [Solana Devnet](https://explorer.solana.com/?cluster=devnet):
+- [Solana Devnet](https://solscan.io/?cluster=devnet):
   - [Data Feeds](/docs/solana/using-data-feeds-solana/)
 
 To learn when more Chainlink services become available, follow us on [Twitter](https://twitter.com/chainlink) or sign up for our [mailing list](/docs/developer-communications/).
