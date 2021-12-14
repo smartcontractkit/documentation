@@ -1,3 +1,10 @@
+---
+layout: nodes.liquid
+date: Last Modified
+title: "Running a Chainlink Node on MacOS"
+permalink: "docs/running-a-local-node-via-docker/"
+---
+
 ## This document will walk through the steps to get a chainlink node running locally using Docker on Mac OS
 
 For this example, I'll be using the Kovan Network
@@ -8,15 +15,13 @@ Create a directory to house the image and settings
 
 ## Setup Environment
 
-⚠️
-
-Note, replace any values \[LIKE\_THIS\] with the appropriate value
+> 📘 Note, replace any values \[LIKE\_THIS\] with the appropriate value
 
 `.env` will house the docker environment variables for the Chainlink Node
 
 `[YOUR_API_KEY]` can be found via alchemy
 
-![alchemy-key](/files/images/node-operators/local-docker/alchemy-key.png)
+![alchemy-key](/images/node-operators/local-docker/alchemy-key.png)
 
 `database.env` will house the docker environment variables for the PostgreSQL Node
 
@@ -38,7 +43,7 @@ In `apicredentials.txt` add, this will be the username and password for the web 
 
 Add the PostgreSQL and Chainlink volumes to docker
 
-![docker-volumes](/files/images/node-operators/local-docker/docker-file-share.gif)
+![docker-volumes](/images/node-operators/local-docker/docker-file-share.gif)
 
 ### Start docker
 
@@ -46,26 +51,26 @@ Add the PostgreSQL and Chainlink volumes to docker
 
 You will see the following error
 
-![error](/files/images/node-operators/local-docker/error1.png)
+![error](/images/node-operators/local-docker/error1.png)
 
 This is expected. The database for PostgreSQL has not been created
 
 Create the PostgreSQL database for chainlink
 
-![docker-shell](/files/images/node-operators/local-docker/docker-shell.gif)
+![docker-shell](/images/node-operators/local-docker/docker-shell.gif)
 
 Stop docker if it's still running and re-run `docker compose up`
 
 You should see a flurry of activity and something like this 👇
 
-![success](/files/images/node-operators/local-docker/success1.png)
+![success](/images/node-operators/local-docker/success1.png)
 
 ## YOUR NODE IS UP AND RUNNING!
 
 Head to [http://localhost:6688](http://localhost:6688/)
 
-![node-success](/files/images/node-operators/local-docker/node-success1.png)
+![node-success](/images/node-operators/local-docker/node-success1.png)
 
 Login with the credentials you set in `apicredentials.txt`
 
-![node-success2](/files/images/node-operators/local-docker/node-success2.png)
+![node-success2](/images/node-operators/local-docker/node-success2.png)
