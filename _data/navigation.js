@@ -6,14 +6,20 @@ module.exports = {
         contents: [
           {
             url: '/docs/node-versions/',
-            title: 'Node Versions' },
+            title: 'Node Versions'
+          },
           {
             url: '/docs/running-a-chainlink-node/',
             title: 'Running a Chainlink Node',
           },
           {
+            url: '/docs/running-a-local-node-via-docker/',
+            title: 'Running a Chainlink Node on MacOS',
+          },
+          {
             url: '/docs/fulfilling-requests/',
-            title: 'Fulfilling Requests' },
+            title: 'Fulfilling Requests'
+          },
           {
             url: '/docs/run-an-ethereum-client/',
             title: 'Run an Ethereum Client',
