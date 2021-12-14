@@ -13,7 +13,7 @@ metadata:
 
 > ℹ️ You are viewing the VRF v2 guide.
 >
-> If you are using v1, see the [VRF v1 guide](./v1).
+> If you are using v1, see the [VRF v1 guide](/docs/get-a-random-number/v1/).
 
 How you manage the subscription is up to you and depends on your randomness needs. In general you configure your smart contracts to use VRF with the following process:
 

@@ -51,9 +51,16 @@ Configure the following parameters to meet the needs of your application:
 
 # Example Contract
 
-<!-- TODO: Add a simple example with individual steps required. -->
+In this example, there is only one consumer who is also the subscription owner. It also sets the request config to be static, so each request uses the same parameters.
 
+<div class="remix-callout">
+    <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFSingleConsumerExample.sol" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
+    <a href="/docs/deploy-your-first-contract/" title="">What is Remix?</a>
+</div>
 
+```solidity Kovan
+{% include samples/VRF/VRFSingleConsumerExample-simple.sol %}
+```
 
 > 🚧 Security Considerations
 >
