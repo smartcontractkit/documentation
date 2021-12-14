@@ -13,13 +13,13 @@ metadata:
 
 > 🚧 VRF v2 replaces and enhances VRF v1.
 >
-> See the [VRF v2 documentation](../) to learn more.
+> See the [VRF v2 documentation](/docs/chainlink-vrf-best-practices/) to learn more.
 
 Best are the practices for using Chainlink VRF.
 
 ## Getting a random number within a range
 
-If you need to generate a random number within a given range, you should use [modulo](https://docs.soliditylang.org/en/v0.6.0/types.html) to define the limits of your range. Below you can see how to get a random number between 1 and 50.
+If you need to generate a random number within a given range, you use [modulo](https://docs.soliditylang.org/en/v0.6.0/types.html) to define the limits of your range. Below you can see how to get a random number between 1 and 50.
 
 ```solidity
 uint256 public randomResult;

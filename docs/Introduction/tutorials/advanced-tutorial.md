@@ -15,6 +15,11 @@ metadata:
 >
 > This tutorial requires basic knowledge about Ethereum, smart contracts, and the Chainlink Request & Receive cycle. If you're unfamiliar with those concepts, follow the [The Basics](../beginners-tutorial/) and [Random Numbers](../intermediates-tutorial/) tutorials.
 
+<!-- TODO: Update this guide for VRF v2 -->
+> 🚧 This guide uses VRF v1
+>
+> This guide uses VRF v1 for demonstration purposes. The steps to implement VRF v2 are different. If you need to use VRF v2, see the current [Chainlink VRF](/docs/chainlink-vrf/) guide. However, the [VRF v1](/docs/chainlink-vrf/v1/) guide is still available.
+
 <p>
   https://www.youtube.com/watch?v=ay4rXZhAefs
 </p>
@@ -263,7 +268,7 @@ contract sportContract is ChainlinkClient {
 
 # 5. How do I deploy to testnet?
 
-Your contract is complete and ready to be compiled and deployed. You can see a complete version of the contract in Remix: 
+Your contract is complete and ready to be compiled and deployed. You can see a complete version of the contract in Remix:
 
 <div class="remix-callout">
   <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/sportContract.sol" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
