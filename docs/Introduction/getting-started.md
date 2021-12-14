@@ -87,7 +87,7 @@ permalink: /getting-started/
           <p>
             Learn how to get verifiable random numbers on-chain.
           </p>
-          <a href="/docs/get-a-random-number/">
+          <a href="/docs/intermediates-tutorial/">
             <div class="arrowed-text">
                 Learn More
                 <img class="cta-learnmore-arrow" src="/images/misc/navigation-arrow-right.svg" loading="lazy" alt="Right arrow">
@@ -124,7 +124,7 @@ permalink: /getting-started/
                 <h3>Architecture Overview</h3>
             </div>
           </a>
-          <a class="cl-productcard" href="/docs/architecture-overview/" target="_blank">
+          <a class="cl-productcard" href="/docs/other-tutorials/" target="_blank">
             <div>
                 <img
                   src="/images/misc/5f75e7d3f8ef05758ce8c1f5_bulb.svg"
@@ -133,7 +133,7 @@ permalink: /getting-started/
                 <h3>Videos and Tutorials</h3>
             </div>
           </a>
-          <a class="cl-productcard" href="/docs/other-tutorials/" target="_blank">
+          <a class="cl-productcard" href="https://blog.chain.link/" target="_blank">
             <div>
                 <img
                   src="/images/misc/61163fe987f45b67ab88bcfe_common-file-text-chainlink.svg"
@@ -142,7 +142,7 @@ permalink: /getting-started/
                 <h3>Chainlink Blog</h3>
             </div>
           </a>
-          <a class="cl-productcard" href="https://blog.chain.link/" target="_blank">
+          <a class="cl-productcard" href="/docs/getting-help/" target="_blank">
             <div>
                 <img
                   src="/images/misc/help_avatar.svg"
@@ -166,4 +166,4 @@ permalink: /getting-started/
   </div>
 </div>
 
-Running your own Chainlink node? See the [Node Operator's Guide](/docs/chainlink-nodes) to learn about starting and maintaining Chainlink Nodes.
+Running your own Chainlink node? See the [Node Operator's Guide](/chainlink-nodes/) to learn about starting and maintaining Chainlink Nodes.

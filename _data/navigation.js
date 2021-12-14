@@ -18,7 +18,7 @@ module.exports = {
           },
           {
             title: 'Get Random Numbers',
-            url: '/docs/get-a-random-number/'
+            url: '/docs/intermediates-tutorial/',
           },
           {
             title: 'Acquire testnet LINK',
@@ -43,10 +43,6 @@ module.exports = {
         section: 'Next Steps',
         contents: [
           {
-            title: 'Request Public API Data ↗',
-            url: '/docs/using-any-api/',
-          },
-          {
             title: 'Chainlink Architecture ↗',
             url: '/docs/architecture-overview/',
           },
@@ -63,7 +59,7 @@ module.exports = {
             url: '/docs/chainlink-keepers/introduction/',
           },
           {
-            title: 'Using Any API ↗',
+            title: 'Connect to Public API Data ↗',
             url: '/docs/request-and-receive-data/',
           },
           {
@@ -186,7 +182,7 @@ module.exports = {
             url: '/docs/chainlink-vrf/',
           },
           {
-            title: 'Example Contracts',
+            title: 'Get a Random Number',
             url: '/docs/get-a-random-number/',
           },
           {
