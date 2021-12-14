@@ -139,7 +139,7 @@ export const NETWORKS = [
     networks: [
       {
         name: "Solana Devnet",
-        url: "https://explorer.solana.com/address/%s?cluster=devnet",
+        url: "https://solscan.io/account/%s?cluster=devnet",
         source: "directory-solana-devnet.json",
       },
     ],
