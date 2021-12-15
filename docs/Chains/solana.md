@@ -19,8 +19,7 @@ permalink: /solana/
     <div class="cl-featuredcard">
       <div>
         <img
-          src="/images/solana/solana-banner.png"
-          class="cl-image-featured" style="max-width:600px"
+          src="/images/logos/solana.svg"
         />
         <h3>Use Data Feeds on Solana</h3>
         <p>
