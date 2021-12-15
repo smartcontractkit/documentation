@@ -19,8 +19,8 @@ permalink: /non-evm/
     <div class="cl-featuredcard">
       <div>
         <img
-          src="/images/solana/solana-banner.png"
-          class="cl-image-featured" style="max-width:600px"
+          src="/images/logos/solana.svg"
+          style="max-width:60px;"
         />
         <h3>Use Data Feeds on Solana</h3>
         <p>
@@ -32,8 +32,8 @@ permalink: /non-evm/
     <div class="cl-featuredcard">
       <div>
         <img
-          src="/images/terra/terra-banner.png"
-          class="cl-image-featured" style="max-width:600px"
+          src="/images/logos/terra.svg"
+          style="max-width:60px;"
         />
         <h3>Use Data Feeds on Terra</h3>
         <p>
