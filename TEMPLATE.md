@@ -10,7 +10,7 @@ metadata:
   image:
     0: "insert image here"
 ---
-*This doc is meant to be used as a template for creating a tutorial doc. Contributors should emulate the structure of this document when creating new pages. The content of this doc comes from the Getting Started Guides.*
+*This doc is meant to be used as a template for creating a tutorial doc. Contributors should emulate the structure of this document when creating new pages. The content of this doc comes from the [Getting Started Guides](https://github.com/smartcontractkit/documentation/tree/main/docs/Introduction/getting-started/).*
 
 *Prerequisites should have its own block at the beginning of the tutorial. Tell the user what tools are required, what knowledge they should already have, and where to go if they need previous reading. Provide links to the other docs pages.*
 > 👍 Prerequisites
@@ -96,7 +96,7 @@ You can see the latest versions of the Solidity compiler [here](https://github.c
 ```solidity
 pragma solidity >=0.7.0 <0.9.0;
 ```
-This means that the code is written for Solidity version 0.7.0, or a newer version of the language up to, but not including version 0.9.0. In short, `pragma` is used to instruct the compiler as how to treat the code.
+This means that the code is written for Solidity version 0.7.0, or a newer version of the language up to, but not including version 0.9.0. The `pragma` selects the compiler, which defines how the code is treated.
 
 ...
 

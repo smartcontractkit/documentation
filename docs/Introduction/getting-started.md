@@ -166,4 +166,4 @@ permalink: /getting-started/
   </div>
 </div>
 
-Running your own Chainlink node? See the [Node Operator's Guide](/chainlink-nodes/) to learn about starting and maintaining Chainlink Nodes.
+Need to run your own Chainlink node? See the [Node Operator's Guide](/chainlink-nodes/) to learn about starting and maintaining Chainlink Nodes.

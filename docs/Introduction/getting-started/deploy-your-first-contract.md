@@ -16,7 +16,7 @@ You can write your first smart contract and run in your browser without any know
 
 > 📘 Already know Solidity and have MetaMask configured?
 >
-> If you are already familiar with how to deploy Smart Contracts and use MetaMask, you can skip to the [<!--TODO: Add link-->]() guide to learn how to connect your smart contracts to Chainlink data feeds.
+> If you are already familiar with how to deploy Smart Contracts and use MetaMask, you can skip to the [Consuming Data Feeds](/docs/consuming-data-feeds/) guide to learn how to connect your smart contracts to Chainlink data feeds.
 
 **Table of Contents**
 + [Overview](#overview)
@@ -117,4 +117,4 @@ Because you deployed the contract to an actual blockchain, several nodes on the 
 
 Now you know how to deploy example contracts to a test network and run the functions in those contracts. You can write your own contracts and test them using this same process.
 
-Next, read the [<!--TODO: Add link-->]() guide to learn how to connect your smart contracts to Chainlink Data Feeds and retrieve on-chain data that your smart contracts can act on.
+Next, read the [Consuming Data Feeds](/docs/consuming-data-feeds/) guide to learn how to connect your smart contracts to Chainlink Data Feeds and retrieve on-chain data that your smart contracts can act on.

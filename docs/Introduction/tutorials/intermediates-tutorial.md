@@ -349,4 +349,4 @@ To read more about generating random numbers in Solidity, read our blog posts:
 - [How to Build Dynamic NFTs on Polygon](https://blog.chain.link/how-to-build-dynamic-nfts-on-polygon/)
 - [Chainlink VRF Now Live on Ethereum Mainnet](https://blog.chain.link/chainlink-vrf-now-live-on-ethereum-mainnet/)
 
-To explore more applications of Chainlink VRF, check out our [other tutorials](/docs/other-tutorials/#vrf).
+To explore more applications of Chainlink VRF, check out our [other tutorials](/docs/other-tutorials/#randomness-vrf).

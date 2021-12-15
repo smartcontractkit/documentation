@@ -71,7 +71,7 @@ You can see the latest versions of the Solidity compiler [here](https://github.c
 ```solidity
 pragma solidity >=0.7.0 <0.9.0;
 ```
-This means that the code is written for Solidity version 0.7.0, or a newer version of the language up to, but not including version 0.9.0. In short, `pragma` is used to instruct the compiler as how to treat the code.
+This means that the code is written for Solidity version 0.7.0, or a newer version of the language up to, but not including version 0.9.0. The `pragma` selects the compiler, which defines how the code is treated.
 
 ### Naming a Contract
 
