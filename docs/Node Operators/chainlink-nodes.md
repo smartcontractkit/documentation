@@ -71,19 +71,16 @@ permalink: /chainlink-nodes/
       </div>
     </div>
     <div class="cl-featuredcard">
-      <div>
+      <div class="cl-chaincard-wrapper">
         <div class="card-icon-wrapper">
-          <img
-            src="https://uploads-ssl.webflow.com/5e444500cbc42eeb5198206f/5e789d70c115820a2354f2cc_ChainlinkProject.svg"
-            class="cl-image-featured"
-          />
+          <img src="/images/card-icons/5f96ab4b4db522072b7ff30c_book-bookmark.svg" class="cl-image-featured"></img>
         </div>
-        <h3>New to Chainlink Nodes?</h3>
+        <h2>New to Chainlink and Smart Contracts?</h2>
         <p>
-          Learn the best practices for node operators to enhance the security and reliability of your infrastructure.
+          Learn the basics in the Getting Started Guide. Build your first smart contract on Ethereum.
         </p>
-        <a href="/docs/best-security-practices/" class="cl-button--ghost">
-          Security and Operation Best Practices
+        <a href="/docs/conceptual-overview/" class="cl-button--ghost">
+          Getting Started Guide
         </a>
       </div>
     </div>
