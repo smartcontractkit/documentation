@@ -27,7 +27,7 @@ permalink: /chainlink-nodes/
             <a href="/docs/running-a-chainlink-node">
               <div class="arrowed-text">
                   Learn More
-                  <img class="cta-learnmore-arrow" src="/images/misc/navigation-arrow-right.svg" loading="lazy" alt="Right arrow">
+                  <img class="cta-learnmore-arrow" src="/images/card-icons/navigation-arrow-right.svg" loading="lazy" alt="Right arrow">
               </div>
             </a>
           </div>
@@ -45,7 +45,7 @@ permalink: /chainlink-nodes/
             <a href="/docs/fulfilling-requests">
               <div class="arrowed-text">
                   Learn More
-                  <img class="cta-learnmore-arrow" src="/images/misc/navigation-arrow-right.svg" loading="lazy" alt="Right arrow">
+                  <img class="cta-learnmore-arrow" src="/images/card-icons/navigation-arrow-right.svg" loading="lazy" alt="Right arrow">
               </div>
             </a>
           </div>
@@ -64,7 +64,7 @@ permalink: /chainlink-nodes/
             <a href="/docs/node-operators">
               <div class="arrowed-text">
                   Learn More
-                  <img class="cta-learnmore-arrow" src="/images/misc/navigation-arrow-right.svg" loading="lazy" alt="Right arrow">
+                  <img class="cta-learnmore-arrow" src="/images/card-icons/navigation-arrow-right.svg" loading="lazy" alt="Right arrow">
               </div>
             </a>
           </div>
@@ -87,9 +87,9 @@ permalink: /chainlink-nodes/
         </a>
       </div>
     </div>
-    <div class="cl-section cl-section--tools">
+    <div class="cl-section">
       <h3>Explore Chainlink Node Tools</h3>
-      <div style="display:flex">
+      <div class="cl-section-cards">
         <a class="cl-productcard" href="https://market.link" target="_blank">
           <div>
               <img

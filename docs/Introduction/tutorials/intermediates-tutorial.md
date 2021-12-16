@@ -15,7 +15,7 @@ metadata:
 
 > 👍 Requirements
 >
-> This guide assumes that you have basic knowledge about writing and deploying smart contracts. If you are new to smart contract development, read the [Getting Started Guide](/getting-started/) before you start this guide.
+> This guide assumes that you have basic knowledge about writing and deploying smart contracts. If you are new to smart contract development, read the [Consuming Data Feeds](/docs/consuming-data-feeds/) guide before you begin.
 
 <p>
   https://www.youtube.com/watch?v=JqZWariqh5s

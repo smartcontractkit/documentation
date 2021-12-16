@@ -2,14 +2,9 @@
 layout: nodes.liquid
 section: ethereum
 date: Last Modified
-title: "Framework Install Instructions"
+title: "Install Frameworks"
 permalink: "docs/create-a-chainlinked-project/"
 whatsnext: {"Introduction to Data Feeds":"/docs/using-chainlink-reference-contracts/", "Introduction to Chainlink VRF":"/docs/chainlink-vrf/", "Introduction to Using Any API":"/docs/request-and-receive-data/"}
-metadata:
-  title: "Getting Started with Chainlink for Smart Contract Developers"
-  description: "Everything you need to know on how to create a new Chainlink project or update an existing one using the Chainlink Library for Solidity"
-  image:
-    0: "/files/OpenGraph_V3.png"
 ---
 ![Starter Kits Logos](/files/c6e99c5-Untitled_design_23.png)
 

@@ -1,9 +1,9 @@
 ---
 layout: nodes.liquid
-section: ethereum
+section: gettingStarted
 date: Last Modified
-title: "Using Any API"
-permalink: "docs/using-any-api/"
+title: "API Calls: Using Any API"
+permalink: "docs/advanced-tutorial/"
 excerpt: "Calling APIs from Smart Contracts"
 whatsnext: {"Make a GET Request":"/docs/make-a-http-get-request/", "Make an Existing Job Request":"/docs/existing-job-request/"}
 metadata:
@@ -13,7 +13,7 @@ metadata:
 
 > 👍 Requirements
 >
-> This guide requires basic knowledge about smart contracts. If you are new to smart contract development, read the [Getting Started Guide](/getting-started/) before you start this guide.
+> This guide requires basic knowledge about smart contracts. If you are new to smart contract development, read the [Consuming Data Feeds](/docs/consuming-data-feeds/) and [Random Numbers](/docs/intermediates-tutorial/) guides before you begin.
 
 <p>
   https://www.youtube.com/watch?v=ay4rXZhAefs
@@ -21,7 +21,7 @@ metadata:
 
 # Overview
 
-In this tutorial, you will learn how to request data from a public API in a smart contract. This includes understanding what Core adapters and External adapters are and how Oracle Jobs use them. You will also learn how to find the Oracle Jobs and Adapters for your contract and how to request data from an Oracle Job.
+In this guide, you will learn how to request data from a public API in a smart contract. This includes understanding what Core adapters and External adapters are and how Oracle Jobs use them. You will also learn how to find the Oracle Jobs and Adapters for your contract and how to request data from an Oracle Job.
 
 **Table of Contents**
 

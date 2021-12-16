@@ -31,7 +31,7 @@ permalink: /solana/
     <div class="cl-featuredcard">
       <div>
         <div class="card-icon-wrapper">
-          <img src="/images/misc/5f96ab4b4db522072b7ff30c_book-bookmark.svg" class="cl-image-featured"></img>
+          <img src="/images/card-icons/5f96ab4b4db522072b7ff30c_book-bookmark.svg" class="cl-image-featured"></img>
         </div>
         <h2>New to Chainlink and Smart Contracts?</h2>
         <p>

@@ -21,12 +21,8 @@ module.exports = {
             url: '/docs/intermediates-tutorial/',
           },
           {
-            title: 'Acquire testnet LINK',
-            url: '/docs/acquire-link/',
-          },
-          {
-            title: 'Fund Your Contracts',
-            url: '/docs/fund-your-contract/',
+            title: 'API Calls',
+            url: '/docs/advanced-tutorial/',
           },
         ],
       },
@@ -43,27 +39,27 @@ module.exports = {
         section: 'Next Steps',
         contents: [
           {
-            title: 'Chainlink Architecture ↗',
+            title: 'Chainlink Architecture',
             url: '/docs/architecture-overview/',
           },
           {
-            title: 'Data Feeds ↗',
+            title: 'Data Feeds',
             url: '/docs/using-chainlink-reference-contracts/',
           },
           {
-            title: 'Chainlink VRF ↗',
+            title: 'Chainlink VRF',
             url: '/docs/chainlink-vrf/',
           },
           {
-            title: 'Chainlink Keepers ↗',
+            title: 'Chainlink Keepers',
             url: '/docs/chainlink-keepers/introduction/',
           },
           {
-            title: 'Connect to Public API Data ↗',
+            title: 'Connect to Public API Data',
             url: '/docs/request-and-receive-data/',
           },
           {
-            title: 'Run a Chainlink Node ↗',
+            title: 'Run a Chainlink Node',
             url: '/chainlink-nodes/',
           },
         ],
@@ -211,10 +207,6 @@ module.exports = {
             url: '/docs/request-and-receive-data/',
           },
           {
-            title: 'Using Any API',
-            url: '/docs/using-any-api/',
-          },
-          {
             title: 'Make a GET Request',
             url: '/docs/make-a-http-get-request/',
           },
@@ -281,7 +273,15 @@ module.exports = {
             url: '/docs/other-tutorials/',
           },
           {
-            title: 'Framework Install Instructions',
+            title: 'Acquire testnet LINK',
+            url: '/docs/acquire-link/',
+          },
+          {
+            title: 'Fund Your Contracts',
+            url: '/docs/fund-your-contract/',
+          },
+          {
+            title: 'Install Frameworks',
             url: '/docs/create-a-chainlinked-project/',
           },
           {

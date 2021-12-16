@@ -28,7 +28,7 @@ permalink: /ethereum/
           <a href="/docs/using-chainlink-reference-contracts/">
             <div class="arrowed-text">
                 Learn More
-                <img class="cta-learnmore-arrow" src="/images/misc/navigation-arrow-right.svg" loading="lazy" alt="Right arrow">
+                <img class="cta-learnmore-arrow" src="/images/card-icons/navigation-arrow-right.svg" loading="lazy" alt="Right arrow">
             </div>
           </a>
         </div>
@@ -46,7 +46,7 @@ permalink: /ethereum/
           <a href="/docs/chainlink-vrf/">
             <div class="arrowed-text">
                 Learn More
-                <img class="cta-learnmore-arrow" src="/images/misc/navigation-arrow-right.svg" loading="lazy" alt="Right arrow">
+                <img class="cta-learnmore-arrow" src="/images/card-icons/navigation-arrow-right.svg" loading="lazy" alt="Right arrow">
             </div>
           </a>
         </div>
@@ -66,7 +66,7 @@ permalink: /ethereum/
           <a href="/docs/request-and-receive-data/">
             <div class="arrowed-text">
                 Learn More
-                <img class="cta-learnmore-arrow" src="/images/misc/navigation-arrow-right.svg" loading="lazy" alt="Right arrow">
+                <img class="cta-learnmore-arrow" src="/images/card-icons/navigation-arrow-right.svg" loading="lazy" alt="Right arrow">
             </div>
           </a>
         </div>
@@ -75,7 +75,7 @@ permalink: /ethereum/
     <div class="cl-featuredcard">
       <div>
         <div class="card-icon-wrapper">
-          <img src="/images/misc/5f96ab4b4db522072b7ff30c_book-bookmark.svg" class="cl-image-featured"></img>
+          <img src="/images/card-icons/5f96ab4b4db522072b7ff30c_book-bookmark.svg" class="cl-image-featured"></img>
         </div>
         <h2>New to Chainlink and Smart Contracts?</h2>
         <p>
@@ -103,15 +103,15 @@ permalink: /ethereum/
       </div>
     </div>
     <div class="cl-section">
-      <div class="cl-section cl-section--tools">
+      <div>
         <h3>Explore Chainlink Developer Tools</h3>
-        <div style="display: flex;">
+        <div class="cl-section-cards">
           <a class="cl-productcard" href="https://www.npmjs.com/package/@chainlink/contracts" target="_blank">
             <div>
                 <img
                   src="https://uploads-ssl.webflow.com/5e444500cbc42eeb5198206f/5e711675d22595473f1c0c20_Contract.svg"
                 />
-                <h3>Contracts ↗</h3>
+                <h3>Contracts</h3>
             </div>
           </a>
           <a class="cl-productcard" href="https://www.npmjs.com/package/@chainlink/test-helpers" target="_blank">
@@ -119,7 +119,7 @@ permalink: /ethereum/
                 <img
                   src="https://uploads-ssl.webflow.com/5e444500cbc42eeb5198206f/5e7116765b27d4521f92bac6_Tester.svg"
                 />
-                <h3>Test Helpers ↗</h3>
+                <h3>Test Helpers</h3>
             </div>
           </a>
         </div>
