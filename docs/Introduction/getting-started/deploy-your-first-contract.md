@@ -68,7 +68,7 @@ Your first contract is a simple `HelloWorld.sol` example. This example shows you
 1. [Open the example contract](https://remix.ethereum.org/#url=https://docs.chain.link/samples/Tutorials/HelloWorld.sol) in the Remix IDE. Remix opens and shows the contents of the smart contract. You can modify the code in this editor when you write your own contract.
 
     <div class="remix-callout">
-      <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/Tutorials/HelloWorld.sol" target="_blank">Open the example contract in Remix</a>
+      <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/Tutorials/HelloWorld.sol" target="_blank">Open in Remix</a>
       <a href="/docs/conceptual-overview/#what-is-remix" >What is Remix?</a>
     </div>
 

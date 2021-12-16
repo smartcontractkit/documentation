@@ -54,7 +54,7 @@ Deploy the `PriceConsumerV3` smart contract on the Kovan testnet.
 1. [Open the example contract](https://remix.ethereum.org/#url=https://docs.chain.link/samples/PriceFeeds/PriceConsumerV3.sol) in Remix. Remix opens and shows the contents of the smart contract.
 
     <div class="remix-callout">
-      <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/PriceFeeds/PriceConsumerV3.sol" target="_blank">Deploy the contract using Remix</a>
+      <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/PriceFeeds/PriceConsumerV3.sol" target="_blank">Open the contract in Remix</a>
     </div>
 
 1. Because the code is already written, you can start the compile step. On the left side of Remix, click the **Solidity Compiler** tab to view the compiler settings.

@@ -55,7 +55,7 @@ contract ChainlinkAlarmClock is ChainlinkClient {
 ```
 
 <div class="remix-callout">
-  <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/DataProviders/AlarmClock.sol" target="_blank" >Deploy using Remix</a>
+  <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/DataProviders/AlarmClock.sol" target="_blank" >Open in Remix</a>
     <a href="/docs/conceptual-overview/#what-is-remix" >What is Remix?</a>
 </div>
 

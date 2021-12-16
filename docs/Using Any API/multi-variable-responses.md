@@ -23,14 +23,13 @@ To consume an API with multiple responses, your contract should inherit from [Ch
 > Making a GET request will fail unless your deployed contract has enough LINK to pay for it. **Learn how to [Acquire testnet LINK](../acquire-link/) and [Fund your contract](../fund-your-contract/)**.
 >
 
-<div class="remix-callout">
-    <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/MultiWordConsumer.sol" target="_blank" >Deploy a Multi-Word Contract Example in Remix</a>
-    <a href="/docs/conceptual-overview/#what-is-remix" >What is Remix?</a>
-</div>
-
 ```solidity Kovan
 {% include samples/APIRequests/MultiWordConsumer.sol %}
 ```
+<div class="remix-callout">
+    <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/MultiWordConsumer.sol" target="_blank" >Open in Remix</a>
+    <a href="/docs/conceptual-overview/#what-is-remix" >What is Remix?</a>
+</div>
 
 > 📘 Note
 >
