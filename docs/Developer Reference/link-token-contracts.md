@@ -276,3 +276,15 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 |Name|ChainLink Token on Optimism Kovan|
 |Symbol|LINK|
 |Decimals|18|
+
+## Harmony
+
+### Mainnet
+
+|Parameter|Value|
+|:---|:---|
+|`ETH_CHAIN_ID`|`1666600000`|
+|Address|[`0x218532a12a389a4a92fc0c5fb22901d1c19198aa`](https://explorer.harmony.one/address/0x218532a12a389a4a92fc0c5fb22901d1c19198aa)|
+|Name|ChainLink Token|
+|Symbol|LINK|
+|Decimals|18|
