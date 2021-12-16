@@ -2,7 +2,7 @@
 layout: nodes.liquid
 section: ethereum
 date: Last Modified
-title: "Example Contracts"
+title: "Get a Random Number"
 permalink: "docs/get-a-random-number/"
 whatsnext: {"API Reference":"/docs/chainlink-vrf-api-reference/", "Contract Addresses":"/docs/vrf-contracts/"}
 metadata:

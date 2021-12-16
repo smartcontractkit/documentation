@@ -1,7 +1,7 @@
 ---
 layout: nodes.liquid
 section: ethereum
-title: "Chainlink on Ethereum Chains"
+title: "Chainlink on EVM Chains"
 date: Last Modified
 permalink: /ethereum/
 ---
@@ -81,7 +81,7 @@ permalink: /ethereum/
         <p>
           Learn the basics in the Getting Started Guide. Build your first smart contract on Ethereum.
         </p>
-        <a href="/getting-started/" class="cl-button--ghost">
+        <a href="/docs/conceptual-overview/" class="cl-button--ghost">
           Getting Started Guide
         </a>
       </div>
@@ -100,6 +100,50 @@ permalink: /ethereum/
         <a href="/docs/chainlink-keepers/introduction/" class="cl-button--ghost">
           Learn More
         </a>
+      </div>
+    </div>
+    <div class="cl-section">
+      <div>
+        <h3>Explore Additional Resources</h3>
+        <p>Find all the right resources to get the most out of Chainlink.</p>
+        <div class="cl-section-cards">
+          <a class="cl-productcard" href="/docs/architecture-overview/" target="_blank">
+            <div>
+                <img
+                  src="/images/card-icons/5f85d14b6782933bd5a70060_decentralized.svg"
+                  width="150px"
+                />
+                <h3>Architecture Overview</h3>
+            </div>
+          </a>
+          <a class="cl-productcard" href="/docs/other-tutorials/" target="_blank">
+            <div>
+                <img
+                  src="/images/card-icons/5f75e7d3f8ef05758ce8c1f5_bulb.svg"
+                  width="150px"
+                />
+                <h3>Videos and Tutorials</h3>
+            </div>
+          </a>
+          <a class="cl-productcard" href="https://blog.chain.link/" target="_blank">
+            <div>
+                <img
+                  src="/images/card-icons/61163fe987f45b67ab88bcfe_common-file-text-chainlink.svg"
+                  width="150px"
+                />
+                <h3>Chainlink Blog</h3>
+            </div>
+          </a>
+          <a class="cl-productcard" href="https://chain.link/community" target="_blank">
+            <div>
+                <img
+                  src="/images/card-icons/5f75ccd99b524261854d093d_multiple-users-network.svg"
+                  width="150px"
+                />
+                <h3>Join the Community</h3>
+            </div>
+          </a>
+        </div>
       </div>
     </div>
     <div class="cl-section">

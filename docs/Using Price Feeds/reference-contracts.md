@@ -17,7 +17,7 @@ Chainlink Data Feed contracts are updated on a regular basis by multiple Chainli
 >
 > See the [LINK Token Contracts](../link-token-contracts/) page for the details of LINK on each blockchain.
 
-- Ethereum Chains
+- EVM Chains
   - [Ethereum Data Feeds](../ethereum-addresses/)
   - [Binance Smart Chain Data Feeds](../binance-smart-chain-addresses/)
   - [Polygon (Matic) Data Feeds](../matic-addresses/)

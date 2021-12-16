@@ -5,7 +5,7 @@ module.exports = {
         section: 'Getting Started',
         contents: [
           {
-            title: 'Conceptual Overview',
+            title: 'Overview',
             url: '/docs/conceptual-overview/',
           },
           {

@@ -2,7 +2,7 @@
 layout: nodes.liquid
 section: gettingStarted
 date: Last Modified
-title: "Conceptual Overview"
+title: "Chainlink Overview"
 permalink: "docs/conceptual-overview/"
 excerpt: "Smart Contracts and Chainlink"
 whatsnext: {"Deploy Your First Smart Contract":"/docs/deploy-your-first-contract/", "Consuming Data Feeds":"/docs/consuming-data-feeds/"}
@@ -17,8 +17,8 @@ Welcome to the Smart Contract Getting Started guide. This overview explains the 
 
 **Skip ahead**
 To get your hands on the code right away, you can skip this overview:
-- If you are new to smart contracts, [Deploy Your First Smart Contract](/docs/deploy-your-first-contract/) in an interactive web development environment.
-- If you are already familiar with smart contracts and want to learn how to create *hybrid* smart contracts that use Chainlink Data Feeds, skip to the [Consuming Data Feeds](/docs/consuming-data-feeds/) guide.
+- [Deploy Your First Smart Contract](/docs/deploy-your-first-contract/): If you are new to smart contracts, deploy your first smart contract in an interactive web development environment.
+- [Learn how to use Data Feeds](/docs/consuming-data-feeds/): If you are already familiar with smart contracts and want to learn how to create *hybrid* smart contracts, use Chainlink Data Feeds to get asset price data on-chain.
 
 <p>
   https://www.youtube.com/watch?v=rFXSEEQG9YE
@@ -45,9 +45,17 @@ Smart contracts can connect to real-world market prices of assets to produce pow
 
 ## What language is a smart contract written in?
 
-The most popular language for writing smart contracts on Ethereum is [Solidity](https://docs.soliditylang.org/en/v0.8.7/). It was created by the Ethereum Foundation specifically for smart contract development and is constantly being updated.
+The most popular language for writing smart contracts on Ethereum and EVM Chains is [Solidity](https://docs.soliditylang.org/en/v0.8.7/). It was created by the Ethereum Foundation specifically for smart contract development and is constantly being updated. Other languages exist for writing smart contracts on EVM Chains, but Solidity is the language used for Chainlink smart contracts on EVM Chains.
 
 If you've ever written Javascript, Java, or other object-oriented scripting languages, Solidity should be easy to understand. Similar to object-oriented languages, Solidity is considered to be a *contract*-oriented language.
+
+Some networks not EVM-compatible, and use languages other than Solidity for smart contracts.
+
+- [Solana](/solana/)
+  - [Writing Solana contracts in Rust](https://docs.solana.com/developing/on-chain-programs/developing-rust)
+  - [Writing Solana contracts in C](https://docs.solana.com/developing/on-chain-programs/developing-c)
+- [Terra](/terra/)
+  - [Writing Terra smart contracts in Rust](https://docs.solana.com/developing/on-chain-programs/developing-rust)
 
 ## What does a smart contract look like?
 
@@ -155,6 +163,12 @@ Oracles are most popularly used with [*Data Feeds*](../using-chainlink-reference
 Chainlink data feeds are sources of data [aggregated from many independent Chainlink node operators](../architecture-decentralized-model/). Each data feed has an on-chain address and functions that enable contracts to read from that address. For example, the [ETH / USD feed](https://feeds.chain.link/eth-usd/).
 
 ![Chainlink Feeds List](/images/contract-devs/price-aggr.png)
+
+Smart contracts also use oracles to get other capabilities on-chain:
+
+- [Generate Verifiable Random Numbers (VRF)](/docs/chainlink-vrf/): Use Chainlink VRF to consume randomness in your smart contracts.
+- [Call External APIs (Any API)](/docs/request-and-receive-data/): Request & Receive data from any API using the Chainlink contract library.
+- [Automate Smart Contract Functions (Keepers)](/docs/chainlink-keepers/introduction/): Automating smart contract functions and regular contract maintenance.
 
 ## What is Remix?
 

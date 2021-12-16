@@ -12,7 +12,7 @@ This page explains how to install and use the [Chainlink Library](../chainlink-f
 
 > 📘 Important
 >
-> If you're new to smart contract development and want a step-by-step guide, try out our [Getting Started Guide](/getting-started/)
+> If you're new to smart contract development and want a step-by-step guide, try out our [Getting Started](/docs/conceptual-overview/) guide.
 
 # Install into Existing Projects
 

@@ -37,7 +37,7 @@ permalink: /solana/
         <p>
           Learn the basics in the Getting Started Guide. Build your first smart contract on Ethereum.
         </p>
-        <a href="/getting-started/" class="cl-button--ghost">
+        <a href="/docs/conceptual-overview/" class="cl-button--ghost">
           Getting Started Guide
         </a>
       </div>
