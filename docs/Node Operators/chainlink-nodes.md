@@ -2,16 +2,17 @@
 layout: nodes.liquid
 section: nodeOperator
 date: Last Modified
-title: "Chainlink Node Docs"
+title: "Chainlink Nodes"
 permalink: /chainlink-nodes/
 ---
 
 <div>
   <div class="markdown-body">
     <div class="cl-section-header">
-      <p>
+      <p style="text-align:left;">
         Operating a Chainlink node allows you to be part of the Chainlink Network, helping developers build hybrid smart contracts, giving them access to real-world data and services.
-        <p>
+      </p>
+      <p style="text-align:left;">
         Learn more about Chainlink nodes with our step‑by‑step tutorials and documentation:
       </p>
     </div>

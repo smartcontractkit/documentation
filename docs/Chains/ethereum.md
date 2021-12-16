@@ -9,7 +9,7 @@ permalink: /ethereum/
 <div>
   <div class="markdown-body">
     <div class="cl-section-header">
-      <p>
+      <p style="text-align:left;">
         Chainlink turns your smart contracts into hybrid smart contracts, giving them access to real-world data and services while maintaining the security and reliability guarantees inherent to blockchain technology.
       </p>
     </div>
@@ -73,7 +73,7 @@ permalink: /ethereum/
       </div>
     </div>
     <div class="cl-featuredcard">
-      <div>
+      <div class="cl-chaincard-wrapper">
         <div class="card-icon-wrapper">
           <img src="/images/card-icons/5f96ab4b4db522072b7ff30c_book-bookmark.svg" class="cl-image-featured"></img>
         </div>
@@ -87,7 +87,7 @@ permalink: /ethereum/
       </div>
     </div>
     <div class="cl-featuredcard">
-      <div>
+      <div class="cl-chaincard-wrapper">
         <img
           src="/images/contract-devs/keeper/icon-keepers.svg"
           class="cl-image-featured"
