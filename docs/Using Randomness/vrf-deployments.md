@@ -51,7 +51,6 @@ To avoid costly responses during gas price volatility, VRF response transactions
 |---|---|
 |LINK Token|[`0x01BE23585060835E02B77ef475b0Cc51aA1e0709`](https://rinkeby.etherscan.io/token/0x01BE23585060835E02B77ef475b0Cc51aA1e0709)|
 |VRF Coordinator|[`0x6168499c0cFfCaCD319c818142124B7A15E857ab`](https://rinkeby.etherscan.io/token/0x6168499c0cFfCaCD319c818142124B7A15E857ab)|
-|10 gwei Key Hash|`0x59245bc7b65da15a2d4328d176535e11d9675cd7cf13fcb800eb7277da216a36`|
 |30 gwei Key Hash|`0xd89b2bf150e3b9e13446986e571fb9cab24b13cea0a43ea20a6049a85cc807cc`|
 |Fee |0.25 LINK|
 
@@ -65,7 +64,6 @@ To avoid costly responses during gas price volatility, VRF response transactions
 |---|---|
 |LINK Token|[`0x326C977E6efc84E512bB9C30f76E30c160eD06FB`](https://mumbai.polygonscan.com/address/0x326C977E6efc84E512bB9C30f76E30c160eD06FB)|
 |VRF Coordinator|[`0x7a1BaC17Ccc5b313516C5E16fb24f7659aA5ebed`](https://mumbai.polygonscan.com/address/0x7a1BaC17Ccc5b313516C5E16fb24f7659aA5ebed)|
-|100 gwei Key Hash|`0x85ebe225389765a0f6256c01b0ffab64c2e3eee50527cca47800417218b84b47`|
 |500 gwei Key Hash|`0x4b09e658ed251bcafeebbc69400383d49f344ace09b9576fe248bb02c003fe9f`|
 
 # Binance Smart Chain Testnet
@@ -78,5 +76,4 @@ To avoid costly responses during gas price volatility, VRF response transactions
 |---|---|
 |LINK Token|[`0x84b9B910527Ad5C03A9Ca831909E21e236EA7b06`](https://testnet.bscscan.com/address/0x84b9B910527Ad5C03A9Ca831909E21e236EA7b06)|
 |VRF Coordinator|[`0x6A2AAd07396B36Fe02a22b33cf443582f682c82f`](https://testnet.bscscan.com/address/0x6A2AAd07396B36Fe02a22b33cf443582f682c82f)|
-|20 gwei Key Hash|`0xbed0624a3355d6c02f88cfa96054e0d39b788c380fdf7e14063edea8ba624d7d`|
 |50 gwei Key Hash|`0xd4bb89654db74673a187bd804519e65e3f71a52bc55f11da7601a13dcf505314`|
