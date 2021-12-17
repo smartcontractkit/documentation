@@ -10,7 +10,7 @@ The Flux Monitor job type is for continually-updating data feeds that aggregate 
 - An occasional poll, which must show that there has been sufficient deviation from an off-chain data source before a new result is submitted
 - New rounds initiated by other oracles on the feeds. If another oracle notices sufficient deviation, all other oracles will submit their current observations as well.
 - A heartbeat, which ensures that even if no deviation occurs, we submit a new result to prove liveness. This can take one of two forms:
-    - The "idle timer", which begins counting down each time a round is completed
+    - The "idle timer", which begins counting down each time a round is started
     - The "drumbeat", which simply ticks at a steady interval, much like a `cron` job
 
 **Spec format**
@@ -60,7 +60,7 @@ See [shared fields](/docs/jobs/#shared-fields).
 - `contractAddress`: the address of the FluxAggregator contract that manages the feed.
 - `threshold`: the percentage threshold of deviation from the previous on-chain answer that must be observed before a new set of observations are submitted to the contract.
 - `absoluteThreshold`: the absolute numerical deviation that must be observed from the previous on-chain answer before a new set of observations are submitted to the contract. This is primarily useful with data that can legitimately sometimes hit 0, as it's impossible to calculate a percentage deviation from 0.
-- `idleTimerPeriod`: the amount of time (after the successful completion of a round) after which a new round will be automatically initiated, regardless of any observed off-chain deviation.
+- `idleTimerPeriod`: the amount of time (after the start of the last round) after which a new round will be automatically initiated, regardless of any observed off-chain deviation.
 - `idleTimerDisabled`: whether the idle timer is used to trigger new rounds.
 - `drumbeatEnabled`: whether the drumbeat is used to trigger new rounds.
 - `drumbeatSchedule`: the cron schedule of the drumbeat. This field supports the same syntax as the cron job type (see the [cron library documentation](https://pkg.go.dev/github.com/robfig/cron?utm_source=godoc) for details). CRON_TZ is required.
