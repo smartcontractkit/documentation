@@ -14,7 +14,7 @@ permalink: /solana/
       </p>
     </div>
     <div class="cl-featuredcard">
-      <div class="cl-chaincard-wrapper">
+      <div class="cl-card-text">
         <img
           src="/images/logos/solana.svg"
         />
@@ -26,7 +26,7 @@ permalink: /solana/
       </div>
     </div>
     <div class="cl-featuredcard">
-      <div class="cl-chaincard-wrapper">
+      <div class="cl-card-text">
         <div class="card-icon-wrapper">
           <img src="/images/card-icons/5f96ab4b4db522072b7ff30c_book-bookmark.svg" class="cl-image-featured"></img>
         </div>

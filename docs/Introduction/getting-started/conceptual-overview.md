@@ -45,11 +45,11 @@ Smart contracts can connect to real-world market prices of assets to produce pow
 
 ## What language is a smart contract written in?
 
-The most popular language for writing smart contracts on Ethereum and EVM Chains is [Solidity](https://docs.soliditylang.org/en/v0.8.7/). It was created by the Ethereum Foundation specifically for smart contract development and is constantly being updated. Other languages exist for writing smart contracts on EVM Chains, but Solidity is the language used for Chainlink smart contracts on EVM Chains.
+The most popular language for writing smart contracts on Ethereum and EVM Chains is [Solidity](https://docs.soliditylang.org/en/v0.8.7/). It was created by the Ethereum Foundation specifically for smart contract development and is constantly being updated. Other languages exist for writing smart contracts on Ethereum and EVM Chains, but Solidity is the language used for Chainlink smart contracts.
 
 If you've ever written Javascript, Java, or other object-oriented scripting languages, Solidity should be easy to understand. Similar to object-oriented languages, Solidity is considered to be a *contract*-oriented language.
 
-Some networks not EVM-compatible, and use languages other than Solidity for smart contracts.
+Some networks are not EVM-compatible and use languages other than Solidity for smart contracts:
 
 - [Solana](/solana/)
   - [Writing Solana contracts in Rust](https://docs.solana.com/developing/on-chain-programs/developing-rust)
@@ -182,7 +182,7 @@ To learn how to use Remix, see the [Deploying Your First Smart Contract
 ](/docs/deploy-your-first-contract/) guide.
 
 <div class="remix-callout">
-  <a href="/docs/deploy-your-first-contract/" target="_blank">Deploy Your First Smart Contract</a>
+  <a href="/docs/deploy-your-first-contract/">Deploy Your First Smart Contract</a>
 </div>
 
 ## What is Metamask?

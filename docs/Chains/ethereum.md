@@ -1,7 +1,7 @@
 ---
 layout: nodes.liquid
 section: ethereum
-title: "Chainlink on EVM Chains"
+title: "Chainlink on EVM (Ethereum) Chains"
 date: Last Modified
 permalink: /ethereum/
 ---
@@ -73,7 +73,7 @@ permalink: /ethereum/
       </div>
     </div>
     <div class="cl-featuredcard">
-      <div class="cl-chaincard-wrapper">
+      <div class="cl-card-text">
         <div class="card-icon-wrapper">
           <img src="/images/card-icons/5f96ab4b4db522072b7ff30c_book-bookmark.svg" class="cl-image-featured"></img>
         </div>
@@ -87,7 +87,7 @@ permalink: /ethereum/
       </div>
     </div>
     <div class="cl-featuredcard">
-      <div class="cl-chaincard-wrapper">
+      <div class="cl-card-text">
         <img
           src="/images/contract-devs/keeper/icon-keepers.svg"
           class="cl-image-featured"
