@@ -59,11 +59,6 @@ ENV > chain-specific > job-specific
   - [DATABASE_BACKUP_MODE](#database_backup_mode)
   - [DATABASE_BACKUP_URL](#database_backup_url)
   - [DATABASE_BACKUP_DIR](#database_backup_dir)
-- [Legacy ETH env vars](#legacy-eth-env-vars)
-  - [USE_LEGACY_ETH_ENV_VARS](#use_legacy_eth_env_vars)
-  - [ETH_URL](#eth_url)
-  - [ETH_HTTP_URL](#eth_http_url)
-  - [ETH_SECONDARY_URLS](#eth_secondary_urls)
 - [Logging](#logging)
   - [JSON_CONSOLE](#json_console)
   - [LOG_FILE_DIR](#log_file_dir)
@@ -91,40 +86,11 @@ ENV > chain-specific > job-specific
   - [CHAINLINK_TLS_REDIRECT](#chainlink_tls_redirect)
   - [TLS_CERT_PATH](#tls_cert_path)
   - [TLS_KEY_PATH](#tls_key_path)
-- [Job Pipeline and tasks](#job-pipeline-and-tasks)
-  - [DEFAULT_HTTP_ALLOW_UNRESTRICTED_NETWORK_ACCESS](#default_http_allow_unrestricted_network_access)
-  - [DEFAULT_HTTP_LIMIT](#default_http_limit)
-  - [DEFAULT_HTTP_TIMEOUT](#default_http_timeout)
-  - [FEATURE_EXTERNAL_INITIATORS](#feature_external_initiators)
-  - [JOB_PIPELINE_MAX_RUN_DURATION](#job_pipeline_max_run_duration)
-  - [JOB_PIPELINE_REAPER_INTERVAL](#job_pipeline_reaper_interval)
-  - [JOB_PIPELINE_REAPER_THRESHOLD](#job_pipeline_reaper_threshold)
-  - [JOB_PIPELINE_RESULT_WRITE_QUEUE_DEPTH](#job_pipeline_result_write_queue_depth)
-- [OCR](#ocr)
-  - [FEATURE_OFFCHAIN_REPORTING](#feature_offchain_reporting)
-  - [OCR_KEY_BUNDLE_ID](#ocr_key_bundle_id)
-  - [OCR_MONITORING_ENDPOINT](#ocr_monitoring_endpoint)
-  - [OCR_TRANSMITTER_ADDRESS](#ocr_transmitter_address)
-  - [P2P_NETWORKING_STACK](#p2p_networking_stack)
-  - [Networking Stack V1](#networking-stack-v1)
-    - [P2P_ANNOUNCE_IP](#p2p_announce_ip)
-    - [P2P_ANNOUNCE_PORT](#p2p_announce_port)
-    - [P2P_BOOTSTRAP_PEERS](#p2p_bootstrap_peers)
-    - [P2P_LISTEN_IP](#p2p_listen_ip)
-    - [P2P_LISTEN_PORT](#p2p_listen_port)
-    - [P2P_PEER_ID](#p2p_peer_id)
-  - [Networking Stack V2](#networking-stack-v2)
-    - [P2PV2_ANNOUNCE_ADDRESSES](#p2pv2_announce_addresses)
-    - [P2PV2_BOOTSTRAPPERS](#p2pv2_bootstrappers)
-    - [P2PV2_LISTEN_ADDRESSES](#p2pv2_listen_addresses)
-- [Keeper](#keeper)
-  - [KEEPER_GAS_PRICE_BUFFER_PERCENT](#keeper_gas_price_buffer_percent)
-  - [KEEPER_GAS_TIP_CAP_BUFFER_PERCENT](#keeper_gas_tip_cap_buffer_percent)
-  - [KEEPER_MAXIMUM_GRACE_PERIOD](#keeper_maximum_grace_period)
-  - [KEEPER_REGISTRY_CHECK_GAS_OVERHEAD](#keeper_registry_check_gas_overhead)
-  - [KEEPER_REGISTRY_PERFORM_GAS_OVERHEAD](#keeper_registry_perform_gas_overhead)
-  - [KEEPER_REGISTRY_SYNC_INTERVAL](#keeper_registry_sync_interval)
-  - [KEEPER_REGISTRY_SYNC_UPKEEP_QUEUE_SIZE](#keeper_registry_sync_upkeep_queue_size)
+- [EVM/Ethereum Legacy ENV Vars](#evmethereum-legacy-env-vars)
+  - [USE_LEGACY_ETH_ENV_VARS](#use_legacy_eth_env_vars)
+  - [ETH_URL](#eth_url)
+  - [ETH_HTTP_URL](#eth_http_url)
+  - [ETH_SECONDARY_URLS](#eth_secondary_urls)
 - [EVM/Ethereum Global Settings](#evmethereum-global-settings)
   - [ETH_CHAIN_ID](#eth_chain_id)
   - [EVM_DISABLED](#evm_disabled)
@@ -173,6 +139,40 @@ ENV > chain-specific > job-specific
 - [EVM/Ethereum Transaction Simulation](#evmethereum-transaction-simulation)
     - [FM_SIMULATE_TRANSACTIONS](#fm_simulate_transactions)
     - [OCR_SIMULATE_TRANSACTIONS](#ocr_simulate_transactions)
+- [Job Pipeline and tasks](#job-pipeline-and-tasks)
+  - [DEFAULT_HTTP_ALLOW_UNRESTRICTED_NETWORK_ACCESS](#default_http_allow_unrestricted_network_access)
+  - [DEFAULT_HTTP_LIMIT](#default_http_limit)
+  - [DEFAULT_HTTP_TIMEOUT](#default_http_timeout)
+  - [FEATURE_EXTERNAL_INITIATORS](#feature_external_initiators)
+  - [JOB_PIPELINE_MAX_RUN_DURATION](#job_pipeline_max_run_duration)
+  - [JOB_PIPELINE_REAPER_INTERVAL](#job_pipeline_reaper_interval)
+  - [JOB_PIPELINE_REAPER_THRESHOLD](#job_pipeline_reaper_threshold)
+  - [JOB_PIPELINE_RESULT_WRITE_QUEUE_DEPTH](#job_pipeline_result_write_queue_depth)
+- [OCR](#ocr)
+  - [FEATURE_OFFCHAIN_REPORTING](#feature_offchain_reporting)
+  - [OCR_KEY_BUNDLE_ID](#ocr_key_bundle_id)
+  - [OCR_MONITORING_ENDPOINT](#ocr_monitoring_endpoint)
+  - [OCR_TRANSMITTER_ADDRESS](#ocr_transmitter_address)
+  - [P2P_NETWORKING_STACK](#p2p_networking_stack)
+  - [Networking Stack V1](#networking-stack-v1)
+    - [P2P_ANNOUNCE_IP](#p2p_announce_ip)
+    - [P2P_ANNOUNCE_PORT](#p2p_announce_port)
+    - [P2P_BOOTSTRAP_PEERS](#p2p_bootstrap_peers)
+    - [P2P_LISTEN_IP](#p2p_listen_ip)
+    - [P2P_LISTEN_PORT](#p2p_listen_port)
+    - [P2P_PEER_ID](#p2p_peer_id)
+  - [Networking Stack V2](#networking-stack-v2)
+    - [P2PV2_ANNOUNCE_ADDRESSES](#p2pv2_announce_addresses)
+    - [P2PV2_BOOTSTRAPPERS](#p2pv2_bootstrappers)
+    - [P2PV2_LISTEN_ADDRESSES](#p2pv2_listen_addresses)
+- [Keeper](#keeper)
+  - [KEEPER_GAS_PRICE_BUFFER_PERCENT](#keeper_gas_price_buffer_percent)
+  - [KEEPER_GAS_TIP_CAP_BUFFER_PERCENT](#keeper_gas_tip_cap_buffer_percent)
+  - [KEEPER_MAXIMUM_GRACE_PERIOD](#keeper_maximum_grace_period)
+  - [KEEPER_REGISTRY_CHECK_GAS_OVERHEAD](#keeper_registry_check_gas_overhead)
+  - [KEEPER_REGISTRY_PERFORM_GAS_OVERHEAD](#keeper_registry_perform_gas_overhead)
+  - [KEEPER_REGISTRY_SYNC_INTERVAL](#keeper_registry_sync_interval)
+  - [KEEPER_REGISTRY_SYNC_UPKEEP_QUEUE_SIZE](#keeper_registry_sync_upkeep_queue_size)
 - [CLI Client](#cli-client)
   - [ADMIN_CREDENTIALS_FILE](#admin_credentials_file)
   - [CLIENT_NODE_URL](#client_node_url)
@@ -386,56 +386,6 @@ If specified, the automatic database backup will pull from this URL rather than 
 
 Sets the directory for saving the backup file, if you want it to be different from default one located in the ROOT directory.
 
-# Legacy ETH env vars
-
-Previous versions of Chainlink only supported one chain. From 1.1.0 and up, Chainlink supports multiple evm and non-evm chains, so the way that chains and nodes are configured has changed.
-
-The preferred way of configuring chainlink nodes as of 1.1.0 and up is to use the API/CLI/UI to set chain-specific configuration and create nodes.
-
-The old way of specifying chains using environment variables is still supported but discouraged. It works as follows:
-
-If you specify `USE_LEGACY_ETH_ENV_VARS` (default: true) then the values of `ETH_CHAIN_ID`, `ETH_URL`, `ETH_HTTP_URL` and `ETH_SECONDARY_URLS` will be used to create/update chains and nodes representing these values in the database. If an existing chain/node is found it will be overwritten. This environment variable is used mainly to ease the process of upgrading, and on subsequent runs (once your old settings have been written to the database) it is recommended to run with `USE_LEGACY_ETH_ENV_VARS=false` and use the API commands exclusively to administer chains and nodes.
-
-## USE_LEGACY_ETH_ENV_VARS
-
-- Default: `"true"`
-
-USE_LEGACY_ETH_ENV_VARS if enabled will upsert a new chain using the ETH_CHAIN_ID and upsert nodes corresponding to the given ETH_URL and ETH_SECONDARY_URLS.
-
-This is really only useful for backwards compatibility. In future, support for legacy `ETH_*` env vars may be removed, so it is recommended to use the API/CLI/GUI instead to setup chains and nodes.
-
-If you are running a multi-chain or multi-node setup, you should set this env var to `"false"` and instead configure chains and nodes exclusively via the API/CLI/UI. Trying to administer multiple nodes/chains with this env var enabled can lead to unexpected results.
-
-## ETH_URL
-
-(Only has effect if USE_LEGACY_ETH_ENV_VARS is enabled)
-
-- Default: _none_
-
-This is the websocket address of the Ethereum client that the Chainlink node will connect to. All interaction with the Ethereum blockchain will occur through this connection.
-
-## ETH_HTTP_URL
-
-(Only has effect if USE_LEGACY_ETH_ENV_VARS is enabled)
-
-- Default: _none_
-
-This should be set to the http URL that points to the same eth node as the primary. If set, Chainlink will automatically use HTTP mode for heavy requests, which can improve reliability.
-
-## ETH_SECONDARY_URLS
-
-(Only has effect if USE_LEGACY_ETH_ENV_VARS is enabled)
-
-- Default: _none_
-
-If set, transactions will also be broadcast to this secondary ethereum node. This allows transaction broadcasting to be more robust in the face of primary ethereum node bugs or failures.
-
-It is recommended to set at least one secondary eth node here that is different from your primary.
-
-Multiple URLs can be specified as a comma-separated list e.g.
-
-`ETH_SECONDARY_URLS=https://example.com/1,https://example.text/2,...`
-
 # Logging
 
 ## JSON_CONSOLE
@@ -613,216 +563,55 @@ Location of the TLS certificate file. Example: `/home/$USER/.chainlink/tls/serve
 
 Location of the TLS private key file. Example: `/home/$USER/.chainlink/tls/server.key`
 
-# Job Pipeline and tasks
+# EVM/Ethereum Legacy ENV Vars
 
-## DEFAULT_HTTP_ALLOW_UNRESTRICTED_NETWORK_ACCESS
+Previous versions of Chainlink only supported one chain. From 1.1.0 and up, Chainlink supports multiple evm and non-evm chains, so the way that chains and nodes are configured has changed.
 
-- Default: `"false"`
+The preferred way of configuring chainlink nodes as of 1.1.0 and up is to use the API/CLI/UI to set chain-specific configuration and create nodes.
 
-By default, Chainlink does not allow the `http` adapter to connect to local IP addresses for security reasons (because the URL can come from on-chain, which is an untrusted source). This can be overridden on a per-task basis by setting the `AllowUnrestrictedNetworkAccess` key, or globally by setting the ENV var `DEFAULT_HTTP_ALLOW_UNRESTRICTED_NETWORK_ACCESS=true`. 
+The old way of specifying chains using environment variables is still supported but discouraged. It works as follows:
 
-It is recommended that this be left disabled.
+If you specify `USE_LEGACY_ETH_ENV_VARS` (default: true) then the values of `ETH_CHAIN_ID`, `ETH_URL`, `ETH_HTTP_URL` and `ETH_SECONDARY_URLS` will be used to create/update chains and nodes representing these values in the database. If an existing chain/node is found it will be overwritten. This environment variable is used mainly to ease the process of upgrading, and on subsequent runs (once your old settings have been written to the database) it is recommended to run with `USE_LEGACY_ETH_ENV_VARS=false` and use the API commands exclusively to administer chains and nodes.
 
-NOTE: In older versions of Chainlink, it was required to set this in order to allow connections to bridges/external adapters on the local network. This requirement has been lifted and this env var now ONLY applies to `http` tasks. `bridge` tasks are always allows to connect to the local network.
+## USE_LEGACY_ETH_ENV_VARS
 
-## DEFAULT_HTTP_LIMIT
+- Default: `"true"`
 
-- Default: `"32768"`
+USE_LEGACY_ETH_ENV_VARS if enabled will upsert a new chain using the ETH_CHAIN_ID and upsert nodes corresponding to the given ETH_URL and ETH_SECONDARY_URLS.
 
-DEFAULT_HTTP_LIMIT defines the max number of bytes for HTTP requests and responses made by `http` and `bridge` adapters.
+This is really only useful for backwards compatibility. In future, support for legacy `ETH_*` env vars may be removed, so it is recommended to use the API/CLI/GUI instead to setup chains and nodes.
 
-## DEFAULT_HTTP_TIMEOUT
+If you are running a multi-chain or multi-node setup, you should set this env var to `"false"` and instead configure chains and nodes exclusively via the API/CLI/UI. Trying to administer multiple nodes/chains with this env var enabled can lead to unexpected results.
 
-- Default: `"15s"`
+## ETH_URL
 
-DEFAULT_HTTP_TIMEOUT defines the default timeout for HTTP requests made by `http` and `bridge` adapters.
-
-## FEATURE_EXTERNAL_INITIATORS
-
-- Default: `"false"`
-
-Enables the External Initiator feature. If disabled, `webhook` jobs may ONLY be initiated by a logged-in user. If enabled, `webhook` jobs can be initiated by a whitelisted external initiator.
-
-## JOB_PIPELINE_MAX_RUN_DURATION
-
-- Default: `"10m"`
-
-JOB_PIPELINE_MAX_RUN_DURATION is the maximum time that a single job run may take. If it takes longer, it will exit early and be marked errored. If set to zero, disables the time limit completely.
-
-## JOB_PIPELINE_REAPER_INTERVAL
-
-- Default: `"1h"`
-
-In order to keep database size manageable, Chainlink will run a reaper that deletes completed job runs older than a certain threshold age. JOB_PIPELINE_REAPER_INTERVAL controls how often the job pipeline reaper will run.
-
-Set to `0` to disable the periodic reaper.
-
-## JOB_PIPELINE_REAPER_THRESHOLD
-
-- Default: `"24h"`
-
-JOB_PIPELINE_REAPER_THRESHOLD determines the age limit for job runs. Completed job runs older than this will be automatically purged from the database.
-
-## JOB_PIPELINE_RESULT_WRITE_QUEUE_DEPTH
-
-- Default: `"100"`
-
-Some jobs write their results asynchronously for performance reasons (e.g. OCR). JOB_PIPELINE_RESULT_WRITE_QUEUE_DEPTH controls how many writes will be buffered before subsequent writes are dropped.
-
-It is not recommended to change this setting unless you know what you are doing.
-
-# OCR
-
-This section only applies if you are running offchain reporting jobs.
-
-## FEATURE_OFFCHAIN_REPORTING
-
-- Default: `"false"`
-
-Set to true to enable OCR jobs.
-
-## OCR_KEY_BUNDLE_ID
+(Only has effect if USE_LEGACY_ETH_ENV_VARS is enabled)
 
 - Default: _none_
 
-OCR_KEY_BUNDLE_ID is the default key bundle ID to use for OCR jobs. If you have an OCR job that does not explicitly specify a key bundle ID, it will fall back to this value.
+This is the websocket address of the Ethereum client that the Chainlink node will connect to. All interaction with the Ethereum blockchain will occur through this connection.
 
-## OCR_MONITORING_ENDPOINT
+## ETH_HTTP_URL
 
-- Default: _none_
-
-Optional URL of OCR monitoring endpoint.
-
-## OCR_TRANSMITTER_ADDRESS
+(Only has effect if USE_LEGACY_ETH_ENV_VARS is enabled)
 
 - Default: _none_
 
-OCR_TRANSMITTER_ADDRESS is the default sending address to use for OCR. If you have an OCR job that does not explicitly specify a transmitter address, it will fall back to this value.
+This should be set to the http URL that points to the same eth node as the primary. If set, Chainlink will automatically use HTTP mode for heavy requests, which can improve reliability.
 
-## P2P_NETWORKING_STACK
+## ETH_SECONDARY_URLS
 
-- Default: `"V1"`
-
-OCR supports multiple networking stacks. P2P_NETWORKING_STACK chooses which one to use. Possible values are:
-
-- `V1`
-- `V1V2` (runs both stacks simultaneously, trying V2 first then falling back to V1 - useful for migrating networks without downtime)
-- `V2`
-
-All nodes in the OCR network should share the same networking stack.
-
-## Networking Stack V1
-
-### P2P_ANNOUNCE_IP
+(Only has effect if USE_LEGACY_ETH_ENV_VARS is enabled)
 
 - Default: _none_
 
-Should be set as the externally reachable IP address of the chainlink node.
+If set, transactions will also be broadcast to this secondary ethereum node. This allows transaction broadcasting to be more robust in the face of primary ethereum node bugs or failures.
 
-### P2P_ANNOUNCE_PORT
+It is recommended to set at least one secondary eth node here that is different from your primary.
 
-- Default: _none_
+Multiple URLs can be specified as a comma-separated list e.g.
 
-Should be set as the externally reachable port of the chainlink node.
-
-### P2P_BOOTSTRAP_PEERS
-
-- Default: _none_
-
-Default set of bootstrap peers.
-
-### P2P_LISTEN_IP
-
-- Default: `"0.0.0.0"`
-
-The default IP address to bind to.
-
-### P2P_LISTEN_PORT
-
-- Default: _none_
-
-The port to listen on. If left blank, chainlink will randomly select a different port each time it boots. It is highly recommended to set this to a static value to avoid network instability.
-
-### P2P_PEER_ID
-
-- Default: _none_
-
-The default peer ID to use for OCR jobs. If unspecified, uses the first available peer ID.
-
-## Networking Stack V2
-
-### P2PV2_ANNOUNCE_ADDRESSES
-
-- Default: _none_
-
-P2PV2AnnounceAddresses contains the addresses the peer will advertise on the network in host:port form as accepted by net.Dial. The addresses should be reachable by peers of interest.
-
-### P2PV2_BOOTSTRAPPERS
-
-- Default: _none_
-
-P2PV2Bootstrappers returns the default bootstrapper peers for libocr's v2 networking stack.
-
-### P2PV2_LISTEN_ADDRESSES
-
-- Default: _none_
-
-P2PV2ListenAddresses contains the addresses the peer will listen to on the network in host:port form as accepted by net.Listen, but host and port must be fully specified and cannot be empty.
-
-# Keeper
-
-## KEEPER_GAS_PRICE_BUFFER_PERCENT
-
-- Default: `"20"`
-
-KEEPER_GAS_PRICE_BUFFER_PERCENT adds the specified percentage to the gas price used for checking whether to perform an upkeep. Only applies in legacy mode (EIP1559 off).
-
-## KEEPER_GAS_TIP_CAP_BUFFER_PERCENT
-
-- Default: `"20"`
-
-KEEPER_GAS_TIP_CAP_BUFFER_PERCENT adds the specified percentage to the gas price used for checking whether to perform an upkeep. Only applies in EIP-1559 mode.
-
-## KEEPER_MAXIMUM_GRACE_PERIOD
-ADVANCED
-It is not recommended to change this setting unless you know what you are doing.
-
-- Default: `"100"`
-
-The maximum number of blocks that a keeper will wait after performing an upkeep before it resumes checking that upkeep
-
-## KEEPER_REGISTRY_CHECK_GAS_OVERHEAD
-ADVANCED
-It is not recommended to change this setting unless you know what you are doing.
-
-- Default: `"200000"`
-
-The amount of extra gas to provide checkUpkeep() calls
-to account for the gas consumed by the keeper registry.
-
-## KEEPER_REGISTRY_PERFORM_GAS_OVERHEAD
-ADVANCED
-It is not recommended to change this setting unless you know what you are doing.
-
-- Default: `"150000"`
-
-The amount of extra gas to provide performUpkeep() calls to account for the gas consumed by the keeper registry
-
-## KEEPER_REGISTRY_SYNC_INTERVAL
-ADVANCED
-It is not recommended to change this setting unless you know what you are doing.
-
-- Default: `"30m"`
-
-The interval in which the RegistrySynchronizer performs a full sync of the keeper registry contract it is tracking.
-
-## KEEPER_REGISTRY_SYNC_UPKEEP_QUEUE_SIZE
-ADVANCED
-It is not recommended to change this setting unless you know what you are doing.
-
-- Default: `"10"`
-
-KEEPER_REGISTRY_SYNC_UPKEEP_QUEUE_SIZE represents the maximum number of upkeeps that can be synced in parallel.
+`ETH_SECONDARY_URLS=https://example.com/1,https://example.text/2,...`
 
 # EVM/Ethereum Global Settings
 
@@ -852,7 +641,7 @@ These configuration options act as an override, setting the value for _all_ chai
 
 This often doesn't make sense, e.g. `ETH_FINALITY_DEPTH` on Avalanche could be quite different from `ETH_FINALITY_DEPTH` on Ethereum mainnet.
 
-We recommend setting this one a per-chain basis using the API/CLI/GUI instead.
+We recommend setting this on a per-chain basis using the API/CLI/GUI instead.
 
 Generally speaking, Chainlink contains built-in defaults for most of these settings that should work out of the box on all officially supported chains, so it's unlikely you'll need to make any changes here.
 
@@ -903,10 +692,7 @@ NOTE: This overrides the setting for _all_ chains, you may wish to set this on a
 
 - Default: _automatically set based on Chain ID, typically 1m_
 
-Controls how long the ethResender will wait before
-re-sending the latest eth_tx_attempt. This is designed a as a fallback to
-protect against the eth nodes dropping txes (it has been anecdotally
-observed to happen), networking issues or txes being ejected from the mempool.
+Controls how long the ethResender will wait before re-sending the latest eth_tx_attempt. This is designed a as a fallback to protect against the eth nodes dropping txes (it has been anecdotally observed to happen), networking issues or txes being ejected from the mempool.
 
 Setting to `0` disables the resender.
 
@@ -916,30 +702,22 @@ Setting to `0` disables the resender.
 
 The number of blocks after which an ethereum transaction is considered "final".
 
-ETH_FINALITY_DEPTH determines how deeply we look back to ensure that transactions are confirmed onto the longest chain
-There is not a large performance penalty to setting this relatively high (on the order of hundreds).
+ETH_FINALITY_DEPTH determines how deeply we look back to ensure that transactions are confirmed onto the longest chain. There is not a large performance penalty to setting this relatively high (on the order of hundreds).
 
 It is practically limited by the number of heads we store in the database (`HEAD_TRACKER_HISTORY_DEPTH`) and should be less than this with a comfortable margin.
-If a transaction is mined in a block more than this many blocks ago, and is reorged out, we will NOT retransmit this transaction and undefined behaviour can occur including gaps in the nonce sequence that require manual intervention to fix.
-Therefore, this number represents a number of blocks we consider large enough that no re-org this deep will ever feasibly happen.
+If a transaction is mined in a block more than this many blocks ago, and is reorged out, we will NOT retransmit this transaction and undefined behaviour can occur including gaps in the nonce sequence that require manual intervention to fix. Therefore, this number represents a number of blocks we consider large enough that no re-org this deep will ever feasibly happen.
 
 ## ETH_HEAD_TRACKER_HISTORY_DEPTH
 
 - Default: _automatically set based on Chain ID, typically 100_
 
-Tracks the top N block numbers to keep in the `heads` database table.
-Note that this can easily result in MORE than N total records since in the case of re-orgs we keep multiple heads for a particular block height, and it is also scoped per chain.
-This number should be at least as large as `ETH_FINALITY_DEPTH`.
-There may be a small performance penalty to setting this to something very large (10,000+)
+Tracks the top N block numbers to keep in the `heads` database table. Note that this can easily result in MORE than N total records since in the case of re-orgs we keep multiple heads for a particular block height, and it is also scoped per chain. This number should be at least as large as `ETH_FINALITY_DEPTH`. There may be a small performance penalty to setting this to something very large (10,000+)
 
 ## ETH_HEAD_TRACKER_MAX_BUFFER_SIZE
 
 - Default: `"3"`
 
-The maximum number of heads that may be
-buffered in front of the head tracker before older heads start to be
-dropped. You may think of it as something like the maximum permittable "lag"
-for the head tracker before we start dropping heads to keep up.
+The maximum number of heads that may be buffered in front of the head tracker before older heads start to be dropped. You may think of it as something like the maximum permittable "lag" for the head tracker before we start dropping heads to keep up.
 
 ## ETH_HEAD_TRACKER_SAMPLING_INTERVAL
 
@@ -1217,7 +995,7 @@ An important point to note is that Chainlink does _not_ ship with built-in suppo
 
 - Default: _automatic, based on chain ID_
 
-Controls what type of gas estimator is used. Possible values are: "BlockHistory", "Optimism" and "FixedPrice".
+Controls what type of gas estimator is used.
 
 - `FixedPrice` uses static configured values for gas price (can be set via API call).
 - `BlockHistory` dynamically adjusts default gas price based on heuristics from mined blocks.
@@ -1299,6 +1077,217 @@ NOTE: This overrides the setting for _all_ chains, it is not currently possible 
 - Default: `"false"`
 
 OCR_SIMULATE_TRANSACTIONS allows to enable transaction simulation for OCR.
+
+# Job Pipeline and tasks
+
+## DEFAULT_HTTP_ALLOW_UNRESTRICTED_NETWORK_ACCESS
+
+- Default: `"false"`
+
+By default, Chainlink does not allow the `http` adapter to connect to local IP addresses for security reasons (because the URL can come from on-chain, which is an untrusted source). This can be overridden on a per-task basis by setting the `AllowUnrestrictedNetworkAccess` key, or globally by setting the ENV var `DEFAULT_HTTP_ALLOW_UNRESTRICTED_NETWORK_ACCESS=true`. 
+
+It is recommended that this be left disabled.
+
+NOTE: In older versions of Chainlink, it was required to set this in order to allow connections to bridges/external adapters on the local network. This requirement has been lifted and this env var now ONLY applies to `http` tasks. `bridge` tasks are always allows to connect to the local network.
+
+## DEFAULT_HTTP_LIMIT
+
+- Default: `"32768"`
+
+DEFAULT_HTTP_LIMIT defines the max number of bytes for HTTP requests and responses made by `http` and `bridge` adapters.
+
+## DEFAULT_HTTP_TIMEOUT
+
+- Default: `"15s"`
+
+DEFAULT_HTTP_TIMEOUT defines the default timeout for HTTP requests made by `http` and `bridge` adapters.
+
+## FEATURE_EXTERNAL_INITIATORS
+
+- Default: `"false"`
+
+Enables the External Initiator feature. If disabled, `webhook` jobs may ONLY be initiated by a logged-in user. If enabled, `webhook` jobs can be initiated by a whitelisted external initiator.
+
+## JOB_PIPELINE_MAX_RUN_DURATION
+
+- Default: `"10m"`
+
+JOB_PIPELINE_MAX_RUN_DURATION is the maximum time that a single job run may take. If it takes longer, it will exit early and be marked errored. If set to zero, disables the time limit completely.
+
+## JOB_PIPELINE_REAPER_INTERVAL
+
+- Default: `"1h"`
+
+In order to keep database size manageable, Chainlink will run a reaper that deletes completed job runs older than a certain threshold age. JOB_PIPELINE_REAPER_INTERVAL controls how often the job pipeline reaper will run.
+
+Set to `0` to disable the periodic reaper.
+
+## JOB_PIPELINE_REAPER_THRESHOLD
+
+- Default: `"24h"`
+
+JOB_PIPELINE_REAPER_THRESHOLD determines the age limit for job runs. Completed job runs older than this will be automatically purged from the database.
+
+## JOB_PIPELINE_RESULT_WRITE_QUEUE_DEPTH
+
+- Default: `"100"`
+
+Some jobs write their results asynchronously for performance reasons (e.g. OCR). JOB_PIPELINE_RESULT_WRITE_QUEUE_DEPTH controls how many writes will be buffered before subsequent writes are dropped.
+
+It is not recommended to change this setting unless you know what you are doing.
+
+# OCR
+
+This section only applies if you are running offchain reporting jobs.
+
+## FEATURE_OFFCHAIN_REPORTING
+
+- Default: `"false"`
+
+Set to true to enable OCR jobs.
+
+## OCR_KEY_BUNDLE_ID
+
+- Default: _none_
+
+OCR_KEY_BUNDLE_ID is the default key bundle ID to use for OCR jobs. If you have an OCR job that does not explicitly specify a key bundle ID, it will fall back to this value.
+
+## OCR_MONITORING_ENDPOINT
+
+- Default: _none_
+
+Optional URL of OCR monitoring endpoint.
+
+## OCR_TRANSMITTER_ADDRESS
+
+- Default: _none_
+
+OCR_TRANSMITTER_ADDRESS is the default sending address to use for OCR. If you have an OCR job that does not explicitly specify a transmitter address, it will fall back to this value.
+
+## P2P_NETWORKING_STACK
+
+- Default: `"V1"`
+
+OCR supports multiple networking stacks. P2P_NETWORKING_STACK chooses which one to use. Possible values are:
+
+- `V1`
+- `V1V2` (runs both stacks simultaneously, trying V2 first then falling back to V1 - useful for migrating networks without downtime)
+- `V2`
+
+All nodes in the OCR network should share the same networking stack.
+
+## Networking Stack V1
+
+### P2P_ANNOUNCE_IP
+
+- Default: _none_
+
+Should be set as the externally reachable IP address of the chainlink node.
+
+### P2P_ANNOUNCE_PORT
+
+- Default: _none_
+
+Should be set as the externally reachable port of the chainlink node.
+
+### P2P_BOOTSTRAP_PEERS
+
+- Default: _none_
+
+Default set of bootstrap peers.
+
+### P2P_LISTEN_IP
+
+- Default: `"0.0.0.0"`
+
+The default IP address to bind to.
+
+### P2P_LISTEN_PORT
+
+- Default: _none_
+
+The port to listen on. If left blank, chainlink will randomly select a different port each time it boots. It is highly recommended to set this to a static value to avoid network instability.
+
+### P2P_PEER_ID
+
+- Default: _none_
+
+The default peer ID to use for OCR jobs. If unspecified, uses the first available peer ID.
+
+## Networking Stack V2
+
+### P2PV2_ANNOUNCE_ADDRESSES
+
+- Default: _none_
+
+P2PV2AnnounceAddresses contains the addresses the peer will advertise on the network in host:port form as accepted by net.Dial. The addresses should be reachable by peers of interest.
+
+### P2PV2_BOOTSTRAPPERS
+
+- Default: _none_
+
+P2PV2Bootstrappers returns the default bootstrapper peers for libocr's v2 networking stack.
+
+### P2PV2_LISTEN_ADDRESSES
+
+- Default: _none_
+
+P2PV2ListenAddresses contains the addresses the peer will listen to on the network in host:port form as accepted by net.Listen, but host and port must be fully specified and cannot be empty.
+
+# Keeper
+
+## KEEPER_GAS_PRICE_BUFFER_PERCENT
+
+- Default: `"20"`
+
+KEEPER_GAS_PRICE_BUFFER_PERCENT adds the specified percentage to the gas price used for checking whether to perform an upkeep. Only applies in legacy mode (EIP1559 off).
+
+## KEEPER_GAS_TIP_CAP_BUFFER_PERCENT
+
+- Default: `"20"`
+
+KEEPER_GAS_TIP_CAP_BUFFER_PERCENT adds the specified percentage to the gas price used for checking whether to perform an upkeep. Only applies in EIP-1559 mode.
+
+## KEEPER_MAXIMUM_GRACE_PERIOD
+ADVANCED
+It is not recommended to change this setting unless you know what you are doing.
+
+- Default: `"100"`
+
+The maximum number of blocks that a keeper will wait after performing an upkeep before it resumes checking that upkeep
+
+## KEEPER_REGISTRY_CHECK_GAS_OVERHEAD
+ADVANCED
+It is not recommended to change this setting unless you know what you are doing.
+
+- Default: `"200000"`
+
+The amount of extra gas to provide checkUpkeep() calls
+to account for the gas consumed by the keeper registry.
+
+## KEEPER_REGISTRY_PERFORM_GAS_OVERHEAD
+ADVANCED
+It is not recommended to change this setting unless you know what you are doing.
+
+- Default: `"150000"`
+
+The amount of extra gas to provide performUpkeep() calls to account for the gas consumed by the keeper registry
+
+## KEEPER_REGISTRY_SYNC_INTERVAL
+ADVANCED
+It is not recommended to change this setting unless you know what you are doing.
+
+- Default: `"30m"`
+
+The interval in which the RegistrySynchronizer performs a full sync of the keeper registry contract it is tracking.
+
+## KEEPER_REGISTRY_SYNC_UPKEEP_QUEUE_SIZE
+ADVANCED
+It is not recommended to change this setting unless you know what you are doing.
+
+- Default: `"10"`
+
+KEEPER_REGISTRY_SYNC_UPKEEP_QUEUE_SIZE represents the maximum number of upkeeps that can be synced in parallel.
 
 # CLI Client
 
