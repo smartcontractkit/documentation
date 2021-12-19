@@ -6,6 +6,7 @@ permalink: "docs/jobs/types/cron/"
 ---
 
 Executes a job on a schedule. Does not rely on any kind of external trigger.
+This means it's triggered based on some condition that the Chainlink node evaluates, and not triggered externally via a smart contract. Because of this, the node isn't paid in LINK tokens for processing the request like it does for API calls, because it's initiating a request itself as opposed to receiving a request (and payment) from on-chain.
 
 **Spec format**
 
@@ -40,3 +41,48 @@ For all supported schedules, please refer to the [cron library documentation](ht
 - `$(jobSpec.externalJobID)`: the globally-unique job ID for this job. Used to coordinate between node operators in certain cases.
 - `$(jobSpec.name)`: the local name of the job.
 - `$(jobRun.meta)`: a map of metadata that can be sent to a bridge, etc.
+
+If you want to send data on-chain to a smart contract once the job is completed, you need to manually define an ethtx task at the end of the cron job.
+
+Here's example that sends the result back to a function called someFunction at the contract deployed at address 0xa36085F69e2889c224210F603D836748e7dC0088. The data can be in any format, as long as the abi of the function matches what's being encoded in the job. i.e. If the function expects a bytes param, you need to ensure your encoding a bytes param, if it expects a uint param, then you need to encode a uint param. In this example, a bytes parameter is used.
+
+**Spec format**
+
+```jpv2
+type            = "cron"
+schemaVersion   = 1
+name = "GET > bytes32 (cron)"
+schedule        = "CRON_TZ=UTC @every 1m"
+observationSource   = """
+    fetch    [type="http" method=GET url="https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD"]
+    parse    [type="jsonparse" path="USD"]
+    multiply [type="multiply" times=100]
+  encode_response [type="ethabiencode"
+             abi="(uint256 data)"
+             data="{\\"data\\": $(multiply) }"] 
+   encode_tx [type="ethabiencode"
+              abi="someFunction(bytes32 data)"
+              data="{ \\"data\\": $(encode_response) }"]
+
+   submit_tx  [type="ethtx"
+               to="0xa36085F69e2889c224210F603D836748e7dC0088"
+               data="$(encode_tx)"]
+
+    fetch -> parse -> multiply -> encode_response -> encode_tx -> submit_tx
+"""
+```
+And here's the consuming contract for the cron job above:
+
+```solidity
+// SPDX-Lincense-Identifier: MIT
+pragma solidity ^0.8.7;
+
+contract Cron {
+
+    bytes32 public currentPrice; 
+
+    function someFunction(bytes32 _price) public {
+        currentPrice = _price;
+    }
+}
+```
