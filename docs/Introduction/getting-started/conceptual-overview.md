@@ -37,11 +37,11 @@ To get your hands on the code right away, you can skip this overview:
 
 ## What is a smart contract? What is a hybrid smart contract?
 
-When deployed to a blockchain, a *smart contract* is a set of instructions that can be executed without intervention from third parties. The code of a smart contract determines how it responds to input, just like the code of any other computer program.
+When deployed to a blockchain, a *smart contract* is a set of instructions that can be executed without intervention from third parties. The smart contract code defines how it responds to input, just like the code of any other computer program.
 
-A valuable feature of smart contracts is that they can store and manage on-chain assets (like [ETH or ERC20 tokens](https://ethereum.org/en/developers/docs/standards/tokens/erc-20/)), just like you can with an Ethereum wallet. Because they have an on-chain address like a wallet, they can do everything any other address can. This opens the door for programming automated actions when receiving and transferring assets.
+A valuable feature of smart contracts is that they can store and manage on-chain assets (like [ETH or ERC20 tokens](https://ethereum.org/en/developers/docs/standards/tokens/erc-20/)), just like you can with an Ethereum wallet. Because they have an on-chain address like a wallet, they can do everything any other address can. This enables you to program automated actions when receiving and transferring assets.
 
-Smart contracts can connect to real-world market prices of assets to produce powerful applications. Being able to securely connect smart contracts with off-chain data and services is what makes them *hybrid* smart contracts. This is done using oracles.
+Smart contracts can connect to real-world market prices of assets to produce powerful applications. Securely connecting smart contracts with off-chain data and services is what makes them *hybrid* smart contracts. This is done using oracles.
 
 ## What language is a smart contract written in?
 
@@ -106,7 +106,7 @@ bool external isTrue;
 
 ### Constructors
 
-Another familiar concept to programmers is the **constructor**. It is called upon deploying the contract, so as to set the state of the contract once created.
+Another familiar concept to programmers is the **constructor**. When you deploy a contract, the constructor sets the state of the contract when it is first created.
 
 In `HelloWorld`, the constructor takes in a `string` as a parameter and sets the `message` state variable to that string.
 
@@ -118,7 +118,7 @@ constructor(string memory initialMessage) {
 
 ### Functions
 
-**Functions** are used to access and modify the state of the contract, and call functions on external contracts. `HelloWorld` has a function called `updateMessage`, which updates the current message stored in the state.
+**Functions** can access and modify the state of the contract or call other functions on external contracts. `HelloWorld` has a function named `updateMessage`, which updates the current message stored in the state.
 
 ```solidity
 constructor(string memory initialMessage) {
@@ -152,9 +152,9 @@ As long as the address is known, its functions can be called through an interfac
 
 ## What are oracles?
 
-**Oracles** provide a bridge between the real-world and on-chain smart contracts, by being a source of data that smart contracts can rely on, and act upon.
+**Oracles** provide a bridge between the real-world and on-chain smart contracts by being a source of data that smart contracts can rely on, and act upon.
 
-Oracles play an extremely important role in facilitating the full potential of smart contract utility. Without a reliable connection to real-world conditions, smart contracts are unable to effectively serve the real-world.
+Oracles play a critical role in facilitating the full potential of smart contract utility. Without a reliable connection to real-world conditions, smart contracts cannot effectively serve the real-world.
 
 ## How do smart contracts use oracles?
 
@@ -187,4 +187,4 @@ To learn how to use Remix, see the [Deploying Your First Smart Contract
 
 ## What is Metamask?
 
-Contracts are deployed by addresses on the network, so to deploy your own you need an address. Not only that, but you need an address which you can easily use with Remix. Fortunately, [MetaMask](https://metamask.io) is just what is needed. **Metamask** allows anyone to create an address, store funds and interact with Ethereum compatible blockchains from a browser extension.
+Contracts are deployed by other addresses on the network. To deploy a smart contract, you need an address. Not only that, but you need an address which you can easily use with Remix. Fortunately, [MetaMask](https://metamask.io) is just what is needed. **Metamask** allows anyone to create an address, store funds, and interact with Ethereum compatible blockchains from a browser extension.
