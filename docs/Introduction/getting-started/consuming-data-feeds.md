@@ -19,7 +19,7 @@ metadata:
 
 ## Overview
 
-When you connect a smart contract to real-world services or off-chain data, you create what is called a *hybrid smart contract*. For example, you can use Chainlink Data Feeds to connect your smart contracts to asset pricing data like the [ETH / USD feed](https://feeds.chain.link/eth-usd). These data feeds use the data aggregated from many independent Chainlink node operators. Each price feed has an on-chain address and functions that enable contracts to read pricing data from that address.
+When you connect a smart contract to real-world services or off-chain data, you create a *hybrid smart contract*. For example, you can use Chainlink Data Feeds to connect your smart contracts to asset pricing data like the [ETH / USD feed](https://feeds.chain.link/eth-usd). These data feeds use the data aggregated from many independent Chainlink node operators. Each price feed has an on-chain address and functions that enable contracts to read pricing data from that address.
 
 This guide shows you how to write, deploy, and run a smart contract that consumes data from a price data feed.
 
@@ -64,7 +64,7 @@ Deploy the `PriceConsumerV3` smart contract on the Kovan testnet.
     ![Screenshot of the Compile button.](/images/getting-started/compilePriceConsumerV3.png)
 
 1. On the **Deploy** tab, select the **Injected Web3** environment. This contract specifically requires Web3 because it connects with another contract on the blockchain. Running in a JavaScript VM will not work.
-    ![Screenshot showing the Intected Web3 environment selected.](/images/getting-started/selectWeb3.png)
+    ![Screenshot showing the Injected Web3 environment selected.](/images/getting-started/selectWeb3.png)
 
 1. Because the example contract has several imports, Remix might select another contract to deploy by default. In the **Contract** section, select the `PriceConsumerV3` contract to make sure that Remix deploys the correct contract.
     ![Screenshot showing PriceConsumerV3 as the contract to deploy.](/images/getting-started/selectPriceConsumerV3.png)
@@ -81,4 +81,4 @@ Deploy the `PriceConsumerV3` smart contract on the Kovan testnet.
 1. Click **getLatestPrice** to show the latest price from the aggregator contract. The latest price appears just below the button. The returned price is an integer, so it is missing its decimal point.
     ![A screenshot showing the deployed contract.](/images/getting-started/getLatestPrice.png)
 
-You can run your own oracle networks that provide data to smart contracts similar to the `AggregatorV3Interface`, but first you should learn how configure your contracts to pay oracles using LINK tokens. Follow the [Generate Random Numbers](../intermediates-tutorial/) to learn how.
+You can run your own oracle networks that provide data to smart contracts similar to the `AggregatorV3Interface`, but first, you should learn how to configure your contracts to pay oracles using LINK tokens. Follow the [Generate Random Numbers](../intermediates-tutorial/) to learn how.

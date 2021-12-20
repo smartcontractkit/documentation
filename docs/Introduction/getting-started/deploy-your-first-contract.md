@@ -12,7 +12,7 @@ metadata:
     0: "/files/1a63254-link.png"
 ---
 
-You can write your first smart contract and run in your browser without any knowledge about Ethereum or blockchains. This guide shows you how easy it is to develop smart contracts using the [Solidity language](https://soliditylang.org/), a [MetaMask wallet](https://metamask.io) and the [Remix Development Environment](https://remix.ethereum.org/). You can use all of these tools in your browser for free with no signup required.
+You can write your first smart contract and run it in your browser without any knowledge about Ethereum or blockchains. This guide shows you how easy it is to develop smart contracts using the [Solidity language](https://soliditylang.org/), a [MetaMask wallet](https://metamask.io) and the [Remix Development Environment](https://remix.ethereum.org/). You can use all of these tools in your browser for free with no signup required.
 
 > 📘 Already know Solidity and have MetaMask configured?
 >
@@ -30,13 +30,13 @@ In general, you create and deploy your smart contracts operate using the followi
 
 1. **Write:** Write a contract to define how the contract functions, what data it can store, what other contracts it interacts with, and what external APIs it might call.
 
-1. **Compile:** Pass your smart contract code through a compiler to translate the contract into byte that the blockchain can understand. For example, [Solidity](https://soliditylang.org) code must be compiled before it can run in the [Ethereum Virtual Machine](https://ethereum.org/en/developers/docs/evm/).
+1. **Compile:** Pass your smart contract code through a compiler to translate the contract into byte code that the blockchain can understand. For example, [Solidity](https://soliditylang.org) code must be compiled before it can run in the [Ethereum Virtual Machine](https://ethereum.org/en/developers/docs/evm/).
 
 1. **Deploy:** Send the compiled smart contract to the blockchain. From that point forward, the contract cannot be altered. However, you can still interact with the contract in several ways.
 
 1. **Run functions:** When you run the functions that you defined for the contract, the network processes those functions and modifies the state of your contract. For some functions, the network charges a small fee to complete the work. Your contract can also have functions that transfer funds to other contracts or wallets.
 
-This guide walks you through each of these steps, but first you must install and fund your MetaMask wallet.
+This guide walks you through each step, but you must install and fund your MetaMask wallet first.
 
 ## Install and fund your MetaMask wallet
 
@@ -53,7 +53,7 @@ Deploying smart contracts on-chain requires a wallet and ETH. The ETH pays for t
     ![Screenshot showing the network selection menu in MetaMask. The Kovan Test Network is selected.](/images/getting-started/selectKovan.png)
 
 1. Go to the [Kovan Chainlink Faucet](https://faucets.chain.link/kovan/) and follow the steps to send 0.1 test ETH to your MetaMask wallet address. You can copy your wallet address by clicking your account name in MetaMask. After the faucet completes the transaction, you should have 0.1 ETH in your MetaMask wallet on the Kovan testnet.
-    ![Screenshot showing a wallet with an balance of 0.1 ETH.](/images/getting-started/fundedWallet.png)
+    ![Screenshot showing a wallet with a balance of 0.1 ETH.](/images/getting-started/fundedWallet.png)
 
 Now that you configured your wallet and funded it with testnet ETH, you can write, compile, and deploy your contract.
 
@@ -82,12 +82,12 @@ Your first contract is a simple `HelloWorld.sol` example. This example shows you
     ![Screenshot of the Deploy tab and its settings.](/images/getting-started/selectSolidityDeploy.png)
 
 1. In the deployment settings, select the **Injected Web3** environment. This tells Remix that you want to deploy your contract to the blockchain that you configured in MetaMask. You could optionally use one of the Javascript VM options, but they run in a virtual environment with no connection to an actual blockchain or Chainlink oracles.
-    ![Screenshot showing the Intected Web3 environment selected.](/images/getting-started/selectWeb3.png)
+    ![Screenshot showing the Injected Web3 environment selected.](/images/getting-started/selectWeb3.png)
 
 1. Next to the **Deploy** button, enter a message that you want to send with the smart contract when you deploy it. This contract has a constructor that sets an initial message when you deploy the contract.
     ![Screenshot of the Deploy button with "Hello world!" as the defined message.](/images/getting-started/deployHelloWorld.png)
 
-1. Click the **Deploy** button to deploy the contract and its initial message to the blockchain network. MetaMask opens and asks you to confirm payment for deploying the contract. Make sure MetaMask is set to the Kovan network before you accept the transaction. Because these transactions are on the blockchain, they are not reversible.
+1. Click the **Deploy** button to deploy the contract and its initial message to the blockchain network. MetaMask opens and asks you to confirm payment to deploy the contract. Make sure MetaMask is set to the Kovan network before you accept the transaction. Because these transactions are on the blockchain, they are not reversible.
 
 1. In the MetaMask prompt, click **Confirm** to approve the transaction and spend your testnet ETH required to deploy the contract.
     ![Screenshot showing Metamask asking you to confirm the transaction.](/images/getting-started/confirmTransaction.png)
@@ -107,7 +107,7 @@ Because you deployed the contract to an actual blockchain, several nodes on the 
 1. In your deployed contract, enter a new message next to the `updateMessage` function.
     ![Screenshot showing the updateMessage function with a new value.](/images/getting-started/runUpdateMessage.png)
 
-1. Click the `updateMessage` button to set the new message in the contract data. MetaMask opens and asks you to confirm payment for updating the state of your contract.
+1. Click the `updateMessage` button to set the new message in the contract data. MetaMask opens and asks you to confirm payment to update the state of your contract.
 
 1. In the new MetaMask prompt, click **Confirm** to approve the transaction.
     ![Screenshot showing Metamask asking you to confirm the transaction.](/images/getting-started/confirmTransaction.png)
