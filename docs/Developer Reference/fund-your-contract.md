@@ -1,6 +1,6 @@
 ---
 layout: nodes.liquid
-section: gettingStarted
+section: ethereum
 date: Last Modified
 title: "Fund Your Contracts"
 permalink: "docs/fund-your-contract/"

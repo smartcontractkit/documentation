@@ -1,6 +1,6 @@
 ---
 layout: nodes.liquid
-section: gettingStarted
+section: ethereum
 date: Last Modified
 title: "Acquire testnet LINK"
 permalink: "docs/acquire-link/"
