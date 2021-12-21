@@ -1,5 +1,6 @@
 ---
 layout: nodes.liquid
+section: nodeOperator
 date: Last Modified
 title: "Configuration Variables"
 permalink: "docs/configuration-variables/"

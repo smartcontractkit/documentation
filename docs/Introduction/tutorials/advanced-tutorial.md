@@ -1,6 +1,6 @@
 ---
 layout: nodes.liquid
-section: smartContract
+section: gettingStarted
 date: Last Modified
 title: "API Calls: Using Any API"
 permalink: "docs/advanced-tutorial/"
@@ -13,7 +13,7 @@ metadata:
 
 > 👍 Requirements
 >
-> This tutorial requires basic knowledge about Ethereum, smart contracts, and the Chainlink Request & Receive cycle. If you're unfamiliar with those concepts, follow the [The Basics](../beginners-tutorial/) and [Random Numbers](../intermediates-tutorial/) tutorials.
+> This guide requires basic knowledge about smart contracts. If you are new to smart contract development, read the [Consuming Data Feeds](/docs/consuming-data-feeds/) and [Random Numbers](/docs/intermediates-tutorial/) guides before you begin.
 
 <p>
   https://www.youtube.com/watch?v=ay4rXZhAefs
@@ -21,7 +21,7 @@ metadata:
 
 # Overview
 
-In this tutorial, you will learn how to request data from a public API in a smart contract. This includes understanding what Core adapters and External adapters are and how Oracle Jobs use them. You will also learn how to find the Oracle Jobs and Adapters for your contract and how to request data from an Oracle Job.
+In this guide, you will learn how to request data from a public API in a smart contract. This includes understanding what Core adapters and External adapters are and how Oracle Jobs use them. You will also learn how to find the Oracle Jobs and Adapters for your contract and how to request data from an Oracle Job.
 
 **Table of Contents**
 
@@ -37,7 +37,7 @@ In this tutorial, you will learn how to request data from a public API in a smar
 
 The request and receive cycle describes how a smart contract requests data from an oracle and receives the response in a separate transaction. If you need a refresher, check out the [Basic Request Model](../architecture-request-model/).
 
-In the [Random Numbers](../intermediates-tutorial/) tutorial, you requested randomness from a VRF oracle, then await the response. The fulfillment function is already given to us from the `VRFConsumerBase` contract, so oracles already know where to send the response to. However, with API calls, the contract itself *defines* which function it wants to receive the response to.
+For contracts that use [Chainlink VRF](/docs/chainlink-vrf/), you request randomness from a VRF oracle and then await the response. The fulfillment function is already given to us from the `VRFConsumerBase` contract, so oracles already know where to send the response to. However, with API calls, the contract itself *defines* which function it wants to receive the response to.
 
 Before creating any code, you should understand how Oracle jobs can get data on-chain.
 
@@ -98,8 +98,8 @@ Let's see what this looks like in a contract:
 ```
 
 <div class="remix-callout">
-  <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/APIConsumer.sol" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
-    <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
+  <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/APIConsumer.sol" target="_blank" >Open in Remix</a>
+  <a href="/docs/conceptual-overview/#what-is-remix" >What is Remix?</a>
 </div>
 
 Here is a breakdown of each component of this contract:
@@ -263,15 +263,14 @@ contract sportContract is ChainlinkClient {
 
 # 5. How do I deploy to testnet?
 
-Your contract is complete and ready to be compiled and deployed. You can see a complete version of the contract in Remix: 
+Your contract is complete and ready to be compiled and deployed. You can see a complete version of the contract in Remix:
 
 <div class="remix-callout">
-  <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/sportContract.sol" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
-    <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
+  <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/sportContract.sol" target="_blank" >Open in Remix</a>
+  <a href="/docs/conceptual-overview/#what-is-remix" >What is Remix?</a>
 </div>
-<br>
 
-If you don't know how to deploy a contract to the Kovan testnet from Remix, follow [The Basics](/docs/beginners-tutorial) tutorial. To make a job request, you *must* have enough LINK to pay for it. Learn how to [acquire testnet LINK](../acquire-link/) and [fund your contract](../fund-your-contract/). Once these steps are completed, you should be able to get sports data.
+If you don't know how to deploy a contract to the Kovan testnet using Remix, follow getting started guide for [Deploying Your First Smart Contract](/docs/deploy-your-first-contract/). To make a job request, you *must* have enough LINK to pay for it. Learn how to [acquire testnet LINK](/docs/acquire-link/) and [fund your contract](/docs/fund-your-contract/). Once these steps are completed, you should be able to get sports data.
 
 
 # 6. Further Reading

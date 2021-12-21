@@ -1,6 +1,6 @@
 ---
 layout: nodes.liquid
-section: smartContract
+section: ethereum
 date: Last Modified
 title: 'Register Keeper Upkeep for a Contract'
 whatsnext:
@@ -14,7 +14,7 @@ whatsnext:
 This guide explains how to register a Keeper-compatible contract with the Chainlink Keeper Network. To find more information about deploying a Keeper-compatible contract, see the [Making Compatible Contracts](../compatible-contracts) page. Register your contracts in the Chainlink Keepers App:
 
 <div class="remix-callout">
-    <a href="https://keepers.chain.link" class="cl-button--ghost solidity-tracked">Chainlink Keepers App</a>
+    <a href="https://keepers.chain.link" >Open the Chainlink Keepers App</a>
 </div>
 
 After you register, you can interact directly with the [registry contract](https://etherscan.io/address/0x7b3EC232b08BD7b4b3305BE0C044D907B2DF960B#code) functions such as `cancelUpkeep` and `addFunds`.
@@ -72,7 +72,7 @@ Registering an Upkeep with the Chainlink Keepers App notifies the Keeper Network
     ![Confirm LINK Transfer](/images/contract-devs/keeper/keeper-confirm-transfer.png)
   * Receive a success message and verify that the funds were added to the Upkeep
     ![Funds Added Successful Message](/images/contract-devs/keeper/keeper-add-funds.png)
-    
+
   Note: Funds added to your upkeep will not be available for use by the Keeper Network until the minimum number of block confirmations have passed. This differs from chain to chain.
 
 # How Funding Works

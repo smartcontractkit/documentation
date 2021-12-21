@@ -1,6 +1,6 @@
 ---
 layout: nodes.liquid
-section: smartContract
+section: ethereum
 date: Last Modified
 title: "VRF Best Practices"
 permalink: "docs/chainlink-vrf-best-practices/"

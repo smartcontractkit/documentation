@@ -1,5 +1,6 @@
 ---
 layout: nodes.liquid
+section: nodeOperator
 date: Last Modified
 title: "Direct Request Jobs"
 permalink: "docs/jobs/types/direct-request/"

@@ -1,230 +1,76 @@
 module.exports = {
   navigation: {
-    nodeOperator: [
+    gettingStarted: [
       {
-        section: 'NODE OPERATORS',
+        section: 'Getting Started',
         contents: [
           {
-            url: '/docs/node-versions/',
-            title: 'Node Versions' },
-          {
-            url: '/docs/running-a-chainlink-node/',
-            title: 'Running a Chainlink Node',
+            title: 'Overview',
+            url: '/docs/conceptual-overview/',
           },
           {
-            url: '/docs/fulfilling-requests/',
-            title: 'Fulfilling Requests' },
-          {
-            url: '/docs/run-an-ethereum-client/',
-            title: 'Run an Ethereum Client',
+            title: 'Deploy Your First Contract',
+            url: '/docs/deploy-your-first-contract/',
           },
           {
-            url: '/docs/performing-system-maintenance/',
-            title: 'Performing System Maintenance',
+            title: 'Consuming Data Feeds',
+            url: '/docs/consuming-data-feeds/',
           },
           {
-            url: '/docs/connecting-to-a-remote-database/',
-            title: 'Connecting to a Remote Database',
+            title: 'Get Random Numbers',
+            url: '/docs/intermediates-tutorial/',
           },
           {
-            url: '/docs/configuration-variables/',
-            title: 'Configuration Variables',
-          },
-          {
-            url: '/docs/enabling-https-connections/',
-            title: 'Enabling HTTPS Connections',
-          },
-          {
-            url: '/docs/best-security-practices/',
-            title: 'Best Security and Operating Practices',
-          },
-          {
-            url: '/docs/best-practices-aws/',
-            title: 'Best Practices for Nodes on AWS',
-          },
-          {
-            url: '/docs/miscellaneous/',
-            title: 'Miscellaneous'
+            title: 'API Calls',
+            url: '/docs/advanced-tutorial/',
           },
         ],
       },
       {
-        section: 'ORACLE JOBS',
+        section: 'Resources',
         contents: [
           {
-            url: '/docs/jobs/migration-v1-v2',
-            title: 'Migrating to v2 Jobs',
-          },
-          {
-            url: '/docs/jobs/',
-            title: 'Jobs',
-            children: [
-              {
-                url: '/docs/jobs/types/cron/',
-                title: 'Cron'
-              },
-              {
-                url: '/docs/jobs/types/direct-request/',
-                title: 'Direct Request',
-              },
-              {
-                url: '/docs/jobs/types/flux-monitor/',
-                title: 'Flux Monitor',
-              },
-              {
-                url: '/docs/jobs/types/keeper/',
-                title: 'Keeper'
-              },
-              {
-                url: '/docs/jobs/types/offchain-reporting/',
-                title: 'Off-chain Reporting',
-              },
-              {
-                url: '/docs/jobs/types/webhook/',
-                title: 'Webhook'
-              },
-            ],
-          },
-          {
-            url: '/docs/tasks/',
-            title: 'Tasks',
-            children: [
-              {
-                url: '/docs/jobs/task-types/pipelines/',
-                title: 'Job Pipelines'
-              },
-              {
-                url: '/docs/jobs/task-types/http/',
-                title: 'HTTP'
-              },
-              {
-                url: '/docs/jobs/task-types/bridge/',
-                title: 'Bridge'
-              },
-              {
-                url: '/docs/jobs/task-types/jsonparse/',
-                title: 'JSON Parse'
-              },
-              {
-                url: '/docs/jobs/task-types/cborparse/',
-                title: 'CBOR Parse'
-              },
-              {
-                url: '/docs/jobs/task-types/eth-abi-decode/',
-                title: 'ETH ABI Decode',
-              },
-              {
-                url: '/docs/jobs/task-types/eth-abi-decode-log/',
-                title: 'ETH ABI Decode Log',
-              },
-              {
-                url: '/docs/jobs/task-types/eth-abi-encode/',
-                title: 'ETH ABI Encode',
-              },
-              {
-                url: '/docs/jobs/task-types/eth-call/',
-                title: 'ETH Call'
-              },
-              {
-                url: '/docs/jobs/task-types/eth-tx/',
-                title: 'ETH Tx'
-              },
-              {
-                url: '/docs/jobs/task-types/multiply/',
-                title: 'Multiply'
-              },
-              {
-                url: '/docs/jobs/task-types/divide/',
-                title: 'Divide'
-              },
-
-              {
-                url: '/docs/jobs/task-types/any/',
-                title: 'Any'
-              },
-              {
-                url: '/docs/jobs/task-types/mean/',
-                title: 'Mean'
-              },
-              {
-                url: '/docs/jobs/task-types/median/',
-                title: 'Median'
-              },
-              {
-                url: '/docs/jobs/task-types/mode/',
-                title: 'Mode'
-              },
-              {
-                url: '/docs/jobs/task-types/sum/',
-                title: 'Sum'
-              },
-            ],
+            title: 'Videos and Tutorials',
+            url: '/docs/other-tutorials/',
           },
         ],
       },
       {
-        section: 'EXTERNAL ADAPTERS',
+        section: 'Next Steps',
         contents: [
           {
-            url: '/docs/external-adapters/',
-            title: 'Introduction'
+            title: 'Chainlink Architecture',
+            url: '/docs/architecture-overview/',
           },
           {
-            url: '/docs/contract-creators/',
-            title: 'External Adapters in Solidity',
+            title: 'Data Feeds',
+            url: '/docs/using-chainlink-reference-contracts/',
           },
           {
-            url: '/docs/developers/',
-            title: 'Building External Adapters'
+            title: 'Chainlink VRF',
+            url: '/docs/chainlink-vrf/',
           },
           {
-            url: '/docs/node-operators/',
-            title: 'Bridges: Adding External Adapters to Nodes',
-          },
-        ],
-      },
-      {
-        section: 'EXTERNAL INITIATORS',
-        contents: [
-          {
-            url: '/docs/external-initiators-introduction/',
-            title: 'Introduction',
+            title: 'Chainlink Keepers',
+            url: '/docs/chainlink-keepers/introduction/',
           },
           {
-            url: '/docs/building-external-initiators/',
-            title: 'Building External Initiators',
+            title: 'Connect to Public API Data',
+            url: '/docs/request-and-receive-data/',
           },
           {
-            url: '/docs/external-initiators-in-nodes/',
-            title: 'Adding External Initiators to Nodes',
+            title: 'Run a Chainlink Node',
+            url: '/chainlink-nodes/',
           },
         ],
       },
     ],
-    smartContract: [
+    ethereum: [
       {
-        section: 'INTRODUCTION',
+        section: 'Overview',
         contents: [
           {
-            title: 'Tutorials',
-            url: '/docs/tutorials/',
-            children: [
-              {
-                title: 'The Basics',
-                url: '/docs/beginners-tutorial/',
-              },
-              {
-                title: 'Random Numbers',
-                url: '/docs/intermediates-tutorial/',
-              },
-              {
-                title: 'API Calls',
-                url: '/docs/advanced-tutorial/',
-              }
-            ],
-          },
-          {
-            title: 'Architecture Overview',
+            title: 'Chainlink Architecture',
             url: '/docs/architecture-overview/',
             children: [
               {
@@ -241,14 +87,10 @@ module.exports = {
               },
             ],
           },
-          {
-            title: 'Learning Resources',
-            url: '/docs/other-tutorials/',
-          }
         ],
       },
       {
-        section: 'USING DATA FEEDS',
+        section: 'DATA FEEDS',
         contents: [
           {
             title: 'Introduction to Data Feeds',
@@ -264,20 +106,20 @@ module.exports = {
           },
           {
             title: 'Feed Registry',
-            url: '/docs/feed-registry/'
+            url: '/docs/feed-registry/',
           },
           {
             title: 'API Reference',
             url: '/docs/price-feeds-api-reference/',
           },
           {
+            title: 'Using ENS with Data Feeds',
+            url: '/docs/ens/'
+          },
+          {
             title: 'Contract Addresses',
             url: '/docs/reference-contracts/',
             children: [
-              {
-                title: 'ENS',
-                url: '/docs/ens/'
-              },
               {
                 title: 'Ethereum Data Feeds',
                 url: '/docs/ethereum-addresses/',
@@ -321,10 +163,7 @@ module.exports = {
               {
                 title: 'Moonriver Data Feeds',
                 url: '/docs/data-feeds-moonriver/',
-              },
-              {
-                title: 'Non-EVM Data Feeds ↗',
-                url: '/non-evm/',
+
               },
             ],
           },
@@ -332,6 +171,7 @@ module.exports = {
       },
       {
         section: 'USING RANDOMNESS',
+
         contents: [
           {
             title: 'Introduction to Chainlink VRF',
@@ -339,7 +179,7 @@ module.exports = {
           },
           {
             title: 'Get a Random Number',
-            url: '/docs/get-a-random-number/'
+            url: '/docs/get-a-random-number/',
           },
           {
             title: 'API Reference',
@@ -360,36 +200,7 @@ module.exports = {
         ],
       },
       {
-        section: 'USING CHAINLINK KEEPERS',
-        contents: [
-          {
-            title: 'Introduction',
-            url: '/docs/chainlink-keepers/introduction/',
-          },
-          {
-            title: 'Making Compatible Contracts',
-            url: '/docs/chainlink-keepers/compatible-contracts/',
-          },
-          {
-            title: 'Register Upkeep for a Contract',
-            url: '/docs/chainlink-keepers/register-upkeep/',
-          },
-          {
-            title: 'Utility Contracts',
-            url: '/docs/chainlink-keepers/utility-contracts/'
-          },
-          {
-            title: 'Network Overview',
-            url: '/docs/chainlink-keepers/overview/',
-          },
-          {
-            title: 'FAQs',
-            url: '/docs/chainlink-keepers/faqs/'
-          },
-        ],
-      },
-      {
-        section: 'USING ANY API',
+        section: 'Connect to any API',
         contents: [
           {
             title: 'Introduction to Using Any API',
@@ -426,10 +237,51 @@ module.exports = {
         ],
       },
       {
-        section: 'DEVELOPER REFERENCE',
+        section: 'CHAINLINK KEEPERS',
         contents: [
           {
-            title: 'Install Instructions',
+            title: 'Introduction to Keepers',
+            url: '/docs/chainlink-keepers/introduction/',
+          },
+          {
+            title: 'Making Compatible Contracts',
+            url: '/docs/chainlink-keepers/compatible-contracts/',
+          },
+          {
+            title: 'Register Upkeep for a Contract',
+            url: '/docs/chainlink-keepers/register-upkeep/',
+          },
+          {
+            title: 'Utility Contracts',
+            url: '/docs/chainlink-keepers/utility-contracts/'
+          },
+          {
+            title: 'Network Overview',
+            url: '/docs/chainlink-keepers/overview/',
+          },
+          {
+            title: 'FAQs',
+            url: '/docs/chainlink-keepers/faqs/'
+          },
+        ],
+      },
+      {
+        section: 'Resources',
+        contents: [
+          {
+            title: 'Videos and Tutorials',
+            url: '/docs/other-tutorials/',
+          },
+          {
+            title: 'Acquire testnet LINK',
+            url: '/docs/acquire-link/',
+          },
+          {
+            title: 'Fund Your Contracts',
+            url: '/docs/fund-your-contract/',
+          },
+          {
+            title: 'Install Frameworks',
             url: '/docs/create-a-chainlinked-project/',
           },
           {
@@ -452,63 +304,30 @@ module.exports = {
             title: 'Selecting Data Feeds',
             url: '/docs/selecting-data-feeds/',
           },
-          { title: 'Hackathon Resources', url: '/docs/hackathon-resources/' },
-          { title: 'Contributing to Chainlink', url: '/docs/contributing-to-chainlink/' },
           {
-            title: 'User Guides',
-            url: '/docs/user-guides/',
-            children: [
-              {
-                title: 'Install, configure & fund MetaMask',
-                url: '/docs/install-metamask/',
-              },
-              {
-                title: 'Acquire testnet LINK',
-                url: '/docs/acquire-link/',
-              },
-              {
-                title: 'Deploy your first contract',
-                url: '/docs/deploy-your-first-contract/',
-              },
-              {
-                title: 'Fund your contract',
-                url: '/docs/fund-your-contract/',
-              },
-              {
-                title: 'Use your first contract!',
-                url: '/docs/use-your-first-contract/',
-              },
-            ],
+            title: 'Hackathon Resources',
+            url: '/docs/hackathon-resources/',
+          },
+          {
+            title: 'Contributing to Chainlink',
+            url: '/docs/contributing-to-chainlink/'
           },
         ],
       },
     ],
-    nonEvm: [
+    terra: [
       {
-        section: 'SOLANA',
-        contents: [
-          {
-            title: 'Overview',
-            url: '/docs/solana/',
-          },
-          {
-            title: 'Using Data Feeds',
-            url: '/docs/solana/using-data-feeds-solana/',
-          },
-          {
-            title: 'Solana Data Feeds',
-            url: '/docs/solana/data-feeds-solana/',
-          },
-
-        ],
-      },
-      {
-        section: 'TERRA',
+        section: 'Terra',
         contents: [
           {
             title: 'Overview',
             url: '/docs/terra/',
           },
+        ],
+      },
+      {
+        section: 'Data Feeds',
+        contents: [
           {
             title: 'Using Data Feeds',
             url: '/docs/terra/using-data-feeds-terra/',
@@ -520,21 +339,248 @@ module.exports = {
         ],
       },
     ],
+    solana: [
+      {
+        section: 'Solana',
+        contents: [
+          {
+            title: 'Overview',
+            url: '/docs/solana/',
+          },
+        ],
+      },
+      {
+        section: 'Data Feeds',
+        contents: [
+          {
+            title: 'Using Data Feeds',
+            url: '/docs/solana/using-data-feeds-solana/',
+          },
+          {
+            title: 'Solana Data Feeds',
+            url: '/docs/solana/data-feeds-solana/',
+          },
+        ],
+      },
+    ],
+    nodeOperator: [
+      {
+        section: 'NODE OPERATORS',
+        contents: [
+          {
+            title: 'Node Versions',
+            url: '/docs/node-versions/',
+          },
+          {
+            title: 'Running a Chainlink Node',
+            url: '/docs/running-a-chainlink-node/',
+          },
+          {
+            title: 'Fulfilling Requests',
+            url: '/docs/fulfilling-requests/',
+          },
+          {
+            title: 'Run an Ethereum Client',
+            url: '/docs/run-an-ethereum-client/',
+          },
+          {
+            title: 'Performing System Maintenance',
+            url: '/docs/performing-system-maintenance/',
+          },
+          {
+            url: '/docs/connecting-to-a-remote-database/',
+            title: 'Connecting to a Remote Database',
+          },
+          {
+            title: 'Configuration Variables',
+            url: '/docs/configuration-variables/',
+          },
+          {
+            title: 'Enabling HTTPS Connections',
+            url: '/docs/enabling-https-connections/',
+          },
+          {
+            title: 'Security and Operation Best Practices',
+            url: '/docs/best-security-practices/',
+          },
+          {
+            title: 'Best Practices for Nodes on AWS',
+            url: '/docs/best-practices-aws/',
+          },
+          {
+            title: 'Miscellaneous',
+            url: '/docs/miscellaneous/',
+          },
+        ],
+      },
+      {
+        section: 'ORACLE JOBS',
+        contents: [
+          {
+            title: 'Migrating to v2 Jobs',
+            url: '/docs/jobs/migration-v1-v2/',
+          },
+          {
+            title: 'Jobs',
+            url: '/docs/jobs/',
+            children: [
+              {
+                title: 'Cron',
+                url: '/docs/jobs/types/cron/',
+              },
+              {
+                title: 'Direct Request',
+                url: '/docs/jobs/types/direct-request/',
+              },
+              {
+                title: 'Flux Monitor',
+                url: '/docs/jobs/types/flux-monitor/',
+              },
+              {
+                title: 'Keeper',
+                url: '/docs/jobs/types/keeper/',
+              },
+              {
+                title: 'Off-chain Reporting',
+                url: '/docs/jobs/types/offchain-reporting/',
+              },
+              {
+                title: 'Webhook',
+                url: '/docs/jobs/types/webhook/',
+              },
+            ],
+          },
+          {
+            url: '/docs/tasks/',
+            title: 'Tasks',
+            children: [
+              {
+                title: 'Job Pipelines',
+                url: '/docs/jobs/task-types/pipelines/',
+              },
+              {
+                title: 'HTTP',
+                url: '/docs/jobs/task-types/http/',
+              },
+              {
+                title: 'Bridge',
+                url: '/docs/jobs/task-types/bridge/',
+              },
+              {
+                title: 'JSON Parse',
+                url: '/docs/jobs/task-types/jsonparse/',
+              },
+              {
+                title: 'CBOR Parse',
+                url: '/docs/jobs/task-types/cborparse/',
+              },
+              {
+                title: 'ETH ABI Decode',
+                url: '/docs/jobs/task-types/eth-abi-decode/',
+              },
+              {
+                title: 'ETH ABI Decode Log',
+                url: '/docs/jobs/task-types/eth-abi-decode-log/',
+              },
+              {
+                title: 'ETH ABI Encode',
+                url: '/docs/jobs/task-types/eth-abi-encode/',
+              },
+              {
+                title: 'ETH Call',
+                url: '/docs/jobs/task-types/eth-call/',
+              },
+              {
+                title: 'ETH Tx',
+                url: '/docs/jobs/task-types/eth-tx/',
+              },
+              {
+                title: 'Multiply',
+                url: '/docs/jobs/task-types/multiply/',
+              },
+              {
+                title: 'Divide',
+                url: '/docs/jobs/task-types/divide/',
+              },
+
+              {
+                title: 'Any',
+                url: '/docs/jobs/task-types/any/',
+              },
+              {
+                title: 'Mean',
+                url: '/docs/jobs/task-types/mean/',
+              },
+              {
+                title: 'Median',
+                url: '/docs/jobs/task-types/median/',
+              },
+              {
+                title: 'Mode',
+                url: '/docs/jobs/task-types/mode/',
+              },
+              {
+                title: 'Sum',
+                url: '/docs/jobs/task-types/sum/',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        section: 'EXTERNAL ADAPTERS',
+        contents: [
+          {
+            title: 'Introduction',
+            url: '/docs/external-adapters/',
+          },
+          {
+            title: 'External Adapters in Solidity',
+            url: '/docs/contract-creators/',
+          },
+          {
+            title: 'Building External Adapters',
+            url: '/docs/developers/',
+          },
+          {
+            title: 'Bridges: Adding External Adapters to Nodes',
+            url: '/docs/node-operators/',
+          },
+        ],
+      },
+      {
+        section: 'EXTERNAL INITIATORS',
+        contents: [
+          {
+            title: 'Introduction',
+            url: '/docs/external-initiators-introduction/',
+          },
+          {
+            title: 'Building External Initiators',
+            url: '/docs/building-external-initiators/',
+          },
+          {
+            title: 'Adding External Initiators to Nodes',
+            url: '/docs/external-initiators-in-nodes/',
+          },
+        ],
+      },
+    ],
     legacy: [
       {
         section: 'v1 JSON JOBS [REMOVED]',
         contents: [
           {
+            title: 'Job Specifications',
             url: '/docs/job-specifications/',
-            title: 'Job Specifications'
           },
           {
+            title: 'Core Adapters',
             url: '/docs/core-adapters/',
-            title: 'Core Adapters'
           },
           {
+            title: 'Initiators',
             url: '/docs/initiators/',
-            title: 'Initiators'
           },
         ],
       },

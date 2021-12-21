@@ -25,7 +25,6 @@ ul li code {
 #page {
   max-width: 1440px;
   margin: 0px auto;
-  color: #666;
   padding-bottom: 40px;
 }
 
@@ -119,8 +118,12 @@ rdme-callout[theme='warn'] > *:first-child {
   border-bottom: 2px solid #375bd2;
   color: #375bd2;
 }
-#nav-container .tab a {
-  margin-right: 15px;
+#nav-container .tab {
+  text-align: center;
+  margin-top: auto;
+  margin-bottom: auto;
+  margin-right: 8px;
+  margin-left: 8px;
 }
 a:hover,
 #nav-container .tab a:hover {
@@ -161,7 +164,7 @@ navigation {
 }
 navigation a {
   display: block;
-  color: #666;
+  color: #6D7380;
   padding-left: 16px;
 }
 navigation a:hover {
@@ -191,7 +194,7 @@ navigation .menu {
   font-weight: bold;
   text-transform: uppercase;
   padding-left: 16px;
-  color: #384248;
+  color: #1A2B6B;
 }
 
 /* notification */
@@ -313,15 +316,17 @@ hr {
   text-align: center;
 }
 .cl-section {
-  padding: 0 0 48px;
-  justify-content: center;
-  align-content: space-between;
+  margin-bottom: 48px;
 }
+.cl-section-cards {
+  display: inline-block;
+}
+
 .cl-section-header {
   padding: 0 0 48px;
   justify-content: left;
 }
-.markdown-body .cl-section {
+.markdown-body {
   padding: 0 0 48px;
   text-align: center;
 }
@@ -341,11 +346,67 @@ hr {
 }
 .cl-section--one h3 {
   font-size: 18px;
+
+/* Callout buttons for Remix and other redirects*/
+/* Applies to the first button, then applies different style to n+2 buttons */
 }
 .remix-callout {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  display: inline-flex;
+  flex-wrap: wrap;
+}
+
+.remix-callout > a:nth-of-type(1) {
+  padding: 8px;
+  padding-left: 20px;
+  padding-right: 20px;
+  border: 2px solid #375bd2;
+  margin: 0px 6px 32px 6px;
+  border-radius: 6px;
+  box-sizing: border-box;
+  text-decoration: none !important;
+  color: #ffffff;
+  background-color: #375bd2;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.remix-callout > a:nth-of-type(1):hover {
+  color: #ffffff;
+  background-color: #1a2b6b;
+  border: 2px solid #0c162c;
+}
+
+.remix-callout > a:nth-of-type(1):active {
+  color: #ffffff;
+  background-color: #0c162c;
+  border: 2px solid #0c162c;
+}
+
+.remix-callout > a:nth-of-type(n+2) {
+  padding: 8px;
+  padding-left: 20px;
+  padding-right: 20px;
+  border: 2px solid #375bd2;
+  margin: 0px 6px 32px 6px;
+  border-radius: 6px;
+  box-sizing: border-box;
+  text-decoration: none !important;
+  color: #375bd2;
+  background-color: #ffffff;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.remix-callout > a:nth-of-type(n+2):hover {
+  color: #1a2b6b;
+  background-color: #f5f7fd;
+  border: 2px solid #1a2b6b;
+}
+
+.remix-callout > a:nth-of-type(n+2):active {
+  color: #0c162c;
+  background-color: #f5f7fd;
+  border: 2px solid #0c162c;
 }
 
 /** Search */
@@ -478,6 +539,18 @@ hr {
   font-display: swap;
 }
 
+/** Card text styling **/
+
+.cl-card-text > h2 {
+  text-align: center;
+  max-width: 800px;
+}
+
+.cl-card-text > p {
+  text-align: center;
+  max-width: 800px;
+}
+
 /** Imported from old site **/
 .cl-custom-page {
   text-align: center;
@@ -494,18 +567,41 @@ hr {
   margin: 0px 0px;
 }
 .cl-featuredcard > div {
+  display: flex;
+  flex-direction: column;
   padding: 24px;
   border-radius: 8px;
   margin: 8px;
   border: 1px solid #dee7fc;
-  display: flex;
-  flex-direction: column;
   align-items: center;
-  text-align: center;
+  text-align: left;
   flex: 1;
 }
-.cl-featuredcard > div > div {
-  height: 250px;
+
+.cl-featuredcard > div > h2 {
+  margin-top: 16px;
+}
+
+.card-icon-wrapper {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+    width: 56px;
+    height: 56px;
+    min-height: 56px;
+    min-width: 56px;
+    -webkit-box-pack: center;
+    -webkit-justify-content: center;
+    -ms-flex-pack: center;
+    justify-content: center;
+    -webkit-box-align: center;
+    -webkit-align-items: center;
+    -ms-flex-align: center;
+    align-items: center;
+    border: 1px solid #dfe7fb;
+    border-radius: 28px;
+    background-color: #f5f7fd;
 }
 
 .cl-button--ghost-sm {
@@ -520,7 +616,7 @@ hr {
   padding-left: 20px;
   padding-right: 20px;
   border: 2px solid #375bd2;
-  margin: 24px auto;
+  margin: 6px auto;
   border-radius: 6px;
   box-sizing: border-box;
   text-decoration: none !important;
@@ -573,9 +669,11 @@ hr {
 }
 
 .cl-productcard {
+  display: inline-flex;
+  align-content: center;
+  width: 150px;
+  height: 190px;
   padding: 16px;
-  padding-top: 32px;
-  width: 100%;
   border-radius: 8px;
   border: 0px solid #dee7fc;
   background-color: #ffffff;
@@ -585,6 +683,12 @@ hr {
 .cl-productcard:hover {
   background-color: #f5f7fe;
   cursor: pointer;
+}
+
+.cl-productcard > div {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .cl-productcard:hover h2 {
@@ -673,10 +777,6 @@ img {
   display: inline-block;
 }
 
-.nav-content img {
-  margin: 8px;
-}
-
 svg:not(:root) {
   overflow: hidden;
 }
@@ -731,21 +831,29 @@ body {
   display: inline-block;
 }
 
+/* The logo next to the page title */
+img.page-logo {
+  margin: 30px 10px 0px 0px;
+  max-height: 50px;
+  max-width: 50px;
+}
+
 h1,
 h2,
 h3,
 h4,
 h5,
 h6 {
-  color: #384248;
-  font-weight: 700;
+  color: #1A2B6B;
+  font-weight: 400;
   margin-bottom: 10px;
   margin-top: 40px;
-  line-height: 44px;
+  line-height: 24px;
 }
 
 h1.page-title {
-  font-size: 34px;
+  font-size: 40px;
+  line-height: 56px;
 }
 
 h1 {
@@ -754,7 +862,7 @@ h1 {
 }
 
 h2 {
-  font-size: 26px;
+  font-size: 32px;
   line-height: 32px;
   font-weight: 400;
 }
@@ -972,7 +1080,6 @@ input[type='reset'] {
     padding: 8px;
   }
   #nav-container .tab {
-    padding: 8px 8px 4px 0;
     display: inline;
   }
   #nav-container .tab a {
@@ -1011,15 +1118,23 @@ input[type='reset'] {
     margin-top: 8px;
   }
   .cl-featuredcard {
+    display: inline;
     flex-direction: column;
-  }
-  .cl-featuredcard > div > div {
-    height: auto;
-  }
-  .cl-featuredcard {
+    justify-content: center;
     height: auto;
     margin-bottom: 20px;
   }
+
+  .cl-featuredcard > div {
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 400px;
+  }
+
+  .cl-featuredcard > div > div {
+    height: auto;
+  }
+
   .cl-section--one .cl-featuredcard {
     height: auto;
   }

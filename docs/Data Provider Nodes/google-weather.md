@@ -1,6 +1,6 @@
 ---
 layout: nodes.liquid
-section: smartContract
+section: ethereum
 date: Last Modified
 title: "Google Weather Oracle"
 permalink: "docs/google-weather/"
@@ -48,7 +48,7 @@ You will need to use the following LINK token address, oracle address, and JobSp
 
 # Steps For Using This Oracle
 
-- Write and deploy your [Chainlinked](../intermediates-tutorial/)  contract using the network details above.
+- Write and deploy your contract using the network details above.
 - Fund it with [LINK](../link-token-contracts/)
 - Call your request method
 
@@ -62,8 +62,8 @@ Import `ChainlinkClient.sol` into your contract so you can inherit the `Chainlin
 ```
 
 <div class="remix-callout">
-  <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/DataProviders/GoogleWeather.sol" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
-    <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
+  <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/DataProviders/GoogleWeather.sol" target="_blank" >Open in Remix</a>
+  <a href="/docs/conceptual-overview/#what-is-remix" >What is Remix?</a>
 </div>
 
 

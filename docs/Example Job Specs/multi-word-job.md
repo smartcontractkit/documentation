@@ -1,11 +1,12 @@
 ---
 layout: nodes.liquid
+section: nodeOperator
 date: Last Modified
 title: 'MultiWord Example Job Spec'
 permalink: "docs/example-job-spec-multi-word/"
 ---
 
-This is an example v1 job spec for returning multiple responses in 1 Chainlink API Call. 
+This is an example v1 job spec for returning multiple responses in 1 Chainlink API Call.
 
 ```json
 {

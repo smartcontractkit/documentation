@@ -1,6 +1,6 @@
 ---
 layout: nodes.liquid
-section: smartContract
+section: ethereum
 date: Last Modified
 title: "ChainlinkClient API Reference"
 permalink: "docs/chainlink-framework/"

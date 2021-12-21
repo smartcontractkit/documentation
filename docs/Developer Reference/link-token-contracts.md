@@ -1,6 +1,6 @@
 ---
 layout: nodes.liquid
-section: smartContract
+section: ethereum
 date: Last Modified
 title: "LINK Token Contracts"
 permalink: "docs/link-token-contracts/"
@@ -84,7 +84,7 @@ The LINK token is an ERC677 token that inherits functionality from the ERC20 tok
 
 --------------------
 
-# Other EVM Compatible Chains
+# Other EVM Chains
 
 LINK is native to Ethereum, so to use LINK on other chains, it must be bridged. <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blank">This guide</a> explains how to bridge and swap tokens to other chains.
 

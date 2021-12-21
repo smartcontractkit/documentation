@@ -1,5 +1,6 @@
 ---
 layout: nodes.liquid
+section: nodeOperator
 date: Last Modified
 title: "Building External Adapters"
 permalink: "docs/developers/"

@@ -1,6 +1,6 @@
 ---
 layout: nodes.liquid
-section: nonEvm
+section: solana
 date: Last Modified
 title: "Using Data Feeds (Solana)"
 permalink: "docs/solana/using-data-feeds-solana/"
@@ -10,11 +10,6 @@ metadata:
 ---
 
 Chainlink Data Feeds are the quickest way to connect your smart contracts to the real-world market prices of assets. For example, one use for data feeds is to enable smart contracts to retrieve the latest pricing data of an asset in a single call.
-
-Price data feeds are available on the following networks:
-- **Solana**
-- [Terra](/docs/terra/using-data-feeds-terra/)
-- [EVM-compatible networks](/docs/get-the-latest-price/)
 
 This guide applies specifically to using data feeds on the [Solana network](https://solana.com/). To get the full list of Chainlink Data Feeds running on the Solana Devnet, see the [Solana Feeds](/docs/solana/data-feeds-solana/) page. You can view the program ID that owns these feeds in the [Solana Devnet Explorer](https://solscan.io/account/2yqG9bzKHD59MxD9q7ExLvnDhNycB3wkvKXFQSpBoiaE?cluster=devnet).
 

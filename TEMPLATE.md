@@ -1,6 +1,6 @@
 ---
 layout: nodes.liquid
-section: smartContract
+section: ethereum
 date: Last Modified
 title: "[insert title here]"
 permalink: "[insert path here]"
@@ -10,13 +10,13 @@ metadata:
   image:
     0: "insert image here"
 ---
-*This doc is meant to be used as a template for creating a tutorial doc. Contributors should emulate the structure of this document when creating new pages. The content of this doc comes from beginners-tutorial.md.*
+*This doc is meant to be used as a template for creating a tutorial doc. Contributors should emulate the structure of this document when creating new pages. The content of this doc comes from the [Getting Started Guides](https://github.com/smartcontractkit/documentation/tree/main/docs/Introduction/getting-started/).*
 
 *Prerequisites should have its own block at the beginning of the tutorial. Tell the user what tools are required, what knowledge they should already have, and where to go if they need previous reading. Provide links to the other docs pages.*
 > 👍 Prerequisites
 >
 > This tutorial requires .... If you're unfamiliar with these concepts, follow ...
-> or 
+> or
 > New to []? We'll walk you through...
 
 *If a tutorial has a corresponding YouTube tutorial, link it at the beginning of the page.*
@@ -57,7 +57,7 @@ A valuable feature of smart contracts is that they can store and manage on-chain
 
 *Notice how users are given external links to read more about concepts such as ETH or ERC20 tokens. They do not have to undertake a separate search.*
 
-Smart contracts can connect to real-world market prices of assets to produce powerful applications. Chainlink's **[Data Feeds](../using-chainlink-reference-contracts/)** feature allows users to quickly and securely connect smart contracts to such assets in a single call. 
+Smart contracts can connect to real-world market prices of assets to produce powerful applications. Chainlink's **[Data Feeds](../using-chainlink-reference-contracts/)** feature allows users to quickly and securely connect smart contracts to such assets in a single call.
 
 # 2. What language is a smart contract written in?
 
@@ -96,7 +96,7 @@ You can see the latest versions of the Solidity compiler [here](https://github.c
 ```solidity
 pragma solidity >=0.7.0 <0.9.0;
 ```
-This means that the code is written for Solidity version 0.7.0, or a newer version of the language up to, but not including version 0.9.0. In short, `pragma` is used to instruct the compiler as how to treat the code.
+This means that the code is written for Solidity version 0.7.0, or a newer version of the language up to, but not including version 0.9.0. The `pragma` selects the compiler, which defines how the code is treated.
 
 ...
 

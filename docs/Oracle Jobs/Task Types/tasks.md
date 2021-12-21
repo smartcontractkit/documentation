@@ -1,5 +1,6 @@
 ---
 layout: nodes.liquid
+section: nodeOperator
 date: Last Modified
 title: "Tasks"
 permalink: "docs/tasks/"
