@@ -22,7 +22,7 @@ Some smart contracts require funding at their addresses so they can operate with
 1. Click the **Send** button to initiate a transaction.
 1. Paste your contract address in the address field.
 1. In the **Asset** drop down menu, select the type of asset that you need to send to your contract. For example, you can send LINK. If LINK is not listed, follow the guide to [Acquire testnet LINK](/docs/acquire-link/).
-1. In the **Ammount** field, enter the amount of LINK that you want to send.
+1. In the **Amount** field, enter the amount of LINK that you want to send.
 1. Click **Next** to review the transaction details and the Gas cost.
 1. If the transaction details are correct, click **Confirm** and wait for the transaction to process.
 
