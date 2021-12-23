@@ -123,11 +123,11 @@ for (let page of targetData) {
         const proxy = contents.proxies[proxyKey];
         if (liveContracts[proxy.aggregator] && !proxy.name.includes("Healthcheck")) {
           proxyList.push({
-            pair: proxy.name,
+            pair: proxy.name.includes("OHM") ? proxy.name.replace("OHM", "OHM(v1)") : proxy.name,
             deviationThreshold: liveContracts[proxy.aggregator].deviationThreshold,
             heartbeat: liveContracts[proxy.aggregator].heartbeat,
             decimals: liveContracts[proxy.aggregator].decimals,
-            proxy: proxyKey.startsWith("sol-") ? proxyKey.replace("sol-", "") : proxyKey,
+            proxy: proxyKey,
           });
         }
       }
@@ -139,7 +139,7 @@ for (let page of targetData) {
           deviationThreshold: liveContracts[contractKey].deviationThreshold,
           heartbeat: liveContracts[contractKey].heartbeat,
           decimals: liveContracts[contractKey].decimals,
-          proxy: contractKey.startsWith("sol-") ? contractKey.replace("sol-", "") : contractKey,
+          proxy: contractKey,
         });
       }
     }
