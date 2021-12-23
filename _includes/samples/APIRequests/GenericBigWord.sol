@@ -46,7 +46,7 @@ contract GenericLargeResponse is ChainlinkClient {
     Chainlink.Request memory req = buildChainlinkRequest(specId, address(this), this.fulfillBytes.selector);
     req.add("get","https://ipfs.io/ipfs/QmZgsvrA1o1C8BGCrx6mHTqR1Ui1XqbCrtbMVrRLHtuPVD?filename=big-api-response.json");
     req.add("path", "image");
-    requestOracleData(req, payment);
+    sendChainlinkRequest(req, payment);
   }
 
   event RequestFulfilled(
