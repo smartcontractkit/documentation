@@ -42,7 +42,7 @@ constructor(address _vrfCoordinator, address _link) public
 
 ___
 
-> Note: `_seed` has recently been depreciated.
+> Note: `_seed` has recently been deprecated.
 # Functions
 
 ## requestRandomness
