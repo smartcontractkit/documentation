@@ -1,5 +1,6 @@
 ---
 layout: nodes.liquid
+section: nodeOperator
 date: Last Modified
 title: "Median Task"
 permalink: "docs/jobs/task-types/median/"

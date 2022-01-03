@@ -1,6 +1,6 @@
 ---
 layout: feed.liquid
-section: nonEvm
+section: solana
 title: "Solana Feeds"
 stub: data-feeds-solana
 permalink: "docs/solana/data-feeds-solana/"

@@ -1,5 +1,6 @@
 ---
 layout: nodes.liquid
+section: nodeOperator
 date: Last Modified
 title: "'Any' Task"
 permalink: "docs/jobs/task-types/any/"

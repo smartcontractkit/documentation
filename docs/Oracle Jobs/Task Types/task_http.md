@@ -1,5 +1,6 @@
 ---
 layout: nodes.liquid
+section: nodeOperator
 date: Last Modified
 title: "HTTP Task"
 permalink: "docs/jobs/task-types/http/"

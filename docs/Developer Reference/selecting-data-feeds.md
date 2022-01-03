@@ -1,6 +1,6 @@
 ---
 layout: nodes.liquid
-section: smartContract
+section: ethereum
 date: Last Modified
 title: "Selecting Quality Data Feeds"
 permalink: "docs/selecting-data-feeds/"

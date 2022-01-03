@@ -1,5 +1,6 @@
 ---
 layout: nodes.liquid
+section: nodeOperator
 date: Last Modified
 title: "Proof of Reserves (BTC)"
 permalink: "docs/proof-of-reserves-btc/"

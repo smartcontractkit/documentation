@@ -1,5 +1,6 @@
 ---
 layout: nodes.liquid
+section: nodeOperator
 date: Last Modified
 title: "CBOR Parse Task"
 permalink: "docs/jobs/task-types/cborparse/"
