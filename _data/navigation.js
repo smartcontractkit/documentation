@@ -392,7 +392,7 @@ module.exports = {
             title: 'Connecting to a Remote Database',
           },
           {
-            title: 'Configuration Variables',
+            title: 'Configuring Chainlink',
             url: '/docs/configuration-variables/',
           },
           {
