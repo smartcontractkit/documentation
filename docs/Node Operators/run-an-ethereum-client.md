@@ -174,6 +174,14 @@ ETH_URL=wss://eth-kovan.alchemyapi.io/v2/YOUR_PROJECT_ID
 ETH_URL=wss://eth-mainnet.alchemyapi.io/v2/YOUR_PROJECT_ID
 ```
 
+## Configuring your eth node
+
+WARNING: By default, go-ethereum will reject transactions that exceed it's built-in RPC gas/txfee caps. Chainlink will fatally error transactions if this happens which means if you ever exceed the caps your node will miss transactions.
+
+You should at a bare minimum disable the default RPC gas and txfee caps on your eth node. This can be done in the TOML file as seen below, or by running go-ethereum with the command line arguments: `--rpc.gascap=0 --rpc.txfeecap=0`.
+
+For further information on configuring eth nodes, see the [configuration page](/docs/configuration-variables/#configuring-your-eth-node).
+
 ## Additional Tools
 
 - [Chainlink ETH Failover Proxy](https://github.com/Fiews/ChainlinkEthFailover)

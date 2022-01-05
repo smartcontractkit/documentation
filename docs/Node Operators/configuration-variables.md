@@ -2,9 +2,9 @@
 layout: nodes.liquid
 section: nodeOperator
 date: Last Modified
-title: "Configuration Variables"
+title: "Configuring Chainlink"
 permalink: "docs/configuration-variables/"
-whatsnext: {"Enabling HTTPS Connections":"/docs/enabling-https-connections/"}
+whatsnext: {"Configuration UI":"/docs/configuration-ui/"}
 ---
 
 Recent versions of Chainlink ship with sensible defaults for most configuration variables.
@@ -22,8 +22,6 @@ The env variables listed here are explicitly supported and current as of Chainli
 As of Chainlink 1.1.0 and up, the way we manage configuration is changing. Previously all configuration was done exclusively by environment variables. While this method of configuration has served us well up until now, it has its limitations - notably, it doesn't mesh well with chain-specific configuration profiles.
 
 For this reason, we are moving towards a model where more configuration is set via API/CLI/GUI and saved in the database. We encourage you to become familiar with this, since it's likely we'll continue to move away from ENV-vased configuration in future.
-
-More details found here TODO: create a guide for this.
 
 As of 1.1.0 we still support ENV vars for all configuration, even the chain-specific ones. If the ENV var is set, it will override any chain-specific or database-based configuration setting and will log a warning that it is doing so.
 
@@ -113,6 +111,9 @@ ENV > chain-specific > job-specific
   - [MIN_OUTGOING_CONFIRMATIONS](#min_outgoing_confirmations)
   - [MINIMUM_CONTRACT_PAYMENT_LINK_JUELS](#minimum_contract_payment_link_juels)
 - [EVM Gas Controls](#evm-gas-controls)
+  - [Configuring your ETH node](#configuring-your-eth-node)
+    - [go-ethereum](#go-ethereum)
+    - [parity/openethereum](#parityopenethereum)
   - [EVM_EIP1559_DYNAMIC_FEES](#evm_eip1559_dynamic_fees)
     - [Technical details](#technical-details-1)
   - [ETH_GAS_BUMP_PERCENT](#eth_gas_bump_percent)
@@ -274,8 +275,6 @@ The max number of database connections that Chainlink will have open at any one 
 Be cautious because postgres has connection limits, if you are running several instances of Chainlink (or other application) on a single database server, you may run out of postgres connection slots if you raise this value too high.
 
 # Database Global Lock
-
-TODO: Check differences between develop and 1.1.0
 
 Chainlink uses a database lock to ensure that only one instance of Chainlink can be run on the database at a time. Running multiple instances of Chainlink on a single database at the same time would likely to lead to strange errors and possibly even data integrity failures and should not be allowed.
 
@@ -793,6 +792,51 @@ These settings allow you to tune your node's gas limits and pricing. In most cas
 
 As of Chainlink 1.1.0, it is recommended to use the API/CLI/UI to configure gas controls since you may wish to use different settings for different chains. Setting the ENV var will typically override the setting for all chains.
 
+## Configuring your ETH node
+
+Your eth node may need some configuration tweaks to make it fully compatible with Chainlink, depending on your configuration.
+
+### go-ethereum
+
+WARNING: By default, go-ethereum will reject transactions that exceed it's built-in RPC gas/txfee caps. Chainlink will fatally error transactions if this happens which means if you ever exceed the caps your node will miss transactions.
+
+You should at a bare minimum disable the default RPC gas and txfee caps on your eth node. This can be done in the TOML file as seen below, or by running go-ethereum with the command line arguments: `--rpc.gascap=0 --rpc.txfeecap=0`.
+
+It is also recommended to configure go-ethereum properly before increasing `ETH_MAX_IN_FLIGHT_TRANSACTIONS` to ensure all in-flight transactions are maintained in the mempool.
+
+Relevant settings for geth (and forks e.g. BSC)
+
+```toml
+[Eth]
+RPCGasCap = 0 # it is recommended to disable both gas and txfee cap
+RPCTxFeeCap = 0
+[Eth.TxPool]
+Locals = ["0xYourNodeAddress1", "0xYourNodeAddress2"]  # Add your node addresses here
+NoLocals = false # Disabled by default but might as well make sure
+Journal = "transactions.rlp" # Make sure you set a journal file
+Rejournal = 3600000000000 # Default 1h, it might make sense to reduce this to e.g. 5m
+PriceBump = 10 # Must be set less than or equal to chainlink's ETH_GAS_BUMP_PERCENT
+AccountSlots = 16 # Highly recommended to increase this, must be greater than or equal to chainlink's ETH_MAX_IN_FLIGHT_TRANSACTIONS setting
+GlobalSlots = 4096 # Increase this as necessary
+AccountQueue = 64 # Increase this as necessary
+GlobalQueue = 1024 # Increase this as necessary
+Lifetime = 10800000000000 # Default 3h, this is probably ok, you might even consider reducing it
+[Eth.
+```
+
+### parity/openethereum
+
+Relevant settings for parity/openethereum (and forks e.g. xDai)
+
+```toml
+tx_queue_locals = ["0xYourNodeAddress1", "0xYourNodeAddress2"] # Add your node addresses here
+tx_queue_size = 8192 # Increase this as necessary
+tx_queue_per_sender = 16 # Highly recommended to increase this, must be greater than or equal to chainlink's ETH_MAX_IN_FLIGHT_TRANSACTIONS setting
+tx_queue_mem_limit = 4 # In MB. Highly recommended to increase this or set to 0 to disable the mem limit entirely
+tx_queue_no_early_reject = true # Recommended to set this
+tx_queue_no_unfamiliar_locals = false # This is disabled by default but might as well make sure
+```
+
 ## EVM_EIP1559_DYNAMIC_FEES
 
 - Default: _automatic based on chain ID_
@@ -896,7 +940,7 @@ uses a default gas limit of 1 and is also applied to EthGasLimitDefault.
 
 - Default: _automatically set based on Chain ID, typically 21000_
 
-The gas limit used for an ordinary eth->eth transfer.
+The gas limit used for an ordinary eth transfer.
 
 ## ETH_GAS_PRICE_DEFAULT
 
@@ -936,9 +980,7 @@ Chainlink will never pay more than this for a transaction.
 
 Controls how many transactions are allowed to be "in-flight" i.e. broadcast but unconfirmed at any one time. You can consider this a form of transaction throttling.
 
-The default is set conservatively at 16 because this is a pessimistic minimum that both geth and parity will hold without evicting local transactions. If your node is falling behind and you need higher throughput, you can increase this setting, but you must make sure that your eth node is configured properly otherwise you can get nonce gapped and your node will get stuck.
-
-See our [guide for configuring your eth node](TODO).
+The default is set conservatively at 16 because this is a pessimistic minimum that both geth and parity will hold without evicting local transactions. If your node is falling behind and you need higher throughput, you can increase this setting, but you MUST make sure that your eth node is configured properly otherwise you can get nonce gapped and your node will get stuck.
 
 0 value disables the limit. Use with caution.
 
