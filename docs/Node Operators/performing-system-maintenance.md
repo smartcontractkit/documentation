@@ -7,7 +7,7 @@ permalink: "docs/performing-system-maintenance/"
 whatsnext: {"Connecting to a Remote Database":"/docs/connecting-to-a-remote-database/"}
 ---
 
-You may occasionally need to restart the system which the Chainlink node runs on. In order to be able to accomplish this without any downtime in regards to completing requests, you can perform the upgrade as a series of steps to pass access to the database to a new instance while the first instance is down.
+You might occasionally need to restart the system that the Chainlink node runs on. To restart without any downtime for completing requests, perform the upgrade as a series of steps that passes database access to a new instance while the first instance is down.
 
 ## Maintenance and Image Update Example
 
@@ -38,7 +38,7 @@ CONTAINER ID        IMAGE                            COMMAND                  CR
 
 Look under the PORTS label to see the ports in use by the running container, in this case, the local port 6688 has been mapped to the application's port 6688, as identified by the `->` arrow. Since we can't use the same local port number twice, we'll need to run the second instance with a different one.
 
-Now start the second instance of the node. The local port option has been modified so that both containers may run simultaneously.
+Now start the second instance of the node. The local port option has been modified so that both containers run simultaneously.
 
 ```shell Rinkeby
 cd ~/.chainlink-rinkeby && docker run -p 6687:6688 -v ~/.chainlink-rinkeby:/chainlink -it --env-file=.env smartcontract/chainlink local n
@@ -50,9 +50,9 @@ cd ~/.chainlink-kovan && docker run -p 6687:6688 -v ~/.chainlink-kovan:/chainlin
 cd ~/.chainlink && docker run -p 6687:6688 -v ~/.chainlink:/chainlink -it --env-file=.env smartcontract/chainlink local n
 ```
 
-The second node instance should log informing you that it is waiting for the database lock.
+The log messages on the second node instance inform you that it is waiting for the database lock.
 
-Now you may shut down the first node instance. We'll use the name given earlier and kill the container. Note that your container name will likely be different.
+Now you can shut down the first node instance. We'll use the name given earlier and kill the container. Note that your container name will likely be different.
 
 ```shell
 docker kill jovial_shirley
@@ -60,7 +60,7 @@ docker kill jovial_shirley
 
 The output returns the name "jovial_shirley" (or what your container's name was) and if you look at the log of your second container, you'll notice that it has taken over.
 
-At this point, you're now running the latest image on your secondary container. If you have any system maintenance to perform on your primary machine, you may do so now.
+At this point, you're now running the latest image on your secondary container. If you have any system maintenance to perform on your primary machine, you can do so now.
 
 Next, you will simply need to run the container again with the local port 6688 in order to go back to normal operations.
 
@@ -74,7 +74,7 @@ cd ~/.chainlink-kovan && docker run -p 6688:6688 -v ~/.chainlink-kovan:/chainlin
 cd ~/.chainlink && docker run -p 6688:6688 -v ~/.chainlink:/chainlink -it --env-file=.env smartcontract/chainlink local n
 ```
 
-You should see the same logging messages on the first node indicating that it is waiting for the database lock. You may now shut down the second instance of the node and the original instance automatically obtains a lock and resumes normal operation.
+When the log messages on the first node indicate that it is waiting for the database lock, shut down the second instance of the node. The original instance automatically obtains a lock and resumes normal operation.
 
 ## Failover Node Example
 
@@ -82,9 +82,9 @@ You should see the same logging messages on the first node indicating that it is
 >
 > This example uses Docker to run the Chainlink node, see the [Running a Chainlink Node](../running-a-chainlink-node/) page for instructions on how to set it up.
 
-You may want to run multiple instances of the Chainlink node on the same machine, so that if one instance goes down, the secondary instance can automatically pick up requests. Building off the concepts in the previous example, we'll use Docker to have primary and a secondary containers referencing the same database URL.
+You might want to run multiple instances of the Chainlink node on the same machine. If one instance goes down, the second instance can automatically pick up requests. Building off the concepts in the previous example, use Docker to have primary and a secondary containers referencing the same database URL.
 
-It is recommended to use `DATABASE_LOCKING_MODE=lease` unless you absolutely need compatibility with an older version that is using advisory locks (see [the docs](docs/configuration-variables/#database_locking_mode)).
+Always use `DATABASE_LOCKING_MODE=lease` unless you absolutely require compatibility with an older node version that is using advisory locks. See [the docs](/docs/configuration-variables/#database_locking_mode) for more information about this configuration variable.
 
 Now, run the Chainlink node with a name option specified:
 
@@ -145,7 +145,7 @@ This will start the container, but the secondary node still has a lock on the da
 docker restart secondary -t 0
 ```
 
-You'll notice the primary container takes control of the database and resumes operation. You can attach to the secondary container by running:
+The primary container takes control of the database and resumes operation. You can attach to the secondary container using `docker attach`:
 
 ```shell
 docker attach secondary
@@ -153,4 +153,4 @@ docker attach secondary
 
 However, it will not produce any output while waiting for a lock on the database.
 
-Congratulations! You now have a redundant setup of Chainlink nodes in case your primary container goes down. Get comfortable with the process by passing control of the database back and forth between the `chainlink` and `secondary` containers.
+Congratulations! You now have a redundant setup of Chainlink nodes in case the primary container goes down. Get comfortable with the process by passing control of the database back and forth between the `chainlink` and `secondary` containers.

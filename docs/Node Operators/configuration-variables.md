@@ -2,34 +2,34 @@
 layout: nodes.liquid
 section: nodeOperator
 date: Last Modified
-title: "Configuring Chainlink"
+title: "Configuring Chainlink Nodes"
 permalink: "docs/configuration-variables/"
 whatsnext: {"Configuration UI":"/docs/configuration-ui/"}
 ---
 
-Recent versions of Chainlink ship with sensible defaults for most configuration variables.
+Recent versions of Chainlink ship with sensible defaults for most configuration variables. You do not need to change much to get a standard deployment working.
 
-It is mostly "batteries included" and you shouldn't need to change much to get a standard working deployment.
+Not all environment variables are documented here. Any environment variable that is undocumented is subject to change in future releases. In almost all cases, you should leave any environment variable not listed here to its default value unless you really understand what you are doing.
 
-Not all env vars are documented here. Any env var that is undocumented is subject to change in future releases. In almost all cases, you should leave any env var not listed here to its default value unless you really understand what you are doing.
+To reiterate: _If you have an environment variable set that is not listed here, and you don't know exactly why you have it set, you should remove it!_
 
-To reiterate: _if you have an env var set that is not listed here, and you don't know exactly why you have it set, you should remove it!_
+The environment variables listed here are explicitly supported and current as of Chainlink 1.1.0.
 
-The env variables listed here are explicitly supported and current as of Chainlink 1.1.0.
+## Changes to node configuration in v1.1.0 nodes
 
-** IMPORTANT NOTE ON CONFIGURATION **
+As of Chainlink v1.1.0 and up, the way nodes manage configuration is changing. Previously, environment variables exclusively handled all configuration. Although this method of configuration worked well in the past, it has its limitations. Notably, it doesn't mesh well with chain-specific configuration profiles.
 
-As of Chainlink 1.1.0 and up, the way we manage configuration is changing. Previously all configuration was done exclusively by environment variables. While this method of configuration has served us well up until now, it has its limitations - notably, it doesn't mesh well with chain-specific configuration profiles.
+For this reason, Chainlink nodes are moving towards a model where you set variables using the API, CLI, or GUI, and the configuration is saved in the database. We encourage you to become familiar with this model because it is likely that nodes will continue to move away from environment variable configuration in the future.
 
-For this reason, we are moving towards a model where more configuration is set via API/CLI/GUI and saved in the database. We encourage you to become familiar with this, since it's likely we'll continue to move away from ENV-vased configuration in future.
+As of v1.1.0 we still support environment variables for all configuration, even the chain-specific ones. If the environment variable is set, it will override any chain-specific or database-based configuration setting and will log a warning that it is doing so.
 
-As of 1.1.0 we still support ENV vars for all configuration, even the chain-specific ones. If the ENV var is set, it will override any chain-specific or database-based configuration setting and will log a warning that it is doing so.
+The configuration hierarchy generally applies as such:
 
-The configuration heirarchy generally applies as such:
+environment variables > chain-specific > job-specific
 
-ENV > chain-specific > job-specific
+## Table of contents
 
-- [Essential env vars](#essential-env-vars)
+- [Essential environment variables](#essential-environment-variables)
   - [DATABASE_URL](#database_url)
 - [General Node Configuration](#general-node-configuration)
   - [CHAIN_TYPE](#chain_type)
@@ -84,7 +84,7 @@ ENV > chain-specific > job-specific
   - [CHAINLINK_TLS_REDIRECT](#chainlink_tls_redirect)
   - [TLS_CERT_PATH](#tls_cert_path)
   - [TLS_KEY_PATH](#tls_key_path)
-- [EVM/Ethereum Legacy ENV Vars](#evmethereum-legacy-env-vars)
+- [EVM/Ethereum Legacy Environment Variables](#evmethereum-legacy-environment-variables)
   - [USE_LEGACY_ETH_ENV_VARS](#use_legacy_eth_env_vars)
   - [ETH_URL](#eth_url)
   - [ETH_HTTP_URL](#eth_http_url)
@@ -178,11 +178,11 @@ ENV > chain-specific > job-specific
   - [ADMIN_CREDENTIALS_FILE](#admin_credentials_file)
   - [CLIENT_NODE_URL](#client_node_url)
   - [INSECURE_SKIP_VERIFY](#insecure_skip_verify)
-- [Notes on setting ENV vars](#notes-on-setting-env-vars)
+- [Notes on setting environment variables](#notes-on-setting-environment-variables)
 
-## Essential env vars
+## Essential environment variables
 
-These are the only ENV vars that are _required_ in order for Chainlink to run.
+These are the only environment variables that are _required_ for a Chainlink node to run.
 
 ### DATABASE_URL
 
@@ -200,7 +200,7 @@ The PostgreSQL URI to connect to your database. Chainlink requires Postgres >= 1
 
 CHAIN_TYPE overrides all chains and forces them to act as a particular chain type. Up-to-date list of chain types is given in [`chaintype.go`](https://github.com/smartcontractkit/chainlink/blob/a710fcb3c1f3501b8df486b45c14423aefdb0876/core/chains/chaintype.go).
 
-This can enable certain chain-specific hacks and optimisations. It is recommended not to use this env var and set the chain-type on a per-chain basis instead.
+This can enable certain chain-specific hacks and optimisations. It is recommended not to use this environment variable and set the chain-type on a per-chain basis instead.
 
 ### CHAINLINK_DEV
 
@@ -288,10 +288,10 @@ Previous versions of Chainlink used advisory locking only, so the default is `du
 
 There are a few quirks to using advisory locks, so if you are sure you don't need backwards compatibility with older versions, we recommend setting this value to `lease`.
 
-- `dual` (the default - uses both locking types for backwards and forwards compatibility)
-- `advisorylock` (advisory lock only)
-- `lease` (lease lock only)
-- _none_ (no locking at all - useful for advanced deployment environments when you can be sure that only one instance of chainlink will ever be running)
+- `dual` - The default: Uses both locking types for backwards and forwards compatibility.
+- `advisorylock` - Advisory lock only
+- `lease` - Lease lock only
+- _none_ - No locking at all: Useful for advanced deployment environments when you are sure that only one instance of a Chainlink node will ever be running.
 
 #### Technical details
 
@@ -311,7 +311,7 @@ For this reason, we have introduced a new locking mode, `lease`, which is likely
 - CL node B will spinlock, checking periodically to see if the update got too old. If it goes more than a set period without updating, it assumes that node A is dead and takes over. Now CL node B is the owner of the row and it updates this every second.
 - If CL node A comes back somehow, it will go to take out a lease and realise that the database has been leased to another process, so it will exit the entire application immediately.
 
-The default is set to `dual` which used both advisory locking AND lease locking, for backwards compatibility. However, it is recommended that node operators who know what they are doing, or explicitly want to stop using the advisory locking mode set `DATABASE_LOCKING_MODE=lease` in their env.
+The default is set to `dual` which used both advisory locking AND lease locking, for backwards compatibility. However, it is recommended that node operators who know what they are doing, or explicitly want to stop using the advisory locking mode set `DATABASE_LOCKING_MODE=lease` in their ENV.
 
 ### ADVISORY_LOCK_CHECK_INTERVAL
 ADVANCED - DEV ONLY, not released
@@ -331,7 +331,7 @@ It is not recommended to change this setting unless you know what you are doing.
 
 - Default: `"1027321974924625846"`
 
-ADVISORY_LOCK_ID is the application advisory lock ID. Should match all other chainlink applications that might access this database. It is unlikely you will ever need to change this from the default.
+ADVISORY_LOCK_ID is the application advisory lock ID. Should match all other Chainlink applications that might access this database. It is unlikely you will ever need to change this from the default.
 
 ### LEASE_LOCK_DURATION
 ADVANCED
@@ -375,7 +375,7 @@ _none_ disables.
 `lite` dumps small tables including configuration and keys essential for node functioning (excludes historical data e.g. job runs, transaction history etc).
 `full` dumps the entire database.
 
-It will write to a file like `$ROOT/backup/cl_backup_<VERSION>.dump`. There is one backup dump file per version of chainlink, so if you upgrade it will keep the backup taken right before the upgrade migration so you can restore to an older version if necessary.
+It will write to a file like `$ROOT/backup/cl_backup_<VERSION>.dump`. There is one backup dump file per version of the Chainlink node. If you upgrade it will keep the backup taken right before the upgrade migration so you can restore to an older version if necessary.
 
 ### DATABASE_BACKUP_URL
 
@@ -475,8 +475,8 @@ ADVANCED
 It is not recommended to change this unless you know what you are doing.
 
 - Default: `"10s"`
-  
-HTTP_SERVER_WRITE_TIMEOUT controls how long chainlink's API server may hold a
+
+HTTP_SERVER_WRITE_TIMEOUT controls how long Chainlink's API server can hold a
 socket open for writing a response to an HTTP request. This sometimes needs
 to be increased for pprof.
 
@@ -530,7 +530,7 @@ This feature must be enabled by setting the following environment variables: `MF
 
 ## Web Server TLS
 
-The TLS settings below apply only if you want to enable TLS security on your chainlink node.
+The TLS settings below apply only if you want to enable TLS security on your Chainlink node.
 
 ### CHAINLINK_TLS_HOST
 
@@ -562,15 +562,15 @@ Location of the TLS certificate file. Example: `/home/$USER/.chainlink/tls/serve
 
 Location of the TLS private key file. Example: `/home/$USER/.chainlink/tls/server.key`
 
-## EVM/Ethereum Legacy ENV Vars
+## EVM/Ethereum Legacy Environment Variables
 
 Previous versions of Chainlink only supported one chain. From 1.1.0 and up, Chainlink supports multiple evm and non-evm chains, so the way that chains and nodes are configured has changed.
 
-The preferred way of configuring chainlink nodes as of 1.1.0 and up is to use the API/CLI/UI to set chain-specific configuration and create nodes.
+The preferred way of configuring Chainlink nodes as of 1.1.0 and up is to use the API, CLI, or UI to set chain-specific configuration and create nodes.
 
 The old way of specifying chains using environment variables is still supported but discouraged. It works as follows:
 
-If you specify `USE_LEGACY_ETH_ENV_VARS` (default: true) then the values of `ETH_CHAIN_ID`, `ETH_URL`, `ETH_HTTP_URL` and `ETH_SECONDARY_URLS` will be used to create/update chains and nodes representing these values in the database. If an existing chain/node is found it will be overwritten. This environment variable is used mainly to ease the process of upgrading, and on subsequent runs (once your old settings have been written to the database) it is recommended to run with `USE_LEGACY_ETH_ENV_VARS=false` and use the API commands exclusively to administer chains and nodes.
+If you specify `USE_LEGACY_ETH_ENV_VARS` (default: true) then the values of `ETH_CHAIN_ID`, `ETH_URL`, `ETH_HTTP_URL` and `ETH_SECONDARY_URLS` will be used to create/update chains and nodes representing these values in the database. If an existing chain or node is found, it will be overwritten. This environment variable is used mainly to ease the process of upgrading, and on subsequent runs (once your old settings have been written to the database) it is recommended to run with `USE_LEGACY_ETH_ENV_VARS=false` and use the API commands exclusively to administer chains and nodes.
 
 ### USE_LEGACY_ETH_ENV_VARS
 
@@ -578,9 +578,9 @@ If you specify `USE_LEGACY_ETH_ENV_VARS` (default: true) then the values of `ETH
 
 USE_LEGACY_ETH_ENV_VARS if enabled will upsert a new chain using the ETH_CHAIN_ID and upsert nodes corresponding to the given ETH_URL and ETH_SECONDARY_URLS.
 
-This is really only useful for backwards compatibility. In future, support for legacy `ETH_*` env vars may be removed, so it is recommended to use the API/CLI/GUI instead to setup chains and nodes.
+This is really only useful for backwards compatibility. In future, support for legacy `ETH_*` environment variables might be removed, so it is recommended to use the API, CLI, or GUI instead to setup chains and nodes.
 
-If you are running a multi-chain or multi-node setup, you should set this env var to `"false"` and instead configure chains and nodes exclusively via the API/CLI/UI. Trying to administer multiple nodes/chains with this env var enabled can lead to unexpected results.
+If you are running a multi-chain or multi-node setup, you should set this environment variable to `"false"` and instead configure chains and nodes exclusively using the API, CLI, or GUI. Trying to administer multiple nodes/chains with this environment variable enabled can lead to unexpected results.
 
 ### ETH_URL
 
@@ -620,19 +620,19 @@ This configuration is specific to EVM/Ethereum chains.
 
 - Default: _none_
 
-This var specifies the default chain ID. Any job spec that has not explicitly set `EVMChainID` will connect to this default chain.
+This environment variable specifies the default chain ID. Any job spec that has not explicitly set `EVMChainID` will connect to this default chain.
 
 ### EVM_DISABLED
 
 - Default: `"false"`
-  
+
 Disable EVM entirely. No services related to EVM chains will be spun up at all. This can be useful in some cases e.g. on a node that only runs Cron jobs that post to an HTTP API, or for node that don't use any EVM chains.
 
 ### ETH_DISABLED
 
 - Default: `"false"`
 
-Disable connecting to any eth nodes. This can be useful in certain cases, e.g. to spin up a chainlink node and add jobs without having it execute anything.
+Disable connecting to any eth nodes. This can be useful in certain cases, e.g. to spin up a Chainlink node and add jobs without having it execute anything.
 
 ## EVM/Ethereum Chain-specific Overrides
 
@@ -640,7 +640,7 @@ These configuration options act as an override, setting the value for _all_ chai
 
 This often doesn't make sense, e.g. `ETH_FINALITY_DEPTH` on Avalanche could be quite different from `ETH_FINALITY_DEPTH` on Ethereum mainnet.
 
-We recommend setting this on a per-chain basis using the API/CLI/GUI instead.
+We recommend setting this on a per-chain basis using the API, CLI, or GUI instead.
 
 Generally speaking, Chainlink contains built-in defaults for most of these settings that should work out of the box on all officially supported chains, so it's unlikely you'll need to make any changes here.
 
@@ -666,7 +666,7 @@ This might be useful on fast chains and if only recent chain events are relevant
 
 ### ETH_TX_REAPER_INTERVAL
 
-NOTE: This overrides the setting for _all_ chains, you may wish to set this on a per-chain basis using the API/CLI/GUI instead.
+NOTE: This overrides the setting for _all_ chains, you may wish to set this on a per-chain basis using the API, CLI, or GUI instead.
 
 - Default: `"1h"`
 
@@ -687,7 +687,7 @@ Setting to `0` disables the reaper.
 
 ### ETH_TX_RESEND_AFTER_THRESHOLD
 
-NOTE: This overrides the setting for _all_ chains, you may wish to set this on a per-chain basis using the API/CLI/GUI instead.
+NOTE: This overrides the setting for _all_ chains, you may wish to set this on a per-chain basis using the API, CLI, or GUI instead.
 
 - Default: _automatically set based on Chain ID, typically 1m_
 
@@ -746,7 +746,7 @@ If you have enabled HTTP urls for all of your eth nodes, you can safely increase
 
 The address of the LINK token contract. It is not essential to provide this, but if given, will be used for displaying the node account's LINK balance. For supported chains, this is automatically set based on the given chain ID. For unsupported chains, you will need to supply it yourself.
 
-Note that this var is a global override - it is recommended instead to set this on a per-chain basis.
+This environment variables is a global override. It is recommended instead to set this on a per-chain basis.
 
 ### MIN_INCOMING_CONFIRMATIONS
 
@@ -790,7 +790,7 @@ For jobs that use the EthTx adapter, this is the minimum payment amount in order
 
 These settings allow you to tune your node's gas limits and pricing. In most cases, leaving these values at their defaults should give good results.
 
-As of Chainlink 1.1.0, it is recommended to use the API/CLI/UI to configure gas controls since you may wish to use different settings for different chains. Setting the ENV var will typically override the setting for all chains.
+As of Chainlink 1.1.0, it is recommended to use the API, CLI, or GUI to configure gas controls because you might want to use different settings for different chains. Setting the environment variable typically overrides the setting for all chains.
 
 ### Configuring your ETH node
 
@@ -815,8 +815,8 @@ Locals = ["0xYourNodeAddress1", "0xYourNodeAddress2"]  # Add your node addresses
 NoLocals = false # Disabled by default but might as well make sure
 Journal = "transactions.rlp" # Make sure you set a journal file
 Rejournal = 3600000000000 # Default 1h, it might make sense to reduce this to e.g. 5m
-PriceBump = 10 # Must be set less than or equal to chainlink's ETH_GAS_BUMP_PERCENT
-AccountSlots = 16 # Highly recommended to increase this, must be greater than or equal to chainlink's ETH_MAX_IN_FLIGHT_TRANSACTIONS setting
+PriceBump = 10 # Must be set less than or equal to Chainlink's ETH_GAS_BUMP_PERCENT
+AccountSlots = 16 # Highly recommended to increase this, must be greater than or equal to Chainlink's ETH_MAX_IN_FLIGHT_TRANSACTIONS setting
 GlobalSlots = 4096 # Increase this as necessary
 AccountQueue = 64 # Increase this as necessary
 GlobalQueue = 1024 # Increase this as necessary
@@ -830,7 +830,7 @@ Relevant settings for parity/openethereum (and forks e.g. xDai)
 ```toml
 tx_queue_locals = ["0xYourNodeAddress1", "0xYourNodeAddress2"] # Add your node addresses here
 tx_queue_size = 8192 # Increase this as necessary
-tx_queue_per_sender = 16 # Highly recommended to increase this, must be greater than or equal to chainlink's ETH_MAX_IN_FLIGHT_TRANSACTIONS setting
+tx_queue_per_sender = 16 # Highly recommended to increase this, must be greater than or equal to Chainlink's ETH_MAX_IN_FLIGHT_TRANSACTIONS setting
 tx_queue_mem_limit = 4 # In MB. Highly recommended to increase this or set to 0 to disable the mem limit entirely
 tx_queue_no_early_reject = true # Recommended to set this
 tx_queue_no_unfamiliar_locals = false # This is disabled by default but might as well make sure
@@ -1003,7 +1003,7 @@ In deployments with very high burst rates, or on chains with large re-orgs, you 
 
 Chainlink will never pay less than this for a transaction.
 
-It is possible to force chainlink to use a fixed gas price by setting a combination of these, e.g.
+It is possible to force the Chainlink node to use a fixed gas price by setting a combination of these, e.g.
 
 ```
 EVM_EIP1559_DYNAMIC_FEES=false
@@ -1024,7 +1024,7 @@ Chainlink will automatically try to sync its local nonce with the remote chain o
 
 These settings allow you to configure how your node calculates gas prices. In most cases, leaving these values at their defaults should give good results.
 
-As of Chainlink 1.1.0, it is recommended to use the API/CLI/UI to configure gas controls since you may wish to use different settings for different chains. Setting the ENV var will typically override the setting for all chains.
+As of Chainlink 1.1.0, it is recommended to use the API, CLI, or GUI to configure gas controls because you might want to use different settings for different chains. Setting the environment variable typically overrides the setting for all chains.
 
 Chainlink decides what gas price to use using an `Estimator`. It ships with several simple and battle-hardened built-in estimators that should work well for almost all use-cases. Note that estimators will change their behaviour slightly depending on if you are in EIP1559 mode or not.
 
@@ -1048,7 +1048,7 @@ Controls what type of gas estimator is used.
 - Default: _automatic, based on chain ID, typically 4_
 
 Sets the maximum number of blocks to fetch in one batch in the block history estimator.
-If the env var BLOCK_HISTORY_ESTIMATOR_BATCH_SIZE is set to 0, it defaults to ETH_RPC_DEFAULT_BATCH_SIZE.
+If the `BLOCK_HISTORY_ESTIMATOR_BATCH_SIZE` environment variable is set to 0, it defaults to ETH_RPC_DEFAULT_BATCH_SIZE.
 
 ### BLOCK_HISTORY_ESTIMATOR_BLOCK_HISTORY_SIZE
 
@@ -1125,11 +1125,11 @@ OCR_SIMULATE_TRANSACTIONS allows to enable transaction simulation for OCR.
 
 - Default: `"false"`
 
-By default, Chainlink does not allow the `http` adapter to connect to local IP addresses for security reasons (because the URL can come from on-chain, which is an untrusted source). This can be overridden on a per-task basis by setting the `AllowUnrestrictedNetworkAccess` key, or globally by setting the ENV var `DEFAULT_HTTP_ALLOW_UNRESTRICTED_NETWORK_ACCESS=true`. 
+By default, Chainlink does not allow the `http` adapter to connect to local IP addresses for security reasons (because the URL can come from on-chain, which is an untrusted source). This can be overridden on a per-task basis by setting the `AllowUnrestrictedNetworkAccess` key, or globally by setting the environment variable `DEFAULT_HTTP_ALLOW_UNRESTRICTED_NETWORK_ACCESS=true`.
 
 It is recommended that this be left disabled.
 
-NOTE: In older versions of Chainlink, it was required to set this in order to allow connections to bridges/external adapters on the local network. This requirement has been lifted and this env var now ONLY applies to `http` tasks. `bridge` tasks are always allows to connect to the local network.
+NOTE: In older versions of Chainlink, it was required to set this in order to allow connections to bridges/external adapters on the local network. This requirement has been lifted and this environment variable now applies ONLY to `http` tasks. `bridge` tasks are always allows to connect to the local network.
 
 ### DEFAULT_HTTP_LIMIT
 
@@ -1223,13 +1223,13 @@ All nodes in the OCR network should share the same networking stack.
 
 - Default: _none_
 
-Should be set as the externally reachable IP address of the chainlink node.
+Should be set as the externally reachable IP address of the Chainlink node.
 
 #### P2P_ANNOUNCE_PORT
 
 - Default: _none_
 
-Should be set as the externally reachable port of the chainlink node.
+Should be set as the externally reachable port of the Chainlink node.
 
 #### P2P_BOOTSTRAP_PEERS
 
@@ -1247,7 +1247,7 @@ The default IP address to bind to.
 
 - Default: _none_
 
-The port to listen on. If left blank, chainlink will randomly select a different port each time it boots. It is highly recommended to set this to a static value to avoid network instability.
+The port to listen on. If left blank, the node randomly selects a different port each time it boots. It is highly recommended to set this to a static value to avoid network instability.
 
 #### P2P_PEER_ID
 
@@ -1332,7 +1332,7 @@ KEEPER_REGISTRY_SYNC_UPKEEP_QUEUE_SIZE represents the maximum number of upkeeps 
 
 ## CLI Client
 
-The env vars in this section apply only when running chainlink CLI commands that connect to a remote running chainlink instance.
+The environment variables in this section apply only when running CLI commands that connect to a remote running instance of a Chainlink node.
 
 ### ADMIN_CREDENTIALS_FILE
 
@@ -1351,23 +1351,23 @@ mysecurepassw0rd
 
 - Default: `"http://localhost:6688"`
 
-This is the URL that you will use to interact with the node, including the GUI. It only has effect when using the chainlink client to run CLI commands.
+This is the URL that you will use to interact with the node, including the GUI. It only has effect when using the Chainlink client to run CLI commands.
 
 ### INSECURE_SKIP_VERIFY
 
 - Default: `"false"`
 
 INSECURE_SKIP_VERIFY disables SSL certificate verification when connection to
-a chainlink client using the remote client, i.e. when executing most remote
+a Chainlink client using the remote client, i.e. when executing most remote
 commands in the CLI.
 This is mostly useful for people who want to use TLS on localhost.
 
 It is not recommended to change this unless you know what you are doing.
 
-## Notes on setting ENV vars
+## Notes on setting environment variables
 
 > ⚠️ NOTE
-> Some env vars require a duration. A duration string is a possibly signed sequence of decimal numbers, each with optional fraction and a unit suffix, such as "300ms", "-1.5h" or "2h45m". Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h". Some examples:
+> Some environment variables require a duration. A duration string is a possibly signed sequence of decimal numbers, each with optional fraction and a unit suffix, such as "300ms", "-1.5h" or "2h45m". Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h". Some examples:
 
 `10ms`
 `1h15m`
