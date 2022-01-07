@@ -135,7 +135,12 @@ for (let page of targetData) {
           // End conditional
 
           proxyList.push({
-            pair: proxy.name.includes("OHM") ? proxy.name.replace("OHM", "OHM(v1)") : proxy.name,
+            pair: 
+              // Only insert 'v1' if this isn't an index
+              !/index/i.test(proxy.name) &&
+              // Only insert 'v1' if this isn't already a versioned OHM
+              !/OHMv/i.test(proxy.name)
+              ? proxy.name.replace("OHM", "OHMv1")  : proxy.name,
             deviationThreshold: liveContracts[proxy.aggregator].deviationThreshold,
             heartbeat: liveContracts[proxy.aggregator].heartbeat,
             decimals: liveContracts[proxy.aggregator].decimals,
