@@ -6,25 +6,27 @@ title: "Configuring Chainlink Nodes"
 permalink: "docs/configuration-variables/"
 ---
 
-Recent versions of Chainlink ship with sensible defaults for most configuration variables. You do not need to change much to get a standard deployment working.
+Recent versions of the Chainlink node use sensible defaults for most configuration variables. You do not need to change much to get a standard deployment working.
 
-Not all environment variables are documented here. Any environment variable that is undocumented is subject to change in future releases. In almost all cases, you should leave any environment variable not listed here to its default value unless you really understand what you are doing.
+Not all environment variables are documented here. Any undocumented environment variable is subject to change in future releases. In almost all cases, you should leave any environment variable not listed here to its default value unless you really understand what you are doing.
 
 To reiterate: _If you have an environment variable set that is not listed here, and you don't know exactly why you have it set, you should remove it!_
 
-The environment variables listed here are explicitly supported and current as of Chainlink 1.1.0.
+The environment variables listed here are explicitly supported and current as of Chainlink node v1.1.0.
 
 ## Changes to node configuration in v1.1.0 nodes
 
-As of Chainlink v1.1.0 and up, the way nodes manage configuration is changing. Previously, environment variables exclusively handled all configuration. Although this method of configuration worked well in the past, it has its limitations. Notably, it doesn't mesh well with chain-specific configuration profiles.
+As of Chainlink node v1.1.0 and up, the way nodes manage configuration is changing. Previously, environment variables exclusively handled all node configuration. Although this configuration method worked well in the past, it has its limitations. Notably, it doesn't mesh well with chain-specific configuration profiles.
 
 For this reason, Chainlink nodes are moving towards a model where you set variables using the API, CLI, or GUI, and the configuration is saved in the database. We encourage you to become familiar with this model because it is likely that nodes will continue to move away from environment variable configuration in the future.
 
-As of v1.1.0 we still support environment variables for all configuration, even the chain-specific ones. If the environment variable is set, it will override any chain-specific or database-based configuration setting and will log a warning that it is doing so.
+As of v1.1.0, Chainlink nodes still support environment variables to configure node settings and chain-specific settings. If the environment variable is set, it overrides any chain-specific, job-specific, or database configuration setting. The log displays a warning to indicate when an override happens, so you know when variables lower in the hierarchy are being ignored.
 
-The configuration hierarchy generally applies as such:
+Your node applies configuration settings using following hierarchy:
 
-environment variables > chain-specific > job-specific
+1. Environment variables
+1. Chain-specific variables
+1. Job-specific variables
 
 ## Table of contents
 
@@ -189,7 +191,7 @@ These are the only environment variables that are _required_ for a Chainlink nod
 
 - Default: _none_
 
-The PostgreSQL URI to connect to your database. Chainlink requires Postgres >= 11. See the [Running a Chainlink Node](../running-a-chainlink-node/#set-the-remote-database_url-config) for an example.
+The PostgreSQL URI to connect to your database. Chainlink nodes require Postgres versions >= 11. See the [Running a Chainlink Node](../running-a-chainlink-node/#set-the-remote-database_url-config) for an example.
 
 ## General Node Configuration
 
@@ -197,15 +199,15 @@ The PostgreSQL URI to connect to your database. Chainlink requires Postgres >= 1
 
 - Default: _none_
 
-CHAIN_TYPE overrides all chains and forces them to act as a particular chain type. Up-to-date list of chain types is given in [`chaintype.go`](https://github.com/smartcontractkit/chainlink/blob/a710fcb3c1f3501b8df486b45c14423aefdb0876/core/chains/chaintype.go).
+CHAIN_TYPE overrides all chains and forces them to act as a particular chain type. An up-to-date list of chain types is given in [`chaintype.go`](https://github.com/smartcontractkit/chainlink/blob/a710fcb3c1f3501b8df486b45c14423aefdb0876/core/chains/chaintype.go).
 
-This can enable certain chain-specific hacks and optimisations. It is recommended not to use this environment variable and set the chain-type on a per-chain basis instead.
+This variable enables some chain-specific hacks and optimizations. It is recommended not to use this environment variable and set the chain-type on a per-chain basis instead.
 
 ### CHAINLINK_DEV
 
 - Default: `"false"`
 
-Setting CHAINLINK_DEV to true enables development mode, this is not recommended for production deployments. It can be useful for enabling experimental features and collecting debug information.
+Setting `CHAINLINK_DEV` to `true` enables development mode. This setting is not recommended for production deployments. It can be useful for enabling experimental features and collecting debug information.
 
 ### EXPLORER_ACCESS_KEY
 
@@ -229,7 +231,7 @@ The Explorer websocket URL for the node to push stats to.
 
 - Default: `"~/.chainlink"`
 
-Chainlink's root directory. This is the default directory for logging, database backups, cookies and other misc Chainlink files. Chainlink will always ensure this directory has 700 permissions since it may contain sensitive data.
+The Chainlink node's root directory. This is the default directory for logging, database backups, cookies, and other misc Chainlink node files. Chainlink nodes will always ensure this directory has `700` permissions because it might contain sensitive data.
 
 ### TELEMETRY_INGRESS_LOGGING
 
@@ -255,88 +257,86 @@ The public key of the telemetry server.
 
 - Default: `"true"`
 
-Controls whether Chainlink will attempt to automatically migrate the database on boot. If you want more control over your database migration process, you can set this to `false` and manually migrate the database using the CLI `migrate` command instead.
+This variable controls whether a Chainlink node will attempt to automatically migrate the database on boot. If you want more control over your database migration process, set this variable to `false` and manually migrate the database using the CLI `migrate` command instead.
 
 ### ORM_MAX_IDLE_CONNS
 
 - Default: `"10"`
 
-The max number of idle database connections that Chainlink will keep open. Think of this as the baseline number of database connnections per Chainlink instance. Increasing this number can help to improve performance under database-heavy workloads.
+This setting configures the maximum number of idle database connections that the Chainlink node will keep open. Think of this as the baseline number of database connections per Chainlink node instance. Increasing this number can help to improve performance under database-heavy workloads.
 
-Be cautious because postgres has connection limits, if you are running several instances of Chainlink (or other application) on a single database server, you may run out of postgres connection slots if you raise this value too high.
+Postgres has connection limits, so you must use cation when increasing this value. If you are running several instances of a Chainlink node or another application on a single database server, you might run out of Postgres connection slots if you raise this value too high.
 
 ### ORM_MAX_OPEN_CONNS
 
 - Default: `"20"`
 
-The max number of database connections that Chainlink will have open at any one time. Think of this as the maximum burst upper bound limit of database connnections per Chainlink instance. Increasing this number can help to improve performance under database-heavy workloads.
+This setting configures the maximum number of database connections that a Chainlink node will have open at any one time. Think of this as the maximum burst upper bound limit of database connections per Chainlink node instance. Increasing this number can help to improve performance under database-heavy workloads.
 
-Be cautious because postgres has connection limits, if you are running several instances of Chainlink (or other application) on a single database server, you may run out of postgres connection slots if you raise this value too high.
+Postgres has connection limits, so you must use cation when increasing this value. If you are running several instances of a Chainlink node or another application on a single database server, you might run out of Postgres connection slots if you raise this value too high.
 
 ## Database Global Lock
 
-Chainlink uses a database lock to ensure that only one instance of Chainlink can be run on the database at a time. Running multiple instances of Chainlink on a single database at the same time would likely to lead to strange errors and possibly even data integrity failures and should not be allowed.
+Chainlink nodes use a database lock to ensure that only one Chainlink node instance can be run on the database at a time. If you run multiple instances of a Chainlink node that share a single database at the same time, the node will encounter strange errors and data integrity failures. Do not allow multiple nodes to write data to the database at the same time.
 
 ### DATABASE_LOCKING_MODE
 
 - Default: `"dual"`
 
-DATABASE_LOCKING_MODE can be one of 'dual', 'advisorylock', 'lease' or 'none'. It controls which mode to use to enforce that only one Chainlink node can use the database.
+The `DATABASE_LOCKING_MODE` variable can be set to 'dual', 'advisorylock', 'lease' or 'none'. It controls which mode to use to enforce that only one Chainlink node can use the database.
 
-Previous versions of Chainlink used advisory locking only, so the default is `dual` to provide backwards and forwards compatibility.
+Previous Chainlink node versions used advisory locking only, so the default is `dual` to provide backward and forward compatibility.
 
 There are a few quirks to using advisory locks, so if you are sure you don't need backwards compatibility with older versions, we recommend setting this value to `lease`.
 
-- `dual` - The default: Uses both locking types for backwards and forwards compatibility.
+- `dual` - The default: Uses both locking types for backward and forward compatibility.
 - `advisorylock` - Advisory lock only
 - `lease` - Lease lock only
-- _none_ - No locking at all: Useful for advanced deployment environments when you are sure that only one instance of a Chainlink node will ever be running.
+- _none_ - No locking at all: This is useful for advanced deployment environments when you are sure that only one instance of a Chainlink node will ever be running.
 
 #### Technical details
 
-Ideally, node operators would be using a container orchestration system (e.g. Kubernetes) that ensures that only one instance of Chainlink ever runs on a particular postgres database.
+Ideally, node operators should use a container orchestration system, such as Kubernetes, that ensures that only one Chainlink node instance ever runs on a particular Postgres database. However, many node operators do not have the technical capacity to do this. A common use case is to run multiple Chainlink node instances in failover mode as recommended by our official documentation. The first instance will take some kind of lock on the database and subsequent instances will wait trying to take this lock in case the first instance fails.
 
-However, we are aware that many node operators do not have the technical capacity to do this. So a common use case is to run multiple Chainlink instances in failover mode (as recommended by our official documentation). The first instance will take some kind of lock on the database and subsequent instances will wait trying to take this lock in case the first instance disappears or dies.
+Traditionally, Chainlink nodes used an advisory lock to manage this. However, advisory locks come with several problems:
+- Postgres does not really like it when you hold locks open for a very long time (hours/days). It hampers certain internal cleanup tasks and is explicitly discouraged by the Postgres maintainers.
+- The advisory lock can silently disappear when you upgrade Postgres, so a new Chainlink node instance can take over even while the old node is still running.
+- Advisory locks do not work well with pooling tools such as pgbouncer.
+- If the application crashes, the advisory lock can hang around for a while (sometimes hours) and can require manual intervention to remove it before another instance of Chainlink node will allow itself to boot.
 
-Traditionally Chainlink has used an advisory lock to manage this. However, advisory locks come with several problems, notably:
-- Postgres does not really like it when you hold locks open for a very long time (hours/days). It hampers certain internal cleanup tasks and is explicitly discouraged by the postgres maintainers.
-- The advisory lock can silently disappear on postgres upgrade, meaning that a new instance can take over even while the old one is still running.
-- Advisory locks do not play nicely with pooling tools such as pgbouncer.
-- If the application crashes, the advisory lock can be left hanging around for a while (sometimes hours) and can require manual intervention to remove it before another instance of Chainlink will allow itself to boot.
+For this reason, we have introduced a new locking mode, `lease`, which is likely to become the default in future. The `lease` locking mode works as follows:
+- Have one row in a database that is updated periodically with the client ID.
+- Node A will run a background process on start that updates the client ID once per second.
+- Node B will spinlock, checking periodically to see if the client ID is too old. If the client ID is not updated after a period of time, node B assumes that node A failed and then takes over. Node B becomes the owner of the row and it updates the client ID once per second.
+- If node A comes back, it will attempt to take out a lease and realize that the database has been leased to another process, so it will exit the entire application immediately.
 
-For this reason, we have introduced a new locking mode, `lease`, which is likely to become the default in future. `lease`-mode works as follows:
-- Have one row in a database which is updated periodically with the client ID.
-- CL node A will run a background process on start that updates this e.g. once per second.
-- CL node B will spinlock, checking periodically to see if the update got too old. If it goes more than a set period without updating, it assumes that node A is dead and takes over. Now CL node B is the owner of the row and it updates this every second.
-- If CL node A comes back somehow, it will go to take out a lease and realise that the database has been leased to another process, so it will exit the entire application immediately.
-
-The default is set to `dual` which used both advisory locking AND lease locking, for backwards compatibility. However, it is recommended that node operators who know what they are doing, or explicitly want to stop using the advisory locking mode set `DATABASE_LOCKING_MODE=lease` in their ENV.
+The default is set to `dual`, which uses both advisory locking and lease locking for backwards compatibility. If you know what you are doing and want to stop using the advisory locking mode, set `DATABASE_LOCKING_MODE=lease`.
 
 ### ADVISORY_LOCK_CHECK_INTERVAL
 ADVANCED - DEV ONLY, not released
-It is not recommended to change this setting unless you know what you are doing.
+Do not change this setting unless you know what you are doing.
 
-(Only applies if `DATABASE_LOCKING_MODE` is set to enable advisory locking)
+This setting applies only if `DATABASE_LOCKING_MODE` is set to enable advisory locking.
 
 - Default: `"1s"`
 
-ADVISORY_LOCK_CHECK_INTERVAL controls how often Chainlink will check to make sure it still holds the advisory lock (if advisory locking is enabled). If it no longer holds it, it will try to re-acquire it and if that fails the application will exit.
+`ADVISORY_LOCK_CHECK_INTERVAL` controls how often the Chainlink node checks to make sure it still holds the advisory lock when advisory locking is enabled. If a node no longer holds the lock, it will try to re-acquire it. If the node cannot re-acquire the lock, the application will exit.
 
 ### ADVISORY_LOCK_ID
 ADVANCED - DEV ONLY, not released
-It is not recommended to change this setting unless you know what you are doing.
+Do not change this setting unless you know what you are doing.
 
-(Only applies if `DATABASE_LOCKING_MODE` is set to enable advisory locking)
+This setting applies only if `DATABASE_LOCKING_MODE` is set to enable advisory locking.
 
 - Default: `"1027321974924625846"`
 
-ADVISORY_LOCK_ID is the application advisory lock ID. Should match all other Chainlink nodes that might access this database. It is unlikely you will ever need to change this from the default.
+`ADVISORY_LOCK_ID` is the application advisory lock ID. This must match all other Chainlink nodes that might access this database. It is unlikely you will ever need to change this from the default.
 
 ### LEASE_LOCK_DURATION
 ADVANCED
 It is not recommended to change this setting unless you know what you are doing.
 
-(Only applies if `DATABASE_LOCKING_MODE` is set to enable lease locking)
+This setting applies only if `DATABASE_LOCKING_MODE` is set to enable lease locking.
 
 - Default: `"30s"`
 
@@ -346,7 +346,7 @@ How long the lease lock will last before expiring.
 ADVANCED
 It is not recommended to change this setting unless you know what you are doing.
 
-(Only applies if `DATABASE_LOCKING_MODE` is set to enable lease locking)
+This setting applies only if `DATABASE_LOCKING_MODE` is set to enable lease locking.
 
 - Default: `"1s"`
 
@@ -354,13 +354,13 @@ How often to refresh the lease lock. Also controls how often a standby node will
 
 ## Database Automatic Backups
 
-It is recommended to all node operators to take regular database backups in case of accidental data loss, especially when upgrading. Chainlink supports automated database backups to make this easier.
+As a best practice, take regular database backups in case of accidental data loss. This best practice is especially important when you upgrade your Chainlink node to a new version. Chainlink nodes support automated database backups to make this process easier.
 
 ### DATABASE_BACKUP_FREQUENCY
 
 - Default: `"1h"`
 
-If set to a positive duration and DATABASE_BACKUP_MODE is not _none_, will dump the database at this regular interval.
+If this variable is set to a positive duration and `DATABASE_BACKUP_MODE` is not _none_, the node will dump the database at this regular interval.
 
 Set to `0` to disable periodic backups.
 
@@ -368,13 +368,13 @@ Set to `0` to disable periodic backups.
 
 - Default: `"none"`
 
-Set the mode for automatic database backups. Can be one of _none_, `lite`, `full`. If enabled, Chainlink will always dump a backup on every boot before running migrations, and additionally it will automatically take database backups (overwriting the backup file for the given version) at regular intervals if `DATABASE_BACKUP_FREQUENCY` is set to a non-zero interval.
+Set the mode for automatic database backups, which can be one of _none_, `lite`, or `full`. If enabled, the Chainlink node will always dump a backup on every boot before running migrations. Additionally, it will automatically take database backups that overwrite the backup file for the given version at regular intervals if `DATABASE_BACKUP_FREQUENCY` is set to a non-zero interval.
 
-_none_ disables.
-`lite` dumps small tables including configuration and keys essential for node functioning (excludes historical data e.g. job runs, transaction history etc).
-`full` dumps the entire database.
+_none_ - Disables backups.
+`lite` - Dumps small tables including configuration and keys that are essential for the node to function, which excludes historical data like job runs, transaction history, etc.
+`full` - Dumps the entire database.
 
-It will write to a file like `$ROOT/backup/cl_backup_<VERSION>.dump`. There is one backup dump file per version of the Chainlink node. If you upgrade it will keep the backup taken right before the upgrade migration so you can restore to an older version if necessary.
+It will write to a file like `$ROOT/backup/cl_backup_<VERSION>.dump`. There is one backup dump file per version of the Chainlink node. If you upgrade the node, it will keep the backup taken right before the upgrade migration so you can restore to an older version if necessary.
 
 ### DATABASE_BACKUP_URL
 
@@ -382,7 +382,7 @@ If specified, the automatic database backup will pull from this URL rather than 
 
 ### DATABASE_BACKUP_DIR
 
-Sets the directory for saving the backup file, if you want it to be different from default one located in the ROOT directory.
+This variable sets the directory to use for saving the backup file. Use this if you want to save the backup file in a directory other than the default ROOT directory.
 
 ## Logging
 
@@ -390,52 +390,46 @@ Sets the directory for saving the backup file, if you want it to be different fr
 
 - Default: `"false"`
 
-Set to true to enable JSON logging. Otherwise will log in a human-friendly console format.
+Set this to true to enable JSON logging. Otherwise, the log is saved in a human-friendly console format.
 
 ### LOG_FILE_DIR
 DEV ONLY - not released
 
 - Default: `"$ROOT"`
 
-By default, Chainlink will log to `$ROOT/log.jsonl`. The log directory can be changed by setting this var, e.g. `LOG_FILE_DIR=/my/log/directory`.
+By default, Chainlink nodes write log data to `$ROOT/log.jsonl`. The log directory can be changed by setting this var. For example, `LOG_FILE_DIR=/my/log/directory`.
 
 ### LOG_LEVEL
 
 - Default: `"info"`
 
-The `LOG_LEVEL` environment variable determines both what is printed on the screen and what is written to the logfile.
+The `LOG_LEVEL` environment variable determines both what is printed on the screen and what is written to the log file.
 
 The available options are:
-- "debug"
-  - Useful for forensic debugging of issues.
-- "info"
-  - High level informational messages.
-- "warn"
-  - Something unexpected happened that may need non-urgent action. Node operators should check these once in a while to see whether anything stands out (e.g. deprecation warnings).
-- "error"
-  - Something bad happened. Node operators may need to take urgent action based on this error.
-- "panic"
-  - Something very bad happened. Node operators should take immediate action to fix this.
-- "fatal"
-  - An unrecoverable problem was encountered and the node had to exit.
+- `"debug"`: Useful for forensic debugging of issues.
+- `"info"`: High level informational messages.
+- `"warn"`: Something unexpected happened that might need non-urgent action. Node operators should check these once in a while to see whether anything stands out (e.g. deprecation warnings).
+- `"error"`: Something bad happened. Node operators might need to take urgent action based on this error.
+- `"panic"`: Something very bad happened. Node operators should take immediate action to fix this.
+- `"fatal"`: An unrecoverable problem was encountered and the node had to exit.
 
 ### LOG_SQL
 
 - Default: `"false"`
 
-Tells Chainlink to log SQL statements made using the default logger. SQL statements will be logged at `debug` level. Note that not all statements can be logged, the best way to get a true log of all SQL statements is to enable SQL statement logging on the postgres side.
+This setting tells the Chainlink node to log SQL statements made using the default logger. SQL statements will be logged at `debug` level. Not all statements can be logged. The best way to get a true log of all SQL statements is to enable SQL statement logging on Postgres.
 
 ### LOG_TO_DISK
 
 - Default: `"true"`
 
-Enables or disables the node writing to the `$LOG_FILE_DIR/log.jsonl` file.
+Enables or disables the node writing to the `$LOG_FILE_DIR/log.jsonl` file
 
 ### LOG_UNIX_TS
 
 - Default: `"false"`
 
-Previous versions of Chainlink used to write JSON logs with a unix timestamp. As of 1.1.0 and up the default has changed to be ISO8601 timestamps for better readability. Setting `LOG_UNIX_TS=true` will enable the old behaviour.
+Previous versions of Chainlink nodes wrote JSON logs with a unix timestamp. As of v1.1.0 and up, the default has changed to use ISO8601 timestamps for better readability. Setting `LOG_UNIX_TS=true` will enable the old behavior.
 
 ## Chainlink Web Server
 
@@ -443,23 +437,23 @@ Previous versions of Chainlink used to write JSON logs with a unix timestamp. As
 
 - Default: `"http://localhost:3000,http://localhost:6688"`
 
-Controls the URLs Chainlink emits in the `Allow-Origins` header of its API responses. Input may be a comma-separated (no spaces) list. You may experience CORS issues if this is not set correctly.
+Controls the URLs Chainlink nodes emit in the `Allow-Origins` header of its API responses. The setting can be a comma-separated list with no spaces. You might experience CORS issues if this is not set correctly.
 
 You should set this to the external URL that you use to access the Chainlink UI.
 
-You may set `ALLOW_ORIGINS=*` to allow the UI to work from any URL, but it is recommended for security reasons to make it explicit instead.
+You can set `ALLOW_ORIGINS=*` to allow the UI to work from any URL, but it is recommended for security reasons to make it explicit instead.
 
 ### AUTHENTICATED_RATE_LIMIT
 
 - Default: `"1000"`
 
-AUTHENTICATED_RATE_LIMIT defines the threshold to which authenticated requests get limited. More than this many authenticated requests per AUTHENTICATED_RATE_LIMIT_PERIOD will be rejected.
+`AUTHENTICATED_RATE_LIMIT` defines the threshold to which authenticated requests get limited. More than this many authenticated requests per `AUTHENTICATED_RATE_LIMIT_PERIOD` will be rejected.
 
 ### AUTHENTICATED_RATE_LIMIT_PERIOD
 
 - Default: `"1m"`
 
-AUTHENTICATED_RATE_LIMIT_PERIOD defines the period to which authenticated requests get limited.
+`AUTHENTICATED_RATE_LIMIT_PERIOD` defines the period to which authenticated requests get limited.
 
 ### BRIDGE_RESPONSE_URL
 
@@ -467,7 +461,7 @@ AUTHENTICATED_RATE_LIMIT_PERIOD defines the period to which authenticated reques
 
 `BRIDGE_RESPONSE_URL` defines the URL for bridges to send a response to. This _must_ be set when using async external adapters.
 
-Usually this will be the same as the URL/IP and port you use to connect to the Chainlink UI e.g. `https://my-chainlink-node.example.com:6688`.
+Usually this will be the same as the URL/IP and port you use to connect to the Chainlink UI, such as `https://my-chainlink-node.example.com:6688`.
 
 ### HTTP_SERVER_WRITE_TIMEOUT
 ADVANCED
@@ -475,9 +469,7 @@ It is not recommended to change this unless you know what you are doing.
 
 - Default: `"10s"`
 
-HTTP_SERVER_WRITE_TIMEOUT controls how long Chainlink's API server can hold a
-socket open for writing a response to an HTTP request. This sometimes needs
-to be increased for pprof.
+`HTTP_SERVER_WRITE_TIMEOUT` controls how long the Chainlink node's API server can hold a socket open for writing a response to an HTTP request. Sometimes, this must be increased for pprof.
 
 ### CHAINLINK_PORT
 
@@ -489,29 +481,29 @@ Port used for the [Chainlink Node API](../chainlink-node-api-reference/) and GUI
 
 - Default: `"true"`
 
-Requires the use of secure cookies for authentication. Set to false to enable standard http requests along with `CHAINLINK_TLS_PORT=0`.
+Requires the use of secure cookies for authentication. Set to false to enable standard HTTP requests along with `CHAINLINK_TLS_PORT=0`.
 
 ### SESSION_TIMEOUT
 
 - Default: `"15m"`
 
-This value determines the amount of idle time to elapse before session cookies expire (this will sign out GUI users from their sessions).
+This value determines the amount of idle time to elapse before session cookies expire. This signs out GUI users from their sessions.
 
 ### UNAUTHENTICATED_RATE_LIMIT
 
 - Default: `"5"`
 
-UNAUTHENTICATED_RATE_LIMIT defines the threshold to which authenticated requests get limited. More than this many unauthenticated requests per UNAUTHENTICATED_RATE_LIMIT_PERIOD will be rejected.
+`UNAUTHENTICATED_RATE_LIMIT` defines the threshold to which authenticated requests get limited. More than this many unauthenticated requests per `UNAUTHENTICATED_RATE_LIMIT_PERIOD` will be rejected.
 
 ### UNAUTHENTICATED_RATE_LIMIT_PERIOD
 
 - Default: `"20s"`
 
-UNAUTHENTICATED_RATE_LIMIT_PERIOD defines the period to which unauthenticated requests get limited.
+`UNAUTHENTICATED_RATE_LIMIT_PERIOD` defines the period to which unauthenticated requests get limited.
 
 ## Web Server MFA
 
-The Operator UI frontend now supports enabling Multi Factor Authentication via Webauthn per account. When enabled, logging in will require the account password and a hardware (or OS) security key (e.g. Yubikey). To enrol, log in to the operator UI and click the circle purple profile button at the top right and then click 'Register MFA Token'. Tap your hardware security key or use the OS public key management feature to enrol a key. Next time you log in, this key will be required to authenticate.
+The Operator UI frontend now supports enabling Multi Factor Authentication via Webauthn per account. When enabled, logging in will require the account password and a hardware or OS security key such as Yubikey. To enroll, log in to the operator UI and click the circle purple profile button at the top right and then click **Register MFA Token**. Tap your hardware security key or use the OS public key management feature to enroll a key. Next time you log in, this key will be required to authenticate.
 
 This feature must be enabled by setting the following environment variables: `MFA_RPID` and `MFA_RPORIGIN`.
 
@@ -519,13 +511,13 @@ This feature must be enabled by setting the following environment variables: `MF
 
 - Default: _none_
 
-`MFA_RPID` value should be the FQDN of where the Operator UI is served. When serving locally, the value should be `localhost`.
+The `MFA_RPID` value should be the FQDN of where the Operator UI is served. When serving locally, the value should be `localhost`.
 
 ### MFA_RPORIGIN
 
 - Default: _none_
 
-`MFA_RPORIGIN` value should be the origin URL where WebAuthn requests initiate, including scheme and port. When serving locally, the value should be `http://localhost:6688/`.
+The `MFA_RPORIGIN` value should be the origin URL where WebAuthn requests initiate, including scheme and port. When serving locally, the value should be `http://localhost:6688/`.
 
 ## Web Server TLS
 
@@ -535,13 +527,13 @@ The TLS settings below apply only if you want to enable TLS security on your Cha
 
 - Default: _none_
 
-The hostname configured for TLS to be used by the Chainlink node. This is useful if you've configured a domain name specific for your Chainlink node.
+The hostname configured for TLS to be used by the Chainlink node. This is useful if you configured a domain name specific for your Chainlink node.
 
 ### CHAINLINK_TLS_PORT
 
 - Default: `"6689"`
 
-The port used for HTTPS connections. Set to 0 to disable HTTPS (disabling HTTPS also relieves Chainlink of the requirement for a TLS certificate).
+The port used for HTTPS connections. Set this to `0` to disable HTTPS. Disabling HTTPS also relieves Chainlink nodes of the requirement for a TLS certificate.
 
 ### CHAINLINK_TLS_REDIRECT
 
@@ -553,37 +545,37 @@ Forces TLS redirect for unencrypted connections.
 
 - Default: _none_
 
-Location of the TLS certificate file. Example: `/home/$USER/.chainlink/tls/server.crt`
+The location of the TLS certificate file. Example: `/home/$USER/.chainlink/tls/server.crt`
 
 ### TLS_KEY_PATH
 
 - Default: _none_
 
-Location of the TLS private key file. Example: `/home/$USER/.chainlink/tls/server.key`
+The location of the TLS private key file. Example: `/home/$USER/.chainlink/tls/server.key`
 
 ## EVM/Ethereum Legacy Environment Variables
 
-Previous versions of Chainlink only supported one chain. From 1.1.0 and up, Chainlink supports multiple evm and non-evm chains, so the way that chains and nodes are configured has changed.
+Previous Chainlink node versions supported only one chain. From v1.1.0 and up, Chainlink nodes support multiple EVM and non-EVM chains, so the way that chains and nodes are configured has changed.
 
-The preferred way of configuring Chainlink nodes as of 1.1.0 and up is to use the API, CLI, or UI to set chain-specific configuration and create nodes.
+The preferred way of configuring Chainlink nodes as of v1.1.0 and up is to use the API, CLI, or UI to set chain-specific configuration and create nodes.
 
-The old way of specifying chains using environment variables is still supported but discouraged. It works as follows:
+The old way of specifying chains using environment variables is still supported, but discouraged. It works as follows:
 
-If you specify `USE_LEGACY_ETH_ENV_VARS` (default: true) then the values of `ETH_CHAIN_ID`, `ETH_URL`, `ETH_HTTP_URL` and `ETH_SECONDARY_URLS` will be used to create/update chains and nodes representing these values in the database. If an existing chain or node is found, it will be overwritten. This environment variable is used mainly to ease the process of upgrading, and on subsequent runs (once your old settings have been written to the database) it is recommended to run with `USE_LEGACY_ETH_ENV_VARS=false` and use the API commands exclusively to administer chains and nodes.
+If you specify `USE_LEGACY_ETH_ENV_VARS` (default: true), the values of `ETH_CHAIN_ID`, `ETH_URL`, `ETH_HTTP_URL` and `ETH_SECONDARY_URLS` will be used to create and update chains and nodes representing these values in the database. If an existing chain or node is found, it will be overwritten. This environment variable is used mainly to ease the process of upgrading. On subsequent runs (once your old settings have been written to the database) it is recommended to run nodes using `USE_LEGACY_ETH_ENV_VARS=false` and use the API commands exclusively to administer chains and nodes.
 
 ### USE_LEGACY_ETH_ENV_VARS
 
 - Default: `"true"`
 
-USE_LEGACY_ETH_ENV_VARS if enabled will upsert a new chain using the ETH_CHAIN_ID and upsert nodes corresponding to the given ETH_URL and ETH_SECONDARY_URLS.
+If enabled, this setting will upsert a new chain using the `ETH_CHAIN_ID` variable and will upsert nodes corresponding to the given `ETH_URL` and `ETH_SECONDARY_URLS` variables.
 
-This is really only useful for backwards compatibility. In future, support for legacy `ETH_*` environment variables might be removed, so it is recommended to use the API, CLI, or GUI instead to setup chains and nodes.
+This is useful only for backwards compatibility. In the future, support for legacy `ETH_*` environment variables might be removed, so it is recommended to use the API, CLI, or GUI instead to setup chains and nodes.
 
-If you are running a multi-chain or multi-node setup, you should set this environment variable to `"false"` and instead configure chains and nodes exclusively using the API, CLI, or GUI. Trying to administer multiple nodes/chains with this environment variable enabled can lead to unexpected results.
+If you are running a multi-chain or multi-node setup, you should set this environment variable to `"false"` and instead configure chains and nodes exclusively using the API, CLI, or GUI. Trying to administer multiple nodes or chains with this environment variable enabled can lead to unexpected results.
 
 ### ETH_URL
 
-(Only has effect if USE_LEGACY_ETH_ENV_VARS is enabled)
+(Only has effect if `USE_LEGACY_ETH_ENV_VARS` is enabled)
 
 - Default: _none_
 
@@ -591,21 +583,21 @@ This is the websocket address of the Ethereum client that the Chainlink node wil
 
 ### ETH_HTTP_URL
 
-(Only has effect if USE_LEGACY_ETH_ENV_VARS is enabled)
+(Only has effect if `USE_LEGACY_ETH_ENV_VARS` is enabled)
 
 - Default: _none_
 
-This should be set to the http URL that points to the same eth node as the primary. If set, Chainlink will automatically use HTTP mode for heavy requests, which can improve reliability.
+This should be set to the HTTP URL that points to the same ETH node as the primary. If set, the Chainlink node will automatically use HTTP mode for heavy requests, which can improve reliability.
 
 ### ETH_SECONDARY_URLS
 
-(Only has effect if USE_LEGACY_ETH_ENV_VARS is enabled)
+(Only has effect if `USE_LEGACY_ETH_ENV_VARS` is enabled)
 
 - Default: _none_
 
-If set, transactions will also be broadcast to this secondary ethereum node. This allows transaction broadcasting to be more robust in the face of primary ethereum node bugs or failures.
+If set, transactions will also be broadcast to this secondary Ethereum node. This allows transaction broadcasting to be more robust in the face of primary Ethereum node bugs or failures.
 
-It is recommended to set at least one secondary eth node here that is different from your primary.
+It is recommended to set at least one secondary ETH node here that is different from your primary.
 
 Multiple URLs can be specified as a comma-separated list e.g.
 
@@ -631,7 +623,7 @@ Disable EVM entirely. No services related to EVM chains will be spun up at all. 
 
 - Default: `"false"`
 
-Disable connecting to any eth nodes. This can be useful in certain cases, e.g. to spin up a Chainlink node and add jobs without having it execute anything.
+Disable connecting to any ETH nodes. This can be useful in certain cases, e.g. to spin up a Chainlink node and add jobs without having it execute anything.
 
 ## EVM/Ethereum Chain-specific Overrides
 
@@ -641,7 +633,7 @@ This often doesn't make sense, e.g. `ETH_FINALITY_DEPTH` on Avalanche could be q
 
 We recommend setting this on a per-chain basis using the API, CLI, or GUI instead.
 
-Generally speaking, Chainlink contains built-in defaults for most of these settings that should work out of the box on all officially supported chains, so it's unlikely you'll need to make any changes here.
+In general, Chainlink nodes contain built-in defaults for most of these settings that should work out of the box on all officially supported chains, so it is unlikely you must make any changes here.
 
 ### BALANCE_MONITOR_ENABLED
 
@@ -653,44 +645,44 @@ Enables Balance Monitor feature. This is required to track balances of keys loca
 
 - Default: `"10"`
 
-It specifies the number of blocks before the current head that the log broadcaster will try to re-consume logs from, e.g. after adding a new job
+This variable specifies the number of blocks before the current head that the log broadcaster will try to re-consume logs from, e.g. after adding a new job.
 
 ### BLOCK_BACKFILL_SKIP
 
 - Default: `"false"`
 
-It enables skipping of very long log backfills - for example in a situation when the node is started after being offline for a long time.
+This variable enables skipping of very long log backfills - for example in a situation when the node is started after being offline for a long time.
 This might be useful on fast chains and if only recent chain events are relevant
 
 
 ### ETH_TX_REAPER_INTERVAL
 
-NOTE: This overrides the setting for _all_ chains, you may wish to set this on a per-chain basis using the API, CLI, or GUI instead.
+NOTE: This overrides the setting for _all_ chains, you might want to set this on a per-chain basis using the API, CLI, or GUI instead.
 
 - Default: `"1h"`
 
-Controls how often the eth tx reaper should run, used to delete old confirmed/fatally_errored transaction records from the database. Setting to `0` disables the reaper.
+Controls how often the ETH tx reaper should run, used to delete old confirmed or fatally_errored transaction records from the database. Setting to `0` disables the reaper.
 
 ### ETH_TX_REAPER_THRESHOLD
 
 - Default: `"24h"`
 
-Represents how long any confirmed/fatally_errored eth_txes will hang around in the database.
-If the eth_tx is confirmed but still below ETH_FINALITY_DEPTH it will not be deleted even if it was created at a time older than this value.
+Represents how long any confirmed or fatally_errored `eth_tx` transactions will hang around in the database.
+If the `eth_tx` is confirmed but still below `ETH_FINALITY_DEPTH`, it will not be deleted even if it was created at a time older than this value.
 
 EXAMPLE:
 With: `EthTxReaperThreshold=1h` and `EthFinalityDepth=50`
-If current head is 142, any eth_tx confirmed in block 91 or below will be reaped as long as its created_at was more than EthTxReaperThreshold ago
+If current head is 142, any `eth_tx` confirmed in block 91 or below will be reaped as long as its `created_at` value is older than the value set for `EthTxReaperThreshold`.
 
 Setting to `0` disables the reaper.
 
 ### ETH_TX_RESEND_AFTER_THRESHOLD
 
-NOTE: This overrides the setting for _all_ chains, you may wish to set this on a per-chain basis using the API, CLI, or GUI instead.
+NOTE: This overrides the setting for _all_ chains, you might want to set this on a per-chain basis using the API, CLI, or GUI instead.
 
 - Default: _automatically set based on Chain ID, typically 1m_
 
-Controls how long the ethResender will wait before re-sending the latest eth_tx_attempt. This is designed a as a fallback to protect against the eth nodes dropping txes (it has been anecdotally observed to happen), networking issues or txes being ejected from the mempool.
+Controls how long the `ethResender` will wait before re-sending the latest `eth_tx_attempt`. This is designed a as a fallback to protect against the ETH nodes dropping transactions (which has been anecdotally observed to happen), networking issues, or transactions being ejected from the mempool.
 
 Setting to `0` disables the resender.
 
@@ -698,30 +690,30 @@ Setting to `0` disables the resender.
 
 - Default: _automatically set based on Chain ID, typically 50_
 
-The number of blocks after which an ethereum transaction is considered "final".
+The number of blocks after which an Ethereum transaction is considered "final".
 
-ETH_FINALITY_DEPTH determines how deeply we look back to ensure that transactions are confirmed onto the longest chain. There is not a large performance penalty to setting this relatively high (on the order of hundreds).
+`ETH_FINALITY_DEPTH` determines how deeply we look back to ensure that transactions are confirmed onto the longest chain. There is not a large performance penalty to setting this relatively high (on the order of hundreds).
 
 It is practically limited by the number of heads we store in the database (`HEAD_TRACKER_HISTORY_DEPTH`) and should be less than this with a comfortable margin.
-If a transaction is mined in a block more than this many blocks ago, and is reorged out, we will NOT retransmit this transaction and undefined behaviour can occur including gaps in the nonce sequence that require manual intervention to fix. Therefore, this number represents a number of blocks we consider large enough that no re-org this deep will ever feasibly happen.
+If a transaction is mined in a block more than this many blocks ago, and is reorged out, we will NOT retransmit this transaction and undefined behavior can occur including gaps in the nonce sequence that require manual intervention to fix. Therefore, this number represents a number of blocks we consider large enough that no re-org this deep will ever feasibly happen.
 
 ### ETH_HEAD_TRACKER_HISTORY_DEPTH
 
 - Default: _automatically set based on Chain ID, typically 100_
 
-Tracks the top N block numbers to keep in the `heads` database table. Note that this can easily result in MORE than N total records since in the case of re-orgs we keep multiple heads for a particular block height, and it is also scoped per chain. This number should be at least as large as `ETH_FINALITY_DEPTH`. There may be a small performance penalty to setting this to something very large (10,000+)
+Tracks the top N block numbers to keep in the `heads` database table. Note that this can easily result in MORE than N total records since in the case of re-orgs we keep multiple heads for a particular block height, and it is also scoped per chain. This number should be at least as large as `ETH_FINALITY_DEPTH`. There might be a small performance penalty to setting this to something very large (10,000+)
 
 ### ETH_HEAD_TRACKER_MAX_BUFFER_SIZE
 
 - Default: `"3"`
 
-The maximum number of heads that may be buffered in front of the head tracker before older heads start to be dropped. You may think of it as something like the maximum permittable "lag" for the head tracker before we start dropping heads to keep up.
+The maximum number of heads that can be buffered in front of the head tracker before older heads start to be dropped. Think this setting as the maximum permitted "lag" for the head tracker before the Chainlink node starts dropping heads to keep up.
 
 ### ETH_HEAD_TRACKER_SAMPLING_INTERVAL
 
 - Default: _automatically set based on Chain ID, typically 1s_
 
-Head tracker sampling was introduced to handle chains with very high throughput. If set, the head tracker will "gap" heads and deliver a maximum of 1 head per this period.
+Head tracker sampling was introduced to handle chains with very high throughput. If this is set, the head tracker will "gap" heads and deliver a maximum of 1 head per this period.
 
 Set to `0` to disable head tracker sampling.
 
@@ -735,25 +727,25 @@ Controls the batch size for calling FilterLogs when backfilling missing or recen
 
 - Default: _automatic based on chain ID_
 
-Chainlink uses batch mode for certain RPC calls to increase efficiency of communication with the remote eth node. In some cases, trying to request too many items in a single batch will result in an error (e.g. due to bugs in go-ethereum, third-party provider limitations, limits inherent to the websocket channel etc). This setting controls the maximum number of items that can be requested in a single batch. Chainlink has built-in conservative defaults for different chains that should work out of the box.
+Chainlink nodes use batch mode for certain RPC calls to increase efficiency of communication with the remote ETH node. In some cases, trying to request too many items in a single batch will result in an error (e.g. due to bugs in go-ethereum, third-party provider limitations, limits inherent to the websocket channel etc). This setting controls the maximum number of items that can be requested in a single batch. Chainlink nodes use built-in conservative defaults for different chains that should work out of the box.
 
-If you have enabled HTTP urls for all of your eth nodes, you can safely increase this to a larger value e.g. 100 and see significant RPC performance improvements.
+If you have enabled HTTP URLs for all of your ETH nodes, you can safely increase this to a larger value e.g. 100 and see significant RPC performance improvements.
 
 ### LINK_CONTRACT_ADDRESS
 
 - Default: _automatic based on Chain ID_
 
-The address of the LINK token contract. It is not essential to provide this, but if given, will be used for displaying the node account's LINK balance. For supported chains, this is automatically set based on the given chain ID. For unsupported chains, you will need to supply it yourself.
+The address of the LINK token contract. It is not essential to provide this, but if given, it is used for displaying the node account's LINK balance. For supported chains, this is automatically set based on the given chain ID. For unsupported chains, you must supply it yourself.
 
-This environment variables is a global override. It is recommended instead to set this on a per-chain basis.
+This environment variable is a global override. It is recommended instead to set this on a per-chain basis.
 
 ### MIN_INCOMING_CONFIRMATIONS
 
 - Default: _automatic based on chain ID, typically 3_
 
-The number of block confirmations to wait before kicking off a job run (or proceeding with a task that listens to blockchain/log events). Setting this to a lower value improves node response time at the expense of occasionally submitting duplicate transactions in the event of chain re-orgs (duplicate transactions are harmless but cost some eth).
+The number of block confirmations to wait before kicking off a job run or proceeding with a task that listens to blockchain and log events. Setting this to a lower value improves node response time at the expense of occasionally submitting duplicate transactions in the event of chain re-orgs (duplicate transactions are harmless but cost some ETH).
 
-This can be overriden on a per-job basis.
+You can override this on a per-job basis.
 
 `MIN_INCOMING_CONFIRMATIONS=1` would kick off a job after seeing the transaction in just one block.
 
@@ -764,8 +756,7 @@ This can be overriden on a per-job basis.
 
 - Default: _automatic based on chain ID, typically 12_
 
-
-The default minimum number of block confirmations that need to be recorded on an outgoing ethtx task before the run can move onto the next task.
+The default minimum number of block confirmations that need to be recorded on an outgoing `ethtx` task before the run can move onto the next task.
 
 This can be overridden on a per-task basis by setting the `MinRequiredOutgoingConfirmations` parameter.
 
@@ -789,21 +780,21 @@ For jobs that use the EthTx adapter, this is the minimum payment amount in order
 
 These settings allow you to tune your node's gas limits and pricing. In most cases, leaving these values at their defaults should give good results.
 
-As of Chainlink 1.1.0, it is recommended to use the API, CLI, or GUI to configure gas controls because you might want to use different settings for different chains. Setting the environment variable typically overrides the setting for all chains.
+As of Chainlink node v1.1.0, it is recommended to use the API, CLI, or GUI to configure gas controls because you might want to use different settings for different chains. Setting the environment variable typically overrides the setting for all chains.
 
 ### Configuring your ETH node
 
-Your eth node may need some configuration tweaks to make it fully compatible with Chainlink, depending on your configuration.
+Your ETH node might need some configuration tweaks to make it fully compatible with Chainlink nodes depending on your configuration.
 
 #### go-ethereum
 
-WARNING: By default, go-ethereum will reject transactions that exceed it's built-in RPC gas/txfee caps. Chainlink will fatally error transactions if this happens which means if you ever exceed the caps your node will miss transactions.
+WARNING: By default, go-ethereum will reject transactions that exceed it's built-in RPC gas or txfee caps. Chainlink nodes will fatally error transactions if this happens which means if you ever exceed the caps your node will miss transactions.
 
-You should at a bare minimum disable the default RPC gas and txfee caps on your eth node. This can be done in the TOML file as seen below, or by running go-ethereum with the command line arguments: `--rpc.gascap=0 --rpc.txfeecap=0`.
+You should at a bare minimum disable the default RPC gas and txfee caps on your ETH node. This can be done in the TOML file as seen below, or by running go-ethereum with the command line arguments: `--rpc.gascap=0 --rpc.txfeecap=0`.
 
 It is also recommended to configure go-ethereum properly before increasing `ETH_MAX_IN_FLIGHT_TRANSACTIONS` to ensure all in-flight transactions are maintained in the mempool.
 
-Relevant settings for geth (and forks e.g. BSC)
+Relevant settings for geth and forks (such as BSC).
 
 ```toml
 [Eth]
@@ -824,7 +815,7 @@ Lifetime = 10800000000000 # Default 3h, this is probably ok, you might even cons
 
 #### parity/openethereum
 
-Relevant settings for parity/openethereum (and forks e.g. xDai)
+Relevant settings for parity and openethereum (and forks such as xDai)
 
 ```toml
 tx_queue_locals = ["0xYourNodeAddress1", "0xYourNodeAddress2"] # Add your node addresses here
@@ -843,11 +834,11 @@ Forces EIP1559 transaction mode for all chains. Enabling EIP1559 mode can help r
 
 #### Technical details
 
-Chainlink now includes experimental support for submitting transactions using type 0x2 (EIP-1559) envelope.
+Chainlink nodes include experimental support for submitting transactions using type 0x2 (EIP-1559) envelope.
 
 EIP-1559 mode is off by default but can be enabled on a per-chain basis or globally.
 
-This may help to save gas on spikes: Chainlink ought to react faster on the upleg and avoid overpaying on the downleg. It may also be possible to set `BLOCK_HISTORY_ESTIMATOR_BATCH_SIZE` to a smaller value e.g. 12 or even 6 because tip cap ought to be a more consistent indicator of inclusion time than total gas price. This would make Chainlink more responsive and ought to reduce response time variance. Some experimentation will be needed here to find optimum settings.
+This might help to save gas on spikes. Chainlink nodes should react faster on the upleg and avoid overpaying on the downleg. It might also be possible to set `BLOCK_HISTORY_ESTIMATOR_BATCH_SIZE` to a smaller value such as 12 or even 6 because tip cap should be a more consistent indicator of inclusion time than total gas price. This would make Chainlink nodes more responsive and should reduce response time variance. Some experimentation is required to find optimum settings.
 
 To enable globally, set `EVM_EIP1559_DYNAMIC_FEES=true`. Set with caution, if you set this on a chain that does not actually support EIP-1559 your node will be broken.
 
@@ -855,15 +846,15 @@ In EIP-1559 mode, the total price for the transaction is the minimum of base fee
 
 Chainlink's implementation of this is to set a large fee cap and modify the tip cap to control confirmation speed of transactions. So, when in EIP1559 mode, the tip cap takes the place of gas price roughly speaking, with the varying base price remaining a constant (we always pay it).
 
-A quick note on terminology - Chainlink uses the same terms used internally by go-ethereum source code to describe various prices. This is not the same as the externally used terms. For reference:
+A quick note on terminology - Chainlink nodes use the same terms used internally by go-ethereum source code to describe various prices. This is not the same as the externally used terms. For reference:
 
-Base Fee Per Gas = BaseFeePerGas
-Max Fee Per Gas = FeeCap
-Max Priority Fee Per Gas = TipCap
+- Base Fee Per Gas = BaseFeePerGas
+- Max Fee Per Gas = FeeCap
+- Max Priority Fee Per Gas = TipCap
 
 In EIP-1559 mode, the following changes occur to how configuration works:
 
-- All new transactions will be sent as type 0x2 transactions specifying a TipCap and FeeCap (NOTE: existing pending legacy transactions will continue to be gas bumped in legacy mode)
+- All new transactions will be sent as type 0x2 transactions specifying a TipCap and FeeCap. Be aware that existing pending legacy transactions will continue to be gas bumped in legacy mode.
 - BlockHistoryEstimator will apply its calculations (gas percentile etc) to the TipCap and this value will be used for new transactions (GasPrice will be ignored)
 - FixedPriceEstimator will use `EVM_GAS_TIP_CAP_DEFAULT` instead of `ETH_GAS_PRICE_DEFAULT`
 - `ETH_GAS_PRICE_DEFAULT` is ignored for new transactions and `EVM_GAS_TIP_CAP_DEFAULT` is used instead (default 20GWei)
@@ -875,7 +866,7 @@ The default tip cap is configurable per-chain but can be specified for all chain
 
 When using the FixedPriceEstimator, the default gas tip will be used for all transactions.
 
-When using the BlockHistoryEstimator, Chainlink will calculate the tip cap based on transactions already included (in the same way it calculates gas price in legacy mode).
+When using the BlockHistoryEstimator, Chainlink nodes calculate the tip cap based on transactions already included in the same way that they calculate gas price in legacy mode.
 
 Enabling EIP1559 mode might lead to marginally faster transaction inclusion and make the node more responsive to sharp rises/falls in gas price, keeping response times more consistent.
 
@@ -902,7 +893,7 @@ The percentage by which to bump gas on a transaction that has exceeded `ETH_GAS_
 
 - Default: _automatic based on chain ID_
 
-Chainlink can be configured to automatically bump gas on transactions that have been stuck waiting in the mempool for at least this many blocks. Set to 0 to disable gas bumping completely.
+Chainlink nodes can be configured to automatically bump gas on transactions that have been stuck waiting in the mempool for at least this many blocks. Set to 0 to disable gas bumping completely.
 
 ### ETH_GAS_BUMP_TX_DEPTH
 
@@ -921,24 +912,21 @@ The minimum fixed amount of wei by which gas is bumped on each transaction attem
 - Default: _automatically set based on Chain ID, typically 500000_
 
 The default gas limit for outgoing transactions. This should not need to be changed in most cases.
-Some job types (e.g. keeper) may set their own gas limit unrelated to this value.
+Some job types, such as Keeper jobs, might set their own gas limit unrelated to this value.
 
 ### ETH_GAS_LIMIT_MULTIPLIER
 
 - Default: `"1.0"`
 
-A factor by which a transaction's GasLimit is
-multiplied before transmission. So if the value is 1.1, and the GasLimit for
-a transaction is 10, 10% will be added before transmission.
+A factor by which a transaction's GasLimit is multiplied before transmission. So if the value is 1.1, and the GasLimit for a transaction is 10, 10% will be added before transmission.
 
-This factor is always applied, so includes Optimism L2 transactions which
-uses a default gas limit of 1 and is also applied to EthGasLimitDefault.
+This factor is always applied, so includes Optimism L2 transactions which uses a default gas limit of 1 and is also applied to EthGasLimitDefault.
 
 ### ETH_GAS_LIMIT_TRANSFER
 
 - Default: _automatically set based on Chain ID, typically 21000_
 
-The gas limit used for an ordinary eth transfer.
+The gas limit used for an ordinary ETH transfer.
 
 ### ETH_GAS_PRICE_DEFAULT
 
@@ -946,7 +934,7 @@ The gas limit used for an ordinary eth transfer.
 
 - Default: _automatic based on chain ID_
 
-The default gas price to use when submitting transactions to the blockchain. Will be overridden by the in-built BlockHistoryEstimator if enabled, and may be increased if gas bumping is enabled.
+The default gas price to use when submitting transactions to the blockchain. Will be overridden by the in-built BlockHistoryEstimator if enabled, and might be increased if gas bumping is enabled.
 
 Can be used with the `chainlink setgasprice` to be updated while the node is still running.
 
@@ -956,7 +944,7 @@ Can be used with the `chainlink setgasprice` to be updated while the node is sti
 
 - Default: _automatic based on chain ID_
 
-The default gas tip to use when submitting transactions to the blockchain. Will be overridden by the in-built BlockHistoryEstimator if enabled, and may be increased if gas bumping is enabled.
+The default gas tip to use when submitting transactions to the blockchain. Will be overridden by the in-built BlockHistoryEstimator if enabled, and might be increased if gas bumping is enabled.
 
 ### EVM_GAS_TIP_CAP_MINIMUM
 
@@ -970,7 +958,7 @@ The minimum gas tip to use when submitting transactions to the blockchain.
 
 - Default: _automatic based on chain ID_
 
-Chainlink will never pay more than this for a transaction.
+Chainlink nodes will never pay more than this for a transaction.
 
 ### ETH_MAX_IN_FLIGHT_TRANSACTIONS
 
@@ -978,7 +966,7 @@ Chainlink will never pay more than this for a transaction.
 
 Controls how many transactions are allowed to be "in-flight" i.e. broadcast but unconfirmed at any one time. You can consider this a form of transaction throttling.
 
-The default is set conservatively at 16 because this is a pessimistic minimum that both geth and parity will hold without evicting local transactions. If your node is falling behind and you need higher throughput, you can increase this setting, but you MUST make sure that your eth node is configured properly otherwise you can get nonce gapped and your node will get stuck.
+The default is set conservatively at 16 because this is a pessimistic minimum that both geth and parity will hold without evicting local transactions. If your node is falling behind and you need higher throughput, you can increase this setting, but you MUST make sure that your ETH node is configured properly otherwise you can get nonce gapped and your node will get stuck.
 
 0 value disables the limit. Use with caution.
 
@@ -986,7 +974,7 @@ The default is set conservatively at 16 because this is a pessimistic minimum th
 
 - Default: _automatically set based on Chain ID, typically 250_
 
-The maximum number of unbroadcast transactions per key that are allowed to be enqueued before jobs will start failing and rejecting send of any further transactions. This represents a sanity limit and generally indicates a problem with your eth node (transactions are not getting mined).
+The maximum number of unbroadcast transactions per key that are allowed to be enqueued before jobs will start failing and rejecting send of any further transactions. This represents a sanity limit and generally indicates a problem with your ETH node (transactions are not getting mined).
 
 Do NOT blindly increase this value thinking it will fix things if you start hitting this limit because transactions are not getting mined, you will instead only make things worse.
 
@@ -1000,7 +988,7 @@ In deployments with very high burst rates, or on chains with large re-orgs, you 
 
 - Default: _automatic based on chain ID_
 
-Chainlink will never pay less than this for a transaction.
+Chainlink nodes will never pay less than this for a transaction.
 
 It is possible to force the Chainlink node to use a fixed gas price by setting a combination of these, e.g.
 
@@ -1017,19 +1005,19 @@ GAS_ESTIMATOR_MODE="FixedPrice"
 
 - Default: `"true"`
 
-Chainlink will automatically try to sync its local nonce with the remote chain on startup and fast forward if necessary. This is almost always safe but can be disabled in exceptional cases by setting this value to false.
+Chainlink nodes will automatically try to sync its local nonce with the remote chain on startup and fast forward if necessary. This is almost always safe but can be disabled in exceptional cases by setting this value to false.
 
 ## EVM/Ethereum Gas Price Estimation
 
 These settings allow you to configure how your node calculates gas prices. In most cases, leaving these values at their defaults should give good results.
 
-As of Chainlink 1.1.0, it is recommended to use the API, CLI, or GUI to configure gas controls because you might want to use different settings for different chains. Setting the environment variable typically overrides the setting for all chains.
+As of Chainlink node v1.1.0, it is recommended to use the API, CLI, or GUI to configure gas controls because you might want to use different settings for different chains. Setting the environment variable typically overrides the setting for all chains.
 
-Chainlink decides what gas price to use using an `Estimator`. It ships with several simple and battle-hardened built-in estimators that should work well for almost all use-cases. Note that estimators will change their behaviour slightly depending on if you are in EIP1559 mode or not.
+Chainlink nodes decide what gas price to use using an `Estimator`. It ships with several simple and battle-hardened built-in estimators that should work well for almost all use-cases. Note that estimators will change their behaviour slightly depending on if you are in EIP1559 mode or not.
 
 You can also use your own estimator for gas price by selecting the `FixedPrice` estimator and using the exposed API to set the price.
 
-An important point to note is that Chainlink does _not_ ship with built-in support for go-ethereum's `estimateGas` call. This is for several reasons, including security and reliability. We have found empirically that it is not generally safe to rely on the remote eth node's idea of what gas price should be.
+An important point to note is that the Chainlink node does _not_ ship with built-in support for go-ethereum's `estimateGas` call. This is for several reasons, including security and reliability. We have found empirically that it is not generally safe to rely on the remote ETH node's idea of what gas price should be.
 
 ### GAS_ESTIMATOR_MODE
 
@@ -1064,7 +1052,7 @@ E.g. if this is set to 3, and we receive block 10, block history estimator will 
 
 CAUTION: You might be tempted to set this to 0 to use the latest possible
 block, but it is possible to receive a head BEFORE that block is actually
-available from the connected node via RPC, due to race conditions in the code of the remote eth node. In this case you will get false
+available from the connected node via RPC, due to race conditions in the code of the remote ETH node. In this case you will get false
 "zero" blocks that are missing transactions.
 
 ### BLOCK_HISTORY_ESTIMATOR_TRANSACTION_PERCENTILE
@@ -1077,15 +1065,15 @@ Only has an effect if gas updater is enabled. Specifies percentile gas price to 
 
 Think of this number as an indicator of how aggressive you want your node to price its transactions.
 
-Setting this number higher will cause Chainlink to select higher gas prices.
+Setting this number higher will cause the Chainlink node to select higher gas prices.
 
 Setting it lower will tend to set lower gas prices.
 
 ## EVM/Ethereum Transaction Simulation
 
-Chainlink now supports transaction simulation for certain types of job. When this is enabled, transactions will be simulated using `eth_call` before initial send. If the transaction would revert, the tx is marked as errored without being broadcast, potentially avoiding an expensive on-chain revert.
+Chainlink nodes support transaction simulation for certain types of job. When this is enabled, transactions will be simulated using `eth_call` before initial send. If the transaction would revert, the transaction is marked as an error without being broadcast, potentially avoiding an expensive on-chain revert.
 
-This can add a tiny bit of latency (upper bound 2s, generally much shorter under good conditions) and will add marginally more load to the eth client, since it adds an extra call for every transaction sent. However, it may help to save gas in some cases especially during periods of high demand by avoiding unnecessary reverts (due to outdated round etc).
+This can add a tiny bit of latency (upper bound 2s, generally much shorter under good conditions) and will add marginally more load to the ETH client, since it adds an extra call for every transaction sent. However, it might help to save gas in some cases especially during periods of high demand by avoiding unnecessary reverts (due to outdated round etc).
 
 This option is EXPERIMENTAL and disabled by default.
 
@@ -1124,7 +1112,7 @@ OCR_SIMULATE_TRANSACTIONS allows to enable transaction simulation for OCR.
 
 - Default: `"false"`
 
-By default, Chainlink does not allow the `http` adapter to connect to local IP addresses for security reasons (because the URL can come from on-chain, which is an untrusted source). This can be overridden on a per-task basis by setting the `AllowUnrestrictedNetworkAccess` key, or globally by setting the environment variable `DEFAULT_HTTP_ALLOW_UNRESTRICTED_NETWORK_ACCESS=true`.
+By default, Chainlink nodes do not allow the `http` adapter to connect to local IP addresses for security reasons (because the URL can come from on-chain, which is an untrusted source). This can be overridden on a per-task basis by setting the `AllowUnrestrictedNetworkAccess` key, or globally by setting the environment variable `DEFAULT_HTTP_ALLOW_UNRESTRICTED_NETWORK_ACCESS=true`.
 
 It is recommended that this be left disabled.
 
@@ -1134,7 +1122,7 @@ NOTE: In older versions of Chainlink, it was required to set this in order to al
 
 - Default: `"32768"`
 
-DEFAULT_HTTP_LIMIT defines the max number of bytes for HTTP requests and responses made by `http` and `bridge` adapters.
+DEFAULT_HTTP_LIMIT defines the maximum number of bytes for HTTP requests and responses made by `http` and `bridge` adapters.
 
 ### DEFAULT_HTTP_TIMEOUT
 
@@ -1146,19 +1134,19 @@ DEFAULT_HTTP_TIMEOUT defines the default timeout for HTTP requests made by `http
 
 - Default: `"false"`
 
-Enables the External Initiator feature. If disabled, `webhook` jobs may ONLY be initiated by a logged-in user. If enabled, `webhook` jobs can be initiated by a whitelisted external initiator.
+Enables the External Initiator feature. If disabled, `webhook` jobs can ONLY be initiated by a logged-in user. If enabled, `webhook` jobs can be initiated by a whitelisted external initiator.
 
 ### JOB_PIPELINE_MAX_RUN_DURATION
 
 - Default: `"10m"`
 
-JOB_PIPELINE_MAX_RUN_DURATION is the maximum time that a single job run may take. If it takes longer, it will exit early and be marked errored. If set to zero, disables the time limit completely.
+`JOB_PIPELINE_MAX_RUN_DURATION` is the maximum time that a single job run might take. If it takes longer, it will exit early and be marked errored. If set to zero, disables the time limit completely.
 
 ### JOB_PIPELINE_REAPER_INTERVAL
 
 - Default: `"1h"`
 
-In order to keep database size manageable, Chainlink will run a reaper that deletes completed job runs older than a certain threshold age. JOB_PIPELINE_REAPER_INTERVAL controls how often the job pipeline reaper will run.
+In order to keep database size manageable, Chainlink nodes will run a reaper that deletes completed job runs older than a certain threshold age. `JOB_PIPELINE_REAPER_INTERVAL` controls how often the job pipeline reaper will run.
 
 Set to `0` to disable the periodic reaper.
 
@@ -1166,31 +1154,31 @@ Set to `0` to disable the periodic reaper.
 
 - Default: `"24h"`
 
-JOB_PIPELINE_REAPER_THRESHOLD determines the age limit for job runs. Completed job runs older than this will be automatically purged from the database.
+`JOB_PIPELINE_REAPER_THRESHOLD` determines the age limit for job runs. Completed job runs older than this will be automatically purged from the database.
 
 ### JOB_PIPELINE_RESULT_WRITE_QUEUE_DEPTH
 
 - Default: `"100"`
 
-Some jobs write their results asynchronously for performance reasons (e.g. OCR). JOB_PIPELINE_RESULT_WRITE_QUEUE_DEPTH controls how many writes will be buffered before subsequent writes are dropped.
+Some jobs write their results asynchronously for performance reasons such as OCR. `JOB_PIPELINE_RESULT_WRITE_QUEUE_DEPTH` controls how many writes will be buffered before subsequent writes are dropped.
 
 It is not recommended to change this setting unless you know what you are doing.
 
 ## OCR
 
-This section only applies if you are running offchain reporting jobs.
+This section applies only if you are running off-chain reporting jobs.
 
 ### FEATURE_OFFCHAIN_REPORTING
 
 - Default: `"false"`
 
-Set to true to enable OCR jobs.
+Set to `true` to enable OCR jobs.
 
 ### OCR_KEY_BUNDLE_ID
 
 - Default: _none_
 
-OCR_KEY_BUNDLE_ID is the default key bundle ID to use for OCR jobs. If you have an OCR job that does not explicitly specify a key bundle ID, it will fall back to this value.
+`OCR_KEY_BUNDLE_ID` is the default key bundle ID to use for OCR jobs. If you have an OCR job that does not explicitly specify a key bundle ID, it will fall back to this value.
 
 ### OCR_MONITORING_ENDPOINT
 
@@ -1202,16 +1190,16 @@ Optional URL of OCR monitoring endpoint.
 
 - Default: _none_
 
-OCR_TRANSMITTER_ADDRESS is the default sending address to use for OCR. If you have an OCR job that does not explicitly specify a transmitter address, it will fall back to this value.
+`OCR_TRANSMITTER_ADDRESS` is the default sending address to use for OCR. If you have an OCR job that does not explicitly specify a transmitter address, it will fall back to this value.
 
 ### P2P_NETWORKING_STACK
 
 - Default: `"V1"`
 
-OCR supports multiple networking stacks. P2P_NETWORKING_STACK chooses which one to use. Possible values are:
+OCR supports multiple networking stacks. `P2P_NETWORKING_STACK` chooses which stack to use. Possible values are:
 
 - `V1`
-- `V1V2` (runs both stacks simultaneously, trying V2 first then falling back to V1 - useful for migrating networks without downtime)
+- `V1V2` - Runs both stacks simultaneously and tries V2 first before falling back to V1. This is useful for migrating networks without downtime.
 - `V2`
 
 All nodes in the OCR network should share the same networking stack.
@@ -1280,7 +1268,7 @@ P2PV2ListenAddresses contains the addresses the peer will listen to on the netwo
 
 - Default: `"20"`
 
-KEEPER_GAS_PRICE_BUFFER_PERCENT adds the specified percentage to the gas price used for checking whether to perform an upkeep. Only applies in legacy mode (EIP1559 off).
+`KEEPER_GAS_PRICE_BUFFER_PERCENT` adds the specified percentage to the gas price used for checking whether to perform an upkeep. Only applies in legacy mode (EIP-1559 off).
 
 ### KEEPER_GAS_TIP_CAP_BUFFER_PERCENT
 
@@ -1302,8 +1290,7 @@ It is not recommended to change this setting unless you know what you are doing.
 
 - Default: `"200000"`
 
-The amount of extra gas to provide checkUpkeep() calls
-to account for the gas consumed by the keeper registry.
+The amount of extra gas to provide checkUpkeep() calls to account for the gas consumed by the keeper registry.
 
 ### KEEPER_REGISTRY_PERFORM_GAS_OVERHEAD
 ADVANCED
@@ -1327,7 +1314,7 @@ It is not recommended to change this setting unless you know what you are doing.
 
 - Default: `"10"`
 
-KEEPER_REGISTRY_SYNC_UPKEEP_QUEUE_SIZE represents the maximum number of upkeeps that can be synced in parallel.
+`KEEPER_REGISTRY_SYNC_UPKEEP_QUEUE_SIZE` represents the maximum number of upkeeps that can be synced in parallel.
 
 ## CLI Client
 
@@ -1337,7 +1324,7 @@ The environment variables in this section apply only when running CLI commands t
 
 - Default: `$ROOT/apicredentials`
 
-ADMIN_CREDENTIALS_FILE optionally points to a text file containing admin credentials for logging in. It is useful for running client CLI commands and has no effect when passed to a running node.
+`ADMIN_CREDENTIALS_FILE` optionally points to a text file containing admin credentials for logging in. It is useful for running client CLI commands and has no effect when passed to a running node.
 
 The file should contain two lines, the first line is the username and second line is the password.
 e.g.
@@ -1356,7 +1343,7 @@ This is the URL that you will use to interact with the node, including the GUI. 
 
 - Default: `"false"`
 
-INSECURE_SKIP_VERIFY disables SSL certificate verification when connection to a Chainlink node using the remote client. For example, when executing most remote commands in the CLI. This is mostly useful for people who want to use TLS on localhost.
+`INSECURE_SKIP_VERIFY` disables SSL certificate verification when connection to a Chainlink node using the remote client. For example, when executing most remote commands in the CLI. This is mostly useful for people who want to use TLS on localhost.
 
 It is not recommended to change this unless you know what you are doing.
 
