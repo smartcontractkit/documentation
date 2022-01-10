@@ -4,7 +4,6 @@ section: nodeOperator
 date: Last Modified
 title: "Configuring Chainlink Nodes"
 permalink: "docs/configuration-variables/"
-whatsnext: {"Configuration UI":"/docs/configuration-ui/"}
 ---
 
 Recent versions of Chainlink ship with sensible defaults for most configuration variables. You do not need to change much to get a standard deployment working.
@@ -282,7 +281,7 @@ Chainlink uses a database lock to ensure that only one instance of Chainlink can
 
 - Default: `"dual"`
 
-DATABASE_LOCKING_MODE can be one of 'dual', 'advisorylock', 'lease' or 'none'. It controls which mode to use to enforce that only one Chainlink application can use the database.
+DATABASE_LOCKING_MODE can be one of 'dual', 'advisorylock', 'lease' or 'none'. It controls which mode to use to enforce that only one Chainlink node can use the database.
 
 Previous versions of Chainlink used advisory locking only, so the default is `dual` to provide backwards and forwards compatibility.
 
@@ -331,7 +330,7 @@ It is not recommended to change this setting unless you know what you are doing.
 
 - Default: `"1027321974924625846"`
 
-ADVISORY_LOCK_ID is the application advisory lock ID. Should match all other Chainlink applications that might access this database. It is unlikely you will ever need to change this from the default.
+ADVISORY_LOCK_ID is the application advisory lock ID. Should match all other Chainlink nodes that might access this database. It is unlikely you will ever need to change this from the default.
 
 ### LEASE_LOCK_DURATION
 ADVANCED
@@ -1351,16 +1350,13 @@ mysecurepassw0rd
 
 - Default: `"http://localhost:6688"`
 
-This is the URL that you will use to interact with the node, including the GUI. It only has effect when using the Chainlink client to run CLI commands.
+This is the URL that you will use to interact with the node, including the GUI. Use this URL to connect to the GUI or to run commands remotely using the Chainlink CLI.
 
 ### INSECURE_SKIP_VERIFY
 
 - Default: `"false"`
 
-INSECURE_SKIP_VERIFY disables SSL certificate verification when connection to
-a Chainlink client using the remote client, i.e. when executing most remote
-commands in the CLI.
-This is mostly useful for people who want to use TLS on localhost.
+INSECURE_SKIP_VERIFY disables SSL certificate verification when connection to a Chainlink node using the remote client. For example, when executing most remote commands in the CLI. This is mostly useful for people who want to use TLS on localhost.
 
 It is not recommended to change this unless you know what you are doing.
 
