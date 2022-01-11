@@ -100,7 +100,7 @@ bytes32 private s_keyHash;
 uint256 private s_fee;
 ```
 
-Bellow are the values for Kovan testnet network. They will be updated in the next step, the `constructor`.
+Below are the values for Kovan testnet network. They will be updated in the `constructor`.
 
 - Key Hash:   0x6c3699283bda56ad74f6b855546325b68d482e983852a7a82979cc4807b641f4
 - Fee:        0.1 LINK (100000000000000000)
@@ -120,7 +120,7 @@ mapping(address => uint256) private s_results;
 
 The fee and the key hash must be initialized in the constructor of the contract. To use `VRFConsumerBase` properly, you must also pass certain values into its constructor.
 
-Only the owner (the address which create the smart contract) will be able to do some tasks. In order to do this, you will import a contract named [`ConfirmedOwner`](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/ConfirmedOwner.sol) and use it to extended the contract that you create.
+Only the owner (the address which create the smart contract) will be able to do some tasks. In order to do this, you will import a contract named [`ConfirmedOwner`](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/ConfirmedOwner.sol) and use it to extend the contract that you create.
 
 ```solidity
 // SPDX-License-Identifier: MIT
@@ -166,7 +166,7 @@ The `rollDice` function will complete the following tasks:
 
 You must add a `ROLL_IN_PROGRESS` constant to signify that the die has been rolled but the result is not yet returned. Also add a `DiceRolled` event to the contract.
 
-Only owner can execute the `rollDice` function.
+Only the owner of the contract can execute the `rollDice` function.
 
 ```solidity
 // SPDX-License-Identifier: MIT
@@ -348,12 +348,12 @@ You have now completed all necessary functions to generate randomness and assign
 
 You will now deploy your completed contract. This deployment is slightly different than the example in the [Deploy Your First Contract](/docs/deploy-your-first-contract/) guide. In our case, you will have to pass in parameters to the constructor upon deployment.
 
-Once compiled, you'll see a dropdown list that looks like this in the deploy pane:
+Once compiled, you'll see a dropdown menu that looks like this in the deploy pane:
 
 ![Remix contract selected](/files/intermediates-tutorial-01.png)
 
-Select the contract `VRFD20` (or the name you given to yours).
-You will deploy it on Kovan testnet network.
+Select the contract `VRFD20` (or the name you've given your contract).
+You will deploy this contract on the Kovan testnet network.
 Click the caret arrow on the right hand side of **Deploy** to expand the parameter fields, and paste the following values in:
 
 - vrfCoordinator:   `0xdD3782915140c8f3b190B5D67eAc6dc5760C46E9`
@@ -391,7 +391,7 @@ After you open the deployed contract tab in the bottom left, the function button
 
 You will have to wait a few minutes for your transaction to confirm and the response to be sent back. You can get your house by clicking the `house` function button with your address. Once the response has been sent back, you'll be assigned a *Game of Thrones* house!
 
-Maybe you notice that there are more buttons (functions) than you built in the smart contract. These were inherited from the smart contracts `VRFConsumerBase` and `ConfirmedOwner`, which were used in the contract definition.
+You may notice there are more buttons (functions) than you originally built in the smart contract. These were inherited from the smart contracts `VRFConsumerBase` and `ConfirmedOwner` which are used in the contract definition.
 
 # 8. Further Reading
 
