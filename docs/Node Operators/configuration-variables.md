@@ -651,7 +651,7 @@ This variable specifies the number of blocks before the current head that the lo
 
 - Default: `"false"`
 
-This variable enables skipping of very long log backfills - for example in a situation when the node is started after being offline for a long time.
+This variable enables skipping of very long log backfills. For example, this happens in a situation when the node is started after being offline for a long time.
 This might be useful on fast chains and if only recent chain events are relevant
 
 
@@ -661,7 +661,7 @@ NOTE: This overrides the setting for _all_ chains, you might want to set this on
 
 - Default: `"1h"`
 
-Controls how often the ETH tx reaper should run, used to delete old confirmed or fatally_errored transaction records from the database. Setting to `0` disables the reaper.
+Controls how often the ETH transaction reaper should run, used to delete old confirmed or fatally_errored transaction records from the database. Setting to `0` disables the reaper.
 
 ### ETH_TX_REAPER_THRESHOLD
 
@@ -770,7 +770,7 @@ This can be overridden on a per-task basis by setting the `MinRequiredOutgoingCo
 
 - Default: _automatically set based on Chain ID, typically 10000000000000 (0.00001 LINK) on all chains except mainnet, where it is 0.1 LINK_
 
-For jobs that use the EthTx adapter, this is the minimum payment amount in order for the node to accept and process the job. Since there are no decimals on the EVM, the value is represented like wei.
+For jobs that use the `EthTx` adapter, this is the minimum payment amount in order for the node to accept and process the job. Since there are no decimals on the EVM, the value is represented like wei.
 
 > 🚧 Note
 >
@@ -830,7 +830,7 @@ tx_queue_no_unfamiliar_locals = false # This is disabled by default but might as
 
 - Default: _automatic based on chain ID_
 
-Forces EIP1559 transaction mode for all chains. Enabling EIP1559 mode can help reduce gas costs on chains that support it.
+Forces EIP-1559 transaction mode for all chains. Enabling EIP-1559 mode can help reduce gas costs on chains that support it.
 
 #### Technical details
 
@@ -844,7 +844,7 @@ To enable globally, set `EVM_EIP1559_DYNAMIC_FEES=true`. Set with caution, if yo
 
 In EIP-1559 mode, the total price for the transaction is the minimum of base fee + tip cap and fee cap. More information can be found on the [official EIP](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-1559.md).
 
-Chainlink's implementation of this is to set a large fee cap and modify the tip cap to control confirmation speed of transactions. So, when in EIP1559 mode, the tip cap takes the place of gas price roughly speaking, with the varying base price remaining a constant (we always pay it).
+Chainlink's implementation of this is to set a large fee cap and modify the tip cap to control confirmation speed of transactions. When in EIP-1559 mode, the tip cap takes the place of gas price roughly speaking, with the varying base price remaining a constant (we always pay it).
 
 A quick note on terminology - Chainlink nodes use the same terms used internally by go-ethereum source code to describe various prices. This is not the same as the externally used terms. For reference:
 
@@ -855,8 +855,8 @@ A quick note on terminology - Chainlink nodes use the same terms used internally
 In EIP-1559 mode, the following changes occur to how configuration works:
 
 - All new transactions will be sent as type 0x2 transactions specifying a TipCap and FeeCap. Be aware that existing pending legacy transactions will continue to be gas bumped in legacy mode.
-- BlockHistoryEstimator will apply its calculations (gas percentile etc) to the TipCap and this value will be used for new transactions (GasPrice will be ignored)
-- FixedPriceEstimator will use `EVM_GAS_TIP_CAP_DEFAULT` instead of `ETH_GAS_PRICE_DEFAULT`
+- `BlockHistoryEstimator` will apply its calculations (gas percentile etc) to the TipCap and this value will be used for new transactions (GasPrice will be ignored)
+- `FixedPriceEstimator` will use `EVM_GAS_TIP_CAP_DEFAULT` instead of `ETH_GAS_PRICE_DEFAULT`
 - `ETH_GAS_PRICE_DEFAULT` is ignored for new transactions and `EVM_GAS_TIP_CAP_DEFAULT` is used instead (default 20GWei)
 - `ETH_MIN_GAS_PRICE_WEI` is ignored for new transactions and `EVM_GAS_TIP_CAP_MINIMUM` is used instead (default 0)
 - `ETH_MAX_GAS_PRICE_WEI` controls the FeeCap
@@ -864,11 +864,11 @@ In EIP-1559 mode, the following changes occur to how configuration works:
 
 The default tip cap is configurable per-chain but can be specified for all chains using `EVM_GAS_TIP_CAP_DEFAULT`. The fee cap is derived from `ETH_MAX_GAS_PRICE_WEI`.
 
-When using the FixedPriceEstimator, the default gas tip will be used for all transactions.
+When using the `FixedPriceEstimator`, the default gas tip will be used for all transactions.
 
-When using the BlockHistoryEstimator, Chainlink nodes calculate the tip cap based on transactions already included in the same way that they calculate gas price in legacy mode.
+When using the `BlockHistoryEstimator`, Chainlink nodes calculate the tip cap based on transactions already included in the same way that they calculate gas price in legacy mode.
 
-Enabling EIP1559 mode might lead to marginally faster transaction inclusion and make the node more responsive to sharp rises/falls in gas price, keeping response times more consistent.
+Enabling EIP-1559 mode might lead to marginally faster transaction inclusion and make the node more responsive to sharp rises/falls in gas price, keeping response times more consistent.
 
 In addition, `ethcall` tasks now accept `gasTipCap` and `gasFeeCap` parameters in addition to `gasPrice`. This is required for Keeper jobs, i.e.:
 
@@ -934,21 +934,21 @@ The gas limit used for an ordinary ETH transfer.
 
 - Default: _automatic based on chain ID_
 
-The default gas price to use when submitting transactions to the blockchain. Will be overridden by the in-built BlockHistoryEstimator if enabled, and might be increased if gas bumping is enabled.
+The default gas price to use when submitting transactions to the blockchain. Will be overridden by the built-in `BlockHistoryEstimator` if enabled, and might be increased if gas bumping is enabled.
 
 Can be used with the `chainlink setgasprice` to be updated while the node is still running.
 
 ### EVM_GAS_TIP_CAP_DEFAULT
 
-(Only applies to EIP1559 transactions)
+(Only applies to EIP-1559 transactions)
 
 - Default: _automatic based on chain ID_
 
-The default gas tip to use when submitting transactions to the blockchain. Will be overridden by the in-built BlockHistoryEstimator if enabled, and might be increased if gas bumping is enabled.
+The default gas tip to use when submitting transactions to the blockchain. Will be overridden by the built-in `BlockHistoryEstimator` if enabled, and might be increased if gas bumping is enabled.
 
 ### EVM_GAS_TIP_CAP_MINIMUM
 
-(Only applies to EIP1559 transactions)
+(Only applies to EIP-1559 transactions)
 
 - Default: _automatic based on chain ID_
 
@@ -1013,7 +1013,7 @@ These settings allow you to configure how your node calculates gas prices. In mo
 
 As of Chainlink node v1.1.0, it is recommended to use the API, CLI, or GUI to configure gas controls because you might want to use different settings for different chains. Setting the environment variable typically overrides the setting for all chains.
 
-Chainlink nodes decide what gas price to use using an `Estimator`. It ships with several simple and battle-hardened built-in estimators that should work well for almost all use-cases. Note that estimators will change their behaviour slightly depending on if you are in EIP1559 mode or not.
+Chainlink nodes decide what gas price to use using an `Estimator`. It ships with several simple and battle-hardened built-in estimators that should work well for almost all use-cases. Note that estimators will change their behaviour slightly depending on if you are in EIP-1559 mode or not.
 
 You can also use your own estimator for gas price by selecting the `FixedPrice` estimator and using the exposed API to set the price.
 
@@ -1048,7 +1048,7 @@ Controls the number of past blocks to keep in memory to use as a basis for calcu
 - Default: _automatic, based on chain ID_
 
 Controls the number of blocks that the block history estimator trails behind head.
-E.g. if this is set to 3, and we receive block 10, block history estimator will fetch block 7.
+For example, if this is set to 3, and we receive block 10, block history estimator will fetch block 7.
 
 CAUTION: You might be tempted to set this to 0 to use the latest possible
 block, but it is possible to receive a head BEFORE that block is actually
@@ -1073,7 +1073,7 @@ Setting it lower will tend to set lower gas prices.
 
 Chainlink nodes support transaction simulation for certain types of job. When this is enabled, transactions will be simulated using `eth_call` before initial send. If the transaction would revert, the transaction is marked as an error without being broadcast, potentially avoiding an expensive on-chain revert.
 
-This can add a tiny bit of latency (upper bound 2s, generally much shorter under good conditions) and will add marginally more load to the ETH client, since it adds an extra call for every transaction sent. However, it might help to save gas in some cases especially during periods of high demand by avoiding unnecessary reverts (due to outdated round etc).
+This can add a tiny bit of latency with an upper bound of 2s, but generally much shorter under good conditions. This will add marginally more load to the ETH client, because it adds an extra call for every transaction sent. However, it might help to save gas in some cases especially during periods of high demand by avoiding unnecessary reverts due to outdated round etc.
 
 This option is EXPERIMENTAL and disabled by default.
 
@@ -1096,7 +1096,7 @@ NOTE: This overrides the setting for _all_ chains, it is not currently possible 
 
 - Default: `"false"`
 
-FM_SIMULATE_TRANSACTIONS allows to enable transaction simulation for Flux Monitor.
+`FM_SIMULATE_TRANSACTIONS` allows to enable transaction simulation for Flux Monitor.
 
 #### OCR_SIMULATE_TRANSACTIONS
 
@@ -1104,7 +1104,7 @@ NOTE: This overrides the setting for _all_ chains, it is not currently possible 
 
 - Default: `"false"`
 
-OCR_SIMULATE_TRANSACTIONS allows to enable transaction simulation for OCR.
+`OCR_SIMULATE_TRANSACTIONS` allows to enable transaction simulation for OCR.
 
 ## Job Pipeline and tasks
 
@@ -1122,13 +1122,13 @@ NOTE: In older versions of Chainlink, it was required to set this in order to al
 
 - Default: `"32768"`
 
-DEFAULT_HTTP_LIMIT defines the maximum number of bytes for HTTP requests and responses made by `http` and `bridge` adapters.
+`DEFAULT_HTTP_LIMIT` defines the maximum number of bytes for HTTP requests and responses made by `http` and `bridge` adapters.
 
 ### DEFAULT_HTTP_TIMEOUT
 
 - Default: `"15s"`
 
-DEFAULT_HTTP_TIMEOUT defines the default timeout for HTTP requests made by `http` and `bridge` adapters.
+`DEFAULT_HTTP_TIMEOUT` defines the default timeout for HTTP requests made by `http` and `bridge` adapters.
 
 ### FEATURE_EXTERNAL_INITIATORS
 
@@ -1248,19 +1248,19 @@ The default peer ID to use for OCR jobs. If unspecified, uses the first availabl
 
 - Default: _none_
 
-P2PV2AnnounceAddresses contains the addresses the peer will advertise on the network in host:port form as accepted by net.Dial. The addresses should be reachable by peers of interest.
+`P2PV2_ANNOUNCE_ADDRESSES` contains the addresses the peer will advertise on the network in host:port form as accepted by net.Dial. The addresses should be reachable by peers of interest.
 
 #### P2PV2_BOOTSTRAPPERS
 
 - Default: _none_
 
-P2PV2Bootstrappers returns the default bootstrapper peers for libocr's v2 networking stack.
+`P2PV2_BOOTSTRAPPERS` returns the default bootstrapper peers for libocr's v2 networking stack.
 
 #### P2PV2_LISTEN_ADDRESSES
 
 - Default: _none_
 
-P2PV2ListenAddresses contains the addresses the peer will listen to on the network in host:port form as accepted by net.Listen, but host and port must be fully specified and cannot be empty.
+`P2PV2_LISTEN_ADDRESSES` contains the addresses the peer will listen to on the network in host:port form as accepted by net.Listen, but host and port must be fully specified and cannot be empty.
 
 ## Keeper
 
@@ -1274,7 +1274,7 @@ P2PV2ListenAddresses contains the addresses the peer will listen to on the netwo
 
 - Default: `"20"`
 
-KEEPER_GAS_TIP_CAP_BUFFER_PERCENT adds the specified percentage to the gas price used for checking whether to perform an upkeep. Only applies in EIP-1559 mode.
+`KEEPER_GAS_TIP_CAP_BUFFER_PERCENT` adds the specified percentage to the gas price used for checking whether to perform an upkeep. Only applies in EIP-1559 mode.
 
 ### KEEPER_MAXIMUM_GRACE_PERIOD
 ADVANCED
