@@ -799,7 +799,7 @@ Relevant settings for geth and forks (such as BSC).
 ```toml
 [Eth]
 RPCGasCap = 0 # it is recommended to disable both gas and txfee cap
-RPCTxFeeCap = 0
+RPCTxFeeCap = 0.0
 [Eth.TxPool]
 Locals = ["0xYourNodeAddress1", "0xYourNodeAddress2"]  # Add your node addresses here
 NoLocals = false # Disabled by default but might as well make sure
