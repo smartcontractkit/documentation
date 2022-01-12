@@ -609,9 +609,9 @@ This configuration is specific to EVM/Ethereum chains.
 
 ### ETH_CHAIN_ID
 
-- Default: _none_
+- Default: `"1"`
 
-This environment variable specifies the default chain ID. Any job spec that has not explicitly set `EVMChainID` will connect to this default chain.
+This environment variable specifies the default chain ID. Any job spec that has not explicitly set `EVMChainID` will connect to this default chain. If you do not have a chain in the database matching this value, any jobs that try to use it will throw an error.
 
 ### EVM_DISABLED
 
