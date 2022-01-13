@@ -102,8 +102,7 @@ uint256 private s_fee;
 
 
  
-For the contract to keep track of addresses that roll the dice, the contract will need to use mappings. 
-[Mappings](https://medium.com/upstate-interactive/mappings-in-solidity-explained-in-under-two-minutes-ecba88aff96e) are unique `key => value` pair data structures similar to hash tables in Java.
+To keep track of addresses that roll the dice, the contract uses mappings. [Mappings](https://medium.com/upstate-interactive/mappings-in-solidity-explained-in-under-two-minutes-ecba88aff96e) are unique key-value pair data structures similar to hash tables in Java.
 
 ```solidity
 mapping(bytes32 => address) private s_rollers;
@@ -120,7 +119,7 @@ The fee and the key hash must be initialized in the constructor of the contract.
 - Key Hash:   0x6c3699283bda56ad74f6b855546325b68d482e983852a7a82979cc4807b641f4
 - Fee:        0.1 LINK (100000000000000000)
 
-Only the owner (the address which create the smart contract) will be able to do some tasks. In order to do this, you will import a contract named [`ConfirmedOwner`](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/ConfirmedOwner.sol) and use it to extend the contract that you create.
+The address that creates the smart contract is the owner of the contract. Only the owner is allowed to do some tasks. Import a contract named [`ConfirmedOwner`](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/ConfirmedOwner.sol) and use it to extend the contract that you create.
 
 ```solidity
 // SPDX-License-Identifier: MIT
@@ -146,10 +145,9 @@ contract VRFD20 is VRFConsumerBase, ConfirmedOwner(msg.sender) {
 }
 ```
 
-As you can see, `VRFConsumerBase` needs to know the address of the vrfCoordinator, and the address of the LINK token. 
-For Kovan testnet network, they are:
+As you can see, the `VRFConsumerBase` constructor requires both the VRF Coordinator address and the LINK token address. For the Kovan test network, use the following values:
 
-- Chainlink VRF Coordinator address: 0xdD3782915140c8f3b190B5D67eAc6dc5760C46E9
+- VRF Coordinator address: 0xdD3782915140c8f3b190B5D67eAc6dc5760C46E9
 - LINK token address:                0xa36085F69e2889c224210F603D836748e7dC0088
 
 You can find the addresses for other networks in the [VRF contracts](../vrf-contracts/) page.
@@ -263,7 +261,7 @@ contract VRFD20 is VRFConsumerBase, ConfirmedOwner(msg.sender) {
 
 Finally, the `house` function returns the house of an address.
 
-In order to have a list of the house's names, you will create the `getHouseName` function, which will be called in the `house` function.
+To have a list of the house's names, create the `getHouseName` function that is called in the `house` function.
 
 ```solidity
 // SPDX-License-Identifier: MIT
@@ -352,8 +350,8 @@ Once compiled, you'll see a dropdown menu that looks like this in the deploy pan
 
 ![Remix contract selected](/files/intermediates-tutorial-01.png)
 
-Select the contract `VRFD20` (or the name you've given your contract).
-You will deploy this contract on the Kovan testnet network.
+Select the `VRFD20` contract or the name that you gave to your contract. You will deploy this contract on the Kovan test network.
+
 Click the caret arrow on the right hand side of **Deploy** to expand the parameter fields, and paste the following values in:
 
 - vrfCoordinator:   `0xdD3782915140c8f3b190B5D67eAc6dc5760C46E9`
@@ -363,7 +361,7 @@ Click the caret arrow on the right hand side of **Deploy** to expand the paramet
 
 ![Remix contract parameters to deploy](/files/intermediates-tutorial-03.png)
 
-Then click on `transact` button.
+Then click the `transact` button.
 
 These are the coordinator address, LINK address, key hash, and fee. For a full reference of the addresses, key hashes, and fees for each network, see [VRF Contracts](../vrf-contracts/). Click deploy and use your Metamask account to confirm the transaction.
 
@@ -381,7 +379,7 @@ Because the contract is on testnet, as with Kovan ETH, you don't need to purchas
 If you encounter any issues, make sure to check you copied the address of the correct network:
 ![Metamask Verify Contracts Screen](/images/contract-devs/metamask-2.png)
 
-Use your Metamask address on the Kovan network to request LINK and send 1 LINK to the contract address. This address can be found in Remix under **Deployed Contracts** on the bottom left.
+Use your Metamask address on the Kovan network to request LINK and send 1 LINK to the contract address. Find this address in Remix under **Deployed Contracts** on the bottom left.
 
 ![Remix contract address](/files/intermediates-tutorial-04.png)
 
@@ -391,7 +389,7 @@ After you open the deployed contract tab in the bottom left, the function button
 
 You will have to wait a few minutes for your transaction to confirm and the response to be sent back. You can get your house by clicking the `house` function button with your address. Once the response has been sent back, you'll be assigned a *Game of Thrones* house!
 
-You may notice there are more buttons (functions) than you originally built in the smart contract. These were inherited from the smart contracts `VRFConsumerBase` and `ConfirmedOwner` which are used in the contract definition.
+You might notice that there are more functions listed than you originally built in the smart contract. These were inherited from the `VRFConsumerBase` and `ConfirmedOwner` smart contracts, which are used in the contract definition.
 
 # 8. Further Reading
 
