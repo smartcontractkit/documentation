@@ -100,10 +100,7 @@ bytes32 private s_keyHash;
 uint256 private s_fee;
 ```
 
-Below are the values for Kovan testnet network. They will be updated in the `constructor`.
 
-- Key Hash:   0x6c3699283bda56ad74f6b855546325b68d482e983852a7a82979cc4807b641f4
-- Fee:        0.1 LINK (100000000000000000)
  
 For the contract to keep track of addresses that roll the dice, the contract will need to use mappings. 
 [Mappings](https://medium.com/upstate-interactive/mappings-in-solidity-explained-in-under-two-minutes-ecba88aff96e) are unique `key => value` pair data structures similar to hash tables in Java.
@@ -118,7 +115,10 @@ mapping(address => uint256) private s_results;
 
 ## Initializing the contract
 
-The fee and the key hash must be initialized in the constructor of the contract. To use `VRFConsumerBase` properly, you must also pass certain values into its constructor.
+The fee and the key hash must be initialized in the constructor of the contract. To use `VRFConsumerBase` properly, you must also pass certain values into its constructor. Below are the values for Kovan testnet network. They will be updated in the `constructor`.
+
+- Key Hash:   0x6c3699283bda56ad74f6b855546325b68d482e983852a7a82979cc4807b641f4
+- Fee:        0.1 LINK (100000000000000000)
 
 Only the owner (the address which create the smart contract) will be able to do some tasks. In order to do this, you will import a contract named [`ConfirmedOwner`](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/ConfirmedOwner.sol) and use it to extend the contract that you create.
 
