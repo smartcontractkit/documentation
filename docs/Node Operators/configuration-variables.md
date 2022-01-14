@@ -281,38 +281,34 @@ Chainlink nodes use a database lock to ensure that only one Chainlink node insta
 
 ### DATABASE_LOCKING_MODE
 
-- Default: `"dual"`
+- Default: `"advisorylock"`
 
-The `DATABASE_LOCKING_MODE` variable can be set to 'dual', 'advisorylock', 'lease' or 'none'. It controls which mode to use to enforce that only one Chainlink node can use the database.
+The `DATABASE_LOCKING_MODE` variable can be set to 'advisorylock', 'lease', 'dual', or 'none'. It controls which mode to use to enforce that only one Chainlink node can use the database. The default is `advisorylock` to provide backward compatibility, but there are some quirks when using advisory locks. If you are sure you don't need backwards compatibility with older versions, set this value to `lease`.
 
-Previous Chainlink node versions used advisory locking only, so the default is `dual` to provide backward and forward compatibility.
-
-There are a few quirks to using advisory locks, so if you are sure you don't need backwards compatibility with older versions, we recommend setting this value to `lease`.
-
-- `dual` - The default: Uses both locking types for backward and forward compatibility.
-- `advisorylock` - Advisory lock only
+- `advisorylock` - The default: Advisory lock only
 - `lease` - Lease lock only
-- _none_ - No locking at all: This is useful for advanced deployment environments when you are sure that only one instance of a Chainlink node will ever be running.
+- `dual` - Uses both locking types for both backward and forward compatibility
+- _none_ - No locking at all: This option useful for advanced deployment environments when you are sure that only one instance of a Chainlink node will ever be running.
 
 #### Technical details
 
-Ideally, node operators should use a container orchestration system, such as Kubernetes, that ensures that only one Chainlink node instance ever runs on a particular Postgres database. However, many node operators do not have the technical capacity to do this. A common use case is to run multiple Chainlink node instances in failover mode as recommended by our official documentation. The first instance will take some kind of lock on the database and subsequent instances will wait trying to take this lock in case the first instance fails.
+Ideally, you should use a container orchestration system like [Kubernetes](https://kubernetes.io/) to ensure that only one Chainlink node instance can ever use a specific Postgres database. However, some node operators do not have the technical capacity to do this. Common use cases run multiple Chainlink node instances in failover mode as recommended by our official documentation. The first instance takes a lock on the database and subsequent instances will wait trying to take this lock in case the first instance fails.
 
-Traditionally, Chainlink nodes used an advisory lock to manage this. However, advisory locks come with several problems:
-- Postgres does not really like it when you hold locks open for a very long time (hours/days). It hampers certain internal cleanup tasks and is explicitly discouraged by the Postgres maintainers.
-- The advisory lock can silently disappear when you upgrade Postgres, so a new Chainlink node instance can take over even while the old node is still running.
-- Advisory locks do not work well with pooling tools such as pgbouncer.
-- If the application crashes, the advisory lock can hang around for a while (sometimes hours) and can require manual intervention to remove it before another instance of Chainlink node will allow itself to boot.
+By default, Chainlink nodes use an advisory lock to manage this. However, advisory locks come with several problems:
+- If your nodes or applications hold locks open for several hours or days, Postgres is unable to complete internal cleanup tasks. The Postgres maintainers explicitly discourage holding locks open for long periods of time.
+- Advisory locks can silently disappear when you upgrade Postgres, so a new Chainlink node instance can take over even while the old node is still running.
+- Advisory locks do not work well with pooling tools such as [pgbouncer](https://www.pgbouncer.org/).
+- If the Chainlink node crashes, an advisory lock can hang around for up to several hours, which might require you to manually remove it so another instance of the Chainlink node will allow itself to boot.
 
-For this reason, we have introduced a new locking mode, `lease`, which is likely to become the default in future. The `lease` locking mode works as follows:
-- Have one row in a database that is updated periodically with the client ID.
-- Node A will run a background process on start that updates the client ID once per second.
-- Node B will spinlock, checking periodically to see if the client ID is too old. If the client ID is not updated after a period of time, node B assumes that node A failed and then takes over. Node B becomes the owner of the row and it updates the client ID once per second.
-- If node A comes back, it will attempt to take out a lease and realize that the database has been leased to another process, so it will exit the entire application immediately.
+Because of the complications with advisory locks, Chainlink nodes with v1.1.0 and later support a new `lease` locking mode. This mode might become the default in future. The `lease` locking mode works using the following process:
+- Node A creates one row in the database with the client ID and updates it once per second.
+- Node B spinlocks and checks periodically to see if the client ID is too old. If the client ID is not updated after a period of time, node B assumes that node A failed and takes over. Node B becomes the owner of the row and updates the client ID once per second.
+- If node A comes back, it attempts to take out a lease, realizes that the database has been leased to another process, and exits the entire application immediately.
 
-The default is set to `dual`, which uses both advisory locking and lease locking for backwards compatibility. If you know what you are doing and want to stop using the advisory locking mode, set `DATABASE_LOCKING_MODE=lease`.
+The default is set to `advisorylock` for backwards compatibility. If you know what you are doing and want to stop using the advisory locking mode, set `DATABASE_LOCKING_MODE=lease`.
 
 ### ADVISORY_LOCK_CHECK_INTERVAL
+
 ADVANCED - DEV ONLY, not released
 Do not change this setting unless you know what you are doing.
 
@@ -323,6 +319,7 @@ This setting applies only if `DATABASE_LOCKING_MODE` is set to enable advisory l
 `ADVISORY_LOCK_CHECK_INTERVAL` controls how often the Chainlink node checks to make sure it still holds the advisory lock when advisory locking is enabled. If a node no longer holds the lock, it will try to re-acquire it. If the node cannot re-acquire the lock, the application will exit.
 
 ### ADVISORY_LOCK_ID
+
 ADVANCED - DEV ONLY, not released
 Do not change this setting unless you know what you are doing.
 
@@ -333,7 +330,9 @@ This setting applies only if `DATABASE_LOCKING_MODE` is set to enable advisory l
 `ADVISORY_LOCK_ID` is the application advisory lock ID. This must match all other Chainlink nodes that might access this database. It is unlikely you will ever need to change this from the default.
 
 ### LEASE_LOCK_DURATION
-ADVANCED
+
+**ADVANCED**
+
 It is not recommended to change this setting unless you know what you are doing.
 
 This setting applies only if `DATABASE_LOCKING_MODE` is set to enable lease locking.
@@ -343,7 +342,9 @@ This setting applies only if `DATABASE_LOCKING_MODE` is set to enable lease lock
 How long the lease lock will last before expiring.
 
 ### LEASE_LOCK_REFRESH_INTERVAL
-ADVANCED
+
+**ADVANCED**
+
 It is not recommended to change this setting unless you know what you are doing.
 
 This setting applies only if `DATABASE_LOCKING_MODE` is set to enable lease locking.
