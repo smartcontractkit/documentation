@@ -17,7 +17,7 @@ metadata:
 >
 > If you are using v1, see the [VRF v1 guide](./v1).
 
-# Generate Random Numbers in your Smart Contracts
+## Generate Random Numbers in your Smart Contracts
 
 Chainlink VRF (Verifiable Random Function) is a provably-fair and verifiable source of randomness designed for smart contracts. Smart contract developers can use Chainlink VRF as a tamper-proof random number generator (RNG) to build reliable smart contracts for any applications which rely on unpredictable outcomes:
 *  Building blockchain games and NFTs.
@@ -26,12 +26,21 @@ Chainlink VRF (Verifiable Random Function) is a provably-fair and verifiable sou
 
 Learn how to write smart contracts that consume random numbers: [Get a Random Number](/docs/get-a-random-number/).
 
-# Supported networks
+## Supported networks
 
-Chainlink VRF v2 is currently available on Ethereum Mainnet and the Rinkeby testnet.
+Chainlink VRF v2 is currently available on the following networks:
 
-# On-chain Verification of Randomness
+- Ethereum Mainnet
+- Rinkeby Testnet
+- Polygon (Matic)
+- Polygon Mumbai Testnet
+- Binance Smart Chain
+- Binance Smart Chain Testnet
+
+See the [Deployments](/docs/vrf-deployments) page for a complete list of coordinator addresses and gas limits.
+
+## On-chain Verification of Randomness
 
 Chainlink VRF enables smart contracts to access randomness without compromising on security or usability. With every new request for randomness, Chainlink VRF generates a random number and cryptographic proof of how that number was determined. The proof is published and verified on-chain before it can be used by any consuming applications. This process ensures that results cannot be tampered with nor manipulated by any single entity, including oracle operators, miners, users and even smart contract developers.
 
-Read more about Chainlink VRF in [our announcement post](https://blog.chain.link/chainlink-vrf-on-chain-verifiable-randomness/).
+Read more about Chainlink VRF in [our announcement post](https://blog.chain.link/chainlink-vrf-on-chain-verifiable-randomness/). <!--TODO: Update for the v2 announcement. -->

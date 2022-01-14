@@ -1,6 +1,6 @@
 ---
 layout: nodes.liquid
-section: smartContract
+section: ethereum
 date: Last Modified
 title: "Example Contracts"
 permalink: "docs/chainlink-vrf/example-contracts/"
@@ -22,7 +22,7 @@ How you manage the subscription is up to you and depends on your randomness need
 1. Register all the applications in the [Subscription Manager]() application.  <!-- TODO: Add subscription management app URL -->
 1. Fund the subscription in the [Subscription Manager]() application.  <!-- TODO: Add subscription management app URL -->
 
-The examples here demonstrate how to complete these tasks programmatically.
+The examples here demonstrate how to complete these tasks programmatically. <!-- TODO: Check this. We might show the app example instead. -->
 
 - [Single consumer and subscription owner](#single-consumer-and-subscription-owner)
 - [Multiple consumers with an external subscription owner](#multiple-consumers-with-an-external-subscription-owner)
