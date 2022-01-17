@@ -18,7 +18,7 @@ Data provider nodes allow customizable, on-demand API calls and the ability to d
 | Data Category      | Name                                                                                                                        | Supported Blockchains                        |
 |:------------------ |:--------------------------------------------------------------------------------------------------------------------------- |:-------------------------------------------- |
 | Collectibles       | [WatchSignals Luxury Watch Price Oracle](https://market.link/data-providers/f76be519-e41e-48a0-9430-47319eda0f43)           | Ethereum, Binance Smart Chain                |
-| Crypto             | [Genesis Volatility Cryptocurrency Options Oracle](https://market.link/data-providers/9a9dfca2-6a47-4d12-a095-2224beec8c41) | Ethereum, Binance Smart Chain, Polygon, xDAI |
+| Crypto             | [Genesis Volatility Cryptocurrency Options Oracle](https://market.link/data-providers/9a9dfca2-6a47-4d12-a095-2224beec8c41) | Ethereum, Binance Smart Chain, Polygon, Gnosis Chain (xDai) |
 | Crypto             | [Kraken Rates Oracle Node](../kraken-rates-oracle-node)                                                                     | Ethereum                                     |
 | DNS Lookup         | [DNS Ownership Oracle](../dns-ownership-oracle)                                                                             | Ethereum, Binance Smart Chain, Polygon       |
 | Equities           | [dxFeed Price Oracle](https://market.link/data-providers/eb5c92a8-6093-4657-9a68-a6d10719946e)                              | Ethereum, Binance Smart Chain                |
