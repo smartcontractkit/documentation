@@ -53,11 +53,11 @@ export const NETWORKS = [
     ],
   },
   {
-    page: "xdai-price-feeds",
-    title: "xDai Data Feeds",
+    page: "data-feeds-gnosis-chain",
+    title: "Gnosis Chain (xDai) Data Feeds",
     networks: [
       {
-        name: "xDai Mainnet",
+        name: "Gnosis Chain Mainnet",
         url: "https://blockscout.com/poa/xdai/address/%s",
         source: "directory-xdai-mainnet.json",
       },

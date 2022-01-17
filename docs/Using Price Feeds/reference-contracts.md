@@ -21,7 +21,7 @@ Chainlink Data Feed contracts are updated on a regular basis by multiple Chainli
   - [Ethereum Data Feeds](../ethereum-addresses/)
   - [Binance Smart Chain Data Feeds](../binance-smart-chain-addresses/)
   - [Polygon (Matic) Data Feeds](../matic-addresses/)
-  - [xDai Data Feeds](../xdai-price-feeds/)
+  - [Gnosis Chain (xDai) Data Feeds](../data-feeds-gnosis-chain/)
   - [Huobi Eco Chain Data Feeds](../huobi-eco-chain-price-feeds/)
   - [Avalanche Data Feeds](../avalanche-price-feeds/)
   - [Fantom Data Feeds](../fantom-price-feeds/)

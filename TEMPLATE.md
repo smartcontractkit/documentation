@@ -106,7 +106,7 @@ This means that the code is written for Solidity version 0.7.0, or a newer versi
 
 To learn more about data feeds, read the Data Feed blog posts:
 
-- [Build a dApp on xDai Chain With Secure Data Feeds](https://blog.chain.link/build-a-dapp-on-xdai-chain-with-secure-data-feeds/)
+- [Build a dApp on Gnosis Chain With Secure Data Feeds](https://blog.chain.link/build-a-dapp-on-xdai-chain-with-secure-data-feeds/)
 - [Build a dApp on Binance Smart Chain With Secure Data Feeds](https://blog.chain.link/build-a-dapp-on-binance-smart-chain-with-secure-data-feeds/)
 - [The 3 Levels of Data Aggregation in Chainlink Price Feeds](https://blog.chain.link/levels-of-data-aggregation-in-chainlink-price-feeds/)
 

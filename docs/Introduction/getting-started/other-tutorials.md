@@ -48,7 +48,7 @@ Below is a list of applications of Chainlink's products and services sorted by d
 | Name                                                                                                                                               | Type     | Difficulty |
 |:-------------------------------------------------------------------------------------------------------------------------------------------------- |:-------- |:---------- |
 | [How to Calculate Price Volatility for DeFi Variance Swaps](https://blog.chain.link/how-to-calculate-price-volatility-for-defi-variance-swaps/)    | DeFi     | Advanced   |
-| [Build a dApp on xDai Chain With Secure Data Feeds](https://blog.chain.link/build-a-dapp-on-xdai-chain-with-secure-data-feeds/)                    | DeFi     | Medium     |
+| [Build a dApp on Gnosis Chain (xDai) with Secure Data Feeds](https://blog.chain.link/build-a-dapp-on-xdai-chain-with-secure-data-feeds/)                    | DeFi     | Medium     |
 | [Craft Whiskey Crypto Payments With Chainlink Oracles](https://blog.chain.link/craft-whiskey-crypto-payments-with-chainlink-oracles/)              | Payments | Advanced   |
 | [Convert a Vending Machine to Accept Cryptocurrency Payments Using Chainlink Data Feeds](https://blog.chain.link/cryptocurrency-vending-machine/) | Payments | Advanced   |
 | [Build a dApp on Binance Smart Chain With Secure Data Feeds](https://blog.chain.link/build-a-dapp-on-binance-smart-chain-with-secure-data-feeds/)  | DeFi     | Medium     |

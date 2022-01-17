@@ -20,7 +20,7 @@ The LINK token is an ERC677 token that inherits functionality from the ERC20 tok
 + [Binance Smart Chain](#binance-smart-chain)
 + [Polygon (Matic)](#polygon-matic)
 + [RSK](#rsk)
-+ [xDai](#xdai)
++ [Gnosis Chain (xDai)](#gnosis-chain-xdai)
 + [Avalanche](#avalanche)
 + [Fantom](#fantom)
 + [Arbitrum](#arbitrum)
@@ -166,11 +166,11 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 |Symbol|rLINK|
 |Decimals|18|
 
-## xDai
+## Gnosis Chain (xDai)
 
 ### Mainnet
 
-> 🚰xDai Faucet
+> 🚰Gnosis Chain (xDai) Faucet
 >
 > Free xDai for transactions: https://blockscout.com/poa/xdai/faucet
 >
@@ -182,7 +182,7 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 |:---|:---|
 |`ETH_CHAIN_ID`|`100`|
 |Address|<a href="https://blockscout.com/poa/xdai/address/0xE2e73A1c69ecF83F464EFCE6A5be353a37cA09b2" target="_blank" rel="noreferrer, noopener">`0xE2e73A1c69ecF83F464EFCE6A5be353a37cA09b2`</a>|
-|Name|ChainLink Token on xDai|
+|Name|ChainLink Token on Gnosis Chain (xDai)|
 |Symbol|LINK|
 |Decimals|18|
 
