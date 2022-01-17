@@ -23,6 +23,11 @@ The v1.1.0 release includes several substantial changes to the way you configure
 - **Full EIP1559 Support**: Chainlink nodes include experimental support for submitting transactions using type 0x2 (EIP-1559) envelope. EIP-1559 mode is off by default, but can be enabled either globally or on a per-chain basis.
 - **Multichain support (Beta)**: Chainlink now supports connecting to multiple different EVM chains simultaneously. This is disabled by default. See the [v1.1.0 Changelog](https://github.com/smartcontractkit/chainlink/blob/v1.1.0/docs/CHANGELOG.md#multichain-support-added) for details.
 
+Before you upgrade your nodes to v1.1.0, be aware of the following requirements:
+
+- If you are upgrading from a previous version, you **MUST** first upgrade the node to at least [v0.10.15](https://github.com/smartcontractkit/chainlink/releases/tag/v0.10.15).
+- Always take a Database snapshot before you upgrade your Chainlink nodes. You must be able to roll the node back to a previous version in the event of an upgrade failure.
+
 See the [v1.1.0 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v1.1.0) for a complete list of changes and fixes.
 
 ## Changes to v1.0.0 and v1.0.1 nodes
@@ -32,5 +37,5 @@ See the [v1.1.0 release notes](https://github.com/smartcontractkit/chainlink/rel
 
 Before you upgrade your nodes to v1.0.0 or v1.0.1, be aware of the following requirements:
 
-- If you are upgrading from a previous version, you **MUST** first upgrade the node to [v0.10.15](https://github.com/smartcontractkit/chainlink/releases/tag/v0.10.15).
+- If you are upgrading from a previous version, you **MUST** first upgrade the node to at least [v0.10.15](https://github.com/smartcontractkit/chainlink/releases/tag/v0.10.15).
 - Always take a Database snapshot before you upgrade your Chainlink nodes. You must be able to roll the node back to a previous version in the event of an upgrade failure.
