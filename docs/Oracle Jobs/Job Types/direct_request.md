@@ -141,18 +141,18 @@ observationSource   = """
     decode_cbor -> jpy
 
     usd          [type="http" method=GET url="$(decode_cbor.urlUSD)" allowunrestrictednetworkaccess="true"]
-    usd_parse    [type="jsonparse" path="$(decode_cbor.pathUSD)"]
-    usd_multiply [type="multiply" value="$(usd_parse)", times="100"]
+    usd_parse    [type="jsonparse" path="$(decode_cbor.pathUSD)" data="$(usd)"]
+    usd_multiply [type="multiply" input="$(usd_parse)", times="100"]
     usd -> usd_parse -> usd_multiply
 
     eur          [type="http" method=GET url="$(decode_cbor.urlEUR)" allowunrestrictednetworkaccess="true"]
-    eur_parse    [type="jsonparse" path="$(decode_cbor.pathEUR)"]
-    eur_multiply [type="multiply" value="$(eur_parse)", times="100"]
+    eur_parse    [type="jsonparse" path="$(decode_cbor.pathEUR)" data="$(eur)"]
+    eur_multiply [type="multiply" input="$(eur_parse)", times="100"]
     eur -> eur_parse -> eur_multiply
 
     jpy          [type="http" method=GET url="$(decode_cbor.urlJPY)" allowunrestrictednetworkaccess="true"]
-    jpy_parse    [type="jsonparse" path="$(decode_cbor.pathJPY)"]
-    jpy_multiply [type="multiply" value="$(jpy_parse)", times="100"]
+    jpy_parse    [type="jsonparse" path="$(decode_cbor.pathJPY)" data="$(jpy)"]
+    jpy_multiply [type="multiply" input="$(jpy_parse)", times="100"]
     jpy -> jpy_parse -> jpy_multiply
 
     usd_multiply -> encode_mwr
