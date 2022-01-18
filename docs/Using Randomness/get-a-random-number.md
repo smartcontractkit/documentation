@@ -17,15 +17,24 @@ metadata:
 
 This page explains how to get a random number inside a smart contract using Chainlink VRF.
 
-Chainlink VRF v2 is subscription-based. The subscription owner manages the subscription LINK balance as well as the set of addresses (consumers) that are allowed to use that balance for VRF requests. The requests follow the [Request & Receive Data](/docs/request-and-receive-data/) cycle. Upon fulfillment, the gas used to fulfill the request is calculated, converted to link using an ETH/LINK feed, and charged to the subscription including a flat per-request fee. To learn more about the fee structure, see the [VRF Deployments page](/docs/vrf-deployments).
+Chainlink VRF v2 is subscription-based. The subscription owner manages the subscription LINK balance as well as the set of addresses (consumers) that are allowed to use that balance for VRF requests. The requests follow the [Request & Receive Data](/docs/request-and-receive-data/) cycle. Upon fulfillment, the gas used to fulfill the request is calculated, converted to link using an ETH/LINK feed, and charged to the subscription including a flat per-request fee. To learn more about the fee structure, see the [VRF Deployments page](/docs/vrf-deployments). There are a maximum of 100 consumers per subscription. If you need more than 100 consumers, use multiple subscriptions.
+
+## Create your subscription
+
+Generally, you configure your smart contracts to use VRF with the following process:
+
+1. Create a subscription in the [Subscription Manager]() application. Take note of the subscriptionId, which your contract needs later. <!--TODO: Add subscription management app URL -->
+1. Deploy your applications to accept a subscription ID and record the addresses for each deployed contract. <!-- TODO: Describe "accept a subscription ID" more clearly. -->
+1. Register all of the deployed applications in the [Subscription Manager]() application. <!-- TODO: Add subscription management app URL -->
+1. Fund the subscription in the [Subscription Manager]() application.  <!-- TODO: Add subscription management app URL -->
 
 ## Static Parameters
 
 Static parameters are the same for all VRF users. You can find the values for your network in the [VRF Deployments page](/docs/vrf-deployments).
 
-- `address link` - LINK token address on the corresponding network.
-- `address vrfCoordinator` - Address of the Chainlink VRF Coordinator.
-- `bytes32 keyHash` - Hash of the public key used to verify the VRF proof. It functions as an ID of the off-chain VRF job to be run in response to requests. Invalid key hashes will result in the request not being processed.
+- `address link`: LINK token address on the corresponding network.
+- `address vrfCoordinator`: Address of the Chainlink VRF Coordinator.
+- `bytes32 keyHash`: Hash of the public key used to verify the VRF proof. It functions as an ID of the off-chain VRF job to be run in response to requests. Invalid key hashes will result in the request not being processed.
 
 ## Selecting a keyhash and minimum balances
 
@@ -48,9 +57,9 @@ You can find the full list of available key hashes and their associated max gas 
 
 Configure the following parameters to meet the needs of your application:
 
-- `uint16 requestConfirmations` - How many confirmations the Chainlink node should wait before responding. The longer the node waits, the more secure the random value is. It must be greater than the coordinator's `minimumRequestBlockConfirmations`.
-- `uint32 callbackGasLimit` - How much gas you would like in your callback to do work with the random words provided. It must be less than the coordinators `maxGasLimit`.
-- `uint16 numWords` - How many random words you would like in your request. If you are able to make use of several random words in the same callback, you can achieve significant gas savings.
+- `uint16 requestConfirmations`: How many confirmations the Chainlink node should wait before responding. The longer the node waits, the more secure the random value is. It must be greater than the coordinator's `minimumRequestBlockConfirmations`.
+- `uint32 callbackGasLimit`: How much gas you would like in your callback to do work with the random words provided. It must be less than the coordinators `maxGasLimit`.
+- `uint16 numWords`: How many random words you would like in your request. If you are able to make use of several random words in the same callback, you can achieve significant gas savings.
 
 ## Example Contract
 

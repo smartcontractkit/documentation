@@ -39,6 +39,12 @@ Chainlink VRF v2 is currently available on the following networks:
 
 See the [Deployments](/docs/vrf-deployments) page for a complete list of coordinator addresses and gas limits.
 
+## Billing
+
+VRF v2 uses a subscription system that allows you to pre-fund multiple requests with a single transaction and reduce the gas fees paid for each request.
+
+<!-- TODO: Explain costs per request in greater detail -->
+
 ## On-chain Verification of Randomness
 
 Chainlink VRF enables smart contracts to access randomness without compromising on security or usability. With every new request for randomness, Chainlink VRF generates a random number and cryptographic proof of how that number was determined. The proof is published and verified on-chain before it can be used by any consuming applications. This process ensures that results cannot be tampered with nor manipulated by any single entity, including oracle operators, miners, users and even smart contract developers.

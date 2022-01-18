@@ -15,17 +15,13 @@ metadata:
 >
 > If you are using v1, see the [VRF v1 guide](/docs/get-a-random-number/v1/).
 
-How you manage the subscription is up to you and depends on your randomness needs. In general you configure your smart contracts to use VRF with the following process:
+How you manage the subscription depends on your randomness needs. You can configure your subscriptions using the [Subscription Manager]() application, but these examples demonstrate how to create your subscription and register your applications programmatically. <!--TODO: Add subscription management app URL -->
 
-1. Create a subscription in the [Subscription Manager]() application. Take note of the subscriptionId, which your contract needs later. <!--TODO: Add subscription management app URL -->
-1. Deploy your applications to accept a subscription ID and record the addresses for each contract.
-1. Register all the applications in the [Subscription Manager]() application.  <!-- TODO: Add subscription management app URL -->
-1. Fund the subscription in the [Subscription Manager]() application.  <!-- TODO: Add subscription management app URL -->
-
-The examples here demonstrate how to complete these tasks programmatically. <!-- TODO: Check this. We might show the app example instead. -->
+## Table of Contents
 
 - [Single consumer and subscription owner](#single-consumer-and-subscription-owner)
 - [Multiple consumers with an external subscription owner](#multiple-consumers-with-an-external-subscription-owner)
+- [Modify existing subscriptions](#modify-existing-subscriptions)
 
 ## Single consumer and subscription owner
 
@@ -42,11 +38,11 @@ In this example, there is only one consumer who is also the subscription owner. 
 
 ## Multiple consumers with an external subscription owner
 
-In this example, the an external account manages the subscription for multiple consumers. Set up this configuration using the following process:
+In this example, an external account manages the subscription for multiple consumers. Set up this configuration using the following process:
 
-1. Create a subscription with `createSubscription()`. Make a note of the subscriptionId emitted in the `SubscriptionCreated` log. <!--TODO: metamask screen shots-->
-1. Deploy your applications which accept a subscription ID like `VRFExternalSubOwnerExample.requestRandomWords` does and record all their addresses.
-1. Register all the applications `addConsumer(uint64 subId, address consumer)` . <!--TODO: metamask screen shots-->
+1. Create a subscription with `createSubscription()`. Make a note of the subscriptionId emitted in the `SubscriptionCreated` log.
+1. Deploy your applications which accept a subscription ID like `VRFExternalSubOwnerExample.requestRandomWords` does and record all their addresses. <!--TODO: Clarify this sentence -->
+1. Register all the applications `addConsumer(uint64 subId, address consumer)` . <!--TODO: Clarify this sentence -->
 1. Fund the subscription with `LINKTOKEN.transferAndCall(address(COORDINATOR), amount, abi.encode(subId));`
 
 <div class="remix-callout">
@@ -58,13 +54,13 @@ In this example, the an external account manages the subscription for multiple c
 {% include samples/VRF/VRFExternalSubOwnerExample.sol %}
 ```
 
-## Advanced
+## Modify existing subscriptions
 
-The above examples are by no means the only way to make use of the VRF. The subscription can be managed dynamically with the following steps:
+Subscription configurations do not have to be static. You can change your subscription configuration dynamically using the following functions:
 
-- Change the consumer set with `addConsumer(uint64 subId, address consumer)`/`removeConsumer(uint64 subId, address consumer)`.
+- Change the consumer set with `addConsumer(uint64 subId, address consumer)` or `removeConsumer(uint64 subId, address consumer)`.
   - There are a maximum of 100 consumers per subscription. If you need more than 100 consumers, use multiple subscriptions.
-- Transfer the subscription ownership with `requestSubscriptionOwnerTransfer(uint64 subId, address newOwner)`/`acceptSubscriptionOwnerTransfer(uint64 subId)`.
+- Transfer the subscription ownership with `requestSubscriptionOwnerTransfer(uint64 subId, address newOwner)` and `acceptSubscriptionOwnerTransfer(uint64 subId)`.
 - Top up the subscription balance with `LINKTOKEN.transferAndCall(address(COORDINATOR), amount, abi.encode(subId));`. Any address can fund a subscription.
 - View the subscription with `getSubscription(uint64 subId)`.
 - Cancel the subscription with `cancelSubscription(uint64 subId)`.
