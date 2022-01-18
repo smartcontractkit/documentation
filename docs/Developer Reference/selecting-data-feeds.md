@@ -13,6 +13,7 @@ If your smart contracts use data feeds, assess those data feeds for the followin
 
 - [Liquidity and its Distribution](#liquidity-and-its-distribution)
 - [Single Source Data Providers](#single-source-data-providers)
+- [Crypto Actions](#crypto-actions)
 - [Fast Gas Reliability](#fast-gas-reliability)
 
 ## Liquidity and its Distribution
@@ -26,6 +27,10 @@ Design and test your contracts to handle price spikes and implement risk managem
 ## Single Source Data Providers
 
 Some data providers use a single data source, which might be necessary if only one source exists off-chain for a specific type of data. Evaluate data providers to make sure they provide high-quality data that your smart contracts can rely on. Any error or omission in the provider's data might negatively impact your application and its users.
+
+## Crypto Actions
+
+Price data quality is subject to crypto actions by the crypto project teams. Crypto actions are similar to [corporate actions](https://en.wikipedia.org/wiki/Corporate_action), but are specific to cryptocurrency projects. Sustaining data quality is dependent on data sources implementing the necessary adjustments related to token  renaming, token swaps, redenominations, splits, and other migrations that teams who govern the token might undertake.
 
 ## Fast Gas Reliability
 
