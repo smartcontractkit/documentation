@@ -23,7 +23,7 @@ The v1.1.0 release includes several substantial changes to the way you configure
 - **Full EIP1559 Support**: Chainlink nodes include experimental support for submitting transactions using type 0x2 (EIP-1559) envelope. EIP-1559 mode is off by default, but can be enabled either globally or on a per-chain basis.
 - **Multichain support (Beta)**: Chainlink now supports connecting to multiple different EVM chains simultaneously. This is disabled by default. See the [v1.1.0 Changelog](https://github.com/smartcontractkit/chainlink/blob/v1.1.0/docs/CHANGELOG.md#multichain-support-added) for details.
 
-With multliple chian support, eth node configuration is stored in the database.
+With multliple chain support, eth node configuration is stored in the database.
 
 The following environment variables are DEPRECATED:
 
