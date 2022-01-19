@@ -86,7 +86,6 @@ Your node applies configuration settings using following hierarchy:
   - [TLS_CERT_PATH](#tls_cert_path)
   - [TLS_KEY_PATH](#tls_key_path)
 - [EVM/Ethereum Legacy Environment Variables](#evmethereum-legacy-environment-variables)
-  - [USE_LEGACY_ETH_ENV_VARS](#use_legacy_eth_env_vars)
   - [ETH_URL](#eth_url)
   - [ETH_HTTP_URL](#eth_http_url)
   - [ETH_SECONDARY_URLS](#eth_secondary_urls)
@@ -562,29 +561,23 @@ The preferred way of configuring Chainlink nodes as of v1.1.0 and up is to use t
 
 The old way of specifying chains using environment variables is still supported, but discouraged. It works as follows:
 
-If you specify `USE_LEGACY_ETH_ENV_VARS` (default: true), the values of `ETH_CHAIN_ID`, `ETH_URL`, `ETH_HTTP_URL` and `ETH_SECONDARY_URLS` will be used to create and update chains and nodes representing these values in the database. If an existing chain or node is found, it will be overwritten. This environment variable is used mainly to ease the process of upgrading. On subsequent runs (once your old settings have been written to the database) it is recommended to run nodes using `USE_LEGACY_ETH_ENV_VARS=false` and use the API commands exclusively to administer chains and nodes.
+If you set any value for `ETH_URL`, the values of `ETH_CHAIN_ID`, `ETH_URL`, `ETH_HTTP_URL` and `ETH_SECONDARY_URLS` will be used to create and update chains and nodes representing these values in the database. If an existing chain or node is found, it will be overwritten. This mode is used mainly to ease the process of upgrading. On subsequent runs (once your old settings have been written to the database) it is recommended to unset `ETH_URL` and use the API commands exclusively to administer chains and nodes.
 
-### USE_LEGACY_ETH_ENV_VARS
-
-- Default: `"true"`
-
-If enabled, this setting will upsert a new chain using the `ETH_CHAIN_ID` variable and will upsert nodes corresponding to the given `ETH_URL` and `ETH_SECONDARY_URLS` variables.
-
-This is useful only for backwards compatibility. In the future, support for legacy `ETH_*` environment variables might be removed, so it is recommended to use the API, CLI, or GUI instead to setup chains and nodes.
-
-If you are running a multi-chain or multi-node setup, you should set this environment variable to `"false"` and instead configure chains and nodes exclusively using the API, CLI, or GUI. Trying to administer multiple nodes or chains with this environment variable enabled can lead to unexpected results.
+In the future, support for the `ETH_URL` and associated environment variables might be removed, so it is recommended to use the API, CLI, or GUI instead to setup chains and nodes.
 
 ### ETH_URL
 
-(Only has effect if `USE_LEGACY_ETH_ENV_VARS` is enabled)
+(Setting this will enable "legacy eth ENV" mode which is not compatible with multichain, prefer to configure in the CLI/API/GUI instead)
 
 - Default: _none_
 
 This is the websocket address of the Ethereum client that the Chainlink node will connect to. All interaction with the Ethereum blockchain will occur through this connection.
 
+NOTE: It is also required to set `ETH_CHAIN_ID` if you set ETH_URL.
+
 ### ETH_HTTP_URL
 
-(Only has effect if `USE_LEGACY_ETH_ENV_VARS` is enabled)
+(Only has effect if `ETH_URL` set to something, otherwise can be set in the CLI/API/GUI)
 
 - Default: _none_
 
@@ -592,7 +585,7 @@ This should be set to the HTTP URL that points to the same ETH node as the prima
 
 ### ETH_SECONDARY_URLS
 
-(Only has effect if `USE_LEGACY_ETH_ENV_VARS` is enabled)
+(Only has effect if `ETH_URL` set to something, otherwise can be set in the CLI/API/GUI)
 
 - Default: _none_
 
@@ -610,7 +603,7 @@ This configuration is specific to EVM/Ethereum chains.
 
 ### ETH_CHAIN_ID
 
-- Default: `"1"`
+- Default: _none_
 
 This environment variable specifies the default chain ID. Any job spec that has not explicitly set `EVMChainID` will connect to this default chain. If you do not have a chain in the database matching this value, any jobs that try to use it will throw an error.
 
