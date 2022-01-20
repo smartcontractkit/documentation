@@ -356,6 +356,8 @@ How often to refresh the lease lock. Also controls how often a standby node will
 
 As a best practice, take regular database backups in case of accidental data loss. This best practice is especially important when you upgrade your Chainlink node to a new version. Chainlink nodes support automated database backups to make this process easier.
 
+NOTE: Dumps can cause high load and massive database latencies, which will negatively impact the normal functioning of the Chainlink node. For this reason, it is recommended to set a DATABASE_BACKUP_URL and point it to a read replica if you enable automatic backups.
+
 ### DATABASE_BACKUP_FREQUENCY
 
 - Default: `"1h"`
