@@ -139,17 +139,6 @@ export const NETWORKS = [
     ],
   },
   {
-    page: "data-feeds-solana",
-    title: "Solana Data Feeds",
-    networks: [
-      {
-        name: "Solana Devnet",
-        url: "https://solscan.io/account/%s?cluster=devnet",
-        source: "directory-solana-devnet.json",
-      },
-    ],
-  },
-  {
     page: "optimism-price-feeds",
     title: "Optimism Data Feeds",
     networks: [
@@ -162,17 +151,6 @@ export const NETWORKS = [
         name: "Optimism Kovan",
         url: "https://kovan-optimistic.etherscan.io/address/%s",
         source: "directory-ethereum-testnet-kovan-optimism-1.json",
-      },
-    ],
-  },
-  {
-    page: "data-feeds-terra",
-    title: "Terra Data Feeds",
-    networks: [
-      {
-        name: "Terra Bombay Testnet",
-        url: "https://finder.terra.money/bombay-12/address/%s",
-        source: "directory-terra-testnet-bombay.json",
       },
     ],
   },

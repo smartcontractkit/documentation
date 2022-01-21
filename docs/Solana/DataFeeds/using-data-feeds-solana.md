@@ -127,8 +127,8 @@ After you deploy the program, you can use it to retrieve data from a feed. The c
 You can view the Rust code and Typescript for this example on GitHub. See the [chainlink-solana-demo](https://github.com/smartcontractkit/chainlink-solana-demo) repository. The example code has a few main components:
 
 - The [client Typescript files](https://github.com/smartcontractkit/chainlink-solana-demo/tree/main/client/src) that establish a connection to the deployed program, determine the fees associated with retrieving the feed data, handle serialization and deserialization of data, and report the returned price from the specified data feed. In this case, the script tells your deployed Solana program to retrieve the price of SOL / USD from [FmAmfoyPXiA8Vhhe6MZTr3U6rZfEZ1ctEHay1ysqCqcf](https://solscan.io/account/FmAmfoyPXiA8Vhhe6MZTr3U6rZfEZ1ctEHay1ysqCqcf?cluster=devnet).
-- The [`./src/lib.rs`](https://github.com/smartcontractkit/chainlink-solana-demo/blob/main/src/lib.rs) file that defines the on-chain program for retrieving price data from a specified [Solana Data Feed](/docs/solana/data-feeds-solana/). This program also imports some methods from the main [smartcontractkit/chainlink-solana](https://github.com/smartcontractkit/chainlink-solana) repository.
-- The program imports some dependencies from the [chainlink-solana](https://github.com/smartcontractkit/chainlink-solana) repository.
+- The [`./src/lib.rs`](https://github.com/smartcontractkit/chainlink-solana-demo/blob/main/src/lib.rs) file that defines the on-chain program for retrieving price data from a specified [Solana Data Feed](/docs/solana/data-feeds-solana/). This program also imports some methods from the [v1 smartcontractkit/chainlink-solana/](https://github.com/smartcontractkit/chainlink-solana/tree/master/v1) repository.
+- The program imports some dependencies from the [v1 smartcontractkit/chainlink-solana/](https://github.com/smartcontractkit/chainlink-solana/tree/master/v1) repository.
 
 The example code operates using the following process:
 
@@ -157,7 +157,7 @@ The example code operates using the following process:
 
 1. Your deployed program receives the request and starts processing at the [`entrypoint` in `src/lib.rs`](https://github.com/smartcontractkit/chainlink-solana-demo/blob/main/src/lib.rs#L45). This is the Rust program that you built and deployed to the Solana Devnet.
 
-1. The `process_instruction` function in `lib.rs` receives the transaction with the specified feed address and handles the steps to retrieve and store the price data on-chain. The function also calls `get_price()` from the [chainlink-solana](https://github.com/smartcontractkit/chainlink-solana) package, which gets imported from GitHub in the `Cargo.toml` file. See the [`Cargo.toml`](https://github.com/smartcontractkit/chainlink-solana-demo/blob/main/Cargo.toml#L19) file, which maps the `chainlink-solana` package to `chainlink`.
+1. The `process_instruction` function in `lib.rs` receives the transaction with the specified feed address and handles the steps to retrieve and store the price data on-chain. The function also calls `get_price()` from the [v1 smartcontractkit/chainlink-solana/](https://github.com/smartcontractkit/chainlink-solana/tree/master/v1) packages, which are imported from GitHub in the `Cargo.toml` file. See the [`Cargo.toml`](https://github.com/smartcontractkit/chainlink-solana-demo/blob/main/Cargo.toml#L19) file, which maps the `chainlink-solana` package to `chainlink`.
 
     ```rust
     pub fn process_instruction(
