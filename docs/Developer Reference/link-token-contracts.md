@@ -24,7 +24,7 @@ The LINK token is an ERC677 token that inherits functionality from the ERC20 tok
 + [Avalanche](#avalanche)
 + [Fantom](#fantom)
 + [Arbitrum](#arbitrum)
-+ [Huobi Eco Chain](#huobi-eco-chain)
++ [HECO Chain](#heco-chain)
 + [Optimism](#optimism)
 + [Harmony](#harmony)
 + [Moonriver](#moonriver)
@@ -268,7 +268,7 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 |Symbol|LINK|
 |Decimals|18|
 
-## Huobi Eco Chain
+## HECO Chain
 
 ### Mainnet
 
