@@ -267,8 +267,12 @@ module.exports = {
             children: [
               {
                 title: 'EthBalanceMonitor',
-            url: '/docs/chainlink-keepers/utility-contracts/',
-              }
+                url: '/docs/chainlink-keepers/utility-contracts/',
+              },
+              {
+                title: 'Cron Jobs',
+                url: '/docs/chainlink-keepers/cron-contracts/'
+              },
             ],
           },
           {
