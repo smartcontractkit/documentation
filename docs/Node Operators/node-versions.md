@@ -20,9 +20,8 @@ The v1.1.0 release includes several substantial changes to the way you configure
 
 - **Legacy environment variables**: Legacy environment variables are supported, but they might be removed in future node versions. See the [Configuring Chainlink Nodes](/docs/configuration-variables/#evmethereum-legacy-environment-variables) page to learn how to migrate your nodes away from legacy environment variables and use the API, CLI, or GUI exclusively to administer chains and nodes.
 - **Full EIP1559 Support**: Chainlink nodes include experimental support for submitting transactions using type 0x2 (EIP-1559) envelope. EIP-1559 mode is off by default, but can be enabled either globally or on a per-chain basis.
-- **Two new log levels have been added**:
+- **New log level added**:
   - [crit]: Critical level logs are more severe than [error] and require quick action from the node operator.
-  - [debug] [trace]: Trace level logs contain extra [debug] information for development, and must be compiled in via -tags trace.
 - **Multichain support (Beta)**: Chainlink now supports connecting to multiple different EVM chains simultaneously. This is disabled by default. See the [v1.1.0 Changelog](https://github.com/smartcontractkit/chainlink/blob/v1.1.0/docs/CHANGELOG.md#multichain-support-added) for details.
 
 With multliple chain support, eth node configuration is stored in the database.
