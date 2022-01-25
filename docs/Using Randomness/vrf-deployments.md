@@ -106,8 +106,8 @@ To avoid costly responses during gas price volatility, VRF response transactions
 |200 gwei Key Hash|`0x6e099d640cde6de9d40ac749b4b594126b0169747122711109c9985d47751f93`|
 |500 gwei Key Hash|`0xcc294a196eeeb44da2888d17c0625cc88d70d9760a69d58d853ba6581a9ab0cd`|
 |1000 gwei Key Hash|`0xd729dc84e21ae57ffb6be0053bf2b0668aa2aaf300a2a7b2ddf7dc0bb6e875a8`|
-|Premium|0.0001 LINK|
-|Minimum Confirmations|10|
+|Premium|0.0005 LINK|
+|Minimum Confirmations|3|
 
 ## Polygon (Matic) Mumbai Testnet
 
