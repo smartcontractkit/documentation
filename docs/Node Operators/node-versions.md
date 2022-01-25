@@ -19,7 +19,6 @@ You can find a list of release notes for Chainlink nodes in the [smartcontractki
 The v1.1.0 release includes several substantial changes to the way you configure and operate Chainlink nodes:
 
 - **Legacy environment variables**: Legacy environment variables are supported, but they might be removed in future node versions. See the [Configuring Chainlink Nodes](/docs/configuration-variables/#evmethereum-legacy-environment-variables) page to learn how to migrate your nodes away from legacy environment variables and use the API, CLI, or GUI exclusively to administer chains and nodes.
-- **Failover nodes**: The process for configuring failover nodes has changed and includes a new `DATABASE_LOCKING_MODE=lease` configuration variable. The default locking mode is still `DATABASE_LOCKING_MODE=advisorylock`. See the new [Failover Node Example](/docs/performing-system-maintenance/#failover-node-example) to learn the new best practices for configuring and testing failover nodes that share the same database.
 - **Full EIP1559 Support**: Chainlink nodes include experimental support for submitting transactions using type 0x2 (EIP-1559) envelope. EIP-1559 mode is off by default, but can be enabled either globally or on a per-chain basis.
 - **Multichain support (Beta)**: Chainlink now supports connecting to multiple different EVM chains simultaneously. This is disabled by default. See the [v1.1.0 Changelog](https://github.com/smartcontractkit/chainlink/blob/v1.1.0/docs/CHANGELOG.md#multichain-support-added) for details.
 

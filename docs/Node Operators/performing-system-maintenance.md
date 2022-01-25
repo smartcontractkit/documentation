@@ -84,9 +84,9 @@ When the log messages on the first node indicate that it is waiting for the data
 
 You might want to run multiple instances of the Chainlink node on the same machine. If one instance goes down, the second instance can automatically pick up requests. Building off the concepts in the previous example, use Docker to have primary and a secondary containers referencing the same database URL.
 
-Use `DATABASE_LOCKING_MODE=lease` unless you absolutely require compatibility with an older node version that is using advisory locks. See [the docs](/docs/configuration-variables/#database_locking_mode) for more information about this configuration variable.
+Use the default `DATABASE_LOCKING_MODE=advisorylock` setting unless you want to test the `lease` or `dual` settings. See [the docs](/docs/configuration-variables/#database_locking_mode) for more information about this configuration variable.
 
-Now, run the Chainlink node with a name option specified:
+Run the Chainlink node with a name option specified:
 
 ```shell Rinkeby
 cd ~/.chainlink-rinkeby && docker run --name chainlink -p 6688:6688 -v ~/.chainlink-rinkeby:/chainlink -it --env-file=.env smartcontract/chainlink local n

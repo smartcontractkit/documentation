@@ -198,7 +198,7 @@ The PostgreSQL URI to connect to your database. Chainlink nodes require Postgres
 
 - Default: _none_
 
-CHAIN_TYPE overrides all chains and forces them to act as a particular chain type. An up-to-date list of chain types is given in [`chaintype.go`](https://github.com/smartcontractkit/chainlink/blob/a710fcb3c1f3501b8df486b45c14423aefdb0876/core/chains/chaintype.go).
+CHAIN_TYPE overrides all chains and forces them to act as a particular chain type. An up-to-date list of chain types is given in [`chaintype.go`](https://github.com/smartcontractkit/chainlink/blob/v1.1.0/core/chains/chaintype.go).
 
 This variable enables some chain-specific hacks and optimizations. It is recommended not to use this environment variable and set the chain-type on a per-chain basis instead.
 
@@ -282,7 +282,7 @@ Chainlink nodes use a database lock to ensure that only one Chainlink node insta
 
 - Default: `"advisorylock"`
 
-The `DATABASE_LOCKING_MODE` variable can be set to 'advisorylock', 'lease', 'dual', or 'none'. It controls which mode to use to enforce that only one Chainlink node can use the database. The default is `advisorylock` to provide backward compatibility, but there are some quirks when using advisory locks. If you are sure you don't need backwards compatibility with older versions, set this value to `lease`.
+The `DATABASE_LOCKING_MODE` variable can be set to 'advisorylock', 'lease', 'dual', or 'none'. It controls which mode to use to enforce that only one Chainlink node can use the database.
 
 - `advisorylock` - The default: Advisory lock only
 - `lease` - Lease lock only
@@ -304,7 +304,7 @@ Because of the complications with advisory locks, Chainlink nodes with v1.1.0 an
 - Node B spinlocks and checks periodically to see if the client ID is too old. If the client ID is not updated after a period of time, node B assumes that node A failed and takes over. Node B becomes the owner of the row and updates the client ID once per second.
 - If node A comes back, it attempts to take out a lease, realizes that the database has been leased to another process, and exits the entire application immediately.
 
-The default is set to `advisorylock` for backwards compatibility. If you know what you are doing and want to stop using the advisory locking mode, set `DATABASE_LOCKING_MODE=lease`.
+The default is set to `advisorylock`.
 
 ### ADVISORY_LOCK_CHECK_INTERVAL
 
