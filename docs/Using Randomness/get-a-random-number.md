@@ -35,7 +35,7 @@ Each keyhash is associated with a maximum gas price used to fulfill a request. T
 
 For this calculation, the `verification_gas` value is 200k.
 
-As an example, assume that the ETH to LINK price is 0.02 ETH/LINK and you request a 200k callback gas limit. If you select the appropriate key hash to specify a max gas price of 200 gwei, the minimum link balance required for that request to be fulfilled is `((200e9)(200000 + 200000))/0.01 = 8 LINK`. This would be the maximum possible payment for that single request.
+As an example, assume that the ETH to LINK price is 0.01 ETH/LINK and you request a 200k callback gas limit. If you select the appropriate key hash to specify a max gas price of 200 gwei, the minimum link balance required for that request to be fulfilled is `((200e9)(200000 + 200000))/0.01 = 8 LINK`. This would be the maximum possible payment for that single request.
 
 If the request is fulfilled at a gas price lower than the maximum, which is likely in steady gas conditions, then the amount billed will be much less than 8 LINK. If you make a request when the subscription is underfunded, top up the subscription with LINK and the request will go through automatically as long as the request was made in the last 24 hours.
 
