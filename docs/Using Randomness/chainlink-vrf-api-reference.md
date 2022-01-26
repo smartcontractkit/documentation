@@ -64,7 +64,7 @@ Called by VRFCoordinator when it receives a valid VRF proof. Override this funct
 
 ```javascript Solidity
 function fulfillRandomness(bytes32 requestId, uint256 randomness)
-    external virtual;
+    internal virtual;
 ```
 
 * `requestId`: The Id initially returned by `requestRandomness`.

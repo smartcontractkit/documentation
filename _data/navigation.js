@@ -133,8 +133,8 @@ module.exports = {
                 url: '/docs/matic-addresses/',
               },
               {
-                title: 'xDai Data Feeds',
-                url: '/docs/xdai-price-feeds/',
+                title: 'Gnosis Chain (xDai) Data Feeds',
+                url: '/docs/data-feeds-gnosis-chain/',
               },
               {
                 title: 'Huobi Eco Chain Data Feeds',
