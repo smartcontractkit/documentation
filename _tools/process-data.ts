@@ -21,6 +21,7 @@ interface DataFile {
         relativeDeviationThresholdPPB: string;
       };
       docsHidden?: boolean;
+      transmissionsAccount?: string;
     };
   };
   proxies: {
@@ -135,7 +136,7 @@ for (let page of targetData) {
           // End conditional
 
           proxyList.push({
-            pair: 
+            pair:
               // Only insert 'v1' if this isn't an index
               !/index/i.test(proxy.name) &&
               // Only insert 'v1' if this isn't already a versioned OHM
@@ -151,13 +152,16 @@ for (let page of targetData) {
     } else {
       for (let contractKey of Object.keys(contents.contracts)) {
         const contract = contents.contracts[contractKey];
-        proxyList.push({
-          pair: contract.name,
-          deviationThreshold: liveContracts[contractKey].deviationThreshold,
-          heartbeat: liveContracts[contractKey].heartbeat,
-          decimals: liveContracts[contractKey].decimals,
-          proxy: contractKey,
-        });
+        if (!contract.docsHidden) {
+          proxyList.push({
+            pair: contract.name,
+            deviationThreshold: liveContracts[contractKey].deviationThreshold,
+            heartbeat: liveContracts[contractKey].heartbeat,
+            decimals: liveContracts[contractKey].decimals,
+            // Use transmissionsAccount for Solana OCR2; contractKey otherwise
+            proxy: contract.transmissionsAccount || contractKey,
+          });
+        }
       }
     }
     // Save the data into our final output
