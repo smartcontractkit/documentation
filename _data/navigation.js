@@ -392,7 +392,7 @@ module.exports = {
             title: 'Connecting to a Remote Database',
           },
           {
-            title: 'Configuration Variables',
+            title: 'Configuring Nodes',
             url: '/docs/configuration-variables/',
           },
           {
