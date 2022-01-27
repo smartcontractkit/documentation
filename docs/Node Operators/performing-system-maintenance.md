@@ -15,13 +15,11 @@ You might occasionally need to restart the system that the Chainlink node runs o
 >
 > This example uses Docker to run the Chainlink node, see the [Running a Chainlink Node](../running-a-chainlink-node/) page for instructions on how to set it up.
 
-First, pull the latest Docker image for your desired tag based on release version (latest is used in this example):
+First, find the most recent Chainlink image on [Docker Hub](https://hub.docker.com/r/smartcontract/chainlink/) and pull that Docker image. For version 1.1.0:
 
 ```shell
-docker pull smartcontract/chainlink:latest
+docker pull smartcontract/chainlink:1.1.0
 ```
-
-This will pull the latest code base of the Chainlink node, which has been pre-compiled and uploaded to Dockerhub for your use.
 
 Then, check what port the existing container is running on:
 
