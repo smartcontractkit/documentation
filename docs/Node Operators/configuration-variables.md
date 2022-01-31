@@ -37,6 +37,7 @@ Your node applies configuration settings using following hierarchy:
 - [General Node Configuration](#general-node-configuration)
   - [CHAIN_TYPE](#chain_type)
   - [CHAINLINK_DEV](#chainlink_dev)
+  - [SHUTDOWN_GRACE_PERIOD](#shutdown_grace_period)
   - [EXPLORER_ACCESS_KEY](#explorer_access_key)
   - [EXPLORER_SECRET](#explorer_secret)
   - [EXPLORER_URL](#explorer_url)
@@ -212,6 +213,12 @@ This variable enables some chain-specific hacks and optimizations. It is recomme
 - Default: `"false"`
 
 Setting `CHAINLINK_DEV` to `true` enables development mode. This setting is not recommended for production deployments. It can be useful for enabling experimental features and collecting debug information.
+
+### SHUTDOWN_GRACE_PERIOD
+
+- Default: `"5s"`
+
+When Chainlink node is shutting down gracefully and exceeded this grace period, it gives up trying to stop all (sub)services gracefully, closes DB connection and quits.
 
 ### EXPLORER_ACCESS_KEY
 
