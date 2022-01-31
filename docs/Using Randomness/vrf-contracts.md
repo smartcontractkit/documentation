@@ -1,6 +1,6 @@
 ---
 layout: nodes.liquid
-section: smartContract
+section: ethereum
 date: Last Modified
 title: "Chainlink VRF Contract Addresses"
 permalink: "docs/vrf-contracts/"
@@ -64,7 +64,7 @@ For implementation details, read [Introduction to Chainlink VRF](../chainlink-vr
 
 > 🚰BSC Faucet
 >
-> Testnet LINK is available from https://faucets.chain.link/bsctest
+> Testnet LINK is available from https://faucets.chain.link/chapel
 
 |Item|Value|
 |---|---|

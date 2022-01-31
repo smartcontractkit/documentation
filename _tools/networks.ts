@@ -53,11 +53,11 @@ export const NETWORKS = [
     ],
   },
   {
-    page: "xdai-price-feeds",
-    title: "xDai Data Feeds",
+    page: "data-feeds-gnosis-chain",
+    title: "Gnosis Chain (xDai) Data Feeds",
     networks: [
       {
-        name: "xDai Mainnet",
+        name: "Gnosis Chain Mainnet",
         url: "https://blockscout.com/poa/xdai/address/%s",
         source: "directory-xdai-mainnet.json",
       },
@@ -127,20 +127,14 @@ export const NETWORKS = [
     title: "Harmony Data Feeds",
     networks: [
       {
+        name: "Harmony Mainnet",
+        url: "https://explorer.harmony.one/#/address/%s",
+        source: "directory-harmony-mainnet-0.json",
+      },
+      {
         name: "Harmony Testnet",
         url: "https://explorer.testnet.harmony.one/#/address/%s",
         source: "directory-harmony-testnet-shard-0.json",
-      },
-    ],
-  },
-  {
-    page: "data-feeds-solana",
-    title: "Solana Data Feeds",
-    networks: [
-      {
-        name: "Solana Devnet",
-        url: "https://explorer.solana.com/address/%s?cluster=devnet",
-        source: "directory-solana-devnet.json",
       },
     ],
   },
@@ -157,17 +151,6 @@ export const NETWORKS = [
         name: "Optimism Kovan",
         url: "https://kovan-optimistic.etherscan.io/address/%s",
         source: "directory-ethereum-testnet-kovan-optimism-1.json",
-      },
-    ],
-  },
-  {
-    page: "data-feeds-terra",
-    title: "Terra Data Feeds",
-    networks: [
-      {
-        name: "Terra Bombay Testnet",
-        url: "https://finder.terra.money/bombay-12/address/%s",
-        source: "directory-terra-testnet-bombay.json",
       },
     ],
   },

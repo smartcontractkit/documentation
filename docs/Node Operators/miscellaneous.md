@@ -1,9 +1,10 @@
 ---
 layout: nodes.liquid
+section: nodeOperator
 date: Last Modified
 title: "Miscellaneous"
 permalink: "docs/miscellaneous/"
-whatsnext: {"Best Security and Operating Practices":"/docs/best-security-practices/"}
+whatsnext: {"Security and Operation Best Practices":"/docs/best-security-practices/"}
 ---
 ## Execute Commands Running Docker
 

@@ -21,6 +21,7 @@ interface DataFile {
         relativeDeviationThresholdPPB: string;
       };
       docsHidden?: boolean;
+      transmissionsAccount?: string;
     };
   };
   proxies: {
@@ -122,25 +123,45 @@ for (let page of targetData) {
       for (let proxyKey of Object.keys(contents.proxies)) {
         const proxy = contents.proxies[proxyKey];
         if (liveContracts[proxy.aggregator] && !proxy.name.includes("Healthcheck")) {
+
+          // Conditional processing for DPI pairs on specific networks.
+          let dpiIndexProxyAddresses: string[] = [
+            "0x029849bbc0b1d93b85a8b6190e979fd38F5760E2", // Ethereum DPI / ETH
+            "0xD2A593BF7594aCE1faD597adb697b5645d5edDB2", // Ethereum DPI / USD
+            "0xC70aAF9092De3a4E5000956E672cDf5E996B4610" // Polygon (Matic) DPI / ETH
+          ];
+          if (dpiIndexProxyAddresses.includes(proxyKey)) {
+            proxy.name = proxy.name.concat(" Index");
+          }
+          // End conditional
+
           proxyList.push({
-            pair: proxy.name,
+            pair:
+              // Only insert 'v1' if this isn't an index
+              !/index/i.test(proxy.name) &&
+              // Only insert 'v1' if this isn't already a versioned OHM
+              !/OHMv/i.test(proxy.name)
+              ? proxy.name.replace("OHM", "OHMv1")  : proxy.name,
             deviationThreshold: liveContracts[proxy.aggregator].deviationThreshold,
             heartbeat: liveContracts[proxy.aggregator].heartbeat,
             decimals: liveContracts[proxy.aggregator].decimals,
-            proxy: proxyKey.startsWith("sol-") ? proxyKey.replace("sol-", "") : proxyKey,
+            proxy: proxyKey,
           });
         }
       }
     } else {
       for (let contractKey of Object.keys(contents.contracts)) {
         const contract = contents.contracts[contractKey];
-        proxyList.push({
-          pair: contract.name,
-          deviationThreshold: liveContracts[contractKey].deviationThreshold,
-          heartbeat: liveContracts[contractKey].heartbeat,
-          decimals: liveContracts[contractKey].decimals,
-          proxy: contractKey.startsWith("sol-") ? contractKey.replace("sol-", "") : contractKey,
-        });
+        if (!contract.docsHidden) {
+          proxyList.push({
+            pair: contract.name,
+            deviationThreshold: liveContracts[contractKey].deviationThreshold,
+            heartbeat: liveContracts[contractKey].heartbeat,
+            decimals: liveContracts[contractKey].decimals,
+            // Use transmissionsAccount for Solana OCR2; contractKey otherwise
+            proxy: contract.transmissionsAccount || contractKey,
+          });
+        }
       }
     }
     // Save the data into our final output
@@ -162,4 +183,3 @@ try {
 }
 const path = '_src/addresses/addresses.json';
 fs.writeFileSync(path, JSON.stringify(finalResult));
-console.log(`processed results written to ${path}`);

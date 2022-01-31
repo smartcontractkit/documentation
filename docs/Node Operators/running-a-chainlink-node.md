@@ -1,24 +1,57 @@
 ---
 layout: nodes.liquid
+section: nodeOperator
 date: Last Modified
 title: "Running a Chainlink Node"
 permalink: "docs/running-a-chainlink-node/"
-whatsnext: {"Fulfilling Requests":"/docs/fulfilling-requests/", "Performing System Maintenance":"/docs/performing-system-maintenance/", "Miscellaneous":"/docs/miscellaneous/", "Best Security and Operating Practices":"/docs/best-security-practices/"}
+whatsnext: {"Fulfilling Requests":"/docs/fulfilling-requests/", "Performing System Maintenance":"/docs/performing-system-maintenance/", "Miscellaneous":"/docs/miscellaneous/", "Security and Operation Best Practices":"/docs/best-security-practices/"}
 metadata:
   title: "Running a Chainlink Node"
   description: "Run your own Chainlink node using this guide which explains the requirements and basics for getting started."
   image:
     0: "/files/OpenGraph_V3.png"
 ---
+
 In this section, we'll explain the requirements and basics for running your own Chainlink node.
 
 It's important to note that nodes can fulfill requests for open APIs out-of-the-box using our [Tasks](/docs/tasks/) without needing any additional configuration.
 
 If you would like to provide data from an authenticated API, you can add an [external adapter](../external-adapters/) to enable connectivity through the Chainlink node.
 
-Hardware requirements are light. The only heavy part is you'll need a blockchain node connection. If you use a 3rd party (defined below), you can use a machine with as little as 10GB of storage and 4GB of RAM.
-
 ![Chainlink Node Diagram](/files/ab5762f-end-to-end-diagram.png)
+
+# Hardware Requirements
+
+## Chainlink Node
+
+Your Chainlink node should be run on a server that has a public IP address.
+
+### Minimum
+
+To get started running a Chainlink node, you will need a machine with at least **2 cores** and **4 GB of RAM**. 
+
+### Recommended 
+
+The requirements for running a Chainlink node scale as the number of jobs your node services also scales.  For nodes with over 100 jobs, you will need at least **4 cores** and **8GB of RAM**.  
+
+
+## PostgreSQL Database
+
+In addition to running a Chainlink node, you will also need a PostgreSQL database.  Please use a version >= 11, and be sure that your DB host provides access to logs.
+
+### Minimum
+
+The minimum requirements for the database are **2 cores**, **4GB of RAM**, and **100 GB of storage**.
+
+### Recommended
+
+Similar to the Chainlink node, requirements increase as you service more jobs.  For more than 100 jobs, your database server will need at least **4 cores**, **16 GB of RAM**, and **100 GB of storage**. 
+
+If you run your node on AWS, use an instance type with dedicated core time. [Burstable Performance Instances](https://aws.amazon.com/ec2/instance-types/#Burstable_Performance_Instances) have a limited number of [CPU credits](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/burstable-credits-baseline-concepts.html), so you should not use them to run Chainlink nodes that require consistent performance.
+
+## Ethereum Client
+
+Connectivity to an Ethereum client is also required for communication with the blockchain. If you decide to run your own Ethereum client, you will want to run that on a separate machine. Hardware requirements of Ethereum clients may change over time.  You can also use a 3rd party (defined below).
 
 # Running From Source
 
@@ -96,22 +129,16 @@ Run the following as a command to create an environment file and populate with v
 echo "ROOT=/chainlink
 LOG_LEVEL=debug
 ETH_CHAIN_ID=4
-MIN_OUTGOING_CONFIRMATIONS=2
-LINK_CONTRACT_ADDRESS=0x01BE23585060835E02B77ef475b0Cc51aA1e0709
 CHAINLINK_TLS_PORT=0
 SECURE_COOKIES=false
-GAS_UPDATER_ENABLED=true
 ALLOW_ORIGINS=*" > ~/.chainlink-rinkeby/.env
 ```
 ```shell Kovan
 echo "ROOT=/chainlink
 LOG_LEVEL=debug
 ETH_CHAIN_ID=42
-MIN_OUTGOING_CONFIRMATIONS=2
-LINK_CONTRACT_ADDRESS=0xa36085F69e2889c224210F603D836748e7dC0088
 CHAINLINK_TLS_PORT=0
 SECURE_COOKIES=false
-GAS_UPDATER_ENABLED=true
 ALLOW_ORIGINS=*" > ~/.chainlink-kovan/.env
 ```
 ```shell Mainnet
@@ -120,7 +147,6 @@ LOG_LEVEL=debug
 ETH_CHAIN_ID=1
 CHAINLINK_TLS_PORT=0
 SECURE_COOKIES=false
-GAS_UPDATER_ENABLED=true
 ALLOW_ORIGINS=*" > ~/.chainlink/.env
 ```
 
@@ -192,18 +218,6 @@ echo "DATABASE_URL=postgresql://$USERNAME:$PASSWORD@$SERVER:$PORT/$DATABASE" >> 
 echo "DATABASE_URL=postgresql://$USERNAME:$PASSWORD@$SERVER:$PORT/$DATABASE" >> ~/.chainlink/.env
 ```
 
-For a primary/secondary Chainlink node architecture, you may also want to set the `DATABASE_TIMEOUT` configuration as well. Setting `DATABASE_TIMEOUT` to 0 allows a secondary node to wait for the lock to be released on the database indefinitely.
-
-```shell Rinkeby
-echo "DATABASE_TIMEOUT=0" >> ~/.chainlink-rinkeby/.env
-```
-```shell Kovan
-echo "DATABASE_TIMEOUT=0" >> ~/.chainlink-kovan/.env
-```
-```shell Mainnet
-echo "DATABASE_TIMEOUT=0" >> ~/.chainlink/.env
-```
-
 ### Start the Chainlink Node
 
 Now you can run the Docker image. Replace `<version>` with your desired version. Tag versions are available in the [Chainlink docker hub](https://hub.docker.com/r/smartcontract/chainlink/tags). *The `latest` version does not work.*
@@ -228,4 +242,4 @@ The first time running the image, it will ask you for a password and confirmatio
 >
 > You will need to send some ETH to your node's address in order for it to fulfill requests. You can view your node's ETH address when the node starts up or on the Configuration page of the GUI.
 
-You can now connect to your Chainlink node's UI interface by navigating to [http://localhost:6688](http://localhost:6688). If using a VPS, you can create a [SSH tunnel](https://www.howtogeek.com/168145/how-to-use-ssh-tunneling/) to your node for `6688:localhost:6688` to enable connectivity to the GUI. Typically this is done with `ssh -i $KEY $USER@$REMOTE-IP -L 6688:localhost:6688 -N`. A SSH tunnel is recommended over opening up ports specific to the Chainlink node to be public facing. See our [Best Security and Operating Practices](../best-security-practices/) page for more details on how to secure your node.
+You can now connect to your Chainlink node's UI interface by navigating to [http://localhost:6688](http://localhost:6688). If using a VPS, you can create a [SSH tunnel](https://www.howtogeek.com/168145/how-to-use-ssh-tunneling/) to your node for `6688:localhost:6688` to enable connectivity to the GUI. Typically this is done with `ssh -i $KEY $USER@$REMOTE-IP -L 6688:localhost:6688 -N`. A SSH tunnel is recommended over opening up ports specific to the Chainlink node to be public facing. See the [Security and Operation Best Practices](../best-security-practices/) page for more details on how to secure your node.
