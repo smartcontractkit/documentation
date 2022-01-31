@@ -12,7 +12,7 @@ Not all environment variables are documented here. Any undocumented environment 
 
 To reiterate: _If you have an environment variable set that is not listed here, and you don't know exactly why you have it set, you should remove it!_
 
-The environment variables listed here are explicitly supported and current as of Chainlink node v1.1.0.
+The environment variables listed here are explicitly supported and current as of Chainlink node v1.1.1.
 
 ## Changes to node configuration in v1.1.0 nodes
 
@@ -44,6 +44,10 @@ Your node applies configuration settings using following hierarchy:
   - [TELEMETRY_INGRESS_LOGGING](#telemetry_ingress_logging)
   - [TELEMETRY_INGRESS_URL](#telemetry_ingress_url)
   - [TELEMETRY_INGRESS_SERVER_PUB_KEY](#telemetry_ingress_server_pub_key)
+- [Chains](#chains)
+  - [SOLANA_ENABLED](#solana_enabled)
+  - [TERRA_ENABLED](#terra_enabled)
+  - [EVM_ENABLED](#evm_enabled)
 - [Database Settings](#database-settings)
   - [MIGRATE_DATABASE](#migrate_database)
   - [ORM_MAX_IDLE_CONNS](#orm_max_idle_conns)
@@ -93,8 +97,7 @@ Your node applies configuration settings using following hierarchy:
   - [ETH_SECONDARY_URLS](#eth_secondary_urls)
 - [EVM/Ethereum Global Settings](#evmethereum-global-settings)
   - [ETH_CHAIN_ID](#eth_chain_id)
-  - [EVM_DISABLED](#evm_disabled)
-  - [ETH_DISABLED](#eth_disabled)
+  - [EVM_RPC_ENABLED](#evm_rpc_enabled)
 - [EVM/Ethereum Chain-specific Overrides](#evmethereum-chain-specific-overrides)
   - [BALANCE_MONITOR_ENABLED](#balance_monitor_enabled)
   - [BLOCK_BACKFILL_DEPTH](#block_backfill_depth)
@@ -202,7 +205,7 @@ The PostgreSQL URI to connect to your database. Chainlink nodes require Postgres
 
 - Default: _none_
 
-CHAIN_TYPE overrides all chains and forces them to act as a particular chain type. An up-to-date list of chain types is given in [`chaintype.go`](https://github.com/smartcontractkit/chainlink/blob/v1.1.0/core/chains/chaintype.go).
+CHAIN_TYPE overrides all chains and forces them to act as a particular chain type. An up-to-date list of chain types is given in [`chaintype.go`](https://github.com/smartcontractkit/chainlink/blob/v1.1.1/core/chains/chaintype.go).
 
 This variable enables some chain-specific hacks and optimizations. It is recommended not to use this environment variable and set the chain-type on a per-chain basis instead.
 
@@ -253,6 +256,26 @@ The URL to connect to for sending telemetry.
 - Default: _none_
 
 The public key of the telemetry server.
+
+## Chains
+
+### SOLANA_ENABLED
+
+- Default: `"false"`
+
+Enables Solana support.
+
+### TERRA_ENABLED
+
+- Default: `"false"`
+
+Enables Terra support.
+
+### EVM_ENABLED
+
+- Default: `"true"`
+
+Enables support for EVM-based chains. On by default for legacy compatibility reasons, to ease the upgrade path from older versions of Chainlink which did not support disabling EVM.
 
 ## Database Settings
 
@@ -312,8 +335,9 @@ The default is set to `advisorylock`.
 
 ### ADVISORY_LOCK_CHECK_INTERVAL
 
-ADVANCED - DEV ONLY, not released
-Do not change this setting unless you know what you are doing.
+**ADVANCED**
+
+It is not recommended to change this setting unless you know what you are doing.
 
 This setting applies only if `DATABASE_LOCKING_MODE` is set to enable advisory locking.
 
@@ -323,8 +347,9 @@ This setting applies only if `DATABASE_LOCKING_MODE` is set to enable advisory l
 
 ### ADVISORY_LOCK_ID
 
-ADVANCED - DEV ONLY, not released
-Do not change this setting unless you know what you are doing.
+**ADVANCED**
+
+It is not recommended to change this setting unless you know what you are doing.
 
 This setting applies only if `DATABASE_LOCKING_MODE` is set to enable advisory locking.
 
@@ -399,7 +424,6 @@ This variable sets the directory to use for saving the backup file. Use this if 
 Set this to true to enable JSON logging. Otherwise, the log is saved in a human-friendly console format.
 
 ### LOG_FILE_DIR
-DEV ONLY - not released
 
 - Default: `"$ROOT"`
 
@@ -613,17 +637,11 @@ This configuration is specific to EVM/Ethereum chains.
 
 This environment variable specifies the default chain ID. Any job spec that has not explicitly set `EVMChainID` will connect to this default chain. If you do not have a chain in the database matching this value, any jobs that try to use it will throw an error.
 
-### EVM_DISABLED
+### EVM_RPC_ENABLED
 
-- Default: `"false"`
+- Default: `"true"`
 
-Disable EVM entirely. No services related to EVM chains will be spun up at all. This can be useful in some cases e.g. on a node that only runs Cron jobs that post to an HTTP API, or for node that don't use any EVM chains.
-
-### ETH_DISABLED
-
-- Default: `"false"`
-
-Disable connecting to any ETH nodes. This can be useful in certain cases, e.g. to spin up a Chainlink node and add jobs without having it execute anything.
+Enables connecting to real EVM RPC nodes. Disabling this can be useful in certain cases, e.g. to spin up a Chainlink node and add EVM-based jobs without having it actually execute anything on-chain, or for debugging to see what the node _would_ do without actually doing it.
 
 ## EVM/Ethereum Chain-specific Overrides
 
