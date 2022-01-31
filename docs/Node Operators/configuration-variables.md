@@ -12,7 +12,7 @@ Not all environment variables are documented here. Any undocumented environment 
 
 To reiterate: _If you have an environment variable set that is not listed here, and you don't know exactly why you have it set, you should remove it!_
 
-The environment variables listed here are explicitly supported and current as of Chainlink node v1.2.0.
+The environment variables listed here are explicitly supported and current as of Chainlink node v1.3.0.
 
 ## Changes to node configuration starting in v1.1.0 nodes
 
@@ -73,7 +73,9 @@ Your node applies configuration settings using following hierarchy:
   - [LOG_FILE_DIR](#log_file_dir)
   - [LOG_LEVEL](#log_level)
   - [LOG_SQL](#log_sql)
-  - [LOG_TO_DISK](#log_to_disk)
+  - [LOG_FILE_MAX_SIZE](#log_file_max_size)
+  - [LOG_FILE_MAX_AGE](#log_file_max_age)
+  - [LOG_FILE_MAX_BACKUPS](#log_file_max_backups)
   - [LOG_UNIX_TS](#log_unix_ts)
 - [Chainlink Web Server](#chainlink-web-server)
   - [ALLOW_ORIGINS](#allow_origins)
@@ -209,7 +211,7 @@ The PostgreSQL URI to connect to your database. Chainlink nodes require Postgres
 
 - Default: _none_
 
-CHAIN_TYPE overrides all chains and forces them to act as a particular chain type. An up-to-date list of chain types is given in [`chaintype.go`](https://github.com/smartcontractkit/chainlink/blob/v1.2.0/core/chains/chaintype.go).
+CHAIN_TYPE overrides all chains and forces them to act as a particular chain type. An up-to-date list of chain types is given in [`chaintype.go`](https://github.com/smartcontractkit/chainlink/blob/v1.3.0/core/chains/chaintype.go).
 
 This variable enables some chain-specific hacks and optimizations. It is recommended not to use this environment variable and set the chain-type on a per-chain basis instead.
 
@@ -468,6 +470,7 @@ By default, Chainlink nodes write log data to `$ROOT/log.jsonl`. The log directo
 The `LOG_LEVEL` environment variable determines both what is printed on the screen and what is written to the log file.
 
 The available options are:
+
 - `"debug"`: Useful for forensic debugging of issues.
 - `"info"`: High-level informational messages.
 - `"warn"`: A mild error occurred that might require non-urgent action. Check these warnings semi-regularly to see if any of them require attention. These warnings usually happen due to factors outside of the control of the node operator. Examples: Unexpected responses from a remote API or misleading networking errors.
@@ -482,11 +485,23 @@ The available options are:
 
 This setting tells the Chainlink node to log SQL statements made using the default logger. SQL statements will be logged at `debug` level. Not all statements can be logged. The best way to get a true log of all SQL statements is to enable SQL statement logging on Postgres.
 
-### LOG_TO_DISK
+### LOG_FILE_MAX_SIZE
 
-- Default: `"true"`
+- Default: `"5120mb"`
 
-Enables or disables the node writing to the `$LOG_FILE_DIR/log.jsonl` file
+Determines the log file's max size (in megabytes) before file rotation. Having this not set will disable logging to disk.
+
+### LOG_FILE_MAX_AGE
+
+- Default: `"0"`
+
+Determines the log file's max age (in days) before file rotation. Keeping this config with the default value means not to remove old log files.
+
+### LOG_FILE_MAX_BACKUPS
+
+- Default: `"1"`
+
+Determines the max amount of old log files to retain. Keeping this config with the default value means to retain all old log files (though `LOG_FILE_MAX_AGE` may still cause them to get deleted).
 
 ### LOG_UNIX_TS
 
