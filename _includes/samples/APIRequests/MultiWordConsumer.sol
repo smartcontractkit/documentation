@@ -9,7 +9,7 @@ import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
  */
 
 /**
- * @notice DO NOT USE THIS CODE IN PRODUCTION. This is an example contract. 
+ * @notice DO NOT USE THIS CODE IN PRODUCTION. This is an example contract.
  */
 contract MultiWordConsumer is ChainlinkClient {
   using Chainlink for Chainlink.Request;
@@ -48,7 +48,7 @@ contract MultiWordConsumer is ChainlinkClient {
   {
     Chainlink.Request memory req = buildChainlinkRequest(specId, address(this), this.fulfillMultipleParameters.selector);
     req.addUint("times", 10000);
-    requestOracleData(req, payment);
+    sendChainlinkRequest(req, payment);
   }
 
   event RequestMultipleFulfilled(

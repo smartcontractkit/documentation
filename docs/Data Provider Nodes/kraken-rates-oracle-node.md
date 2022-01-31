@@ -1,6 +1,6 @@
 ---
 layout: nodes.liquid
-section: smartContract
+section: ethereum
 date: Last Modified
 title: "Kraken Rates Oracle Node"
 permalink: "docs/kraken-rates-oracle-node/"
@@ -12,7 +12,7 @@ This Chainlink has a dedicated connection to <a href="https://blog.cfbenchmarks.
 
 # Steps for using this oracle
 
-- Write and deploy your [Chainlink](../intermediates-tutorial/)  contract using the network details below
+- Write and deploy your contract using the network details below
 - Fund it with [LINK](../link-token-contracts/)
 - Call your [request method](./#chainlink-examples)
 
@@ -95,8 +95,8 @@ contract KrakenChainlink is ChainlinkClient {
 ```
 
 <div class="remix-callout">
-  <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/DataProviders/Kraken.sol" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
-    <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
+  <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/DataProviders/Kraken.sol" target="_blank" >Open in Remix</a>
+  <a href="/docs/conceptual-overview/#what-is-remix" >What is Remix?</a>
 </div>
 
 # Tasks

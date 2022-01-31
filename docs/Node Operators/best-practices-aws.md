@@ -1,5 +1,6 @@
 ---
 layout: nodes.liquid
+section: nodeOperator
 date: Last Modified
 title: "Best Practices for Deploying Nodes on AWS"
 permalink: "docs/best-practices-aws/"
@@ -7,8 +8,8 @@ permalink: "docs/best-practices-aws/"
 
 You can deploy a Chainlink node on the AWS Cloud using [AWS Quick Start](https://aws.amazon.com/quickstart) to deploy a highly available and secure Chainlink node on the AWS Cloud.
 
-<div class="callout">
-    <a href="https://aws.amazon.com/quickstart/architecture/chainlink-node/" class="cl-button--ghost solidity-tracked">Deploy a Chainlink Node on AWS ↗</a>
+<div class="remix-callout">
+    <a href="https://aws.amazon.com/quickstart/architecture/chainlink-node/" >Deploy a Chainlink Node on AWS</a>
 </div>
 
 ## Created resources

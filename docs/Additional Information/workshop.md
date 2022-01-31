@@ -79,7 +79,7 @@ Ropsten LINK faucet: <a href="https://ropsten.chain.link" target="_blank">https:
 0x20fE562d797A42Dcb3399062AE9546cd06f63280
 ```
 
-### Slide: Deploying with Remix
+### Slide: Deploying contracts using Remix
 
 Remix: <a href="https://remix.ethereum.org/#optimize=false&version=soljson-v0.4.24+commit.e67f0147.js" target="_blank">https://remix.ethereum.org/#optimize=false&version=soljson-v0.4.24+commit.e67f0147.js</a>
 

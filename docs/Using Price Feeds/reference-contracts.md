@@ -1,6 +1,6 @@
 ---
 layout: nodes.liquid
-section: smartContract
+section: ethereum
 date: Last Modified
 title: "Data Feeds Contract Addresses"
 permalink: "docs/reference-contracts/"
@@ -17,11 +17,11 @@ Chainlink Data Feed contracts are updated on a regular basis by multiple Chainli
 >
 > See the [LINK Token Contracts](../link-token-contracts/) page for the details of LINK on each blockchain.
 
-- EVM-compatible networks
+- EVM (Ethereum) Chains
   - [Ethereum Data Feeds](../ethereum-addresses/)
   - [Binance Smart Chain Data Feeds](../binance-smart-chain-addresses/)
   - [Polygon (Matic) Data Feeds](../matic-addresses/)
-  - [xDai Data Feeds](../xdai-price-feeds/)
+  - [Gnosis Chain (xDai) Data Feeds](../data-feeds-gnosis-chain/)
   - [Huobi Eco Chain Data Feeds](../huobi-eco-chain-price-feeds/)
   - [Avalanche Data Feeds](../avalanche-price-feeds/)
   - [Fantom Data Feeds](../fantom-price-feeds/)
@@ -29,6 +29,6 @@ Chainlink Data Feed contracts are updated on a regular basis by multiple Chainli
   - [Harmony Data Feeds](../harmony-price-feeds/)
   - [Optimism Data Feeds](../optimism-price-feeds/)
   - [Moonriver Data Feeds](../data-feeds-moonriver/)
-- Non-EVM networks
+- Other chains
   - [Solana Data Feeds](/docs/solana/data-feeds-solana/)
   - [Terra Data Feeds](/docs/terra/data-feeds-terra/)

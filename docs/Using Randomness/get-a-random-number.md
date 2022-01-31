@@ -1,6 +1,6 @@
 ---
 layout: nodes.liquid
-section: smartContract
+section: ethereum
 date: Last Modified
 title: "Get a Random Number"
 permalink: "docs/get-a-random-number/"
@@ -10,18 +10,19 @@ metadata:
   image:
     0: "/files/OpenGraph_V3.png"
 ---
-This page explains how to get a random number inside a smart contract using Chainlink VRF.
+This page shows examples for how to get a random number inside a smart contract using Chainlink VRF.
 
-# Random Number Consumer
+# Overview
 
-Chainlink VRF follows the [Request & Receive Data](../request-and-receive-data/) cycle. To consume randomness, your contract should inherit from <a href="https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/VRFConsumerBase.sol" target="_blank">`VRFConsumerBase`</a> and define two required functions
+Chainlink VRF follows the [Request & Receive Data](../request-and-receive-data/) cycle. To consume randomness, your contract should inherit from [`VRFConsumerBase`](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/VRFConsumerBase.sol) and define two required functions:
 
-1. `requestRandomness`, which makes the initial request for randomness.
-2. `fulfillRandomness`, which is the function that receives and does something with verified randomness.
+- `requestRandomness`, which makes the initial request for randomness.
+- `fulfillRandomness`, which is the function that receives and does something with verified randomness.
 
 The contract should own enough LINK to pay the specified fee. The beginner walkthrough explains how to [fund your contract](../fund-your-contract/).
 
 Note, the below values have to be configured correctly for VRF requests to work. You can find the respective values for your network in the [VRF Contracts page](../vrf-contracts).
+
 - `LINK Token` - LINK token address on the corresponding network (Ethereum, Polygon, BSC, etc)
 - `VRF Coordinator` - address of the Chainlink VRF Coordinator
 - `Key Hash` - public key against which randomness is generated
@@ -35,14 +36,14 @@ Note, the below values have to be configured correctly for VRF requests to work.
 >
 > Requesting randomness will fail unless your deployed contract has enough LINK to pay for it. **Learn how to [Acquire testnet LINK](../acquire-link/) and [Fund your contract](../fund-your-contract/)**.
 
-<div class="remix-callout">
-    <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/RandomNumberConsumer.sol" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
-    <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
-</div>
-
 ```solidity Kovan
 {% include samples/VRF/RandomNumberConsumer.sol %}
 ```
+
+<div class="remix-callout">
+    <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/RandomNumberConsumer.sol" target="_blank">Open in Remix</a>
+    <a href="/docs/conceptual-overview/#what-is-remix">What is Remix?</a>
+</div>
 
 > 🚧 Maximum Gas for Callback
 >

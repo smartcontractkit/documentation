@@ -1,6 +1,6 @@
 ---
 layout: nodes.liquid
-section: smartContract
+section: ethereum
 date: Last Modified
 title: "DNS Ownership Oracle"
 permalink: "docs/dns-ownership-oracle/"
@@ -9,7 +9,7 @@ This oracle checks Google’s DNS service to determine if a given domain is owne
 
 # Steps For Using This Oracle
 
-- Write and deploy your [Chainlink](../intermediates-tutorial/) contract using the network details below
+- Write and deploy your contract using the network details below
 - Fund it with [LINK](../link-token-contracts/)
 - Call your [request method](./#chainlink-examples)
 
@@ -96,8 +96,8 @@ contract DnsOwnershipChainlink is ChainlinkClient {
 ```
 
 <div class="remix-callout">
-  <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/DataProviders/DnsOwnership.sol" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
-    <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
+  <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/DataProviders/DnsOwnership.sol" target="_blank" >Open in Remix</a>
+  <a href="/docs/conceptual-overview/#what-is-remix" >What is Remix?</a>
 </div>
 
 # Tasks

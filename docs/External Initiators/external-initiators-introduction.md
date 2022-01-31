@@ -1,5 +1,6 @@
 ---
 layout: nodes.liquid
+section: nodeOperator
 date: Last Modified
 title: "Introduction"
 permalink: "docs/external-initiators-introduction/"

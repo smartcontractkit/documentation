@@ -1,5 +1,6 @@
 ---
 layout: nodes.liquid
+section: nodeOperator
 date: Last Modified
 title: "Keeper Jobs"
 permalink: "docs/jobs/types/keeper/"

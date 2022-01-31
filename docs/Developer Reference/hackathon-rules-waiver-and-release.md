@@ -1,6 +1,6 @@
 ---
 layout: nodes.liquid
-section: smartContract
+section: ethereum
 date: Last Modified
 title: "Hackathon Rules, Waiver & Release, and Code of Conduct"
 permalink: "docs/hackathon-rules-waiver-release-and-code-of-conduct/"

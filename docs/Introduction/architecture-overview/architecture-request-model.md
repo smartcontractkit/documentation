@@ -1,6 +1,6 @@
 ---
 layout: nodes.liquid
-section: smartContract
+section: ethereum
 date: Last Modified
 title: "Basic Request Model"
 permalink: "docs/architecture-request-model/"
