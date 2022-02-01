@@ -32,9 +32,9 @@ contract VRFSingleConsumerExample is VRFConsumerBaseV2 {
   address s_owner;
 
   constructor()
-  VRFConsumerBaseV2(0x5Ff6db248780a059ad893c898ba9a198Eddc4a08)  // NOTE: Rinkeby coordinator - see docs for other networks
+  VRFConsumerBaseV2(0x6168499c0cFfCaCD319c818142124B7A15E857ab)  // NOTE: Rinkeby coordinator - see docs for other networks
   {
-    COORDINATOR = VRFCoordinatorV2Interface(0x5Ff6db248780a059ad893c898ba9a198Eddc4a08); // NOTE: Rinkeby coordinator - see docs for other networks
+    COORDINATOR = VRFCoordinatorV2Interface(0x6168499c0cFfCaCD319c818142124B7A15E857ab); // NOTE: Rinkeby coordinator - see docs for other networks
     LINKTOKEN = LinkTokenInterface(0x01BE23585060835E02B77ef475b0Cc51aA1e0709); // NOTE: Rinkeby coordinator - see docs for other networks
     s_owner = msg.sender;
     s_requestConfig = RequestConfig({
