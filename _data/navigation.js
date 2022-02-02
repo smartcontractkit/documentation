@@ -178,6 +178,10 @@ module.exports = {
             url: '/docs/chainlink-vrf/',
           },
           {
+            title: 'Using the Subscription Manager',
+            url: '/docs/subscription-manager/',
+          },
+          {
             title: 'Get a Random Number',
             url: '/docs/get-a-random-number/',
           },
@@ -195,7 +199,7 @@ module.exports = {
           },
           {
             title: 'Contract Deployments',
-            url: '/docs/vrf-deployments/'
+            url: '/docs/vrf-contracts/'
           },
           {
             title: 'Migrating to VRF v2',
@@ -592,7 +596,7 @@ module.exports = {
           },
           {
             title: 'Contract Addresses',
-            url: '/docs/vrf-deployments/v1/'
+            url: '/docs/vrf-contracts/v1/'
           },
           {
             title: 'API Reference',

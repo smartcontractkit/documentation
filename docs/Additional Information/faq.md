@@ -34,7 +34,7 @@ These announce that work has begun on an integration, but the integration is not
 
 2\. <a href="https://www.binance.org/en/blog/chainlink-vrf-is-live-on-binance-smart-chain-bringing-verifiable-randomness-to-bsc-developers/" target="_blank">Integration Live Announcements</a>
 
-These announce that an integration is live and ready to be used. You can find the contract addresses in our docs for <a href="https://docs.chain.link/docs/reference-contracts/" target="_blank">Data Feeds</a> and <a href="https://docs.chain.link/docs/vrf-deployments/" target="_blank">Chainlink VRF</a> respectively.
+These announce that an integration is live and ready to be used. You can find the contract addresses in our docs for <a href="https://docs.chain.link/docs/reference-contracts/" target="_blank">Data Feeds</a> and <a href="https://docs.chain.link/docs/vrf-contracts/" target="_blank">Chainlink VRF</a> respectively.
 
 Often these announcements will posted by our integration partners.
 

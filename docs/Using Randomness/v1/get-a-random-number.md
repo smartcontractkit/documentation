@@ -4,7 +4,7 @@ section: legacy
 date: Last Modified
 title: "Get a Random Number [v1]"
 permalink: "docs/get-a-random-number/v1/"
-whatsnext: {"API Reference":"/docs/chainlink-vrf-api-reference/v1/", "Contract Addresses":"/docs/vrf-deployments/v1/"}
+whatsnext: {"API Reference":"/docs/chainlink-vrf-api-reference/v1/", "Contract Addresses":"/docs/vrf-contracts/v1/"}
 metadata:
   description: "How to generate a random number inside a smart contract using Chainlink VRF."
   image:
@@ -26,7 +26,7 @@ Chainlink VRF follows the [Request & Receive Data](/docs/request-and-receive-dat
 
 The contract should own enough LINK to pay the specified fee. The beginner walkthrough explains how to [fund your contract](/docs/fund-your-contract/).
 
-Note, the below values have to be configured correctly for VRF requests to work. You can find the respective values for your network in the [VRF Contracts page](/docs/vrf-deployments/v1).
+Note, the below values have to be configured correctly for VRF requests to work. You can find the respective values for your network in the [VRF Contracts page](/docs/vrf-contracts/v1).
 - `LINK Token` - LINK token address on the corresponding network (Ethereum, Polygon, BSC, etc)
 - `VRF Coordinator` - address of the Chainlink VRF Coordinator
 - `Key Hash` - public key against which randomness is generated
@@ -40,14 +40,14 @@ Note, the below values have to be configured correctly for VRF requests to work.
 >
 > Requesting randomness will fail unless your deployed contract has enough LINK to pay for it. **Learn how to [Acquire testnet LINK](/docs/acquire-link/) and [Fund your contract](/docs/fund-your-contract/)**.
 
-<div class="remix-callout">
-    <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/RandomNumberConsumer.sol" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
-    <a href="/docs/deploy-your-first-contract/" title="">What is Remix?</a>
-</div>
-
 ```solidity Kovan
 {% include samples/VRF/RandomNumberConsumer.sol %}
 ```
+
+<div class="remix-callout">
+      <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/RandomNumberConsumer.sol" target="_blank" >Open in Remix</a>
+      <a href="/docs/conceptual-overview/#what-is-remix">What is Remix?</a>
+</div>
 
 > 🚧 Maximum Gas for Callback
 >

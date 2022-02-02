@@ -10,7 +10,7 @@ import "@chainlink/contracts/src/v0.8/dev/VRFConsumerBaseV2.sol";
  * @notice Simplified example with hardcoded addresses requesting
  * randomness using the VRF V2 API.
  * Production code _should not_ hardcode values such as the VRF coordinator
- * and LINK contrat addresses because it could lead to a loss of funds on different
+ * and LINK contract addresses because it could lead to a loss of funds on different
  * networks.
 */
 contract VRFSingleConsumerExample is VRFConsumerBaseV2 {

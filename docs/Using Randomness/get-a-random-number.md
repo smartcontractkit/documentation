@@ -4,7 +4,7 @@ section: ethereum
 date: Last Modified
 title: "Get a Random Number"
 permalink: "docs/get-a-random-number/"
-whatsnext: {"Contract Addresses":"/docs/vrf-deployments/"}
+whatsnext: {"Contract Addresses":"/docs/vrf-contracts/"}
 metadata:
   description: "How to generate a random number inside a smart contract using Chainlink VRF."
   image:
@@ -17,9 +17,9 @@ metadata:
 
 This page explains how to get a random number inside a smart contract using Chainlink VRF.
 
-Chainlink VRF v2 is subscription-based. The subscription owner manages the subscription LINK balance as well as the set of addresses (consumers) that are allowed to use that balance for VRF requests. The requests follow the [Request & Receive Data](/docs/request-and-receive-data/) cycle. Upon fulfillment, the gas used to fulfill the request is calculated, converted to link using an ETH/LINK feed, and charged to the subscription including a flat per-request fee. To learn more about the fee structure, see the [VRF Deployments page](/docs/vrf-deployments). There are a maximum of 100 consumers per subscription. If you need more than 100 consumers, use multiple subscriptions.
+Chainlink VRF v2 is subscription-based. The subscription owner manages the subscription LINK balance as well as the set of addresses (consumers) that are allowed to use that balance for VRF requests. The requests follow the [Request & Receive Data](/docs/request-and-receive-data/) cycle. Upon fulfillment, the gas used to fulfill the request is calculated, converted to LINK using an ETH/LINK feed, and charged to the subscription including a flat per-request fee. To learn more about the fee structure, see the [VRF Contract Addresses](/docs/vrf-contracts) page. There are a maximum of 100 consumers per subscription. If you need more than 100 consumers, use multiple subscriptions.
 
-## Create your subscription
+## Overview
 
 Generally, you configure your smart contracts to use VRF with the following process:
 
@@ -30,7 +30,7 @@ Generally, you configure your smart contracts to use VRF with the following proc
 
 ## Static Parameters
 
-Static parameters are the same for all VRF users. You can find the values for your network in the [VRF Deployments page](/docs/vrf-deployments).
+Static parameters are the same for all VRF users. You can find the values for your network in the [VRF Contract Addresses](/docs/vrf-contracts) page.
 
 - `address link`: LINK token address on the corresponding network.
 - `address vrfCoordinator`: Address of the Chainlink VRF Coordinator.
@@ -51,7 +51,7 @@ As an example, assume that the ETH to LINK price is 0.01 ETH/LINK and you reques
 
 If the request is fulfilled at a gas price lower than the maximum, which is likely in steady gas conditions, then the amount billed will be much less than 8 LINK. If you make a request when the subscription is underfunded, top up the subscription with LINK and the request will go through automatically as long as the request was made in the last 24 hours.
 
-You can find the full list of available key hashes and their associated max gas prices on the [VRF Deployments page](/docs/vrf-deployments).
+You can find the full list of available key hashes and their associated max gas prices on the [VRF Contract Addresses](/docs/vrf-contracts) page.
 
 ## User Parameters
 
@@ -70,8 +70,8 @@ In this example, there is only one consumer who is also the subscription owner. 
 ```
 
 <div class="remix-callout">
-    <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFSingleConsumerExample-simple.sol" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
-    <a href="/docs/deploy-your-first-contract/" title="">What is Remix?</a>
+      <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFSingleConsumerExample-simple.sol" target="_blank" >Open in Remix</a>
+      <a href="/docs/conceptual-overview/#what-is-remix">What is Remix?</a>
 </div>
 
 > 🚧 Security Considerations

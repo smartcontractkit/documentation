@@ -4,7 +4,7 @@ section: ethereum
 date: Last Modified
 title: "Introduction to Chainlink VRF"
 permalink: "docs/chainlink-vrf/"
-whatsnext: {"Get a Random Number":"/docs/get-a-random-number/", "Contract Addresses":"/docs/vrf-deployments/"}
+whatsnext: {"Get a Random Number":"/docs/get-a-random-number/", "Contract Addresses":"/docs/vrf-contracts/"}
 metadata:
   title: "Generate Random Numbers for Smart Contracts using Chainlink VRF"
   description: "Learn how to securely generate random numbers for your smart contract with Chainlink VRF (an RNG). This guide uses Solidity code examples."
@@ -20,9 +20,10 @@ metadata:
 ## Generate Random Numbers in your Smart Contracts
 
 Chainlink VRF (Verifiable Random Function) is a provably-fair and verifiable source of randomness designed for smart contracts. Smart contract developers can use Chainlink VRF as a tamper-proof random number generator (RNG) to build reliable smart contracts for any applications which rely on unpredictable outcomes:
-*  Building blockchain games and NFTs.
-*  Random assignment of duties and resources. For example, randomly assigning judges to cases.
-*  Choosing a representative sample for consensus mechanisms.
+
+- Building blockchain games and NFTs.
+- Random assignment of duties and resources. For example, randomly assigning judges to cases.
+- Choosing a representative sample for consensus mechanisms.
 
 Learn how to write smart contracts that consume random numbers: [Get a Random Number](/docs/get-a-random-number/).
 
@@ -32,12 +33,8 @@ Chainlink VRF v2 is currently available on the following networks:
 
 - Ethereum Mainnet
 - Rinkeby Testnet
-- Polygon (Matic)
-- Polygon Mumbai Testnet
-- Binance Smart Chain
-- Binance Smart Chain Testnet
 
-See the [Deployments](/docs/vrf-deployments) page for a complete list of coordinator addresses and gas limits.
+See the [Contract Addresses](/docs/vrf-contracts) page for a complete list of coordinator addresses and gas limits.
 
 ## Billing
 

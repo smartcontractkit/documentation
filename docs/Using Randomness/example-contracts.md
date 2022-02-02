@@ -4,7 +4,7 @@ section: ethereum
 date: Last Modified
 title: "Example Contracts"
 permalink: "docs/chainlink-vrf/example-contracts/"
-whatsnext: {"Contract Addresses":"/docs/vrf-deployments/"}
+whatsnext: {"Contract Addresses":"/docs/vrf-contracts/"}
 metadata:
   description: "Example contracts for generating a random number inside a smart contract using Chainlink VRF."
   image:
@@ -27,14 +27,14 @@ How you manage the subscription depends on your randomness needs. You can config
 
 In this example, there is only one consumer who is also the subscription owner. It also sets the request config to be static, so each request uses the same parameters.
 
-<div class="remix-callout">
-    <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFSingleConsumerExample.sol" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
-    <a href="/docs/deploy-your-first-contract/" title="">What is Remix?</a>
-</div>
-
 ```solidity Kovan
 {% include samples/VRF/VRFSingleConsumerExample.sol %}
 ```
+
+<div class="remix-callout">
+      <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFSingleConsumerExample.sol" target="_blank" >Open in Remix</a>
+      <a href="/docs/conceptual-overview/#what-is-remix">What is Remix?</a>
+</div>
 
 ## Multiple consumers with an external subscription owner
 

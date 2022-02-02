@@ -3,7 +3,7 @@ layout: nodes.liquid
 section: legacy
 date: Last Modified
 title: "Chainlink VRF Contract Addresses [v1]"
-permalink: "docs/vrf-deployments/v1/"
+permalink: "docs/vrf-contracts/v1/"
 metadata:
   title: "Chainlink VRF Contract Addresses"
   image:
@@ -12,7 +12,7 @@ metadata:
 
 > 🚧 VRF v2 replaces and enhances VRF v1.
 >
-> See the [VRF v2 documentation](/docs/vrf-deployments/) to learn more.
+> See the [VRF v2 documentation](/docs/vrf-contracts/) to learn more.
 
 Chainlink VRF allows you to integrate provably-fair and verifiably random data in your smart contract.
 
