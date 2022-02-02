@@ -11,7 +11,7 @@ metadata:
     0: "/files/OpenGraph_V3.png"
 ---
 
-The Subscription Manager lets you create an account and pre-pay for Chainlink products like VRF v2 so you don't need a funding transaction each time your application requests randomness. This reduces the total number of transactions required to use Chainlink products and reduces the total gas costs for your smart contract applications. It also provides a simple way to fund your use of Chainlink products from a single location so you don't have to manage multiple wallets across several different systems and applications.
+The [Subscription Manager](https://vrf.chain.link) lets you create an account and pre-pay for Chainlink products like VRF v2 so you don't need a funding transaction each time your application requests randomness. This reduces the total number of transactions required to use Chainlink products and reduces the total gas costs for your smart contract applications. It also provides a simple way to fund your use of Chainlink products from a single location so you don't have to manage multiple wallets across several different systems and applications.
 
 Requests to a Chainlink product like VRF v2 follow the [Request & Receive Data](/docs/request-and-receive-data/) cycle. When you make a request for randomness, VRF calculates the gas that is used to fulfill the request, converts it to LINK using an ETH/LINK feed, and charges your subscription rather than asking you to make a separate transaction for payment.
 
@@ -23,9 +23,16 @@ Requests to a Chainlink product like VRF v2 follow the [Request & Receive Data](
 
 ## Overview
 
+Subscriptions have the following core concepts:
+
+- **Subscription accounts:** An account that holds LINK tokens and makes them available to fund requests to a Chainlink product like VRF v2.
+- **Subscription owner:** The wallet address that creates and manages a subscription account. You can add additional owners to a subscription account after you create it. Any account can add LINK to subscription account, but only the owners can add approved consumers or withdraw funds.
+- **Consumers:** Contracts that are approved to use funding from your subscription account.
+- **Subscription balance:** The amount of LINK maintained on your subscription account. Requests from consumer contracts will continue to be funded until the balance runs out, so be sure to maintain sufficient funds in your subscription balance to pay for the requests and keep your applications running.
+
 In general, subscriptions have the following life cycle:
 
-1. Create a new subscription.
+1. Create a new subscription in the [Subscription Manager](https://vrf.chain.link) application.
 1. Fund the subscription balance.
 1. Add approved consumer contracts that are allowed to use the subscription for funding.
 1. Consumer contracts make requests to Chainlink products like VRF v2. Funding is subtracted from the subscription balance for each request.

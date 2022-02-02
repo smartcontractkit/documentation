@@ -31,16 +31,49 @@ Learn how to write smart contracts that consume random numbers: [Get a Random Nu
 
 Chainlink VRF v2 is currently available on the following networks:
 
-- Ethereum Mainnet
-- Rinkeby Testnet
+- Ethereum:
+  - Mainnet
+  - Rinkeby testnet
+- Binance Smart Chain
+  - Testnet
+- Polygon (Matic):
+  - Mumbai testnet
 
 See the [Contract Addresses](/docs/vrf-contracts) page for a complete list of coordinator addresses and gas limits.
 
+To learn when VRF v2 becomes available on more networks, follow us on [Twitter](https://twitter.com/chainlink) or sign up for our [mailing list](/docs/developer-communications/).
+
 ## Billing
 
-VRF v2 uses a subscription system that allows you to pre-fund multiple requests with a single transaction and reduce the gas fees paid for each request.
+VRF v2 requests receive funding from subscription accounts. The [Subscription Manager](https://vrf.chain.link) lets you create an account and pre-pay for Chainlink products like VRF v2 so you don't need a funding transaction each time your application requests randomness. Subscriptions have the following core concepts:
 
-<!-- TODO: Explain costs per request in greater detail -->
+- **Subscription accounts:** An account that holds LINK tokens and makes them available to fund requests to a Chainlink product like VRF v2.
+- **Subscription owner:** The wallet address that creates and manages a subscription account. You can add additional owners to a subscription account after you create it. Any account can add LINK to subscription account, but only the owners can add approved consumers or withdraw funds.
+- **Consumers:** Contracts that are approved to use funding from your subscription account.
+- **Subscription balance:** The amount of LINK maintained on your subscription account. Requests from consumer contracts will continue to be funded until the balance runs out, so be sure to maintain sufficient funds in your subscription balance to pay for the requests and keep your applications running.
+
+To learn how to create subscription accounts and approve consuming contracts, see the [Using the Subscription Manager](/docs/subscription-manager/) page.
+
+### Calculating VRF costs
+
+The cost to fulfill a randomness request depends on the blockchain network that you are using. You define the maximum amount of gas you are willing to pay for each transaction by specifying a [keyHash](/docs/get-a-random-number/#selecting-a-keyhash-and-minimum-balances). Each keyhash is associated with a maximum gas price used to fulfill a request. This maximum is important during gas price spikes where the node might need to bump the gas price for timely fulfillment. The maximum specifies an upper bound on the gas bumping and determines what the minimum subscription balance is in order to fulfill a request. You can compute the minimum with the following formula:
+
+<!-- TODO: Explain this more clearly in terms of total cost per transaction including the fee. -->
+`(max_gas_price * (callback_gas_limit + verification_gas)) / (eth_link_price) = minimum_balance`
+
+For this calculation, the `verification_gas` value is 200k.
+
+As an example, assume that the ETH to LINK price is 0.01 ETH/LINK and you request a 200k callback gas limit. If you select the appropriate key hash to specify a max gas price of 200 gwei, the minimum link balance required for that request to be fulfilled is `((200e9)(200,000 + 200,000)) = 0.08 ETH`, and `0.08/0.01 = 8 LINK`. This would be the maximum possible payment for that single request.
+
+If the request is fulfilled at a gas price lower than the maximum, which is likely in steady gas conditions, then the amount billed will be much less than 8 LINK. If you make a request when the subscription is underfunded, top up the subscription with LINK and the request will go through automatically as long as the request was made in the last 24 hours.
+
+You can find the full list of available key hashes and their associated max gas prices on the [VRF Contract Addresses](/docs/vrf-contracts) page.
+
+<!-- TODO: Explain costs per request in greater detail. Replace the keyhash section with full billing conceptual overview here. -->
+
+## Common use cases
+
+For help with your specific use case, [contact us]() to connect with one of our Solutions Architects. You can also ask questions about Chainlink VRF on [Stack Overflow](https://stackoverflow.com/questions/ask?tags=chainlink). <!-- TODO: Add contact URLs -->
 
 ## On-chain Verification of Randomness
 

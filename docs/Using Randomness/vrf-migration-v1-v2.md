@@ -14,7 +14,7 @@ permalink: "docs/chainlink-vrf/migration-vrf-v1-v2/"
 
 Chainlink VRF v2 includes several improvements and changes to the way you fund and request randomness for your smart contracts.
 
-+ **Subscription management:** Chainlink VRF v2 introduces a subscription management app that allows smart contract applications to pre-fund multiple requests for randomness using a single LINK token balance. This reduces the gas fees for VRF requests by eliminating the need to transfer LINK tokens for each individual request. You need to transfer LINK tokens only one time to fill your subscription balance. Go to the [subscription management app]() to learn more. <!-- TODO: Add URL and url text and maybe reconsider a link to the docs instead-->
++ **Subscription management:** Chainlink VRF v2 introduces a [Subscription Manager](https://vrf.chain.link) application that allows smart contract applications to pre-fund multiple requests for randomness using a single LINK token balance. This reduces the gas fees for VRF requests by eliminating the need to transfer LINK tokens for each individual request. You need to transfer LINK tokens only one time to fill your subscription balance. Go to the [Subscription Manager](https://vrf.chain.link) to learn more.
 
 + **Variable Callback Gas Limit:** Chainlink VRF v2 lets you adjust the callback gas limit when your smart contract application receives verifiable randomness. Consuming contracts can execute more complex logic in the same transaction that verifiable randomness is received in. Tasks involving the delivered randomness are handled during the response process. The new gas limits are higher than the VRF V1 limit, and vary depending on the underlying blockchain you use. See the gas limits on the [VRF Contract Addresses](/docs/vrf-contracts) page.
 
@@ -28,14 +28,14 @@ Chainlink VRF v2 includes several improvements and changes to the way you fund a
 
 To modify your existing smart contract code to work with VRF v2, complete the following changes. See the [Get a Random Number](/docs/get-a-random-number/#example-contract) guide for an example.
 
-- Set up and fund a subscription. <!-- TODO: Add URL and url text -->
+1. Set up and fund a subscription in the [Subscription Manager](https://vrf.chain.link) application.
 
-- Import the new [`VRFConsumerBaseV2.sol` contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/dev/VRFConsumerBaseV2.sol) and remove the v1 `VRFConsumerBase.sol` import. This contract includes the `fulfillRandomWords` function.
+1. Import the new [`VRFConsumerBaseV2.sol` contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/dev/VRFConsumerBaseV2.sol) and remove the v1 `VRFConsumerBase.sol` import. This contract includes the `fulfillRandomWords` function.
 
-- Import the [`VRFCoordinatorV2Interface.sol`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol) interface. This interface includes the new `requestRandomWords` function.
+1. Import the [`VRFCoordinatorV2Interface.sol`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol) interface. This interface includes the new `requestRandomWords` function.
 
-- Add a `VRFConsumerBaseV2` constructor as shown in the [Get a Random Number](/docs/get-a-random-number/#example-contract) example.
+1. Add a `VRFConsumerBaseV2` constructor as shown in the [Get a Random Number](/docs/get-a-random-number/#example-contract) example.
 
-- Change `requestRandomness` function calls to `requestRandomWords`. The `requestRandomWords` function requires several additional parameters.
+1. Change `requestRandomness` function calls to `requestRandomWords`. The `requestRandomWords` function requires several additional parameters.
 
-- Change `fulfillRandomness` function calls to `fulfillRandomWords`. Update the call to handle the returned `uint256[]` array instead of the single `uint256` variable.
+1. Change `fulfillRandomness` function calls to `fulfillRandomWords`. Update the call to handle the returned `uint256[]` array instead of the single `uint256` variable.

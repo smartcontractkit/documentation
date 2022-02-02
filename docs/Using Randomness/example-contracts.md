@@ -15,7 +15,7 @@ metadata:
 >
 > If you are using v1, see the [VRF v1 guide](/docs/get-a-random-number/v1/).
 
-How you manage the subscription depends on your randomness needs. You can configure your subscriptions using the [Subscription Manager]() application, but these examples demonstrate how to create your subscription and register your applications programmatically. <!--TODO: Add subscription management app URL -->
+How you manage the subscription depends on your randomness needs. You can configure your subscriptions using the [Subscription Manager](https://vrf.chain.link) application, but these examples demonstrate how to create your subscription and register your applications programmatically.
 
 ## Table of Contents
 

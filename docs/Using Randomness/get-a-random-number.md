@@ -23,10 +23,10 @@ Chainlink VRF v2 is subscription-based. The subscription owner manages the subsc
 
 Generally, you configure your smart contracts to use VRF with the following process:
 
-1. Create a subscription in the [Subscription Manager]() application. Take note of the subscriptionId, which your contract needs later. <!--TODO: Add subscription management app URL -->
-1. Deploy your applications to accept a subscription ID and record the addresses for each deployed contract. <!-- TODO: Describe "accept a subscription ID" more clearly. -->
-1. Register all of the deployed applications in the [Subscription Manager]() application. <!-- TODO: Add subscription management app URL -->
-1. Fund the subscription in the [Subscription Manager]() application.  <!-- TODO: Add subscription management app URL -->
+1. Create a subscription in the [Subscription Manager](https://vrf.chain.link) application. Take note of the `subscriptionId`, which your contract needs later.
+1. Deploy your applications to accept a subscription ID and record the addresses for each deployed contract.
+1. Register all of the deployed applications in the [Subscription Manager](https://vrf.chain.link) application.
+1. Fund the subscription in the [Subscription Manager](https://vrf.chain.link) application.
 
 ## Static Parameters
 
