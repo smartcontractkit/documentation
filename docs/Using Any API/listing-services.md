@@ -7,7 +7,7 @@ permalink: "docs/listing-services/"
 whatsnext: {"API Reference":"/docs/chainlink-framework/", "Contract Addresses":"/docs/decentralized-oracles-ethereum-mainnet/"}
 ---
 
-# Overview <!-- omit in toc -->
+# Overview
 
 This page explains how to find an existing Oracle Job to suit the needs of your API call.
 
