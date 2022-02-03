@@ -218,7 +218,7 @@ Setting `CHAINLINK_DEV` to `true` enables development mode. This setting is not 
 
 - Default: `"5s"`
 
-When Chainlink node is shutting down gracefully and exceeded this grace period, it gives up trying to stop all (sub)services gracefully, closes DB connection and quits.
+If the grace period is exceeded during shutdown, the node will (1) abandon blocking (sub)services, (2) release the DB lock and connection, and (3) exit immediately. This should be set _less_ than your systems `SIGKILL` timeout.
 
 ### EXPLORER_ACCESS_KEY
 
