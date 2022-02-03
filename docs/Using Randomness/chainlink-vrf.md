@@ -17,66 +17,95 @@ metadata:
 >
 > If you are using v1, see the [VRF v1 guide](./v1).
 
-## Generate Random Numbers in your Smart Contracts
+Chainlink VRF (Verifiable Random Function) is a provably-fair and verifiable random number generator (RNG) that enables smart contracts to access random values without compromising on security or usability.
 
-Chainlink VRF (Verifiable Random Function) is a provably-fair and verifiable source of randomness designed for smart contracts. Smart contract developers can use Chainlink VRF as a tamper-proof random number generator (RNG) to build reliable smart contracts for any applications which rely on unpredictable outcomes:
+**Table of contents**
+
+- [Overview](#overview)
+- [Supported networks](#supported-networks)
+- [Subscriptions](#subscriptions)
+- [Subscription billing](#subscription-billing)
+
+## Overview
+
+For each request, Chainlink VRF generates one or more random values and cryptographic proof of how those values were determined. The proof is published and verified on-chain before it can be used by any consuming applications. This process ensures that results cannot be tampered with or manipulated by any single entity including oracle operators, miners, users, or smart contract developers.
+
+Use Chainlink VRF to build reliable smart contracts for any applications that rely on unpredictable outcomes:
 
 - Building blockchain games and NFTs.
 - Random assignment of duties and resources. For example, randomly assigning judges to cases.
 - Choosing a representative sample for consensus mechanisms.
 
-Learn how to write smart contracts that consume random numbers: [Get a Random Number](/docs/get-a-random-number/).
+For help with your specific use case, [contact us]() to connect with one of our Solutions Architects. You can also ask questions about Chainlink VRF on [Stack Overflow](https://stackoverflow.com/questions/ask?tags=chainlink). <!-- TODO: Add contact URLs -->
 
 ## Supported networks
 
 Chainlink VRF v2 is currently available on the following networks:
 
 - Ethereum:
-  - Mainnet
-  - Rinkeby testnet
+  - [Mainnet](/docs/vrf-contracts/#ethereum-mainnet)
+  - [Rinkeby testnet](/docs/vrf-contracts/#rinkeby-testnet)
 - Binance Smart Chain
-  - Testnet
+  - [Testnet](/docs/vrf-contracts/#binance-smart-chain-testnet)
 - Polygon (Matic):
-  - Mumbai testnet
+  - [Mumbai testnet](/docs/vrf-contracts/#polygon-matic-mumbai-testnet)
 
-See the [Contract Addresses](/docs/vrf-contracts) page for a complete list of coordinator addresses and gas limits.
+See the [Contract Addresses](/docs/vrf-contracts) page for a complete list of coordinator addresses and gas price limits.
 
 To learn when VRF v2 becomes available on more networks, follow us on [Twitter](https://twitter.com/chainlink) or sign up for our [mailing list](/docs/developer-communications/).
 
-## Billing
+## Subscriptions
 
-VRF v2 requests receive funding from subscription accounts. The [Subscription Manager](https://vrf.chain.link) lets you create an account and pre-pay for Chainlink products like VRF v2 so you don't need a funding transaction each time your application requests randomness. Subscriptions have the following core concepts:
+VRF v2 requests receive funding from subscription accounts. The [Subscription Manager](https://vrf.chain.link) lets you create an account and pre-pay for VRF v2 so you don't provide funding each time your application requests randomness. This reduces the total gas cost to use VRF v2. It also provides a simple way to fund your use of Chainlink products from a single location so you don't have to manage multiple wallets across several different systems and applications.
 
-- **Subscription accounts:** An account that holds LINK tokens and makes them available to fund requests to a Chainlink product like VRF v2.
-- **Subscription owner:** The wallet address that creates and manages a subscription account. You can add additional owners to a subscription account after you create it. Any account can add LINK to subscription account, but only the owners can add approved consumers or withdraw funds.
+Subscriptions have the following core concepts:
+
+- **Subscription accounts:** An account that holds LINK tokens and makes them available to fund requests to Chainlink VRF v2 coordinators.
+- **Subscription owner:** The wallet address that creates and manages a subscription account. Any account can add LINK to the subscription balance, but only the owner can add approved consumers or withdraw funds.
 - **Consumers:** Contracts that are approved to use funding from your subscription account.
 - **Subscription balance:** The amount of LINK maintained on your subscription account. Requests from consumer contracts will continue to be funded until the balance runs out, so be sure to maintain sufficient funds in your subscription balance to pay for the requests and keep your applications running.
 
-To learn how to create subscription accounts and approve consuming contracts, see the [Using the Subscription Manager](/docs/subscription-manager/) page.
+The Subscription Manager system has the following limitations:
 
-### Calculating VRF costs
+- Each subscription supports up to 100 consumer contracts. If you need more than 100 consumers, create multiple subscriptions.
+- Each subscription must maintain a minimum balance in order to fund requests from consumer contracts. If your balance drops below this threshold
 
-The cost to fulfill a randomness request depends on the blockchain network that you are using. You define the maximum amount of gas you are willing to pay for each transaction by specifying a [keyHash](/docs/get-a-random-number/#selecting-a-keyhash-and-minimum-balances). Each keyhash is associated with a maximum gas price used to fulfill a request. This maximum is important during gas price spikes where the node might need to bump the gas price for timely fulfillment. The maximum specifies an upper bound on the gas bumping and determines what the minimum subscription balance is in order to fulfill a request. You can compute the minimum with the following formula:
+## Subscription billing
 
-<!-- TODO: Explain this more clearly in terms of total cost per transaction including the fee. -->
-`(max_gas_price * (callback_gas_limit + verification_gas)) / (eth_link_price) = minimum_balance`
+For Chainlink VRF v2 to fulfill your requests, you must maintain a sufficient amount of LINK in your subscription balance. If the total cost of a request exceeds your subscription balance, top up the subscription balance with LINK and the request will go through automatically as long as the request was made in the last 24 hours. Gas cost calculation includes the following variables:
 
-For this calculation, the `verification_gas` value is 200k.
+- **Gas price:** The current gas price, which fluctuates depending on network conditions
 
-As an example, assume that the ETH to LINK price is 0.01 ETH/LINK and you request a 200k callback gas limit. If you select the appropriate key hash to specify a max gas price of 200 gwei, the minimum link balance required for that request to be fulfilled is `((200e9)(200,000 + 200,000)) = 0.08 ETH`, and `0.08/0.01 = 8 LINK`. This would be the maximum possible payment for that single request.
+- **Callback gas:** The amount of gas used for the callback request that returns your requested random values
 
-If the request is fulfilled at a gas price lower than the maximum, which is likely in steady gas conditions, then the amount billed will be much less than 8 LINK. If you make a request when the subscription is underfunded, top up the subscription with LINK and the request will go through automatically as long as the request was made in the last 24 hours.
+- **Verification gas:** The amount of gas used to verify randomness on-chain
 
-You can find the full list of available key hashes and their associated max gas prices on the [VRF Contract Addresses](/docs/vrf-contracts) page.
+These variables depend on current network conditions, your specified limit on callback gas, and the size of your randomness request. The cost of each request is final only after the transaction is complete, but you define the limits you are willing to spend for the request with the following variables:
 
-<!-- TODO: Explain costs per request in greater detail. Replace the keyhash section with full billing conceptual overview here. -->
+- **Gas lane:** The maximum gas price you are willing to pay for a request in wei. Define this limit by specifying the appropriate `keyHash` in your request. The limits of each gas lane are important for handling gas price spikes when Chainlink VRF bumps the gas price to fulfill your request quickly.
 
-## Common use cases
+- **Callback gas limit:** Specifies maximum amount of gas you are willing to spend on the callback request. Define this limit by specifying the `callbackGasLimit` value in your request.
 
-For help with your specific use case, [contact us]() to connect with one of our Solutions Architects. You can also ask questions about Chainlink VRF on [Stack Overflow](https://stackoverflow.com/questions/ask?tags=chainlink). <!-- TODO: Add contact URLs -->
+Requests to Chainlink VRF v2 follow the [Request & Receive Data](/docs/request-and-receive-data/) cycle. The VRF coordinator processes the request and determines the final charge to your subscription using the following steps:
 
-## On-chain Verification of Randomness
+1. You submit your request with a specified gas lane `keyHash` and the `callbackGasLimit`. If your request is urgent, specify a gas lane with a higher gas price limit. The `callbackGasLimit` depends on the size of your request, but generally a limit of 100,000 gas is appropriate. Verification gas has a hard upper limit of 200,000 gas.
 
-Chainlink VRF enables smart contracts to access randomness without compromising on security or usability. With every new request for randomness, Chainlink VRF generates a random number and cryptographic proof of how that number was determined. The proof is published and verified on-chain before it can be used by any consuming applications. This process ensures that results cannot be tampered with nor manipulated by any single entity, including oracle operators, miners, users and even smart contract developers.
+1. The coordinator starts the transaction and bumps the gas price until the transaction is completed. The coordinator will not exceed the gas price limit of your selected gas lane. If your request cannot be completed at your specified gas limit, you resubmit the request with a different gas lane or after gas prices fall below your current gas lane limits.
 
-Read more about Chainlink VRF in [our announcement post](https://blog.chain.link/chainlink-vrf-on-chain-verifiable-randomness/). <!--TODO: Update for the v2 announcement. -->
+1. The responding Chainlink oracle verifies your random values on-chain and completes the callback to your contract with the random values.
+
+1. After the request is complete, the final gas cost for the request is recorded based on how much how much gas was required for the verification and the callback. The total gas cost for your request uses the following formula:
+
+    ```
+    (Gas price * (Verification gas + Callback gas) = total gas cost
+    ```
+
+1. The total gas cost is converted to LINK using the ETH/LINK data feed. In the unlikely event that the data feed is unavailable, the VRF coordinator uses the `fallbackWeiPerUnitLink` value for the conversion instead. The `fallbackWeiPerUnitLink` value is defined in the [coordinator contract](/docs/vrf-contracts/#configurations) for your selected network.
+
+1. The LINK premium is added to the total gas cost. The premium is defined in the [coordinator contract](/docs/vrf-contracts/#configurations) with the `fulfillmentFlatFeeLinkPPMTier1` parameter in millionths of LINK.
+
+    ```
+    (total gas cost + LINK premium) = total request cost
+    ```
+
+1. The total request cost is charged to your subscription balance.

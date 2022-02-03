@@ -33,7 +33,7 @@ function fulfillRandomness(uint256 requestId, uint256[] randomness) internal ove
 ## Getting multiple random numbers
 
 If you want to get multiple random numbers from a single VRF request, you can
-request this directly with the `numWords` argument described [here](/docs/get-a-random-number/#user-parameters)
+request this directly with the `numWords` argument described [here](/docs/get-a-random-number/#parameters)
 
 ## Having multiple VRF requests in flight
 

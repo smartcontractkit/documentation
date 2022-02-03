@@ -20,22 +20,25 @@ For implementation details, read [Introduction to Chainlink VRF](/docs/chainlink
 
 ## Coordinator Parameters
 
-These parameters are configured in the coordinator contract. You can view these values by running `getConfig` on the coordinator.
+These parameters are configured in the coordinator contract. You can view these values by running `getConfig` on the coordinator or by viewing the coordinator contracts in a blockchain explorer.
 
 - `uint16 minimumRequestConfirmations`: The minimum number of confirmation blocks on VRF requests before oracles respond
 - `uint32 maxGasLimit`: The maximum gas limit supported for a `fulfillRandomWords` callback.
-- `uint32 stalenessSeconds`: How long we wait until we consider the ETH/LINK price used for converting gas costs to LINK) is stale and use `fallbackWeiPerUnitLink`
-- `uint32 gasAfterPaymentCalculation`: How much gas is used outside of the payment calculation. Specifically its the gas outside of [here]() and [here](). <!--TODO: add links and explain this parameter more clearly. -->
+- `uint32 stalenessSeconds`: How long the coordinator waits until we consider the ETH/LINK price used for converting gas costs to LINK is stale and use `fallbackWeiPerUnitLink`
+- `uint32 gasAfterPaymentCalculation`: How much gas is used outside of the payment calculation. This covers the additional operations required to decrement the subscription balance and increment the balance for the oracle that handled the request.
 
 ## Fee parameters
 
 Fee parameters are configured in the coordinator contract and specify the premium you pay per request in addition to the gas cost for the transaction. You can view them by running `getFeeConfig` on the coordinator. The `uint32 fulfillmentFlatFeeLinkPPMTier1` parameter defines the fees per request specified in millionths of LINK.
 
-## Gas prices
+## Configurations
 
-To avoid costly responses during gas price volatility, VRF response transactions are submitted with a limit on the maximum gas price. Because every use case is different, different VRF jobs are set up on each blockchain with different gas caps. Each VRF job corresponds to a different keyHash. Contract developers can reference the appropriate keyHash according to how much they are willing to pay for gas for each specific use case. Note that these are maximum gas prices and are used only if current network conditions require it. Otherwise, a more appropriate lower gas price is used to submit the response. If your use case requires a different gas price cap than what is currently available, [contact our team](https://chainlinkcommunity.typeform.com/to/OYQO67EF).
+- [Ethereum Mainnet](#ethereum-mainnet)
+- [Rinkeby testnet](#rinkeby-testnet)
+- [Binance Smart Chain testnet](#binance-smart-chain-testnet)
+- [Polygon (Matic) Mumbai testnet](#polygon-matic-mumbai-testnet)
 
-## Ethereum Mainnet
+### Ethereum Mainnet
 
 |Item|Value|
 |---|---|
@@ -47,7 +50,7 @@ To avoid costly responses during gas price volatility, VRF response transactions
 |Premium|0.25 LINK|
 |Minimum Confirmations|3|
 
-## Rinkeby
+### Rinkeby testnet
 
 > 🚰Rinkeby Faucets
 >
@@ -63,7 +66,7 @@ To avoid costly responses during gas price volatility, VRF response transactions
 |Premium|0.25 LINK|
 |Minimum Confirmations|3|
 
-## Binance Smart Chain Testnet
+### Binance Smart Chain testnet
 
 > 🚰BSC Faucet
 >
@@ -77,11 +80,12 @@ To avoid costly responses during gas price volatility, VRF response transactions
 |Premium|0.005 LINK|
 |Minimum Confirmations|3|
 
-## Polygon (Matic) Mumbai Testnet
+### Polygon (Matic) Mumbai testnet
 
 > 🚰Mumbai Faucet
 >
 > Testnet LINK and MATIC are available from the [Polygon faucet](https://faucet.polygon.technology/) and https://faucets.chain.link/mumbai.
+
 |Item|Value|
 |---|---|
 |LINK Token|[`0x326C977E6efc84E512bB9C30f76E30c160eD06FB`](https://mumbai.polygonscan.com/address/0x326C977E6efc84E512bB9C30f76E30c160eD06FB)|
