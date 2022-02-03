@@ -412,11 +412,13 @@ By default, Chainlink nodes write log data to `$ROOT/log.jsonl`. The log directo
 The `LOG_LEVEL` environment variable determines both what is printed on the screen and what is written to the log file.
 
 The available options are:
+- `"trace"`: Used only in development, off by default and not accessible on production builds.
 - `"debug"`: Useful for forensic debugging of issues.
 - `"info"`: High level informational messages.
 - `"warn"`: Something unexpected happened that might need non-urgent action. Node operators should check these once in a while to see whether anything stands out (e.g. deprecation warnings).
-- `"error"`: Something bad happened. Node operators might need to take urgent action based on this error.
-- `"panic"`: Something very bad happened. Node operators should take immediate action to fix this.
+- `"error"`: Something bad happened. Node operators might need to take urgent action based on this error (e.g. eth node became inaccessible).
+- `"crit"`: A critical error occured. Node operators should take immediate action to fix this (e.g. node was not able to open a network socket).
+- `"panic"`:An unrecoverable problem was encountered that was unexpected. Node operators should try to restart their nodes, and notify Chainlink team of a bug.
 - `"fatal"`: An unrecoverable problem was encountered and the node had to exit.
 
 ### LOG_SQL
