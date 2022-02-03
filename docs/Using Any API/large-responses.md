@@ -7,7 +7,7 @@ permalink: "docs/large-responses/"
 whatsnext: {"Make an Existing Job Request":"/docs/existing-job-request/", "API Reference":"/docs/chainlink-framework/", "Contract Addresses":"/docs/decentralized-oracles-ethereum-mainnet/"}
 ---
 
-# Overview <!-- omit in toc -->
+# Overview
 
 This page explains how to make an HTTP GET request to an external API from a smart contract, using Chainlink's [Request & Receive Data](../request-and-receive-data/) cycle and then receive large responses.
 
