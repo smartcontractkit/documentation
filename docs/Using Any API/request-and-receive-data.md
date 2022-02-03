@@ -31,7 +31,7 @@ Chainlink’s decentralized oracle network provides smart contracts with the abi
 
 ## Requesting Off-chain Data
 
-Outlined below are multiple ways developers can connect smart contracts to off-chain data feeds. Click on each request type to learn more:
+Outlined below are multiple ways developers can connect smart contracts to off-chain data feeds. Click a request type to learn more about it:
 
 | Request Type                  | Description                                                          |
 | ------------------------------- | -------------------------------------------------------------------- |
