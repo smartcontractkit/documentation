@@ -35,7 +35,7 @@ Smart contracts should inherit from [`ChainlinkClient`](https://github.com/smart
 >
 > Making a GET request will fail unless your deployed contract has enough LINK to pay for it. **Learn how to [Acquire testnet LINK](../acquire-link/) and [Fund your contract](../fund-your-contract/)**.
 
-Currently, any return value must fit within 32 bytes, if the value is bigger than that multiple requests will need to be made. 
+The return value must fit within 32 bytes. If the value is bigger than that, make multiple requests. 
 
 If the LINK address for targeted blockchain is not [publicly available](../link-token-contracts/) yet, replace [setPublicChainlinkToken(/)](../chainlink-framework/#setpublicchainlinktoken) with [setChainlinkToken(_address)](../chainlink-framework/#setchainlinktoken) in the constructor, where `_address` is a corresponding LINK token contract. Below is an example `APIConsumer` contract:
 
