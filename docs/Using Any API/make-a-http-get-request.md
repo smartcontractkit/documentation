@@ -72,7 +72,7 @@ The `APIConsumer` in the example above is flexible enough to call any public API
 
 The *path* task parameter depends on where the target data exists in the response. It uses [JSONPath](https://jsonpath.com/) to determine the location of the data. For example, if the response from the API is `{"USD":243.33}`, the "path" parameter is short: `"USD"`.
 
-If an API responds with a complex JSON object, the *path* parameter needs to specify where to retrieve the desired data using a dot delimited string for nested objects. For example, take the following response:
+If an API responds with a complex JSON object, the *path* parameter must specify where to retrieve the desired data using a dot delimited string for nested objects. For example, take the following response:
 
 ```json
 {
