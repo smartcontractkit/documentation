@@ -45,6 +45,12 @@ Before you begin, set up your environment for development on Solana:
     node --version
     ```
 
+1. Install a C compiler such as the one included in [GCC](https://gcc.gnu.org/install/). Some dependencies require a C compiler.
+
+    ```sh
+    sudo apt install gcc
+    ```
+
 1. Install [Rust](https://www.rust-lang.org/tools/install):
 
     ```sh
