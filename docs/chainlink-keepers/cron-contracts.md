@@ -22,7 +22,7 @@ This guide outlines how you can quickly set up a time schedule to automatically 
 
 # Job Scheduler Overview
 
-With the Job Scheduler you can schedule jobs to automatically execute your smart contract functions at specific times using the Chainlink Keepers network. Simply specify the address of your target contract, the function to execute, and the execution time(s) to create a new scheduled job and then register your Job Scheduler with Chainlink Keepers to enable the decentralized Keepers network to start monitoring and executing your jobs.  
+With the Job Scheduler you can schedule jobs to automatically execute your smart contract functions at specific times using the Chainlink Keepers network. Simply specify the address of your target contract, the function to execute, and the execution time(s) to create a new scheduled job. Once you register your Job Scheduler with Chainlink Keepers, the decentralized Keepers network will start monitoring and executing your scheduled jobs.  
 
 # Job Scheduling Tutorial
 
@@ -30,23 +30,25 @@ We will be using [Remix](https://remix.ethereum.org/) for this tutorial. To lear
 
 You will also need a MetaMask (or other Remix compatible wallet) in your browser with some testnet tokens of choice. See our [MetaMask tutorial](https://www.youtube.com/watch?v=4ZgFijd02Jo) if you need help setting up a wallet.
 
+We recommend you first test the tutorial on an EVM-compatible testnet where Chainlink Keepers is deployed.
+
 ## Creating your own Job Scheduler contract
 
-To create your own on-chain Job Scheduler contract (called ), we will use the externally audited and pre-deployed [CronUpkeepFactory](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/factories/CronUpkeepFactory.sol) smart contract to deploy a new smart contract. This is called the [Factory pattern](https://www.youtube.com/watch?v=Q1zZo4O_Ong), where one contract deploys another contract. To generate a new Job Scheduler for you called `CronUpkeep`, select the new file icon in Remix, name it `CronUpkeepFactory.abi` and paste the ABI for `CronUkeepFactory`. The ABI is the application binary interface that is used to interact with the smart contract that has been deployed to the network.
+To create your own on-chain Job Scheduler contract, we will use the externally audited and pre-deployed Chainlink  [CronUpkeepFactory](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/factories/CronUpkeepFactory.sol) smart contract to deploy a new on-chain smart contract. This is called the [Factory pattern](https://www.youtube.com/watch?v=Q1zZo4O_Ong), where one contract deploys another contract. To generate your Job Scheduler (called `CronUpkeep`), select the new file icon in Remix, name it `CronUpkeepFactory.abi` and paste the ABI for `CronUkeepFactory`. The ABI is the application binary interface that is used to interact with the smart contract that has been deployed to the network.
 
 ![Remix ABI Cron](/images/keepers/cron-1.png)
 
-Select the **DEPLOY & RUN TRANSACTIONS** icon on the left and set **Environment** to *Injected Web3*. Paste the address of your deployed `CronUpkeepFactory` contract in the **At Address** box and select the **At Address** button. You can find the addresses for `CronUpkeepFactory` [below](#contract-addresses). Once this step is completed, you will be able to view callable functions. Select the orange `newCronUpkeep` button and follow the prompts to confirm the transaction. Once the transaction is complete you should see a transaction hash in the terminal
+Now select the **DEPLOY & RUN TRANSACTIONS** icon on the left and set **Environment** to *Injected Web3*. Paste the address of your deployed `CronUpkeepFactory` contract in the **At Address** box and select the **At Address** button. You can find the addresses for `CronUpkeepFactory` [below](#contract-addresses). Once this step is completed, you will be able to view callable functions fo the `CronUpkeepFactory`. Select the orange `newCronUpkeep` button and follow the prompts to confirm the transaction. Once the transaction is complete you should see a transaction hash in the terminal pointing to the creation of your Job Scheduler
 
 ## Finding the address of your Job Scheduler
 
-Please copy the transaction hash of your transaction, and open it in the scanner of the chain you are working on. Now select the *Internal Txns* tab. This will show what happened during this transaction and it will contain the address of our Job Scheduler (or CronUpkeep). Please note the address and transaction hash for future use.
+Please copy the transaction hash of your transaction, and open it in the scanner of the chain you are working on. For example, if you were working on Ethereum Kovan please go to https://kovan.etherscan.io/ and search for your Transaction Hash. Now select the *Internal Txns* tab which will show the contract creation and contract address in the To field. Please note the address and transaction hash for future use.
 
 ![Remix Transaction Hash](/images/keepers/cron-2.png)
 
 ## Interacting with your Job Scheduler
 
-To interact with your Job Scheduler contract, create a new file called `CronUpkeep.abi` in Remix and paste the ABI for `CronUpkeep` contract from the Resources section below. Select the **DEPLOY & RUN TRANSACTIONS** icon on the left and paste the address of your `CronUpkeep` contract in the **At Address** box, and then select the **At Address** button. Please accept the prompts after which the contract interface will open in the bottom left of Remix.
+To interact with your Job Scheduler contract, create a new file called `CronUpkeep.abi` in Remix and paste the ABI for `CronUpkeep` contract from the Resources section below. Select the **DEPLOY & RUN TRANSACTIONS** icon on the left and paste the address of your Job Scheduler contract in the **At Address** box, and then select the **At Address** button. Please accept the prompts after which the contract interface will open in the bottom left of Remix.
 
 ![Remix Contract Interface](/images/keepers/cron-3.png)
 
@@ -60,11 +62,11 @@ To schedule a new job, use the function `createCronJobFromEncodedSpec`. This fun
 
 Please see each of the sections below to get the function signature and the encodedCronSpec. 
 
-We will now paste 
+We will now paste, minus <> brackets, 
 ```json
 <your target address>, <your function specification>, <your encodedCronSpec>
 ```
-into the into the createCronJobFromEncodedSpec function and execute it. Once executed, you can call the getActiveCronJobIDs to see if your job has been registered. You can execute the getCronJob function to see the details of your job played back. You can add multiple jobs on this contract in this fashion, and also use the other functions in your Job Scheduler to delete jobs or pause the scheduler.
+into the into the createCronJobFromEncodedSpec function in Remix and execute it. Once executed, you can call the getActiveCronJobIDs to see if your job has been registered. You can execute the getCronJob function to see the details of your job played back. You can add multiple jobs on this contract in this fashion, and also use the other functions in your Job Scheduler to delete jobs or pause the scheduler.
 
 [[To do insert picture!!!!!!!]]
 
@@ -123,10 +125,10 @@ Cron jobs are interpreted according to this format:
 
   Special limitations:
     * there is no year field
-    * no special characters: ? L W #
+    * No special characters: ? L W #
     * lists can have a max length of 26
-    * no words like JAN / FEB or MON / TUES
-    * No <division operators> (eg */5 * * * *) ** TO BE CHECKED
+    * No words like JAN / FEB or MON / TUES
+    * No <division operators> (eg */5 * * * *)
 */
 ```
 
@@ -146,6 +148,467 @@ Paste this spec into the cronStringToEncodeSpec function in Remix and run the fu
 
 
 # Useful Patterns and Best Practices
+
+
+#Resources
+
+## CronUpkeepFactory ABI
+```json
+[
+	{
+		"inputs": [],
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "address",
+				"name": "upkeep",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "address",
+				"name": "owner",
+				"type": "address"
+			}
+		],
+		"name": "NewCronUpkeepCreated",
+		"type": "event"
+	},
+	{
+		"inputs": [],
+		"name": "cronDelegateAddress",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "newCronUpkeep",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	}
+]
+```
+
+
+## Job Scheduler (CronUpkeep) ABI
+```json
+[
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "owner",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "delegate",
+				"type": "address"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "id",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "reason",
+				"type": "string"
+			}
+		],
+		"name": "CallFailed",
+		"type": "error"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "id",
+				"type": "uint256"
+			}
+		],
+		"name": "CronJobIDNotFound",
+		"type": "error"
+	},
+	{
+		"inputs": [],
+		"name": "InvalidHandler",
+		"type": "error"
+	},
+	{
+		"inputs": [],
+		"name": "OnlySimulatedBackend",
+		"type": "error"
+	},
+	{
+		"inputs": [],
+		"name": "TickDoesntMatchSpec",
+		"type": "error"
+	},
+	{
+		"inputs": [],
+		"name": "TickInFuture",
+		"type": "error"
+	},
+	{
+		"inputs": [],
+		"name": "TickTooOld",
+		"type": "error"
+	},
+	{
+		"inputs": [],
+		"name": "UnknownFieldType",
+		"type": "error"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "uint256",
+				"name": "id",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "address",
+				"name": "target",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "bytes",
+				"name": "handler",
+				"type": "bytes"
+			}
+		],
+		"name": "CronJobCreated",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "uint256",
+				"name": "id",
+				"type": "uint256"
+			}
+		],
+		"name": "CronJobDeleted",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "uint256",
+				"name": "id",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "timestamp",
+				"type": "uint256"
+			}
+		],
+		"name": "CronJobExecuted",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "from",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			}
+		],
+		"name": "OwnershipTransferRequested",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "from",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			}
+		],
+		"name": "OwnershipTransferred",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "address",
+				"name": "account",
+				"type": "address"
+			}
+		],
+		"name": "Paused",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "address",
+				"name": "account",
+				"type": "address"
+			}
+		],
+		"name": "Unpaused",
+		"type": "event"
+	},
+	{
+		"stateMutability": "payable",
+		"type": "fallback"
+	},
+	{
+		"inputs": [],
+		"name": "acceptOwnership",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "bytes",
+				"name": "",
+				"type": "bytes"
+			}
+		],
+		"name": "checkUpkeep",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			},
+			{
+				"internalType": "bytes",
+				"name": "",
+				"type": "bytes"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "target",
+				"type": "address"
+			},
+			{
+				"internalType": "bytes",
+				"name": "handler",
+				"type": "bytes"
+			},
+			{
+				"internalType": "bytes",
+				"name": "encodedCronSpec",
+				"type": "bytes"
+			}
+		],
+		"name": "createCronJobFromEncodedSpec",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "cronString",
+				"type": "string"
+			}
+		],
+		"name": "cronStringToEncodedSpec",
+		"outputs": [
+			{
+				"internalType": "bytes",
+				"name": "",
+				"type": "bytes"
+			}
+		],
+		"stateMutability": "pure",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "id",
+				"type": "uint256"
+			}
+		],
+		"name": "deleteCronJob",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getActiveCronJobIDs",
+		"outputs": [
+			{
+				"internalType": "uint256[]",
+				"name": "",
+				"type": "uint256[]"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "id",
+				"type": "uint256"
+			}
+		],
+		"name": "getCronJob",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "target",
+				"type": "address"
+			},
+			{
+				"internalType": "bytes",
+				"name": "handler",
+				"type": "bytes"
+			},
+			{
+				"internalType": "string",
+				"name": "cronString",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "nextTick",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "owner",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "pause",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "paused",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "bytes",
+				"name": "performData",
+				"type": "bytes"
+			}
+		],
+		"name": "performUpkeep",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			}
+		],
+		"name": "transferOwnership",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "unpause",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"stateMutability": "payable",
+		"type": "receive"
+	}
+]
+```
 
 ## Contract Addresses
 
