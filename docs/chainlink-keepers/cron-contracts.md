@@ -83,7 +83,27 @@ Once registered you can view your Upkeep. The Upkeep History will show Perform U
 
 
 ### Function Signature
+The Function Signature (or bytes handler) the the first four bytes of the Keccak-hash which is used in EVM chains to encode the function. You can use Python (>3.6) to get the function specification and by doing this ahead of time you save the gas cost of repeatedly converting the function name into the Function Signature.
 
+```{python}
+#Install pycryptodome from https://pypi.org/project/pycryptodome/
+#pip install pycryptodome 
+from Crypto.Hash import keccak
+import binascii
+
+#Our example smart contract function is called increment()
+#and remember to include the brackets
+#Note Job Scheduler will not pass a parameter
+functionToEncode = 'increment()'
+
+#Calculate the Hash
+functionEncoding = keccak.new(data=functionToEncode.encode('UTF-8'), digest_bits=256).digest()
+
+#Decode to UTF-8 and return first 4 bits (8 characters)
+functionSig = binascii.hexlify(functionEncoding).decode('UTF-8')[:8]
+print("Function Signature:", functionSig)
+#Should return Function Signature: d09de08a
+```
 
 ### EncodedCronSpec
 The Spec is our time interval specification, and to minimize the amount of string handling that our smart contract has to do, we will encode it.
