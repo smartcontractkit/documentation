@@ -15,59 +15,137 @@ metadata:
 >
 > If you are using v1, see the [VRF v1 guide](./v1).
 
-This guide explains how to get a random number inside a smart contract using Chainlink VRF v2.
+This guide explains how to get random values using a simple contract that can request and receive random values from Chainlink VRF v2. To see more advanced examples where many of these steps can be handled programmatically, see the [Example Contracts](/docs/chainlink-vrf/example-contracts/) page.
 
-## Overview
+**Table of contents**
 
-Generally, you configure your smart contracts to use VRF v2 with the following process:
++ [Requirements](#requirements)
++ [Create and fund a subscription](#create-and-fund-a-subscription)
++ [Create and deploy a VRF v2 compatible contract](#create-and-deploy-a-vrf-v2-compatible-contract)
++ [Request random values](#request-random-values)
 
-1. Create a compatible smart contract that imports [VRFCoordinatorV2Interface.sol](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol) and includes the following components:
+## Requirements
 
-  - The `VRFConsumerBaseV2()` constructor
+This guide assumes that you know how to create and deploy smart contracts on Ethereum testnets using the following tools:
 
-  - The `requestRandomWords()` function
+- [The Remix IDE](https://remix.ethereum.org/)
+- [MetaMask](https://metamask.io/)
+- [Rinkeby testnet ETH](/docs/link-token-contracts/#rinkeby)
 
-1. Create a subscription in the [Subscription Manager](https://vrf.chain.link) application. Take note of the `subscriptionId`, which your contract needs later.
+If you are new to developing smart contracts on Ethereum, see the [Getting Started](/docs/conceptual-overview/) guide to learn the basics.
 
-1. Deploy your applications to accept a subscription ID and record the addresses for each deployed contract.
+## Create and fund a subscription
 
-1. Register all of the deployed applications in the [Subscription Manager](https://vrf.chain.link) application.
+For this example, create a new subscription on the Rinkeby testnet.
 
-1. Fund the subscription in the [Subscription Manager](https://vrf.chain.link) application.
+1. Open the [Subscription Manager](https://vrf.chain.link) page.
 
-##  Parameters
+1. Open MetaMask and set it to use the Rinkeby testnet. The Subscription Manager detects your network based on the active network in MetaMask.
 
-These parameters define how your requests will be processed. You can find the values for your network in the [VRF Contract Addresses](/docs/vrf-contracts) page.
+1. Check MetaMask to make sure you have testnet ETH and LINK on Rinkeby. If you need testnet funds, you can get them from [faucets.chain.link](https://faucets.chain.link/rinkeby).
 
-- `address link`: The LINK token address for your selected network.
+1. Click **Create Subscription** and follow the instructions to create a new subscription account. MetaMask opens and asks you to confirm payment to create the account on-chain. After you approve the transaction, the network confirms the creation of your subscription account on-chain.
 
-- `address vrfCoordinator`: The address of the Chainlink VRF Coordinator.
+1. After the subscription is created, click **Add funds** and follow the instructions to fund your subscription. For this example, a balance of 2 LINK is sufficient. MetaMask opens to confirm the LINK transfer to your subscription. After you approve the transaction, the network confirms the transfer of your LINK token to your subscription account.
 
-- `bytes32 keyHash`: The keyHash for specifying your gas lane, which is the maximum gas price you are willing to pay for a request in wei. It functions as an ID of the off-chain VRF job to be run in response to requests.
+1. After you add funds, click **Add consumer**. A page with your account details and subscription ID.
 
-- `uint16 requestConfirmations`: How many confirmations the Chainlink node should wait before responding. The longer the node waits, the more secure the random value is. It must be greater than the coordinator's `minimumRequestBlockConfirmations`.
+1. Record your subscription ID, which you need for your consumer contract.
 
-- `uint32 callbackGasLimit`: How much gas you would like in your callback to do work with the random words provided. It must be less than the coordinators `maxGasLimit`.
+You can always find your subscription IDs, balances, and consumers on the [Subscription Manager](https://vrf.chain.link/) page.
 
-- `uint16 numWords`: How many random words you would like in your request. If you are able to make use of several random words in the same callback, you can achieve significant gas savings.
+Now that you have a funded subscription account and your subscription ID, [create and deploy a VRF v2 compatible contract](#create-and-deploy-a-vrf-v2-compatible-contract).
 
-## Example Contract
+## Create and deploy a VRF v2 compatible contract
 
-In this example, there is only one consumer who is also the subscription owner. It also sets the request config to be static, so each request uses the same parameters.
+For this example, use the [VRFv2Consumer.sol](https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFv2Consumer.sol) sample contract. This contract imports the following dependencies:
+
+- [VRFConsumerBaseV2.sol](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/dev/VRFConsumerBaseV2.sol)
+- [VRFCoordinatorV2Interface.sol](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol)
+- [LinkTokenInterface.sol](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/interfaces/LinkTokenInterface.sol)
+
+Build and deploy the contract on Rinkeby.
+
+1. Open the [VRFv2Consumer.sol](https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFv2Consumer.sol) in Remix.
+
+    <div class="remix-callout">
+          <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFv2Consumer.sol" target="_blank" >Open in Remix</a>
+          <a href="/docs/conceptual-overview/#what-is-remix">What is Remix?</a>
+    </div>
+
+1. Specify your subscription ID in the `subID` value in the contract. You can find your subscription ID in the [Subscription Manager](https://vrf.chain.link/).
+
+    ```
+    // Your subscription ID.
+    uint64 subId = 0;
+    ```
+
+1. Compile and deploy the `VRFv2Consumer.sol` contract. MetaMask opens and asks you to confirm the transaction. After you approve the transaction, the contract is deployed on-chain with the subscription ID that you configured.
+
+1. After you deploy your contract, get your deployed contract address from Remix. Before you can request randomness from VRF v2, you must add this address as an approved consumer on your subscription account.
+
+1. In the [Subscription Manager](https://vrf.chain.link/), click the ID of your new subscription under the **My Subscriptions** list. The subscription details page opens.
+
+1. In the **Consumers** section, click **Add consumer**.
+
+1. Enter the address for your consumer contract that you just deployed and click **Add consumer**. MetaMask opens and asks you to confirm the transaction.
+
+Your example contract is deployed and approved to use your subscription balance to pay for VRF v2 requests. Next, [request random values](#request-random-values) from Chainlink VRF.
+
+## Request random values
+
+The deployed contract is configured to request random values from Chainlink VRF, receive those values, and then store them in the `s_randomWords` array. Run the `requestRandomWords()` function on your contract to start the request.
+
+1. Return to Remix and view your deployed contract functions in the **Deployed Contracts** list.
+
+1. Click the `requestRandomWords()` function to send the request for random values to Chainlink VRF. MetaMask opens and asks you to confirm the transaction. After you approve the transaction, Chainlink VRF processes your request, the request is fulfilled by a VRF oracle, and that oracle returns the requested random values to your contract through a callback to the `fulfillRandomWords()` function.
+
+1. After the oracle returns the random values to your contract, the `s_randomWords` variable stores an array with all of the requested random values. Specify the index of the array that you want to display and click `s_randomWords` to print the value. Depending on current testnet conditions, it might take several minutes for the callback to return the requested random values to your contract.
+
+You deployed a simple contract that can request and receive random values from Chainlink VRF. To see more advanced examples where many of these steps can be handled programmatically, see the [Example Contracts](/docs/chainlink-vrf/example-contracts/) page.
+
+## Understanding the contract
+
+In this example, there is only one consumer who is also the subscription owner. It also sets the request configuration to be static, so each request uses the same parameters.
 
 ```solidity Kovan
 {% include samples/VRF/VRFSingleConsumerExample-simple.sol %}
 ```
 
-<div class="remix-callout">
-      <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFSingleConsumerExample-simple.sol" target="_blank" >Open in Remix</a>
-      <a href="/docs/conceptual-overview/#what-is-remix">What is Remix?</a>
-</div>
+The parameters define how your requests will be processed. You can find the values for your network in the [VRF Contract Addresses](/docs/vrf-contracts) page.
+
+- `uint64 subId`: The subscription ID that this contract uses for funding requests.
+
+- `address vrfCoordinator`: The address of the Chainlink VRF Coordinator contract.
+
+- `address link`: The LINK token address for your selected network.
+
+- `bytes32 keyHash`: The gas lane key hash value, which is the maximum gas price you are willing to pay for a request in wei. It functions as an ID of the off-chain VRF job to be run in response to requests.
+
+- `uint32 callbackGasLimit`: The limit for how much gas to use for the the callback request to your contract's `fulfillRandomWords()` function. It must be less than the `maxGasLimit` limit on the coordinator contract.
+
+- `uint16 requestConfirmations`: How many confirmations the Chainlink node should wait before responding. The longer the node waits, the more secure the random value is. It must be greater than the `minimumRequestBlockConfirmations` limit on the coordinator contract.
+
+- `uint16 numWords`: How many random words to request. If you are able to make use of several random values in a single callback, you can reduce the amount of gas that you spend per random value.
+
+The contract includes the following functions:
+
+- `requestRandomWords()`: Takes your specified parameters and submits the request to the VRF coordinator contract.
+
+- `fulfillRandomWords()`: Receives random values and stores them with your contract.
+
+- `withdraw()`: A function you can use to withdraw LINK from your subscription and send it to the specified address.
 
 > 🚧 Security Considerations
 >
-> Be sure to look your contract over with [these security considerations](/docs/vrf-security-considerations/) in mind!
+> Be sure to review your contracts to make sure they follow the best practices on the [security considerations](/docs/vrf-security-considerations/) page.
 
->❗️ Remember to fund your subscription with LINK!
->
-> Your randomness request will not complete unless your subscription has enough LINK to pay for it. **Learn how to [Acquire testnet LINK](/docs/acquire-link/)**.
+## Clean up
+
+After you are done with this contract and the subscription, you can retrieve the unused testnet LINK to use with other examples.
+
+1. In the [Subscription Manager](https://vrf.chain.link/), click the ID of your new subscription under the **My Subscriptions** list. The subscription details page opens.
+
+1. Under your subscription details, click **Cancel subscription**. A field opens asking which wallet address you want to send remaining funds to.
+
+1. Enter your wallet address and click **Cancel subscription**. MetaMask opens and asks you to confirm the transaction. After you approve the transaction, Chainlink VRF closes your subscription account and sends the remaining LINK to your wallet.
