@@ -15,7 +15,7 @@ metadata:
 >
 > If you are using v1, see the [VRF v1 guide](./v1).
 
-This guide explains how to get random values using a simple contract that can request and receive random values from Chainlink VRF v2. To see more advanced examples where many of these steps can be handled programmatically, see the [Example Contracts](/docs/chainlink-vrf/example-contracts/) page.
+This guide explains how to get random values using a simple contract to request and receive random values from Chainlink VRF v2. To see more advanced examples with programmatic subscription configuration, see the [Example Contracts](/docs/chainlink-vrf/example-contracts/) page.
 
 **Table of contents**
 
@@ -38,19 +38,19 @@ If you are new to developing smart contracts on Ethereum, see the [Getting Start
 
 For this example, create a new subscription on the Rinkeby testnet.
 
-1. Open the [Subscription Manager](https://vrf.chain.link) page.
-
 1. Open MetaMask and set it to use the Rinkeby testnet. The Subscription Manager detects your network based on the active network in MetaMask.
 
 1. Check MetaMask to make sure you have testnet ETH and LINK on Rinkeby. If you need testnet funds, you can get them from [faucets.chain.link](https://faucets.chain.link/rinkeby).
+
+1. Open the [Subscription Manager](https://vrf.chain.link) page.
 
 1. Click **Create Subscription** and follow the instructions to create a new subscription account. MetaMask opens and asks you to confirm payment to create the account on-chain. After you approve the transaction, the network confirms the creation of your subscription account on-chain.
 
 1. After the subscription is created, click **Add funds** and follow the instructions to fund your subscription. For this example, a balance of 2 LINK is sufficient. MetaMask opens to confirm the LINK transfer to your subscription. After you approve the transaction, the network confirms the transfer of your LINK token to your subscription account.
 
-1. After you add funds, click **Add consumer**. A page with your account details and subscription ID.
+1. After you add funds, click **Add consumer**. A page opens with your account details and subscription ID.
 
-1. Record your subscription ID, which you need for your consumer contract.
+1. Record your subscription ID, which you need for your consumer contract. You will add the consumer to your subscription later.
 
 You can always find your subscription IDs, balances, and consumers on the [Subscription Manager](https://vrf.chain.link/) page.
 
@@ -73,7 +73,7 @@ Build and deploy the contract on Rinkeby.
           <a href="/docs/conceptual-overview/#what-is-remix">What is Remix?</a>
     </div>
 
-1. Specify your subscription ID in the `subID` value in the contract. You can find your subscription ID in the [Subscription Manager](https://vrf.chain.link/).
+1. Specify your subscription ID in the `subId` value in the contract. You can find your subscription ID in the [Subscription Manager](https://vrf.chain.link/).
 
     ```
     // Your subscription ID.
@@ -94,22 +94,22 @@ Your example contract is deployed and approved to use your subscription balance 
 
 ## Request random values
 
-The deployed contract is configured to request random values from Chainlink VRF, receive those values, and then store them in the `s_randomWords` array. Run the `requestRandomWords()` function on your contract to start the request.
+The deployed contract requests random values from Chainlink VRF, receives those values, and then stores them in the `s_randomWords` array. Run the `requestRandomWords()` function on your contract to start the request.
 
 1. Return to Remix and view your deployed contract functions in the **Deployed Contracts** list.
 
-1. Click the `requestRandomWords()` function to send the request for random values to Chainlink VRF. MetaMask opens and asks you to confirm the transaction. After you approve the transaction, Chainlink VRF processes your request, the request is fulfilled by a VRF oracle, and that oracle returns the requested random values to your contract through a callback to the `fulfillRandomWords()` function.
+1. Click the `requestRandomWords()` function to send the request for random values to Chainlink VRF. MetaMask opens and asks you to confirm the transaction. After you approve the transaction, Chainlink VRF processes your request. Chainlink VRF fulfills the request and returns the random values to your contract in a callback to the `fulfillRandomWords()` function. Depending on current testnet conditions, it might take several minutes for the callback to return the requested random values to your contract.
 
-1. After the oracle returns the random values to your contract, the `s_randomWords` variable stores an array with all of the requested random values. Specify the index of the array that you want to display and click `s_randomWords` to print the value. Depending on current testnet conditions, it might take several minutes for the callback to return the requested random values to your contract.
+1. After the oracle returns the random values to your contract, the `s_randomWords` variable stores an array with all of the requested random values. Specify the index of the array that you want to display and click `s_randomWords` to print the value. Because this example requests two random values, check the value at index `0` and then check the value at index `1`.
 
-You deployed a simple contract that can request and receive random values from Chainlink VRF. To see more advanced examples where many of these steps can be handled programmatically, see the [Example Contracts](/docs/chainlink-vrf/example-contracts/) page.
+You deployed a simple contract that can request and receive random values from Chainlink VRF. To see more advanced examples where the contract can complete the entire process including subscription setup and management, see the [Example Contracts](/docs/chainlink-vrf/example-contracts/) page.
 
 ## Understanding the contract
 
 In this example, there is only one consumer who is also the subscription owner. It also sets the request configuration to be static, so each request uses the same parameters.
 
-```solidity Kovan
-{% include samples/VRF/VRFSingleConsumerExample-simple.sol %}
+```solidity
+{% include samples/VRF/VRFv2Consumer.sol %}
 ```
 
 The parameters define how your requests will be processed. You can find the values for your network in the [VRF Contract Addresses](/docs/vrf-contracts) page.
@@ -134,7 +134,7 @@ The contract includes the following functions:
 
 - `fulfillRandomWords()`: Receives random values and stores them with your contract.
 
-- `withdraw()`: A function you can use to withdraw LINK from your subscription and send it to the specified address.
+- `withdraw()`: A function you can use to withdraw LINK from your contract and send it to the specified address.
 
 > 🚧 Security Considerations
 >
@@ -142,7 +142,7 @@ The contract includes the following functions:
 
 ## Clean up
 
-After you are done with this contract and the subscription, you can retrieve the unused testnet LINK to use with other examples.
+After you are done with this contract and the subscription, you can retrieve the remaining testnet LINK to use with other examples.
 
 1. In the [Subscription Manager](https://vrf.chain.link/), click the ID of your new subscription under the **My Subscriptions** list. The subscription details page opens.
 

@@ -10,7 +10,7 @@ permalink: "docs/vrf-security-considerations/"
 >
 > If you are using v1, see the [VRF v1 guide](./v1).
 
-Gaining access to high quality randomness on-chain requires a solution like Chainlink's VRF, but it also requires you to understand some of the ways that randonmess generation can be manipulated by miners/validators. Here are some of the top security considerations you should review in your project.
+Gaining access to high quality randomness on-chain requires a solution like Chainlink's VRF, but it also requires you to understand some of the ways that randomness generation can be manipulated by miners or validators. Here are some of the top security considerations you should review in your project.
 
 * [Use `requestId` to match randomness requests with their fulfillment in order](#use-requestid-to-match-randomness-requests-with-their-fulfillment-in-order)
 * [Choose a safe block confirmation time, which will vary between blockchains](#choose-a-safe-block-confirmation-time-which-will-vary-between-blockchains)
@@ -35,9 +35,9 @@ In principle, miners/validators of your underlying blockchain could rewrite the 
 
 You must choose an appropriate confirmation time for the randomness requests you make (i.e. how many blocks the the VRF service waits before writing a fulfillment to the chain) to make such rewrite attacks unprofitable in the context of your application and its value-at-risk.
 
-On Ethereum, such rewrites are very expensive due to the very high rate of work performed by Ethereum's proof-of-work: the hashrate of the Ethereum network is currently 630 trillion hashes per second, and any attacker would have to control at least 51% of that for the duration of the attack. Therefore, major centralized exchanges consider a __20-block confirmation time__ as highly secure for deposit confirmation times. The block confirmation time required from one use case to the next may differ.
+On Ethereum, such rewrites are very expensive due to the very high rate of work performed by Ethereum's proof-of-work. The hashrate of the Ethereum network is currently 630 trillion hashes per second, and any attacker would have to control at least 51% of that for the duration of the attack. Therefore, major centralized exchanges consider a __20-block confirmation time__ as highly secure for deposit confirmation times. The block confirmation time required from one use case to the next may differ.
 
-On proof-of-stake blockchains (e.g. BSC, Polygon), what block confirmation time is considered secure depends on the specifics of their consensus mechanism and whether you're willing to trust any underlying assumptions of (partial) honesty of validators.
+On proof-of-stake blockchains such as BSC and Polygon, what block confirmation time is considered secure depends on the specifics of their consensus mechanism and whether you're willing to trust any underlying assumptions of partial honesty of validators.
 
 For further details, take a look at the consensus documentation for the chain you want to use:
 - [Ethereum Consensus Mechanisms](https://ethereum.org/en/developers/docs/consensus-mechanisms/)

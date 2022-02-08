@@ -6,7 +6,7 @@ import "@chainlink/contracts/src/v0.8/interfaces/LinkTokenInterface.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
 import "@chainlink/contracts/src/v0.8/dev/VRFConsumerBaseV2.sol";
 
-contract VRFSingleConsumerExample is VRFConsumerBaseV2 {
+contract VRFv2Consumer is VRFConsumerBaseV2 {
   VRFCoordinatorV2Interface COORDINATOR;
   LinkTokenInterface LINKTOKEN;
 

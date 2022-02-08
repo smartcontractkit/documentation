@@ -17,60 +17,46 @@ metadata:
 
 How you manage the subscription depends on your randomness needs. You can configure your subscriptions using the [Subscription Manager](https://vrf.chain.link) application, but these examples demonstrate how to create your subscription and register your applications programmatically.
 
-## Table of Contents
-
-- [Single consumer and subscription owner](#single-consumer-and-subscription-owner)
-- [Multiple consumers with an external subscription owner](#multiple-consumers-with-an-external-subscription-owner)
-- [Modify existing subscriptions](#modify-existing-subscriptions)
-
-## Single consumer and subscription owner
-
-In this example, there is only one consumer who is also the subscription owner. It also sets the request config to be static, so each request uses the same parameters.
-
-```solidity Kovan
-{% include samples/VRF/VRFSingleConsumerExample.sol %}
-```
-
-<div class="remix-callout">
-      <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFSingleConsumerExample.sol" target="_blank" >Open in Remix</a>
-      <a href="/docs/conceptual-overview/#what-is-remix">What is Remix?</a>
-</div>
-
-## Multiple consumers with an external subscription owner
-
-In this example, an external account manages the subscription for multiple consumers. Set up this configuration using the following process:
-
-1. Create a subscription with `createSubscription()`. Make a note of the subscriptionId emitted in the `SubscriptionCreated` log.
-1. Deploy your applications which accept a subscription ID like `VRFExternalSubOwnerExample.requestRandomWords` does and record all their addresses. <!--TODO: Clarify this sentence -->
-1. Register all the applications `addConsumer(uint64 subId, address consumer)` . <!--TODO: Clarify this sentence -->
-1. Fund the subscription with `LINKTOKEN.transferAndCall(address(COORDINATOR), amount, abi.encode(subId));`
-
-<div class="remix-callout">
-    <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFExternalSubOwnerExample.sol" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
-    <a href="/docs/deploy-your-first-contract/" title="">What is Remix?</a>
-</div>
-
-```solidity Kovan
-{% include samples/VRF/VRFExternalSubOwnerExample.sol %}
-```
-
-## Modify existing subscriptions
-
-Subscription configurations do not have to be static. You can change your subscription configuration dynamically using the following functions:
+Subscription configurations do not have to be static. You can change your subscription configuration dynamically by calling the following functions on the VRF v2 coordinator contract:
 
 - Change the consumer set with `addConsumer(uint64 subId, address consumer)` or `removeConsumer(uint64 subId, address consumer)`.
-  - There are a maximum of 100 consumers per subscription. If you need more than 100 consumers, use multiple subscriptions.
 - Transfer the subscription ownership with `requestSubscriptionOwnerTransfer(uint64 subId, address newOwner)` and `acceptSubscriptionOwnerTransfer(uint64 subId)`.
 - Top up the subscription balance with `LINKTOKEN.transferAndCall(address(COORDINATOR), amount, abi.encode(subId));`. Any address can fund a subscription.
 - View the subscription with `getSubscription(uint64 subId)`.
 - Cancel the subscription with `cancelSubscription(uint64 subId)`.
 
-The full coordinator interface is available [here](https://github.com/smartcontractkit/chainlink/blob/bbc471860883f302ea90425346c7a51a0e867a24/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol). You can use the subscription management functions however you see fit.
+The full coordinator interface is available on [GitHub](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol). You can use the subscription management functions however you see fit.
+
+In this example, the contract operates as a subscription owner and can run functions to add consumer contracts to the subscription. Those contracts need only include the `requestRandomWords()` function, the `fulfillRandomWords()` functions with the correct coordinator parameters and the correct `subId` value in order to obtain their own random values and use the subscription balance.
+
+```solidity
+{% include samples/VRF/VRFv2SubscriptionManager.sol %}
+```
+
+To use this contract, compile and deploy it in Remix.
+
+1. Open the contract in Remix.
+
+    <div class="remix-callout">
+          <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFv2SubscriptionManager.sol" target="_blank" >Open in Remix</a>
+          <a href="/docs/conceptual-overview/#what-is-remix">What is Remix?</a>
+    </div>
+
+1. Compile and deploy the contract. Specify the constructor parameters with the desired addresses and values for your network. For a full list of available configuration variables, see the [Contract Addresses](/docs/vrf-contracts/) page. This contract automatically creates a new subscription when you deploy it. Read the `s_requestConfig` variable to see the configuration details. You can look up this subscription in the [Subscription Manager](https://vrf.chain.link) using the `subId` value.
+
+1. Create and deploy consumer contracts that include the following components:
+
+    - The `requestRandomWords()` function and the required variables
+    - The `fulfillRandomWords()` callback function
+
+1. After you deploy these consumer contracts, add them to the subscription as approved consumers using the `addConsumer()` function.
+
+1. Fund the subscription by running the `topUpSubscription()` function.
+
+1. On the consumer contracts, run their `requestRandomWords()` functions to request and receive random values.
+
+1. If you need to remove consumer contracts later, use the `removeConsumer()`.
 
 > 🚧 Security Considerations
 >
 > Be sure to look your contract over with [these security considerations](/docs/vrf-security-considerations/) in mind!
-
->❗️ Remember to fund your subscription with LINK!
->
-> Your randomness request will not complete unless your subscription has enough LINK to pay for it. **Learn how to [Acquire testnet LINK](/docs/acquire-link/)**.
