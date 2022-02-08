@@ -66,6 +66,8 @@ For this example, use the [VRFv2Consumer.sol](https://remix.ethereum.org/#url=ht
 - [VRFCoordinatorV2Interface.sol](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol)
 - [LinkTokenInterface.sol](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/interfaces/LinkTokenInterface.sol)
 
+The contract also includes pre-configured values for the necessary request parameters such as `vrfCoordinator` address, `link` token contract address, and gas lane `keyHash`. You can change these parameters if you want to experiment on different testnets, but for this example you only need to specify `subId` with your subscription ID.
+
 Build and deploy the contract on Rinkeby.
 
 1. Open the [VRFv2Consumer.sol](https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFv2Consumer.sol) contract in Remix.

@@ -48,20 +48,24 @@ To use this contract, compile and deploy it in Remix.
           <a href="/docs/conceptual-overview/#what-is-remix">What is Remix?</a>
     </div>
 
-1. Compile and deploy the contract. Specify the constructor parameters with the desired addresses and values for your network. For a full list of available configuration variables, see the [Contract Addresses](/docs/vrf-contracts/) page. This contract automatically creates a new subscription when you deploy it. Read the `s_requestConfig` variable to see the configuration details. You can look up this subscription in the [Subscription Manager](https://vrf.chain.link) using the `subId` value.
+1. Compile and deploy the contract. Specify the constructor parameters with the desired addresses and values for your network. For a full list of available configuration variables, see the [Contract Addresses](/docs/vrf-contracts/) page.
+
+    This contract automatically creates a new subscription when you deploy it. Read the `s_requestConfig` variable to see the configuration details. You can look up this subscription in the [Subscription Manager](https://vrf.chain.link) using the `subId` value.
+
+1. Fund the subscription by running the `topUpSubscription()` function.
 
 1. Create and deploy consumer contracts that include the following components:
 
     - The `requestRandomWords()` function and the required variables
     - The `fulfillRandomWords()` callback function
 
-1. After you deploy these consumer contracts, add them to the subscription as approved consumers using the `addConsumer()` function.
-
-1. Fund the subscription by running the `topUpSubscription()` function.
+1. After you deploy these consumer contracts, add them to the subscription as approved consumers using the `addConsumer()` function on your subscription manager contract.
 
 1. On the consumer contracts, run their `requestRandomWords()` functions to request and receive random values.
 
-1. If you need to remove consumer contracts later, use the `removeConsumer()` function.
+The consumer contracts can continue to make requests until your subscription balance runs out. The subscription manager contract must maintain sufficient balance in the subscription so that the consumers can continue to operate.
+
+If you need to remove consumer contracts later, use the `removeConsumer()` function.
 
 > 🚧 Security Considerations
 >
