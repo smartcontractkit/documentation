@@ -15,19 +15,25 @@ metadata:
 >
 > If you are using v1, see the [VRF v1 guide](/docs/get-a-random-number/v1/).
 
-How you manage the subscription depends on your randomness needs. You can configure your subscriptions using the [Subscription Manager](https://vrf.chain.link) application, but these examples demonstrate how to create your subscription and register your applications programmatically.
+How you manage the subscription depends on your randomness needs. You can configure your subscriptions using the [Subscription Manager](https://vrf.chain.link) application, but these examples demonstrate how to create your subscription and register your applications programmatically. For these examples, the contract owns and manages the subscription. You can still view the subscriptions in the [Subscription Manager](https://vrf.chain.link) and any wallet can provide funding to those subscriptions.
+
+## Modifying subscriptions and configurations
 
 Subscription configurations do not have to be static. You can change your subscription configuration dynamically by calling the following functions on the VRF v2 coordinator contract:
 
 - Change the consumer set with `addConsumer(uint64 subId, address consumer)` or `removeConsumer(uint64 subId, address consumer)`.
 - Transfer the subscription ownership with `requestSubscriptionOwnerTransfer(uint64 subId, address newOwner)` and `acceptSubscriptionOwnerTransfer(uint64 subId)`.
-- Top up the subscription balance with `LINKTOKEN.transferAndCall(address(COORDINATOR), amount, abi.encode(subId));`. Any address can fund a subscription.
+- Top up the subscription balance with `LINKTOKEN.transferAndCall(address(COORDINATOR), amount, abi.encode(subId));`. Any wallet can fund a subscription.
 - View the subscription with `getSubscription(uint64 subId)`.
 - Cancel the subscription with `cancelSubscription(uint64 subId)`.
 
 The full coordinator interface is available on [GitHub](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol). You can use the subscription management functions however you see fit.
 
+## Subscription manager contract
+
 In this example, the contract operates as a subscription owner and can run functions to add consumer contracts to the subscription. Those contracts need only include the `requestRandomWords()` function, the `fulfillRandomWords()` functions with the correct coordinator parameters and the correct `subId` value in order to obtain their own random values and use the subscription balance.
+
+Subscription owners and consumers do not have to be separate. This contract can also act as a consumer by running its own `requestRandomWords()` function, but it must add itself as an approved consumer. This example creates the subscription and adds itself as a consumer when you deploy it.
 
 ```solidity
 {% include samples/VRF/VRFv2SubscriptionManager.sol %}
@@ -55,7 +61,7 @@ To use this contract, compile and deploy it in Remix.
 
 1. On the consumer contracts, run their `requestRandomWords()` functions to request and receive random values.
 
-1. If you need to remove consumer contracts later, use the `removeConsumer()`.
+1. If you need to remove consumer contracts later, use the `removeConsumer()` function.
 
 > 🚧 Security Considerations
 >

@@ -17,7 +17,7 @@ metadata:
 >
 > If you are using v1, see the [VRF v1 guide](./v1).
 
-Chainlink VRF (Verifiable Random Function) is a provably-fair and verifiable random number generator (RNG) that enables smart contracts to access random values without compromising on security or usability.
+Chainlink VRF (Verifiable Random Function) is a provably fair and verifiable random number generator (RNG) that enables smart contracts to access random values without compromising security or usability.
 
 **Table of contents**
 
@@ -28,7 +28,7 @@ Chainlink VRF (Verifiable Random Function) is a provably-fair and verifiable ran
 
 ## Overview
 
-For each request, Chainlink VRF generates one or more random values and cryptographic proof of how those values were determined. The proof is published and verified on-chain before it can be used by any consuming applications. This process ensures that results cannot be tampered with or manipulated by any single entity including oracle operators, miners, users, or smart contract developers.
+For each request, Chainlink VRF generates one or more random values and cryptographic proof of how those values were determined. The proof is published and verified on-chain before any consuming applications can use it. This process ensures that results cannot be tampered with or manipulated by any single entity including oracle operators, miners, users, or smart contract developers.
 
 Use Chainlink VRF to build reliable smart contracts for any applications that rely on unpredictable outcomes:
 
@@ -56,7 +56,7 @@ To learn when VRF v2 becomes available on more networks, follow us on [Twitter](
 
 ## Subscriptions
 
-VRF v2 requests receive funding from subscription accounts. The [Subscription Manager](https://vrf.chain.link) lets you create an account and pre-pay for VRF v2 so you don't provide funding each time your application requests randomness. This reduces the total gas cost to use VRF v2. It also provides a simple way to fund your use of Chainlink products from a single location so you don't have to manage multiple wallets across several different systems and applications.
+VRF v2 requests receive funding from subscription accounts. The [Subscription Manager](https://vrf.chain.link) lets you create an account and pre-pay for VRF v2, so you don't provide funding each time your application requests randomness. This reduces the total gas cost to use VRF v2. It also provides a simple way to fund your use of Chainlink products from a single location, so you don't have to manage multiple wallets across several different systems and applications.
 
 Subscriptions have the following core concepts:
 
@@ -68,11 +68,11 @@ Subscriptions have the following core concepts:
 The Subscription Manager system has the following limitations:
 
 - Each subscription supports up to 100 consumer contracts. If you need more than 100 consumers, create multiple subscriptions.
-- Each subscription must maintain a minimum balance in order to fund requests from consumer contracts. If your balance drops below this threshold
+- Each subscription must maintain a sufficient balance to fund requests from consumer contracts. If your balance cannot cover the cost to complete a request, the request remains pending. Top up the subscription balance with LINK. The request will go through automatically as long as you made the request in the last 24 hours.
 
 ## Subscription billing
 
-For Chainlink VRF v2 to fulfill your requests, you must maintain a sufficient amount of LINK in your subscription balance. If the total cost of a request exceeds your subscription balance, top up the subscription balance with LINK and the request will go through automatically as long as the request was made in the last 24 hours. Gas cost calculation includes the following variables:
+For Chainlink VRF v2 to fulfill your requests, you must maintain a sufficient amount of LINK in your subscription balance. Gas cost calculation includes the following variables:
 
 - **Gas price:** The current gas price, which fluctuates depending on network conditions
 
@@ -80,21 +80,21 @@ For Chainlink VRF v2 to fulfill your requests, you must maintain a sufficient am
 
 - **Verification gas:** The amount of gas used to verify randomness on-chain
 
-These variables depend on current network conditions, your specified limit on callback gas, and the size of your randomness request. The cost of each request is final only after the transaction is complete, but you define the limits you are willing to spend for the request with the following variables:
+These variables depend on current network conditions, your specified limit on callback gas, and the number of random values in your request. The cost of each request is final only after the transaction is complete, but you define the limits you are willing to spend for the request with the following variables:
 
 - **Gas lane:** The maximum gas price you are willing to pay for a request in wei. Define this limit by specifying the appropriate `keyHash` in your request. The limits of each gas lane are important for handling gas price spikes when Chainlink VRF bumps the gas price to fulfill your request quickly.
 
-- **Callback gas limit:** Specifies maximum amount of gas you are willing to spend on the callback request. Define this limit by specifying the `callbackGasLimit` value in your request.
+- **Callback gas limit:** Specifies the maximum amount of gas you are willing to spend on the callback request. Define this limit by specifying the `callbackGasLimit` value in your request.
 
 Requests to Chainlink VRF v2 follow the [Request & Receive Data](/docs/request-and-receive-data/) cycle. The VRF coordinator processes the request and determines the final charge to your subscription using the following steps:
 
-1. You submit your request with a specified gas lane `keyHash` and the `callbackGasLimit`. If your request is urgent, specify a gas lane with a higher gas price limit. The `callbackGasLimit` depends on the size of your request, but generally a limit of 100,000 gas is appropriate. Verification gas has a hard upper limit of 200,000 gas.
+1. You submit your request with a specified gas lane `keyHash` and the `callbackGasLimit`. If your request is urgent, specify a gas lane with a higher gas price limit. The `callbackGasLimit` depends on the size of your request. Generally, a limit of 100,000 gas is appropriate. Verification gas has a hard upper limit of 200,000 gas.
 
-1. The coordinator starts the transaction and bumps the gas price until the transaction is completed. The coordinator will not exceed the gas price limit of your selected gas lane. If your request cannot be completed at your specified gas limit, you resubmit the request with a different gas lane or after gas prices fall below your current gas lane limits.
+1. The coordinator starts the transaction and bumps the gas price until the transaction is completed. The coordinator will not exceed the gas price limit of your selected gas lane. If your request cannot be completed at your specified gas limit, resubmit the request with a different gas lane or wait until gas prices fall below your current gas lane limits.
 
 1. The responding Chainlink oracle verifies your random values on-chain and completes the callback to your contract with the random values.
 
-1. After the request is complete, the final gas cost for the request is recorded based on how much how much gas was required for the verification and the callback. The total gas cost for your request uses the following formula:
+1. After the request is complete, the final gas cost is recorded based on how much gas is required for the verification and callback. The total gas cost for your request uses the following formula:
 
     ```
     (Gas price * (Verification gas + Callback gas) = total gas cost

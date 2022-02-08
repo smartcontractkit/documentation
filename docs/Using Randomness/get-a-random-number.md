@@ -23,6 +23,8 @@ This guide explains how to get random values using a simple contract to request 
 + [Create and fund a subscription](#create-and-fund-a-subscription)
 + [Create and deploy a VRF v2 compatible contract](#create-and-deploy-a-vrf-v2-compatible-contract)
 + [Request random values](#request-random-values)
++ [Analyzing the contract](#analyzing-the-contract)
++ [Clean up](#clean-up)
 
 ## Requirements
 
@@ -66,7 +68,7 @@ For this example, use the [VRFv2Consumer.sol](https://remix.ethereum.org/#url=ht
 
 Build and deploy the contract on Rinkeby.
 
-1. Open the [VRFv2Consumer.sol](https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFv2Consumer.sol) in Remix.
+1. Open the [VRFv2Consumer.sol](https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFv2Consumer.sol) contract in Remix.
 
     <div class="remix-callout">
           <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFv2Consumer.sol" target="_blank" >Open in Remix</a>
@@ -98,15 +100,17 @@ The deployed contract requests random values from Chainlink VRF, receives those 
 
 1. Return to Remix and view your deployed contract functions in the **Deployed Contracts** list.
 
-1. Click the `requestRandomWords()` function to send the request for random values to Chainlink VRF. MetaMask opens and asks you to confirm the transaction. After you approve the transaction, Chainlink VRF processes your request. Chainlink VRF fulfills the request and returns the random values to your contract in a callback to the `fulfillRandomWords()` function. Depending on current testnet conditions, it might take several minutes for the callback to return the requested random values to your contract.
+1. Click the `requestRandomWords()` function to send the request for random values to Chainlink VRF. MetaMask opens and asks you to confirm the transaction. After you approve the transaction, Chainlink VRF processes your request. Chainlink VRF fulfills the request and returns the random values to your contract in a callback to the `fulfillRandomWords()` function.
+
+    Depending on current testnet conditions, it might take several minutes for the callback to return the requested random values to your contract. You can see a list of pending requests for your subscription ID in the [Subscription Manager](https://vrf.chain.link/).
 
 1. After the oracle returns the random values to your contract, the `s_randomWords` variable stores an array with all of the requested random values. Specify the index of the array that you want to display and click `s_randomWords` to print the value. Because this example requests two random values, check the value at index `0` and then check the value at index `1`.
 
 You deployed a simple contract that can request and receive random values from Chainlink VRF. To see more advanced examples where the contract can complete the entire process including subscription setup and management, see the [Example Contracts](/docs/chainlink-vrf/example-contracts/) page.
 
-## Understanding the contract
+## Analyzing the contract
 
-In this example, there is only one consumer who is also the subscription owner. It also sets the request configuration to be static, so each request uses the same parameters.
+In this example, your MetaMask wallet is the subscription owner and you created a consumer contract to use that subscription. The consumer contract uses static configuration parameters.
 
 ```solidity
 {% include samples/VRF/VRFv2Consumer.sol %}
