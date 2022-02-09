@@ -72,39 +72,39 @@ No. Ganache is a mock testnet and it doesn't work with Chainlink because of that
 
 Your Chainlink node should be run on a server that has a public IP address.
 
-### Minimum
+### Basic Requirements
 
 To get started running a Chainlink node, you will need a machine with at least **2 cores** and **4 GB of RAM**. 
 
-### Recommended 
+### Recommended Settings
 
 The requirements for running a Chainlink node scale as the number of jobs your node services also scales.  For nodes with over 100 jobs, you will need at least **4 cores** and **8GB of RAM**.  
 
 Resources:
-*  <a href="https://docs.chain.link/docs/running-a-chainlink-node/" target="_blank">Running a Chainlink Node</a>
+*  [Running a Chainlink Node](../running-a-chainlink-node/)
 *  <a href="https://github.com/smartcontractkit/chainlink/wiki/Development-Setup-Guide" target="_blank">Development Setup Guide</a>
 
 ## Database Requirements
 
 In addition to running a Chainlink node, you will also need a PostgreSQL database.  Please use a version >= 11, and be sure that your DB host provides access to logs.
 
-### Minimum
+### Basic Requirements
 
 The minimum requirements for the database are **2 cores**, **4GB of RAM**, and **100 GB of storage**.
 
-### Recommended
+### Recommended Settings
 
 Similar to the Chainlink node, requirements increase as you service more jobs.  For more than 100 jobs, your database server will need at least **4 cores**, **16 GB of RAM**, and **100 GB of storage**. 
 
 If using AWS, use dedicated IOPS (not the burstable one).
 
-## Ethereum Client
+## Connecting to Ethereum Client
 
 Connectivity to an Ethereum client is also required for communication with the blockchain. If you decide to run your own Ethereum client, you will want to run that on a separate machine. Hardware requirements of Ethereum clients may change over time.
 
 Resources:
-*  <a href="https://ethereum.stackexchange.com/a/27369" target="_blank">StackExchange Answer</a>
-*  <a href="https://ethereum.stackexchange.com/questions/tagged/hardware" target="_blank">All Ethereum Hardware Questions</a>
+*  [StackExchange Answer](https://ethereum.stackexchange.com/a/27369)
+*  [All Ethereum Hardware Questions](https://ethereum.stackexchange.com/questions/tagged/hardware)
 
 ## Do I need to have access to APIs in order to provide data?
 
