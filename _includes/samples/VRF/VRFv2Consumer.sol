@@ -11,7 +11,7 @@ contract VRFv2Consumer is VRFConsumerBaseV2 {
   LinkTokenInterface LINKTOKEN;
 
   // Your subscription ID.
-  uint64 subId = 0;
+  uint64 s_subscriptionId;
 
   // Rinkeby coordinator. For other networks,
   // see https://docs.chain.link/docs/vrf-contracts/#configurations
@@ -40,11 +40,11 @@ contract VRFv2Consumer is VRFConsumerBaseV2 {
   uint256 public s_requestId;
   address s_owner;
 
-  constructor(
-  ) VRFConsumerBaseV2(vrfCoordinator) {
+  constructor(uint64 subscriptionId) VRFConsumerBaseV2(vrfCoordinator) {
     COORDINATOR = VRFCoordinatorV2Interface(vrfCoordinator);
     LINKTOKEN = LinkTokenInterface(link);
     s_owner = msg.sender;
+    s_subscriptionId = subscriptionId;
   }
 
   function fulfillRandomWords(
@@ -59,15 +59,11 @@ contract VRFv2Consumer is VRFConsumerBaseV2 {
     // Will revert if subscription is not set and funded.
     s_requestId = COORDINATOR.requestRandomWords(
       keyHash,
-      subId,
+      s_subscriptionId,
       requestConfirmations,
       callbackGasLimit,
       numWords
     );
-  }
-
-  function withdraw(uint256 amount, address to) external onlyOwner {
-    LINKTOKEN.transfer(to, amount);
   }
 
   modifier onlyOwner() {

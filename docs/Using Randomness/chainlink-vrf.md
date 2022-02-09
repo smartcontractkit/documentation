@@ -36,7 +36,7 @@ Use Chainlink VRF to build reliable smart contracts for any applications that re
 - Random assignment of duties and resources. For example, randomly assigning judges to cases.
 - Choosing a representative sample for consensus mechanisms.
 
-For help with your specific use case, [contact us]() to connect with one of our Solutions Architects. You can also ask questions about Chainlink VRF on [Stack Overflow](https://stackoverflow.com/questions/ask?tags=chainlink). <!-- TODO: Add contact URLs -->
+For help with your specific use case, [contact us](https://chainlinkcommunity.typeform.com/to/OYQO67EF?page=docs-footer) to connect with one of our Solutions Architects. You can also ask questions about Chainlink VRF on [Stack Overflow](https://stackoverflow.com/questions/ask?tags=chainlink).
 
 ## Supported networks
 
