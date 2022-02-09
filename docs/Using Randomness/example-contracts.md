@@ -35,7 +35,7 @@ Subscription configurations do not have to be static. You can change your subscr
 
 The full coordinator interface is available on [GitHub](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol). You can use the subscription management functions however you see fit.
 
-See the example in the [Subscription manager contract](subscription-manager-contract) section to learn how to create a contract that can change your subscription configuration.
+See the example in the [Subscription manager contract](#subscription-manager-contract) section to learn how to create a contract that can change your subscription configuration.
 
 ## Subscription manager contract
 
@@ -60,7 +60,7 @@ To use this contract, compile and deploy it in Remix.
 
     This contract automatically creates a new subscription when you deploy it. Read the `s_requestConfig` variable to see the configuration details. You can look up this subscription in the [Subscription Manager](https://vrf.chain.link) using the `subId` value.
 
-1. Fund the subscription by running the `topUpSubscription()` function.
+1. Fund the subscription by running the `topUpSubscription()` function. For this function, a value of 1000000000000000000 = 1 LINK.
 
 1. Create and deploy consumer contracts that include the following components:
 
@@ -70,6 +70,8 @@ To use this contract, compile and deploy it in Remix.
 1. After you deploy these consumer contracts, add them to the subscription as approved consumers using the `addConsumer()` function on your subscription manager contract.
 
 1. On the consumer contracts, run their `requestRandomWords()` functions to request and receive random values.
+
+1. When you are done with this contract and its subscription, run the `cancelSubscription()` to close the subscription and send remaining LINK tokens to your wallet address.
 
 The consumer contracts can continue to make requests until your subscription balance runs out. The subscription manager contract must maintain sufficient balance in the subscription so that the consumers can continue to operate.
 

@@ -43,6 +43,7 @@ contract VRFv2Consumer is VRFConsumerBaseV2 {
     COORDINATOR = VRFCoordinatorV2Interface(vrfCoordinator);
     LINKTOKEN = LinkTokenInterface(link_token_contract);
     s_owner = msg.sender;
+    //Create a new subscription when you deploy the contract.
     createNewSubscription();
   }
 
