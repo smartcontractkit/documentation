@@ -96,7 +96,7 @@ The minimum requirements for the database are **2 cores**, **4GB of RAM**, and *
 
 Similar to the Chainlink node, requirements increase as you service more jobs.  For more than 100 jobs, your database server will need at least **4 cores**, **16 GB of RAM**, and **100 GB of storage**. 
 
-If using AWS, use dedicated IOPS (not the burstable one).
+If you run your node on AWS, use an instance type with dedicated core time. [Burstable Performance Instances](https://aws.amazon.com/ec2/instance-types/#Burstable_Performance_Instances) have a limited number of [CPU credits](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/burstable-credits-baseline-concepts.html), so you should not use them to run Chainlink nodes that require consistent performance.
 
 ## Connecting to Ethereum Client
 
