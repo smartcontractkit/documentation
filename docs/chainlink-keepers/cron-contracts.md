@@ -35,11 +35,11 @@ We recommend you first test the tutorial on an EVM-compatible testnet where Chai
 
 ## Creating your own Job Scheduler contract
 
-To create your own on-chain Job Scheduler contract, we will use the externally audited and pre-deployed Chainlink  [CronUpkeepFactory](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/factories/CronUpkeepFactory.sol) smart contract to deploy a new on-chain smart contract. This is called the [Factory pattern](https://www.youtube.com/watch?v=Q1zZo4O_Ong), where one contract deploys another contract. To generate your Job Scheduler (called `CronUpkeep`), select the new file icon in Remix, name it `CronUpkeepFactory.abi` and paste the ABI for `CronUkeepFactory`. The ABI is the application binary interface that is used to interact with the smart contract that has been deployed to the network.
+To create your own on-chain Job Scheduler contract, we will use the externally audited and pre-deployed Chainlink  [CronUpkeepFactory](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/factories/CronUpkeepFactory.sol) smart contract to deploy a new on-chain smart contract. This is called the [Factory pattern](https://www.youtube.com/watch?v=Q1zZo4O_Ong), where one contract deploys another contract. To generate your Job Scheduler (called `CronUpkeep`), select the new file icon in Remix, name it `CronUpkeepFactory.abi` and paste the ABI for `CronUpkeepFactory`. The ABI is the application binary interface that is used to interact with the smart contract that has been deployed to the network.
 
 ![Remix ABI Cron](/images/keepers/cron-1.png)
 
-Now select the **DEPLOY & RUN TRANSACTIONS** icon on the left and set **Environment** to *Injected Web3*. Paste the address of your deployed `CronUpkeepFactory` contract in the **At Address** box and select the **At Address** button. You can find the addresses for `CronUpkeepFactory` [below](#contract-addresses). Once this step is completed, you will be able to view callable functions fo the `CronUpkeepFactory`. Select the orange `newCronUpkeep` button and follow the prompts to confirm the transaction. Once the transaction is complete you should see a transaction hash in the terminal pointing to the creation of your Job Scheduler
+Now select the **DEPLOY & RUN TRANSACTIONS** icon on the left and set **Environment** to *Injected Web3*. Paste the address of your deployed `CronUpkeepFactory` contract in the **At Address** box and select the **At Address** button. You can find the addresses for `CronUpkeepFactory` [below](#contract-addresses). Once this step is completed, you will be able to view callable functions of the `CronUpkeepFactory`. Select the orange `newCronUpkeep` button and follow the prompts to confirm the transaction. Once the transaction is complete you should see a transaction hash in the terminal pointing to the creation of your Job Scheduler
 
 ## Finding the address of your Job Scheduler
 
@@ -67,17 +67,15 @@ We will now paste, minus <> brackets,
 ```json
 <your target address>, <your function specification>, <your encodedCronSpec>
 ```
-into the into the createCronJobFromEncodedSpec function in Remix and execute it. Once executed, you can call the getActiveCronJobIDs to see if your job has been registered. You can execute the getCronJob function to see the details of your job played back. You can add multiple jobs on this contract in this fashion, and also use the other functions in your Job Scheduler to delete jobs or pause the scheduler.
-
-[[To do insert picture!!!!!!!]]
+into the into the createCronJobFromEncodedSpec function in Remix and execute it. Once executed, you can call the getActiveCronJobIDs to see if your job has been registered. You can execute the getCronJob function to see the details of your job played back. You can add multiple jobs on this contract in this fashion, and also use the other functions in your Job Scheduler to delete jobs or pause the Scheduler.
 
 While the job has been scheduled, you still have to register your Job Scheduler with the Chainlink Keepers service to have it monitored. 
 
 ## Setting up Chainlink Keepers
 
-To learn how to make your smart contract Keeper-compatible refer to [Making Compatible Contracts](../compatible-contracts). To register yout contract on the Chainlink Keeper Network, refer to [Register Upkeep for a Contract](../register-upkeep). Be sure to provide the address of your Job Scheduler contract in **Upkeep address**. For Gas limit you should specify the upper limit of Gas your target function will use.
+To learn how to make your smart contract Keeper-compatible refer to [Making Compatible Contracts](../compatible-contracts). To register your contract on the Chainlink Keeper Network, refer to [Register Upkeep for a Contract](../register-upkeep). Be sure to provide the address of your Job Scheduler contract in **Upkeep address**. For Gas limit you should specify the upper limit of Gas your target function will use.
 
-Once you have registered your contract, you can view your Upkeep. The *Upkeep History* will display **Perform Upkeep** for all registerd jobs on your Job Scheduler contract. To ensure Chainlink Keepers monitors your Job Scheduler, please ensure you fund your Upkeep.
+Once you have registered your contract, you can view your Upkeep. The *Upkeep History* will display **Perform Upkeep** for all registered jobs on your Job Scheduler contract. To ensure Chainlink Keepers monitors your Job Scheduler, please ensure you fund your Upkeep.
 
 
 ### Function Signature
