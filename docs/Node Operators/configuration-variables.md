@@ -415,9 +415,9 @@ The available options are:
 - `"trace"`: Used only in development, off by default and not accessible on production builds.
 - `"debug"`: Useful for forensic debugging of issues.
 - `"info"`: High level informational messages.
-- `"warn"`: Something unexpected happened that might need non-urgent action. Node operators should check these once in a while to see whether anything stands out (e.g. deprecation warnings).
-- `"error"`: Something bad happened. Node operators might need to take urgent action based on this error (e.g. eth node became inaccessible).
-- `"crit"`: A critical error occured. Node operators should take immediate action to fix this (e.g. node was not able to open a network socket).
+- `"warn"`: A mild error happened that might require non-urgent action. Node operators should check these once in a while to see whether anything stands out. These can happen due to factors outside of the control of the node operator (e.g. unexpected responded from a remote API, spurious networking errors etc).
+- `"error"`: Something bad happened. The node might be running in a partially broken state. Node operators might need to take action to remedy this error (e.g. deprecation warnings, misconfiguration causing a job to fail to run etc).
+- `"crit"`: A critical error occured. The node might be fully broken. Node operators should take immediate action to fix this (e.g. node was not able to boot because a network socket could not be opened, database became inaccessible etc).
 - `"panic"`:An unrecoverable problem was encountered that was unexpected. Node operators should try to restart their nodes, and notify Chainlink team of a bug.
 - `"fatal"`: An unrecoverable problem was encountered and the node had to exit.
 
