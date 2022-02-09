@@ -6,7 +6,7 @@ import "@chainlink/contracts/src/v0.8/interfaces/LinkTokenInterface.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
 import "@chainlink/contracts/src/v0.8/dev/VRFConsumerBaseV2.sol";
 
-contract VRFv2Consumer is VRFConsumerBaseV2 {
+contract VRFv2SubscriptionManager is VRFConsumerBaseV2 {
   VRFCoordinatorV2Interface COORDINATOR;
   LinkTokenInterface LINKTOKEN;
 
@@ -22,9 +22,9 @@ contract VRFv2Consumer is VRFConsumerBaseV2 {
   // see https://docs.chain.link/docs/vrf-contracts/#configurations
   bytes32 keyHash = 0xd89b2bf150e3b9e13446986e571fb9cab24b13cea0a43ea20a6049a85cc807cc;
 
-  // A reasonable default is 1000000, but this value could be different
+  // A reasonable default is 100000, but this value could be different
   // on other networks.
-  uint32 callbackGasLimit = 1000000;
+  uint32 callbackGasLimit = 100000;
 
   // The default is 3, but you can set this higher.
   uint16 requestConfirmations = 3;
