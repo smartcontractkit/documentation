@@ -6,9 +6,9 @@ title: "Run an Ethereum Client"
 permalink: "docs/run-an-ethereum-client/"
 whatsnext: {"Running a Chainlink Node":"/docs/running-a-chainlink-node/"}
 ---
-In order to run a Chainlink node, it must be able to connect to an Ethereum client with an active websocket connection. This is accomplished by running either [Geth](https://geth.ethereum.org/), [Parity](https://www.parity.io/), or using a 3rd party connection. The examples below show how to run Geth and Parity in their official Docker containers for each network that they support.
+In order to run a Chainlink node, it must be able to connect to an Ethereum client with an active websocket connection. This is accomplished by running either [Geth](https://geth.ethereum.org/), [Parity](https://www.parity.io/), [Nethermind](https://nethermind.io/), or using a 3rd party connection. The examples below show how to run Geth, Parity and Nethermind in their official Docker containers for each network that they support.
 
-We would recommend to use one of the external services for your Ethereum client, since running one on your own managed machine will consume a lot of resources. If you do choose to run either Geth or Parity with their native clients, please be sure to enable the websockets API, since it is required for the Chainlink node to communicate with the Ethereum blockchain.
+We would recommend to use one of the external services for your Ethereum client, since running one on your own managed machine will consume a lot of resources. If you do choose to run either Geth, Parity or Nethermind with their native clients, please be sure to enable the websockets API, since it is required for the Chainlink node to communicate with the Ethereum blockchain.
 
 ## Geth
 
@@ -63,7 +63,7 @@ Return to [Running a Chainlink Node](../running-a-chainlink-node/).
 Download the latest version:
 
 ```
-openethereum/openethereum:stable
+docker pull openethereum/openethereum:stable
 ```
 
 Create a local directory to persist the data:
@@ -89,6 +89,56 @@ docker run --name eth -p 8546:8546 \
            -v ~/.parity:/home/parity/.local/share/io.parity.ethereum/ \
            -it parity/parity:stable --ws-interface=all --ws-origins="all" \
            --base-path /home/parity/.local/share/io.parity.ethereum/
+```
+
+Once the Ethereum client is running, you can use `Ctrl + P, Ctrl + Q` to detach from the container without stopping it. You will need to leave the container running for the Chainlink node to connect to it.
+
+If the container was stopped and you need to run it again, you can simply use the following command:
+
+```bash
+docker start -i eth
+```
+
+Return to [Running a Chainlink Node](../running-a-chainlink-node/).
+
+## Nethermind
+
+[Nethermind's Documentation](https://docs.nethermind.io/nethermind/)
+
+*The Nethermind client can be use for many test networks (e.g. Kovan, Rinkeby and Ropsten), and the Ethereum main network. A list of all the networks supported can be found [here](https://docs.nethermind.io/nethermind/ethereum-client/docker#available-configurations).*
+
+Download the latest version:
+
+```shell
+docker pull nethermind/nethermind:latest
+```
+
+Create a local directory to persist the data:
+
+```shell Kovan
+mkdir ~/.nethermind-kovan
+```
+
+```shell Mainnet
+mkdir ~/.nethermind
+```
+
+Run the container:
+
+```shell Kovan
+docker run --name eth -p 8545:8545 \
+           -v ~/.nethermind-kovan/:/nethermind/data \
+           -it nethermind/nethermind:latest --config kovan \
+           --Init.WebSocketsEnabled true --JsonRpc.Enabled true --JsonRpc.Host 0.0.0.0 --NoCategory.CorsOrigins * \
+           --datadir data
+```
+
+```shell Mainnet
+docker run --name eth -p 8545:8545 \
+           -v ~/.nethermind-kovan/:/nethermind/data \
+           -it nethermind/nethermind:latest --Sync.FastSync true \
+           --Init.WebSocketsEnabled true --JsonRpc.Enabled true --JsonRpc.Host 0.0.0.0 --NoCategory.CorsOrigins * \
+           --datadir data
 ```
 
 Once the Ethereum client is running, you can use `Ctrl + P, Ctrl + Q` to detach from the container without stopping it. You will need to leave the container running for the Chainlink node to connect to it.

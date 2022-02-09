@@ -28,11 +28,11 @@ Your Chainlink node should be run on a server that has a public IP address.
 
 ### Minimum
 
-To get started running a Chainlink node, you will need a machine with at least **2 cores** and **4 GB of RAM**. 
+To get started running a Chainlink node, you will need a machine with at least **2 cores** and **4 GB of RAM**.
 
-### Recommended 
+### Recommended
 
-The requirements for running a Chainlink node scale as the number of jobs your node services also scales.  For nodes with over 100 jobs, you will need at least **4 cores** and **8GB of RAM**.  
+The requirements for running a Chainlink node scale as the number of jobs your node services also scales.  For nodes with over 100 jobs, you will need at least **4 cores** and **8GB of RAM**.
 
 
 ## PostgreSQL Database
@@ -45,7 +45,7 @@ The minimum requirements for the database are **2 cores**, **4GB of RAM**, and *
 
 ### Recommended
 
-Similar to the Chainlink node, requirements increase as you service more jobs.  For more than 100 jobs, your database server will need at least **4 cores**, **16 GB of RAM**, and **100 GB of storage**. 
+Similar to the Chainlink node, requirements increase as you service more jobs.  For more than 100 jobs, your database server will need at least **4 cores**, **16 GB of RAM**, and **100 GB of storage**.
 
 If you run your node on AWS, use an instance type with dedicated core time. [Burstable Performance Instances](https://aws.amazon.com/ec2/instance-types/#Burstable_Performance_Instances) have a limited number of [CPU credits](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/burstable-credits-baseline-concepts.html), so you should not use them to run Chainlink nodes that require consistent performance.
 
@@ -102,7 +102,9 @@ exit
 - A fully synced Ethereum client with websockets enabled. Client specific instructions can be found below:
   - [Run Geth](../run-an-ethereum-client/#geth)
   - [Run OpenEthereum](../run-an-ethereum-client/#parity)
+  - [Run Nethermind](../run-an-ethereum-client/#nethermind)
   - [Use an external service](../run-an-ethereum-client/#external-services)
+
 ### Create a directory
 
 Once you have your Ethereum client running and fully synced, you're ready to run the Chainlink node.
