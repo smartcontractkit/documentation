@@ -1,6 +1,6 @@
 ---
 layout: feed.liquid
-section: nonEvm
+section: solana
 title: "Solana Feeds"
 stub: data-feeds-solana
 permalink: "docs/solana/data-feeds-solana/"
@@ -14,4 +14,3 @@ metadata:
     4: "#dbe1f8"
 date: Last Modified
 ---
-(content rendered programatically by layout)

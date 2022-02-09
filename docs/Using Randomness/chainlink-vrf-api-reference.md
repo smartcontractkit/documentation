@@ -1,6 +1,6 @@
 ---
 layout: nodes.liquid
-section: smartContract
+section: ethereum
 date: Last Modified
 title: "Chainlink VRF API Reference"
 permalink: "docs/chainlink-vrf-api-reference/"
@@ -42,7 +42,7 @@ constructor(address _vrfCoordinator, address _link) public
 
 ___
 
-> Note: `_seed` has recently been depreciated.
+> Note: `_seed` has recently been deprecated.
 # Functions
 
 ## requestRandomness
@@ -64,7 +64,7 @@ Called by VRFCoordinator when it receives a valid VRF proof. Override this funct
 
 ```javascript Solidity
 function fulfillRandomness(bytes32 requestId, uint256 randomness)
-    external virtual;
+    internal virtual;
 ```
 
 * `requestId`: The Id initially returned by `requestRandomness`.

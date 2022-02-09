@@ -1,10 +1,14 @@
 ---
 layout: nodes.liquid
-section: smartContract
+section: ethereum
 date: Last Modified
 title: "Hackathon Resources"
 permalink: "docs/hackathon-resources/"
 ---
+> 👍 Note on Resources
+>
+> For a comprehensive list of resources, refer to the [Learning Resources](../other-tutorials/) page.
+
 ### Hackathon & Project Resources
 
 If you're looking to just start jumping into stuff, here is a directory that can help you out.
@@ -33,9 +37,7 @@ Always refer back to the [getting help](/docs/getting-help) page for the latest 
 
 Be sure to check the documentation in the links above for in depth-descriptions of everything.
 
-New? Start with [Beginners - The Basics](../beginners-tutorial/), and follow everything in [Tutorials](../tutorials/)
-- [Beginners - The Basics](../beginners-tutorial/)
-- [Step-by-step guide to working with smart contracts](/docs/intermediates-tutorial)
+New? See the [Getting Started Guide](/docs/conceptual-overview/).
 - [Video Tutorials](https://www.youtube.com/playlist?list=PLVP9aGDn-X0QwJVbQvuKr-zrh2_DV5M6J)
 - [What is Ethereum?](https://www.youtube.com/playlist?list=PLVP9aGDn-X0QwJVbQvuKr-zrh2_DV5M6J)
 - [Developer Blog (many tutorials)](https://blog.chain.link/tag/developers/)

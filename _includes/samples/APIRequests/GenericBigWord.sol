@@ -9,7 +9,7 @@ import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
  */
 
 /**
- * @notice DO NOT USE THIS CODE IN PRODUCTION. This is an example contract. 
+ * @notice DO NOT USE THIS CODE IN PRODUCTION. This is an example contract.
  */
 contract GenericLargeResponse is ChainlinkClient {
   using Chainlink for Chainlink.Request;
@@ -23,7 +23,7 @@ contract GenericLargeResponse is ChainlinkClient {
    * @dev The oracle address must be an Operator contract for multiword response
    *
    *
-   * Kovan Testnet details: 
+   * Kovan Testnet details:
    * Link Token: 0xa36085F69e2889c224210F603D836748e7dC0088
    * Oracle: 0xc57B33452b4F7BB189bB5AfaE9cc4aBa1f7a4FD8 (Chainlink DevRel)
    *
@@ -31,7 +31,7 @@ contract GenericLargeResponse is ChainlinkClient {
   constructor(
   ) {
     setChainlinkToken(0xa36085F69e2889c224210F603D836748e7dC0088);
-    setChainlinkOracle(0xc57B33452b4F7BB189bB5AfaE9cc4aBa1f7a4FD8);
+    setChainlinkOracle(0x25C7ac1900de67605c0A1812109E960068B1C3d6);
   }
 
   /**
@@ -41,12 +41,12 @@ contract GenericLargeResponse is ChainlinkClient {
   )
     public
   {
-    bytes32 specId = "7a97ff8493ec406d90621b2531f9251a";
+    bytes32 specId = "b3b68ecd35464833a16613742640ae89";
     uint256 payment = 100000000000000000;
     Chainlink.Request memory req = buildChainlinkRequest(specId, address(this), this.fulfillBytes.selector);
     req.add("get","https://ipfs.io/ipfs/QmZgsvrA1o1C8BGCrx6mHTqR1Ui1XqbCrtbMVrRLHtuPVD?filename=big-api-response.json");
     req.add("path", "image");
-    requestOracleData(req, payment);
+    sendOperatorRequest(req, payment);
   }
 
   event RequestFulfilled(

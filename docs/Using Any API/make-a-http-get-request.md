@@ -1,6 +1,6 @@
 ---
 layout: nodes.liquid
-section: smartContract
+section: ethereum
 date: Last Modified
 title: "Make a GET Request"
 permalink: "docs/make-a-http-get-request/"
@@ -24,8 +24,8 @@ Currently, any return value must fit within 32 bytes, if the value is bigger tha
 > Making a GET request will fail unless your deployed contract has enough LINK to pay for it. **Learn how to [Acquire testnet LINK](../acquire-link/) and [Fund your contract](../fund-your-contract/)**.
 
 <div class="remix-callout">
-    <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/APIConsumer.sol" target="_blank" class="cl-button--ghost solidity-tracked">Deploy this contract using Remix ↗</a>
-    <a href="../deploy-your-first-contract/" title="">What is Remix?</a>
+    <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/APIConsumer.sol" target="_blank" >Open in Remix</a>
+    <a href="/docs/conceptual-overview/#what-is-remix" >What is Remix?</a>
 </div>
 
 ```solidity Kovan

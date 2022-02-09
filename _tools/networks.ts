@@ -2,6 +2,7 @@ export const NETWORKS = [
   {
     page: "ethereum-addresses",
     title: "Ethereum Data Feeds",
+    feedType: "Proxy",
     networks: [
       {
         name: "Ethereum Mainnet",
@@ -23,6 +24,7 @@ export const NETWORKS = [
   {
     page: "binance-smart-chain-addresses-price",
     title: "Binance Smart Chain Data Feeds",
+    feedType: "Proxy",
     networks: [
       {
         name: "BSC Mainnet",
@@ -39,6 +41,7 @@ export const NETWORKS = [
   {
     page: "matic-addresses",
     title: "Polygon (Matic) Data Feeds",
+    feedType: "Proxy",
     networks: [
       {
         name: "Polygon Mainnet",
@@ -53,11 +56,12 @@ export const NETWORKS = [
     ],
   },
   {
-    page: "xdai-price-feeds",
-    title: "xDai Data Feeds",
+    page: "data-feeds-gnosis-chain",
+    title: "Gnosis Chain (xDai) Data Feeds",
+    feedType: "Proxy",
     networks: [
       {
-        name: "xDai Mainnet",
+        name: "Gnosis Chain Mainnet",
         url: "https://blockscout.com/poa/xdai/address/%s",
         source: "directory-xdai-mainnet.json",
       },
@@ -66,6 +70,7 @@ export const NETWORKS = [
   {
     page: "huobi-eco-chain-price-feeds",
     title: "Huobi Eco Chain Data Feeds",
+    feedType: "Proxy",
     networks: [
       {
         name: "Huobi Mainnet",
@@ -77,6 +82,7 @@ export const NETWORKS = [
   {
     page: "avalanche-price-feeds",
     title: "Avalanche Data Feeds",
+    feedType: "Proxy",
     networks: [
       {
         name: "Avalanche Mainnet",
@@ -93,6 +99,7 @@ export const NETWORKS = [
   {
     page: "fantom-price-feeds",
     title: "Fantom Testnet",
+    feedType: "Proxy",
     networks: [
       {
         name: "Fantom Mainnet",
@@ -109,6 +116,7 @@ export const NETWORKS = [
   {
     page: "arbitrum-price-feeds",
     title: "Arbitrum Data Feeds",
+    feedType: "Proxy",
     networks: [
       {
         name: "Arbitrum Mainnet",
@@ -125,7 +133,13 @@ export const NETWORKS = [
   {
     page: "harmony-price-feeds",
     title: "Harmony Data Feeds",
+    feedType: "Proxy",
     networks: [
+      {
+        name: "Harmony Mainnet",
+        url: "https://explorer.harmony.one/#/address/%s",
+        source: "directory-harmony-mainnet-0.json",
+      },
       {
         name: "Harmony Testnet",
         url: "https://explorer.testnet.harmony.one/#/address/%s",
@@ -136,10 +150,11 @@ export const NETWORKS = [
   {
     page: "data-feeds-solana",
     title: "Solana Data Feeds",
+    feedType: "Account",
     networks: [
       {
         name: "Solana Devnet",
-        url: "https://explorer.solana.com/address/%s?cluster=devnet",
+        url: "https://solscan.io/account/%s?cluster=devnet",
         source: "directory-solana-devnet.json",
       },
     ],
@@ -147,6 +162,7 @@ export const NETWORKS = [
   {
     page: "optimism-price-feeds",
     title: "Optimism Data Feeds",
+    feedType: "Proxy",
     networks: [
       {
         name: "Optimism Mainnet",
@@ -161,19 +177,9 @@ export const NETWORKS = [
     ],
   },
   {
-    page: "data-feeds-terra",
-    title: "Terra Data Feeds",
-    networks: [
-      {
-        name: "Terra Bombay Testnet",
-        url: "https://finder.terra.money/bombay-12/address/%s",
-        source: "directory-terra-testnet-bombay.json",
-      },
-    ],
-  },
-  {
     page: "data-feeds-moonriver",
     title: "Moonriver Data Feeds",
+    feedType: "Proxy",
     networks: [
       {
         name: "Moonriver Mainnet",

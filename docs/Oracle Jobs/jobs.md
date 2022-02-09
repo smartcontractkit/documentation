@@ -1,5 +1,6 @@
 ---
 layout: nodes.liquid
+section: nodeOperator
 date: Last Modified
 title: "v2 Jobs"
 permalink: "docs/jobs/"

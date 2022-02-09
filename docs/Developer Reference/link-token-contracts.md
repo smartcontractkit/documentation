@@ -1,6 +1,6 @@
 ---
 layout: nodes.liquid
-section: smartContract
+section: ethereum
 date: Last Modified
 title: "LINK Token Contracts"
 permalink: "docs/link-token-contracts/"
@@ -13,6 +13,21 @@ metadata:
 LINK tokens are used to pay node operators for retrieving data for smart contracts and also for deposits placed by node operators as required by contract creators.
 
 The LINK token is an ERC677 token that inherits functionality from the ERC20 token standard and allows token transfers to contain a data payload. Read more about the <a href="https://github.com/ethereum/EIPs/issues/677" target="_blank" rel="noreferrer, noopener">ERC677 transferAndCall token standard</a>.
+
+**Table of Contents**
+
++ [Ethereum](#ethereum)
++ [Binance Smart Chain](#binance-smart-chain)
++ [Polygon (Matic)](#polygon-matic)
++ [RSK](#rsk)
++ [Gnosis Chain (xDai)](#gnosis-chain-xdai)
++ [Avalanche](#avalanche)
++ [Fantom](#fantom)
++ [Arbitrum](#arbitrum)
++ [Huobi Eco Chain](#huobi-eco-chain)
++ [Optimism](#optimism)
++ [Harmony](#harmony)
++ [Moonriver](#moonriver)
 
 # Ethereum
 
@@ -69,7 +84,7 @@ The LINK token is an ERC677 token that inherits functionality from the ERC20 tok
 
 --------------------
 
-# Other EVM Compatible Chains
+# Other EVM Chains
 
 LINK is native to Ethereum, so to use LINK on other chains, it must be bridged. <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blank">This guide</a> explains how to bridge and swap tokens to other chains.
 
@@ -151,11 +166,11 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 |Symbol|rLINK|
 |Decimals|18|
 
-## xDai
+## Gnosis Chain (xDai)
 
 ### Mainnet
 
-> 🚰xDai Faucet
+> 🚰Gnosis Chain (xDai) Faucet
 >
 > Free xDai for transactions: https://blockscout.com/poa/xdai/faucet
 >
@@ -167,7 +182,7 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 |:---|:---|
 |`ETH_CHAIN_ID`|`100`|
 |Address|<a href="https://blockscout.com/poa/xdai/address/0xE2e73A1c69ecF83F464EFCE6A5be353a37cA09b2" target="_blank" rel="noreferrer, noopener">`0xE2e73A1c69ecF83F464EFCE6A5be353a37cA09b2`</a>|
-|Name|ChainLink Token on xDai|
+|Name|ChainLink Token on Gnosis Chain (xDai)|
 |Symbol|LINK|
 |Decimals|18|
 
@@ -227,6 +242,16 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 
 ## Arbitrum
 
+### Arbitrum Mainnet
+
+|Parameter|Value|
+|:---|:---|
+|`ETH_CHAIN_ID`|`42161`|
+|Address|[`0xf97f4df75117a78c1A5a0DBb814Af92458539FB4`](https://explorer.arbitrum.io/address/0xf97f4df75117a78c1A5a0DBb814Af92458539FB4)|
+|Name|ChainLink Token on Arbitrum Mainnet|
+|Symbol|LINK|
+|Decimals|18|
+
 ### Rinkeby Testnet
 
 > 🚰Arbitrum Faucet on Rinkeby
@@ -274,5 +299,39 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 |`ETH_CHAIN_ID`|`69`|
 |Address|[`0x4911b761993b9c8c0d14Ba2d86902AF6B0074F5B`](https://kovan-optimistic.etherscan.io/address/0x4911b761993b9c8c0d14Ba2d86902AF6B0074F5B)|
 |Name|ChainLink Token on Optimism Kovan|
+|Symbol|LINK|
+|Decimals|18|
+
+## Harmony
+
+### Mainnet
+
+|Parameter|Value|
+|:---|:---|
+|`ETH_CHAIN_ID`|`1666600000`|
+|Address|[`0x218532a12a389a4a92fC0C5Fb22901D1c19198aA`](https://explorer.harmony.one/address/0x218532a12a389a4a92fC0C5Fb22901D1c19198aA)|
+|Name|ChainLink Token on Harmony Mainnet|
+|Symbol|LINK|
+|Decimals|18|
+
+### Testnet
+
+|Parameter|Value|
+|:---|:---|
+|`ETH_CHAIN_ID`|`1666700000`|
+|Address|[`0x8b12Ac23BFe11cAb03a634C1F117D64a7f2cFD3e`](https://explorer.testnet.harmony.one/address/0x8b12Ac23BFe11cAb03a634C1F117D64a7f2cFD3e)|
+|Name|ChainLink Token on Harmony Testnet|
+|Symbol|LINK|
+|Decimals|18|
+
+## Moonriver
+
+### Mainnet
+
+|Parameter|Value|
+|:---|:---|
+|`ETH_CHAIN_ID`|`1285`|
+|Address|[`0x8b12Ac23BFe11cAb03a634C1F117D64a7f2cFD3e`](https://moonriver.moonscan.io/address/0x8b12Ac23BFe11cAb03a634C1F117D64a7f2cFD3e)|
+|Name|ChainLink Token on Moonriver Mainnet|
 |Symbol|LINK|
 |Decimals|18|

@@ -1,5 +1,6 @@
 ---
 layout: nodes.liquid
+section: nodeOperator
 date: Last Modified
 title: "External Adapters in Solidity"
 permalink: "docs/contract-creators/"
