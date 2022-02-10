@@ -415,10 +415,10 @@ The available options are:
 - `"trace"`: Used only in development, off by default and not accessible on production builds.
 - `"debug"`: Useful for forensic debugging of issues.
 - `"info"`: High level informational messages.
-- `"warn"`: A mild error happened that might require non-urgent action. Node operators should check these once in a while to see whether anything stands out. These can happen due to factors outside of the control of the node operator (e.g. unexpected responded from a remote API, spurious networking errors etc).
-- `"error"`: Something bad happened. The node might be running in a partially broken state. Node operators might need to take action to remedy this error (e.g. deprecation warnings, misconfiguration causing a job to fail to run etc).
-- `"crit"`: A critical error occured. The node might be fully broken. Node operators should take immediate action to fix this (e.g. node was not able to boot because a network socket could not be opened, database became inaccessible etc).
-- `"panic"`:An unrecoverable problem was encountered that was unexpected. Node operators should try to restart their nodes, and notify Chainlink team of a bug.
+- `"warn"`: A mild error occurred that might require non-urgent action. Check these warnings semi-regularly to see if any of them require attention. These warnings usually happen due to factors outside of the control of the node operator. Examples: Unexpected responded from a remote API or inaccurate networking errors.
+- `"error"`: An error occurred that might have put the node in a partially broken state. Node operators might need to take action to remedy this error. Examples: Deprecation warnings or incorrectly configured settings that cause a job to fail.
+- `"crit"`: A critical error occurred. The node might be completely stopped and non-responsive. Node operators should take immediate action to fix these errors. Examples: The node was not able to boot because a network socket could not be opened or the database became inaccessible.
+- `"panic"`: An unrecoverable error occurred that was unexpected. Node operators should try to restart their nodes, and notify the Chainlink team of a bug.
 - `"fatal"`: An unrecoverable problem was encountered and the node had to exit.
 
 ### LOG_SQL
