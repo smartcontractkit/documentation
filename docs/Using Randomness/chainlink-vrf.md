@@ -97,7 +97,7 @@ Requests to Chainlink VRF v2 follow the [Request & Receive Data](/docs/request-a
 1. After the request is complete, the final gas cost is recorded based on how much gas is required for the verification and callback. The total gas cost for your request uses the following formula:
 
     ```
-    (Gas price * (Verification gas + Callback gas) = total gas cost
+    (Gas price * (Verification gas + Callback gas)) = total gas cost
     ```
 
 1. The total gas cost is converted to LINK using the ETH/LINK data feed. In the unlikely event that the data feed is unavailable, the VRF coordinator uses the `fallbackWeiPerUnitLink` value for the conversion instead. The `fallbackWeiPerUnitLink` value is defined in the [coordinator contract](/docs/vrf-contracts/#configurations) for your selected network.
