@@ -539,7 +539,7 @@ Do not change this setting unless you know what you are doing.
 
 - Default: `"6688"`
 
-Port used for the [Chainlink Node API](../chainlink-node-api-reference/) and GUI.
+Port used for the Chainlink Node API, CLI, and GUI.
 
 ### SECURE_COOKIES
 
