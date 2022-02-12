@@ -59,7 +59,6 @@ Below are the parameters and return values of the `checkUpkeep` function. Click 
 | Name                  | Description                                                          |
 | ------------------------------- | -------------------------------------------------------------------- |
 | [`checkData`](#checkdata)                     | Data passed to the contract when checking for Upkeep. Specified in the Upkeep registration so it is always the same for a registered Upkeep. |
-| [`performUpkeep`](#performupkeep)                 | Performs the work on the contract, if instructed by `checkUpkeep()`. |
 
 ### Return Values
 
