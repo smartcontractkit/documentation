@@ -94,7 +94,7 @@ Requests to Chainlink VRF v2 follow the [Request & Receive Data](/docs/request-a
 
 1. The responding Chainlink oracle verifies your random values on-chain and completes the callback to your contract with the random values.
 
-1. After the request is complete, the final gas cost is recorded based on how much gas is required for the verification and callback. The total gas cost for your request uses the following formula:
+1. After the request is complete, the final gas cost is recorded based on how much gas is required for the verification and callback. The total gas cost in wei for your request uses the following formula:
 
     ```
     (Gas price * (Verification gas + Callback gas)) = total gas cost

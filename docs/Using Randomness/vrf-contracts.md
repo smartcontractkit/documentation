@@ -49,6 +49,8 @@ Fee parameters are configured in the coordinator contract and specify the premiu
 |1000 gwei Key Hash|`0x9fe0eebf5e446e3c998ec9bb19951541aee00bb90ea201ae456421a2ded86805`|
 |Premium|0.25 LINK|
 |Minimum Confirmations|3|
+|Maximum Confirmations|200|
+|Maximum Random Values|500|
 
 ### Rinkeby testnet
 
@@ -63,8 +65,10 @@ Fee parameters are configured in the coordinator contract and specify the premiu
 |LINK Token|[`0x01BE23585060835E02B77ef475b0Cc51aA1e0709`](https://rinkeby.etherscan.io/token/0x01BE23585060835E02B77ef475b0Cc51aA1e0709)|
 |VRF Coordinator|[`0x6168499c0cFfCaCD319c818142124B7A15E857ab`](https://rinkeby.etherscan.io/token/0x6168499c0cFfCaCD319c818142124B7A15E857ab)|
 |30 gwei Key Hash|`0xd89b2bf150e3b9e13446986e571fb9cab24b13cea0a43ea20a6049a85cc807cc`|
-|Premium|0.25 LINK|
+|Premium|0.01 LINK|
 |Minimum Confirmations|3|
+|Maximum Confirmations|200|
+|Maximum Random Values|500|
 
 ### Binance Smart Chain testnet
 
@@ -79,6 +83,8 @@ Fee parameters are configured in the coordinator contract and specify the premiu
 |50 gwei Key Hash|`0xd4bb89654db74673a187bd804519e65e3f71a52bc55f11da7601a13dcf505314`|
 |Premium|0.005 LINK|
 |Minimum Confirmations|3|
+|Maximum Confirmations|200|
+|Maximum Random Values|500|
 
 ### Polygon (Matic) Mumbai testnet
 
@@ -93,3 +99,5 @@ Fee parameters are configured in the coordinator contract and specify the premiu
 |500 gwei Key Hash|`0x4b09e658ed251bcafeebbc69400383d49f344ace09b9576fe248bb02c003fe9f`|
 |Premium|0.0005 LINK|
 |Minimum Confirmations|3|
+|Maximum Confirmations|200|
+|Maximum Random Values|500|
