@@ -134,11 +134,11 @@ The parameters define how your requests will be processed. You can find the valu
 
 - `bytes32 keyHash`: The gas lane key hash value, which is the maximum gas price you are willing to pay for a request in wei. It functions as an ID of the off-chain VRF job to be run in response to requests.
 
-- `uint32 callbackGasLimit`: The limit for how much gas to use for the the callback request to your contract's `fulfillRandomWords()` function. It must be less than the `maxGasLimit` limit on the coordinator contract.
+- `uint32 callbackGasLimit`: The limit for how much gas to use for the the callback request to your contract's `fulfillRandomWords()` function. It must be less than the `maxGasLimit` limit on the coordinator contract. In this example, the `fulfillRandomWords()` function stores two random values, which cost about 20,000 gas each, so a limit of 100,000 gas is sufficient. Adjust this value for larger requests depending on how your `fulfillRandomWords()` function processes and stores the received random values. If your `callbackGasLimit` is not sufficient, the callback will fail and your subscription is still charged for the work done to generate your requested random values.
 
 - `uint16 requestConfirmations`: How many confirmations the Chainlink node should wait before responding. The longer the node waits, the more secure the random value is. It must be greater than the `minimumRequestBlockConfirmations` limit on the coordinator contract.
 
-- `uint16 numWords`: How many random words to request. If you are able to make use of several random values in a single callback, you can reduce the amount of gas that you spend per random value.
+- `uint16 numWords`: How many random words to request. If you are able to make use of several random values in a single callback, you can reduce the amount of gas that you spend per random value. The total cost of the callback request depends on how your `fulfillRandomWords()` function processes and stores the received random values, so adjust your `callbackGasLimit` accordingly.
 
 The contract includes the following functions:
 

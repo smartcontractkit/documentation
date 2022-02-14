@@ -25,6 +25,7 @@ Chainlink VRF (Verifiable Random Function) is a provably fair and verifiable ran
 - [Supported networks](#supported-networks)
 - [Subscriptions](#subscriptions)
 - [Subscription billing](#subscription-billing)
+- [Limits](#limits)
 
 ## Overview
 
@@ -65,11 +66,6 @@ Subscriptions have the following core concepts:
 - **Consumers:** Contracts that are approved to use funding from your subscription account.
 - **Subscription balance:** The amount of LINK maintained on your subscription account. Requests from consumer contracts will continue to be funded until the balance runs out, so be sure to maintain sufficient funds in your subscription balance to pay for the requests and keep your applications running.
 
-The Subscription Manager system has the following limitations:
-
-- Each subscription supports up to 100 consumer contracts. If you need more than 100 consumers, create multiple subscriptions.
-- Each subscription must maintain a sufficient balance to fund requests from consumer contracts. If your balance cannot cover the cost to complete a request, the request remains pending. Top up the subscription balance with LINK. The request will go through automatically as long as you made the request in the last 24 hours.
-
 ## Subscription billing
 
 For Chainlink VRF v2 to fulfill your requests, you must maintain a sufficient amount of LINK in your subscription balance. Gas cost calculation includes the following variables:
@@ -109,3 +105,28 @@ Requests to Chainlink VRF v2 follow the [Request & Receive Data](/docs/request-a
     ```
 
 1. The total request cost is charged to your subscription balance.
+
+## Limits
+
+Chainlink VRF v2 has some [subscription limits](#subscription-limits) and [coordinator contract limits](#coordinator-contract-limits).
+
+### Subscription limits
+
+Each subscription has the following limits:
+
+- Each subscription must maintain a minimum balance to fund requests from consumer contracts. If your balance is below that minimum, your requests remain pending for up to 24 hours before they expire. After you add sufficient LINK to a subscription, pending requests process automatically as long as long as they have not expired.
+- The minimum subscription balance must be sufficient for each new consumer contract that you add to a subscription. The require size of the minimum balance depends on the gas lane, and the size of the request that the consumer contract makes. For example, a consumer contract that requests one random value will require a smaller minimum balance than a consumer contract that requests 50 random values. In general, you can estimate the required minimum LINK balance using the following formula where max verification gas is always 200,000.
+
+    ```
+    (Gas lane maximum * (Max verification gas + Callback gas limit)) / (ETH to LINK price) = Minimum LINK balance
+    ```
+
+- Each subscription supports up to 100 consumer contracts. If you need more than 100 consumers, create multiple subscriptions.
+
+### Coordinator contract limits
+
+You can see the configuration for each network on the [Contract Addresses](/docs/vrf-contracts/) page. You can also view the full configuration for each coordinator contract directly in Etherscan. As an example, view the [Ethereum Mainnet VRF v2 coordinator contract](https://etherscan.io/token/0x271682DEB8C4E0901D1a1550aD2e64D568E69909#readContract) configuration.
+
+- Each coordinator has a `MAX_NUM_WORDS` which limits the maximum number of random values you can receive in each request.
+- Each coordinator has a `maxGasLimit` which is the maximum allowed `callbackGasLimit` value for your requests.
+- You must specify a sufficient `callbackGasLimit` to fund the callback request to your consumer contract. This depends on the number of random values you request and how you process them in your `fulfillRandomWords()` function. If your `callbackGasLimit` is not sufficient, the callback will fail and your subscription is still charged for the work done to generate your requested random values.
