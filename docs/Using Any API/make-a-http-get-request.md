@@ -12,10 +12,11 @@ metadata:
     0: "/files/930cbb7-link.png"
 ---
 
-# Overview <!-- omit in toc -->
+# Overview
 
 This guide explains how to make an HTTP GET request to an external API from a smart contract, using Chainlink's [Request & Receive Data](../request-and-receive-data/) cycle. External adapters are services which the core of the Chainlink node communicates via its API with a simple JSON specification. Refer to [External Adapters Introduction](../external-adapters/) for more information on external adapters and how to build them.
 
++ [Overview](#overview)
 + [API Consumer Example](#api-consumer-example)
 + [Choosing an Oracle and JobId](#choosing-an-oracle-and-jobid)
 + [Supported APIs](#supported-apis)
@@ -46,9 +47,6 @@ If the LINK address for targeted blockchain is not [publicly available](../link-
     <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/APIConsumer.sol" target="_blank" >Open in Remix</a>
     <a href="/docs/conceptual-overview/#what-is-remix" >What is Remix?</a>
 </div>
-
-<p>
-</p>
 
 Here is a breakdown of each component of the contract:
 
