@@ -54,6 +54,17 @@ If no jobs have been added, you will receive the following output, otherwise, th
 ╬════╬════════════╬════════════╬═══════╬
 ```
 
+## Transfer funds from node wallet.
+
+> 🚧 Note
+>
+> If using Docker, you will first need to follow the [Execute Commands Running Docker](#execute-commands-running-docker) guide to enter the running container.
+
+In order to transfer funds from the node wallet to another address, you can use the following CLI command.
+```bash
+chainlink txs create <amount> <your-cl-node-address> <send-to-address>
+```
+This method is preferred above manually interacting with your node wallet as this can cause nonce issues.
 
 ## Change your API password
 
