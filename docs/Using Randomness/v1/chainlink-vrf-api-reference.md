@@ -15,7 +15,7 @@ metadata:
 >
 > See the [VRF v2 documentation](/docs/chainlink-vrf) to learn more.
 
-API reference for [`VRFConsumerBase`](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.6/VRFConsumerBase.sol).
+API reference for [`VRFConsumerBase`](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/VRFConsumerBase.sol).
 
 ## Index
 
