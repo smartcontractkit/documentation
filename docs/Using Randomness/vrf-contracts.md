@@ -35,8 +35,6 @@ Fee parameters are configured in the coordinator contract and specify the premiu
 
 - [Ethereum Mainnet](#ethereum-mainnet)
 - [Rinkeby testnet](#rinkeby-testnet)
-- [Binance Smart Chain testnet](#binance-smart-chain-testnet)
-- [Polygon (Matic) Mumbai testnet](#polygon-matic-mumbai-testnet)
 
 ### Ethereum Mainnet
 
@@ -66,38 +64,6 @@ Fee parameters are configured in the coordinator contract and specify the premiu
 |VRF Coordinator|[`0x6168499c0cFfCaCD319c818142124B7A15E857ab`](https://rinkeby.etherscan.io/token/0x6168499c0cFfCaCD319c818142124B7A15E857ab)|
 |30 gwei Key Hash|`0xd89b2bf150e3b9e13446986e571fb9cab24b13cea0a43ea20a6049a85cc807cc`|
 |Premium|0.01 LINK|
-|Minimum Confirmations|3|
-|Maximum Confirmations|200|
-|Maximum Random Values|500|
-
-### Binance Smart Chain testnet
-
-> 🚰BSC Faucet
->
-> Testnet LINK is available from https://faucets.chain.link/chapel
-
-|Item|Value|
-|---|---|
-|LINK Token|[`0x84b9B910527Ad5C03A9Ca831909E21e236EA7b06`](https://testnet.bscscan.com/address/0x84b9B910527Ad5C03A9Ca831909E21e236EA7b06)|
-|VRF Coordinator|[`0x6A2AAd07396B36Fe02a22b33cf443582f682c82f`](https://testnet.bscscan.com/address/0x6A2AAd07396B36Fe02a22b33cf443582f682c82f)|
-|50 gwei Key Hash|`0xd4bb89654db74673a187bd804519e65e3f71a52bc55f11da7601a13dcf505314`|
-|Premium|0.005 LINK|
-|Minimum Confirmations|3|
-|Maximum Confirmations|200|
-|Maximum Random Values|500|
-
-### Polygon (Matic) Mumbai testnet
-
-> 🚰Mumbai Faucet
->
-> Testnet LINK and MATIC are available from the [Polygon faucet](https://faucet.polygon.technology/) and https://faucets.chain.link/mumbai.
-
-|Item|Value|
-|---|---|
-|LINK Token|[`0x326C977E6efc84E512bB9C30f76E30c160eD06FB`](https://mumbai.polygonscan.com/address/0x326C977E6efc84E512bB9C30f76E30c160eD06FB)|
-|VRF Coordinator|[`0x7a1BaC17Ccc5b313516C5E16fb24f7659aA5ebed`](https://mumbai.polygonscan.com/address/0x7a1BaC17Ccc5b313516C5E16fb24f7659aA5ebed)|
-|500 gwei Key Hash|`0x4b09e658ed251bcafeebbc69400383d49f344ace09b9576fe248bb02c003fe9f`|
-|Premium|0.0005 LINK|
 |Minimum Confirmations|3|
 |Maximum Confirmations|200|
 |Maximum Random Values|500|
