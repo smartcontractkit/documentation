@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// Example of a single consumer contract which owns the subscription.
+// An example of a consumer contract that relies on a subscription for funding.
 pragma solidity ^0.8.7;
 
 import "@chainlink/contracts/src/v0.8/interfaces/LinkTokenInterface.sol";
@@ -17,7 +17,8 @@ contract VRFv2Consumer is VRFConsumerBaseV2 {
   // see https://docs.chain.link/docs/vrf-contracts/#configurations
   address vrfCoordinator = 0x6168499c0cFfCaCD319c818142124B7A15E857ab;
 
-  // Rinkeby LINK token contract. For other networks, see https://docs.chain.link/docs/vrf-contracts/#configurations
+  // Rinkeby LINK token contract. For other networks,
+  // see https://docs.chain.link/docs/vrf-contracts/#configurations
   address link = 0x01BE23585060835E02B77ef475b0Cc51aA1e0709;
 
   // The gas lane to use, which specifies the maximum gas price to bump to.

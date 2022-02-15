@@ -15,7 +15,7 @@ metadata:
 >
 > If you are using v1, see the [VRF v1 guide](./v1).
 
-This guide explains how to get random values using a simple contract to request and receive random values from Chainlink VRF v2. To see more advanced examples with programmatic subscription configuration, see the [Example Contracts](/docs/chainlink-vrf/example-contracts/) page.
+This guide explains how to get random values using a simple contract to request and receive random values from Chainlink VRF v2. For more advanced examples with programmatic subscription configuration, see the [Example Contracts](/docs/chainlink-vrf/example-contracts/) page.
 
 **Table of contents**
 
@@ -99,7 +99,7 @@ Your example contract is deployed and approved to use your subscription balance 
 
 ## Request random values
 
-The deployed contract requests random values from Chainlink VRF, receives those values, and then stores them in the `s_randomWords` array. Run the `requestRandomWords()` function on your contract to start the request.
+The deployed contract requests random values from Chainlink VRF, receives those values, and stores them in the `s_randomWords` array. Run the `requestRandomWords()` function on your contract to start the request.
 
 1. Return to Remix and view your deployed contract functions in the **Deployed Contracts** list.
 
@@ -132,13 +132,13 @@ The parameters define how your requests will be processed. You can find the valu
 
 - `address link`: The LINK token address for your selected network.
 
-- `bytes32 keyHash`: The gas lane key hash value, which is the maximum gas price you are willing to pay for a request in wei. It functions as an ID of the off-chain VRF job to be run in response to requests.
+- `bytes32 keyHash`: The gas lane key hash value, which is the maximum gas price you are willing to pay for a request in wei. It functions as an ID of the off-chain VRF job that runs in response to requests.
 
-- `uint32 callbackGasLimit`: The limit for how much gas to use for the the callback request to your contract's `fulfillRandomWords()` function. It must be less than the `maxGasLimit` limit on the coordinator contract. In this example, the `fulfillRandomWords()` function stores two random values, which cost about 20,000 gas each, so a limit of 100,000 gas is sufficient. Adjust this value for larger requests depending on how your `fulfillRandomWords()` function processes and stores the received random values. If your `callbackGasLimit` is not sufficient, the callback will fail and your subscription is still charged for the work done to generate your requested random values.
+- `uint32 callbackGasLimit`: The limit for how much gas to use for the callback request to your contract's `fulfillRandomWords()` function. It must be less than the `maxGasLimit` limit on the coordinator contract. In this example, the `fulfillRandomWords()` function stores two random values, which cost about 20,000 gas each, so a limit of 100,000 gas is sufficient. Adjust this value for larger requests depending on how your `fulfillRandomWords()` function processes and stores the received random values. If your `callbackGasLimit` is not sufficient, the callback will fail and your subscription is still charged for the work done to generate your requested random values.
 
 - `uint16 requestConfirmations`: How many confirmations the Chainlink node should wait before responding. The longer the node waits, the more secure the random value is. It must be greater than the `minimumRequestBlockConfirmations` limit on the coordinator contract.
 
-- `uint16 numWords`: How many random words to request. If you are able to make use of several random values in a single callback, you can reduce the amount of gas that you spend per random value. The total cost of the callback request depends on how your `fulfillRandomWords()` function processes and stores the received random values, so adjust your `callbackGasLimit` accordingly.
+- `uint16 numWords`: How many random values to request. If you can use several random values in a single callback, you can reduce the amount of gas that you spend per random value. The total cost of the callback request depends on how your `fulfillRandomWords()` function processes and stores the received random values, so adjust your `callbackGasLimit` accordingly.
 
 The contract includes the following functions:
 
@@ -156,6 +156,6 @@ After you are done with this contract and the subscription, you can retrieve the
 
 1. In the [Subscription Manager](https://vrf.chain.link/), click the ID of your new subscription under the **My Subscriptions** list. The subscription details page opens.
 
-1. Under your subscription details, click **Cancel subscription**. A field opens asking which wallet address you want to send remaining funds to.
+1. Under your subscription details, click **Cancel subscription**. A field opens asking which wallet address you want to send the remaining funds to.
 
 1. Enter your wallet address and click **Cancel subscription**. MetaMask opens and asks you to confirm the transaction. After you approve the transaction, Chainlink VRF closes your subscription account and sends the remaining LINK to your wallet.

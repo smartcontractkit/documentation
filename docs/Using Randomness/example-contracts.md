@@ -39,7 +39,7 @@ See the example in the [Subscription manager contract](#subscription-manager-con
 
 ## Subscription manager contract
 
-In this example, the contract operates as a subscription owner and can run functions to add consumer contracts to the subscription. Those contracts need only include the `requestRandomWords()` function, the `fulfillRandomWords()` functions with the correct coordinator parameters and the correct `subscriptionId` value in order to obtain their own random values and use the subscription balance.
+In this example, the contract operates as a subscription owner and can run functions to add consumer contracts to the subscription. Those contracts need to include only the `requestRandomWords()` function, the `fulfillRandomWords()` functions with the correct coordinator parameters and the correct `subscriptionId` value to obtain their own random values and use the subscription balance.
 
 Subscription owners and consumers do not have to be separate. This contract can also act as a consumer by running its own `requestRandomWords()` function, but it must add itself as an approved consumer. This example creates the subscription and adds itself as a consumer when you deploy it.
 
@@ -69,7 +69,7 @@ To use this contract, compile and deploy it in Remix.
 
 1. After you deploy these consumer contracts, add them to the subscription as approved consumers using the `addConsumer()` function on your subscription manager contract.
 
-1. On the consumer contracts, run their `requestRandomWords()` functions to request and receive random values.
+1. On each of the consumer contracts, run their `requestRandomWords()` functions to request and receive random values.
 
 1. When you are done with this contract and its subscription, run the `cancelSubscription()` to close the subscription and send remaining LINK tokens to your wallet address.
 
@@ -90,4 +90,4 @@ Add this function to your contracts if you need to provide funding simultaneousl
 
 > 🚧 Security Considerations
 >
-> Be sure to look your contract over with [these security considerations](/docs/vrf-security-considerations/) in mind!
+> Be sure to review your contract with the [security considerations](/docs/vrf-security-considerations/) in mind.

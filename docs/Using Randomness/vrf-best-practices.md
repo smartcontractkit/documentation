@@ -68,7 +68,7 @@ function fulfillRandomWords(bytes32 requestId, uint256 randomness) internal over
 }
 ```
 
-If you want to keep generated random numbers of several VRF requests, you might want to use a mapping of `requestId` to the returned random number.
+If you want to keep generated random numbers of several VRF requests, you might want to map `requestId` to the returned random number.
 
 ```solidity
 mapping(uint256 => uint256) public requestIdToRandomNumber;

@@ -82,7 +82,7 @@ Requests to Chainlink VRF v2 follow the [Request & Receive Data](/docs/request-a
 
 1. You submit your request with a specified gas lane `keyHash` and the `callbackGasLimit`. If your request is urgent, specify a gas lane with a higher gas price limit. The `callbackGasLimit` depends on the size of your request. Generally, a limit of 100,000 gas is appropriate. Verification gas has a hard upper limit of 200,000 gas.
 
-1. The coordinator starts the transaction and bumps the gas price until the transaction is completed. The coordinator will not exceed the gas price limit of your selected gas lane. If your request cannot be completed at your specified gas limit, resubmit the request with a different gas lane or wait until gas prices fall below your current gas lane limits.
+1. The coordinator starts the transaction and bumps the gas price until the transaction is complete. The coordinator will not exceed the gas price limit of your selected gas lane. If your request cannot be completed at your specified gas limit, resubmit the request with a different gas lane or wait until gas prices fall below your current gas lane limits.
 
 1. The responding Chainlink oracle verifies your random values on-chain and completes the callback to your contract with the random values.
 
@@ -110,8 +110,8 @@ Chainlink VRF v2 has some [subscription limits](#subscription-limits) and [coord
 
 Each subscription has the following limits:
 
-- Each subscription must maintain a minimum balance to fund requests from consumer contracts. If your balance is below that minimum, your requests remain pending for up to 24 hours before they expire. After you add sufficient LINK to a subscription, pending requests process automatically as long as long as they have not expired.
-- The minimum subscription balance must be sufficient for each new consumer contract that you add to a subscription. The require size of the minimum balance depends on the gas lane, and the size of the request that the consumer contract makes. For example, a consumer contract that requests one random value will require a smaller minimum balance than a consumer contract that requests 50 random values. In general, you can estimate the required minimum LINK balance using the following formula where max verification gas is always 200,000.
+- Each subscription must maintain a minimum balance to fund requests from consumer contracts. If your balance is below that minimum, your requests remain pending for up to 24 hours before they expire. After you add sufficient LINK to a subscription, pending requests automatically process as long as they have not expired.
+- The minimum subscription balance must be sufficient for each new consumer contract that you add to a subscription. The required size of the minimum balance depends on the gas lane and the size of the request that the consumer contract makes. For example, a consumer contract that requests one random value will require a smaller minimum balance than a consumer contract that requests 50 random values. In general, you can estimate the required minimum LINK balance using the following formula where max verification gas is always 200,000.
 
     ```
     (Gas lane maximum * (Max verification gas + Callback gas limit)) / (ETH to LINK price) = Minimum LINK balance
@@ -123,6 +123,6 @@ Each subscription has the following limits:
 
 You can see the configuration for each network on the [Contract Addresses](/docs/vrf-contracts/) page. You can also view the full configuration for each coordinator contract directly in Etherscan. As an example, view the [Ethereum Mainnet VRF v2 coordinator contract](https://etherscan.io/token/0x271682DEB8C4E0901D1a1550aD2e64D568E69909#readContract) configuration.
 
-- Each coordinator has a `MAX_NUM_WORDS` which limits the maximum number of random values you can receive in each request.
-- Each coordinator has a `maxGasLimit` which is the maximum allowed `callbackGasLimit` value for your requests.
-- You must specify a sufficient `callbackGasLimit` to fund the callback request to your consumer contract. This depends on the number of random values you request and how you process them in your `fulfillRandomWords()` function. If your `callbackGasLimit` is not sufficient, the callback will fail and your subscription is still charged for the work done to generate your requested random values.
+- Each coordinator has a `MAX_NUM_WORDS` parameter that limits the maximum number of random values you can receive in each request.
+- Each coordinator has a `maxGasLimit` parameter, which is the maximum allowed `callbackGasLimit` value for your requests.
+- You must specify a sufficient `callbackGasLimit` to fund the callback request to your consumer contract. This depends on the number of random values you request and how you process them in your `fulfillRandomWords()` function. If your `callbackGasLimit` is not sufficient, the callback fails but your subscription is still charged for the work done to generate your requested random values.

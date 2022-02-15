@@ -14,7 +14,7 @@ metadata:
 >
 > If you are using v1, see the [VRF v1 guide](./v1).
 
-Chainlink VRF allows you to integrate provably-fair and verifiably random data in your smart contract.
+Chainlink VRF allows you to integrate provably fair and verifiably random data in your smart contract.
 
 For implementation details, read [Introduction to Chainlink VRF](/docs/chainlink-vrf/).
 
