@@ -209,18 +209,20 @@ module.exports = {
           {
             title: 'Make a GET Request',
             url: '/docs/make-a-http-get-request/',
+            children: [
+              {
+                title: 'Multi-Variable Responses',
+                url: '/docs/multi-variable-responses/',
+              },
+              {
+                title: 'Large Responses',
+                url: '/docs/large-responses/',
+              },
+            ],
           },
           {
             title: 'Make an Existing Job Request',
             url: '/docs/existing-job-request/',
-          },
-          {
-            title: 'Multi-Variable Responses',
-            url: '/docs/multi-variable-responses/',
-          },
-          {
-            title: 'Large Responses',
-            url: '/docs/large-responses/',
           },
           {
             title: 'Find Existing Jobs',

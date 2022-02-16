@@ -5,30 +5,30 @@ date: Last Modified
 title: "Contract Addresses"
 permalink: "docs/decentralized-oracles-ethereum-mainnet/"
 ---
-# Overview
+## Overview
 
 This page details example addresses and jobs that are supported by oracles on various networks, so you can test your implementation quickly and easily.
 
-For a comprehensive list of data providers, oracles, jobs, adapters, and more, visit <a href="https://market.link/" target="_blank">Chainlink Market</a>.
+For a comprehensive list of data providers, oracles, jobs, adapters, and more, visit [Chainlink Market](https://market.link/).
 
 ![Chainlink Market Logo](/files/afe3efe-marketlink.jpg)
 
-# Mainnet
+## Mainnet
 
 > 🚧 Important
-> 
+>
 > We strongly recommend that you deploy to a [testnet](#testnets) first, then move to mainnet.
 LINK address:  [`0x514910771af9ca656af840dff83e8264ecf986ca`](https://etherscan.io/token/0x514910771af9ca656af840dff83e8264ecf986ca)
 
 Head to [Chainlink Market](https://market.link/) for the latest Node and Job details.
 
-# Testnets
+## Testnets
 
 Each request on the test networks cost 0.1 LINK. Each oracle will wait for 3 confirmations before processing a request.
 
 These are examples which enable you to deploy and test quickly. Many more testnet oracle nodes and jobs can be found on [Chainlink Market](https://market.link/).
 
-## Kovan
+### Kovan
 
 Kovan LINK address: [`0xa36085F69e2889c224210F603D836748e7dC0088`](https://kovan.etherscan.io/address/0xa36085F69e2889c224210F603D836748e7dC0088)
 
@@ -47,10 +47,10 @@ For Faucet details, please refer to [LINK Token Contracts](../link-token-contrac
 |[HttpGet](../core-adapters/#httpget)<br>[JsonParse](../core-adapters#jsonparse)<br>[Multiply](../core-adapters/#multiply)<br>[EthUint256](../core-adapters/#ethuint256)|`d5270d1c311941d0b08bead21fea7747 `|`get` (string)<br>`path` (dot-delimited string or array of strings)<br>`times` (int) (optional)|
 |[HttpGet](../core-adapters/#httpget)<br>[JsonParse](../core-adapters/#jsonparse)<br>[EthBool](../core-adapters/#ethbool)|`bc746611ebee40a3989bbe49e12a02b9 `|`get` (string)<br>`path` (dot-delimited string or array of strings)|
 
-## Rinkeby
+### Rinkeby
 
 > ❗️ Maintanence
-> 
+>
 > Currently, Rinkeby is in maintenance mode. Please use other environments (e.g. Kovan) to perform tests.
 
 Rinkeby LINK address:  [`0x01BE23585060835E02B77ef475b0Cc51aA1e0709`](https://rinkeby.etherscan.io/address/0x01BE23585060835E02B77ef475b0Cc51aA1e0709)

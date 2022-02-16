@@ -11,9 +11,11 @@ metadata:
   image:
     0: "/files/OpenGraph_V3.png"
 ---
+## Overview
+
 Using an *existing* Oracle Job makes your smart contract code more succinct. This page explains how to retrieve the winners of various elections based on the date, state, and race ID.
 
-# AP Election Data Consumer
+## AP Election Data Consumer
 
 In [Make a GET Request](../make-a-http-get-request/), the example contract code declared which URL to use, where to find the data in the response, and how to convert it so that it can be represented on-chain.
 
@@ -26,13 +28,13 @@ You can find the job spec for this example on [GitHub](https://github.com/smartc
 >
 > Making a job request will fail unless your deployed contract has enough LINK to pay for it. **Learn how to [Acquire testnet LINK](../acquire-link/) and [Fund your contract](../fund-your-contract/)**.
 
+```solidity
+{% include samples/APIRequests/APElection.sol %}
+```
+
 <div class="remix-callout">
     <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/APElection.sol" target="_blank" >Open in Remix</a>
     <a href="/docs/conceptual-overview/#what-is-remix" >What is Remix?</a>
 </div>
-
-```solidity
-{% include samples/APIRequests/APElection.sol %}
-```
 
 For more information on finding existing jobs, see [Find Existing Jobs](../listing-services/).
