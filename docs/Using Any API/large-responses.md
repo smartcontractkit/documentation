@@ -32,14 +32,14 @@ To consume an API with a large responses, your contract should inherit from [Cha
 > Making a GET request will fail unless your deployed contract has enough LINK to pay for it. **Learn how to [Acquire testnet LINK](../acquire-link/) and [Fund your contract](../fund-your-contract/)**.
 >
 
+```solidity Kovan
+{% include samples/APIRequests/GenericBigWord.sol %}
+```
+
 <div class="remix-callout">
     <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/GenericBigWord.sol" target="_blank" >Open in Remix</a>
     <a href="/docs/conceptual-overview/#what-is-remix" >What is Remix?</a>
 </div>
-
-```solidity Kovan
-{% include samples/APIRequests/GenericBigWord.sol %}
-```
 
 The job spec for the Chainlink node in this example can be [found here](../example-job-spec-large/).
 
