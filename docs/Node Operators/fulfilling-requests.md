@@ -11,6 +11,10 @@ metadata:
 ---
 With your own Oracle contract, you can use your own node to fulfill requests. This guide will show you how to deploy your own Oracle contract and add jobs to your node so that it can provide data to smart contracts.
 
+Chainlink nodes can fulfill requests from open or unauthenticated APIs without the need for [External Adapters](../external-adapters/) as long as you've [added the jobs](#add-a-job-to-the-node) to the node. For these requests, requesters supply the URL to the open API that they want each node to retrieve. The Chainlink node will use [tasks](/docs/tasks/) to fulfill the request.
+
+Some APIs require authentication by providing request headers for the operator's API key, which the Chainlink node supports. If you would like to provide access to an API that requires authentication, you must create a job that is specific for that API either using an external adapter or by using the parameters of the [HTTP task](/docs/jobs/task-types/http/).
+
 ## Requirements
 
 Before you begin this guide, complete the following tasks to make sure you have all of the tools that you need:
