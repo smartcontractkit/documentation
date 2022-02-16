@@ -30,6 +30,7 @@ To get your hands on the code right away, you can skip this overview:
 + [What language is a smart contract written in?](#what-language-is-a-smart-contract-written-in)
 + [What does a smart contract look like?](#what-does-a-smart-contract-look-like)
 + [What does "deploying" mean?](#what-does-deploying-mean)
++ [What is a LINK token?](#what-is-a-link-token)
 + [What are oracles? Why are they important?](#what-are-oracles)
 + [How do smart contracts use oracles?](#how-do-smart-contracts-use-oracles)
 + [What is Remix?](#what-is-remix)
@@ -149,6 +150,12 @@ For this example, `override` is necessary in the `Test` contract function becaus
 **Deploying** a smart contract is the process of pushing the code to the blockchain, at which point it resides with an on-chain address. Once it's deployed, the code cannot be changed and is said to be *immutable*.
 
 As long as the address is known, its functions can be called through an interface, on [Etherscan](https://etherscan.io/), or through a library like [web3js](https://web3js.readthedocs.io/), [web3py](https://web3py.readthedocs.io/), [ethers](https://docs.ethers.io), and more. Contracts can also be written to interact with other contracts on the blockchain.
+
+## What is a LINK token?
+
+The LINK token is an ERC677 token that inherits functionality from the [ERC20 token standard](https://ethereum.org/en/developers/docs/standards/tokens/erc-20/) and allows token transfers to contain a data payload. It is used to pay node operators for retrieving data for smart contracts and also for deposits placed by node operators as required by contract creators.
+
+Any wallet that handles ERC20 tokens can store LINK tokens. The ERC677 token standard that the LINK token implements still retains all functionality of ERC20 tokens.
 
 ## What are oracles?
 
