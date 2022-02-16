@@ -52,13 +52,6 @@ contract VRFv2Consumer is VRFConsumerBaseV2 {
     s_subscriptionId = subscriptionId;
   }
 
-  function fulfillRandomWords(
-    uint256, /* requestId */
-    uint256[] memory randomWords
-  ) internal override {
-    s_randomWords = randomWords;
-  }
-
   // Assumes the subscription is funded sufficiently.
   function requestRandomWords() external onlyOwner {
     // Will revert if subscription is not set and funded.
@@ -69,6 +62,13 @@ contract VRFv2Consumer is VRFConsumerBaseV2 {
       callbackGasLimit,
       numWords
     );
+  }
+  
+  function fulfillRandomWords(
+    uint256, /* requestId */
+    uint256[] memory randomWords
+  ) internal override {
+    s_randomWords = randomWords;
   }
 
   modifier onlyOwner() {
