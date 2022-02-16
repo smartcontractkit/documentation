@@ -11,11 +11,11 @@ metadata:
   image:
     0: "/files/OpenGraph_V3.png"
 ---
-# Overview
+## Overview
 
 Using an *existing* Oracle Job makes your smart contract code more succinct. This page explains how to retrieve the winners of various elections based on the date, state, and race ID.
 
-# AP Election Data Consumer
+## AP Election Data Consumer
 
 In [Make a GET Request](../make-a-http-get-request/), the example contract code declared which URL to use, where to find the data in the response, and how to convert it so that it can be represented on-chain.
 
