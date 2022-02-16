@@ -3,8 +3,8 @@
 pragma solidity ^0.8.7;
 
 import "@chainlink/contracts/src/v0.8/interfaces/LinkTokenInterface.sol";
-import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
-import "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol";
+import "@chainlink/contracts@0.4.0/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
+import "@chainlink/contracts@0.4.0/src/v0.8/VRFConsumerBaseV2.sol";
 
 contract VRFv2SubscriptionManager is VRFConsumerBaseV2 {
   VRFCoordinatorV2Interface COORDINATOR;
