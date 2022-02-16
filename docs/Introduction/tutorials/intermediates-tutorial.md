@@ -17,6 +17,10 @@ metadata:
 >
 > This guide assumes that you have basic knowledge about writing and deploying smart contracts. If you are new to smart contract development, read the [Consuming Data Feeds](/docs/consuming-data-feeds/) guide before you begin.
 
+> 🚧 This guide uses VRF v1
+>
+> This guide uses VRF v1 for demonstration purposes. The steps to implement VRF v2 are different. If you need to use VRF v2, see the current [Chainlink VRF](/docs/chainlink-vrf/) guide. The [VRF v1](/docs/chainlink-vrf/v1/) guide is also still available.
+
 <p>
   https://www.youtube.com/watch?v=JqZWariqh5s
 </p>
