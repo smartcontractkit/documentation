@@ -140,7 +140,7 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 
 > 🚰Mumbai Faucet
 >
-> Testnet LINK and MATIC are available from [the official Matic faucet](https://faucet.polygon.technology/) and https://faucets.chain.link/mumbai.
+> Testnet LINK and MATIC are available from the [Polygon faucet](https://faucet.polygon.technology/) and https://faucets.chain.link/mumbai.
 
 |Parameter|Value|
 |:---|:---|
