@@ -15,7 +15,7 @@ metadata:
 >
 > If you are using v1, see the [VRF v1 guide](./v1).
 
-These are the best practices for using Chainlink VRF.
+These are example best practices for using Chainlink VRF.
 
 ## Getting a random number within a range
 
@@ -37,13 +37,14 @@ If you want to get multiple random values from a single VRF request, you can req
 
 ## Processing simultaneous VRF requests
 
-If you want to have multiple VRF requests processing simultaneously, create a mapping between `requestID` and the response. You might also create a mapping between the `requestId` and the address of the requester to track the most recent request that each address made. This way you can find the request ID for the requesting address and use that ID to look up the most recent stored response.
+If you want to have multiple VRF requests processing simultaneously, create a mapping between `requestId` and the response. You might also create a mapping between the `requestId` and the address of the requester to track which address made each request.
 
 ```solidity
-mapping(address => uint256) public s_AddressTorequestId;
-mapping(uint256 => uint256[]) public s_randomWordsTorequestId;
+mapping(uint256 => uint256[]) public s_requestIdToRandomWords;
+mapping(uint256 => address) public s_requestIdToAddress;
+uint256 public s_requestId;
 
-function requestRandomWords() external onlyOwner {
+function requestRandomWords() external onlyOwner returns (uint256) {
   uint256 requestId = COORDINATOR.requestRandomWords(
     keyHash,
     s_subscriptionId,
@@ -51,22 +52,30 @@ function requestRandomWords() external onlyOwner {
     callbackGasLimit,
     numWords
   );
-  s_AddressTorequestId[msg.sender] = requestId;
+  s_requestIdToAddress[requestId] = msg.sender;
+
+  // Store the latest requestId for this example.
+  s_requestId = requestId;
+
+  // Return the requestId to the requester.
+  return requestId;
 }
 
 function fulfillRandomWords(
-  uint256 requestId,
-  uint256[] memory randomWords
-) internal override {
-  s_randomWordsTorequestId[requestId] = randomWords;
+    uint256 requestId,
+    uint256[] memory randomWords
+  ) internal override {
+  // You can return the value to the requester,
+  // but this example simply stores it.
+  s_requestIdToRandomWords[requestId] = randomWords;
 }
 ```
 
 You could also map the `requestId` to an index to keep track of the order in which a request was made.
 
 ```solidity
-mapping(uint256 => uint256) s_requestIdToRequestNumberIndex;
-mapping(uint256 => uint256[]) public s_randomWordsToRequestNumberIndex;
+mapping(uint256 => uint256) s_requestIdToRequestIndex;
+mapping(uint256 => uint256[]) public s_requestIndexToRandomWords;
 uint256 public requestCounter;
 
 function requestRandomWords() external onlyOwner {
@@ -77,15 +86,15 @@ function requestRandomWords() external onlyOwner {
     callbackGasLimit,
     numWords
   );
-  s_requestIdToRequestNumberIndex[requestId] = requestCounter;
+  s_requestIdToRequestIndex[requestId] = requestCounter;
   requestCounter += 1;
 }
 
 function fulfillRandomWords(
-  uint256 requestId,
-  uint256[] memory randomWords
-) internal override {
-  uint256 requestNumber = s_requestIdToRequestNumberIndex[requestId];
-  s_randomWordsToRequestNumberIndex[requestNumber] = randomWords;
+    uint256 requestId,
+    uint256[] memory randomWords
+  ) internal override {
+  uint256 requestNumber = s_requestIdToRequestIndex[requestId];
+  s_requestIndexToRandomWords[requestNumber] = randomWords;
 }
 ```
