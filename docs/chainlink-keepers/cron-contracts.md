@@ -10,7 +10,7 @@ whatsnext:
 ---
 
 # Overview
-In this tutorial you will use the Chainlink Keepers Job Scheduler to quickly set up a time schedule to automatically execute your smart contract functions.
+In this tutorial you will use the Chainlink Keepers Job Scheduler to set up a time schedule to automatically execute smart contract functions.
 
 **Table of Contents**
 
@@ -28,7 +28,7 @@ In this tutorial you will use the Chainlink Keepers Job Scheduler to quickly set
 
 # What is Job Scheduler?
 
-Use the Chainlink Keepers Job Scheduler to schedule jobs that will use the Chainlink Keepers Network to automatically execute your smart contract functions at specific times without having to modify your deployed smart contract functions. Simply specify the address of your target contract, the function to execute, and the execution time(s) to create a new scheduled job. Once you register your Job Scheduler with [Chainlink Keepers](https://keepers.chain.link/new), the decentralized Keepers network will start monitoring and executing your scheduled jobs.  
+The Chainlink Keepers Job Scheduler schedules jobs which utilize the Chainlink Keepers Network to automatically execute your smart contract functions at specific times. Once your Job Scheduler is registered with  the [Chainlink Keepers network](https://keepers.chain.link/new), the decentralized Keepers network will start monitoring and executing your scheduled jobs.  
 
 # Job Scheduling Tutorial
 
@@ -36,25 +36,26 @@ We will use [Remix](https://remix.ethereum.org/) for this tutorial. To learn mor
 
 You will also need a MetaMask (or other Remix compatible wallet) in your browser with some testnet tokens of choice. See our [MetaMask tutorial](https://www.youtube.com/watch?v=4ZgFijd02Jo) if you need help setting up a wallet.
 
-We recommend you first test the tutorial on an EVM-compatible testnet where Chainlink Keepers is deployed, before moving to mainnet.
+> ⚠️ Testing Contracts
+> We recommend you first test the tutorial on an EVM-compatible testnet before moving to mainnet.
 
-## Creating your own Job Scheduler contract
+## Creating a Job Scheduler contract
 
-To deploy your own on-chain Job Scheduler contract, we will use the externally audited and pre-deployed Chainlink  [CronUpkeepFactory](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/factories/CronUpkeepFactory.sol) smart contract. This is called the [Factory pattern](https://www.youtube.com/watch?v=Q1zZo4O_Ong), where one contract deploys another contract. To deploy your Job Scheduler (called `CronUpkeep`), select the new file icon in Remix, name it `CronUpkeepFactory.abi` and paste the [ABI](#cronupkeepfactory-abi) for `CronUpkeepFactory` from the [Resources](#resources) section below. The ABI is the application binary interface that is used to interact with the smart contract that has been deployed to the network.
+To deploy an on-chain Job Scheduler contract, we will use the externally audited and pre-deployed Chainlink  [CronUpkeepFactory](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/factories/CronUpkeepFactory.sol) smart contract. This is called the [Factory pattern](https://www.youtube.com/watch?v=Q1zZo4O_Ong), where one contract deploys another contract. To deploy your Job Scheduler (`CronUpkeep`), select the new file icon in Remix and name it `CronUpkeepFactory.abi`. Paste the [ABI](#cronupkeepfactory-abi) for `CronUpkeepFactory` from the [Resources](#resources) section below. The ABI is the application binary interface that is used to interact with the smart contract that has been deployed to the network.
 
 ![Remix ABI Cron](/images/keepers/cron-1.png)
 
-Now select the **DEPLOY & RUN TRANSACTIONS** icon in the left-hand navigation bar and set **Environment** to *Injected Web3*. Paste the address of our deployed `CronUpkeepFactory` contract in the **At Address** box and select the **At Address** button. You can find the [addresses](#contract-addresses) for deployed `CronUpkeepFactory` contracts in the [Resources](#resources) section. Once this step is completed, you will be able to view callable functions of the `CronUpkeepFactory` in Remix in the bottom left of the screen. Select the orange `newCronUpkeep` button and follow the prompts in MetaMask to confirm the transaction. When the transaction completes, you will see a transaction hash in the terminal pointing to the creation of your Job Scheduler.
+Select the **DEPLOY & RUN TRANSACTIONS** icon in the left-hand navigation bar and set **Environment** to *Injected Web3*. Paste the address of our deployed `CronUpkeepFactory` contract in the **At Address** box and select the **At Address** button. You can find the [addresses](#contract-addresses) for deployed `CronUpkeepFactory` contracts in the [Resources](#resources) section. You will then be able to view callable functions of `CronUpkeepFactory`. Select the `newCronUpkeep` button and follow the prompts in MetaMask to confirm the transaction. When the transaction is complete,  a transaction hash will appear in the terminal. This points to the creation of your Job Scheduler.
 
 ## Finding the address of your Job Scheduler
 
-Please copy the transaction hash, and open it in the scanner of the chain you are working on. For example, if you were working on Ethereum Kovan please go to https://kovan.etherscan.io/ and search for your Transaction Hash. Now select the *Internal Txns* tab which will show the contract creation and contract address in the `To` field. Please note the address and transaction hash for future use.
+Copy the transaction hash and open it in the scanner of the chain you are working on. Once you have found it, select the **Internal Txns** tab. This displays the contract creation and contract address in the `To` field. Note the address and transaction hash for future use.
 
 ![Remix Transaction Hash](/images/keepers/cron-2.png)
 
 ## Interacting with your Job Scheduler
 
-To interact with your Job Scheduler contract, create a new file called `CronUpkeep.abi` in Remix and paste the [ABI](#job-scheduler-aka-cronupkeep-abi) for `CronUpkeep` contract from the [Resources](#resources) section below. Select the **DEPLOY & RUN TRANSACTIONS** icon on the left and paste the address of your Job Scheduler contract in the **At Address** box, and then select the **At Address** button. Please accept the prompts after which the contract interface will open in the bottom left of Remix.
+To interact with your Job Scheduler contract, create a new file called `CronUpkeep.abi` in Remix and paste the [ABI](#job-scheduler-aka-cronupkeep-abi) for `CronUpkeep` contract from the [Resources](#resources) section below. Select the **DEPLOY & RUN TRANSACTIONS** icon on the left and paste the address of your Job Scheduler contract in the **At Address** box, and then select the **At Address** button. Accept the prompts after which the contract interface will open in the bottom left of Remix.
 
 ![Remix Contract Interface](/images/keepers/cron-3.png)
 
@@ -66,19 +67,21 @@ To schedule a new job, use the function `createCronJobFromEncodedSpec`. This fun
 + The [function signature](#function-signature), or the encoding of the function, you want to call 
 + The [encodedCronSpec](#encodedcronspec) encoding of your specified time interval.
 
-Please see the [Encodings](#encodings) section below to get the [function signature](#function-signature) and the [encodedCronSpec](#encodedcronspec) for your job. 
+Refer to the [Encodings](#encodings) section below to retrieve the [function signature](#function-signature) and the [encodedCronSpec](#encodedcronspec) for your job. 
 
-We will now paste, minus <> brackets, 
 ```json
 <your target address>, <your function specification>, <your encodedCronSpec>
 ```
-into the into the createCronJobFromEncodedSpec function in Remix and execute it. Once executed, you can call the getActiveCronJobIDs to see if your job has been registered. You can execute the getCronJob function to see the details of your job played back. You can add multiple jobs on this contract in this fashion, and also use the other functions in your Job Scheduler to delete jobs or pause and unpause the Scheduler.
+Replace the values and paste the snippet above into the `createCronJobFromEncodedSpec` function in Remix and execute the function. Once executed, you can call the `getActiveCronJobIDs` to see if your job has been registered. You can execute the `getCronJob` function to view the details of your job played back. You can add multiple jobs on this contract in this fashion, and also use the other in your Job Scheduler to delete jobs or pause and unpause the Scheduler. However, you must register your Job Scheduler with the Chainlink Keepers network for it to be monitored and executed.
 
-You still have to register your Job Scheduler with the Chainlink Keepers service to have it monitored and executed.
 
 ## Setting up Chainlink Keepers
 
-Since our deployed contract is already [Keeper-compatible](../compatible-contracts), we can immediately register it with Keepers following these [steps](../register-upkeep). Be sure to provide the address of your Job Scheduler contract in **Upkeep address**. For Gas limit you should specify the upper limit of Gas your target function will use.
+Since our deployed contract is already [Keeper-compatible](../compatible-contracts), we can immediately register it with Keepers following these [steps](../register-upkeep). Be sure to provide the address of your Job Scheduler contract in **Upkeep address**. For gas limits, you should specify the upper limit of gas your target function will use.
+
+> ❗️ Gas Limits
+>
+> The `KeeperRegistry` enforces a cap for gas used both on-chain and off-chain. See the [Keepers Network Overview](../overview/) for details. The caps are configurable and might change based on user feedback. Be sure that you understand these limits if your use case requires a large amount of gas.
 
 Once you have registered your contract, you can view your Upkeep. The *Upkeep History* will display **Perform Upkeep** for all registered jobs on your Job Scheduler contract. To ensure Chainlink Keepers monitors your Job Scheduler, please ensure you fund your Upkeep.
 
@@ -88,7 +91,7 @@ In this tutorial you used the Chainlink Keepers Job Scheduler to automate the ex
 
 # Encodings
 
-By using encodings you save the repeated gas costs of having your contract calculate them during execution.
+Encodings allow you to save repeated gas costs of having your contract calculate them during execution.
 
 ### Function Signature
 The Function Signature (or bytes handler) is the first four bytes of the Keccak-hash used in EVM chains to encode a function. You can use the following Python script to retrieve the function signature.
