@@ -63,7 +63,7 @@ Fee parameters are configured in the coordinator contract and specify the premiu
 |LINK Token|[`0x01BE23585060835E02B77ef475b0Cc51aA1e0709`](https://rinkeby.etherscan.io/token/0x01BE23585060835E02B77ef475b0Cc51aA1e0709)|
 |VRF Coordinator|[`0x6168499c0cFfCaCD319c818142124B7A15E857ab`](https://rinkeby.etherscan.io/token/0x6168499c0cFfCaCD319c818142124B7A15E857ab)|
 |30 gwei Key Hash|`0xd89b2bf150e3b9e13446986e571fb9cab24b13cea0a43ea20a6049a85cc807cc`|
-|Premium|0.01 LINK|
+|Premium|0.25 LINK|
 |Minimum Confirmations|3|
 |Maximum Confirmations|200|
 |Maximum Random Values|500|

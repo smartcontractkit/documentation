@@ -114,7 +114,7 @@ Each subscription has the following limits:
 - The minimum subscription balance must be sufficient for each new consumer contract that you add to a subscription. The required size of the minimum balance depends on the gas lane and the size of the request that the consumer contract makes. For example, a consumer contract that requests one random value will require a smaller minimum balance than a consumer contract that requests 50 random values. In general, you can estimate the required minimum LINK balance using the following formula where max verification gas is always 200,000.
 
     ```
-    (Gas lane maximum * (Max verification gas + Callback gas limit)) / (ETH to LINK price) = Minimum LINK balance
+    ((Gas lane maximum * (Max verification gas + Callback gas limit)) / (ETH to LINK price)) + LINK premium = Minimum LINK
     ```
 
 - Each subscription supports up to 100 consumer contracts. If you need more than 100 consumers, create multiple subscriptions.
