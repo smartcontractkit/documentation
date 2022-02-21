@@ -30,7 +30,7 @@ To modify your existing smart contract code to work with VRF v2, complete the fo
 
 1. Set up and fund a subscription in the [Subscription Manager](https://vrf.chain.link) application.
 
-1. Import the new [`VRFConsumerBaseV2.sol` contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/dev/VRFConsumerBaseV2.sol) and remove the v1 `VRFConsumerBase.sol` import. This contract includes the `fulfillRandomWords` function.
+1. Import the new [`VRFConsumerBaseV2.sol` contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/VRFConsumerBaseV2.sol) and remove the v1 `VRFConsumerBase.sol` import. This contract includes the `fulfillRandomWords` function.
 
 1. Import the [`VRFCoordinatorV2Interface.sol`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol) interface. This interface includes the new `requestRandomWords` function.
 
