@@ -28,16 +28,15 @@ In this tutorial you will use the Chainlink Keepers Job Scheduler to set up a ti
 
 # What is Job Scheduler?
 
-The Chainlink Keepers Job Scheduler schedules jobs which utilize the Chainlink Keepers Network to automatically execute your smart contract functions at specific times. Once your Job Scheduler is registered with  the [Chainlink Keepers network](https://keepers.chain.link/new), the decentralized Keepers network will start monitoring and executing your scheduled jobs.  
+The Chainlink Keepers Job Scheduler schedules jobs that use the Chainlink Keepers Network to automatically execute your smart contract functions at specific times. After you register your Job Scheduler with the [Chainlink Keepers network](https://keepers.chain.link/new), the decentralized Keepers network monitors and executes your scheduled jobs.  
 
 # Job Scheduling Tutorial
 
-We will use [Remix](https://remix.ethereum.org/) for this tutorial. To learn more about Remix and how you can use it to deploy a smart contract, visit our [tutorial](https://www.youtube.com/watch?v=JWJWT9cwFbo).
+Use [Remix](https://remix.ethereum.org/) for this tutorial. To learn more about Remix and how you can use it to deploy a smart contract, visit our [tutorial](https://www.youtube.com/watch?v=JWJWT9cwFbo).
 
-You will also need a MetaMask (or other Remix compatible wallet) in your browser with some testnet tokens of choice. See our [MetaMask tutorial](https://www.youtube.com/watch?v=4ZgFijd02Jo) if you need help setting up a wallet.
+You will also need MetaMask or other another wallet that is compatible with Remix with some testnet tokens of choice. See the [MetaMask tutorial](https://www.youtube.com/watch?v=4ZgFijd02Jo) if you need help setting up a wallet.
 
-> ⚠️ Testing Contracts
-> We recommend you first test the tutorial on an EVM-compatible testnet before moving to mainnet.
+Before you deploy your application to a mainnet, test the tutorial on one of the [supported testnets](/docs/chainlink-keepers/introduction/#supported-blockchain-networks).
 
 ## Creating a Job Scheduler contract
 
@@ -77,7 +76,7 @@ Replace the values and paste the snippet above into the `createCronJobFromEncode
 
 ## Setting up Chainlink Keepers
 
-Since our deployed contract is already [Keeper-compatible](../compatible-contracts), we can immediately register it with Keepers following these [steps](../register-upkeep). Be sure to provide the address of your Job Scheduler contract in **Upkeep address**. For gas limits, you should specify the upper limit of gas your target function will use.
+Because the deployed contract is already [Keeper-compatible](../compatible-contracts), you can immediately register it with Keepers following these [steps](../register-upkeep). Be sure to provide the address of your Job Scheduler contract in **Upkeep address**. For gas limits, you should specify the upper limit of gas your target function will use.
 
 > ❗️ Gas Limits
 >
