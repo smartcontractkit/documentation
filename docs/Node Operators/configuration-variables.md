@@ -124,6 +124,9 @@ Your node applies configuration settings using following hierarchy:
   - [MIN_INCOMING_CONFIRMATIONS](#min_incoming_confirmations)
   - [MIN_OUTGOING_CONFIRMATIONS](#min_outgoing_confirmations)
   - [MINIMUM_CONTRACT_PAYMENT_LINK_JUELS](#minimum_contract_payment_link_juels)
+  - [NODE_NO_NEW_HEADS_THRESHOLD](#node_no_new_heads_threshold)
+  - [NODE_POLL_FAILURE_THRESHOLD](#node_poll_failure_threshold)
+  - [NODE_POLL_INTERVAL](#node_poll_interval)
 - [EVM Gas Controls](#evm-gas-controls)
   - [Configuring your ETH node](#configuring-your-eth-node)
     - [go-ethereum](#go-ethereum)
@@ -868,6 +871,30 @@ For jobs that use the `EthTx` adapter, this is the minimum payment amount in ord
 > 🚧 Note
 >
 > Keep in mind, the Chainlink node currently responds with a 500,000 gas limit. Under pricing your node could mean it spends more in ETH (on gas) than it earns in LINK.
+
+### NODE_NO_NEW_HEADS_THRESHOLD
+
+- Default: _automatically set based on Chain ID, typically "3m" (3 minutes)_
+
+Controls how long to wait after receiving no new heads before marking the node as out-of-sync.
+
+Set to zero to disable out-of-sync checking.
+
+### NODE_POLL_FAILURE_THRESHOLD
+
+- Default: _automatically set based on Chain ID, typically 3_
+
+Indicates how many consecutive polls must fail in order to mark a node as unreachable.
+
+Set to zero to disable poll checking.
+
+### NODE_POLL_INTERVAL
+
+- Default: _automatically set based on Chain ID, typically "10s" (10 seconds)_
+
+Controls how often to poll the node to check for liveness.
+
+Set to zero to disable poll checking.
 
 ## EVM Gas Controls
 
