@@ -182,20 +182,24 @@ module.exports = {
             url: '/docs/get-a-random-number/',
           },
           {
-            title: 'API Reference',
-            url: '/docs/chainlink-vrf-api-reference/'
+            title: 'Example Contracts',
+            url: '/docs/chainlink-vrf/example-contracts/'
           },
           {
             title: 'Security Considerations',
             url: '/docs/vrf-security-considerations/',
           },
           {
+            title: 'Best Practices',
+            url: '/docs/chainlink-vrf-best-practices/',
+          },
+          {
             title: 'Contract Addresses',
             url: '/docs/vrf-contracts/'
           },
           {
-            title: 'Best Practices',
-            url: '/docs/chainlink-vrf-best-practices/',
+            title: 'Migrating to VRF v2',
+            url: '/docs/chainlink-vrf/migration-vrf-v1-v2/',
           },
         ],
       },
@@ -209,18 +213,20 @@ module.exports = {
           {
             title: 'Make a GET Request',
             url: '/docs/make-a-http-get-request/',
+            children: [
+              {
+                title: 'Multi-Variable Responses',
+                url: '/docs/multi-variable-responses/',
+              },
+              {
+                title: 'Large Responses',
+                url: '/docs/large-responses/',
+              },
+            ],
           },
           {
             title: 'Make an Existing Job Request',
             url: '/docs/existing-job-request/',
-          },
-          {
-            title: 'Multi-Variable Responses',
-            url: '/docs/multi-variable-responses/',
-          },
-          {
-            title: 'Large Responses',
-            url: '/docs/large-responses/',
           },
           {
             title: 'Find Existing Jobs',
@@ -567,6 +573,35 @@ module.exports = {
       },
     ],
     legacy: [
+      {
+        section: 'VRF v1 [DEPRECATED]',
+        contents: [
+          {
+            title: 'Introduction to Chainlink VRF',
+            url: '/docs/chainlink-vrf/v1/',
+          },
+          {
+            title: 'Get a Random Number',
+            url: '/docs/get-a-random-number/v1/'
+          },
+          {
+            title: 'Security Considerations',
+            url: '/docs/vrf-security-considerations/v1/',
+          },
+          {
+            title: 'Best Practices',
+            url: '/docs/chainlink-vrf-best-practices/v1/',
+          },
+          {
+            title: 'Contract Addresses',
+            url: '/docs/vrf-contracts/v1/'
+          },
+          {
+            title: 'API Reference',
+            url: '/docs/chainlink-vrf-api-reference/v1/'
+          },
+        ],
+      },
       {
         section: 'v1 JSON JOBS [REMOVED]',
         contents: [
