@@ -35,6 +35,8 @@ Fee parameters are configured in the coordinator contract and specify the premiu
 
 - [Ethereum Mainnet](#ethereum-mainnet)
 - [Rinkeby testnet](#rinkeby-testnet)
+- [Binance Smart Chain](#binance-smart-chain)
+- [Binance Smart Chain testnet](#binance-smart-chain-testnet)
 
 ### Ethereum Mainnet
 
@@ -64,6 +66,36 @@ Fee parameters are configured in the coordinator contract and specify the premiu
 |VRF Coordinator|[`0x6168499c0cFfCaCD319c818142124B7A15E857ab`](https://rinkeby.etherscan.io/token/0x6168499c0cFfCaCD319c818142124B7A15E857ab)|
 |30 gwei Key Hash|`0xd89b2bf150e3b9e13446986e571fb9cab24b13cea0a43ea20a6049a85cc807cc`|
 |Premium|0.25 LINK|
+|Minimum Confirmations|3|
+|Maximum Confirmations|200|
+|Maximum Random Values|500|
+
+### Binance Smart Chain
+
+|Item|Value|
+|---|---|
+|LINK Token|[`0x404460c6a5ede2d891e8297795264fde62adbb75`](https://bscscan.com/address/0x404460c6a5ede2d891e8297795264fde62adbb75)|
+|VRF Coordinator|[`0xc587d9053cd1118f25F645F9E08BB98c9712A4EE`](https://bscscan.com/address/0xc587d9053cd1118f25F645F9E08BB98c9712A4EE)|
+|200 gwei Key Hash|`0x114f3da0a805b6a67d6e9cd2ec746f7028f1b7376365af575cfea3550dd1aa04`|
+|500 gwei Key Hash|`0xba6e730de88d94a5510ae6613898bfb0c3de5d16e609c5b7da808747125506f7`|
+|1000 gwei Key Hash|`0x17cd473250a9a479dc7f234c64332ed4bc8af9e8ded7556aa6e66d83da49f470`|
+|Premium|0.005 LINK|
+|Minimum Confirmations|3|
+|Maximum Confirmations|200|
+|Maximum Random Values|500|
+
+### Binance Smart Chain testnet
+
+> 🚰BSC Faucet
+>
+> Testnet LINK is available from https://faucets.chain.link/chapel
+
+|Item|Value|
+|---|---|
+|LINK Token|[`0x84b9B910527Ad5C03A9Ca831909E21e236EA7b06`](https://testnet.bscscan.com/address/0x84b9B910527Ad5C03A9Ca831909E21e236EA7b06)|
+|VRF Coordinator|[`0x6A2AAd07396B36Fe02a22b33cf443582f682c82f`](https://testnet.bscscan.com/address/0x6A2AAd07396B36Fe02a22b33cf443582f682c82f)|
+|50 gwei Key Hash|`0xd4bb89654db74673a187bd804519e65e3f71a52bc55f11da7601a13dcf505314`|
+|Premium|0.005 LINK|
 |Minimum Confirmations|3|
 |Maximum Confirmations|200|
 |Maximum Random Values|500|
