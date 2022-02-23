@@ -22,17 +22,17 @@ export const NETWORKS = [
     ],
   },
   {
-    page: "binance-smart-chain-addresses-price",
-    title: "Binance Smart Chain Data Feeds",
+    page: "bnb-chain-addresses-price",
+    title: "BNB Chain Data Feeds",
     feedType: "Proxy",
     networks: [
       {
-        name: "BSC Mainnet",
+        name: "BNB Chain Mainnet",
         url: "https://bscscan.com/address/%s",
         source: "directory-bsc-mainnet.json",
       },
       {
-        name: "BSC Testnet",
+        name: "BNB Chain Testnet",
         url: "https://testnet.bscscan.com/address/%s",
         source: "directory-bsc-testnet.json",
       },

@@ -46,9 +46,9 @@ Chainlink VRF v2 is currently available on the following networks:
 - Ethereum:
   - [Mainnet](/docs/vrf-contracts/#ethereum-mainnet)
   - [Rinkeby testnet](/docs/vrf-contracts/#rinkeby-testnet)
-- Binance Smart Chain
-  - [Mainnet](/docs/vrf-contracts/#binance-smart-chain)
-  - [Testnet](/docs/vrf-contracts/#binance-smart-chain-testnet)
+- BNB Chain
+  - [Mainnet](/docs/vrf-contracts/#bnb-chain)
+  - [Testnet](/docs/vrf-contracts/#bnb-chain-testnet)
 
 See the [Contract Addresses](/docs/vrf-contracts) page for a complete list of coordinator addresses and gas price limits.
 

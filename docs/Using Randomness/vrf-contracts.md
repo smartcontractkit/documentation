@@ -35,8 +35,8 @@ Fee parameters are configured in the coordinator contract and specify the premiu
 
 - [Ethereum Mainnet](#ethereum-mainnet)
 - [Rinkeby testnet](#rinkeby-testnet)
-- [Binance Smart Chain](#binance-smart-chain)
-- [Binance Smart Chain testnet](#binance-smart-chain-testnet)
+- [BNB Chain](#bnb-chain)
+- [BNB Chain testnet](#bnb-chain-testnet)
 
 ### Ethereum Mainnet
 
@@ -70,7 +70,7 @@ Fee parameters are configured in the coordinator contract and specify the premiu
 |Maximum Confirmations|200|
 |Maximum Random Values|500|
 
-### Binance Smart Chain
+### BNB Chain
 
 |Item|Value|
 |---|---|
@@ -84,9 +84,9 @@ Fee parameters are configured in the coordinator contract and specify the premiu
 |Maximum Confirmations|200|
 |Maximum Random Values|500|
 
-### Binance Smart Chain testnet
+### BNB Chain testnet
 
-> 🚰BSC Faucet
+> 🚰 BNB Chain Faucet
 >
 > Testnet LINK is available from https://faucets.chain.link/chapel
 

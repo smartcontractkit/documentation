@@ -125,8 +125,8 @@ module.exports = {
                 url: '/docs/ethereum-addresses/',
               },
               {
-                title: 'Binance Smart Chain Data Feeds',
-                url: '/docs/binance-smart-chain-addresses/',
+                title: 'BNB Chain Data Feeds',
+                url: '/docs/bnb-chain-addresses/',
               },
               {
                 title: 'Polygon (Matic) Data Feeds',
