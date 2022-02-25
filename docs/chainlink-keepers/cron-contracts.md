@@ -2,7 +2,7 @@
 layout: nodes.liquid
 section: ethereum
 date: Last Modified
-title: 'Keepers Job Scheduler'
+title: 'Keepers Job Scheduler Beta'
 whatsnext:
   {
     'FAQs': '/docs/chainlink-keepers/faqs/',
@@ -17,13 +17,7 @@ In this tutorial you will use the Chainlink Keepers Job Scheduler to set up a ti
 + [Overview](#overview)
 + [What is Job Scheduler?](#what-is-job-scheduler)
 + [Job Scheduling Tutorial](#job-scheduling-tutorial)
-+ [Encodings](#encodings)
-  +  [Function Signature](#function-signature)
-  +  [Encoded Cron Spec](#encodedcronspec)
 + [Resources](#resources)
-  +  [CronUpkeepFactory ABI](#cronupkeepfactory-abi)
-  +  [Job Scheduler ABI](#job-scheduler-aka-cronupkeep-abi)
-  +  [Contract Addresses](#contract-addresses)
 
 
 # What is Job Scheduler?
@@ -32,9 +26,9 @@ The Chainlink Keepers Job Scheduler schedules jobs that use the Chainlink Keeper
 
 # Job Scheduling Tutorial
 
-Use [Remix](https://remix.ethereum.org/) for this tutorial. To learn more about Remix and how you can use it to deploy a smart contract, visit our [tutorial](https://www.youtube.com/watch?v=JWJWT9cwFbo).
+Use [Remix](https://remix.ethereum.org/) for this tutorial. To learn more about Remix and how you can use it to deploy a smart contract, visit our [tutorial](/docs/Introduction/getting-started/deploy-your-first-contract/).
 
-You will also need MetaMask or other another wallet that is compatible with Remix with some testnet tokens of choice. See the [MetaMask tutorial](https://www.youtube.com/watch?v=4ZgFijd02Jo) if you need help setting up a wallet.
+You will also need MetaMask or other another wallet that is compatible with Remix with some testnet tokens of choice. See the [MetaMask tutorial](/docs/Introduction/getting-started/deploy-your-first-contract/#install-and-fund-your-metamask-wallet/) if you need help setting up a wallet.
 
 Before you deploy your application to a mainnet, test the tutorial on one of the [supported testnets](/docs/chainlink-keepers/introduction/#supported-blockchain-networks).
 
@@ -64,33 +58,7 @@ To schedule a new job, use the function `createCronJobFromEncodedSpec`. This fun
 
 + The target address of the smart contract you want to automate
 + The [function signature](#function-signature), or the encoding of the function, you want to call 
-+ The [encodedCronSpec](#encodedcronspec) encoding of your specified time interval.
-
-Refer to the [Encodings](#encodings) section below to retrieve the [function signature](#function-signature) and the [encodedCronSpec](#encodedcronspec) for your job. 
-
-```json
-<your target address>, <your function specification>, <your encodedCronSpec>
-```
-Replace the values and paste the snippet above into the `createCronJobFromEncodedSpec` function in Remix and execute the function. Once executed, you can call the `getActiveCronJobIDs` to see if your job has been registered. You can execute the `getCronJob` function to view the details of your job played back. You can add multiple jobs on this contract in this fashion, and also use the other in your Job Scheduler to delete jobs or pause and unpause the Scheduler. However, you must register your Job Scheduler with the Chainlink Keepers network for it to be monitored and executed.
-
-
-## Setting up Chainlink Keepers
-
-Because the deployed contract is already [Keeper-compatible](../compatible-contracts), you can immediately register it with Keepers following these [steps](../register-upkeep). Be sure to provide the address of your Job Scheduler contract in **Upkeep address**. For gas limits, you should specify the upper limit of gas your target function will use.
-
-> ❗️ Gas Limits
->
-> The `KeeperRegistry` enforces a cap for gas used both on-chain and off-chain. See the [Keepers Network Overview](../overview/) for details. The caps are configurable and might change based on user feedback. Be sure that you understand these limits if your use case requires a large amount of gas.
-
-Once you have registered your contract, you can view your Upkeep. The *Upkeep History* will display **Perform Upkeep** for all registered jobs on your Job Scheduler contract. To ensure Chainlink Keepers monitors your Job Scheduler, please ensure you fund your Upkeep.
-
-# Summary
-
-In this tutorial you used the Chainlink Keepers Job Scheduler to automate the execution of your smart contract functions at specific times. 
-
-# Encodings
-
-Encodings allow you to save repeated gas costs of having your contract calculate them during execution.
++ The [encodedCronSpec](#encodedcronspec) encoding of your specified time interval. Encodings allow you to save repeated gas costs of having your contract calculate them during execution.
 
 ### Function Signature
 The Function Signature (or bytes handler) is the first four bytes of the Keccak-hash used in EVM chains to encode a function. You can use the following Python script to retrieve the function signature.
@@ -153,468 +121,45 @@ Paste this expression into the `cronStringToEncodeSpec` function in Remix and ru
 
 ```json
 0x00000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000005000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000000f00000000000000000000000000000000000000000000000000000000000000140000000000000000000000000000000000000000000000000000000000000019000000000000000000000000000000000000000000000000000000000000001e00000000000000000000000000000000000000000000000000000000000000230000000000000000000000000000000000000000000000000000000000000028000000000000000000000000000000000000000000000000000000000000002d000000000000000000000000000000000000000000000000000000000000003200000000000000000000000000000000000000000000000000000000000000370000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-```
+``` 
 
+```json
+<your target address>, <your function specification>, <your encodedCronSpec>
+```
+Replace the values and paste the snippet above into the `createCronJobFromEncodedSpec` function in Remix and execute the function. Once executed, you can call the `getActiveCronJobIDs` to see if your job has been registered. You can execute the `getCronJob` function to view the details of your job played back. You can add multiple jobs on this contract in this fashion, and also use the other in your Job Scheduler to delete jobs or pause and unpause the Scheduler. However, you must register your Job Scheduler with the Chainlink Keepers network for it to be monitored and executed.
+
+
+## Setting up Chainlink Keepers
+
+Because the deployed contract is already [Keeper-compatible](../compatible-contracts), you can immediately register it with Keepers following these [steps](../register-upkeep). Be sure to provide the address of your Job Scheduler contract in **Upkeep address**. For gas limits, you should specify the upper limit of gas your target function will use.
+
+> ❗️ Gas Limits
+>
+> The `KeeperRegistry` enforces a cap for gas used both on-chain and off-chain. See the [Keepers Network Overview](../overview/) for details. The caps are configurable and might change based on user feedback. Be sure that you understand these limits if your use case requires a large amount of gas.
+
+Once you have registered your contract, you can view your Upkeep. The *Upkeep History* will display **Perform Upkeep** for all registered jobs on your Job Scheduler contract. To ensure Chainlink Keepers monitors your Job Scheduler, please ensure you fund your Upkeep.
 
 # Resources
 
 ## CronUpkeepFactory ABI
 ```json
-[
-	{
-		"inputs": [],
-		"stateMutability": "nonpayable",
-		"type": "constructor"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": false,
-				"internalType": "address",
-				"name": "upkeep",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "address",
-				"name": "owner",
-				"type": "address"
-			}
-		],
-		"name": "NewCronUpkeepCreated",
-		"type": "event"
-	},
-	{
-		"inputs": [],
-		"name": "cronDelegateAddress",
-		"outputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "newCronUpkeep",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	}
-]
+{% include samples/Keepers/CronUpkeepFactory.abi %}
 ```
+<div class="remix-callout">
+    <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/Keepers/CronUpkeepFactory.abi" >Open in Remix</a>
+    <a href="/docs/conceptual-overview/#what-is-remix" >What is Remix?</a>
+</div>
 
 
-## Job Scheduler aka CronUpkeep ABI
+## CronUpkeep ABI
+
 ```json
-[
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "owner",
-				"type": "address"
-			},
-			{
-				"internalType": "address",
-				"name": "delegate",
-				"type": "address"
-			}
-		],
-		"stateMutability": "nonpayable",
-		"type": "constructor"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "id",
-				"type": "uint256"
-			},
-			{
-				"internalType": "string",
-				"name": "reason",
-				"type": "string"
-			}
-		],
-		"name": "CallFailed",
-		"type": "error"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "id",
-				"type": "uint256"
-			}
-		],
-		"name": "CronJobIDNotFound",
-		"type": "error"
-	},
-	{
-		"inputs": [],
-		"name": "InvalidHandler",
-		"type": "error"
-	},
-	{
-		"inputs": [],
-		"name": "OnlySimulatedBackend",
-		"type": "error"
-	},
-	{
-		"inputs": [],
-		"name": "TickDoesntMatchSpec",
-		"type": "error"
-	},
-	{
-		"inputs": [],
-		"name": "TickInFuture",
-		"type": "error"
-	},
-	{
-		"inputs": [],
-		"name": "TickTooOld",
-		"type": "error"
-	},
-	{
-		"inputs": [],
-		"name": "UnknownFieldType",
-		"type": "error"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "uint256",
-				"name": "id",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "address",
-				"name": "target",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "bytes",
-				"name": "handler",
-				"type": "bytes"
-			}
-		],
-		"name": "CronJobCreated",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "uint256",
-				"name": "id",
-				"type": "uint256"
-			}
-		],
-		"name": "CronJobDeleted",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "uint256",
-				"name": "id",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "timestamp",
-				"type": "uint256"
-			}
-		],
-		"name": "CronJobExecuted",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "from",
-				"type": "address"
-			},
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "to",
-				"type": "address"
-			}
-		],
-		"name": "OwnershipTransferRequested",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "from",
-				"type": "address"
-			},
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "to",
-				"type": "address"
-			}
-		],
-		"name": "OwnershipTransferred",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": false,
-				"internalType": "address",
-				"name": "account",
-				"type": "address"
-			}
-		],
-		"name": "Paused",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": false,
-				"internalType": "address",
-				"name": "account",
-				"type": "address"
-			}
-		],
-		"name": "Unpaused",
-		"type": "event"
-	},
-	{
-		"stateMutability": "payable",
-		"type": "fallback"
-	},
-	{
-		"inputs": [],
-		"name": "acceptOwnership",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "bytes",
-				"name": "",
-				"type": "bytes"
-			}
-		],
-		"name": "checkUpkeep",
-		"outputs": [
-			{
-				"internalType": "bool",
-				"name": "",
-				"type": "bool"
-			},
-			{
-				"internalType": "bytes",
-				"name": "",
-				"type": "bytes"
-			}
-		],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "target",
-				"type": "address"
-			},
-			{
-				"internalType": "bytes",
-				"name": "handler",
-				"type": "bytes"
-			},
-			{
-				"internalType": "bytes",
-				"name": "encodedCronSpec",
-				"type": "bytes"
-			}
-		],
-		"name": "createCronJobFromEncodedSpec",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "string",
-				"name": "cronString",
-				"type": "string"
-			}
-		],
-		"name": "cronStringToEncodedSpec",
-		"outputs": [
-			{
-				"internalType": "bytes",
-				"name": "",
-				"type": "bytes"
-			}
-		],
-		"stateMutability": "pure",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "id",
-				"type": "uint256"
-			}
-		],
-		"name": "deleteCronJob",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "getActiveCronJobIDs",
-		"outputs": [
-			{
-				"internalType": "uint256[]",
-				"name": "",
-				"type": "uint256[]"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "id",
-				"type": "uint256"
-			}
-		],
-		"name": "getCronJob",
-		"outputs": [
-			{
-				"internalType": "address",
-				"name": "target",
-				"type": "address"
-			},
-			{
-				"internalType": "bytes",
-				"name": "handler",
-				"type": "bytes"
-			},
-			{
-				"internalType": "string",
-				"name": "cronString",
-				"type": "string"
-			},
-			{
-				"internalType": "uint256",
-				"name": "nextTick",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "owner",
-		"outputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "pause",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "paused",
-		"outputs": [
-			{
-				"internalType": "bool",
-				"name": "",
-				"type": "bool"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "bytes",
-				"name": "performData",
-				"type": "bytes"
-			}
-		],
-		"name": "performUpkeep",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "to",
-				"type": "address"
-			}
-		],
-		"name": "transferOwnership",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "unpause",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"stateMutability": "payable",
-		"type": "receive"
-	}
-]
+{% include samples/Keepers/CronUpkeep.abi %}
 ```
+<div class="remix-callout">
+    <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/Keepers/CronUpkeep.abi" >Open in Remix</a>
+    <a href="/docs/conceptual-overview/#what-is-remix" >What is Remix?</a>
+</div>
 
 ## Contract Addresses
 

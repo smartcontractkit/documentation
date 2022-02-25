@@ -270,7 +270,7 @@ module.exports = {
                 url: '/docs/chainlink-keepers/utility-contracts/',
               },
               {
-                title: 'Cron Jobs',
+                title: 'Job Scheduler',
                 url: '/docs/chainlink-keepers/cron-contracts/'
               },
             ],
