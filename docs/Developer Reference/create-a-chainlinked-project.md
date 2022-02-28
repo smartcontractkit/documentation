@@ -42,29 +42,23 @@ If you're creating a new project from scratch, these commands will help you set 
 
 ## Hardhat Starter Kit
 
-Install <a href="https://hardhat.org" target="_blank"> hardhat </a>
+It's recommended that you are familiar with [hardhat](https://hardhat.org/getting-started/) before proceeding. 
 
-```shell
-npm install --save-dev hardhat
-```
-
-Then, clone the starter kit
+Clone the starter kit
 
 ```shell
 git clone https://github.com/smartcontractkit/hardhat-starter-kit
 cd hardhat-starter-kit
 ```
 
-For more information on Hardhat, see our blog post <a href="https://blog.chain.link/using-chainlink-with-hardhat/" target="_blank">How to use Hardhat with Chainlink</a>. Alternatively, visit the <a href="https://github.com/smartcontractkit/hardhat-starter-kit/blob/main/README.md" target="_blank">repo</a> for more instructions.
+Visit the <a href="https://github.com/smartcontractkit/hardhat-starter-kit/blob/main/README.md" target="_blank">Hardhat starter kit README</a> for more instructions.
+
+For more information on how to use Chainlink with Hardhat, see our blog post <a href="https://blog.chain.link/using-chainlink-with-hardhat/" target="_blank">How to use Hardhat with Chainlink</a>.
 ___
 
 ## Brownie Starter Kit
 
-Install <a href="https://eth-brownie.readthedocs.io/en/stable/install.html" target="_blank" rel="noreferrer, noopener">Brownie</a> with pip:
-
-```shell
-pip install eth-brownie
-```
+Make sure to [install Brownie](https://eth-brownie.readthedocs.io/en/stable/install.html).
 
 With Brownie installed, run the commands below to open a Brownie project into a new directory.
 
@@ -74,10 +68,9 @@ cd MyChainlinkProject/
 brownie bake chainlink-mix
 cd chainlink-mix
 ```
+Visit the <a href="https://github.com/smartcontractkit/chainlink-mix/blob/master/README.md" target="_blank">Brownie starter kit README</a> for more instructions.
 
-For more information on working with Brownie, see our blog <a href="https://blog.chain.link/develop-python-defi-project/" target="_blank"  rel="noreferrer, noopener">how to use Brownie with Chainlink</a> or visit the <a href="https://github.com/smartcontractkit/chainlink-mix/blob/master/README.md" target="_blank" rel="noreferrer, noopener"> repo</a> to learn more.
-
-Environment variables are required when working with Brownie. <a target="_blank" href="https://www.twilio.com/blog/2017/01/how-to-set-environment-variables.html">Learn how to set environment variables</a>.
+For more information on how to use Chainlink with Brownie, see our blog post <a href="https://blog.chain.link/develop-python-defi-project/" target="_blank"  rel="noreferrer, noopener">Develop a DeFi Project Using Python</a>.
 ___
 
 ## Truffle Starter Kit
@@ -96,7 +89,9 @@ cd MyChainlinkProject/
 truffle unbox smartcontractkit/truffle-starter-kit
 ```
 
-For more details on how to use the Truffle, see our <a href="https://www.trufflesuite.com/blog/using-truffle-to-interact-with-chainlink-smart-contracts" target="_blank">blog post</a>. Alternatively, visit the <a href="https://github.com/smartcontractkit/box/blob/master/README.md" target="_blank">repo</a> for more information.
+Visit the <a href="https://github.com/smartcontractkit/truffle-starter-kit/blob/master/README.md" target="_blank">Truffle starter kit README</a> for more instructions.
+
+For more details on how to use the Truffle, see our blog post <a href="https://www.trufflesuite.com/blog/using-truffle-to-interact-with-chainlink-smart-contracts" target="_blank">Using Truffle to interact with Chainlink Smart Contracts</a>.
 ___
 
 
