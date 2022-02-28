@@ -47,6 +47,7 @@ Your node applies configuration settings using following hierarchy:
   - [TELEMETRY_INGRESS_BUFFER_SIZE](#telemetry_ingress_buffer_size)
   - [TELEMETRY_INGRESS_MAX_BATCH_SIZE](#telemetry_ingress_max_batch_size)
   - [TELEMETRY_INGRESS_SEND_INTERVAL](#telemetry_ingress_send_interval)
+  - [TELEMETRY_INGRESS_SEND_TIMEOUT](#telemetry_ingress_send_timeout)
   - [TELEMETRY_INGRESS_USE_BATCH_SEND](#telemetry_ingress_use_batch_send)
 - [Chains](#chains)
   - [SOLANA_ENABLED](#solana_enabled)
@@ -278,6 +279,12 @@ The maximum number of messages to batch into one telemetry request.
 - Default: `"500ms"`
 
 The interval on which batched telemetry is sent to the ingress server.
+
+### TELEMETRY_INGRESS_SEND_TIMEOUT
+
+- Default: `"10s"`
+
+The max duration to wait for the request to complete when sending batch telemetry.
 
 ### TELEMETRY_INGRESS_USE_BATCH_SEND
 
