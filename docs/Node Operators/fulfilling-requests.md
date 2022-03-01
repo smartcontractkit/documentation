@@ -157,7 +157,7 @@ Now that you have a working consumer contract, you can use that same `ATestnetCo
 
 1. In the new job's definition page, find the `externalJobID`.
 
-1. Input your oracle contract address and the job ID for the `Get > Bytes32` job into the `requestEthereumPrice` request method **without dashes**.
+1. Input your oracle contract address and the job ID for the `Get > Bytes32` job into the `requestEthereumLastMarket` request method **without dashes**.
 
     ![Screenshot of the requestEthereumLastMarket function with the oracle address and job ID specified.](/images/node-operators/request-lastmarket-function.png)
 
