@@ -26,7 +26,6 @@ Significant changes:
 - Added support for batch sending telemetry to the ingress server to improve performance.
 - New environment variables: See the [release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v1.2.0) for details.
 - Removed the `deleteuser` CLI command.
-- Added the [`bootstrap`](https://github.com/smartcontractkit/chainlink/releases/tag/v1.2.0#bootstrap-job) job type.
 
 See the [v1.2.0 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v1.2.0) for a complete list of changes and fixes.
 
