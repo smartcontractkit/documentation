@@ -24,7 +24,7 @@ Chainlink VRF v2 includes several improvements and changes to the way you fund a
 
 + **Unified Billing - Delegate Subscription Balance to Multiple Addresses:** Chainlink VRF v2 allows up to 100 smart contract addresses to fund their requests for verifiable randomness from a single LINK subscription balance, which is managed by the subscription owner.
 
-[Read this blog](https://blog.chain.link/vrf-v2-mainnet-launch/) for a detailed explanation on the benefits and use cases.
+Read the [Chainlink VRF v2 blog post](https://blog.chain.link/vrf-v2-mainnet-launch/) for a detailed explanation about the benefits and use cases for VRF v2.
 
 ## Updating your applications to use VRF v2
 

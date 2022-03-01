@@ -38,7 +38,7 @@ See the example in the [Subscription manager contract](#subscription-manager-con
 
 ## Subscription manager contract
 
-In this example, the contract operates as a subscription owner and can run functions to add consumer contracts to the subscription. Those contracts need to include the `requestRandomWords()` with the correct coordinator parameters and the correct subscription ID to obtain their own random values and use the subscription balance and the `fulfillRandomWords()` functions.
+In this example, the contract operates as a subscription owner and can run functions to add consumer contracts to the subscription. The consumer contracts must include the `requestRandomWords()` function with the correct coordinator parameters and the correct subscription ID to request random values and use the subscription balance. The consumer contracts must also include the `fulfillRandomWords()` function to receive the random values.
 
 Subscription owners and consumers do not have to be separate. This contract can also act as a consumer by running its own `requestRandomWords()` function, but it must add itself as an approved consumer. This example contract includes functions in the `constructor()` that creates the subscription and adds itself as a consumer automatically when you deploy it.
 
