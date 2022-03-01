@@ -55,11 +55,11 @@ To deploy an on-chain Job Scheduler contract, use the pre-deployed Chainlink [Cr
 
     ![The At Address Button](/images/keepers/deployAtAddress.png)
 
-1. Click the the **At Address** button to point the ABI to the deployed `CronUpkeepFactory` contract. Remix prompts you to confirm that you want to interact with the contract using the ABI.
+1. Click the **At Address** button to point the ABI to the deployed `CronUpkeepFactory` contract. Remix prompts you to confirm that you want to interact with the contract using the ABI.
 
 1. After the ABI is configured, it is listed in the **Deployed Contracts** section of Remix with the callable functions from the `CronUpkeepFactory` contract. Click the `newCronUpkeep` button and follow the prompts in MetaMask to confirm the transaction.
 
-After the transaction is complete, a transaction hash appears in the terminal. This transaction has points to the creation of your Job Scheduler. Use this transaction hash to find your contract address:
+After the transaction is complete, a transaction hash appears in the terminal. This transaction points to the creation of your Job Scheduler. Use this transaction hash to find your contract address:
 
 1. Find the transaction hash in your terminal.
 
@@ -133,7 +133,7 @@ Get the required inputs and run the `createCronJobFromEncodedSpec` function:
 
 1. After the transaction is complete, run the `getActiveCronJobIDs` function to confirm that your job is registered.
 
-1. Run the the `getCronJob` function to view the details of your job played back.
+1. Run the `getCronJob` function to view the details of your job played back.
 
 1. [Register the contract for upkeep](/docs/chainlink-keepers/register-upkeep/). Provide the address of your Job Scheduler contract in the **Upkeep address** field. For gas limits, specify the upper limit of gas that your target function will use.
 
@@ -143,7 +143,7 @@ Get the required inputs and run the `createCronJobFromEncodedSpec` function:
 
 After you register your contract, view your upkeep in the [Chainlink Keepers App](https://keepers.chain.link/). The *Upkeep History* displays **Perform Upkeep** events for all registered jobs on your Job Scheduler contract. To ensure that Chainlink Keepers continues to monitor your Job Scheduler, maintain a sufficient LINK balance on your Upkeep.
 
-You can add multiple jobs on your Job Scheduler contract. Use the other functions in your Job Scheduler to delete jobs, pause jobs, or unpause jobs.
+You can add multiple jobs to your Job Scheduler contract. Use the other functions in your Job Scheduler to delete jobs, pause jobs, or unpause jobs.
 
 ## Resources
 
