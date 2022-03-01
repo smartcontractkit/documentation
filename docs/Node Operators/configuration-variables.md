@@ -297,7 +297,7 @@ Enables Solana support.
 
 ### TERRA_ENABLED
 
-> 🚧 Not intended for use on mainnet.
+> 🚧 Not intended for use on the Terra mainnet.
 
 - Default: `"false"`
 
