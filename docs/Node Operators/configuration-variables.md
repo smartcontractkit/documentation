@@ -12,9 +12,9 @@ Not all environment variables are documented here. Any undocumented environment 
 
 To reiterate: _If you have an environment variable set that is not listed here, and you don't know exactly why you have it set, you should remove it!_
 
-The environment variables listed here are explicitly supported and current as of Chainlink node v1.1.1.
+The environment variables listed here are explicitly supported and current as of Chainlink node v1.2.0.
 
-## Changes to node configuration in v1.1.0 nodes
+## Changes to node configuration starting in v1.1.0 nodes
 
 As of Chainlink node v1.1.0 and up, the way nodes manage configuration is changing. Previously, environment variables exclusively handled all node configuration. Although this configuration method worked well in the past, it has its limitations. Notably, it doesn't mesh well with chain-specific configuration profiles.
 
@@ -209,7 +209,7 @@ The PostgreSQL URI to connect to your database. Chainlink nodes require Postgres
 
 - Default: _none_
 
-CHAIN_TYPE overrides all chains and forces them to act as a particular chain type. An up-to-date list of chain types is given in [`chaintype.go`](https://github.com/smartcontractkit/chainlink/blob/v1.1.1/core/chains/chaintype.go).
+CHAIN_TYPE overrides all chains and forces them to act as a particular chain type. An up-to-date list of chain types is given in [`chaintype.go`](https://github.com/smartcontractkit/chainlink/blob/v1.2.0/core/chains/chaintype.go).
 
 This variable enables some chain-specific hacks and optimizations. It is recommended not to use this environment variable and set the chain-type on a per-chain basis instead.
 
@@ -289,11 +289,15 @@ Toggles sending telemetry to the ingress server using the batch client.
 
 ### SOLANA_ENABLED
 
+> 🚧 Not intended for use on the Solana mainnet.
+
 - Default: `"false"`
 
 Enables Solana support.
 
 ### TERRA_ENABLED
+
+> 🚧 Not intended for use on mainnet.
 
 - Default: `"false"`
 
@@ -303,7 +307,7 @@ Enables Terra support.
 
 - Default: `"true"`
 
-Enables support for EVM-based chains. On by default for legacy compatibility reasons, to ease the upgrade path from older versions of Chainlink which did not support disabling EVM.
+Enables support for EVM-based chains. By default, this variable is set to `true` to provide legacy compatibility and ease the upgrade path from older versions of Chainlink which did not support disabling EVM.
 
 ## Database Settings
 
@@ -365,7 +369,7 @@ The default is set to `advisorylock`.
 
 **ADVANCED**
 
-It is not recommended to change this setting unless you know what you are doing.
+Do not change this setting unless you know what you are doing.
 
 This setting applies only if `DATABASE_LOCKING_MODE` is set to enable advisory locking.
 
@@ -377,7 +381,7 @@ This setting applies only if `DATABASE_LOCKING_MODE` is set to enable advisory l
 
 **ADVANCED**
 
-It is not recommended to change this setting unless you know what you are doing.
+Do not change this setting unless you know what you are doing.
 
 This setting applies only if `DATABASE_LOCKING_MODE` is set to enable advisory locking.
 
@@ -389,7 +393,7 @@ This setting applies only if `DATABASE_LOCKING_MODE` is set to enable advisory l
 
 **ADVANCED**
 
-It is not recommended to change this setting unless you know what you are doing.
+Do not change this setting unless you know what you are doing.
 
 This setting applies only if `DATABASE_LOCKING_MODE` is set to enable lease locking.
 
@@ -401,7 +405,7 @@ How long the lease lock will last before expiring.
 
 **ADVANCED**
 
-It is not recommended to change this setting unless you know what you are doing.
+Do not change this setting unless you know what you are doing.
 
 This setting applies only if `DATABASE_LOCKING_MODE` is set to enable lease locking.
 
@@ -522,8 +526,10 @@ You can set `ALLOW_ORIGINS=*` to allow the UI to work from any URL, but it is re
 Usually this will be the same as the URL/IP and port you use to connect to the Chainlink UI, such as `https://my-chainlink-node.example.com:6688`.
 
 ### HTTP_SERVER_WRITE_TIMEOUT
-ADVANCED
-It is not recommended to change this unless you know what you are doing.
+
+**ADVANCED**
+
+Do not change this setting unless you know what you are doing.
 
 - Default: `"10s"`
 
@@ -669,7 +675,7 @@ This environment variable specifies the default chain ID. Any job spec that has 
 
 - Default: `"true"`
 
-Enables connecting to real EVM RPC nodes. Disabling this can be useful in certain cases, e.g. to spin up a Chainlink node and add EVM-based jobs without having it actually execute anything on-chain, or for debugging to see what the node _would_ do without actually doing it.
+Enables connecting to real EVM RPC nodes. Disabling this can be useful in certain cases such as spinning up a Chainlink node and adding EVM-based jobs without having it actually execute anything on-chain, or for debugging to see what the node _would_ do without actually doing it.
 
 ## EVM/Ethereum Chain-specific Overrides
 
@@ -1100,7 +1106,8 @@ available from the connected node via RPC, due to race conditions in the code of
 "zero" blocks that are missing transactions.
 
 ### BLOCK_HISTORY_ESTIMATOR_EIP1559_FEE_CAP_BUFFER_BLOCKS
-** Advanced **
+
+**ADVANCED**
 
 - Default: _gas bump threshold + 1 block_
 
@@ -1213,7 +1220,7 @@ Set to `0` to disable the periodic reaper.
 
 Some jobs write their results asynchronously for performance reasons such as OCR. `JOB_PIPELINE_RESULT_WRITE_QUEUE_DEPTH` controls how many writes will be buffered before subsequent writes are dropped.
 
-It is not recommended to change this setting unless you know what you are doing.
+Do not change this setting unless you know what you are doing.
 
 ## OCR
 
@@ -1328,40 +1335,50 @@ The default peer ID to use for OCR jobs. If unspecified, uses the first availabl
 `KEEPER_GAS_TIP_CAP_BUFFER_PERCENT` adds the specified percentage to the gas price used for checking whether to perform an upkeep. Only applies in EIP-1559 mode.
 
 ### KEEPER_MAXIMUM_GRACE_PERIOD
-ADVANCED
-It is not recommended to change this setting unless you know what you are doing.
+
+**ADVANCED**
+
+Do not change this setting unless you know what you are doing.
 
 - Default: `"100"`
 
 The maximum number of blocks that a keeper will wait after performing an upkeep before it resumes checking that upkeep
 
 ### KEEPER_REGISTRY_CHECK_GAS_OVERHEAD
-ADVANCED
-It is not recommended to change this setting unless you know what you are doing.
+
+**ADVANCED**
+
+Do not change this setting unless you know what you are doing.
 
 - Default: `"200000"`
 
 The amount of extra gas to provide checkUpkeep() calls to account for the gas consumed by the keeper registry.
 
 ### KEEPER_REGISTRY_PERFORM_GAS_OVERHEAD
-ADVANCED
-It is not recommended to change this setting unless you know what you are doing.
+
+**ADVANCED**
+
+Do not change this setting unless you know what you are doing.
 
 - Default: `"150000"`
 
 The amount of extra gas to provide performUpkeep() calls to account for the gas consumed by the keeper registry
 
 ### KEEPER_REGISTRY_SYNC_INTERVAL
-ADVANCED
-It is not recommended to change this setting unless you know what you are doing.
+
+**ADVANCED**
+
+Do not change this setting unless you know what you are doing.
 
 - Default: `"30m"`
 
 The interval in which the RegistrySynchronizer performs a full sync of the keeper registry contract it is tracking.
 
 ### KEEPER_REGISTRY_SYNC_UPKEEP_QUEUE_SIZE
-ADVANCED
-It is not recommended to change this setting unless you know what you are doing.
+
+**ADVANCED**
+
+Do not change this setting unless you know what you are doing.
 
 - Default: `"10"`
 

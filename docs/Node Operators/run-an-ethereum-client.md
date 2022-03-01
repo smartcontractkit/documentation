@@ -105,7 +105,7 @@ Return to [Running a Chainlink Node](../running-a-chainlink-node/).
 
 [Nethermind's Documentation](https://docs.nethermind.io/nethermind/)
 
-*The Nethermind client can be use for many test networks (e.g. Kovan, Rinkeby and Ropsten), and the Ethereum main network. A list of all the networks supported can be found [here](https://docs.nethermind.io/nethermind/ethereum-client/docker#available-configurations).*
+The Nethermind client can be used for Ethereum Mainnet and test networks such as Kovan, Rinkeby and Ropsten. To see a full list of supported networks, see the [Nethermind supported network configurations](https://docs.nethermind.io/nethermind/ethereum-client/docker#available-configurations) page.
 
 Download the latest version:
 
@@ -141,9 +141,9 @@ docker run --name eth -p 8545:8545 \
            --datadir data
 ```
 
-Once the Ethereum client is running, you can use `Ctrl + P, Ctrl + Q` to detach from the container without stopping it. You will need to leave the container running for the Chainlink node to connect to it.
+After the Ethereum client is running, you can use `Ctrl + P, Ctrl + Q` to detach from the container without stopping it. You will need to leave the container running for the Chainlink node to connect to it.
 
-If the container was stopped and you need to run it again, you can simply use the following command:
+If the container was stopped and you need to run it again, use the following command to start it:
 
 ```bash
 docker start -i eth
