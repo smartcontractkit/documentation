@@ -14,7 +14,7 @@ whatsnext:
 > The Keepers Job Scheduler is currently in Beta.
 
 # Overview
-In this tutorial you will use the Chainlink Keepers Job Scheduler to set up a time schedule to automatically execute smart contract functions.
+In this tutorial you will use the Chainlink Keepers Job Scheduler to automatically execute smart contract functions on a specific time schedule.
 
 **Table of Contents**
 
@@ -29,7 +29,7 @@ The Chainlink Keepers Job Scheduler schedules jobs that use the Chainlink Keeper
 
 # Job Scheduling Tutorial
 
-Use [Remix](https://remix.ethereum.org/) for this tutorial. To learn more about Remix and how you can use it to deploy a smart contract, visit our [tutorial](/docs/deploy-your-first-contract/).
+Use [Remix](https://remix.ethereum.org/) for this tutorial. To learn more about Remix and how you can use it to deploy a smart contract, see the [Getting Started guide](/docs/deploy-your-first-contract/).
 
 You will also need MetaMask or other another wallet that is compatible with Remix with some testnet tokens of choice. See the [MetaMask tutorial](/docs/deploy-your-first-contract/#install-and-fund-your-metamask-wallet) if you need help setting up a wallet.
 
@@ -134,13 +134,13 @@ Replace the values and paste the snippet above into the `createCronJobFromEncode
 
 ## Setting up Chainlink Keepers
 
-Because the deployed contract is already [Keeper-compatible](../compatible-contracts), you can immediately register it with Keepers following these [steps](../register-upkeep). Be sure to provide the address of your Job Scheduler contract in **Upkeep address**. For gas limits, you should specify the upper limit of gas your target function will use.
+Because the deployed contract is already [Keeper-compatible](../compatible-contracts), you can immediately [register the contract for upkeep(/docs/chainlink-keepers/register-upkeep/). Provide the address of your Job Scheduler contract in the **Upkeep address** field. For gas limits, specify the upper limit of gas that your target function will use.
 
 > ❗️ Gas Limits
 >
 > The `KeeperRegistry` enforces a cap for gas used both on-chain and off-chain. See the [Keepers Network Overview](../overview/) for details. The caps are configurable and might change based on user feedback. Be sure that you understand these limits if your use case requires a large amount of gas.
 
-Once you have registered your contract, you can view your Upkeep. The *Upkeep History* will display **Perform Upkeep** for all registered jobs on your Job Scheduler contract. To ensure Chainlink Keepers monitors your Job Scheduler, please ensure you fund your Upkeep.
+After you register your contract, you can view your upkeep in the [Chainlink Keepers App](https://keepers.chain.link/). The *Upkeep History* displays **Perform Upkeep** events for all registered jobs on your Job Scheduler contract. To ensure that Chainlink Keepers continues to monitor your Job Scheduler, maintain a sufficient LINK balance on your Upkeep.
 
 # Resources
 
