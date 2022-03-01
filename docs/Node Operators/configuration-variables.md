@@ -30,7 +30,7 @@ Your node applies configuration settings using following hierarchy:
 
 ## Table of contents
 
-- [Changes to node configuration in v1.1.0 nodes](#changes-to-node-configuration-in-v110-nodes)
+- [Changes to node configuration starting in v1.1.0 nodes](#changes-to-node-configuration-starting-in-v110-nodes)
 - [Table of contents](#table-of-contents)
 - [Essential environment variables](#essential-environment-variables)
   - [DATABASE_URL](#database_url)
