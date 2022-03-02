@@ -105,9 +105,23 @@ Return to [Running a Chainlink Node](../running-a-chainlink-node/).
 
 The following services offer Ethereum clients with websockets connectivity known to work with the Chainlink node.
 
+## [Alchemy](https://www.alchemyapi.io)
+
+Example connection setting:
+
+```text Rinkeby
+ETH_URL=wss://eth-rinkeby.alchemyapi.io/v2/YOUR_PROJECT_ID
+```
+```text Kovan
+ETH_URL=wss://eth-kovan.alchemyapi.io/v2/YOUR_PROJECT_ID
+```
+```text Mainnet
+ETH_URL=wss://eth-mainnet.alchemyapi.io/v2/YOUR_PROJECT_ID
+```
+
 ## [Chainstack](https://support.chainstack.com/hc/en-us/articles/900001664463-Setting-up-a-Chainlink-node-with-an-Ethereum-node-provided-by-Chainstack)
 
-Example connection setting
+Example connection setting:
 
 ```text Mainnet
 ETH_URL=wss://user-name:pass-word-pass-word-pass-word@ws-nd-123-456-789.p2pify.com
@@ -115,18 +129,41 @@ ETH_URL=wss://user-name:pass-word-pass-word-pass-word@ws-nd-123-456-789.p2pify.c
 
 ## [Fiews](https://docs.fiews.io/docs/getting-started)
 
-Example connection setting
+Example connection setting:
 
 ```text Rinkeby
-ETH_URL=wss://cl-rinkeby.fiews.io/v1/yourapikey
+ETH_URL=wss://cl-rinkeby.fiews.io/v1/YOUR_API_KEY
 ```
 ```text Mainnet
-ETH_URL=wss://cl-main.fiews.io/v1/yourapikey
+ETH_URL=wss://cl-main.fiews.io/v1/YOUR_API_KEY
+```
+
+## [GetBlock](https://getblock.io/)
+
+Example connection setting:
+
+```text Rinkeby
+ETH_URL=wss://eth.getblock.io/rinkeby/YOUR_API_KEY
+```
+```text Kovan
+ETH_URL=wss://eth.getblock.io/kovan/YOUR_API_KEY
+```
+```text Ropsten
+ETH_URL=wss://eth.getblock.io/ropsten/YOUR_API_KEY
+```
+```text Goerli
+ETH_URL=wss://eth.getblock.io/goerli/YOUR_API_KEY
+```
+```text Sepolia
+ETH_URL=wss://eth.getblock.io/sepolia/YOUR_API_KEY
+```
+```text Mainnet
+ETH_URL=wss://eth.getblock.io/mainnet/YOUR_API_KEY
 ```
 
 ## [Infura](https://infura.io/docs/ethereum/wss/introduction.md)
 
-Example connection setting. Note to replace YOUR_PROJECT_ID with the ID Infura provides you on your project settings page
+Example connection setting. Replace YOUR_PROJECT_ID with the ID Infura provides you on your project settings page.
 
 ```text Rinkeby
 ETH_URL=wss://rinkeby.infura.io/ws/v3/YOUR_PROJECT_ID
@@ -140,7 +177,7 @@ ETH_URL=wss://mainnet.infura.io/ws/v3/YOUR_PROJECT_ID
 
 ## [LinkPool](https://docs.linkpool.io/docs/websocket_main)
 
-Example connection setting
+Example connection setting:
 
 ```text Mainnet
 ETH_URL=wss://main-rpc.linkpool.io/ws
@@ -148,7 +185,7 @@ ETH_URL=wss://main-rpc.linkpool.io/ws
 
 ## [QuikNode](https://www.quiknode.io)
 
-Example connection setting
+Example connection setting:
 
 ```text Rinkeby
 ETH_URL=wss://your-node-name.rinkeby.quiknode.pro/security-hash/
@@ -158,20 +195,6 @@ ETH_URL=wss://your-node-name.kovan.quiknode.pro/security-hash/
 ```
 ```text Mainnet
 ETH_URL=wss://your-node-name.quiknode.pro/security-hash/
-```
-
-## [Alchemy](https://www.alchemyapi.io)
-
-Example connection setting
-
-```text Rinkeby
-ETH_URL=wss://eth-rinkeby.alchemyapi.io/v2/YOUR_PROJECT_ID
-```
-```text Kovan
-ETH_URL=wss://eth-kovan.alchemyapi.io/v2/YOUR_PROJECT_ID
-```
-```text Mainnet
-ETH_URL=wss://eth-mainnet.alchemyapi.io/v2/YOUR_PROJECT_ID
 ```
 
 ## Configuring your ETH node
