@@ -125,8 +125,8 @@ module.exports = {
                 url: '/docs/ethereum-addresses/',
               },
               {
-                title: 'Binance Smart Chain Data Feeds',
-                url: '/docs/binance-smart-chain-addresses/',
+                title: 'BNB Chain Data Feeds',
+                url: '/docs/bnb-chain-addresses/',
               },
               {
                 title: 'Polygon (Matic) Data Feeds',
@@ -137,7 +137,7 @@ module.exports = {
                 url: '/docs/data-feeds-gnosis-chain/',
               },
               {
-                title: 'Huobi Eco Chain Data Feeds',
+                title: 'HECO Chain Data Feeds',
                 url: '/docs/huobi-eco-chain-price-feeds/',
               },
               {

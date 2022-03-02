@@ -16,13 +16,13 @@ This page explains how to install and use the [Chainlink Library](../chainlink-f
 
 # Install into Existing Projects
 
-Chainlink is supported by <a href="http://hardhat.org" target="_blank">Hardhat</a>, <a href="https://eth-brownie.readthedocs.io/en/stable" target="_blank">Brownie</a>, <a href="https://www.trufflesuite.com" target="_blank">Truffle</a> and other frameworks.
+Chainlink is supported by [Hardhat](http://hardhat.org), [Brownie](https://eth-brownie.readthedocs.io/en/stable), [Truffle](https://www.trufflesuite.com) and other frameworks.
 
 If you already have a project, you can add Chainlink to it by using the following package managers.
 
 ## NPM
 
-Install using <a href="https://www.npmjs.com/" target="_blank" rel="noreferrer, noopener">NPM</a>
+Install using [NPM](https://www.npmjs.com/):
 
 ```shell npm
 npm install @chainlink/contracts --save
@@ -30,7 +30,7 @@ npm install @chainlink/contracts --save
 
 ## Yarn
 
-Install using <a href="https://yarnpkg.com/" target="_blank" rel="noreferrer, noopener">Yarn</a>
+Install using [Yarn](https://yarnpkg.com/):
 
 ```shell yarn
 yarn add @chainlink/contracts
@@ -42,31 +42,25 @@ If you're creating a new project from scratch, these commands will help you set 
 
 ## Hardhat Starter Kit
 
-Install <a href="https://hardhat.org" target="_blank"> hardhat </a>
+To learn more about Hardhat, see the [Hardhat Documentation](https://hardhat.org/getting-started/).
 
-```shell
-npm install --save-dev hardhat
-```
-
-Then, clone the starter kit
+Clone the starter kit. The starter kit includes Hardhat, so you don't need to install it separately.
 
 ```shell
 git clone https://github.com/smartcontractkit/hardhat-starter-kit
 cd hardhat-starter-kit
 ```
 
-For more information on Hardhat, see our blog post <a href="https://blog.chain.link/using-chainlink-with-hardhat/" target="_blank">How to use Hardhat with Chainlink</a>. Alternatively, visit the <a href="https://github.com/smartcontractkit/hardhat-starter-kit/blob/main/README.md" target="_blank">repo</a> for more instructions.
+For instructions about how to use the starter kit, see the [Hardhat starter kit README](https://github.com/smartcontractkit/hardhat-starter-kit/blob/main/README.md).
+
+For more information on how to use Chainlink with Hardhat, see our blog post [How to use Hardhat with Chainlink](https://blog.chain.link/using-chainlink-with-hardhat/).
 ___
 
 ## Brownie Starter Kit
 
-Install <a href="https://eth-brownie.readthedocs.io/en/stable/install.html" target="_blank" rel="noreferrer, noopener">Brownie</a> with pip:
+Before you begin, [install Brownie](https://eth-brownie.readthedocs.io/en/stable/install.html).
 
-```shell
-pip install eth-brownie
-```
-
-With Brownie installed, run the commands below to open a Brownie project into a new directory.
+With Brownie installed, run the commands below to open a Brownie project in a new directory.
 
 ```shell
 mkdir MyChainlinkProject
@@ -74,21 +68,20 @@ cd MyChainlinkProject/
 brownie bake chainlink-mix
 cd chainlink-mix
 ```
+For instructions about how to use the starter kit, see the [Brownie starter kit README](https://github.com/smartcontractkit/chainlink-mix/blob/master/README.md).
 
-For more information on working with Brownie, see our blog <a href="https://blog.chain.link/develop-python-defi-project/" target="_blank"  rel="noreferrer, noopener">how to use Brownie with Chainlink</a> or visit the <a href="https://github.com/smartcontractkit/chainlink-mix/blob/master/README.md" target="_blank" rel="noreferrer, noopener"> repo</a> to learn more.
-
-Environment variables are required when working with Brownie. <a target="_blank" href="https://www.twilio.com/blog/2017/01/how-to-set-environment-variables.html">Learn how to set environment variables</a>.
+For more information on how to use Chainlink with Brownie, see our blog post [Develop a DeFi Project Using Python](https://blog.chain.link/develop-python-defi-project/).
 ___
 
 ## Truffle Starter Kit
 
-Install <a href="https://www.trufflesuite.com/truffle" target="_blank" rel="noreferrer, noopener">Truffle</a> with NPM:
+Before you begin, [install Truffle with NPM](https://www.trufflesuite.com/truffle):
 
 ```shell
 npm install truffle -g
 ```
 
-Once installed, unbox the Truffle Starter Kit.
+Once installed, unbox the Truffle Starter Kit:
 
 ```shell Truffle
 mkdir MyChainlinkProject
@@ -96,7 +89,9 @@ cd MyChainlinkProject/
 truffle unbox smartcontractkit/truffle-starter-kit
 ```
 
-For more details on how to use the Truffle, see our <a href="https://www.trufflesuite.com/blog/using-truffle-to-interact-with-chainlink-smart-contracts" target="_blank">blog post</a>. Alternatively, visit the <a href="https://github.com/smartcontractkit/box/blob/master/README.md" target="_blank">repo</a> for more information.
+For instructions about how to use the starter kit, see the [Truffle starter kit README](https://github.com/smartcontractkit/truffle-starter-kit/blob/master/README.md).
+
+For more details on how to use Chainlink with Truffle, see our blog post [Using Truffle to interact with Chainlink Smart Contracts](https://www.trufflesuite.com/blog/using-truffle-to-interact-with-chainlink-smart-contracts).
 ___
 
 
@@ -112,6 +107,6 @@ And if you want your contracts to retrieve data from off-chain APIs, learn about
 
 # Testing Chainlink Contracts
 
-See our blog post on <a href="https://blog.chain.link/testing-chainlink-smart-contracts/" target="_blank">Testing Chainlink Smart Contracts</a> or watch the <a href="https://www.youtube.com/watch?v=d8SqLaH8pu0" target="_blank">Chainlink Hackathon Workshop</a>.
+See our blog post on [Testing Chainlink Smart Contracts](https://blog.chain.link/testing-chainlink-smart-contracts/) or watch the [Chainlink Hackathon Workshop](https://www.youtube.com/watch?v=d8SqLaH8pu0).
 
-Tests samples can be found on <a href="https://github.com/smartcontractkit/hardhat-starter-kit/tree/main/test" target="_blank">Hardhat Starter Kit</a> and <a href="https://github.com/smartcontractkit/truffle-starter-kit/tree/master/test" target="_blank">Truffle Starter Kit</a> respectively.
+Tests samples can be found on [Hardhat Starter Kit](https://github.com/smartcontractkit/hardhat-starter-kit/tree/main/test) and [Truffle Starter Kit](https://github.com/smartcontractkit/truffle-starter-kit/tree/master/test) respectively.

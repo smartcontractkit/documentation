@@ -43,7 +43,7 @@ Chainlink Keepers are currently available on the following networks:
 - Polygon (Matic):
   - Mainnet
   - Mumbai testnet
-- Binance Smart Chain:
+- BNB Chain:
   - Mainnet
   - Testnet
 

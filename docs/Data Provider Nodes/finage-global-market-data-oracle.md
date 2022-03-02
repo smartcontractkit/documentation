@@ -28,7 +28,7 @@ LINK Token Address: `{{variables.KOVAN_LINK_TOKEN}}`
 Oracle Address: `0x56dd6586DB0D08c6Ce7B2f2805af28616E082455`
 JobID: `955810d193e144abb85ae2edea65344d`
 
-#### Binance Smart Chain Mainnet
+#### BNB Chain Mainnet
 Payment Amount: 0.1 LINK
 LINK Token address:`{{variables.BINANCE_MAINNET_LINK_TOKEN}}`
 Oracle Address: `0xa80bEAEBf1955D8AA9B5f741388e5A43Ba309935`

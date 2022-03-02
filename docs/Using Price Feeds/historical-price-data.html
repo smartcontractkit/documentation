@@ -31,11 +31,15 @@ To learn more about how price feeds update, see the [Decentralized Data Model](.
 
 # Historical Rounds
 
-Data Feeds are updated in rounds. Rounds are identified by their `roundId`, which increases with each new round (please note that the increase may not be monotonic). Knowing the `roundId` of a previous round allows contracts to consume historical price data.
+Data Feeds are updated in rounds. Rounds are identified by their `roundId`, which increases with each new round. The increase might not be monotonic. Knowing the `roundId` of a previous round allows contracts to consume historical price data.
+
+The `updatedAt` data feed property is the timestamp of an answered round and `answeredInRound` is the round it was updated in. You can check `answeredInRound` against the current `roundId`. If `answeredInRound` is less than `roundId`, the answer is being carried over. If `answeredInRound` is equal to `roundId`, then the answer is fresh.
 
 > 🚧 Important
 >
-> If you are deriving a round id without having observed it before, the round may or may not be complete. To check if it is, you must validate that the timestamp on that round is not 0.
+> A read can revert if the caller is requesting details of a round that was invalid or has not yet been answered yet. If you are deriving a round id without having observed it before, the round may or may not be complete. To check if it is, you must validate that the timestamp on that round is not 0.
+
+In a best-case scenario rounds update chronologically. However, a round can time out if it doesn't reach consensus. Technically, that is a timed out round that carries over the answer from the previous round. The `roundId` can jump significantly when the `phaseId` is updated because of how the combination of `phaseId` and `roundId` is stored in the proxy.
 
 ## Solidity
 

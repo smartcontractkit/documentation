@@ -1,6 +1,6 @@
 ---
 layout: feed.liquid
-title: "Huobi Eco Chain Data Feeds"
+title: "HECO Chain Data Feeds"
 section: ethereum
 permalink: "docs/huobi-eco-chain-price-feeds/"
 stub: huobi-eco-chain-price-feeds

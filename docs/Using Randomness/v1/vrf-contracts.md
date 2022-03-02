@@ -48,26 +48,26 @@ For implementation details, read [Introduction to Chainlink VRF](/docs/chainlink
 |Key Hash|`0x6e75b569a01ef56d18cab6a8e71e6600d6ce853834d4a5748b720d06f878b3a4`|
 |Fee|0.0001 LINK|
 
-## Binance Smart Chain Mainnet
+## BNB Chain Mainnet
 
 > 📘 Important
 >
-> The LINK provided by the [Binance Bridge](https://www.binance.org/en/bridge) is not ERC-677 compatible, so cannot be used with Chainlink oracles. However, it can be [**converted to the official LINK token on BSC using Chainlink's PegSwap service**](https://pegswap.chain.link/).
+> The LINK provided by the [BNB Chain Bridge](https://www.bnbchain.world/en/bridge) is not ERC-677 compatible, so cannot be used with Chainlink oracles. However, it can be [**converted to the official LINK token on BNB Chain using Chainlink's PegSwap service**](https://pegswap.chain.link/).
 
 |Item|Value|
 |---|---|
 |LINK Token|`0x404460C6A5EdE2D891e8297795264fDe62ADBB75`|
 |VRF Coordinator|`0x747973a5A2a4Ae1D3a8fDF5479f1514F65Db9C31`|
 |Key Hash|`0xc251acd21ec4fb7f31bb8868288bfdbaeb4fbfec2df3735ddbd4f7dc8d60103c`|
-|Fee|0.2 LINK - initial fees on BSC are meant to cover the highest gas cost prices. To use VRF more efficiently, please [contact us](https://chainlinkcommunity.typeform.com/to/OYQO67EF?page=docs-VRF)|
+|Fee|0.2 LINK - initial fees on BNB Chain are meant to cover the highest gas cost prices. To use VRF more efficiently, please [contact us](https://chainlinkcommunity.typeform.com/to/OYQO67EF?page=docs-VRF)|
 
 > 📘 Early Access
 >
-> For the most efficient consumption of Chainlink VRF on Binance Smart Chain, please contact us using [this form](https://chainlinkcommunity.typeform.com/to/OYQO67EF?page=docs-VRF) to create a payment channel, through which we can provide VRF to you at the cost of BSC network gas fees. You will only be paying in LINK for the gas costs incurred by the Chainlink node from calling your smart contract.
+> For the most efficient consumption of Chainlink VRF on BNB Chain, please contact us using [this form](https://chainlinkcommunity.typeform.com/to/OYQO67EF?page=docs-VRF) to create a payment channel, through which we can provide VRF to you at the cost of BNB Chain network gas fees. You will only be paying in LINK for the gas costs incurred by the Chainlink node from calling your smart contract.
 
-## Binance Smart Chain Testnet
+## BNB Chain Testnet
 
-> 🚰BSC Faucet
+> 🚰 BNB Chain Faucet
 >
 > Testnet LINK is available from https://faucets.chain.link/chapel
 

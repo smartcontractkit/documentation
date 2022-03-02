@@ -17,14 +17,14 @@ The LINK token is an ERC677 token that inherits functionality from the ERC20 tok
 **Table of Contents**
 
 + [Ethereum](#ethereum)
-+ [Binance Smart Chain](#binance-smart-chain)
++ [BNB Chain](#bnb-chain)
 + [Polygon (Matic)](#polygon-matic)
 + [RSK](#rsk)
 + [Gnosis Chain (xDai)](#gnosis-chain-xdai)
 + [Avalanche](#avalanche)
 + [Fantom](#fantom)
 + [Arbitrum](#arbitrum)
-+ [Huobi Eco Chain](#huobi-eco-chain)
++ [HECO Chain](#heco-chain)
 + [Optimism](#optimism)
 + [Harmony](#harmony)
 + [Moonriver](#moonriver)
@@ -88,13 +88,13 @@ The LINK token is an ERC677 token that inherits functionality from the ERC20 tok
 
 LINK is native to Ethereum, so to use LINK on other chains, it must be bridged. <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blank">This guide</a> explains how to bridge and swap tokens to other chains.
 
-## Binance Smart Chain
+## BNB Chain
 
 ### Mainnet
 
 > 📘 Important
 >
-> The LINK provided by the [Binance Bridge](https://www.binance.org/en/bridge) is not ERC-677 compatible, so cannot be used with Chainlink oracles. However, it can be [**converted to the official LINK token on BSC using Chainlink's PegSwap service**](https://pegswap.chain.link/).
+> The LINK provided by the [BNB Chain Bridge](https://www.bnbchain.world/en/bridge) is not ERC-677 compatible, so cannot be used with Chainlink oracles. However, it can be [**converted to the official LINK token on BNB Chain using Chainlink's PegSwap service**](https://pegswap.chain.link/).
 
 |Parameter|Value|
 |:---|:---|
@@ -106,7 +106,7 @@ LINK is native to Ethereum, so to use LINK on other chains, it must be bridged. 
 
 ### Testnet
 
-> 🚰BSC Faucet
+> 🚰BNB Chain Faucet
 >
 > Testnet LINK is available from https://faucets.chain.link/chapel
 
@@ -268,7 +268,7 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 |Symbol|LINK|
 |Decimals|18|
 
-## Huobi Eco Chain
+## HECO Chain
 
 ### Mainnet
 

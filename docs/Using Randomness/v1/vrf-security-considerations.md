@@ -44,7 +44,7 @@ On proof-of-stake blockchains (e.g. BSC, Polygon), what block confirmation time 
 
 For further details, take a look at the consensus documentation for the chain you want to use:
 - [Ethereum Consensus Mechanisms](https://ethereum.org/en/developers/docs/consensus-mechanisms/)
-- [Binance Consensus Docs](https://docs.binance.org/smart-chain/guides/concepts/consensus.html)
+- [BNB Chain Consensus Docs](https://docs.binance.org/smart-chain/guides/concepts/consensus.html)
 - [Polygon Consensus Docs](https://docs.matic.network/docs/contribute/bor/consensus/)
 
 Understanding the blockchains you build your application on is very important. You should take time to understand [chain reorganization](https://blog.ethereum.org/2015/08/08/chain-reorganisation-depth-expectations/) which will also result in a different VRF output, which could be exploited.
