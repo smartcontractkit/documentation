@@ -412,12 +412,11 @@ By default, Chainlink nodes write log data to `$ROOT/log.jsonl`. The log directo
 The `LOG_LEVEL` environment variable determines both what is printed on the screen and what is written to the log file.
 
 The available options are:
-- `"trace"`: Used only in development, off by default and not accessible on production builds.
 - `"debug"`: Useful for forensic debugging of issues.
 - `"info"`: High level informational messages.
 - `"warn"`: A mild error occurred that might require non-urgent action. Check these warnings semi-regularly to see if any of them require attention. These warnings usually happen due to factors outside of the control of the node operator. Examples: Unexpected responded from a remote API or inaccurate networking errors.
-- `"error"`: An error occurred that might have put the node in a partially broken state. Node operators might need to take action to remedy this error. Examples: Deprecation warnings or incorrectly configured settings that cause a job to fail.
-- `"crit"`: A critical error occurred. The node might be completely stopped and non-responsive. Node operators should take immediate action to fix these errors. Examples: The node was not able to boot because a network socket could not be opened or the database became inaccessible.
+- `"error"`: An error occurred that is not expected during regular operation of a well-maintained node. Node operators might need to take action to remedy this error. Check these regularly to see if any of them require attention. Examples: Use of deprecated configuration options or incorrectly configured settings that cause a job to fail.
+- `"crit"`: A critical error occurred. The node might be unable to function. Node operators should take immediate action to fix these errors. Examples: The node was not able to boot because a network socket could not be opened or the database became inaccessible.
 - `"panic"`: An unrecoverable error occurred that was unexpected. Node operators should try to restart their nodes, and notify the Chainlink team of a bug.
 - `"fatal"`: An unrecoverable problem was encountered and the node had to exit.
 
