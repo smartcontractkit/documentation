@@ -117,10 +117,10 @@ Get the required inputs and run the `createCronJobFromEncodedSpec` function:
     #Calculate the Hash
     functionEncoding = keccak.new(data=functionToEncode.encode('UTF-8'), digest_bits=256).digest()
 
-    #Decode to UTF-8 and return first 4 bits (8 characters)
-    functionSig = binascii.hexlify(functionEncoding).decode('UTF-8')[:8]
+    #Decode to UTF-8 and return first 4 bits (8 characters) and prepend 0x
+    functionSig = '0x'+binascii.hexlify(functionEncoding).decode('UTF-8')[:8]
     print("Function Signature:", functionSig)
-    #Should return Function Signature: d09de08a
+    #Should return Function Signature: 0xd09de08a
     ```
 
 1. In Remix, use the `cronStringToEncodedSpec` function from your Job Scheduler contract to encode a Cron spec. Specify a standard [Cron Spec](#encodedcronspec) string for the `cronString` input. Run the function and save the output to use later. For example, if you specify `*/5 * * * *` for a job that runs every 5 minutes, the `cronStringToEncodedSpec` function returns the following encoding value:
