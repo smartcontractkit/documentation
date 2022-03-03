@@ -24,7 +24,7 @@ After you register, you can interact directly with the [registry contract](https
 + [Fund Upkeep](#fund-upkeep)
 + [How Funding Works](#how-funding-works)
 + [Maintain a Minimum Balance](#maintain-a-minimum-balance)
-+ [Useful Patterns](#useful-patterns)
++ [Best Practices](#best-practices)
   + [Gas Limits](#gas-limits)
   + [Testing](#testing)
 
@@ -90,9 +90,7 @@ The minimum balance is calculated using the current fast gas price, the Gas Limi
 
 To account for gas price fluctuations, maintain a balance that is 3 to 5 times the minimum balance.
 
-## Useful Patterns
-
-These patterns are not mutually exclusive. Review and make use of the patterns that make sense for your use case.
+## Best practices
 
 ### Gas Limits
 
@@ -100,7 +98,7 @@ These patterns are not mutually exclusive. Review and make use of the patterns t
 >
 > The `KeeperRegistry` enforces a cap for gas used both on-chain and off-chain. See the [Keepers Network Overview](../overview/) for details. The caps are configurable and might change based on user feedback. Be sure that you understand these limits if your use case requires a large amount of gas.
 
-When developing your keeper-compatible smart contracts, you must understand the gas limits that you are working with on the KeeperRegistry. There is a `check` gas limit and a `call` gas limit that your contract must adhere to in order to operate successfully. See the [Keepers Network Overview](../overview/) to learn the current configuration.
+When developing your Keeper-compatible smart contracts, you must understand the gas limits that you are working with on the `KeeperRegistry`. There is a `check` gas limit and a `call` gas limit that your contract must adhere to in order to operate successfully. See the [Keepers Network Overview](../overview/) to learn the current configuration.
 
 ### Testing
 
