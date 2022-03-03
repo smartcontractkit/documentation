@@ -56,7 +56,7 @@ Doing so would give the VRF service provider the option to withhold a VRF fulfil
 
 ## Don't accept bids/bets/inputs after you have made a randomness request
 
-Consider the example of a contract that mints a random NFT in response to a users' actions.
+Consider the example of a contract that mints a random NFT in response to a user's actions.
 
 The contract should:
 
@@ -70,7 +70,7 @@ Otherwise, the cryptoeconomic security properties may be violated by an attacker
 
 ## `fulfillRandomWords` must not revert
 
-If your fulfillRandomWords implementation reverts, the VRF service will not attempt to call it a second time. Make sure your contract logic does not revert. Consider simply storing the randomness and taking more complex follow-on actions in separate contract calls made by you or your users.
+If your `fulfillRandomWords()` implementation reverts, the VRF service will not attempt to call it a second time. Make sure your contract logic does not revert. Consider simply storing the randomness and taking more complex follow-on actions in separate contract calls made by you, your users, or a [keeper](/docs/chainlink-keepers/introduction/).
 
 ## Use `VRFConsumerBaseV2` in your contract, to interact with the VRF service
 
