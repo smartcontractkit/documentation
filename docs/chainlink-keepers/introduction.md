@@ -16,7 +16,7 @@ Smart contracts alone can't trigger or initiate their own functions at arbitrary
 
 To resolve this issue, blockchain projects can:
 
-- Create highly reliable infrastructure trigger smart contract functions. This is centralized and often expensive to build and maintain.
+- Create highly reliable infrastructure to trigger smart contract functions. This is centralized and often expensive to build and maintain.
 - Outsource it to a third party. This option is also centralized and creates a single point of failure.
 - Use an open market solution. This option is decentralized, but comes with complex incentive alignment, the potential for competitive bots that increase the cost of execution, and difficulty ensuring reliability.
 - Use the **Chainlink Keeper** Network.
@@ -58,6 +58,7 @@ Below are the steps needed to create a Keeper compatible contract and register U
 1. Get [LINK](../../link-token-contracts/) on the testnet that you want to use.
 1. Many token bridges give you ERC-20 LINK tokens. Use PegSwap to [convert Chainlink tokens (LINK) to be ERC-677 compatible](https://pegswap.chain.link/).
 1. [Register your Upkeep](../register-upkeep/) on the testnet.
+1. Fund your upkeep on the testnet.
 1. Test, iterate, and finalize your Keeper-compatible contract.
 1. Deploy your fully tested contract onto the Mainnet.
 1. [Register your Upkeep](../register-upkeep/) on the Mainnet.
@@ -65,6 +66,6 @@ Below are the steps needed to create a Keeper compatible contract and register U
 1. Confirm the first performance of your Upkeep.
 
 > ⚠️ Registration Onboarding Note
-> Your registrations on testnet will be auto approved immediately. To help us streamline the process of onboarding your use case on mainnet, please fill out the optional details (and form) during testnet registration so our onboarding team can expect your use case on mainnet. Mainnet registrations will be reviewed by our onboarding team before being approved. We are working towards a fully self-serve model.
+> Your registrations on testnet will be auto-approved immediately. To help us streamline the process of onboarding your use case on mainnet, please fill out the optional details (and form) during testnet registration so our onboarding team can expect your use case on mainnet. Mainnet registrations will be reviewed by our onboarding team before being approved. We are working towards a fully self-serve model.
 
 If you have questions, read the [Keepers Frequently Asked Questions](../faqs/) page or [reach out to us](https://forms.gle/WadxnzzjHPtta5Zd9).
