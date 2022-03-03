@@ -18,9 +18,7 @@ This guide explains how to make smart contracts **Keeper-compatible**. You will 
 + [Functions](#functions)
   + [`checkUpkeep` function](#checkupkeep-function)
     + [`checkData`](#checkdata)
-    + [`upkeepNeeded`](#upkeepneeded)
     + [`performData`](#performdata)
-    + [`cannotExecute`](#cannotexecute)
   + [`performUpkeep` function](#performupkeep-function)
     + [`performData`](#performdata-1)
 + [Example Contract](#example-contract)
@@ -63,7 +61,7 @@ Below are the parameters and return values of the `checkUpkeep` function. Click 
 
 **Return Values:**
 
-- [`upkeepNeeded`](#performupkeep): Indicates whether the Keeper should call `performUpkeep` or not.
+- `upkeepNeeded`: Indicates whether the Keeper should call `performUpkeep` or not.
 - [`performData`](#performdata): Bytes that the Keeper should call `performUpkeep` with, if Upkeep is needed. If you would like to encode data to decode later, try `abi.encode`.
 
 If you use `checkData` and `performData`, you create a highly flexible off-chain computation infrastructure that can perform precise actions on-chain. Both of these computations are entirely programmable.
