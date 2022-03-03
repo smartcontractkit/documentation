@@ -10,7 +10,7 @@ whatsnext:
 ---
 ![Chainlink Keeper Network Banner](/images/contract-devs/generic-banner.png)
 
-# Overview
+## Overview
 
 Smart contracts alone can't trigger or initiate their own functions at arbitrary times or under arbitrary conditions. State change will only occur when a transaction is initiated by another account (such as user, oracle, or contract).
 
@@ -29,11 +29,11 @@ Chainlink Keepers provide users with a decentralized network of nodes that are i
 
 Read the [Network Overview](../overview) page to learn how these networks work.
 
-# Getting Started
+## Getting Started
 
 The goal of Keepers is to ensure flawless execution of Upkeeps when expected. To get the most out of Chainlink Keepers, review these docs in full: [how to create a Keepers-compatible contract](../compatible-contracts), usage patterns, best practices, and how to [maintain the health of your upkeep](../register-upkeep).
 
-## Supported Blockchain Networks
+### Supported Blockchain Networks
 
 Chainlink Keepers are currently available on the following networks:
 
@@ -49,7 +49,7 @@ Chainlink Keepers are currently available on the following networks:
 
 If you are interested in using Keepers but need it on a different blockchain or network, [contact us](https://forms.gle/WadxnzzjHPtta5Zd9) and let us know.
 
-## Onboarding Steps
+### Onboarding Steps
 
 Below are the steps needed to create a Keeper compatible contract and register Upkeep for the contract. Test Keeper-compatible contracts on testnet before moving to mainnet.
 
