@@ -30,6 +30,8 @@ Your node applies configuration settings using following hierarchy:
 
 ## Table of contents
 
+- [Changes to node configuration in v1.1.0 nodes](#changes-to-node-configuration-in-v110-nodes)
+- [Table of contents](#table-of-contents)
 - [Essential environment variables](#essential-environment-variables)
   - [DATABASE_URL](#database_url)
 - [General Node Configuration](#general-node-configuration)
@@ -120,6 +122,7 @@ Your node applies configuration settings using following hierarchy:
   - [ETH_GAS_BUMP_THRESHOLD](#eth_gas_bump_threshold)
   - [ETH_GAS_BUMP_TX_DEPTH](#eth_gas_bump_tx_depth)
   - [ETH_GAS_BUMP_WEI](#eth_gas_bump_wei)
+  - [EVM_GAS_FEE_CAP_DEFAULT](#evm_gas_fee_cap_default)
   - [ETH_GAS_LIMIT_DEFAULT](#eth_gas_limit_default)
   - [ETH_GAS_LIMIT_MULTIPLIER](#eth_gas_limit_multiplier)
   - [ETH_GAS_LIMIT_TRANSFER](#eth_gas_limit_transfer)
@@ -136,6 +139,7 @@ Your node applies configuration settings using following hierarchy:
   - [BLOCK_HISTORY_ESTIMATOR_BATCH_SIZE](#block_history_estimator_batch_size)
   - [BLOCK_HISTORY_ESTIMATOR_BLOCK_HISTORY_SIZE](#block_history_estimator_block_history_size)
   - [BLOCK_HISTORY_ESTIMATOR_BLOCK_DELAY](#block_history_estimator_block_delay)
+  - [BLOCK_HISTORY_ESTIMATOR_EIP1559_FEE_CAP_BUFFER_BLOCKS](#block_history_estimator_eip1559_fee_cap_buffer_blocks)
   - [BLOCK_HISTORY_ESTIMATOR_TRANSACTION_PERCENTILE](#block_history_estimator_transaction_percentile)
 - [EVM/Ethereum Transaction Simulation](#evmethereum-transaction-simulation)
     - [FM_SIMULATE_TRANSACTIONS](#fm_simulate_transactions)
@@ -840,7 +844,20 @@ To enable globally, set `EVM_EIP1559_DYNAMIC_FEES=true`. Set with caution, if yo
 
 In EIP-1559 mode, the total price for the transaction is the minimum of base fee + tip cap and fee cap. More information can be found on the [official EIP](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-1559.md).
 
-Chainlink's implementation of this is to set a large fee cap and modify the tip cap to control confirmation speed of transactions. When in EIP-1559 mode, the tip cap takes the place of gas price roughly speaking, with the varying base price remaining a constant (we always pay it).
+Chainlink's implementation of EIP-1559 works as follows:
+
+If you are using FixedPriceEstimator:
+- With gas bumping disabled, it will submit all transactions with `feecap=ETH_MAX_GAS_PRICE_WEI` and `tipcap=EVM_GAS_TIP_CAP_DEFAULT`
+- With gas bumping enabled, it will submit all transactions initially with `feecap=EVM_GAS_FEE_CAP_DEFAULT` and `tipcap=EVM_GAS_TIP_CAP_DEFAULT`.  
+
+If you are using BlockHistoryEstimator (default for most chains):
+- With gas bumping disabled, it will submit all transactions with `feecap=ETH_MAX_GAS_PRICE_WEI` and `tipcap=<calculated using past blocks>`
+- With gas bumping enabled (default for most chains) it will submit all transactions initially with `feecap=current block base fee * (1.125 ^ N)` where N is configurable by setting BLOCK_HISTORY_ESTIMATOR_EIP1559_FEE_CAP_BUFFER_BLOCKS but defaults to `gas bump threshold+1` and `tipcap=<calculated using past blocks>`
+
+Bumping works as follows:
+
+- Increase tipcap by `max(tipcap * (1 + ETH_GAS_BUMP_PERCENT), tipcap + ETH_GAS_BUMP_WEI)`
+- Increase feecap by `max(feecap * (1 + ETH_GAS_BUMP_PERCENT), feecap + ETH_GAS_BUMP_WEI)`
 
 A quick note on terminology - Chainlink nodes use the same terms used internally by go-ethereum source code to describe various prices. This is not the same as the externally used terms. For reference:
 
@@ -852,33 +869,12 @@ In EIP-1559 mode, the following changes occur to how configuration works:
 
 - All new transactions will be sent as type 0x2 transactions specifying a TipCap and FeeCap. Be aware that existing pending legacy transactions will continue to be gas bumped in legacy mode.
 - `BlockHistoryEstimator` will apply its calculations (gas percentile etc) to the TipCap and this value will be used for new transactions (GasPrice will be ignored)
-- `FixedPriceEstimator` will use `EVM_GAS_TIP_CAP_DEFAULT` instead of `ETH_GAS_PRICE_DEFAULT`
-- `ETH_GAS_PRICE_DEFAULT` is ignored for new transactions and `EVM_GAS_TIP_CAP_DEFAULT` is used instead (default 20GWei)
+- `FixedPriceEstimator` will use `EVM_GAS_TIP_CAP_DEFAULT` instead of `ETH_GAS_PRICE_DEFAULT` for the tip cap
+- `FixedPriceEstimator` will use `EVM_GAS_FEE_CAP_DEFAULT` instaed of `ETH_GAS_PRICE_DEFAULT` for the fee cap
 - `ETH_MIN_GAS_PRICE_WEI` is ignored for new transactions and `EVM_GAS_TIP_CAP_MINIMUM` is used instead (default 0)
-- `ETH_MAX_GAS_PRICE_WEI` controls the FeeCap
+- `ETH_MAX_GAS_PRICE_WEI` still represents that absolute upper limit that Chainlink will ever spend (total) on a single tx
 - `KEEPER_GAS_PRICE_BUFFER_PERCENT` is ignored in EIP-1559 mode and `KEEPER_TIP_CAP_BUFFER_PERCENT` is used instead
 
-The default tip cap is configurable per-chain but can be specified for all chains using `EVM_GAS_TIP_CAP_DEFAULT`. The fee cap is derived from `ETH_MAX_GAS_PRICE_WEI`.
-
-When using the `FixedPriceEstimator`, the default gas tip will be used for all transactions.
-
-When using the `BlockHistoryEstimator`, Chainlink nodes calculate the tip cap based on transactions already included in the same way that they calculate gas price in legacy mode.
-
-Enabling EIP-1559 mode might lead to marginally faster transaction inclusion and make the node more responsive to sharp rises/falls in gas price, keeping response times more consistent.
-
-In addition, `ethcall` tasks now accept `gasTipCap` and `gasFeeCap` parameters in addition to `gasPrice`. This is required for Keeper jobs, i.e.:
-
-```
-check_upkeep_tx          [type=ethcall
-                          failEarly=true
-                          extractRevertReason=true
-                          contract="$(jobSpec.contractAddress)"
-                          gas="$(jobSpec.checkUpkeepGasLimit)"
-                          gasPrice="$(jobSpec.gasPrice)"
-                          gasTipCap="$(jobSpec.gasTipCap)"
-                          gasFeeCap="$(jobSpec.gasFeeCap)"
-                          data="$(encode_check_upkeep_tx)"]
-```
 ### ETH_GAS_BUMP_PERCENT
 
 - Default: _automatic based on chain ID_
@@ -902,6 +898,12 @@ The number of transactions to gas bump starting from oldest. Set to 0 for no lim
 - Default: _automatic based on chain ID_
 
 The minimum fixed amount of wei by which gas is bumped on each transaction attempt.
+
+### EVM_GAS_FEE_CAP_DEFAULT 
+
+- Default: _automatic based on chain ID_
+
+If EIP1559 mode is enabled, and FixedPrice gas estimator is used, this env var controls the fixed initial fee cap.
 
 ### ETH_GAS_LIMIT_DEFAULT
 
@@ -1050,6 +1052,13 @@ CAUTION: You might be tempted to set this to 0 to use the latest possible
 block, but it is possible to receive a head BEFORE that block is actually
 available from the connected node via RPC, due to race conditions in the code of the remote ETH node. In this case you will get false
 "zero" blocks that are missing transactions.
+
+### BLOCK_HISTORY_ESTIMATOR_EIP1559_FEE_CAP_BUFFER_BLOCKS
+** Advanced **
+
+- Default: _gas bump threshold + 1 block_
+
+If EIP1559 mode is enabled, this optional env var controls the buffer blocks to add to the current base fee when sending a transaction. By default, the gas bumping threshold + 1 block is used. It is not recommended to change this unless you know what you are doing.
 
 ### BLOCK_HISTORY_ESTIMATOR_TRANSACTION_PERCENTILE
 

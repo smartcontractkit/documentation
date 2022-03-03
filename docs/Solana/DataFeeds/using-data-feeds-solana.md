@@ -11,7 +11,9 @@ metadata:
 
 Chainlink Data Feeds are the quickest way to connect your smart contracts to the real-world market prices of assets. For example, one use for data feeds is to enable smart contracts to retrieve the latest pricing data of an asset in a single call.
 
-This guide applies specifically to using data feeds on the [Solana network](https://solana.com/). To get the full list of Chainlink Data Feeds running on the Solana Devnet, see the [Solana Feeds](/docs/solana/data-feeds-solana/) page. You can view the program ID that owns these feeds in the [Solana Devnet Explorer](https://solscan.io/account/2yqG9bzKHD59MxD9q7ExLvnDhNycB3wkvKXFQSpBoiaE?cluster=devnet).
+This guide applies specifically to using data feeds on [Solana](https://solana.com/) clusters. To get the full list of Chainlink Data Feeds on Solana, see the [Solana Feeds](/docs/solana/data-feeds-solana/) page.
+
+View the program that owns the Chainlink Data Feeds in the [Solana Devnet Explorer](https://solscan.io/account/CaH12fwNTKJAG8PxEvo9R96Zc2j8qNHZaFj8ZW49yZNT?cluster=devnet).
 
 {% include data-quality.md %}
 
@@ -19,206 +21,262 @@ This guide applies specifically to using data feeds on the [Solana network](http
 
 This guide demonstrates the following tasks:
 
-- Write and deploy programs to the [Solana Devnet](https://solscan.io/?cluster=devnet) using Rust.
-- Retrieve data using the [Solana Web3 JavaScript API](https://www.npmjs.com/package/@solana/web3.js) with Node and Yarn.
+- Write and deploy programs to the [Solana Devnet](https://solscan.io/?cluster=devnet) cluster using Anchor.
+- Retrieve data using the [Solana Web3 JavaScript API](https://www.npmjs.com/package/@solana/web3.js) with Node.js.
 
 This example shows you how to work with a program that you deploy, but you can refactor the client section to work with a program ID of your choice.
 
-## Requirements
+**Table of contents:**
 
-This guide requires the following tools:
+- [Install the required tools](#install-the-required-tools)
+- [Deploy the example program](#deploy-the-example-program)
+- [Call the deployed program](#call-the-deployed-program)
+- [Clean up](#clean-up)
 
-- Build and deploying Solana programs:
-  - [Rust](https://www.rust-lang.org/tools/install)
-  - [The Solana CLI](https://docs.solana.com/cli/install-solana-cli-tools#use-solanas-install-tool)
-  - [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
-- Call the deployed program to read the data feed for the [SOL / USD price](https://solscan.io/account/FmAmfoyPXiA8Vhhe6MZTr3U6rZfEZ1ctEHay1ysqCqcf?cluster=devnet):
-  - [Node.js 12 or higher](https://nodejs.org/en/download/)
-  - [Yarn](https://classic.yarnpkg.com/en/docs/install/)
+## Install the required tools
 
-## Create and deploy a program to the Solana Devnet
+Before you begin, set up your environment for development on Solana:
 
-1. Clone the [chainlink-solana-demo](https://github.com/smartcontractkit/chainlink-solana-demo) repository:
+1. Install [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) if it is not already configured on your system.
 
-    ```bash
-    git clone https://github.com/smartcontractkit/chainlink-solana-demo
+1. Install [Node.js 12 or higher](https://nodejs.org/en/download/). Run `node --version` to verify which version you have installed:
+
+    ```sh
+    node --version
     ```
 
-    ```bash
-    cd chainlink-solana-demo
+1. Install a C compiler such as the one included in [GCC](https://gcc.gnu.org/install/). Some dependencies require a C compiler.
+
+    ```sh
+    sudo apt install gcc
     ```
 
-1. Set the Solana cluster (network) to [Devnet](https://docs.solana.com/clusters#devnet):
+1. Install [Rust](https://www.rust-lang.org/tools/install):
 
-    ```bash
-    solana config set --url https://api.devnet.solana.com
+    ```sh
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh &&
+    source $HOME/.cargo/env
     ```
 
-1. Create a [keypair](https://docs.solana.com/terminology#keypair) for your account that you can use for testing and development. For production deployments, follow the security best practices for [Command Line Wallets](https://docs.solana.com/wallet-guide/cli#file-system-wallet-security).
+1. Install the latest Mainnet version of [the Solana CLI](https://github.com/solana-labs/solana/releases) and export the path to the CLI:
 
-    ```bash
-    mkdir solana-wallet
+    ```sh
+    sh -c "$(curl -sSfL https://release.solana.com/v1.8.14/install)" &&
+    export PATH="~/.local/share/solana/install/active_release/bin:$PATH"
     ```
 
-    ```bash
-    solana-keygen new --outfile ./solana-wallet/keypair.json
+    Run `solana --version` to make sure the Solana CLI is installed correctly.
+
+    ```sh
+    solana --version
     ```
 
-1. Fund your account. On Devnet, you can use `solana airdrop` to add tokens to your account:
+1. Use the Node package manager to [Install Anchor](https://project-serum.github.io/anchor/getting-started/installation.html). Depending on your environment, this step might require `sudo` permissions:
 
-    ```bash
-    solana airdrop 5 $(solana-keygen pubkey solana-wallet/keypair.json)
+    ```sh
+    npm i -g @project-serum/anchor-cli
     ```
 
-    - If the command line faucet doesn't work, use `solana-keygen pubkey` to see your public key value and request tokens from [SolFaucet](https://solfaucet.com/):
+    On some operating systems, you might need to build and install Anchor locally. See the [Anchor documentation](https://project-serum.github.io/anchor/getting-started/installation.html#build-from-source-for-other-operating-systems) for instructions.
 
-        ```bash
-        solana-keygen pubkey ./solana-wallet/keypair.json
+After you install the required tools, deploy the example program from the [solana-starter-kit](https://github.com/smartcontractkit/solana-starter-kit) repository.
+
+## Deploy the example program
+
+This example includes a contract written in Rust. Deploy the contract to the Solana Devnet cluster.
+
+1. In a terminal, clone the [solana-starter-kit](https://github.com/smartcontractkit/solana-starter-kit) repository and change to the `solana-starter-kit` directory:
+
+    ```sh
+    git clone https://github.com/smartcontractkit/solana-starter-kit &&
+    cd ./solana-starter-kit
+    ```
+
+    You can see the complete code for the example on [GitHub](https://github.com/smartcontractkit/solana-starter-kit/).
+
+1. In the `./solana-starter-kit` directory, install Node.js dependencies defined in the `package.json` file:
+
+    ```sh
+    npm install
+    ```
+
+1. Create a temporary Solana wallet to use for this example. Use a temporary wallet to isolate development and testing from your other wallets. Alternatively, if you have an existing wallet that you want to use, locate the path to your [keypair](https://docs.solana.com/terminology#keypair) file and use it as the keypair for the rest of this guide.
+
+    ```sh
+    solana-keygen new --outfile ./id.json
+    ```
+
+    Always follow the security best practices in the [Solana Wallet Guide](https://docs.solana.com/wallet-guide) when managing your wallets and keypairs.
+
+1. Fund your Solana wallet. On Devnet, use `solana airdrop` to add tokens to your account. The contract requires at least 4 SOL to deploy and the faucet limits each request to 2 SOL, so you must make two requests to get a total of 4 SOL on your wallet:
+
+    ```sh
+    solana airdrop 2 --keypair ./id.json --url devnet &&
+    solana airdrop 2 --keypair ./id.json --url devnet
+    ```
+
+    - If the command line faucet does not work, run `solana address` on the temporary wallet to print the public key value for the wallet and request tokens from [SolFaucet](https://solfaucet.com/):
+
+        ```sh
+        solana address -k ./id.json
         ```
 
-1. Build the program using the [Solana BPF](https://docs.solana.com/developing/on-chain-programs/developing-rust#how-to-build):
+1. Run `anchor build` to build the example program. If you receive the `no such subcommand: 'build-bpf'` error, restart your terminal session and run `anchor build` again:
 
-    ```bash
-    cargo build-bpf
+    ```sh
+    anchor build
     ```
 
-1. Deploy the program. The output from the previous step will give you the command to execute to deploy the program. It should look similar to this:
+1. The build process generates the keypair for your program's account. Before you deploy your program, you must add this public key to the `lib.rs` file:
 
-    ```bash
-    solana program deploy target/deploy/chainlink_solana_demo.so --keypair solana-wallet/keypair.json
+    1. Get the keypair from the `./target/deploy/chainlink_solana_demo-keypair.json` file that Anchor generated:
+
+        ```sh
+        solana address -k ./target/deploy/chainlink_solana_demo-keypair.json
+        ```
+
+    1. Edit the `./programs/chainlink_solana_demo/src/lib.rs` file and replace the keypair in the `declare_id!()` definition:
+
+        ```sh
+        vi ./programs/chainlink_solana_demo/src/lib.rs
+        ```
+
+        ```sh
+        declare_id!("JC16qi56dgcLoaTVe4BvnCoDL6FhH5NtahA7jmWZFdqm");
+        ```
+
+1. With the new program ID added, run `anchor build` again. This recreates the necessary program files with the correct program ID:
+
+    ```sh
+    anchor build
     ```
 
-    If the deployment is successful, it prints your program ID:
+1. Run `anchor deploy` to deploy the program to the Solana Devnet. Remember to specify the keypair file for your wallet and override the default. This wallet is the [account owner](https://docs.solana.com/terminology#account-owner) (authority) for the program:
 
-    ```bash
-    RPC URL: https://api.devnet.solana.com
-    Default Signer Path: solana-wallet/keypair.json
-    Commitment: confirmed
-    Program Id: AZRurZi6N2VTPpFJZ8DB45rCBn2MsBBYaHJfuAS7Tm4v
+    ```sh
+    anchor deploy --provider.wallet ./id.json --provider.cluster devnet
     ```
 
-1. Copy the program ID and look it up in the [Solana Devnet Explorer](https://solscan.io/?cluster=devnet).
+1. To confirm that the program deployed correctly, run `solana program show --programs` to get a list of deployed programs that your wallet owns. For this example, check the list of deployed programs for the `id.json` wallet on the Solana Devnet:
 
-## Call a deployed program
-
-After you deploy the program, you can use it to retrieve data from a feed. The code for this part of the guide is in the `client` folder from the [chainlink-solana-demo](https://github.com/smartcontractkit/chainlink-solana-demo) repository.
-
-1. Change to the `client` directory and run `yarn` to install Node.js dependencies:
-
-    ```bash
-    cd client
+    ```sh
+    solana program show --programs --keypair ./id.json --url devnet
     ```
 
-    ```bash
-    yarn
+    The command prints the program ID, slot number, the wallet address that owns the program, and the program balance:
+
+    ```sh
+    Program Id                                   | Slot      | Authority                                    | Balance
+    GRt21UnJFHZvcaWLbcUrXaTCFMREewDrm1DweDYBak3Z | 110801571 | FsQPnANKDhqpoayxCL3oDHFCBmrhP34NrfbDR34qbQUt | 3.07874904 SOL
     ```
 
-1. Run `yarn start` to execute the script:
+    To see additional details of your deployed program, copy the program ID and look it up in the [Solana Devnet Explorer](https://solscan.io/?cluster=devnet).
 
-    ```bash
-    yarn start
-    ```
-    The script completes the following steps. This does require SOL tokens. If the script cannot run due to insufficient funds, airdrop more funds to your Devnet account again.
+Now that the program is on-chain, you can call it using the [Anchor Web3 module](https://project-serum.github.io/anchor/ts/modules/web3.html).
 
-    If the script executes correctly, you will see output with the current price of SOL/USD.
+## Call the deployed program
 
-## Review the example code
+Use your deployed program to retrieve price data from a Chainlink data feed on Solana Devnet. For this example, call your deployed program using the [Anchor Web3 module](https://project-serum.github.io/anchor/ts/modules/web3.html) and the [`client.js` example](https://github.com/smartcontractkit/solana-starter-kit/blob/main/client.js) code.
 
-You can view the Rust code and Typescript for this example on GitHub. See the [chainlink-solana-demo](https://github.com/smartcontractkit/chainlink-solana-demo) repository. The example code has a few main components:
+1. Set the [Anchor environment variables](https://www.twilio.com/blog/2017/01/how-to-set-environment-variables.html). Anchor uses these to determine which wallet to use and Solana cluster to use.
 
-- The [client Typescript files](https://github.com/smartcontractkit/chainlink-solana-demo/tree/main/client/src) that establish a connection to the deployed program, determine the fees associated with retrieving the feed data, handle serialization and deserialization of data, and report the returned price from the specified data feed. In this case, the script tells your deployed Solana program to retrieve the price of SOL / USD from [FmAmfoyPXiA8Vhhe6MZTr3U6rZfEZ1ctEHay1ysqCqcf](https://solscan.io/account/FmAmfoyPXiA8Vhhe6MZTr3U6rZfEZ1ctEHay1ysqCqcf?cluster=devnet).
-- The [`./src/lib.rs`](https://github.com/smartcontractkit/chainlink-solana-demo/blob/main/src/lib.rs) file that defines the on-chain program for retrieving price data from a specified [Solana Data Feed](/docs/solana/data-feeds-solana/). This program also imports some methods from the [v1 smartcontractkit/chainlink-solana/](https://github.com/smartcontractkit/chainlink-solana/tree/master/v1) repository.
-- The program imports some dependencies from the [v1 smartcontractkit/chainlink-solana/](https://github.com/smartcontractkit/chainlink-solana/tree/master/v1) repository.
-
-The example code operates using the following process:
-
-1. The client [`main.ts`](https://github.com/smartcontractkit/chainlink-solana-demo/blob/main/client/src/main.ts) script defines the process for connecting to the cluster, establishing fee payment, and verifying that your Solana program deployed correctly. The script also calls `getPrice` and `reportPrice` in the [`hello_world.ts`](https://github.com/smartcontractkit/chainlink-solana-demo/blob/main/client/src/hello_world.ts) file.
-
-1. The `getPrice` function defines `const priceFeedAccount` to specify which data feed to use. Then, it creates `const instruction` with a formatted [transaction](https://docs.solana.com/terminology#transaction) that your deployed Solana program can process. The script sends that instruction and waits for the transaction to confirm that it is complete.
-
-    ```Typescript
-    export async function getPrice(): Promise<void> {
-      console.log('Getting data from ', readingPubkey.toBase58())
-      const priceFeedAccount = "FmAmfoyPXiA8Vhhe6MZTr3U6rZfEZ1ctEHay1ysqCqcf"
-      const AggregatorPublicKey = new PublicKey(priceFeedAccount)
-      const instruction = new TransactionInstruction({
-        keys: [{ pubkey: readingPubkey, isSigner: false, isWritable: true },
-        { pubkey: AggregatorPublicKey, isSigner: false, isWritable: false }],
-        programId,
-        data: Buffer.alloc(0), // All instructions are hellos
-      })
-      await sendAndConfirmTransaction(
-        connection,
-        new Transaction().add(instruction),
-        [payer],
-      )
-    }
+    ```sh
+    export ANCHOR_PROVIDER_URL=https://api.devnet.solana.com &&
+    export ANCHOR_WALLET=./id.json
     ```
 
-1. Your deployed program receives the request and starts processing at the [`entrypoint` in `src/lib.rs`](https://github.com/smartcontractkit/chainlink-solana-demo/blob/main/src/lib.rs#L45). This is the Rust program that you built and deployed to the Solana Devnet.
+1. Run the `client.js` example and pass the program address in using the `--program` flag:
 
-1. The `process_instruction` function in `lib.rs` receives the transaction with the specified feed address and handles the steps to retrieve and store the price data on-chain. The function also calls `get_price()` from the [v1 smartcontractkit/chainlink-solana/](https://github.com/smartcontractkit/chainlink-solana/tree/master/v1) packages, which are imported from GitHub in the `Cargo.toml` file. See the [`Cargo.toml`](https://github.com/smartcontractkit/chainlink-solana-demo/blob/main/Cargo.toml#L19) file, which maps the `chainlink-solana` package to `chainlink`.
-
-    ```rust
-    pub fn process_instruction(
-        _program_id: &Pubkey, // Ignored
-        accounts: &[AccountInfo], // Public key of the account to read price data from
-        _instruction_data: &[u8], // Ignored
-    ) -> ProgramResult {
-        msg!("Chainlink Solana Demo program entrypoint");
-
-        let accounts_iter = &mut accounts.iter();
-        // This is the account of our our account
-        let my_account = next_account_info(accounts_iter)?;
-        // This is the account of the data feed for prices
-        let feed_account = next_account_info(accounts_iter)?;
-
-        const DECIMALS: u32 = 9;
-
-        let price = chainlink::get_price(&chainlink::id(), feed_account)?;
-
-        if let Some(price) = price {
-            let decimal = Decimal::new(price, DECIMALS);
-            msg!("Price is {}", decimal);
-        } else {
-            msg!("No current price");
-        }
-
-         // Store the price ourselves
-         let mut price_data_account = PriceFeedAccount::try_from_slice(&my_account.data.borrow())?;
-         price_data_account.answer = price.unwrap_or(0);
-         price_data_account.serialize(&mut &mut my_account.data.borrow_mut()[..])?;
-
-
-        Ok(())
-    }
+    ```sh
+    node client.js --program $(solana address -k ./target/deploy/chainlink_solana_demo-keypair.json)
     ```
 
-1. After the deployed Solana program finishes storing the data on-chain, the script retrieves the price data from the on-chain storage and prints it to the console.
+    If the script executes correctly, you will see output with the current price of SOL / USD.
 
-    ```rust
-    export async function reportPrice(): Promise<void> {
-      // const priceFeedAccount = "FmAmfoyPXiA8Vhhe6MZTr3U6rZfEZ1ctEHay1ysqCqcf"
-      // const AggregatorPublicKey = new PublicKey(priceFeedAccount)
-      const accountInfo = await connection.getAccountInfo(readingPubkey)
-      if (accountInfo === null) {
-        throw new Error('Error: cannot find the aggregator account')
-      }
-      const latestPrice = borsh.deserialize(
-        AggregatorSchema,
-        AggregatorAccount,
-        accountInfo.data,
-      )
-      console.log("Current price of SOL/USD is: ", latestPrice.answer.toString())
-    }
+    ```sh
+    ⋮
+    Price Is: 9056000000
+    Success
+    ⋮
     ```
 
-In addition to the main functions of this example, several smaller components are required:
+1. Each request costs an amount of SOL that is subtracted from the `id.json` wallet. Run `solana balance` to check the remaining balance for your temporary wallet on Devnet.
 
-- The [`solana-program` crate](https://lib.rs/crates/solana-program) provides necessary functions for on-chain transactions.
-- The communications between the script and the deployed program are serialized and deserialized using [Borsh](https://borsh.io/).
-- The [Solana JavaScript API](https://solana-labs.github.io/solana-web3.js/) handles RPCs required to retrieve account data.
+    ```sh
+    solana balance --keypair ./id.json --url devnet
+    ```
 
-If you want to experiment with the code yourself to learn how it works, see this [example code on GitHub](https://github.com/smartcontractkit/chainlink-solana-demo/).
+1. To get prices for a different asset pair, run `client.js` again and add the `--feed` flag with one of the available [Chainlink data feeds on the Solana Devnet](/docs/solana/data-feeds-solana/). For example, to get the price of LINK / USD, use the following command:
 
-To learn more about Solana, head to the [Solana Documentation](https://docs.solana.com/), as well as our blog post on [How to Build and Deploy a Solana Smart Contract](https://blog.chain.link/how-to-build-and-deploy-a-solana-smart-contract/)
+    ```sh
+    node client.js \
+    --program $(solana address -k ./target/deploy/chainlink_solana_demo-keypair.json) \
+    --feed CFRkaCg9PcuMaCZZdcePkaa8d8ugtH221HL7tXQHNVia
+    ```
+
+    ```sh
+    Price Is: 1517000000
+    Success
+    ```
+
+The program that owns the data feeds is [CaH12fwNTKJAG8PxEvo9R96Zc2j8qNHZaFj8ZW49yZNT](https://solscan.io/account/CaH12fwNTKJAG8PxEvo9R96Zc2j8qNHZaFj8ZW49yZNT?cluster=devnet), which you can see defined for `const CHAINLINK_PROGRAM_ID` in the `client.js` file.
+
+<!-- TODO: Add a step by step explanation for what the contract is doing and how client.js functions. -->
+
+## Clean up
+
+After you are done with your deployed contract and no longer need it, it is nice to close the program and withdraw the Devnet SOL tokens for future use. In a production environment, you will want to withdraw unused SOL tokens from any Solana program that you no longer plan to use, so it is good to practice the process when you are done with programs on Devnet.
+
+1. Run `solana program show` to see the list of deployed programs that your wallet owns and the balances for each of those programs:
+
+    ```sh
+    solana program show --programs --keypair ./id.json --url devnet
+    ```
+
+    ```sh
+    Program Id                                   | Slot      | Authority                                    | Balance
+    GRt21UnJFHZvcaWLbcUrXaTCFMREewDrm1DweDYBak3Z | 110801571 | FsQPnANKDhqpoayxCL3oDHFCBmrhP34NrfbDR34qbQUt | 3.07874904 SOL
+    ```
+
+1. Run `solana program close` and specify the program that you want to close:
+
+    ```sh
+    solana program close [YOUR_PROGRAM_ID] --keypair ./id.json --url devnet
+    ```
+
+    The program closes and the remaining SOL is transferred to your temporary wallet.
+
+1. If you have deployments that failed, they might still be in the buffer holding SOL tokens. Run `solana program show` again with the `--buffers` flag:
+
+    ```sh
+    solana program show --buffers --keypair ./id.json --url devnet
+    ```
+
+    If you have open buffers, they will appear in the list.
+
+    ```sh
+    Buffer Address                               | Authority                                    | Balance
+    CSc9hnBqYJoYtBgsryJAmrjAE6vZ918qaFhL6N6BdEmB | FsQPnANKDhqpoayxCL3oDHFCBmrhP34NrfbDR34qbQUt | 1.28936088 SOL
+    ```
+
+1. If you have any buffers that you do not plan to finish deploying, run the same `solana program close` command to close them and retrieve the unused SOL tokens:
+
+    ```sh
+    solana program close [YOUR_PROGRAM_ID] --keypair ./id.json --url devnet
+    ```
+
+1. Check the balance on your temporary wallet.
+
+    ```sh
+    solana balance --keypair ./id.json --url devnet
+    ```
+
+1. If you are done using this wallet for examples and testing, you can use [`solana transfer`](https://docs.solana.com/cli/transfer-tokens) to send the remaining SOL tokens to your default wallet or another Solana wallet that you use. For example, if your default wallet keypair is at `~/.config/solana/id.json`, you can send `ALL` of the temporary wallet's balance with the following command:
+
+    ```sh
+    solana transfer ~/.config/solana/id.json ALL --keypair ./id.json --url devnet
+    ```
+
+    Alternatively, you can send the remaining balance to a web wallet. Specify the public key for your wallet instead of the path the default wallet keypair. Now you can use those Devnet funds for other examples and development.
+
+To learn more about Solana and Anchor, see the [Solana Documentation](https://docs.solana.com/) and the [Anchor Documentation](https://project-serum.github.io/anchor/).

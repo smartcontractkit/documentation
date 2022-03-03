@@ -2,6 +2,7 @@ export const NETWORKS = [
   {
     page: "ethereum-addresses",
     title: "Ethereum Data Feeds",
+    feedType: "Proxy",
     networks: [
       {
         name: "Ethereum Mainnet",
@@ -21,16 +22,17 @@ export const NETWORKS = [
     ],
   },
   {
-    page: "binance-smart-chain-addresses-price",
-    title: "Binance Smart Chain Data Feeds",
+    page: "bnb-chain-addresses-price",
+    title: "BNB Chain Data Feeds",
+    feedType: "Proxy",
     networks: [
       {
-        name: "BSC Mainnet",
+        name: "BNB Chain Mainnet",
         url: "https://bscscan.com/address/%s",
         source: "directory-bsc-mainnet.json",
       },
       {
-        name: "BSC Testnet",
+        name: "BNB Chain Testnet",
         url: "https://testnet.bscscan.com/address/%s",
         source: "directory-bsc-testnet.json",
       },
@@ -39,6 +41,7 @@ export const NETWORKS = [
   {
     page: "matic-addresses",
     title: "Polygon (Matic) Data Feeds",
+    feedType: "Proxy",
     networks: [
       {
         name: "Polygon Mainnet",
@@ -55,6 +58,7 @@ export const NETWORKS = [
   {
     page: "data-feeds-gnosis-chain",
     title: "Gnosis Chain (xDai) Data Feeds",
+    feedType: "Proxy",
     networks: [
       {
         name: "Gnosis Chain Mainnet",
@@ -65,10 +69,11 @@ export const NETWORKS = [
   },
   {
     page: "huobi-eco-chain-price-feeds",
-    title: "Huobi Eco Chain Data Feeds",
+    title: "HECO Chain Data Feeds",
+    feedType: "Proxy",
     networks: [
       {
-        name: "Huobi Mainnet",
+        name: "HECO Mainnet",
         url: "https://hecoinfo.com/address/%s",
         source: "directory-heco-mainnet.json",
       },
@@ -77,6 +82,7 @@ export const NETWORKS = [
   {
     page: "avalanche-price-feeds",
     title: "Avalanche Data Feeds",
+    feedType: "Proxy",
     networks: [
       {
         name: "Avalanche Mainnet",
@@ -93,6 +99,7 @@ export const NETWORKS = [
   {
     page: "fantom-price-feeds",
     title: "Fantom Testnet",
+    feedType: "Proxy",
     networks: [
       {
         name: "Fantom Mainnet",
@@ -109,6 +116,7 @@ export const NETWORKS = [
   {
     page: "arbitrum-price-feeds",
     title: "Arbitrum Data Feeds",
+    feedType: "Proxy",
     networks: [
       {
         name: "Arbitrum Mainnet",
@@ -125,6 +133,7 @@ export const NETWORKS = [
   {
     page: "harmony-price-feeds",
     title: "Harmony Data Feeds",
+    feedType: "Proxy",
     networks: [
       {
         name: "Harmony Mainnet",
@@ -139,8 +148,21 @@ export const NETWORKS = [
     ],
   },
   {
+    page: "data-feeds-solana",
+    title: "Solana Data Feeds",
+    feedType: "Account",
+    networks: [
+      {
+        name: "Solana Devnet",
+        url: "https://solscan.io/account/%s?cluster=devnet",
+        source: "directory-solana-devnet.json",
+      },
+    ],
+  },
+  {
     page: "optimism-price-feeds",
     title: "Optimism Data Feeds",
+    feedType: "Proxy",
     networks: [
       {
         name: "Optimism Mainnet",
@@ -157,6 +179,7 @@ export const NETWORKS = [
   {
     page: "data-feeds-moonriver",
     title: "Moonriver Data Feeds",
+    feedType: "Proxy",
     networks: [
       {
         name: "Moonriver Mainnet",

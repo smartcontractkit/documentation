@@ -58,6 +58,7 @@ function load(filename: string): DataFile {
 const finalResult: {
   [key: string]: {
     title: string;
+    feedType: string;
     networks: {
       name: string;
       url: string;
@@ -68,7 +69,11 @@ const finalResult: {
 
 // Generate the data we need to serve
 for (let page of targetData) {
-  finalResult[page.page] = { title: page.title, networks: [] };
+  finalResult[page.page] = {
+    title: page.title,
+    feedType: page.feedType,
+    networks: []
+  };
 
   for (let network of page.networks) {
     const contents = load(network.source);
@@ -158,7 +163,7 @@ for (let page of targetData) {
             deviationThreshold: liveContracts[contractKey].deviationThreshold,
             heartbeat: liveContracts[contractKey].heartbeat,
             decimals: liveContracts[contractKey].decimals,
-            // Use transmissionsAccount for Solana OCR2; contractKey otherwise
+            // Use transmissionsAccount for Solana; contractKey otherwise
             proxy: contract.transmissionsAccount || contractKey,
           });
         }

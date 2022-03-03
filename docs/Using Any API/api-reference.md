@@ -7,9 +7,9 @@ permalink: "docs/chainlink-framework/"
 ---
 API reference for [`ChainlinkClient`](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.6/ChainlinkClient.sol).
 
-# Index
+## Index
 
-##  Methods
+###  Methods
 
 | Name                                                                                 | Description                                                                               |
 |:------------------------------------------------------------------------------------ |:----------------------------------------------------------------------------------------- |
@@ -27,7 +27,7 @@ API reference for [`ChainlinkClient`](https://github.com/smartcontractkit/chainl
 | [chainlinkTokenAddress](#chainlinktokenaddress)               | Returns the stored address of the LINK token                                              |
 | [chainlinkOracleAddress](#chainlinkoracleaddress)             | Returns the stored address of the oracle contract                                         |
 
-## Events
+### Events
 
 | Name                                                             | Description                                                                  |
 |:---------------------------------------------------------------- | ---------------------------------------------------------------------------- |
@@ -35,13 +35,13 @@ API reference for [`ChainlinkClient`](https://github.com/smartcontractkit/chainl
 | [ChainlinkFulfilled](#chainlinkfulfilled) | Emitted from a Chainlinked contract when a request is fulfilled by an oracle |
 | [ChainlinkCancelled](#chainlinkcancelled) | Emitted from a Chainlinked contract when a request is cancelled              |
 
-## Modifiers
+### Modifiers
 
 | Name                                                                             | Description                                                                                                                                              |
 |:-------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [recordChainlinkFulfillment](#recordchainlinkfulfillment) | Used on fulfillment callbacks to ensure that the caller and requestId are valid. This is the modifier equivalent of the method validateChainlinkCallback |
 
-## Constants
+### Constants
 
 > 🚧 Namechange Between Versions
 >
@@ -52,20 +52,20 @@ API reference for [`ChainlinkClient`](https://github.com/smartcontractkit/chainl
 |:------------------------------------ | --------------------------------------------------------------------------------- |
 | [LINK](#link) | Helper uint256 to represent the divisibility of a LINK token. Equivalent to 10^18 |
 
-## Structs
+### Structs
 
 | Name                                                          | Description                                                          |
 |:------------------------------------------------------------- | -------------------------------------------------------------------- |
 | [Chainlink.Request](#chainlinkrequest) | All of the parameters that can be passed over in a Chainlink request |
 
-# Methods
+## Methods
 
 
 Below you'll find each helper explained in greater detail alongside respective implementation examples to help you leverage these methods once you start building your own Chainlinked contract.
 
 After the function signature and a short description, two code examples are provided, one focusing on the exact usage of the method and one where the helper is presented in the context of a full contract.
 
-## setChainlinkOracle
+### setChainlinkOracle
 
 ```javascript
 function setChainlinkOracle(
@@ -109,7 +109,7 @@ contract MyContract is ChainlinkClient {
 }
 ```
 
-## setChainlinkToken
+### setChainlinkToken
 
 ```javascript
 setChainlinkToken(
@@ -151,7 +151,7 @@ contract MyContract is ChainlinkClient {
 }
 ```
 
-## setPublicChainlinkToken
+### setPublicChainlinkToken
 
 ```javascript
 setPublicChainlinkToken()
@@ -200,7 +200,7 @@ contract MyContract is ChainlinkClient {
 }
 ```
 
-## buildChainlinkRequest
+### buildChainlinkRequest
 
 ```javascript
 function buildChainlinkRequest(
@@ -258,7 +258,7 @@ contract MyContract is ChainlinkClient {
 }
 ```
 
-## sendChainlinkRequest
+### sendChainlinkRequest
 
 ```javascript
 function sendChainlinkRequest(
@@ -316,7 +316,7 @@ contract MyContract is ChainlinkClient {
 }
 ```
 
-## sendChainlinkRequestTo
+### sendChainlinkRequestTo
 
 ```javascript
 function sendChainlinkRequestTo(
@@ -381,7 +381,7 @@ contract MyContract is ChainlinkClient, RateCalculator {
 }
 ```
 
-## validateChainlinkCallback
+### validateChainlinkCallback
 
 ```javascript
 function validateChainlinkCallback(
@@ -433,7 +433,7 @@ contract MyContract is ChainlinkClient {
 >
 > Do not call `validateChainlinkCallback` multiple times. The nature of validating the callback is to ensure the response is only received once and not replayed. Calling a second time with the same method ID will trigger a revert. Similarly, your callback should validate using either `validateChainlinkCallback` or `recordChainlinkFulfillment`, not both.
 
-## addChainlinkExternalRequest
+### addChainlinkExternalRequest
 
 ```javascript
 function addChainlinkExternalRequest(
@@ -481,7 +481,7 @@ contract MyContract is ChainlinkClient, Ownable {
 >
 > Being able to change a request means that you can change the data fed into a contract. Permissioning someone to make external requests can allow them to change the outcome of your contract. You should be sure to make sure that they are a trusted to do so. If they are not trusted to do so, you should put the request making logic on-chain where it is auditable and tamperproof.
 
-## cancelChainlinkRequest
+### cancelChainlinkRequest
 
 ```javascript  
 function cancelChainlinkRequest(bytes32 _requestId,
@@ -550,7 +550,7 @@ contract MyContract is ChainlinkClient, Ownable {
 }
 ```
 
-## useChainlinkWithENS
+### useChainlinkWithENS
 
 ```javascript
 function useChainlinkWithENS(
@@ -611,7 +611,7 @@ contract MyContract is ChainlinkClient, Ownable {
 >
 > If an oracle provider supports listing their oracle on ENS, that provides the added security of being able to update any issues that may arise. The tradeoff here is that by using their ENS record, you are allowing whoever controls that record and the corresponding code it points to. If your contract does this, you must either audit the updated code and make sure it matches [Oracle.sol](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.4/Oracle.sol) or trust whoever can update the records.
 
-## updateChainlinkOracleWithENS
+### updateChainlinkOracleWithENS
 
 ```javascript
 function updateChainlinkOracleWithENS()
@@ -666,7 +666,7 @@ contract MyContract is ChainlinkClient, Ownable {
 >
 > If an oracle provider supports listing their oracle on ENS, that provides the added security of being able to update any issues that may arise. The tradeoff here is that by using their ENS record, you are allowing whoever controls that record and the corresponding code it points to. If your contract does this, you must either audit the updated code and make sure it matches [Oracle.sol](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.4/Oracle.sol) or trust whoever can update the records.
 
-## chainlinkTokenAddress
+### chainlinkTokenAddress
 
 ```javascript
 function chainlinkTokenAddress() returns (address)
@@ -714,7 +714,7 @@ contract MyContract is ChainlinkClient, Ownable {
 }
 ```
 
-## chainlinkOracleAddress
+### chainlinkOracleAddress
 
 The `chainlinkOracleAddress` function is a helper used to return the stored address of the oracle contract.
 
@@ -745,9 +745,9 @@ contract MyContract is ChainlinkClient, Ownable {
 }
 ```
 
-# Events
+## Events
 
-## ChainlinkRequested
+### ChainlinkRequested
 
 ```javascript
 event ChainlinkRequested(
@@ -757,7 +757,7 @@ event ChainlinkRequested(
 
 Emitted when [sendChainlinkRequest](#sendchainlinkrequest) and [sendChainlinkRequestTo](#sendchainlinkrequestto) are called. Includes the request ID as an event topic.
 
-## ChainlinkFulfilled
+### ChainlinkFulfilled
 
 ```javascript
 event ChainlinkFulfilled(
@@ -767,7 +767,7 @@ event ChainlinkFulfilled(
 
 Emitted when [validateChainlinkCallback](#validatechainlinkcallback) or  [recordChainlinkFulfillment](#recordchainlinkfulfillment) are called. Includes the request ID as an event topic.
 
-## ChainlinkCancelled
+### ChainlinkCancelled
 
 ```javascript
 event ChainlinkCancelled(
@@ -777,9 +777,9 @@ event ChainlinkCancelled(
 
 Emitted when [cancelChainlinkRequest](#cancelchainlinkrequest) is called. Includes the request ID as an event topic.
 
-# Constants
+## Constants
 
-## LINK
+### LINK
 
 > 🚧 Namechange Between Versions
 >
@@ -815,9 +815,9 @@ contract MyContract is ChainlinkClient {
 }
 ```
 
-# Modifiers
+## Modifiers
 
-## recordChainlinkFulfillment
+### recordChainlinkFulfillment
 
 `recordChainlinkFulfillment` is used on fulfillment callbacks to ensure that the caller and `requestId` are valid. This is the method equivalent of the method `validateChainlinkCallback`.
 
@@ -856,7 +856,7 @@ contract MyContract is ChainlinkClient {
 }
 ```
 
-# Chainlink.Request
+## Chainlink.Request
 
 ```javascript
 library Chainlink {
@@ -880,7 +880,7 @@ The request's ID is generated by hashing the sender's address and the request's 
 >
 > The Request object was intended to be stored in memory. If you have a reason to persist the struct in storage, it is recommended that you do so by copying each attribute over and explicitly copying the bytes in the buffer.
 
-## Attributes
+### Attributes
 | Name               | Description                                                                                             |
 | ------------------ |:------------------------------------------------------------------------------------------------------- |
 | id                 | Identifier for the request                                                                              |
@@ -889,7 +889,7 @@ The request's ID is generated by hashing the sender's address and the request's 
 | nonce              | Used to generate the request ID                                                                         |
 | buf                | Buffer that stores additional user defined parameters as CBOR                                           |
 
-## Methods
+### Methods
 
 | Name                                                     | Description                                                      |
 |:-------------------------------------------------------- | ---------------------------------------------------------------- |
@@ -900,7 +900,7 @@ The request's ID is generated by hashing the sender's address and the request's 
 | [addStringArray](#addstringarray) | Add an array of strings as a value in the run request parameters |
 | [setBuffer](#setbuffer)           | Directly set the CBOR of the run request parameters              |
 
-### add
+#### add
 
 ```javascript
 function add(
@@ -950,7 +950,7 @@ contract MyContract is ChainlinkClient {
 }
 ```
 
-### addBytes
+#### addBytes
 
 ```javascript
 function addBytes(
@@ -1000,7 +1000,7 @@ contract MyContract is ChainlinkClient {
 }
 ```
 
-### addInt
+#### addInt
 
 ```javascript
 function addInt(
@@ -1050,7 +1050,7 @@ contract MyContract is ChainlinkClient {
 }
 ```
 
-### addUint
+#### addUint
 
 ```javascript
 function addUint(
@@ -1100,7 +1100,7 @@ contract MyContract is ChainlinkClient {
 }
 ```
 
-### addStringArray
+#### addStringArray
 
 ```javascript
 function addStringArray(
@@ -1157,7 +1157,7 @@ contract MyContract is ChainlinkClient {
 }
 ```
 
-### setBuffer
+#### setBuffer
 
 ```javascript
 function setBuffer(
