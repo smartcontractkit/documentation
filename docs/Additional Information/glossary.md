@@ -76,6 +76,10 @@ The on-chain component of an [Oracle](#oracle). The Oracle Contract is the inter
 
 The off-chain component of an [Oracle](#oracle).
 
+### Phase
+
+For data feeds, a phase indicates the underlying aggregator implementation has been updated. Phases are relevant only for the EACAggregatorProxys. You can think of a roundId on the proxies as a large number containing data for two numbers (phaseId + roundId). The roundId is pulled from the aggregator's implementation and combined by bit shifting with the latest phaseId of the proxy.
+
 ### Requester
 
 A Smart Contract or Externally Owned Account which requests data from an [Oracle](#oracle). The Requester does not have to be the same entity as the [Consumer](#consumer-contract) but commonly is the same.

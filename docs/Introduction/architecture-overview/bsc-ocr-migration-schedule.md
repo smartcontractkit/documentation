@@ -2,13 +2,13 @@
 layout: nodes.liquid
 section: ethereum
 date: Last Modified
-title: "BSC OCR Migration Schedule"
+title: "BNB Chain OCR Migration Schedule"
 permalink: "docs/bsc-ocr-migration-schedule/"
 hidden: true
 ---
-> 🚧 BSC OCR Migration 🚧 
+> 🚧 BNB Chain OCR Migration 🚧
 >
-> BSC Off-chain Reporting is planned to be migrated on **20 May 2021 at 16:30UTC**. Service should not be interrupted during this process.
+> BNB Chain Off-chain Reporting is planned to be migrated on **20 May 2021 at 16:30UTC**. Service should not be interrupted during this process.
 
 |Pair|Aggregator|
 |:---|:---|
