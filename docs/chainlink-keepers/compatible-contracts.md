@@ -57,18 +57,14 @@ function checkUpkeep(
 
 Below are the parameters and return values of the `checkUpkeep` function. Click each value to learn more about its design patterns and best practices:
 
-#### Parameters
+**Parameters:**
 
-| Name                  | Description                                                          |
-| ------------------------------- | -------------------------------------------------------------------- |
-| [`checkData`](#checkdata)                     | Data passed to the contract when checking for Upkeep. Specified in the Upkeep registration so it is always the same for a registered Upkeep. |
+- [`checkData`](#checkdata): Data passed to the contract when checking for Upkeep. Specified in the Upkeep registration so it is always the same for a registered Upkeep.
 
-#### Return Values
+**Return Values:**
 
-| Name                   | Description                                                          |
-| ------------------------------- | -------------------------------------------------------------------- |
-| [`upkeepNeeded`](#performupkeep)     | Indicates whether the Keeper should call `performUpkeep` or not.                    |
-| [`performData`](#performdata) | Bytes that the Keeper should call `performUpkeep` with, if Upkeep is needed. If you would like to encode data to decode later, try `abi.encode`. |
+- [`upkeepNeeded`](#performupkeep): Indicates whether the Keeper should call `performUpkeep` or not.
+- [`performData`](#performdata): Bytes that the Keeper should call `performUpkeep` with, if Upkeep is needed. If you would like to encode data to decode later, try `abi.encode`.
 
 If you use `checkData` and `performData`, you create a highly flexible off-chain computation infrastructure that can perform precise actions on-chain. Both of these computations are entirely programmable.
 
@@ -126,13 +122,9 @@ function performUpkeep(
 ) external override;
 ```
 
-#### Parameters
+**Parameters:**
 
-Below is the parameter of the `performUpkeep` function. Click the value to learn more about its design patterns and best practices:
-
-| Name                  | Description                                                          |
-| ------------------------------- | -------------------------------------------------------------------- |
-| [`performData`](#performdata-1)                   | Data which was passed back from the `checkData` simulation. If it is encoded, it can easily be decoded into other types by calling `abi.decode`. This data should always be validated against the contract's current state. |
+- [`performData`](#performdata-1): Data which was passed back from the `checkData` simulation. If it is encoded, it can easily be decoded into other types by calling `abi.decode`. This data should always be validated against the contract's current state.
 
 #### `performData`
 
