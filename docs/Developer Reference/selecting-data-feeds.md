@@ -11,15 +11,18 @@ When you design your applications, consider the quality of the data that you use
 
 ## Data Feeds Categories
 
-🟢 Data Feeds
+🟢 Verified Feeds
 
-These are our standard data feeds that follow our typical data feeds workflow. Chainlink node operators each query a number of different sources for the market price, and aggregate the estimates provided by those sources. Learn more about our decentralized data model at https://chain.link/data-feeds.
+These are our standard data feeds that follow our typical data feeds workflow. Chainlink node operators each query several sources for the market price and aggregate the estimates provided by those sources.
+Characteristics of Verified feeds, they're highly resilient to disruption, have many data sources, an extensive network of nodes, are highly liquid and well represented on a large number of markets.
+Learn more about our decentralized data model at https://chain.link/data-feeds.
 
-🟡 Custom Feeds & Monitored Feeds
+🟡 Custom & Monitored Feeds
 
-Feeds in this category contain non-standard price feeds, custom data feeds, feeds which might be in early development, and feeds for assets that are going through a significant market event. Feeds that have been tagged in this category as **under probation** are being monitored by the team to support the stability of the wider ecosystem.
+Feeds in this category contain non-standard price feeds, custom data feeds, feeds that might be in early development, and feeds for assets going through a significant market event.
+Feeds tagged as **under review** are being monitored by the team to support the stability of the broader ecosystem.
 
-**Reasons for a price feed being under probation:**
+**Reasons for a price feed being under review:**
 
 - The token project or asset is in early development
 - The project is going through a market event such as a token or liquidity migration
@@ -27,22 +30,47 @@ Feeds in this category contain non-standard price feeds, custom data feeds, feed
 
 **Custom Feeds**
 
-These feeds were built to service a specific use case and might not be suitable for general use. Users must evaluate the properties of a feed to make sure it aligns with their user's intended use case. Contact the team if you would like more detail on any of the specific feeds in this category.
+These feeds were built to service a specific use case and might not be suitable for general use. Users must evaluate the properties of a feed to make sure it aligns with their user's intended use case. Contact the team if you want more detail on any specific feeds in this category.
 
-**Each custom feed is categorized and we explain their composition below:**
+**Each custom feed is categorised and we explain their composition below:**
 
-- **Off-chain Single Source Feeds:** Some data providers use a single data source, which might be necessary if only one source exists off-chain for a specific type of data.
 - **On-chain single source feeds:** These feeds are similar to Off-chain Single Source Feeds. However, in this case the data source resides on-chain.
-- **Proof of Reserve Feeds:** Chainlink Proof of Reserve utilizes the largest decentralized collection of security-reviewed and Sybil-resistant node operators in the industry to acquire and verify reserve data. Reserves could reside both on-chain and off-chain.
+- **On-chain Proof of Reserve Feeds:** Chainlink Proof of Reserve utilises the largest decentralized collection of security-reviewed and Sybil-resistant node operators in the industry to acquire and verify reserve data, reserves in this use case reside on-chain.
 - **Technical Feeds:** Feeds within this category measure a particular technical metric from a specified blockchain. For example, Fast Gas or Block Difficulty.
 - **Total Value Locked Feeds:** These feeds measure the total value locked in a particular protocol.
 - **Custom Index Feeds:** An index calculates a function of the values for multiple underlying assets. The function is specific to that index and is typically calculated by our node operators following an agreed formula.
-- **LP Token Feeds:** These feeds use a decentralized feed for the underlying asset as well as some custom calculations to value the LP tokens.
+
+If you plan on using one of these feeds and would like to get a more detailed understanding, please contact the Chainlink Labs team
+
+🔴  Specialised
+These are highly complex and bespoke feeds that inherently contain more significant risk factors associated with them. Typical users of these feeds are our large institutional users with deep expertise in the market space they operate in.
+While these are monitored and well supported, they may not meet the same levels of resiliency as the above categories.
+**We strongly advise you to speak with the team to understand their use case, properties and associated risks.**
+
+**Examples of Specialised feeds**
+
+- **Off-chain Single Source Feeds:** Some data providers use a single data source, which might be necessary if only one source exists off-chain for a specific type of data.
+- **Off-chain Proof of Reserve Feeds:** Chainlink Proof of Reserve utilises the largest decentralised collection of security-reviewed and Sybil-resistant node operators in the industry to acquire and verify reserve data, reserves in this use case reside on-chain.
+- **LP Token Feeds:** These feeds use a decentralised feed for the underlying asset as well as some custom calculations to value the LP tokens.
 - **Wrapped Calculated Feeds:** These feeds are typically pegged 1:1 to the underlying token or asset. Under normal market conditions, these feeds track its underlying value accurately. However, the price is a derivative formed from a calculated method and might not always track value precisely.
 
 > 📘 Note:
 >
 > Users should evaluate data providers to make sure they provide high-quality data that your smart contracts can rely on. Any error or omission in the provider's data might negatively impact your application and its users.
+
+## Chainlink Community Deployments
+Deployments built and run by community members are not tracked in our documentation.
+Chainlink's community is continuously growing, and we believe they play a vital role in developing the blockchain ecosystem. Chainlink Labs fully supports the use and growth of open-source software and the philosophies underpinning the DeFi & Web3 communities.
+
+Chainlink's technology is used by many in the community to provide data on-chain; we continue to develop support and tooling for anyone to use. Users have a wide variety of options for choosing how to deliver data on-chain. They can deploy Chainlink nodes themselves or via our extensive network of node operators that offer services and access one of our community-managed oracle networks that supports the supply of various types of data on-chain.
+
+We would always recommend conducting a thorough analysis of your requirements and carrying out appropriate due diligence on any partners you wish to use with your project.
+
+> **Chainlink Labs does not monitor community deployments** in our infrastructure and encourages users to use best practices in observability, monitoring and risk mitigation as appropriate for your application's stage of development and use case.
+
+As a deployment evolves and develops, requirements for higher availability and greater security may increase due to the value secured by the oracle network. In these cases, Chainlink Labs can provide support and services to ensure deployments meet the highest levels of availability and security.
+
+## Example Best Practices for evaluating data sources
 
 If your smart contracts use data feeds, assess those data feeds for the following characteristics:
 
@@ -70,6 +98,5 @@ Price data quality is subject to crypto actions by the crypto project teams. Cry
 ## Fast Gas Reliability
 
 The [Fast Gas Data Feed](https://data.chain.link/ethereum/mainnet/gas/fast-gas-gwei) provides a simple way to determine the price of gas so you can estimate how much gas you need to make a transaction execute quickly. Fast gas prices can be manipulated, so you should design your applications to detect gas price volatility or malicious activity that might affect the costs of your transactions.
-
 
 > 📘 The best practices above are provided for informational purposes only. You are responsible for reviewing the quality of the data that you integrate into your smart contracts.
