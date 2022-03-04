@@ -31,7 +31,7 @@ Read the [Network Overview](../overview) page to learn how these networks work.
 
 ## Getting Started
 
-The goal of Keepers is to ensure flawless execution of Upkeeps when expected. To get the most out of Chainlink Keepers, review these docs in full: [how to create a Keepers-compatible contract](../compatible-contracts), usage patterns, best practices, and how to [maintain the health of your upkeep](../register-upkeep).
+The goal of Keepers is to ensure flawless execution of Upkeeps when expected. To get the most out of Chainlink Keepers, review these docs in full: [how to create a Keepers-compatible contract](../compatible-contracts), how to [register and fund your upkeep](../register-upkeep), [utility contracts](../utility-contracts) and [network overview](../overview)
 
 ### Supported Blockchain Networks
 
