@@ -18,9 +18,10 @@ All feeds published on [docs.chain.link](http://docs.chain.link) are monitored a
 
 Feeds do though evolve over time and we regularly monitor their market fundamentals and will proactively communicate any upcoming changes or issues we identify with a feed, these categories are designed to act as a mechanism in order to assist in accomplishing that task.
 
-Feeds sit within two broad categories: 
-🟢 Data feeds standard feeds
-🟡 Data feeds contain custom feeds or feeds under probation.
+Feeds sit within three broad categories:
+🟢 Verified
+🟡 Custom and Monitored
+🔴 Specialised
 
 For more information on these categories.
 
