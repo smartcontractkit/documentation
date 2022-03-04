@@ -47,7 +47,7 @@ Registering an Upkeep with the Chainlink Keepers App notifies the Keeper Network
      - Specify a LINK starting balance to fund your Upkeep. If you need testnet LINK, see the [LINK Token Contracts](/docs/link-token-contracts/) page to find the LINK faucets available on your network.
 
     > ❗️ Funding Upkeep
-    > You should fund your contract with more LINK that you anticipate you will need. The network will not check or perform your Upkeep if your balance could be too low based on current exchange rates.
+    > You should fund your contract with more LINK that you anticipate you will need. The network will not check or perform your Upkeep if your balance is too low based on current exchange rates.
     >
     > Your balance is charged LINK to run `performUpkeep`. Gas costs include the gas required for your Keeper-compatible contract to complete execution and an 80k overhead from the `KeeperRegistry` itself. The premium and overhead are not fixed and will change over time. See the [Network Configuration](/docs/chainlink-keepers/overview/#configuration) section to find the gas premium for your specific network.
 
@@ -62,16 +62,19 @@ After you complete registration, your upkeep will start being serviced after a p
 
 ## Fund Upkeep
 
-1. **Add funds to your Upkeep**
-  You provided initial funding as part of the registration step. If the balance runs low, add more LINK to your Upkeep. If you allow the balance to run out, the Keepers network will not perform upkeep.
+After registration, you have to monitor the balance of your Upkeep. If the balance runs out then the Keepers network will not perform the Upkeep. Follow these steps to fund your Upkeep.
 
-  * Click `View Upkeep` or go to the [Chainlink Keepers App](https://keepers.chain.link) and click on your recently registered Upkeep
-  * Click the `Add funds` button
-  * Approve the LINK spend allowance
+  1. **Click `View Upkeep`** or go to the [Chainlink Keepers App](https://keepers.chain.link) and click on your recently registered Upkeep
+  
+  1. **Click the `Add funds` button**
+  
+  1. **Approve the LINK spend allowance** 
     ![Approve LINK Spend Allowance](/images/contract-devs/keeper/keeper-approve-allowance.png)
-  * Confirm the LINK transfer by sending funds to the Chainlink Keeper Network Registry
+  
+  1. **Confirm the LINK transfer** by sending funds to the Chainlink Keeper Network Registry
     ![Confirm LINK Transfer](/images/contract-devs/keeper/keeper-confirm-transfer.png)
-  * Receive a success message and verify that the funds were added to the Upkeep
+    
+  1. **Receive a success message*** and verify that the funds were added to the Upkeep
     ![Funds Added Successful Message](/images/contract-devs/keeper/keeper-add-funds.png)
 
 ## How Funding Works
