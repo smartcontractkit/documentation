@@ -38,7 +38,7 @@ The Keeper node runs this method as an [`eth_call`](https://eth.wiki/json-rpc/AP
 >
 > The check that is run is subject to the `checkGasLimit` in the [configuration of the registry](/docs/chainlink-keepers/overview/#configuration).
 
-Because `checkUpkeep` is only ever performed off-chain in simulation, for most cases it is best to treat this as a `view` function and not modify any state. This might not always be possible if you want to use more advanced Solidity features like [`DelegateCall`](https://docs.soliditylang.org/en/latest/introduction-to-smart-contracts.html#delegatecall-callcode-and-libraries). It is a best practice to import the [`KeeperCompatible.sol`](https://github.com/smartcontractkit/keeper/blob/master/contracts/KeeperCompatible.sol) contract and use the `cannotExecute` modifier to ensure that the method can be used only for simulation purposes.
+Because `checkUpkeep` is only ever performed off-chain in simulation, for most cases it is best to treat this as a `view` function and not modify any state. This might not always be possible if you want to use more advanced Solidity features like [`DelegateCall`](https://docs.soliditylang.org/en/latest/introduction-to-smart-contracts.html#delegatecall-callcode-and-libraries). It is a best practice to import the [`KeeperCompatible.sol`](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/KeeperCompatible.sol) contract and use the `cannotExecute` modifier to ensure that the method can be used only for simulation purposes.
 
 ```solidity
 function checkUpkeep(
