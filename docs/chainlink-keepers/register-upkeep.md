@@ -74,7 +74,7 @@ After registration, you have to monitor the balance of your Upkeep. If the balan
   1. **Confirm the LINK transfer** by sending funds to the Chainlink Keeper Network Registry
     ![Confirm LINK Transfer](/images/contract-devs/keeper/keeper-confirm-transfer.png)
     
-  1. **Receive a success message*** and verify that the funds were added to the Upkeep
+  1. **Receive a success message** and verify that the funds were added to the Upkeep
     ![Funds Added Successful Message](/images/contract-devs/keeper/keeper-add-funds.png)
 
 ## How Funding Works
