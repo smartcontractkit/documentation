@@ -43,7 +43,7 @@ Before you deploy your application to a mainnet, test this tutorial on one of th
 
 To deploy an on-chain Job Scheduler contract, use the pre-deployed Chainlink [CronUpkeepFactory](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/factories/CronUpkeepFactory.sol) smart contract. This is called the [Factory pattern](https://www.youtube.com/watch?v=Q1zZo4O_Ong), where one contract deploys another contract. To deploy your Job Scheduler (`CronUpkeep`), use the following process:
 
-1. [Open the `CronUpkeepFactory.abi` in Remix](https://remix.ethereum.org/#url=https://docs.chain.link/samples/Keepers/CronUpkeepFactory.abi). This is an ABI (application binary interface) that can interact with the `CronUpkeepFactory.sol` contract that is already deployed to the network. You can deploy and run ABIs in Remix. Because they are not Solidity contracts, they do not require a compile step.
+1. [Open the `CronUpkeepFactory.abi` in Remix](https://remix.ethereum.org/#gist=ca1dcf2be15f0313824929cfb9c3ba3b). This is an ABI (application binary interface) that can interact with the `CronUpkeepFactory.sol` contract that is already deployed to the network. You can deploy and run ABIs in Remix. Because they are not Solidity contracts, they do not require a compile step.
 
     ![Remix ABI Cron](/images/keepers/cron-1.png)
 
@@ -77,7 +77,7 @@ After the transaction is complete, a transaction hash appears in the terminal. T
 
 To interact with your Job Scheduler contract, use another ABI with your deployed contract address:
 
-1. [Open the `CronUpkeep.abi` in Remix](https://remix.ethereum.org/#url=https://docs.chain.link/samples/Keepers/CronUpkeep.abi):
+1. [Open the `CronUpkeep.abi` in Remix](https://remix.ethereum.org/#gist=f0ba3fb0bdbfd1589387c05ac904a050):
 
 1. In Remix, click the **Deploy and Run** tab.
 
@@ -184,7 +184,7 @@ The `EncodedCronSpec` is an encoded version the [Cron](https://en.wikipedia.org/
 {% include samples/Keepers/CronUpkeepFactory.abi %}
 ```
 <div class="remix-callout">
-    <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/Keepers/CronUpkeepFactory.abi" >Open in Remix</a>
+    <a href="https://remix.ethereum.org/#gist=ca1dcf2be15f0313824929cfb9c3ba3b" >Open in Remix</a>
     <a href="/docs/conceptual-overview/#what-is-remix" >What is Remix?</a>
 </div>
 
@@ -195,7 +195,7 @@ The `EncodedCronSpec` is an encoded version the [Cron](https://en.wikipedia.org/
 {% include samples/Keepers/CronUpkeep.abi %}
 ```
 <div class="remix-callout">
-    <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/Keepers/CronUpkeep.abi" >Open in Remix</a>
+    <a href="https://remix.ethereum.org/#gist=f0ba3fb0bdbfd1589387c05ac904a050" >Open in Remix</a>
     <a href="/docs/conceptual-overview/#what-is-remix" >What is Remix?</a>
 </div>
 
