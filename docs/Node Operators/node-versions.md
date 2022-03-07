@@ -12,6 +12,23 @@ metadata:
 
 You can find a list of release notes for Chainlink nodes in the [smartcontractkit GitHub repository](https://github.com/smartcontractkit/chainlink/releases). Docker images are available in the [Chainlink Docker hub](https://hub.docker.com/r/smartcontract/chainlink/tags).
 
+## Changes to v1.2.0 nodes
+
+**[v1.2.0 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v1.2.0)**
+
+> 🚧 Not for use on Solana or Terra
+>
+> Although this release provides `SOLANA_ENABLED` and `TERRA_ENABLED` environment variables, these are not intended for use on Solana or Terra mainnets.
+
+Significant changes:
+
+- Added support for the [Nethermind Ethereum client](https://nethermind.io/).
+- Added support for batch sending telemetry to the ingress server to improve performance.
+- New environment variables: See the [release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v1.2.0) for details.
+- Removed the `deleteuser` CLI command.
+
+See the [v1.2.0 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v1.2.0) for a complete list of changes and fixes.
+
 ## Changes to v1.1.0 nodes
 
 **[v1.1.0 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v1.1.0)**
