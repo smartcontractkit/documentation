@@ -19,10 +19,9 @@ When you design your applications, consider the quality of the data that you use
 
 Data feeds are grouped into the following categories:
 
-+ [Verified Feeds](#verified-feeds)
-+ [Monitored Feeds](#monitored-feeds)
-+ [Custom Feeds](#custom-Feeds)
-+ [Specialized Feeds](#specialized-feeds)
++ [Verified Feeds](#🟢-verified-feeds)
++ [Monitored and Custom Feeds](#🟡-monitored-and-custom-feeds)
++ [Specialized Feeds](#-specialized-feeds)
 
 ### 🟢 Verified Feeds
 
@@ -35,7 +34,9 @@ These are our standard data feeds that follow our typical data feeds workflow. C
 
 Learn more about our decentralized data model at [https://chain.link/data-feeds](https://chain.link/data-feeds).
 
-### 🟡 Monitored Feeds
+### 🟡 Monitored and Custom Feeds
+
+#### Monitored Feeds
 
 Feeds in this category contain non-standard price feeds, custom data feeds, feeds that might be in early development, and feeds for assets going through a significant market event.
 
@@ -45,7 +46,7 @@ Feeds tagged as *under review* are being monitored by the team to support the st
 - The project is going through a market event such as a token or liquidity migration
 - The token or project is being deprecated in the market
 
-### 🟠 Custom Feeds
+#### Custom Feeds
 
 Custom Feeds are built to service a specific use case and might not be suitable for general use. Users must evaluate the properties of a feed to make sure it aligns with their user's intended use case. Contact the team if you want more detail on any specific feeds in this category.
 
