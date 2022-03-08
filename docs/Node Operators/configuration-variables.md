@@ -820,7 +820,7 @@ This can be overridden on a per-task basis by setting the `MinRequiredOutgoingCo
 > ⚠️ NOTE
 > This has replaced the formerly used MINIMUM_CONTRACT_PAYMENT
 
-- Default: _automatically set based on Chain ID, typically 10000000000000 (0.00001 LINK) on all chains except mainnet, where it is 0.1 LINK_
+- Default: _automatically set based on Chain ID, typically 10000000000000 (0.00001 LINK) on all chains except ETH Mainnet, Kovan, Goerli, and Rinkeby, where it is 100000000000000000 (0.1 LINK)._
 
 For jobs that use the `EthTx` adapter, this is the minimum payment amount in order for the node to accept and process the job. Since there are no decimals on the EVM, the value is represented like wei.
 
