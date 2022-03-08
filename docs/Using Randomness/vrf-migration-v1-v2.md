@@ -24,6 +24,8 @@ Chainlink VRF v2 includes several improvements and changes to the way you fund a
 
 + **Unified Billing - Delegate Subscription Balance to Multiple Addresses:** Chainlink VRF v2 allows up to 100 smart contract addresses to fund their requests for verifiable randomness from a single LINK subscription balance, which is managed by the subscription owner.
 
+Read the [Chainlink VRF v2 blog post](https://blog.chain.link/vrf-v2-mainnet-launch/) for a detailed explanation about the benefits and use cases for VRF v2.
+
 ## Updating your applications to use VRF v2
 
 To modify your existing smart contract code to work with VRF v2, complete the following changes. See the [Get a Random Number](/docs/get-a-random-number/) guide for an example.
@@ -32,7 +34,7 @@ To modify your existing smart contract code to work with VRF v2, complete the fo
 
 1. Import the new [`VRFConsumerBaseV2.sol` contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/VRFConsumerBaseV2.sol) and remove the v1 `VRFConsumerBase.sol` import. This contract includes the `fulfillRandomWords` function.
 
-1. Import the [`VRFCoordinatorV2Interface.sol`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol) interface. This interface includes the new `requestRandomWords` function.
+1. Import the [`VRFCoordinatorV2Interface.sol` interface](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol). This interface includes the new `requestRandomWords` function.
 
 1. Add a `VRFConsumerBaseV2` constructor as shown in the [Get a Random Number](/docs/get-a-random-number/) example.
 

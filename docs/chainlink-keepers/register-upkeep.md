@@ -24,7 +24,7 @@ After you register, you can interact directly with the [registry contract](https
 + [Fund Upkeep](#fund-upkeep)
 + [How Funding Works](#how-funding-works)
 + [Maintain a Minimum Balance](#maintain-a-minimum-balance)
-+ [Useful Patterns](#useful-patterns)
++ [Best Practices](#best-practices)
   + [Gas Limits](#gas-limits)
   + [Testing](#testing)
 
@@ -47,7 +47,7 @@ Registering an Upkeep with the Chainlink Keepers App notifies the Keeper Network
      - Specify a LINK starting balance to fund your Upkeep. If you need testnet LINK, see the [LINK Token Contracts](/docs/link-token-contracts/) page to find the LINK faucets available on your network.
 
     > ❗️ Funding Upkeep
-    > You should fund your contract with more LINK that you anticipate you will need. The network will not check or perform your Upkeep if your balance could be too low based on current exchange rates.
+    > You should fund your contract with more LINK that you anticipate you will need. The network will not check or perform your Upkeep if your balance is too low based on current exchange rates.
     >
     > Your balance is charged LINK to run `performUpkeep`. Gas costs include the gas required for your Keeper-compatible contract to complete execution and an 80k overhead from the `KeeperRegistry` itself. The premium and overhead are not fixed and will change over time. See the [Network Configuration](/docs/chainlink-keepers/overview/#configuration) section to find the gas premium for your specific network.
 
@@ -62,16 +62,19 @@ After you complete registration, your upkeep will start being serviced after a p
 
 ## Fund Upkeep
 
-1. **Add funds to your Upkeep**
-  You provided initial funding as part of the registration step. If the balance runs low, add more LINK to your Upkeep. If you allow the balance to run out, the Keepers network will not perform upkeep.
+After registration, you have to monitor the balance of your Upkeep. If the balance runs out then the Keepers network will not perform the Upkeep. Follow these steps to fund your Upkeep.
 
-  * Click `View Upkeep` or go to the [Chainlink Keepers App](https://keepers.chain.link) and click on your recently registered Upkeep
-  * Click the `Add funds` button
-  * Approve the LINK spend allowance
+  1. **Click `View Upkeep`** or go to the [Chainlink Keepers App](https://keepers.chain.link) and click on your recently registered Upkeep
+  
+  1. **Click the `Add funds` button**
+  
+  1. **Approve the LINK spend allowance** 
     ![Approve LINK Spend Allowance](/images/contract-devs/keeper/keeper-approve-allowance.png)
-  * Confirm the LINK transfer by sending funds to the Chainlink Keeper Network Registry
+  
+  1. **Confirm the LINK transfer** by sending funds to the Chainlink Keeper Network Registry
     ![Confirm LINK Transfer](/images/contract-devs/keeper/keeper-confirm-transfer.png)
-  * Receive a success message and verify that the funds were added to the Upkeep
+    
+  1. **Receive a success message** and verify that the funds were added to the Upkeep
     ![Funds Added Successful Message](/images/contract-devs/keeper/keeper-add-funds.png)
 
 ## How Funding Works
@@ -90,9 +93,7 @@ The minimum balance is calculated using the current fast gas price, the Gas Limi
 
 To account for gas price fluctuations, maintain a balance that is 3 to 5 times the minimum balance.
 
-## Useful Patterns
-
-These patterns are not mutually exclusive. Review and make use of the patterns that make sense for your use case.
+## Best practices
 
 ### Gas Limits
 
@@ -100,7 +101,7 @@ These patterns are not mutually exclusive. Review and make use of the patterns t
 >
 > The `KeeperRegistry` enforces a cap for gas used both on-chain and off-chain. See the [Keepers Network Overview](../overview/) for details. The caps are configurable and might change based on user feedback. Be sure that you understand these limits if your use case requires a large amount of gas.
 
-When developing your keeper-compatible smart contracts, you must understand the gas limits that you are working with on the KeeperRegistry. There is a `check` gas limit and a `call` gas limit that your contract must adhere to in order to operate successfully. See the [Keepers Network Overview](../overview/) to learn the current configuration.
+When developing your Keeper-compatible smart contracts, you must understand the gas limits that you are working with on the `KeeperRegistry`. There is a `check` gas limit and a `call` gas limit that your contract must adhere to in order to operate successfully. See the [Keepers Network Overview](../overview/) to learn the current configuration.
 
 ### Testing
 

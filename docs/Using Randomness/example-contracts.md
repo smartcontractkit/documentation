@@ -4,7 +4,7 @@ section: ethereum
 date: Last Modified
 title: "Example Contracts"
 permalink: "docs/chainlink-vrf/example-contracts/"
-whatsnext: {"Contract Addresses":"/docs/vrf-contracts/"}
+whatsnext: {"Security Considerations":"/docs/vrf-security-considerations/", "Best Practices":"/docs/chainlink-vrf-best-practices/", "Migrating from VRF v1 to v2":"/docs/chainlink-vrf/migration-vrf-v1-v2/", "Contract Addresses":"/docs/vrf-contracts/"}
 metadata:
   description: "Example contracts for generating a random number inside a smart contract using Chainlink VRF."
   image:
@@ -38,7 +38,7 @@ See the example in the [Subscription manager contract](#subscription-manager-con
 
 ## Subscription manager contract
 
-In this example, the contract operates as a subscription owner and can run functions to add consumer contracts to the subscription. Those contracts need to include only the `requestRandomWords()` function, the `fulfillRandomWords()` functions with the correct coordinator parameters and the correct subscription ID to obtain their own random values and use the subscription balance.
+In this example, the contract operates as a subscription owner and can run functions to add consumer contracts to the subscription. The consumer contracts must include the `requestRandomWords()` function with the correct coordinator parameters and the correct subscription ID to request random values and use the subscription balance. The consumer contracts must also include the `fulfillRandomWords()` function to receive the random values.
 
 Subscription owners and consumers do not have to be separate. This contract can also act as a consumer by running its own `requestRandomWords()` function, but it must add itself as an approved consumer. This example contract includes functions in the `constructor()` that creates the subscription and adds itself as a consumer automatically when you deploy it.
 
@@ -70,15 +70,15 @@ To use this contract, compile and deploy it in Remix.
 
     You can use the example from the [Get a Random Number](/docs/get-a-random-number/#analyzing-the-contract) guide.
 
-1. After you deploy the consumer contract, add it to the subscription as an approved consumer using the `addConsumer()` function on your subscription manager contract. Specify the address for your consumer contract.
+1. After you deploy the consumer contract, add it to the subscription as an approved consumer using the `addConsumer()` function on your subscription manager contract. Specify the address of your consumer contract.
 
-1. On the consumer contract, run the `requestRandomWords()` functions to request and receive random values. The request might take several minutes to process. Track pending request status in the [Subscription Manager](https://vrf.chain.link) app.
+1. On the consumer contract, run the `requestRandomWords()` function to request and receive random values. The request might take several minutes to process. Track pending request status in the [Subscription Manager](https://vrf.chain.link) app.
 
     The consumer contract can continue to make requests until your subscription balance runs out. The subscription manager contract must maintain sufficient balance in the subscription so that the consumers can continue to operate.
 
-1. When you are done with your contracts and the subscription, run the `cancelSubscription()` to close the subscription and send the remaining LINK to your wallet address.
+1. When you are done with your contracts and the subscription, run the `cancelSubscription()` to close the subscription and send the remaining LINK to your wallet address. Specify the address of the receiving wallet.
 
-If you need to remove consumer contracts from the subscription, use the `removeConsumer()` function.
+If you need to remove consumer contracts from the subscription, use the `removeConsumer()` function. Specify the address of the consumer contract to be removed.
 
 ## Funding and requesting simultaneously
 

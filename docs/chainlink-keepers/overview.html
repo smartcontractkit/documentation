@@ -24,13 +24,13 @@ The diagram below describes the architecture of the Keeper network. It is respon
 ![keeper-overview](/images/contract-devs/keeper/keeper-overview.png)
 
 ## Keeper Contracts
-There are several contracts to be aware of. You can find these in the [Chainlink repository](https://github.com/smartcontractkit/chainlink/tree/develop/contracts/src/v0.7).
+There are several contracts to be aware of. You can find these in the [Chainlink repository](https://github.com/smartcontractkit/chainlink/tree/develop/contracts/src/v0.8).
 
-+ [`KeeperCompatible.sol`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/KeeperCompatible.sol): Imports the following contracts:
-  + [`KeeperBase.sol`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/KeeperBase.sol): Enables the use of the `cannotExecute` modifier. Import if you have a need for this modifier. See the [`cannotExecute` modifier](/docs/chainlink-keepers/compatible-contracts#cannotexecute) for details.
-  + [`KeeperCompatibleInterface.sol`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/interfaces/KeeperCompatibleInterface.sol): The interface to be implemented in order to make your contract Keeper-compatible. Import for type safety.
++ [`KeeperCompatible.sol`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/KeeperCompatible.sol): Imports the following contracts:
+  + [`KeeperBase.sol`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/KeeperBase.sol): Enables the use of the `cannotExecute` modifier. Import if you have a need for this modifier. See the [`checkUpkeep` function](/docs/chainlink-keepers/compatible-contracts#checkupkeep-function) for details.
+  + [`KeeperCompatibleInterface.sol`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/interfaces/KeeperCompatibleInterface.sol): The interface to be implemented in order to make your contract Keeper-compatible. Import for type safety.
 + [`KeeperRegistry.sol`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/KeeperRegistry.sol): The registry contract that tracks all registered Upkeeps and the Keepers that can perform them.
-+ `UpkeepRegistrationRequest.sol`: The registration contract that allows users to register/configure their Upkeep with the associated KeeperRegistry.
++ [`UpkeepRegistrationRequests.sol`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/UpkeepRegistrationRequests.sol): The registration contract that allows users to register/configure their Upkeep with the associated KeeperRegistry.
 
 ## Chainlink Keepers Economics
 Chainlink Keepers do not compete with one another, but rather work together to ensure all registered Upkeeps are performed. This makes costs more predictable upfront, enabling you to estimate costs based on the expected gas consumption.
@@ -66,15 +66,15 @@ Keeper Registry contract: [0x7b3EC232b08BD7b4b3305BE0C044D907B2DF960B](https://e
 
 ### {{network[0]}}
 
-* **Payment Premium (paymentPremiumPPB)** - <span id="show-{{network[1]}}-paymentPremiumPPB"></span>% gas premium
+* **Payment Premium (paymentPremiumPPB):** <span id="show-{{network[1]}}-paymentPremiumPPB"></span>% gas premium
     This premium is applied on top of the gas cost paid by the Keeper to perform your Upkeep
-* **Block Count Per Turn (blockCountPerTurn)** - <span id="show-{{network[1]}}-blockCountPerTurn"></span>
+* **Block Count Per Turn (blockCountPerTurn):** <span id="show-{{network[1]}}-blockCountPerTurn"></span>
     The number of blocks in each turn before the Upkeep is rotated to the next Keeper
-* **Check Gas Limit (checkGasLimit)** - <span id="show-{{network[1]}}-checkGasLimit"></span>
+* **Check Gas Limit (checkGasLimit):** <span id="show-{{network[1]}}-checkGasLimit"></span>
     The maximum amount of gas that can be used by your checkUpkeep for off-chain computation.
-* **Call Gas Limit (callGasLimit)**: <span>2,500,000</span> <!-- @TODO render this programatically. <span id="show-callGasLimit"></span> -->
+* **Call Gas Limit (callGasLimit):** <span>5,000,000</span> <!-- @TODO render this programatically. <span id="show-callGasLimit"></span> -->
     The maximum amount of gas that can be used by the client contract’s performUpkeep for the on-chain transaction. You can set an upper limit on your Upkeep during registration, but this number must not exceed the call gas limit on the KeeperRegistry.
-* **Gas Ceiling Multiplier (gasCeilingMultiplier)** - <span id="show-{{network[1]}}-gasCeilingMultiplier"></span>
+* **Gas Ceiling Multiplier (gasCeilingMultiplier):** <span id="show-{{network[1]}}-gasCeilingMultiplier"></span>
     Establishes a ceiling for the maximum price based on the on-chain fast gas feed.
 
 {% endmarkdown %}
@@ -83,15 +83,15 @@ Keeper Registry contract: [0x7b3EC232b08BD7b4b3305BE0C044D907B2DF960B](https://e
 {% markdown %}
 ### BNB Chain
 
-* **Payment Premium (paymentPremiumPPB)** - <span>30</span>% gas premium
+* **Payment Premium (paymentPremiumPPB):** <span>30</span>% gas premium
     This premium is applied on top of the gas cost paid by the Keeper to perform your Upkeep
-* **Block Count Per Turn (blockCountPerTurn)** - <span>10</span>
+* **Block Count Per Turn (blockCountPerTurn):** <span>10</span>
     The number of blocks in each turn before the Upkeep is rotated to the next Keeper
-* **Check Gas Limit (checkGasLimit)** - <span>6,500,000</span>
+* **Check Gas Limit (checkGasLimit):** <span>6,500,000</span>
     The maximum amount of gas that can be used by your checkUpkeep for off-chain computation.
-* **Call Gas Limit (callGasLimit)**: <span>5,000,000</span> <!-- @TODO render this programatically. <span id="show-callGasLimit"></span> -->
+* **Call Gas Limit (callGasLimit):** <span>5,000,000</span> <!-- @TODO render this programatically. <span id="show-callGasLimit"></span> -->
     The maximum amount of gas that can be used by the client contract’s performUpkeep for the on-chain transaction. You can set an upper limit on your Upkeep during registration, but this number must not exceed the call gas limit on the KeeperRegistry.
-* **Gas Ceiling Multiplier (gasCeilingMultiplier)** - <span>3</span>
+* **Gas Ceiling Multiplier (gasCeilingMultiplier):** <span>3</span>
     Establishes a ceiling for the maximum price based on the on-chain fast gas feed.
 {% endmarkdown %}
 

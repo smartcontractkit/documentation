@@ -4,7 +4,7 @@ section: ethereum
 date: Last Modified
 title: "Get a Random Number"
 permalink: "docs/get-a-random-number/"
-whatsnext: {"Contract Addresses":"/docs/vrf-contracts/"}
+whatsnext: {"Example Contracts":"/docs/chainlink-vrf/example-contracts/", "Security Considerations":"/docs/vrf-security-considerations/", "Best Practices":"/docs/chainlink-vrf-best-practices/", "Migrating from VRF v1 to v2":"/docs/chainlink-vrf/migration-vrf-v1-v2/" , "Contract Addresses":"/docs/vrf-contracts/"}
 metadata:
   description: "How to generate a random number inside a smart contract using Chainlink VRF."
   image:
@@ -93,7 +93,7 @@ Build and deploy the contract on Rinkeby.
 
 1. Under the **Consumers** section of the Subscription Manager, click **Add consumer**.
 
-1. Enter the address for your consumer contract that you just deployed and click **Add consumer**. MetaMask opens and asks you to confirm the transaction.
+1. Enter the address of your consumer contract that you just deployed and click **Add consumer**. MetaMask opens and asks you to confirm the transaction.
 
 Your example contract is deployed and approved to use your subscription balance to pay for VRF v2 requests. Next, [request random values](#request-random-values) from Chainlink VRF.
 

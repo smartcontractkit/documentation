@@ -99,6 +99,7 @@ It's recommended to run the Chainlink node with [Docker](https://www.docker.com/
 - A fully synced Ethereum client with websockets enabled. Client specific instructions can be found below:
   - [Run Geth](../run-an-ethereum-client/#geth)
   - [Run OpenEthereum](../run-an-ethereum-client/#parity)
+  - [Run Nethermind](../run-an-ethereum-client/#nethermind)
   - [Use an external service](../run-an-ethereum-client/#external-services)
 
 #### Create a directory
