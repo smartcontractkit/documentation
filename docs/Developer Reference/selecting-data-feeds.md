@@ -20,8 +20,9 @@ When you design your applications, consider the quality of the data that you use
 Data feeds are grouped into the following categories:
 
 + [Verified Feeds](#🟢-verified-feeds)
-+ [Monitored and Custom Feeds](#🟡-monitored-and-custom-feeds)
-+ [Specialized Feeds](#-specialized-feeds)
++ [Monitored Feeds](#🟡-monitored-feeds)
++ [Custom Feeds](# 🔵-custom-feeds)
++ [Specialized Feeds](#⚫-specialized-feeds)
 
 ### 🟢 Verified Feeds
 
@@ -34,19 +35,18 @@ These are our standard data feeds that follow our typical data feeds workflow. C
 
 Learn more about our decentralized data model at [https://chain.link/data-feeds](https://chain.link/data-feeds).
 
-### 🟡 Monitored and Custom Feeds
+### 🟡 Monitored 
 
-#### Monitored Feeds
 
-Feeds in this category contain non-standard price feeds, custom data feeds, feeds that might be in early development, and feeds for assets going through a significant market event.
 
-Feeds tagged as *under review* are being monitored by the team to support the stability of the broader ecosystem. Data feeds might be under review for the following reasons:
+Feeds under the monitored category are *under review* by the team to support the stability of the broader ecosystem. 
+Data feeds might be under review for the following reasons:
 
 - The token project or asset is in early development
 - The project is going through a market event such as a token or liquidity migration
 - The token or project is being deprecated in the market
 
-#### Custom Feeds
+### 🔵 Custom Feeds
 
 Custom Feeds are built to service a specific use case and might not be suitable for general use. Users must evaluate the properties of a feed to make sure it aligns with their user's intended use case. Contact the team if you want more detail on any specific feeds in this category.
 
@@ -60,7 +60,7 @@ Custom feeds have the following categories and compositions:
 
 If you plan on using one of these feeds and would like to get a more detailed understanding, please contact the Chainlink Labs team.
 
-### 🔴 Specialized Feeds
+### ⚫ Specialized Feeds
 
 These are highly complex and bespoke feeds that inherently contain more significant risk factors associated with them. Typical users of these feeds are our large institutional users with deep expertise in the market space they operate in.
 

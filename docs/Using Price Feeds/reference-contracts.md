@@ -23,8 +23,8 @@ Data feeds are grouped into the following categories:
 
 🟢 Verified
 🟡 Monitored
-🟠 Custom
-🔴 Specialized
+🔵  Custom
+⚫  Specialized
 
 For more information on these categories, see the [Selecting Quality Data Feeds](/docs/selecting-data-feeds/#data-feed-categories) page.
 
