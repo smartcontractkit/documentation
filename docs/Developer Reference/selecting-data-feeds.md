@@ -21,8 +21,8 @@ Data feeds are grouped into the following categories:
 
 + [Verified Feeds](#🟢-verified-feeds)
 + [Monitored Feeds](#🟡-monitored-feeds)
-+ [Custom Feeds](# 🔵-custom-feeds)
-+ [Specialized Feeds](#⚫-specialized-feeds)
++ [Custom Feeds](#-custom-feeds)
++ [Specialized Feeds](#-specialized-feeds)
 
 ### 🟢 Verified Feeds
 
@@ -35,9 +35,7 @@ These are our standard data feeds that follow our typical data feeds workflow. C
 
 Learn more about our decentralized data model at [https://chain.link/data-feeds](https://chain.link/data-feeds).
 
-### 🟡 Monitored
-
-
+### 🟡 Monitored Feeds
 
 Feeds under the monitored category are *under review* by the team to support the stability of the broader ecosystem.
 Data feeds might be under review for the following reasons:
@@ -76,13 +74,15 @@ While these are monitored and well supported, they might not meet the same level
 > 📘 Note:
 >
 > Users should evaluate data providers to make sure they provide high-quality data that your smart contracts can rely on. Any error or omission in the provider's data might negatively impact your application and its users.
-```suggestion
-At Chainlink Labs we plan for all eventualities, however small they might be. To help our users prepare for such events, we recommend adding additional tooling for custom or specialized feeds to protect their application/protocol. This tooling is put in place to mitigate against some of the following risks: extreme market events, possible malicious activity occurring on a 3rd party venues/contracts, potential delays, or outages.
-Below are some of the examples of tooling some of our users have put in place:
-- Circuit Breakers - In the case of an extreme price event, the contract would pause operations for a limited period of time.
-- Contract update delays - contracts would not update until the protocol had received a recent fresh input from the data feed.
-- Manual Kill Switch - Example: If a vulnerability/bug was discovered in one of the upstream contracts, The user would manually be able to cease operation and temporarily sever the connection to the Price feed.
-- Additionally, monitoring - some users create their own monitoring alerts based on deviations in the price feeds they’re using.
+
+At Chainlink Labs, we plan for all eventualities, however small they might be. To help you prepare for such events, we recommend adding additional tooling for custom or specialized feeds to protect your application or protocol. This tooling is put in place to mitigate extreme market events, possible malicious activity on third-party venues or contracts, potential delays, and outages.
+
+Below are some examples of tooling that our users have put in place:
+
+- Circuit Breakers: In the case of an extreme price event, the contract would pause operations for a limited period of time.
+- Contract update delays: contracts would not update until the protocol had received a recent fresh input from the data feed.
+- Manual Kill Switch: If a vulnerability or bug is discovered in one of the upstream contracts, the user can manually cease operation and temporarily sever the connection to the data feed.
+- Monitoring: Some users create their own monitoring alerts based on deviations in the data feeds that they are using.
 
 ## Chainlink Community Deployments
 
