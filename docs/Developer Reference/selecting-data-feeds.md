@@ -35,11 +35,11 @@ These are our standard data feeds that follow our typical data feeds workflow. C
 
 Learn more about our decentralized data model at [https://chain.link/data-feeds](https://chain.link/data-feeds).
 
-### 🟡 Monitored 
+### 🟡 Monitored
 
 
 
-Feeds under the monitored category are *under review* by the team to support the stability of the broader ecosystem. 
+Feeds under the monitored category are *under review* by the team to support the stability of the broader ecosystem.
 Data feeds might be under review for the following reasons:
 
 - The token project or asset is in early development
@@ -70,7 +70,7 @@ While these are monitored and well supported, they might not meet the same level
 
 - **Off-chain Single Source Feeds:** Some data providers use a single data source, which might be necessary if only one source exists off-chain for a specific type of data.
 - **Off-chain Proof of Reserve Feeds:** Chainlink Proof of Reserve uses the largest decentralized collection of security-reviewed and Sybil-resistant node operators in the industry to acquire and verify reserve data, reserves in this use case reside on-chain.
-- **LP Token Feeds:** These feeds use a decentralized feed for the underlying asset as well as some custom calculations to value the LP tokens.
+- **LP Token Feeds:** These feeds use a decentralized feed for the underlying asset as well calculations to value the LP tokens.
 - **Wrapped Calculated Feeds:** These feeds are typically pegged 1:1 to the underlying token or asset. Under normal market conditions, these feeds track its underlying value accurately. However, the price is a derivative formed from a calculated method and might not always track value precisely.
 
 > 📘 Note:
