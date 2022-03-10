@@ -167,7 +167,6 @@ The `EncodedCronSpec` is an encoded version the [Cron](https://en.wikipedia.org/
     * No special characters: ? L W #
     * lists can have a max length of 26
     * No words like JAN / FEB or MON / TUES
-    * No <division operators> (eg */5 * * * *)
 */
 ```
 
