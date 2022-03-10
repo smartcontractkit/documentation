@@ -193,22 +193,22 @@ ETH_URL=wss://cl-main.fiews.io/v1/YOUR_API_KEY
 Example connection setting:
 
 ```text Rinkeby
-ETH_URL=wss://eth.getblock.io/rinkeby/YOUR_API_KEY
+ETH_URL=wss://eth.getblock.io/rinkeby/?api_key=YOUR_API_KEY
 ```
 ```text Kovan
-ETH_URL=wss://eth.getblock.io/kovan/YOUR_API_KEY
+ETH_URL=wss://eth.getblock.io/kovan/?api_key=YOUR_API_KEY
 ```
 ```text Ropsten
-ETH_URL=wss://eth.getblock.io/ropsten/YOUR_API_KEY
+ETH_URL=wss://eth.getblock.io/ropsten/?api_key=YOUR_API_KEY
 ```
 ```text Goerli
-ETH_URL=wss://eth.getblock.io/goerli/YOUR_API_KEY
+ETH_URL=wss://eth.getblock.io/goerli/?api_key=YOUR_API_KEY
 ```
 ```text Sepolia
-ETH_URL=wss://eth.getblock.io/sepolia/YOUR_API_KEY
+ETH_URL=wss://eth.getblock.io/sepolia/?api_key=YOUR_API_KEY
 ```
 ```text Mainnet
-ETH_URL=wss://eth.getblock.io/mainnet/YOUR_API_KEY
+ETH_URL=wss://eth.getblock.io/mainnet/?api_key=YOUR_API_KEY
 ```
 
 ## [Infura](https://infura.io/docs/ethereum/wss/introduction.md)
