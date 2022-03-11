@@ -16,7 +16,7 @@ This oracle checks Google’s DNS service to determine if a given domain is owne
 # Network Details
 
 #### Ethereum Mainnet
-Payment Amount: 1 LINK  
+Payment Amount: 2 LINK  
 LINK Token Address: `{{variables.MAINNET_LINK_TOKEN}}`
 Oracle Address: `0x240BaE5A27233Fd3aC5440B5a598467725F7D1cd`  
 JobID: `6ca2e68622bd421d98c648f056ee7c76`
@@ -107,10 +107,6 @@ contract DnsOwnershipChainlink is ChainlinkClient {
 * [EthTx](../core-adapters/#ethtx)
 
 # Request Parameters
-### `type`
-Always use `TXT`
-#### Solidity Example
-`req.add("type", "TXT");`
 ### `name`
 The domain name to check ownership of.
 #### Solidity Example
@@ -131,7 +127,6 @@ function requestProof
 (
   address _oracle,
   bytes32 _jobId,
-  string memory _txt,
   string memory _name,
   string memory _record
 )
@@ -139,7 +134,6 @@ function requestProof
   onlyOwner
 {
   Chainlink.Request memory req = buildChainlinkRequest(_jobId, address(this), this.fulfill.selector);
-  req.add("type", _txt);
   req.add("name", _name);
   req.add("record", _record);
   sendChainlinkRequestTo(_oracle, req, oraclePayment);
