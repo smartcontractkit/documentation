@@ -24,7 +24,7 @@ JobID: `6ca2e68622bd421d98c648f056ee7c76`
 #### Ethereum Kovan Testnet
 Payment Amount: 0.1  LINK  
 LINK Token Address: `{{variables.KOVAN_LINK_TOKEN}}`
-Oracle Address: `0x56dd6586DB0D08c6Ce7B2f2805af28616E082455`  
+Oracle Address: `0xff07c97631ff3bab5e5e5660cdf47aded8d4d4fd`  
 JobID: `791bd73c8a1349859f09b1cb87304f71`
 
 #### BNB Chain Mainnet
