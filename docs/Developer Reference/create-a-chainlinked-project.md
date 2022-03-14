@@ -94,6 +94,38 @@ For instructions about how to use the starter kit, see the [Truffle starter kit 
 For more details on how to use Chainlink with Truffle, see our blog post [Using Truffle to interact with Chainlink Smart Contracts](https://www.trufflesuite.com/blog/using-truffle-to-interact-with-chainlink-smart-contracts).
 ___
 
+## DappTools Starter Kit
+
+To learn more about DappTools, see the [DappTools Documentation](https://dapp.tools/). Also you can check the [Installation instructions](https://github.com/dapphub/dapptools#installation).
+
+Once installed, clone the starter kit and install the project's dependencies:
+
+```shell
+git clone https://github.com/smartcontractkit/dapptools-starter-kit
+cd dapptools-starter-kit
+make # This installs the project's dependencies.
+```
+
+For instructions about how to use the starter kit, see the [DappTools starter kit README](https://github.com/smartcontractkit/dapptools-starter-kit#readme).
+
+For more details on how to use Chainlink with DappTools, see our blog post [How To Use DappTools](https://blog.chain.link/how-to-use-dapptools/).
+___
+
+## Foundry Starter Kit
+
+To learn more about Foundry, see the [Foundry Documentation](https://onbjerg.github.io/foundry-book/). Also you can check the [Installation instructions](https://onbjerg.github.io/foundry-book/getting-started/installation.html).
+
+Once installed, clone the starter kit and install the project's dependencies:
+
+```shell
+git clone https://github.com/smartcontractkit/foundry-starter-kit
+cd foundry-starter-kit
+make # This installs the project's dependencies.
+```
+
+For instructions about how to use the starter kit, see the [Foundry starter kit README](https://github.com/smartcontractkit/foundry-starter-kit#readme).
+
+___
 
 # Using Chainlink Contracts
 
