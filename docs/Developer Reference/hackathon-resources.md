@@ -27,7 +27,7 @@ Be sure to check the docs above for remix examples!
 
 Always refer back to the [getting help](/docs/getting-help) page for the latest information about how to get support.
 
-- [Getting Help](/docs/getting-help))
+- [Getting Help](/docs/getting-help)
 - [Stack Overflow](https://stackoverflow.com/questions/tagged/chainlink)
 - [Stack Exchange Ethereum](https://ethereum.stackexchange.com/questions/tagged/chainlink)
 - [Hackathon Discord](https://discord.gg/h3AvTHj)
