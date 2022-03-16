@@ -24,7 +24,7 @@ This guide explains how to make an HTTP GET request to an external API from a sm
 
 ## API Consumer Example
 
-Smart contracts should inherit from [`ChainlinkClient`](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.6/ChainlinkClient.sol) to consume an API request. This contract exposes a struct called `Chainlink.Request`, which is used to build the API request. The request should include the following:
+Smart contracts should inherit from [`ChainlinkClient`](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/ChainlinkClient.sol) to consume an API request. This contract exposes a struct called [Chainlink.Request](../chainlink-framework/#chainlinkrequest), which is used to build the API request. The request should include the following:
 
 - Oracle address
 - Job id
@@ -38,7 +38,7 @@ Smart contracts should inherit from [`ChainlinkClient`](https://github.com/smart
 
 The return value must fit within 32 bytes. If the value is bigger than that, make multiple requests.
 
-If the LINK address for targeted blockchain is not [publicly available](../link-token-contracts/) yet, replace [setPublicChainlinkToken(/)](../chainlink-framework/#setpublicchainlinktoken) with [setChainlinkToken(_address)](../chainlink-framework/#setchainlinktoken) in the constructor, where `_address` is a corresponding LINK token contract. Below is an example `APIConsumer` contract:
+If the LINK address for targeted blockchain is not [publicly available](../link-token-contracts/) yet, replace [setPublicChainlinkToken()](../chainlink-framework/#setpublicchainlinktoken) with [setChainlinkToken(_address)](../chainlink-framework/#setchainlinktoken) in the constructor, where `_address` is a corresponding LINK token contract's address. Below is an example `APIConsumer` contract:
 
 ```solidity Kovan
 {% include samples/APIRequests/APIConsumer.sol %}
@@ -51,8 +51,8 @@ If the LINK address for targeted blockchain is not [publicly available](../link-
 Here is a breakdown of each component of the contract:
 
 1. **Constructor**: This sets up the contract with the Oracle address, Job ID, and LINK fee that the oracle charges for the job.
-2. **`requestVolumeData` function**: This builds and sends a request - which includes the fulfillment functions selector - to the oracle. Notice how it adds the get, path and times parameters.
-3. **`fulfill` function**: This is where the result is sent upon the Oracle Job's completion.
+2. **`requestVolumeData` function**: This builds and sends a request to the oracle by calling [buildChainlinkRequest](../chainlink-framework/#buildchainlinkrequest) and [sendChainlinkRequestTo](../chainlink-framework/#sendChainlinkRequestTo) respectively. Notice that `buildChainlinkRequest` includes the fulfillment functions selector and that the parameters _get_, _path_ and _times_ are added to `request` by calling [add](../chainlink-framework/#add) and [addInt](../chainlink-framework/#addInt).
+3. **`fulfill` function**: This is where the result is sent upon the Oracle Job's completion. Notice that the [recordChainlinkFulfillment](../chainlink-framework/#recordchainlinkfulfillment) is used to ensure that __requestId_ and the sender are valid.
 
 ## Choosing an Oracle and JobId
 
