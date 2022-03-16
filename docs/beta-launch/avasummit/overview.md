@@ -31,7 +31,7 @@ If you are new to Chainlink, please get familiar with [hybrid smart contracts](h
 
 At the moment, you can use these Chainlink features on Avalanche:
 
-- Data Feeds are supported on [Avalanche](/docs/avalanche-price-feeds/.
+- Data Feeds are supported on [Avalanche](/docs/avalanche-price-feeds/).
 - Chainlink VRF: Although not officially supported yet, we will walk you through a tutorial to get you started on Avalanche Fuji Testnet.
 
 ## Data Feeds
@@ -49,14 +49,14 @@ Use Chainlink VRF to build reliable smart contracts for any applications that re
 - Random assignment of duties and resources. For example, randomly assigning judges to cases.
 - Choosing a representative sample for consensus mechanisms.
 
-Check the [developer documentation](/docs/docs/chainlink-vrf/) to learn how to use Chainlink VRF. Note that the examples and the [Subscription Manager](https://vrf.chain.link/) are currently supported on the following networks:
+Check the [developer documentation](/docs/chainlink-vrf/) to learn how to use Chainlink VRF. **Important Note** : The [Subscription Manager](https://vrf.chain.link/) is only supported on the following networks:
 
 - Ethereum:
-- [Mainnet](/docs/vrf-contracts/#ethereum-mainnet)
-- [Rinkeby testnet](/docs/vrf-contracts/#rinkeby-testnet)
+  - [Mainnet](/docs/vrf-contracts/#ethereum-mainnet)
+  - [Rinkeby testnet](/docs/vrf-contracts/#rinkeby-testnet)
 - BNB Chain
-- [Mainnet](/docs/vrf-contracts/#bnb-chain)
-- [Testnet](/docs/vrf-contracts/#bnb-chain-testnet)
+  - [Mainnet](/docs/vrf-contracts/#bnb-chain)
+  - [Testnet](/docs/vrf-contracts/#bnb-chain-testnet)
 
 Although not officially supported on Avalanche yet, the following guide will explain how to test Chainlink VRF on [Avalanche Fuji Testnet](https://docs.avax.network/build/tutorials/platform/fuji-workflow/).
 
@@ -96,7 +96,7 @@ These parameters define how your requests will be processed:
 
 - `bytes32 keyHash`: The gas lane key hash value, which is the maximum gas price you are willing to pay for a request in wei. It functions as an ID of the off-chain VRF job that runs in response to requests. Only `0x354d2f95da55398f44b7cff77da56283d9c6c829a4bdf1bbcaf2ad6a4d081f61` is currently available on Avalanche Fuji Testnet.
 
-- `uint32 callbackGasLimit`: The limit for how much gas to use for the callback request to your contract's `fulfillRandomWords()` function. It must be less than the `maxGasLimit` limit on the coordinator contract, `2500000` on Avalanche Fuji Testnet. In this example, the `fulfillRandomWords()` function stores two random values, which cost about 20,000 gas each, so a limit of `100000` gas is sufficient. Adjust this value for larger requests depending on how your `fulfillRandomWords()` function processes and stores the received random values. If your `callbackGasLimit` is not sufficient, the callback will fail, and your subscription is still charged for the work done to generate your requested random values.
+- `uint32 callbackGasLimit`: The limit for how much gas to use for the callback request to your contract's `fulfillRandomWords()` function. It must be less than the `maxGasLimit` limit on the coordinator contract, `2500000` on Avalanche Fuji Testnet. In this example, the `fulfillRandomWords()` function stores two random values, which cost about 20,000 gas each, so a limit of `100000` gas is sufficient. Adjust this value for larger requests depending on how your `fulfillRandomWords()` function processes and stores the received random values. If your `callbackGasLimit` is not sufficient, the callback will fail, and the contract subscription is still charged for the work done to generate your requested random values.
 
 - `uint16 requestConfirmations`: How many confirmations the Chainlink node should wait before responding. The longer the node waits, the more secure the random value is. It must be greater than the `minimumRequestBlockConfirmations` limit on the coordinator contract, which is `3` on Avalanche Fuji Testnet. In this example, we set the value to `3,` but you can set it higher.
 
@@ -108,16 +108,16 @@ To use this contract:
 
 1. Compile and deploy the contract using the Injected Web3 environment. The contract includes all the configuration variables you need, but you can edit them if necessary (cf. above).
 
-This contract automatically creates a new subscription when you deploy it. Read the `s_subscriptionId` variable to find your subscription ID.
+This contract automatically creates a new subscription when you deploy it. Read the `s_subscriptionId` variable to find the contract subscription ID.
 
-1. Fund your contract with at least two testnet LINK as shown [here](/docs/fund-your-contract/).
+1. Fund your contract with at least two testnet LINK as shown [here](/docs/fund-your-contract/). Call the `getLinkBalance()` function to verify: it should return `2000000000000000000`.
 
 1. In this example, the `topUpSubscription()` function sends LINK from your contract to the subscription. Fund your contract with at least two testnet LINK. If you need testnet LINK, you can get it from one of the available [Avalanche Fuji faucets](/docs/link-token-contracts/#fuji-testnet).
-   Run the `topUpSubscription()` function to send LINK from your contract to your subscription balance. For this example, specify a value of `2000000000000000000`, which is equivalent to two LINK.
+   Run the `topUpSubscription()` function to send LINK from your contract to its subscription balance. For this example, specify a value of `2000000000000000000`, which is equivalent to two LINK.
 
-1. Call the `getSubscriptionDetails()` function to get details of the subscription. You will notice that your contract is part of the consumers list and that the balance is 2 LINK.
+1. Call the `getSubscriptionDetails()` function to get details of the subscription. You will notice that your contract is part of the consumers list and that its subscription balance is 2 LINK.
 
-1. On the consumer contract, run the `requestRandomWords()` function to request and receive random values. The request might take several minutes to process. You can track if the request is still pending by calling `pendingRequestExists().` When `pendingRequestExists()` returns `false`, that means `fulfillRandomWords()` has been called.
+1. On the consumer contract, run the `requestRandomWords()` function to request and receive random values. The request might take several minutes to process. You can track if the request is still pending by calling `pendingRequestExists().` When `pendingRequestExists()` returns `false`, that means `fulfillRandomWords()` has been called. `fulfillRandomWords()` receives random values and stores them in the contract.
 
 1. Read `s_randomWords` at index `0`or `1`to fetch the random values.
 
