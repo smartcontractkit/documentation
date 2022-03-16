@@ -7,7 +7,7 @@ permalink: "docs/selecting-data-feeds/"
 excerpt: "Learn how to assess data feeds that you use in your smart contracts."
 ---
 
-When you design your applications, consider the quality of the data that you use in your smart contracts. Chainlink lists decentralized data feeds in the documentation to help developers build new applications integrated with data.
+When you design your applications, consider the quality of the data that you use in your smart contracts. Ultimately you are responsible for identifying and assessing the accuracy, availability, and quality of data that you choose to consume via the Chainlink Network. Chainlink lists decentralized data feeds in the documentation to help developers build new applications integrated with data.
 
 ## Table of Contents
 
@@ -17,7 +17,7 @@ When you design your applications, consider the quality of the data that you use
 
 ## Data Feed Categories
 
-Data feeds are grouped into the following categories:
+Data feeds are grouped into the following categories based on the level of risk from lowest to highest:
 
 + [Verified Feeds](#🟢-verified-feeds)
 + [Monitored Feeds](#🟡-monitored-feeds)
@@ -26,18 +26,19 @@ Data feeds are grouped into the following categories:
 
 ### 🟢 Verified Feeds
 
-These are our standard data feeds that follow our typical data feeds workflow. Chainlink node operators each query several sources for the market price and aggregate the estimates provided by those sources. Verified feeds have the following characteristics:
+These are data feeds that follow a standardized data feeds workflow. Chainlink node operators each query several sources for the market price and aggregate the estimates that those sources provide. Verified feeds have the following characteristics:
 
 - Highly resilient to disruption
-- Many data sources
-- Extensive network of nodes
+- Leverage many data sources
+- Use an extensive network of nodes
 - Highly liquid and well represented on a large number of markets
 
-Learn more about our decentralized data model at [https://chain.link/data-feeds](https://chain.link/data-feeds).
+These feeds incorporate three layers of aggregation at the data source, node operator, and oracle network layers. These layers provide industry-grade security and reliability on the price data that they reference. To learn more about the three-layers of data aggregation, see the blog post about [Data Aggregation in Chainlink Price Feeds](https://blog.chain.link/levels-of-data-aggregation-in-chainlink-price-feeds/).
 
 ### 🟡 Monitored Feeds
 
-Feeds under the monitored category are *under review* by the team to support the stability of the broader ecosystem.
+Feeds under the monitored category are *under review* by the Chainlink Labs team to support the stability of the broader ecosystem.
+
 Data feeds might be under review for the following reasons:
 
 - The token project or asset is in early development
@@ -46,55 +47,56 @@ Data feeds might be under review for the following reasons:
 
 ### 🔵 Custom Feeds
 
-Custom Feeds are built to service a specific use case and might not be suitable for general use. Users must evaluate the properties of a feed to make sure it aligns with their user's intended use case. Contact the team if you want more detail on any specific feeds in this category.
-
+Custom Feeds are built to serve a specific use case and might not be suitable for general use. Users must evaluate the properties of a feed to make sure it aligns with their intended use case. Contact the Chainlink Labs team if you want more detail on any specific feeds in this category.
 Custom feeds have the following categories and compositions:
 
-- **On-chain single source feeds:** These feeds are similar to Off-chain Single Source Feeds. However, in this case the data source resides on-chain.
-- **On-chain Proof of Reserve Feeds:** Chainlink Proof of Reserve uses the largest decentralized collection of security-reviewed and Sybil-resistant node operators in the industry to acquire and verify reserve data, reserves in this use case reside on-chain.
+- **On-chain single source feeds:** These feeds take their data from an on-chain source. However, the feed has only a single data provider currently supporting the feed.
+- **On-chain Proof of Reserve Feeds:** Chainlink Proof of Reserve uses the largest decentralized collection of security-reviewed and Sybil-resistant node operators in the industry to acquire and verify reserve data. In this use case, reserves reside on-chain.
 - **Technical Feeds:** Feeds within this category measure a particular technical metric from a specified blockchain. For example, Fast Gas or Block Difficulty.
 - **Total Value Locked Feeds:** These feeds measure the total value locked in a particular protocol.
-- **Custom Index Feeds:** An index calculates a function of the values for multiple underlying assets. The function is specific to that index and is typically calculated by our node operators following an agreed formula.
+- **Custom Index Feeds:** An index calculates a function of the values for multiple underlying assets. The function is specific to that index and is typically calculated by node operators following an agreed formula.
 
-If you plan on using one of these feeds and would like to get a more detailed understanding, please contact the Chainlink Labs team.
+If you plan on using one of these feeds and would like to get a more detailed understanding, contact the Chainlink Labs team.
 
 ### ⚫ Specialized Feeds
 
-These are highly complex and bespoke feeds that inherently contain more significant risk factors associated with them. Typical users of these feeds are our large institutional users with deep expertise in the market space they operate in.
+These are highly complex and bespoke feeds that inherently have more **significant risk factors** associated with them. Typical users of these feeds are large institutional users with deep expertise in the market space they operate in.
 
-While these are monitored and well supported, they might not meet the same levels of resiliency as the above categories. We strongly advise you to speak with the team to understand their use case, properties, and associated risks.
+These feeds are monitored and well-supported, but they might not meet the same levels of resiliency as the other categories. We strongly advise you to contact the Chainlink Labs team to understand their use case, properties, and associated risks.
 
 **Examples of Specialized feeds:**
 
 - **Off-chain Single Source Feeds:** Some data providers use a single data source, which might be necessary if only one source exists off-chain for a specific type of data.
-- **Off-chain Proof of Reserve Feeds:** Chainlink Proof of Reserve uses the largest decentralized collection of security-reviewed and Sybil-resistant node operators in the industry to acquire and verify reserve data, reserves in this use case reside on-chain.
-- **LP Token Feeds:** These feeds use a decentralized feed for the underlying asset as well calculations to value the LP tokens.
-- **Wrapped Calculated Feeds:** These feeds are typically pegged 1:1 to the underlying token or asset. Under normal market conditions, these feeds track its underlying value accurately. However, the price is a derivative formed from a calculated method and might not always track value precisely.
+- **Off-chain Proof of Reserve Feeds:** Chainlink Proof of Reserve uses the largest decentralized collection of security-reviewed and Sybil-resistant node operators in the industry to acquire and verify reserve data. In this use case, reserves reside off-chain.
+- **LP Token Feeds:** These feeds use a decentralized feed for the underlying asset as well as calculations to value the LP tokens.
+- **Wrapped Calculated Feeds:** These feeds are typically pegged 1:1 to the underlying token or asset. Under normal market conditions, these feeds track their underlying value accurately. However, the price is a derivative formed from a calculated method and might not always track value precisely.
 
-> 📘 Note:
->
-> Users should evaluate data providers to make sure they provide high-quality data that your smart contracts can rely on. Any error or omission in the provider's data might negatively impact your application and its users.
+If you plan on using one of these feeds and would like to get a more detailed understanding, contact the Chainlink Labs team.
 
-At Chainlink Labs, we plan for all eventualities, however small they might be. To help you prepare for such events, we recommend adding additional tooling for custom or specialized feeds to protect your application or protocol. This tooling is put in place to mitigate extreme market events, possible malicious activity on third-party venues or contracts, potential delays, and outages.
+## Mitigating Risk
 
-Below are some examples of tooling that our users have put in place:
+To help you prepare for unforeseen market events, we recommend taking additional steps for custom or specialized feeds to protect your application or protocol. This might also be worth considering in all categories based on the value that your application secures. This tooling is put in place to mitigate extreme market events, possible malicious activity on third-party venues or contracts, potential delays, and outages.
 
-- Circuit Breakers: In the case of an extreme price event, the contract would pause operations for a limited period of time.
-- Contract update delays: contracts would not update until the protocol had received a recent fresh input from the data feed.
-- Manual Kill Switch: If a vulnerability or bug is discovered in one of the upstream contracts, the user can manually cease operation and temporarily sever the connection to the data feed.
-- Monitoring: Some users create their own monitoring alerts based on deviations in the data feeds that they are using.
+Below are some examples of tooling that Chainlink users have put in place:
+
+- **Circuit Breakers:** In the case of an extreme price event, the contract would pause operations for a limited period of time.
+- **Contract update delays:** Contracts would not update until the protocol had received a recent fresh input from the data feed.
+- **Manual Kill Switch:** If a vulnerability or bug is discovered in one of the upstream contracts, the user can manually cease operation and temporarily sever the connection to the data feed.
+- **Monitoring:** Some users create their own monitoring alerts based on deviations in the data feeds that they are using.
 
 ## Chainlink Community Deployments
 
-Deployments built and run by community members are not tracked in our documentation. Chainlink's community is continuously growing, and we believe they play a vital role in developing the blockchain ecosystem. Chainlink Labs fully supports the use and growth of open-source software and the philosophies underpinning the DeFi and Web3 communities.
+Chainlink technology is used by many within the blockchain community to support their use cases. Deployments built and run by community members are not tracked in the Chainlink documentation. Chainlink's community is continuously growing, and we believe they play a vital role in developing the ecosystem, hence we continue to develop our software and tooling for anyone to use. Users have a wide variety of options for choosing how to deliver data on-chain. They can deploy Chainlink nodes themselves or via the extensive network of node operators that offer services and access one of the community-managed oracle networks that supports the supply of various types of data on-chain.
 
-Chainlink's technology is used by many in the community to provide data on-chain; we continue to develop support and tooling for anyone to use. Users have a wide variety of options for choosing how to deliver data on-chain. They can deploy Chainlink nodes themselves or via our extensive network of node operators that offer services and access one of our community-managed oracle networks that supports the supply of various types of data on-chain.
+It is always recommended that you conduct a thorough analysis of your requirements and carry out appropriate due diligence on any partners you wish to use with your project.
 
-We would always recommend conducting a thorough analysis of your requirements and carrying out appropriate due diligence on any partners you wish to use with your project.
+> **The Chainlink Labs team does not monitor community deployments** and encourages users to use best practices in observability, monitoring, and risk mitigation as appropriate for your application's stage of development and use case.
 
-> **Chainlink Labs does not monitor community deployments** in our infrastructure and encourages users to use best practices in observability, monitoring and risk mitigation as appropriate for your application's stage of development and use case.
+As your usage of data feeds evolves and requirements for higher availability and greater security increases, such as securing substantive value, the reliability properties of your data feed will become crucial. Contact Chainlink Labs team for services to ensure deployments meet the highest levels of availability and security.
 
-As a deployment evolves and develops, requirements for higher availability and greater security may increase due to the value secured by the oracle network. In these cases, Chainlink Labs can provide support and services to ensure deployments meet the highest levels of availability and security.
+> ❗️ High Risk: Forked, modified, or custom software
+>
+> Chainlink Labs does not support deployments created by entities other than Chainlink Labs and does not support forked source code of its technology. These deployments do not receive updates, enhancements, bug fixes, nor are they monitored by Chainlink Labs in any way. Their use might pose risks that can do harm to your project. Users are solely responsible for thoroughly vetting and validating such deployments and determining their suitability and risks. Chainlink Labs takes no responsibility for any issues that can arise from the use of forked, modified, or custom software.
 
 ## Evaluating data sources
 
@@ -109,7 +111,9 @@ If your smart contracts use data feeds, assess those data feeds for the followin
 
 If your smart contract relies on pricing data for a specific asset, make sure that the asset has sufficient liquidity in the market to avoid price manipulation. Assets with low liquidity can be volatile, which might negatively impact your application and its users. Malicious actors might try to exploit volatility to take advantage of the logic in a smart contract and cause it to execute in a way that you did not intend.
 
-Some data feeds obtain their pricing data from individual exchanges rather than from aggregated price tracking services that gather their data from multiple exchanges. Assess the liquidity and reliability of that specific exchange.
+Some data feeds obtain their pricing data from individual exchanges rather than from aggregated price tracking services that gather their data from multiple exchanges. These are marked as such in the docs page for that feed. Assess the liquidity and reliability of that specific exchange.
+
+**Liquidity migrations** occur when a project moves its tokens from one liquidity provider to another, such as a DEX, a CEX, or a new DeFi application. When liquidity migrations occur, it might result in low liquidity in the original pool, making the asset susceptible to market manipulation. If your project is considering a liquidity migration, coordinate with relevant stakeholders, liquidity providers, exchanges, oracle node operators, and users to ensure prices are accurately reported throughout the migration.
 
 Design and test your contracts to handle price spikes and implement risk management measures to protect your assets. For example, create mock tests that return a wide variety of oracle responses.
 
@@ -119,7 +123,9 @@ Some data providers use a single data source, which might be necessary if only o
 
 ### Crypto Actions
 
-Price data quality is subject to crypto actions by the crypto project teams. Crypto actions are similar to [corporate actions](https://en.wikipedia.org/wiki/Corporate_action), but are specific to cryptocurrency projects. Sustaining data quality is dependent on data sources implementing the necessary adjustments related to token  renaming, token swaps, redenominations, splits, and other migrations that teams who govern the token might undertake.
+Price data quality is subject to crypto actions by the crypto project teams. Crypto actions are similar to [corporate actions](https://en.wikipedia.org/wiki/Corporate_action) but are specific to cryptocurrency projects. Sustaining data quality is dependent on data sources implementing the necessary adjustments related to token renaming, token swaps, redenominations, splits, and other migrations that teams who govern the token might undertake.
+
+For example, when a project upgrades to a new version of their token, this results in a token migration. When token migrations occur, they require building a new price feed to ensure that the token price is accurately reported. When considering a token migration or another crypto action, projects should contact relevant stakeholders to ensure the asset price is accurately reported throughout the process.
 
 ### Fast Gas Reliability
 
