@@ -65,20 +65,28 @@ section: ethereum
 <script>
     dest = document.getElementById('feed-data');
     let showExtraDetails = false;
+    let feedCategories = {
+        "verified": '<a href="" alt="Verified">🟢</a>',
+        "monitored": '<a href="" alt="Monitored">🟡</a>',
+        "custom": '<a href="" alt="Custom">🔵</a>',
+        "specialized": '<a href="" alt="Specialized">⚫</a>',
+        "none": '-'
+    }
     render = (data) => {
         let html = '';
         if(data["{{stub}}"]) {
             for(let network of data["{{stub}}"].networks) {
                 html += `<h2 id="${network.name}">${network.name} <a class="anchor" href="#${network.name}"><img src="/images/link.svg" alt="Link to this section"></a></h2>`;
-                html += `<label><input type="checkbox" class="extra" ${showExtraDetails ? 'checked="checked"' : ''}>Show Heartbeat and Deviation Details</input></label>`;
+                html += `<label><input type="checkbox" class="extra" ${showExtraDetails ? 'checked="checked"' : ''}>Show more details</input></label>`;
                 let proxyList = '';
                 for(let proxy of network.proxies) {
                     proxyList += `
                     <tr id="${network.name} ${proxy.pair}">
-                        <td><code>${proxy.pair}</code></td>
+                        <td><code>${feedCategories[proxy.feedCategory]} ${proxy.pair}</code></td>
+                        <td><code>${proxy.feedType}</code></td>
                         <td ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.deviationThreshold ? (proxy.deviationThreshold + '%') : 'N/A'}</td>
                         <td ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.heartbeat ? proxy.heartbeat : 'N/A'}</td>
-                        <td>${proxy.decimals}</td>
+                        <td ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.decimals ? proxy.decimals : 'N/A'}</td>
                         <td><a href="${network.url.replace('%s',proxy.proxy)}"><code>${proxy.proxy}</code></a></td>
                     </tr>`;
                 }
@@ -87,9 +95,10 @@ section: ethereum
                     <thead>
                         <tr>
                             <th>Pair</th>
+                            <th>Type</th>
                             <th ${ showExtraDetails ? '' : 'class="detail-hidden"'}>Deviation</th>
                             <th ${ showExtraDetails ? '' : 'class="detail-hidden"'}>Heartbeat</th>
-                            <th>Dec</th>
+                            <th ${ showExtraDetails ? '' : 'class="detail-hidden"'}>Dec</th>
                             <th>${data["{{stub}}"].feedType}</th>
                         </tr>
                     </thead>
