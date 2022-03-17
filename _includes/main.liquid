@@ -1,6 +1,5 @@
 <!doctype html>
 <html>
-
     <head>
         <meta charset="utf-8">
         {% unless title %}
@@ -35,96 +34,148 @@
         {% endif %}
 
         <!-- Syntax Highlight-->
-        <link href="/prism.css" rel="stylesheet" type="text/css">
-        <script src="/prism.js"></script>
-        <script src="/tab.js"></script>
-        <script src="/sul.js"></script>
-
-
+        <link rel="preload" href="/prism.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+        <noscript><link rel="stylesheet" href="/prism.css"></noscript>
+        <script src="/index.js" defer></script>
         <link href="/docs.css" rel="stylesheet" type="text/css">
         <script src="/dark.js"></script>
 
         <link href="https://assets-global.website-files.com/5f6b7190899f41fb70882d08/5fa97474da20bc75f63bfdc4_Chainlink-favicon-32.png" rel="shortcut icon" type="image/x-icon">
         <link href="https://assets-global.website-files.com/5f6b7190899f41fb70882d08/5fa973e31adbc3414aa8f77d_Chainlink-webclip.png" rel="apple-touch-icon">
-        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-128878871-16"></script>
-        <script type="text/javascript">
-            window.dataLayer = window.dataLayer || [];
-            function gtag() {
-                dataLayer.push(arguments);
-            }
-            gtag("js", new Date());
-            gtag("config", "UA-128878871-16");
-        </script>
 
-        <script>
-            // Detect highlighting
-            let lastEvent = 0;
-            const checkForHighlight = (event) => {
-                try {
-                    const selection = window.getSelection().toString();
-                    // Rate limit to 30s
-                    if(selection && Date.now() > (lastEvent + 1000 * 30)) {
-                        gtag('event','select_content',{'event_category': 'docs-engagement', label: selection.substring(0,30)});
-                        lastEvent = Date.now();
-                    }
-                } catch (e) {}
-            }
-            document.addEventListener('mouseup',checkForHighlight);
-
-            // Track remix deployments
-            document.addEventListener('DOMContentLoaded', () => {
-                [...document.getElementsByTagName('a')]
-                    .filter(x => x.href.startsWith('https://remix.ethereum.org/') && x.href.length > 27 )
-                    .map(x => {x.addEventListener('click',(event) => {
-                        console.log('sending to gtag!');
-                        gtag('event','deploy-to-remix',{event_category:'docs-engagement'});
-                    });});
-                [...document.getElementsByClassName('copy-to-clipboard-button')]
-                    .map(x => {x.addEventListener('click',(event) => {
-                        gtag('event','copy-code',{event_category:'docs-engagement'});
-                    });});
-            })
-        </script>
+        <!-- Google Tag Manager -->
+            <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+            })(window,document,'script','dataLayer','GTM-N6DQ47T');</script>
+        <!-- End Google Tag Manager -->
 
 
     </head>
 
     <body class="body">
+        <!-- Google Tag Manager (noscript) -->
+            <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-N6DQ47T" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+        <!-- End Google Tag Manager (noscript) -->
+        <div class="notification" key="2022-february-oracle-olympics" start="2022-02-04" end="2022-02-28">
+            <div class="notification-info">
+                <span class="notification-close">X</span>
+                <span class="notification-text">
+                  <span class="notification-text-highlight">NEW</span> Chainlink Oracle Olympics #1 kicks off 2/28! <a href="https://chain.link/oracle-olympics">Sign up now.</a>
+                </span>
+            </div>
+        </div>
         <div id="nav-container">
             <nav>
                 <a href="/" aria-current="page" style="margin-right:40px;"
                     aria-label="home"><img
                     src="/chainlink-docs.svg"
                     loading="lazy" style="height:40px;width:176px;max-width:176px" alt="Chainlink Developers"></a>
+                <!--Top navigation tabs-->
                 <span style="flex-grow:1;"></span>
-                <div class="tab"><a href="/" {% if section == "smartContract" %} class="active" {% endif %}>Contract Developers</a></div>
-                <div class="tab"><a href="/chainlink-nodes/" {% unless section == "smartContract" %} class="active" {% endunless %}>Node Operators</a></div>
-
+                <div style="display:flex">
+                    <div class="tab"><a href="/docs/conceptual-overview/" {% if section == "gettingStarted" %} class="active" {% endif %}>Getting Started</a></div>
+                    <div class="tab"><a href="/ethereum/" {% if section == "ethereum" %} class="active" {% endif %}>EVM Chains</a></div>
+                    <div class="tab"><a href="/solana/" {% if section == "solana" %} class="active" {% endif %}>Solana</a></div>
+                    <div class="tab"><a href="/terra/" {% if section == "terra" %} class="active" {% endif %}>Terra</a></div>
+                    <div class="tab"><a href="/chainlink-nodes/" {% if section == "nodeOperator" %} class="active" {% endif %}>Node Operators</a></div>
+                </div>
                 <span style="flex-grow:1;"></span>
-                
 
                 {% include _search.html %}
                 <a href="https://github.com/smartcontractkit/documentation/" id="github-button"><img src="/github.svg" style="height:32px;margin:0 0 0 8px;"></a>
             </nav>
         </div>
 
-   
-
-
         <div id="page">
-        <section class="section-content" style="padding-top:0px;">
-            
-            <div class="corner-floated">
-                <div id="docsat"></div>
-                <script src="/docsat.js"></script>
-                <a href="https://github.com/smartcontractkit/documentation/edit/main/{{page.inputPath}}">Suggest Edits</a>
-                <!--   Last Modified: {{page.date}} -->
-            </div>
-	        {{ content }}
-        </section>
-    </div>
+        {{ content }}
+        </div>
 
-        
+        <!-- Learn more CTA cards -->
+        <section class="cta-learnmore">
+            <a href="https://chainlinkcommunity.typeform.com/to/OYQO67EF?page=docs-footer">
+                <div>
+                    <img class="cta-learnmore-avatar" src="/images/card-icons/help_avatar.svg" loading="lazy" alt="Expert icon">
+                    <div>
+                        <div>Need integration support?</div>
+                        <div class="arrowed-text">
+                            Talk to an expert
+                            <img class="cta-learnmore-arrow" src="/images/card-icons/navigation-arrow-right.svg" loading="lazy"
+                                alt="Right arrow">
+                        </div>
+                    </div>
+                </div>
+            </a>
+
+            <a href="https://www.youtube.com/c/Chainlink/playlists">
+                <div>
+                    <img class="cta-learnmore-avatar" src="/images/card-icons/youtube_avatar.svg" loading="lazy" alt="YouTube icon">
+                    <div>
+                        <div>YouTube</div>
+                        <div class="arrowed-text">
+                            Watch developer tutorials
+                            <img class="cta-learnmore-arrow" src="/images/card-icons/navigation-arrow-right.svg" loading="lazy"
+                                alt="Right arrow">
+                        </div>
+                    </div>
+                </div>
+            </a>
+
+            <a href="https://stackoverflow.com/questions/tagged/chainlink">
+                <div>
+                    <img class="cta-learnmore-avatar" src="/images/card-icons/stackoverflow_avatar.svg" loading="lazy"
+                        alt="Stack Overflow icon">
+                    <div>
+                        <div>Stack Overflow</div>
+                        <div class="arrowed-text">
+                            Get technical support
+                            <img class="cta-learnmore-arrow" src="/images/card-icons/navigation-arrow-right.svg" loading="lazy"
+                                alt="Right arrow">
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </section>
+
+        <!-- Newsletter subscription -->
+        <section class="cta-subscribe">
+            <div class="container">
+                <h1 class="h1 cta-subscribe-h1">Stay updated on the latest Chainlink news</h1>
+                <div class="form-subscribe-wrapper w-form">
+                    <form id="wf-form-Chainlink-Newsletter" name="wf-form-Chainlink-Newsletter" data-name="Chainlink Newsletter" class="form-subscribe">
+                        <div class="form-subscribe-field-wrapper"><label for="Email" class="field-label-hidden">Email Address</label><input type="email" class="cta-subscribe-input w-input" maxlength="256" name="Email" data-name="Email" placeholder="Enter your email address" id="Email" required=""><input id="subscribe-button" type="submit" value="Sign up" class="btn btn-secondary w-button">
+                        </div>
+                        <label class="form-subscribe-checkbox">
+                            <input type="checkbox" value="true" required>
+                            Yes, I agree to receive email communications from Chainlink.
+                        </label>
+                    </form>
+                    <div class="form-success-message w-form-done">
+                        <div class="subscribe-success-message-text">
+                          Thank you for signing up! Please check your inbox to confirm your subscription.
+                        </div>
+                        <div class="subscribe-success-social">
+                            <a rel="noopener" href="https://twitter.com/chainlink" class="subscribe-form-success-social w-inline-block"><img src="/images/twitter.svg" loading="lazy" width="24" height="24" alt="Twitter"></a>
+                            <a rel="noopener" href="https://www.youtube.com/channel/UCnjkrlqaWEBSnKZQ71gdyFA" class="subscribe-form-success-social w-inline-block"><img src="/images/youtube.svg" loading="lazy" width="24" height="24" alt="YouTube"></a>
+                            <a rel="noopener" href="https://stackoverflow.com/questions/tagged/chainlink" class="subscribe-form-success-social w-inline-block"><img src="/images/stackoverflow.svg" loading="lazy" width="24" height="24" alt="Stack Overflow"></a>
+                            <a rel="noopener" href="https://ethereum.stackexchange.com/questions/tagged/chainlink" class="subscribe-form-success-social w-inline-block"><img src="/images/stackexchange.svg" loading="lazy" width="24" height="24" alt="Stack Exchange Ethereum"></a>
+                            <a rel="noopener" href="https://discord.gg/aSK4zew" class="subscribe-form-success-social w-inline-block"><img src="/images/discord.svg" loading="lazy" width="24" height="24" alt="Discord"></a>
+                            <a rel="noopener" href="https://t.me/chainlinkofficial" class="subscribe-form-success-social w-inline-block"><img src="/images/telegram.svg" loading="lazy" width="24" height="24" alt="Telegram"></a>
+                            <a rel="noopener" href="https://blog.chain.link/chainlink-chinese-communities/" class="subscribe-form-success-social w-inline-block"><img src="/images/wechat.svg" loading="lazy" width="24" height="24" alt="WeChat"></a>
+                            <a rel="noopener" href="https://www.reddit.com/r/Chainlink/" class="subscribe-form-success-social w-inline-block"><img src="/images/reddit.svg" loading="lazy" width="24" height="24" alt="Reddit"></a>
+                        </div>
+                        <div class="form-error-message w-form-fail">
+                            <div class="subscribe-text-block">
+                              Oops! Something went wrong while submitting the form. Please try again
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
         <footer class="footer">
             <div class="container">
                 <div class="w-layout-grid footer-grid">
@@ -137,14 +188,14 @@
                                     class="footer-list-item-link">Developer resources</a></li>
                             <li class="footer-list-item"><a
                                     href="/docs/using-chainlink-reference-contracts/"
-                                    class="footer-list-item-link">Price feeds</a></li>
+                                    class="footer-list-item-link">Data feeds</a></li>
                             <li class="footer-list-item"><a href="/docs/chainlink-vrf/"
                                     class="footer-list-item-link">Randomness</a></li>
                             <li class="footer-list-item"><a href="/docs/request-and-receive-data/"
                                     class="footer-list-item-link">External API&nbsp;calls</a></li>
                             <li class="footer-list-item"><a href="/docs/link-token-contracts/"
                                     class="footer-list-item-link">Contract reference</a></li>
-                            <li class="footer-list-item"><a href="/docs/node-operator-overview/"
+                            <li class="footer-list-item"><a href="/chainlink-nodes/"
                                     class="footer-list-item-link">Node operators</a></li>
                             <li class="footer-list-item"><a href="#" id="dark-toggle" class="footer-list-item-link">Dark Mode</a></li>
                         </ul>
@@ -202,14 +253,6 @@
                     <nav class="footer-col">
                         <h3 class="h3 footer-heading">Contact</h3>
                         <ul role="list" class="footer-list w-list-unstyled">
-                            <li class="footer-list-item">
-                                <div class="html-embed w-embed w-script"><a
-                                        class="typeform-share button footer-list-item-link"
-                                        href="https://chainlinkcommunity.typeform.com/to/OYQO67EF" data-mode="popup"
-                                        style="display: inline-block;" target="_blank" rel="noopener">Talk to an
-                                        expert</a>
-                                </div>
-                            </li>
                             <li class="footer-list-item"><a href="mailto:security@chain.link"
                                     class="footer-list-item-link">Security</a></li>
                             <li class="footer-list-item"><a href="mailto:support@chain.link"
@@ -226,32 +269,32 @@
                             <li class="footer-list-item-social"><img
                                     src="https://assets-global.website-files.com/5f6b7190899f41fb70882d08/5f760fcc8de393ea2bffa0ff_twitter.svg"
                                     loading="lazy" width="24" height="24" alt="" class="footer-list-item-social-icon"><a
-                                    rel="noopener" href="https://twitter.com/chainlink" target="_blank"
+                                    rel="noopener" href="https://twitter.com/chainlink"
                                     class="footer-list-item-link">Twitter</a></li>
                             <li class="footer-list-item-social"><img
                                     src="https://assets-global.website-files.com/5f6b7190899f41fb70882d08/5f760fcc3830fc22d9bc18c8_youtube.svg"
                                     loading="lazy" width="24" height="24" alt="" class="footer-list-item-social-icon"><a
-                                    rel="noopener" href="https://www.youtube.com/chainlinkofficial" target="_blank"
+                                    rel="noopener" href="https://www.youtube.com/channel/UCnjkrlqaWEBSnKZQ71gdyFA"
                                     class="footer-list-item-link">YouTube</a></li>
                             <li class="footer-list-item-social"><img
                                     src="https://assets-global.website-files.com/5f6b7190899f41fb70882d08/5f760fcff3840d5ec8300b30_discord.svg"
                                     loading="lazy" width="24" height="24" alt="" class="footer-list-item-social-icon"><a
-                                    rel="noopener" href="https://discord.gg/aSK4zew" target="_blank"
+                                    rel="noopener" href="https://discord.gg/aSK4zew"
                                     class="footer-list-item-link">Discord</a></li>
                             <li class="footer-list-item-social"><img
                                     src="https://assets-global.website-files.com/5f6b7190899f41fb70882d08/5f760fcceaf22843cde97118_telegram.svg"
                                     loading="lazy" width="24" height="24" alt="" class="footer-list-item-social-icon"><a
-                                    rel="noopener" href="https://t.me/chainlinkofficial" target="_blank"
+                                    rel="noopener" href="https://t.me/chainlinkofficial"
                                     class="footer-list-item-link">Telegram</a></li>
                             <li class="footer-list-item-social"><img
                                     src="https://assets-global.website-files.com/5f6b7190899f41fb70882d08/5f760fcc8e9ff41b546f039f_wechat.svg"
                                     loading="lazy" width="24" height="24" alt="" class="footer-list-item-social-icon"><a
                                     rel="noopener" href="https://blog.chain.link/chainlink-chinese-communities/"
-                                    target="_blank" class="footer-list-item-link">WeChat</a></li>
+                                    class="footer-list-item-link">WeChat</a></li>
                             <li class="footer-list-item-social"><img
                                     src="https://assets-global.website-files.com/5f6b7190899f41fb70882d08/5f760fcc8f83d17d2d857106_reddit.svg"
                                     loading="lazy" width="24" height="24" alt="" class="footer-list-item-social-icon"><a
-                                    rel="noopener" href="https://www.reddit.com/r/Chainlink/" target="_blank"
+                                    rel="noopener" href="https://www.reddit.com/r/Chainlink/"
                                     class="footer-list-item-link">Reddit</a></li>
                         </ul>
                     </nav>
@@ -267,7 +310,7 @@
                                     loading="lazy" width="85" height="28" alt="Chainlink logo" class="logo-white">
                             </a>
                             <div class="paragraph small footer-copyright footer-chainlinkreg">Chainlink®</div>
-                            <div class="paragraph small footer-chainlinkreg">© 2021 SmartContract Chainlink Ltd SEZC
+                            <div class="paragraph small footer-chainlinkreg">&copy 2022 SmartContract Chainlink Ltd SEZC
                             </div>
                         </div>
                         <div class="footer-copyright-wrapper-col footer-privacyandterms"><a href="https://chain.link/privacy-policy"
@@ -277,22 +320,34 @@
                 </div>
             </div>
         </footer>
-        <script
-            src="https://d3e54v103j8qbb.cloudfront.net/js/jquery-3.5.1.min.dc5e7f18c8.js?site=5f6b7190899f41fb70882d08"
-            type="text/javascript" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0="
-            crossorigin="anonymous"></script>
+
 
         <script>
-            var links = document.links;
-            for (var i = 0, linksLength = links.length; i < linksLength; i++) {
-                if(!links[i].href.startsWith("javascript:")) {
-                    if (links[i].hostname != window.location.hostname) {
-                        links[i].target = '_blank';
-                    } 
-                }
-            }
-        </script>
 
+            document.addEventListener('DOMContentLoaded', () => {
+                    // Open all external links in a blank context
+                    const links = document.links;
+                    for (var i = 0, linksLength = links.length; i < linksLength; i++) {
+                        if(!links[i].href.startsWith("javascript:")) {
+                            if (links[i].hostname != window.location.hostname) {
+                                links[i].target = '_blank';
+                            }
+                        }
+                    }
+
+                    // Add header anchor tags
+                    const headers = document.querySelectorAll('.article > h1:not(.page-title),.article > h2,.article > h3');
+                    [...headers].map(header => {
+                        const link = document.createElement('a');
+                        link.href = `#${header.id}`;
+                        link.classList.add('anchor');
+                        link.innerHTML = '<img src="/images/link.svg" alt="Link to this section">';
+                        header.appendChild(link);
+                    })
+            })
+
+
+        </script>
     </body>
 
 

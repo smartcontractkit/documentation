@@ -1,107 +1,66 @@
 ---
 layout: nodes.liquid
-section: smartContract
+section: ethereum
 date: Last Modified
-title: "Install Instructions"
+title: "Install Frameworks"
 permalink: "docs/create-a-chainlinked-project/"
-whatsnext: {"Introduction to Price Feeds":"/docs/using-chainlink-reference-contracts/", "Introduction to Chainlink VRF":"/docs/chainlink-vrf/", "Introduction to Using Any API":"/docs/request-and-receive-data/"}
-hidden: false
-metadata: 
-  title: "Getting Started with Chainlink for Smart Contract Developers"
-  description: "Everything you need to know on how to create a new Chainlink project or update an existing one using the Chainlink Library for Solidity"
-  image: 
-    0: "https://files.readme.io/1e53dff-670379d-OpenGraph_V3.png"
-    1: "670379d-OpenGraph_V3.png"
-    2: 1459
-    3: 1459
-    4: "#dbe1f8"
+whatsnext: {"Introduction to Data Feeds":"/docs/using-chainlink-reference-contracts/", "Introduction to Chainlink VRF":"/docs/chainlink-vrf/", "Introduction to Using Any API":"/docs/request-and-receive-data/"}
 ---
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "https://files.readme.io/c6e99c5-Untitled_design_23.png",
-        "Untitled design (23).png",
-        800,
-        418,
-        "#c0b98b"
-      ]
-    }
-  ]
-}
-[/block]
-This page explains how to install and use the [Chainlink Library](../chainlink-framework/) in your projects.
+![Starter Kits Logos](/files/c6e99c5-Untitled_design_23.png)
 
-> 📘 
+This page explains how to install and use the [Chainlink Library](../chainlink-framework/) in your projects, either manually or via the user of the Chainlink Starter Kits.
+
+> 📘 Important
 >
-> If you're new to smart contract development and want a step-by-step guide, try out our [Beginner Walkthrough](../intermediates-tutorial/) 
+> If you're new to smart contract development and want a step-by-step guide, try out our [Getting Started](/docs/conceptual-overview/) guide.
 
 # Install into Existing Projects
 
-Chainlink is supported by <a href="http://hardhat.org" target="_blank">Hardhat</a>, <a href="https://eth-brownie.readthedocs.io/en/stable" target="_blank">Brownie</a>, <a href="https://www.trufflesuite.com" target="_blank">Truffle</a> and other frameworks.
+Chainlink is supported by [Hardhat](http://hardhat.org), [Brownie](https://eth-brownie.readthedocs.io/en/stable), [Truffle](https://www.trufflesuite.com) and other frameworks.
 
 If you already have a project, you can add Chainlink to it by using the following package managers.
 
-## NPM 
+## NPM
 
-Install using <a href="https://www.npmjs.com/" target="_blank" rel="noreferrer, noopener">NPM</a>
-[block:code]
-{
-  "codes": [
-    {
-      "code": "npm install @chainlink/contracts --save",
-      "language": "shell",
-      "name": "npm"
-    }
-  ]
-}
-[/block]
+Install using [NPM](https://www.npmjs.com/):
+
+```shell npm
+npm install @chainlink/contracts --save
+```
+
 ## Yarn
 
-Install using <a href="https://yarnpkg.com/" target="_blank" rel="noreferrer, noopener">Yarn</a>
-[block:code]
-{
-  "codes": [
-    {
-      "code": "yarn add @chainlink/contracts",
-      "language": "shell",
-      "name": "yarn"
-    }
-  ]
-}
-[/block]
+Install using [Yarn](https://yarnpkg.com/):
+
+```shell yarn
+yarn add @chainlink/contracts
+```
+
 # Create a New Project
 
-If you're creating a new project from scratch, these commands will help you set up your project to interact with Chainlink.
+If you're creating a new project from scratch, these commands will help you set up your project to interact with Chainlink tools and features via the use of our Starter Kits.
 
-## Hardhat Box
+## Hardhat Starter Kit
 
-Install <a href="https://hardhat.org" target="_blank"> hardhat </a>
+To learn more about Hardhat, see the [Hardhat Documentation](https://hardhat.org/getting-started/).
 
-```shell
-npm install --save-dev hardhat
-```
-
-Then, clone the boilerplate repository.
+Clone the starter kit. The starter kit includes Hardhat, so you don't need to install it separately.
 
 ```shell
-git clone https://github.com/smartcontractkit/chainlink-hardhat-box
-cd chainlink-hardhat-box
+git clone https://github.com/smartcontractkit/hardhat-starter-kit
+cd hardhat-starter-kit
 ```
 
-For more information on Hardhat, see our blog post <a href="https://blog.chain.link/using-chainlink-with-hardhat/" target="_blank">How to use Hardhat with Chainlink</a>. Alternatively, visit the <a href="https://github.com/smartcontractkit/chainlink-hardhat-box/blob/main/README.md" target="_blank">repo</a> for more instructions.
+For instructions about how to use the starter kit, see the [Hardhat starter kit README](https://github.com/smartcontractkit/hardhat-starter-kit/blob/main/README.md).
+
+For more information on how to use Chainlink with Hardhat, see our blog post [How to use Hardhat with Chainlink](https://blog.chain.link/using-chainlink-with-hardhat/).
 ___
 
-## Brownie Mix
+## Brownie Starter Kit
 
-Install <a href="https://eth-brownie.readthedocs.io/en/stable/install.html" target="_blank" rel="noreferrer, noopener">Brownie</a> with pip:
+Before you begin, [install Brownie](https://eth-brownie.readthedocs.io/en/stable/install.html).
 
-```shell
-pip install eth-brownie
-```
-
-With Brownie installed, run the commands below to open a Brownie project into a new directory.
+With Brownie installed, run the commands below to open a Brownie project in a new directory.
 
 ```shell
 mkdir MyChainlinkProject
@@ -109,44 +68,45 @@ cd MyChainlinkProject/
 brownie bake chainlink-mix
 cd chainlink-mix
 ```
+For instructions about how to use the starter kit, see the [Brownie starter kit README](https://github.com/smartcontractkit/chainlink-mix/blob/master/README.md).
 
-For more information on working with Bownie, see our blog <a href="https://blog.chain.link/develop-python-defi-project/" target="_blank"  rel="noreferrer, noopener">how to use Brownie with Chainlink</a> or visit the <a href="https://github.com/smartcontractkit/chainlink-mix/blob/master/README.md" target="_blank" rel="noreferrer, noopener"> repo</a> to learn more.
-
-Environment variables are required when working with Brownie. <a target="_blank" href="https://www.twilio.com/blog/2017/01/how-to-set-environment-variables.html">Learn how to set environment variables</a>.
+For more information on how to use Chainlink with Brownie, see our blog post [Develop a DeFi Project Using Python](https://blog.chain.link/develop-python-defi-project/).
 ___
 
-## Truffle Box
+## Truffle Starter Kit
 
-Install <a href="https://www.trufflesuite.com/truffle" target="_blank" rel="noreferrer, noopener">Truffle</a> with NPM:
+Before you begin, [install Truffle with NPM](https://www.trufflesuite.com/truffle):
 
 ```shell
 npm install truffle -g
 ```
 
-Once installed, unbox the Chainlink box.
+Once installed, unbox the Truffle Starter Kit:
 
 ```shell Truffle
 mkdir MyChainlinkProject
 cd MyChainlinkProject/
-truffle unbox smartcontractkit/box
+truffle unbox smartcontractkit/truffle-starter-kit
 ```
 
-For more details on how to use the Truffle, see our <a href="https://www.trufflesuite.com/blog/using-truffle-to-interact-with-chainlink-smart-contracts" target="_blank">blog post</a>. Alternatively, visit the <a href="https://github.com/smartcontractkit/box/blob/master/README.md" target="_blank">repo</a> for more information.
+For instructions about how to use the starter kit, see the [Truffle starter kit README](https://github.com/smartcontractkit/truffle-starter-kit/blob/master/README.md).
+
+For more details on how to use Chainlink with Truffle, see our blog post [Using Truffle to interact with Chainlink Smart Contracts](https://www.trufflesuite.com/blog/using-truffle-to-interact-with-chainlink-smart-contracts).
 ___
 
 
 # Using Chainlink Contracts
 
-Once you have the Chainlink library installed, you can leverage the Chainlink ecosystem. 
+Once you have the Chainlink library installed, you can leverage the Chainlink ecosystem.
 
-If you're interested in retrieving up to date crypto prices in your contracts, learn more about our [Price Feeds](../using-chainlink-reference-contracts/). 
+If you're interested in retrieving up to date crypto prices in your contracts, learn more about our [Data Feeds](../using-chainlink-reference-contracts/).
 
-If you need to consume randomness in your contracts, learn about [Chainlink VRF](../chainlink-vrf/). 
+If you need to consume randomness in your contracts, learn about [Chainlink VRF](../chainlink-vrf/).
 
 And if you want your contracts to retrieve data from off-chain APIs, learn about [Using Any API](../request-and-receive-data/).
 
 # Testing Chainlink Contracts
 
-See our blog post on <a href="https://blog.chain.link/testing-chainlink-smart-contracts/" target="_blank">Testing Chainlink Smart Contracts</a> or watch the <a href="https://www.youtube.com/watch?v=d8SqLaH8pu0" target="_blank">Chainlink Hackathon Workshop</a>.
+See our blog post on [Testing Chainlink Smart Contracts](https://blog.chain.link/testing-chainlink-smart-contracts/) or watch the [Chainlink Hackathon Workshop](https://www.youtube.com/watch?v=d8SqLaH8pu0).
 
-Tests samples can be found on <a href="https://github.com/smartcontractkit/chainlink-hardhat-box/tree/main/test" target="_blank">Chainlink Hardhat Box</a> and <a href="https://github.com/smartcontractkit/box/tree/master/test" target="_blank">Chainlink Truffle Box</a> respectively.
+Tests samples can be found on [Hardhat Starter Kit](https://github.com/smartcontractkit/hardhat-starter-kit/tree/main/test) and [Truffle Starter Kit](https://github.com/smartcontractkit/truffle-starter-kit/tree/master/test) respectively.

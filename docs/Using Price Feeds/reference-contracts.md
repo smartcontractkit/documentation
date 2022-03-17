@@ -1,47 +1,34 @@
 ---
 layout: nodes.liquid
-section: smartContract
+section: ethereum
 date: Last Modified
-title: "Contract Addresses"
+title: "Data Feeds Contract Addresses"
 permalink: "docs/reference-contracts/"
-whatsnext: {"ENS":"/docs/ens/", "Ethereum Price Feeds":"/docs/ethereum-addresses/", "Binance Smart Chain Price Feeds":"/docs/binance-smart-chain-addresses/", "Polygon (Matic) Price Feeds":"/docs/matic-addresses/", "xDai Price Feeds":"/docs/xdai-price-feeds/", "Huobi Eco Chain Price Feeds":"/docs/huobi-eco-chain-price-feeds/"}
-hidden: false
-metadata: 
-  title: "Chainlink Price Feed Smart Contract Addresses"
-  description: "A list of addresses for Price Feed aggregator contracts on supported networks."
-  image: 
-    0: "https://files.readme.io/a437a0a-670379d-OpenGraph_V3.png"
-    1: "670379d-OpenGraph_V3.png"
-    2: 1459
-    3: 1459
-    4: "#dbe1f8"
+metadata:
+  title: "Data Feeds Contract Addresses"
+  description: "A list of links to data feed addresses for Data Feed aggregator contracts on supported networks."
 ---
-Chainlink Price Feed contracts are updated on a regular basis by multiple Chainlink nodes. For implementation details, read [Introduction to Price Feeds](../using-chainlink-reference-contracts/).
 
-# Supported Blockchains
+{% include data-quality.md %}
 
-Chainlink is a blockchain agnostic technology. This section lists the blockchains that Chainlink Price Feeds are currently live on, and the details of where to access them.
+Chainlink Data Feed contracts are updated on a regular basis by multiple Chainlink nodes. For implementation details, read [Introduction to Data Feeds](../using-chainlink-reference-contracts/). Chainlink is a blockchain agnostic technology. This page lists the blockchain networks that Chainlink Data Feeds are currently live on, and the details of where to access them.
 
 > 📘 LINK token on multiple chains
 >
 > See the [LINK Token Contracts](../link-token-contracts/) page for the details of LINK on each blockchain.
 
-## Ethereum
-
-For Ethereum Price Feed addresses, see [Ethereum Price Feeds](../ethereum-addresses/).
-
-## Binance Smart Chain
-
-For BSC Price Feed addresses, see [Binance Smart Chain Price Feeds](../binance-smart-chain-addresses/).
-
-## Polygon (Matic)
-
-For Polygon (Matic) Price Feed addresses, see [Polygon (Matic) Price Feeds](../matic-addresses/).
-
-## xDai
-
-For xDai Price Feed addresses, see [xDai Price Feeds](../xdai-price-feeds/).
-
-## Huobi Eco Chain
-
-For HEC Price Feed Addresses, see [Huobi Eco Chain Price Feeds](../huobi-eco-chain-price-feeds/).
+- EVM (Ethereum) Chains
+  - [Ethereum Data Feeds](../ethereum-addresses/)
+  - [BNB Chain Data Feeds](../bnb-chain-addresses/)
+  - [Polygon (Matic) Data Feeds](../matic-addresses/)
+  - [Gnosis Chain (xDai) Data Feeds](../data-feeds-gnosis-chain/)
+  - [HECO Chain Data Feeds](../huobi-eco-chain-price-feeds/)
+  - [Avalanche Data Feeds](../avalanche-price-feeds/)
+  - [Fantom Data Feeds](../fantom-price-feeds/)
+  - [Arbitrum Data Feeds](../arbitrum-price-feeds/)
+  - [Harmony Data Feeds](../harmony-price-feeds/)
+  - [Optimism Data Feeds](../optimism-price-feeds/)
+  - [Moonriver Data Feeds](../data-feeds-moonriver/)
+- Other chains
+  - [Solana Data Feeds](/docs/solana/data-feeds-solana/)
+  - [Terra Data Feeds](/docs/terra/data-feeds-terra/)

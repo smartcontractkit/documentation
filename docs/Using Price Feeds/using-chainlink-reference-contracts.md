@@ -1,45 +1,30 @@
 ---
 layout: nodes.liquid
-section: smartContract
+section: ethereum
 date: Last Modified
-title: "Introduction to Price Feeds"
+title: "Introduction to Data Feeds"
 permalink: "docs/using-chainlink-reference-contracts/"
 whatsnext: {"Get the Latest Price":"/docs/get-the-latest-price/", "API Reference":"/docs/price-feeds-api-reference/", "Contract Addresses":"/docs/reference-contracts/"}
-hidden: false
-metadata: 
-  title: "How to Use Chainlink Decentralized Price Feeds in Smart Contracts"
-  description: "Add cryptocurrency price data to your smart contract. Chainlink price feeds include BTC/USD, BTC/ETH, ETH/USD and more!"
-  image: 
-    0: "https://files.readme.io/d2484e7-670379d-OpenGraph_V3.png"
-    1: "670379d-OpenGraph_V3.png"
-    2: 1459
-    3: 1459
-    4: "#dbe1f8"
+metadata:
+  title: "How to Use Chainlink Decentralized Data Feeds in Smart Contracts"
+  description: "Add cryptocurrency price data to your smart contract. Chainlink data feeds include BTC/USD, BTC/ETH, ETH/USD and more!"
+  image:
+    0: "/files/OpenGraph_V3.png"
 ---
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "https://files.readme.io/2306b8b-Decentralized_Oracles_V3.png",
-        "Decentralized Oracles V3.png",
-        1558,
-        352,
-        "#f3f5fc"
-      ],
-      "caption": ""
-    }
-  ]
-}
-[/block]
+![Chainlink Abstract Banner](/files/2306b8b-Decentralized_Oracles_V3.png)
+
 # Connect Your Smart Contracts to the Outside World
 
-Chainlink Price Feeds are the quickest way to connect your smart contracts to the real-world market prices of assets. They enable smart contracts to retrieve the latest price of an asset in a single call.
+Chainlink Data Feeds are the quickest way to connect your smart contracts to the real-world market prices of assets. For example, one use for data feeds is to enable smart contracts to retrieve the latest pricing data of an asset in a single call.
+
+If you already have a project started and would like to integrate Chainlink, you can [add Chainlink to your existing project](../create-a-chainlinked-project/#install-into-existing-projects) by using the `chainlink` NPM package.
+
+You can use the [Chainlink Market](https://market.link/) to select nodes for your requests. If you have the node's oracle contract address and the Job ID, use the [`sendChainlinkRequestTo`](/docs/chainlink-framework/#sendchainlinkrequestto) function to create requests to oracles.
 
 # Retrieve the Latest Asset Prices
 
-Often, smart contracts need to act upon prices of assets in real-time. This is especially true in <a href="https://defi.chain.link/" target="_blank">DeFi</a>.
+Often, smart contracts need to act upon prices of assets in real-time. This is especially true in [DeFi](https://defi.chain.link/).
 
-For example, <a href="https://www.synthetix.io/" target="_blank">Synthetix</a> use Price Feeds to determine prices on their derivatives platform. Lending and Borrowing platforms like <a href="https://aave.com/" target="_blank">AAVE</a> use Price Feeds to ensure the total value of the collateral.
+For example, [Synthetix](https://www.synthetix.io/) uses Data Feeds to determine prices on their derivatives platform. Lending and Borrowing platforms like [AAVE](https://aave.com/) use Data Feeds to ensure the total value of the collateral.
 
-The [Decentralized Data Model](../architecture-decentralized-model/) describes how Price Feeds are aggregated from many data sources and published on-chain.
+The [Decentralized Data Model](../architecture-decentralized-model/) describes how Data Feeds are aggregated from many data sources and published on-chain.

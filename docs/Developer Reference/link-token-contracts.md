@@ -1,23 +1,33 @@
 ---
 layout: nodes.liquid
-section: smartContract
+section: ethereum
 date: Last Modified
 title: "LINK Token Contracts"
 permalink: "docs/link-token-contracts/"
-hidden: false
-metadata: 
+metadata:
   title: "LINK Token Contracts"
   description: "Addresses for the LINK token on supported networks."
-  image: 
-    0: "https://files.readme.io/72d4bd9-link.png"
-    1: "link.png"
-    2: 1459
-    3: 1459
-    4: "#dbe1f8"
+  image:
+    0: "/files/72d4bd9-link.png"
 ---
 LINK tokens are used to pay node operators for retrieving data for smart contracts and also for deposits placed by node operators as required by contract creators.
 
 The LINK token is an ERC677 token that inherits functionality from the ERC20 token standard and allows token transfers to contain a data payload. Read more about the <a href="https://github.com/ethereum/EIPs/issues/677" target="_blank" rel="noreferrer, noopener">ERC677 transferAndCall token standard</a>.
+
+**Table of Contents**
+
++ [Ethereum](#ethereum)
++ [BNB Chain](#bnb-chain)
++ [Polygon (Matic)](#polygon-matic)
++ [RSK](#rsk)
++ [Gnosis Chain (xDai)](#gnosis-chain-xdai)
++ [Avalanche](#avalanche)
++ [Fantom](#fantom)
++ [Arbitrum](#arbitrum)
++ [HECO Chain](#heco-chain)
++ [Optimism](#optimism)
++ [Harmony](#harmony)
++ [Moonriver](#moonriver)
 
 # Ethereum
 
@@ -35,8 +45,8 @@ The LINK token is an ERC677 token that inherits functionality from the ERC20 tok
 
 > 🚰Kovan Faucets
 >
-> Testnet LINK is available from https://kovan.chain.link/
-> Testnet ETH is available from https://faucet.kovan.network/
+> Testnet LINK are available from https://faucets.chain.link/kovan
+> Testnet ETH are available from https://faucets.chain.link/kovan
 
 |Parameter|Value|
 |:---|:---|
@@ -50,8 +60,9 @@ The LINK token is an ERC677 token that inherits functionality from the ERC20 tok
 
 > 🚰Rinkeby Faucets
 >
-> Testnet LINK is available from https://rinkeby.chain.link/
-> Testnet ETH is available from https://faucet.rinkeby.io/
+> Testnet LINK is available from https://faucets.chain.link/rinkeby
+> Testnet ETH is available from: https://faucets.chain.link/rinkeby
+> Backup Testnet ETH Faucets: https://rinkeby-faucet.com/, https://app.mycrypto.com/faucet
 
 |Parameter|Value|
 |:---|:---|
@@ -73,17 +84,17 @@ The LINK token is an ERC677 token that inherits functionality from the ERC20 tok
 
 --------------------
 
-# Other EVM Compatible Chains
+# Other EVM Chains
 
 LINK is native to Ethereum, so to use LINK on other chains, it must be bridged. <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blank">This guide</a> explains how to bridge and swap tokens to other chains.
 
-## Binance Smart Chain
+## BNB Chain
 
 ### Mainnet
 
 > 📘 Important
 >
-> The LINK provided by the <a href="https://www.binance.org/en/bridge" target="_blank">Binance Bridge</a> is not ERC-677 compatible, so cannot be used with Chainlink oracles. However, it can be <a href="https://pegswap.surge.sh/" target="_blank">**converted to the official LINK token on BSC using Chainlink's PegSwap service**</a>. 
+> The LINK provided by the [BNB Chain Bridge](https://www.bnbchain.world/en/bridge) is not ERC-677 compatible, so cannot be used with Chainlink oracles. However, it can be [**converted to the official LINK token on BNB Chain using Chainlink's PegSwap service**](https://pegswap.chain.link/).
 
 |Parameter|Value|
 |:---|:---|
@@ -95,9 +106,9 @@ LINK is native to Ethereum, so to use LINK on other chains, it must be bridged. 
 
 ### Testnet
 
-> 🚰BSC Faucet
+> 🚰BNB Chain Faucet
 >
-> Testnet LINK is available from <a href="https://linkfaucet.protofire.io/bsctest" target="_blank" rel="noreferrer, noopener">the community faucet</a>.
+> Testnet LINK is available from https://faucets.chain.link/chapel
 
 |Parameter|Value|
 |:---|:---|
@@ -111,16 +122,16 @@ LINK is native to Ethereum, so to use LINK on other chains, it must be bridged. 
 
 > 📘 Important
 >
-> The LINK provided by the <a href="https://wallet.matic.network/bridge" target="_blank">Polygon (Matic) Bridge</a> is not ERC-677 compatible, so cannot be used with Chainlink oracles. However, it can be <a href="https://pegswap.surge.sh/" target="_blank">**converted to the official LINK token on Polygon (Matic) using Chainlink's PegSwap service**</a>
+> The LINK provided by the [Polygon (Matic) Bridge](https://wallet.polygon.technology/bridge) is not ERC-677 compatible, so cannot be used with Chainlink oracles. However, it can be [**converted to the official LINK token on Polygon (Matic) using Chainlink's PegSwap service**](https://pegswap.chain.link/)
 
-You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blank"> watch this video </a>. 
+You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blank"> watch this video </a>.
 
 ### Mainnet
 
 |Parameter|Value|
 |:---|:---|
 |`ETH_CHAIN_ID`|`137`|
-|Address|<a href="https://explorer.matic.network/address/0xb0897686c545045afc77cf20ec7a532e3120e0f1" target="_blank" rel="noreferrer, noopener">`0xb0897686c545045afc77cf20ec7a532e3120e0f1`</a>|
+|Address|<a href="https://polygonscan.com/address/0xb0897686c545045afc77cf20ec7a532e3120e0f1" target="_blank" rel="noreferrer, noopener">`0xb0897686c545045afc77cf20ec7a532e3120e0f1`</a>|
 |Name|ChainLink Token|
 |Symbol|LINK|
 |Decimals|18|
@@ -129,12 +140,12 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 
 > 🚰Mumbai Faucet
 >
-> Testnet LINK and MATIC are available from <a href="https://faucet.matic.today" target="_blank" rel="noreferrer, noopener">the official matic faucet</a> and <a href="https://linkfaucet.protofire.io/mumbai" target="_blank" rel="noreferrer, noopener">the community faucet</a>.
+> Testnet LINK and MATIC are available from the [Polygon faucet](https://faucet.polygon.technology/) and https://faucets.chain.link/mumbai.
 
 |Parameter|Value|
 |:---|:---|
 |`ETH_CHAIN_ID`|`80001`|
-|Address|<a href="https://explorer-mumbai.maticvigil.com/address/0x326C977E6efc84E512bB9C30f76E30c160eD06FB" target="_blank" rel="noreferrer, noopener">`0x326C977E6efc84E512bB9C30f76E30c160eD06FB `</a>|
+|Address|<a href="https://mumbai.polygonscan.com/address/0x326C977E6efc84E512bB9C30f76E30c160eD06FB" target="_blank" rel="noreferrer, noopener">`0x326C977E6efc84E512bB9C30f76E30c160eD06FB `</a>|
 |Name|ChainLink Token|
 |Symbol|LINK|
 |Decimals|18|
@@ -155,11 +166,11 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 |Symbol|rLINK|
 |Decimals|18|
 
-## xDai
+## Gnosis Chain (xDai)
 
 ### Mainnet
 
-> 🚰xDai Faucet
+> 🚰Gnosis Chain (xDai) Faucet
 >
 > Free xDai for transactions: https://blockscout.com/poa/xdai/faucet
 >
@@ -171,6 +182,156 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 |:---|:---|
 |`ETH_CHAIN_ID`|`100`|
 |Address|<a href="https://blockscout.com/poa/xdai/address/0xE2e73A1c69ecF83F464EFCE6A5be353a37cA09b2" target="_blank" rel="noreferrer, noopener">`0xE2e73A1c69ecF83F464EFCE6A5be353a37cA09b2`</a>|
-|Name|ChainLink Token on xDai|
+|Name|ChainLink Token on Gnosis Chain (xDai)|
+|Symbol|LINK|
+|Decimals|18|
+
+## Avalanche
+
+### Mainnet
+
+|Parameter|Value|
+|:---|:---|
+|`ETH_CHAIN_ID`|`43114`|
+|Address|[`0x5947BB275c521040051D82396192181b413227A3`](https://snowtrace.io/address/0x5947BB275c521040051D82396192181b413227A3)|
+|Name|ChainLink Token on Avalanche|
+|Symbol|LINK|
+|Decimals|18|
+
+### Fuji Testnet
+
+> 🚰Avax Faucet
+>
+> Testnet LINK is available from https://faucets.chain.link/fuji
+>
+
+|Parameter|Value|
+|:---|:---|
+|`ETH_CHAIN_ID`|`43113`|
+|Address|[`0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846`](https://testnet.snowtrace.io/address/0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846)|
+|Name|ChainLink Token on Avalanche|
+|Symbol|LINK|
+|Decimals|18|
+
+## Fantom
+
+### Fantom Mainnet
+
+|Parameter|Value|
+|:---|:---|
+|`ETH_CHAIN_ID`|`250`|
+|Address|[`0x6F43FF82CCA38001B6699a8AC47A2d0E66939407`](https://ftmscan.com/address/0x6F43FF82CCA38001B6699a8AC47A2d0E66939407)|
+|Name|ChainLink Token on Fantom|
+|Symbol|LINK|
+|Decimals|18|
+
+### Fantom Testnet
+
+> 🚰Fantom Faucet
+>
+> Testnet LINK is available from https://faucets.chain.link/fantom-testnet  
+>
+
+|Parameter|Value|
+|:---|:---|
+|`ETH_CHAIN_ID`|`4002`|
+|Address|[`0xfaFedb041c0DD4fA2Dc0d87a6B0979Ee6FA7af5F`](https://testnet.ftmscan.com/address/0xfaFedb041c0DD4fA2Dc0d87a6B0979Ee6FA7af5F)|
+|Name|ChainLink Token on Fantom|
+|Symbol|LINK|
+|Decimals|18|
+
+## Arbitrum
+
+### Arbitrum Mainnet
+
+|Parameter|Value|
+|:---|:---|
+|`ETH_CHAIN_ID`|`42161`|
+|Address|[`0xf97f4df75117a78c1A5a0DBb814Af92458539FB4`](https://explorer.arbitrum.io/address/0xf97f4df75117a78c1A5a0DBb814Af92458539FB4)|
+|Name|ChainLink Token on Arbitrum Mainnet|
+|Symbol|LINK|
+|Decimals|18|
+
+### Rinkeby Testnet
+
+> 🚰Arbitrum Faucet on Rinkeby
+>
+> Testnet LINK is available from https://faucets.chain.link/arbitrum-rinkeby
+>
+> Supported bridge: https://bridge.arbitrum.io
+
+|Parameter|Value|
+|:---|:---|
+|`ETH_CHAIN_ID`|`421611`|
+|Address|[`0x615fBe6372676474d9e6933d310469c9b68e9726`](https://rinkeby-explorer.arbitrum.io/address/0x615fBe6372676474d9e6933d310469c9b68e9726)|
+|Name|ChainLink Token on Arbitrum Rinkeby|
+|Symbol|LINK|
+|Decimals|18|
+
+## HECO Chain
+
+### Mainnet
+
+|Parameter|Value|
+|:---|:---|
+|`ETH_CHAIN_ID`|`128`|
+|Address|[`0x9e004545c59D359F6B7BFB06a26390b087717b42`](https://hecoinfo.com/address/0x9e004545c59D359F6B7BFB06a26390b087717b42)|
+|Name|Heco-Peg LINK Token|
+|Symbol|LINK|
+|Decimals|18|
+
+## Optimism
+
+### Mainnet
+
+|Parameter|Value|
+|:---|:---|
+|`ETH_CHAIN_ID`|`10`|
+|Address|[`0x350a791Bfc2C21F9Ed5d10980Dad2e2638ffa7f6`](https://optimistic.etherscan.io/address/0x350a791Bfc2C21F9Ed5d10980Dad2e2638ffa7f6)|
+|Name|ChainLink Token on Optimism Mainnet|
+|Symbol|LINK|
+|Decimals|18|
+
+### Kovan Testnet
+
+|Parameter|Value|
+|:---|:---|
+|`ETH_CHAIN_ID`|`69`|
+|Address|[`0x4911b761993b9c8c0d14Ba2d86902AF6B0074F5B`](https://kovan-optimistic.etherscan.io/address/0x4911b761993b9c8c0d14Ba2d86902AF6B0074F5B)|
+|Name|ChainLink Token on Optimism Kovan|
+|Symbol|LINK|
+|Decimals|18|
+
+## Harmony
+
+### Mainnet
+
+|Parameter|Value|
+|:---|:---|
+|`ETH_CHAIN_ID`|`1666600000`|
+|Address|[`0x218532a12a389a4a92fC0C5Fb22901D1c19198aA`](https://explorer.harmony.one/address/0x218532a12a389a4a92fC0C5Fb22901D1c19198aA)|
+|Name|ChainLink Token on Harmony Mainnet|
+|Symbol|LINK|
+|Decimals|18|
+
+### Testnet
+
+|Parameter|Value|
+|:---|:---|
+|`ETH_CHAIN_ID`|`1666700000`|
+|Address|[`0x8b12Ac23BFe11cAb03a634C1F117D64a7f2cFD3e`](https://explorer.testnet.harmony.one/address/0x8b12Ac23BFe11cAb03a634C1F117D64a7f2cFD3e)|
+|Name|ChainLink Token on Harmony Testnet|
+|Symbol|LINK|
+|Decimals|18|
+
+## Moonriver
+
+### Mainnet
+
+|Parameter|Value|
+|:---|:---|
+|`ETH_CHAIN_ID`|`1285`|
+|Address|[`0x8b12Ac23BFe11cAb03a634C1F117D64a7f2cFD3e`](https://moonriver.moonscan.io/address/0x8b12Ac23BFe11cAb03a634C1F117D64a7f2cFD3e)|
+|Name|ChainLink Token on Moonriver Mainnet|
 |Symbol|LINK|
 |Decimals|18|

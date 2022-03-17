@@ -1,95 +1,101 @@
 ---
 layout: nodes.liquid
-section: smartContract
+section: ethereum
 date: Last Modified
 title: "Contract Addresses"
 permalink: "docs/vrf-contracts/"
-hidden: false
-metadata: 
+metadata:
   title: "Chainlink VRF Contract Addresses"
-  image: 
-    0: "https://files.readme.io/95f26ed-670379d-OpenGraph_V3.png"
-    1: "670379d-OpenGraph_V3.png"
-    2: 1459
-    3: 1459
-    4: "#dbe1f8"
+  image:
+    0: "/files/OpenGraph_V3.png"
 ---
-Chainlink VRF allows you to integrate provably-fair and verifiably random data in your smart contract. 
 
-For implementation details, read [Introduction to Chainlink VRF](../chainlink-vrf/).
+> ℹ️ You are viewing the VRF v2 guide.
+>
+> If you are using v1, see the [VRF v1 guide](./v1).
 
-# Polygon (Matic) Mainnet
+Chainlink VRF allows you to integrate provably fair and verifiably random data in your smart contract.
 
-|Item|Value|
-|---|---|
-|LINK Token|`0xb0897686c545045aFc77CF20eC7A532E3120E0F1`|
-|VRF Coordinator|`0x3d2341ADb2D31f1c5530cDC622016af293177AE0`|
-|Key Hash|`0xf86195cf7690c55907b2b611ebb7343a6f649bff128701cc542f0569e2c549da`|
-|Fee|0.0001 LINK|
+For implementation details, read [Introduction to Chainlink VRF](/docs/chainlink-vrf/).
 
-# Polygon (Matic) Mumbai Testnet
+## Coordinator Parameters
 
-|Item|Value|
-|---|---|
-|LINK Token|`0x326C977E6efc84E512bB9C30f76E30c160eD06FB`|
-|VRF Coordinator|`0x8C7382F9D8f56b33781fE506E897a4F1e2d17255`|
-|Key Hash|`0x6e75b569a01ef56d18cab6a8e71e6600d6ce853834d4a5748b720d06f878b3a4`|
-|Fee|0.0001 LINK|
+These parameters are configured in the coordinator contract. You can view these values by running `getConfig` on the coordinator or by viewing the coordinator contracts in a blockchain explorer.
 
-# Binance Smart Chain Mainnet
+- `uint16 minimumRequestConfirmations`: The minimum number of confirmation blocks on VRF requests before oracles respond
+- `uint32 maxGasLimit`: The maximum gas limit supported for a `fulfillRandomWords` callback.
+- `uint32 stalenessSeconds`: How long the coordinator waits until we consider the ETH/LINK price used for converting gas costs to LINK is stale and use `fallbackWeiPerUnitLink`
+- `uint32 gasAfterPaymentCalculation`: How much gas is used outside of the payment calculation. This covers the additional operations required to decrement the subscription balance and increment the balance for the oracle that handled the request.
 
-|Item|Value|
-|---|---|
-|LINK Token|`0x404460C6A5EdE2D891e8297795264fDe62ADBB75`|
-|VRF Coordinator|`0x747973a5A2a4Ae1D3a8fDF5479f1514F65Db9C31`|
-|Key Hash|`0xc251acd21ec4fb7f31bb8868288bfdbaeb4fbfec2df3735ddbd4f7dc8d60103c`|
-|Fee|0.2 LINK - initial fees on BSC are meant to cover the highest gas cost prices. To use VRF more efficiently, please [contact us](https://chainlinkcommunity.typeform.com/to/OYQO67EF)|
-[block:callout]
-{
-  "type": "success",
-  "body": "For the most efficient consumption of Chainlink VRF on Binance Smart Chain, please contact us using [this form](https://chainlinkcommunity.typeform.com/to/OYQO67EF) to create a payment channel, through which we can provide VRF to you at the cost of BSC network gas fees. You will only be paying in LINK for the gas costs incurred by the Chainlink node from calling your smart contract.",
-  "title": "Early Access"
-}
-[/block]
-# Binance Smart Chain Testnet
+## Fee parameters
+
+Fee parameters are configured in the coordinator contract and specify the premium you pay per request in addition to the gas cost for the transaction. You can view them by running `getFeeConfig` on the coordinator. The `uint32 fulfillmentFlatFeeLinkPPMTier1` parameter defines the fees per request specified in millionths of LINK.
+
+## Configurations
+
+- [Ethereum Mainnet](#ethereum-mainnet)
+- [Rinkeby testnet](#rinkeby-testnet)
+- [BNB Chain](#bnb-chain)
+- [BNB Chain testnet](#bnb-chain-testnet)
+
+### Ethereum Mainnet
 
 |Item|Value|
 |---|---|
-|LINK|`0x84b9B910527Ad5C03A9Ca831909E21e236EA7b06`|
-|VRF Coordinator|`0xa555fC018435bef5A13C6c6870a9d4C11DEC329C `|
-|Key Hash|`0xcaf3c3727e033261d383b315559476f48034c13b18f8cafed4d871abe5049186 `|
-|Fee|0.1 LINK|
+|LINK Token|[`0x514910771af9ca656af840dff83e8264ecf986ca`](https://etherscan.io/token/0x514910771af9ca656af840dff83e8264ecf986ca)|
+|VRF Coordinator|[`0x271682DEB8C4E0901D1a1550aD2e64D568E69909`](https://etherscan.io/token/0x271682DEB8C4E0901D1a1550aD2e64D568E69909)|
+|200 gwei Key Hash|`0x8af398995b04c28e9951adb9721ef74c74f93e6a478f39e7e0777be13527e7ef`|
+|500 gwei Key Hash|`0xff8dedfbfa60af186cf3c830acbc32c05aae823045ae5ea7da1e45fbfaba4f92`|
+|1000 gwei Key Hash|`0x9fe0eebf5e446e3c998ec9bb19951541aee00bb90ea201ae456421a2ded86805`|
+|Premium|0.25 LINK|
+|Minimum Confirmations|3|
+|Maximum Confirmations|200|
+|Maximum Random Values|500|
 
+### Rinkeby testnet
 
-# Ethereum Mainnet
-
-|Item|Value|
-|---|---|
-|LINK Token|`0x514910771af9ca656af840dff83e8264ecf986ca`|
-|VRF Coordinator|`0xf0d54349aDdcf704F77AE15b96510dEA15cb7952`|
-|Key Hash|`0xAA77729D3466CA35AE8D28B3BBAC7CC36A5031EFDC430821C02BC31A238AF445`|
-|Fee|2 LINK - initial fees on Ethereum are meant to cover the highest gas cost prices. To use VRF more efficiently, please [contact us](https://chainlinkcommunity.typeform.com/to/OYQO67EF)|
-[block:callout]
-{
-  "type": "success",
-  "body": "For the most efficient consumption of Chainlink VRF on Ethereum, please contact us using [this form](https://chainlinkcommunity.typeform.com/to/OYQO67EF) to create a payment channel, through which we can provide VRF to you at the cost of Ethereum network gas fees. You will only be paying in LINK for the gas costs incurred by the Chainlink node from calling your smart contract.",
-  "title": "Early Access"
-}
-[/block]
-# Kovan
+> 🚰Rinkeby Faucets
+>
+> Testnet LINK is available from https://faucets.chain.link/rinkeby
+> Testnet ETH is available from: https://faucets.chain.link/rinkeby
+> Backup Testnet ETH Faucets: https://rinkeby-faucet.com/, https://app.mycrypto.com/faucet
 
 |Item|Value|
 |---|---|
-|LINK|`0xa36085f69e2889c224210f603d836748e7dc0088`|
-|VRF Coordinator|`0xdD3782915140c8f3b190B5D67eAc6dc5760C46E9 `|
-|Key Hash|`0x6c3699283bda56ad74f6b855546325b68d482e983852a7a82979cc4807b641f4 `|
-|Fee|0.1 LINK|
+|LINK Token|[`0x01BE23585060835E02B77ef475b0Cc51aA1e0709`](https://rinkeby.etherscan.io/token/0x01BE23585060835E02B77ef475b0Cc51aA1e0709)|
+|VRF Coordinator|[`0x6168499c0cFfCaCD319c818142124B7A15E857ab`](https://rinkeby.etherscan.io/token/0x6168499c0cFfCaCD319c818142124B7A15E857ab)|
+|30 gwei Key Hash|`0xd89b2bf150e3b9e13446986e571fb9cab24b13cea0a43ea20a6049a85cc807cc`|
+|Premium|0.25 LINK|
+|Minimum Confirmations|3|
+|Maximum Confirmations|200|
+|Maximum Random Values|500|
 
-# Rinkeby
+### BNB Chain
 
 |Item|Value|
 |---|---|
-|LINK|`0x01be23585060835e02b77ef475b0cc51aa1e0709`|
-|VRF Coordinator|`0xb3dCcb4Cf7a26f6cf6B120Cf5A73875B7BBc655B `|
-|Key Hash|`0x2ed0feb3e7fd2022120aa84fab1945545a9f2ffc9076fd6156fa96eaff4c1311 `|
-|Fee|0.1 LINK|
+|LINK Token|[`0x404460c6a5ede2d891e8297795264fde62adbb75`](https://bscscan.com/address/0x404460c6a5ede2d891e8297795264fde62adbb75)|
+|VRF Coordinator|[`0xc587d9053cd1118f25F645F9E08BB98c9712A4EE`](https://bscscan.com/address/0xc587d9053cd1118f25F645F9E08BB98c9712A4EE)|
+|200 gwei Key Hash|`0x114f3da0a805b6a67d6e9cd2ec746f7028f1b7376365af575cfea3550dd1aa04`|
+|500 gwei Key Hash|`0xba6e730de88d94a5510ae6613898bfb0c3de5d16e609c5b7da808747125506f7`|
+|1000 gwei Key Hash|`0x17cd473250a9a479dc7f234c64332ed4bc8af9e8ded7556aa6e66d83da49f470`|
+|Premium|0.005 LINK|
+|Minimum Confirmations|3|
+|Maximum Confirmations|200|
+|Maximum Random Values|500|
+
+### BNB Chain testnet
+
+> 🚰 BNB Chain Faucet
+>
+> Testnet LINK is available from https://faucets.chain.link/chapel
+
+|Item|Value|
+|---|---|
+|LINK Token|[`0x84b9B910527Ad5C03A9Ca831909E21e236EA7b06`](https://testnet.bscscan.com/address/0x84b9B910527Ad5C03A9Ca831909E21e236EA7b06)|
+|VRF Coordinator|[`0x6A2AAd07396B36Fe02a22b33cf443582f682c82f`](https://testnet.bscscan.com/address/0x6A2AAd07396B36Fe02a22b33cf443582f682c82f)|
+|50 gwei Key Hash|`0xd4bb89654db74673a187bd804519e65e3f71a52bc55f11da7601a13dcf505314`|
+|Premium|0.005 LINK|
+|Minimum Confirmations|3|
+|Maximum Confirmations|200|
+|Maximum Random Values|500|

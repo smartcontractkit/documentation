@@ -1,20 +1,13 @@
 ---
 layout: nodes.liquid
-section: smartContract
+section: ethereum
 date: Last Modified
-title: "API Reference"
+title: "Data Feeds API Reference"
 permalink: "docs/price-feeds-api-reference/"
-hidden: false
-metadata: 
-  description: "API reference for using Chainlink Price Feeds in smart contracts."
-  image: 
-    0: "https://files.readme.io/fc85aa8-670379d-OpenGraph_V3.png"
-    1: "670379d-OpenGraph_V3.png"
-    2: 1459
-    3: 1459
-    4: "#dbe1f8"
+metadata:
+  description: "API reference for using Chainlink Data Feeds in smart contracts."
 ---
-API reference for <a href="https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/src/v0.6/interfaces/AggregatorV3Interface.sol" target="_blank">`AggregatorV3Interface`</a>.
+API reference for <a href="https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.6/interfaces/AggregatorV3Interface.sol" target="_blank">`AggregatorV3Interface`</a>.
 
 # Functions
 
@@ -53,12 +46,12 @@ function description() external view returns (string memory)
 Get data about a specific round, using the `roundId`.
 
 ```javascript Solidity
-function getRoundData(uint80 _roundId) external view 
+function getRoundData(uint80 _roundId) external view
     returns (
-        uint80 roundId, 
-        int256 answer, 
-        uint256 startedAt, 
-        uint256 updatedAt, 
+        uint80 roundId,
+        int256 answer,
+        uint256 startedAt,
+        uint256 updatedAt,
         uint80 answeredInRound
     )
 ```
@@ -73,20 +66,19 @@ function getRoundData(uint80 _roundId) external view
 * `answer`: The price.
 * `startedAt`: Timestamp of when the round started.
 * `updatedAt`: Timestamp of when the round was updated.
-* `answeredInRound`: The round ID of the round in which the answer
-   * was computed.
+* `answeredInRound`: The round ID of the round in which the answer was computed.
 
 ## latestRoundData
 
 Get the price from the latest round.
 
 ```javascript Solidity
-function latestRoundData() external view 
+function latestRoundData() external view
     returns (
-        uint80 roundId, 
-        int256 answer, 
-        uint256 startedAt, 
-        uint256 updatedAt, 
+        uint80 roundId,
+        int256 answer,
+        uint256 startedAt,
+        uint256 updatedAt,
         uint80 answeredInRound
     )
 ```
@@ -97,8 +89,7 @@ function latestRoundData() external view
 * `answer`: The price.
 * `startedAt`: Timestamp of when the round started.
 * `updatedAt`: Timestamp of when the round was updated.
-* `answeredInRound`: The round ID of the round in which the answer
-   * was computed.
+* `answeredInRound`: The round ID of the round in which the answer was computed.
 
 ## version
 

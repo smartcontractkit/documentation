@@ -1,166 +1,169 @@
 module.exports = {
   navigation: {
-    nodeOperator: [
+    gettingStarted: [
       {
-        section: 'NODE OPERATORS',
+        section: 'Getting Started',
         contents: [
-          { url: 'node-operator-overview', title: 'Overview' },
           {
-            url: 'running-a-chainlink-node',
-            title: 'Running a Chainlink Node',
-          },
-          { url: 'fulfilling-requests', title: 'Fulfilling Requests' },
-          {
-            url: 'run-an-ethereum-client',
-            title: 'Run an Ethereum Client',
+            title: 'Overview',
+            url: '/docs/conceptual-overview/',
           },
           {
-            url: 'performing-system-maintenance',
-            title: 'Performing System Maintenance',
+            title: 'Deploy Your First Contract',
+            url: '/docs/deploy-your-first-contract/',
           },
           {
-            url: 'connecting-to-a-remote-database',
-            title: 'Connecting to a Remote Database',
+            title: 'Consuming Data Feeds',
+            url: '/docs/consuming-data-feeds/',
           },
           {
-            url: 'configuration-variables',
-            title: 'Configuration Variables',
+            title: 'Get Random Numbers',
+            url: '/docs/intermediates-tutorial/',
           },
           {
-            url: 'enabling-https-connections',
-            title: 'Enabling HTTPS Connections',
-          },
-          { url: 'miscellaneous', title: 'Miscellaneous' },
-          {
-            url: 'best-security-practices',
-            title: 'Best Security and Operating Practices',
-          },
-          { url: 'fluxaggregator-uses', title: 'FluxAggregator Uses' },
-        ],
-      },
-      {
-        section: 'ORACLE JOBS',
-        contents: [
-          { url: 'job-specifications', title: 'Job Specifications' },
-          { url: 'adapters', title: 'Core Adapters' },
-          { url: 'initiators', title: 'Initiators' },
-        ],
-      },
-      {
-        section: 'EXTERNAL ADAPTERS',
-        contents: [
-          { url: 'external-adapters', title: 'Introduction' },
-          {
-            url: 'contract-creators',
-            title: 'External Adapters in Solidity',
-          },
-          { url: 'developers', title: 'Building External Adapters' },
-          {
-            url: 'node-operators',
-            title: 'Bridges: Adding External Adapters to Nodes',
+            title: 'API Calls',
+            url: '/docs/advanced-tutorial/',
           },
         ],
       },
       {
-        section: 'EXTERNAL INITIATORS',
+        section: 'Resources',
         contents: [
           {
-            url: 'external-initiators-introduction',
-            title: 'Introduction',
+            title: 'Videos and Tutorials',
+            url: '/docs/other-tutorials/',
+          },
+        ],
+      },
+      {
+        section: 'Next Steps',
+        contents: [
+          {
+            title: 'Chainlink Architecture',
+            url: '/docs/architecture-overview/',
           },
           {
-            url: 'building-external-initiators',
-            title: 'Building External Initiators',
+            title: 'Data Feeds',
+            url: '/docs/using-chainlink-reference-contracts/',
           },
           {
-            url: 'external-initiators-in-nodes',
-            title: 'Adding External Initiators to Nodes',
+            title: 'Chainlink VRF',
+            url: '/docs/chainlink-vrf/',
+          },
+          {
+            title: 'Chainlink Keepers',
+            url: '/docs/chainlink-keepers/introduction/',
+          },
+          {
+            title: 'Connect to Public API Data',
+            url: '/docs/request-and-receive-data/',
+          },
+          {
+            title: 'Run a Chainlink Node',
+            url: '/chainlink-nodes/',
           },
         ],
       },
     ],
-    smartContract: [
+    ethereum: [
       {
-        section: 'INTRODUCTION',
+        section: 'Overview',
         contents: [
           {
-            title: 'Tutorials',
-            url: 'tutorials',
-            children: [
-              {
-                title: 'Beginners - The Basics',
-                url: 'beginners-tutorial',
-              },
-              {
-                title: 'Intermediates - Random Numbers',
-                url: 'intermediates-tutorial',
-              },
-              {
-                title: 'Advanced - API Calls',
-                url: 'advanced-tutorial',
-              },
-            ],
-          },
-          {
-            title: 'Architecture Overview',
-            url: 'architecture-overview',
+            title: 'Chainlink Architecture',
+            url: '/docs/architecture-overview/',
             children: [
               {
                 title: 'Basic Request Model',
-                url: 'architecture-request-model',
+                url: '/docs/architecture-request-model/',
               },
               {
                 title: 'Decentralized Data Model',
-                url:
-                  'architecture-decentralized-model',
+                url: '/docs/architecture-decentralized-model/',
               },
               {
                 title: 'Off-Chain Reporting',
-                url: 'off-chain-reporting',
+                url: '/docs/off-chain-reporting/',
               },
             ],
           },
         ],
       },
       {
-        section: 'USING PRICE FEEDS',
+        section: 'DATA FEEDS',
         contents: [
           {
-            title: 'Introduction to Price Feeds',
-            url: 'using-chainlink-reference-contracts',
+            title: 'Introduction to Data Feeds',
+            url: '/docs/using-chainlink-reference-contracts/',
           },
-          { title: 'Get the Latest Price', url: 'get-the-latest-price' },
-          { title: 'Historical Price Data', url: 'historical-price-data' },
+          {
+            title: 'Using Data Feeds',
+            url: '/docs/get-the-latest-price/'
+          },
+          {
+            title: 'Historical Price Data',
+            url: '/docs/historical-price-data/',
+          },
+          {
+            title: 'Feed Registry',
+            url: '/docs/feed-registry/',
+          },
           {
             title: 'API Reference',
-            url: 'price-feeds-api-reference',
-            children: [],
+            url: '/docs/price-feeds-api-reference/',
+          },
+          {
+            title: 'Using ENS with Data Feeds',
+            url: '/docs/ens/'
           },
           {
             title: 'Contract Addresses',
-            url: 'reference-contracts',
+            url: '/docs/reference-contracts/',
             children: [
-              { title: 'ENS', url: 'ens' },
               {
-                title: 'Ethereum Price Feeds',
-                url: 'ethereum-addresses',
+                title: 'Ethereum Data Feeds',
+                url: '/docs/ethereum-addresses/',
               },
               {
-                title: 'Binance Smart Chain Price Feeds',
-                url:
-                  'binance-smart-chain-addresses',
+                title: 'BNB Chain Data Feeds',
+                url: '/docs/bnb-chain-addresses/',
               },
               {
-                title: 'Polygon (Matic) Price Feeds',
-                url: 'matic-addresses',
+                title: 'Polygon (Matic) Data Feeds',
+                url: '/docs/matic-addresses/',
               },
               {
-                title: 'xDai Price Feeds',
-                url: 'xdai-price-feeds',
+                title: 'Gnosis Chain (xDai) Data Feeds',
+                url: '/docs/data-feeds-gnosis-chain/',
               },
               {
-                title: 'Huobi Eco Chain Price Feeds',
-                url: 'huobi-eco-chain-price-feeds',
+                title: 'HECO Chain Data Feeds',
+                url: '/docs/huobi-eco-chain-price-feeds/',
+              },
+              {
+                title: 'Avalanche Data Feeds',
+                url: '/docs/avalanche-price-feeds/',
+              },
+              {
+                title: 'Fantom Data Feeds',
+                url: '/docs/fantom-price-feeds/',
+              },
+              {
+                title: 'Arbitrum Data Feeds',
+                url: '/docs/arbitrum-price-feeds/',
+              },
+              {
+                title: 'Harmony Data Feeds',
+                url: '/docs/harmony-price-feeds/',
+              },
+              {
+                title: 'Optimism Data Feeds',
+                url: '/docs/optimism-price-feeds/',
+              },
+              {
+                title: 'Moonriver Data Feeds',
+                url: '/docs/data-feeds-moonriver/',
+
               },
             ],
           },
@@ -168,130 +171,454 @@ module.exports = {
       },
       {
         section: 'USING RANDOMNESS',
+
         contents: [
-          { title: 'Introduction to Chainlink VRF', url: 'chainlink-vrf' },
-          { title: 'Get a Random Number', url: 'get-a-random-number' },
-          { title: 'API Reference', url: 'chainlink-vrf-api-reference' },
-          { title: 'Contract Addresses', url: 'vrf-contracts' },
+          {
+            title: 'Introduction to Chainlink VRF',
+            url: '/docs/chainlink-vrf/',
+          },
+          {
+            title: 'Get a Random Number',
+            url: '/docs/get-a-random-number/',
+          },
+          {
+            title: 'Example Contracts',
+            url: '/docs/chainlink-vrf/example-contracts/'
+          },
+          {
+            title: 'Security Considerations',
+            url: '/docs/vrf-security-considerations/',
+          },
+          {
+            title: 'Best Practices',
+            url: '/docs/chainlink-vrf-best-practices/',
+          },
+          {
+            title: 'Contract Addresses',
+            url: '/docs/vrf-contracts/'
+          },
+          {
+            title: 'Migrating to VRF v2',
+            url: '/docs/chainlink-vrf/migration-vrf-v1-v2/',
+          },
         ],
       },
       {
-        section: 'USING ANY API',
+        section: 'Connect to any API',
         contents: [
           {
             title: 'Introduction to Using Any API',
-            url: 'request-and-receive-data',
+            url: '/docs/request-and-receive-data/',
           },
-          { title: 'Make a GET Request', url: 'make-a-http-get-request' },
+          {
+            title: 'Make a GET Request',
+            url: '/docs/make-a-http-get-request/',
+            children: [
+              {
+                title: 'Multi-Variable Responses',
+                url: '/docs/multi-variable-responses/',
+              },
+              {
+                title: 'Large Responses',
+                url: '/docs/large-responses/',
+              },
+            ],
+          },
           {
             title: 'Make an Existing Job Request',
-            url: 'existing-job-request',
+            url: '/docs/existing-job-request/',
           },
-          { title: 'Find Existing Jobs', url: 'listing-services' },
-          { title: 'API Reference', url: 'chainlink-framework' },
+          {
+            title: 'Find Existing Jobs',
+            url: '/docs/listing-services/'
+          },
+          {
+            title: 'API Reference',
+            url: '/docs/chainlink-framework/'
+          },
           {
             title: 'Contract Addresses',
-            url: 'decentralized-oracles-ethereum-mainnet',
+            url: '/docs/decentralized-oracles-ethereum-mainnet/',
           },
         ],
       },
       {
-        section: 'DEVELOPER REFERENCE',
+        section: 'CHAINLINK KEEPERS',
         contents: [
           {
-            title: 'Install Instructions',
-            url: 'create-a-chainlinked-project',
+            title: 'Introduction to Keepers',
+            url: '/docs/chainlink-keepers/introduction/',
           },
-          { title: 'LINK Token Contracts', url: 'link-token-contracts' },
+          {
+            title: 'Making Compatible Contracts',
+            url: '/docs/chainlink-keepers/compatible-contracts/',
+          },
+          {
+            title: 'Register Upkeep for a Contract',
+            url: '/docs/chainlink-keepers/register-upkeep/',
+          },
+          {
+            title: 'Utility Contracts',
+            url: '/docs/chainlink-keepers/utility-contracts/'
+          },
+          {
+            title: 'Network Overview',
+            url: '/docs/chainlink-keepers/overview/',
+          },
+          {
+            title: 'FAQs',
+            url: '/docs/chainlink-keepers/faqs/'
+          },
+        ],
+      },
+      {
+        section: 'Resources',
+        contents: [
+          {
+            title: 'Videos and Tutorials',
+            url: '/docs/other-tutorials/',
+          },
+          {
+            title: 'Acquire testnet LINK',
+            url: '/docs/acquire-link/',
+          },
+          {
+            title: 'Fund Your Contracts',
+            url: '/docs/fund-your-contract/',
+          },
+          {
+            title: 'Install Frameworks',
+            url: '/docs/create-a-chainlinked-project/',
+          },
+          {
+            title: 'LINK Token Contracts',
+            url: '/docs/link-token-contracts/'
+          },
           {
             title: 'Developer Communications',
-            url: 'developer-communications',
+            url: '/docs/developer-communications/',
           },
-          { title: 'Hackathon Resources', url: 'hackathon-resources' },
           {
-            title: 'User Guides',
-            url: 'user-guides',
+            title: 'Getting Help',
+            url: '/docs/getting-help/',
+          },
+          {
+            title: 'Data Provider Nodes',
+            url: '/docs/data-provider-nodes/',
+          },
+          {
+            title: 'Selecting Data Feeds',
+            url: '/docs/selecting-data-feeds/',
+          },
+          {
+            title: 'Hackathon Resources',
+            url: '/docs/hackathon-resources/',
+          },
+          {
+            title: 'Contributing to Chainlink',
+            url: '/docs/contributing-to-chainlink/'
+          },
+        ],
+      },
+    ],
+    terra: [
+      {
+        section: 'Terra',
+        contents: [
+          {
+            title: 'Overview',
+            url: '/docs/terra/',
+          },
+        ],
+      },
+      {
+        section: 'Data Feeds',
+        contents: [
+          {
+            title: 'Using Data Feeds',
+            url: '/docs/terra/using-data-feeds-terra/',
+          },
+          {
+            title: 'Terra Data Feeds',
+            url: '/docs/terra/data-feeds-terra/',
+          },
+        ],
+      },
+    ],
+    solana: [
+      {
+        section: 'Solana',
+        contents: [
+          {
+            title: 'Overview',
+            url: '/docs/solana/',
+          },
+        ],
+      },
+      {
+        section: 'Data Feeds',
+        contents: [
+          {
+            title: 'Using Data Feeds',
+            url: '/docs/solana/using-data-feeds-solana/',
+          },
+          {
+            title: 'Solana Data Feeds',
+            url: '/docs/solana/data-feeds-solana/',
+          },
+        ],
+      },
+    ],
+    nodeOperator: [
+      {
+        section: 'NODE OPERATORS',
+        contents: [
+          {
+            title: 'Node Versions',
+            url: '/docs/node-versions/',
+          },
+          {
+            title: 'Running a Chainlink Node',
+            url: '/docs/running-a-chainlink-node/',
+          },
+          {
+            title: 'Fulfilling Requests',
+            url: '/docs/fulfilling-requests/',
+          },
+          {
+            title: 'Run an Ethereum Client',
+            url: '/docs/run-an-ethereum-client/',
+          },
+          {
+            title: 'Performing System Maintenance',
+            url: '/docs/performing-system-maintenance/',
+          },
+          {
+            url: '/docs/connecting-to-a-remote-database/',
+            title: 'Connecting to a Remote Database',
+          },
+          {
+            title: 'Configuring Nodes',
+            url: '/docs/configuration-variables/',
+          },
+          {
+            title: 'Enabling HTTPS Connections',
+            url: '/docs/enabling-https-connections/',
+          },
+          {
+            title: 'Security and Operation Best Practices',
+            url: '/docs/best-security-practices/',
+          },
+          {
+            title: 'Best Practices for Nodes on AWS',
+            url: '/docs/best-practices-aws/',
+          },
+          {
+            title: 'Miscellaneous',
+            url: '/docs/miscellaneous/',
+          },
+        ],
+      },
+      {
+        section: 'ORACLE JOBS',
+        contents: [
+          {
+            title: 'Migrating to v2 Jobs',
+            url: '/docs/jobs/migration-v1-v2/',
+          },
+          {
+            title: 'Jobs',
+            url: '/docs/jobs/',
             children: [
               {
-                title: 'Install, configure & fund MetaMask',
-                url: 'install-metamask',
+                title: 'Cron',
+                url: '/docs/jobs/types/cron/',
               },
               {
-                title: 'Acquire testnet LINK',
-                url: 'acquire-link',
+                title: 'Direct Request',
+                url: '/docs/jobs/types/direct-request/',
               },
               {
-                title: 'Deploy your first contract',
-                url: 'deploy-your-first-contract',
+                title: 'Flux Monitor',
+                url: '/docs/jobs/types/flux-monitor/',
               },
               {
-                title: 'Fund your contract',
-                url: 'fund-your-contract',
+                title: 'Keeper',
+                url: '/docs/jobs/types/keeper/',
               },
               {
-                title: 'Use your first contract!',
-                url: 'use-your-first-contract',
+                title: 'Off-chain Reporting',
+                url: '/docs/jobs/types/offchain-reporting/',
+              },
+              {
+                title: 'Webhook',
+                url: '/docs/jobs/types/webhook/',
+              },
+            ],
+          },
+          {
+            url: '/docs/tasks/',
+            title: 'Tasks',
+            children: [
+              {
+                title: 'Job Pipelines',
+                url: '/docs/jobs/task-types/pipelines/',
+              },
+              {
+                title: 'HTTP',
+                url: '/docs/jobs/task-types/http/',
+              },
+              {
+                title: 'Bridge',
+                url: '/docs/jobs/task-types/bridge/',
+              },
+              {
+                title: 'JSON Parse',
+                url: '/docs/jobs/task-types/jsonparse/',
+              },
+              {
+                title: 'CBOR Parse',
+                url: '/docs/jobs/task-types/cborparse/',
+              },
+              {
+                title: 'ETH ABI Decode',
+                url: '/docs/jobs/task-types/eth-abi-decode/',
+              },
+              {
+                title: 'ETH ABI Decode Log',
+                url: '/docs/jobs/task-types/eth-abi-decode-log/',
+              },
+              {
+                title: 'ETH ABI Encode',
+                url: '/docs/jobs/task-types/eth-abi-encode/',
+              },
+              {
+                title: 'ETH Call',
+                url: '/docs/jobs/task-types/eth-call/',
+              },
+              {
+                title: 'ETH Tx',
+                url: '/docs/jobs/task-types/eth-tx/',
+              },
+              {
+                title: 'Multiply',
+                url: '/docs/jobs/task-types/multiply/',
+              },
+              {
+                title: 'Divide',
+                url: '/docs/jobs/task-types/divide/',
+              },
+
+              {
+                title: 'Any',
+                url: '/docs/jobs/task-types/any/',
+              },
+              {
+                title: 'Mean',
+                url: '/docs/jobs/task-types/mean/',
+              },
+              {
+                title: 'Median',
+                url: '/docs/jobs/task-types/median/',
+              },
+              {
+                title: 'Mode',
+                url: '/docs/jobs/task-types/mode/',
+              },
+              {
+                title: 'Sum',
+                url: '/docs/jobs/task-types/sum/',
               },
             ],
           },
         ],
       },
       {
-        section: 'DATA PROVIDER NODES',
+        section: 'EXTERNAL ADAPTERS',
         contents: [
           {
-            title: 'Introduction to Data Provider Nodes',
-            url: 'data-provider-nodes'
+            title: 'Introduction',
+            url: '/docs/external-adapters/',
           },
           {
-            title: 'Chainlink Alarm Clock (Testnet)',
-            url: 'chainlink-alarm-clock'
-          },
-          { title: 'LCX (Testnet)', url: 'lcx-testnet' },
-          {
-            title: 'Kraken Rates Oracle Node',
-            url: 'kraken-rates-oracle-node'
+            title: 'External Adapters in Solidity',
+            url: '/docs/contract-creators/',
           },
           {
-            title: 'Tiingo EOD Stock Price Oracle',
-            url: 'tiingo-eod-stock-price-oracle'
-          },
-          { title: 'GeoDB Oracle Node', url: 'geodb-oracle-node' },
-          {
-            title: 'TheRunDown Oracle Node',
-            url: 'therundown-oracle-node',
-          },
-          { title: 'DNS Ownership Oracle', url: 'dns-ownership-oracle' },
-          {
-            title: 'WatchSignals Luxury Watch Price Oracle',
-            url: 'watchsignals'
+            title: 'Building External Adapters',
+            url: '/docs/developers/',
           },
           {
-            title: 'Genesis Volatility Cryptocurrency Options Oracle',
-            url: 'genesis-volatility'
+            title: 'Bridges: Adding External Adapters to Nodes',
+            url: '/docs/node-operators/',
+          },
+        ],
+      },
+      {
+        section: 'EXTERNAL INITIATORS',
+        contents: [
+          {
+            title: 'Introduction',
+            url: '/docs/external-initiators-introduction/',
           },
           {
-            title: 'dxFeed Price Oracle',
-            url: 'dxfeed-oracle'
+            title: 'Building External Initiators',
+            url: '/docs/building-external-initiators/',
           },
           {
-            title: 'CipherTrace DeFi Compli Oracle',
-            url: 'ciphertrace-defi-compli-oracle'
+            title: 'Adding External Initiators to Nodes',
+            url: '/docs/external-initiators-in-nodes/',
+          },
+        ],
+      },
+    ],
+    legacy: [
+      {
+        section: 'VRF v1 [DEPRECATED]',
+        contents: [
+          {
+            title: 'Introduction to Chainlink VRF',
+            url: '/docs/chainlink-vrf/v1/',
           },
           {
-            title: 'Bookmaker Ratings Oracle',
-            url: 'bookmaker-ratings-oracle'
+            title: 'Get a Random Number',
+            url: '/docs/get-a-random-number/v1/'
           },
           {
-            title: 'Finage Global Market Data Oracle',
-            url: 'finage-global-market-data-oracle'
+            title: 'Security Considerations',
+            url: '/docs/vrf-security-considerations/v1/',
           },
           {
-            title: 'SportMonks Sports Data Oracle',
-            url: 'sport-monks-oracle'
-          }
+            title: 'Best Practices',
+            url: '/docs/chainlink-vrf-best-practices/v1/',
+          },
+          {
+            title: 'Contract Addresses',
+            url: '/docs/vrf-contracts/v1/'
+          },
+          {
+            title: 'API Reference',
+            url: '/docs/chainlink-vrf-api-reference/v1/'
+          },
+        ],
+      },
+      {
+        section: 'v1 JSON JOBS [REMOVED]',
+        contents: [
+          {
+            title: 'Job Specifications',
+            url: '/docs/job-specifications/',
+          },
+          {
+            title: 'Core Adapters',
+            url: '/docs/core-adapters/',
+          },
+          {
+            title: 'Initiators',
+            url: '/docs/initiators/',
+          },
         ],
       },
     ],
   },
-}
+};

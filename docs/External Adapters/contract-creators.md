@@ -1,10 +1,10 @@
 ---
 layout: nodes.liquid
+section: nodeOperator
 date: Last Modified
 title: "External Adapters in Solidity"
 permalink: "docs/contract-creators/"
 whatsnext: {"Building External Adapters":"/docs/developers/", "Bridges: Adding External Adapters to Nodes":"/docs/node-operators/"}
-hidden: false
 ---
 ### Using parameters with an External Adapter
 
@@ -28,7 +28,7 @@ function requestMWAPrice(string _coin, string _market)
 
 ### Using the Copy adapter with an External Adapter
 
-The [Copy](../adapters/#copy) adapter allows for the same functionality of the [JsonParse](../adapters/#jsonparse)  adapter but for getting data from the external adapter's response.
+The [Copy](../core-adapters/#copy) adapter allows for the same functionality of the [JsonParse](../core-adapters/#jsonparse)  adapter but for getting data from the external adapter's response.
 
 For example, if an adapter returns JSON data like what is below:
 
