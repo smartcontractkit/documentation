@@ -33,8 +33,8 @@ contract VRFv2SubscriptionManager is VRFConsumerBaseV2 {
     // on other networks.
     uint32 callbackGasLimit = 100000;
 
-    // The default is 3, but you can set this higher.
-    uint16 requestConfirmations = 3;
+    // The default is 1, but you can set this higher.
+    uint16 requestConfirmations = 1;
 
     // For this example, retrieve 2 random values in one request.
     // Cannot exceed VRFCoordinatorV2.MAX_NUM_WORDS.

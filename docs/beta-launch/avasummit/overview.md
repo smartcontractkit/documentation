@@ -17,7 +17,7 @@ metadata:
 > - Apply for the [Avalanche Summit Hackathon](https://hackathon.avalanchesummit.com/).
 > - Join us at the [Chainlink Happy Hour](https://www.eventbrite.com/e/chainlink-happy-hour-avalanche-summit-tickets-258013052987).
 
-Next, we will show you how you can use Chainlink with Avalanche. The following can also be used as support material for Avalanche Summit Hackathon participants.
+Next, we will show you how you can use Chainlink with Avalanche. **Please Note** Chainlink VRF is an early-beta implementation, specifically for the Avalanche Summit.  Chainlink cannot provide official support, but we hope you enjoy building with us!
 
 **Table of contents**
 
@@ -43,22 +43,9 @@ Check the [developer documentation](/docs/using-chainlink-reference-contracts/) 
 ## VRF
 
 Chainlink VRF (Verifiable Random Function) is a provably fair and verifiable random number generator (RNG) that enables smart contracts to access random values without compromising security or usability.
-Use Chainlink VRF to build reliable smart contracts for any applications that rely on unpredictable outcomes:
+Use Chainlink VRF to build reliable smart contracts for any applications that rely on unpredictable outcomes. Also, check our blog to learn how Chainlink VRF enables [35+ Blockchain RNG Use Cases](https://blog.chain.link/blockchain-rng-use-cases-enabled-by-chainlink-vrf/).
 
-- Building blockchain games and NFTs.
-- Random assignment of duties and resources. For example, randomly assigning judges to cases.
-- Choosing a representative sample for consensus mechanisms.
-
-Check the [developer documentation](/docs/chainlink-vrf/) to learn how to use Chainlink VRF. **Important Note** : The [Subscription Manager](https://vrf.chain.link/) is only supported on the following networks:
-
-- Ethereum:
-  - [Mainnet](/docs/vrf-contracts/#ethereum-mainnet)
-  - [Rinkeby testnet](/docs/vrf-contracts/#rinkeby-testnet)
-- BNB Chain
-  - [Mainnet](/docs/vrf-contracts/#bnb-chain)
-  - [Testnet](/docs/vrf-contracts/#bnb-chain-testnet)
-
-Although not officially supported on Avalanche yet, the following guide will explain how to test Chainlink VRF on [Avalanche Fuji Testnet](https://docs.avax.network/build/tutorials/platform/fuji-workflow/).
+Check the [developer documentation](/docs/chainlink-vrf/) to learn how to use Chainlink VRF. **Important Note** : The [Subscription Manager User-Interface](https://vrf.chain.link/) is not live for Avalanche yet. Therefore, the following guide will explain how to test Chainlink VRF on [Avalanche Fuji Testnet](https://docs.avax.network/build/tutorials/platform/fuji-workflow/).
 
 ### Requirements
 
@@ -98,7 +85,7 @@ These parameters define how your requests will be processed:
 
 - `uint32 callbackGasLimit`: The limit for how much gas to use for the callback request to your contract's `fulfillRandomWords()` function. It must be less than the `maxGasLimit` limit on the coordinator contract, `2500000` on Avalanche Fuji Testnet. In this example, the `fulfillRandomWords()` function stores two random values, which cost about 20,000 gas each, so a limit of `100000` gas is sufficient. Adjust this value for larger requests depending on how your `fulfillRandomWords()` function processes and stores the received random values. If your `callbackGasLimit` is not sufficient, the callback will fail, and the contract subscription is still charged for the work done to generate your requested random values.
 
-- `uint16 requestConfirmations`: How many confirmations the Chainlink node should wait before responding. The longer the node waits, the more secure the random value is. It must be greater than the `minimumRequestBlockConfirmations` limit on the coordinator contract, which is `3` on Avalanche Fuji Testnet. In this example, we set the value to `3,` but you can set it higher.
+- `uint16 requestConfirmations`: How many confirmations the Chainlink node should wait before responding. The longer the node waits, the more secure the random value is. It must be greater than the `minimumRequestBlockConfirmations` limit on the coordinator contract, which is `1` on Avalanche Fuji Testnet. In this example, we set the value to `1,` but you can set it higher.
 
 - `uint16 numWords`: How many random values to request. If you can use several random values in a single callback, you can reduce the amount of gas you spend per random value. The total cost of the callback request depends on how your `fulfillRandomWords()` function processes and stores the received random values, so adjust your `callbackGasLimit` accordingly. Here we are requesting two random values.
 
