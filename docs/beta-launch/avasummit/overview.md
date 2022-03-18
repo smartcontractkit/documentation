@@ -43,6 +43,7 @@ Check the [developer documentation](/docs/using-chainlink-reference-contracts/) 
 ## VRF
 
 Chainlink VRF (Verifiable Random Function) is a provably fair and verifiable random number generator (RNG) that enables smart contracts to access random values without compromising security or usability.
+
 Use Chainlink VRF to build reliable smart contracts for any applications that rely on unpredictable outcomes. Also, check our blog to learn how Chainlink VRF enables [35+ Blockchain RNG Use Cases](https://blog.chain.link/blockchain-rng-use-cases-enabled-by-chainlink-vrf/).
 
 Check the [developer documentation](/docs/chainlink-vrf/) to learn how to use Chainlink VRF. **Important Note** : The [Subscription Manager User-Interface](https://vrf.chain.link/) is not live for Avalanche yet. Therefore, the following guide will explain how to test Chainlink VRF on [Avalanche Fuji Testnet](https://docs.avax.network/build/tutorials/platform/fuji-workflow/).
