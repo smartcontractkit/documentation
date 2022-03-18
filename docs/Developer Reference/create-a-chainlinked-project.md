@@ -123,7 +123,7 @@ cd foundry-starter-kit
 make # This installs the project's dependencies.
 ```
 
-For instructions about how to use the starter kit, see the [Foundry starter kit README](https://github.com/smartcontractkit/foundry-starter-kit#readme).
+For instructions on how to use the starter kit, refer to the [Foundry starter kit README](https://github.com/smartcontractkit/foundry-starter-kit#readme).
 
 ___
 
