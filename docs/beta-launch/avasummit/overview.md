@@ -54,7 +54,7 @@ Check the [developer documentation](/docs/chainlink-vrf/) to learn how to use Ch
 
 ### Requirements
 
-This guide assumes that you know how to create and deploy smart contracts on Avalanche Fuji Testnet using the following tools:
+This guide assumes that you know how to create and deploy smart contracts on the Avalanche Fuji Testnet using the following tools:
 
 - [The Remix IDE](https://remix.ethereum.org/)
 - [MetaMask](https://metamask.io/)
