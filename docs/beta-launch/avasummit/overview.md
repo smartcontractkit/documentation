@@ -64,7 +64,7 @@ If you are new to developing smart contracts on Ethereum, see the [Getting Start
 
 ### Subscription manager contract
 
-Since the [Subscription Manager](https://vrf.chain.link/) is currently not available on Avalanche, we are going to walk you through a contract that operates at the same time as:
+This example contract has several functions that allow it to operate both as a subscription owner and a random value consumer. You can separate these functions and approve consumer contracts to use the subscription without having ownership over the subscription.
 
 - Subscription owner: creates a subscription to Chainlin VRF when deployed. It also allows adding and removing consumers from the subscription.
 - Consumer: calls Chainlink VRF to request random values. You will notice that, when deployed, the contract adds itself as a consumer to the subscription.
