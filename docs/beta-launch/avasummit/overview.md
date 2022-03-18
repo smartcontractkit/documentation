@@ -121,7 +121,7 @@ This contract automatically creates a new subscription when you deploy it. Read 
 
 ### Clean up
 
-When you are done with your contracts and the subscription, run the `cancelSubscription()` to close the subscription and send the remaining LINK to your wallet address. Specify the address of the receiving wallet. You can also call the `withdraw()` function to withdraw any remaining testnet LINK in the contract. The `getLinkBalance()` returns the LINK balance of the contract.
+When you are done with your contracts and the subscription, run the `cancelSubscription()` function to close the subscription and send the remaining LINK to your wallet address. Specify the address of the receiving wallet. You can also call the `withdraw()` function to withdraw any remaining testnet LINK in the contract. The `getLinkBalance()` function returns the LINK balance of the contract.
 
 ### Next Steps
 
