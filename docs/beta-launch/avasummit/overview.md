@@ -116,7 +116,7 @@ This contract automatically creates a new subscription when you deploy it. Read 
 
 1. Run the `requestRandomWords()` function to request and receive random values. The request might take several minutes to process. You can track if the request is still pending by calling `pendingRequestExists().` When `pendingRequestExists()` returns `false`, that means `fulfillRandomWords()` has been called. `fulfillRandomWords()` receives random values and stores them in the contract.
 
-1. Read `s_randomWords` at index `0`or `1`to fetch the random values.
+1. Because this contract requested two random values, the oracle returns an array with two values. Read `s_randomWords` at index `0` or `1`to fetch the random values.
 
 Notice that even though we didn’t call the following functions in this tutorial, we implemented them to show how you can support other Chainlink VRF consumers:
 
