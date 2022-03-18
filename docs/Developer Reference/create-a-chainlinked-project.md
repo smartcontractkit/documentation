@@ -106,7 +106,7 @@ cd dapptools-starter-kit
 make # This installs the project's dependencies.
 ```
 
-For instructions about how to use the starter kit, see the [DappTools starter kit README](https://github.com/smartcontractkit/dapptools-starter-kit#readme).
+For instructions on how to use the starter kit, refer to the DappTools starter kit [README](https://github.com/smartcontractkit/dapptools-starter-kit#readme).
 
 For more details on how to use Chainlink with DappTools, see our blog post [How To Use DappTools](https://blog.chain.link/how-to-use-dapptools/).
 ___
