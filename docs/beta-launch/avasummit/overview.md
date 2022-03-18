@@ -38,7 +38,7 @@ At the moment, you can use the following Chainlink features on Avalanche:
 
 Chainlink Data Feeds are the quickest way to connect your smart contracts to the real-world data. For instance, you can get the price of Avalanche (AVAX) in your smart contract by calling the AVAX/USD feed.
 
-Check the [developer documentation](/docs/using-chainlink-reference-contracts/) to learn how to use Data Feeds. The examples are compatible with EVM Chains, make sure to use the [Avalanche Feeds](/docs/avalanche-price-feeds/).
+Check the [developer documentation](/docs/using-chainlink-reference-contracts/) to learn how to use Data Feeds. The examples are configured for EVM Chains, so make sure to use the [Avalanche data feed addresses](/docs/avalanche-price-feeds/) and [Avalanche Link token contracts](/docs/link-token-contracts/#avalanche).
 
 ## VRF
 
