@@ -46,7 +46,11 @@ Chainlink VRF (Verifiable Random Function) is a provably fair and verifiable ran
 
 Use Chainlink VRF to build reliable smart contracts for any applications that rely on unpredictable outcomes. Also, check our blog to learn how Chainlink VRF enables [35+ Blockchain RNG Use Cases](https://blog.chain.link/blockchain-rng-use-cases-enabled-by-chainlink-vrf/).
 
-Check the [developer documentation](/docs/chainlink-vrf/) to learn how to use Chainlink VRF. **Important Note** : The [Subscription Manager User-Interface](https://vrf.chain.link/) is not live for Avalanche yet. Therefore, the following guide will explain how to test Chainlink VRF on [Avalanche Fuji Testnet](https://docs.avax.network/build/tutorials/platform/fuji-workflow/).
+Check the [developer documentation](/docs/chainlink-vrf/) to learn how to use Chainlink VRF.
+
+> 📘
+> 
+> The [Subscription Manager User-Interface](https://vrf.chain.link/) is not available for Avalanche yet, so this guide explains how to test Chainlink VRF programmatically on the [Avalanche Fuji Testnet](https://docs.avax.network/build/tutorials/platform/fuji-workflow/).
 
 ### Requirements
 
