@@ -130,4 +130,4 @@ When you create your own contracts that use Chainlink VRF, always review them wi
 - [Security Considerations](/docs/vrf-security-considerations/).
 - [Best Practices](/docs/chainlink-vrf-best-practices/).
 
-We also encourage you to ask your questions on [Stackoverflow](https://stackoverflow.com/questions/tagged/chainlink) and join our [Discord](https://discord.com/invite/aSK4zew) where you can participate to technical discussions.
+If you have questions, post them to [Stackoverflow](https://stackoverflow.com/questions/tagged/chainlink) or join our [Discord](https://discord.com/invite/aSK4zew) to participate in technical discussions.
