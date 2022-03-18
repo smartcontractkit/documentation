@@ -51,9 +51,9 @@ git clone https://github.com/smartcontractkit/hardhat-starter-kit
 cd hardhat-starter-kit
 ```
 
-For instructions about how to use the starter kit, see the [Hardhat starter kit README](https://github.com/smartcontractkit/hardhat-starter-kit/blob/main/README.md).
+For instructions on how to use the starter kit, refer to the [Hardhat starter kit README](https://github.com/smartcontractkit/hardhat-starter-kit/blob/main/README.md).
 
-For more information on how to use Chainlink with Hardhat, see our blog post [How to use Hardhat with Chainlink](https://blog.chain.link/using-chainlink-with-hardhat/).
+For more details on how to use Chainlink with Hardhat, see our blog post [How to use Hardhat with Chainlink](https://blog.chain.link/using-chainlink-with-hardhat/).
 ___
 
 ## Brownie Starter Kit
@@ -68,9 +68,9 @@ cd MyChainlinkProject/
 brownie bake chainlink-mix
 cd chainlink-mix
 ```
-For instructions about how to use the starter kit, see the [Brownie starter kit README](https://github.com/smartcontractkit/chainlink-mix/blob/master/README.md).
+For instructions on how to use the starter kit, refer to the [Brownie starter kit README](https://github.com/smartcontractkit/chainlink-mix/blob/master/README.md).
 
-For more information on how to use Chainlink with Brownie, see our blog post [Develop a DeFi Project Using Python](https://blog.chain.link/develop-python-defi-project/).
+For more details on how to use Chainlink with Brownie, see our blog post [Develop a DeFi Project Using Python](https://blog.chain.link/develop-python-defi-project/).
 ___
 
 ## Truffle Starter Kit
@@ -89,7 +89,7 @@ cd MyChainlinkProject/
 truffle unbox smartcontractkit/truffle-starter-kit
 ```
 
-For instructions about how to use the starter kit, see the [Truffle starter kit README](https://github.com/smartcontractkit/truffle-starter-kit/blob/master/README.md).
+For instructions on how to use the starter kit, see the [Truffle starter kit README](https://github.com/smartcontractkit/truffle-starter-kit/blob/master/README.md).
 
 For more details on how to use Chainlink with Truffle, see our blog post [Using Truffle to interact with Chainlink Smart Contracts](https://www.trufflesuite.com/blog/using-truffle-to-interact-with-chainlink-smart-contracts).
 ___
