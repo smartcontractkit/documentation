@@ -127,7 +127,7 @@ When you are done with your contracts and the subscription, run the `cancelSubsc
 
 When you create your own contracts that use Chainlink VRF, always review them with the latest security considerations and best practices in mind.
 
-- [The Security Considerations](/docs/vrf-security-considerations/).
-- [The Best Practices](/docs/chainlink-vrf-best-practices/).
+- [Security Considerations](/docs/vrf-security-considerations/).
+- [Best Practices](/docs/chainlink-vrf-best-practices/).
 
 We also encourage you to ask your questions on [Stackoverflow](https://stackoverflow.com/questions/tagged/chainlink) and join our [Discord](https://discord.com/invite/aSK4zew) where you can participate to technical discussions.
