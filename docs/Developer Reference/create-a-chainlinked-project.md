@@ -113,7 +113,7 @@ ___
 
 ## Foundry Starter Kit
 
-To learn more about Foundry, see the [Foundry Documentation](https://onbjerg.github.io/foundry-book/). Also you can check the [Installation instructions](https://onbjerg.github.io/foundry-book/getting-started/installation.html).
+To learn more about Foundry, refer to the [Foundry Documentation](https://onbjerg.github.io/foundry-book/). You you also refer to the [Installation instructions](https://onbjerg.github.io/foundry-book/getting-started/installation.html).
 
 Once installed, clone the starter kit and install the project's dependencies:
 
