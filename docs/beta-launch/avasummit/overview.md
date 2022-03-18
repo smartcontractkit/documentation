@@ -17,7 +17,7 @@ metadata:
 > - Apply for the [Avalanche Summit Hackathon](https://hackathon.avalanchesummit.com/).
 > - Join us at the [Chainlink Happy Hour](https://www.eventbrite.com/e/chainlink-happy-hour-avalanche-summit-tickets-258013052987).
 
-Next, we will show you how you can use Chainlink with Avalanche. **Please Note** Chainlink VRF is an early-beta implementation, specifically for the Avalanche Summit.  Chainlink cannot provide official support, but we hope you enjoy building with us!
+Next, we will show you how you can use Chainlink with Avalanche. **Please note** that Chainlink VRF on the Avalanche network is in an early-beta implementation specifically for the Avalanche Summit. Chainlink cannot provide official support, but we hope you enjoy building with us!
 
 **Table of contents**
 
