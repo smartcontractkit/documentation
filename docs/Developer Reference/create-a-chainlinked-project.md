@@ -89,7 +89,7 @@ cd MyChainlinkProject/
 truffle unbox smartcontractkit/truffle-starter-kit
 ```
 
-For instructions on how to use the starter kit, see the [Truffle starter kit README](https://github.com/smartcontractkit/truffle-starter-kit/blob/master/README.md).
+For instructions on how to use the starter kit, refer to the [Truffle starter kit README](https://github.com/smartcontractkit/truffle-starter-kit/blob/master/README.md).
 
 For more details on how to use Chainlink with Truffle, see our blog post [Using Truffle to interact with Chainlink Smart Contracts](https://www.trufflesuite.com/blog/using-truffle-to-interact-with-chainlink-smart-contracts).
 ___
