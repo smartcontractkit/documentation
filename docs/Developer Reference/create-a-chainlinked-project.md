@@ -96,7 +96,7 @@ ___
 
 ## DappTools Starter Kit
 
-To learn more about DappTools, see the [DappTools Documentation](https://dapp.tools/). Also you can check the [Installation instructions](https://github.com/dapphub/dapptools#installation).
+To learn more about DappTools, refer to the [DappTools Documentation](https://dapp.tools/). You can also refer to the [Installation instructions](https://github.com/dapphub/dapptools#installation).
 
 Once installed, clone the starter kit and install the project's dependencies:
 
