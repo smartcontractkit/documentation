@@ -58,7 +58,7 @@ This guide assumes that you know how to create and deploy smart contracts on the
 
 - [The Remix IDE](https://remix.ethereum.org/)
 - [MetaMask](https://metamask.io/)
-- [Fuji testnet AVAX](/docs/link-token-contracts/#fuji-testnet)
+- [Fuji testnet AVAX tokens](/docs/link-token-contracts/#fuji-testnet)
 
 If you are new to developing smart contracts on Ethereum, see the [Getting Started](/docs/conceptual-overview/) guide to learn the basics. Avalanche is an EVM-compatible chain; hence the basic tutorials should be portable.
 
