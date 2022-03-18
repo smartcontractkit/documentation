@@ -27,7 +27,7 @@ Next, we will show you how you can use Chainlink with Avalanche. **Please note**
 
 ## Overview
 
-If you are new to Chainlink, please get familiar with [hybrid smart contracts](https://blog.chain.link/hybrid-smart-contracts-explained/). Our [developer documentation](/docs/conceptual-overview) is also a good place to start interacting with Chainlink.
+If you are new to Chainlink, take some time to [get familiar with hybrid smart contracts](https://blog.chain.link/hybrid-smart-contracts-explained/). See the [Getting Started](/docs/conceptual-overview) guide to learn how to build your first smart contract and start interacting with Chainlink.
 
 At the moment, you can use these Chainlink features on Avalanche:
 
