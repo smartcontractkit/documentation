@@ -114,7 +114,7 @@ This contract automatically creates a new subscription when you deploy it. Read 
 
 1. Call the `getSubscriptionDetails()` function to get details of the subscription. You will notice that your contract is part of the consumers list and that its subscription balance is 2 LINK.
 
-1. On the consumer contract, run the `requestRandomWords()` function to request and receive random values. The request might take several minutes to process. You can track if the request is still pending by calling `pendingRequestExists().` When `pendingRequestExists()` returns `false`, that means `fulfillRandomWords()` has been called. `fulfillRandomWords()` receives random values and stores them in the contract.
+1. Run the `requestRandomWords()` function to request and receive random values. The request might take several minutes to process. You can track if the request is still pending by calling `pendingRequestExists().` When `pendingRequestExists()` returns `false`, that means `fulfillRandomWords()` has been called. `fulfillRandomWords()` receives random values and stores them in the contract.
 
 1. Read `s_randomWords` at index `0`or `1`to fetch the random values.
 
