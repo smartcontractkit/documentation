@@ -1,5 +1,17 @@
 ---
-layout: main.liquid
+layout: beta-launches.liquid
+section:
+  [
+    {
+      'title': 'GETTING STARTED',
+      'contents':
+        [
+          { title: 'Overview', url: '#overview' },
+          { title: 'Data Feeds', url: '#data-feeds' },
+          { title: 'VRF', url: '#vrf' },
+        ],
+    },
+  ]
 date: Last Modified
 title: 'Avalanche Summit  March 22nd - 27th, 2022'
 permalink: 'avasummit/'
@@ -17,13 +29,7 @@ metadata:
 > - Apply for the [Avalanche Summit Hackathon](https://hackathon.avalanchesummit.com/).
 > - Join us at the [Chainlink Happy Hour](https://www.eventbrite.com/e/chainlink-happy-hour-avalanche-summit-tickets-258013052987).
 
-Next, we will show you how you can use Chainlink with Avalanche. **Please Note** Chainlink VRF is an early-beta implementation, specifically for the Avalanche Summit.  Chainlink cannot provide official support, but we hope you enjoy building with us!
-
-**Table of contents**
-
-- [Overview](#overview)
-- [Data Feeds](#data-feeds)
-- [VRF](#vrf)
+Next, we will show you how you can use Chainlink with Avalanche. **Please Note** Chainlink VRF is an early-beta implementation, specifically for the Avalanche Summit. Chainlink cannot provide official support, but we hope you enjoy building with us!
 
 ## Overview
 
