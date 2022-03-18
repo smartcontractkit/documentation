@@ -118,10 +118,6 @@ This contract automatically creates a new subscription when you deploy it. Read 
 
 1. Because this contract requested two random values, the oracle returns an array with two values. Read `s_randomWords` at index `0` or `1`to fetch the random values.
 
-Notice that even though we didn’t call the following functions in this tutorial, we implemented them to show how you can support other Chainlink VRF consumers:
-
-- `addConsumer()`: Add a Chainlink VRF consumer to the subscription. As discussed above, the contract used in this tutorial is also the subscription owner.
-- `removeConsumer()`: Remove a Chainlink VRF consumer from the subscription.
 
 ### Clean up
 
