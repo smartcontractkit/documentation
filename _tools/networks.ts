@@ -187,17 +187,5 @@ export const NETWORKS = [
         source: "directory-kusama-mainnet-moonriver.json",
       },
     ],
-  },
-  {
-    page: "data-feeds-terra",
-    title: "Terra Data Feeds",
-    feedType: "Proxy",
-    networks: [
-      {
-        name: "Terra Bombay Testnet",
-        url: "https://finder.terra.money/bombay-12/address/%s",
-        source: "directory-terra-testnet-bombay.json",
-      },
-    ],
   }
 ];
