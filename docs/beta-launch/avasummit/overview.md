@@ -66,8 +66,13 @@ If you are new to developing smart contracts on Ethereum, see the [Getting Start
 
 This example contract has several functions that allow it to operate both as a subscription owner and a random value consumer. You can separate these functions and approve consumer contracts to use the subscription without having ownership over the subscription.
 
-- Subscription owner: creates a subscription to Chainlin VRF when deployed. It also allows adding and removing consumers from the subscription.
-- Consumer: calls Chainlink VRF to request random values. You will notice that, when deployed, the contract adds itself as a consumer to the subscription.
+This example contract operates using the following steps:
+
+1. When you deploy the contract, the `constructor()` creates a new subscription. This contract is the owner of that new subscription.
+1. The contract adds itself as an approved consumer on its own subscription using the `addConsumer()` function.
+1. Run `addConsumer()` or `removeConsumer()` to control which consumer contracts are also allowed to use the subscription.
+1. Run `topUpSubscription()` to send LINK tokens to the subscription that provide payment for requests. Alternatively, any wallet can send LINK to the subscription to increase the LINK balance.
+1. Consumer contracts can call Chainlink VRF to request random values. The subscription balance is charged for each request.
 
 ```solidity
 {% include samples/beta-launch/avasummit/VRFv2SubscriptionManager.sol %}
