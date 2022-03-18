@@ -29,7 +29,7 @@ Next, we will show you how you can use Chainlink with Avalanche. **Please note**
 
 If you are new to Chainlink, take some time to [get familiar with hybrid smart contracts](https://blog.chain.link/hybrid-smart-contracts-explained/). See the [Getting Started](/docs/conceptual-overview) guide to learn how to build your first smart contract and start interacting with Chainlink.
 
-At the moment, you can use these Chainlink features on Avalanche:
+At the moment, you can use the following Chainlink features on Avalanche:
 
 - Data Feeds are supported on [Avalanche](/docs/avalanche-price-feeds/).
 - Chainlink VRF: Although not officially supported yet, we will walk you through a tutorial to get you started on Avalanche Fuji Testnet.
