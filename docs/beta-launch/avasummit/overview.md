@@ -9,7 +9,18 @@ section:
           { title: 'Overview', url: '#overview' },
           { title: 'Data Feeds', url: '#data-feeds' },
           { title: 'Keepers', url: '#keepers' },
-          { title: 'VRF', url: '#vrf' },
+          {
+            title: 'VRF',
+            url: '#vrf',
+            chapters:
+              [
+                { title: 'Requirements', url: '#requirements' },
+                { title: 'Subscription manager contract', url: '#subscription-manager-contract' },
+                { title: 'Configuration', url: '#configuration' },
+                { title: 'Clean up', url: '#clean-up' },
+                { title: 'Next Steps', url: '#next-steps' },
+              ],
+          },
         ],
     },
   ]
@@ -22,11 +33,8 @@ metadata:
     0: '/files/OpenGraph_V3.png'
 ---
 
-# Avalanche Summit March 22nd - 27th, 2022
-
 > ℹ️We are happy to announce our participation in the [Avalanche Summit](https://www.avalanchesummit.com/).
-> <br>
-> To make the most out of it:
+> <br> To make the most out of it:
 >
 > - Keep an eye on the [schedule](https://www.avalanchesummit.com/agenda) and join the Chainlink talks.
 > - Apply for the [Avalanche Summit Hackathon](https://hackathon.avalanchesummit.com/).
@@ -41,7 +49,7 @@ If you are new to Chainlink, take some time to [get familiar with hybrid smart c
 At the moment, you can use the following Chainlink features on Avalanche:
 
 - **Data Feeds:** Several feeds are available on the [Avalanche Mainnet and Testnet](/docs/avalanche-price-feeds/).
-- **Chainlink Keepers:** Start your smart contract automation journey on the [Avalanche Fuji Testnet]((https://keepers.chain.link/fuji)).
+- **Chainlink Keepers:** Start your smart contract automation journey on the [Avalanche Fuji Testnet](<(https://keepers.chain.link/fuji)>).
 - **Chainlink VRF:** Although not officially supported yet, we will walk you through a tutorial to get you started on the Avalanche Fuji Testnet.
 
 ## Data Feeds
@@ -64,11 +72,8 @@ Use Chainlink VRF to build reliable smart contracts for any applications that re
 
 Check the [developer documentation](/docs/chainlink-vrf/) to learn how to use Chainlink VRF.
 
-> 📘
->
-> The [Subscription Manager User-Interface](https://vrf.chain.link/) is not available for Avalanche yet.
-> <br>
-> This guide explains how to test Chainlink VRF programmatically on the [Avalanche Fuji Testnet](https://docs.avax.network/build/tutorials/platform/fuji-workflow/).
+> 📘The [Subscription Manager User-Interface](https://vrf.chain.link/) is not available for Avalanche yet.
+> <br>This guide explains how to test Chainlink VRF programmatically on the [Avalanche Fuji Testnet](https://docs.avax.network/build/tutorials/platform/fuji-workflow/).
 
 ### Requirements
 
