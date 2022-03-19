@@ -8,6 +8,7 @@ section:
         [
           { title: 'Overview', url: '#overview' },
           { title: 'Data Feeds', url: '#data-feeds' },
+          { title: 'Keepers', url: '#Keepers' },
           { title: 'VRF', url: '#vrf' },
         ],
     },
@@ -40,6 +41,7 @@ If you are new to Chainlink, take some time to [get familiar with hybrid smart c
 At the moment, you can use the following Chainlink features on Avalanche:
 
 - **Data Feeds:** Several feeds are available on the [Avalanche Mainnet and Testnet](/docs/avalanche-price-feeds/).
+- **Chainlink Keepers:** Start your smart contract automation journey on the [Avalanche Fuji Testnet]((https://keepers.chain.link/fuji)).
 - **Chainlink VRF:** Although not officially supported yet, we will walk you through a tutorial to get you started on the Avalanche Fuji Testnet.
 
 ## Data Feeds
@@ -47,6 +49,12 @@ At the moment, you can use the following Chainlink features on Avalanche:
 Chainlink Data Feeds are the quickest way to connect your smart contracts to the real-world data. For instance, you can get the price of Avalanche (AVAX) in your smart contract by calling the AVAX/USD feed.
 
 Check the [developer documentation](/docs/using-chainlink-reference-contracts/) to learn how to use Data Feeds. The examples are configured for EVM Chains, so make sure to use the [Avalanche data feed addresses](/docs/avalanche-price-feeds/) and [Avalanche Link token contracts](/docs/link-token-contracts/#avalanche).
+
+## Keepers
+
+Chainlink Keepers is the most reliable way to automate your smart contracts. Move costly on-chain gas checks off-chain and decentralize your DevOps automation. To get started with Chainlink Keepers on Avalanche Fuji Testnet use the [Chainlink Keepers App](https://keepers.chain.link/fuji). Please complete our [survey](https://forms.gle/3rp5Qi4HH2BEPzTq9) to request access to the Chainlink Keepers Avalanche Mainnet Beta.
+
+To learn more about Chainlink Keepers read our [developer documentation](/docs/chainlink-keepers/introduction/).
 
 ## VRF
 
