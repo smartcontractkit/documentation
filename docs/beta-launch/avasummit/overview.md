@@ -50,7 +50,7 @@ Check the [developer documentation](/docs/using-chainlink-reference-contracts/) 
 
 ## Keepers
 
-Chainlink Keepers is the most reliable way to automate your smart contracts. Move costly on-chain gas checks off-chain and decentralize your DevOps automation. To get started with Chainlink Keepers on Avalanche Fuji use the [Chainlink Keepers App](https://keepers.chain.link/fuji).
+Chainlink Keepers is the most reliable way to automate your smart contracts. Move costly on-chain gas checks off-chain and decentralize your DevOps automation. To get started with Chainlink Keepers on Avalanche Fuji Testnet use the [Chainlink Keepers App](https://keepers.chain.link/fuji). Please complete our [survey](https://forms.gle/3rp5Qi4HH2BEPzTq9) to request access to the Chainlink Keepers Avalanche Mainnet Beta.
 
 To learn more about Chainlink Keepers read our [developer documentation](/docs/chainlink-keepers/introduction/).
 
