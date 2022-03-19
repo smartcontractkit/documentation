@@ -8,7 +8,7 @@ section:
         [
           { title: 'Overview', url: '#overview' },
           { title: 'Data Feeds', url: '#data-feeds' },
-          { title: 'Keepers', url: '#Keepers' },
+          { title: 'Keepers', url: '#keepers' },
           { title: 'VRF', url: '#vrf' },
         ],
     },
