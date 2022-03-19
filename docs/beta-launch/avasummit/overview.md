@@ -23,7 +23,9 @@ metadata:
 
 # Avalanche Summit March 22nd - 27th, 2022
 
-> ℹ️ We are happy to announce our participation in the [Avalanche Summit](https://www.avalanchesummit.com/). To make the most out of it:
+> ℹ️We are happy to announce our participation in the [Avalanche Summit](https://www.avalanchesummit.com/).
+> <br>
+> To make the most out of it:
 >
 > - Keep an eye on the [schedule](https://www.avalanchesummit.com/agenda) and join the Chainlink talks.
 > - Apply for the [Avalanche Summit Hackathon](https://hackathon.avalanchesummit.com/).
@@ -56,7 +58,9 @@ Check the [developer documentation](/docs/chainlink-vrf/) to learn how to use Ch
 
 > 📘
 >
-> The [Subscription Manager User-Interface](https://vrf.chain.link/) is not available for Avalanche yet, so this guide explains how to test Chainlink VRF programmatically on the [Avalanche Fuji Testnet](https://docs.avax.network/build/tutorials/platform/fuji-workflow/).
+> The [Subscription Manager User-Interface](https://vrf.chain.link/) is not available for Avalanche yet.
+> <br>
+> This guide explains how to test Chainlink VRF programmatically on the [Avalanche Fuji Testnet](https://docs.avax.network/build/tutorials/platform/fuji-workflow/).
 
 ### Requirements
 
@@ -121,6 +125,20 @@ To use this contract:
 1. Run the `requestRandomWords()` function to request and receive random values. The request might take several minutes to process. You can track if the request is still pending by calling `pendingRequestExists().` When `pendingRequestExists()` returns `false`, that means `fulfillRandomWords()` has been called. `fulfillRandomWords()` receives random values and stores them in the contract.
 
 1. Because this contract requested two random values, the oracle returns an array with two values. Read `s_randomWords` at index `0` or `1`to fetch the random values.
+
+### Configuration
+
+Below a summary of the configuration of Chainlink VRF on Avalanche Fuji Testnet. Check the [developer documentation](/docs/vrf-contracts/#coordinator-parameters) for a more detailed explanation.
+
+| Item                  | Value                                                                                                                         |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| LINK Token            | [`0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846`](https://testnet.snowtrace.io/token/0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846) |
+| VRF Coordinator       | [`0x2eD832Ba664535e5886b75D64C46EB9a228C2610`](https://testnet.snowtrace.io/token/0x2eD832Ba664535e5886b75D64C46EB9a228C2610) |
+| 300 gwei Key Hash     | `0x354d2f95da55398f44b7cff77da56283d9c6c829a4bdf1bbcaf2ad6a4d081f61`                                                          |
+| Premium               | 0.01 LINK                                                                                                                     |
+| Minimum Confirmations | 1                                                                                                                             |
+| Maximum Confirmations | 200                                                                                                                           |
+| Maximum Random Values | 500                                                                                                                           |
 
 ### Clean up
 
