@@ -69,6 +69,7 @@ const finalResult: {
     networks: {
       name: string;
       url: string;
+      networkType: string;
       proxies: ResultProxy[];
     }[];
   };
@@ -122,7 +123,7 @@ for (let page of targetData) {
           heartbeat: contract.heartbeat ? contract.heartbeat : contract.config?.maxContractValueAge || '',
           decimals: contract.decimals,
           nameOverride: contract.docs?.nameOverride,
-          feedCategory: contract.docs?.feedCategory || "none",
+          feedCategory: contract.docs?.feedCategory || "",
           feedType: contract.docs?.feedType || "-",
 
         };
@@ -132,7 +133,7 @@ for (let page of targetData) {
             heartbeat: contract.heartbeat,
             decimals: contract.decimals,
             nameOverride: contract.docs?.nameOverride,
-            feedCategory: contract.docs?.feedCategory || "none",
+            feedCategory: contract.docs?.feedCategory || "",
             feedType: contract.docs?.feedType || "-",
           };
         }
@@ -163,7 +164,7 @@ for (let page of targetData) {
             heartbeat: liveContracts[proxy.aggregator].heartbeat,
             decimals: liveContracts[proxy.aggregator].decimals,
             proxy: proxyKey,
-            feedCategory: liveContracts[proxy.aggregator].feedCategory || "none",
+            feedCategory: liveContracts[proxy.aggregator].feedCategory || "",
             feedType: liveContracts[proxy.aggregator].feedType || "-",
           });
         }
@@ -179,7 +180,7 @@ for (let page of targetData) {
             decimals: liveContracts[contractKey].decimals,
             // Use transmissionsAccount for Solana; contractKey otherwise
             proxy: contract.transmissionsAccount || contractKey,
-            feedCategory: contract.docs?.feedCategory || "none",
+            feedCategory: contract.docs?.feedCategory || "",
             feedType: contract.docs?.feedType || "-",
           });
         }
@@ -191,6 +192,7 @@ for (let page of targetData) {
     finalResult[page.page].networks.push({
       name: network.name,
       url: network.url,
+      networkType: network.networkType,
       proxies: proxyList,
     });
   }

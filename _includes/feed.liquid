@@ -69,8 +69,7 @@ section: ethereum
         "verified": '<a href="" alt="Verified">🟢</a>',
         "monitored": '<a href="" alt="Monitored">🟡</a>',
         "custom": '<a href="" alt="Custom">🔵</a>',
-        "specialized": '<a href="" alt="Specialized">⚫</a>',
-        "none": '-'
+        "specialized": '<a href="" alt="Specialized">⚫</a>'
     }
     render = (data) => {
         let html = '';
@@ -79,31 +78,57 @@ section: ethereum
                 html += `<h2 id="${network.name}">${network.name} <a class="anchor" href="#${network.name}"><img src="/images/link.svg" alt="Link to this section"></a></h2>`;
                 html += `<label><input type="checkbox" class="extra" ${showExtraDetails ? 'checked="checked"' : ''}>Show more details</input></label>`;
                 let proxyList = '';
-                for(let proxy of network.proxies) {
-                    proxyList += `
-                    <tr id="${network.name} ${proxy.pair}">
-                        <td><code>${feedCategories[proxy.feedCategory]} ${proxy.pair}</code></td>
-                        <td><code>${proxy.feedType}</code></td>
-                        <td ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.deviationThreshold ? (proxy.deviationThreshold + '%') : 'N/A'}</td>
-                        <td ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.heartbeat ? proxy.heartbeat : 'N/A'}</td>
-                        <td ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.decimals ? proxy.decimals : 'N/A'}</td>
-                        <td><a href="${network.url.replace('%s',proxy.proxy)}"><code>${proxy.proxy}</code></a></td>
-                    </tr>`;
+                if(network.networkType == "mainnet") {
+                    for(let proxy of network.proxies) {
+                        proxyList += `
+                        <tr id="${network.name} ${proxy.pair}">
+                            <td><code>${feedCategories[proxy.feedCategory] || ''} ${proxy.pair}</code></td>
+                            <td><code>${proxy.feedType}</code></td>
+                            <td ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.deviationThreshold ? (proxy.deviationThreshold + '%') : 'N/A'}</td>
+                            <td ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.heartbeat ? proxy.heartbeat : 'N/A'}</td>
+                            <td ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.decimals ? proxy.decimals : 'N/A'}</td>
+                            <td><a href="${network.url.replace('%s',proxy.proxy)}"><code>${proxy.proxy}</code></a></td>
+                        </tr>`;
+                    }
+                    html += `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Pair</th>
+                                <th>Type</th>
+                                <th ${ showExtraDetails ? '' : 'class="detail-hidden"'}>Deviation</th>
+                                <th ${ showExtraDetails ? '' : 'class="detail-hidden"'}>Heartbeat</th>
+                                <th ${ showExtraDetails ? '' : 'class="detail-hidden"'}>Dec</th>
+                                <th>${data["{{stub}}"].feedType}</th>
+                            </tr>
+                        </thead>
+                        <tbody>${proxyList}</tbody>
+                    </table>`;
+                } else {
+                    for(let proxy of network.proxies) {
+                        proxyList += `
+                        <tr id="${network.name} ${proxy.pair}">
+                            <td><code>${proxy.pair}</code></td>
+                            <td ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.deviationThreshold ? (proxy.deviationThreshold + '%') : 'N/A'}</td>
+                            <td ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.heartbeat ? proxy.heartbeat : 'N/A'}</td>
+                            <td ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.decimals ? proxy.decimals : 'N/A'}</td>
+                            <td><a href="${network.url.replace('%s',proxy.proxy)}"><code>${proxy.proxy}</code></a></td>
+                        </tr>`;
+                    }
+                    html += `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Pair</th>
+                                <th ${ showExtraDetails ? '' : 'class="detail-hidden"'}>Deviation</th>
+                                <th ${ showExtraDetails ? '' : 'class="detail-hidden"'}>Heartbeat</th>
+                                <th ${ showExtraDetails ? '' : 'class="detail-hidden"'}>Dec</th>
+                                <th>${data["{{stub}}"].feedType}</th>
+                            </tr>
+                        </thead>
+                        <tbody>${proxyList}</tbody>
+                    </table>`;
                 }
-                html += `
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Pair</th>
-                            <th>Type</th>
-                            <th ${ showExtraDetails ? '' : 'class="detail-hidden"'}>Deviation</th>
-                            <th ${ showExtraDetails ? '' : 'class="detail-hidden"'}>Heartbeat</th>
-                            <th ${ showExtraDetails ? '' : 'class="detail-hidden"'}>Dec</th>
-                            <th>${data["{{stub}}"].feedType}</th>
-                        </tr>
-                    </thead>
-                    <tbody>${proxyList}</tbody>
-                </table>`;
             }
         } else {
             html = `<em style="color:red;">Couldn't render the feed list, it may still be processing. Feeds are updated about every half hour..</em>`;
