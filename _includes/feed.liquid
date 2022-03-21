@@ -43,6 +43,30 @@ section: ethereum
     input {
         margin-right:8px;
     }
+
+    .hovertext {
+    position: relative;
+    }
+
+    .hovertext:before {
+      content: attr(data-hover);
+      visibility: hidden;
+      opacity: 0;
+      width: auto;
+      background-color: #fff;
+      color: #000;
+      text-align: center;
+      padding: 5px;
+      position: absolute;
+      z-index: 1;
+      left: 0;
+      top: 110%;
+    }
+
+    .hovertext:hover:before {
+      opacity: 1;
+      visibility: visible;
+    }
 </style>
 
 {% case metadata.l2healthflag %}
@@ -77,10 +101,10 @@ section: ethereum
     dest = document.getElementById('feed-data');
     let showExtraDetails = false;
     let feedCategories = {
-        "verified": '<a href="/docs/selecting-data-feeds/#🟢-verified-feeds" alt="Verified" target="_blank">🟢</a>',
-        "monitored": '<a href="/docs/selecting-data-feeds/#🟡-monitored-feeds" alt="Monitored" target="_blank">🟡</a>',
-        "custom": '<a href="/docs/selecting-data-feeds/#-custom-feeds" alt="Custom" target="_blank">🔵</a>',
-        "specialized": '<a href="/docs/selecting-data-feeds/#-specialized-feeds" alt="Specialized" target="_blank">⚫</a>'
+        "verified": '<span class="hovertext" data-hover="Verified"><a href="/docs/selecting-data-feeds/#🟢-verified-feeds" alt="Verified" target="_blank">🟢</a></span>',
+        "monitored": '<span class="hovertext" data-hover="Monitored"><a href="/docs/selecting-data-feeds/#🟡-monitored-feeds" alt="Monitored" target="_blank">🟡</a></span>',
+        "custom": '<span class="hovertext" data-hover="Custom"><a href="/docs/selecting-data-feeds/#-custom-feeds" alt="Custom" target="_blank">🔵</a></span>',
+        "specialized": '<span class="hovertext" data-hover="Specialized"><a href="/docs/selecting-data-feeds/#-specialized-feeds" alt="Specialized" target="_blank">⚫</a></span>'
     }
     render = (data) => {
         let html = '';
