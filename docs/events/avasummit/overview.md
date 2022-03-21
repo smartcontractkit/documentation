@@ -49,7 +49,7 @@ If you are new to Chainlink, take some time to [get familiar with hybrid smart c
 At the moment, you can use the following Chainlink features on Avalanche:
 
 - **Data Feeds:** Several feeds are available on the [Avalanche Mainnet and Testnet](/docs/avalanche-price-feeds/).
-- **Chainlink Keepers:** Start your smart contract automation journey on the [Avalanche Fuji Testnet](<(https://keepers.chain.link/fuji)>).
+- **Chainlink Keepers:** Start your smart contract automation journey on the [Avalanche Fuji Testnet](https://keepers.chain.link/fuji).
 - **Chainlink VRF:** Although not officially supported yet, we will walk you through a tutorial to get you started on the Avalanche Fuji Testnet.
 
 ## Data Feeds
