@@ -20,7 +20,12 @@ interface DataFile {
         maxContractValueAge: string;
         relativeDeviationThresholdPPB: string;
       };
-      docsHidden?: boolean;
+      docs?: {
+        hidden?: boolean;
+        nameOverride?: string;
+        feedCategory?: string;
+        feedType?: string;
+      };
       transmissionsAccount?: string;
     };
   };
@@ -38,6 +43,8 @@ interface ResultProxy {
   heartbeat: string;
   decimals: number;
   proxy: string;
+  feedCategory: string;
+  feedType: string;
 }
 
 function load(filename: string): DataFile {
@@ -62,6 +69,7 @@ const finalResult: {
     networks: {
       name: string;
       url: string;
+      networkType: string;
       proxies: ResultProxy[];
     }[];
   };
@@ -84,6 +92,9 @@ for (let page of targetData) {
         decimals: number;
         deviationThreshold: number;
         heartbeat: string;
+        nameOverride?: string;
+        feedCategory: string;
+        feedType?: string;
       };
     } = {};
     for (let contractKey of Object.keys(contents.contracts)) {
@@ -91,7 +102,7 @@ for (let page of targetData) {
       if (
         (contract.status === 'testnet-priority' || contract.status === 'live') &&
         // Only include if the key does not exist or it's not true
-        !contract['docsHidden']
+        !contract.docs?.hidden
       ) {
         let threshold: number = 0;
         // Handle Threshold defined in the config object
@@ -111,12 +122,19 @@ for (let page of targetData) {
           deviationThreshold: contract.deviationThreshold ? contract.deviationThreshold : threshold,
           heartbeat: contract.heartbeat ? contract.heartbeat : contract.config?.maxContractValueAge || '',
           decimals: contract.decimals,
+          nameOverride: contract.docs?.nameOverride,
+          feedCategory: contract.docs?.feedCategory || "",
+          feedType: contract.docs?.feedType || "-",
+
         };
         if (contract.v3Facade) {
           liveContracts[contract.v3Facade] = {
             deviationThreshold: contract.deviationThreshold,
             heartbeat: contract.heartbeat,
             decimals: contract.decimals,
+            nameOverride: contract.docs?.nameOverride,
+            feedCategory: contract.docs?.feedCategory || "",
+            feedType: contract.docs?.feedType || "-",
           };
         }
       }
@@ -141,30 +159,29 @@ for (let page of targetData) {
           // End conditional
 
           proxyList.push({
-            pair:
-              // Only insert 'v1' if this isn't an index
-              !/index/i.test(proxy.name) &&
-              // Only insert 'v1' if this isn't already a versioned OHM
-              !/OHMv/i.test(proxy.name)
-              ? proxy.name.replace("OHM", "OHMv1")  : proxy.name,
+            pair: liveContracts[proxy.aggregator].nameOverride || proxy.name,
             deviationThreshold: liveContracts[proxy.aggregator].deviationThreshold,
             heartbeat: liveContracts[proxy.aggregator].heartbeat,
             decimals: liveContracts[proxy.aggregator].decimals,
             proxy: proxyKey,
+            feedCategory: liveContracts[proxy.aggregator].feedCategory || "",
+            feedType: liveContracts[proxy.aggregator].feedType || "-",
           });
         }
       }
     } else {
       for (let contractKey of Object.keys(contents.contracts)) {
         const contract = contents.contracts[contractKey];
-        if (!contract.docsHidden) {
+        if (!contract.docs?.hidden) {
           proxyList.push({
-            pair: contract.name,
+            pair: contract.docs?.nameOverride || contract.name,
             deviationThreshold: liveContracts[contractKey].deviationThreshold,
             heartbeat: liveContracts[contractKey].heartbeat,
             decimals: liveContracts[contractKey].decimals,
             // Use transmissionsAccount for Solana; contractKey otherwise
             proxy: contract.transmissionsAccount || contractKey,
+            feedCategory: contract.docs?.feedCategory || "",
+            feedType: contract.docs?.feedType || "-",
           });
         }
       }
@@ -175,6 +192,7 @@ for (let page of targetData) {
     finalResult[page.page].networks.push({
       name: network.name,
       url: network.url,
+      networkType: network.networkType,
       proxies: proxyList,
     });
   }
