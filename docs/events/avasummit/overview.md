@@ -98,11 +98,11 @@ This example contract operates using the following steps:
 1. Consumer contracts can call Chainlink VRF to request random values. The subscription balance is charged for each request.
 
 ```solidity
-{% include samples/beta-launch/avasummit/VRFv2SubscriptionManager.sol %}
+{% include samples/events/avasummit/VRFv2SubscriptionManager.sol %}
 ```
 
 <div class="remix-callout">
-      <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/beta-launch/avasummit/VRFv2SubscriptionManager.sol" target="_blank" >Open in Remix</a>
+      <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/events/avasummit/VRFv2SubscriptionManager.sol" target="_blank" >Open in Remix</a>
       <a href="/docs/conceptual-overview/#what-is-remix">What is Remix?</a>
 </div>
 
@@ -124,7 +124,7 @@ These parameters define how your requests will be processed:
 
 To use this contract:
 
-1. Open the [contract in Remix](https://remix.ethereum.org/#url=https://docs.chain.link/samples/beta-launch/avasummit/VRFv2SubscriptionManager.sol).
+1. Open the [contract in Remix](https://remix.ethereum.org/#url=https://docs.chain.link/samples/events/avasummit/VRFv2SubscriptionManager.sol).
 
 1. Compile and deploy the contract using the Injected Web3 environment. The contract includes all the configuration variables you need, but you can edit them if necessary. Notice that this contract automatically creates a new subscription when you deploy it. Read the `s_subscriptionId` variable to find the contract subscription ID.
 
@@ -148,7 +148,7 @@ Below a summary of the configuration of Chainlink VRF on Avalanche Fuji Testnet.
 | LINK Token            | [`0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846`](https://testnet.snowtrace.io/token/0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846) |
 | VRF Coordinator       | [`0x2eD832Ba664535e5886b75D64C46EB9a228C2610`](https://testnet.snowtrace.io/token/0x2eD832Ba664535e5886b75D64C46EB9a228C2610) |
 | 300 gwei Key Hash     | `0x354d2f95da55398f44b7cff77da56283d9c6c829a4bdf1bbcaf2ad6a4d081f61`                                                          |
-| Premium               | 0.01 LINK                                                                                                                     |
+| Premium               | 0.0005 LINK                                                                                                                     |
 | Minimum Confirmations | 1                                                                                                                             |
 | Maximum Confirmations | 200                                                                                                                           |
 | Maximum Random Values | 500                                                                                                                           |
