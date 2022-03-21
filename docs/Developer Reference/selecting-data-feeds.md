@@ -95,7 +95,9 @@ It is always recommended that you conduct a thorough analysis of your requiremen
 
 As your usage of data feeds evolves and requirements for higher availability and greater security increases, such as securing substantive value, the reliability properties of your data feed will become crucial. [Contact Chainlink Labs team](https://chainlinkcommunity.typeform.com/to/OYQO67EF?page=market-data-feeds) for services to ensure deployments meet the highest levels of availability and security.
 
-> **High Risk: Forked, modified, or custom software:** As Chainlink is open source, independent forks and modifications may exist. Chainlink Labs and development teams are not involved in these and do not track or maintain visibility on them. Chainlink Labs is not responsible for updates, enhancements, or bug fixes for these versions, and Chainlink Labs does monitor them. Their use might pose risks that can do harm to your project. Users are responsible for thoroughly vetting and validating such deployments and determining their suitability.
+**High Risk: Forked, modified, or custom software:**
+
+As Chainlink is open source, independent forks and modifications may exist. Chainlink Labs and development teams are not involved in these and do not track or maintain visibility on them. Chainlink Labs is not responsible for updates, enhancements, or bug fixes for these versions, and Chainlink Labs does monitor them. Their use might pose risks that can do harm to your project. Users are responsible for thoroughly vetting and validating such deployments and determining their suitability.
 
 ## Evaluating Data Sources and Risks
 
