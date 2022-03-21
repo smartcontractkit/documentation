@@ -37,7 +37,7 @@ The goal of Keepers is to ensure flawless execution of Upkeeps when expected. To
 
 Chainlink Keepers are currently available on the following networks:
 
-- ETH:
+- Ethereum:
   - Mainnet
   - Kovan testnet
 - Polygon (Matic):
@@ -46,6 +46,8 @@ Chainlink Keepers are currently available on the following networks:
 - BNB Chain:
   - Mainnet
   - Testnet
+- Avalanche Chain:
+  - Fuji testnet
 
 If you are interested in using Keepers but need it on a different blockchain or network, [contact us](https://forms.gle/WadxnzzjHPtta5Zd9) and let us know.
 
