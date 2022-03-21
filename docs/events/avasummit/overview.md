@@ -1,9 +1,9 @@
 ---
-layout: beta-launches.liquid
+layout: events.liquid
 section:
   [
     {
-      'title': 'GETTING STARTED',
+      'title': 'Avalanche Summit',
       'contents':
         [
           { title: 'Overview', url: '#overview' },
