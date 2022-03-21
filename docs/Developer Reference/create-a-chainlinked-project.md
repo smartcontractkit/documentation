@@ -119,7 +119,7 @@ To learn more about Foundry, refer to the [Foundry Documentation](https://onbjer
 
 1. Install Foundry using the [Installation instructions](https://onbjerg.github.io/foundry-book/getting-started/installation.html) on GitHub.io.
 
-1. After you install Foundry, clone the starter kit and install the projects dependencies:
+1. After you install Foundry, clone the starter kit and install the project dependencies:
 
       ```shell
       git clone https://github.com/smartcontractkit/foundry-starter-kit
