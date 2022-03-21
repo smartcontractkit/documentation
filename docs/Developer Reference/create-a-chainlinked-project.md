@@ -96,15 +96,17 @@ ___
 
 ## DappTools Starter Kit
 
-To learn more about DappTools, refer to the [DappTools Documentation](https://dapp.tools/). You can also refer to the [Installation instructions](https://github.com/dapphub/dapptools#installation).
+To learn more about DappTools, refer to the [DappTools Documentation](https://dapp.tools/).
 
-Once installed, clone the starter kit and install the project's dependencies:
+1. Install Dapp tools using the [Installation instructions](https://github.com/dapphub/dapptools#installation) in the Dapp tools GitHub repository.
 
-```shell
-git clone https://github.com/smartcontractkit/dapptools-starter-kit
-cd dapptools-starter-kit
-make # This installs the project's dependencies.
-```
+1. After you install the tools, clone the starter kit and install the dependencies:
+
+      ```shell
+      git clone https://github.com/smartcontractkit/dapptools-starter-kit
+      cd dapptools-starter-kit
+      make # This installs the project's dependencies.
+      ```
 
 For instructions on how to use the starter kit, refer to the DappTools starter kit [README](https://github.com/smartcontractkit/dapptools-starter-kit#readme).
 
@@ -113,15 +115,17 @@ ___
 
 ## Foundry Starter Kit
 
-To learn more about Foundry, refer to the [Foundry Documentation](https://onbjerg.github.io/foundry-book/). You you also refer to the [Installation instructions](https://onbjerg.github.io/foundry-book/getting-started/installation.html).
+To learn more about Foundry, refer to the [Foundry Documentation](https://onbjerg.github.io/foundry-book/).
 
-Once installed, clone the starter kit and install the project's dependencies:
+1. Install Foundry using the [Installation instructions](https://onbjerg.github.io/foundry-book/getting-started/installation.html) on GitHub.io.
 
-```shell
-git clone https://github.com/smartcontractkit/foundry-starter-kit
-cd foundry-starter-kit
-make # This installs the project's dependencies.
-```
+1. After you install Foundry, clone the starter kit and install the projects dependencies:
+
+      ```shell
+      git clone https://github.com/smartcontractkit/foundry-starter-kit
+      cd foundry-starter-kit
+      make # This installs the project's dependencies.
+      ```
 
 For instructions on how to use the starter kit, refer to the [Foundry starter kit README](https://github.com/smartcontractkit/foundry-starter-kit#readme).
 
