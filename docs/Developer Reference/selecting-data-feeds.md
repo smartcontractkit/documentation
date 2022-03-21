@@ -7,7 +7,7 @@ permalink: "docs/selecting-data-feeds/"
 excerpt: "Learn how to assess data feeds that you use in your smart contracts."
 ---
 
-When you design your applications, consider the quality of the data that you use in your smart contracts. Ultimately you are responsible for identifying and assessing the accuracy, availability, and quality of data that you choose to consume via the Chainlink Network. Note that all feeds contain some risk. Read the [Risk Mitigation](#risk-mitigation) and [Evaluating Data Sources](#evaluating-data-sources) sections when making design decisions. Chainlink lists decentralized data feeds in the documentation to help developers build new applications integrated with data.
+When you design your applications, consider the quality of the data that you use in your smart contracts. Ultimately you are responsible for identifying and assessing the accuracy, availability, and quality of data that you choose to consume via the Chainlink Network. Note that all feeds contain some risk. Read the [Risk Mitigation](#risk-mitigation) and [Evaluating Data Sources](#evaluating-data-sources-and-risks) sections when making design decisions. Chainlink lists decentralized data feeds in the documentation to help developers build new applications integrated with data.
 
 ## Table of Contents
 
@@ -34,7 +34,7 @@ These are data feeds that follow a standardized data feeds workflow. Chainlink n
 - Use an extensive network of nodes
 - Highly liquid and well represented on a large number of markets
 
-These feeds incorporate three layers of aggregation at the data source, node operator, and oracle network layers. These layers provide industry-grade security and reliability on the price data that they reference. To learn more about the three-layers of data aggregation, see the blog post about [Data Aggregation in Chainlink Price Feeds](https://blog.chain.link/levels-of-data-aggregation-in-chainlink-price-feeds/).
+These feeds incorporate three layers of aggregation at the data source, node operator, and oracle network layers. These layers provide industry-grade security and reliability on the price data that they reference. To learn more about the three layers of data aggregation, see the blog post about [Data Aggregation in Chainlink Price Feeds](https://blog.chain.link/levels-of-data-aggregation-in-chainlink-price-feeds/).
 
 ### 🟡 Monitored Feeds
 
@@ -87,7 +87,7 @@ Below are some examples of tooling that Chainlink users have put in place:
 
 ## Chainlink Community Deployments
 
-Chainlink technology is used by many within the blockchain community to support their use cases. Deployments built and run by community members are not tracked in the Chainlink documentation. Chainlink's community is continuously growing, and we believe they play a vital role in developing the ecosystem, so we continue to develop our software and tooling for anyone to use. Users have a wide variety of options for choosing how to deliver data on-chain. They can deploy Chainlink nodes themselves or via the extensive network of node operators that offer services and access one of the community-managed oracle networks that supports the supply of various types of data on-chain. Chainlink Labs does not take responsibility for your use of our node software.
+Chainlink technology is used by many within the blockchain community to support their use cases. Deployments built and run by community members are not tracked in the Chainlink documentation. Chainlink's community is continuously growing, and we believe they play a vital role in developing the ecosystem, so we continue to develop our software and tooling for anyone to use. Users have a wide variety of options for choosing how to deliver data on-chain. They can deploy Chainlink nodes themselves or via the extensive network of node operators that offer services and access one of the community-managed oracle networks that support the supply of various types of data on-chain. Chainlink Labs does not take responsibility for your use of our node software.
 
 It is always recommended that you conduct a thorough analysis of your requirements and carry out appropriate due diligence on any partners you wish to use with your project.
 
