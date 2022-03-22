@@ -7,7 +7,7 @@ permalink: "docs/selecting-data-feeds/"
 excerpt: "Learn how to assess data feeds that you use in your smart contracts."
 ---
 
-When you design your applications, consider the quality of the data that you use in your smart contracts. Ultimately you are responsible for identifying and assessing the accuracy, availability, and quality of data that you choose to consume via the Chainlink Network. Note that all feeds contain some risk. Read the [Risk Mitigation](#risk-mitigation) and [Evaluating Data Sources](#evaluating-data-sources-and-risks) sections when making design decisions. Chainlink lists decentralized data feeds in the documentation to help developers build new applications integrated with data.
+When you design your applications, consider the quality of the data that you use in your smart contracts. Ultimately you are responsible for identifying and assessing the accuracy, availability, and quality of data that you choose to consume via the Chainlink Network. Note that all feeds contain some inherent risk. Read the [Risk Mitigation](#risk-mitigation) and [Evaluating Data Sources](#evaluating-data-sources-and-risks) sections when making design decisions. Chainlink lists decentralized data feeds in the documentation to help developers build new applications integrated with data.
 
 ## Table of Contents
 
@@ -36,9 +36,11 @@ These are data feeds that follow a standardized data feeds workflow. Chainlink n
 
 These feeds incorporate three layers of aggregation at the data source, node operator, and oracle network layers. These layers provide industry-grade security and reliability on the price data that they reference. To learn more about the three layers of data aggregation, see the blog post about [Data Aggregation in Chainlink Price Feeds](https://blog.chain.link/levels-of-data-aggregation-in-chainlink-price-feeds/).
 
+Inherent risks might exist based on your use case, the blockchain where feed is deployed, and the conditions on that chain..
+
 ### 🟡 Monitored Feeds
 
-Feeds under the monitored category are *under review* by the Chainlink Labs team to support the stability of the broader ecosystem.
+Feeds under the monitored category are *under review* by the Chainlink Labs team to support the stability of the broader ecosystem. While generally resilient and distributed, these feeds carry additional risk.
 
 Data feeds might be under review for the following reasons:
 
@@ -48,7 +50,7 @@ Data feeds might be under review for the following reasons:
 
 ### 🔵 Custom Feeds
 
-Custom Feeds are built to serve a specific use case and might not be suitable for general use. Users must evaluate the properties of a feed to make sure it aligns with their intended use case. [Contact the Chainlink Labs team](https://chainlinkcommunity.typeform.com/to/OYQO67EF?page=market-data-feeds) if you want more detail on any specific feeds in this category.
+Custom Feeds are built to serve a specific use case and might not be suitable for general use or your use case’s risk parameters. Users must evaluate the properties of a feed to make sure it aligns with their intended use case. [Contact the Chainlink Labs team](https://chainlinkcommunity.typeform.com/to/OYQO67EF?page=market-data-feeds) if you want more detail on any specific feeds in this category.
 Custom feeds have the following categories and compositions:
 
 - **On-chain single source feeds:** These feeds take their data from an on-chain source. However, the feed has only a single data provider currently supporting the feed.
