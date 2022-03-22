@@ -36,7 +36,7 @@ If you are new to developing smart contracts on Ethereum, see the [Getting Start
 This example operates using the following steps:
 
 1. When you deploy the contract, the `constructor()` initializes the address of `oracle` , the `jobId` and the fees `oraclePayment`. **Note** that these values are proper to _Kovan testnet_. Check the [Network Details section](#network-details) for other networks.
-1. Run `requestProof()` to check that an address owns a domain name. For this example, you can use _www5.infernos.io_ for `_name` and _0xf75519f611776c22275474151a04183665b7feDe for `_record`. Notice how these parameters are used to build the Chainlink request. the selector of the `fulfill()` function is also passed so that the oracle knows which function to call back with the `proof`.
+1. Run `requestProof()` to check that an address owns a domain name. For this example, you can use _www5.infernos.io_ for `_name` and _0xf75519f611776c22275474151a04183665b7feDe_ for `_record`. Notice how these parameters are used to build the Chainlink request. the selector of the `fulfill()` function is also passed so that the oracle knows which function to call back with the `proof`.
 1. After few seconds, check the value of `proof`. It should return `true`. 
 
 ```solidity
