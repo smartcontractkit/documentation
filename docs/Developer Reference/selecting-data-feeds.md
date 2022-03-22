@@ -36,7 +36,7 @@ These are data feeds that follow a standardized data feeds workflow. Chainlink n
 
 These feeds incorporate three layers of aggregation at the data source, node operator, and oracle network layers. These layers provide industry-grade security and reliability on the price data that they reference. To learn more about the three layers of data aggregation, see the blog post about [Data Aggregation in Chainlink Price Feeds](https://blog.chain.link/levels-of-data-aggregation-in-chainlink-price-feeds/).
 
-Inherent risks might exist based on your use case, the blockchain where feed is deployed, and the conditions on that chain..
+Inherent risks might still exist based on your use case, the blockchain on which the feed is deployed and the conditions on that chain.
 
 ### 🟡 Monitored Feeds
 
@@ -50,7 +50,8 @@ Data feeds might be under review for the following reasons:
 
 ### 🔵 Custom Feeds
 
-Custom Feeds are built to serve a specific use case and might not be suitable for general use or your use case’s risk parameters. Users must evaluate the properties of a feed to make sure it aligns with their intended use case. [Contact the Chainlink Labs team](https://chainlinkcommunity.typeform.com/to/OYQO67EF?page=market-data-feeds) if you want more detail on any specific feeds in this category.
+Custom Feeds are built to serve a specific use case and might not be suitable for general use or your use case's risk parameters. Users must evaluate the properties of a feed to make sure it aligns with their intended use case. [Contact the Chainlink Labs team](https://chainlinkcommunity.typeform.com/to/OYQO67EF?page=market-data-feeds) if you want more detail on any specific feeds in this category.
+
 Custom feeds have the following categories and compositions:
 
 - **On-chain single source feeds:** These feeds take their data from an on-chain source. However, the feed has only a single data provider currently supporting the feed.
