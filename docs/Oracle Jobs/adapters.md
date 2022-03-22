@@ -2,9 +2,9 @@
 layout: nodes.liquid
 section: legacy
 date: Last Modified
-title: "Core Adapters [v1]"
-permalink: "docs/core-adapters/"
-whatsnext: {"Introduction to External Adapters":"/docs/external-adapters/", "Initiators":"/docs/initiators/"}
+title: 'Core Adapters [v1]'
+permalink: 'docs/core-adapters/'
+whatsnext: { 'Introduction to External Adapters': '/docs/external-adapters/', 'Initiators': '/docs/initiators/' }
 ---
 
 # REMOVED
@@ -47,10 +47,12 @@ This core adapter compares a user-specified value with the value from the previo
 #### Solidity Example
 
 ```javascript
-req.addInt("value", 10000);
-req.add("operator", "gte");
+req.addInt('value', 10000);
+req.add('operator', 'gte');
 ```
+
 ## Copy
+
 The core adapter walks the `copyPath` specified and returns the value found at that result. If returning JSON data from an [external adapter](../external-adapters/), you will need to use this adapter to parse the response.
 
 #### Parameters
@@ -62,7 +64,7 @@ The core adapter walks the `copyPath` specified and returns the value found at t
 For the JSON object:
 
 ```json
-{"RAW": {"ETH": {"USD": {"LASTMARKET": "_someValue"}}}}
+{ "RAW": { "ETH": { "USD": { "LASTMARKET": "_someValue" } } } }
 ```
 
 You would use the following for an array of strings:
@@ -76,11 +78,13 @@ path[3] = "LASTMARKET";
 req.addStringArray("copyPath", path);
 ```
 
-Or the following for a single dot-delimited string:
+Or the following for a single comma-delimited string:
 
 ```javascript
-req.add("copyPath", "RAW.ETH.USD.LASTMARKET");
+req.add('copyPath', 'RAW,ETH,USD,LASTMARKET');
 ```
+
+> Note: Chainlink nodes prior to `1.0.0` supported dot delimited strings instead of commas.
 
 #### Job Specification Example
 
@@ -88,12 +92,7 @@ req.add("copyPath", "RAW.ETH.USD.LASTMARKET");
 {
   "type": "Copy",
   "params": {
-    "copyPath": [
-      "RAW",
-      "ETH",
-      "USD",
-      "LASTMARKET"
-    ]
+    "copyPath": ["RAW", "ETH", "USD", "LASTMARKET"]
   }
 }
 ```
@@ -101,14 +100,15 @@ req.add("copyPath", "RAW.ETH.USD.LASTMARKET");
 For arrays, you can access the path of an array by using the index. If this is your JSON:
 
 ```json
-{"endpoint": [ {"path":"value"}]}
+{ "endpoint": [{ "path": "value" }] }
 ```
 
 You could get the `"value"` by:
 
 ```javascript
-req.add("copyPath", "endpoint.0.path");
+req.add('copyPath', 'endpoint.0.path');
 ```
+
 ## EthBool
 
 The core adapter reads the given Boolean value and then converts it into Solidity's `bool` format.
@@ -172,9 +172,9 @@ The core adapter will report the body of a successful `GET` request to the speci
 #### Solidity Example
 
 ```javascript
-req.add("get", "http://example.com");
-req.add("queryParams", "firstKey=firstVal&secondKey=secondVal");
-req.add("extPath", "price/BTC/USD");
+req.add('get', 'http://example.com');
+req.add('queryParams', 'firstKey=firstVal&secondKey=secondVal');
+req.add('extPath', 'price/BTC/USD');
 ```
 
 #### Job Specification Example
@@ -185,9 +185,7 @@ req.add("extPath", "price/BTC/USD");
   "params": {
     "get": "https://example.com/some-endpoint",
     "headers": {
-      "X-API-Key": [
-        "abc123abc123abc123abc123"
-      ]
+      "X-API-Key": ["abc123abc123abc123abc123"]
     }
   }
 }
@@ -217,9 +215,9 @@ The core adapter will report the body of a successful `POST` request to the spec
 #### Solidity Example
 
 ```javascript
-req.add("post", "http://post.example.com");
-req.add("queryParams", "firstKey=firstVal&secondKey=secondVal");
-req.add("extPath", "price/BTC/USD");
+req.add('post', 'http://post.example.com');
+req.add('queryParams', 'firstKey=firstVal&secondKey=secondVal');
+req.add('extPath', 'price/BTC/USD');
 ```
 
 #### Job Specification Example
@@ -256,7 +254,7 @@ The core adapter walks the `path` specified and returns the value found at that 
 For the stringified JSON:
 
 ```json
-{"RAW": {"ETH": {"USD": {"LASTMARKET": "_someValue"}}}}
+{ "RAW": { "ETH": { "USD": { "LASTMARKET": "_someValue" } } } }
 ```
 
 You would use the following for an array of strings:
@@ -270,11 +268,13 @@ path[3] = "LASTMARKET";
 req.addStringArray("path", path);
 ```
 
-Or the following for a single dot-delimited string:
+Or the following for a single comma-delimited string:
 
 ```javascript
-req.add("path", "RAW.ETH.USD.LASTMARKET");
+req.add('path', 'RAW,ETH,USD,LASTMARKET');
 ```
+
+> 🚧 Note: Chainlink nodes prior to 1.0.0 support dot-delimited strings instead of comma-delimited strings.
 
 #### Job Specification Example
 
@@ -282,12 +282,7 @@ req.add("path", "RAW.ETH.USD.LASTMARKET");
 {
   "type": "JsonParse",
   "params": {
-    "path": [
-      "RAW",
-      "ETH",
-      "USD",
-      "LASTMARKET"
-    ]
+    "path": ["RAW", "ETH", "USD", "LASTMARKET"]
   }
 }
 ```
@@ -295,28 +290,30 @@ req.add("path", "RAW.ETH.USD.LASTMARKET");
 #### Parsing Arrays
 
 ```javascript
-req.add("path", "3.standardId");
+req.add('path', '3,standardId');
 ```
+
 The above example parses the 4th object of the following JSON response and returns 677 as a result:
+
 ```javascript
 [
-   {
-     "standardId": 20,
-     "name": "ERC-20"
-   },
-   {
-     "standardId": 721,
-     "name": "ERC-721"
-   },
-   {
-     "standardId": 1155,
-     "name": "ERC-1155"
-   },
-   {
-     "standardId": 677,
-     "name": "ERC-677"
-    }
-]
+  {
+    standardId: 20,
+    name: 'ERC-20',
+  },
+  {
+    standardId: 721,
+    name: 'ERC-721',
+  },
+  {
+    standardId: 1155,
+    name: 'ERC-1155',
+  },
+  {
+    standardId: 677,
+    name: 'ERC-677',
+  },
+];
 ```
 
 ## Multiply
@@ -330,7 +327,7 @@ The core adapter parses the input into a float and then multiplies it by the `ti
 #### Solidity Example
 
 ```javascript
-run.addInt("times", 100);
+run.addInt('times', 100);
 ```
 
 ## NoOp
@@ -380,6 +377,7 @@ req.addUint("until", now + 1 hours);
 ```
 
 #### Job Specification example
+
 ```
 {
   "initiators": [

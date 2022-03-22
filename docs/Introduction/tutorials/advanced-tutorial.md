@@ -2,13 +2,17 @@
 layout: nodes.liquid
 section: gettingStarted
 date: Last Modified
-title: "API Calls: Using Any API"
-permalink: "docs/advanced-tutorial/"
-excerpt: "Calling APIs from Smart Contracts"
-whatsnext: {"Make a GET Request":"/docs/make-a-http-get-request/", "Make an Existing Job Request":"/docs/existing-job-request/"}
+title: 'API Calls: Using Any API'
+permalink: 'docs/advanced-tutorial/'
+excerpt: 'Calling APIs from Smart Contracts'
+whatsnext:
+  {
+    'Make a GET Request': '/docs/make-a-http-get-request/',
+    'Make an Existing Job Request': '/docs/existing-job-request/',
+  }
 metadata:
   image:
-    0: "/files/04b8e56-cl.png"
+    0: '/files/04b8e56-cl.png'
 ---
 
 > 👍 Requirements
@@ -25,19 +29,26 @@ In this guide, you will learn how to request data from a public API in a smart c
 
 **Table of Contents**
 
-+ [Overview](#overview)
-+ [1. How does the request and receive cycle work for API calls?](#1-how-does-the-request-and-receive-cycle-work-for-api-calls)
-+ [2. What are initiators?](#2-what-are-initiators)
-+ [3. What are Adapters?](#3-what-are-adapters)
-+ [4. How can I use Adapters in my own contract?](#4-how-can-i-use-adapters-in-my-own-contract)
-+ [5. How do I deploy to testnet?](#5-how-do-i-deploy-to-testnet)
-+ [6. Further Reading](#6-further-reading)
+- [Overview](#overview)
+- [1. How does the request and receive cycle work for API calls?](#1-how-does-the-request-and-receive-cycle-work-for-api-calls)
+- [2. What are initiators?](#2-what-are-initiators)
+- [3. What are Adapters?](#3-what-are-adapters)
+  - [Core Adapters](#core-adapters)
+  - [Contract Example](#contract-example)
+  - [External Adapters](#external-adapters)
+- [4. How can I use Adapters in my own contract?](#4-how-can-i-use-adapters-in-my-own-contract)
+  - [Variables](#variables)
+  - [Constructor](#constructor)
+  - [`requestData` Function](#requestdata-function)
+  - [Callback Function](#callback-function)
+- [5. How do I deploy to testnet?](#5-how-do-i-deploy-to-testnet)
+- [6. Further Reading](#6-further-reading)
 
 # 1. How does the request and receive cycle work for API calls?
 
 The request and receive cycle describes how a smart contract requests data from an oracle and receives the response in a separate transaction. If you need a refresher, check out the [Basic Request Model](../architecture-request-model/).
 
-For contracts that use [Chainlink VRF](/docs/chainlink-vrf/), you request randomness from a VRF oracle and then await the response. The fulfillment function is already given to us from the `VRFConsumerBase` contract, so oracles already know where to send the response to. However, with API calls, the contract itself *defines* which function it wants to receive the response to.
+For contracts that use [Chainlink VRF](/docs/chainlink-vrf/), you request randomness from a VRF oracle and then await the response. The fulfillment function is already given to us from the `VRFConsumerBase` contract, so oracles already know where to send the response to. However, with API calls, the contract itself _defines_ which function it wants to receive the response to.
 
 Before creating any code, you should understand how Oracle jobs can get data on-chain.
 
@@ -55,6 +66,7 @@ Each oracle job has a configured set of tasks it must complete when it is run. T
 ## Core Adapters
 
 If a job needs to make a GET request to an API, find a specific unsigned integer field in a JSON response, then submit that back to the requesting contract, it would need a job containing the following Core Adapters:
+
 - [HttpGet](../core-adapters/#httpget) calls the API
 - [JsonParse](../core-adapters/#jsonparse) parses the JSON and retrieve the desired data
 - [EthUint256](../core-adapters/#ethuint256) converts the data to Ethereum compatible data type (uint256)
@@ -62,7 +74,8 @@ If a job needs to make a GET request to an API, find a specific unsigned integer
 
 Let's walk through a real example, where you will retrieve 24 volumes of the [ETH/USD pair](https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETH&tsyms=USD) from the cryptocompare API.
 
-1. [HttpGet](../core-adapters/#httpget) calls the API and returns the body of an HTTP GET result for [ETH/USD pair](https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETH&tsyms=USD).  Example:
+1. [HttpGet](../core-adapters/#httpget) calls the API and returns the body of an HTTP GET result for [ETH/USD pair](https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETH&tsyms=USD). Example:
+
 ```json
 {"RAW":
   {"ETH":
@@ -79,7 +92,7 @@ Let's walk through a real example, where you will retrieve 24 volumes of the [ET
 }
 ```
 
-2. [JsonParse](../core-adapters/#jsonparse) walks a specified `path` (`"RAW.ETH.USD.VOLUME24HOUR"`) and returns the value found at that result. Example: `703946.0675653099`
+2. [JsonParse](../core-adapters/#jsonparse) walks a specified `path` (`"RAW,ETH,USD,VOLUME24HOUR"`) and returns the value found at that result. Example: `703946.0675653099`
 
 3. [Multiply](../core-adapters/#multiply) parses the input into a float and multiplies it by the 10^18. Example: `703946067565309900000000`
 
@@ -103,6 +116,7 @@ Let's see what this looks like in a contract:
 </div>
 
 Here is a breakdown of each component of this contract:
+
 1. Constructor: This sets up the contract with the Oracle address, Job ID, and LINK fee that the oracle charges for the job.
 2. `requestVolumeData` functions: This builds and sends a request - which includes the fulfillment functions selector - to the oracle. Notice how it adds the `get`, `path` and `times` parameters. These are read by the Adapters in the job to perform the tasks correctly. `get` is used by [HttpGet](../core-adapters/#httpget), `path` is used by [JsonParse](../core-adapters/#jsonparse) and `times` is used by [Multiply](../core-adapters/#multiply).
 3. `fulfill` function: This is where the result is sent upon the Oracle Job's completion.
@@ -157,6 +171,7 @@ contract sportContract is ChainlinkClient {
 ```
 
 ## Variables
+
 The request should include the oracle address, the job id, the fee, adapter parameters, and the callback function signature. Create variables for these items using the correct data types.
 
 ```solidity
@@ -174,6 +189,7 @@ contract sportContract is ChainlinkClient {
 ```
 
 ## Constructor
+
 In the constructor, set up the contract with the Oracle address, Job ID, and LINK fee that the oracle charges for the job.
 
 ```solidity
@@ -198,7 +214,8 @@ contract sportContract is ChainlinkClient {
 ```
 
 ## `requestData` Function
-The [SportsDataIO](https://market.link/data-providers/d66c1ec8-2504-4696-ab22-6825044049f7/integrations) job page specifies the request parameters to be *date* and *teamName*. To account for this, your `requestData` function should have both of these items as parameters. Please refer to the job page to understand the specific input format for these items.
+
+The [SportsDataIO](https://market.link/data-providers/d66c1ec8-2504-4696-ab22-6825044049f7/integrations) job page specifies the request parameters to be _date_ and _teamName_. To account for this, your `requestData` function should have both of these items as parameters. Please refer to the job page to understand the specific input format for these items.
 
 ```solidity
 pragma solidity ^0.8.7;
@@ -270,8 +287,7 @@ Your contract is complete and ready to be compiled and deployed. You can see a c
   <a href="/docs/conceptual-overview/#what-is-remix" >What is Remix?</a>
 </div>
 
-If you don't know how to deploy a contract to the Kovan testnet using Remix, follow getting started guide for [Deploying Your First Smart Contract](/docs/deploy-your-first-contract/). To make a job request, you *must* have enough LINK to pay for it. Learn how to [acquire testnet LINK](/docs/acquire-link/) and [fund your contract](/docs/fund-your-contract/). Once these steps are completed, you should be able to get sports data.
-
+If you don't know how to deploy a contract to the Kovan testnet using Remix, follow getting started guide for [Deploying Your First Smart Contract](/docs/deploy-your-first-contract/). To make a job request, you _must_ have enough LINK to pay for it. Learn how to [acquire testnet LINK](/docs/acquire-link/) and [fund your contract](/docs/fund-your-contract/). Once these steps are completed, you should be able to get sports data.
 
 # 6. Further Reading
 
