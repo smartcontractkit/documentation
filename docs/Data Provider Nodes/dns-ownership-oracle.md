@@ -5,94 +5,42 @@ date: Last Modified
 title: "DNS Ownership Oracle"
 permalink: "docs/dns-ownership-oracle/"
 ---
-This oracle checks Google’s DNS service to determine if a given domain is owned by a given blockchain address.
 
-# Steps For Using This Oracle
+## Overview
 
-- Write and deploy your contract using the network details below
-- Fund it with [LINK](../link-token-contracts/)
-- Call your [request method](./#chainlink-examples)
+This oracle checks Google’s DNS service to determine if a given domain is owned by a given blockchain address. Each address is stored in a _TXT record_.
+This guide explains how to call the _DNS ownership oracle_ and verify that a given address owns a specific domain. For instance, we will confirm that the address _0xf75519f611776c22275474151a04183665b7feDe_ owns _www5.infernos.io_.  **Note** that the source of data is [google dns](https://dns.google/resolve?name=www5.infernos.io&type=TXT).
 
-# Network Details
+**Table of Contents**
 
-#### Ethereum Mainnet
-Payment Amount: 2 LINK  
-LINK Token Address: `{{variables.MAINNET_LINK_TOKEN}}`
-Oracle Address: `0x240BaE5A27233Fd3aC5440B5a598467725F7D1cd`  
-JobID: `6ca2e68622bd421d98c648f056ee7c76`
+- [Overview](#overview)
+- [Requirements](#requirements)
+- [DNS Ownership Contract](#dns-ownership-contract)
+- [Network Details](#network-details)
+- [Tasks](#tasks)
 
-#### Ethereum Kovan Testnet
-Payment Amount: 0.1  LINK  
-LINK Token Address: `{{variables.KOVAN_LINK_TOKEN}}`
-Oracle Address: `0xff07c97631ff3bab5e5e5660cdf47aded8d4d4fd`  
-JobID: `791bd73c8a1349859f09b1cb87304f71`
 
-#### BNB Chain Mainnet
-Payment Amount: 0.1 LINK  
-LINK Token address:`{{variables.BINANCE_MAINNET_LINK_TOKEN}}`
-Oracle Address: `0x63B72AF260E8b40A7b89E238FeB53448A97b03D2`  
-JobID: `fb06afd5a9df4e6cb156f6b797b63a24`  
+## Requirements
 
-#### Polygon (Matic) Mainnet
-Payment Amount: 0.1 LINK  
-LINK Token Address: `{{variables.MATIC_MAINNET_LINK_TOKEN}}`
-Oracle Address: `0x63B72AF260E8b40A7b89E238FeB53448A97b03D2`  
-JobID: `f3daed2990114e98906aaf21c4172da3`  
+This guide assumes that you know how to create and deploy smart contracts on the Kovan Testnet using the following tools:
 
-# Create Your Contract
+- [The Remix IDE](https://remix.ethereum.org/)
+- [MetaMask](https://metamask.io/)
+- [Kovan Link tokens](/docs/link-token-contracts/#kovan-testnet)
 
-Import `ChainlinkClient.sol` into your contract so you can inherit the Chainlink behavior.
+Also you should be familiar with the [Chainlink Basic Request Model](/docs/architecture-request-model/).
+If you are new to developing smart contracts on Ethereum, see the [Getting Started](/docs/conceptual-overview/) guide to learn the basics.
 
-```solidity Solidity 4
-pragma solidity ^0.4.24;
+## DNS Ownership Contract
 
-import "@chainlink/contracts/v0.4/ChainlinkClient.sol";
+This example operates using the following steps:
 
-contract DnsOwnershipChainlink is ChainlinkClient {
+1. When you deploy the contract, the `constructor()` initializes the address of `oracle` , the `jobId` and the fees `oraclePayment`. **Note** that these values are proper to _Kovan testnet_. Check the [Configuration section](#configuration) for other networks.
+1. Run `requestProof()` to check that an address owns a domain name. For this example, you can use _www5.infernos.io_ for `_name` and _0xf75519f611776c22275474151a04183665b7feDe for `_record`. Notice how these parameters are used to build the Chainlink request. the selector of the `fulfill()` function is also passed so that the oracle knows which function to call back with the `proof`.
+1. After few seconds, check the value of `proof`. It should return `true`. 
 
-  uint256 oraclePayment;
-
-  constructor(uint256 _oraclePayment) public {
-    setPublicChainlinkToken();
-    oraclePayment = _oraclePayment;
-  }
-  // Additional functions here:
-
-}
-```
-```solidity Solidity 5
-pragma solidity ^0.5.0;
-
-import "@chainlink/contracts/v0.5/ChainlinkClient.sol";
-
-contract DnsOwnershipChainlink is ChainlinkClient {
-
-  uint256 oraclePayment;
-
-  constructor(uint256 _oraclePayment) public {
-    setPublicChainlinkToken();
-    oraclePayment = _oraclePayment;
-  }
-  // Additional functions here:
-
-}
-```
-```solidity Solidity 6
-pragma solidity ^0.6.0;
-
-import "@chainlink/contracts/v0.6/ChainlinkClient.sol";
-
-contract DnsOwnershipChainlink is ChainlinkClient {
-
-  uint256 oraclePayment;
-
-  constructor(uint256 _oraclePayment) public {
-    setPublicChainlinkToken();
-    oraclePayment = _oraclePayment;
-  }
-  // Additional functions here:
-
-}
+```solidity
+{% include samples/DataProviders/DnsOwnership.sol %}
 ```
 
 <div class="remix-callout">
@@ -100,54 +48,43 @@ contract DnsOwnershipChainlink is ChainlinkClient {
   <a href="/docs/conceptual-overview/#what-is-remix" >What is Remix?</a>
 </div>
 
-# Tasks
-* <a href="https://market.link/adapters/9bfdd269-133c-44d4-9c67-b66cca770c0f" target="_blank">DNS Record Check</a>
-* [Copy](../core-adapters/#copy)
-* [EthBool](../core-adapters/#ethbool)
-* [EthTx](../core-adapters/#ethtx)
+## Network Details
 
-# Request Parameters
-### `name`
-The domain name to check ownership of.
-#### Solidity Example
-`req.add("name", "www5.infernos.io");`
-### `record`
-The Ethereum address to check a given domain against.
-#### Solidity Example
-`req.add("record", "0xf75519f611776c22275474151a04183665b7feDe");`
+The [DNS Ownership Contract example](#dns-ownership-contract) works on the _Kovan Testnet_. Below are the configuration for other chains.
 
-# Chainlink Examples
+#### Ethereum Mainnet
 
-The examples below show how to create a request for the Chainlink node.
+Payment Amount: 2 LINK  
+LINK Token Address: `{{variables.MAINNET_LINK_TOKEN}}`
+Oracle Address: `0x240BaE5A27233Fd3aC5440B5a598467725F7D1cd`  
+JobID: `6ca2e68622bd421d98c648f056ee7c76`
 
-### `requestProof` function
+#### Ethereum Kovan Testnet
 
-```solidity
-function requestProof
-(
-  address _oracle,
-  bytes32 _jobId,
-  string memory _name,
-  string memory _record
-)
-  public
-  onlyOwner
-{
-  Chainlink.Request memory req = buildChainlinkRequest(_jobId, address(this), this.fulfill.selector);
-  req.add("name", _name);
-  req.add("record", _record);
-  sendChainlinkRequestTo(_oracle, req, oraclePayment);
-}
-```
-### `fulfill` function
+Payment Amount: 0.1  LINK  
+LINK Token Address: `{{variables.KOVAN_LINK_TOKEN}}`
+Oracle Address: `0xff07c97631ff3bab5e5e5660cdf47aded8d4d4fd`  
+JobID: `791bd73c8a1349859f09b1cb87304f71`
 
-```solidity
-bool public proof;
+#### BNB Chain Mainnet
 
-function fulfill(bytes32 _requestId, bool _proof)
-  public
-  recordChainlinkFulfillment(_requestId)
-{
-  proof = _proof;
-}
-```
+Payment Amount: 0.1 LINK  
+LINK Token address:`{{variables.BINANCE_MAINNET_LINK_TOKEN}}`
+Oracle Address: `0x63B72AF260E8b40A7b89E238FeB53448A97b03D2`  
+JobID: `fb06afd5a9df4e6cb156f6b797b63a24`  
+
+#### Polygon (Matic) Mainnet
+
+Payment Amount: 0.1 LINK  
+LINK Token Address: `{{variables.MATIC_MAINNET_LINK_TOKEN}}`
+Oracle Address: `0x63B72AF260E8b40A7b89E238FeB53448A97b03D2`  
+JobID: `f3daed2990114e98906aaf21c4172da3`  
+
+## Tasks
+
+Here below are listed the tasks used by the _DNS Ownership_ oracle:
+
+- <a href="https://market.link/adapters/9bfdd269-133c-44d4-9c67-b66cca770c0f" target="_blank">DNS Record Check</a>
+- [Copy](/docs/core-adapters/#copy)
+- [EthBool](/docs/core-adapters/#ethbool)
+- [EthTx](/docs/core-adapters/#ethtx)
