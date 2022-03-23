@@ -3,11 +3,10 @@ layout: nodes.liquid
 section: nodeOperator
 date: Last Modified
 title: 'Large Response Example Job Spec'
-permalink: "docs/example-job-spec-large/"
+permalink: 'docs/example-job-spec-large/'
 ---
 
-This is an example v2 job spec for returning large responses in 1 Chainlink API Call. 
-
+This is an example v2 job spec for returning large responses in 1 Chainlink API Call.
 
 ```jpv2
 type = "directrequest"
@@ -41,7 +40,7 @@ observationSource = """
 
 ```
 
-This is an example v1 job spec for returning large responses in 1 Chainlink API Call. 
+This is an example v1 job spec for returning large responses in 1 Chainlink API Call.
 
 ```json
 {
@@ -74,10 +73,7 @@ This is an example v1 job spec for returning large responses in 1 Chainlink API 
       "type": "ethtx",
       "confirmations": 1,
       "params": {
-        "abiEncoding": [
-          "bytes32",
-          "bytes"
-        ]
+        "abiEncoding": ["bytes32", "bytes"]
       }
     }
   ]
