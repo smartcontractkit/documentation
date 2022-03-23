@@ -17,7 +17,7 @@ This guide explains how to call the _DNS ownership oracle_ and verify that a giv
 - [Requirements](#requirements)
 - [DNS Ownership Contract](#dns-ownership-contract)
 - [Network Details](#network-details)
-- [Tasks](#tasks)
+- [Job](#job)
 
 
 ## Requirements
@@ -80,11 +80,48 @@ LINK Token Address: `{{variables.MATIC_MAINNET_LINK_TOKEN}}`
 Oracle Address: `0x63B72AF260E8b40A7b89E238FeB53448A97b03D2`  
 JobID: `f3daed2990114e98906aaf21c4172da3`  
 
-## Tasks
+## Job
 
-Here below are listed the tasks used by the _DNS Ownership_ oracle:
+The _DNS Ownership_ node uses a [Chainlink v2 direct-request job](/docs/jobs/types/direct-request/). It is composed by the following taks:
 
-- <a href="https://market.link/adapters/9bfdd269-133c-44d4-9c67-b66cca770c0f" target="_blank">DNS Record Check</a>
-- [Copy](/docs/core-adapters/#copy)
-- [EthBool](/docs/core-adapters/#ethbool)
-- [EthTx](/docs/core-adapters/#ethtx)
+- [ETH ABI Decode Log](/docs/jobs/task-types/eth-abi-decode-log/)
+- [CBOR Parse](/docs/jobs/task-types/cborparse/)
+- [DNS Proof](https://market.link/adapters/9bfdd269-133c-44d4-9c67-b66cca770c0f)
+- [JSON Parse](/docs/jobs/task-types/jsonparse/)
+- [ETH ABI Encode](/docs/jobs/task-types/eth-abi-encode/)
+- [EthTx](/docs/jobs/task-types/eth-tx/)
+
+```jpv2
+type = "directrequest"
+schemaVersion = 1
+contractAddress = "0x0000000000000000000000000000000000000000"
+maxTaskDuration = "0s"
+observationSource = """
+    decode_log          [type=ethabidecodelog
+                         abi="OracleRequest(bytes32 indexed specId, address requester, bytes32 requestId, uint256 payment, address callbackAddr, bytes4 callbackFunctionId, uint256 cancelExpiration, uint256 dataVersion, bytes data)"
+                         data="$(jobRun.logData)"
+                         topics="$(jobRun.logTopics)"]
+
+    decode_cbor         [type=cborparse data="$(decode_log.data)"]
+
+    dnsproof            [type=bridge
+                         name="dnsproof"
+                         requestData="{\\"data\\": {\\"endpoint\\": \\"dnsProof\\", \\"name\\": $(decode_cbor.name), \\"record\\": $(decode_cbor.record)}}"]
+                         
+
+    result_parse        [type=jsonparse data="$(dnsproof)" path="result"]
+
+    encode_data         [type=ethabiencode
+                         abi="(bool _result)"
+                         data="{\\"_requestId\\": $(decode_log.requestId),\\"_result\\": $(result_parse)}"]
+
+    encode_tx           [type=ethabiencode
+                         abi="fulfillOracleRequest(bytes32 requestId, uint256 payment, address callbackAddress, bytes4 callbackFunctionId, uint256 expiration, bytes32 data)"
+                         data="{\\"requestId\\": $(decode_log.requestId),\\"payment\\": $(decode_log.payment),\\"callbackAddress\\": $(decode_log.callbackAddr),\\"callbackFunctionId\\": $(decode_log.callbackFunctionId),\\"expiration\\": $(decode_log.cancelExpiration),\\"data\\": $(encode_data)}"]
+
+    submit_tx           [type=ethtx to="0x0000000000000000000000000000000000000000" data="$(encode_tx)" minConfirmations="2"]
+
+    decode_log -> decode_cbor -> dnsproof -> result_parse -> encode_data -> encode_tx -> submit_tx
+```
+
+
