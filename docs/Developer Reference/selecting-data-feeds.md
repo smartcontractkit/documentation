@@ -27,14 +27,16 @@ Data feeds are grouped into the following categories based on the level of risk 
 
 ### 🟢 Verified Feeds
 
-These are data feeds that follow a standardized data feeds workflow. Chainlink node operators each query several sources for the market price and aggregate the estimates that those sources provide. Verified feeds have the following characteristics:
+These are data feeds that follow a standardized data feeds workflow. Chainlink node operators each query several sources for the market price and aggregate the estimates provided by those sources.
+
+Verified feeds have the following characteristics:
 
 - Highly resilient to disruption
 - Leverage many data sources
 - Use an extensive network of nodes
 - Highly liquid and well represented on a large number of markets
 
-These feeds incorporate three layers of aggregation at the data source, node operator, and oracle network layers. These layers provide industry-grade security and reliability on the price data that they reference. To learn more about the three layers of data aggregation, see the blog post about [Data Aggregation in Chainlink Price Feeds](https://blog.chain.link/levels-of-data-aggregation-in-chainlink-price-feeds/).
+These feeds incorporate three layers of aggregation (at the data source, node operator, and oracle network layers), providing industry-grade security and reliability on the price data they reference. To learn more about the three layers of data aggregation, see the blog post about [Data Aggregation in Chainlink Price Feeds](https://blog.chain.link/levels-of-data-aggregation-in-chainlink-price-feeds/).
 
 Inherent risks might still exist based on your use case, the blockchain on which the feed is deployed and the conditions on that chain.
 
@@ -54,7 +56,7 @@ Custom Feeds are built to serve a specific use case and might not be suitable fo
 
 Custom feeds have the following categories and compositions:
 
-- **On-chain single source feeds:** These feeds take their data from an on-chain source. However, the feed has only a single data provider currently supporting the feed.
+- **On-chain single source feeds:** These feeds take their data from an on-chain source, however the feed has only a single data provider currently supporting the feed.
 - **On-chain Proof of Reserve Feeds:** Chainlink Proof of Reserve uses the largest decentralized collection of security-reviewed and Sybil-resistant node operators in the industry to acquire and verify reserve data. In this use case, reserves reside on-chain.
 - **Technical Feeds:** Feeds within this category measure a particular technical metric from a specified blockchain. For example, Fast Gas or Block Difficulty.
 - **Total Value Locked Feeds:** These feeds measure the total value locked in a particular protocol.
@@ -66,7 +68,7 @@ If you plan on using one of these feeds and would like to get a more detailed un
 
 These are highly complex and bespoke feeds that inherently have more **significant risk factors** associated with them. Typical users of these feeds are large institutional users with deep expertise in the market space they operate in.
 
-These feeds are monitored and well-supported, but they might not meet the same levels of resiliency as the other categories. We strongly advise you to [contact the Chainlink Labs team](https://chainlinkcommunity.typeform.com/to/OYQO67EF?page=market-data-feeds) to understand their use case, properties, and associated risks.
+These feeds are monitored and well-supported, but they might not meet the same levels of resiliency as the above categories. We strongly advise you to [speak with the Chainlink Labs team](https://chainlinkcommunity.typeform.com/to/OYQO67EF?page=market-data-feeds) to understand their use cases, properties, and associated risks.
 
 **Examples of Specialized feeds:**
 
@@ -100,7 +102,7 @@ As your usage of data feeds evolves and requirements for higher availability and
 
 **High Risk: Forked, modified, or custom software:**
 
-As Chainlink is open source, independent forks and modifications may exist. Chainlink Labs and development teams are not involved in these and do not track or maintain visibility on them. Chainlink Labs is not responsible for updates, enhancements, or bug fixes for these versions, and Chainlink Labs does monitor them. Their use might pose risks that can do harm to your project. Users are responsible for thoroughly vetting and validating such deployments and determining their suitability.
+As Chainlink is open source, independent forks and modifications may exist. Chainlink Labs and development teams are not involved in these and do not track or maintain visibility on them. Chainlink Labs is not responsible for updates, enhancements, or bug fixes for these versions, and Chainlink Labs does not monitor them. Their use might pose risks that can do harm to your project. Users are responsible for thoroughly vetting and validating such deployments and determining their suitability.
 
 ## Evaluating Data Sources and Risks
 
@@ -129,7 +131,7 @@ Some data providers use a single data source, which might be necessary if only o
 
 Price data quality is subject to crypto actions by the crypto project teams. Crypto actions are similar to [corporate actions](https://en.wikipedia.org/wiki/Corporate_action) but are specific to cryptocurrency projects. Sustaining data quality is dependent on data sources implementing the necessary adjustments related to token renaming, token swaps, redenominations, splits, and other migrations that teams who govern the token might undertake.
 
-For example, when a project upgrades to a new version of their token, this results in a token migration. When token migrations occur, they require building a new price feed to ensure that the token price is accurately reported. When considering a token migration, or other crypto action, projects should proactively reach out to relevant stakeholders to ensure the asset price is accurately reported throughout the process.
+For example, when a project upgrades to a new version of their token, this results in a *token migration*. When token migrations occur, they require building a new price feed to ensure that the token price is accurately reported. When considering a token migration, or other crypto action, projects should proactively reach out to relevant stakeholders to ensure the asset price is accurately reported throughout the process.
 
 ### Fast Gas Reliability
 
