@@ -10,7 +10,7 @@ Makes a mutating transaction to the specified contract with the specified data p
 
 **Parameters**
 
-- `from`: the address(es) of the externally-owned account from which to send the transaction. If left blank, it will select a random address on every send for the given chain ID.
+- `from`: one or more addresses of the externally-owned account from which to send the transaction. If left blank, it will select a random address on every send for the given chain ID.
 - `to`: the address of the contract to make a transaction to.
 - `data`: the data to attach to the call (including the function selector). Most likely, this will be the output of an `ethabiencode` task.
 - `gasLimit`: the amount of gas to attach to the transaction.
