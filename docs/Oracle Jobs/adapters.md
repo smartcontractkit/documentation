@@ -27,7 +27,7 @@ Adapters that are prefixed with "Eth" refer to tasks that post data onto the cha
 | Bytes             | [EthBytes32](#ethbytes32) | bytes32            |
 | Boolean           | [EthBool](#ethbool)       | bool               |
 
-You can learn more about Solidity data types [here](https://docs.soliditylang.org/en/v0.5.3/types.html).
+You can learn more about Solidity data types [here](https://docs.soliditylang.org/en/latest/types.html).
 
 ## Compare
 
@@ -46,9 +46,9 @@ This core adapter compares a user-specified value with the value from the previo
 
 #### Solidity Example
 
-```javascript
-req.addInt('value', 10000);
-req.add('operator', 'gte');
+```solidity
+req.addInt("value", 10000);
+req.add("operator", "gte");
 ```
 
 ## Copy
@@ -69,7 +69,7 @@ For the JSON object:
 
 You would use the following for an array of strings:
 
-```javascript
+```solidity
 string[] memory path = new string[](4);
 path[0] = "RAW";
 path[1] = "ETH";
@@ -80,8 +80,8 @@ req.addStringArray("copyPath", path);
 
 Or the following for a single comma-delimited string:
 
-```javascript
-req.add('copyPath', 'RAW,ETH,USD,LASTMARKET');
+```solidity
+req.add("copyPath", "RAW,ETH,USD,LASTMARKET");
 ```
 
 > Note: Chainlink nodes prior to `1.0.0` supported dot delimited strings instead of commas.
@@ -105,8 +105,8 @@ For arrays, you can access the path of an array by using the index. If this is y
 
 You could get the `"value"` by:
 
-```javascript
-req.add('copyPath', 'endpoint.0.path');
+```solidity
+req.add("copyPath", "endpoint.0.path");
 ```
 
 ## EthBool
@@ -171,10 +171,10 @@ The core adapter will report the body of a successful `GET` request to the speci
 
 #### Solidity Example
 
-```javascript
-req.add('get', 'http://example.com');
-req.add('queryParams', 'firstKey=firstVal&secondKey=secondVal');
-req.add('extPath', 'price/BTC/USD');
+```solidity
+req.add("get", "http://example.com");
+req.add("queryParams", "firstKey=firstVal&secondKey=secondVal");
+req.add("extPath", "price/BTC/USD");
 ```
 
 #### Job Specification Example
@@ -214,10 +214,10 @@ The core adapter will report the body of a successful `POST` request to the spec
 
 #### Solidity Example
 
-```javascript
-req.add('post', 'http://post.example.com');
-req.add('queryParams', 'firstKey=firstVal&secondKey=secondVal');
-req.add('extPath', 'price/BTC/USD');
+```solidity
+req.add("post", "http://post.example.com");
+req.add("queryParams", "firstKey=firstVal&secondKey=secondVal");
+req.add("extPath", "price/BTC/USD");
 ```
 
 #### Job Specification Example
@@ -259,7 +259,7 @@ For the stringified JSON:
 
 You would use the following for an array of strings:
 
-```javascript
+```solidity
 string[] memory path = new string[](4);
 path[0] = "RAW";
 path[1] = "ETH";
@@ -270,8 +270,8 @@ req.addStringArray("path", path);
 
 Or the following for a single comma-delimited string:
 
-```javascript
-req.add('path', 'RAW,ETH,USD,LASTMARKET');
+```solidity
+req.add("path", "RAW,ETH,USD,LASTMARKET");
 ```
 
 > 🚧 Note: Chainlink nodes prior to 1.0.0 support dot-delimited strings instead of comma-delimited strings.
@@ -289,8 +289,8 @@ req.add('path', 'RAW,ETH,USD,LASTMARKET');
 
 #### Parsing Arrays
 
-```javascript
-req.add('path', '3,standardId');
+```solidity
+req.add("path", "3,standardId");
 ```
 
 The above example parses the 4th object of the following JSON response and returns 677 as a result:
@@ -326,8 +326,8 @@ The core adapter parses the input into a float and then multiplies it by the `ti
 
 #### Solidity Example
 
-```javascript
-run.addInt('times', 100);
+```solidity
+run.addInt("times", 100);
 ```
 
 ## NoOp
@@ -372,7 +372,7 @@ The core adapter will pause the current task pipeline for the given duration.
 
 #### Solidity Example
 
-```javascript
+```solidity
 req.addUint("until", now + 1 hours);
 ```
 
