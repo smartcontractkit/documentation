@@ -10,11 +10,13 @@ Makes a mutating transaction to the specified contract with the specified data p
 
 **Parameters**
 
-- `from`: the address of the externally-owned from which to send the transaction.
+- `from`: one or more addresses of the externally-owned account from which to send the transaction. If left blank, it will select a random address on every send for the given chain ID.
 - `to`: the address of the contract to make a transaction to.
 - `data`: the data to attach to the call (including the function selector). Most likely, this will be the output of an `ethabiencode` task.
 - `gasLimit`: the amount of gas to attach to the transaction.
 - `txMeta`: a map of metadata that is saved into the database for debugging.
+- `minConfirmations`: minimum number of confirmations required before this task will continue. Set to zero to continue immediately. Note that this does not affect transaction inclusion. All transactions will always be included in the chain up to the configured finality depth.
+- `evmChainID`: set this optional parameter to transmit on the given chain. You must have the chain configured with RPC nodes for this to work. If left blank, it will use the default chain.
 
 **Outputs**
 
