@@ -2,9 +2,9 @@
 layout: nodes.liquid
 section: legacy
 date: Last Modified
-title: "Core Adapters [v1]"
-permalink: "docs/core-adapters/"
-whatsnext: {"Introduction to External Adapters":"/docs/external-adapters/", "Initiators":"/docs/initiators/"}
+title: 'Core Adapters [v1]'
+permalink: 'docs/core-adapters/'
+whatsnext: { 'Introduction to External Adapters': '/docs/external-adapters/', 'Initiators': '/docs/initiators/' }
 ---
 
 # REMOVED
@@ -27,7 +27,7 @@ Adapters that are prefixed with "Eth" refer to tasks that post data onto the cha
 | Bytes             | [EthBytes32](#ethbytes32) | bytes32            |
 | Boolean           | [EthBool](#ethbool)       | bool               |
 
-You can learn more about Solidity data types [here](https://docs.soliditylang.org/en/v0.5.3/types.html).
+You can learn more about Solidity data types [here](https://docs.soliditylang.org/en/latest/types.html).
 
 ## Compare
 
@@ -46,11 +46,13 @@ This core adapter compares a user-specified value with the value from the previo
 
 #### Solidity Example
 
-```javascript
+```solidity
 req.addInt("value", 10000);
 req.add("operator", "gte");
 ```
+
 ## Copy
+
 The core adapter walks the `copyPath` specified and returns the value found at that result. If returning JSON data from an [external adapter](../external-adapters/), you will need to use this adapter to parse the response.
 
 #### Parameters
@@ -62,12 +64,12 @@ The core adapter walks the `copyPath` specified and returns the value found at t
 For the JSON object:
 
 ```json
-{"RAW": {"ETH": {"USD": {"LASTMARKET": "_someValue"}}}}
+{ "RAW": { "ETH": { "USD": { "LASTMARKET": "_someValue" } } } }
 ```
 
 You would use the following for an array of strings:
 
-```javascript
+```solidity
 string[] memory path = new string[](4);
 path[0] = "RAW";
 path[1] = "ETH";
@@ -76,11 +78,13 @@ path[3] = "LASTMARKET";
 req.addStringArray("copyPath", path);
 ```
 
-Or the following for a single dot-delimited string:
+Or the following for a single comma-delimited string:
 
-```javascript
-req.add("copyPath", "RAW.ETH.USD.LASTMARKET");
+```solidity
+req.add("copyPath", "RAW,ETH,USD,LASTMARKET");
 ```
+
+> Note: Chainlink nodes prior to `1.0.0` supported dot delimited strings instead of commas.
 
 #### Job Specification Example
 
@@ -88,12 +92,7 @@ req.add("copyPath", "RAW.ETH.USD.LASTMARKET");
 {
   "type": "Copy",
   "params": {
-    "copyPath": [
-      "RAW",
-      "ETH",
-      "USD",
-      "LASTMARKET"
-    ]
+    "copyPath": ["RAW", "ETH", "USD", "LASTMARKET"]
   }
 }
 ```
@@ -101,14 +100,15 @@ req.add("copyPath", "RAW.ETH.USD.LASTMARKET");
 For arrays, you can access the path of an array by using the index. If this is your JSON:
 
 ```json
-{"endpoint": [ {"path":"value"}]}
+{ "endpoint": [{ "path": "value" }] }
 ```
 
 You could get the `"value"` by:
 
-```javascript
+```solidity
 req.add("copyPath", "endpoint.0.path");
 ```
+
 ## EthBool
 
 The core adapter reads the given Boolean value and then converts it into Solidity's `bool` format.
@@ -171,7 +171,7 @@ The core adapter will report the body of a successful `GET` request to the speci
 
 #### Solidity Example
 
-```javascript
+```solidity
 req.add("get", "http://example.com");
 req.add("queryParams", "firstKey=firstVal&secondKey=secondVal");
 req.add("extPath", "price/BTC/USD");
@@ -185,9 +185,7 @@ req.add("extPath", "price/BTC/USD");
   "params": {
     "get": "https://example.com/some-endpoint",
     "headers": {
-      "X-API-Key": [
-        "abc123abc123abc123abc123"
-      ]
+      "X-API-Key": ["abc123abc123abc123abc123"]
     }
   }
 }
@@ -216,7 +214,7 @@ The core adapter will report the body of a successful `POST` request to the spec
 
 #### Solidity Example
 
-```javascript
+```solidity
 req.add("post", "http://post.example.com");
 req.add("queryParams", "firstKey=firstVal&secondKey=secondVal");
 req.add("extPath", "price/BTC/USD");
@@ -256,12 +254,12 @@ The core adapter walks the `path` specified and returns the value found at that 
 For the stringified JSON:
 
 ```json
-{"RAW": {"ETH": {"USD": {"LASTMARKET": "_someValue"}}}}
+{ "RAW": { "ETH": { "USD": { "LASTMARKET": "_someValue" } } } }
 ```
 
 You would use the following for an array of strings:
 
-```javascript
+```solidity
 string[] memory path = new string[](4);
 path[0] = "RAW";
 path[1] = "ETH";
@@ -270,11 +268,13 @@ path[3] = "LASTMARKET";
 req.addStringArray("path", path);
 ```
 
-Or the following for a single dot-delimited string:
+Or the following for a single comma-delimited string:
 
-```javascript
-req.add("path", "RAW.ETH.USD.LASTMARKET");
+```solidity
+req.add("path", "RAW,ETH,USD,LASTMARKET");
 ```
+
+> 🚧 Note: Chainlink nodes prior to 1.0.0 support dot-delimited strings instead of comma-delimited strings.
 
 #### Job Specification Example
 
@@ -282,41 +282,38 @@ req.add("path", "RAW.ETH.USD.LASTMARKET");
 {
   "type": "JsonParse",
   "params": {
-    "path": [
-      "RAW",
-      "ETH",
-      "USD",
-      "LASTMARKET"
-    ]
+    "path": ["RAW", "ETH", "USD", "LASTMARKET"]
   }
 }
 ```
 
 #### Parsing Arrays
 
-```javascript
-req.add("path", "3.standardId");
+```solidity
+req.add("path", "3,standardId");
 ```
+
 The above example parses the 4th object of the following JSON response and returns 677 as a result:
+
 ```javascript
 [
-   {
-     "standardId": 20,
-     "name": "ERC-20"
-   },
-   {
-     "standardId": 721,
-     "name": "ERC-721"
-   },
-   {
-     "standardId": 1155,
-     "name": "ERC-1155"
-   },
-   {
-     "standardId": 677,
-     "name": "ERC-677"
-    }
-]
+  {
+    standardId: 20,
+    name: 'ERC-20',
+  },
+  {
+    standardId: 721,
+    name: 'ERC-721',
+  },
+  {
+    standardId: 1155,
+    name: 'ERC-1155',
+  },
+  {
+    standardId: 677,
+    name: 'ERC-677',
+  },
+];
 ```
 
 ## Multiply
@@ -329,7 +326,7 @@ The core adapter parses the input into a float and then multiplies it by the `ti
 
 #### Solidity Example
 
-```javascript
+```solidity
 run.addInt("times", 100);
 ```
 
@@ -375,11 +372,12 @@ The core adapter will pause the current task pipeline for the given duration.
 
 #### Solidity Example
 
-```javascript
+```solidity
 req.addUint("until", now + 1 hours);
 ```
 
 #### Job Specification example
+
 ```
 {
   "initiators": [
