@@ -11,6 +11,7 @@ CBOR Parse tasks parse a CBOR payload, typically as part of a Direct Request wor
 **Parameters**
 
 - `data`: a byte array containing the CBOR payload.
+- `mode`: optional string: `diet` (default) or `standard`. In `diet` mode, the incoming CBOR is expected to be a map.
 
 **Outputs**
 
