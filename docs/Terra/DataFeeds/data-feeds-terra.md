@@ -1,7 +1,7 @@
 ---
 layout: nodes.liquid
 section: terra
-title: "Terra Feeds"
+title: "Terra Data Feeds"
 stub: data-feeds-terra
 permalink: "docs/terra/data-feeds-terra/"
 metadata:

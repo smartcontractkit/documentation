@@ -1,6 +1,6 @@
 ---
 layout: feed.liquid
-title: "Moonriver Feeds"
+title: "Moonriver Data Feeds"
 section: ethereum
 stub: data-feeds-moonriver
 permalink: "docs/data-feeds-moonriver/"
