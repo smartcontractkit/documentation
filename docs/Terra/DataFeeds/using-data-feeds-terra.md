@@ -11,7 +11,7 @@ metadata:
 
 Chainlink Data Feeds are the quickest way to connect your smart contracts to the real-world market prices of assets. For example, one use for data feeds is to enable smart contracts to retrieve the latest pricing data of an asset in a single call.
 
-This guide applies specifically to using data feeds on the [Terra network](https://www.terra.money/). To get the full list of Chainlink Data Feeds running on the Terra Devnet, see the [Terra Feeds](/docs/terra/data-feeds-terra/) page.
+This guide applies specifically to using data feeds on the [Terra network](https://www.terra.money/). To get the full list of Chainlink Data Feeds running on the Terra Bombay testnet, see the [Terra Feeds](/docs/terra/data-feeds-terra/) page.
 
 {% include data-quality.md %}
 
@@ -19,7 +19,7 @@ This guide applies specifically to using data feeds on the [Terra network](https
 
 This guide demonstrates the following tasks:
 
-- Write and deploy programs to the [Terra Bombay-12 Devnet](https://finder.terra.money/bombay-12/) using the [Rust](https://docs.terra.money/Tutorials/Smart-contracts/Overview.html) language.
+- Write and deploy programs to the [Terra Bombay-12 testnet](https://finder.terra.money/bombay-12/) using the [Rust](https://docs.terra.money/Tutorials/Smart-contracts/Overview.html) language.
 - Compile the smart contract using the [CosmWasm](https://docs.cosmwasm.com/docs/) platform.
 - Deploy, instantiate, and execute the contract using a NodeJS script to a call the Wasm artifact and retrieve the latest price.
 
@@ -55,9 +55,9 @@ You need a Terra Station wallet with testnet LUNA to complete the steps in this 
 1. Take note of your seed phrase and your wallet address. You need these to execute your smart contract later.
 1. Go to the [Terra Testnet Faucet](https://faucet.terra.money/) and follow the instructions to send testnet LUNA to your Terra wallet.
 
-After you complete these steps, you should see the LUNA balance for your wallet on the testnet.
+After you complete these steps, you can see the LUNA balance for your wallet on the testnet.
 
-![The Terra Station browser extension showing a LUNA balance on Testnet.](/images/terra/terra-wallet.png)
+![The Terra Station browser extension showing a LUNA balance on the Terra testnet.](/images/terra/terra-wallet.png)
 
 ## Clone the example code repository
 
@@ -76,12 +76,6 @@ produce the `./target/wasm32-unknown-unknown/release/consumer.wasm` build file:
 
    ```shell
    cargo wasm
-   ```
-
-1. Run `cargo schema` in the `./contracts/consumer` directory to generate the schema files. These files expose the schema for the expected messages to the clients.
-
-   ```shell
-   (cd ./contracts/consumer && cargo schema)
    ```
 
 1. From the base of the cloned repository, run the `workspace-optimizer` Rust optimizer to ensure the smallest output size and create a reproducible build process. The optimizer runs in a Docker container and creates an `/artifacts` directory with the compiled and optimized output of the contract:
@@ -131,20 +125,22 @@ If the script is not successful, check to make sure that you compiled the contra
 
 You can view the Rust code and scripts for this example on GitHub. See the [chainlink-terra-feeds-demo](https://github.com/smartcontractkit/chainlink-terra-feeds-demo/) repository. The example code has a few main components:
 
-- The [lib.rs](https://github.com/smartcontractkit/chainlink-terra-feeds-demo/blob/master/contracts/consumer/src/lib.rs) file that defines the functions for the smart contract and is eventually compiled into the `./artifacts/consumer.wasm` bytecode file.
+- The [contract.rs](https://github.com/smartcontractkit/chainlink-terra-feeds-demo/blob/main/contracts/price-consumer/src/contract.rs) file that defines the functions for the smart contract and is eventually compiled into the `./artifacts/price_consumer.wasm` bytecode file.
 - The [`readLatestPrice.mjs` script](https://github.com/smartcontractkit/chainlink-terra-feeds-demo/blob/master/scripts/readLatestPrice.mjs)
 
-The `./scripts/readLatestPrice.mjs` script completes each of the steps to deploy, instantiate, and execute the `consumer.wasm` compiled smart contract. The `run()` function deploys and instantiates the `consumer.wasm` smart contract. Then, the script uses an [`LCDClient`](https://terra-money.github.io/terra-sdk-python/guides/lcdclient.html) object from [Terra.js](https://terra-money.github.io/terra.js/#installation) to call the `get_latest_round_data` function on the aggregator contract and retrieve the price data.
+The `./scripts/readLatestPrice.mjs` script completes each of the steps to deploy, instantiate, and execute the `price_consumer.wasm` compiled smart contract. The `run()` function deploys and instantiates the `price_consumer.wasm` smart contract. Then, the script uses an [`LCDClient`](https://terra-money.github.io/terra-sdk-python/guides/lcdclient.html) object from [Terra.js](https://terra-money.github.io/terra.js/#installation) to call the `latest_round_data` function on the aggregator contract and retrieve the price data.
 
 ```javascript
 async function run() {
   console.log("Deploying Price Consumer Contract");
 
   const consmCodeId = await upload(CONSUMER_PATH);
+  await sleep(12000);
   console.log("instatiating contract");
-  const consmAddress = await instantiate(consmCodeId, {"proxy": "terra1dw5ex5g802vgrek3nzppwt29tfzlpa38ep97qy"})
+  const consmAddress = await instantiate(consmCodeId, {"feed": "terra185esv8hg3ddn85fkwgznskf95k0th9ryvegeak"})
+  await sleep(12000);
   console.log("reading contract");
-  const result = await terra.wasm.contractQuery(consmAddress, { "get_latest_round_data": {} } )
+  const result = await terra.wasm.contractQuery(consmAddress, { "latest_round_data": {} } )
   console.log(result);
 }
 ```
