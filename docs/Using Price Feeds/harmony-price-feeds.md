@@ -1,6 +1,6 @@
 ---
 layout: feed.liquid
-title: "Harmony Feeds"
+title: "Harmony Data Feeds"
 section: ethereum
 stub: harmony-price-feeds
 permalink: "docs/harmony-price-feeds/"
