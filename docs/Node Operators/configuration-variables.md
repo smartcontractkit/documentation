@@ -188,6 +188,7 @@ Your node applies configuration settings using following hierarchy:
 - [Keeper](#keeper)
   - [KEEPER_GAS_PRICE_BUFFER_PERCENT](#keeper_gas_price_buffer_percent)
   - [KEEPER_GAS_TIP_CAP_BUFFER_PERCENT](#keeper_gas_tip_cap_buffer_percent)
+  - [KEEPER_BASE_FEE_BUFFER_PERCENT](#keeper_base_fee_buffer_percent)
   - [KEEPER_MAXIMUM_GRACE_PERIOD](#keeper_maximum_grace_period)
   - [KEEPER_REGISTRY_CHECK_GAS_OVERHEAD](#keeper_registry_check_gas_overhead)
   - [KEEPER_REGISTRY_PERFORM_GAS_OVERHEAD](#keeper_registry_perform_gas_overhead)
@@ -359,13 +360,13 @@ Chainlink nodes use a database lock to ensure that only one Chainlink node insta
 
 ### DATABASE_LOCKING_MODE
 
-- Default: `"advisorylock"`
+- Default: `"dual"`
 
-The `DATABASE_LOCKING_MODE` variable can be set to 'advisorylock', 'lease', 'dual', or 'none'. It controls which mode to use to enforce that only one Chainlink node can use the database.
+The `DATABASE_LOCKING_MODE` variable can be set to 'dual', 'advisorylock', 'lease', or 'none'. It controls which mode to use to enforce that only one Chainlink node can use the database. As a best practice, set this value to `lease` if your node no longer requires advisory locks.
 
-- `advisorylock` - The default: Advisory lock only
+- `dual` - The default: Uses both advisory locks and lease locks for backward and forward compatibility
+- `advisorylock` - Advisory lock only
 - `lease` - Lease lock only
-- `dual` - Uses both locking types for both backward and forward compatibility
 - _none_ - No locking at all: This option useful for advanced deployment environments when you are sure that only one instance of a Chainlink node will ever be running.
 
 #### Technical details
@@ -382,8 +383,6 @@ Because of the complications with advisory locks, Chainlink nodes with v1.1.0 an
 - Node A creates one row in the database with the client ID and updates it once per second.
 - Node B spinlocks and checks periodically to see if the client ID is too old. If the client ID is not updated after a period of time, node B assumes that node A failed and takes over. Node B becomes the owner of the row and updates the client ID once per second.
 - If node A comes back, it attempts to take out a lease, realizes that the database has been leased to another process, and exits the entire application immediately.
-
-The default is set to `advisorylock`.
 
 ### ADVISORY_LOCK_CHECK_INTERVAL
 
@@ -507,19 +506,19 @@ This setting tells the Chainlink node to log SQL statements made using the defau
 
 - Default: `"5120mb"`
 
-Determines the log file's max size (in megabytes) before file rotation. Having this not set will disable logging to disk.
+Determines the log file's max size in megabytes before file rotation. Having this not set will disable logging to disk. If your disk doesn't have enough disk space, the logging will pause and the application will log errors until space is available again.
 
 ### LOG_FILE_MAX_AGE
 
 - Default: `"0"`
 
-Determines the log file's max age (in days) before file rotation. Keeping this config with the default value means not to remove old log files.
+Determines the log file's max age in days before file rotation. Keeping this config with the default value will not remove log files based on age.
 
 ### LOG_FILE_MAX_BACKUPS
 
 - Default: `"1"`
 
-Determines the max amount of old log files to retain. Keeping this config with the default value means to retain all old log files (though `LOG_FILE_MAX_AGE` may still cause them to get deleted).
+Determines the maximum number of old log files to retain. Keeping this config with the default value retains all old log files. The `LOG_FILE_MAX_AGE` variable can still cause them to get deleted.
 
 ### LOG_UNIX_TS
 
@@ -689,7 +688,58 @@ This should be set to the HTTP URL that points to the same ETH node as the prima
 
 - Default: _none_
 
-A JSON array of node specifications that allows you to configure multiple nodes or chains using an environment variable. This is not compatible with other environment variables that specify the node such as `ETH_URL` or `ETH_SECONDARY_URLS`. Set this variable using the following format: `EVM_NODES='{...}'`
+A JSON array of node specifications that allows you to configure multiple nodes or chains using an environment variable. This is not compatible with other environment variables that specify the node such as `ETH_URL` or `ETH_SECONDARY_URLS`. Set this variable using a configuration like the following example:
+
+```json
+EVM_NODES='
+[
+	{
+		"name": "primary_0_1",
+		"evmChainId": "0",
+		"wsUrl": "ws://test1.invalid",
+		"sendOnly": false
+	},
+	{
+		"name": "primary_0_2",
+		"evmChainId": "0",
+		"wsUrl": "ws://test2.invalid",
+		"httpUrl": "https://test3.invalid",
+		"sendOnly": false
+	},
+	{
+		"name": "primary_1337_1",
+		"evmChainId": "1337",
+		"wsUrl": "ws://test4.invalid",
+		"httpUrl": "http://test5.invalid",
+		"sendOnly": false
+	},
+	{
+		"name": "sendonly_1337_1",
+		"evmChainId": "1337",
+		"httpUrl": "http://test6.invalid",
+		"sendOnly": true
+	},
+	{
+		"name": "sendonly_0_1",
+		"evmChainId": "0",
+		"httpUrl": "http://test7.invalid",
+		"sendOnly": true
+	},
+	{
+		"name": "primary_42_1",
+		"evmChainId": "42",
+		"wsUrl": "ws://test8.invalid",
+		"sendOnly": false
+	},
+	{
+		"name": "sendonly_43_1",
+		"evmChainId": "43",
+		"httpUrl": "http://test9.invalid",
+		"sendOnly": true
+	}
+]
+'
+```
 
 ### ETH_SECONDARY_URLS
 
@@ -950,13 +1000,13 @@ tx_queue_no_unfamiliar_locals = false # This is disabled by default but might as
 
 - Default: _automatic based on chain ID_
 
-Forces EIP-1559 transaction mode for all chains. Enabling EIP-1559 mode can help reduce gas costs on chains that support it.
+Forces EIP-1559 transaction mode for all chains. Enabling EIP-1559 mode can help reduce gas costs on chains that support it. This is supported only on official Ethereum mainnet and testnets. It is not recommended to enable this setting on Polygon because the EIP-1559 fee market appears to be broken on all Polygon chains and EIP-1559 transactions are less likely to be included than legacy transactions.
 
 #### Technical details
 
 Chainlink nodes include experimental support for submitting transactions using type 0x2 (EIP-1559) envelope.
 
-EIP-1559 mode is off by default but can be enabled on a per-chain basis or globally.
+EIP-1559 mode is enabled by default on the Ethereum Mainnet, but can be enabled on a per-chain basis or globally.
 
 This might help to save gas on spikes. Chainlink nodes should react faster on the upleg and avoid overpaying on the downleg. It might also be possible to set `BLOCK_HISTORY_ESTIMATOR_BATCH_SIZE` to a smaller value such as 12 or even 6 because tip cap should be a more consistent indicator of inclusion time than total gas price. This would make Chainlink nodes more responsive and should reduce response time variance. Some experimentation is required to find optimum settings.
 
@@ -1401,6 +1451,12 @@ The default peer ID to use for OCR jobs. If unspecified, uses the first availabl
 - Default: `"20"`
 
 `KEEPER_GAS_TIP_CAP_BUFFER_PERCENT` adds the specified percentage to the gas price used for checking whether to perform an upkeep. Only applies in EIP-1559 mode.
+
+### KEEPER_BASE_FEE_BUFFER_PERCENT
+
+- Default: `"20"`
+
+Adds the specified percentage to the base fee used for checking whether to perform an upkeep. Applies only in EIP-1559 mode.
 
 ### KEEPER_MAXIMUM_GRACE_PERIOD
 
