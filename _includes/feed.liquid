@@ -15,7 +15,12 @@ section: ethereum
      <p>For LINK token and Faucet details, see the <a href="/docs/link-token-contracts/">LINK Token Contracts</a> page.</p>
 {% endcase %}
 
-<p>Note, off-chain equity and ETF assets are only traded during standard market hours (9:30 am - 4 pm ET M-F). Using these feeds outside of those windows is not recommended.</p>
+<p>Notes:</p>
+<ul>
+<li>Off-chain equity and ETF assets are traded only during standard market hours from 9:30AM to 4:00PM EDT Monday through Friday.</li>
+<li>Assets on the Forex (Foreign Exchange) markets are traded only from 5PM EDT on Sunday through 4PM EDT on Friday.</li>
+</ul>
+<p>Using these feeds outside of those windows is not recommended.</p>
 
 <style>
     table {
@@ -38,6 +43,31 @@ section: ethereum
     input {
         margin-right:8px;
     }
+
+    .hovertext {
+    position: relative;
+    }
+
+    .hovertext:before {
+      content: attr(data-hover);
+      visibility: hidden;
+      opacity: 0;
+      background-color: white;
+      color: #375bd2;
+      text-align: center;
+      padding: 4px;
+      outline: 1px solid #375bd2;
+      font-color: #375bd2;
+      border-radius: 2px;
+      position: absolute;
+      z-index: 1;
+      bottom: 120%;
+    }
+
+    .hovertext:hover:before {
+      opacity: 1;
+      visibility: visible;
+    }
 </style>
 
 {% case metadata.l2healthflag %}
@@ -53,6 +83,19 @@ section: ethereum
      </rdme-callout>
 {% endcase %}
 
+{% if metadata.ecosystem != "terra" and metadata.ecosystem != "solana" %}
+  <div id="categories">
+      <p>Data feeds reside in the following categories:</p>
+      <ul>
+        <li>🟢 <a href="/docs/selecting-data-feeds/#🟢-verified-feeds"><strong>Verified Feeds</strong></a>: Feeds that follow a standardized data feeds workflow</li>
+        <li>🟡 <a href="/docs/selecting-data-feeds/#🟡-monitored-feeds"><strong>Monitored Feeds</strong></a>: Feeds under review by the Chainlink Labs team to support the stability of the broader ecosystem</li>
+        <li>🔵 <a href="/docs/selecting-data-feeds/#-custom-feeds"><strong>Custom Feeds</strong></a>: Feeds built to serve a specific use case and might not be suitable for general use</li>
+        <li>⚫ <a href="/docs/selecting-data-feeds/#-specialized-feeds"><strong>Specialized Feeds</strong></a>: Feeds that inherently have more significant risk factors associated with them</li>
+      </ul>
+      <p>See the <a href="/docs/selecting-data-feeds/">Selecting Quality Data Feeds</a> page for complete details about each category.</p>
+  </div>
+{% endif %}
+
 <div id="feed-data">
     Loading feeds...
 </div>
@@ -60,36 +103,70 @@ section: ethereum
 <script>
     dest = document.getElementById('feed-data');
     let showExtraDetails = false;
+    let feedCategories = {
+        "verified": '<span class="hovertext" data-hover="Verified"><a href="/docs/selecting-data-feeds/#🟢-verified-feeds" alt="Verified" target="_blank">🟢</a></span>',
+        "monitored": '<span class="hovertext" data-hover="Monitored"><a href="/docs/selecting-data-feeds/#🟡-monitored-feeds" alt="Monitored" target="_blank">🟡</a></span>',
+        "custom": '<span class="hovertext" data-hover="Custom"><a href="/docs/selecting-data-feeds/#-custom-feeds" alt="Custom" target="_blank">🔵</a></span>',
+        "specialized": '<span class="hovertext" data-hover="Specialized"><a href="/docs/selecting-data-feeds/#-specialized-feeds" alt="Specialized" target="_blank">⚫</a></span>'
+    }
     render = (data) => {
         let html = '';
         if(data["{{stub}}"]) {
             for(let network of data["{{stub}}"].networks) {
                 html += `<h2 id="${network.name}">${network.name} <a class="anchor" href="#${network.name}"><img src="/images/link.svg" alt="Link to this section"></a></h2>`;
-                html += `<label><input type="checkbox" class="extra" ${showExtraDetails ? 'checked="checked"' : ''}>Show Heartbeat and Deviation Details</input></label>`;
+                html += `<label><input type="checkbox" class="extra" ${showExtraDetails ? 'checked="checked"' : ''}>Show more details</input></label>`;
                 let proxyList = '';
-                for(let proxy of network.proxies) {
-                    proxyList += `
-                    <tr id="${network.name} ${proxy.pair}">
-                        <td><code>${proxy.pair}</code></td>
-                        <td ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.deviationThreshold ? (proxy.deviationThreshold + '%') : 'N/A'}</td>
-                        <td ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.heartbeat ? proxy.heartbeat : 'N/A'}</td>
-                        <td>${proxy.decimals}</td>
-                        <td><a href="${network.url.replace('%s',proxy.proxy)}"><code>${proxy.proxy}</code></a></td>
-                    </tr>`;
+                if(network.networkType == "mainnet") {
+                    for(let proxy of network.proxies) {
+                        proxyList += `
+                        <tr id="${network.name} ${proxy.pair}">
+                            <td><code>${feedCategories[proxy.feedCategory] || ''} ${proxy.pair}</code></td>
+                            <td><code>${proxy.feedType}</code></td>
+                            <td ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.deviationThreshold ? (proxy.deviationThreshold + '%') : 'N/A'}</td>
+                            <td ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.heartbeat ? proxy.heartbeat : 'N/A'}</td>
+                            <td ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.decimals ? proxy.decimals : 'N/A'}</td>
+                            <td><a href="${network.url.replace('%s',proxy.proxy)}"><code>${proxy.proxy}</code></a></td>
+                        </tr>`;
+                    }
+                    html += `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Pair</th>
+                                <th>Type</th>
+                                <th ${ showExtraDetails ? '' : 'class="detail-hidden"'}>Deviation</th>
+                                <th ${ showExtraDetails ? '' : 'class="detail-hidden"'}>Heartbeat</th>
+                                <th ${ showExtraDetails ? '' : 'class="detail-hidden"'}>Dec</th>
+                                <th>${data["{{stub}}"].feedType}</th>
+                            </tr>
+                        </thead>
+                        <tbody>${proxyList}</tbody>
+                    </table>`;
+                } else {
+                    for(let proxy of network.proxies) {
+                        proxyList += `
+                        <tr id="${network.name} ${proxy.pair}">
+                            <td><code>${proxy.pair}</code></td>
+                            <td ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.deviationThreshold ? (proxy.deviationThreshold + '%') : 'N/A'}</td>
+                            <td ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.heartbeat ? proxy.heartbeat : 'N/A'}</td>
+                            <td ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.decimals ? proxy.decimals : 'N/A'}</td>
+                            <td><a href="${network.url.replace('%s',proxy.proxy)}"><code>${proxy.proxy}</code></a></td>
+                        </tr>`;
+                    }
+                    html += `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Pair</th>
+                                <th ${ showExtraDetails ? '' : 'class="detail-hidden"'}>Deviation</th>
+                                <th ${ showExtraDetails ? '' : 'class="detail-hidden"'}>Heartbeat</th>
+                                <th ${ showExtraDetails ? '' : 'class="detail-hidden"'}>Dec</th>
+                                <th>${data["{{stub}}"].feedType}</th>
+                            </tr>
+                        </thead>
+                        <tbody>${proxyList}</tbody>
+                    </table>`;
                 }
-                html += `
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Pair</th>
-                            <th ${ showExtraDetails ? '' : 'class="detail-hidden"'}>Deviation</th>
-                            <th ${ showExtraDetails ? '' : 'class="detail-hidden"'}>Heartbeat</th>
-                            <th>Dec</th>
-                            <th>${data["{{stub}}"].feedType}</th>
-                        </tr>
-                    </thead>
-                    <tbody>${proxyList}</tbody>
-                </table>`;
             }
         } else {
             html = `<em style="color:red;">Couldn't render the feed list, it may still be processing. Feeds are updated about every half hour..</em>`;
