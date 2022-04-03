@@ -1,7 +1,7 @@
 ---
 layout: nodes.liquid
 section: terra
-title: "Terra Feeds"
+title: "Terra Data Feeds"
 stub: data-feeds-terra
 permalink: "docs/terra/data-feeds-terra/"
 metadata:
@@ -56,154 +56,72 @@ input {
         </tr>
     </thead>
     <tbody>
-    <tr id="Terra Bombay Testnet AAPL/USD">
-        <td><code>AAPL/USD</code></td>
+    <tr id="Terra Bombay Testnet ATOM / USD">
+        <td><code>ATOM / USD</code></td>
         <td class="detail-hidden">0.3%</td>
         <td class="detail-hidden">50s</td>
         <td>8</td>
-        <td><a href="https://finder.terra.money/bombay-12/address/terra134d04hya5e80gyy592k6wdzghkyeryxtlkg469"><code>terra134d04hya5e80gyy592k6wdzghkyeryxtlkg469</code></a></td>
+        <td><a href="https://finder.terra.money/bombay-12/address/terra1apq6mfjh99kuh9l3c8p6jq3eqez73vchq37lye"><code>terra1apq6mfjh99kuh9l3c8p6jq3eqez73vchq37lye</code></a></td>
     </tr>
-    <tr id="Terra Bombay Testnet AMZN/USD">
-        <td><code>AMZN/USD</code></td>
+    <tr id="Terra Bombay Testnet AVAX / USD">
+        <td><code>AVAX / USD</code></td>
         <td class="detail-hidden">0.3%</td>
         <td class="detail-hidden">50s</td>
         <td>8</td>
-        <td><a href="https://finder.terra.money/bombay-12/address/terra15t8vumfc7gcwfwt88mx62748c7ku809d2t889a"><code>terra15t8vumfc7gcwfwt88mx62748c7ku809d2t889a</code></a></td>
+        <td><a href="https://finder.terra.money/bombay-12/address/terra16hudd9gu3k2n7gj8eq0699hrladhvns7sgvamc"><code>terra16hudd9gu3k2n7gj8eq0699hrladhvns7sgvamc</code></a></td>
     </tr>
-    <tr id="Terra Bombay Testnet ATOM/USD">
-        <td><code>ATOM/USD</code></td>
+    <tr id="Terra Bombay Testnet BTC / USD">
+        <td><code>BTC / USD</code></td>
         <td class="detail-hidden">0.3%</td>
         <td class="detail-hidden">50s</td>
         <td>8</td>
-        <td><a href="https://finder.terra.money/bombay-12/address/terra1zydus5l7dere5zcr9n8r0fh2ga4mmcpumahedw"><code>terra1zydus5l7dere5zcr9n8r0fh2ga4mmcpumahedw</code></a></td>
+        <td><a href="https://finder.terra.money/bombay-12/address/terra1qejazzlpt0a0l6takrd9esymwlctszczr38s70"><code>terra1qejazzlpt0a0l6takrd9esymwlctszczr38s70</code></a></td>
     </tr>
-    <tr id="Terra Bombay Testnet BETH/USD">
-        <td><code>BETH/USD</code></td>
+    <tr id="Terra Bombay Testnet ETH / USD">
+        <td><code>ETH / USD</code></td>
         <td class="detail-hidden">0.3%</td>
         <td class="detail-hidden">50s</td>
         <td>8</td>
-        <td><a href="https://finder.terra.money/bombay-12/address/terra19ws7jhe5npxkhz0x7fyv5jld87lt07l7g8zzdk"><code>terra19ws7jhe5npxkhz0x7fyv5jld87lt07l7g8zzdk</code></a></td>
+        <td><a href="https://finder.terra.money/bombay-12/address/terra1tza2y6msqa06hpyrv322f4n3mtn68jxhugwdvk"><code>terra1tza2y6msqa06hpyrv322f4n3mtn68jxhugwdvk</code></a></td>
     </tr>
-    <tr id="Terra Bombay Testnet BLUNA/USD">
-        <td><code>BLUNA/USD</code></td>
+    <tr id="Terra Bombay Testnet LINK / USD">
+        <td><code>LINK / USD</code></td>
         <td class="detail-hidden">0.3%</td>
         <td class="detail-hidden">50s</td>
         <td>8</td>
-        <td><a href="https://finder.terra.money/bombay-12/address/terra12umgm09f844adnv4yjfujkx90xqq2d24m5s40l"><code>terra12umgm09f844adnv4yjfujkx90xqq2d24m5s40l</code></a></td>
+        <td><a href="https://finder.terra.money/bombay-12/address/terra1ftzglg3qppydee0e8nmlrc3fxqwc3rawmnxj9r"><code>terra1ftzglg3qppydee0e8nmlrc3fxqwc3rawmnxj9r</code></a></td>
     </tr>
-    <tr id="Terra Bombay Testnet BTC/USD">
-        <td><code>BTC/USD</code></td>
+    <tr id="Terra Bombay Testnet LUNA / USD">
+        <td><code>LUNA / USD</code></td>
         <td class="detail-hidden">0.3%</td>
         <td class="detail-hidden">50s</td>
         <td>8</td>
-        <td><a href="https://finder.terra.money/bombay-12/address/terra134m32c6p87df4cjx36vhgxnlhf06pfgvj7jsx7"><code>terra134m32c6p87df4cjx36vhgxnlhf06pfgvj7jsx7</code></a></td>
+        <td><a href="https://finder.terra.money/bombay-12/address/terra1l90n7cqfnk68eeysjuhfxfgnajnz97lh378v6k"><code>terra1l90n7cqfnk68eeysjuhfxfgnajnz97lh378v6k</code></a></td>
     </tr>
-    <tr id="Terra Bombay Testnet DOT/USD">
-        <td><code>DOT/USD</code></td>
+    <tr id="Terra Bombay Testnet MIR / USD">
+        <td><code>MIR / USD</code></td>
         <td class="detail-hidden">0.3%</td>
         <td class="detail-hidden">50s</td>
         <td>8</td>
-        <td><a href="https://finder.terra.money/bombay-12/address/terra1hu3wsydvk6jaszaedsklq3xf056hsv5xlekmyp"><code>terra1hu3wsydvk6jaszaedsklq3xf056hsv5xlekmyp</code></a></td>
+        <td><a href="https://finder.terra.money/bombay-12/address/terra1dzpkczas47x473q8t9nfjvk790vucf6nq0gram"><code>terra1dzpkczas47x473q8t9nfjvk790vucf6nq0gram</code></a></td>
     </tr>
-    <tr id="Terra Bombay Testnet ETH/USD">
-        <td><code>ETH/USD</code></td>
+    <tr id="Terra Bombay Testnet USDT / USD">
+        <td><code>USDT / USD</code></td>
         <td class="detail-hidden">0.3%</td>
         <td class="detail-hidden">50s</td>
         <td>8</td>
-        <td><a href="https://finder.terra.money/bombay-12/address/terra1dw5ex5g802vgrek3nzppwt29tfzlpa38ep97qy"><code>terra1dw5ex5g802vgrek3nzppwt29tfzlpa38ep97qy</code></a></td>
+        <td><a href="https://finder.terra.money/bombay-12/address/terra134lgzqfwms0sg4a33wpygj8waff2d704gcezsu"><code>terra134lgzqfwms0sg4a33wpygj8waff2d704gcezsu</code></a></td>
     </tr>
-    <tr id="Terra Bombay Testnet FB/USD">
-        <td><code>FB/USD</code></td>
+    <tr id="Terra Bombay Testnet UST / USD">
+        <td><code>UST / USD</code></td>
         <td class="detail-hidden">0.3%</td>
         <td class="detail-hidden">50s</td>
         <td>8</td>
-        <td><a href="https://finder.terra.money/bombay-12/address/terra1plae5wxpf8zsqf395zpx3qgmrvmfgcuujlnzyq"><code>terra1plae5wxpf8zsqf395zpx3qgmrvmfgcuujlnzyq</code></a></td>
+        <td><a href="https://finder.terra.money/bombay-12/address/terra1ddjxhyqlpr8gdamzcw50jfs7anmthy44s0xvl6"><code>terra1ddjxhyqlpr8gdamzcw50jfs7anmthy44s0xvl6</code></a></td>
     </tr>
-    <tr id="Terra Bombay Testnet GOOGL/USD">
-        <td><code>GOOGL/USD</code></td>
-        <td class="detail-hidden">0.3%</td>
-        <td class="detail-hidden">50s</td>
-        <td>8</td>
-        <td><a href="https://finder.terra.money/bombay-12/address/terra12kghrazs7m8twncs0pj09uuqvqsgllperwvmmw"><code>terra12kghrazs7m8twncs0pj09uuqvqsgllperwvmmw</code></a></td>
-    </tr>
-    <tr id="Terra Bombay Testnet KSM/USD">
-        <td><code>KSM/USD</code></td>
-        <td class="detail-hidden">0.3%</td>
-        <td class="detail-hidden">50s</td>
-        <td>8</td>
-        <td><a href="https://finder.terra.money/bombay-12/address/terra14a3r33x8n7t2u58g5aev72gzdclnmgzhyqglur"><code>terra14a3r33x8n7t2u58g5aev72gzdclnmgzhyqglur</code></a></td>
-    </tr>
-    <tr id="Terra Bombay Testnet LINK/USD">
-        <td><code>LINK/USD</code></td>
-        <td class="detail-hidden">0.3%</td>
-        <td class="detail-hidden">50s</td>
-        <td>8</td>
-        <td><a href="https://finder.terra.money/bombay-12/address/terra1ltjatw2uhhautp2ljs2cqanepuep9l4pd8lq9d"><code>terra1ltjatw2uhhautp2ljs2cqanepuep9l4pd8lq9d</code></a></td>
-    </tr>
-    <tr id="Terra Bombay Testnet LUNA/USD">
-        <td><code>LUNA/USD</code></td>
-        <td class="detail-hidden">0.3%</td>
-        <td class="detail-hidden">50s</td>
-        <td>8</td>
-        <td><a href="https://finder.terra.money/bombay-12/address/terra1u475ps69rmhpf4f4gx2pc74l7tlyu4hkj4wp9d"><code>terra1u475ps69rmhpf4f4gx2pc74l7tlyu4hkj4wp9d</code></a></td>
-    </tr>
-    <tr id="Terra Bombay Testnet MRNA/USD">
-        <td><code>MRNA/USD</code></td>
-        <td class="detail-hidden">0.3%</td>
-        <td class="detail-hidden">50s</td>
-        <td>8</td>
-        <td><a href="https://finder.terra.money/bombay-12/address/terra1trwvc2cjf9ulpp3gels3lzp0ua7dtzjqngvqj9"><code>terra1trwvc2cjf9ulpp3gels3lzp0ua7dtzjqngvqj9</code></a></td>
-    </tr>
-    <tr id="Terra Bombay Testnet NVDA/USD">
-        <td><code>NVDA/USD</code></td>
-        <td class="detail-hidden">0.3%</td>
-        <td class="detail-hidden">50s</td>
-        <td>8</td>
-        <td><a href="https://finder.terra.money/bombay-12/address/terra1ykdm75fxpgtqcxp07chnavkzqeleues92gcxl7"><code>terra1ykdm75fxpgtqcxp07chnavkzqeleues92gcxl7</code></a></td>
-    </tr>
-    <tr id="Terra Bombay Testnet RWM/USD">
-        <td><code>RWM/USD</code></td>
-        <td class="detail-hidden">0.3%</td>
-        <td class="detail-hidden">50s</td>
-        <td>8</td>
-        <td><a href="https://finder.terra.money/bombay-12/address/terra1xl7efpt8m2rpthndtvqf0rujfwkul40gzrr33s"><code>terra1xl7efpt8m2rpthndtvqf0rujfwkul40gzrr33s</code></a></td>
-    </tr>
-    <tr id="Terra Bombay Testnet SOL/USD">
-        <td><code>SOL/USD</code></td>
-        <td class="detail-hidden">0.3%</td>
-        <td class="detail-hidden">50s</td>
-        <td>8</td>
-        <td><a href="https://finder.terra.money/bombay-12/address/terra19rytncykgvgt63u7hu5devygn2rjuqpzvwfp9c"><code>terra19rytncykgvgt63u7hu5devygn2rjuqpzvwfp9c</code></a></td>
-    </tr>
-    <tr id="Terra Bombay Testnet SPCE/USD">
-        <td><code>SPCE/USD</code></td>
-        <td class="detail-hidden">0.3%</td>
-        <td class="detail-hidden">50s</td>
-        <td>8</td>
-        <td><a href="https://finder.terra.money/bombay-12/address/terra1xf9q6kths50mevdsgl3qmmv9wcg7krx8x5fnfa"><code>terra1xf9q6kths50mevdsgl3qmmv9wcg7krx8x5fnfa</code></a></td>
-    </tr>
-    <tr id="Terra Bombay Testnet SQ/USD">
-        <td><code>SQ/USD</code></td>
-        <td class="detail-hidden">0.3%</td>
-        <td class="detail-hidden">50s</td>
-        <td>8</td>
-        <td><a href="https://finder.terra.money/bombay-12/address/terra13ysqt0ucy28l5hjwdcsz23vrmsd2d8qyd677un"><code>terra13ysqt0ucy28l5hjwdcsz23vrmsd2d8qyd677un</code></a></td>
-    </tr>
-    <tr id="Terra Bombay Testnet USDC/USD">
-        <td><code>USDC/USD</code></td>
-        <td class="detail-hidden">0.3%</td>
-        <td class="detail-hidden">50s</td>
-        <td>8</td>
-        <td><a href="https://finder.terra.money/bombay-12/address/terra157urrd78q63hp9m6s7tl8jfaydfemwflrj4rr5"><code>terra157urrd78q63hp9m6s7tl8jfaydfemwflrj4rr5</code></a></td>
-    </tr>
-    <tr id="Terra Bombay Testnet UST/USD">
-        <td><code>UST/USD</code></td>
-        <td class="detail-hidden">0.3%</td>
-        <td class="detail-hidden">50s</td>
-        <td>8</td>
-        <td><a href="https://finder.terra.money/bombay-12/address/terra1c8dudakkd9jrym5utvcrrqmqeztstm4k9mcf6u"><code>terra1c8dudakkd9jrym5utvcrrqmqeztstm4k9mcf6u</code></a></td>
-    </tr></tbody>
-</table></div>
+  </tbody>
+</table>
+</div>
 
 <rdme-callout theme="warn">
 <p><small>Please be careful with the feeds used by your smart contracts. The feeds listed in our official documentation have been reviewed; feeds built for custom deployments by other community members might have additional risks. Please do close diligence on your feeds before implementing them in your contracts. <a href="/docs/selecting-data-feeds/">Learn more about making responsible data quality decisions.</a></small>
