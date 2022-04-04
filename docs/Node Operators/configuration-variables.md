@@ -684,7 +684,7 @@ This should be set to the HTTP URL that points to the same ETH node as the prima
 
 > 🚧 WARNING
 >
-> Setting this environment variable will **COMPLETELY ERASE** your `evm_nodes` table on every boot and repopulate from the given data to nullify any runtime modifications.
+> Setting this environment variable will **COMPLETELY ERASE** your `evm_nodes` table on every boot and repopulate from the given data to nullify any runtime modifications. This is a temporary solution until this configuration can be defined in a file in the future.
 
 - Default: _none_
 
