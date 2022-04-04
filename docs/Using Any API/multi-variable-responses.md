@@ -2,26 +2,27 @@
 layout: nodes.liquid
 section: ethereum
 date: Last Modified
-title: "Multi-Variable Responses"
-permalink: "docs/multi-variable-responses/"
-whatsnext: {"Make an Existing Job Request":"/docs/existing-job-request/", "API Reference":"/docs/chainlink-framework/", "Contract Addresses":"/docs/decentralized-oracles-ethereum-mainnet/", "Large Responses": "/docs/large-responses/"}
+title: 'Multi-Variable Responses'
+permalink: 'docs/multi-variable-responses/'
+whatsnext:
+  {
+    'Make an Existing Job Request': '/docs/existing-job-request/',
+    'API Reference': '/docs/chainlink-framework/',
+    'Contract Addresses': '/docs/decentralized-oracles-ethereum-mainnet/',
+    'Large Responses': '/docs/large-responses/',
+  }
 ---
 
 ## Overview
 
-This page explains how to make an HTTP GET request to an external API from a smart contract, using Chainlink's [Request & Receive Data](../request-and-receive-data/) cycle and then receive multiple responses.
-
+This guide explains how to make an HTTP GET request to an external API from a smart contract, using Chainlink's [Request & Receive Data](/docs/request-and-receive-data/) cycle and then receive multiple responses.
 This is known as **multi-variable** or **multi-word** responses.
-
-> ⚠️ Note on Chainlink Versioning
->
-> This feature is available as of Chainlink `0.10.10` but can only be customized with different URLs and responses on the node operator side. In `0.10.11` generic jobs will be available for solidity as well. Please see [Make an API Call](../make-a-http-get-request/) for more information on making API calls.
 
 **Table of Contents**
 
-+ [MultiWord](#multiword)
-+ [Choosing an Oracle and JobId](#choosing-an-oracle-and-jobid)
-+ [Make an Existing Job Request](#make-an-existing-job-request)
+- [MultiWord](#multiword)
+- [Choosing an Oracle and JobId](#choosing-an-oracle-and-jobid)
+- [Make an Existing Job Request](#make-an-existing-job-request)
 
 ## MultiWord
 
@@ -33,26 +34,26 @@ To consume an API with multiple responses, your contract should inherit from [Ch
 - Task parameters
 - Callback function signature
 
->❗️ Note on Funding Contracts
+> ❗️ Note on Funding Contracts
 >
 > Making a GET request will fail unless your deployed contract has enough LINK to pay for it. **Learn how to [Acquire testnet LINK](../acquire-link/) and [Fund your contract](../fund-your-contract/)**.
->
+
+Assume that a user wants to obtain the ETH price quoted against three different currencies: _BTC_ , _USD_ and _EUR_. If they use only a single-word job, it would require three different requests. To make that more efficient, they can use multi-word responses to do it all in a single request as shown in the following example:
 
 ```solidity Kovan
 {% include 'samples/APIRequests/MultiWordConsumer.sol' %}
 ```
+
 <div class="remix-callout">
     <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/MultiWordConsumer.sol" target="_blank" >Open in Remix</a>
     <a href="/docs/conceptual-overview/#what-is-remix" >What is Remix?</a>
 </div>
 
-The job spec for the Chainlink node in this example can be [found here](../example-job-spec-multi-word/).
-
-If the LINK address for targeted blockchain is not [publicly available](../link-token-contracts/) yet, replace [setPublicChainlinkToken(/)](../chainlink-framework/#setpublicchainlinktoken) with [setChainlinkToken(_address)](../chainlink-framework/#setchainlinktoken) in the constructor, where `_address` is a corresponding LINK token contract.
+The job spec for the Chainlink node in this example can be found [here](/docs/example-job-spec-multi-word/).
 
 ## Choosing an Oracle and JobId
 
-`oracle` refers to a specific Chainlink node that a contract makes an API call from, and `specId` refers to a specific job for that node to run. Each job is unique and returns different types of data.
+`oracle` refers to a specific Chainlink node that a contract makes an API call from, and `jobId` refers to a specific job for that node to run. Each job is unique and returns different types of data.
 
 For example, a job that returns a `bytes32` variable from an API would have a different `specId` than a job that retrieved the same data, but in the form of a `uint256` variable.
 

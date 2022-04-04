@@ -115,7 +115,7 @@ contract MyClient is ChainlinkClient {
         sendChainlinkRequest(req, 100000000000000000); // MWR API.
     }
 
-    function fulfill(bytes32 requestID, uint256 usd, uint256 eur, uint256 jpy) public {
+    function fulfill(bytes32 requestID, uint256 btc, uint256 usd, uint256 eur) public {
         // ...
     }
 }
