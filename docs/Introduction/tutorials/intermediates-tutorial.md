@@ -366,19 +366,19 @@ Then click the `Deploy` button and use your Metamask account to confirm the tran
 >
 > For a full reference of the addresses, key hashes and fees for each network, see [VRF Contract Addresses](/docs/vrf-contracts/#configurations).
 
-At this point, your contract should be successfully deployed. However, it can't request anything yet since it is not whitelisted in the [Subscription Manager](https://vrf.chain.link). If you click `rollDice` with no LINK, the transaction will revert.
+At this point, your contract should be successfully deployed. However, it can't request anything yet since it is not whitelisted in the [Subscription Manager](https://vrf.chain.link). If you click `rollDice`, the transaction will revert.
 
 ## 6. How do I add my contract to my subscription account?
 
-Once you deploy your contract, it should be whitelisted in the subscription account so it can use the funding when requesting for randomness. Go to the [Subscription Manager](https://vrf.chain.link) and add your deployed contract to the list of consumers. Find your contract address in Remix under **Deployed Contracts** on the bottom left.
+Once you deploy your contract, it should be whitelisted in the subscription account so it can use the funding when requesting for randomness. Go to the [Subscription Manager](https://vrf.chain.link) and add your deployed contract address to the list of consumers. Find your contract address in Remix under **Deployed Contracts** on the bottom left.
 
 ![Remix contract address](/files/intermediates-tutorial-03.png)
 
 ## 7. How do I test `rollDice`?
 
-After you open the deployed contract tab in the bottom left, the function buttons are available. Find `rollDice` and click the caret to expand the parameter fields. Enter an Ethereum address, and click 'roll'.
+After you open the deployed contract tab in the bottom left, the function buttons are available. Find `rollDice` and click the caret to expand the parameter fields. Enter an Ethereum address, and click 'rollDice'.
 
-You will have to wait a few minutes for your transaction to confirm and the response to be sent back. You can get your house by clicking the `house` function button with your address. Once the response has been sent back, you'll be assigned a _Game of Thrones_ house!
+You will have to wait a few minutes for your transaction to confirm and the response to be sent back. You can get your house by clicking the `house` function button with the address passed in `rollDice`. Once the response has been sent back, you'll be assigned a _Game of Thrones_ house!
 
 ## 8. Further Reading
 
