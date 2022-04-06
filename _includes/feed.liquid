@@ -4,7 +4,7 @@ section: ethereum
 ---
 
 {% case metadata.ecosystem %}
-  {% when "terra" or "terra-preview" %}
+  {% when "terra" %}
      <p>To learn how to implement these feeds, see the <a href="/docs/terra/using-data-feeds-terra/">Terra Examples for Consuming Data Feeds</a>.</p>
      <p>To obtain tokens on the Terra Bombay Testnet, see the <a href="https://faucet.terra.money/">Terra Testnet Faucet</a>. For these feeds, use the <strong>Bombay-12</strong> testnet.</p>
  {% when "terra-preview" %}
@@ -189,7 +189,7 @@ section: ethereum
                 }
             }
         } else {
-            html = `<em style="color:red;">Couldn't render the feed list, it may still be processing. Feeds are updated about every half hour..</em>`;
+            html = `<em style="color:red;">Couldn't render the feed list, it may still be processing. Feeds are updated about every half hour.</em>`;
         }
         dest.innerHTML = html;
         dest.querySelectorAll('.extra').forEach((item) => item.addEventListener('change', () => {
@@ -203,6 +203,8 @@ section: ethereum
     let path = 'https://cl-docs-addresses.web.app/addresses.json';
     if(window.location.host === 'localhost:4200') {
         path = '/addresses/addresses.json';
+    }else if(window.location.host.includes('chainlinklabs.vercel.app')){
+        path = '/samples/temp-proxy-addresses.json';
     }
     fetch(path)
     .then(response => response.json())
