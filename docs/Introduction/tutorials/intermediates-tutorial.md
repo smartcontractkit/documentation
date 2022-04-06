@@ -378,7 +378,7 @@ After you deploy your contract, you must add it as an approved consumer contract
 
 After you open the deployed contract tab in the bottom left, the function buttons are available. Find `rollDice` and click the caret to expand the parameter fields. Enter an Ethereum address, and click 'rollDice'.
 
-You will have to wait a few minutes for your transaction to confirm and the response to be sent back. You can get your house by clicking the `house` function button with the address passed in `rollDice`. Once the response has been sent back, you'll be assigned a _Game of Thrones_ house!
+You will have to wait a few minutes for your transaction to confirm and the response to be sent back. You can get your house by clicking the `house` function button with the address passed in `rollDice`. After the response is sent back, you'll be assigned a _Game of Thrones_ house!
 
 ## 8. Further Reading
 
