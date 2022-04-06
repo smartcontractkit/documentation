@@ -28,6 +28,8 @@ metadata:
   https://www.youtube.com/watch?v=rdJ5d8j1RCg&ab
 </p>
 
+<p style="text-align:center">VRF v2 - Developer Walkthrough</p>
+
 ## Overview
 
 In this guide, you will learn about generating randomness on blockchains. This includes learning how to implement a Request and Receive cycle with Chainlink oracles and how to consume random numbers with Chainlink VRF in smart contracts.
@@ -386,6 +388,4 @@ To read more about generating random numbers in Solidity, read our blog posts:
 
 - [35+ Blockchain RNG Use Cases Enabled by Chainlink VRF](https://blog.chain.link/blockchain-rng-use-cases-enabled-by-chainlink-vrf/)
 - [How to Build Dynamic NFTs on Polygon](https://blog.chain.link/how-to-build-dynamic-nfts-on-polygon/)
-- [Chainlink VRF Now Live on Ethereum Mainnet](https://blog.chain.link/chainlink-vrf-now-live-on-ethereum-mainnet/)
-
-To explore more applications of Chainlink VRF, check out our [other tutorials](/docs/other-tutorials/#randomness-vrf).
+- [Chainlink VRF v2 Now Live on Ethereum Mainnet](https://blog.chain.link/vrf-v2-mainnet-launch/)
