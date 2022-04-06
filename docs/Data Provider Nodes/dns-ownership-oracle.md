@@ -28,15 +28,15 @@ This guide assumes that you know how to create and deploy smart contracts on the
 - [MetaMask](https://metamask.io/)
 - [Kovan Link tokens](/docs/link-token-contracts/#kovan-testnet)
 
-Also you should be familiar with the [Chainlink Basic Request Model](/docs/architecture-request-model/).
-If you are new to developing smart contracts on Ethereum, see the [Getting Started](/docs/conceptual-overview/) guide to learn the basics.
+You should be familiar with the [Chainlink Basic Request Model](/docs/architecture-request-model/). If you are new to developing smart contracts on Ethereum, see the [Getting Started](/docs/conceptual-overview/) guide to learn the basics.
 
 ## DNS Ownership Contract
 
 This example operates using the following steps:
 
-1. When you deploy the contract, the `constructor()` initializes the address of `oracle` , the `jobId` and the fees `oraclePayment`. **Note** that these values are proper to _Kovan testnet_. Check the [Network Details section](#network-details) for other networks.
-1. Run `requestProof()` to check that an address owns a domain name. For this example, you can use _www5.infernos.io_ for `_name` and _0xf75519f611776c22275474151a04183665b7feDe_ for `_record`. Notice how these parameters are used to build the Chainlink request. the selector of the `fulfill()` function is also passed so that the oracle knows which function to call back with the `proof`.
+1. When you deploy the contract, the `constructor()` initializes the address of `oracle`, the `jobId`, and the fees `oraclePayment`. The code example is configured for the _Kovan testnet_. Check the [Network Details section](#network-details) for other networks.
+1. Fund the contract with LINK tokens. Each request requires 0.1 LINK.
+1. Run the `requestProof()` function to check that an address owns a domain name. For this example, you can use `www5.infernos.io` for the `_name` and `0xf75519f611776c22275474151a04183665b7feDe` for the `_record`. Notice how these parameters are used to build the Chainlink request. The selector of the `fulfill()` function is also passed so that the oracle knows which function to call back with the `proof`.
 1. After few seconds, check the value of `proof`. It should return `true`. 
 
 ```solidity
@@ -122,6 +122,7 @@ observationSource = """
     submit_tx           [type=ethtx to="0x0000000000000000000000000000000000000000" data="$(encode_tx)" minConfirmations="2"]
 
     decode_log -> decode_cbor -> dnsproof -> result_parse -> encode_data -> encode_tx -> submit_tx
+"""
 ```
 
 

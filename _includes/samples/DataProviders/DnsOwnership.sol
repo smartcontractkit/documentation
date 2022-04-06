@@ -21,7 +21,7 @@ contract DnsOwnershipChainlink is ChainlinkClient, ConfirmedOwner {
      * Oracle: 
      *      Name:           LinkPool
      *      Listing URL:    https://market.link/nodes/323602b9-3831-4f8d-a66b-3fb7531649eb?network=42
-     *      Address:        0xff07c97631ff3bab5e5e5660cdf47aded8d4d4fd
+     *      Address:        0xfF07C97631Ff3bAb5e5e5660Cdf47AdEd8D4d4Fd
      * Job: 
      *      Name:           DNS Record Check
      *      Listing URL:    https://market.link/jobs/bf1a410f-ce93-497d-83ac-e63fed9d83bd?network=42
