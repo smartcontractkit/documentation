@@ -366,7 +366,7 @@ Then click the `Deploy` button and use your Metamask account to confirm the tran
 >
 > For a full reference of the addresses, key hashes and fees for each network, see [VRF Contract Addresses](/docs/vrf-contracts/#configurations).
 
-At this point, your contract should be successfully deployed. However, it can't request anything yet since it is not whitelisted in the [Subscription Manager](https://vrf.chain.link). If you click `rollDice`, the transaction will revert.
+At this point, your contract should be successfully deployed. However, it can't request anything because it is not yet approved to use the LINK balance in your subscription. If you click `rollDice`, the transaction will revert.
 
 ## 6. How do I add my contract to my subscription account?
 
