@@ -370,7 +370,7 @@ At this point, your contract should be successfully deployed. However, it can't 
 
 ## 6. How do I add my contract to my subscription account?
 
-Once you deploy your contract, it should be whitelisted in the subscription account so it can use the funding when requesting for randomness. Go to the [Subscription Manager](https://vrf.chain.link) and add your deployed contract address to the list of consumers. Find your contract address in Remix under **Deployed Contracts** on the bottom left.
+After you deploy your contract, you must add it as an approved consumer contract so it can use the subscription balance when requesting for randomness. Go to the [Subscription Manager](https://vrf.chain.link) and add your deployed contract address to the list of consumers. Find your contract address in Remix under **Deployed Contracts** on the bottom left.
 
 ![Remix contract address](/files/intermediates-tutorial-03.png)
 
