@@ -216,7 +216,7 @@ contract VRFD20 is VRFConsumerBaseV2 {
 
 `fulfillRandomWords` is a special function defined within the `VRFConsumerBaseV2` contract that our contract extends from. The coordinator sends the result of our generated `randomWords` back to `fulfillRandomWords`. You will implement some functionality here to deal with the result:
 
-1. Transform the result to a number between 1 and 20 inclusively. Note that `randomWords` is an array that could contain several randomnesses. In this example, we requested 1 randomness.
+1. Change the result to a number between 1 and 20 inclusively. Note that `randomWords` is an array that could contain several random values. In this example, request 1 random value.
 1. Assign the transformed value to the address in the `s_results` mapping variable.
 1. Emit a `DiceLanded` event.
 
