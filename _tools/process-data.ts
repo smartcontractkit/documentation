@@ -21,10 +21,10 @@ interface DataFile {
         relativeDeviationThresholdPPB: string;
       };
       docs?: {
-        hidden?: boolean;
-        nameOverride?: string;
+        assetName?: string;
         feedCategory?: string;
         feedType?: string;
+        hidden?: boolean;
       };
       transmissionsAccount?: string;
     };
@@ -39,6 +39,7 @@ interface DataFile {
 
 interface ResultProxy {
   pair: string;
+  assetName: string;
   deviationThreshold: number;
   heartbeat: string;
   decimals: number;
@@ -92,7 +93,7 @@ for (let page of targetData) {
         decimals: number;
         deviationThreshold: number;
         heartbeat: string;
-        nameOverride?: string;
+        assetName?: string;
         feedCategory: string;
         feedType?: string;
       };
@@ -122,7 +123,7 @@ for (let page of targetData) {
           deviationThreshold: contract.deviationThreshold ? contract.deviationThreshold : threshold,
           heartbeat: contract.heartbeat ? contract.heartbeat : contract.config?.maxContractValueAge || '',
           decimals: contract.decimals,
-          nameOverride: contract.docs?.nameOverride,
+          assetName: contract.docs?.assetName,
           feedCategory: contract.docs?.feedCategory || "",
           feedType: contract.docs?.feedType || "-",
 
@@ -132,7 +133,7 @@ for (let page of targetData) {
             deviationThreshold: contract.deviationThreshold,
             heartbeat: contract.heartbeat,
             decimals: contract.decimals,
-            nameOverride: contract.docs?.nameOverride,
+            assetName: contract.docs?.assetName,
             feedCategory: contract.docs?.feedCategory || "",
             feedType: contract.docs?.feedType || "-",
           };
@@ -147,19 +148,9 @@ for (let page of targetData) {
         const proxy = contents.proxies[proxyKey];
         if (liveContracts[proxy.aggregator] && !proxy.name.includes("Healthcheck")) {
 
-          // Conditional processing for DPI pairs on specific networks.
-          let dpiIndexProxyAddresses: string[] = [
-            "0x029849bbc0b1d93b85a8b6190e979fd38F5760E2", // Ethereum DPI / ETH
-            "0xD2A593BF7594aCE1faD597adb697b5645d5edDB2", // Ethereum DPI / USD
-            "0xC70aAF9092De3a4E5000956E672cDf5E996B4610" // Polygon (Matic) DPI / ETH
-          ];
-          if (dpiIndexProxyAddresses.includes(proxyKey)) {
-            proxy.name = proxy.name.concat(" Index");
-          }
-          // End conditional
-
           proxyList.push({
-            pair: liveContracts[proxy.aggregator].nameOverride || proxy.name,
+            pair: proxy.name,
+            assetName: liveContracts[proxy.aggregator].assetName || "",
             deviationThreshold: liveContracts[proxy.aggregator].deviationThreshold,
             heartbeat: liveContracts[proxy.aggregator].heartbeat,
             decimals: liveContracts[proxy.aggregator].decimals,
@@ -174,7 +165,8 @@ for (let page of targetData) {
         const contract = contents.contracts[contractKey];
         if (!contract.docs?.hidden) {
           proxyList.push({
-            pair: contract.docs?.nameOverride || contract.name,
+            pair: contract.name,
+            assetName: contract.docs?.assetName || "",
             deviationThreshold: liveContracts[contractKey].deviationThreshold,
             heartbeat: liveContracts[contractKey].heartbeat,
             decimals: liveContracts[contractKey].decimals,
