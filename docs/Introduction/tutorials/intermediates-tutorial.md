@@ -376,7 +376,7 @@ After you deploy your contract, you must add it as an approved consumer contract
 
 ## 7. How do I test `rollDice`?
 
-After you open the deployed contract tab in the bottom left, the function buttons are available. Find `rollDice` and click the caret to expand the parameter fields. Enter an Ethereum address, and click 'rollDice'.
+After you open the deployed contract tab in the bottom left, the function buttons are available. Find `rollDice` and click the caret to expand the parameter fields. Enter an Ethereum address to specify a "dice roller", and click 'rollDice'.
 
 You will have to wait a few minutes for your transaction to confirm and the response to be sent back. You can get your house by clicking the `house` function button with the address passed in `rollDice`. After the response is sent back, you'll be assigned a _Game of Thrones_ house!
 
