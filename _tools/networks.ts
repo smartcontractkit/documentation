@@ -221,5 +221,18 @@ export const NETWORKS = [
         networkType: "mainnet",
       },
     ],
+  },
+  {
+    page: "data-feeds-terra-mainnet",
+    title: "Terra Mainnet Data Feeds",
+    feedType: "Proxy",
+    networks: [
+      {
+        name: "Terra Mainnet",
+        url: "https://finder.terra.money/mainnet/address/%s",
+        source: "directory-terra-mainnet.json",
+        networkType: "mainnet"
+      }
+    ]
   }
 ];
