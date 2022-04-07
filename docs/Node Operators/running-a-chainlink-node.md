@@ -62,39 +62,39 @@ It's recommended to run the Chainlink node with [Docker](https://www.docker.com/
 
 - [Docker-CE](https://docs.docker.com/install/). Quick instructions for setting up Docker are below:
 
-    ```shell Amazon Linux 2
-    sudo amazon-linux-extras install -y docker
-    sudo systemctl start docker
-    sudo gpasswd -a $USER docker
-    exit
-    # log in again
-    ```
-    ```shell CentOS
-    curl -sSL https://get.docker.com/ | sh
-    sudo systemctl start docker
-    sudo usermod -aG docker $USER
-    exit
-    # log in again
-    ```
-    ```shell Debian
-    curl -sSL https://get.docker.com/ | sh
-    sudo usermod -aG docker $USER
-    exit
-    # log in again
-    ```
-    ```shell Fedora
-    curl -sSL https://get.docker.com/ | sh
-    sudo systemctl start docker
-    sudo usermod -aG docker $USER
-    exit
-    # log in again
-    ```
-    ```shell Ubuntu
-    curl -sSL https://get.docker.com/ | sh
-    sudo usermod -aG docker $USER
-    exit
-    # log in again
-    ```
+  ```shell Amazon Linux 2
+  sudo amazon-linux-extras install -y docker
+  sudo systemctl start docker
+  sudo gpasswd -a $USER docker
+  exit
+  # log in again
+  ```
+  ```shell CentOS
+  curl -sSL https://get.docker.com/ | sh
+  sudo systemctl start docker
+  sudo usermod -aG docker $USER
+  exit
+  # log in again
+  ```
+  ```shell Debian
+  curl -sSL https://get.docker.com/ | sh
+  sudo usermod -aG docker $USER
+  exit
+  # log in again
+  ```
+  ```shell Fedora
+  curl -sSL https://get.docker.com/ | sh
+  sudo systemctl start docker
+  sudo usermod -aG docker $USER
+  exit
+  # log in again
+  ```
+  ```shell Ubuntu
+  curl -sSL https://get.docker.com/ | sh
+  sudo usermod -aG docker $USER
+  exit
+  # log in again
+  ```
 
 - A fully synced Ethereum client with websockets enabled. Client specific instructions can be found below:
   - [Run Geth](../run-an-ethereum-client/#geth)

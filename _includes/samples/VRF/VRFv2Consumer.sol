@@ -2,13 +2,11 @@
 // An example of a consumer contract that relies on a subscription for funding.
 pragma solidity ^0.8.7;
 
-import "@chainlink/contracts/src/v0.8/interfaces/LinkTokenInterface.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
 import "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol";
 
 contract VRFv2Consumer is VRFConsumerBaseV2 {
   VRFCoordinatorV2Interface COORDINATOR;
-  LinkTokenInterface LINKTOKEN;
 
   // Your subscription ID.
   uint64 s_subscriptionId;
@@ -16,10 +14,6 @@ contract VRFv2Consumer is VRFConsumerBaseV2 {
   // Rinkeby coordinator. For other networks,
   // see https://docs.chain.link/docs/vrf-contracts/#configurations
   address vrfCoordinator = 0x6168499c0cFfCaCD319c818142124B7A15E857ab;
-
-  // Rinkeby LINK token contract. For other networks,
-  // see https://docs.chain.link/docs/vrf-contracts/#configurations
-  address link = 0x01BE23585060835E02B77ef475b0Cc51aA1e0709;
 
   // The gas lane to use, which specifies the maximum gas price to bump to.
   // For a list of available gas lanes on each network,
@@ -47,7 +41,6 @@ contract VRFv2Consumer is VRFConsumerBaseV2 {
 
   constructor(uint64 subscriptionId) VRFConsumerBaseV2(vrfCoordinator) {
     COORDINATOR = VRFCoordinatorV2Interface(vrfCoordinator);
-    LINKTOKEN = LinkTokenInterface(link);
     s_owner = msg.sender;
     s_subscriptionId = subscriptionId;
   }

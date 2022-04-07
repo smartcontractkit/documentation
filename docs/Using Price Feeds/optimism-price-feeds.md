@@ -1,6 +1,6 @@
 ---
 layout: feed.liquid
-title: "Optimism Feeds"
+title: "Optimism Data Feeds"
 section: ethereum
 stub: optimism-price-feeds
 permalink: "docs/optimism-price-feeds/"

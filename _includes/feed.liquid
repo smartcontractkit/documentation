@@ -29,7 +29,7 @@ section: ethereum
     }
     th, td {
         border: 1px solid #dfe2e5;
-        padding: 6px 13px;
+        padding: 6px;
     }
     thead tr {
         background-color: #f6f8fa;
@@ -68,6 +68,22 @@ section: ethereum
       opacity: 1;
       visibility: visible;
     }
+
+    .proxy-pair-column {
+      display: inline-flex;
+    }
+
+    .feed-category {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-right: 2px;
+    }
+
+    .proxy-pair {
+      min-width: 107px;
+    }
+
 </style>
 
 {% case metadata.l2healthflag %}
@@ -104,10 +120,10 @@ section: ethereum
     dest = document.getElementById('feed-data');
     let showExtraDetails = false;
     let feedCategories = {
-        "verified": '<span class="hovertext" data-hover="Verified"><a href="/docs/selecting-data-feeds/#🟢-verified-feeds" alt="Verified" target="_blank">🟢</a></span>',
-        "monitored": '<span class="hovertext" data-hover="Monitored"><a href="/docs/selecting-data-feeds/#🟡-monitored-feeds" alt="Monitored" target="_blank">🟡</a></span>',
-        "custom": '<span class="hovertext" data-hover="Custom"><a href="/docs/selecting-data-feeds/#-custom-feeds" alt="Custom" target="_blank">🔵</a></span>',
-        "specialized": '<span class="hovertext" data-hover="Specialized"><a href="/docs/selecting-data-feeds/#-specialized-feeds" alt="Specialized" target="_blank">⚫</a></span>'
+        "verified": '<span class="hovertext feed-category" data-hover="Verified"><a href="/docs/selecting-data-feeds/#🟢-verified-feeds" alt="Verified" target="_blank">🟢</a></span>',
+        "monitored": '<span class="hovertext feed-category" data-hover="Monitored"><a href="/docs/selecting-data-feeds/#🟡-monitored-feeds" alt="Monitored" target="_blank">🟡</a></span>',
+        "custom": '<span class="hovertext feed-category" data-hover="Custom"><a href="/docs/selecting-data-feeds/#-custom-feeds" alt="Custom" target="_blank">🔵</a></span>',
+        "specialized": '<span class="hovertext feed-category" data-hover="Specialized"><a href="/docs/selecting-data-feeds/#-specialized-feeds" alt="Specialized" target="_blank">⚫</a></span>'
     }
     render = (data) => {
         let html = '';
@@ -120,7 +136,8 @@ section: ethereum
                     for(let proxy of network.proxies) {
                         proxyList += `
                         <tr id="${network.name} ${proxy.pair}">
-                            <td><code>${feedCategories[proxy.feedCategory] || ''} ${proxy.pair}</code></td>
+                            <td><div class="proxy-pair-column">${feedCategories[proxy.feedCategory] || ''}<code class="proxy-pair">${proxy.pair}</code></div></td>
+                            <td><code>${proxy.assetName}</code></td>
                             <td><code>${proxy.feedType}</code></td>
                             <td ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.deviationThreshold ? (proxy.deviationThreshold + '%') : 'N/A'}</td>
                             <td ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.heartbeat ? proxy.heartbeat : 'N/A'}</td>
@@ -133,6 +150,7 @@ section: ethereum
                         <thead>
                             <tr>
                                 <th>Pair</th>
+                                <th>Asset</th>
                                 <th>Type</th>
                                 <th ${ showExtraDetails ? '' : 'class="detail-hidden"'}>Deviation</th>
                                 <th ${ showExtraDetails ? '' : 'class="detail-hidden"'}>Heartbeat</th>
@@ -146,7 +164,7 @@ section: ethereum
                     for(let proxy of network.proxies) {
                         proxyList += `
                         <tr id="${network.name} ${proxy.pair}">
-                            <td><code>${proxy.pair}</code></td>
+                            <td class="proxy-column"><code>${proxy.pair}</code></td>
                             <td ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.deviationThreshold ? (proxy.deviationThreshold + '%') : 'N/A'}</td>
                             <td ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.heartbeat ? proxy.heartbeat : 'N/A'}</td>
                             <td ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.decimals ? proxy.decimals : 'N/A'}</td>
