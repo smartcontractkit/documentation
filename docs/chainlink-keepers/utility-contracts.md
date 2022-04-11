@@ -2,7 +2,7 @@
 layout: nodes.liquid
 section: ethereum
 date: Last Modified
-title: 'Keeper Utility Contracts'
+title: '`EthBalanceMonitor` Utility Contract'
 whatsnext:
   {
     'FAQs': '/docs/chainlink-keepers/faqs/',
@@ -10,26 +10,33 @@ whatsnext:
 ---
 
 ## Overview
-This guide explains the use cases for Keeper utility contracts and specifically for the [`EthBalanceMonitor` contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/upkeeps/EthBalanceMonitor.sol). This Keeper contract monitors and funds Ethereum addresses that developers might need to top up frequently based on a configurable threshold. As a result, nodes are funded automatically.
+This guide explains the use case for the [`EthBalanceMonitor` contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/upkeeps/EthBalanceMonitor.sol). This Keeper contract monitors and funds Ethereum addresses that developers might need to top up frequently based on a configurable threshold. As a result, nodes are funded automatically.
 
 After deploying the contract, developers can go to [keepers.chain.link](https://keepers.chain.link/) to register Upkeep and run the contract. To take full advantage of the Keepers automation infrastructure, read all of the documentation to understand the features of Chainlink Keepers.
 
 **Table of Contents**
-+ [`EthBalanceMonitor` Overview](#ethbalancemonitor-overview)
++ [`EthBalanceMonitor` Properties](#ethbalancemonitor-properties)
 + [Functions](#functions)
   + [`setWatchList` Function](#setwatchlist-function)
   + [`setKeeperRegistryAddress` Function](#setkeeperregistryaddress-function)
   + [`setMinWaitPeriodSeconds` Function](#setminwaitperiodseconds-function)
   + [`topUp` Function](#topup-function)
 
-## `EthBalanceMonitor` Overview
-`EthBalanceMonitor` is ownable, pausable, and Keeper-compatible:
+## `EthBalanceMonitor` Properties
+`EthBalanceMonitor` is ownable, pausable, and Keepers-compatible:
 
 - **Ownable**: The contract has an owner address, and provides basic authorization control functions. This simplifies the implementation of *user permissions* and allows for transer of ownership.
 - **Pausable**: This feature allows the contract to implement a pause and unpause mechanism that the contract owner can trigger.
-- **Keeper-compatible**: The `KeeperCompatibleInterface` is necessary to create Keeper-compatible contracts. To learn more about the `KeeperCompatibleInterface` and its uses and functions, refer to [Making Keeper-compatible Contracts](../compatible-contracts/).
+- **Keepers-compatible**: The `KeeperCompatibleInterface` is necessary to create Keepers-compatible contracts. To learn more about the `KeeperCompatibleInterface` and its uses and functions, refer to [Making Keepers-compatible Contracts](../compatible-contracts/).
+
+You can open the contract in Remix:
+<div class="remix-callout">
+    <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/Keepers/EthBalanceMonitor.sol" target="_blank" >Open in Remix</a>
+    <a href="/docs/conceptual-overview/#what-is-remix" >What is Remix?</a>
+</div>
 
 > ⚠️ Note on Owner Settings
+>
 > Aside from certain features listed below, only owners can withdraw funds and pause or unpause the contract. If the contract is paused or unpaused, it will affect `checkUpkeep`, `performUpkeep`, and `topUp` functions.
 
 ## Functions
@@ -88,4 +95,4 @@ Only the `keeperRegistryAddress` can `performUpkeep`, which is a *global setting
 | ------------------------------- | -------------------------------------------------------------------- |
 | `needsFunding`                  | List of addresses to fund (addresses must be pre-approved)           |
 
-Any address can trigger the `topUp` function. This is an intentional design pattern that shows how easy it is to make an existing contract Keeper-compatible while maintaining an open interface. All validations are performed before the funding is triggered. If the conditions are not met, any attempt to top up will revert.
+Any address can trigger the `topUp` function. This is an intentional design pattern that shows how easy it is to make an existing contract Keepers-compatible while maintaining an open interface. All validations are performed before the funding is triggered. If the conditions are not met, any attempt to top up will revert.
