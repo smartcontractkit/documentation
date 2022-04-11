@@ -116,7 +116,7 @@ You deployed a simple contract that can request and receive random values from C
 In this example, your MetaMask wallet is the subscription owner and you created a consumer contract to use that subscription. The consumer contract uses static configuration parameters.
 
 ```solidity
-{% include samples/VRF/VRFv2Consumer.sol %}
+{% include 'samples/VRF/VRFv2Consumer.sol' %}
 ```
 
 <div class="remix-callout">

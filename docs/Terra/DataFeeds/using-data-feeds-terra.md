@@ -13,7 +13,7 @@ Chainlink Data Feeds are the quickest way to connect your smart contracts to the
 
 This guide applies specifically to using data feeds on the [Terra network](https://www.terra.money/). To get the full list of Chainlink Data Feeds running on the Terra Bombay testnet, see the [Terra Feeds](/docs/terra/data-feeds-terra/) page.
 
-{% include data-quality.md %}
+{% include 'data-quality.md' %}
 
 ## Overview
 

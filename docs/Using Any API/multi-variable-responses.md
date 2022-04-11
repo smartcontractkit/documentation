@@ -39,7 +39,7 @@ To consume an API with multiple responses, your contract should inherit from [Ch
 >
 
 ```solidity Kovan
-{% include samples/APIRequests/MultiWordConsumer.sol %}
+{% include 'samples/APIRequests/MultiWordConsumer.sol' %}
 ```
 <div class="remix-callout">
     <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/MultiWordConsumer.sol" target="_blank" >Open in Remix</a>

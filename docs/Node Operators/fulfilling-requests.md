@@ -91,7 +91,7 @@ Find the address for your Chainlink node and add it to the Oracle contract.
 You can add jobs to your Chainlink node in the Chainlink Operator GUI. The [ATestnetConsumer.sol](https://github.com/smartcontractkit/documentation/blob/main/_includes/samples/APIRequests/ATestnetConsumer.sol) consumer contract expects the price value in `Uint256`. Use the following [Job](../jobs/) example:
 
 ```jpv2 Uint256
-{% include samples/NodeOperators/jobs/get-uint256.toml %}
+{% include 'samples/NodeOperators/jobs/get-uint256.toml' %}
 ```
 
 1. In the Chainlink Operator GUI on the **Jobs** tab, click **New Job**.
@@ -150,7 +150,7 @@ After you add jobs to your node, you can use the node to fulfill requests. This 
 Now that you have a working consumer contract, you can use that same `ATestnetConsumer` contract to obtain other types of data. The [ATestnetConsumer.sol](https://github.com/smartcontractkit/documentation/blob/main/_includes/samples/APIRequests/ATestnetConsumer.sol) consumer contract has a `requestEthereumLastMarket` function that requests more detailed data from [https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETH&tsyms=USD](https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETH&tsyms=USD). Returning this type of data requires another job.
 
 ```jpv2 Bytes32
-{% include samples/NodeOperators/jobs/get-bytes32.toml %}
+{% include 'samples/NodeOperators/jobs/get-bytes32.toml' %}
 ```
 
 1. Add the `Get > Bytes32` job to your node like you did for the first job.

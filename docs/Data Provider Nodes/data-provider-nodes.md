@@ -11,7 +11,7 @@ Chainlink has facilitated the launch of several new oracle data services that al
 
 Data provider nodes allow customizable, on-demand API calls and the ability to deliver different data points on each request. This enables use cases where each requestor requires a different piece of data.
 
-{% include data-quality.md %}
+{% include 'data-quality.md' %}
 
 # Data Provider Nodes List
 

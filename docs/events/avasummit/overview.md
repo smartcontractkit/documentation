@@ -75,7 +75,7 @@ This example contract operates using the following steps:
 1. Consumer contracts can call Chainlink VRF to request random values. The subscription balance is charged for each request.
 
 ```solidity
-{% include samples/events/avasummit/VRFv2SubscriptionManager.sol %}
+{% include 'samples/events/avasummit/VRFv2SubscriptionManager.sol' %}
 ```
 
 <div class="remix-callout">

@@ -43,7 +43,7 @@ In this example, the contract operates as a subscription owner and can run funct
 Subscription owners and consumers do not have to be separate. This contract can also act as a consumer by running its own `requestRandomWords()` function, but it must add itself as an approved consumer. This example contract includes functions in the `constructor()` that creates the subscription and adds itself as a consumer automatically when you deploy it.
 
 ```solidity
-{% include samples/VRF/VRFv2SubscriptionManager.sol %}
+{% include 'samples/VRF/VRFv2SubscriptionManager.sol' %}
 ```
 
 <div class="remix-callout">
@@ -85,7 +85,7 @@ If you need to remove consumer contracts from the subscription, use the `removeC
 You can fund a subscription and request randomness in a single transaction. This is similar to how VRF v1 functions, but you must estimate how much the transaction might cost and determine the amount of funding to send to the subscription yourself. See the [Subscription billing](/docs/chainlink-vrf/#subscription-billing) page to learn how to estimate request costs.
 
 ```solidity
-{% include snippets/VRF/VRFv2FundAndRequestFunction.sol %}
+{% include 'snippets/VRF/VRFv2FundAndRequestFunction.sol' %}
 ```
 
 Add this function to your contracts if you need to provide funding simultaneously with your requests. The `transferAndCall()` function sends LINK from your contract to the subscription, and the `requestRandomWords()` function requests the random words. Your contract still needs the `fulfillRandomWords()` callback function to receive the random values.

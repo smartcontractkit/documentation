@@ -41,7 +41,7 @@ The return value must fit within 32 bytes. If the value is bigger than that, mak
 If the LINK address for targeted blockchain is not [publicly available](../link-token-contracts/) yet, replace [setPublicChainlinkToken(/)](../chainlink-framework/#setpublicchainlinktoken) with [setChainlinkToken(_address)](../chainlink-framework/#setchainlinktoken) in the constructor, where `_address` is a corresponding LINK token contract. Below is an example `APIConsumer` contract:
 
 ```solidity Kovan
-{% include samples/APIRequests/APIConsumer.sol %}
+{% include 'samples/APIRequests/APIConsumer.sol' %}
 ```
 <div class="remix-callout">
     <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/APIConsumer.sol" target="_blank" >Open in Remix</a>

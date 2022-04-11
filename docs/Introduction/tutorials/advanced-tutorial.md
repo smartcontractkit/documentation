@@ -107,7 +107,7 @@ Let's see what this looks like in a contract:
 ### Contract Example
 
 ```solidity
-{% include samples/APIRequests/APIConsumer.sol %}
+{% include 'samples/APIRequests/APIConsumer.sol' %}
 ```
 
 <div class="remix-callout">
