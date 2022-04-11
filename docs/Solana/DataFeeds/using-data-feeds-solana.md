@@ -15,7 +15,7 @@ This guide applies specifically to using data feeds on [Solana](https://solana.c
 
 View the program that owns the Chainlink Data Feeds in the [Solana Devnet Explorer](https://solscan.io/account/CaH12fwNTKJAG8PxEvo9R96Zc2j8qNHZaFj8ZW49yZNT?cluster=devnet).
 
-{% include data-quality.md %}
+{% include 'data-quality.md' %}
 
 ## Overview
 

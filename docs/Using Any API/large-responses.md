@@ -33,7 +33,7 @@ To consume an API with a large responses, your contract should inherit from [Cha
 >
 
 ```solidity Kovan
-{% include samples/APIRequests/GenericBigWord.sol %}
+{% include 'samples/APIRequests/GenericBigWord.sol' %}
 ```
 
 <div class="remix-callout">

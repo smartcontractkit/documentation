@@ -11,7 +11,7 @@ PRs are welcome! We try to keep a clean commit history, so we'll follow a standa
 ## Standards
 * Commit messages
     * Start with a present tense verb
-    * Keep your commit headline short but sufficient to understand the scope and focus of the change. 
+    * Keep your commit headline short but sufficient to understand the scope and focus of the change.
     * Changes are often formatted like `add doc X`, `fix page Y`, `improve docs for Z`.
     * Example: "`update contract addresses for BSC`".
 * If you touch any infrastructure, make sure it builds with `yarn build`
@@ -65,7 +65,7 @@ It's easier to use `git --amend` while working on your PR first. Avoiding multip
 ## Adding a new chain feed
 Feed data for various chains comes from a private GitHub repository, processed regularly on the server via `process-feeds.yml` and published as JSON. This JSON is loaded by each of the `feed.liquid` based pages.
 
-To test a new feed locally, get access to the private repo, then clone it into `data-source`, and then run `yarn process`. 
+To test a new feed locally, get access to the private repo, then clone it into `data-source`, and then run `yarn process`.
 
 ## Checking Links
 To check the site for broken links, [install `linkcheck`](https://github.com/filiph/linkcheck/), serve the site locally and point to the executable in the command below and run:
@@ -81,7 +81,7 @@ The main code samples are stored in `/_includes/samples` directory. If you need 
 To embed a code sample in the documentation, use the following format:
 
 ```solidity Kovan
-{% include samples/APIRequests/APIConsumer.sol %}
+{% include 'samples/APIRequests/APIConsumer.sol' %}
 ```
 
 Note, you have to include only samples that represent the main Chainlink products. The following code shoudn't be included in `/_includes/samples` directory:

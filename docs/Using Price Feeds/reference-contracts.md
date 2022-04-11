@@ -28,7 +28,7 @@ Data feeds are grouped into the following categories:
 
 For more information on these categories, see the [Selecting Quality Data Feeds](/docs/selecting-data-feeds/#data-feed-categories) page.
 
-{% include data-quality.md %}
+{% include 'data-quality.md' %}
 
 > 📘 LINK token on multiple chains
 >

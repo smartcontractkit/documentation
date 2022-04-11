@@ -62,7 +62,7 @@ Now that you configured your wallet and funded it with testnet ETH, you can writ
 Your first contract is a simple `HelloWorld.sol` example. This example shows you how to set and retrieve variables in a smart contract on-chain.
 
 ```solidity
-{% include samples/Tutorials/HelloWorld.sol %}
+{% include 'samples/Tutorials/HelloWorld.sol' %}
 ```
 
 1. [Open the example contract](https://remix.ethereum.org/#url=https://docs.chain.link/samples/Tutorials/HelloWorld.sol) in the Remix IDE. Remix opens and shows the contents of the smart contract. You can modify the code in this editor when you write your own contract.

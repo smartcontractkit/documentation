@@ -58,7 +58,7 @@ You will need to use the following LINK token address, oracle address, and JobSp
 Import `ChainlinkClient.sol` into your contract so you can inherit the `ChainlinkClient` behavior. Below is a sample that can call the hail, rain, and average temperature jobs to fetch weather data from Bergen, Norway.
 
 ```solidity
-{% include samples/DataProviders/GoogleWeather.sol %}
+{% include 'samples/DataProviders/GoogleWeather.sol' %}
 ```
 
 <div class="remix-callout">
