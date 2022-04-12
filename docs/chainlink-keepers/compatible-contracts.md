@@ -39,7 +39,7 @@ Use these elements to create a Keepers-compatible contract that will automatical
 
 
 ```solidity
-{% include samples/Keepers/KeepersCounter.sol %}
+{% include 'samples/Keepers/KeepersCounter.sol' %}
 ```
 
 <div class="remix-callout">
