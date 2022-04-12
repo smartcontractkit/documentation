@@ -180,7 +180,7 @@ The `EncodedCronSpec` is an encoded version the [Cron](https://en.wikipedia.org/
 ### CronUpkeepFactory ABI
 
 ```json
-{% include samples/Keepers/CronUpkeepFactory.abi %}
+{% include 'samples/Keepers/CronUpkeepFactory.abi' %}
 ```
 <div class="remix-callout">
     <a href="https://remix.ethereum.org/#gist=ca1dcf2be15f0313824929cfb9c3ba3b" >Open in Remix</a>
@@ -191,7 +191,7 @@ The `EncodedCronSpec` is an encoded version the [Cron](https://en.wikipedia.org/
 ### CronUpkeep ABI
 
 ```json
-{% include samples/Keepers/CronUpkeep.abi %}
+{% include 'samples/Keepers/CronUpkeep.abi' %}
 ```
 <div class="remix-callout">
     <a href="https://remix.ethereum.org/#gist=f0ba3fb0bdbfd1589387c05ac904a050" >Open in Remix</a>
