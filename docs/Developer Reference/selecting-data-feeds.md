@@ -66,7 +66,7 @@ If you plan on using one of these feeds and would like to get a more detailed un
 
 ### ⚫ Specialized Feeds
 
-These are highly complex and bespoke feeds that inherently have more **significant risk factors** associated with them. Typical users of these feeds are large institutional users with deep expertise in the market space they operate in.
+These are purpose-built feeds that might rely heavily on contracts maintained by external entities. Typical users of these feeds are large institutional users with deep expertise in the market space they operate in.
 
 These feeds are monitored and well-supported, but they might not meet the same levels of resiliency as the above categories. We strongly advise you to [speak with the Chainlink Labs team](https://chainlinkcommunity.typeform.com/to/OYQO67EF?page=market-data-feeds) to understand their use cases, properties, and associated risks.
 
