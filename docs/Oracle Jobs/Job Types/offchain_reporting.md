@@ -17,6 +17,7 @@ Every OCR cluster requires at least one bootstrap node as a kind of "rallying po
 ```jpv2
 type               = "offchainreporting"
 schemaVersion      = 1
+evmChainID         = 1
 contractAddress    = "0x27548a32b9aD5D64c5945EaE9Da5337bc3169D15"
 p2pBootstrapPeers  = [
     "/dns4/chain.link/tcp/1234/p2p/16Uiu2HAm58SP7UL8zsnpeuwHfytLocaqgnyaYKP8wu7qRdrixLju",
@@ -31,6 +32,7 @@ See [shared fields](/docs/jobs/#shared-fields).
 **Unique fields**
 
 - `contractAddress`: the address of the `OffchainReportingAggregator` contract.
+- `evmChainID`: the EVM chain ID of the EVM chain in which the job will operate.
 - `p2pBootstrapPeers`: a list of libp2p dial addresses of the other bootstrap nodes helping oracle nodes find one another on the network.
 - `isBootstrapPeer`: this must be set to `true`.
 
@@ -50,6 +52,7 @@ Oracle nodes, on the other hand, are responsible for submitting answers.
 ```jpv2
 type               = "offchainreporting"
 schemaVersion      = 1
+evmChainID         = 1
 name               = "OCR: ETH/USD"
 contractAddress    = "0x613a38AC1659769640aaE063C651F48E0250454C"
 externalJobID      = "0EEC7E1D-D0D2-476C-A1A8-72DFB6633F06"
@@ -91,6 +94,7 @@ See [shared fields](/docs/jobs/#shared-fields).
 **Unique fields**
 
 - `contractAddress`: the address of the `OffchainReportingAggregator` contract.
+- `evmChainID`: the EVM chain ID of the EVM chain in which the job will operate.
 - `p2pPeerID`: the base58-encoded libp2p public key of this node.
 - `p2pBootstrapPeers`: a list of libp2p dial addresses of the other bootstrap nodes helping oracle nodes find one another on the network.
 - `keyBundleID`: the hash of the OCR key bundle to be used by this node (the Chainlink node keystore manages these key bundles — use the subcommands under `chainlink keys ocr` to interact with them or use the Operator UI).
