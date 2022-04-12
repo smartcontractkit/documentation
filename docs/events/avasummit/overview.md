@@ -7,8 +7,6 @@ section:
       'contents':
         [
           { title: 'Overview', url: '#overview' },
-          { title: 'Data Feeds', url: '#data-feeds' },
-          { title: 'Keepers', url: '#keepers' },
           {
             title: 'VRF',
             url: '#vrf',
@@ -33,14 +31,7 @@ metadata:
     0: '/files/OpenGraph_V3.png'
 ---
 
-> ℹ️We are happy to announce our participation in the [Avalanche Summit](https://www.avalanchesummit.com/).
-> <br> To make the most out of it:
->
-> - Keep an eye on the [schedule](https://www.avalanchesummit.com/agenda) and join the Chainlink talks.
-> - Apply for the [Avalanche Summit Hackathon](https://hackathon.avalanchesummit.com/).
-> - Join us at the [Chainlink Happy Hour](https://www.eventbrite.com/e/chainlink-happy-hour-avalanche-summit-tickets-258013052987).
-
-Next, we will show you how you can use Chainlink with Avalanche. **Please note** that Chainlink VRF on the Avalanche network is in an early-beta implementation specifically for the Avalanche Summit. Chainlink cannot provide official support, but we hope you enjoy building with us!
+We will show you how you can use Chainlink with Avalanche. **Please note** that Chainlink VRF on the Avalanche network is in an early-beta implementation specifically for the Avalanche Summit. Chainlink cannot provide official support, but we hope you enjoy building with us!
 
 ## Overview
 
@@ -48,21 +39,7 @@ If you are new to Chainlink, take some time to [get familiar with hybrid smart c
 
 At the moment, you can use the following Chainlink features on Avalanche:
 
-- **Data Feeds:** Several feeds are available on the [Avalanche Mainnet and Testnet](/docs/avalanche-price-feeds/).
-- **Chainlink Keepers:** Start your smart contract automation journey on the [Avalanche Fuji Testnet](https://keepers.chain.link/fuji).
 - **Chainlink VRF:** Although not officially supported yet, we will walk you through a tutorial to get you started on the Avalanche Fuji Testnet.
-
-## Data Feeds
-
-Chainlink Data Feeds are the quickest way to connect your smart contracts to the real-world data. For instance, you can get the price of Avalanche (AVAX) in your smart contract by calling the AVAX/USD feed.
-
-Check the [developer documentation](/docs/using-chainlink-reference-contracts/) to learn how to use Data Feeds. The examples are configured for EVM Chains, so make sure to use the [Avalanche data feed addresses](/docs/avalanche-price-feeds/) and [Avalanche Link token contracts](/docs/link-token-contracts/#avalanche).
-
-## Keepers
-
-Chainlink Keepers is the most reliable way to automate your smart contracts. Move costly on-chain gas checks off-chain and decentralize your DevOps automation. To get started with Chainlink Keepers on Avalanche Fuji Testnet use the [Chainlink Keepers App](https://keepers.chain.link/fuji). Please complete our [survey](https://forms.gle/3rp5Qi4HH2BEPzTq9) to request access to the Chainlink Keepers Avalanche Mainnet Beta.
-
-To learn more about Chainlink Keepers read our [developer documentation](/docs/chainlink-keepers/introduction/).
 
 ## VRF
 
@@ -120,7 +97,7 @@ These parameters define how your requests will be processed:
 
 - `uint16 requestConfirmations`: The number of confirmations the Chainlink node should wait before responding. The longer the node waits, the more secure the random value is. It must be greater than the `minimumRequestBlockConfirmations` limit on the coordinator contract, which is `1` on Avalanche Fuji Testnet. In this example, we set the value to `1`, but you can set it higher.
 
-- `uint16 numWords`: How many random values to request. If you can use several random values in a single callback, you can reduce the amount of gas you spend per random value. The total cost of the callback request depends on how your `fulfillRandomWords()` function processes and stores the received random values, so adjust your `callbackGasLimit` accordingly. Here we are requesting two random values.
+- `uint32 numWords`: How many random values to request. If you can use several random values in a single callback, you can reduce the amount of gas you spend per random value. The total cost of the callback request depends on how your `fulfillRandomWords()` function processes and stores the received random values, so adjust your `callbackGasLimit` accordingly. Here we are requesting two random values.
 
 To use this contract:
 

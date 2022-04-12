@@ -2,13 +2,17 @@
 layout: nodes.liquid
 section: gettingStarted
 date: Last Modified
-title: "API Calls: Using Any API"
-permalink: "docs/advanced-tutorial/"
-excerpt: "Calling APIs from Smart Contracts"
-whatsnext: {"Make a GET Request":"/docs/make-a-http-get-request/", "Make an Existing Job Request":"/docs/existing-job-request/"}
+title: 'API Calls: Using Any API'
+permalink: 'docs/advanced-tutorial/'
+excerpt: 'Calling APIs from Smart Contracts'
+whatsnext:
+  {
+    'Make a GET Request': '/docs/make-a-http-get-request/',
+    'Make an Existing Job Request': '/docs/existing-job-request/',
+  }
 metadata:
   image:
-    0: "/files/04b8e56-cl.png"
+    0: '/files/04b8e56-cl.png'
 ---
 
 > 👍 Requirements
@@ -19,50 +23,59 @@ metadata:
   https://www.youtube.com/watch?v=ay4rXZhAefs
 </p>
 
-# Overview
+## Overview
 
-In this guide, you will learn how to request data from a public API in a smart contract. This includes understanding what Core adapters and External adapters are and how Oracle Jobs use them. You will also learn how to find the Oracle Jobs and Adapters for your contract and how to request data from an Oracle Job.
+In this guide, you will learn how to request data from a public API in a smart contract. This includes understanding what Tasks and External adapters are and how Oracle Jobs use them. You will also learn how to find the Oracle Jobs and Tasks for your contract and how to request data from an Oracle Job.
 
 **Table of Contents**
 
-+ [Overview](#overview)
-+ [1. How does the request and receive cycle work for API calls?](#1-how-does-the-request-and-receive-cycle-work-for-api-calls)
-+ [2. What are initiators?](#2-what-are-initiators)
-+ [3. What are Adapters?](#3-what-are-adapters)
-+ [4. How can I use Adapters in my own contract?](#4-how-can-i-use-adapters-in-my-own-contract)
-+ [5. How do I deploy to testnet?](#5-how-do-i-deploy-to-testnet)
-+ [6. Further Reading](#6-further-reading)
+- [Overview](#overview)
+- [1. How does the request and receive cycle work for API calls?](#1-how-does-the-request-and-receive-cycle-work-for-api-calls)
+- [2. What are jobs?](#2-what-are-jobs)
+- [3. What are Tasks?](#3-what-are-tasks)
+  - [Tasks](#tasks)
+  - [Contract Example](#contract-example)
+  - [External Adapters](#external-adapters)
+- [4. How can I use Tasks in my own contract?](#4-how-can-i-use-tasks-in-my-own-contract)
+  - [Variables](#variables)
+  - [Constructor](#constructor)
+  - [`requestData` Function](#requestdata-function)
+  - [Callback Function](#callback-function)
+- [5. How do I deploy to testnet?](#5-how-do-i-deploy-to-testnet)
+- [6. Further Reading](#6-further-reading)
 
-# 1. How does the request and receive cycle work for API calls?
+## 1. How does the request and receive cycle work for API calls?
 
 The request and receive cycle describes how a smart contract requests data from an oracle and receives the response in a separate transaction. If you need a refresher, check out the [Basic Request Model](../architecture-request-model/).
 
-For contracts that use [Chainlink VRF](/docs/chainlink-vrf/), you request randomness from a VRF oracle and then await the response. The fulfillment function is already given to us from the `VRFConsumerBase` contract, so oracles already know where to send the response to. However, with API calls, the contract itself *defines* which function it wants to receive the response to.
+For contracts that use [Chainlink VRF](/docs/chainlink-vrf/), you request randomness from a VRF oracle and then await the response. The fulfillment function is already given to us from the `VRFConsumerBase` contract, so oracles already know where to send the response to. However, with API calls, the contract itself _defines_ which function it wants to receive the response to.
 
 Before creating any code, you should understand how Oracle jobs can get data on-chain.
 
-# 2. What are initiators?
+## 2. What are jobs?
 
-[**Initiators**](../initiators/) are what start, or initiate, a job inside an Oracle. In the case of a Request and Receive job, the [RunLog](/docs/initiators/#runlog) initiator monitors the blockchain for a request from a smart contract. Once it catches a request, it initiates the job. This runs the adapters (both core and external) that the job is configured to run and eventually returns the response to the requesting contract.
+Chainlink nodes require [**Jobs**](/docs/jobs/) to do anything useful. In the case of a Request and Receive job, the [Direct Request](/docs/jobs/types/direct-request/) job monitors the blockchain for a request from a smart contract. Once it catches a request, it runs the tasks (both core and external adapters) that the job is configured to run and eventually returns the response to the requesting contract.
 
-# 3. What are Adapters?
+## 3. What are Tasks?
 
-Each oracle job has a configured set of tasks it must complete when it is run. These tasks are defined by the [**Adapters**](../core-adapters/) they support. Adapters are split into two subcategories:
+Each oracle job has a configured set of tasks it must complete when it is run. These tasks are split into two subcategories:
 
-- **Core Adapters** - These are adapters that come built-in to each node. (examples: HttpGet, EthUint256, etc)
-- **External Adapters** - These are custom adapters built by node operators and community members, which perform specific tasks like calling a particular endpoint with a specific set of parameters (like authentication secrets that shouldn't be publicly visible smart contracts).
+- [**Tasks**](/docs/tasks/) - These are tasks that come built-in to each node. (examples: http, ethabidecode, etc).
+- [**External Adapters**](/docs/external-adapters/) - These are custom adapters built by node operators and community members, which perform specific tasks like calling a particular endpoint with a specific set of parameters (like authentication secrets that shouldn't be publicly visible).
 
-## Core Adapters
+### Tasks
 
-If a job needs to make a GET request to an API, find a specific unsigned integer field in a JSON response, then submit that back to the requesting contract, it would need a job containing the following Core Adapters:
-- [HttpGet](../core-adapters/#httpget) calls the API
-- [JsonParse](../core-adapters/#jsonparse) parses the JSON and retrieve the desired data
-- [EthUint256](../core-adapters/#ethuint256) converts the data to Ethereum compatible data type (uint256)
-- [EthTx](../core-adapters/#ethtx) submits the transaction to the chain, completing the cycle.
+If a job needs to make a GET request to an API, find a specific unsigned integer field in a JSON response, then submit that back to the requesting contract, it would need a job containing the following Tasks:
+
+- [HTTP](/docs/jobs/task-types/http/) calls the API. the `method` must be set to _GET_.
+- [JSON Parse](/docs/jobs/task-types/jsonparse/) parses the JSON and extracts a value at a given keypath.
+- [ETH ABI Encode](/docs/jobs/task-types/eth-abi-encode/) converts the data to a bytes payload according to ETH ABI encoding.
+- [ETH Tx](/docs/jobs/task-types/eth-tx/) submits the transaction to the chain, completing the cycle.
 
 Let's walk through a real example, where you will retrieve 24 volumes of the [ETH/USD pair](https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETH&tsyms=USD) from the cryptocompare API.
 
-1. [HttpGet](../core-adapters/#httpget) calls the API and returns the body of an HTTP GET result for [ETH/USD pair](https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETH&tsyms=USD).  Example:
+1. [HTTP](/docs/jobs/task-types/http/) calls the API and returns the body of an HTTP GET result for [ETH/USD pair](https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETH&tsyms=USD). Example:
+
 ```json
 {"RAW":
   {"ETH":
@@ -79,19 +92,19 @@ Let's walk through a real example, where you will retrieve 24 volumes of the [ET
 }
 ```
 
-2. [JsonParse](../core-adapters/#jsonparse) walks a specified `path` (`"RAW.ETH.USD.VOLUME24HOUR"`) and returns the value found at that result. Example: `703946.0675653099`
+2. [JSON Parse](/docs/jobs/task-types/jsonparse/) walks a specified `path` (`"RAW,ETH,USD,VOLUME24HOUR"`) and returns the value found at that result. Example: `703946.0675653099`
 
-3. [Multiply](../core-adapters/#multiply) parses the input into a float and multiplies it by the 10^18. Example: `703946067565309900000000`
+3. [Multiply](/docs/jobs/task-types/multiply/) parses the input into a float and multiplies it by the 10^18. Example: `703946067565309900000000`
 
-4. [EthUint256](../core-adapters/#ethuint256) formats the input into an integer and then converts it into Solidity's `uint256` format. Example: `0xc618a1e4`
+4. [ETH ABI Encode](/docs/jobs/task-types/eth-abi-encode/) formats the input into an integer and then converts it into Solidity's `uint256` format. Example: `0xc618a1e4`
 
-5. [EthTx](../core-adapters/#ethtx) takes the given input, places it into the data field of the transaction, signs a transaction, and broadcasts it to the network. Example: [transaction result](https://kovan.etherscan.io/tx/0xf36ec811db8bde1245b6aa16bc052d4fbab287b220cf194bb91ae452f1fad084)
+5. [ETH Tx](/docs/jobs/task-types/eth-tx/) takes the given input, places it into the data field of the transaction, signs a transaction, and broadcasts it to the network. Example: [transaction result](https://kovan.etherscan.io/tx/0xf36ec811db8bde1245b6aa16bc052d4fbab287b220cf194bb91ae452f1fad084)
 
-**Note: Some core adapters accept parameters to be passed to them to inform them how to run.** Example: [JsonParse](../core-adapters/#jsonparse) accepts a `path` parameter which informs the adapter where to find the data in the JSON object.
+**Note: Some tasks accept parameters to be passed to them to inform them how to run.** Example: [JSON Parse](/docs/jobs/task-types/jsonparse/) accepts a `path` parameter which informs the task where to find the data in the JSON object.
 
 Let's see what this looks like in a contract:
 
-## Contract Example
+### Contract Example
 
 ```solidity
 {% include samples/APIRequests/APIConsumer.sol %}
@@ -103,15 +116,16 @@ Let's see what this looks like in a contract:
 </div>
 
 Here is a breakdown of each component of this contract:
+
 1. Constructor: This sets up the contract with the Oracle address, Job ID, and LINK fee that the oracle charges for the job.
-2. `requestVolumeData` functions: This builds and sends a request - which includes the fulfillment functions selector - to the oracle. Notice how it adds the `get`, `path` and `times` parameters. These are read by the Adapters in the job to perform the tasks correctly. `get` is used by [HttpGet](../core-adapters/#httpget), `path` is used by [JsonParse](../core-adapters/#jsonparse) and `times` is used by [Multiply](../core-adapters/#multiply).
+2. `requestVolumeData` functions: This builds and sends a request - which includes the fulfillment functions selector - to the oracle. Notice how it adds the `get`, `path` and `times` parameters. These are read by the Tasks in the job to perform correctly. `get` is used by [HTTP](/docs/jobs/task-types/http/), `path` is used by [JSON Parse](/docs/jobs/task-types/jsonparse/) and `times` is used by [Multiply](/docs/jobs/task-types/multiply/).
 3. `fulfill` function: This is where the result is sent upon the Oracle Job's completion.
 
-**Note:** The calling contract should own enough LINK to pay the [specified fee](https://market.link/data-providers/d66c1ec8-2504-4696-ab22-6825044049f7/integrations) (by default 0.1 LINK). You can use [this tutorial](../fund-your-contract/) to fund your contract.
+**Note:** The calling contract should own enough LINK to pay the [specified fee](https://market.link/jobs/f5357a30-54b7-4a68-b6a8-ae55d4eda987) (by default 0.1 LINK). You can use [this tutorial](/docs/fund-your-contract/) to fund your contract.
 
-This is an example of a basic HTTP GET request. However, it requires defining the API URL directly in the smart contract. This can, in fact, be extracted and configured on the Job level inside the Oracle.
+This is an example of a basic HTTP GET request. However, it requires defining the API URL directly in the smart contract. This can, in fact, be extracted and configured on the Job level inside the Oracle node.
 
-## External Adapters
+### External Adapters
 
 Here are some examples of external adapters:
 
@@ -121,7 +135,7 @@ Here are some examples of external adapters:
 
 These external adapters, along with many others, can be found on [Chainlink Market](https://market.link/search/all?network=42).
 
-If all the parameters are defined within the Oracle job, the only thing a smart contract needs to define to consume it is:
+If all the parameters are defined within the Oracle job, the only things a smart contract needs to define to consume are:
 
 - JobId
 - Oracle address
@@ -140,7 +154,9 @@ function requestVolumeData() public returns (bytes32 requestId) {
 }
 ```
 
-# 4. How can I use Adapters in my own contract?
+More on External Adapters can be found [here](/docs/external-adapters/).
+
+## 4. How can I use Tasks in my own contract?
 
 Create a smart contract that can get sports data using the [SportsDataIO](https://market.link/data-providers/d66c1ec8-2504-4696-ab22-6825044049f7/integrations) oracle job found on Chainlink Market, without having to specify the URL inside the contract.
 
@@ -156,7 +172,8 @@ contract sportContract is ChainlinkClient {
 }
 ```
 
-## Variables
+### Variables
+
 The request should include the oracle address, the job id, the fee, adapter parameters, and the callback function signature. Create variables for these items using the correct data types.
 
 ```solidity
@@ -173,7 +190,8 @@ contract sportContract is ChainlinkClient {
 }
 ```
 
-## Constructor
+### Constructor
+
 In the constructor, set up the contract with the Oracle address, Job ID, and LINK fee that the oracle charges for the job.
 
 ```solidity
@@ -197,8 +215,9 @@ contract sportContract is ChainlinkClient {
 }
 ```
 
-## `requestData` Function
-The [SportsDataIO](https://market.link/data-providers/d66c1ec8-2504-4696-ab22-6825044049f7/integrations) job page specifies the request parameters to be *date* and *teamName*. To account for this, your `requestData` function should have both of these items as parameters. Please refer to the job page to understand the specific input format for these items.
+### `requestData` Function
+
+The [SportsDataIO](https://market.link/data-providers/d66c1ec8-2504-4696-ab22-6825044049f7/integrations) job page specifies the request parameters to be _date_ and _teamName_. To account for this, your `requestData` function should have both of these items as parameters. Please refer to the job page to understand the specific input format for these items.
 
 ```solidity
 pragma solidity ^0.8.7;
@@ -226,7 +245,7 @@ contract sportContract is ChainlinkClient {
 }
 ```
 
-## Callback Function
+### Callback Function
 
 The last component of your contract should be the `fulfill` function. This is where the sports data is sent upon the Oracle Job's completion. The [SportsDataIO](https://market.link/data-providers/d66c1ec8-2504-4696-ab22-6825044049f7/integrations) job page specifies that the request returns a `bytes32` packed `string`. You should add a `data` variable to your contract to store this result.
 
@@ -261,7 +280,7 @@ contract sportContract is ChainlinkClient {
 }
 ```
 
-# 5. How do I deploy to testnet?
+## 5. How do I deploy to testnet?
 
 Your contract is complete and ready to be compiled and deployed. You can see a complete version of the contract in Remix:
 
@@ -270,10 +289,9 @@ Your contract is complete and ready to be compiled and deployed. You can see a c
   <a href="/docs/conceptual-overview/#what-is-remix" >What is Remix?</a>
 </div>
 
-If you don't know how to deploy a contract to the Kovan testnet using Remix, follow getting started guide for [Deploying Your First Smart Contract](/docs/deploy-your-first-contract/). To make a job request, you *must* have enough LINK to pay for it. Learn how to [acquire testnet LINK](/docs/acquire-link/) and [fund your contract](/docs/fund-your-contract/). Once these steps are completed, you should be able to get sports data.
+If you don't know how to deploy a contract to the Kovan testnet using Remix, follow getting started guide for [Deploying Your First Smart Contract](/docs/deploy-your-first-contract/). To make a job request, you _must_ have enough LINK to pay for it. Learn how to [acquire testnet LINK](/docs/acquire-link/) and [fund your contract](/docs/fund-your-contract/). Once these steps are completed, you should be able to get sports data.
 
-
-# 6. Further Reading
+## 6. Further Reading
 
 To learn more about connecting smart contracts to external APIs, read our blog posts:
 
