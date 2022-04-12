@@ -63,7 +63,7 @@ Some networks are not EVM-compatible and use languages other than Solidity for s
 The structure of a smart contract is similar to that of a class in Javascript, with a few differences. For example, the following `HelloWorld` contract is a simple smart contract that stores a single variable and includes a function to update the value of that variable.
 
 ```solidity
-{% include samples/Tutorials/HelloWorld.sol %}
+{% include 'samples/Tutorials/HelloWorld.sol' %}
 ```
 
 <div class="remix-callout">
@@ -136,7 +136,7 @@ function updateMessage(string memory newMessage) public {
 An **interface** is another concept that is familiar to programmers of other languages. Interfaces define functions without their implementation, which leaves inheriting contracts to define the actual implementation themselves. This makes it easier to know what functions to call in a contract. Here's an example of an interface:
 
 ```solidity
-{% include samples/Tutorials/Test.sol %}
+{% include 'samples/Tutorials/Test.sol' %}
 ```
 <div class="remix-callout">
   <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/Tutorials/Test.sol" target="_blank">Open in Remix</a>

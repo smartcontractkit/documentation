@@ -29,7 +29,7 @@ You can find the job spec for this example on [GitHub](https://github.com/smartc
 > Making a job request will fail unless your deployed contract has enough LINK to pay for it. **Learn how to [Acquire testnet LINK](../acquire-link/) and [Fund your contract](../fund-your-contract/)**.
 
 ```solidity
-{% include samples/APIRequests/APElection.sol %}
+{% include 'samples/APIRequests/APElection.sol' %}
 ```
 
 <div class="remix-callout">

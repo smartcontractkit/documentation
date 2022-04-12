@@ -1,6 +1,6 @@
 ---
 layout: feed.liquid
-title: "Avalanche Feeds"
+title: "Avalanche Data Feeds"
 section: ethereum
 stub: avalanche-price-feeds
 permalink: "docs/avalanche-price-feeds/"

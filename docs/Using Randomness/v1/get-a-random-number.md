@@ -41,7 +41,7 @@ Note, the below values have to be configured correctly for VRF requests to work.
 > Requesting randomness will fail unless your deployed contract has enough LINK to pay for it. **Learn how to [Acquire testnet LINK](/docs/acquire-link/) and [Fund your contract](/docs/fund-your-contract/)**.
 
 ```solidity Kovan
-{% include samples/VRF/RandomNumberConsumer.sol %}
+{% include 'samples/VRF/RandomNumberConsumer.sol' %}
 ```
 
 <div class="remix-callout">

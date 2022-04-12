@@ -1,6 +1,6 @@
 ---
 layout: feed.liquid
-title: "Arbitrum Feeds"
+title: "Arbitrum Data Feeds"
 section: ethereum
 stub: arbitrum-price-feeds
 permalink: "docs/arbitrum-price-feeds/"

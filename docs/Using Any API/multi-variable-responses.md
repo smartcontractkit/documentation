@@ -13,7 +13,7 @@ This page explains how to make an HTTP GET request to an external API from a sma
 
 This is known as **multi-variable** or **multi-word** responses.
 
-> ⚠️ Note on Chailink Versioning
+> ⚠️ Note on Chainlink Versioning
 >
 > This feature is available as of Chainlink `0.10.10` but can only be customized with different URLs and responses on the node operator side. In `0.10.11` generic jobs will be available for solidity as well. Please see [Make an API Call](../make-a-http-get-request/) for more information on making API calls.
 
@@ -39,7 +39,7 @@ To consume an API with multiple responses, your contract should inherit from [Ch
 >
 
 ```solidity Kovan
-{% include samples/APIRequests/MultiWordConsumer.sol %}
+{% include 'samples/APIRequests/MultiWordConsumer.sol' %}
 ```
 <div class="remix-callout">
     <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/MultiWordConsumer.sol" target="_blank" >Open in Remix</a>

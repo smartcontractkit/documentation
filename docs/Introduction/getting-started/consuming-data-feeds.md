@@ -34,7 +34,7 @@ This guide shows you how to write, deploy, and run a smart contract that consume
 The following code describes a contract that obtains the latest ETH / USD price using the Kovan testnet.
 
 ```solidity
-{% include samples/PriceFeeds/PriceConsumerV3.sol %}
+{% include 'samples/PriceFeeds/PriceConsumerV3.sol' %}
 ```
 
 The contract has the following components:

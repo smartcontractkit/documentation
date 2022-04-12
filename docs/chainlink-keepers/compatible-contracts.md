@@ -83,7 +83,7 @@ Validate the conditions that might trigger `performUpkeep` before work is perfor
     For example, if you have a contract where you create a timer in `checkUpkeep` that is designed to add to a balance on a weekly basis, validate the condition to ensure third-party calls to your `performUpkeep` method do not transfer funds in a way that you do not intend.
 
 ```solidity Rinkeby
-{% include snippets/Keepers/checkData.sol %}
+{% include 'snippets/Keepers/checkData.sol' %}
 ```
 
 You can also pass arbitrary `bytes` through the `checkData` argument as part of your Upkeep registration. You can use `checkData` to pass in a fixed set of inputs into your `checkUpkeep` function, which can be used to modify the behavior of your application within the constraints of your smart contract logic such as:
@@ -101,7 +101,7 @@ You can also pass arbitrary `bytes` through the `checkData` argument as part of 
 The response from `checkUpkeep` is passed to the `performUpkeep` function as `performData`. This allows you to perform complex and costly simulations with no gas cost. Then you can identify the subset of actions that you are ready to take based on the conditions that are met.
 
 ```solidity Rinkeby
-{% include snippets/Keepers/performData.sol %}
+{% include 'snippets/Keepers/performData.sol' %}
 ```
 
 ### `performUpkeep` function
@@ -139,7 +139,7 @@ You can perform complex and broad off-chain computation, then execute on-chain s
 The example below represents a simple counter contract. Each time `performUpkeep` is called, it increments its counter by one.
 
 ```solidity
-{% include samples/Keepers/KeepersCounter.sol %}
+{% include 'samples/Keepers/KeepersCounter.sol' %}
 ```
 
 <div class="remix-callout">

@@ -1,6 +1,6 @@
 ---
 layout: feed.liquid
-title: "Fantom Feeds"
+title: "Fantom Data Feeds"
 section: ethereum
 stub: fantom-price-feeds
 permalink: "docs/fantom-price-feeds/"
