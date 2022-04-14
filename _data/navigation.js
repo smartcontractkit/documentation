@@ -272,7 +272,7 @@ module.exports = {
             ],
           },
           {
-            title: 'Chainlink Keepers Overview',
+            title: 'Keepers Architecture',
             url: '/docs/chainlink-keepers/overview/',
           },
           {
@@ -280,7 +280,7 @@ module.exports = {
             url: '/docs/chainlink-keepers/supported-networks/',
           },
           {
-            title: 'Chainlink Keepers Economics',
+            title: 'Keepers Economics',
             url: '/docs/chainlink-keepers/keeper-economics/'
           },
           {

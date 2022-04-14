@@ -2,7 +2,7 @@
 layout: nodes.liquid
 section: ethereum
 date: Last Modified
-title: 'Chainlink Keepers Overview'
+title: 'Chainlink Keepers Architecture'
 whatsnext:
   {
     'FAQs': '/docs/chainlink-keepers/faqs/',

@@ -14,7 +14,7 @@ whatsnext:
 
 Automate your smart contracts using **Chainlink Keepers**, Chainlink Labs' decentralized and highly reliable smart contract automation service. Relying on Chainlink Keepers will help you get to market faster and save gas by offloading expensive on-chain automation logic to our decentralized Keepers Network. To take full advantage of the Keepers automation infrastructure, read all of the documentation to understand the features of Chainlink Keepers.
 
-To learn more about how the Chainlink Keepers Network automates your smart contracts, read the [Chainlink Keepers Overview](../overview) page.
+To learn more about how the Chainlink Keepers Network automates your smart contracts, read the [Chainlink Keepers Architecture](../overview) page.
 
 
 ## Using Chainlink Keepers
