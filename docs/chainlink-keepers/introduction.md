@@ -42,7 +42,7 @@ You can automate your smart contract using the following steps:
 
 ## Supported Networks and Cost
 
-For a list of blockchains that is supported by Chainlink Keepers, see the [supported networks page](../supported-networks). To learn more about the cost of using Chainlink Keepers, see the [Keepers economics](../keeper-economics) page.
+For a list of blockchains that is supported by Chainlink Keepers, see the [Supported Networks](../supported-networks)  page. To learn more about the cost of using Chainlink Keepers, see the [Keepers Economics](../keeper-economics) page.
 
 
 ## Questions
