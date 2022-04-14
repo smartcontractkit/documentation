@@ -243,27 +243,45 @@ module.exports = {
         ],
       },
       {
-        section: 'CHAINLINK KEEPERS',
+        section: 'AUTOMATE CONTRACTS',
         contents: [
           {
-            title: 'Introduction to Keepers',
+            title: 'Introduction to Chainlink Keepers',
             url: '/docs/chainlink-keepers/introduction/',
           },
           {
-            title: 'Making Compatible Contracts',
+            title: 'Keepers-compatible Contracts',
             url: '/docs/chainlink-keepers/compatible-contracts/',
           },
           {
-            title: 'Register Upkeep for a Contract',
+            title: 'Register an Upkeep',
             url: '/docs/chainlink-keepers/register-upkeep/',
           },
           {
-            title: 'Utility Contracts',
-            url: '/docs/chainlink-keepers/utility-contracts/'
+            title: 'Manage your Upkeeps',
+            url: '/docs/chainlink-keepers/manage-upkeeps/',
           },
           {
-            title: 'Network Overview',
+            title: 'Utility Contracts',
+            url: '/docs/chainlink-keepers/util-overview/',
+            children: [
+              {
+                title: 'EthBalanceMonitor',
+            url: '/docs/chainlink-keepers/utility-contracts/',
+              }
+            ],
+          },
+          {
+            title: 'Keepers Architecture',
             url: '/docs/chainlink-keepers/overview/',
+          },
+          {
+            title: 'Supported Networks',
+            url: '/docs/chainlink-keepers/supported-networks/',
+          },
+          {
+            title: 'Keepers Economics',
+            url: '/docs/chainlink-keepers/keeper-economics/'
           },
           {
             title: 'FAQs',
