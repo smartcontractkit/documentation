@@ -1,0 +1,26 @@
+name: Test solidity contracts
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+jobs:
+  test-contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+      - name: Install Dependencies
+        run: yarn
+      - name: Create .env
+        run: |
+          touch .env
+          echo ETHERSCAN_API_KEY=$ETHERSCAN_API_KEY >> .env
+          echo KOVAN_URL=$KOVAN_URL >> .env
+          echo MNEMONIC=$MNEMONIC >> .env
+        env:
+          ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
+          KOVAN_URL: ${{ secrets.KOVAN_URL }}
+          MNEMONIC: ${{ secrets.MNEMONIC }}
+      - name: Compile contracts
+        run: npx hardhat compile
+      - name: Test API consumer
+        run: npx hardhat test test/any-api/apiconsumer.ts --network kovan
