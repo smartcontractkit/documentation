@@ -12,6 +12,17 @@ metadata:
 
 You can find a list of release notes for Chainlink nodes in the [smartcontractkit GitHub repository](https://github.com/smartcontractkit/chainlink/releases). Docker images are available in the [Chainlink Docker hub](https://hub.docker.com/r/smartcontract/chainlink/tags).
 
+## Changes to v1.3.0 nodes
+
+**[v1.3.0 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v1.3.0)**
+
+- Added disk rotating logs. See the [Node Logging](/docs/configuration-variables/#logging) and [LOG_FILE_MAX_SIZE](/docs/configuration-variables/#log_file_max_size) documentation for details.
+- Added support for the `force` flag on the `chainlink blocks replay` CLI command. If set to true, already consumed logs that would otherwise be skipped will be rebroadcasted.
+- Added a version compatibility check when using the CLI to login to a remote node. The `bypass-version-check` flag skips this check.
+- Changed default locking mode to "dual". See the [DATABASE_LOCKING_MODE](/docs/configuration-variables/#database_locking_mode) documentation for details.
+- Specifying multiple EVM RPC nodes with the same URL is no longer supported. If you see `ERROR 0106_evm_node_uniqueness.sql: failed to run SQL migration`, you have multiple nodes specified with the same URL and you must fix this before proceeding with the upgrade.
+- EIP-1559 is now enabled by default on the Ethereum Mainnet. See the [EVM_EIP1559_DYNAMIC_FEES](/docs/configuration-variables/#evm_eip1559_dynamic_fees) documentation for details.
+
 ## Changes to v1.2.0 nodes
 
 **[v1.2.0 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v1.2.0)**
@@ -26,6 +37,7 @@ Significant changes:
 - Added support for batch sending telemetry to the ingress server to improve performance.
 - New environment variables: See the [release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v1.2.0) for details.
 - Removed the `deleteuser` CLI command.
+- Removed the `LOG_TO_DISK` environment variable.
 
 See the [v1.2.0 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v1.2.0) for a complete list of changes and fixes.
 
