@@ -186,6 +186,7 @@ Your node applies configuration settings using following hierarchy:
     - [P2PV2_BOOTSTRAPPERS](#p2pv2_bootstrappers)
     - [P2PV2_LISTEN_ADDRESSES](#p2pv2_listen_addresses)
 - [Keeper](#keeper)
+  - [KEEPER_CHECK_UPKEEP_GAS_PRICE_FEATURE_ENABLED](#keeper_check_upkeep_gas_price_feature_enabled)
   - [KEEPER_GAS_PRICE_BUFFER_PERCENT](#keeper_gas_price_buffer_percent)
   - [KEEPER_GAS_TIP_CAP_BUFFER_PERCENT](#keeper_gas_tip_cap_buffer_percent)
   - [KEEPER_BASE_FEE_BUFFER_PERCENT](#keeper_base_fee_buffer_percent)
@@ -1441,6 +1442,14 @@ The default peer ID to use for OCR jobs. If unspecified, uses the first availabl
 `P2PV2_LISTEN_ADDRESSES` contains the addresses the peer will listen to on the network in host:port form as accepted by net.Listen, but host and port must be fully specified and cannot be empty.
 
 ## Keeper
+
+### KEEPER_CHECK_UPKEEP_GAS_PRICE_FEATURE_ENABLED
+
+- Default: `"false"`
+
+Use this setting *only* on Polygon networks.
+
+Includes gas price in calls to `checkUpkeep()` when set to `true`.
 
 ### KEEPER_GAS_PRICE_BUFFER_PERCENT
 
