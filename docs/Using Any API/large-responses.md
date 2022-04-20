@@ -2,9 +2,14 @@
 layout: nodes.liquid
 section: ethereum
 date: Last Modified
-title: "Large Responses"
-permalink: "docs/large-responses/"
-whatsnext: {"Make an Existing Job Request":"/docs/existing-job-request/", "API Reference":"/docs/chainlink-framework/", "Contract Addresses":"/docs/decentralized-oracles-ethereum-mainnet/"}
+title: 'Large Responses'
+permalink: 'docs/large-responses/'
+whatsnext:
+  {
+    'Make an Existing Job Request': '/docs/existing-job-request/',
+    'API Reference': '/docs/chainlink-framework/',
+    'Contract Addresses': '/docs/decentralized-oracles-ethereum-mainnet/',
+  }
 ---
 
 ## Overview
@@ -13,9 +18,9 @@ This page explains how to make an HTTP GET request to an external API from a sma
 
 **Table of Contents**
 
-+ [Large Response](#large-response)
-+ [Choosing an Oracle and JobId](#choosing-an-oracle-and-jobid)
-+ [Make an Existing Job Request](#make-an-existing-job-request)
+- [Large Response](#large-response)
+- [Choosing an Oracle and JobId](#choosing-an-oracle-and-jobid)
+- [Make an Existing Job Request](#make-an-existing-job-request)
 
 ## Large Response
 
@@ -27,10 +32,9 @@ To consume an API with a large responses, your contract should inherit from [Cha
 - Task parameters
 - Callback function signature
 
->❗️ Note on Funding Contracts
+> ❗️ Note on Funding Contracts
 >
 > Making a GET request will fail unless your deployed contract has enough LINK to pay for it. **Learn how to [Acquire testnet LINK](../acquire-link/) and [Fund your contract](../fund-your-contract/)**.
->
 
 ```solidity Kovan
 {% include 'samples/APIRequests/GenericBigWord.sol' %}
@@ -42,8 +46,6 @@ To consume an API with a large responses, your contract should inherit from [Cha
 </div>
 
 The job spec for the Chainlink node in this example can be [found here](../example-job-spec-large/).
-
-If the LINK address for targeted blockchain is not [publicly available](../link-token-contracts/) yet, replace [setPublicChainlinkToken(/)](../chainlink-framework/#setpublicchainlinktoken) with [setChainlinkToken(_address)](../chainlink-framework/#setchainlinktoken) in the constructor, where `_address` is a corresponding LINK token contract.
 
 ## Choosing an Oracle and JobId
 
