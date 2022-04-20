@@ -13,6 +13,8 @@ Executes a job upon receipt of an explicit request made by a user. The request i
 ```jpv2
 type                = "directrequest"
 schemaVersion       = 1
+requesters                  = ["0xaaaa1F8ee20f5565510B84f9353F1E333E753B7a", "0xbbbb70F0e81C6F3430dfdC9fa02fB22BdD818C4e"] # optional
+minContractPaymentLinkJuels = "100000000000000" # optional
 name                = "example eth request event spec"
 contractAddress     = "0x613a38AC1659769640aaE063C651F48E0250454C"
 # Optional externalJobID: Automatically generated if unspecified
