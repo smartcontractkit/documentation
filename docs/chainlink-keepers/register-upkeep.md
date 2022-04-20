@@ -5,34 +5,26 @@ date: Last Modified
 title: 'Register Keeper Upkeep for a Contract'
 whatsnext:
   {
-    'FAQs': '/docs/chainlink-keepers/faqs/',
+    'Manage your Upkeeps': '/docs/chainlink-keepers/manage-upkeeps/',
   }
 ---
 
 ## Overview
 
-This guide explains how to register a Keeper-compatible contract with the Chainlink Keeper Network. To find more information about deploying a Keeper-compatible contract, see the [Making Compatible Contracts](../compatible-contracts) page. Register your contracts in the Chainlink Keepers App:
+This guide explains how to register a [Keepers-compatible contract](../compatible-contracts) with the Chainlink Keeper Network.
+
+**Table of Contents**
++ [Register Contract](#register-contract)
+
+## Register Contract
+
+After you register your contract as an Upkeep on the Keepers Registry, the Keepers Network monitors the Upkeep and executes your functions.
 
 <div class="remix-callout">
     <a href="https://keepers.chain.link" >Open the Chainlink Keepers App</a>
 </div>
 
-After you register, you can interact directly with the [registry contract](https://etherscan.io/address/0x7b3EC232b08BD7b4b3305BE0C044D907B2DF960B#code) functions such as `cancelUpkeep` and `addFunds`.
-
-**Table of Contents**
-+ [Register Contract](#register-contract)
-+ [Fund Upkeep](#fund-upkeep)
-+ [How Funding Works](#how-funding-works)
-+ [Maintain a Minimum Balance](#maintain-a-minimum-balance)
-+ [Best Practices](#best-practices)
-  + [Gas Limits](#gas-limits)
-  + [Testing](#testing)
-
-## Register Contract
-
-Registering an Upkeep with the Chainlink Keepers App notifies the Keeper Network about your contract and allows you to fund it so your work is performed continuously. As part of the registration, we’re requesting some information that will help us to deliver the optimal experience for your use case as we continue to improve the product.
-
-1. **Connect your wallet** with the button in the top right corner and choose a chain. For a list of supported networks, see the [Supported Blockchain Networks](../introduction/#supported-blockchain-networks) section. The Chain Keepers App also lists the currently supported networks.
+1. **Connect your wallet** with the button in the top right corner and choose a chain. For a list of supported networks, see the [Supported Blockchain Networks](../supported-networks) section. The Chain Keepers App also lists the currently supported networks.
   ![Connect With Metamask](/images/contract-devs/keeper/keeper-metamask.png)
 
 1. **Click the `Register new upkeep` button**
@@ -41,70 +33,25 @@ Registering an Upkeep with the Chainlink Keepers App notifies the Keeper Network
 1. **Fill out the registration form**
     The information that you provide will be publicly visible on the blockchain.
 
-     - You must enter an email to receive upkeep notifications. The email address will be encrypted.
-     - The gas limit of the [KeepersCounters.sol](/docs/chainlink-keepers/compatible-contracts#example-contract) example contract should be set to 200,000.
-     - The **Check data** field must be a hexadecimal value starting with `0x`.
+     - Provide the **Upkeep address** of the contract you want to automate. The contract doesn't need to be validated on-chain, but for Keepers to work it needs to be [Keepers-compatible](../compatible-contracts/).
+     - Enter an **email** to receive Upkeep notifications. The email address will be encrypted.
+     - The **Gas Limit** is the maximum amount of gas that will be used to execute your function on-chain. The Gas Limit of the [KeepersCounters.sol](/docs/chainlink-keepers/compatible-contracts#example-contract) example contract should be set to 200,000. We simulate `performUpkeep` during `checkUpkeep` and if the gas exceeds this limit the function will not execute on-chain. The gas limit cannot exceed the `callGasLimit` in the [configuration of the registry](/docs/chainlink-keepers/supported-networks/#configurations).
+     - The **Check data** field can be empty or `0x`. If you want to supply a value it must be a hexadecimal value starting with `0x`.
      - Specify a LINK starting balance to fund your Upkeep. If you need testnet LINK, see the [LINK Token Contracts](/docs/link-token-contracts/) page to find the LINK faucets available on your network.
 
-    > ❗️ Funding Upkeep
-    > You should fund your contract with more LINK that you anticipate you will need. The network will not check or perform your Upkeep if your balance is too low based on current exchange rates.
+    > 🚧 Funding Upkeep
     >
-    > Your balance is charged LINK to run `performUpkeep`. Gas costs include the gas required for your Keeper-compatible contract to complete execution and an 80k overhead from the `KeeperRegistry` itself. The premium and overhead are not fixed and will change over time. See the [Network Configuration](/docs/chainlink-keepers/overview/#configuration) section to find the gas premium for your specific network.
+    > You should fund your contract with more LINK that you anticipate you will need. The network will not check or perform your Upkeep if your balance is too low based on current exchange rates. View the [Keepers economics](../keeper-economics) page to learn more about the cost of using Keepers.
 
-    The gas limit of the example counter contract should be set to 200,000.
+    > 🚧 ERC677 Link
+    >
+    > For registration on Mainnet, you need ERC-677 LINK. Many token bridges give you ERC-20 LINK tokens. Use PegSwap to [convert Chainlink tokens (LINK) to be ERC-677 compatible](https://pegswap.chain.link/). To register on a supported testnet, get [LINK](../../link-token-contracts/) for the testnet you are using from our [faucet](https://faucets.chain.link/).
 
-1. **Click `Register upkeep`** and confirm the transaction in MetaMask
-  This sends a request to the Chainlink Keeper Network that will need to be manually approved. On testnets, requests are automatically approved.
-
+1. **Click `Register upkeep`** and confirm the transaction in MetaMask.
     ![Upkeep Registration Success Message](/images/contract-devs/keeper/keeper-registration-submitted.png)
 
-After you complete registration, your upkeep will start being serviced after a predefined block confirmation time, which is less than 10 minutes. The number of block confirmations might differ depending on which blockchain you selected.
-
-## Fund Upkeep
-
-After registration, you have to monitor the balance of your Upkeep. If the balance runs out then the Keepers network will not perform the Upkeep. Follow these steps to fund your Upkeep.
-
-  1. **Click `View Upkeep`** or go to the [Chainlink Keepers App](https://keepers.chain.link) and click on your recently registered Upkeep
-  
-  1. **Click the `Add funds` button**
-  
-  1. **Approve the LINK spend allowance** 
-    ![Approve LINK Spend Allowance](/images/contract-devs/keeper/keeper-approve-allowance.png)
-  
-  1. **Confirm the LINK transfer** by sending funds to the Chainlink Keeper Network Registry
-    ![Confirm LINK Transfer](/images/contract-devs/keeper/keeper-confirm-transfer.png)
-    
-  1. **Receive a success message** and verify that the funds were added to the Upkeep
-    ![Funds Added Successful Message](/images/contract-devs/keeper/keeper-add-funds.png)
-
-## How Funding Works
-
-* Your balance is reduced each time a Keeper executes your `performUpkeep` method.
-* There is no cost for `checkUpkeep` calls.
-* If you want to automate adding funds, you can directly call the `addFunds()` function on the `KeeperRegistry` contract.
-* Anyone can call the `addFunds()` function, not just the Upkeep owner.
-* To withdraw funds, cancel the Upkeep and then click **Withdraw funds**.
-
-## Maintain a Minimum Balance
-
-To ensure that the Chainlink Keepers are compensated for performance, there is an expected minimum balance on each Upkeep. If your funds drop below this amount, the Upkeep will not be performed.
-
-The minimum balance is calculated using the current fast gas price, the Gas Limit you entered for your Upkeep, and the max gas multiplier. To find the latest value for the `gasCeilingMultiplier`, see the [Registry Configuration](../overview/#configuration) section on the Network Overview page.
-
-To account for gas price fluctuations, maintain a balance that is 3 to 5 times the minimum balance.
-
-## Best practices
-
-### Gas Limits
-
-> ❗️ Gas Limits
+> 📘 Registration Onboarding Note
 >
-> The `KeeperRegistry` enforces a cap for gas used both on-chain and off-chain. See the [Keepers Network Overview](../overview/) for details. The caps are configurable and might change based on user feedback. Be sure that you understand these limits if your use case requires a large amount of gas.
+> Registrations on a testnet will be approved immediately. Mainnet registrations will be reviewed by our onboarding team before being approved. We are working towards a fully self-serve model.
 
-When developing your Keeper-compatible smart contracts, you must understand the gas limits that you are working with on the `KeeperRegistry`. There is a `check` gas limit and a `call` gas limit that your contract must adhere to in order to operate successfully. See the [Keepers Network Overview](../overview/) to learn the current configuration.
-
-### Testing
-
-As with all smart contract testing, it is important to test the boundaries of your smart contract in order to ensure it operates as intended. Similarly, it is important to make sure your Keeper-compatible contract operates within the parameters of the `KeeperRegistry`.
-
-Test all of your mission-critical contracts, and stress-test the contract to confirm the performance and correct operation of your use case under load and adversarial conditions. The Chainlink Keeper Network will continue to operate under stress, but so should your contract. [Reach out](https://forms.gle/WadxnzzjHPtta5Zd9) to us if you need help, have questions, or feedback for improvement.
+After your Upkeep is approved, will receive an Upkeep ID and be registered on the Registry. Providing that your Upkeep is appropriately funded, the Keepers Network will monitor it. You must monitor the balance of your Upkeep. If the balance drops below the **Minimum Balance**, the Keepers Network will not perform the Upkeep. See [Manage Your Upkeeps](../manage-upkeeps) to learn how to manage your Upkeeps.

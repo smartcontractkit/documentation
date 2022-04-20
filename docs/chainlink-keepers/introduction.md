@@ -5,69 +5,46 @@ date: Last Modified
 title: 'Introduction to Chainlink Keepers'
 whatsnext:
   {
-    'Learn how to make a Keeper-compatible contract': '/docs/chainlink-keepers/compatible-contracts/',
+    'Make your contract Keepers-compatible': '/docs/chainlink-keepers/compatible-contracts/',
   }
 ---
 ![Chainlink Keeper Network Banner](/images/contract-devs/generic-banner.png)
 
 ## Overview
 
-Smart contracts alone can't trigger or initiate their own functions at arbitrary times or under arbitrary conditions. State change will only occur when a transaction is initiated by another account (such as user, oracle, or contract).
+Automate your smart contracts using **Chainlink Keepers**, Chainlink Labs' decentralized and highly reliable smart contract automation service. Relying on Chainlink Keepers will help you get to market faster and save gas by offloading expensive on-chain automation logic to our decentralized Keepers Network. To take full advantage of the Keepers automation infrastructure, read all of the documentation to understand the features of Chainlink Keepers.
 
-To resolve this issue, blockchain projects can:
+To learn more about how the Chainlink Keepers Network automates your smart contracts, read the [Chainlink Keepers Architecture](../overview) page.
 
-- Create highly reliable infrastructure to trigger smart contract functions. This is centralized and often expensive to build and maintain.
-- Outsource it to a third party. This option is also centralized and creates a single point of failure.
-- Use an open market solution. This option is decentralized, but comes with complex incentive alignment, the potential for competitive bots that increase the cost of execution, and difficulty ensuring reliability.
-- Use the **Chainlink Keeper** Network.
 
-Chainlink Keepers provide users with a decentralized network of nodes that are incentivized to perform all registered jobs (or *Upkeeps*) without competing with each other. The network has several benefits:
+## Using Chainlink Keepers
 
-- Provide developers with hyper-reliable, decentralized smart contract automation
-- Offer expandable computation allowing developers to build more advanced dApps at lower costs
-- Flexibility and programmability
+<div class="remix-callout">
+    <a href="https://keepers.chain.link" >Open the Chainlink Keepers App</a>
+</div>
 
-Read the [Network Overview](../overview) page to learn how these networks work.
+You can automate your smart contract using the following steps:
 
-## Getting Started
+1. Make your contract [Keepers-compatible](../compatible-contracts/) so the Keepers Network knows how to check if your contract should be called, and what to do when calling your contract.
 
-The goal of Keepers is to ensure flawless execution of Upkeeps when expected. To get the most out of Chainlink Keepers, review these docs in full: [how to create a Keepers-compatible contract](../compatible-contracts), how to [register and fund your upkeep](../register-upkeep), [utility contracts](../utility-contracts) and [network overview](../overview)
+1. [Register](../register-upkeep/) a new Upkeep in the [Chainlink Keepers App](https://keepers.chain.link) so the Keepers Network knows to monitor your contract and fund your Upkeep with [LINK](../../link-token-contracts/). For registration on mainnet, you need ERC-677 LINK. Many token bridges give you ERC-20 LINK tokens. Use PegSwap to [convert Chainlink tokens (LINK) to be ERC-677 compatible](https://pegswap.chain.link/).
 
-### Supported Blockchain Networks
+1. After your Upkeep is registered and funded, [manage](../manage-upkeeps/) it in the Keepers App.
 
-Chainlink Keepers are currently available on the following networks:
+> ❗️ **WARNING**
+>
+> Do **NOT** attempt to send LINK to your contract like you do with [VRF](../../get-a-random-number/). For Chainlink Keepers, contracts are funded via the registry rather than within your contract.
 
-- Ethereum:
-  - Mainnet
-  - Kovan testnet
-- Polygon (Matic):
-  - Mainnet
-  - Mumbai testnet
-- BNB Chain:
-  - Mainnet
-  - Testnet
-- Avalanche Chain:
-  - Fuji testnet
-
-If you are interested in using Keepers but need it on a different blockchain or network, [contact us](https://forms.gle/WadxnzzjHPtta5Zd9) and let us know.
-
-### Onboarding Steps
-
-Below are the steps needed to create a Keeper compatible contract and register Upkeep for the contract. Test Keeper-compatible contracts on testnet before moving to mainnet.
-
-1. Create a [Keeper-compatible contract](../compatible-contracts/).
-1. Deploy your contract onto a supported testnet.
-1. Get [LINK](../../link-token-contracts/) on the testnet that you want to use.
-1. Many token bridges give you ERC-20 LINK tokens. Use PegSwap to [convert Chainlink tokens (LINK) to be ERC-677 compatible](https://pegswap.chain.link/).
-1. [Register your Upkeep](../register-upkeep/) on the testnet.
-1. Fund your upkeep on the testnet.
-1. Test, iterate, and finalize your Keeper-compatible contract.
-1. Deploy your fully tested contract onto the Mainnet.
-1. [Register your Upkeep](../register-upkeep/) on the Mainnet.
-1. Fund your upkeep on the Mainnet.
-1. Confirm the first performance of your Upkeep.
 
 > ⚠️ Registration Onboarding Note
-> Your registrations on testnet will be auto-approved immediately. To help us streamline the process of onboarding your use case on mainnet, please fill out the optional details (and form) during testnet registration so our onboarding team can expect your use case on mainnet. Mainnet registrations will be reviewed by our onboarding team before being approved. We are working towards a fully self-serve model.
+>
+> Registrations on a testnet will be approved immediately. Mainnet registrations will be reviewed by our onboarding team before being approved. We are working towards a fully self-serve model.
 
-If you have questions, read the [Keepers Frequently Asked Questions](../faqs/) page or [reach out to us](https://forms.gle/WadxnzzjHPtta5Zd9).
+## Supported Networks and Cost
+
+For a list of blockchains that is supported by Chainlink Keepers, see the [Supported Networks](../supported-networks)  page. To learn more about the cost of using Chainlink Keepers, see the [Keepers Economics](../keeper-economics) page.
+
+
+## Questions
+
+If you have questions, read the [Keepers Frequently Asked Questions](../faqs/) page, ask them in the [#keepers channel](https://discord.com/channels/592041321326182401/821350860302581771) in our [Discord server](https://discord.gg/qj9qarT), or [reach out to us](https://forms.gle/WadxnzzjHPtta5Zd9).
