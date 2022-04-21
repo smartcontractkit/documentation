@@ -28,6 +28,7 @@ This is known as **multi-variable** or **multi-word** responses.
 
 To consume an API with multiple responses, your contract should inherit from [ChainlinkClient](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/ChainlinkClient.sol). This contract exposes a struct called `Chainlink.Request`, which your contract should use to build the API request. The request should include the following:
 
+- Link token address
 - Oracle address
 - Job id
 - Request fee
