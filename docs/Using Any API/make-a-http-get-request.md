@@ -2,25 +2,33 @@
 layout: nodes.liquid
 section: ethereum
 date: Last Modified
-title: "Make a GET Request"
-permalink: "docs/make-a-http-get-request/"
-whatsnext: {"Make an Existing Job Request":"/docs/existing-job-request/", "Multi-Variable Responses":"/docs/multi-variable-responses/"}
+title: 'Make a GET Request'
+permalink: 'docs/make-a-http-get-request/'
+whatsnext:
+  {
+    'Multi-Variable Responses': '/docs/multi-variable-responses/',
+    'Fetch data from an Array': '/docs/api-array-response/',
+    'Large Responses': '/docs/large-responses/',
+    'Make an Existing Job Request': '/docs/existing-job-request/',
+    'API Reference': '/docs/chainlink-framework/',
+    'Contract Addresses': '/docs/decentralized-oracles-ethereum-mainnet/',
+  }
 metadata:
-  title: "Make a GET Request"
-  description: "Learn how to make a GET request to an API from a smart contract, using Chainlink."
+  title: 'Make a GET Request'
+  description: 'Learn how to make a GET request to an API from a smart contract, using Chainlink.'
   image:
-    0: "/files/930cbb7-link.png"
+    0: '/files/930cbb7-link.png'
 ---
 
 ## Overview
 
 This guide explains how to make an HTTP GET request to an external API from a smart contract, using Chainlink's [Request & Receive Data](../request-and-receive-data/) cycle. External adapters are services which the core of the Chainlink node communicates via its API with a simple JSON specification. Refer to [External Adapters Introduction](../external-adapters/) for more information on external adapters and how to build them.
 
-+ [Overview](#overview)
-+ [API Consumer Example](#api-consumer-example)
-+ [Choosing an Oracle and JobId](#choosing-an-oracle-and-jobid)
-+ [Supported APIs](#supported-apis)
-+ [Existing Job Requests](#existing-job-requests)
+- [Overview](#overview)
+- [API Consumer Example](#api-consumer-example)
+- [Choosing an Oracle and JobId](#choosing-an-oracle-and-jobid)
+- [Supported APIs](#supported-apis)
+- [Existing Job Requests](#existing-job-requests)
 
 ## API Consumer Example
 
@@ -32,17 +40,18 @@ Smart contracts should inherit from [`ChainlinkClient`](https://github.com/smart
 - Task parameters
 - Callback function signature
 
->❗️ Note on Funding Contracts
+> ❗️ Note on Funding Contracts
 >
 > Making a GET request will fail unless your deployed contract has enough LINK to pay for it. **Learn how to [Acquire testnet LINK](../acquire-link/) and [Fund your contract](../fund-your-contract/)**.
 
 The return value must fit within 32 bytes. If the value is bigger than that, make multiple requests.
 
-If the LINK address for targeted blockchain is not [publicly available](../link-token-contracts/) yet, replace [setPublicChainlinkToken(/)](../chainlink-framework/#setpublicchainlinktoken) with [setChainlinkToken(_address)](../chainlink-framework/#setchainlinktoken) in the constructor, where `_address` is a corresponding LINK token contract. Below is an example `APIConsumer` contract:
+If the LINK address for targeted blockchain is not [publicly available](../link-token-contracts/) yet, replace [setPublicChainlinkToken(/)](../chainlink-framework/#setpublicchainlinktoken) with [setChainlinkToken(\_address)](../chainlink-framework/#setchainlinktoken) in the constructor, where `_address` is a corresponding LINK token contract. Below is an example `APIConsumer` contract:
 
 ```solidity Kovan
 {% include 'samples/APIRequests/APIConsumer.sol' %}
 ```
+
 <div class="remix-callout">
     <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/APIConsumer.sol" target="_blank" >Open in Remix</a>
     <a href="/docs/conceptual-overview/#what-is-remix" >What is Remix?</a>
@@ -68,15 +77,15 @@ The `APIConsumer` in the example above is flexible enough to call any public API
 
 ## Response Data
 
-The *path* task parameter depends on where the target data exists in the response. It uses [JSONPath](https://jsonpath.com/) to determine the location of the data. For example, if the response from the API is `{"USD":243.33}`, the "path" parameter is short: `"USD"`.
+The _path_ task parameter depends on where the target data exists in the response. It uses [JSONPath](https://jsonpath.com/) to determine the location of the data. For example, if the response from the API is `{"USD":243.33}`, the "path" parameter is short: `"USD"`.
 
-If an API responds with a complex JSON object, the *path* parameter must specify where to retrieve the desired data using a dot delimited string for nested objects. For example, take the following response:
+If an API responds with a complex JSON object, the _path_ parameter must specify where to retrieve the desired data using a dot delimited string for nested objects. For example, take the following response:
 
 ```json
 {
-   "Prices":{
-        "USD":243.33
-    }
+  "Prices": {
+    "USD": 243.33
+  }
 }
 ```
 
@@ -86,10 +95,10 @@ This would require the following path: `"Prices.USD"`.
 
 The code example above returns an unsigned integer from the oracle response, but multiple data types are available such as:
 
-* **`uint256`** - Unsigned integers
-* **`int256`** - Signed integers
-* **`bool`** - True or False values
-* **`bytes32`/`bytes`** - Strings and byte values
+- **`uint256`** - Unsigned integers
+- **`int256`** - Signed integers
+- **`bool`** - True or False values
+- **`bytes32`/`bytes`** - Strings and byte values
 
 If you need to return a string, use `bytes32`. Here's [one method](https://gist.github.com/alexroan/a8caf258218f4065894ecd8926de39e7) of converting `bytes32` to `string`. Currently, any return value must fit within 32 bytes. If the value is bigger than that, make multiple requests.
 
