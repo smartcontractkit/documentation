@@ -19,13 +19,14 @@ This page explains how to make an HTTP GET request to an external API from a sma
 **Table of Contents**
 
 - [Large Response](#large-response)
-- [Choosing an Oracle and JobId](#choosing-an-oracle-and-jobid)
+- [Choosing Link token address, Oracle and JobId](#choosing-link-token-address-oracle-and-jobid)
 - [Make an Existing Job Request](#make-an-existing-job-request)
 
 ## Large Response
 
 To consume an API with a large responses, your contract should inherit from [ChainlinkClient](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/ChainlinkClient.sol). This contract exposes a struct called `Chainlink.Request`, which your contract should use to build the API request. The request should include the following:
 
+- Link token address
 - Oracle address
 - Job id
 - Request fee
@@ -47,11 +48,11 @@ To consume an API with a large responses, your contract should inherit from [Cha
 
 The job spec for the Chainlink node in this example can be [found here](../example-job-spec-large/).
 
-## Choosing an Oracle and JobId
+## Choosing Link token address, Oracle and JobId
 
-`oracle` refers to a specific Chainlink node that a contract makes an API call from, and `specId` refers to a specific job for that node to run. Each job is unique and returns different types of data.
+[`setChainlinkToken`](/docs/chainlink-framework/#setchainlinktoken) function allows to set the Link token address on the [network](/docs/link-token-contracts/) you are deploying to. [`setChainlinkOracle`](/docs/chainlink-framework/#setchainlinkoracle) function allows to set a specific Chainlink node that a contract makes an API call from, and `jobId` refers to a specific job for that node to run. Each job is unique and returns different types of data.
 
-For example, a job that returns a `bytes32` variable from an API would have a different `specId` than a job that retrieved the same data, but in the form of a `uint256` variable.
+For example, a job that returns a `bytes32` variable from an API would have a different `jobId` than a job that retrieved the same data, but in the form of a `uint256` variable.
 
 [market.link](https://market.link/) provides a searchable catalogue of Oracles, Jobs and their subsequent return types.
 
