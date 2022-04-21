@@ -46,7 +46,7 @@ To consume an API with a large responses, your contract should inherit from [Cha
     <a href="/docs/conceptual-overview/#what-is-remix" >What is Remix?</a>
 </div>
 
-The job spec for the Chainlink node in this example can be [found here](../example-job-spec-large/).
+Note that this example contract is hardcoded to work on _Kovan_ testnet. The job spec for the Chainlink node in this example can be [found here](../example-job-spec-large/).
 
 ## Choosing Link token address, Oracle and JobId
 
