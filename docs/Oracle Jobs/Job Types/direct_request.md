@@ -39,14 +39,14 @@ observationSource   = """
 
 See [shared fields](/docs/jobs/#shared-fields).
 
-### Unique fields\*\*
+### Unique fields
 
 - `contractAddress`: The Oracle or Operator contract to monitor for requests
 - `requesters`: Optional - Allows whitelisting requesters
 - `minContractPaymentLinkJuels` Optional - Allows you to specify a job-specific minimum contract payment
 - `minIncomingConfirmations` Optional - Allows you to specify a job-specific `MIN_INCOMING_CONFIRMATIONS` value, must be greater than or equal to 1
 
-**Job type specific pipeline variables**
+### Job type specific pipeline variables
 
 - `$(jobSpec.databaseID)`: the ID of the job spec in the local database. You shouldn't need this in 99% of cases.
 - `$(jobSpec.externalJobID)`: the globally-unique job ID for this job. Used to coordinate between node operators in certain cases.
