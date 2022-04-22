@@ -2,13 +2,13 @@
 layout: nodes.liquid
 section: nodeOperator
 date: Last Modified
-title: "Direct Request Jobs"
-permalink: "docs/jobs/types/direct-request/"
+title: 'Direct Request Jobs'
+permalink: 'docs/jobs/types/direct-request/'
 ---
 
 Executes a job upon receipt of an explicit request made by a user. The request is detected via a log emitted by an Oracle or Operator contract. This is similar to the legacy ethlog/runlog style of jobs.
 
-**Spec format**
+## Spec format
 
 ```jpv2
 type                = "directrequest"
@@ -35,10 +35,11 @@ observationSource   = """
 """
 ```
 
-**Shared fields**
+### Shared fields
+
 See [shared fields](/docs/jobs/#shared-fields).
 
-**Unique fields**
+### Unique fields\*\*
 
 - `contractAddress`: The Oracle or Operator contract to monitor for requests
 - `requesters`: Optional - Allows whitelisting requesters
@@ -61,7 +62,14 @@ See [shared fields](/docs/jobs/#shared-fields).
 - `$(jobRun.blockTransactionsRoot)` : the root of the transaction trie of the block (hash).
 - `$(jobRun.blockStateRoot)` : the root of the final state trie of the block (hash).
 
-**Single-Word Example**
+## Get > String Job
+
+Let's assume that a user makes a request to an oracle and would like to fetch a _string_ from the response.
+
+- The smart contract example can be found [here](/docs/api-array-response/).
+- The job spec example can be found [here](/docs/direct-request-get-string/).
+
+## Single-Word Example
 
 First, let's assume that a user makes a request to the oracle using the following contract:
 
@@ -113,7 +121,7 @@ submit_tx  [type="ethtx" to="0x613a38AC1659769640aaE063C651F48E0250454C" data="$
 decode_log -> decode_cbor -> fetch -> parse -> encode_response -> encode_tx -> submit_tx
 ```
 
-**Multi-Word Example**
+## Multi-Word Example
 
 Assume that a user wants to obtain the ETH price quoted against three different currencies. If they use only a single-word DR job, it would require three different requests. To make that more efficient, they can use multi-word responses to do it all in a single request as shown in the following example:
 
