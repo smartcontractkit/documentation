@@ -10,5 +10,5 @@ This is an example v2 (TOML) job spec for returning a _string_ in 1 Chainlink AP
 To test it from a smart contract, see this [Example](/docs/api-array-response/).
 
 ```jpv2
-  {% include 'samples/NodeOperators/jobs/get-string.toml' %}
+{% include 'samples/NodeOperators/jobs/get-string.toml' %}
 ```
