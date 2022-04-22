@@ -1378,7 +1378,7 @@ Optional URL of OCR monitoring endpoint.
 OCR supports multiple networking stacks. `P2P_NETWORKING_STACK` chooses which stack to use. Possible values are:
 
 - `V1`
-- `V1V2` - Runs both stacks simultaneously and tries V2 first before falling back to V1. This is useful for migrating networks without downtime.
+- `V1V2` - Runs both stacks simultaneously. For each link with another peer, V2 networking will be preferred. If V2 does not work, the link will automatically fall back to V1. If V2 starts working again later, it will automatically be prefered again. This is useful for migrating networks without downtime. Note that the two networking stacks _must not_ be configured to bind to the same IP/port.
 - `V2`
 
 All nodes in the OCR network should share the same networking stack.
@@ -1390,18 +1390,21 @@ All nodes in the OCR network should share the same networking stack.
 - Default: _none_
 
 Should be set as the externally reachable IP address of the Chainlink node.
+Example: `P2P_ANNOUNCE_IP=1.2.3.4`
 
 #### P2P_ANNOUNCE_PORT
 
 - Default: _none_
 
 Should be set as the externally reachable port of the Chainlink node.
+Example: `P2P_ANNOUNCE_PORT=1337`
 
 #### P2P_BOOTSTRAP_PEERS
 
 - Default: _none_
 
 Default set of bootstrap peers.
+Example: `P2P_BOOTSTRAP_PEERS=/dns4/example.com/tcp/1337/p2p/12D3KooWMHMRLQkgPbFSYHwD3NBuwtS1AmxhvKVUrcfyaGDASR4U /ip4/1.2.3.4/tcp/9999/p2p/12D3KooWLZ9uTC3MrvKfDpGju6RAQubiMDL7CuJcAgDRTYP7fh7R`
 
 #### P2P_LISTEN_IP
 
@@ -1420,6 +1423,7 @@ The port to listen on. If left blank, the node randomly selects a different port
 - Default: _none_
 
 The default peer ID to use for OCR jobs. If unspecified, uses the first available peer ID.
+Example: `P2P_PEER_ID=12D3KooWMHMRLQkgPbFSYHwD3NBuwtS1AmxhvKVUrcfyaGDASR4U`
 
 ### Networking Stack V2
 
@@ -1428,18 +1432,21 @@ The default peer ID to use for OCR jobs. If unspecified, uses the first availabl
 - Default: _none_
 
 `P2PV2_ANNOUNCE_ADDRESSES` contains the addresses the peer will advertise on the network in host:port form as accepted by net.Dial. The addresses should be reachable by peers of interest.
+Example: `P2PV2_ANNOUNCE_ADDRESSES=1.2.3.4:9999 [a52d:0:a88:1274::abcd]:1337`
 
 #### P2PV2_BOOTSTRAPPERS
 
 - Default: _none_
 
 `P2PV2_BOOTSTRAPPERS` returns the default bootstrapper peers for libocr's v2 networking stack.
+Example: `P2PV2_BOOTSTRAPPERS=12D3KooWMHMRLQkgPbFSYHwD3NBuwtS1AmxhvKVUrcfyaGDASR4U@1.2.3.4:9999 12D3KooWLZ9uTC3MrvKfDpGju6RAQubiMDL7CuJcAgDRTYP7fh7R@[a52d:0:a88:1274::abcd]:1337 12D3KooWM55u5Swtpw9r8aFLQHEtw7HR4t44GdNs654ej5gRs2Dh@example.com:1234`
 
 #### P2PV2_LISTEN_ADDRESSES
 
 - Default: _none_
 
 `P2PV2_LISTEN_ADDRESSES` contains the addresses the peer will listen to on the network in host:port form as accepted by net.Listen, but host and port must be fully specified and cannot be empty.
+Example: `P2PV2_ANNOUNCE_ADDRESSES=1.2.3.4:9999 [a52d:0:a88:1274::abcd]:1337`
 
 ## Keeper
 
