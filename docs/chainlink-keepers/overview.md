@@ -27,11 +27,11 @@ The diagram below describes the architecture of the Keeper network. It is respon
 
 There are several contracts to be aware of. You can find them in the [Chainlink repository](https://github.com/smartcontractkit/chainlink/tree/develop/contracts/src/v0.8). For details on how to use them see the [Keepers-compatible Contracts](../compatible-contracts/) page.
 
-+ [`KeeperCompatible.sol`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/KeeperCompatible.sol): Imports the following contracts:
-  + [`KeeperBase.sol`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/KeeperBase.sol): Enables the use of the `cannotExecute` modifier. Import this contract if you need for this modifier. See the [`checkUpkeep` function](/docs/chainlink-keepers/compatible-contracts#checkupkeep-function) for details.
-  + [`KeeperCompatibleInterface.sol`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/interfaces/KeeperCompatibleInterface.sol): The interface to be implemented in order to make your contract Keepers-compatible. Import this contract for type safety.
-+ [`KeeperRegistry.sol`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/KeeperRegistry.sol): The registry contract that tracks all registered Upkeeps and the Keepers that can perform them.
-+ [`UpkeepRegistrationRequests.sol`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/UpkeepRegistrationRequests.sol): The registration contract that allows users to register and configure their Upkeep with the associated `KeeperRegistry` contract.
++ `KeeperCompatible.sol`[(link)](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/KeeperCompatible.sol): Imports the following contracts:
+  + `KeeperBase.sol`[(link)](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/KeeperBase.sol): Enables the use of the `cannotExecute` modifier. Import this contract if you need for this modifier. See the [`checkUpkeep` function](/docs/chainlink-keepers/compatible-contracts#checkupkeep-function) for details.
+  + `KeeperCompatibleInterface.sol`[(link)](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/interfaces/KeeperCompatibleInterface.sol): The interface to be implemented in order to make your contract Keepers-compatible. Import this contract for type safety.
++ `KeeperRegistry.sol`[(link)](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/KeeperRegistry.sol): The registry contract that tracks all registered Upkeeps and the Keepers that can perform them.
++ `UpkeepRegistrationRequests.sol`[(link)](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/UpkeepRegistrationRequests.sol): The registration contract that allows users to register and configure their Upkeep with the associated `KeeperRegistry` contract.
 
 ## How it works
 

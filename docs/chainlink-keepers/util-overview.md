@@ -17,4 +17,4 @@ Utility contracts are tools to help developers quickly deploy Keepers for specif
 
 ## `EthBalanceMonitor`
 
-This utility contract reviews the balances of a list of addresses and automatically tops them up. This automates the monitoring of Upkeep for registered contracts. To use this contract, you must add an address to the balance monitor Upkeep and make sure the balance monitor upkeep is well funded. Review the [`EthBalanceMonitor`](../utility-contracts) documentation to get started.
+This utility contract reviews the balances of a list of addresses and automatically tops them up. This automates the monitoring of Upkeep for registered contracts. To use this contract, you must add an address to the balance monitor Upkeep and make sure the balance monitor upkeep is well funded. Review the [`EthBalanceMonitor` documentation](../utility-contracts) to get started.
