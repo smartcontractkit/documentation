@@ -71,7 +71,7 @@ Let's assume that a user makes a request to an oracle and would like to fetch a 
 
 ## Single-Word Example
 
-First, let's assume that a user makes a request to the oracle using the following contract:
+For this example, assume that a user makes a request to the oracle using the following contract:
 
 ```solidity
 contract MyClient is ChainlinkClient {
