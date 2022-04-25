@@ -91,7 +91,7 @@ To use this contract:
 
 1. Fund your contract with 0.1 LINK. To learn how to send LINK to contracts, read the [Fund Your Contracts](/docs/fund-your-contract/) page.
 
-1. Call `id` function to confirm `id` is empty.
+1. Call the `id` function to confirm that it is not set.
 
 1. Run `requestFirstId` function. This builds the `Chainlink.Request` using the right parameters. Note the syntax that will be used by the oracle node to parse the _path_: `req.add("path", "0,id")` ("Fetch the id at index 0 of the array").
 
