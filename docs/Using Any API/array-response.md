@@ -27,7 +27,7 @@ This page explains how to make an HTTP GET request to an external API, that retu
 
 This example shows how to:
 
-- Call an API which returns a json array.
+- Call an API which returns a JSON array.
 - Fetch a specific information from the response.
 
 [Coingecko _GET /coins/markets/_ API](https://www.coingecko.com/en/api/documentation?) returns a list of coins and their market data (price, market cap and volume). To check the response, you can directly paste the following URL in your browser `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1&sparkline=false` or run this command in your terminal:
