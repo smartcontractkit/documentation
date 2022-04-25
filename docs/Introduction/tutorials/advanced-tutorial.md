@@ -69,9 +69,11 @@ If a job needs to make a GET request to an API, find a specific unsigned integer
 
 - [HTTP](/docs/jobs/task-types/http/) calls the API. the `method` must be set to _GET_.
 - [JSON Parse](/docs/jobs/task-types/jsonparse/) parses the JSON and extracts a value at a given keypath.
+- [Multiply](/docs/jobs/task-types/multiply/) multiplies the input by a multiplier. Used to remove the decimals.
 - [ETH ABI Encode](/docs/jobs/task-types/eth-abi-encode/) converts the data to a bytes payload according to ETH ABI encoding.
 - [ETH Tx](/docs/jobs/task-types/eth-tx/) submits the transaction to the chain, completing the cycle.
 
+The job specs example can be found [here](/docs/direct-request-get-uint256/).
 Let's walk through a real example, where you will retrieve 24 volumes of the [ETH/USD pair](https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETH&tsyms=USD) from the cryptocompare API.
 
 1. [HTTP](/docs/jobs/task-types/http/) calls the API and returns the body of an HTTP GET result for [ETH/USD pair](https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETH&tsyms=USD). Example:
@@ -123,7 +125,7 @@ Here is a breakdown of each component of this contract:
 
 **Note:** The calling contract should own enough LINK to pay the [specified fee](https://market.link/jobs/f5357a30-54b7-4a68-b6a8-ae55d4eda987) (by default 0.1 LINK). You can use [this tutorial](/docs/fund-your-contract/) to fund your contract.
 
-This is an example of a basic HTTP GET request. However, it requires defining the API URL directly in the smart contract. This can, in fact, be extracted and configured on the Job level inside the Oracle node.
+This is an example of a basic HTTP GET request. However, it requires defining the API URL directly in the smart contract. This can, in fact, be extracted and configured on the Job level inside the Oracle node. You can follow the _APIConsumer_ tutorial [here](/docs/single-word-response/).
 
 ### External Adapters
 
@@ -146,14 +148,15 @@ This will make your smart contract much more succinct. The `requestVolumeData` f
 
 ```solidity
 function requestVolumeData() public returns (bytes32 requestId) {
-    Chainlink.Request memory request = buildChainlinkRequest(jobId, address(this), this.fulfill.selector);
+    Chainlink.Request memory req = buildChainlinkRequest(jobId, address(this), this.fulfill.selector);
 
     // Extra parameters don't need to be defined here because they are already defined in the job
 
-    return sendChainlinkRequestTo(oracle, request, fee);
+    return sendChainlinkRequest(req, fee);
 }
 ```
 
+You can follow a full _Existing Job Tutorial_ [here](/docs/existing-job-request/).
 More on External Adapters can be found [here](/docs/external-adapters/).
 
 ## 4. How can I use Tasks in my own contract?
@@ -167,7 +170,7 @@ pragma solidity ^0.8.7;
 
 import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
 
-contract sportContract is ChainlinkClient {
+contract SportContract is ChainlinkClient {
   using Chainlink for Chainlink.Request;
 }
 ```
@@ -181,10 +184,9 @@ pragma solidity ^0.8.7;
 
 import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
 
-contract sportContract is ChainlinkClient {
+contract SportContract is ChainlinkClient {
   using Chainlink for Chainlink.Request;
 
-  address private oracle;
   bytes32 private jobId;
   uint256 private fee;
 }
@@ -192,14 +194,14 @@ contract sportContract is ChainlinkClient {
 
 ### Constructor
 
-In the constructor, set up the contract with the Oracle address, Job ID, and LINK fee that the oracle charges for the job.
+In the constructor, set up the contract with the LINK token address for the [network](/docs/link-token-contracts/) you are deploying to, Oracle address, Job ID, and LINK fee that the oracle charges for the job.
 
 ```solidity
 pragma solidity ^0.8.7;
 
 import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
 
-contract sportContract is ChainlinkClient {
+contract SportContract is ChainlinkClient {
   using Chainlink for Chainlink.Request;
 
   // ...
@@ -207,8 +209,8 @@ contract sportContract is ChainlinkClient {
   // ...
 
   constructor() {
-    setPublicChainlinkToken();
-    oracle = 0xfF07C97631Ff3bAb5e5e5660Cdf47AdEd8D4d4Fd;
+    setChainlinkToken(0xa36085F69e2889c224210F603D836748e7dC0088);
+    setChainlinkOracle(0xfF07C97631Ff3bAb5e5e5660Cdf47AdEd8D4d4Fd);
     jobId = "9abb342e5a1d41c6b72941a3064cf55f";
     fee = 0.1 * 10 ** 18; // (Varies by network and job)
   }
@@ -224,7 +226,7 @@ pragma solidity ^0.8.7;
 
 import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
 
-contract sportContract is ChainlinkClient {
+contract SportContract is ChainlinkClient {
   using Chainlink for Chainlink.Request;
 
   // ...
@@ -240,7 +242,7 @@ contract sportContract is ChainlinkClient {
       Chainlink.Request memory req = buildChainlinkRequest(jobId, address(this), this.fulfill.selector);
       req.add("date", _date);
       req.add("teamName", _team);
-      return sendChainlinkRequestTo(oracle, req, fee);
+      return sendChainlinkRequest(req, fee);
   }
 }
 ```
@@ -256,7 +258,7 @@ pragma solidity ^0.8.7;
 
 import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
 
-contract sportContract is ChainlinkClient {
+contract SportContract is ChainlinkClient {
   using Chainlink for Chainlink.Request;
 
   bytes32 public data;
@@ -285,7 +287,7 @@ contract sportContract is ChainlinkClient {
 Your contract is complete and ready to be compiled and deployed. You can see a complete version of the contract in Remix:
 
 <div class="remix-callout">
-  <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/sportContract.sol" target="_blank" >Open in Remix</a>
+  <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/SportContract.sol" target="_blank" >Open in Remix</a>
   <a href="/docs/conceptual-overview/#what-is-remix" >What is Remix?</a>
 </div>
 

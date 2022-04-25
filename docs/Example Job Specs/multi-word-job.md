@@ -3,10 +3,11 @@ layout: nodes.liquid
 section: nodeOperator
 date: Last Modified
 title: 'MultiWord Example Job Spec'
-permalink: "docs/example-job-spec-multi-word/"
+permalink: 'docs/direct-request-multi-word/'
 ---
 
-This is an example v2(TOML) job spec for returning multiple responses in 1 Chainlink API Call.
+This is an example v2(TOML) job spec for returning multiple responses in 1 Chainlink API Call.Note that the job calls the `fulfillOracleRequest2` function. If you are a node operator, use an [Operator contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/Operator.sol) with this job.
+To test it from a smart contract, see this [Example](/docs/multi-variable-responses/).
 
 ```jpv2
 type = "directrequest"

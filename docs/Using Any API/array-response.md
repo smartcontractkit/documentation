@@ -15,7 +15,7 @@ whatsnext:
 
 ## Overview
 
-This page explains how to make an HTTP GET request to an external API, that returns a _json_ array, from a smart contract, using Chainlink's [Request & Receive Data](../request-and-receive-data/) cycle and then receive the needed data from the array.
+This guide explains how to make an HTTP GET request to an external API, that returns a _json_ array, from a smart contract, using Chainlink's [Request & Receive Data](../request-and-receive-data/) cycle and then receive the needed data from the array.
 
 **Table of Contents**
 
@@ -27,7 +27,7 @@ This page explains how to make an HTTP GET request to an external API, that retu
 
 This example shows how to:
 
-- Call an API which returns a JSON array.
+- Call an API that returns a JSON array.
 - Fetch a specific information from the response.
 
 [Coingecko _GET /coins/markets/_ API](https://www.coingecko.com/en/api/documentation) returns a list of coins and their market data such as price, market cap, and volume. To check the response, you can directly paste the following URL in your browser `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1&sparkline=false` or run this command in your terminal:
@@ -87,13 +87,13 @@ To use this contract:
 
    - The Chainlink Token address for _Kovan_ by calling the [`setChainlinkToken`](/docs/chainlink-framework/#setchainlinktoken) function.
    - The Oracle contract address for _Kovan_ by calling the [`setChainlinkOracle`](/docs/chainlink-framework/#setchainlinkoracle) function.
-   - The `jobId`: A specific job for the oracle node to run. In this case, the _id_ is a _string_ data type, so you must call a job which calls an API and returns a _string_. You can find the job spec for the Chainlink node in this example [here](/docs/direct-request-get-string/).
+   - The `jobId`: A specific job for the oracle node to run. In this case, the _id_ is a _string_ data type, so you must call a job that calls an API and returns a _string_. You can find the job spec for the Chainlink node [here](/docs/direct-request-get-string/).
 
 1. Fund your contract with 0.1 LINK. To learn how to send LINK to contracts, read the [Fund Your Contracts](/docs/fund-your-contract/) page.
 
-1. Call the `id` function to confirm that it is not set.
+1. Call the `id` function to confirm that the `id` state variable is not set.
 
-1. Run the `requestFirstId` function. This builds the `Chainlink.Request` using the correct parameters. The `req.add("path", "0,id")` request parameter tells the oracle node to fetch the id at index 0 of the array returned by the GET request.
+1. Run the `requestFirstId` function. This builds the `Chainlink.Request` using the correct parameters. The `req.add("path", "0,id")` request parameter tells the oracle node to fetch the id at index 0 of the array returned by the GET request. It uses [JSONPath expression](https://jsonpath.com/) with comma(,) delimited string for nested objects, for example: `'0,id'`.
 
 1. After few seconds, call the `id` function. You should get a non-empty response: _bitcoin_
 

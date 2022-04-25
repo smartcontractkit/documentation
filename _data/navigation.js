@@ -218,6 +218,10 @@ module.exports = {
             url: '/docs/make-a-http-get-request/',
             children: [
               {
+                title: 'Single Word Response',
+                url: '/docs/single-word-response/',
+              },
+              {
                 title: 'Multi-Variable Responses',
                 url: '/docs/multi-variable-responses/',
               },
@@ -229,11 +233,11 @@ module.exports = {
                 title: 'Large Responses',
                 url: '/docs/large-responses/',
               },
+              {
+                title: 'Existing Job Request',
+                url: '/docs/existing-job-request/',
+              },
             ],
-          },
-          {
-            title: 'Make an Existing Job Request',
-            url: '/docs/existing-job-request/',
           },
           {
             title: 'Find Existing Jobs',
