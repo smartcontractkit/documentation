@@ -93,7 +93,7 @@ To use this contract:
 
 1. Call the `id` function to confirm that it is not set.
 
-1. Run `requestFirstId` function. This builds the `Chainlink.Request` using the right parameters. Note the syntax that will be used by the oracle node to parse the _path_: `req.add("path", "0,id")` ("Fetch the id at index 0 of the array").
+1. Run the `requestFirstId` function. This builds the `Chainlink.Request` using the correct parameters. The `req.add("path", "0,id")` request parameter tells the oracle node to fetch the id at index 0 of the array returned by the GET request.
 
 1. After few seconds, call `id` function. You should get a non-empty response: _bitcoin_ at the time of writing.
 
