@@ -57,8 +57,7 @@ The response should be similar to the following:
 ]
 ```
 
-Next we will show how to fetch the _id_ of the first element.
-To consume an API, your contract should inherit from [ChainlinkClient](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/ChainlinkClient.sol). This contract exposes a struct called `Chainlink.Request`, which your contract should use to build the API request. The request should include the following:
+Fetch the _id_ of the first element. To consume an API, your contract must inherit from [ChainlinkClient](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/ChainlinkClient.sol). This contract exposes a struct named `Chainlink.Request`, which your contract can use to build the API request. The request must include the following parameters:
 
 - Link token address
 - Oracle address
