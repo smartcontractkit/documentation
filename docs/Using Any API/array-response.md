@@ -85,9 +85,9 @@ To use this contract:
 
 1. Compile and deploy the contract using the Injected Web3 environment. The contract includes all the configuration variables for the _Kovan_ testnet. Make sure your wallet is set to use _Kovan_. The _constructor_ sets the following parameters:
 
-   - The Chainlink Token address for _Kovan_ by calling [`setChainlinkToken`](/docs/chainlink-framework/#setchainlinktoken) function.
-   - The Oracle contract address for _Kovan_ by calling [`setChainlinkOracle`](/docs/chainlink-framework/#setchainlinkoracle) function.
-   - The `jobId`: specific job for the oracle node to run. Note that in this case, the _id_ is a _string_ data type. Hence, we need to call a job which calls an API and returns a _string_.The job spec for the Chainlink node in this example can be [found here](/docs/direct-request-get-string/).
+   - The Chainlink Token address for _Kovan_ by calling the [`setChainlinkToken`](/docs/chainlink-framework/#setchainlinktoken) function.
+   - The Oracle contract address for _Kovan_ by calling the [`setChainlinkOracle`](/docs/chainlink-framework/#setchainlinkoracle) function.
+   - The `jobId`: A specific job for the oracle node to run. In this case, the _id_ is a _string_ data type, so you must call a job which calls an API and returns a _string_. You can find the job spec for the Chainlink node in this example [here](/docs/direct-request-get-string/).
 
 1. Fund your contract with 0.1 LINK as shown [here](/docs/fund-your-contract/).
 
