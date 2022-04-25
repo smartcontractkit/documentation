@@ -83,7 +83,7 @@ To use this contract:
 
 1. Open the [contract in Remix](https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/FetchFromArray.sol).
 
-1. Compile and deploy the contract using the Injected Web3 environment. The contract includes all the configuration variables for _Kovan_ testnet , make sure you are connected to _Kovan_. Note that in the _constructor_ , we setup:
+1. Compile and deploy the contract using the Injected Web3 environment. The contract includes all the configuration variables for the _Kovan_ testnet. Make sure your wallet is set to use _Kovan_. The _constructor_ sets the following parameters:
 
    - The Chainlink Token address for _Kovan_ by calling [`setChainlinkToken`](/docs/chainlink-framework/#setchainlinktoken) function.
    - The Oracle contract address for _Kovan_ by calling [`setChainlinkOracle`](/docs/chainlink-framework/#setchainlinkoracle) function.
