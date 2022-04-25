@@ -377,7 +377,11 @@ module.exports = {
         section: 'Data Feeds',
         contents: [
           {
-            title: 'Using Data Feeds',
+            title: 'Using Data Feeds Off-Chain',
+            url: '/docs/solana/using-data-feeds-off-chain/',
+          },
+          {
+            title: 'Using Data Feeds On-Chain',
             url: '/docs/solana/using-data-feeds-solana/',
           },
           {

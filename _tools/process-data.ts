@@ -163,13 +163,13 @@ for (let page of targetData) {
     } else {
       for (let contractKey of Object.keys(contents.contracts)) {
         const contract = contents.contracts[contractKey];
-        if (!contract.docs?.hidden) {
+        if (!contract.docs?.hidden && contract.status === 'live') {
           proxyList.push({
             pair: contract.name,
             assetName: contract.docs?.assetName || "",
-            deviationThreshold: liveContracts[contractKey].deviationThreshold,
-            heartbeat: liveContracts[contractKey].heartbeat,
-            decimals: liveContracts[contractKey].decimals,
+            deviationThreshold: liveContracts[contractKey]?.deviationThreshold,
+            heartbeat: liveContracts[contractKey]?.heartbeat,
+            decimals: liveContracts[contractKey]?.decimals,
             // Use transmissionsAccount for Solana; contractKey otherwise
             proxy: contract.transmissionsAccount || contractKey,
             feedCategory: contract.docs?.feedCategory || "",
