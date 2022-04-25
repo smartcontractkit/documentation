@@ -70,7 +70,7 @@ The contract also includes pre-configured values for the necessary request param
 
 Build and deploy the contract on Rinkeby.
 
-1. Open the `VRFv2Consumer.sol`s[(link)](https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFv2Consumer.sol) contract in Remix.
+1. Open the `VRFv2Consumer.sol`[(link)](https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFv2Consumer.sol) contract in Remix.
 
     <div class="remix-callout">
           <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFv2Consumer.sol" target="_blank" >Open in Remix</a>
