@@ -48,7 +48,7 @@ To consume an API with a large responses, your contract should inherit from [Cha
 
 Note that this example contract is hardcoded to work on _Kovan_ testnet. The job spec for the Chainlink node in this example can be [found here](../example-job-spec-large/).
 
-## Choosing Link token address, Oracle and JobId
+## Setting the LINK token address, Oracle, and JobId
 
 [`setChainlinkToken`](/docs/chainlink-framework/#setchainlinktoken) function allows to set the Link token address on the [network](/docs/link-token-contracts/) you are deploying to. [`setChainlinkOracle`](/docs/chainlink-framework/#setchainlinkoracle) function allows to set a specific Chainlink node that a contract makes an API call from, and `jobId` refers to a specific job for that node to run. Each job is unique and returns different types of data.
 
