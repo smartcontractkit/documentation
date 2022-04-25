@@ -46,7 +46,7 @@ Smart contracts should inherit from [`ChainlinkClient`](https://github.com/smart
 
 The return value must fit within 32 bytes. If the value is bigger than that, make multiple requests.
 
-If the LINK address for targeted blockchain is not [publicly available](../link-token-contracts/) yet, replace [setPublicChainlinkToken(/)](../chainlink-framework/#setpublicchainlinktoken) with [setChainlinkToken(\_address)](../chainlink-framework/#setchainlinktoken) in the constructor, where `_address` is a corresponding LINK token contract. Below is an example `APIConsumer` contract:
+If the LINK address for targeted blockchain is not [publicly available](../link-token-contracts/) yet, replace [setPublicChainlinkToken()](../chainlink-framework/#setpublicchainlinktoken) with [setChainlinkToken(\_address)](../chainlink-framework/#setchainlinktoken) in the constructor, where `_address` is a corresponding LINK token contract. Below is an example `APIConsumer` contract:
 
 ```solidity Kovan
 {% include 'samples/APIRequests/APIConsumer.sol' %}
