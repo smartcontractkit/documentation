@@ -95,7 +95,7 @@ To use this contract:
 
 1. Run the `requestFirstId` function. This builds the `Chainlink.Request` using the correct parameters. The `req.add("path", "0,id")` request parameter tells the oracle node to fetch the id at index 0 of the array returned by the GET request.
 
-1. After few seconds, call `id` function. You should get a non-empty response: _bitcoin_ at the time of writing.
+1. After few seconds, call the `id` function. You should get a non-empty response: _bitcoin_
 
 ## Setting the LINK token address, Oracle, and JobId
 
