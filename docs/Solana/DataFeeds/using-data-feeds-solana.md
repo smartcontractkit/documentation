@@ -13,7 +13,7 @@ Chainlink Data Feeds are the quickest way to connect your smart contracts to the
 
 This guide applies specifically to using data feeds on [Solana](https://solana.com/) clusters. To get the full list of Chainlink Data Feeds on Solana, see the [Solana Feeds](/docs/solana/data-feeds-solana/) page.
 
-View the program that owns the Chainlink Data Feeds in the [Solana Devnet Explorer](https://solscan.io/account/CaH12fwNTKJAG8PxEvo9R96Zc2j8qNHZaFj8ZW49yZNT?cluster=devnet).
+View the program that owns the Chainlink Data Feeds in the [Solana Devnet Explorer](https://solscan.io/account/HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny?cluster=devnet).
 
 {% include 'data-quality.md' %}
 
@@ -219,7 +219,7 @@ Use your deployed program to retrieve price data from a Chainlink data feed on S
     Success
     ```
 
-The program that owns the data feeds is [CaH12fwNTKJAG8PxEvo9R96Zc2j8qNHZaFj8ZW49yZNT](https://solscan.io/account/CaH12fwNTKJAG8PxEvo9R96Zc2j8qNHZaFj8ZW49yZNT?cluster=devnet), which you can see defined for `const CHAINLINK_PROGRAM_ID` in the `client.js` file.
+The program that owns the data feeds is [HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny](https://solscan.io/account/HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny?cluster=devnet), which you can see defined for `const CHAINLINK_PROGRAM_ID` in the `client.js` file.
 
 <!-- TODO: Add a step by step explanation for what the contract is doing and how client.js functions. -->
 
