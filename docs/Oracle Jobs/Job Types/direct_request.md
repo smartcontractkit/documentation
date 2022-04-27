@@ -84,6 +84,18 @@ Let's assume that a user makes a request to an oracle to call a public API, retr
 - The smart contract example can be found [here](/docs/single-word-response/).
 - The job spec example can be found [here](/docs/direct-request-get-uint256/).
 
+### Get > Int256 Job
+
+Let's assume that a user makes a request to an oracle to call a public API, retrieve a number from the response, remove any decimals and return _int256_.
+
+- The job spec example can be found [here](/docs/direct-request-get-int256/).
+
+### Get > Bool Job
+
+Let's assume that a user makes a request to an oracle to call a public API, retrieve a boolean from the response and return _bool_.
+
+- The job spec example can be found [here](/docs/direct-request-get-bool/).
+
 ### Get > String Job
 
 Let's assume that a user makes a request to an oracle and would like to fetch a _string_ from the response.

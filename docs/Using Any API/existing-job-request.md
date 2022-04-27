@@ -21,12 +21,9 @@ metadata:
 
 Using an _existing_ Oracle Job makes your smart contract code more succinct. This page explains how to retrieve the gas price from an existing Chainlink job that calls [etherscan gas tracker API](https://docs.etherscan.io/api-endpoints/gas-tracker#get-gas-oracle).
 
-**Table of Contents**
+{% include 'sections/any-api-common-table-contents.md' %}
 
-- [Existing Job](#existing-job)
-- [Setting the LINK token address, Oracle, and JobId](#setting-the-link-token-address-oracle-and-jobid)
-
-## Existing Job
+## Example
 
 In [Single Word Response Example](/docs/single-word-response/), the example contract code declared which URL to use, where to find the data in the response, and how to convert it so that it can be represented on-chain.
 
@@ -57,7 +54,7 @@ The response should be similar to the following:
 ```
 
 For this example, we created a job that leverages the [EtherScan External Adapter](https://github.com/smartcontractkit/external-adapters-js/tree/develop/packages/sources/etherscan) to fetch the _SafeGasPrice_ , _ProposeGasPrice_ and _FastGasPrice_. You can learn more about External Adapters [here](/docs/external-adapters/).
-To consume an API, your contract must inherit from [ChainlinkClient](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/ChainlinkClient.sol). This contract exposes a struct named `Chainlink.Request`, which your contract can use to build the API request. The request must include the following parameters:
+To consume an API, your contract must import [ChainlinkClient.sol](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/ChainlinkClient.sol). This contract exposes a struct named `Chainlink.Request`, which your contract can use to build the API request. The request must include the following parameters:
 
 - Link token address
 - Oracle address
@@ -97,10 +94,4 @@ To use this contract:
 
 1. After few seconds, call the `gasPriceFast`, `gasPriceAverage` and `gasPriceSafe` functions. You should get a non-zero responses.
 
-## Setting the LINK token address, Oracle, and JobId
-
-The [`setChainlinkToken`](/docs/chainlink-framework/#setchainlinktoken) function sets the LINK token address for the [network](/docs/link-token-contracts/) you are deploying to. The [`setChainlinkOracle`](/docs/chainlink-framework/#setchainlinkoracle) function sets a specific Chainlink oracle that a contract makes an API call from. The `jobId` refers to a specific job for that node to run.
-
-Each job is unique and returns different types of data. For example, a job that returns a `bytes32` variable from an API would have a different `jobId` than a job that retrieved the same data, but in the form of a `uint256` variable.
-
-[market.link](https://market.link/) provides a searchable catalogue of Oracles, Jobs and their subsequent return types.
+{% include 'sections/any-api-common.md' %}

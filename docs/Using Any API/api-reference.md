@@ -2,20 +2,19 @@
 layout: nodes.liquid
 section: ethereum
 date: Last Modified
-title: "ChainlinkClient API Reference"
-permalink: "docs/chainlink-framework/"
+title: 'ChainlinkClient API Reference'
+permalink: 'docs/chainlink-framework/'
 ---
 API reference for [`ChainlinkClient`](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/ChainlinkClient.sol).
 
 ## Index
 
-###  Methods
+### Methods
 
-| Name                                                                                 | Description                                                                               |
-|:------------------------------------------------------------------------------------ |:----------------------------------------------------------------------------------------- |
+| Name                                                          | Description                                                                               |
+| :------------------------------------------------------------ | :---------------------------------------------------------------------------------------- |
 | [setChainlinkOracle](#setchainlinkoracle)                     | Sets the stored address for the oracle contract                                           |
 | [setChainlinkToken](#setchainlinktoken)                       | Sets the stored address for the LINK token                                                |
-| [setPublicChainlinkToken](#setpublicchainlinktoken)           | Sets the LINK token address for the detected public network                               |
 | [buildChainlinkRequest](#buildchainlinkrequest)               | Instantiates a Request object with the required parameters                                |
 | [sendChainlinkRequest](#sendchainlinkrequest)                 | Sends the request payload to the stored address stored as chainlinkOracleAddress          |
 | [sendChainlinkRequestTo](#sendchainlinkrequestto)             | Sends a request to the oracle address specified                                           |
@@ -29,16 +28,16 @@ API reference for [`ChainlinkClient`](https://github.com/smartcontractkit/chainl
 
 ### Events
 
-| Name                                                             | Description                                                                  |
-|:---------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| Name                                      | Description                                                                  |
+| :---------------------------------------- | ---------------------------------------------------------------------------- |
 | [ChainlinkRequested](#chainlinkrequested) | Emitted from a Chainlinked contract when a request is sent to an oracle      |
 | [ChainlinkFulfilled](#chainlinkfulfilled) | Emitted from a Chainlinked contract when a request is fulfilled by an oracle |
 | [ChainlinkCancelled](#chainlinkcancelled) | Emitted from a Chainlinked contract when a request is cancelled              |
 
 ### Modifiers
 
-| Name                                                                             | Description                                                                                                                                              |
-|:-------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Name                                                      | Description                                                                                                                                              |
+| :-------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [recordChainlinkFulfillment](#recordchainlinkfulfillment) | Used on fulfillment callbacks to ensure that the caller and requestId are valid. This is the modifier equivalent of the method validateChainlinkCallback |
 
 ### Constants
@@ -47,19 +46,17 @@ API reference for [`ChainlinkClient`](https://github.com/smartcontractkit/chainl
 >
 > From Solidity v0.7 onwards, this constant is renamed to `LINK_DIVISIBILITY`.
 
-
-| Name                                 | Description                                                                       |
-|:------------------------------------ | --------------------------------------------------------------------------------- |
+| Name          | Description                                                                       |
+| :------------ | --------------------------------------------------------------------------------- |
 | [LINK](#link) | Helper uint256 to represent the divisibility of a LINK token. Equivalent to 10^18 |
 
 ### Structs
 
-| Name                                                          | Description                                                          |
-|:------------------------------------------------------------- | -------------------------------------------------------------------- |
+| Name                                   | Description                                                          |
+| :------------------------------------- | -------------------------------------------------------------------- |
 | [Chainlink.Request](#chainlinkrequest) | All of the parameters that can be passed over in a Chainlink request |
 
 ## Methods
-
 
 Below you'll find each helper explained in greater detail alongside respective implementation examples to help you leverage these methods once you start building your own Chainlinked contract.
 
@@ -84,6 +81,7 @@ constructor(address _oracle)
   setChainlinkOracle(_oracle);
 }
 ```
+
 ```javascript in context
 contract MyContract is ChainlinkClient {
   bytes32 constant JOB_ID = bytes32("493610cff14346f786f88ed791ab7704");
@@ -126,6 +124,7 @@ constructor(address _link)
   setChainlinkToken(_link);
 }
 ```
+
 ```javascript in context
 contract MyContract is ChainlinkClient {
   bytes32 constant JOB_ID = bytes32("493610cff14346f786f88ed791ab7704");
@@ -136,55 +135,6 @@ contract MyContract is ChainlinkClient {
     // set the address of the Chainlink token
     //   because it is different on different networks
     setChainlinkToken(_link);
-
-    setChainlinkOracle(_oracle);
-  }
-
-  function requestPrice() public {
-    sendChainlinkRequest(buildChainlinkRequest(JOB_ID, this, this.myCallback.selector), PAYMENT);
-  }
-
-  function myCallback(bytes32 _requestId, uint256 _price) public {
-    validateChainlinkCallback(_requestId); // always validate callbacks
-    latestPrice = _price;
-  }
-}
-```
-
-### setPublicChainlinkToken
-
-```javascript
-setPublicChainlinkToken()
-```
-
-Sets the stored address for the LINK token based on the public network that the contract is deployed on. This method will only set the LINK token address if the calling contract is on a public network.
-
-```javascript example
-constructor(address _link)
-  public
-{
-  if(_link == address(0)) {
-    setPublicChainlinkToken();
-  } else {
-    setChainlinkToken(_link);
-  }
-}
-```
-```javascript in context
-contract MyContract is ChainlinkClient {
-  bytes32 constant JOB_ID = bytes32("493610cff14346f786f88ed791ab7704");
-  uint256 constant PAYMENT = 1 * LINK;
-  uint256 latestPrice;
-
-  constructor(address _link, address _oracle) public {
-    // If the address passed in for _link is zero
-    if(_link == address(0)) {
-      // Detect what public network the contract is on
-      setPublicChainlinkToken();
-    } else {
-      // Otherwise set the address to what was passed in
-      setChainlinkToken(_link);
-    }
 
     setChainlinkOracle(_oracle);
   }
@@ -230,6 +180,7 @@ function requestPrice()
   sendChainlinkRequest(request, paymentAmount);
 }
 ```
+
 ```javascript in context
 contract MyContract is ChainlinkClient {
   bytes32 constant JOB_ID = bytes32("493610cff14346f786f88ed791ab7704");
@@ -284,6 +235,7 @@ function requestPrice()
   sendChainlinkRequest(request, paymentAmount);
 }
 ```
+
 ```javascript in context
 contract MyContract is ChainlinkClient {
   bytes32 constant JOB_ID = bytes32("493610cff14346f786f88ed791ab7704");
@@ -341,6 +293,7 @@ function requestPriceFrom(address _oracle)
   sendChainlinkRequestTo(_oracle, request, paymentAmount);
 }
 ```
+
 ```javascript in context
 contract MyContract is ChainlinkClient, RateCalculator {
   uint256 constant PAYMENT = 1 * LINK;
@@ -403,6 +356,7 @@ function myCallback(bytes32 _requestId, uint256 _price)
   currentPrice = _price;
 }
 ```
+
 ```javascript in context
 contract MyContract is ChainlinkClient {
   bytes32 constant JOB_ID = bytes32("493610cff14346f786f88ed791ab7704");
@@ -451,6 +405,7 @@ function expectResponseFor(bytes32 _requestId)
   addChainlinkExternalRequest(chainlinkOracleAddress(), _requestId);
 }
 ```
+
 ```javascript in context
 contract MyContract is ChainlinkClient, Ownable {
   uint256 latestPrice;
@@ -483,7 +438,7 @@ contract MyContract is ChainlinkClient, Ownable {
 
 ### cancelChainlinkRequest
 
-```javascript  
+```javascript
 function cancelChainlinkRequest(bytes32 _requestId,
     uint256 _payment,
     bytes4 _callbackFunc,
@@ -509,6 +464,7 @@ function cancelRequest(
   cancelChainlinkRequest(_requestId, _payment, _callbackFunc, _expiration);
 }
 ```
+
 ```javascript in context
 contract MyContract is ChainlinkClient, Ownable {
   uint256 constant PAYMENT = 1 * LINK;
@@ -571,6 +527,7 @@ constructor() public {
   useChainlinkWithENS(ROPSTEN_ENS, ROPSTEN_CHAINLINK_ENS);
 }
 ```
+
 ```javascript in context
 contract MyContract is ChainlinkClient, Ownable {
   bytes32 constant JOB_ID = bytes32("493610cff14346f786f88ed791ab7704");
@@ -626,6 +583,7 @@ function updateOracleAddressToLatest() public {
   updateChainlinkOracleWithENS();
 }
 ```
+
 ```javascript in context
 contract MyContract is ChainlinkClient, Ownable {
   bytes32 constant JOB_ID = bytes32("493610cff14346f786f88ed791ab7704");
@@ -681,6 +639,7 @@ function withdrawLink() public {
   require(link.transfer(msg.sender, link.balanceOf(address(this))), "Unable to transfer");
 }
 ```
+
 ```javascript in context
 contract MyContract is ChainlinkClient, Ownable {
   bytes32 constant JOB_ID = bytes32("493610cff14346f786f88ed791ab7704");
@@ -724,6 +683,7 @@ function getOracle() public view returns (address) {
 }
 
 ```
+
 ```javascript in context
 contract MyContract is ChainlinkClient, Ownable {
   uint256 latestPrice;
@@ -765,7 +725,7 @@ event ChainlinkFulfilled(
 )
 ```
 
-Emitted when [validateChainlinkCallback](#validatechainlinkcallback) or  [recordChainlinkFulfillment](#recordchainlinkfulfillment) are called. Includes the request ID as an event topic.
+Emitted when [validateChainlinkCallback](#validatechainlinkcallback) or [recordChainlinkFulfillment](#recordchainlinkfulfillment) are called. Includes the request ID as an event topic.
 
 ### ChainlinkCancelled
 
@@ -790,6 +750,7 @@ Emitted when [cancelChainlinkRequest](#cancelchainlinkrequest) is called. Includ
 ```javascript example
 uint256 constant private ORACLE_PAYMENT = 100 * LINK;
 ```
+
 ```javascript in context
 contract MyContract is ChainlinkClient {
   bytes32 constant JOB_ID = "493610cff14346f786f88ed791ab7704";
@@ -831,6 +792,7 @@ function myCallback(bytes32 _requestId, uint256 _price)
   currentPrice = _price;
 }
 ```
+
 ```javascript in context
 contract MyContract is ChainlinkClient {
   bytes32 constant JOB_ID = bytes32("493610cff14346f786f88ed791ab7704");
@@ -881,8 +843,9 @@ The request's ID is generated by hashing the sender's address and the request's 
 > The Request object was intended to be stored in memory. If you have a reason to persist the struct in storage, it is recommended that you do so by copying each attribute over and explicitly copying the bytes in the buffer.
 
 ### Attributes
+
 | Name               | Description                                                                                             |
-| ------------------ |:------------------------------------------------------------------------------------------------------- |
+| ------------------ | :------------------------------------------------------------------------------------------------------ |
 | id                 | Identifier for the request                                                                              |
 | callbackAddress    | Address that the response will be sent to upon fulfillment                                              |
 | callbackFunctionId | Selector of the function on the callbackAddress that will be invoked with the response upon fulfillment |
@@ -891,8 +854,8 @@ The request's ID is generated by hashing the sender's address and the request's 
 
 ### Methods
 
-| Name                                                     | Description                                                      |
-|:-------------------------------------------------------- | ---------------------------------------------------------------- |
+| Name                              | Description                                                      |
+| :-------------------------------- | ---------------------------------------------------------------- |
 | [add](#add)                       | Add a string value to the run request parameters                 |
 | [addBytes](#addbytes)             | Add a bytes value to the run request parameters                  |
 | [addInt](#addint)                 | Add an integer value to the run request parameters               |
@@ -923,6 +886,7 @@ function requestEthereumPrice()
   sendChainlinkRequest(req, LINK * 1);
 }
 ```
+
 ```javascript in context
 contract MyContract is ChainlinkClient {
   bytes32 constant JOB_ID = bytes32("493610cff14346f786f88ed791ab7704");
@@ -973,6 +937,7 @@ function requestEmojiPopularity(bytes _unicode)
   sendChainlinkRequest(req, LINK * 1);
 }
 ```
+
 ```javascript in context
 contract MyContract is ChainlinkClient {
   bytes32 constant JOB_ID = bytes32("493610cff14346f786f88ed791ab7704");
@@ -987,7 +952,7 @@ contract MyContract is ChainlinkClient {
   function requestEmojiPopularity(bytes _unicode) public {
     Chainlink.Request memory req = buildChainlinkRequest(JOB_ID, this, this.myCallback.selector);
 
-    // specify templated fields in a job specification       
+    // specify templated fields in a job specification
     req.addBytes("emojiUnicode", _unicode);
 
     sendChainlinkRequest(req, PAYMENT);
@@ -1023,6 +988,7 @@ function requestPrice()
   sendChainlinkRequest(req, LINK * 1);
 }
 ```
+
 ```javascript in context
 contract MyContract is ChainlinkClient {
   bytes32 constant JOB_ID = bytes32("493610cff14346f786f88ed791ab7704");
@@ -1073,6 +1039,7 @@ function requestPrice()
   sendChainlinkRequest(req, LINK * 1);
 }
 ```
+
 ```javascript in context
 contract MyContract is ChainlinkClient {
   bytes32 constant JOB_ID = bytes32("493610cff14346f786f88ed791ab7704");
@@ -1127,6 +1094,7 @@ function requestPrice(string _currency)
   sendChainlinkRequest(req, PAYMENT);
 }
 ```
+
 ```javascript in context
 contract MyContract is ChainlinkClient {
   bytes32 constant JOB_ID = bytes32("493610cff14346f786f88ed791ab7704");
@@ -1179,6 +1147,7 @@ function requestPrice(bytes _cbor)
   sendChainlinkRequest(req, PAYMENT);
 }
 ```
+
 ```javascript in context
 contract MyContract is ChainlinkClient {
   bytes32 constant JOB_ID = bytes32("493610cff14346f786f88ed791ab7704");

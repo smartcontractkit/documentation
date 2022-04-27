@@ -17,13 +17,9 @@ whatsnext:
 
 This guide explains how to make an HTTP GET request to an external API, that returns a _json_ array, from a smart contract, using Chainlink's [Request & Receive Data](../request-and-receive-data/) cycle and then receive the needed data from the array.
 
-**Table of Contents**
+{% include 'sections/any-api-common-table-contents.md' %}
 
-- [Array Example](#array-example)
-- [Setting the LINK token address, Oracle, and JobId](#setting-the-link-token-address-oracle-and-jobid)
-- [Make an Existing Job Request](#make-an-existing-job-request)
-
-## Array Example
+## Example
 
 This example shows how to:
 
@@ -57,7 +53,7 @@ The response should be similar to the following:
 ]
 ```
 
-Fetch the _id_ of the first element. To consume an API, your contract must inherit from [ChainlinkClient](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/ChainlinkClient.sol). This contract exposes a struct named `Chainlink.Request`, which your contract can use to build the API request. The request must include the following parameters:
+Fetch the _id_ of the first element. To consume an API, your contract must import [ChainlinkClient.sol](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/ChainlinkClient.sol). This contract exposes a struct named `Chainlink.Request`, which your contract can use to build the API request. The request must include the following parameters:
 
 - Link token address
 - Oracle address
@@ -97,16 +93,4 @@ To use this contract:
 
 1. After few seconds, call the `id` function. You should get a non-empty response: _bitcoin_
 
-## Setting the LINK token address, Oracle, and JobId
-
-The [`setChainlinkToken`](/docs/chainlink-framework/#setchainlinktoken) function sets the LINK token address for the [network](/docs/link-token-contracts/) you are deploying to. The [`setChainlinkOracle`](/docs/chainlink-framework/#setchainlinkoracle) function sets a specific Chainlink oracle that a contract makes an API call from. The `jobId` refers to a specific job for that node to run.
-
-Each job is unique and returns different types of data. For example, a job that returns a `bytes32` variable from an API would have a different `jobId` than a job that retrieved the same data, but in the form of a `uint256` variable.
-
-[market.link](https://market.link/) provides a searchable catalogue of Oracles, Jobs and their subsequent return types.
-
-## Make an Existing Job Request
-
-If your contract is calling a public API endpoint, an Oracle job might already exist for it. It could mean that you do not need to add the URL or other adapter parameters into the request because the job is already configured to return the desired data. This makes your smart contract code more succinct. To see an example of a contract using an existing job, see the [Make an Existing Job Request](../existing-job-request/) guide.
-
-For more information about the functions in `ChainlinkClient`, visit the [ChainlinkClient API Reference](../chainlink-framework/).
+{% include 'sections/any-api-common.md' %}

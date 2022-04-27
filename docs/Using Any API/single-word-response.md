@@ -22,22 +22,17 @@ metadata:
 
 ## Overview
 
-This guide explains how to make an HTTP GET request to an external API from a smart contract, using Chainlink's [Request & Receive Data](/docs/request-and-receive-data/) cycle and then receive one single response.
+This guide explains how to make an HTTP GET request to an external API from a smart contract using Chainlink's [Request & Receive Data](/docs/request-and-receive-data/) cycle and receive a single response.
 
-**Table of Contents**
+{% include 'sections/any-api-common-table-contents.md' %}
 
-- [Single Word Example](#single-word-example)
-- [Response Types](#response-types)
-- [Setting the LINK token address, Oracle, and JobId](#setting-the-link-token-address-oracle-and-jobid)
-- [Make an Existing Job Request](#make-an-existing-job-request)
-
-## Single Word Example
+## Example
 
 This example shows how to:
 
-- Fetch a single word response in one single call.
+- Fetch a single word response in a single call.
 
-[Cryptocompare GET /data/pricemultifull API](https://min-api.cryptocompare.com/documentation?key=Price&cat=multipleSymbolsFullPriceEndpoint) returns all the current trading info (price, vol, open, high, low ..Etc) of any list of cryptocurrencies in any other currency that you need. To check the response, you can directly paste the following URL in your browser `https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETH&tsyms=USD` or run this command in your terminal:
+The [Cryptocompare GET /data/pricemultifull API](https://min-api.cryptocompare.com/documentation?key=Price&cat=multipleSymbolsFullPriceEndpoint) returns the current trading info (price, vol, open, high, low) of any list of cryptocurrencies in any other currency that you need. To check the response, you can directly paste the following URL in your browser `https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETH&tsyms=USD` or run this command in your terminal:
 
 ```curl
 curl -X 'GET' \
@@ -45,7 +40,7 @@ curl -X 'GET' \
   -H 'accept: application/json'
 ```
 
-The response should be similar to the following:
+The response should be similar to the following example:
 
 ```json
 {
@@ -70,7 +65,7 @@ The response should be similar to the following:
 }
 ```
 
-To consume an API with multiple responses, your contract should inherit from [ChainlinkClient](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/ChainlinkClient.sol). This contract exposes a struct called `Chainlink.Request`, which your contract should use to build the API request. The request should include the following parameters:
+To consume an API with multiple responses, your contract must import [ChainlinkClient](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/ChainlinkClient.sol). This contract exposes a struct called `Chainlink.Request`, which your contract should use to build the API request. The request should include the following parameters:
 
 - Link token address
 - Oracle address
@@ -111,35 +106,10 @@ To use this contract:
 1. Run the `requestVolumeData` function. This builds the `Chainlink.Request` using the correct parameters:
 
    - The `req.add("get", "<cryptocompareURL>")` request parameter provides the oracle node with the [url](https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETH&tsyms=USD) where to fetch the _ETH-USD_ trading info.
-   - The `req.add('path', 'RAW,ETH,USD,VOLUME24HOUR')` request parameter tells the oracle node where to fetch the 24h ETH volume in the _json_ response. It uses [JSONPath expression](https://jsonpath.com/) with comma(,) delimited string for nested objects, for example: `'RAW,ETH,USD,VOLUME24HOUR'`.
-   - The `req.addInt('times', timesAmount)` request parameter provides the oracle node with the multiplier `timesAmount` by which the fetched volume is to be multiplied , purpose being to remove any decimals from it.
-     Note that The `APIConsumer` in the example above is flexible enough to call any public API, so long as the URL in the _get_ , the _path_ and the _timesAmounnt_ are correct.
+   - The `req.add('path', 'RAW,ETH,USD,VOLUME24HOUR')` request parameter tells the oracle node where to fetch the 24h ETH volume in the _json_ response. It uses a [JSONPath expression](https://jsonpath.com/) with comma(,) delimited string for nested objects. For example: `'RAW,ETH,USD,VOLUME24HOUR'`.
+   - The `req.addInt('times', timesAmount)` request parameter provides the oracle node with the multiplier `timesAmount` by which the fetched volume is multiplied. Use this to remove any decimals from the volume.
+     The `APIConsumer` in the example above is flexible enough to call any public API as long as the URL in _get_, _path_, and _timesAmounnt_ are correct.
 
 1. After few seconds, call the `volume` function. You should get a non-zero response.
 
-### Response Types
-
-The code example above returns an unsigned integer from the oracle response, but multiple data types are available such as:
-
-- **`uint256`** - Unsigned integers
-- **`int256`** - Signed integers
-- **`bool`** - True or False values
-- **`string`** - String
-- **`bytes32`** - Strings and byte values. If you need to return a string, use `bytes32`. Here's [one method](https://gist.github.com/alexroan/a8caf258218f4065894ecd8926de39e7) of converting `bytes32` to `string`. Currently, any return value must fit within 32 bytes. If the value is bigger than that, make multiple requests.
-- **`bytes`** - Arbitrary-length raw byte data
-
-Make sure to choose an oracle job that supports the data type that your contract needs to consume.
-
-## Setting the LINK token address, Oracle, and JobId
-
-The [`setChainlinkToken`](/docs/chainlink-framework/#setchainlinktoken) function sets the LINK token address for the [network](/docs/link-token-contracts/) you are deploying to. The [`setChainlinkOracle`](/docs/chainlink-framework/#setchainlinkoracle) function sets a specific Chainlink oracle that a contract makes an API call from. The `jobId` refers to a specific job for that node to run.
-
-Each job is unique and returns different types of data. For example, a job that returns a `bytes32` variable from an API would have a different `jobId` than a job that retrieved the same data, but in the form of a `uint256` variable.
-
-[market.link](https://market.link/) provides a searchable catalogue of Oracles, Jobs and their subsequent return types.
-
-## Make an Existing Job Request
-
-If your contract is calling a public API endpoint, an Oracle job might already exist for it. It could mean that you do not need to add the URL or other adapter parameters into the request because the job is already configured to return the desired data. This makes your smart contract code more succinct. To see an example of a contract using an existing job, see the [Make an Existing Job Request](../existing-job-request/) guide.
-
-For more information about the functions in `ChainlinkClient`, visit the [ChainlinkClient API Reference](../chainlink-framework/).
+{% include 'sections/any-api-common.md' %}
