@@ -55,10 +55,12 @@ encode_check_upkeep_tx -> check_upkeep_tx -> decode_check_upkeep_tx -> encode_pe
 ```
 
 **Shared fields**
+
 See [shared fields](/docs/jobs/#shared-fields).
 
 **Unique fields**
-- `evmChainID`: the numeric chain ID of the chain on which Keepers Registry is deployed.
-- `contractAddress`: the address of the Keepers Registry contract to poll and update.
-- `fromAddress`: the Oracle node address from which to send updates.
-- `externalJobID`: this is an optional field. When ommitted it will be generatrd.
+
+- `evmChainID`: The numeric chain ID of the chain on which Keepers Registry is deployed
+- `contractAddress`: The address of the Keepers Registry contract to poll and update
+- `fromAddress`: The Oracle node address from which to send updates
+- `externalJobID`: This is an optional field. When omitted it will be generated
