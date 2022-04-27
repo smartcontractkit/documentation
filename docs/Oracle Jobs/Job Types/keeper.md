@@ -52,7 +52,8 @@ perform_upkeep_tx        [type="ethtx"
                           gasLimit="$(jobSpec.performUpkeepGasLimit)"
                           txMeta="{\\"jobID\\": $(jobSpec.jobID),\\"upkeepID\\": $(jobSpec.upkeepID)}"]
 
-encode_check_upkeep_tx -> check_upkeep_tx -> decode_check_upkeep_tx -> encode_perform_upkeep_tx -> perform_upkeep_tx"""
+encode_check_upkeep_tx -> check_upkeep_tx -> decode_check_upkeep_tx -> encode_perform_upkeep_tx -> perform_upkeep_tx
+"""
 ```
 
 **Shared fields**
