@@ -15,8 +15,15 @@ type                = "directrequest"
 schemaVersion       = 1
 name                = "example eth request event spec"
 contractAddress     = "0x613a38AC1659769640aaE063C651F48E0250454C"
-# Optional externalJobID: Automatically generated if unspecified
-externalJobID       = "0EEC7E1D-D0D2-476C-A1A8-72DFB6633F02"
+
+# Optional fields:
+# requesters        = [
+#   "0xaaaa1F8ee20f5565510B84f9353F1E333E753B7a",
+#   "0xbbbb70F0e81C6F3430dfdC9fa02fB22BdD818C4e"
+# ]
+# minContractPaymentLinkJuels = "100000000000000"
+# externalJobID = "0EEC7E1D-D0D2-476C-A1A8-72DFB6633F02"
+
 observationSource   = """
     ds          [type="http" method=GET url="http://example.com"]
     ds_parse    [type="jsonparse" path="USD"]
@@ -31,7 +38,9 @@ See [shared fields](/docs/jobs/#shared-fields).
 
 **Unique fields**
 
-- `contractAddress`: the Oracle or Operator contract to monitor for requests.
+- `contractAddress`: The Oracle or Operator contract to monitor for requests
+- `requesters`: Optional - Allows whitelisting requesters
+- `minContractPaymentLinkJuels` Optional - Allows you to specify a job-specific minimum contract payment
 
 **Job type specific pipeline variables**
 
