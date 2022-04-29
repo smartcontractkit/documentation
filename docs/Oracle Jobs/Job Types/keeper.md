@@ -17,17 +17,15 @@ Keeper jobs occasionally poll a smart contract method that expresses whether som
 **Spec format**
 
 ```jpv2
-type            = "keeper"
-schemaVersion   = 3
-evmChainID      = "1"
+type            		 	= "keeper"
+schemaVersion   		 	= 3
 name            = "example keeper spec"
 contractAddress = "0x7b3EC232b08BD7b4b3305BE0C044D907B2DF960B"
 fromAddress     = "0xa8037A20989AFcBC51798de9762b351D63ff462e"
-externalJobID   = "0EEC7E1D-D0D2-476C-A1A8-72DFB6633F04"
 observationSource = """
 encode_check_upkeep_tx   [type="ethabiencode"
                           abi="checkUpkeep(uint256 id, address from)"
-                          data="{\\"id\\": $(jobSpec.upkeepID),\\"from\\": $(jobSpec.fromAddress)}"]
+                          data="{\\"id\\":$(jobSpec.upkeepID),\\"from\\":$(jobSpec.fromAddress)}"]
 check_upkeep_tx          [type="ethcall"
                           failEarly=true
                           extractRevertReason=true
@@ -42,7 +40,7 @@ decode_check_upkeep_tx   [type="ethabidecode"
                           abi="bytes memory performData, uint256 maxLinkPayment, uint256 gasLimit, uint256 adjustedGasWei, uint256 linkEth"]
 encode_perform_upkeep_tx [type="ethabiencode"
                           abi="performUpkeep(uint256 id, bytes calldata performData)"
-                          data="{\\"id\\": $(jobSpec.upkeepID),\\"performData\\": $(decode_check_upkeep_tx.performData)}"]
+                          data="{\\"id\\": $(jobSpec.upkeepID),\\"performData\\":$(decode_check_upkeep_tx.performData)}"]
 perform_upkeep_tx        [type="ethtx"
                           minConfirmations=0
                           to="$(jobSpec.contractAddress)"
@@ -50,7 +48,7 @@ perform_upkeep_tx        [type="ethtx"
                           evmChainID="$(jobSpec.evmChainID)"
                           data="$(encode_perform_upkeep_tx)"
                           gasLimit="$(jobSpec.performUpkeepGasLimit)"
-                          txMeta="{\\"jobID\\": $(jobSpec.jobID),\\"upkeepID\\": $(jobSpec.upkeepID)}"]
+                          txMeta="{\\"jobID\\":$(jobSpec.jobID)}"]
 
 encode_check_upkeep_tx -> check_upkeep_tx -> decode_check_upkeep_tx -> encode_perform_upkeep_tx -> perform_upkeep_tx
 """
