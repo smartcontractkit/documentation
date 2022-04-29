@@ -17,8 +17,8 @@ Keeper jobs occasionally poll a smart contract method that expresses whether som
 **Spec format**
 
 ```jpv2
-type            		 	= "keeper"
-schemaVersion   		 	= 3
+type            = "keeper"
+schemaVersion   = 3
 name            = "example keeper spec"
 contractAddress = "0x7b3EC232b08BD7b4b3305BE0C044D907B2DF960B"
 fromAddress     = "0xa8037A20989AFcBC51798de9762b351D63ff462e"
