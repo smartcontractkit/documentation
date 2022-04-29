@@ -49,4 +49,4 @@ For a list of blockchains that is supported by Chainlink Keepers, see the [Suppo
 
 If you have questions, read the [Keepers Frequently Asked Questions](../faqs/) page, ask them in the [#keepers channel](https://discord.com/channels/592041321326182401/821350860302581771) in our [Discord server](https://discord.gg/qj9qarT), or [reach out to us](https://forms.gle/WadxnzzjHPtta5Zd9). 
 
-To understand different use cases for Chainlink Keepers, refer to our [Other Tutorials](/docs/Introduction/getting-started/other-tutorials/).
+To understand different use cases for Chainlink Keepers, refer to [Other Tutorials](/docs/other-tutorials/).
