@@ -134,4 +134,4 @@ You can see the configuration for each network on the [Contract Addresses](/docs
 - Each coordinator has a `maxGasLimit` parameter, which is the maximum allowed `callbackGasLimit` value for your requests.
 - You must specify a sufficient `callbackGasLimit` to fund the callback request to your consumer contract. This depends on the number of random values you request and how you process them in your `fulfillRandomWords()` function. If your `callbackGasLimit` is not sufficient, the callback fails but your subscription is still charged for the work done to generate your requested random values.
 
-To understand different use cases for Chainlink VRF, refer to our [Other Tutorials](/getting-started/other-tutorials).
+To understand different use cases for Chainlink VRF, refer to our [Other Tutorials](/docs/Introduction/getting-started/other-tutorials).
