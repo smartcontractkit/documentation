@@ -12,7 +12,7 @@ You can deploy a Chainlink node on the AWS Cloud using [AWS Quick Start](https:/
     <a href="https://aws.amazon.com/quickstart/architecture/chainlink-node/" >Deploy a Chainlink Node on AWS</a>
 </div>
 
-## Created resources
+## Created Resources
 
 The Quick Start creates the following public resources:
 
@@ -22,28 +22,28 @@ The Quick Start creates the following public resources:
 
 Because these resources are public facing, you should review security and best practices information on a regular basis against vulnerabilities that pose a risk.
 
-## IAM roles
+## IAM Roles
 
 The Quick Start creates the following IAM roles:
 - **Administration Role:** Grants the provided administrator ID with administrator access
 - **Execution Role:** Grants cloudformation.amazonaws.com the administration role to extend the functionality of stacks by enabling create, update, or delete stacks across multiple accounts and regions with a single operation
-- **Chainlink Node Role:**:
-- Enables instances to use Systems Manager core service functionality
-- Enables instances with logs and metrics functionality in CloudWatch
-- Enables instances to retrieve Chainlink node secrets created during the Quick Start
+- **Chainlink Node Role:**
+  - Enables instances to use Systems Manager core service functionality
+  - Enables instances with logs and metrics functionality in CloudWatch
+  - Enables instances to retrieve Chainlink node secrets created during the Quick Start
 
 ## Billable services
 
-The Quick Start has the following billable services:
-- **Amazon EC2**
-- **Amazon Virtual Private Cloud (VPC)**
-- **Amazon Aurora PostgreSQL-Compatible DB**
-- **Parameter Store**
-- **AWS Secrets Manager**
-- **AWS Key Management Service**
-- **Amazon CloudWatch**
-- **Application Load Balancer:** Optional if you are not using a public certificate with AWS Certificate Manager
-- **Amazon Devop Guru:** Optional, if not using Amazon Devops Guru
+The Quick Start has the following billable services. Click on each link to learn about the pricing model for each service:
+- [**Amazon EC2**](https://aws.amazon.com/ec2/pricing/?nc2=type_a)
+- [**Amazon Virtual Private Cloud (VPC)**](https://aws.amazon.com/vpc/pricing/)
+- [**Amazon Aurora PostgreSQL-Compatible DB**](https://aws.amazon.com/rds/aurora/pricing/)
+- [**Parameter Store**](https://aws.amazon.com/systems-manager/pricing/?nc2=type_a)
+- [**AWS Secrets Manager**](https://aws.amazon.com/secrets-manager/pricing/?nc1=h_ls)
+- [**AWS Key Management Service**](https://aws.amazon.com/kms/pricing/?nc2=type_a)
+- [**Amazon CloudWatch**](https://aws.amazon.com/cloudwatch/pricing/?nc2=type_a)
+- (*Optional* if you are not using a public certificate with AWS Certificate Manager) [**Application Load Balancer**](https://aws.amazon.com/elasticloadbalancing/pricing/?nc=sn&loc=3)
+- (*Optional*) [**Amazon Devops Guru**](https://aws.amazon.com/devops-guru/pricing/?nc=sn&loc=3&refid=0c5ce5de-7dc6-4ce5-95c9-29c9047095fc~ha_awssm-10495_event_prospect)
 
 You are responsible for the cost of the AWS services and any third-party licenses that you use while running this Quick Start. There is no additional cost for using the Quick Start.
 
@@ -54,15 +54,15 @@ For more information, visit [Manage Service Limits](https://aws.amazon.com/premi
 
 ## Best Practices
 
-**Do not run as the root user:**
+### Do not run as the root user
 The operations on the Chainlink node do not require the root user so it is recommended to use the default user or run as a non-root user.
 
-**Protect your AWS account:**
+### Protect your AWS account
 As a best security practice, [rotate programmatic system credentials](https://aws.amazon.com/blogs/security/how-to-rotate-access-keys-for-iam-users/) and [cryptographic keys](https://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html).
 
 If you enable Amazon Devops Guru, the Quick Start deploys an AWS managed customer key (CMK) that is used for the Amazon SNS topic for DevOps Guru. The default setting is automatically set to rotate this KMS key every year.
 
-**Monitor your Chainlink node health:**
+### Monitor your Chainlink node's health
 Run regular health checks of your Chainlink node.
 
 We recommend using a monitoring solution to track the health of your Chainlink node, such as [Prometheus](https://prometheus.io/docs/prometheus/latest/getting_started/) or [Grafana](https://grafana.com/docs/grafana/latest/getting-started/getting-started-prometheus/). Chainlink exposes metrics on the `/metrics` endpoint of the UI. By default, that's http://localhost:6688/metrics.
@@ -133,7 +133,7 @@ Tag versions for Chainlink node releases are available in the [Chainlink docker 
 
 If the Chainlink node containers are stopped or if you need to start up a new instance during an upgrade or recovery, you must create new `.env`, `.password`, and `.api` files to start the Chainlink node.
 
-**Generating the .env file:**
+### Generating the `.env` file
 
 ```
 cd /home/ec2-user/.chainlink/ && ./create-env.sh \
@@ -146,14 +146,14 @@ ${psqlPort} \
 ${psqlDb}
 ```
 
-**Generating the .password file:**
+### Generating the `.password` file
 
 ```
 cd /home/ec2-user/.chainlink/ && ./create-password.sh \
 $(aws secretsmanager get-secret-value --secret-id WalletSecret --query "SecretString" --output text)
 ```
 
-**Generating the .api file:**
+### Generating the `.api` file
 
 ```
 cd /home/ec2-user/.chainlink/ && ./create-api.sh \
@@ -161,7 +161,7 @@ ${apiUser} \
 $(aws secretsmanager get-secret-value --secret-id ApiSecret --query "SecretString" --output text)
 ```
 
-**Stopping and removing the existing Chainlink node container:**
+### Stopping and removing the existing Chainlink node container
 
 This process is required when you update the container to a newer release.
 
@@ -169,7 +169,7 @@ This process is required when you update the container to a newer release.
 docker stop chainlink && docker rm chainlink
 ```
 
-**Starting the Chainlink node container in Docker:**
+### Starting the Chainlink node container in Docker
 
 ```
 latestimage=$(curl -s -S "https://registry.hub.docker.com/v2/repositories/smartcontract/chainlink/tags/" | jq -r '."results"[]["name"]' | head -n 1)
