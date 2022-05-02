@@ -13,6 +13,7 @@ Executes a job upon receipt of an explicit request made by a user. The request i
 ```jpv2
 type                = "directrequest"
 schemaVersion       = 1
+evmChainID          = 1
 name                = "example eth request event spec"
 contractAddress     = "0x613a38AC1659769640aaE063C651F48E0250454C"
 
@@ -133,6 +134,7 @@ contract MyClient is ChainlinkClient {
 ```jpv2
 type                = "directrequest"
 schemaVersion       = 1
+evmChainID          = 1
 name                = "example eth request event spec"
 contractAddress     = "0x613a38AC1659769640aaE063C651F48E0250454C"
 externalJobID       = "0EEC7E1D-D0D2-476C-A1A8-72DFB6633F47"

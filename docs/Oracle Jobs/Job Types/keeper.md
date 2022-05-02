@@ -6,7 +6,9 @@ title: "Keeper Jobs"
 permalink: "docs/jobs/types/keeper/"
 ---
 
-Keeper jobs occasionally poll a smart contract method that expresses whether something in the contract is ready for some on-chain action to be performed. When it's ready, the job executes that on-chain action. Examples:
+Keeper jobs occasionally poll a smart contract method that expresses whether something in the contract is ready for some on-chain action to be performed. When it's ready, the job executes that on-chain action.
+
+Examples:
 
 - Liquidations
 - Rebalancing portfolios
@@ -19,6 +21,7 @@ Keeper jobs occasionally poll a smart contract method that expresses whether som
 ```jpv2
 type            = "keeper"
 schemaVersion   = 3
+evmChainID      = 1
 name            = "example keeper spec"
 contractAddress = "0x7b3EC232b08BD7b4b3305BE0C044D907B2DF960B"
 fromAddress     = "0xa8037A20989AFcBC51798de9762b351D63ff462e"
