@@ -37,6 +37,8 @@ Fee parameters are configured in the coordinator contract and specify the premiu
 - [Rinkeby testnet](#rinkeby-testnet)
 - [BNB Chain](#bnb-chain)
 - [BNB Chain testnet](#bnb-chain-testnet)
+- [Polygon Mainnet](#polygon-matic-mainnet)
+- [Polygon Mumbai Testnet](#polygon-matic-mumbai-testnet)
 
 ### Ethereum Mainnet
 
@@ -96,6 +98,40 @@ Fee parameters are configured in the coordinator contract and specify the premiu
 |VRF Coordinator|[`0x6A2AAd07396B36Fe02a22b33cf443582f682c82f`](https://testnet.bscscan.com/address/0x6A2AAd07396B36Fe02a22b33cf443582f682c82f)|
 |50 gwei Key Hash|`0xd4bb89654db74673a187bd804519e65e3f71a52bc55f11da7601a13dcf505314`|
 |Premium|0.005 LINK|
+|Minimum Confirmations|3|
+|Maximum Confirmations|200|
+|Maximum Random Values|500|
+
+### Polygon (Matic) Mainnet
+
+Polygon is not yet available in the Subscription Manager. Use [subscription management functions](/docs/chainlink-vrf/example-contracts/#modifying-subscriptions-and-configurations) in your smart contract to create and modify subscriptions on Polygon.
+
+|Item|Value|
+|---|---|
+|LINK Token|[`0xb0897686c545045aFc77CF20eC7A532E3120E0F1`](https://polygonscan.com/address/0xb0897686c545045aFc77CF20eC7A532E3120E0F1)|
+|VRF Coordinator|[`0xae975071be8f8ee67addbc1a82488f1c24858067`](https://polygonscan.com/address/0xae975071be8f8ee67addbc1a82488f1c24858067)|
+|200 gwei Key Hash|`0x36ca8dc16a1273afbe95210222e5f91660bfce50f4a023464f0afbcb4e13edf400`|
+|500 gwei Key Hash|`0x84b8d13679499734a8048359443e01229f923b074ba2b9c117b9f1f94a87056701`|
+|1000 gwei Key Hash|`0xae139fda616189eb9905f0aa183da3d08caf0cffe47caadb429111b7ca54d25e01`|
+|Premium|0.0005 LINK|
+|Minimum Confirmations|3|
+|Maximum Confirmations|200|
+|Maximum Random Values|500|
+
+### Polygon (Matic) Mumbai Testnet
+
+> 🚰Mumbai Faucet
+>
+> Testnet LINK and MATIC are available from the [Polygon faucet](https://faucet.polygon.technology/) and https://faucets.chain.link/mumbai.
+
+Polygon is not yet available in the Subscription Manager. Use [subscription management functions](/docs/chainlink-vrf/example-contracts/#modifying-subscriptions-and-configurations) in your smart contract to create and modify subscriptions on Polygon.
+
+|Item|Value|
+|---|---|
+|LINK Token|[`0x326C977E6efc84E512bB9C30f76E30c160eD06FB`](https://mumbai.polygonscan.com/address/0x326C977E6efc84E512bB9C30f76E30c160eD06FB)|
+|VRF Coordinator|[`0x7a1BaC17Ccc5b313516C5E16fb24f7659aA5ebed`](https://mumbai.polygonscan.com/address/0x7a1BaC17Ccc5b313516C5E16fb24f7659aA5ebed)|
+|500 gwei Key Hash|`0x4b09e658ed251bcafeebbc69400383d49f344ace09b9576fe248bb02c003fe9f`|
+|Premium|0.0005 LINK|
 |Minimum Confirmations|3|
 |Maximum Confirmations|200|
 |Maximum Random Values|500|
