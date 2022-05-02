@@ -41,3 +41,6 @@ Outlined below are multiple ways developers can connect smart contracts to off-c
 ### Building External Adapters
 
 To learn more about building external adapters and adding them to nodes, refer to the [External Adapters](../external-adapters/) documentation.
+
+
+To understand different use cases for using any API, refer to [Other Tutorials](/docs/other-tutorials/).
