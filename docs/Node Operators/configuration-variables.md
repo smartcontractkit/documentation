@@ -556,58 +556,83 @@ Previous versions of Chainlink nodes wrote JSON logs with a unix timestamp. As o
 
 ## Nurse service (auto-pprof)
 
-The Chainlink node is equipped with an internal "nurse" service that can perform automatic `pprof` profiling when the certain resource thresholds are exceeded (currently, memory and goroutine count). These profiles are saved to disk to facilitate fine-grained debugging of performance-related issues. Generally speaking, if you notice that your node has begun to accumulate profiles, you should forward them to the Chainlink team.
+The Chainlink node is equipped with an internal "nurse" service that can perform automatic `pprof` profiling when the certain resource thresholds are exceeded, such as memory and goroutine count. These profiles are saved to disk to facilitate fine-grained debugging of performance-related issues. In general, if you notice that your node has begun to accumulate profiles, forward them to the Chainlink team.
 
 To learn more about these profiles, read the [Profiling Go programs with pprof](https://jvns.ca/blog/2017/09/24/profiling-go-with-pprof/) guide.
 
 ### AUTO_PPROF_ENABLED
 
-Set to `true` to enable the automatic profiling service. Defaults to `false`.
+- Default: `"false"`
+
+Set to `true` to enable the automatic profiling service.
 
 ### AUTO_PPROF_PROFILE_ROOT
 
-The location on disk where pprof profiles will be stored. Defaults to `$CHAINLINK_ROOT`.
+Defaults to `$CHAINLINK_ROOT`
+
+The location on disk where pprof profiles will be stored.
 
 ### AUTO_PPROF_POLL_INTERVAL
 
-The interval at which the node's resources are checked. Defaults to `10s`.
+- Default: `"10s"`
+
+The interval at which the node's resources are checked.
 
 ### AUTO_PPROF_GATHER_DURATION
 
-The duration for which profiles are gathered when profiling is kicked off. Defaults to `10s`.
+- Default: `"10s"`
+
+The duration for which profiles are gathered when profiling starts.
 
 ### AUTO_PPROF_GATHER_TRACE_DURATION
 
-The duration for which traces are gathered when profiling is kicked off. This is separately configurable because traces are significantly larger than other types of profiles. Defaults to `5s`.
+- Default: `"5s"`
+
+The duration for which traces are gathered when profiling is kicked off. This is separately configurable because traces are significantly larger than other types of profiles.
 
 ### AUTO_PPROF_MAX_PROFILE_SIZE
 
-The maximum amount of disk space that profiles may consume before profiling is disabled. Defaults to `100mb`.
+- Default: `"100mb"`
+
+The maximum amount of disk space that profiles may consume before profiling is disabled.
 
 ### AUTO_PPROF_CPU_PROFILE_RATE
 
-See https://pkg.go.dev/runtime#SetCPUProfileRate. Defaults to `1`.
+- Default: `"1"`
+
+See https://pkg.go.dev/runtime#SetCPUProfileRate.
 
 ### AUTO_PPROF_MEM_PROFILE_RATE
 
-See https://pkg.go.dev/runtime#pkg-variables. Defaults to `1`.
+- Default: `"1"`
+
+See https://pkg.go.dev/runtime#pkg-variables.
 
 ### AUTO_PPROF_BLOCK_PROFILE_RATE
 
-See https://pkg.go.dev/runtime#SetBlockProfileRate. Defaults to `1`.
+- Default: `"1"`
+
+See https://pkg.go.dev/runtime#SetBlockProfileRate.
 
 ### AUTO_PPROF_MUTEX_PROFILE_FRACTION
 
-See https://pkg.go.dev/runtime#SetMutexProfileFraction. Defaults to `1`.
+- Default: `"1"`
+
+See https://pkg.go.dev/runtime#SetMutexProfileFraction.
+
+- Default: `"1"`
 
 ### AUTO_PPROF_MEM_THRESHOLD
 
-The maximum amount of memory the node can actively consume before profiling begins. Defaults to `4gb`.
+- Default: `"4gb"`
+
+The maximum amount of memory the node can actively consume before profiling begins.
 
 ### AUTO_PPROF_GOROUTINE_THRESHOLD
 
-The maximum number of actively-running goroutines the node can spawn before profiling begins. Defaults to `5000`.
+- Default: `"5000"`
 
+The maximum number of actively-running goroutines the node can spawn before profiling begins.
 
 ## Chainlink Web Server
 
