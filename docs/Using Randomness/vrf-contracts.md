@@ -109,10 +109,10 @@ Polygon is not yet available in the Subscription Manager. Use [subscription mana
 |Item|Value|
 |---|---|
 |LINK Token|[`0xb0897686c545045aFc77CF20eC7A532E3120E0F1`](https://polygonscan.com/address/0xb0897686c545045aFc77CF20eC7A532E3120E0F1)|
-|VRF Coordinator|[`0xae975071be8f8ee67addbc1a82488f1c24858067`](https://polygonscan.com/address/0xae975071be8f8ee67addbc1a82488f1c24858067)|
-|200 gwei Key Hash|`0x36ca8dc16a1273afbe95210222e5f91660bfce50f4a023464f0afbcb4e13edf400`|
-|500 gwei Key Hash|`0x84b8d13679499734a8048359443e01229f923b074ba2b9c117b9f1f94a87056701`|
-|1000 gwei Key Hash|`0xae139fda616189eb9905f0aa183da3d08caf0cffe47caadb429111b7ca54d25e01`|
+|VRF Coordinator|[`0xAE975071Be8F8eE67addBC1A82488F1C24858067`](https://polygonscan.com/address/0xAE975071Be8F8eE67addBC1A82488F1C24858067)|
+|200 gwei Key Hash|`0x6e099d640cde6de9d40ac749b4b594126b0169747122711109c9985d47751f93`|
+|500 gwei Key Hash|`0xcc294a196eeeb44da2888d17c0625cc88d70d9760a69d58d853ba6581a9ab0cd`|
+|1000 gwei Key Hash|`0xd729dc84e21ae57ffb6be0053bf2b0668aa2aaf300a2a7b2ddf7dc0bb6e875a8`|
 |Premium|0.0005 LINK|
 |Minimum Confirmations|3|
 |Maximum Confirmations|200|
