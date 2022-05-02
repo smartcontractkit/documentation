@@ -18,6 +18,7 @@ You can find a list of release notes for Chainlink nodes in the [smartcontractki
 
 - JSON parse tasks in TOML now support a custom `separator` parameter to substitute for the default `,`.
 - Slow SQL queries are now logged.
+- Updated the block explorer URLs to include FTMScan and SnowTrace.
 - Keeper upkeep order can now be shuffled. See [KEEPER_TURN_FLAG_ENABLED](/docs/configuration-variables/#keeper_turn_flag_enabled) for details.
 - Several fixes. See the [release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v1.4.0) for a full list of changes.
 
