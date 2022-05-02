@@ -511,6 +511,14 @@ This setting tells the Chainlink node to log SQL statements made using the defau
 
 Determines the log file's max size in megabytes before file rotation. Having this not set will disable logging to disk. If your disk doesn't have enough disk space, the logging will pause and the application will log errors until space is available again.
 
+Any value should be suffixed with a unit like: "5120mb" (for 5,120 Megabytes). If not unit suffix is provided, it will default to "b" (bytes). The list of valid unit suffixes are:
+
+- b (bytes)
+- kb (kilobytes)
+- mb (megabytes)
+- gb (gigabytes)
+- tb (terabytes)
+
 ### LOG_FILE_MAX_AGE
 
 - Default: `"0"`
