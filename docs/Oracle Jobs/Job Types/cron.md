@@ -13,6 +13,7 @@ Executes a job on a schedule. Does not rely on any kind of external trigger.
 ```jpv2
 type            = "cron"
 schemaVersion   = 1
+evmChainID      = 1
 schedule        = "CRON_TZ=UTC * */20 * * * *"
 externalJobID       = "0EEC7E1D-D0D2-476C-A1A8-72DFB6633F01"
 observationSource   = """
