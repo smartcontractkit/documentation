@@ -119,6 +119,7 @@ Your node applies configuration settings using following hierarchy:
   - [ETH_HEAD_TRACKER_MAX_BUFFER_SIZE](#eth_head_tracker_max_buffer_size)
   - [ETH_HEAD_TRACKER_SAMPLING_INTERVAL](#eth_head_tracker_sampling_interval)
   - [ETH_LOG_BACKFILL_BATCH_SIZE](#eth_log_backfill_batch_size)
+  - [ETH_LOG_POLL_INTERVAL](#eth_log_poll_interval)
   - [ETH_RPC_DEFAULT_BATCH_SIZE](#eth_rpc_default_batch_size)
   - [LINK_CONTRACT_ADDRESS](#link_contract_address)
   - [MIN_INCOMING_CONFIRMATIONS](#min_incoming_confirmations)
@@ -149,6 +150,7 @@ Your node applies configuration settings using following hierarchy:
   - [ETH_MAX_QUEUED_TRANSACTIONS](#eth_max_queued_transactions)
   - [ETH_MIN_GAS_PRICE_WEI](#eth_min_gas_price_wei)
   - [ETH_NONCE_AUTO_SYNC](#eth_nonce_auto_sync)
+  - [ETH_USE_FORWARDERS](#eth_use_forwarders)
 - [EVM/Ethereum Gas Price Estimation](#evmethereum-gas-price-estimation)
   - [GAS_ESTIMATOR_MODE](#gas_estimator_mode)
   - [BLOCK_HISTORY_ESTIMATOR_BATCH_SIZE](#block_history_estimator_batch_size)
@@ -195,6 +197,8 @@ Your node applies configuration settings using following hierarchy:
   - [KEEPER_REGISTRY_PERFORM_GAS_OVERHEAD](#keeper_registry_perform_gas_overhead)
   - [KEEPER_REGISTRY_SYNC_INTERVAL](#keeper_registry_sync_interval)
   - [KEEPER_REGISTRY_SYNC_UPKEEP_QUEUE_SIZE](#keeper_registry_sync_upkeep_queue_size)
+  - [KEEPER_TURN_LOOK_BACK](#keeper_turn_look_back)
+  - [KEEPER_TURN_FLAG_ENABLED](#keeper_turn_flag_enabled)
 - [CLI Client](#cli-client)
   - [ADMIN_CREDENTIALS_FILE](#admin_credentials_file)
   - [CLIENT_NODE_URL](#client_node_url)
@@ -880,6 +884,12 @@ Set to `0` to disable head tracker sampling.
 
 Controls the batch size for calling FilterLogs when backfilling missing or recent logs.
 
+### ETH_LOG_POLL_INTERVAL
+
+- Default: _automatic based on Chain ID_
+
+Defines how frequently to poll for new logs.
+
 ### ETH_RPC_DEFAULT_BATCH_SIZE
 
 - Default: _automatic based on chain ID_
@@ -1185,6 +1195,12 @@ GAS_ESTIMATOR_MODE="FixedPrice"
 - Default: `"true"`
 
 Chainlink nodes will automatically try to sync its local nonce with the remote chain on startup and fast forward if necessary. This is almost always safe but can be disabled in exceptional cases by setting this value to false.
+
+### ETH_USE_FORWARDERS
+
+- Default: `"false"`
+
+Enables or disables sending transactions through forwarder contracts.
 
 ## EVM/Ethereum Gas Price Estimation
 
@@ -1533,6 +1549,18 @@ Do not change this setting unless you know what you are doing.
 - Default: `"10"`
 
 `KEEPER_REGISTRY_SYNC_UPKEEP_QUEUE_SIZE` represents the maximum number of upkeeps that can be synced in parallel.
+
+### KEEPER_TURN_LOOK_BACK
+
+- Default: `"1000"`
+
+The number of blocks in the past to look back when getting a block for a turn.
+
+### KEEPER_TURN_FLAG_ENABLED
+
+- Default: `"false"`
+
+Enables a new algorithm for how keepers take turns.
 
 ## CLI Client
 
