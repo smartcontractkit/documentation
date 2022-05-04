@@ -104,8 +104,6 @@ Fee parameters are configured in the coordinator contract and specify the premiu
 
 ### Polygon (Matic) Mainnet
 
-Polygon is not yet available in the Subscription Manager. Use [subscription management functions](/docs/chainlink-vrf/example-contracts/#modifying-subscriptions-and-configurations) in your smart contract to create and modify subscriptions on Polygon.
-
 |Item|Value|
 |---|---|
 |LINK Token|[`0xb0897686c545045aFc77CF20eC7A532E3120E0F1`](https://polygonscan.com/address/0xb0897686c545045aFc77CF20eC7A532E3120E0F1)|
@@ -123,8 +121,6 @@ Polygon is not yet available in the Subscription Manager. Use [subscription mana
 > 🚰Mumbai Faucet
 >
 > Testnet LINK and MATIC are available from the [Polygon faucet](https://faucet.polygon.technology/) and https://faucets.chain.link/mumbai.
-
-Polygon is not yet available in the Subscription Manager. Use [subscription management functions](/docs/chainlink-vrf/example-contracts/#modifying-subscriptions-and-configurations) in your smart contract to create and modify subscriptions on Polygon.
 
 |Item|Value|
 |---|---|
