@@ -163,7 +163,10 @@ module.exports = {
               {
                 title: 'Moonriver Data Feeds',
                 url: '/docs/data-feeds-moonriver/',
-
+              },
+              {
+                title: 'Moonbeam Data Feeds',
+                url: '/docs/data-feeds-moonbeam/',
               },
             ],
           },

@@ -221,5 +221,18 @@ export const NETWORKS = [
         networkType: "mainnet",
       },
     ],
+  },
+  {
+    page: "data-feeds-moonbeam",
+    title: "Moonbeam Data Feeds",
+    feedType: "Proxy",
+    networks: [
+      {
+        name: "Moonbeam Mainnet",
+        url: "https://moonscan.io/address/%s",
+        source: "directory-polkadot-mainnet-moonbeam.json",
+        networkType: "mainnet",
+      },
+    ],
   }
 ];
