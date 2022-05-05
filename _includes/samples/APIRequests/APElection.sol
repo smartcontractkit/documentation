@@ -41,7 +41,7 @@ contract APElection is ChainlinkClient {
         setChainlinkToken(0xa36085F69e2889c224210F603D836748e7dC0088);
         setChainlinkOracle(0xf4316Eb1584B3CF547E091Acd7003c116E07577b);
         jobId = '2e37b8362f474fce9dd019fa195a8627';
-        fee = 0.1 * 10**18; // (Varies by network and job)
+        fee = (1 * LINK_DIVISIBILITY) / 10; // 0,1 * 10**18 (Varies by network and job)
     }
 
     /**

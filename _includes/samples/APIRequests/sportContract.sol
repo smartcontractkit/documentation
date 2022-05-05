@@ -34,7 +34,7 @@ contract SportContract is ChainlinkClient {
         setChainlinkToken(0xa36085F69e2889c224210F603D836748e7dC0088);
         setChainlinkOracle(0xfF07C97631Ff3bAb5e5e5660Cdf47AdEd8D4d4Fd);
         jobId = '9abb342e5a1d41c6b72941a3064cf55f';
-        fee = 0.1 * 10**18; // (Varies by network and job)
+        fee = (1 * LINK_DIVISIBILITY) / 10; // 0,1 * 10**18 (Varies by network and job)
     }
 
     // Initial Request

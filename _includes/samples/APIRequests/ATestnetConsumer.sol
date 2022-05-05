@@ -7,7 +7,7 @@ import '@chainlink/contracts/src/v0.8/ConfirmedOwner.sol';
 contract ATestnetConsumer is ChainlinkClient, ConfirmedOwner {
     using Chainlink for Chainlink.Request;
 
-    uint256 private constant ORACLE_PAYMENT = 1 * LINK_DIVISIBILITY;
+    uint256 private constant ORACLE_PAYMENT = 1 * LINK_DIVISIBILITY; // 1 * 10**18
     uint256 public currentPrice;
     int256 public changeDay;
     bytes32 public lastMarket;

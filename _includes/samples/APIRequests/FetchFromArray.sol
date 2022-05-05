@@ -35,7 +35,7 @@ contract FetchFromArray is ChainlinkClient {
         setChainlinkToken(0xa36085F69e2889c224210F603D836748e7dC0088);
         setChainlinkOracle(0x74EcC8Bdeb76F2C6760eD2dc8A46ca5e581fA656);
         jobId = '7d80a6386ef543a3abb52817f6707e3b';
-        fee = 0.1 * 10**18; // (Varies by network and job)
+        fee = (1 * LINK_DIVISIBILITY) / 10; // 0,1 * 10**18 (Varies by network and job)
     }
 
     /**
