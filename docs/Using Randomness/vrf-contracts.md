@@ -104,6 +104,10 @@ Fee parameters are configured in the coordinator contract and specify the premiu
 
 ### Polygon (Matic) Mainnet
 
+> 📘 Important
+>
+> The LINK provided by the [Polygon (Matic) Bridge](https://wallet.polygon.technology/bridge) is not ERC-677 compatible, so cannot be used with Chainlink oracles. However, it can be [**converted to the official LINK token on Polygon (Matic) using Chainlink's PegSwap service**](https://pegswap.chain.link/)
+
 |Item|Value|
 |---|---|
 |LINK Token|[`0xb0897686c545045aFc77CF20eC7A532E3120E0F1`](https://polygonscan.com/address/0xb0897686c545045aFc77CF20eC7A532E3120E0F1)|
