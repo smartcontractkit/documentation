@@ -2,7 +2,7 @@
 layout: feed.liquid
 section: terra
 title: "Terra Data Feeds"
-stub: data-feeds-terra
+defaultFeed: data-feeds-terra
 permalink: "docs/terra/data-feeds-terra/"
 metadata:
   ecosystem: terra

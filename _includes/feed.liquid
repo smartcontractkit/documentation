@@ -1,27 +1,84 @@
 ---
 layout: ./nodes.liquid
 section: ethereum
+defaultFeed: evm
 ---
+
+{% markdown %}
+Chainlink Data Feed contracts are updated on a regular basis by multiple Chainlink nodes. Chainlink is a blockchain agnostic technology. This page lists the blockchain networks that Chainlink Data Feeds are currently live on, and the details of where to access them.
+{% endmarkdown %}
 
 {% case metadata.ecosystem %}
   {% when "terra" %}
-     <p>To learn how to implement these feeds, see the <a href="/docs/terra/using-data-feeds-terra/">Terra Examples for Consuming Data Feeds</a>.</p>
+     <p>To learn how to implement these feeds, see <a href="/docs/terra/using-data-feeds-terra/">Using Data Feeds (Terra)</a>.</p>
      <p>To obtain tokens on the Terra Bombay Testnet, see the <a href="https://faucet.terra.money/">Terra Testnet Faucet</a>. For these feeds, use the <strong>Bombay-12</strong> testnet.</p>
   {% when "solana" %}
-     <p>To learn how to implement these feeds, see the <a href="/docs/solana/using-data-feeds-solana/">Solana Examples for Consuming Data Feeds</a>.</p>
+     <p>To learn how to implement these feeds, see the <a href="/docs/solana/using-data-feeds-solana/">Using Data Feeds (Solana)</a>.</p>
      <p>To learn how to obtain SOL tokens on the Solana Devnet, see the <a href="https://docs.solana.com/cli/transfer-tokens#airdrop-some-tokens-to-get-started">Solana Documentation</a>.</p>
   {% else %}
-     <p>To learn how to implement these feeds, see the <a href="/docs/get-the-latest-price/">Ethereum Examples for Consuming Data Feeds</a>.</p>
+     <p>To learn how to implement these feeds, see the <a href="/docs/get-the-latest-price/">Using Data Feeds (EVM Chains)</a>.</p>
      <p>For LINK token and Faucet details, see the <a href="/docs/link-token-contracts/">LINK Token Contracts</a> page.</p>
 {% endcase %}
 
-<p>Notes:</p>
-<ul>
-<li>Off-chain equity and ETF assets are traded only during standard market hours from 9:30AM to 4:00PM EDT Monday through Friday.</li>
-<li>Assets on the Forex (Foreign Exchange) markets are traded only from 5PM EDT on Sunday through 4PM EDT on Friday.</li>
-</ul>
-<p>Using these feeds outside of those windows is not recommended.</p>
+{% markdown %}
 
+{% include 'feed-categories.md' %}
+
+> 📘 Off-chain equity and ETF assets
+>
+> - Off-chain equity and ETF assets are traded only during standard market hours from 9:30AM to 4:00PM EDT Monday through Friday.
+> - Assets on the Forex (Foreign Exchange) markets are traded only from 5PM EDT on Sunday through 4PM EDT on Friday.
+>
+> Using these feeds outside of those windows is not recommended.
+
+{% endmarkdown %}
+
+<!--Dropdown style-->
+<style>
+.dropbtn {
+  background-color: #2a5ada;
+  color: white;
+  padding: 16px;
+  font-size: 20px;
+  border: none;
+  border-radius: 8px;
+}
+
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f1f1f1;
+  min-width: 300px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+}
+
+.dropdown-content div {
+  color: black;
+  padding: 4px 8px;
+  text-decoration: none;
+  display: block;
+}
+
+.dropdown-content div > img {
+  height: 32px;
+  width: 32px;
+  margin: 4px;
+}
+
+.dropdown-content div:hover {background-color: #ddd;}
+
+.dropdown:hover .dropdown-content {display: block;}
+
+.dropdown:hover .dropbtn {background-color: #1a2b6b;}
+</style>
+
+<!-- Table style -->
 <style>
     table {
         border-collapse: collapse;
@@ -86,6 +143,7 @@ section: ethereum
 
 </style>
 
+
 {% case metadata.l2healthflag %}
   {% when "arbitrum" %}
      <rdme-callout theme="warn">
@@ -99,24 +157,12 @@ section: ethereum
      </rdme-callout>
 {% endcase %}
 
-{% if metadata.ecosystem != "terra" and metadata.ecosystem != "solana" %}
-  <div id="categories">
-      <p>Data feeds reside in the following categories:</p>
-      <ul>
-        <li>🟢 <a href="/docs/selecting-data-feeds/#🟢-verified-feeds"><strong>Verified Feeds</strong></a>: Feeds that follow a standardized data feeds workflow</li>
-        <li>🟡 <a href="/docs/selecting-data-feeds/#🟡-monitored-feeds"><strong>Monitored Feeds</strong></a>: Feeds under review by the Chainlink Labs team to support the stability of the broader ecosystem</li>
-        <li>🔵 <a href="/docs/selecting-data-feeds/#-custom-feeds"><strong>Custom Feeds</strong></a>: Feeds built to serve a specific use case and might not be suitable for general use</li>
-        <li>⚫ <a href="/docs/selecting-data-feeds/#-specialized-feeds"><strong>Specialized Feeds</strong></a>: Purpose-built feeds that might rely on contracts maintained by external entities and require in-depth understanding of composition methodology before use</li>
-      </ul>
-      <p>See the <a href="/docs/selecting-data-feeds/">Selecting Quality Data Feeds</a> page for complete details about each category.</p>
-  </div>
-{% endif %}
-
 <div id="feed-data">
     Loading feeds...
 </div>
 
 <script>
+    // Table script
     dest = document.getElementById('feed-data');
     let showExtraDetails = false;
     let feedCategories = {
@@ -125,73 +171,103 @@ section: ethereum
         "custom": '<span class="hovertext feed-category" data-hover="Custom"><a href="/docs/selecting-data-feeds/#-custom-feeds" alt="Custom" target="_blank">🔵</a></span>',
         "specialized": '<span class="hovertext feed-category" data-hover="Specialized"><a href="/docs/selecting-data-feeds/#-specialized-feeds" alt="Specialized" target="_blank">⚫</a></span>'
     }
+
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+
+    let selectedFeed = urlParams.get('chain') || '{{defaultFeed}}' || 'all';
+    let nonEVM = ['data-feeds-solana', 'data-feeds-terra'];
+
+    function setChain(chainId){
+        console.log(chainId);
+        selectedFeed = chainId;
+    }
+
     render = (data) => {
         let html = '';
-        if(data["{{stub}}"]) {
-            for(let network of data["{{stub}}"].networks) {
-                html += `<h2 id="${network.name}">${network.name} <a class="anchor" href="#${network.name}"><img src="/images/link.svg" alt="Link to this section"></a></h2>`;
-                html += `<label><input type="checkbox" class="extra" ${showExtraDetails ? 'checked="checked"' : ''}>Show more details</input></label>`;
-                let proxyList = '';
-                if(network.networkType == "mainnet") {
-                    for(let proxy of network.proxies) {
-                        proxyList += `
-                        <tr id="${network.name} ${proxy.pair}">
-                            <td><div class="proxy-pair-column">${feedCategories[proxy.feedCategory] || ''}<code class="proxy-pair">${proxy.pair}</code></div></td>
-                            <td><code>${proxy.assetName}</code></td>
-                            <td><code>${proxy.feedType}</code></td>
-                            <td ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.deviationThreshold ? (proxy.deviationThreshold + '%') : 'N/A'}</td>
-                            <td ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.heartbeat ? proxy.heartbeat : 'N/A'}</td>
-                            <td ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.decimals ? proxy.decimals : 'N/A'}</td>
-                            <td><a href="${network.url.replace('%s',proxy.proxy)}"><code>${proxy.proxy}</code></a></td>
-                        </tr>`;
+
+        // Render dropdown list
+        html += `<div class="dropdown"><button class="dropbtn">Select a chain</button><div class="dropdown-content">`;
+        html += `<div class='chainSelection' onclick='setChain("all")'>All Chains</div>`;
+        html += `<div class='chainSelection' onclick='setChain("evm")'>EVM Chains</div>`;
+        for(var key in data){
+          html += `<div class='chainSelection' onclick='setChain("${key}")'><img src="${data[key].icon}" loading="lazy" />${data[key].title}</div>`;
+        }
+        html += `</div></div>`;
+
+        // Render feeds lists
+        for(var page in data){
+            if(selectedFeed === 'all' || selectedFeed === "evm" && !nonEVM.includes(page) || selectedFeed === page) {
+                for(let network of data[page].networks) {
+                    html += `<h2 id="${network.name}">${network.name} <a class="anchor" href="#${network.name}"><img src="/images/link.svg" alt="Link to this section"></a></h2>`;
+                    html += `<label><input type="checkbox" class="extra" ${showExtraDetails ? 'checked="checked"' : ''}>Show more details</input></label>`;
+                    let proxyList = '';
+                    if(network.networkType == "mainnet") {
+                        for(let proxy of network.proxies) {
+                            proxyList += `
+                            <tr id="${network.name} ${proxy.pair}">
+                                <td><div class="proxy-pair-column">${feedCategories[proxy.feedCategory] || ''}<code class="proxy-pair">${proxy.pair}</code></div></td>
+                                <td><code>${proxy.assetName}</code></td>
+                                <td><code>${proxy.feedType}</code></td>
+                                <td ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.deviationThreshold ? (proxy.deviationThreshold + '%') : 'N/A'}</td>
+                                <td ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.heartbeat ? proxy.heartbeat : 'N/A'}</td>
+                                <td ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.decimals ? proxy.decimals : 'N/A'}</td>
+                                <td><a href="${network.url.replace('%s',proxy.proxy)}"><code>${proxy.proxy}</code></a></td>
+                            </tr>`;
+                        }
+                        html += `
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Pair</th>
+                                    <th>Asset</th>
+                                    <th>Type</th>
+                                    <th ${ showExtraDetails ? '' : 'class="detail-hidden"'}>Deviation</th>
+                                    <th ${ showExtraDetails ? '' : 'class="detail-hidden"'}>Heartbeat</th>
+                                    <th ${ showExtraDetails ? '' : 'class="detail-hidden"'}>Dec</th>
+                                    <th>${data[page].feedType}</th>
+                                </tr>
+                            </thead>
+                            <tbody>${proxyList}</tbody>
+                        </table>`;
+                    } else {
+                        for(let proxy of network.proxies) {
+                            proxyList += `
+                            <tr id="${network.name} ${proxy.pair}">
+                                <td class="proxy-column"><code>${proxy.pair}</code></td>
+                                <td ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.deviationThreshold ? (proxy.deviationThreshold + '%') : 'N/A'}</td>
+                                <td ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.heartbeat ? proxy.heartbeat : 'N/A'}</td>
+                                <td ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.decimals ? proxy.decimals : 'N/A'}</td>
+                                <td><a href="${network.url.replace('%s',proxy.proxy)}"><code>${proxy.proxy}</code></a></td>
+                            </tr>`;
+                        }
+                        html += `
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Pair</th>
+                                    <th ${ showExtraDetails ? '' : 'class="detail-hidden"'}>Deviation</th>
+                                    <th ${ showExtraDetails ? '' : 'class="detail-hidden"'}>Heartbeat</th>
+                                    <th ${ showExtraDetails ? '' : 'class="detail-hidden"'}>Dec</th>
+                                    <th>${data[page].feedType}</th>
+                                </tr>
+                            </thead>
+                            <tbody>${proxyList}</tbody>
+                        </table>`;
                     }
-                    html += `
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Pair</th>
-                                <th>Asset</th>
-                                <th>Type</th>
-                                <th ${ showExtraDetails ? '' : 'class="detail-hidden"'}>Deviation</th>
-                                <th ${ showExtraDetails ? '' : 'class="detail-hidden"'}>Heartbeat</th>
-                                <th ${ showExtraDetails ? '' : 'class="detail-hidden"'}>Dec</th>
-                                <th>${data["{{stub}}"].feedType}</th>
-                            </tr>
-                        </thead>
-                        <tbody>${proxyList}</tbody>
-                    </table>`;
-                } else {
-                    for(let proxy of network.proxies) {
-                        proxyList += `
-                        <tr id="${network.name} ${proxy.pair}">
-                            <td class="proxy-column"><code>${proxy.pair}</code></td>
-                            <td ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.deviationThreshold ? (proxy.deviationThreshold + '%') : 'N/A'}</td>
-                            <td ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.heartbeat ? proxy.heartbeat : 'N/A'}</td>
-                            <td ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.decimals ? proxy.decimals : 'N/A'}</td>
-                            <td><a href="${network.url.replace('%s',proxy.proxy)}"><code>${proxy.proxy}</code></a></td>
-                        </tr>`;
-                    }
-                    html += `
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Pair</th>
-                                <th ${ showExtraDetails ? '' : 'class="detail-hidden"'}>Deviation</th>
-                                <th ${ showExtraDetails ? '' : 'class="detail-hidden"'}>Heartbeat</th>
-                                <th ${ showExtraDetails ? '' : 'class="detail-hidden"'}>Dec</th>
-                                <th>${data["{{stub}}"].feedType}</th>
-                            </tr>
-                        </thead>
-                        <tbody>${proxyList}</tbody>
-                    </table>`;
                 }
             }
-        } else {
-            html = `<em style="color:red;">Couldn't render the feed list, it may still be processing. Feeds are updated about every half hour..</em>`;
+            //else {
+            //    html = `<em style="color:red;">Couldn't render the feed list, it may still be processing. Feeds are updated about every half hour..</em>`;
+            //}
         }
         dest.innerHTML = html;
         dest.querySelectorAll('.extra').forEach((item) => item.addEventListener('change', () => {
             showExtraDetails = event.target.checked;
+            render(data);
+            })
+        );
+        dest.querySelectorAll('.chainSelection').forEach((item) => item.addEventListener('click', () => {
             render(data);
             })
         );
@@ -210,6 +286,6 @@ section: ethereum
 </script>
 
 <rdme-callout theme="warn">
-    <p><small>Please be careful with the feeds used by your smart contracts. The feeds listed in our official documentation have been reviewed; feeds built for custom deployments by other community members might have additional risks. Please do close diligence on your feeds before implementing them in your contracts. <a href="/docs/selecting-data-feeds/">Learn more about making responsible data quality decisions.</a></small>
+    <p><small>Be careful with the feeds used by your smart contracts. The feeds listed in our official documentation have been reviewed; feeds built for custom deployments by other community members might have additional risks. Please do close diligence on your feeds before implementing them in your contracts. <a href="/docs/selecting-data-feeds/">Learn more about making responsible data quality decisions.</a></small>
     </p>
 </rdme-callout>

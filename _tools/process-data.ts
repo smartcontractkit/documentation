@@ -66,6 +66,7 @@ function load(filename: string): DataFile {
 const finalResult: {
   [key: string]: {
     title: string;
+    icon: string;
     feedType: string;
     networks: {
       name: string;
@@ -80,6 +81,7 @@ const finalResult: {
 for (let page of targetData) {
   finalResult[page.page] = {
     title: page.title,
+    icon: page.icon,
     feedType: page.feedType,
     networks: []
   };

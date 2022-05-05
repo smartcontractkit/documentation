@@ -119,53 +119,6 @@ module.exports = {
           {
             title: 'Contract Addresses',
             url: '/docs/reference-contracts/',
-            children: [
-              {
-                title: 'Ethereum Data Feeds',
-                url: '/docs/ethereum-addresses/',
-              },
-              {
-                title: 'BNB Chain Data Feeds',
-                url: '/docs/bnb-chain-addresses/',
-              },
-              {
-                title: 'Polygon (Matic) Data Feeds',
-                url: '/docs/matic-addresses/',
-              },
-              {
-                title: 'Gnosis Chain (xDai) Data Feeds',
-                url: '/docs/data-feeds-gnosis-chain/',
-              },
-              {
-                title: 'HECO Chain Data Feeds',
-                url: '/docs/huobi-eco-chain-price-feeds/',
-              },
-              {
-                title: 'Avalanche Data Feeds',
-                url: '/docs/avalanche-price-feeds/',
-              },
-              {
-                title: 'Fantom Data Feeds',
-                url: '/docs/fantom-price-feeds/',
-              },
-              {
-                title: 'Arbitrum Data Feeds',
-                url: '/docs/arbitrum-price-feeds/',
-              },
-              {
-                title: 'Harmony Data Feeds',
-                url: '/docs/harmony-price-feeds/',
-              },
-              {
-                title: 'Optimism Data Feeds',
-                url: '/docs/optimism-price-feeds/',
-              },
-              {
-                title: 'Moonriver Data Feeds',
-                url: '/docs/data-feeds-moonriver/',
-
-              },
-            ],
           },
         ],
       },
