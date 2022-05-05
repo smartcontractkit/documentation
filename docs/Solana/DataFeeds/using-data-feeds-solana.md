@@ -4,15 +4,18 @@ section: solana
 date: Last Modified
 title: "Using Data Feeds On-Chain (Solana)"
 permalink: "docs/solana/using-data-feeds-solana/"
-whatsnext: {"Use data feeds off-chain":"/docs/solana/using-data-feeds-off-chain/", "See the available data feeds on Solana":"/docs/solana/data-feeds-solana/"}
+whatsnext: {
+  "Use data feeds off-chain":"/docs/solana/using-data-feeds-off-chain/",
+  "See the available data feeds on Solana":"/docs/solana/data-feeds-solana/"
+}
 metadata:
   title: "Using Data Feeds On-Chain (Solana)"
   description: "How to use Chainlink Data Feeds in your on-chain Solana programs."
 ---
 
-Chainlink Data Feeds are the quickest way to connect your smart contracts to the real-world market prices of assets. This guide demonstrates how to deploy a contract to the Solana Devnet and access Data Feeds on-chain using the [Chainlink Solana Starter Kit](https://github.com/smartcontractkit/solana-starter-kit). To learn how to read price feed data using off-chain applications, see the [Using Data Feeds Off-Chain](/docs/solana/using-data-feeds-off-chain/) guide.
+Chainlink Data Feeds are the quickest way to connect your smart contracts to the real-world market prices of assets. This guide demonstrates how to deploy a program to the Solana Devnet cluster and access Data Feeds on-chain using the [Chainlink Solana Starter Kit](https://github.com/smartcontractkit/solana-starter-kit). To learn how to read price feed data using off-chain applications, see the [Using Data Feeds Off-Chain](/docs/solana/using-data-feeds-off-chain/) guide.
 
-To get the full list of available Chainlink Data Feeds on Solana, see the [Solana Feeds](/docs/solana/data-feeds-solana/) page. View the program that owns the Chainlink Data Feeds in the [Solana Devnet Explorer](https://solscan.io/account/HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny?cluster=devnet).
+To get the full list of available Chainlink Data Feeds on Solana, see the [Solana Feeds](/docs/solana/data-feeds-solana/) page. View the program that owns the Chainlink Data Feeds in the [Solana Devnet Explorer](https://solscan.io/account/HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny?cluster=devnet), or the [Solana Mainnet Explorer](https://solscan.io/account/HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny).
 
 {% include 'data-quality.md' %}
 
@@ -23,7 +26,10 @@ This guide demonstrates the following tasks:
 - Write and deploy programs to the [Solana Devnet](https://solscan.io/?cluster=devnet) cluster using Anchor.
 - Retrieve data using the [Solana Web3 JavaScript API](https://www.npmjs.com/package/@solana/web3.js) with Node.js.
 
-This example shows you how to work with a program that you deploy, but you can refactor the client section to work with a program ID of your choice.
+This example shows you how to work with a new program that you deploy, but you can easily integrate price feeds into your existing project by importing the [chainlink_solana](https://crates.io/crates/chainlink_solana) crate into your project, then calling the specified price feed functions (latest_round_data,description,decimals), passing in the [Chainlink program ID](http://localhost:4200/docs/solana/using-data-feeds-solana/#the-chainlink-data-feeds-program), and the Chainlink [data feed account](http://localhost:4200/docs/solana/data-feeds-solana/) that you want to look up price data for, as shown in the [example Rust program](https://github.com/smartcontractkit/solana-starter-kit/blob/main/programs/chainlink_solana_demo/src/lib.rs)
+
+## The Chainlink Data Feeds Program
+The program that owns the data feeds on Devnet is [HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny](https://solscan.io/account/HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny?cluster=devnet). The same program ID is also used for the Data Feeds Program [on Mainnet](https://solscan.io/account/HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny).
 
 **Table of contents:**
 
@@ -101,13 +107,13 @@ This example includes a contract written in Rust. Deploy the contract to the Sol
     yarn install
     ```
 
-1. Create a temporary Solana wallet to use for this example. Use a temporary wallet to isolate development and testing from your other wallets. Alternatively, if you have an existing wallet that you want to use, locate the path to your [keypair](https://docs.solana.com/terminology#keypair) file and use it as the keypair for the rest of this guide.
+1. Create a temporary Solana wallet to use for this example. Use a temporary wallet to isolate development from your other wallets and prevent you from unintentionally using real SOL tokens on the Solana Mainnet. Alternatively, if you have an existing wallet that you want to use, locate the path to your [keypair](https://docs.solana.com/terminology#keypair) file and use it as the keypair for the rest of this guide.
 
     ```sh
     solana-keygen new --outfile ./id.json
     ```
 
-    Always follow the security best practices in the [Solana Wallet Guide](https://docs.solana.com/wallet-guide) when managing your wallets and keypairs.
+    When you build your production applications and deploy Solana programs to the Mainnet cluster, always follow the security best practices in the [Solana Wallet Guide](https://docs.solana.com/wallet-guide) for managing your wallets and keypairs.
 
 1. Fund your Solana wallet. On Devnet, use `solana airdrop` to add tokens to your account. The contract requires at least 4 SOL to deploy and the faucet limits each request to 2 SOL, so you must make two requests to get a total of 4 SOL on your wallet:
 

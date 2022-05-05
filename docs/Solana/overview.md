@@ -4,7 +4,11 @@ section: solana
 date: Last Modified
 title: "Solana on Chainlink"
 permalink: "docs/solana/"
-whatsnext: {"Using Data Feeds":"/docs/solana/using-data-feeds-solana/"}
+whatsnext: {
+  "Use data feeds off-chain":"/docs/solana/using-data-feeds-off-chain/",
+  "Use data feeds on-chain":"/docs/solana/using-data-feeds-solana/",
+  "See the available data feeds on Solana":"/docs/solana/data-feeds-solana/"
+}
 ---
 
 ## Overview
@@ -21,7 +25,10 @@ Solana programs are stateless, so you don't always need to deploy your program t
 
 ## Chainlink products and Solana clusters
 
-[Data Feeds](/docs/solana/using-data-feeds-solana/) are available on the [Solana Devnet](https://solscan.io/?cluster=devnet) cluster.
+[Data Feeds](/docs/solana/using-data-feeds-solana/) are available on the following Solana clusters:
+
+- [Solana Mainnet](https://solscan.io/)
+- [Solana Devnet](https://solscan.io/?cluster=devnet)
 
 Solana provides a [Testnet cluster](https://docs.solana.com/clusters#testnet) that runs newer [Solana releases](https://github.com/solana-labs/solana/releases), but Chainlink Data Feeds are not available on this cluster.
 
@@ -53,7 +60,7 @@ The examples in this documentation use Solana programs in [Rust](https://docs.so
 
 ## Solana Wallets
 
-When you use Chainlink on Solana, you need a [Solana wallet](https://docs.solana.com/wallet-guide/). The Chainlink documentation uses [file system wallets](https://docs.solana.com/wallet-guide/file-system-wallet) and free Devnet SOL tokens to demonstrate examples.
+When you use Chainlink on Solana, you need a [Solana wallet](https://docs.solana.com/wallet-guide/). The Chainlink documentation uses [file system wallets](https://docs.solana.com/wallet-guide/file-system-wallet) and free Devnet SOL tokens to demonstrate examples. When you deploy your programs to the Solana Mainnet, you must use wallets with real SOL tokens.
 
 If you have existing wallets that you want to use for the guides in the Chainlink documentation, find your wallet keypair and make it available in your development environment as a file. You can point [Anchor](https://project-serum.github.io/anchor/getting-started/introduction.html) and the [Solana CLI](https://docs.solana.com/cli) to a specific keypair when you deploy or manage your Solana programs.
 
@@ -70,4 +77,4 @@ Program Id                                   | Slot      | Authority            
 6U4suTp55kiJRKqV7HGAQvFgcLaStLnUA4myg5DRqsKw | 109609728 | E6gKKToCJPgf4zEL1GRLL6T99g2WcfAzJAMvtma1KijT | 2.57751768 SOL
 ```
 
-Always follow the security best practices in the [Solana Wallet Guide](https://docs.solana.com/wallet-guide) for managing your wallets and keypairs.
+When you build your production applications and deploy Solana programs to the Mainnet cluster, always follow the security best practices in the [Solana Wallet Guide](https://docs.solana.com/wallet-guide) for managing your wallets and keypairs.
