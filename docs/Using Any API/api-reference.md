@@ -480,6 +480,15 @@ function requestEmojiPopularity(bytes _unicode)
 }
 ```
 
+Note that this can also be used as a workaround to pass other data types like arrays or addresses. For instance, to add an _address_, one would first encode it using `abi.encode` then pass the result to `addBytes`:
+
+```solidity
+Chainlink.Request memory req = buildChainlinkRequest(jobId, this, this.fulfill.selector);
+
+req.addBytes("address", abi.encode(msg.sender)); // msg.sender used in this example. Replace it with your address
+
+```
+
 #### addInt
 
 ```solidity
