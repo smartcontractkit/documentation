@@ -3,6 +3,7 @@ export const NETWORKS = [
     page: "ethereum-addresses",
     title: "Ethereum Data Feeds",
     feedType: "Proxy",
+    icon: "/images/logos/ethereum.svg",
     networks: [
       {
         name: "Ethereum Mainnet",
@@ -28,6 +29,7 @@ export const NETWORKS = [
     page: "bnb-chain-addresses-price",
     title: "BNB Chain Data Feeds",
     feedType: "Proxy",
+    icon: "/images/logos/bnb-chain.svg",
     networks: [
       {
         name: "BNB Chain Mainnet",
@@ -47,6 +49,7 @@ export const NETWORKS = [
     page: "matic-addresses",
     title: "Polygon (Matic) Data Feeds",
     feedType: "Proxy",
+    icon: "/images/logos/polygon.svg",
     networks: [
       {
         name: "Polygon Mainnet",
@@ -66,6 +69,7 @@ export const NETWORKS = [
     page: "data-feeds-gnosis-chain",
     title: "Gnosis Chain (xDai) Data Feeds",
     feedType: "Proxy",
+    icon: "/images/logos/gnosis-chain.svg",
     networks: [
       {
         name: "Gnosis Chain Mainnet",
@@ -79,6 +83,7 @@ export const NETWORKS = [
     page: "huobi-eco-chain-price-feeds",
     title: "HECO Chain Data Feeds",
     feedType: "Proxy",
+    icon: "/images/logos/heco.svg",
     networks: [
       {
         name: "HECO Mainnet",
@@ -92,6 +97,7 @@ export const NETWORKS = [
     page: "avalanche-price-feeds",
     title: "Avalanche Data Feeds",
     feedType: "Proxy",
+    icon: "/images/logos/avalanche.svg",
     networks: [
       {
         name: "Avalanche Mainnet",
@@ -109,8 +115,9 @@ export const NETWORKS = [
   },
   {
     page: "fantom-price-feeds",
-    title: "Fantom Testnet",
+    title: "Fantom Data Feeds",
     feedType: "Proxy",
+    icon: "/images/logos/fantom.svg",
     networks: [
       {
         name: "Fantom Mainnet",
@@ -130,6 +137,7 @@ export const NETWORKS = [
     page: "arbitrum-price-feeds",
     title: "Arbitrum Data Feeds",
     feedType: "Proxy",
+    icon: "/images/logos/arbitrum.svg",
     networks: [
       {
         name: "Arbitrum Mainnet",
@@ -149,6 +157,7 @@ export const NETWORKS = [
     page: "harmony-price-feeds",
     title: "Harmony Data Feeds",
     feedType: "Proxy",
+    icon: "/images/logos/harmony.svg",
     networks: [
       {
         name: "Harmony Mainnet",
@@ -168,6 +177,7 @@ export const NETWORKS = [
     page: "data-feeds-solana",
     title: "Solana Data Feeds",
     feedType: "Account",
+    icon: "/images/logos/solana.svg",
     networks: [
       {
         name: "Solana Devnet",
@@ -181,6 +191,7 @@ export const NETWORKS = [
     page: "data-feeds-terra",
     title: "Terra Data Feeds",
     feedType: "Proxy",
+    icon: "/images/logos/terra.svg",
     networks: [
       {
         name: "Terra Bombay Testnet",
@@ -194,6 +205,7 @@ export const NETWORKS = [
     page: "optimism-price-feeds",
     title: "Optimism Data Feeds",
     feedType: "Proxy",
+    icon: "/images/logos/optimism.svg",
     networks: [
       {
         name: "Optimism Mainnet",
@@ -213,6 +225,7 @@ export const NETWORKS = [
     page: "data-feeds-moonriver",
     title: "Moonriver Data Feeds",
     feedType: "Proxy",
+    icon: "/images/logos/moonriver.png",
     networks: [
       {
         name: "Moonriver Mainnet",

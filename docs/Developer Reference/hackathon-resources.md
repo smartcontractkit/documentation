@@ -61,6 +61,6 @@ New? See the [Getting Started Guide](/docs/conceptual-overview/).
 
 ## Blockchain Specific
 
-- [Matic Data Feeds](../matic-addresses/)
-- [BNB Chain Data Feeds](../bnb-chain-addresses/)
+- [Matic Data Feeds](/docs/reference-contracts/?chain=matic-addresses)
+- [BNB Chain Data Feeds](/docs/reference-contracts/?chain=bnb-chain-addresses/)
 - [Conflux](https://github.com/Conflux-Network-Global/demo-cfx-chainlink)
