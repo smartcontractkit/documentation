@@ -6,6 +6,19 @@ title: "Best Practices for Deploying Nodes on AWS"
 permalink: "docs/best-practices-aws/"
 ---
 
+**Table of Contents**
+
+- [Overview](#overview)
+- [Created Resources](#created-resources)
+- [IAM Roles](#iam-roles)
+- [Billable Services](#billable-services)
+- [Best Practices](#best-practices)
+- [Recovering or Upgrading your Chainlink Node Container](#recovering-or-upgrading-your-chainlink-node-container)
+- [Backup and Restore](#backup-and-restore)
+- [Failover Capabilities and Disaster Recovery](#failover-capabilities-and-disaster-recovery)
+
+## Overview
+
 You can deploy a Chainlink node on the AWS Cloud using [AWS Quick Start](https://aws.amazon.com/quickstart) to deploy a highly available and secure Chainlink node on the AWS Cloud.
 
 <div class="remix-callout">
@@ -32,7 +45,7 @@ The Quick Start creates the following IAM roles:
   - Enables instances with logs and metrics functionality in CloudWatch
   - Enables instances to retrieve Chainlink node secrets created during the Quick Start
 
-## Billable services
+## Billable Services
 
 The Quick Start has the following billable services. Click on each link to learn about the pricing model for each service:
 - [**Amazon EC2**](https://aws.amazon.com/ec2/pricing/?nc2=type_a)
@@ -127,7 +140,7 @@ curl -XGET localhost:6688/health | jq '.'
 To check the status of your Chainlink node container, use the `docker ps` command.
 
 
-## Recovering or Upgrading your Chainlink node container
+## Recovering or Upgrading your Chainlink Node Container
 
 Tag versions for Chainlink node releases are available in the [Chainlink docker hub](https://hub.docker.com/r/smartcontract/chainlink/tags)
 
