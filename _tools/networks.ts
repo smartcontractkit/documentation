@@ -119,7 +119,7 @@ export const NETWORKS = [
         networkType: "mainnet",
       },
       {
-        name: "Fantom Testnet",
+        name: "Fantom Data Feeds",
         url: "https://testnet.ftmscan.com/address/%s",
         source: "directory-fantom-testnet.json",
         networkType: "testnet",
