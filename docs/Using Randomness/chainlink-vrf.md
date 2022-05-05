@@ -53,6 +53,9 @@ Chainlink VRF v2 is currently available on the following networks:
 - BNB Chain
   - [Mainnet](/docs/vrf-contracts/#bnb-chain)
   - [Testnet](/docs/vrf-contracts/#bnb-chain-testnet)
+- Polygon (Matic)
+  - [Mainnet](/docs/vrf-contracts/#polygon-matic-mainnet)
+  - [Mumbai Testnet](/docs/vrf-contracts/#polygon-matic-mumbai-testnet)
 
 See the [Contract Addresses](/docs/vrf-contracts) page for a complete list of coordinator addresses and gas price limits.
 
