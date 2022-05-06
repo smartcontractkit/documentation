@@ -21,7 +21,6 @@ To get the full list of available Chainlink Data Feeds on Solana, see the [Solan
 
 **Table of contents:**
 
-- [The Chainlink Data Feeds Program](#the-chainlink-data-feeds-program)
 - [Adding Data Feeds On-Chain In An Existing Project](#adding-data-feeds-on-chain-in-an-existing-project)
 - [Solana Starter Kit Example](#solana-starter-kit-example)
 

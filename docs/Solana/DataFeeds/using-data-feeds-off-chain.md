@@ -21,8 +21,8 @@ To get the full list of Chainlink Data Feeds on Solana, see the [Solana Feeds](/
 
 **Table of contents:**
 
-- [Adding data feeds to an existing off-chain project](#using-data-feeds-off-chain-in-an-existing-project)
-- [Using Data Feeds Off-Chain: Solana Starter Kit Example](#using-data-feeds-off-chain-solana-starter-kit-example)
+- [Adding data feeds to an existing off-chain project](#adding-data-feeds-to-an-existing-off-chain-project)
+- [Using the Solana Starter Kit](#using-the-solana-starter-kit)
 
 ## Adding data feeds to an existing off-chain project
 
@@ -66,7 +66,7 @@ Before you begin, set up your environment. Any of these steps can be skipped if 
 {% include 'samples/Solana/PriceFeeds/off-chain-read.ts' %}
 ```
 
-## Solana Starter Kit
+## Using the Solana Starter Kit
 
 This example reads price data from an off-chain client using the [Solana Starter Kit](https://github.com/smartcontractkit/solana-starter-kit).
 
