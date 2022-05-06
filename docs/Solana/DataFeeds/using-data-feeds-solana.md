@@ -22,202 +22,56 @@ To get the full list of available Chainlink Data Feeds on Solana, see the [Solan
 **Table of contents:**
 
 - [The Chainlink Data Feeds Program](#the-chainlink-data-feeds-program)
-- [Using Data Feeds On-Chain In An Existing Project](#using-data-feeds-on-chain-in-an-existing-project)
-- [Using Data Feeds Off-Chain: Solana Starter Kit Example](#using-data-feeds-on-chain-solana-starter-kit-example)
+- [Adding Data Feeds On-Chain In An Existing Project](#adding-data-feeds-on-chain-in-an-existing-project)
+- [Solana Starter Kit Example](#solana-starter-kit-example)
 
-# The Chainlink Data Feeds Program
+## The Chainlink Data Feeds Program
+
 The program that owns the data feeds on both Devnet and Mainnet is [HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny](https://solscan.io/account/HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny?cluster=devnet). This is the program that you interact with to retrieve Chainlink Price Data. Source code for this program is available on the [Smartcontractkit GitHub](https://github.com/smartcontractkit/chainlink-solana/tree/develop/contracts).
 
-## Using Data Feeds On-Chain In An Existing Project
-## Overview
+## Adding Data Feeds On-Chain In An Existing Project
 
 You can read Chainlink Data Feed data on-chain in your existing project using the [Chainlink Solana Crate](https://crates.io/crates/chainlink_solana).
 
-## Add the Chainlink Solana Crate to your Project
+### Add the Chainlink Solana Crate to your Project
 
-Before you begin, you need to import the Chainlink Solana Crate into your project
+Before you begin, import the Chainlink Solana Crate into your project.
 
-1. Add the Chainlink Solana Crate as an entry in your Cargo.toml file dependencies section, as shown in the [starter kit Cargo.toml example](https://github.com/smartcontractkit/solana-starter-kit/blob/main/programs/chainlink_solana_demo/Cargo.toml)
+1. Add the Chainlink Solana Crate as an entry in your Cargo.toml file dependencies section, as shown in the [starter kit Cargo.toml example](https://github.com/smartcontractkit/solana-starter-kit/blob/main/programs/chainlink_solana_demo/Cargo.toml).
 
     ```toml
     [dependencies]
     chainlink_solana = "1.0.0"
     ```
 
-
 1. Use the following code sample to query price data. Each function call to the Chainlink Solana library takes two parameters:
-- The [feed account](https://docs.chain.link/docs/solana/data-feeds-solana/) that you wish to query
-- The [Chainlink Data Feeds Program](#the-chainlink-data-feeds-program) for the network. This is a static value that never changes.
 
-Here is an explanation of each part of the code sample:
-- `latest_round_data`: returns the latest round information for the specified price pair, including the latest price
-- `description`: returns the price pair description. Eg SOL/USD
-- `decimals`: returns the precision of the price, as in how many numbers the price is padded out to
-- `Display`: helper function used to convert the padded out price data into a human readable price
+    - The [feed account](https://docs.chain.link/docs/solana/data-feeds-solana/) that you wish to query
+    - The [Chainlink Data Feeds Program](#the-chainlink-data-feeds-program) for the network. This is a static value that never changes.
 
+The code sample has the following components:
 
-## Rust (without Anchor)
+- `latest_round_data`: Returns the latest round information for the specified price pair including the latest price
+- `description`: Returns a price pair description such as SOL/USD
+- `decimals`: Returns the precision of the price, as in how many numbers the price is padded out to
+- `Display`: A relper function that formats the padded out price data into a human-readable price
 
-```rust
-    use chainlink_solana as chainlink;
-
-    use solana_program::{
-        account_info::{next_account_info, AccountInfo},
-        entrypoint,
-        entrypoint::ProgramResult,
-        msg,
-        pubkey::Pubkey,
-    };
-
-    struct Decimal {
-        pub value: i128,
-        pub decimals: u32,
-    }
-
-    impl Decimal {
-        pub fn new(value: i128, decimals: u32) -> Self {
-            Decimal { value, decimals }
-        }
-    }
-
-    impl std::fmt::Display for Decimal {
-        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-            let mut scaled_val = self.value.to_string();
-            if scaled_val.len() <= self.decimals as usize {
-                scaled_val.insert_str(
-                    0,
-                    &vec!["0"; self.decimals as usize - scaled_val.len()].join(""),
-                );
-                scaled_val.insert_str(0, "0.");
-            } else {
-                scaled_val.insert(scaled_val.len() - self.decimals as usize, '.');
-            }
-            f.write_str(&scaled_val)
-        }
-    }
-
-    // Declare and export the program's entrypoint
-    entrypoint!(process_instruction);
-
-    // Program entrypoint's implementation
-    pub fn process_instruction(
-        _program_id: &Pubkey, // Ignored
-        accounts: &[AccountInfo],
-        _instruction_data: &[u8], // Ignored
-    ) -> ProgramResult {
-        msg!("Chainlink Price Feed Consumer entrypoint");
-
-        let accounts_iter = &mut accounts.iter();
-
-        // This is the account of the price feed data to read from
-        let feed_account = next_account_info(accounts_iter)?;
-        // This is the chainlink solana program ID
-        let chainlink_program = next_account_info(accounts_iter)?;
-
-        let round = chainlink::latest_round_data(
-            chainlink_program.clone(),
-            feed_account.clone(),
-        )?;
-
-        let description = chainlink::description(
-            chainlink_program.clone(),
-            feed_account.clone(),
-        )?;
-
-        let decimals = chainlink::decimals(
-            chainlink_program.clone(),
-            feed_account.clone(),
-        )?;
-
-        let decimal_print = Decimal::new(round.answer, u32::from(decimals));
-        msg!("{} price is {}", description, decimal_print);
-
-        Ok(())
-    }
+```rust Rust
+{% include 'samples/Solana/PriceFeeds/on-chain-read.rs' %}
+```
+```rust Rust and Anchor
+{% include 'samples/Solana/PriceFeeds/on-chain-read-anchor.rs' %}
 ```
 
 Program Transaction logs:
 
-```
+```sh Rust
 > Program logged: "Chainlink Price Feed Consumer entrypoint"
 > Program logged: "SOL / USD price is 83.99000000"
 > Program consumed: 95953 of 1400000 compute units
 > Program return: HNYSbr77Jc9LhHeb9tx53SrWbWfNBnQzQrM4b3BB3PCR CA==
 ```
-
-## Rust (with Anchor)
-```rust
-    use anchor_lang::prelude::*;
-    use chainlink_solana as chainlink;
-
-    //Program ID required by Anchor. Replace with your unique program ID once you build your project
-    declare_id!("HPuUpM1bKbaqx7yY2EJ4hGBaA3QsfP5cofHHK99daz85");
-
-    #[account]
-    pub struct Decimal {
-        pub value: i128,
-        pub decimals: u32,
-    }
-
-    impl Decimal {
-        pub fn new(value: i128, decimals: u32) -> Self {
-            Decimal { value, decimals }
-        }
-    }
-
-    impl std::fmt::Display for Decimal {
-        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-            let mut scaled_val = self.value.to_string();
-            if scaled_val.len() <= self.decimals as usize {
-                scaled_val.insert_str(
-                    0,
-                    &vec!["0"; self.decimals as usize - scaled_val.len()].join(""),
-                );
-                scaled_val.insert_str(0, "0.");
-            } else {
-                scaled_val.insert(scaled_val.len() - self.decimals as usize, '.');
-            }
-            f.write_str(&scaled_val)
-        }
-    }
-
-    #[program]
-    pub mod chainlink_solana_demo {
-        use super::*;
-            pub fn execute(ctx: Context<Execute>) -> Result<()>  {
-            let round = chainlink::latest_round_data(
-                ctx.accounts.chainlink_program.to_account_info(),
-                ctx.accounts.chainlink_feed.to_account_info(),
-            )?;
-
-            let description = chainlink::description(
-                ctx.accounts.chainlink_program.to_account_info(),
-                ctx.accounts.chainlink_feed.to_account_info(),
-            )?;
-
-            let decimals = chainlink::decimals(
-                ctx.accounts.chainlink_program.to_account_info(),
-                ctx.accounts.chainlink_feed.to_account_info(),
-            )?;
-            // write the latest price to the program output
-            let decimal_print = Decimal::new(round.answer, u32::from(decimals));
-            msg!("{} price is {}", description, decimal_print);
-            Ok(())
-        }
-    }
-
-    #[derive(Accounts)]
-    pub struct Execute<'info> {
-        /// CHECK: We're reading data from this chainlink feed account
-        pub chainlink_feed: AccountInfo<'info>,
-        /// CHECK: This is the Chainlink program library
-        pub chainlink_program: AccountInfo<'info>
-    }
-```
-
-Program Transaction logs:
-
-```
+```sh Rust with Anchor
 Fetching transaction logs...
 [
   'Program HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny consumed 1826 of 1306895 compute units',
@@ -227,10 +81,7 @@ Fetching transaction logs...
 ]
 ```
 
-
-## Using Data Feeds On-Chain: Solana Starter Kit Example
-
-## Overview
+## Solana Starter Kit Example
 
 This guide demonstrates the following tasks:
 
@@ -238,7 +89,6 @@ This guide demonstrates the following tasks:
 - Retrieve price data data using the [Solana Web3 JavaScript API](https://www.npmjs.com/package/@solana/web3.js) with Node.js.
 
 This example shows a full end to end example of using Chainlink Price Feeds on Solana. It includes an on-chain program written in rust, as well as an off-chain client written in JavaScript. The client passes in an account to the program, the program then looks up the latest price of the specified price feed account, and then stores the result in the passed in account. The off-chain client then reads the value stored in the account.
-
 
 **Table of contents:**
 
@@ -390,7 +240,7 @@ This example includes a contract written in Rust. Deploy the contract to the Sol
 
 Now that the program is on-chain, you can call it using the [Anchor Web3 module](https://project-serum.github.io/anchor/ts/modules/web3.html).
 
-## Call the deployed program
+### Call the deployed program
 
 Use your deployed program to retrieve price data from a Chainlink data feed on Solana Devnet. For this example, call your deployed program using the [Anchor Web3 module](https://project-serum.github.io/anchor/ts/modules/web3.html) and the [`client.js` example](https://github.com/smartcontractkit/solana-starter-kit/blob/main/client.js) code.
 
@@ -439,7 +289,7 @@ The program that owns the data feeds is [HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEm
 
 <!-- TODO: Add a step by step explanation for what the contract is doing and how client.js functions. -->
 
-## Clean up
+### Clean up
 
 After you are done with your deployed contract and no longer need it, it is nice to close the program and withdraw the Devnet SOL tokens for future use. In a production environment, you will want to withdraw unused SOL tokens from any Solana program that you no longer plan to use, so it is good to practice the process when you are done with programs on Devnet.
 

@@ -21,15 +21,14 @@ To get the full list of Chainlink Data Feeds on Solana, see the [Solana Feeds](/
 
 **Table of contents:**
 
-- [Using Data Feeds Off-Chain In An Existing Project](#using-data-feeds-off-chain-in-an-existing-project)
+- [Adding data feeds to an existing off-chain project](#using-data-feeds-off-chain-in-an-existing-project)
 - [Using Data Feeds Off-Chain: Solana Starter Kit Example](#using-data-feeds-off-chain-solana-starter-kit-example)
 
-## Using Data Feeds Off-Chain In An Existing Project
-## Overview
+## Adding data feeds to an existing off-chain project
 
 You can read Chainlink Data Feed data off-chain in your existing project by using the [Chainlink Solana NPM library](https://www.npmjs.com/package/@chainlink/solana-sdk).
 
-## Install the required tools
+### Install the required tools
 
 Before you begin, set up your environment. Any of these steps can be skipped if you have already done them as part of your project:
 
@@ -58,90 +57,20 @@ Before you begin, set up your environment. Any of these steps can be skipped if 
     export ANCHOR_WALLET=./id.json
     ```
 
-1. Use the following code sample to query price data off-chain, making sure to replace the `CHAINLINK_FEED_ADDRESS` variable value with the [feed account](https://docs.chain.link/docs/solana/data-feeds-solana/) that you wish to query
+1. Use the following code sample to query price data off-chain, making sure to replace the `CHAINLINK_FEED_ADDRESS` variable value with the [feed account](https://docs.chain.link/docs/solana/data-feeds-solana/) that you wish to query.
 
-## JavaScript
-
-```JavaScript
-    const anchor = require("@project-serum/anchor");
-    const  chainlink = require("@chainlink/solana-sdk");
-    const provider = anchor.Provider.env();
-
-
-    async function main() {
-        const provider = anchor.Provider.env();
-        anchor.setProvider(provider);
-
-        const CHAINLINK_FEED_ADDRESS="2ypeVyYnZaW2TNYXXTaZq9YhYvnqcjCiifW1C6n8b7Go"
-        const CHAINLINK_PROGRAM_ID = new anchor.web3.PublicKey("cjg3oHmg9uuPsP8D6g29NWvhySJkdYdAo9D25PRbKXJ");
-        const feedAddress = new anchor.web3.PublicKey(CHAINLINK_FEED_ADDRESS); //ETH-USD Devnet
-
-        //load the data feed account
-        let dataFeed = await chainlink.OCR2Feed.load(CHAINLINK_PROGRAM_ID, provider);
-        let listener = null;
-
-        //listen for events agains the price feed, and grab the latest rounds price data
-        listener = dataFeed.onRound(feedAddress, (event) => {
-            console.log(event.answer.toNumber())
-        });
-
-        //block execution and keep waiting for events to be emitted with price data
-        await new Promise(function () {});
-    }
-
-    main().then(
-        () => process.exit(),
-        err => {
-            console.error(err);
-            process.exit(-1);
-        },
-    );
+```javascript JavaScript
+{% include 'samples/Solana/PriceFeeds/off-chain-read.js' %}
+```
+```typescript TypeScript
+{% include 'samples/Solana/PriceFeeds/off-chain-read.ts' %}
 ```
 
-## TypeScript
+## Solana Starter Kit
 
-```TypeScript
-    import * as anchor from "@project-serum/anchor";
-    import { OCR2Feed } from "@chainlink/solana-sdk";
+This example reads price data from an off-chain client using the [Solana Starter Kit](https://github.com/smartcontractkit/solana-starter-kit).
 
-    async function main() {
-        const provider = anchor.Provider.env();
-        anchor.setProvider(provider);
-
-        const CHAINLINK_FEED_ADDRESS="2ypeVyYnZaW2TNYXXTaZq9YhYvnqcjCiifW1C6n8b7Go"
-        const CHAINLINK_PROGRAM_ID = new anchor.web3.PublicKey("cjg3oHmg9uuPsP8D6g29NWvhySJkdYdAo9D25PRbKXJ");
-        const feedAddress = new anchor.web3.PublicKey(CHAINLINK_FEED_ADDRESS); //ETH-USD Devnet
-
-        //load the data feed account
-        let dataFeed = await OCR2Feed.load(CHAINLINK_PROGRAM_ID, provider);
-        let listener = null;
-
-        //listen for events agains the price feed, and grab the latest rounds price data
-        listener = dataFeed.onRound(feedAddress, (event) => {
-            console.log(event.answer.toNumber())
-        });
-
-        //block execution and keep waiting for events to be emitted with price data
-        await new Promise(function () {});
-    }
-
-    main().then(
-        () => process.exit(),
-        err => {
-            console.error(err);
-            process.exit(-1);
-        },
-    );
-```
-
-## Using Data Feeds Off-Chain: Solana Starter Kit Example
-
-
-## Overview
-
-In this example, we'll read price data from an off-chain client using the Solana Starter Kit
-
-## Install the required tools
+### Install the required tools
 
 Before you begin, set up your environment for development on Solana:
 
@@ -163,7 +92,7 @@ Before you begin, set up your environment for development on Solana:
 
     On some operating systems, you might need to build and install Anchor locally. See the [Anchor documentation](https://project-serum.github.io/anchor/getting-started/installation.html#build-from-source-for-other-operating-systems) for instructions.
 
-## Run the example program
+### Run the example program
 
 After you install the required tools, clone the example code from the [solana-starter-kit](https://github.com/smartcontractkit/solana-starter-kit) repository.
 
@@ -195,37 +124,22 @@ After you install the required tools, clone the example code from the [solana-st
     export ANCHOR_WALLET=./id.json
     ```
 
-1. If you are using TypeScript, run the `read-data.ts` example:
+1. Run the example:
 
-    ```sh
+    ```sh JavaScript
+    node read-data.js
+    ```
+    ```sh TypeScript
     yarn run read-data
     ```
 
     The example code retrieves and prints the current price feed data until you close the application:
 
     ```
-    yarn run v1.22.18
-    $ ts-node ./read-data.ts
     9731000000
     9732000000
     9730839909
     9734000000
-    ```
-
-1. If you are using JavaScript, run the `read-data.js` example:
-
-    ```sh
-    node read-data.js
-    ```
-
-    The example code retrieves and prints the current price feed data until you close the application:
-
-    ```
-    285378472482
-    285388880269
-    285378649498
-    285373633029
-    285295000000
     ```
 
 To learn more about Solana and Anchor, see the [Solana Documentation](https://docs.solana.com/) and the [Anchor Documentation](https://project-serum.github.io/anchor/).
