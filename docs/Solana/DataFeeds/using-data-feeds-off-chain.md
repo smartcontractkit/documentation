@@ -25,6 +25,7 @@ To get the full list of Chainlink Data Feeds on Solana, see the [Solana Feeds](/
 - [Using Data Feeds Off-Chain: Solana Starter Kit Example](#using-data-feeds-off-chain-solana-starter-kit-example)
 
 ## Using Data Feeds Off-Chain In An Existing Project
+## Overview
 
 You can read Chainlink Data Feed data off-chain in your existing project by using the [Chainlink Solana NPM library](https://www.npmjs.com/package/@chainlink/solana-sdk).
 
@@ -61,7 +62,7 @@ Before you begin, set up your environment. Any of these steps can be skipped if 
 
 ## JavaScript
 
-    ```
+```JavaScript
     const anchor = require("@project-serum/anchor");
     const  chainlink = require("@chainlink/solana-sdk");
     const provider = anchor.Provider.env();
@@ -95,11 +96,11 @@ Before you begin, set up your environment. Any of these steps can be skipped if 
             process.exit(-1);
         },
     );
-    ```
+```
 
 ## TypeScript
 
-    ```
+```TypeScript
     import * as anchor from "@project-serum/anchor";
     import { OCR2Feed } from "@chainlink/solana-sdk";
 
@@ -131,11 +132,14 @@ Before you begin, set up your environment. Any of these steps can be skipped if 
             process.exit(-1);
         },
     );
-    ```
+```
 
 ## Using Data Feeds Off-Chain: Solana Starter Kit Example
 
-In this example, we'll read price data from an off-chain client using the Solana Starter Kit.
+
+## Overview
+
+In this example, we'll read price data from an off-chain client using the Solana Starter Kit
 
 ## Install the required tools
 
