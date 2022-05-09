@@ -1,10 +1,9 @@
 const anchor = require("@project-serum/anchor");
 const  chainlink = require("@chainlink/solana-sdk");
-const provider = anchor.Provider.env();
+const provider = anchor.AnchorProvider.env();
 
 
 async function main() {
-    const provider = anchor.Provider.env();
     anchor.setProvider(provider);
 
     const CHAINLINK_FEED_ADDRESS="2ypeVyYnZaW2TNYXXTaZq9YhYvnqcjCiifW1C6n8b7Go"
