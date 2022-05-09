@@ -16,6 +16,7 @@ permalink: "docs/best-practices-aws/"
 - [Recovering or Upgrading your Chainlink Node Container](#recovering-or-upgrading-your-chainlink-node-container)
 - [Backup and Restore](#backup-and-restore)
 - [Failover Capabilities and Disaster Recovery](#failover-capabilities-and-disaster-recovery)
+- [Troubleshooting and Design Practices](#troubleshooting-and-design-practices)
 
 ## Overview
 
@@ -29,7 +30,7 @@ You can deploy a Chainlink node on the AWS Cloud using [AWS Quick Start](https:/
 
 The Quick Start creates the following public resources:
 
-- An Elastic Load Balancing (ELB) load balancer to access the Chainlink node web graphical user interface.
+- An Elastic Load Balancing (ELB) load balancer to access the Chainlink node web graphical user interface
 - A Linux bastion host in an Auto Scaling group to allow inbound Secure Shell (SSH) access to EC2 instances in public and private subnetworks
 - Managed network address translation (NAT) gateways to allow outbound internet access for the Chainlink node instances in the private subnets
 
@@ -148,7 +149,7 @@ If the Chainlink node containers are stopped or if you need to start up a new in
 
 ### Generating the `.env` file
 
-```
+```shell
 cd /home/ec2-user/.chainlink/ && ./create-env.sh \
 ${chainNetwork} \
 ${blockchainNodeUrl} \
@@ -161,14 +162,14 @@ ${psqlDb}
 
 ### Generating the `.password` file
 
-```
+```shell
 cd /home/ec2-user/.chainlink/ && ./create-password.sh \
 $(aws secretsmanager get-secret-value --secret-id WalletSecret --query "SecretString" --output text)
 ```
 
 ### Generating the `.api` file
 
-```
+```shell
 cd /home/ec2-user/.chainlink/ && ./create-api.sh \
 ${apiUser} \
 $(aws secretsmanager get-secret-value --secret-id ApiSecret --query "SecretString" --output text)
@@ -178,13 +179,13 @@ $(aws secretsmanager get-secret-value --secret-id ApiSecret --query "SecretStrin
 
 This process is required when you update the container to a newer release.
 
-```
+```shell
 docker stop chainlink && docker rm chainlink
 ```
 
 ### Starting the Chainlink node container in Docker
 
-```
+```shell
 latestimage=$(curl -s -S "https://registry.hub.docker.com/v2/repositories/smartcontract/chainlink/tags/" | jq -r '."results"[]["name"]' | head -n 1)
 cd /home/ec2-user/.chainlink && docker run -d \
 --log-driver=awslogs \
@@ -236,3 +237,18 @@ If one Availability Zone becomes unhealthy or unavailable, the Amazon EC2 Auto S
 The data from both the Chainlink node and the Ethereum client is stored in the PostgreSQL database. The Aurora database cluster is fault tolerant by design and can handle an Availability Zone failure without any loss of data. There might be only a brief interruption of service with an automatic failover, which helps to reduce the Recovery Point Objective (RPO) and Recovery Time Objective (RTO).
 
 Management of AWS service limits are not required for proper disaster recovery. The Quick Start deployment is configured with high availability in mind.
+
+## Troubleshooting and Design Practices
+
+### AWS Certificate Manager
+
+In the AWS console, if the **SSL certificate with AWS Certificate Manager** is set to `false`, we can leave **arn:aws:acm:region:account-id:certificate** as is. However, if you would like your node to be external facing and be reached by the internet, you will need to enable this feature and set it to `true`.
+
+![AWS Certificate Manager](/images/node-operators/aws-certificate-manager.png)
+
+### Amazon Devops Guru
+
+In the AWS console, if the **Amazon Devops Guru** is set to `false`, we can leave **AdministerAccountId** and **EmailAddress** as is. 
+
+![Amazon Devops Guru](/images/node-operators/amazon-devops-guru.png)
+
