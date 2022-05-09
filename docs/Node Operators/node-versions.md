@@ -12,6 +12,13 @@ metadata:
 
 You can find a list of release notes for Chainlink nodes in the [smartcontractkit GitHub repository](https://github.com/smartcontractkit/chainlink/releases). Docker images are available in the [Chainlink Docker hub](https://hub.docker.com/r/smartcontract/chainlink/tags).
 
+## Changes to v1.4.1
+
+**[v1.4.1 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v1.4.1)**
+
+- Added a fix to ensure that a failed `EthSubscribe` does not register `(*rpc.ClientSubscription)(nil)`, which leads to a panic when unsubscribing.
+- Fix parsing of float values on job specs.
+
 ## Changes to v1.4.0
 
 **[v1.4.0 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v1.4.0)**
