@@ -2,7 +2,7 @@ import * as anchor from "@project-serum/anchor";
 import { OCR2Feed } from "@chainlink/solana-sdk";
 
 async function main() {
-    const provider = anchor.Provider.env();
+    const provider = anchor.AnchorProvider.env();
     anchor.setProvider(provider);
 
     const CHAINLINK_FEED_ADDRESS="2ypeVyYnZaW2TNYXXTaZq9YhYvnqcjCiifW1C6n8b7Go"
