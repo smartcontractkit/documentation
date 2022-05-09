@@ -248,7 +248,7 @@ In the AWS console, if the **SSL certificate with AWS Certificate Manager** is s
 
 ### Amazon Devops Guru
 
-In the AWS console, if the **Amazon Devops Guru** is set to `false`, we can leave **AdministerAccountId** and **EmailAddress** as is. 
+In the AWS console, if the **Amazon DevOps Guru** is set to `false`, we can leave **AdministerAccountId** and **EmailAddress** as is. 
 
 ![Amazon Devops Guru](/images/node-operators/amazon-devops-guru.png)
 
