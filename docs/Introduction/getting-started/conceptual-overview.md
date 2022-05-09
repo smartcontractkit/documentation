@@ -1,4 +1,67 @@
 ---
+#!/usr/bin/env bash
+
+# ตั้งค่าการรับรองความถูกต้อง: 
+
+apiKey = "ใส่รหัส API ของคุณเองที่นี่"
+
+# ตั้งค่าคำขอ: 
+
+apiMethod = "POST" 
+
+apiCall = "v3/order" 
+
+apiParams = "symbol=BTCUSDT&side=SELL&type=LIMIT&timeInForce=GTC&quantity=1&price=0.2&recvWindow=5000"
+
+ฟังก์ชัน rawurlencode { 
+
+    ค่าท้องถิ่น = " $1 " len ท้องถิ่น= ${# ค่า} เข้ารหัสใน เครื่อง = "" pos co ท้องถิ่น
+
+     
+
+     
+
+    
+
+    สำหรับ ((  pos = 0  ; pos<len ; pos++ )) 
+
+    do 
+
+        c = ${ value : $pos : 1 } 
+
+        case  " $c "ใน
+
+             [ -_.~a-zA-Z0-9 )  )  o = " $ { ค} "  ;; 
+
+            * )    printf -vo '%%%02x'  "' $c " 
+
+        esac 
+
+        เข้ารหัส+= " $o " 
+
+    เสร็จสิ้น
+
+    echo  " $encoded " 
+
+}
+
+ts = $(วันที่ +%s000 ) 
+
+paramsWithTs = " $apiParams ×tamp= $ts "
+
+rawSignature = $( echo -n " $paramsWithTs "  \
+
+               | openssl dgst -keyform PEM -sha256 -sign ./test-prv-key.pem \
+
+               | openssl enc -base64 \
+
+               | tr -d '\n' ) 
+
+ลายเซ็น= $( rawurlencode " $rawSignature " )
+
+curl --silent -H "X-MBX-APIKEY: $apiKey "  \
+
+     -X $apiMethod  "https://testnet.binance.vision/api/ $apiCall ? $paramsWithTs &signature= $signature "
 layout: nodes.liquid
 section: gettingStarted
 date: Last Modified
