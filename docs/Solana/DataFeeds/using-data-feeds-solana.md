@@ -2,18 +2,17 @@
 layout: nodes.liquid
 section: solana
 date: Last Modified
-title: "Using Data Feeds (Solana)"
+title: "Using Data Feeds On-Chain (Solana)"
 permalink: "docs/solana/using-data-feeds-solana/"
+whatsnext: {"Use data feeds off-chain":"/docs/solana/using-data-feeds-off-chain/", "See the available data feeds on Solana":"/docs/solana/data-feeds-solana/"}
 metadata:
-  title: "Using Data Feeds (Solana)"
-  description: "How to use Chainlink Data Feeds in your Solana programs."
+  title: "Using Data Feeds On-Chain (Solana)"
+  description: "How to use Chainlink Data Feeds in your on-chain Solana programs."
 ---
 
-Chainlink Data Feeds are the quickest way to connect your smart contracts to the real-world market prices of assets. For example, one use for data feeds is to enable smart contracts to retrieve the latest pricing data of an asset in a single call.
+Chainlink Data Feeds are the quickest way to connect your smart contracts to the real-world market prices of assets. This guide demonstrates how to deploy a contract to the Solana Devnet and access Data Feeds on-chain using the [Chainlink Solana Starter Kit](https://github.com/smartcontractkit/solana-starter-kit). To learn how to read price feed data using off-chain applications, see the [Using Data Feeds Off-Chain](/docs/solana/using-data-feeds-off-chain/) guide.
 
-This guide applies specifically to using data feeds on [Solana](https://solana.com/) clusters. To get the full list of Chainlink Data Feeds on Solana, see the [Solana Feeds](/docs/solana/data-feeds-solana/) page.
-
-View the program that owns the Chainlink Data Feeds in the [Solana Devnet Explorer](https://solscan.io/account/HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny?cluster=devnet).
+To get the full list of available Chainlink Data Feeds on Solana, see the [Solana Feeds](/docs/solana/data-feeds-solana/) page. View the program that owns the Chainlink Data Feeds in the [Solana Devnet Explorer](https://solscan.io/account/HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny?cluster=devnet).
 
 {% include 'data-quality.md' %}
 
@@ -39,11 +38,13 @@ Before you begin, set up your environment for development on Solana:
 
 1. Install [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) if it is not already configured on your system.
 
-1. Install [Node.js 12 or higher](https://nodejs.org/en/download/). Run `node --version` to verify which version you have installed:
+1. Install [Node.js 14 or higher](https://nodejs.org/en/download/). Run `node --version` to verify which version you have installed:
 
     ```sh
     node --version
     ```
+
+1. Install [Yarn](https://classic.yarnpkg.com/lang/en/docs/install/) to simplify package management and run code samples.
 
 1. Install a C compiler such as the one included in [GCC](https://gcc.gnu.org/install/). Some dependencies require a C compiler.
 
@@ -61,7 +62,7 @@ Before you begin, set up your environment for development on Solana:
 1. Install the latest Mainnet version of [the Solana CLI](https://github.com/solana-labs/solana/releases) and export the path to the CLI:
 
     ```sh
-    sh -c "$(curl -sSfL https://release.solana.com/v1.8.14/install)" &&
+    sh -c "$(curl -sSfL https://release.solana.com/v1.9.18/install)" &&
     export PATH="~/.local/share/solana/install/active_release/bin:$PATH"
     ```
 
@@ -71,7 +72,7 @@ Before you begin, set up your environment for development on Solana:
     solana --version
     ```
 
-1. Use the Node package manager to [Install Anchor](https://project-serum.github.io/anchor/getting-started/installation.html). Depending on your environment, this step might require `sudo` permissions:
+1. Use the Node package manager to [Install Anchor](https://project-serum.github.io/anchor/getting-started/installation.html) globally. The global install allows you to run the [Anchor CLI](https://project-serum.github.io/anchor/cli/commands.html). Depending on your environment, this step might require `sudo` permissions:
 
     ```sh
     npm i -g @project-serum/anchor-cli
@@ -79,7 +80,7 @@ Before you begin, set up your environment for development on Solana:
 
     On some operating systems, you might need to build and install Anchor locally. See the [Anchor documentation](https://project-serum.github.io/anchor/getting-started/installation.html#build-from-source-for-other-operating-systems) for instructions.
 
-After you install the required tools, deploy the example program from the [solana-starter-kit](https://github.com/smartcontractkit/solana-starter-kit) repository.
+After you install the required tools, build and deploy the example program from the [solana-starter-kit](https://github.com/smartcontractkit/solana-starter-kit) repository.
 
 ## Deploy the example program
 
@@ -97,7 +98,7 @@ This example includes a contract written in Rust. Deploy the contract to the Sol
 1. In the `./solana-starter-kit` directory, install Node.js dependencies defined in the `package.json` file:
 
     ```sh
-    npm install
+    yarn install
     ```
 
 1. Create a temporary Solana wallet to use for this example. Use a temporary wallet to isolate development and testing from your other wallets. Alternatively, if you have an existing wallet that you want to use, locate the path to your [keypair](https://docs.solana.com/terminology#keypair) file and use it as the keypair for the rest of this guide.
@@ -195,7 +196,7 @@ Use your deployed program to retrieve price data from a Chainlink data feed on S
 
     ```sh
     ⋮
-    Price Is: 9056000000
+    Price Is: 96.79778375
     Success
     ⋮
     ```
@@ -211,11 +212,11 @@ Use your deployed program to retrieve price data from a Chainlink data feed on S
     ```sh
     node client.js \
     --program $(solana address -k ./target/deploy/chainlink_solana_demo-keypair.json) \
-    --feed CFRkaCg9PcuMaCZZdcePkaa8d8ugtH221HL7tXQHNVia
+    --feed 6N2eCQv8hBkyZjSzN1pe5QtznZL9bGn6TZzcFhaYSLTs
     ```
 
     ```sh
-    Price Is: 1517000000
+    Price Is: 12.4215826
     Success
     ```
 
