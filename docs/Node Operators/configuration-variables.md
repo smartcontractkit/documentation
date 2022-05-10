@@ -1562,8 +1562,9 @@ Example: `P2PV2_BOOTSTRAPPERS=12D3KooWMHMRLQkgPbFSYHwD3NBuwtS1AmxhvKVUrcfyaGDASR
 
 - Default: _none_
 
-`P2PV2_LISTEN_ADDRESSES` contains the addresses the peer will listen to on the network in host:port form as accepted by net.Listen, but host and port must be fully specified and cannot be empty.
-Example: `P2PV2_ANNOUNCE_ADDRESSES=1.2.3.4:9999 [a52d:0:a88:1274::abcd]:1337`
+`P2PV2_LISTEN_ADDRESSES` contains the addresses the peer will listen to on the network in `host:port` form as accepted by `net.Listen()`, but the host and port must be fully specified and cannot be empty. You can specify `0.0.0.0` (IPv4) or `::` (IPv6) to listen on all interfaces, but that is not recommended.
+
+Example: `P2PV2_LISTEN_ADDRESSES=1.2.3.4:9999 [a52d:0:a88:1274::abcd]:1337`
 
 ## Keeper
 
