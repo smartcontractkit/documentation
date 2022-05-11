@@ -165,7 +165,7 @@ Fee parameters are configured in the coordinator contract and specify the premiu
 | LINK Token            | [`0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846`](https://testnet.snowtrace.io/token/0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846)   |
 | VRF Coordinator       | [`0x2eD832Ba664535e5886b75D64C46EB9a228C2610`](https://testnet.snowtrace.io/address/0x2eD832Ba664535e5886b75D64C46EB9a228C2610) |
 | 300 gwei Key Hash     | `0x354d2f95da55398f44b7cff77da56283d9c6c829a4bdf1bbcaf2ad6a4d081f61`                                                            |
-| Premium               | 0.0005 LINK                                                                                                                     |
+| Premium               | 0.005 LINK                                                                                                                     |
 | Minimum Confirmations | 1                                                                                                                               |
 | Maximum Confirmations | 200                                                                                                                             |
 | Maximum Random Values | 500                                                                                                                             |
