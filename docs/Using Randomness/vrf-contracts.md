@@ -149,7 +149,7 @@ Fee parameters are configured in the coordinator contract and specify the premiu
 | 100 gwei Key Hash     | `0x83250c5584ffa93feb6ee082981c5ebe484c865196750b39835ad4f13780435d`                                                    |
 | 300 gwei Key Hash     | `0x89630569c9567e43c4fe7b1633258df9f2531b62f2352fa721cf3162ee4ecb46`                                                    |
 | 600 gwei Key Hash     | `0x06eb0e2ea7cca202fc7c8258397a36f33d88568d2522b37aaa3b14ff6ee1b696`                                                    |
-| Premium               | 0.0005 LINK                                                                                                             |
+| Premium               | 0.005 LINK                                                                                                             |
 | Minimum Confirmations | 1                                                                                                                       |
 | Maximum Confirmations | 200                                                                                                                     |
 | Maximum Random Values | 500                                                                                                                     |
