@@ -21,12 +21,13 @@ To get the full list of available Chainlink Data Feeds on Solana, see the [Solan
 
 **Table of contents:**
 
+- [The Chainlink Data Feeds OCR2 Program](#the-chainlink-data-feeds-ocr2-program)
 - [Adding Data Feeds On-Chain In An Existing Project](#adding-data-feeds-on-chain-in-an-existing-project)
 - [Solana Starter Kit Example](#solana-starter-kit-example)
 
-## The Chainlink Data Feeds Program
+## The Chainlink Data Feeds OCR2 Program
 
-The program that owns the data feeds on both Devnet and Mainnet is [HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny](https://solscan.io/account/HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny?cluster=devnet). This is the program that you interact with to retrieve Chainlink Price Data. Source code for this program is available on the [Smartcontractkit GitHub](https://github.com/smartcontractkit/chainlink-solana/tree/develop/contracts).
+The program that owns the data feeds on both Devnet and Mainnet is [HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny](https://solscan.io/account/HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny?cluster=devnet). This is the program ID that you use to retrieve Chainlink Price Data on-chain in your program. Source code for this program is available on the [Smartcontractkit GitHub](https://github.com/smartcontractkit/chainlink-solana/tree/develop/contracts/programs/ocr2).
 
 ## Adding Data Feeds On-Chain In An Existing Project
 
