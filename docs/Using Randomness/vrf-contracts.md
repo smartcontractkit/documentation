@@ -146,10 +146,10 @@ Fee parameters are configured in the coordinator contract and specify the premiu
 | --------------------- | ----------------------------------------------------------------------------------------------------------------------- |
 | LINK Token            | [`0x5947BB275c521040051D82396192181b413227A3`](https://snowtrace.io/token/0x5947BB275c521040051D82396192181b413227A3)   |
 | VRF Coordinator       | [`0xd5D517aBE5cF79B7e95eC98dB0f0277788aFF634`](https://snowtrace.io/address/0xd5D517aBE5cF79B7e95eC98dB0f0277788aFF634) |
-| 100 gwei Key Hash     | `0x83250c5584ffa93feb6ee082981c5ebe484c865196750b39835ad4f13780435d`                                                    |
-| 300 gwei Key Hash     | `0x89630569c9567e43c4fe7b1633258df9f2531b62f2352fa721cf3162ee4ecb46`                                                    |
-| 600 gwei Key Hash     | `0x06eb0e2ea7cca202fc7c8258397a36f33d88568d2522b37aaa3b14ff6ee1b696`                                                    |
-| Premium               | 0.005 LINK                                                                                                             |
+| 200 gwei Key Hash     | `0x83250c5584ffa93feb6ee082981c5ebe484c865196750b39835ad4f13780435d`                                                    |
+| 500 gwei Key Hash     | `0x89630569c9567e43c4fe7b1633258df9f2531b62f2352fa721cf3162ee4ecb46`                                                    |
+| 1000 gwei Key Hash    | `0x06eb0e2ea7cca202fc7c8258397a36f33d88568d2522b37aaa3b14ff6ee1b696`                                                    |
+| Premium               | 0.005 LINK                                                                                                              |
 | Minimum Confirmations | 1                                                                                                                       |
 | Maximum Confirmations | 200                                                                                                                     |
 | Maximum Random Values | 500                                                                                                                     |
@@ -165,7 +165,7 @@ Fee parameters are configured in the coordinator contract and specify the premiu
 | LINK Token            | [`0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846`](https://testnet.snowtrace.io/token/0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846)   |
 | VRF Coordinator       | [`0x2eD832Ba664535e5886b75D64C46EB9a228C2610`](https://testnet.snowtrace.io/address/0x2eD832Ba664535e5886b75D64C46EB9a228C2610) |
 | 300 gwei Key Hash     | `0x354d2f95da55398f44b7cff77da56283d9c6c829a4bdf1bbcaf2ad6a4d081f61`                                                            |
-| Premium               | 0.005 LINK                                                                                                                     |
+| Premium               | 0.005 LINK                                                                                                                      |
 | Minimum Confirmations | 1                                                                                                                               |
 | Maximum Confirmations | 200                                                                                                                             |
 | Maximum Random Values | 500                                                                                                                             |
@@ -176,9 +176,9 @@ Fee parameters are configured in the coordinator contract and specify the premiu
 | --------------------- | ---------------------------------------------------------------------------------------------------------------------- |
 | LINK Token            | [`0x6f43ff82cca38001b6699a8ac47a2d0e66939407`](https://ftmscan.com/token/0x6f43ff82cca38001b6699a8ac47a2d0e66939407)   |
 | VRF Coordinator       | [`0xd5D517aBE5cF79B7e95eC98dB0f0277788aFF634`](https://ftmscan.com/address/0xd5d517abe5cf79b7e95ec98db0f0277788aff634) |
-| 1200 gwei Key Hash    | `0xb4797e686f9a1548b9a2e8c68988d74788e0c4af5899020fb0c47784af76ddfa`                                                   |
-| 3000 gwei Key Hash    | `0x5881eea62f9876043df723cf89f0c2bb6f950da25e9dfe66995c24f919c8f8ab`                                                   |
-| 6000 gwei Key Hash    | `0x64ae04e5dba58bc08ba2d53eb33fe95bf71f5002789692fe78fb3778f16121c9`                                                   |
+| 4000 gwei Key Hash    | `0xb4797e686f9a1548b9a2e8c68988d74788e0c4af5899020fb0c47784af76ddfa`                                                   |
+| 10000 gwei Key Hash   | `0x5881eea62f9876043df723cf89f0c2bb6f950da25e9dfe66995c24f919c8f8ab`                                                   |
+| 20000 gwei Key Hash   | `0x64ae04e5dba58bc08ba2d53eb33fe95bf71f5002789692fe78fb3778f16121c9`                                                   |
 | Premium               | 0.0005 LINK                                                                                                            |
 | Minimum Confirmations | 1                                                                                                                      |
 | Maximum Confirmations | 200                                                                                                                    |
