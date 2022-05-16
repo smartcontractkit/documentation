@@ -31,9 +31,9 @@ To learn more about how price feeds update, see the [Decentralized Data Model](.
 
 # Historical Rounds
 
-To get historical data, one needs to call the `getRoundData` [function](/docs/price-feeds-api-reference/#getrounddata) providing `roundId` as parameter.
-Data Feeds are updated in rounds. Rounds are identified by their `roundId`, which increases with each new round. The increase might not be monotonic. Knowing the `roundId` of a previous round allows contracts to consume historical price data.
-Technically, the `roundId` is computed as the following in the [proxy contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/dev/AggregatorProxy.sol):
+To get historical data, you need to call the `getRoundData` [function](/docs/price-feeds-api-reference/#getrounddata) and provide `roundId` as a parameter.
+Data feeds are updated in **rounds**. Rounds are identified by their `roundId`, which increases with each new round. This increase may not be monotonic. Knowing the `roundId` of a previous round allows contracts to consume historical price data.
+The `roundId` is computed as the following in the [proxy contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/dev/AggregatorProxy.sol):
 
 ```solidity
 roundId = uint80((uint256(phaseId) << 64) | originalId);
@@ -41,12 +41,12 @@ roundId = uint80((uint256(phaseId) << 64) | originalId);
 
 where:
 
-- `phaseId`: is incremented each time the underlying aggregator implementation has been updated. More info on the relationship between _proxies_ and _aggregators_ can be found [here](/docs/architecture-decentralized-model/).
-- `originalId` : is the round id of the current underlying aggregator. The id starts at 1. 
-- `roundId`: computed round id. From the above formula, you can think of it as a large number containing `phaseId` and `originalId`.
+- `phaseId` is incremented each time the underlying aggregator implementation has been updated. More info on the relationship between _proxies_ and _aggregators_ can be found [here](/docs/architecture-decentralized-model/).
+- `originalId` is the round id of the current underlying aggregator. The id starts at 1. 
+- `roundId` computed round id. From the above formula, you can think of it as a large number containing `phaseId` and `originalId`.
 
 When querying the historical data, it is important to know when we hit the history of the underlying aggregator. Let's illustrate this with an example:
-At the time of writing, `latestRoundData` [function](/docs/price-feeds-api-reference/#latestrounddata) of  [LINK / USD feed on Ethereum Mainnet](/docs/ethereum-addresses/) returns _roundId = 92233720368547771158 _. From this number, we can compute the `phaseId` and `originalId`:
+At the time of writing, `latestRoundData` [function](/docs/price-feeds-api-reference/#latestrounddata) of  [LINK / USD feed on Ethereum Mainnet](/docs/ethereum-addresses/) returns _roundId = 92233720368547771158 _. Using this value, we can compute the `phaseId` and `originalId`:
 
 - _phaseId = 92233720368547771158 >> 64_ . Right shifting an integer by 64 bits is equivalent to dividing it by 2^64: _phaseId = 92233720368547771158/ 2^64 = 5_ . The current phase id is 5 , which means that this proxy has had 5 underlying aggregators since its initial deployment.
 - _originalId = uint64(92233720368547771158)_. This will retrieve the first 64 bits from the right. If you are calculating this off-chain, you can do the following in javascript:
@@ -60,11 +60,11 @@ console.log(Number(num >> 64n)); // returns 5 (phaseId)
 console.log(Number(num & num2)) // returns 13078 (originalId) . Use & (AND bitwise operator) which sets each bit to 1 if both bits are 1
 ```
 
-Now that we got the current aggregator's round _13078_ , we can get its historical data by looping over `getRoundData` [function](/docs/price-feeds-api-reference/#getrounddata) :
+Now that we have the current aggregator's round _13078_ , we can get its historical data by looping over `getRoundData` [function](/docs/price-feeds-api-reference/#getrounddata) :
 - starting from the first round 92233720368547758081 (result of _92233720368547771158 - 13078 + 1_).
 - until the current round: _92233720368547771158_. 
 
-Note that if we want the historical data for previous aggregators, we have to decrement the `phaseId` and start from round 1. For phase 4, we can get the starting roundId off-chain in javascript : 
+_Note_: if we want the historical data for previous aggregators, we have to decrement the `phaseId` and start from round 1. For phase 4, we can get the starting roundId off-chain in javascript : 
 
 ```javascript
 const phaseId = BigInt("4");
@@ -73,7 +73,7 @@ const originalId = BigInt("1");
 roundId = (phaseId << 64n) | originalId // returns 73786976294838206465n
 ```
 
-We can loop over the `getRoundData` [function](/docs/price-feeds-api-reference/#getrounddata) , starting at _73786976294838206465_ and incrementing until we get a revert, meaning that we hit the last round for the underlying aggregator. The same process could be repeated for previous `phaseIds` (3,2,1).
+We can loop over the `getRoundData` [function](/docs/price-feeds-api-reference/#getrounddata) , starting at _73786976294838206465_ and incrementing until we get a revert. This means that we have reached the last round for the underlying aggregator. The same process could be repeated for previous `phaseIds` (3,2,1).
 
 A few important words regarding the returned values of the `getRoundData` [function](/docs/price-feeds-api-reference/#getrounddata):
 
