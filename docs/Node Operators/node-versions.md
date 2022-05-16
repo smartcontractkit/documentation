@@ -10,7 +10,7 @@ metadata:
   description: "Details about various node versions and how to migrate between them."
 ---
 
-You can find a list of release notes for Chainlink nodes in the [smartcontractkit GitHub repository](https://github.com/smartcontractkit/chainlink/releases). Docker images are available in the [Chainlink Docker hub](https://hub.docker.com/r/smartcontract/chainlink/tags).
+You can find a list of release notes for Chainlink nodes in our [GitHub](https://github.com/smartcontractkit/chainlink/releases) repository. Docker images are available in the [Chainlink Docker hub](https://hub.docker.com/r/smartcontract/chainlink/tags).
 
 ## Changes to v1.4.1
 
