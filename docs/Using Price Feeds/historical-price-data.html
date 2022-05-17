@@ -58,6 +58,11 @@ where:
 - `aggregatorRoundId` is the aggregator roundId. The id starts at 1.
 - `roundId` computed round id. From the above formula, you can think of it as a large number containing `phaseId` and `aggregatorRoundId`.
 
+> 📘 Remark
+>
+> Note the formula above ensures that no matter how many times the underlying aggregator is changed, the proxy `roundId` will always be increasing.
+>
+
 ** Example:**
 
 When querying the historical data, it is important to know when we reach the end of the history of the underlying aggregator. Let's illustrate this with an example:
@@ -89,6 +94,11 @@ roundId = (phaseId << 64n) | aggregatorRoundId // returns 73786976294838206465n
 ```
 
 We can loop over the `getRoundData` [function](/docs/price-feeds-api-reference/#getrounddata) , starting at _73786976294838206465_ and incrementing it until we get a revert. This means that we have reached the last round for the underlying aggregator. The same process could be repeated for previous `phaseIds` (3,2,1).
+
+> 🚧 Looping on-chain
+>
+> The examples showed how to loop off-chain to fetch all historical data from a given proxy. Technically, you could also write a similar code on-chain but please be aware that this could cause **very high gas prices** if a state is changed within the same function.
+
 
 ### getRoundData return values
 
