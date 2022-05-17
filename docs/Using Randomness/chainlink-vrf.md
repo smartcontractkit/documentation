@@ -50,12 +50,18 @@ Chainlink VRF v2 is currently available on the following networks:
 - Ethereum:
   - [Mainnet](/docs/vrf-contracts/#ethereum-mainnet)
   - [Rinkeby testnet](/docs/vrf-contracts/#rinkeby-testnet)
-- BNB Chain
+- BNB Chain:
   - [Mainnet](/docs/vrf-contracts/#bnb-chain)
   - [Testnet](/docs/vrf-contracts/#bnb-chain-testnet)
-- Polygon (Matic)
+- Polygon (Matic):
   - [Mainnet](/docs/vrf-contracts/#polygon-matic-mainnet)
   - [Mumbai Testnet](/docs/vrf-contracts/#polygon-matic-mumbai-testnet)
+- Avalanche:
+  - [Avalanche Mainnet](/docs/vrf-contracts/#avalanche-mainnet)
+  - [Avalanche Fuji Testnet](/docs/vrf-contracts/#avalanche-fuji-testnet)
+- Fantom:
+  - [Fantom Mainnet](/docs/vrf-contracts/#fantom-mainnet)
+  - [Fantom Testnet](/docs/vrf-contracts/#fantom-testnet)
 
 See the [Contract Addresses](/docs/vrf-contracts) page for a complete list of coordinator addresses and gas price limits.
 
