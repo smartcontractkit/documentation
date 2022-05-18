@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	proxy "github.com/aelmanaa/chainlink-price-feed-golang/aggregatorv3"
+	"github.com/aelmanaa/chainlink-price-feed-golang/aggregatorv3"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -17,14 +17,13 @@ func main() {
 	}
 
 	// Price Feed address
-	addr := "0x9326BFA02ADD2366b30bacB125260Af641031331"
-	aggregatorAddress := common.HexToAddress(addr)
-	instance, err := proxy.NewAggregatorV3Interface(aggregatorAddress, client)
+	aggregatorAddress := common.HexToAddress("0x9326BFA02ADD2366b30bacB125260Af641031331")
+	chainlinkPriceFeedProxy, err := aggregatorv3.NewAggregatorV3Interface(aggregatorAddress, client)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	roundData, err := instance.LatestRoundData(&bind.CallOpts{})
+	roundData, err := chainlinkPriceFeedProxy.LatestRoundData(&bind.CallOpts{})
 	if err != nil {
 		log.Fatal(err)
 	}

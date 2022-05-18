@@ -94,7 +94,7 @@ This example uses [Web3.py](https://web3py.readthedocs.io/en/stable/) to retriev
 ## Golang
 
 This example uses [go-ethereum](https://github.com/ethereum/go-ethereum) to retrieve feed data from the [ETH / USD feed](https://kovan.etherscan.io/address/0x9326BFA02ADD2366b30bacB125260Af641031331) on the Kovan testnet.
-In order to interact with a smart contract in go, you need to:
+In order to interact with a smart contract in `Go`, you need to:
 
 1. Generate the [Contract ABI](https://docs.soliditylang.org/en/latest/abi-spec.html) from a solidity source file using [solc](https://docs.soliditylang.org/en/latest/using-the-compiler.html). In this case, we are going to download the [`AggregatorV3Interface`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol) and generate an ABI called `AggregatorV3Interface.abi`:
 
@@ -103,13 +103,13 @@ wget https://raw.githubusercontent.com/smartcontractkit/chainlink/develop/contra
 solc --abi AggregatorV3Interface.sol -o .
 ```
 
-2. Convert `AggregatorV3Interface.abi` to a `Go` file `aggregator_v3_interface.go`. Ensure that [Geth](https://geth.ethereum.org/docs/install-and-build/installing-geth) is installed so you can use `abigen`. This source code generator allows to convert Ethereum contract definitions into easy to use, compile-time type-safe Go packages.
+2. From `AggregatorV3Interface.abi`, generate the `Go` bindings `aggregator_v3_interface.go` required to programmatically interact with a smart contract using generated, typesafe `Go`code. Ensure that [Geth](https://geth.ethereum.org/docs/install-and-build/installing-geth) is installed so you can use [`abigen`](https://geth.ethereum.org/docs/dapp/native-bindings).
 
 ```shell
 abigen --abi=AggregatorV3Interface.abi --pkg=aggregator_v3_interface --out=aggregator_v3_interface.go
 ```
 
-3. Import the package. You can find the whole example with all the source files [here](https://replit.com/@hophop/chainlink-price-feed-golang?v=1)
+3. Import the package. You can find the whole example with all the source files [here](https://replit.com/@hophop/chainlink-price-feed-golang?v=1).
 
 
 ```go Kovan
