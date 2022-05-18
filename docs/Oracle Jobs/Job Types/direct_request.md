@@ -24,6 +24,7 @@ contractAddress     = "0x613a38AC1659769640aaE063C651F48E0250454C"
 # ]
 # minContractPaymentLinkJuels = "100000000000000"
 # externalJobID = "0EEC7E1D-D0D2-476C-A1A8-72DFB6633F02"
+# minIncomingConfirmations = 10
 
 observationSource   = """
     ds          [type="http" method=GET url="http://example.com"]
@@ -42,6 +43,7 @@ See [shared fields](/docs/jobs/#shared-fields).
 - `contractAddress`: The Oracle or Operator contract to monitor for requests
 - `requesters`: Optional - Allows whitelisting requesters
 - `minContractPaymentLinkJuels` Optional - Allows you to specify a job-specific minimum contract payment
+- `minIncomingConfirmations` Optional - Allows you to specify a job-specific `MIN_INCOMING_CONFIRMATIONS` value, must be greater than or equal to 1
 
 **Job type specific pipeline variables**
 
@@ -55,6 +57,9 @@ See [shared fields](/docs/jobs/#shared-fields).
 - `$(jobRun.logAddress)`: the address of the contract to which the initiating transaction was sent.
 - `$(jobRun.logTopics)`: the log's topics (`indexed` fields).
 - `$(jobRun.logData)`: the log's data (non-`indexed` fields).
+- `$(jobRun.blockReceiptsRoot)` : the root of the receipts trie of the block (hash).
+- `$(jobRun.blockTransactionsRoot)` : the root of the transaction trie of the block (hash).
+- `$(jobRun.blockStateRoot)` : the root of the final state trie of the block (hash).
 
 **Single-Word Example**
 
