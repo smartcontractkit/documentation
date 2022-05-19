@@ -9,13 +9,16 @@ import '@chainlink/contracts/src/v0.8/ConfirmedOwner.sol';
  * Find information on LINK Token Contracts and get the latest ETH and LINK faucets here: https://docs.chain.link/docs/link-token-contracts/
  */
 
+/**
+ * THIS IS AN EXAMPLE CONTRACT WHICH USES HARDCODED VALUES FOR CLARITY.
+ * PLEASE DO NOT USE THIS CODE IN PRODUCTION.
+ */
 contract DnsOwnershipChainlink is ChainlinkClient, ConfirmedOwner {
     using Chainlink for Chainlink.Request;
 
-    uint256 oraclePayment;
-    address private oracle;
     bytes32 private jobId;
     bool public proof;
+    uint256 oraclePayment;
 
     /**
      * Network: Kovan
@@ -31,9 +34,9 @@ contract DnsOwnershipChainlink is ChainlinkClient, ConfirmedOwner {
      */
     constructor() ConfirmedOwner(msg.sender) {
         setChainlinkToken(0xa36085F69e2889c224210F603D836748e7dC0088);
-        oracle = 0xfF07C97631Ff3bAb5e5e5660Cdf47AdEd8D4d4Fd;
+        setChainlinkOracle(0xfF07C97631Ff3bAb5e5e5660Cdf47AdEd8D4d4Fd);
         jobId = '791bd73c8a1349859f09b1cb87304f71';
-        oraclePayment = 0.1 * 10**18; // (Varies by network and job)
+        oraclePayment = (1 * LINK_DIVISIBILITY) / 10; // 0,1 * 10**18 (Varies by network and job)
     }
 
     /**
@@ -44,7 +47,7 @@ contract DnsOwnershipChainlink is ChainlinkClient, ConfirmedOwner {
         Chainlink.Request memory req = buildChainlinkRequest(jobId, address(this), this.fulfill.selector);
         req.add('name', _name);
         req.add('record', _record);
-        sendChainlinkRequestTo(oracle, req, oraclePayment);
+        sendChainlinkRequest(req, oraclePayment);
     }
 
     /**
@@ -53,5 +56,13 @@ contract DnsOwnershipChainlink is ChainlinkClient, ConfirmedOwner {
      */
     function fulfill(bytes32 _requestId, bool _proof) public recordChainlinkFulfillment(_requestId) {
         proof = _proof;
+    }
+
+    /**
+     * Allow withdraw of Link tokens from the contract
+     */
+    function withdrawLink() public onlyOwner {
+        LinkTokenInterface link = LinkTokenInterface(chainlinkTokenAddress());
+        require(link.transfer(msg.sender, link.balanceOf(address(this))), 'Unable to transfer');
     }
 }

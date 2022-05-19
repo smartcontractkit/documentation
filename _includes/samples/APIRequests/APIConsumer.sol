@@ -2,6 +2,7 @@
 pragma solidity ^0.8.7;
 
 import '@chainlink/contracts/src/v0.8/ChainlinkClient.sol';
+import '@chainlink/contracts/src/v0.8/ConfirmedOwner.sol';
 
 /**
  * Request testnet LINK and ETH here: https://faucets.chain.link/
@@ -12,7 +13,7 @@ import '@chainlink/contracts/src/v0.8/ChainlinkClient.sol';
  * THIS IS AN EXAMPLE CONTRACT WHICH USES HARDCODED VALUES FOR CLARITY.
  * PLEASE DO NOT USE THIS CODE IN PRODUCTION.
  */
-contract APIConsumer is ChainlinkClient {
+contract APIConsumer is ChainlinkClient, ConfirmedOwner {
     using Chainlink for Chainlink.Request;
 
     uint256 public volume;
@@ -30,7 +31,7 @@ contract APIConsumer is ChainlinkClient {
      * jobId: ca98366cc7314957b8c012c72f05aeeb
      *
      */
-    constructor() {
+    constructor() ConfirmedOwner(msg.sender) {
         setChainlinkToken(0xa36085F69e2889c224210F603D836748e7dC0088);
         setChainlinkOracle(0x74EcC8Bdeb76F2C6760eD2dc8A46ca5e581fA656);
         jobId = 'ca98366cc7314957b8c012c72f05aeeb';
@@ -76,5 +77,11 @@ contract APIConsumer is ChainlinkClient {
         volume = _volume;
     }
 
-    // function withdrawLink() external {} - Implement a withdraw function to avoid locking your LINK in the contract
+    /**
+     * Allow withdraw of Link tokens from the contract
+     */
+    function withdrawLink() public onlyOwner {
+        LinkTokenInterface link = LinkTokenInterface(chainlinkTokenAddress());
+        require(link.transfer(msg.sender, link.balanceOf(address(this))), 'Unable to transfer');
+    }
 }

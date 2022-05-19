@@ -36,13 +36,8 @@ In this guide, you will learn how to request data from a public API in a smart c
   - [Tasks](#tasks)
   - [Contract Example](#contract-example)
   - [External Adapters](#external-adapters)
-- [4. How can I use Tasks in my own contract?](#4-how-can-i-use-tasks-in-my-own-contract)
-  - [Variables](#variables)
-  - [Constructor](#constructor)
-  - [`requestData` Function](#requestdata-function)
-  - [Callback Function](#callback-function)
-- [5. How do I deploy to testnet?](#5-how-do-i-deploy-to-testnet)
-- [6. Further Reading](#6-further-reading)
+- [4. How can I use an Oracle Data Service?](#4-how-can-i-use-an-oracle-data-service)
+- [5. Further Reading](#5-further-reading)
 
 ## 1. How does the request and receive cycle work for API calls?
 
@@ -159,141 +154,12 @@ function requestVolumeData() public returns (bytes32 requestId) {
 You can follow a full _Existing Job Tutorial_ [here](/docs/existing-job-request/).
 More on External Adapters can be found [here](/docs/external-adapters/).
 
-## 4. How can I use Tasks in my own contract?
+## 4. How can I use an Oracle Data Service?
 
-Create a smart contract that can get sports data using the [SportsDataIO](https://market.link/data-providers/d66c1ec8-2504-4696-ab22-6825044049f7/integrations) oracle job found on Chainlink Market, without having to specify the URL inside the contract.
+Chainlink has facilitated the launch of several new oracle data services that allow dApps to access rich data from external data sources. For instance, you can create a smart contract that checks Google's DNS service to determine if a given domain is owned by a given blockchain address using oracle job found on [Chainlink Market](https://market.link/jobs/bf1a410f-ce93-497d-83ac-e63fed9d83bd), without having to specify the URL inside the contract.
+A full example on Kovan testnet can be found [here](/docs/dns-ownership-oracle/).
 
-To consume an API response, your contract should inherit from `ChainlinkClient`. This contract exposes a struct called `Chainlink.Request` that your contract should use to build the API request.
-
-```solidity
-pragma solidity ^0.8.7;
-
-import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
-
-contract SportContract is ChainlinkClient {
-  using Chainlink for Chainlink.Request;
-}
-```
-
-### Variables
-
-The request should include the oracle address, the job id, the fee, adapter parameters, and the callback function signature. Create variables for these items using the correct data types.
-
-```solidity
-pragma solidity ^0.8.7;
-
-import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
-
-contract SportContract is ChainlinkClient {
-  using Chainlink for Chainlink.Request;
-
-  bytes32 private jobId;
-  uint256 private fee;
-}
-```
-
-### Constructor
-
-In the constructor, set up the contract with the LINK token address for the [network](/docs/link-token-contracts/) you are deploying to, Oracle address, Job ID, and LINK fee that the oracle charges for the job.
-
-```solidity
-pragma solidity ^0.8.7;
-
-import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
-
-contract SportContract is ChainlinkClient {
-  using Chainlink for Chainlink.Request;
-
-  // ...
-  // { previously created variables }
-  // ...
-
-  constructor() {
-    setChainlinkToken(0xa36085F69e2889c224210F603D836748e7dC0088);
-    setChainlinkOracle(0xfF07C97631Ff3bAb5e5e5660Cdf47AdEd8D4d4Fd);
-    jobId = "9abb342e5a1d41c6b72941a3064cf55f";
-    fee = 0.1 * 10 ** 18; // (Varies by network and job)
-  }
-}
-```
-
-### `requestData` Function
-
-The [SportsDataIO](https://market.link/data-providers/d66c1ec8-2504-4696-ab22-6825044049f7/integrations) job page specifies the request parameters to be _date_ and _teamName_. To account for this, your `requestData` function should have both of these items as parameters. Please refer to the job page to understand the specific input format for these items.
-
-```solidity
-pragma solidity ^0.8.7;
-
-import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
-
-contract SportContract is ChainlinkClient {
-  using Chainlink for Chainlink.Request;
-
-  // ...
-  // { previously created variables }
-  // ...
-
-  // ...
-  // { constructor }
-  // ...
-
-  // Initial Request
-  function requestData(string memory _date, string memory _team) public returns (bytes32 requestId)  {
-      Chainlink.Request memory req = buildChainlinkRequest(jobId, address(this), this.fulfill.selector);
-      req.add("date", _date);
-      req.add("teamName", _team);
-      return sendChainlinkRequest(req, fee);
-  }
-}
-```
-
-### Callback Function
-
-The last component of your contract should be the `fulfill` function. This is where the sports data is sent upon the Oracle Job's completion. The [SportsDataIO](https://market.link/data-providers/d66c1ec8-2504-4696-ab22-6825044049f7/integrations) job page specifies that the request returns a `bytes32` packed `string`. You should add a `data` variable to your contract to store this result.
-
-**Note:** Currently, any return value must fit within 32 bytes. If the value is bigger than that, you must make multiple requests.
-
-```solidity
-pragma solidity ^0.8.7;
-
-import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
-
-contract SportContract is ChainlinkClient {
-  using Chainlink for Chainlink.Request;
-
-  bytes32 public data;
-  // ...
-  // { previously created variables }
-  // ...
-
-  // ...
-  // { constructor }
-  // ...
-
-  // ...
-  // { requestData function }
-  // ...
-
-
-  // Callback Function
-  function fulfill(bytes32 _requestId, bytes32 _data) public recordChainlinkFulfillment(_requestId) {
-      data = _data;
-  }
-}
-```
-
-## 5. How do I deploy to testnet?
-
-Your contract is complete and ready to be compiled and deployed. You can see a complete version of the contract in Remix:
-
-<div class="remix-callout">
-  <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/SportContract.sol" target="_blank" >Open in Remix</a>
-  <a href="/docs/conceptual-overview/#what-is-remix" >What is Remix?</a>
-</div>
-
-If you don't know how to deploy a contract to the Kovan testnet using Remix, follow getting started guide for [Deploying Your First Smart Contract](/docs/deploy-your-first-contract/). To make a job request, you _must_ have enough LINK to pay for it. Learn how to [acquire testnet LINK](/docs/acquire-link/) and [fund your contract](/docs/fund-your-contract/). Once these steps are completed, you should be able to get sports data.
-
-## 6. Further Reading
+## 5. Further Reading
 
 To learn more about connecting smart contracts to external APIs, read our blog posts:
 
