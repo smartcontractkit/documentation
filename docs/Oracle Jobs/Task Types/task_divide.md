@@ -6,7 +6,7 @@ title: "Divide Task"
 permalink: "docs/jobs/task-types/divide/"
 ---
 
-Divides the provided `input` and `times` values.
+Divides the provided `input` by `divisor` and returns the result precisely to the `precision` value .
 
 **Parameters**
 
