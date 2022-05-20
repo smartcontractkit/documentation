@@ -3,131 +3,54 @@ layout: nodes.liquid
 section: nodeOperator
 date: Last Modified
 title: 'MultiWord Example Job Spec'
-permalink: "docs/example-job-spec-multi-word/"
+permalink: 'docs/direct-request-multi-word/'
 ---
 
-This is an example v1 job spec for returning multiple responses in 1 Chainlink API Call.
+This is an example v2(TOML) job spec for returning multiple responses in 1 Chainlink API Call.Note that the job calls the `fulfillOracleRequest2` function. If you are a node operator, use an [Operator contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/Operator.sol) with this job.
+To test it from a smart contract, see this [Example](/docs/multi-variable-responses/).
 
-```json
-{
-  "name": "multi-word",
-  "initiators": [
-    {
-      "id": 3,
-      "jobSpecId": "64566152-8ea4-4aa7-b137-ed9f9d54c3d5",
-      "type": "runlog",
-      "params": {
-        "address": "0xc57b33452b4f7bb189bb5afae9cc4aba1f7a4fd8"
-      }
-    }
-  ],
-  "tasks": [
-    {
-      "jobSpecId": "645661528ea44aa7b137ed9f9d54c3d5",
-      "type": "httpget",
-      "params": {
-        "get": "https://min-api.cryptocompare.com/data/price?fsym=BTC&tsyms=USD,JPY,EUR"
-      }
-    },
-    {
-      "jobSpecId": "645661528ea44aa7b137ed9f9d54c3d5",
-      "type": "jsonparse",
-      "params": {
-        "path": [
-          "USD"
-        ]
-      }
-    },
-    {
-      "jobSpecId": "645661528ea44aa7b137ed9f9d54c3d5",
-      "type": "multiply",
-      "params": {
-        "times": 100
-      }
-    },
-    {
-      "jobSpecId": "645661528ea44aa7b137ed9f9d54c3d5",
-      "type": "ethuint256"
-    },
-    {
-      "jobSpecId": "645661528ea44aa7b137ed9f9d54c3d5",
-      "type": "resultcollect"
-    },
-    {
-      "jobSpecId": "645661528ea44aa7b137ed9f9d54c3d5",
-      "type": "httpget",
-      "params": {
-        "get": "https://min-api.cryptocompare.com/data/price?fsym=BTC&tsyms=USD,JPY,EUR"
-      }
-    },
-    {
-      "jobSpecId": "645661528ea44aa7b137ed9f9d54c3d5",
-      "type": "jsonparse",
-      "params": {
-        "path": [
-          "EUR"
-        ]
-      }
-    },
-    {
-      "jobSpecId": "645661528ea44aa7b137ed9f9d54c3d5",
-      "type": "multiply",
-      "params": {
-        "times": 100
-      }
-    },
-    {
-      "jobSpecId": "645661528ea44aa7b137ed9f9d54c3d5",
-      "type": "ethuint256"
-    },
-    {
-      "jobSpecId": "645661528ea44aa7b137ed9f9d54c3d5",
-      "type": "resultcollect"
-    },
-    {
-      "jobSpecId": "645661528ea44aa7b137ed9f9d54c3d5",
-      "type": "httpget",
-      "params": {
-        "get": "https://min-api.cryptocompare.com/data/price?fsym=BTC&tsyms=USD,JPY,EUR"
-      }
-    },
-    {
-      "jobSpecId": "645661528ea44aa7b137ed9f9d54c3d5",
-      "type": "jsonparse",
-      "params": {
-        "path": [
-          "JPY"
-        ]
-      }
-    },
-    {
-      "jobSpecId": "645661528ea44aa7b137ed9f9d54c3d5",
-      "type": "multiply",
-      "params": {
-        "times": 100
-      }
-    },
-    {
-      "jobSpecId": "645661528ea44aa7b137ed9f9d54c3d5",
-      "type": "ethuint256"
-    },
-    {
-      "jobSpecId": "645661528ea44aa7b137ed9f9d54c3d5",
-      "type": "resultcollect"
-    },
-    {
-      "jobSpecId": "645661528ea44aa7b137ed9f9d54c3d5",
-      "type": "ethtx",
-      "confirmations": 1,
-      "params": {
-        "abiEncoding": [
-          "bytes32",
-          "bytes32",
-          "bytes32",
-          "bytes32"
-        ]
-      }
-    }
-  ]
-}
+```jpv2
+type = "directrequest"
+schemaVersion = 1
+name = "multi-word (TOML)"
+maxTaskDuration = "0s"
+contractAddress = "YOUR_ORACLE_CONTRACT_ADDRESS"
+minIncomingConfirmations = 0
+observationSource = """
+       decode_log   [type="ethabidecodelog"
+                  abi="OracleRequest(bytes32 indexed specId, address requester, bytes32 requestId, uint256 payment, address callbackAddr, bytes4 callbackFunctionId, uint256 cancelExpiration, uint256 dataVersion, bytes data)"
+                  data="$(jobRun.logData)"
+                  topics="$(jobRun.logTopics)"]
+    decode_cbor  [type="cborparse" data="$(decode_log.data)"]
+    decode_log -> decode_cbor
+    decode_cbor -> btc
+    decode_cbor -> usd
+    decode_cbor -> eur
+    btc          [type="http" method=GET url="$(decode_cbor.urlBTC)" allowunrestrictednetworkaccess="true"]
+    btc_parse    [type="jsonparse" path="$(decode_cbor.pathBTC)" data="$(btc)"]
+    btc_multiply [type="multiply" input="$(btc_parse)", times="100000"]
+    btc -> btc_parse -> btc_multiply
+    usd          [type="http" method=GET url="$(decode_cbor.urlUSD)" allowunrestrictednetworkaccess="true"]
+    usd_parse    [type="jsonparse" path="$(decode_cbor.pathUSD)" data="$(usd)"]
+    usd_multiply [type="multiply" input="$(usd_parse)", times="100000"]
+    usd -> usd_parse -> usd_multiply
+    eur          [type="http" method=GET url="$(decode_cbor.urlEUR)" allowunrestrictednetworkaccess="true"]
+    eur_parse    [type="jsonparse" path="$(decode_cbor.pathEUR)" data="$(eur)"]
+    eurs_multiply [type="multiply" input="$(eur_parse)", times="100000"]
+    eur -> eur_parse -> eurs_multiply
+    btc_multiply -> encode_mwr
+    usd_multiply -> encode_mwr
+    eurs_multiply -> encode_mwr
+    // MWR API does NOT auto populate the requestID.
+    encode_mwr [type="ethabiencode"
+                abi="(bytes32 requestId, uint256 _btc, uint256 _usd, uint256 _eurs)"
+                data="{\\"requestId\\": $(decode_log.requestId), \\"_btc\\": $(btc_multiply), \\"_usd\\": $(usd_multiply), \\"_eurs\\": $(eurs_multiply)}"
+                ]
+    encode_tx  [type="ethabiencode"
+                abi="fulfillOracleRequest2(bytes32 requestId, uint256 payment, address callbackAddress, bytes4 callbackFunctionId, uint256 expiration, bytes calldata data)"
+                data="{\\"requestId\\": $(decode_log.requestId), \\"payment\\":   $(decode_log.payment), \\"callbackAddress\\": $(decode_log.callbackAddr), \\"callbackFunctionId\\": $(decode_log.callbackFunctionId), \\"expiration\\": $(decode_log.cancelExpiration), \\"data\\": $(encode_mwr)}"
+                ]
+    submit_tx  [type="ethtx" to="YOUR_ORACLE_CONTRACT_ADDRESS" data="$(encode_tx)"]
+    encode_mwr -> encode_tx -> submit_tx
+"""
 ```

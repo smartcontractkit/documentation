@@ -2,14 +2,14 @@
 layout: nodes.liquid
 section: ethereum
 date: Last Modified
-title: "Decentralized Data Model"
-permalink: "docs/architecture-decentralized-model/"
-whatsnext: {"Using Data Feeds":"/docs/get-the-latest-price/", "Off-Chain Reporting":"/docs/off-chain-reporting/"}
+title: 'Decentralized Data Model'
+permalink: 'docs/architecture-decentralized-model/'
+whatsnext: { 'Using Data Feeds': '/docs/get-the-latest-price/', 'Off-Chain Reporting': '/docs/off-chain-reporting/' }
 metadata:
-  title: "Chainlink Decentralised Data Model"
-  description: "This page describes the decentralized architecture which enables Chainlink to aggregate data from multiple independent node operators."
+  title: 'Chainlink Decentralised Data Model'
+  description: 'This page describes the decentralized architecture which enables Chainlink to aggregate data from multiple independent node operators.'
   image:
-    0: "/files/OpenGraph_V3.png"
+    0: '/files/OpenGraph_V3.png'
 ---
 
 ## Overview
@@ -17,6 +17,7 @@ metadata:
 This page describes how data aggregation is applied to produce Chainlink Data Feeds and provides more insight as to how price feeds are updated.
 
 **Table of Contents**
+
 - [Data Aggregation](#data-aggregation)
 - [Shared Data Resource](#shared-data-resource)
 - [Decentralized Oracle Network](#decentralized-oracle-network)
@@ -69,7 +70,7 @@ Off-chain applications can also consume data feeds. See the Javascript and Pytho
 
 Proxy contracts are on-chain proxies that point to the aggregator for a particular data feed. Using proxies enables the underlying aggregator to be upgraded without any service interruption to consuming contracts.
 
-Proxy contracts can vary from one data feed to another, but the [`AggregatorProxy.sol` contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/dev/AggregatorProxy.sol" target="_blank) on Github is a common example.
+Proxy contracts can vary from one data feed to another, but the [`AggregatorProxy.sol` contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/dev/AggregatorProxy.sol) on Github is a common example.
 
 ### Aggregator
 
