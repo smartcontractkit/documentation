@@ -113,7 +113,7 @@ permalink: /ethereum/
                   src="/images/card-icons/5f85d14b6782933bd5a70060_decentralized.svg"
                   width="150px"
                 />
-                <h3>Architecture Overview</h3>
+                <h3>Data Feeds Architecture</h3>
             </div>
           </a>
           <a class="cl-productcard" href="/docs/other-tutorials/" target="_blank">

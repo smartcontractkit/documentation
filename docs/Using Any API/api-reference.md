@@ -5,7 +5,7 @@ date: Last Modified
 title: "ChainlinkClient API Reference"
 permalink: "docs/chainlink-framework/"
 ---
-API reference for [`ChainlinkClient`](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.6/ChainlinkClient.sol).
+API reference for [`ChainlinkClient`](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/ChainlinkClient.sol).
 
 ## Index
 
