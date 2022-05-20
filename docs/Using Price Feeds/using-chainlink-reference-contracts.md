@@ -19,7 +19,7 @@ Chainlink Data Feeds are the quickest way to connect your smart contracts to the
 
 If you already have a project started and would like to integrate Chainlink, you can [add Chainlink to your existing project](../create-a-chainlinked-project/#install-into-existing-projects) by using the [`chainlink` NPM package](https://www.npmjs.com/package/@chainlink/contracts).
 
-See the the [Data Feeds Contract Addresses](/docs/reference-contracts/) page for a list of networks and proxy addresses. You can also use [data.chain.link](https://data.chain.link/) or the [Chainlink Market](https://market.link/) to select nodes for your requests.  
+See the [Data Feeds Contract Addresses](/docs/reference-contracts/) page for a list of networks and proxy addresses. You can also use [data.chain.link](https://data.chain.link/) or the [Chainlink Market](https://market.link/) to select nodes for your requests.  
 
 ## Retrieve the Latest Asset Prices
 
