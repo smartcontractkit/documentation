@@ -13,18 +13,18 @@ metadata:
 ---
 ![Chainlink Abstract Banner](/files/2306b8b-Decentralized_Oracles_V3.png)
 
-# Connect Your Smart Contracts to the Outside World
+## Connect Your Smart Contracts to the Outside World
 
-Chainlink Data Feeds are the quickest way to connect your smart contracts to the real-world market prices of assets. For example, one use for data feeds is to enable smart contracts to retrieve the latest pricing data of an asset in a single call.
+Chainlink Data Feeds are the quickest way to connect your smart contracts to the real-world data such as asset prices. One use for data feeds is to retrieve the latest pricing data of an asset in a single call and use that data either on-chain in a smart contract or off-chain in another application of your choice.
 
-If you already have a project started and would like to integrate Chainlink, you can [add Chainlink to your existing project](../create-a-chainlinked-project/#install-into-existing-projects) by using the `chainlink` NPM package.
+If you already have a project started and would like to integrate Chainlink, you can [add Chainlink to your existing project](../create-a-chainlinked-project/#install-into-existing-projects) by using the [`chainlink` NPM package](https://www.npmjs.com/package/@chainlink/contracts).
 
-You can use the [Chainlink Market](https://market.link/) to select nodes for your requests. If you have the node's oracle contract address and the Job ID, use the [`sendChainlinkRequestTo`](/docs/chainlink-framework/#sendchainlinkrequestto) function to create requests to oracles.
+See the [Data Feeds Contract Addresses](/docs/reference-contracts/) page for a list of networks and proxy addresses. You can also use [data.chain.link](https://data.chain.link/) or the [Chainlink Market](https://market.link/) to select nodes for your requests.  
 
-# Retrieve the Latest Asset Prices
+## Retrieve the Latest Asset Prices
 
-Often, smart contracts need to act upon prices of assets in real-time. This is especially true in [DeFi](https://defi.chain.link/).
+Often, smart contracts need to act in real-time on data such as prices of assets. This is especially true in [DeFi](https://defi.chain.link/).
 
-For example, [Synthetix](https://www.synthetix.io/) uses Data Feeds to determine prices on their derivatives platform. Lending and Borrowing platforms like [AAVE](https://aave.com/) use Data Feeds to ensure the total value of the collateral.
+For example, [Synthetix](https://www.synthetix.io/) uses Data Feeds to determine prices on their derivatives platform. Lending and borrowing platforms like [AAVE](https://aave.com/) use Data Feeds to ensure the total value of the collateral.
 
-The [Decentralized Data Model](../architecture-decentralized-model/) describes how Data Feeds are aggregated from many data sources and published on-chain.
+Data Feeds aggregate many data sources and publish them on-chain using the [Off-chain Reporting Model](/docs/off-chain-reporting/).
