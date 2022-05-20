@@ -242,13 +242,13 @@ Management of AWS service limits are not required for proper disaster recovery. 
 
 ### AWS Certificate Manager
 
-In the AWS console, if the **SSL certificate with AWS Certificate Manager** is set to `false`, we can leave **arn:aws:acm:region:account-id:certificate** as is. However, if you would like your node to be external facing and be reached by the internet, you will need to enable this feature and set it to `true`.
+In the AWS console, if the **SSL certificate with AWS Certificate Manager** is set to `false`, you can leave **arn:aws:acm:region:account-id:certificate** as is. However, if your node is external facing and must be reached by the internet, enable this feature and set it to `true`.
 
 ![AWS Certificate Manager](/images/node-operators/aws-certificate-manager.png)
 
 ### Amazon Devops Guru
 
-In the AWS console, if the **Amazon DevOps Guru** is set to `false`, we can leave **AdministerAccountId** and **EmailAddress** as is. 
+In the AWS console, if the **Amazon DevOps Guru** is set to `false`, you can leave **AdministerAccountId** and **EmailAddress** as is. 
 
 ![Amazon Devops Guru](/images/node-operators/amazon-devops-guru.png)
 
