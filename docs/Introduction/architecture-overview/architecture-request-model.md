@@ -37,11 +37,11 @@ Learn more about [ERC-677 and the LINK token](../link-token-contracts/).
 
 #### Request
 
-The client contract that initiates this cycle must create a request with:
+The client contract that initiates this cycle must create a request with the following items:
 
-* the oracle address
-* the job ID, so the oracle know what tasks to perform
-* the callback function, which the oracle will send the response to.
+- The oracle address.
+- The job ID, so the oracle knows which tasks to perform.
+- The callback function, which the oracle sends the response to.
 
 To learn about how to find oracles to suit your needs, see [Find Existing Jobs](../listing-services/).
 
