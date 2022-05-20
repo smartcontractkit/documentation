@@ -36,17 +36,17 @@ The examples in the Chainlink documentation use the following languages, tools, 
 - [Rust](https://docs.solana.com/developing/on-chain-programs/developing-rust): A general-purpose programming language designed for performance and memory safety
 - [Anchor](https://project-serum.github.io/anchor/getting-started/introduction.html): A framework for the [Solana Sealevel runtime](https://github.com/solana-labs/sealevel) that provides several developer tools
 - [Solana CLI](https://docs.solana.com/cli): The Solana command line interface
-- [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
-- [Node.js 12 or higher](https://nodejs.org/en/download/)
+- [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git): Used to clone the example code repository
+- [Node.js 14 or higher](https://nodejs.org/en/download/): Used to run client code
 
 When developing applications to use Chainlink products on Solana, always use a [Mainnet release](https://github.com/solana-labs/solana/releases) version of the Solana CLI that is equal to or greater than the version currently running on your target cluster. Use `solana --version` and `solana cluster-version` to check CLI and cluster versions:
 
 ```sh
-$ solana --version
-solana-cli 1.8.14 (src:9c01d90c; feat:1006352700)
+solana --version
+solana-cli 1.9.18 (src:5d0f2a9f; feat:1070292356)
 
-$ solana cluster-version --url devnet
-1.8.12
+solana cluster-version --url devnet
+1.9.14
 ```
 
 The examples in this documentation use Solana programs in [Rust](https://docs.solana.com/developing/on-chain-programs/developing-rust), but you can also write Solana programs in [C](https://docs.solana.com/developing/on-chain-programs/developing-c). To learn more about the Solana programming model, see the [Solana Documentation](https://docs.solana.com/developing/programming-model/overview).
@@ -70,4 +70,4 @@ Program Id                                   | Slot      | Authority            
 6U4suTp55kiJRKqV7HGAQvFgcLaStLnUA4myg5DRqsKw | 109609728 | E6gKKToCJPgf4zEL1GRLL6T99g2WcfAzJAMvtma1KijT | 2.57751768 SOL
 ```
 
-Always follow the security best practices in the [Solana Wallet Guide](https://docs.solana.com/wallet-guide) for managing wallets and keypairs.
+Always follow the security best practices in the [Solana Wallet Guide](https://docs.solana.com/wallet-guide) for managing your wallets and keypairs.

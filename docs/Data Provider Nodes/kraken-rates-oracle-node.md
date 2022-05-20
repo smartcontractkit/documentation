@@ -2,12 +2,13 @@
 layout: nodes.liquid
 section: ethereum
 date: Last Modified
-title: "Kraken Rates Oracle Node"
-permalink: "docs/kraken-rates-oracle-node/"
+title: 'Kraken Rates Oracle Node'
+permalink: 'docs/kraken-rates-oracle-node/'
 metadata:
   image:
-    0: "/files/2713d5c-cl.png"
+    0: '/files/2713d5c-cl.png'
 ---
+
 This Chainlink has a dedicated connection to <a href="https://blog.cfbenchmarks.com/rest-api/" target="_blank">Kraken's Prices</a> API.
 
 # Steps for using this oracle
@@ -21,18 +22,21 @@ This Chainlink has a dedicated connection to <a href="https://blog.cfbenchmarks.
 You will need to use the following LINK token address, oracle address, and Job ID in order to create the Chainlink request.
 
 #### Rinkeby
+
 Payment amount: 1 LINK
 LINK Token address: `{{variables.RINKEBY_LINK_TOKEN}}`
 Oracle address: `{{variables.RINKEBY_CHAINLINK_ORACLE}}`
 JobID: `49ea116156cd44be997e7670a5dde80d`
 
 #### Kovan
+
 Payment amount: 1 LINK
 LINK Token address: `{{variables.KOVAN_LINK_TOKEN}}`
 Oracle address: `{{variables.KOVAN_CHAINLINK_ORACLE}}`
 JobID: `8f4eeda1a8724077a0560ee84eb006b4`
 
 #### Mainnet
+
 Payment amount: 0.5 LINK
 LINK Token address: `{{variables.MAINNET_LINK_TOKEN}}`
 Oracle address: `{{variables.MAINNET_CHAINLINK_ORACLE}}`
@@ -52,13 +56,14 @@ contract KrakenChainlink is ChainlinkClient {
   uint256 oraclePayment;
 
   constructor(uint256 _oraclePayment) public {
-    setPublicChainlinkToken();
+    setChainlinkToken(0xa36085F69e2889c224210F603D836748e7dC0088);
     oraclePayment = _oraclePayment;
   }
   // Additional functions here:
 
 }
 ```
+
 ```solidity Solidity 5
 pragma solidity ^0.5.0;
 
@@ -69,13 +74,14 @@ contract KrakenChainlink is ChainlinkClient {
   uint256 oraclePayment;
 
   constructor(uint256 _oraclePayment) public {
-    setPublicChainlinkToken();
+    setChainlinkToken(0xa36085F69e2889c224210F603D836748e7dC0088);
     oraclePayment = _oraclePayment;
   }
   // Additional functions here:
 
 }
 ```
+
 ```solidity Solidity 6
 pragma solidity ^0.6.0;
 
@@ -86,7 +92,7 @@ contract KrakenChainlink is ChainlinkClient {
   uint256 oraclePayment;
 
   constructor(uint256 _oraclePayment) public {
-    setPublicChainlinkToken();
+    setChainlinkToken(0xa36085F69e2889c224210F603D836748e7dC0088);
     oraclePayment = _oraclePayment;
   }
   // Additional functions here:
@@ -142,7 +148,6 @@ Index identifiers include:
 ### times
 
 The amount to multiply the result by (since Solidity does not handle decimals).
-
 
 #### Solidity example
 

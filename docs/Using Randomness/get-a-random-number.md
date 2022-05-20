@@ -62,15 +62,15 @@ Now that you have a funded subscription account and your subscription ID, [creat
 
 For this example, use the [VRFv2Consumer.sol](https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFv2Consumer.sol) sample contract. This contract imports the following dependencies:
 
-- [VRFConsumerBaseV2.sol](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/VRFConsumerBaseV2.sol)
-- [VRFCoordinatorV2Interface.sol](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol)
-- [LinkTokenInterface.sol](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/interfaces/LinkTokenInterface.sol)
+- `VRFConsumerBaseV2.sol`[(link)](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/VRFConsumerBaseV2.sol)
+- `VRFCoordinatorV2Interface.sol`[(link)](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol)
+- `LinkTokenInterface.sol`[(link)](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/interfaces/LinkTokenInterface.sol)
 
 The contract also includes pre-configured values for the necessary request parameters such as `vrfCoordinator` address, `link` token contract address, and gas lane `keyHash`. You can change these parameters if you want to experiment on different testnets, but for this example you only need to specify `subscriptionId` when you deploy the contract.
 
 Build and deploy the contract on Rinkeby.
 
-1. Open the [VRFv2Consumer.sol](https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFv2Consumer.sol) contract in Remix.
+1. Open the `VRFv2Consumer.sol`[(link)](https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFv2Consumer.sol) contract in Remix.
 
     <div class="remix-callout">
           <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFv2Consumer.sol" target="_blank" >Open in Remix</a>
@@ -111,12 +111,15 @@ The deployed contract requests random values from Chainlink VRF, receives those 
 
 You deployed a simple contract that can request and receive random values from Chainlink VRF. To see more advanced examples where the contract can complete the entire process including subscription setup and management, see the [Example Contracts](/docs/chainlink-vrf/example-contracts/) page.
 
+> 📘 Note on Requesting Randomness
+> Do not re-request randomness even if you do **not** receive an answer right away. Doing so would give the VRF service provider the option to withhold a VRF fulfillment, if it doesn't like the outcome, and wait for the re-request in the hopes that it gets a better outcome. This is similar to the considerations with block confirmation time. For more information, see the [VRF Security Considerations](../vrf-security-considerations) page.
+
 ## Analyzing the contract
 
 In this example, your MetaMask wallet is the subscription owner and you created a consumer contract to use that subscription. The consumer contract uses static configuration parameters.
 
 ```solidity
-{% include samples/VRF/VRFv2Consumer.sol %}
+{% include 'samples/VRF/VRFv2Consumer.sol' %}
 ```
 
 <div class="remix-callout">
@@ -138,7 +141,7 @@ The parameters define how your requests will be processed. You can find the valu
 
 - `uint16 requestConfirmations`: How many confirmations the Chainlink node should wait before responding. The longer the node waits, the more secure the random value is. It must be greater than the `minimumRequestBlockConfirmations` limit on the coordinator contract.
 
-- `uint16 numWords`: How many random values to request. If you can use several random values in a single callback, you can reduce the amount of gas that you spend per random value. The total cost of the callback request depends on how your `fulfillRandomWords()` function processes and stores the received random values, so adjust your `callbackGasLimit` accordingly.
+- `uint32 numWords`: How many random values to request. If you can use several random values in a single callback, you can reduce the amount of gas that you spend per random value. The total cost of the callback request depends on how your `fulfillRandomWords()` function processes and stores the received random values, so adjust your `callbackGasLimit` accordingly.
 
 The contract includes the following functions:
 

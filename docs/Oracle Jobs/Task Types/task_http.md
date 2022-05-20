@@ -14,6 +14,7 @@ HTTP tasks make HTTP requests to arbitrary URLs.
 - `url`: the URL to make the HTTP request to.
 - `requestData` (optional): a statically-defined payload to be sent to the external adapter.
 - `allowUnrestrictedNetworkAccess` (optional): permits the task to access a URL at `localhost`, which could present a security risk. Note that Bridge tasks allow this by default.
+- `headers` (optional): an array of strings. The number of strings must be even. Example: `foo [type=http headers="[\\"X-Header-1\\", \\"value1\\", \\"X-Header-2\\", \\"value2\\"]"]`
 
 **Outputs**
 

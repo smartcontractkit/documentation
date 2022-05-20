@@ -13,7 +13,8 @@ JSON Parse tasks parse a JSON payload and extract a value at a given keypath.
 - `data`: the JSON string. Can be:
     - string
     - byte array
-- `path`: the keypath to extract. Must be a comma-delimited list of keys.
+- `path`: the keypath to extract. Must be a comma-delimited list of keys, or specify a custom `separator` alternative.
+- `separator`: (optional) custom `path` key separator. Defaults to comma (`,`).
 - `lax` (optional): if false (or omitted), and the keypath doesn't exist, the task will error. If true, the task will return `nil` to the next task.
 
 **Outputs**

@@ -12,7 +12,7 @@ Not all environment variables are documented here. Any undocumented environment 
 
 To reiterate: _If you have an environment variable set that is not listed here, and you don't know exactly why you have it set, you should remove it!_
 
-The environment variables listed here are explicitly supported and current as of Chainlink node v1.2.0.
+The environment variables listed here are explicitly supported and current as of Chainlink node v1.3.0.
 
 ## Changes to node configuration starting in v1.1.0 nodes
 
@@ -41,12 +41,14 @@ Your node applies configuration settings using following hierarchy:
   - [EXPLORER_SECRET](#explorer_secret)
   - [EXPLORER_URL](#explorer_url)
   - [ROOT](#root)
+  - [TELEMETRY_INGRESS_UNICONN](#telemetry_ingress_uniconn)
   - [TELEMETRY_INGRESS_LOGGING](#telemetry_ingress_logging)
   - [TELEMETRY_INGRESS_URL](#telemetry_ingress_url)
   - [TELEMETRY_INGRESS_SERVER_PUB_KEY](#telemetry_ingress_server_pub_key)
   - [TELEMETRY_INGRESS_BUFFER_SIZE](#telemetry_ingress_buffer_size)
   - [TELEMETRY_INGRESS_MAX_BATCH_SIZE](#telemetry_ingress_max_batch_size)
   - [TELEMETRY_INGRESS_SEND_INTERVAL](#telemetry_ingress_send_interval)
+  - [TELEMETRY_INGRESS_SEND_TIMEOUT](#telemetry_ingress_send_timeout)
   - [TELEMETRY_INGRESS_USE_BATCH_SEND](#telemetry_ingress_use_batch_send)
 - [Chains](#chains)
   - [SOLANA_ENABLED](#solana_enabled)
@@ -73,8 +75,23 @@ Your node applies configuration settings using following hierarchy:
   - [LOG_FILE_DIR](#log_file_dir)
   - [LOG_LEVEL](#log_level)
   - [LOG_SQL](#log_sql)
-  - [LOG_TO_DISK](#log_to_disk)
+  - [LOG_FILE_MAX_SIZE](#log_file_max_size)
+  - [LOG_FILE_MAX_AGE](#log_file_max_age)
+  - [LOG_FILE_MAX_BACKUPS](#log_file_max_backups)
   - [LOG_UNIX_TS](#log_unix_ts)
+- [Nurse service (auto-pprof)](#nurse-service-auto-pprof)
+  - [AUTO_PPROF_ENABLED](#auto_pprof_enabled)
+  - [AUTO_PPROF_PROFILE_ROOT](#auto_pprof_profile_root)
+  - [AUTO_PPROF_POLL_INTERVAL](#auto_pprof_poll_interval)
+  - [AUTO_PPROF_GATHER_DURATION](#auto_pprof_gather_duration)
+  - [AUTO_PPROF_GATHER_TRACE_DURATION](#auto_pprof_gather_trace_duration)
+  - [AUTO_PPROF_MAX_PROFILE_SIZE](#auto_pprof_max_profile_size)
+  - [AUTO_PPROF_CPU_PROFILE_RATE](#auto_pprof_cpu_profile_rate)
+  - [AUTO_PPROF_MEM_PROFILE_RATE](#auto_pprof_mem_profile_rate)
+  - [AUTO_PPROF_BLOCK_PROFILE_RATE](#auto_pprof_block_profile_rate)
+  - [AUTO_PPROF_MUTEX_PROFILE_FRACTION](#auto_pprof_mutex_profile_fraction)
+  - [AUTO_PPROF_MEM_THRESHOLD](#auto_pprof_mem_threshold)
+  - [AUTO_PPROF_GOROUTINE_THRESHOLD](#auto_pprof_goroutine_threshold)
 - [Chainlink Web Server](#chainlink-web-server)
   - [ALLOW_ORIGINS](#allow_origins)
   - [AUTHENTICATED_RATE_LIMIT](#authenticated_rate_limit)
@@ -98,6 +115,7 @@ Your node applies configuration settings using following hierarchy:
 - [EVM/Ethereum Legacy Environment Variables](#evmethereum-legacy-environment-variables)
   - [ETH_URL](#eth_url)
   - [ETH_HTTP_URL](#eth_http_url)
+  - [EVM_NODES](#evm_nodes)
   - [ETH_SECONDARY_URLS](#eth_secondary_urls)
 - [EVM/Ethereum Global Settings](#evmethereum-global-settings)
   - [ETH_CHAIN_ID](#eth_chain_id)
@@ -114,11 +132,15 @@ Your node applies configuration settings using following hierarchy:
   - [ETH_HEAD_TRACKER_MAX_BUFFER_SIZE](#eth_head_tracker_max_buffer_size)
   - [ETH_HEAD_TRACKER_SAMPLING_INTERVAL](#eth_head_tracker_sampling_interval)
   - [ETH_LOG_BACKFILL_BATCH_SIZE](#eth_log_backfill_batch_size)
+  - [ETH_LOG_POLL_INTERVAL](#eth_log_poll_interval)
   - [ETH_RPC_DEFAULT_BATCH_SIZE](#eth_rpc_default_batch_size)
   - [LINK_CONTRACT_ADDRESS](#link_contract_address)
   - [MIN_INCOMING_CONFIRMATIONS](#min_incoming_confirmations)
   - [MIN_OUTGOING_CONFIRMATIONS](#min_outgoing_confirmations)
   - [MINIMUM_CONTRACT_PAYMENT_LINK_JUELS](#minimum_contract_payment_link_juels)
+  - [NODE_NO_NEW_HEADS_THRESHOLD](#node_no_new_heads_threshold)
+  - [NODE_POLL_FAILURE_THRESHOLD](#node_poll_failure_threshold)
+  - [NODE_POLL_INTERVAL](#node_poll_interval)
 - [EVM Gas Controls](#evm-gas-controls)
   - [Configuring your ETH node](#configuring-your-eth-node)
     - [go-ethereum](#go-ethereum)
@@ -141,6 +163,7 @@ Your node applies configuration settings using following hierarchy:
   - [ETH_MAX_QUEUED_TRANSACTIONS](#eth_max_queued_transactions)
   - [ETH_MIN_GAS_PRICE_WEI](#eth_min_gas_price_wei)
   - [ETH_NONCE_AUTO_SYNC](#eth_nonce_auto_sync)
+  - [ETH_USE_FORWARDERS](#eth_use_forwarders)
 - [EVM/Ethereum Gas Price Estimation](#evmethereum-gas-price-estimation)
   - [GAS_ESTIMATOR_MODE](#gas_estimator_mode)
   - [BLOCK_HISTORY_ESTIMATOR_BATCH_SIZE](#block_history_estimator_batch_size)
@@ -178,13 +201,17 @@ Your node applies configuration settings using following hierarchy:
     - [P2PV2_BOOTSTRAPPERS](#p2pv2_bootstrappers)
     - [P2PV2_LISTEN_ADDRESSES](#p2pv2_listen_addresses)
 - [Keeper](#keeper)
+  - [KEEPER_CHECK_UPKEEP_GAS_PRICE_FEATURE_ENABLED](#keeper_check_upkeep_gas_price_feature_enabled)
   - [KEEPER_GAS_PRICE_BUFFER_PERCENT](#keeper_gas_price_buffer_percent)
   - [KEEPER_GAS_TIP_CAP_BUFFER_PERCENT](#keeper_gas_tip_cap_buffer_percent)
+  - [KEEPER_BASE_FEE_BUFFER_PERCENT](#keeper_base_fee_buffer_percent)
   - [KEEPER_MAXIMUM_GRACE_PERIOD](#keeper_maximum_grace_period)
   - [KEEPER_REGISTRY_CHECK_GAS_OVERHEAD](#keeper_registry_check_gas_overhead)
   - [KEEPER_REGISTRY_PERFORM_GAS_OVERHEAD](#keeper_registry_perform_gas_overhead)
   - [KEEPER_REGISTRY_SYNC_INTERVAL](#keeper_registry_sync_interval)
   - [KEEPER_REGISTRY_SYNC_UPKEEP_QUEUE_SIZE](#keeper_registry_sync_upkeep_queue_size)
+  - [KEEPER_TURN_LOOK_BACK](#keeper_turn_look_back)
+  - [KEEPER_TURN_FLAG_ENABLED](#keeper_turn_flag_enabled)
 - [CLI Client](#cli-client)
   - [ADMIN_CREDENTIALS_FILE](#admin_credentials_file)
   - [CLIENT_NODE_URL](#client_node_url)
@@ -209,7 +236,7 @@ The PostgreSQL URI to connect to your database. Chainlink nodes require Postgres
 
 - Default: _none_
 
-CHAIN_TYPE overrides all chains and forces them to act as a particular chain type. An up-to-date list of chain types is given in [`chaintype.go`](https://github.com/smartcontractkit/chainlink/blob/v1.2.0/core/chains/chaintype.go).
+CHAIN_TYPE overrides all chains and forces them to act as a particular chain type. An up-to-date list of chain types is given in [`chaintype.go`](https://github.com/smartcontractkit/chainlink/blob/v1.3.0/core/chains/chaintype.go).
 
 This variable enables some chain-specific hacks and optimizations. It is recommended not to use this environment variable and set the chain-type on a per-chain basis instead.
 
@@ -242,6 +269,12 @@ The Explorer websocket URL for the node to push stats to.
 - Default: `"~/.chainlink"`
 
 The Chainlink node's root directory. This is the default directory for logging, database backups, cookies, and other misc Chainlink node files. Chainlink nodes will always ensure this directory has `700` permissions because it might contain sensitive data.
+
+### TELEMETRY_INGRESS_UNICONN
+
+- Default: `"true"`
+
+Toggles which ws connection style is used.
 
 ### TELEMETRY_INGRESS_LOGGING
 
@@ -278,6 +311,12 @@ The maximum number of messages to batch into one telemetry request.
 - Default: `"500ms"`
 
 The interval on which batched telemetry is sent to the ingress server.
+
+### TELEMETRY_INGRESS_SEND_TIMEOUT
+
+- Default: `"10s"`
+
+The max duration to wait for the request to complete when sending batch telemetry.
 
 ### TELEMETRY_INGRESS_USE_BATCH_SEND
 
@@ -339,31 +378,31 @@ Chainlink nodes use a database lock to ensure that only one Chainlink node insta
 
 ### DATABASE_LOCKING_MODE
 
-- Default: `"advisorylock"`
+- Default: `"dual"`
 
-The `DATABASE_LOCKING_MODE` variable can be set to 'advisorylock', 'lease', 'dual', or 'none'. It controls which mode to use to enforce that only one Chainlink node can use the database.
+The `DATABASE_LOCKING_MODE` variable can be set to 'dual', 'advisorylock', 'lease', or 'none'. It controls which mode to use to enforce that only one Chainlink node can use the database. It is recommended to set this to `lease`.
 
-- `advisorylock` - The default: Advisory lock only
+- `dual` - The default: Uses both advisory locks and lease locks for backward and forward compatibility
+- `advisorylock` - Advisory lock only
 - `lease` - Lease lock only
-- `dual` - Uses both locking types for both backward and forward compatibility
 - _none_ - No locking at all: This option useful for advanced deployment environments when you are sure that only one instance of a Chainlink node will ever be running.
 
 #### Technical details
 
 Ideally, you should use a container orchestration system like [Kubernetes](https://kubernetes.io/) to ensure that only one Chainlink node instance can ever use a specific Postgres database. However, some node operators do not have the technical capacity to do this. Common use cases run multiple Chainlink node instances in failover mode as recommended by our official documentation. The first instance takes a lock on the database and subsequent instances will wait trying to take this lock in case the first instance fails.
 
-By default, Chainlink nodes use an advisory lock to manage this. However, advisory locks come with several problems:
+By default, Chainlink nodes use the `dual` setting to provide both advisory locks and lease locks for backward and forward compatibility. Using advisory locks alone presents the following problems:
+
 - If your nodes or applications hold locks open for several hours or days, Postgres is unable to complete internal cleanup tasks. The Postgres maintainers explicitly discourage holding locks open for long periods of time.
 - Advisory locks can silently disappear when you upgrade Postgres, so a new Chainlink node instance can take over even while the old node is still running.
 - Advisory locks do not work well with pooling tools such as [pgbouncer](https://www.pgbouncer.org/).
 - If the Chainlink node crashes, an advisory lock can hang around for up to several hours, which might require you to manually remove it so another instance of the Chainlink node will allow itself to boot.
 
 Because of the complications with advisory locks, Chainlink nodes with v1.1.0 and later support a new `lease` locking mode. This mode might become the default in future. The `lease` locking mode works using the following process:
+
 - Node A creates one row in the database with the client ID and updates it once per second.
 - Node B spinlocks and checks periodically to see if the client ID is too old. If the client ID is not updated after a period of time, node B assumes that node A failed and takes over. Node B becomes the owner of the row and updates the client ID once per second.
 - If node A comes back, it attempts to take out a lease, realizes that the database has been leased to another process, and exits the entire application immediately.
-
-The default is set to `advisorylock`.
 
 ### ADVISORY_LOCK_CHECK_INTERVAL
 
@@ -468,6 +507,7 @@ By default, Chainlink nodes write log data to `$ROOT/log.jsonl`. The log directo
 The `LOG_LEVEL` environment variable determines both what is printed on the screen and what is written to the log file.
 
 The available options are:
+
 - `"debug"`: Useful for forensic debugging of issues.
 - `"info"`: High-level informational messages.
 - `"warn"`: A mild error occurred that might require non-urgent action. Check these warnings semi-regularly to see if any of them require attention. These warnings usually happen due to factors outside of the control of the node operator. Examples: Unexpected responses from a remote API or misleading networking errors.
@@ -482,17 +522,117 @@ The available options are:
 
 This setting tells the Chainlink node to log SQL statements made using the default logger. SQL statements will be logged at `debug` level. Not all statements can be logged. The best way to get a true log of all SQL statements is to enable SQL statement logging on Postgres.
 
-### LOG_TO_DISK
+### LOG_FILE_MAX_SIZE
 
-- Default: `"true"`
+- Default: `"5120mb"`
 
-Enables or disables the node writing to the `$LOG_FILE_DIR/log.jsonl` file
+Determines the log file's max size in megabytes before file rotation. Having this not set will disable logging to disk. If your disk doesn't have enough disk space, the logging will pause and the application will log errors until space is available again.
+
+Values must have suffixes with a unit like: `5120mb` (5,120 megabytes). If no unit suffix is provided, the value defaults to `b` (bytes). The list of valid unit suffixes are:
+
+- b (bytes)
+- kb (kilobytes)
+- mb (megabytes)
+- gb (gigabytes)
+- tb (terabytes)
+
+### LOG_FILE_MAX_AGE
+
+- Default: `"0"`
+
+Determines the log file's max age in days before file rotation. Keeping this config with the default value will not remove log files based on age.
+
+### LOG_FILE_MAX_BACKUPS
+
+- Default: `"1"`
+
+Determines the maximum number of old log files to retain. Keeping this config with the default value retains all old log files. The `LOG_FILE_MAX_AGE` variable can still cause them to get deleted.
 
 ### LOG_UNIX_TS
 
 - Default: `"false"`
 
 Previous versions of Chainlink nodes wrote JSON logs with a unix timestamp. As of v1.1.0 and up, the default has changed to use ISO8601 timestamps for better readability. Setting `LOG_UNIX_TS=true` will enable the old behavior.
+
+## Nurse service (auto-pprof)
+
+The Chainlink node is equipped with an internal "nurse" service that can perform automatic `pprof` profiling when the certain resource thresholds are exceeded, such as memory and goroutine count. These profiles are saved to disk to facilitate fine-grained debugging of performance-related issues. In general, if you notice that your node has begun to accumulate profiles, forward them to the Chainlink team.
+
+To learn more about these profiles, read the [Profiling Go programs with pprof](https://jvns.ca/blog/2017/09/24/profiling-go-with-pprof/) guide.
+
+### AUTO_PPROF_ENABLED
+
+- Default: `"false"`
+
+Set to `true` to enable the automatic profiling service.
+
+### AUTO_PPROF_PROFILE_ROOT
+
+Defaults to `$CHAINLINK_ROOT`
+
+The location on disk where pprof profiles will be stored.
+
+### AUTO_PPROF_POLL_INTERVAL
+
+- Default: `"10s"`
+
+The interval at which the node's resources are checked.
+
+### AUTO_PPROF_GATHER_DURATION
+
+- Default: `"10s"`
+
+The duration for which profiles are gathered when profiling starts.
+
+### AUTO_PPROF_GATHER_TRACE_DURATION
+
+- Default: `"5s"`
+
+The duration for which traces are gathered when profiling is kicked off. This is separately configurable because traces are significantly larger than other types of profiles.
+
+### AUTO_PPROF_MAX_PROFILE_SIZE
+
+- Default: `"100mb"`
+
+The maximum amount of disk space that profiles may consume before profiling is disabled.
+
+### AUTO_PPROF_CPU_PROFILE_RATE
+
+- Default: `"1"`
+
+See https://pkg.go.dev/runtime#SetCPUProfileRate.
+
+### AUTO_PPROF_MEM_PROFILE_RATE
+
+- Default: `"1"`
+
+See https://pkg.go.dev/runtime#pkg-variables.
+
+### AUTO_PPROF_BLOCK_PROFILE_RATE
+
+- Default: `"1"`
+
+See https://pkg.go.dev/runtime#SetBlockProfileRate.
+
+### AUTO_PPROF_MUTEX_PROFILE_FRACTION
+
+- Default: `"1"`
+
+See https://pkg.go.dev/runtime#SetMutexProfileFraction.
+
+- Default: `"1"`
+
+### AUTO_PPROF_MEM_THRESHOLD
+
+- Default: `"4gb"`
+
+The maximum amount of memory the node can actively consume before profiling begins.
+
+### AUTO_PPROF_GOROUTINE_THRESHOLD
+
+- Default: `"5000"`
+
+The maximum number of actively-running goroutines the node can spawn before profiling begins.
 
 ## Chainlink Web Server
 
@@ -648,6 +788,67 @@ Only has effect if `ETH_URL` set. Otherwise, it can be set in the API, [CLI](/do
 
 This should be set to the HTTP URL that points to the same ETH node as the primary. If set, the Chainlink node will automatically use HTTP mode for heavy requests, which can improve reliability.
 
+### EVM_NODES
+
+> 🚧 WARNING
+>
+> Setting this environment variable will **COMPLETELY ERASE** your `evm_nodes` table on every boot and repopulate from the given data to nullify any runtime modifications. This is a temporary solution until this configuration can be defined in a file in the future.
+
+- Default: _none_
+
+A JSON array of node specifications that allows you to configure multiple nodes or chains using an environment variable. This is not compatible with other environment variables that specify the node such as `ETH_URL` or `ETH_SECONDARY_URLS`. Set this variable using a configuration like the following example:
+
+```json
+EVM_NODES='
+[
+	{
+		"name": "primary_0_1",
+		"evmChainId": "0",
+		"wsUrl": "ws://test1.invalid",
+		"sendOnly": false
+	},
+	{
+		"name": "primary_0_2",
+		"evmChainId": "0",
+		"wsUrl": "ws://test2.invalid",
+		"httpUrl": "https://test3.invalid",
+		"sendOnly": false
+	},
+	{
+		"name": "primary_1337_1",
+		"evmChainId": "1337",
+		"wsUrl": "ws://test4.invalid",
+		"httpUrl": "http://test5.invalid",
+		"sendOnly": false
+	},
+	{
+		"name": "sendonly_1337_1",
+		"evmChainId": "1337",
+		"httpUrl": "http://test6.invalid",
+		"sendOnly": true
+	},
+	{
+		"name": "sendonly_0_1",
+		"evmChainId": "0",
+		"httpUrl": "http://test7.invalid",
+		"sendOnly": true
+	},
+	{
+		"name": "primary_42_1",
+		"evmChainId": "42",
+		"wsUrl": "ws://test8.invalid",
+		"sendOnly": false
+	},
+	{
+		"name": "sendonly_43_1",
+		"evmChainId": "43",
+		"httpUrl": "http://test9.invalid",
+		"sendOnly": true
+	}
+]
+'
+```
+
 ### ETH_SECONDARY_URLS
 
 Only has effect if `ETH_URL` set. Otherwise, it can be set in the API, [CLI](/docs/configuration-variables/#cli-client), or GUI.
@@ -776,6 +977,12 @@ Set to `0` to disable head tracker sampling.
 
 Controls the batch size for calling FilterLogs when backfilling missing or recent logs.
 
+### ETH_LOG_POLL_INTERVAL
+
+- Default: _automatic based on Chain ID_
+
+Defines how frequently to poll for new logs.
+
 ### ETH_RPC_DEFAULT_BATCH_SIZE
 
 - Default: _automatic based on chain ID_
@@ -828,6 +1035,30 @@ For jobs that use the `EthTx` adapter, this is the minimum payment amount in ord
 > 🚧 Note
 >
 > Keep in mind, the Chainlink node currently responds with a 500,000 gas limit. Under pricing your node could mean it spends more in ETH (on gas) than it earns in LINK.
+
+### NODE_NO_NEW_HEADS_THRESHOLD
+
+- Default: _automatically set based on Chain ID, typically "3m" (3 minutes)_
+
+Controls how long to wait after receiving no new heads before marking the node as out-of-sync.
+
+Set to zero to disable out-of-sync checking.
+
+### NODE_POLL_FAILURE_THRESHOLD
+
+- Default: _automatically set based on Chain ID, typically 3_
+
+Indicates how many consecutive polls must fail in order to mark a node as unreachable.
+
+Set to zero to disable poll checking.
+
+### NODE_POLL_INTERVAL
+
+- Default: _automatically set based on Chain ID, typically "10s" (10 seconds)_
+
+Controls how often to poll the node to check for liveness.
+
+Set to zero to disable poll checking.
 
 ## EVM Gas Controls
 
@@ -883,13 +1114,13 @@ tx_queue_no_unfamiliar_locals = false # This is disabled by default but might as
 
 - Default: _automatic based on chain ID_
 
-Forces EIP-1559 transaction mode for all chains. Enabling EIP-1559 mode can help reduce gas costs on chains that support it.
+Forces EIP-1559 transaction mode for all chains. Enabling EIP-1559 mode can help reduce gas costs on chains that support it. This is supported only on official Ethereum mainnet and testnets. It is not recommended to enable this setting on Polygon because the EIP-1559 fee market appears to be broken on all Polygon chains and EIP-1559 transactions are less likely to be included than legacy transactions.
 
 #### Technical details
 
 Chainlink nodes include experimental support for submitting transactions using type 0x2 (EIP-1559) envelope.
 
-EIP-1559 mode is off by default but can be enabled on a per-chain basis or globally.
+EIP-1559 mode is enabled by default on the Ethereum Mainnet, but can be enabled on a per-chain basis or globally.
 
 This might help to save gas on spikes. Chainlink nodes should react faster on the upleg and avoid overpaying on the downleg. It might also be possible to set `BLOCK_HISTORY_ESTIMATOR_BATCH_SIZE` to a smaller value such as 12 or even 6 because tip cap should be a more consistent indicator of inclusion time than total gas price. This would make Chainlink nodes more responsive and should reduce response time variance. Some experimentation is required to find optimum settings.
 
@@ -1054,9 +1285,15 @@ GAS_ESTIMATOR_MODE="FixedPrice"
 
 ### ETH_NONCE_AUTO_SYNC
 
-- Default: `"true"`
+- Default: `"false"`
 
 Chainlink nodes will automatically try to sync its local nonce with the remote chain on startup and fast forward if necessary. This is almost always safe but can be disabled in exceptional cases by setting this value to false.
+
+### ETH_USE_FORWARDERS
+
+- Default: `"false"`
+
+Enables or disables sending transactions through forwarder contracts.
 
 ## EVM/Ethereum Gas Price Estimation
 
@@ -1258,7 +1495,7 @@ Optional URL of OCR monitoring endpoint.
 OCR supports multiple networking stacks. `P2P_NETWORKING_STACK` chooses which stack to use. Possible values are:
 
 - `V1`
-- `V1V2` - Runs both stacks simultaneously and tries V2 first before falling back to V1. This is useful for migrating networks without downtime.
+- `V1V2` - Runs both stacks simultaneously. For each link with another peer, V2 networking will be preferred. If V2 does not work, the link will automatically fall back to V1. If V2 starts working again later, it will automatically be prefered again. This is useful for migrating networks without downtime. Note that the two networking stacks _must not_ be configured to bind to the same IP/port.
 - `V2`
 
 All nodes in the OCR network should share the same networking stack.
@@ -1270,18 +1507,21 @@ All nodes in the OCR network should share the same networking stack.
 - Default: _none_
 
 Should be set as the externally reachable IP address of the Chainlink node.
+Example: `P2P_ANNOUNCE_IP=1.2.3.4`
 
 #### P2P_ANNOUNCE_PORT
 
 - Default: _none_
 
 Should be set as the externally reachable port of the Chainlink node.
+Example: `P2P_ANNOUNCE_PORT=1337`
 
 #### P2P_BOOTSTRAP_PEERS
 
 - Default: _none_
 
 Default set of bootstrap peers.
+Example: `P2P_BOOTSTRAP_PEERS=/dns4/example.com/tcp/1337/p2p/12D3KooWMHMRLQkgPbFSYHwD3NBuwtS1AmxhvKVUrcfyaGDASR4U /ip4/1.2.3.4/tcp/9999/p2p/12D3KooWLZ9uTC3MrvKfDpGju6RAQubiMDL7CuJcAgDRTYP7fh7R`
 
 #### P2P_LISTEN_IP
 
@@ -1300,6 +1540,7 @@ The port to listen on. If left blank, the node randomly selects a different port
 - Default: _none_
 
 The default peer ID to use for OCR jobs. If unspecified, uses the first available peer ID.
+Example: `P2P_PEER_ID=12D3KooWMHMRLQkgPbFSYHwD3NBuwtS1AmxhvKVUrcfyaGDASR4U`
 
 ### Networking Stack V2
 
@@ -1308,20 +1549,32 @@ The default peer ID to use for OCR jobs. If unspecified, uses the first availabl
 - Default: _none_
 
 `P2PV2_ANNOUNCE_ADDRESSES` contains the addresses the peer will advertise on the network in host:port form as accepted by net.Dial. The addresses should be reachable by peers of interest.
+Example: `P2PV2_ANNOUNCE_ADDRESSES=1.2.3.4:9999 [a52d:0:a88:1274::abcd]:1337`
 
 #### P2PV2_BOOTSTRAPPERS
 
 - Default: _none_
 
 `P2PV2_BOOTSTRAPPERS` returns the default bootstrapper peers for libocr's v2 networking stack.
+Example: `P2PV2_BOOTSTRAPPERS=12D3KooWMHMRLQkgPbFSYHwD3NBuwtS1AmxhvKVUrcfyaGDASR4U@1.2.3.4:9999 12D3KooWLZ9uTC3MrvKfDpGju6RAQubiMDL7CuJcAgDRTYP7fh7R@[a52d:0:a88:1274::abcd]:1337 12D3KooWM55u5Swtpw9r8aFLQHEtw7HR4t44GdNs654ej5gRs2Dh@example.com:1234`
 
 #### P2PV2_LISTEN_ADDRESSES
 
 - Default: _none_
 
-`P2PV2_LISTEN_ADDRESSES` contains the addresses the peer will listen to on the network in host:port form as accepted by net.Listen, but host and port must be fully specified and cannot be empty.
+`P2PV2_LISTEN_ADDRESSES` contains the addresses the peer will listen to on the network in `host:port` form as accepted by `net.Listen()`, but the host and port must be fully specified and cannot be empty. You can specify `0.0.0.0` (IPv4) or `::` (IPv6) to listen on all interfaces, but that is not recommended.
+
+Example: `P2PV2_LISTEN_ADDRESSES=1.2.3.4:9999 [a52d:0:a88:1274::abcd]:1337`
 
 ## Keeper
+
+### KEEPER_CHECK_UPKEEP_GAS_PRICE_FEATURE_ENABLED
+
+- Default: `"false"`
+
+Use this setting *only* on Polygon networks.
+
+Includes gas price in calls to `checkUpkeep()` when set to `true`.
 
 ### KEEPER_GAS_PRICE_BUFFER_PERCENT
 
@@ -1334,6 +1587,12 @@ The default peer ID to use for OCR jobs. If unspecified, uses the first availabl
 - Default: `"20"`
 
 `KEEPER_GAS_TIP_CAP_BUFFER_PERCENT` adds the specified percentage to the gas price used for checking whether to perform an upkeep. Only applies in EIP-1559 mode.
+
+### KEEPER_BASE_FEE_BUFFER_PERCENT
+
+- Default: `"20"`
+
+Adds the specified percentage to the base fee used for checking whether to perform an upkeep. Applies only in EIP-1559 mode.
 
 ### KEEPER_MAXIMUM_GRACE_PERIOD
 
@@ -1385,6 +1644,18 @@ Do not change this setting unless you know what you are doing.
 
 `KEEPER_REGISTRY_SYNC_UPKEEP_QUEUE_SIZE` represents the maximum number of upkeeps that can be synced in parallel.
 
+### KEEPER_TURN_LOOK_BACK
+
+- Default: `"1000"`
+
+The number of blocks in the past to look back when getting a block for a turn.
+
+### KEEPER_TURN_FLAG_ENABLED
+
+- Default: `"false"`
+
+Enables a new algorithm for how keepers take turns.
+
 ## CLI Client
 
 The environment variables in this section apply only when running CLI commands that connect to a remote running instance of a Chainlink node.
@@ -1424,3 +1695,10 @@ It is not recommended to change this unless you know what you are doing.
 `10ms`
 `1h15m`
 `42m30s`
+
+> ⚠️ NOTE
+> Some configuration variables require a file size. A file size string is an unsigned integer (123) or a float (12.3) followed by a unit suffix. Valid file size units are "b", "kb", "mb", "gb", and "tb". If the unit is omitted, it is assumed to be "b" (bytes). Capitalization does not matter. Some examples:
+
+`123gb`
+`1.2TB`
+`12345`

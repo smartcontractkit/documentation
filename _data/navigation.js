@@ -98,7 +98,7 @@ module.exports = {
           },
           {
             title: 'Using Data Feeds',
-            url: '/docs/get-the-latest-price/'
+            url: '/docs/get-the-latest-price/',
           },
           {
             title: 'Historical Price Data',
@@ -114,7 +114,7 @@ module.exports = {
           },
           {
             title: 'Using ENS with Data Feeds',
-            url: '/docs/ens/'
+            url: '/docs/ens/',
           },
           {
             title: 'Contract Addresses',
@@ -163,7 +163,10 @@ module.exports = {
               {
                 title: 'Moonriver Data Feeds',
                 url: '/docs/data-feeds-moonriver/',
-
+              },
+              {
+                title: 'Moonbeam Data Feeds',
+                url: '/docs/data-feeds-moonbeam/',
               },
             ],
           },
@@ -183,7 +186,7 @@ module.exports = {
           },
           {
             title: 'Example Contracts',
-            url: '/docs/chainlink-vrf/example-contracts/'
+            url: '/docs/chainlink-vrf/example-contracts/',
           },
           {
             title: 'Security Considerations',
@@ -195,7 +198,7 @@ module.exports = {
           },
           {
             title: 'Contract Addresses',
-            url: '/docs/vrf-contracts/'
+            url: '/docs/vrf-contracts/',
           },
           {
             title: 'Migrating to VRF v2',
@@ -215,26 +218,34 @@ module.exports = {
             url: '/docs/make-a-http-get-request/',
             children: [
               {
+                title: 'Single Word Response',
+                url: '/docs/single-word-response/',
+              },
+              {
                 title: 'Multi-Variable Responses',
                 url: '/docs/multi-variable-responses/',
+              },
+              {
+                title: 'Array Response',
+                url: '/docs/api-array-response/',
               },
               {
                 title: 'Large Responses',
                 url: '/docs/large-responses/',
               },
+              {
+                title: 'Existing Job Request',
+                url: '/docs/existing-job-request/',
+              },
             ],
           },
           {
-            title: 'Make an Existing Job Request',
-            url: '/docs/existing-job-request/',
-          },
-          {
             title: 'Find Existing Jobs',
-            url: '/docs/listing-services/'
+            url: '/docs/listing-services/',
           },
           {
             title: 'API Reference',
-            url: '/docs/chainlink-framework/'
+            url: '/docs/chainlink-framework/',
           },
           {
             title: 'Contract Addresses',
@@ -243,31 +254,49 @@ module.exports = {
         ],
       },
       {
-        section: 'CHAINLINK KEEPERS',
+        section: 'AUTOMATE CONTRACTS',
         contents: [
           {
-            title: 'Introduction to Keepers',
+            title: 'Introduction to Chainlink Keepers',
             url: '/docs/chainlink-keepers/introduction/',
           },
           {
-            title: 'Making Compatible Contracts',
+            title: 'Keepers-compatible Contracts',
             url: '/docs/chainlink-keepers/compatible-contracts/',
           },
           {
-            title: 'Register Upkeep for a Contract',
+            title: 'Register an Upkeep',
             url: '/docs/chainlink-keepers/register-upkeep/',
           },
           {
-            title: 'Utility Contracts',
-            url: '/docs/chainlink-keepers/utility-contracts/'
+            title: 'Manage your Upkeeps',
+            url: '/docs/chainlink-keepers/manage-upkeeps/',
           },
           {
-            title: 'Network Overview',
+            title: 'Utility Contracts',
+            url: '/docs/chainlink-keepers/util-overview/',
+            children: [
+              {
+                title: 'EthBalanceMonitor',
+                url: '/docs/chainlink-keepers/utility-contracts/',
+              },
+            ],
+          },
+          {
+            title: 'Keepers Architecture',
             url: '/docs/chainlink-keepers/overview/',
           },
           {
+            title: 'Supported Networks',
+            url: '/docs/chainlink-keepers/supported-networks/',
+          },
+          {
+            title: 'Keepers Economics',
+            url: '/docs/chainlink-keepers/keeper-economics/',
+          },
+          {
             title: 'FAQs',
-            url: '/docs/chainlink-keepers/faqs/'
+            url: '/docs/chainlink-keepers/faqs/',
           },
         ],
       },
@@ -292,7 +321,7 @@ module.exports = {
           },
           {
             title: 'LINK Token Contracts',
-            url: '/docs/link-token-contracts/'
+            url: '/docs/link-token-contracts/',
           },
           {
             title: 'Developer Communications',
@@ -316,7 +345,7 @@ module.exports = {
           },
           {
             title: 'Contributing to Chainlink',
-            url: '/docs/contributing-to-chainlink/'
+            url: '/docs/contributing-to-chainlink/',
           },
         ],
       },
@@ -359,7 +388,11 @@ module.exports = {
         section: 'Data Feeds',
         contents: [
           {
-            title: 'Using Data Feeds',
+            title: 'Using Data Feeds Off-Chain',
+            url: '/docs/solana/using-data-feeds-off-chain/',
+          },
+          {
+            title: 'Using Data Feeds On-Chain',
             url: '/docs/solana/using-data-feeds-solana/',
           },
           {
@@ -582,7 +615,7 @@ module.exports = {
           },
           {
             title: 'Get a Random Number',
-            url: '/docs/get-a-random-number/v1/'
+            url: '/docs/get-a-random-number/v1/',
           },
           {
             title: 'Security Considerations',
@@ -594,11 +627,11 @@ module.exports = {
           },
           {
             title: 'Contract Addresses',
-            url: '/docs/vrf-contracts/v1/'
+            url: '/docs/vrf-contracts/v1/',
           },
           {
             title: 'API Reference',
-            url: '/docs/chainlink-vrf-api-reference/v1/'
+            url: '/docs/chainlink-vrf-api-reference/v1/',
           },
         ],
       },
