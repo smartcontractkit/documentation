@@ -49,7 +49,7 @@ Data Feeds are an example of a decentralized oracle network, and include the fol
 
 - [A consumer contract](#consumer)
 - [A proxy contract](#proxy)
-- [A proxy contract](#proxy)
+- [An aggregator contract](#aggregator)
 
 To learn how to create a consumer contract that uses an existing data feed, read the [Get the Latest Price](../get-the-latest-price/) documentation.
 
