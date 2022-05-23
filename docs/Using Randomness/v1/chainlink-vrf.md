@@ -8,8 +8,6 @@ whatsnext: {"Get a Random Number":"/docs/get-a-random-number/v1/", "API Referenc
 metadata:
   title: "Generate Random Numbers for Smart Contracts using Chainlink VRF"
   description: "Learn how to securely generate random numbers for your smart contract with Chainlink VRF (an RNG). This guide uses Solidity code examples."
-  image:
-    0: "/files/OpenGraph_V3.png"
 ---
 ![Chainlink Abstract Banner](/files/a4c6c80-85d09b6-19facd8-banner.png)
 

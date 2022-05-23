@@ -7,8 +7,6 @@ permalink: "docs/chainlink-vrf-best-practices/"
 metadata:
   title: "Chainlink VRF API Reference"
   description: "Best pracices for using Chainlink VRF."
-  image:
-    0: "/files/OpenGraph_V3.png"
 ---
 
 > ℹ️ You are viewing the VRF v2 guide.

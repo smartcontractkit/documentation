@@ -8,8 +8,6 @@ whatsnext: {"Get the Latest Price":"/docs/get-the-latest-price/", "API Reference
 metadata:
   title: "Introduction to Data Feeds"
   description: "Add data to your smart contracts and applications. Chainlink data feeds include BTC/USD, BTC/ETH, ETH/USD and more!"
-  image:
-    0: "../../files/OpenGraph_V3.png"
 ---
 ![Chainlink Abstract Banner](/files/2306b8b-Decentralized_Oracles_V3.png)
 
