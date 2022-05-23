@@ -132,7 +132,7 @@ This is the contract for the aggregator. You can call functions on the aggregato
 
 The aggregator contract has several variables and functions that might be useful for your application. Although aggregator contracts are similar for each data feed, some aggregators have different variables. Use the `typeAndVersion()` function on the aggregator to identify what type of aggregator it is and what version it is running.
 
-Always check the contract source code and configuration to understand how specific data feeds operate. For example, the [aggregator contract](https://arbiscan.io/address/0x942d00008d658dbb40745bbec89a93c253f9b882#code) for BTC / USD on Arbitrum is different from the aggregators on other networks. The [contract on Kovan](https://kovan.etherscan.io/address/0x222d3bd9bc8aef87afa9c8e4c7468da3f2c7130d#code) for BTC/USD is also different from the contracts on other testnets and the Ethereum Mainnet.
+Always check the contract source code and configuration to understand how specific data feeds operate. For example, the [aggregator contract for BTC/USD on Arbitrum](https://arbiscan.io/address/0x942d00008d658dbb40745bbec89a93c253f9b882#code) is different from the aggregators on other networks. The [contract on Kovan for BTC/USD](https://kovan.etherscan.io/address/0x222d3bd9bc8aef87afa9c8e4c7468da3f2c7130d#code) is also different from the contracts on other testnets and the Ethereum Mainnet.
 
 For examples of the contracts that are typically used in aggregator deployments, see the [libocr repository](https://github.com/smartcontractkit/libocr/blob/master/contract/) on GitHub.
 
