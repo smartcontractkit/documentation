@@ -52,7 +52,6 @@ Your node applies configuration settings using following hierarchy:
   - [TELEMETRY_INGRESS_USE_BATCH_SEND](#telemetry_ingress_use_batch_send)
 - [Chains](#chains)
   - [SOLANA_ENABLED](#solana_enabled)
-  - [TERRA_ENABLED](#terra_enabled)
   - [EVM_ENABLED](#evm_enabled)
 - [Database Settings](#database-settings)
   - [MIGRATE_DATABASE](#migrate_database)
@@ -333,14 +332,6 @@ Toggles sending telemetry to the ingress server using the batch client.
 - Default: `"false"`
 
 Enables Solana support.
-
-### TERRA_ENABLED
-
-> 🚧 Not intended for use on the Terra mainnet.
-
-- Default: `"false"`
-
-Enables Terra support.
 
 ### EVM_ENABLED
 

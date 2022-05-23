@@ -55,8 +55,6 @@ Some networks are not EVM-compatible and use languages other than Solidity for s
 - [Solana](/solana/)
   - [Writing Solana contracts in Rust](https://docs.solana.com/developing/on-chain-programs/developing-rust)
   - [Writing Solana contracts in C](https://docs.solana.com/developing/on-chain-programs/developing-c)
-- [Terra](/terra/)
-  - [Writing Terra smart contracts in Rust](https://docs.terra.money/docs/develop/dapp/smart-contracts/write-smart-contract.html)
 
 ## What does a smart contract look like?
 

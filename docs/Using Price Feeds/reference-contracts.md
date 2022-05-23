@@ -48,4 +48,3 @@ For more information on these categories, see the [Selecting Quality Data Feeds]
   - [Moonriver Data Feeds](../data-feeds-moonriver/)
 - Other chains
   - [Solana Data Feeds](/docs/solana/data-feeds-solana/)
-  - [Terra Data Feeds](/docs/terra/data-feeds-terra/)

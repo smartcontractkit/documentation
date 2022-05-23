@@ -350,30 +350,6 @@ module.exports = {
         ],
       },
     ],
-    terra: [
-      {
-        section: 'Terra',
-        contents: [
-          {
-            title: 'Overview',
-            url: '/docs/terra/',
-          },
-        ],
-      },
-      {
-        section: 'Data Feeds',
-        contents: [
-          {
-            title: 'Using Data Feeds',
-            url: '/docs/terra/using-data-feeds-terra/',
-          },
-          {
-            title: 'Terra Data Feeds',
-            url: '/docs/terra/data-feeds-terra/',
-          },
-        ],
-      },
-    ],
     solana: [
       {
         section: 'Solana',
