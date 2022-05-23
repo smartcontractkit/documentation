@@ -7,8 +7,6 @@ permalink: "docs/architecture-overview/"
 whatsnext: {"Basic Request Model":"/docs/architecture-request-model/", "Decentralized Data Model":"/docs/architecture-decentralized-model/", "Off-Chain Reporting":"/docs/off-chain-reporting/"}
 metadata:
   title: "Data Feeds Architecture"
-  image:
-    0: "/files/OpenGraph_V3.png"
 ---
 ![Request Model Banner](/files/8c35025-Request__Receive_Data.png)
 

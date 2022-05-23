@@ -7,8 +7,6 @@ permalink: "docs/architecture-request-model/"
 whatsnext: {"Make a GET Request":"/docs/make-a-http-get-request/", "Decentralized Data Model":"/docs/architecture-decentralized-model/", "Off-Chain Reporting":"/docs/off-chain-reporting/"}
 metadata:
   title: "Chainlink Basic Request Model"
-  image:
-    0: "/files/OpenGraph_V3.png"
 ---
 
 ## Contracts Overview

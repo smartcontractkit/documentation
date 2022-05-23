@@ -8,8 +8,6 @@ whatsnext: {"API Reference":"/docs/price-feeds-api-reference/", "Contract Addres
 metadata:
   title: "Get Historical Price Data"
   description: "How to use Chainlink Data Feeds to retrieve historical price data of ETH in your smart contracts."
-  image:
-    0: "/files/OpenGraph_V3.png"
 ---
 
 
@@ -54,7 +52,7 @@ roundId = uint80((uint256(phaseId) << 64) | aggregatorRoundId);
 
 where:
 
-- `phaseId` is incremented each time the underlying aggregator implementation is updated. It is used as key to find the aggregator address. 
+- `phaseId` is incremented each time the underlying aggregator implementation is updated. It is used as key to find the aggregator address.
 - `aggregatorRoundId` is the aggregator `roundId`. The id starts at 1.
 - `roundId` is the computed round id. From the above formula, you can think of it as a large number containing the `phaseId` and the `aggregatorRoundId`.
 
@@ -72,7 +70,7 @@ When you query historical data, it is important to know when you reach the end o
 ```javascript
 // First parse to BigInt to perform computation with big integers
 const num = BigInt("92233720368547771158");
-const num2 = BigInt("0xFFFFFFFFFFFFFFFF"); // Largest 64bits integer 
+const num2 = BigInt("0xFFFFFFFFFFFFFFFF"); // Largest 64bits integer
 
 console.log(Number(num >> 64n)); // returns 5 (phaseId)
 console.log(Number(num & num2)) // returns 13078 (aggregatorRoundId) . Use & (AND bitwise operator) which sets each bit to _1_ if both bits are _1_
@@ -82,7 +80,7 @@ Using _13078_ as the current aggregator's round, get its historical data by loop
 - Start from the first round: _92233720368547758081_ (result of _92233720368547771158 - 13078 + 1_)
 - Continue until the current round: _92233720368547771158_
 
-To get the historical data for previous aggregators, decrement the `phaseId` and start from round _1_. For phase _4_, get the starting `roundId` off-chain using the following JavaScript example: 
+To get the historical data for previous aggregators, decrement the `phaseId` and start from round _1_. For phase _4_, get the starting `roundId` off-chain using the following JavaScript example:
 
 ```javascript
 const phaseId = BigInt("4");
@@ -106,7 +104,7 @@ The [`getRoundData` function](/docs/price-feeds-api-reference/#getrounddata) ret
 - `answer` is the price.
 - `answeredInRound`: The combination of `aggregatorAnsweredInRound` and `phaseId`. `aggregatorAnsweredInRound`: The round the answer was updated in. You can check `answeredInRound` against the current `roundId`. If `answeredInRound` is less than `roundId`, the answer is being carried over. If `answeredInRound` is equal to `roundId`, then the answer is fresh.
 - `startedAt`: The timestamp when the round started.
-- `updatedAt`: The timestamp when the answer was computed. 
+- `updatedAt`: The timestamp when the answer was computed.
 
 > 🚧 Important
 >
