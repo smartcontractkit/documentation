@@ -15,7 +15,7 @@ When you use data feeds, retrieve the feeds through the `AggregatorV3Interface` 
 + [AggregatorV3Interface contract](#aggregatorv3interface)
 + [AccessControlledOffchainAggregator contract](#accesscontrolledoffchainaggregator)
 
-### AggregatorV3Interface
+## AggregatorV3Interface
 
 Import this interface to your contract and use it to run functions in the proxy contract. Create the interface object by pointing to the proxy address. For example, on Rinkeby you could create the interface object in the constructor of your contract using the following example:
 
@@ -34,7 +34,7 @@ To see examples for how to use this interface, read the [Using Data Feeds](/docs
 
 You can see the code for the [`AggregatorV3Interface` contract](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol) on GitHub.
 
-#### Functions in AggregatorV3Interface
+### Functions in AggregatorV3Interface
 
 |Name|Description|
 |---|---|
@@ -44,7 +44,7 @@ You can see the code for the [`AggregatorV3Interface` contract](https://github.c
 |[latestRoundData](#latestrounddata)|Get data from the latest round.|
 |[version](#version)|The version representing the type of aggregator the proxy points to.|
 
-##### decimals
+#### decimals
 
 Get the number of decimals present in the response value.
 
@@ -54,7 +54,7 @@ function decimals() external view returns (uint8);
 
 * `RETURN`: The number of decimals.
 
-##### description
+#### description
 
 Get the description of the underlying aggregator that the proxy points to.
 
@@ -64,7 +64,7 @@ function description() external view returns (string memory);
 
 * `RETURN`: The description of the underlying aggregator.
 
-##### getRoundData
+#### getRoundData
 
 Get data about a specific round, using the `roundId`.
 
@@ -93,7 +93,7 @@ function getRoundData(uint80 _roundId)
 * `updatedAt`: Timestamp of when the round was updated
 * `answeredInRound`: The round ID in which the answer was computed
 
-##### latestRoundData
+#### latestRoundData
 
 Get the price from the latest round.
 
@@ -116,7 +116,7 @@ function latestRoundData() external view
 * `updatedAt`: Timestamp of when the round was updated.
 * `answeredInRound`: The round ID of the round in which the answer was computed.
 
-##### version
+#### version
 
 The version representing the type of aggregator the proxy points to.
 
@@ -126,7 +126,7 @@ function version() external view returns (uint256)
 
 * `RETURN`: The version number.
 
-### AccessControlledOffchainAggregator
+## AccessControlledOffchainAggregator
 
 This is the contract for the aggregator. You can call functions on the aggregator directly, but it is a best practice to use the [AggregatorV3Interface](#aggregatorv3interface) to run functions on the proxy instead so that changes to the aggregator do not affect your application. Read the aggregator contract only if you need functions that are not available in the proxy.
 
@@ -136,7 +136,7 @@ Always check the contract source code and configuration to understand how specif
 
 For examples of the contracts that are typically used in aggregator deployments, see the [libocr repository](https://github.com/smartcontractkit/libocr/blob/master/contract/) on GitHub.
 
-#### Variables and functions in AccessControlledOffchainAggregator
+### Variables and functions in AccessControlledOffchainAggregator
 
 This contract imports `OffchainAggregator` and `SimpleReadAccessController`, which also include their own imports. The variables and functions lists include the publicly accessible items from these imported contracts.
 
@@ -179,7 +179,7 @@ A simple way to read the variables or functions is to get the ABI from a blockch
 |[validatorConfig](#validatorconfig)|Returns the address and the gas limit for the validator contract.|
 |[version](#version-1)|Returns the contract version. This is different from the `typeAndVersion` for the aggregator.|
 
-##### decimals
+#### decimals
 
 Return the number of digits of precision for the stored answer. Answers are stored in fixed-point format.
 
@@ -187,7 +187,7 @@ Return the number of digits of precision for the stored answer. Answers are stor
 function decimals() external view returns (uint8 decimalPlaces);
 ```
 
-##### description
+#### description
 
 Return a description for this data feed. Usually this is an asset pair for a price feed.
 
@@ -203,7 +203,7 @@ function description()
 }
 ```
 
-##### getAnswer
+#### getAnswer
 
 Get an answer from a specific aggregator round. Use this to get historical data.
 
@@ -219,7 +219,7 @@ function getAnswer(uint256 _roundId)
 }
 ```
 
-##### getBilling
+#### getBilling
 
 Retrieve the current billing configuration.
 
@@ -246,7 +246,7 @@ function getBilling()
 }
 ```
 
-##### getRoundData
+#### getRoundData
 
 Get the full information for a specific aggregator round including the answer and update timestamps. Use this to get the full historical data for a round.
 
@@ -268,7 +268,7 @@ function getRoundData(uint80 _roundId)
 }
 ```
 
-##### getTimestamp
+#### getTimestamp
 
 Get the block timestamp from a specific aggregator round.
 
@@ -284,7 +284,7 @@ function getTimestamp(uint256 _roundId)
 }
 ```
 
-##### hasAccess
+#### hasAccess
 
 Check if an address has internal access.
 
@@ -303,7 +303,7 @@ function hasAccess(
 }
 ```
 
-##### latestAnswer
+#### latestAnswer
 
 Return the most recent answer accepted by the aggregator.
 
@@ -319,7 +319,7 @@ function latestAnswer()
 }
 ```
 
-##### latestConfigDetails
+#### latestConfigDetails
 
 Return information about the current off-chain reporting protocol configuration.
 
@@ -337,7 +337,7 @@ function latestConfigDetails()
 }
 ```
 
-##### latestRound
+#### latestRound
 
 Return the `roundID` for the most recent aggregator round.
 
@@ -353,7 +353,7 @@ function latestRound()
 }
 ```
 
-##### latestRoundData
+#### latestRoundData
 
 Get the full information for the most recent round including the answer and update timestamps.
 
@@ -375,7 +375,7 @@ function latestRoundData()
 }
 ```
 
-##### latestTimestamp
+#### latestTimestamp
 
 Get the block timestamp when the last answer was accepted.
 
@@ -391,7 +391,7 @@ function latestTimestamp()
 }
 ```
 
-##### latestTransmissionDetails
+#### latestTransmissionDetails
 
 Get information about the most recent answer.
 
@@ -418,7 +418,7 @@ function latestTransmissionDetails()
 }
 ```
 
-##### linkAvailableForPayment
+#### linkAvailableForPayment
 
 Get the amount of LINK on this contract that is available to make payments to oracles. This value can be negative if there are outstanding payment obligations.
 
@@ -438,7 +438,7 @@ function linkAvailableForPayment()
 }
 ```
 
-##### oracleObservationCount
+#### oracleObservationCount
 
 Returns the number of observations that oracle is due to be reimbursed for.
 
@@ -454,7 +454,7 @@ function oracleObservationCount(address _signerOrTransmitter)
 }
 ```
 
-##### owedPayment
+#### owedPayment
 
 Returns how much LINK an oracle is owed for its observations.
 
@@ -476,7 +476,7 @@ function owedPayment(address _transmitter)
 }
 ```
 
-##### requesterAccessController
+#### requesterAccessController
 
 Returns the address for the access controller contract.
 
@@ -490,7 +490,7 @@ function requesterAccessController()
 }
 ```
 
-##### transmitters
+#### transmitters
 
 The oracle addresses that can report answers to this aggregator.
 
@@ -504,7 +504,7 @@ function transmitters()
 }
 ```
 
-##### typeAndVersion
+#### typeAndVersion
 
 Returns the aggregator type and version. Many aggregators are `AccessControlledOffchainAggregator 2.0.0`, but there are other variants in production. The version is for the type of aggregator, and different from the contract `version`.
 
@@ -520,7 +520,7 @@ function typeAndVersion()
 }
 ```
 
-##### validatorConfig
+#### validatorConfig
 
 Returns the address and the gas limit for the validator contract.
 
@@ -535,7 +535,7 @@ function validatorConfig()
 }
 ```
 
-##### version
+#### version
 
 Returns the contract version. This is different from the `typeAndVersion` for the aggregator.
 
