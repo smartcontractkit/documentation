@@ -93,38 +93,9 @@ This example uses [Web3.py](https://web3py.readthedocs.io/en/stable/) to retriev
 
 ## Golang
 
-This example uses [go-ethereum](https://github.com/ethereum/go-ethereum) to retrieve feed data from the [ETH / USD feed](https://kovan.etherscan.io/address/0x9326BFA02ADD2366b30bacB125260Af641031331) on the Kovan testnet.
-In order to interact with a smart contract in `Go`, you need to:
+You can find an example with all the source files [here](https://github.com/smartcontractkit/smart-contract-examples/tree/main/pricefeed-golang).This example uses [go-ethereum](https://github.com/ethereum/go-ethereum) to retrieve feed data from the [ETH / USD feed](https://kovan.etherscan.io/address/0x9326BFA02ADD2366b30bacB125260Af641031331) on the Kovan testnet.
+For instructions how to run it, refer to the [README](https://github.com/smartcontractkit/smart-contract-examples/blob/main/pricefeed-golang/README.md).
 
-1. Generate the [Contract ABI](https://docs.soliditylang.org/en/latest/abi-spec.html) from a solidity source file using [solc](https://docs.soliditylang.org/en/latest/using-the-compiler.html). In this case, we are going to download the [`AggregatorV3Interface`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol) and generate an ABI called `AggregatorV3Interface.abi`:
-
-```shell 
-wget https://raw.githubusercontent.com/smartcontractkit/chainlink/develop/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol
-solc --abi AggregatorV3Interface.sol -o .
-```
-
-2. From `AggregatorV3Interface.abi`, generate the `Go` bindings `aggregator_v3_interface.go` required to programmatically interact with a smart contract using generated, typesafe `Go`code. Ensure that [Geth](https://geth.ethereum.org/docs/install-and-build/installing-geth) is installed so you can use [`abigen`](https://geth.ethereum.org/docs/dapp/native-bindings).
-
-```shell
-abigen --abi=AggregatorV3Interface.abi --pkg=aggregator_v3_interface --out=aggregator_v3_interface.go
-```
-
-3. Import the package. You can find the whole example with all the source files [here](https://replit.com/@hophop/chainlink-price-feed-golang?v=1).
-
-
-```go Kovan
-{% include 'samples/PriceFeeds/PriceConsumerV3.go' %}
-```
-
-{% endmarkdown %}
-
-<div class="row cl-button-container">
-  <div class="col-xs-12 col-md-12">
-  <a href="https://replit.com/@hophop/chainlink-price-feed-golang?v=1" class="cl-button--ghost">Run this Go example</a>
-  </div>
-</div>
-
-{% markdown %}
 
 > 📘 New Feed Registry
 > You can use the [Feed Registry](../feed-registry/) to reference data feed assets by name or currency identifier instead of by pair/proxy address.
