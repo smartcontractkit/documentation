@@ -439,6 +439,10 @@ module.exports = {
             title: 'Best Practices for Nodes on AWS',
             url: '/docs/best-practices-aws/',
           },
+	  {
+	    title: 'EVM Performance Configuration',
+	    url: '/docs/evm-performance-configuration/',
+	  },
           {
             title: 'Miscellaneous',
             url: '/docs/miscellaneous/',
