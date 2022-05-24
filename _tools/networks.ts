@@ -119,7 +119,7 @@ export const NETWORKS = [
         networkType: "mainnet",
       },
       {
-        name: "Fantom Testnet",
+        name: "Fantom Data Feeds",
         url: "https://testnet.ftmscan.com/address/%s",
         source: "directory-fantom-testnet.json",
         networkType: "testnet",
@@ -218,6 +218,19 @@ export const NETWORKS = [
         name: "Moonriver Mainnet",
         url: "https://moonriver.moonscan.io/address/%s",
         source: "directory-kusama-mainnet-moonriver.json",
+        networkType: "mainnet",
+      },
+    ],
+  },
+  {
+    page: "data-feeds-moonbeam",
+    title: "Moonbeam Data Feeds",
+    feedType: "Proxy",
+    networks: [
+      {
+        name: "Moonbeam Mainnet",
+        url: "https://moonscan.io/address/%s",
+        source: "directory-polkadot-mainnet-moonbeam.json",
         networkType: "mainnet",
       },
     ],

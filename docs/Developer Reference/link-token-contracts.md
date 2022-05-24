@@ -316,6 +316,10 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 
 ### Testnet
 
+> 🚰Harmony Testnet Faucet
+>
+> Testnet LINK is available from https://faucets.chain.link/harmony-testnet
+
 |Parameter|Value|
 |:---|:---|
 |`ETH_CHAIN_ID`|`1666700000`|

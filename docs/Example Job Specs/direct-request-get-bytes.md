@@ -2,12 +2,12 @@
 layout: nodes.liquid
 section: nodeOperator
 date: Last Modified
-title: 'Large Response Example Job Spec'
-permalink: "docs/example-job-spec-large/"
+title: 'GET > Bytes Example Job Spec'
+permalink: 'docs/direct-request-get-bytes/'
 ---
 
-This is an example v2 job spec for returning large responses in 1 Chainlink API Call. 
-
+This is an example v2 (TOML) job spec for returning _bytes_ in one Chainlink API Call. Note that the job calls the `fulfillOracleRequest2` function. If you are a node operator, use an [Operator contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/Operator.sol) with this job.
+To test it from a smart contract, see this [Example](/docs/large-responses/).
 
 ```jpv2
 type = "directrequest"
@@ -41,7 +41,7 @@ observationSource = """
 
 ```
 
-This is an example v1 job spec for returning large responses in 1 Chainlink API Call. 
+This is an example legacy v1 job spec for returning large responses in one Chainlink API Call.
 
 ```json
 {
@@ -74,10 +74,7 @@ This is an example v1 job spec for returning large responses in 1 Chainlink API 
       "type": "ethtx",
       "confirmations": 1,
       "params": {
-        "abiEncoding": [
-          "bytes32",
-          "bytes"
-        ]
+        "abiEncoding": ["bytes32", "bytes"]
       }
     }
   ]

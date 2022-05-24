@@ -2,13 +2,19 @@
 layout: nodes.liquid
 section: nodeOperator
 date: Last Modified
-title: "Fulfilling Requests"
-permalink: "docs/fulfilling-requests/"
-whatsnext: {"Performing System Maintenance":"/docs/performing-system-maintenance/", "v2 Jobs":"/docs/jobs/", "Security and Operation Best Practices":"/docs/best-security-practices/"}
+title: 'Fulfilling Requests'
+permalink: 'docs/fulfilling-requests/'
+whatsnext:
+  {
+    'Performing System Maintenance': '/docs/performing-system-maintenance/',
+    'v2 Jobs': '/docs/jobs/',
+    'Security and Operation Best Practices': '/docs/best-security-practices/',
+  }
 metadata:
-  title: "Chainlink Node Operators: Fulfilling Requests"
-  description: "Deploy your own Oracle contract and add jobs to your node so that it can provide data to smart contracts."
+  title: 'Chainlink Node Operators: Fulfilling Requests'
+  description: 'Deploy your own Oracle contract and add jobs to your node so that it can provide data to smart contracts.'
 ---
+
 With your own Oracle contract, you can use your own node to fulfill requests. This guide will show you how to deploy your own Oracle contract and add jobs to your node so that it can provide data to smart contracts.
 
 Chainlink nodes can fulfill requests from open or unauthenticated APIs without the need for [External Adapters](../external-adapters/) as long as you've [added the jobs](#add-a-job-to-the-node) to the node. For these requests, requesters supply the URL to the open API that they want each node to retrieve. The Chainlink node will use [tasks](/docs/tasks/) to fulfill the request.
@@ -27,6 +33,7 @@ Before you begin this guide, complete the following tasks to make sure you have 
 ## Address Types
 
 Your node works with several different types of addresses. Each address type has a specific function:
+
 - **Node address:** This is the address for your Chainlink node wallet. The node requires native blockchain tokens at all times to respond to requests. For this example, the node uses ETH. When you start a Chainlink node, it automatically generates this address. You can find this address on the Node Operator GUI under Keys > Account addresses.
 - **Oracle contract address:** This is the address for contracts like `Operator.sol` or `Oracle.sol` that are deployed to a blockchain. Do not fund these addresses with native blockchain tokens such as ETH. When you make API call requests, the funds pass through this contract to interact with your Chainlink node. This will be the address that smart contract developers point to when they choose a node for an API call.
 - **Admin wallet address:** This is the address that owns your `Operator.sol` or `Oracle.sol` contract addresses. If you're on OCR, this is the wallet address that receives LINK tokens.
@@ -39,37 +46,39 @@ Your node works with several different types of addresses. Each address type has
 
 1. On the **Deploy and Run** tab, configure the following settings:
 
-    - Select "Injected Web3" as your **Environment**. The Javascript VM environment cannot access your oracle node.
-    - Select the "Oracle" contract from the **Contract** menu.
-    - Copy the LINK token contract address for the network you are using and paste it into the `address_link` field next to the **Deploy** button. Use one of the following network addresses:
+   - Select "Injected Web3" as your **Environment**. The Javascript VM environment cannot access your oracle node.
+   - Select the "Oracle" contract from the **Contract** menu.
+   - Copy the LINK token contract address for the network you are using and paste it into the `address_link` field next to the **Deploy** button. Use one of the following network addresses:
 
-      ``` text Rinkeby
-      0x01BE23585060835E02B77ef475b0Cc51aA1e0709
-      ```
-      ``` text Kovan
-      0xa36085F69e2889c224210F603D836748e7dC0088
-      ```
-      ``` text Mainnet
-      0x514910771AF9Ca656af840dff83E8264EcF986CA
-      ```
+     ```text Rinkeby
+     0x01BE23585060835E02B77ef475b0Cc51aA1e0709
+     ```
 
-    ![The Deploy & Run transaction window showing Injected Web 3 selected and the address for your MetaMask wallet.](/files/b9d3620-remix004.jpg)
+     ```text Kovan
+     0xa36085F69e2889c224210F603D836748e7dC0088
+     ```
+
+     ```text Mainnet
+     0x514910771AF9Ca656af840dff83E8264EcF986CA
+     ```
+
+   ![The Deploy & Run transaction window showing Injected Web 3 selected and the address for your MetaMask wallet.](/files/b9d3620-remix004.jpg)
 
 1. Click **Deploy**. MetaMask prompts you to confirm the transaction.
 
-    > 🚧 MetaMask doesn't pop up?
-    >
-    > If MetaMask does not prompt you and instead displays the error below, disable "Privacy Mode" in MetaMask. You can do this by clicking on your unique account icon at the top-right, then go to the Settings. Privacy Mode will be a switch near the bottom.
-    >
-    > Error: **Send transaction failed: Invalid address. If you use an injected provider, please check it is properly unlocked.**
+   > 🚧 MetaMask doesn't pop up?
+   >
+   > If MetaMask does not prompt you and instead displays the error below, disable "Privacy Mode" in MetaMask. You can do this by clicking on your unique account icon at the top-right, then go to the Settings. Privacy Mode will be a switch near the bottom.
+   >
+   > Error: **Send transaction failed: Invalid address. If you use an injected provider, please check it is properly unlocked.**
 
 1. After you deploy the contract, a link to Etherscan displays at the bottom. Open that link in a new tab to keep track of the transaction.
 
-    ![Remix Pending Transaction Message](/files/b6fe1ac-remix005.jpg)
+   ![Remix Pending Transaction Message](/files/b6fe1ac-remix005.jpg)
 
 1. If the transaction is successful, a new address displays in the **Deployed Contracts** section.
 
-    ![Screenshot showing the newly deployed contract.](/files/6858cf3-remix006.jpg)
+   ![Screenshot showing the newly deployed contract.](/files/6858cf3-remix006.jpg)
 
 1. Keep note of the Oracle contract address. You need it later for your consuming contract.
 
@@ -78,11 +87,11 @@ Your node works with several different types of addresses. Each address type has
 Find the address for your Chainlink node and add it to the Oracle contract.
 
 1. In the Chainlink Operator GUI for your node, find and copy the address at the bottom of the **Keys** page in the Account addresses section.
-      ![Node UI Account Addresses](/images/node-operators/node-address.png)
+   ![Node UI Account Addresses](/images/node-operators/node-address.png)
 
 1. In Remix, call the `setFulfillmentPermission` function with the address of your node, a comma, and the value `true`, as the input parameters. This allows your node to fulfill requests to your oracle contract.
 
-    ![A screenshot showing all of the fields for the deployed contract in Remix.](/files/c6925db-remix007.jpg)
+   ![A screenshot showing all of the fields for the deployed contract in Remix.](/files/c6925db-remix007.jpg)
 
 1. Click the `setFulfillmentPermission` function to run it. Approve the transaction in MetaMask and wait for it to confirm on the blockchain.
 
@@ -96,17 +105,17 @@ You can add jobs to your Chainlink node in the Chainlink Operator GUI. The [ATes
 
 1. In the Chainlink Operator GUI on the **Jobs** tab, click **New Job**.
 
-    ![The new job button.](/images/node-operators/new-job-button.png)
+   ![The new job button.](/images/node-operators/new-job-button.png)
 
 1. Paste the job specification from above into the text field.
 
-    ![The new job page with TOML format for a new job pasted.](/images/node-operators/new-job-toml.png)
+   ![The new job page with TOML format for a new job pasted.](/images/node-operators/new-job-toml.png)
 
 1. Replace `YOUR_ORACLE_CONTRACT_ADDRESS` with the address of your deployed oracle contract address from the previous steps. Replace `YOUR_ORACLE_CONTRACT_ADDRESS` for both the attribute `contractAddress` and also attribute `to` for the `submit_tx` step in the `observationSource` part of the job specification. This address not the same as the `ACCOUNT_ADDRESS` from your Chainlink node.
 
 1. Click **Create Job**. If the node creates the job successfully, a notice with the job number appears.
 
-    ![A screenshot showing that the job is created successfully.](/images/node-operators/job-created.png)
+   ![A screenshot showing that the job is created successfully.](/images/node-operators/job-created.png)
 
 1. Click the job number to view the job details. You can also find the job listed on the **Jobs** tab in the Node Operators UI.
 
@@ -120,12 +129,14 @@ After you add jobs to your node, you can use the node to fulfill requests. This 
 
 1. Open [ATestnetConsumer.sol in Remix](https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/ATestnetConsumer.sol).
 
+1. Note that `setChainlinkToken(0xa36085F69e2889c224210F603D836748e7dC0088)` is configured for _Kovan_. Fetch the Link token address for the network you are deploying into from the [Link token contracts page](/docs/link-token-contracts).
+
 1. On the **Compiler** tab, click the **Compile** button for `ATestnetConsumer.sol`.
 
 1. On the **Deploy and Run** tab, configure the following settings:
 
-    - Select "Injected Web3" as your environment.
-    - Select "ATestnetConsumer" from the **Contract** menu.
+   - Select "Injected Web3" as your environment.
+   - Select "ATestnetConsumer" from the **Contract** menu.
 
 1. Click **Deploy**. MetaMask prompts you to confirm the transaction.
 
@@ -135,7 +146,7 @@ After you add jobs to your node, you can use the node to fulfill requests. This 
 
 1. After you fund the contract, create a request. Input your oracle contract address and the job ID for the `Get > Uint256` job into the `requestEthereumPrice` request method **without dashes**. The job ID is the `externalJobID` parameter, which you can find on your job's definition page in the Node Operators UI.
 
-    ![Screenshot of the requestEthereumPrice function with the oracle address and job ID specified.](/images/node-operators/request-price-function.png)
+   ![Screenshot of the requestEthereumPrice function with the oracle address and job ID specified.](/images/node-operators/request-price-function.png)
 
 1. Click the **transact** button for the `requestEthereumPrice` function and approve the transaction in Metamask. The `requestEthereumPrice` function asks the node to retrieve `uint256` data specifically from [https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD](https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD).
 
@@ -143,7 +154,7 @@ After you add jobs to your node, you can use the node to fulfill requests. This 
 
 1. In Remix, click the `currentPrice` variable to see the current price updated on your consumer contract.
 
-    ![A screenshot of the currentPrice button](/files/6741635-Screenshot_from_2019-05-15_15-38-25.png)
+   ![A screenshot of the currentPrice button](/files/6741635-Screenshot_from_2019-05-15_15-38-25.png)
 
 ## Retrieving other types of data
 
@@ -159,7 +170,7 @@ Now that you have a working consumer contract, you can use that same `ATestnetCo
 
 1. Input your oracle contract address and the job ID for the `Get > Bytes32` job into the `requestEthereumLastMarket` request method **without dashes**.
 
-    ![Screenshot of the requestEthereumLastMarket function with the oracle address and job ID specified.](/images/node-operators/request-lastmarket-function.png)
+   ![Screenshot of the requestEthereumLastMarket function with the oracle address and job ID specified.](/images/node-operators/request-lastmarket-function.png)
 
 1. Click the **transact** button for the `requestEthereumLastMarket` function and approve the transaction in Metamask.
 
@@ -167,7 +178,7 @@ Now that you have a working consumer contract, you can use that same `ATestnetCo
 
 1. In Remix, click the `lastMarket` variable. The value is in bytes that you can convert to a string outside of the smart contract later.
 
-    ![A screenshot of the lastMarket button](/images/node-operators/lastMarket-variable.png)
+   ![A screenshot of the lastMarket button](/images/node-operators/lastMarket-variable.png)
 
 Jobs can do more than just retrieve data and put it on chain. You can write your own jobs to accomplish various tasks. See the [v2 Jobs](/docs/jobs/) page to learn more.
 
