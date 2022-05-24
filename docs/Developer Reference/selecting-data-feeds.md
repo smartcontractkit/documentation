@@ -90,6 +90,8 @@ Below are some examples of tooling that Chainlink users have put in place:
 - **Manual Kill Switch:** If a vulnerability or bug is discovered in one of the upstream contracts, the user can manually cease operation and temporarily sever the connection to the data feed.
 - **Monitoring:** Some users create their own monitoring alerts based on deviations in the data feeds that they are using.
 
+For more detailed information about some of these examples, see the [Monitoring data feeds](/docs/using-chainlink-reference-contracts/#monitoring-data-feeds) documentation.
+
 ## Chainlink Community Deployments
 
 Chainlink technology is used by many within the blockchain community to support their use cases. Deployments built and run by community members are not tracked in the Chainlink documentation. Chainlink's community is continuously growing, and we believe they play a vital role in developing the ecosystem, so we continue to develop our software and tooling for anyone to use. Users have a wide variety of options for choosing how to deliver data on-chain. They can deploy Chainlink nodes themselves or via the extensive network of node operators that offer services and access one of the community-managed oracle networks that support the supply of various types of data on-chain. Chainlink Labs does not take responsibility for your use of our node software.

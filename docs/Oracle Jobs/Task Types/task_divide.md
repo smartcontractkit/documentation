@@ -6,21 +6,21 @@ title: "Divide Task"
 permalink: "docs/jobs/task-types/divide/"
 ---
 
-Divides the provided `input` and `times` values.
+Divides the provided `input` by the `divisor` and returns the result with a number of decimal places defined in the `precision` value.
 
 **Parameters**
 
-- `input`: the value to be divided. Possible values:
+- `input`: The value to be divided
     - number
     - stringified number
     - bytes-ified number
     - `$(variable)`
-- `divisor`: the value by which to divide the `input`.
+- `divisor`: The value by which to divide the `input`
     - number
     - stringified number
     - bytes-ified number
     - `$(variable)`
-- `precision`: the number of decimal places to retain.
+- `precision`: The number of decimal places to retain in the result
     - number
     - stringified number
     - bytes-ified number
@@ -39,5 +39,4 @@ my_divide_task [type="divide"
                 precision="2"]
 ```
 
-Given the input `10`, the task will return `3.33`.
-
+Given the input `10`, this example returns `3.33`.

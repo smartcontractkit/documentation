@@ -7,8 +7,6 @@ permalink: "docs/chainlink-vrf-api-reference/v1/"
 metadata:
   title: "Chainlink VRF API Reference"
   description: "API reference for VRFConsumerBase."
-  image:
-    0: "/files/OpenGraph_V3.png"
 ---
 
 > 🚧 VRF v2 replaces and enhances VRF v1.
