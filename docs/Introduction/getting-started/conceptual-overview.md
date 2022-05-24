@@ -100,7 +100,6 @@ Like Javascript, contracts can have state variables and local variables. **State
 string public message;
 uint256 internal internalVar;
 uint8 private privateVar;
-bool external isTrue;
 ```
 
 ### Constructors
