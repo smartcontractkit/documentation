@@ -94,13 +94,15 @@ contract HelloWorld {
 
 Like Javascript, contracts can have state variables and local variables. **State variables** are variables with values that are permanently stored in contract storage. The values of **local variables**, however, are present only until the function is executing. There are also different types of variables you can use within Solidity, such as `string`, `uint256`, etc. Check out the [Solidity documentation](https://docs.soliditylang.org/en/v0.8.7/) to learn more about the different kinds of variables and types.
 
-*Modifiers* are used to change the level of access to these variables. Here are some examples of state variables with different modifiers:
+*Visibility modifiers* are used to define the level of access to these variables. Here are some examples of state variables with different visibility modifiers:
 
 ```solidity
 string public message;
 uint256 internal internalVar;
 uint8 private privateVar;
 ```
+
+Learn more about state variables visibility [here](https://docs.soliditylang.org/en/latest/contracts.html#state-variable-visibility).
 
 ### Constructors
 
@@ -127,6 +129,8 @@ function updateMessage(string memory newMessage) public {
   message = newMessage;
 }
 ```
+
+Functions use visibility modifiers to define the access level. Learn more about functions visibility [here](https://docs.soliditylang.org/en/latest/contracts.html#function-visibility). 
 
 ### Interfaces
 
