@@ -6,7 +6,7 @@ const provider = anchor.AnchorProvider.env();
 async function main() {
     anchor.setProvider(provider);
 
-    const CHAINLINK_FEED_ADDRESS="2ypeVyYnZaW2TNYXXTaZq9YhYvnqcjCiifW1C6n8b7Go"
+    const CHAINLINK_FEED_ADDRESS="HgTtcbcmp5BeThax5AU8vg4VwK79qAvAKKFMs8txMLW6"
     const CHAINLINK_PROGRAM_ID = new anchor.web3.PublicKey("cjg3oHmg9uuPsP8D6g29NWvhySJkdYdAo9D25PRbKXJ");
     const feedAddress = new anchor.web3.PublicKey(CHAINLINK_FEED_ADDRESS); //ETH-USD Devnet
 
