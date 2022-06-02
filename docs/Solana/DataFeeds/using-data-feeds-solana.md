@@ -33,6 +33,11 @@ The program that owns the data feeds on both Devnet and Mainnet is [HEvSKofvBgfa
 
 You can read Chainlink Data Feed data on-chain in your existing project using the [Chainlink Solana Crate](https://crates.io/crates/chainlink_solana).
 
+
+> 🚧 Reading feed data
+>
+> While you can directly query the data feed accounts , you should not rely on the memory layout always being the same as it currently is. Based on this, the reccomendation is to always use the consumer library queries below.
+
 ### Add the Chainlink Solana Crate to your Project
 
 Before you begin, import the Chainlink Solana Crate into your project.
