@@ -168,6 +168,10 @@ module.exports = {
                 title: 'Moonbeam Data Feeds',
                 url: '/docs/data-feeds-moonbeam/',
               },
+              {
+                title: 'Metis Data Feeds',
+                url: '/docs/data-feeds-metis/',
+              },
             ],
           },
           {
