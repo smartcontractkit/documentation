@@ -12,7 +12,7 @@ metadata:
 ---
 LINK tokens are used to pay node operators for retrieving data for smart contracts and also for deposits placed by node operators as required by contract creators.
 
-The LINK token is an ERC677 token that inherits functionality from the ERC20 token standard and allows token transfers to contain a data payload. Read more about the <a href="https://github.com/ethereum/EIPs/issues/677" target="_blank" rel="noreferrer, noopener">ERC677 transferAndCall token standard</a>.
+The LINK token is an ERC677 token that inherits functionality from the ERC20 token standard and allows token transfers to contain a data payload. Read more about the [ERC677 transferAndCall token standard](https://github.com/ethereum/EIPs/issues/677).
 
 **Table of Contents**
 
@@ -28,6 +28,7 @@ The LINK token is an ERC677 token that inherits functionality from the ERC20 tok
 + [Optimism](#optimism)
 + [Harmony](#harmony)
 + [Moonriver](#moonriver)
++ [Moonbeam](#moonbeam)
 
 # Ethereum
 
@@ -36,7 +37,7 @@ The LINK token is an ERC677 token that inherits functionality from the ERC20 tok
 |Parameter|Value|
 |:---|:---|
 |`ETH_CHAIN_ID`|`1`|
-|Address|<a href="https://etherscan.io/token/0x514910771af9ca656af840dff83e8264ecf986ca" target="_blank" rel="noreferrer, noopener">`0x514910771af9ca656af840dff83e8264ecf986ca`</a>|
+|Address|[0x514910771af9ca656af840dff83e8264ecf986ca](https://etherscan.io/token/0x514910771af9ca656af840dff83e8264ecf986ca)|
 |Name|ChainLink Token|
 |Symbol|LINK|
 |Decimals|18|
@@ -51,7 +52,7 @@ The LINK token is an ERC677 token that inherits functionality from the ERC20 tok
 |Parameter|Value|
 |:---|:---|
 |`ETH_CHAIN_ID`|`42`|
-|Address|<a href="https://kovan.etherscan.io/token/0xa36085F69e2889c224210F603D836748e7dC0088" target="_blank" rel="noreferrer, noopener">`0xa36085F69e2889c224210F603D836748e7dC0088`</a>|
+|Address|[0xa36085F69e2889c224210F603D836748e7dC0088](https://kovan.etherscan.io/token/0xa36085F69e2889c224210F603D836748e7dC0088)|
 |Name|ChainLink Token|
 |Symbol|LINK|
 |Decimals|18|
@@ -67,7 +68,7 @@ The LINK token is an ERC677 token that inherits functionality from the ERC20 tok
 |Parameter|Value|
 |:---|:---|
 |`ETH_CHAIN_ID`|`4`|
-|Address|<a href="https://rinkeby.etherscan.io/token/0x01BE23585060835E02B77ef475b0Cc51aA1e0709" target="_blank" rel="noreferrer, noopener">`0x01BE23585060835E02B77ef475b0Cc51aA1e0709`</a>|
+|Address|[0x01BE23585060835E02B77ef475b0Cc51aA1e0709](https://rinkeby.etherscan.io/token/0x01BE23585060835E02B77ef475b0Cc51aA1e0709)|
 |Name|ChainLink Token|
 |Symbol|LINK|
 |Decimals|18|
@@ -77,7 +78,7 @@ The LINK token is an ERC677 token that inherits functionality from the ERC20 tok
 |Parameter|Value|
 |:---|:---|
 |`ETH_CHAIN_ID`|`5`|
-|Address|<a href="https://goerli.etherscan.io/address/0x326c977e6efc84e512bb9c30f76e30c160ed06fb" target="_blank" rel="noreferrer, noopener">`0x326c977e6efc84e512bb9c30f76e30c160ed06fb`</a>|
+|Address|[0x326c977e6efc84e512bb9c30f76e30c160ed06fb](https://goerli.etherscan.io/address/0x326c977e6efc84e512bb9c30f76e30c160ed06fb)|
 |Name|ChainLink Token|
 |Symbol|LINK|
 |Decimals|18|
@@ -99,7 +100,7 @@ LINK is native to Ethereum, so to use LINK on other chains, it must be bridged. 
 |Parameter|Value|
 |:---|:---|
 |`ETH_CHAIN_ID`|`56`|
-|Address|<a href="https://bscscan.com/token/0x404460c6a5ede2d891e8297795264fde62adbb75" target="_blank" rel="noreferrer, noopener">`0x404460c6a5ede2d891e8297795264fde62adbb75`</a>|
+|Address|[0x404460c6a5ede2d891e8297795264fde62adbb75](https://bscscan.com/token/0x404460c6a5ede2d891e8297795264fde62adbb75)|
 |Name|ChainLink Token|
 |Symbol|LINK|
 |Decimals|18|
@@ -113,7 +114,7 @@ LINK is native to Ethereum, so to use LINK on other chains, it must be bridged. 
 |Parameter|Value|
 |:---|:---|
 |`ETH_CHAIN_ID`|`97`|
-|Address|<a href="https://testnet.bscscan.com/address/0x84b9b910527ad5c03a9ca831909e21e236ea7b06" target="_blank" rel="noreferrer, noopener">`0x84b9b910527ad5c03a9ca831909e21e236ea7b06`</a>|
+|Address|[0x84b9b910527ad5c03a9ca831909e21e236ea7b06](https://testnet.bscscan.com/address/0x84b9b910527ad5c03a9ca831909e21e236ea7b06)|
 |Name|ChainLink Token|
 |Symbol|LINK|
 |Decimals|18|
@@ -131,7 +132,7 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 |Parameter|Value|
 |:---|:---|
 |`ETH_CHAIN_ID`|`137`|
-|Address|<a href="https://polygonscan.com/address/0xb0897686c545045afc77cf20ec7a532e3120e0f1" target="_blank" rel="noreferrer, noopener">`0xb0897686c545045afc77cf20ec7a532e3120e0f1`</a>|
+|Address|[0xb0897686c545045afc77cf20ec7a532e3120e0f1](https://polygonscan.com/address/0xb0897686c545045afc77cf20ec7a532e3120e0f1)|
 |Name|ChainLink Token|
 |Symbol|LINK|
 |Decimals|18|
@@ -145,7 +146,7 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 |Parameter|Value|
 |:---|:---|
 |`ETH_CHAIN_ID`|`80001`|
-|Address|<a href="https://mumbai.polygonscan.com/address/0x326C977E6efc84E512bB9C30f76E30c160eD06FB" target="_blank" rel="noreferrer, noopener">`0x326C977E6efc84E512bB9C30f76E30c160eD06FB `</a>|
+|Address|[0x326C977E6efc84E512bB9C30f76E30c160eD06FB](https://mumbai.polygonscan.com/address/0x326C977E6efc84E512bB9C30f76E30c160eD06FB)|
 |Name|ChainLink Token|
 |Symbol|LINK|
 |Decimals|18|
@@ -161,7 +162,7 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 |Parameter|Value|
 |:---|:---|
 |`ETH_CHAIN_ID`|`30`|
-|Address|<a href="https://explorer.rsk.co/address/0x14adae34bef7ca957ce2dde5add97ea050123827" target="_blank" rel="noreferrer, noopener">`0x14adae34bef7ca957ce2dde5add97ea050123827`</a>|
+|Address|[0x14adae34bef7ca957ce2dde5add97ea050123827](https://explorer.rsk.co/address/0x14adae34bef7ca957ce2dde5add97ea050123827)|
 |Name|rLINK|
 |Symbol|rLINK|
 |Decimals|18|
@@ -181,7 +182,7 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 |Parameter|Value|
 |:---|:---|
 |`ETH_CHAIN_ID`|`100`|
-|Address|<a href="https://blockscout.com/poa/xdai/address/0xE2e73A1c69ecF83F464EFCE6A5be353a37cA09b2" target="_blank" rel="noreferrer, noopener">`0xE2e73A1c69ecF83F464EFCE6A5be353a37cA09b2`</a>|
+|Address|[0xE2e73A1c69ecF83F464EFCE6A5be353a37cA09b2](https://blockscout.com/poa/xdai/address/0xE2e73A1c69ecF83F464EFCE6A5be353a37cA09b2)|
 |Name|ChainLink Token on Gnosis Chain (xDai)|
 |Symbol|LINK|
 |Decimals|18|
@@ -337,5 +338,17 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 |`ETH_CHAIN_ID`|`1285`|
 |Address|[`0x8b12Ac23BFe11cAb03a634C1F117D64a7f2cFD3e`](https://moonriver.moonscan.io/address/0x8b12Ac23BFe11cAb03a634C1F117D64a7f2cFD3e)|
 |Name|ChainLink Token on Moonriver Mainnet|
+|Symbol|LINK|
+|Decimals|18|
+
+## Moonbeam
+
+### Mainnet
+
+|Parameter|Value|
+|:---|:---|
+|`ETH_CHAIN_ID`|`1284`|
+|Address|[`0x012414A392F9FA442a3109f1320c439C45518aC3`](https://moonscan.io/address/0x012414A392F9FA442a3109f1320c439C45518aC3)|
+|Name|ChainLink Token on Moonbeam Mainnet|
 |Symbol|LINK|
 |Decimals|18|
