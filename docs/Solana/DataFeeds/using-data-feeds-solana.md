@@ -22,71 +22,16 @@ To get the full list of available Chainlink Data Feeds on Solana, see the [Solan
 **Table of contents:**
 
 - [The Chainlink Data Feeds OCR2 Program](#the-chainlink-data-feeds-ocr2-program)
+- [Using the Solana Starter Kit](#using-the-solana-starter-kit)
 - [Adding Data Feeds On-Chain In An Existing Project](#adding-data-feeds-on-chain-in-an-existing-project)
-- [Solana Starter Kit Example](#solana-starter-kit-example)
 
 ## The Chainlink Data Feeds OCR2 Program
 
-The program that owns the data feeds on both Devnet and Mainnet is [HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny](https://solscan.io/account/HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny?cluster=devnet). This is the program ID that you use to retrieve Chainlink Price Data on-chain in your program. Source code for this program is available on the [Smartcontractkit GitHub](https://github.com/smartcontractkit/chainlink-solana/tree/develop/contracts/programs/ocr2).
+The program that owns the data feeds on both Devnet and Mainnet is [HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny](https://solscan.io/account/HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny?cluster=devnet). This is the program ID that you use to retrieve Chainlink Price Data on-chain in your program. The source code for this program is available in the [smartcontractkit/chainlink-solana](https://github.com/smartcontractkit/chainlink-solana/tree/develop/contracts/programs/ocr2) repository on GitHub.
 
-## Adding Data Feeds On-Chain In An Existing Project
+You can [add data feeds to an existing project](#adding-data-feeds-on-chain-in-an-existing-project) or [use the Solana Starter Kit](#using-the-solana-starter-kit).
 
-You can read Chainlink Data Feed data on-chain in your existing project using the [Chainlink Solana Crate](https://crates.io/crates/chainlink_solana).
-
-
-> 🚧 Reading feed data
->
-> While you can directly query the data feed accounts , you should not rely on the memory layout always being the same as it currently is. Based on this, the reccomendation is to always use the consumer library queries below.
-
-### Add the Chainlink Solana Crate to your Project
-
-Before you begin, import the Chainlink Solana Crate into your project.
-
-1. Add the Chainlink Solana Crate as an entry in your Cargo.toml file dependencies section, as shown in the [starter kit Cargo.toml example](https://github.com/smartcontractkit/solana-starter-kit/blob/main/programs/chainlink_solana_demo/Cargo.toml).
-
-    ```toml
-    [dependencies]
-    chainlink_solana = "1.0.0"
-    ```
-
-1. Use the following code sample to query price data. Each function call to the Chainlink Solana library takes two parameters:
-
-    - The [feed account](https://docs.chain.link/docs/solana/data-feeds-solana/) that you wish to query
-    - The [Chainlink Data Feeds OCR2 Program](#the-chainlink-data-feeds-ocr2-program) for the network. This is a static value that never changes.
-
-The code sample has the following components:
-
-- `latest_round_data`: Returns the latest round information for the specified price pair including the latest price
-- `description`: Returns a price pair description such as SOL/USD
-- `decimals`: Returns the precision of the price, as in how many numbers the price is padded out to
-- `Display`: A relper function that formats the padded out price data into a human-readable price
-
-```rust Rust
-{% include 'samples/Solana/PriceFeeds/on-chain-read.rs' %}
-```
-```rust Rust and Anchor
-{% include 'samples/Solana/PriceFeeds/on-chain-read-anchor.rs' %}
-```
-
-Program Transaction logs:
-
-```sh Rust
-> Program logged: "Chainlink Price Feed Consumer entrypoint"
-> Program logged: "SOL / USD price is 83.99000000"
-> Program consumed: 95953 of 1400000 compute units
-> Program return: HNYSbr77Jc9LhHeb9tx53SrWbWfNBnQzQrM4b3BB3PCR CA==
-```
-```sh Rust with Anchor
-Fetching transaction logs...
-[
-  'Program HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny consumed 1826 of 1306895 compute units',
-  'Program return: HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny CA==',
-  'Program HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny success',
-  'Program log: SOL / USD price is 93.76988029',
-]
-```
-
-## Solana Starter Kit Example
+## Using the Solana Starter Kit
 
 This guide demonstrates the following tasks:
 
@@ -171,7 +116,7 @@ This example includes a contract written in Rust. Deploy the contract to the Sol
     yarn install
     ```
 
-1. Create a temporary Solana wallet to use for this example. Use a temporary wallet to isolate development from your other wallets and prevent you from unintentionally using real SOL tokens on the Solana Mainnet. Alternatively, if you have an existing wallet that you want to use, locate the path to your [keypair](https://docs.solana.com/terminology#keypair) file and use it as the keypair for the rest of this guide.
+1. Create a temporary Solana wallet to use for this example. Use a temporary wallet to isolate development from your other wallets and prevent you from unintentionally using SOL tokens on the Solana Mainnet. Alternatively, if you have an existing wallet that you want to use, locate the path to your [keypair](https://docs.solana.com/terminology#keypair) file and use it as the keypair for the rest of this guide.
 
     ```sh
     solana-keygen new --outfile ./id.json
@@ -349,5 +294,63 @@ After you are done with your deployed contract and no longer need it, it is nice
     ```
 
     Alternatively, you can send the remaining balance to a web wallet. Specify the public key for your wallet instead of the path the default wallet keypair. Now you can use those Devnet funds for other examples and development.
+
+To learn more about Solana and Anchor, see the [Solana Documentation](https://docs.solana.com/) and the [Anchor Documentation](https://project-serum.github.io/anchor/).
+
+## Adding Data Feeds On-Chain In An Existing Project
+
+You can read Chainlink Data Feed data on-chain in your existing project using the [Chainlink Solana Crate](https://crates.io/crates/chainlink_solana).
+
+> 🚧 Reading feed data
+>
+> Although you can directly query the data feed accounts, you should not rely on the memory layout always being the same as it currently is. Based on this, the recommendation is to always use the consumer library queries below.
+
+### Add the Chainlink Solana Crate to your Project
+
+Before you begin, import the Chainlink Solana Crate into your project.
+
+1. Add the Chainlink Solana Crate as an entry in your `Cargo.toml` file dependencies section, as shown in the [starter kit Cargo.toml example](https://github.com/smartcontractkit/solana-starter-kit/blob/main/programs/chainlink_solana_demo/Cargo.toml).
+
+    ```toml
+    [dependencies]
+    chainlink_solana = "1.0.0"
+    ```
+
+1. Use the following code sample to query price data. Each function call to the Chainlink Solana library takes two parameters:
+
+    - The [feed account](https://docs.chain.link/docs/solana/data-feeds-solana/) that you wish to query
+    - The [Chainlink Data Feeds OCR2 Program](#the-chainlink-data-feeds-ocr2-program) for the network. This is a static value that never changes.
+
+The code sample has the following components:
+
+- `latest_round_data`: Returns the latest round information for the specified price pair including the latest price
+- `description`: Returns a price pair description such as SOL/USD
+- `decimals`: Returns the precision of the price, as in how many numbers the price is padded out to
+- `Display`: A relper function that formats the padded out price data into a human-readable price
+
+```rust Rust
+{% include 'samples/Solana/PriceFeeds/on-chain-read.rs' %}
+```
+```rust Rust and Anchor
+{% include 'samples/Solana/PriceFeeds/on-chain-read-anchor.rs' %}
+```
+
+Program Transaction logs:
+
+```sh Rust
+> Program logged: "Chainlink Price Feed Consumer entrypoint"
+> Program logged: "SOL / USD price is 83.99000000"
+> Program consumed: 95953 of 1400000 compute units
+> Program return: HNYSbr77Jc9LhHeb9tx53SrWbWfNBnQzQrM4b3BB3PCR CA==
+```
+```sh Rust with Anchor
+Fetching transaction logs...
+[
+  'Program HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny consumed 1826 of 1306895 compute units',
+  'Program return: HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny CA==',
+  'Program HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny success',
+  'Program log: SOL / USD price is 93.76988029',
+]
+```
 
 To learn more about Solana and Anchor, see the [Solana Documentation](https://docs.solana.com/) and the [Anchor Documentation](https://project-serum.github.io/anchor/).

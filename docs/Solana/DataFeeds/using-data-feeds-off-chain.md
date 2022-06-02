@@ -22,8 +22,8 @@ To get the full list of Chainlink Data Feeds on Solana, see the [Solana Feeds](/
 **Table of contents:**
 
 - [The Chainlink Data Feeds Store Program](#the-chainlink-data-feeds-store-program)
-- [Add data feeds to an existing off-chain project](#add-data-feeds-to-an-existing-off-chain-project)
-- [Use the Solana Starter Kit](#using-the-solana-starter-kit)
+- [Using the Solana Starter Kit](#using-the-solana-starter-kit)
+- [Adding data feeds to an existing off-chain project](#adding-data-feeds-to-an-existing-off-chain-project)
 
 ## The Chainlink Data Feeds Store Program
 
@@ -31,13 +31,103 @@ The program that contains the logic required for the storing and retrieval of Ch
 
 You can [add data feeds to an existing off-chain project](#add-data-feeds-to-an-existing-off-chain-project) or [use the Solana Starter Kit](#using-the-solana-starter-kit).
 
-## Add Data Feeds to an existing off-chain project
+## Using the Solana Starter Kit
+
+This example reads price data from an off-chain client using the [Solana Starter Kit](https://github.com/smartcontractkit/solana-starter-kit).
+
+### Install the required tools
+
+Before you begin, set up your environment for development on Solana:
+
+1. Install [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) if it is not already configured on your system.
+
+1. Install [Node.js 14 or higher](https://nodejs.org/en/download/). Run `node --version` to verify which version you have installed:
+
+    ```sh
+    node --version
+    ```
+
+1. Use the Node package manager to [install the Anchor CLI](https://project-serum.github.io/anchor/getting-started/installation.html) globally. The global install allows you to run [Anchor CLI commands](https://project-serum.github.io/anchor/cli/commands.html). Depending on your environment, this step might require superuser permissions:
+
+    ```sh
+    npm i -g @project-serum/anchor-cli
+    ```
+
+    On some operating systems, you might need to build and install Anchor locally. See the [Anchor documentation](https://project-serum.github.io/anchor/getting-started/installation.html#build-from-source-for-other-operating-systems) for instructions.
+
+1. Install [Yarn](https://classic.yarnpkg.com/lang/en/docs/install/) to simplify package management and run code samples in the Starter Kit.
+
+    ```sh
+    npm install -g yarn
+    ```
+
+### Run the example program
+
+After you install the required tools, clone the example code from the [solana-starter-kit](https://github.com/smartcontractkit/solana-starter-kit) repository.
+
+1. In a terminal, clone the [solana-starter-kit](https://github.com/smartcontractkit/solana-starter-kit) repository and change to the `solana-starter-kit` directory:
+
+    ```sh
+    git clone https://github.com/smartcontractkit/solana-starter-kit &&
+    cd ./solana-starter-kit
+    ```
+
+    You can see the complete code for the example on [GitHub](https://github.com/smartcontractkit/solana-starter-kit/).
+
+1. In the `./solana-starter-kit` directory, install Node.js dependencies defined in the `package.json` file:
+
+    ```sh
+    yarn install
+    ```
+
+1. Create a temporary Solana wallet file to use for this example. Because your application runs off-chain and does not run any functions or alter data on-chain, the wallet does not require any SOL tokens to function.
+
+    ```sh
+    solana-keygen new --outfile ./id.json
+    ```
+
+1. Set the [Anchor environment variables](https://www.twilio.com/blog/2017/01/how-to-set-environment-variables.html). Anchor uses these to determine which wallet to use and Solana cluster to use. Take note that beacuse we are not generating or signing any transactions, the wallet isn't used, it's just required by the Anchor library. For a list of available networks and endpoints, see the [Solana Cluster RPC Endpoints](https://docs.solana.com/cluster/rpc-endpoints) documentation.
+
+    ```sh Solana Devnet
+    export ANCHOR_PROVIDER_URL=https://api.devnet.solana.com &&
+    export ANCHOR_WALLET=./id.json
+    ```
+    ```sh Solana Mainnet
+    export ANCHOR_PROVIDER_URL=https://api.mainnet-beta.solana.com &&
+    export ANCHOR_WALLET=./id.json
+    ```
+    ```sh Solana Mainnet Project Serum Endpoint
+    export ANCHOR_PROVIDER_URL=https://solana-api.projectserum.com &&
+    export ANCHOR_WALLET=./id.json
+    ```
+
+1. Run the example:
+
+    ```sh JavaScript
+    node read-data.js
+    ```
+    ```sh TypeScript
+    yarn run read-data
+    ```
+
+    The example code retrieves and prints the current price feed data until you close the application:
+
+    ```
+    4027000000
+    4026439929
+    4026476542
+    4023000000
+    ```
+
+To learn more about Solana and Anchor, see the [Solana Documentation](https://docs.solana.com/) and the [Anchor Documentation](https://project-serum.github.io/anchor/).
+
+## Adding Data Feeds to an existing off-chain project
 
 You can read Chainlink Data Feed data off-chain in your existing project by using the [Chainlink Solana NPM library](https://www.npmjs.com/package/@chainlink/solana-sdk).
 
 > 🚧 Reading feed data
 >
-> While you can directly query the data feed accounts, you should not rely on the memory layout always being the same as it currently is. Based on this, the reccomendation is to always use the consumer library.
+> Although you can directly query the data feed accounts, you should not rely on the memory layout always being the same as it currently is. Based on this, the recommendation is to always use the consumer library.
 
 ### Install the required tools
 
@@ -100,7 +190,7 @@ Before you begin, set up your environment. Any of these steps can be skipped if 
     export ANCHOR_WALLET=./id.json
     ```
 
-1. Download the sample code. This example queries price data off-chain. By default, the script reads the SOL/USD feed, but you can change the `CHAINLINK_FEED_ADDRESS` variable to point to any of the  value with the [feed account](https://docs.chain.link/docs/solana/data-feeds-solana/) that you wish to query.
+1. Download the sample code. This example queries price data off-chain. By default, the script reads the SOL/USD feed, but you can change the `CHAINLINK_FEED_ADDRESS` variable to point to any of the  value with the [feed account](https://docs.chain.link/docs/solana/data-feeds-solana/) that you wish to query. Alternatively, you can copy the code sample below.
 
     ```sh JavaScript
     curl -o off-chain-read.js https://docs.chain.link/samples/Solana/PriceFeeds/off-chain-read.js
@@ -121,10 +211,10 @@ Before you begin, set up your environment. Any of these steps can be skipped if 
     After a short delay, the script prints the current answer from the selected data feed until you close the application:
 
     ```
-    9731000000
-    9732000000
-    9730839909
-    9734000000
+    4027000000
+    4026439929
+    4026476542
+    4023000000
     ```
 
 You can take the components of these code samples and integrate them with your existing project. Alternatively, you can use the components in the [Solana Starter Kit](#using-the-solana-starter-kit) example. Because these examples read data feeds without making any on-chain changes, no SOL tokens are required for them to run.
@@ -135,85 +225,5 @@ You can take the components of these code samples and integrate them with your e
 ```typescript TypeScript
 {% include 'samples/Solana/PriceFeeds/off-chain-read.ts' %}
 ```
-
-## Using the Solana Starter Kit
-
-This example reads price data from an off-chain client using the [Solana Starter Kit](https://github.com/smartcontractkit/solana-starter-kit).
-
-### Install the required tools
-
-Before you begin, set up your environment for development on Solana:
-
-1. Install [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) if it is not already configured on your system.
-
-1. Install [Node.js 14 or higher](https://nodejs.org/en/download/). Run `node --version` to verify which version you have installed:
-
-    ```sh
-    node --version
-    ```
-
-1. Use the Node package manager to [install the Anchor CLI](https://project-serum.github.io/anchor/getting-started/installation.html) globally. The global install allows you to run [Anchor CLI commands](https://project-serum.github.io/anchor/cli/commands.html). Depending on your environment, this step might require superuser permissions:
-
-    ```sh
-    npm i -g @project-serum/anchor-cli
-    ```
-
-    On some operating systems, you might need to build and install Anchor locally. See the [Anchor documentation](https://project-serum.github.io/anchor/getting-started/installation.html#build-from-source-for-other-operating-systems) for instructions.
-
-1. Install [Yarn](https://classic.yarnpkg.com/lang/en/docs/install/) to simplify package management and run code samples in the Starter Kit.
-
-    ```sh
-    npm install -g yarn
-    ```
-
-### Run the example program
-
-After you install the required tools, clone the example code from the [solana-starter-kit](https://github.com/smartcontractkit/solana-starter-kit) repository.
-
-1. In a terminal, clone the [solana-starter-kit](https://github.com/smartcontractkit/solana-starter-kit) repository and change to the `solana-starter-kit` directory:
-
-    ```sh
-    git clone https://github.com/smartcontractkit/solana-starter-kit &&
-    cd ./solana-starter-kit
-    ```
-
-    You can see the complete code for the example on [GitHub](https://github.com/smartcontractkit/solana-starter-kit/).
-
-1. In the `./solana-starter-kit` directory, install Node.js dependencies defined in the `package.json` file:
-
-    ```sh
-    yarn install
-    ```
-
-1. Create a temporary Solana wallet file to use for this example. Because your application runs off-chain and does not run any functions or alter data on-chain, the wallet does not require any SOL tokens to function.
-
-    ```sh
-    solana-keygen new --outfile ./id.json
-    ```
-
-1. Set the [Anchor environment variables](https://www.twilio.com/blog/2017/01/how-to-set-environment-variables.html). Anchor uses these to determine which wallet to use and Solana cluster to use. Take note that beacuse we are not generating or signing any transactions, the wallet isn't used, it's just required by the Anchor library. For a list of available networks and endpoints, see the [Solana Cluster RPC Endpoints](https://docs.solana.com/cluster/rpc-endpoints) documentation.
-
-    ```sh
-    export ANCHOR_PROVIDER_URL=https://api.devnet.solana.com &&
-    export ANCHOR_WALLET=./id.json
-    ```
-
-1. Run the example:
-
-    ```sh JavaScript
-    node read-data.js
-    ```
-    ```sh TypeScript
-    yarn run read-data
-    ```
-
-    The example code retrieves and prints the current price feed data until you close the application:
-
-    ```
-    9731000000
-    9732000000
-    9730839909
-    9734000000
-    ```
 
 To learn more about Solana and Anchor, see the [Solana Documentation](https://docs.solana.com/) and the [Anchor Documentation](https://project-serum.github.io/anchor/).
