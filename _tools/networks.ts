@@ -170,6 +170,12 @@ export const NETWORKS = [
     feedType: "Account",
     networks: [
       {
+        name: "Solana Mainnet",
+        url: "https://solscan.io/account/%s",
+        source: "directory-solana-mainnet.json",
+        networkType: "mainnet",
+      },
+      {
         name: "Solana Devnet",
         url: "https://solscan.io/account/%s?cluster=devnet",
         source: "directory-solana-devnet.json",
