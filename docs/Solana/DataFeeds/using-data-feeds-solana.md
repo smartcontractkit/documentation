@@ -43,9 +43,7 @@ You can read Chainlink Data Feed data on-chain in your existing project using th
 >
 > Although you can directly query the data feed accounts, you should not rely on the memory layout always being the same as it currently is. Based on this, the recommendation is to always use the consumer library queries below.
 
-### Add the Chainlink Solana Crate to your Project
-
-Before you begin, import the Chainlink Solana Crate into your project.
+Import the Chainlink Solana Crate into your project and use the code sample to make function calls.
 
 1. Add the Chainlink Solana Crate as an entry in your `Cargo.toml` file dependencies section, as shown in the [starter kit Cargo.toml example](https://github.com/smartcontractkit/solana-starter-kit/blob/main/programs/chainlink_solana_demo/Cargo.toml).
 
@@ -56,7 +54,7 @@ Before you begin, import the Chainlink Solana Crate into your project.
 
 1. Use the following code sample to query price data. Each function call to the Chainlink Solana library takes two parameters:
 
-    - The [feed account](https://docs.chain.link/docs/solana/data-feeds-solana/) that you wish to query
+    - The [feed account](https://docs.chain.link/docs/solana/data-feeds-solana/) that you want to query.
     - The [Chainlink Data Feeds OCR2 Program](#the-chainlink-data-feeds-ocr2-program) for the network. This is a static value that never changes.
 
 The code sample has the following components:
