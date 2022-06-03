@@ -2,7 +2,7 @@
 layout: nodes.liquid
 section: solana
 date: Last Modified
-title: "Solana on Chainlink"
+title: "Overview"
 permalink: "docs/solana/"
 whatsnext: {
   "Use data feeds off-chain":"/docs/solana/using-data-feeds-off-chain/",
@@ -10,8 +10,6 @@ whatsnext: {
   "See the available data feeds on Solana":"/docs/solana/data-feeds-solana/"
 }
 ---
-
-## Overview
 
 Chainlink provides data feeds on the [Solana](https://solana.com/) network. Chainlink data feeds on Solana employ [Off-Chain Reporting (OCR)](/docs/off-chain-reporting/) to aggregate data from data providers who pull from both centralized and decentralized exchanges. Chainlink’s Solana deployment has no dependencies on external blockchain networks such as Ethereum. In Solana, storage and smart contract logic are separate. Programs store all the logic similar to an EVM (Ethereum) smart contract. The accounts store all the data. Compared to Solidity, the combination of an account and a program is equivalent to a smart contract on an EVM chain. State and logic are separate in Solana.
 

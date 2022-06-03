@@ -41,6 +41,19 @@ You can read Chainlink Data Feeds off-chain in your existing project by using th
 
 Install the necessary components and include the example code in your project. Optionally, you can run the example code by itself to learn how it works before you integrate it with your project.
 
+1. Install the latest Mainnet version of [the Solana CLI](https://github.com/solana-labs/solana/releases) and export the path to the CLI:
+
+    ```sh
+    sh -c "$(curl -sSfL https://release.solana.com/v1.9.28/install)" &&
+    export PATH="~/.local/share/solana/install/active_release/bin:$PATH"
+    ```
+
+    Run `solana --version` to make sure the Solana CLI is installed correctly.
+
+    ```sh
+    solana --version
+    ```
+
 1. Install [Node.js 14 or higher](https://nodejs.org/en/download/). Run `node --version` to verify which version you have installed:
 
     ```sh
@@ -119,6 +132,19 @@ This example reads price data from an off-chain client using the [Solana Starter
 Before you begin, set up your environment for development on Solana:
 
 1. Install [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) if it is not already configured on your system.
+
+1. Install the latest Mainnet version of [the Solana CLI](https://github.com/solana-labs/solana/releases) and export the path to the CLI:
+
+    ```sh
+    sh -c "$(curl -sSfL https://release.solana.com/v1.9.28/install)" &&
+    export PATH="~/.local/share/solana/install/active_release/bin:$PATH"
+    ```
+
+    Run `solana --version` to make sure the Solana CLI is installed correctly.
+
+    ```sh
+    solana --version
+    ```
 
 1. Install [Node.js 14 or higher](https://nodejs.org/en/download/). Run `node --version` to verify which version you have installed:
 
