@@ -59,11 +59,15 @@ For a complete list of functions and variables available on most aggregator cont
 
 ## Updates to proxy and aggregator contracts
 
-Aggregator contracts must be updated from time to time to add additional capabilities to data feeds. These updates include changes to the aggregator configuration or a complete replacement of the aggregator that the proxy uses. If you consume data feeds through the proxy, your applications can continue to operate during these changes.
+To accommodate the dynamic nature of off-chain environments, Chainlink Data Feeds are updated from time to time to add new features and capabilities as well as respond to externalities such as token migrations, protocol rebrands, extreme market events, and upstream issues with data or node operations.
+
+These updates include changes to the aggregator configuration or a complete replacement of the aggregator that the proxy uses. If you consume data feeds through the proxy, your applications can continue to operate during these changes.
 
 Proxy and aggregator contracts all have an `owner` address that has permission to change variables and functions. For example, if you read the [BTC/USD proxy contract](https://etherscan.io/address/0xF4030086522a5bEEa4988F8cA5B36dbC97BeE88c#readContract) in Etherscan, you can see the `owner` address. This address is a [multi-signature safe](https://docs.gnosis-safe.io/introduction/the-programmable-account/gnosis-safe) (multisig) that you can also inspect.
 
 If you [view the multisig contract](https://etherscan.io/address/0x21f73d42eb58ba49ddb685dc29d3bf5c0f0373ca#readProxyContract) in Etherscan using the _Read as Proxy_ feature, you can see the full details of the multisig including the list of addresses that can sign and the number of signers required for the multisig to approve actions on any contracts that it owns.
+
+The multisig-coordinated upgradability of Chainlink Data Feeds involves time-tested processes that balance collusion-resistance with the flexibility required to implement improvements and swiftly react to external conditions. The approach taken to upgradability will continue to evolve over time to meet user requirements.
 
 ## Monitoring Data Feeds
 
