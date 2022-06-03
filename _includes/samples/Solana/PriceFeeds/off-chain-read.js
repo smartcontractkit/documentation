@@ -1,5 +1,5 @@
 const anchor = require("@project-serum/anchor");
-const  chainlink = require("@chainlink/solana-sdk");
+const chainlink = require("@chainlink/solana-sdk");
 const provider = anchor.AnchorProvider.env();
 
 
