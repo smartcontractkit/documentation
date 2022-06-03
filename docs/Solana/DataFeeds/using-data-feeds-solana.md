@@ -267,12 +267,12 @@ Use your deployed program to retrieve price data from a Chainlink data feed on S
     solana balance --keypair ./id.json --url devnet
     ```
 
-1. To get prices for a different asset pair, run `client.js` again and add the `--feed` flag with one of the available [Chainlink data feeds on the Solana Devnet](/docs/solana/data-feeds-solana/). For example, to get the price of LINK / USD, use the following command:
+1. To get prices for a different asset pair, run `client.js` again and add the `--feed` flag with one of the available [Chainlink data feeds](/docs/solana/data-feeds-solana/). For example, to get the price of BTC / USD on Devnet, use the following command:
 
     ```sh
     node client.js \
     --program $(solana address -k ./target/deploy/chainlink_solana_demo-keypair.json) \
-    --feed 6N2eCQv8hBkyZjSzN1pe5QtznZL9bGn6TZzcFhaYSLTs
+    --feed CzZQBrJCLqjXRfMjRN3fhbxur2QYHUzkpaRwkWsiPqbz
     ```
 
     ```sh
