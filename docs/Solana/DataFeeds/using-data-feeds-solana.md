@@ -64,7 +64,7 @@ The code sample has the following components:
 - `latest_round_data`: Returns the latest round information for the specified price pair including the latest price
 - `description`: Returns a price pair description such as SOL/USD
 - `decimals`: Returns the precision of the price, as in how many numbers the price is padded out to
-- `Display`: A relper function that formats the padded out price data into a human-readable price
+- `Display`: A helper function that formats the padded out price data into a human-readable price
 
 ```rust Rust
 {% include 'samples/Solana/PriceFeeds/on-chain-read.rs' %}
