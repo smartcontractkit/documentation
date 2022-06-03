@@ -86,7 +86,7 @@ After you install the required tools, clone the example code from the [solana-st
     solana-keygen new --outfile ./id.json
     ```
 
-1. Set the [Anchor environment variables](https://www.twilio.com/blog/2017/01/how-to-set-environment-variables.html). Anchor uses these to determine which wallet to use and Solana cluster to use. Take note that beacuse we are not generating or signing any transactions, the wallet isn't used, it's just required by the Anchor library. For a list of available networks and endpoints, see the [Solana Cluster RPC Endpoints](https://docs.solana.com/cluster/rpc-endpoints) documentation.
+1. Set the [Anchor environment variables](https://www.twilio.com/blog/2017/01/how-to-set-environment-variables.html). Anchor uses these to determine which wallet to use and Solana cluster to use. Take note that because we are not generating or signing any transactions, the wallet isn't used, it's just required by the Anchor library. For a list of available networks and endpoints, see the [Solana Cluster RPC Endpoints](https://docs.solana.com/cluster/rpc-endpoints) documentation.
 
     ```sh Solana Devnet
     export ANCHOR_PROVIDER_URL=https://api.devnet.solana.com &&
@@ -175,7 +175,7 @@ Before you begin, set up your environment. Any of these steps can be skipped if 
     solana-keygen new --outfile ./id.json
     ```
 
-1. Set the [Anchor environment variables](https://www.twilio.com/blog/2017/01/how-to-set-environment-variables.html). Anchor uses these to determine which wallet to use and how to get a connection to a Solana cluster. Because this example does not generate or sign any transactions, no SOL tokens are required. The wallet is required only by the Anchor library. For a list of available networks and endpoints, see the [Solana Cluster RPC Endpoints](https://docs.solana.com/cluster/rpc-endpoints) documentation.
+1. Set the [Anchor environment variables](https://www.twilio.com/blog/2017/01/how-to-set-environment-variables.html). Anchor uses these to determine which wallet to use and how to get a connection to a Solana cluster. Because this example does not generate or sign any transactions, no lamports are required. The wallet is required only by the Anchor library. For a list of available networks and endpoints, see the [Solana Cluster RPC Endpoints](https://docs.solana.com/cluster/rpc-endpoints) documentation.
 
     ```sh Solana Devnet
     export ANCHOR_PROVIDER_URL=https://api.devnet.solana.com &&
@@ -205,7 +205,7 @@ Before you begin, set up your environment. Any of these steps can be skipped if 
     node off-chain-read.js
     ```
     ```sh TypeScript
-    node off-chain-read.ts
+    yarn ts-node off-chain-read.ts
     ```
 
     After a short delay, the script prints the current answer from the selected data feed until you close the application:

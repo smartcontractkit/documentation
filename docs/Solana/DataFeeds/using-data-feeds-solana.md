@@ -116,7 +116,7 @@ This example includes a contract written in Rust. Deploy the contract to the Sol
     yarn install
     ```
 
-1. Create a temporary Solana wallet to use for this example. Use a temporary wallet to isolate development from your other wallets and prevent you from unintentionally using SOL tokens on the Solana Mainnet. Alternatively, if you have an existing wallet that you want to use, locate the path to your [keypair](https://docs.solana.com/terminology#keypair) file and use it as the keypair for the rest of this guide.
+1. Create a temporary Solana wallet to use for this example. Use a temporary wallet to isolate development from your other wallets and prevent you from unintentionally using lamports on the Solana Mainnet. Alternatively, if you have an existing wallet that you want to use, locate the path to your [keypair](https://docs.solana.com/terminology#keypair) file and use it as the keypair for the rest of this guide.
 
     ```sh
     solana-keygen new --outfile ./id.json
