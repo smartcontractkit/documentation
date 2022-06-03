@@ -90,7 +90,7 @@ Install the necessary components and include the example code in your project. O
     export ANCHOR_WALLET=./id.json
     ```
 
-1. Copy the sample code into your project. This example queries price data off-chain. By default, the script reads the SOL/USD feed, but you can change the `CHAINLINK_FEED_ADDRESS` variable to point to the [feed account addresses](https://docs.chain.link/docs/solana/data-feeds-solana/) that you want to query. You can take the components of these code samples and integrate them with your existing project. Because these examples read data feeds without making any on-chain changes, no lamports are required to run them.
+1. Copy the sample code into your project. This example queries price data off-chain. By default, the script reads the SOL/USD feed, but you can change the `CHAINLINK_FEED_ADDRESS` variable to point to the [feed account addresses](/docs/solana/data-feeds-solana/) that you want to query. You can take the components of these code samples and integrate them with your existing project. Because these examples read data feeds without making any on-chain changes, no lamports are required to run them.
 
 ```javascript JavaScript
 {% include 'samples/Solana/PriceFeeds/off-chain-read.js' %}

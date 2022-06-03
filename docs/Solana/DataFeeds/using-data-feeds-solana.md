@@ -54,7 +54,7 @@ Import the Chainlink Solana Crate into your project and use the code sample to m
 
 1. Use the following code sample to query price data. Each function call to the Chainlink Solana library takes two parameters:
 
-    - The [feed account](https://docs.chain.link/docs/solana/data-feeds-solana/) that you want to query.
+    - The [feed account](/docs/solana/data-feeds-solana/) that you want to query.
     - The [Chainlink Data Feeds OCR2 Program](#the-chainlink-data-feeds-ocr2-program) for the network. This is a static value that never changes.
 
 The code sample has the following components:
