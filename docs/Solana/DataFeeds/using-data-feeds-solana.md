@@ -22,8 +22,12 @@ To get the full list of available Chainlink Data Feeds on Solana, see the [Solan
 **Table of contents:**
 
 - [The Chainlink Data Feeds OCR2 Program](#the-chainlink-data-feeds-ocr2-program)
-- [Using the Solana Starter Kit](#using-the-solana-starter-kit)
 - [Adding Data Feeds On-Chain In An Existing Project](#adding-data-feeds-on-chain-in-an-existing-project)
+- [Using the Solana Starter Kit](#using-the-solana-starter-kit)
+  - [Install the required tools](#install-the-required-tools)
+  - [Deploy the example program](#deploy-the-example-program)
+  - [Call the deployed program](#call-the-deployed-program)
+  - [Clean up](#clean-up)
 
 ## The Chainlink Data Feeds OCR2 Program
 
@@ -98,13 +102,6 @@ This guide demonstrates the following tasks:
 
 This example shows a full end to end example of using Chainlink Price Feeds on Solana. It includes an on-chain program written in rust, as well as an off-chain client written in JavaScript. The client passes in an account to the program, the program then looks up the latest price of the specified price feed account, and then stores the result in the passed in account. The off-chain client then reads the value stored in the account.
 
-**Table of contents:**
-
-- [Install the required tools](#install-the-required-tools)
-- [Deploy the example program](#deploy-the-example-program)
-- [Call the deployed program](#call-the-deployed-program)
-- [Clean up](#clean-up)
-
 ### Install the required tools
 
 Before you begin, set up your environment for development on Solana:
@@ -119,11 +116,7 @@ Before you begin, set up your environment for development on Solana:
 
 1. Install [Yarn](https://classic.yarnpkg.com/lang/en/docs/install/) to simplify package management and run code samples.
 
-1. Install a C compiler such as the one included in [GCC](https://gcc.gnu.org/install/). Some dependencies require a C compiler.
-
-    ```sh
-    sudo apt install gcc
-    ```
+1. Install a C compiler such as the one included in [GCC](https://gcc.gnu.org/install/). Some of the dependencies require a C compiler.
 
 1. Install [Rust](https://www.rust-lang.org/tools/install):
 
@@ -135,7 +128,7 @@ Before you begin, set up your environment for development on Solana:
 1. Install the latest Mainnet version of [the Solana CLI](https://github.com/solana-labs/solana/releases) and export the path to the CLI:
 
     ```sh
-    sh -c "$(curl -sSfL https://release.solana.com/v1.9.18/install)" &&
+    sh -c "$(curl -sSfL https://release.solana.com/v1.9.28/install)" &&
     export PATH="~/.local/share/solana/install/active_release/bin:$PATH"
     ```
 
@@ -145,13 +138,7 @@ Before you begin, set up your environment for development on Solana:
     solana --version
     ```
 
-1. Use the Node package manager to [Install Anchor](https://book.anchor-lang.com/getting_started/installation.html) globally. The global install allows you to run the [Anchor CLI](https://book.anchor-lang.com/anchor_references/cli.html). Depending on your environment, this step might require `sudo` permissions:
-
-    ```sh
-    npm i -g @project-serum/anchor-cli
-    ```
-
-    On some operating systems, you might need to build and install Anchor locally. See the [Anchor documentation](https://book.anchor-lang.com/getting_started/installation.html#build-from-source-for-other-operating-systems-without-avm) for instructions.
+1. [Install Anchor](https://book.anchor-lang.com/getting_started/installation.html). On some operating systems, you might need to build and install Anchor locally. See the [Anchor documentation](https://book.anchor-lang.com/getting_started/installation.html#build-from-source-for-other-operating-systems-without-avm) for instructions.
 
 After you install the required tools, build and deploy the example program from the [solana-starter-kit](https://github.com/smartcontractkit/solana-starter-kit) repository.
 

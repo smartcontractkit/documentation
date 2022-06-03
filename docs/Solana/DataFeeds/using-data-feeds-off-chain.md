@@ -22,8 +22,8 @@ To get the full list of Chainlink Data Feeds on Solana, see the [Solana Feeds](/
 **Table of contents:**
 
 - [The Chainlink Data Feeds Store Program](#the-chainlink-data-feeds-store-program)
-- [Using the Solana Starter Kit](#using-the-solana-starter-kit)
 - [Adding data feeds to an existing off-chain project](#adding-data-feeds-to-an-existing-off-chain-project)
+- [Using the Solana Starter Kit](#using-the-solana-starter-kit)
 
 ## The Chainlink Data Feeds Store Program
 
@@ -87,53 +87,27 @@ Before you begin, set up your environment. Any of these steps can be skipped if 
 
 1. Set the [Anchor environment variables](https://www.twilio.com/blog/2017/01/how-to-set-environment-variables.html). Anchor uses these to determine which wallet to use and how to get a connection to a Solana cluster. Because this example does not generate or sign any transactions, no lamports are required. The wallet is required only by the Anchor library. For a list of available networks and endpoints, see the [Solana Cluster RPC Endpoints](https://docs.solana.com/cluster/rpc-endpoints) documentation.
 
-    ```sh Solana Devnet
+    ```sh
     export ANCHOR_PROVIDER_URL=https://api.devnet.solana.com &&
     export ANCHOR_WALLET=./id.json
     ```
-    ```sh Solana Mainnet
-    export ANCHOR_PROVIDER_URL=https://api.mainnet-beta.solana.com &&
-    export ANCHOR_WALLET=./id.json
-    ```
-    ```sh Solana Mainnet Project Serum Endpoint
-    export ANCHOR_PROVIDER_URL=https://solana-api.projectserum.com &&
-    export ANCHOR_WALLET=./id.json
-    ```
 
-1. Download the sample code. This example queries price data off-chain. By default, the script reads the SOL/USD feed, but you can change the `CHAINLINK_FEED_ADDRESS` variable to point to any of the  value with the [feed account](https://docs.chain.link/docs/solana/data-feeds-solana/) that you wish to query. Alternatively, you can copy the code sample below.
-
-    ```sh JavaScript
-    curl -o off-chain-read.js https://docs.chain.link/samples/Solana/PriceFeeds/off-chain-read.js
-    ```
-    ```sh TypeScript
-    curl -o off-chain-read.ts https://docs.chain.link/samples/Solana/PriceFeeds/off-chain-read.ts
-    ```
-
-1. Run the sample code.
-
-    ```sh JavaScript
-    node off-chain-read.js
-    ```
-    ```sh TypeScript
-    yarn ts-node off-chain-read.ts
-    ```
-
-    After a short delay, the script prints the current answer from the selected data feed until you close the application:
-
-    ```
-    4027000000
-    4026439929
-    4026476542
-    4023000000
-    ```
-
-You can take the components of these code samples and integrate them with your existing project. Alternatively, you can use the components in the [Solana Starter Kit](#using-the-solana-starter-kit) example. Because these examples read data feeds without making any on-chain changes, no SOL tokens are required for them to run.
+1. Copy the sample code into your project. This example queries price data off-chain. By default, the script reads the SOL/USD feed, but you can change the `CHAINLINK_FEED_ADDRESS` variable to point to the [feed account addresses](https://docs.chain.link/docs/solana/data-feeds-solana/) that you want to query. You can take the components of these code samples and integrate them with your existing project. Because these examples read data feeds without making any on-chain changes, no lamports are required to run them.
 
 ```javascript JavaScript
 {% include 'samples/Solana/PriceFeeds/off-chain-read.js' %}
 ```
 ```typescript TypeScript
 {% include 'samples/Solana/PriceFeeds/off-chain-read.ts' %}
+```
+
+You can run these examples using the following commands:
+
+```sh JavaScript
+node javascript-example.js
+```
+```sh TypeScript
+yarn add ts-node typescript && yarn ts-node typescript-example.ts
 ```
 
 To learn more about Solana and Anchor, see the [Solana Documentation](https://docs.solana.com/) and the [Anchor Documentation](https://book.anchor-lang.com/).
@@ -154,13 +128,7 @@ Before you begin, set up your environment for development on Solana:
     node --version
     ```
 
-1. Use the Node package manager to [install the Anchor CLI](https://book.anchor-lang.com/getting_started/installation.html) globally. The global install allows you to run [Anchor CLI commands](https://book.anchor-lang.com/anchor_references/cli.html). Depending on your environment, this step might require superuser permissions:
-
-    ```sh
-    npm i -g @project-serum/anchor-cli
-    ```
-
-    On some operating systems, you might need to build and install Anchor locally. See the [Anchor documentation](https://book.anchor-lang.com/getting_started/installation.html#build-from-source-for-other-operating-systems-without-avm) for instructions.
+1. [Install Anchor](https://book.anchor-lang.com/getting_started/installation.html). On some operating systems, you might need to build and install Anchor locally. See the [Anchor documentation](https://book.anchor-lang.com/getting_started/installation.html#build-from-source-for-other-operating-systems-without-avm) for instructions.
 
 1. Install [Yarn](https://classic.yarnpkg.com/lang/en/docs/install/) to simplify package management and run code samples in the Starter Kit.
 
@@ -197,14 +165,6 @@ After you install the required tools, clone the example code from the [solana-st
 
     ```sh Solana Devnet
     export ANCHOR_PROVIDER_URL=https://api.devnet.solana.com &&
-    export ANCHOR_WALLET=./id.json
-    ```
-    ```sh Solana Mainnet
-    export ANCHOR_PROVIDER_URL=https://api.mainnet-beta.solana.com &&
-    export ANCHOR_WALLET=./id.json
-    ```
-    ```sh Solana Mainnet Project Serum Endpoint
-    export ANCHOR_PROVIDER_URL=https://solana-api.projectserum.com &&
     export ANCHOR_WALLET=./id.json
     ```
 
