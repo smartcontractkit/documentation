@@ -31,7 +31,7 @@ Learn more about [ERC-677 and the LINK token](../link-token-contracts/).
 
 ### Oracle Contract
 
-[`Oracle` contracts](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/Oracle.sol) are owned by oracle node operators, which run alongside off-chain oracle nodes.
+[`Oracle` contracts](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/interfaces/OracleInterface.sol) are owned by oracle node operators, which run alongside off-chain oracle nodes.
 
 #### Request
 
