@@ -1642,6 +1642,11 @@ The environment variables in this section apply only when running CLI commands t
 
 ### ADMIN_CREDENTIALS_FILE
 
+> 🚧 Deprecated:
+>
+> This environment variable is deprecated and will be removed in a future release. Use the `--admin-credentials-file FILE` CLI argument instead.
+
+
 - Default: `$ROOT/apicredentials`
 
 `ADMIN_CREDENTIALS_FILE` optionally points to a text file containing admin credentials for logging in. It is useful for running client CLI commands and has no effect when passed to a running node.
@@ -1655,11 +1660,19 @@ mysecurepassw0rd
 
 ### CLIENT_NODE_URL
 
+> 🚧 Deprecated:
+>
+> This environment variable is deprecated and will be removed in a future release. Use the `--remote-node-url URL` CLI argument instead.
+
 - Default: `"http://localhost:6688"`
 
 This is the URL that you will use to interact with the node, including the GUI. Use this URL to connect to the GUI or to run commands remotely using the Chainlink CLI.
 
 ### INSECURE_SKIP_VERIFY
+
+> 🚧 Deprecated:
+>
+> This environment variable is deprecated and will be removed in a future release. Use the `--insecure-skip-verify` CLI argument instead.
 
 - Default: `"false"`
 
