@@ -81,7 +81,9 @@ If you plan on using one of these feeds and would like to get a more detailed un
 
 ## Risk Mitigation
 
-To help you prepare for unforeseen market events, we recommend taking additional steps for custom or specialized feeds to protect your application or protocol. This might also be worth considering in all categories based on the value that your application secures. This tooling is put in place to mitigate extreme market events, possible malicious activity on third-party venues or contracts, potential delays, and outages.
+As a development best practice, design your systems and smart contracts to be resilient and mitigate risk to your protocol and your users. Ensure that your systems can tolerate known and unknown exceptions that might occur. Some examples include but are not limited to volatile market conditions, the degraded performance of infrastructure, chains, or networks, and any other upstream outage related to data providers or node operators. You bear responsibility for any manner in which you use the Chainlink Network, its software, and documentation.
+
+To help you prepare for unforeseen market events, we recommend taking additional steps for custom or specialized feeds to protect your application or protocol. This might also be worth considering in all categories based on the value that your application secures. This tooling is put in place to mitigate extreme market events, possible malicious activity on third-party venues or contracts, potential delays, performance degradation, and outages.
 
 Below are some examples of tooling that Chainlink users have put in place:
 
