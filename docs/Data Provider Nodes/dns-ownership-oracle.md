@@ -86,6 +86,7 @@ The _DNS Ownership_ node uses a [Chainlink v2 direct-request job](/docs/jobs/typ
 
 - [ETH ABI Decode Log](/docs/jobs/task-types/eth-abi-decode-log/)
 - [CBOR Parse](/docs/jobs/task-types/cborparse/)
+- [DNS Proof external adapter](https://github.com/smartcontractkit/external-adapters-js/tree/develop/packages/sources/dns-query#dns-proof-endpoint)
 - [JSON Parse](/docs/jobs/task-types/jsonparse/)
 - [ETH ABI Encode](/docs/jobs/task-types/eth-abi-encode/)
 - [EthTx](/docs/jobs/task-types/eth-tx/)
