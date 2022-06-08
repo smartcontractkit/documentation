@@ -216,18 +216,26 @@ echo "DATABASE_URL=postgresql://$USERNAME:$PASSWORD@$SERVER:$PORT/$DATABASE" >> 
 ```
 
 #### Start the Chainlink Node
-
-Now you can run the Docker image. Replace `<version>` with your desired version. Tag versions are available in the [Chainlink docker hub](https://hub.docker.com/r/smartcontract/chainlink/tags). *The `latest` version does not work.*
+Now you can run the Docker image. Replace `<version>` with your desired version and `<uid>:<gid>` with your desired UID & GID. For more information on running chainlink inside docker as non-root see below. *Mandatory from V1.4.1-nonroot and higher.* Tag versions are available in the [Chainlink docker hub](https://hub.docker.com/r/smartcontract/chainlink/tags). *The `latest` version does not work.*
 
 ```shell Rinkeby
-cd ~/.chainlink-rinkeby && docker run -p 6688:6688 -v ~/.chainlink-rinkeby:/chainlink -it --env-file=.env smartcontract/chainlink:<version> local n
+cd ~/.chainlink-rinkeby && docker run -u <uid>:<gid> -p 6688:6688 -v ~/.chainlink-rinkeby:/chainlink -it --env-file=.env smartcontract/chainlink:<version> local n
 ```
 ```shell Kovan
-cd ~/.chainlink-kovan && docker run -p 6688:6688 -v ~/.chainlink-kovan:/chainlink -it --env-file=.env smartcontract/chainlink:<version> local n
+cd ~/.chainlink-kovan && docker run -u <uid>:<gid> -p 6688:6688 -v ~/.chainlink-kovan:/chainlink -it --env-file=.env smartcontract/chainlink:<version> local n
 ```
 ```shell Mainnet
-cd ~/.chainlink && docker run -p 6688:6688 -v ~/.chainlink:/chainlink -it --env-file=.env smartcontract/chainlink:<version> local n
+cd ~/.chainlink && docker run -u <uid>:<gid> -p 6688:6688 -v ~/.chainlink:/chainlink -it --env-file=.env smartcontract/chainlink:<version> local n
 ```
+
+## Running Chainlink inside docker as non-root.
+For security reasons it’s considered a best practice to not run root inside your containers.
+It’s also considered best practice to run your docker engine as non-root as well. If you are already doing that use the same user you are running engine with.
+
+Docker allows you to specify the user that you want to run inside the container with using the
+--user or -u parameter.
+-u, --user string Username or UID (format:
+<name|uid>[:<group|gid>])
 
 > 📘 Local Database
 >
