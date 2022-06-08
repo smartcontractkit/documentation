@@ -102,6 +102,7 @@ contract FinageChainlink is ChainlinkClient {
 
 # Tasks
 
+- [Finage external adapter](https://github.com/smartcontractkit/external-adapters-js/tree/develop/packages/sources/finage)
 - [Copy](../core-adapters/#copy)
 - [Multiply](../core-adapters/#multiply)
 - [EthInt256](../core-adapters/#ethint256)
