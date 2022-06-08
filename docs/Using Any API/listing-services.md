@@ -29,7 +29,6 @@ Chainlink has facilitated the launch of several oracle data services that allow 
 
 Additionally, here are some independent listing services to help find Oracle Jobs that are pre-configured to call the APIs and endpoints you wish to access in your smart contracts:
 
-* [Chainlink Market](https://market.link/)
 * [Chainlink Oracle Reputation](https://reputation.link/)
 * [CL Adapters](https://chainlinkadapters.com/)
 

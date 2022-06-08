@@ -12,8 +12,6 @@ Here is our external adapters monorepo which contains many examples to help get 
 
 * <a href="https://github.com/smartcontractkit/external-adapters-js" target="_blank">Official Chainlink External Adapter Monorepo (NodeJS)</a>
 
-Once created, you can submit your adapter repo to <a href="https://market.link/profile/adapters" target="_blank">Chainlink Market</a>, so node operators can find and start using it.
-
 ### Requesting Data
 
 When an external adapter receives a request from the Chainlink node, the JSON payload will include the following objects:
