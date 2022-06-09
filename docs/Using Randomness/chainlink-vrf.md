@@ -58,7 +58,6 @@ Chainlink VRF v2 is currently available on the following networks:
   - [Avalanche Mainnet](/docs/vrf-contracts/#avalanche-mainnet)
   - [Avalanche Fuji Testnet](/docs/vrf-contracts/#avalanche-fuji-testnet)
 - Fantom:
-  - [Fantom Mainnet](/docs/vrf-contracts/#fantom-mainnet)
   - [Fantom Testnet](/docs/vrf-contracts/#fantom-testnet)
 
 See the [Contract Addresses](/docs/vrf-contracts) page for a complete list of coordinator addresses and gas price limits.

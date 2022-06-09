@@ -372,8 +372,25 @@ module.exports = {
             url: '/docs/solana/using-data-feeds-solana/',
           },
           {
-            title: 'Solana Data Feeds',
+            title: 'Data Feed Addresses',
             url: '/docs/solana/data-feeds-solana/',
+          },
+        ],
+      },
+      {
+        section: 'Resources',
+        contents: [
+          {
+            title: 'Getting Help',
+            url: '/docs/getting-help/',
+          },
+          {
+            title: 'Selecting Data Feeds',
+            url: '/docs/selecting-data-feeds/',
+          },
+          {
+            title: 'Contributing to Chainlink',
+            url: '/docs/contributing-to-chainlink/',
           },
         ],
       },

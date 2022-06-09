@@ -41,7 +41,6 @@ Fee parameters are configured in the coordinator contract and specify the premiu
 - [Polygon Mumbai Testnet](#polygon-matic-mumbai-testnet)
 - [Avalanche Mainnet](#avalanche-mainnet)
 - [Avalanche Fuji Testnet](#avalanche-fuji-testnet)
-- [Fantom Mainnet](#fantom-mainnet)
 - [Fantom Testnet](#fantom-testnet)
 
 ### Ethereum Mainnet
@@ -169,20 +168,6 @@ Fee parameters are configured in the coordinator contract and specify the premiu
 | Minimum Confirmations | 1                                                                                                                               |
 | Maximum Confirmations | 200                                                                                                                             |
 | Maximum Random Values | 500                                                                                                                             |
-
-### Fantom Mainnet
-
-| Item                  | Value                                                                                                                  |
-| --------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| LINK Token            | [`0x6f43ff82cca38001b6699a8ac47a2d0e66939407`](https://ftmscan.com/token/0x6f43ff82cca38001b6699a8ac47a2d0e66939407)   |
-| VRF Coordinator       | [`0xd5D517aBE5cF79B7e95eC98dB0f0277788aFF634`](https://ftmscan.com/address/0xd5d517abe5cf79b7e95ec98db0f0277788aff634) |
-| 4000 gwei Key Hash    | `0xb4797e686f9a1548b9a2e8c68988d74788e0c4af5899020fb0c47784af76ddfa`                                                   |
-| 10000 gwei Key Hash   | `0x5881eea62f9876043df723cf89f0c2bb6f950da25e9dfe66995c24f919c8f8ab`                                                   |
-| 20000 gwei Key Hash   | `0x64ae04e5dba58bc08ba2d53eb33fe95bf71f5002789692fe78fb3778f16121c9`                                                   |
-| Premium               | 0.0005 LINK                                                                                                            |
-| Minimum Confirmations | 1                                                                                                                      |
-| Maximum Confirmations | 200                                                                                                                    |
-| Maximum Random Values | 500                                                                                                                    |
 
 ### Fantom Testnet
 
