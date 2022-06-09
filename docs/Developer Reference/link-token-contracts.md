@@ -218,6 +218,11 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 
 ### Fantom Mainnet
 
+> 🚧 ERC-677 LINK on Fantom
+>
+> You must use ERC-677 LINK on Fantom. ERC-20 LINK will not work with Chainlink services.
+> Use [bridge.multichain.org](https://bridge.multichain.org/#/router) to send LINK to the Fantom network and be sure to select LINK-ERC677 as the token you will receive on the Fantom mainnet.
+
 |Parameter|Value|
 |:---|:---|
 |`ETH_CHAIN_ID`|`250`|
@@ -231,7 +236,6 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 > 🚰Fantom Faucet
 >
 > Testnet LINK is available from https://faucets.chain.link/fantom-testnet  
->
 
 |Parameter|Value|
 |:---|:---|
