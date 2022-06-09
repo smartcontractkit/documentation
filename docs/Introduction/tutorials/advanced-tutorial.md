@@ -154,6 +154,7 @@ More on External Adapters can be found [here](/docs/external-adapters/).
 ## 4. How can I use an Oracle Data Service?
 
 Chainlink has facilitated the launch of several new oracle data services that allow dApps to access rich data from external data sources. For instance, you can create a smart contract that checks Google's DNS service to determine if a given domain is owned by a given blockchain address using oracle job without having to specify the URL inside the contract.
+Join the [operator-requests discord channel](https://discord.com/invite/kEneq3Kg) to directly communicate with community node operators. 
 A full example on Kovan testnet can be found [here](/docs/dns-ownership-oracle/).
 
 ## 5. Further Reading
