@@ -27,9 +27,10 @@ Chainlink has facilitated the launch of several oracle data services that allow 
 
 * [Data Provider Node List](../data-provider-nodes/#data-provider-nodes-list)
 
+To find an Oracle Job that is pre-configured for your use case and available on the right network, join the [Chainlink operator-requests discord channel](https://discord.com/invite/kEneq3Kg) to directly communicate with community node operators. 
+
 Additionally, here are some independent listing services to help find Oracle Jobs that are pre-configured to call the APIs and endpoints you wish to access in your smart contracts:
 
-* [Chainlink Market](https://market.link/)
 * [Chainlink Oracle Reputation](https://reputation.link/)
 * [CL Adapters](https://chainlinkadapters.com/)
 

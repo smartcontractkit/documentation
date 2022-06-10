@@ -102,7 +102,7 @@ contract FinageChainlink is ChainlinkClient {
 
 # Tasks
 
-- <a href="https://market.link/profile/adapters/687be1a9-f5f8-44f1-a9d8-81bab4fb4247/data-source" target="_blank">Finage Relative Stock Performance</a>
+- [Finage external adapter](https://github.com/smartcontractkit/external-adapters-js/tree/develop/packages/sources/finage)
 - [Copy](../core-adapters/#copy)
 - [Multiply](../core-adapters/#multiply)
 - [EthInt256](../core-adapters/#ethint256)

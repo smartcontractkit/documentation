@@ -118,19 +118,16 @@ Here is a breakdown of each component of this contract:
 2. `requestVolumeData` functions: This builds and sends a request - which includes the fulfillment functions selector - to the oracle. Notice how it adds the `get`, `path` and `times` parameters. These are read by the Tasks in the job to perform correctly. `get` is used by [HTTP](/docs/jobs/task-types/http/), `path` is used by [JSON Parse](/docs/jobs/task-types/jsonparse/) and `times` is used by [Multiply](/docs/jobs/task-types/multiply/).
 3. `fulfill` function: This is where the result is sent upon the Oracle Job's completion.
 
-**Note:** The calling contract should own enough LINK to pay the [specified fee](https://market.link/jobs/f5357a30-54b7-4a68-b6a8-ae55d4eda987) (by default 0.1 LINK). You can use [this tutorial](/docs/fund-your-contract/) to fund your contract.
+**Note:** The calling contract should own enough LINK to pay the fee, which by default is 0.1 LINK. You can use [this tutorial](/docs/fund-your-contract/) to learn how to fund your contract.
 
 This is an example of a basic HTTP GET request. However, it requires defining the API URL directly in the smart contract. This can, in fact, be extracted and configured on the Job level inside the Oracle node. You can follow the _APIConsumer_ tutorial [here](/docs/single-word-response/).
 
 ### External Adapters
 
-Here are some examples of external adapters:
+Here are some examples nodes with external adapters:
 
-1. Real-world events: [Google Weather Data](https://market.link/adapters/654b3417-c381-4764-8cb7-4e8d552a9d95), [Associated Press](https://market.link/adapters/cee0cc56-43a2-40e1-9014-3905c2534caa)
-2. Social media proofs: [MUBC Retweet Verifier](https://market.link/adapters/8fba59b1-f639-4d0a-9b01-7adff9b74442?network=1)
-3. Cryptocurrency aggregators: [CoinAPI](https://market.link/adapters/f4d69a08-f3dd-46e7-b4b8-3d2fb620c033?network=1)
-
-These external adapters, along with many others, can be found on [Chainlink Market](https://market.link/search/all?network=42).
+- [Google Weather Data](https://docs.chain.link/docs/google-weather/)
+- [Associated Press](https://market.link/nodes/The%20Associated%20Press/integrations)
 
 If all the parameters are defined within the Oracle job, the only things a smart contract needs to define to consume are:
 
@@ -156,7 +153,8 @@ More on External Adapters can be found [here](/docs/external-adapters/).
 
 ## 4. How can I use an Oracle Data Service?
 
-Chainlink has facilitated the launch of several new oracle data services that allow dApps to access rich data from external data sources. For instance, you can create a smart contract that checks Google's DNS service to determine if a given domain is owned by a given blockchain address using oracle job found on [Chainlink Market](https://market.link/jobs/bf1a410f-ce93-497d-83ac-e63fed9d83bd), without having to specify the URL inside the contract.
+Chainlink has facilitated the launch of several new oracle data services that allow dApps to access rich data from external data sources. For instance, you can create a smart contract that checks Google's DNS service to determine if a given domain is owned by a given blockchain address using oracle job without having to specify the URL inside the contract.
+Join the [operator-requests discord channel](https://discord.com/invite/kEneq3Kg) to directly communicate with community node operators. 
 A full example on Kovan testnet can be found [here](/docs/dns-ownership-oracle/).
 
 ## 5. Further Reading

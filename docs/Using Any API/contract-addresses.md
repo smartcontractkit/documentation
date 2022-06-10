@@ -10,8 +10,6 @@ permalink: 'docs/decentralized-oracles-ethereum-mainnet/'
 
 This page details example addresses and jobs that are supported by oracles on various networks, so you can test your implementation quickly and easily.
 
-For a comprehensive list of data providers, oracles, jobs, adapters, and more, visit [Chainlink Market](https://market.link/).
-
 ![Chainlink Market Logo](/files/afe3efe-marketlink.jpg)
 
 ## Mainnet
@@ -22,13 +20,11 @@ For a comprehensive list of data providers, oracles, jobs, adapters, and more, v
 
 LINK address:  [`0x514910771af9ca656af840dff83e8264ecf986ca`](https://etherscan.io/token/0x514910771af9ca656af840dff83e8264ecf986ca)
 
-Head to [Chainlink Market](https://market.link/) for the latest Node and Job details.
-
 ## Testnets
 
 Each request on the test networks cost 0.1 LINK. Each oracle will wait for 1 confirmation before processing a request.
 
-These are examples which enable you to deploy and test quickly. Many more testnet oracle nodes and jobs can be found on [Chainlink Market](https://market.link/).
+These are examples which enable you to deploy and test quickly.
 
 ### Kovan
 
