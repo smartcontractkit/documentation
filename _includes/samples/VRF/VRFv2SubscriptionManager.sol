@@ -69,12 +69,9 @@ contract VRFv2SubscriptionManager is VRFConsumerBaseV2 {
 
   // Create a new subscription when the contract is initially deployed.
   function createNewSubscription() private onlyOwner {
-    // Create a subscription with a new subscription ID.
-    address[] memory consumers = new address[](1);
-    consumers[0] = address(this);
     s_subscriptionId = COORDINATOR.createSubscription();
     // Add this contract as a consumer of its own subscription.
-    COORDINATOR.addConsumer(s_subscriptionId, consumers[0]);
+    COORDINATOR.addConsumer(s_subscriptionId, address(this));
   }
 
   // Assumes this contract owns link.
