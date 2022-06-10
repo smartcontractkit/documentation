@@ -2,58 +2,61 @@
 layout: nodes.liquid
 section: ethereum
 date: Last Modified
-title: "L2 Sequencer Health Flag"
+title: "L2 Sequencer Uptime Feeds"
 permalink: "docs/l2-sequencer-flag/"
 ---
 
-The idea behind an Optimistic Rollup (OR) type of protocol is to move all execution off-chain and keep all transaction data available on-chain. Such protocols have a special off-chain component, [a Sequencer](https://medium.com/stakefish/optimistic-rollups-how-they-work-and-why-they-matter-3f677a504fcf), that executes and rolls up the Layer 2 transactions by batching multiple transactions into a single one.
-
-If a sequencer becomes unavailable, it becomes impossible to access read/write APIs that consumers are using so every dapp will be down for 95% of the users, except those that know how to interact with the Layer 1 OR contracts. In this case, it would be unfair to continue providing service on your dApp, as only 5 % of the users can use it. Note, this doesn't mean that the Layer 2 network has stopped, as OR is not an actual chain.
-
 ## Overview
 
-The L2 Sequencer Health Flag helps mitigate potential exploits when the Sequencer is unavailable by notifying the corresponding OR protocol to raise a flag on Layer 2.
+Optimistic rollup protocols move all execution off the layer 1 (L1) Ethereum chain, complete execution on a layer 2 (L2) chain, and  return the results of the L2 execution back to the L1. These protocols have a [sequencer](https://community.optimism.io/docs/how-optimism-works/#block-production) that executes and rolls up the L2 transactions by batching multiple transactions into a single transaction.
 
-The L2 Sequencer Health Flag consists of three actors:
+If a sequencer becomes unavailable, it is impossible to access read/write APIs that consumers are using and applications on the L2 network will be down for most users without interacting directly through the L1 optimistic rollup contracts. The L2 has not stopped, but it would be unfair to continue providing service on your applications when only a few users can use them.
 
-1) Chainlink Cluster (a group of validator nodes) - executes the OCR Job every heartbeat "T" (the minimum frequency the Chainlink feed is configured to be updated)
+To help your applications identify when the sequencer is unavailable, you can use a data feed that tracks the last known status of the sequencer at a given point in time. This is to allow customers to prevent mass liquidations by providing a grace period to allow customers to react to such an event.
 
-2) The actual OCR feed reporting the Sequencer status - could be used for external users on Layer 1 to check OR protocol (e.g. Arbitrum) status
+L2 sequencer feeds are available on the following networks:
 
-3) Validator - gets triggered by the OCR feed and executes the raise or lower flag action if the current answer is different from the previous one
+- [Arbitrum mainnet](#sequencer-feed-proxy-addresses)
+- [Ethereum Rinkeby testnet](#sequencer-feed-proxy-addresses)
 
-## Checking the Sequencer Status
+## Architecture
 
-If you have contracts that rely on Layer 2 Chainlink Data Feeds, you should add an extra check for each of your contracts. To implement, use the following sample:
+L2 sequencer uptime feeds are architected similar to other Chainlink feeds. The diagram below shows how these feeds update and how a consumer retrieves the status of the Arbitrum sequencer.
 
-```solidity Rinkeby
+![L2 Sequencer Feed Diagram](/images/data-feed/l2-diagram.png)
+
+1. Chainlink nodes trigger an OCR round every 30s and update the sequencer status by calling the `validate` function in the [`ArbitrumValidator` contract](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/dev/ArbitrumValidator.sol) by calling it through the [`ValidatorProxy` contract](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/ValidatorProxy.sol).
+1. The `ArbitrumValidator` checks to see if the latest update is different from the previous update. If it detects a difference, it places a message in the [Arbitrum inbox contract](https://developer.offchainlabs.com/docs/inside_arbitrum#the-big-picture).
+1. The inbox contract sends the message to the [`ArbitrumSequencerUptimeFeed` contract](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/dev/ArbitrumSequencerUptimeFeed.sol). The message calls the `updateStatus` function in the `ArbitrumSequencerUptimeFeed` contract and updates the latest sequencer status to 0 if the sequencer is up and 1 if it is down. It also records the block timestamp to indicate when the message was sent from the L1 network.
+1. A consumer contract on the L2 network can read these values from the [proxy contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.6/EACAggregatorProxy.sol), which reads values from the `ArbitrumSequencerUptimeFeed` contract.
+
+## Handling Arbitrum outages
+
+If the Arbitrum network becomes unavailable, the `ArbitrumValidator` contract continues to send messages to the L2 network through the delayed inbox on L1. This message stays there until the sequencer is back up again. When the sequencer comes back online after downtime, it processes all transactions from the delayed inbox before it accepts new transactions. The message that signals when the sequencer is down will be processed before any new messages with transactions that require the sequencer to be operational.
+
+## Example code
+
+Create your consumer contract for uptime feeds similarly to contracts you would use for other Chainlink data feeds. You will need the following items:
+
+- The [sequencer uptime feed proxy address](#sequencer-feed-proxy-addresses): This contract on the L2 network
+- A contract that imports the [`AggregatorV2V3Interface.sol` contract](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/interfaces/AggregatorV2V3Interface.sol): Use this interface to create a `flagsFeed` object that points to the sequencer feed proxy.
+
+You can use the sequencer uptime feed on Arbitrum, but this example uses an Ethereum Rinkeby testnet feed for development and testing purposes.
+
+```solidity Mainnet
 {% include 'samples/PriceFeeds/ArbitrumPriceConsumer.sol' %}
 ```
 
-> ⚠️ Important
->
-> Flag should be checked using `address(bytes20(bytes32(uint256(keccak256("chainlink.flags.arbitrum-seq-offline")) - 1)))` which translates into `0xa438451D6458044c3c8CD2f6f31c91ac882A6d91`
+This example includes a modified `getLatestPrice` function that reverts if `checkSequencerState` returns false. The `checkSequencerState` function reads the answer from the sequencer uptime feed and returns either a `1` or a `0`.
 
-A raised flag will determine that the feed wasn't updated in "T" time and its data can be considered stale. In other words, the Sequencer went offline and your contract shouldn't perform any critical operations. When the Sequencer comes back up again and the Layer 2 Chainlink Data Feeds are updated, you can continue using your contracts as usual.
+- 0: The sequencer is up
+- 1: The sequencer is down
 
-## Contract Addresses
+The `updatedAt` timestamp is the block timestamp when the answer updated on the L1 network, Ethereum Mainnet. Use this to ensure the latest answer is recent enough to be trustworthy.
 
-> 📘 Note
->
-> These contract addresses are on L2, and should therefore only be read from L2.
+## Sequencer feed proxy addresses
 
-### Mainnet Contracts
+You can find proxy addresses for the L2 sequencer feeds on the following networks:
 
-| Name                              | Address                                    |
-| --------------------------------- |:------------------------------------------ |
-| Arbitrum Mainnet Flags Contract   | 0x3C14e07Edd0dC67442FA96f1Ec6999c57E810a83 |
-
-### Rinkeby Contracts
-
-| Name                             | Address                                    |
-| -------------------------------- |:------------------------------------------ |
-| Arbitrum Rinkeby Flags Contract  | 0x491B1dDA0A8fa069bbC1125133A975BF4e85a91b |
-
-> 📘 Note
->
-> Healthcheck Proxy Feed returns `1` when the Sequencer is offline and `0` when Sequencer is available
+- Arbitrum mainnet: [0xFdB631F5EE196F0ed6FAa767959853A9F217697D](https://arbiscan.io/address/0xfdb631f5ee196f0ed6faa767959853a9f217697d)
+- Ethereum Rinkeby testnet: [0x13E99C19833F557672B67C70508061A2E1e54162](https://rinkeby.etherscan.io/address/0x13E99C19833F557672B67C70508061A2E1e54162)

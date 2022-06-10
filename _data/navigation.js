@@ -170,6 +170,10 @@ module.exports = {
               },
             ],
           },
+          {
+            title: 'L2 Sequencer Uptime Feeds',
+            url: '/docs/l2-sequencer-flag/',
+          },
         ],
       },
       {
