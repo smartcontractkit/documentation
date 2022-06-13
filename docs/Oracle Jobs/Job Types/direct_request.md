@@ -2,13 +2,26 @@
 layout: nodes.liquid
 section: nodeOperator
 date: Last Modified
-title: "Direct Request Jobs"
-permalink: "docs/jobs/types/direct-request/"
+title: 'Direct Request Jobs'
+permalink: 'docs/jobs/types/direct-request/'
 ---
 
 Executes a job upon receipt of an explicit request made by a user. The request is detected via a log emitted by an Oracle or Operator contract. This is similar to the legacy ethlog/runlog style of jobs.
 
-**Spec format**
+**Table of Contents**
+
+- [Spec format](#spec-format)
+  - [Shared fields](#shared-fields)
+  - [Unique fields](#unique-fields)
+  - [Job type specific pipeline variables](#job-type-specific-pipeline-variables)
+- [Examples](#examples)
+  - [Get > Uint256 Job](#get--uint256-job)
+  - [Get > String Job](#get--string-job)
+  - [Get > Bytes Job](#get--bytes-job)
+  - [Multi-Word Job](#multi-word-job)
+  - [Existing Job](#existing-job)
+
+## Spec format
 
 ```jpv2
 type                = "directrequest"
@@ -35,17 +48,18 @@ observationSource   = """
 """
 ```
 
-**Shared fields**
+### Shared fields
+
 See [shared fields](/docs/jobs/#shared-fields).
 
-**Unique fields**
+### Unique fields
 
 - `contractAddress`: The Oracle or Operator contract to monitor for requests
 - `requesters`: Optional - Allows whitelisting requesters
 - `minContractPaymentLinkJuels` Optional - Allows you to specify a job-specific minimum contract payment
 - `minIncomingConfirmations` Optional - Allows you to specify a job-specific `MIN_INCOMING_CONFIRMATIONS` value, must be greater than or equal to 1
 
-**Job type specific pipeline variables**
+### Job type specific pipeline variables
 
 - `$(jobSpec.databaseID)`: the ID of the job spec in the local database. You shouldn't need this in 99% of cases.
 - `$(jobSpec.externalJobID)`: the globally-unique job ID for this job. Used to coordinate between node operators in certain cases.
@@ -61,125 +75,51 @@ See [shared fields](/docs/jobs/#shared-fields).
 - `$(jobRun.blockTransactionsRoot)` : the root of the transaction trie of the block (hash).
 - `$(jobRun.blockStateRoot)` : the root of the final state trie of the block (hash).
 
-**Single-Word Example**
+## Examples
 
-First, let's assume that a user makes a request to the oracle using the following contract:
+### Get > Uint256 Job
 
-```solidity
-contract MyClient is ChainlinkClient {
-    function doRequest(uint256 _payment) public {
-        Chainlink.Request memory req = buildChainlinkRequest(specId, address(this), this.fulfill.selector);
-        req.add("fetchURL", "https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD");
-        req.add("jsonPath", "USD");
-        sendChainlinkRequest(req, _payment);
-    }
+Let's assume that a user makes a request to an oracle to call a public API, retrieve a number from the response, remove any decimals and return _uint256_.
 
-    function fulfill(bytes32 requestID, uint256 answer) public {
-        // ...
-    }
-}
-```
+- The smart contract example can be found [here](/docs/single-word-response/).
+- The job spec example can be found [here](/docs/direct-request-get-uint256/).
 
-This is a single-word response because aside from the `requestID`, the fulfill callback receives only a single-word argument in the `uint256 answer`. You can fulfill this request with a direct request job using the following pipeline:
+### Get > Int256 Job
 
-```jpv2
-// First, we parse the request log and the CBOR payload inside of it
-decode_log  [type="ethabidecodelog"
-             data="$(jobRun.logData)"
-             topics="$(jobRun.logTopics)"
-             abi="SomeContractEvent(bytes32 requestID, bytes cborPayload)"]
+Let's assume that a user makes a request to an oracle to call a public API, retrieve a number from the response, remove any decimals and return _int256_.
 
-decode_cbor [type="cborparse"
-             data="$(decode_log.cborPayload)"]
+- The job spec example can be found [here](/docs/direct-request-get-int256/).
 
-// Then, we use the decoded request parameters to make an HTTP fetch
-fetch [type="http" method=GET url="$(decode_cbor.fetchURL)"]
-parse [type="jsonparse" path="$(decode_cbor.jsonPath)" data="$(fetch)"]
+### Get > Bool Job
 
-// Finally, we send a response on-chain.
-// Note that single-word responses automatically populate
-// the requestId.
-encode_response [type="ethabiencode"
-                 abi="(uint256 data)"
-                 data="{\\"data\\": $(parse) }"]
+Let's assume that a user makes a request to an oracle to call a public API, retrieve a boolean from the response and return _bool_.
 
-encode_tx       [type="ethabiencode"
-                 abi="fulfillOracleRequest(bytes32 requestId, uint256 payment, address callbackAddress, bytes4 callbackFunctionId, uint256 expiration, bytes32 data)"
-                 data="{\\"requestId\\": $(decode_log.requestId), \\"payment\\": $(decode_log.payment), \\"callbackAddress\\": $(decode_log.callbackAddr), \\"callbackFunctionId\\": $(decode_log.callbackFunctionId), \\"expiration\\": $(decode_log.cancelExpiration), \\"data\\": $(encode_response)}"
-                 ]
+- The job spec example can be found [here](/docs/direct-request-get-bool/).
 
-submit_tx  [type="ethtx" to="0x613a38AC1659769640aaE063C651F48E0250454C" data="$(encode_tx)"]
+### Get > String Job
 
-decode_log -> decode_cbor -> fetch -> parse -> encode_response -> encode_tx -> submit_tx
-```
+Let's assume that a user makes a request to an oracle and would like to fetch a _string_ from the response.
 
-**Multi-Word Example**
+- The smart contract example can be found [here](/docs/api-array-response/).
+- The job spec example can be found [here](/docs/direct-request-get-string/).
 
-Assume that a user wants to obtain the ETH price quoted against three different currencies. If they use only a single-word DR job, it would require three different requests. To make that more efficient, they can use multi-word responses to do it all in a single request as shown in the following example:
+### Get > Bytes Job
 
-```solidity
-contract MyClient is ChainlinkClient {
-    function doRequest(uint256 _payment) public {
-        Chainlink.Request memory req = buildChainlinkRequest(stringToBytes32("4b77c08653fa4350bdb22914bf5af04a"), address(this), this.fulfillMultipleParameters.selector);
-        req.add("urlBTC", "https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=BTC");
-        req.add("pathBTC", "BTC");
-        req.add("urlUSD", "https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD");
-        req.add("pathUSD", "USD");
-        req.add("urlEUR", "https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=EUR");
-        req.add("pathEUR", "EUR");
-        sendChainlinkRequest(req, 100000000000000000); // MWR API.
-    }
+Let's assume that a user makes a request to an oracle and would like to fetch _bytes_ from the response (meaning a response that contains an arbitrary-length raw byte data).
 
-    function fulfill(bytes32 requestID, uint256 usd, uint256 eur, uint256 jpy) public {
-        // ...
-    }
-}
-```
+- The smart contract example can be found [here](/docs/large-responses/).
+- The job spec example can be found [here](/docs/direct-request-get-bytes/).
 
-```jpv2
-type                = "directrequest"
-schemaVersion       = 1
-evmChainID          = 1
-name                = "example eth request event spec"
-contractAddress     = "0x613a38AC1659769640aaE063C651F48E0250454C"
-externalJobID       = "0EEC7E1D-D0D2-476C-A1A8-72DFB6633F47"
-observationSource   = """
-       decode_log   [type="ethabidecodelog"
-                  abi="OracleRequest(bytes32 indexed specId, address requester, bytes32 requestId, uint256 payment, address callbackAddr, bytes4 callbackFunctionId, uint256 cancelExpiration, uint256 dataVersion, bytes data)"
-                  data="$(jobRun.logData)"
-                  topics="$(jobRun.logTopics)"]
-    decode_cbor  [type="cborparse" data="$(decode_log.data)"]
-    decode_log -> decode_cbor
-    decode_cbor -> btc
-    decode_cbor -> usd
-    decode_cbor -> eur
-    btc          [type="http" method=GET url="$(decode_cbor.urlBTC)" allowunrestrictednetworkaccess="true"]
-    btc_parse    [type="jsonparse" path="$(decode_cbor.pathBTC)" data="$(btc)"]
-    btc_multiply [type="multiply" input="$(btc_parse)", times="100000"]
-    btc -> btc_parse -> btc_multiply
-    usd          [type="http" method=GET url="$(decode_cbor.urlUSD)" allowunrestrictednetworkaccess="true"]
-    usd_parse    [type="jsonparse" path="$(decode_cbor.pathUSD)" data="$(usd)"]
-    usd_multiply [type="multiply" input="$(usd_parse)", times="100000"]
-    usd -> usd_parse -> usd_multiply
-    eur          [type="http" method=GET url="$(decode_cbor.urlEUR)" allowunrestrictednetworkaccess="true"]
-    eur_parse    [type="jsonparse" path="$(decode_cbor.pathEUR)" data="$(eur)"]
-    eurs_multiply [type="multiply" input="$(eur_parse)", times="100000"]
-    eur -> eur_parse -> eurs_multiply
-    btc_multiply -> encode_mwr
-    usd_multiply -> encode_mwr
-    eurs_multiply -> encode_mwr
-    // MWR API does NOT auto populate the requestID.
-    encode_mwr [type="ethabiencode"
-                abi="(bytes32 requestId, uint256 _btc, uint256 _usd, uint256 _eurs)"
-                data="{\\"requestId\\": $(decode_log.requestId), \\"_btc\\": $(btc_multiply), \\"_usd\\": $(usd_multiply), \\"_eurs\\": $(eurs_multiply)}"
-                ]
-    encode_tx  [type="ethabiencode"
-                abi="fulfillOracleRequest2(bytes32 requestId, uint256 payment, address callbackAddress, bytes4 callbackFunctionId, uint256 expiration, bytes calldata data)"
-                data="{\\"requestId\\": $(decode_log.requestId), \\"payment\\":   $(decode_log.payment), \\"callbackAddress\\": $(decode_log.callbackAddr), \\"callbackFunctionId\\": $(decode_log.callbackFunctionId), \\"expiration\\": $(decode_log.cancelExpiration), \\"data\\": $(encode_mwr)}"
-                ]
-    submit_tx  [type="ethtx" to="0x1C9AE012eC6aA5D2acDF20A57A887b4E8B6d5da4" data="$(encode_tx)" minConfirmations="2"]
-    encode_mwr -> encode_tx -> submit_tx
-"""
-```
+### Multi-Word Job
 
-Multi-word response jobs like this, and also large response jobs need to use the [Operator contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/Operator.sol) as the on-chain contract that coordinates things between the consuming contract and the Chainlink node, as opposed to the legacy [Oracle contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.6/Oracle.sol).
+Let's assume that a user makes a request to an oracle and would like to fetch multiple words in one single request.
+
+- The smart contract example can be found [here](/docs/multi-variable-responses/).
+- The job spec example can be found [here](/docs/direct-request-multi-word/).
+
+### Existing Job
+
+Using an _existing_ Oracle Job makes your smart contract code more succinct. Let's assume that a user makes a request to an oracle that leverages [Etherscan External Adapter](https://github.com/smartcontractkit/external-adapters-js/tree/develop/packages/sources/etherscan) to retrieve the gas price.
+
+- The smart contract example can be found [here](/docs/existing-job-request/).
+- The job spec example can be found [here](/docs/direct-request-existing-job/).

@@ -172,6 +172,11 @@ Fee parameters are configured in the coordinator contract and specify the premiu
 
 ### Fantom Mainnet
 
+> 🚧 ERC-677 LINK on Fantom
+>
+> You must use ERC-677 LINK on Fantom. ERC-20 LINK will not work with Chainlink services.
+> Use [bridge.multichain.org](https://bridge.multichain.org/#/router) to send LINK to the Fantom network and be sure to select LINK-ERC677 as the token you will receive on the Fantom mainnet.
+
 | Item                  | Value                                                                                                                  |
 | --------------------- | ---------------------------------------------------------------------------------------------------------------------- |
 | LINK Token            | [`0x6f43ff82cca38001b6699a8ac47a2d0e66939407`](https://ftmscan.com/token/0x6f43ff82cca38001b6699a8ac47a2d0e66939407)   |

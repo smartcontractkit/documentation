@@ -7,8 +7,6 @@ permalink: "docs/get-a-random-number/v1/"
 whatsnext: {"API Reference":"/docs/chainlink-vrf-api-reference/v1/", "Contract Addresses":"/docs/vrf-contracts/v1/"}
 metadata:
   description: "How to generate a random number inside a smart contract using Chainlink VRF."
-  image:
-    0: "/files/OpenGraph_V3.png"
 ---
 
 > 🚧 VRF v2 replaces and enhances VRF v1.

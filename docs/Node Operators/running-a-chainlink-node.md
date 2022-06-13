@@ -8,8 +8,6 @@ whatsnext: {"Fulfilling Requests":"/docs/fulfilling-requests/", "Performing Syst
 metadata:
   title: "Running a Chainlink Node"
   description: "Run your own Chainlink node using this guide which explains the requirements and basics for getting started."
-  image:
-    0: "/files/OpenGraph_V3.png"
 ---
 
 In this section, we'll explain the requirements and basics for running your own Chainlink node.

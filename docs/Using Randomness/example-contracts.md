@@ -7,8 +7,6 @@ permalink: "docs/chainlink-vrf/example-contracts/"
 whatsnext: {"Security Considerations":"/docs/vrf-security-considerations/", "Best Practices":"/docs/chainlink-vrf-best-practices/", "Migrating from VRF v1 to v2":"/docs/chainlink-vrf/migration-vrf-v1-v2/", "Contract Addresses":"/docs/vrf-contracts/"}
 metadata:
   description: "Example contracts for generating a random number inside a smart contract using Chainlink VRF."
-  image:
-    0: "/files/OpenGraph_V3.png"
 ---
 
 > ℹ️ You are viewing the VRF v2 guide.
