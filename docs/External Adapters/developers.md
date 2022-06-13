@@ -2,39 +2,76 @@
 layout: nodes.liquid
 section: nodeOperator
 date: Last Modified
-title: "Building External Adapters"
-permalink: "docs/developers/"
-whatsnext: {"Bridges: Adding External Adapters to Nodes":"/docs/node-operators/"}
+title: 'Building External Adapters'
+permalink: 'docs/developers/'
+whatsnext: { 'Bridges: Adding External Adapters to Nodes': '/docs/node-operators/' }
 ---
+
 Developers of external adapters will need to know how the Chainlink node requests data from it, and how the data should be formatted for a response. External adapters can be written in any language, and even run on separate machines, to include serverless functions.
 
 Here is our external adapters monorepo which contains many examples to help get you started:
 
-* <a href="https://github.com/smartcontractkit/external-adapters-js" target="_blank">Official Chainlink External Adapter Monorepo (NodeJS)</a>
+- [Official Chainlink External Adapter Monorepo (NodeJS)](https://github.com/smartcontractkit/external-adapters-js).
 
 Once created, you can submit your adapter repo to <a href="https://market.link/profile/adapters" target="_blank">Chainlink Market</a>, so node operators can find and start using it.
+
+### Example
+
+In this guide, we will explain how you can leverage the [Official Chainlink External Adapter Monorepo (NodeJS)](https://github.com/smartcontractkit/external-adapters-js) to build a custom adapter.
+[Coinpaprika API](https://api.coinpaprika.com) delivers crypto market data: coin prices, volumes, all time highs..ETc. In this example, we will build a custom adapter that calls the [getTickersById operation](https://api.coinpaprika.com/#operation/getTickersById) to fetch price data of a single coin.
+
+### Creating a new Adapter
+
+First of all, fork [Official Chainlink External Adapter Monorepo (NodeJS)](https://github.com/smartcontractkit/external-adapters-js) as explained in [here](https://docs.github.com/en/get-started/quickstart/fork-a-repo).
+Then create the new customer adapter as explained in the [contributing page](https://github.com/smartcontractkit/external-adapters-js/blob/develop/CONTRIBUTING.md):
+
+```sh
+yarn new source coinpaprika-custom
+```
+
+- `source` is the template to use when generating an adapter. see [contributing page](https://github.com/smartcontractkit/external-adapters-js/blob/develop/CONTRIBUTING.md) for other configuration options.
+- `coinpaprika-custom` is the name of our custom adapter.
+
+This will create a new repository `packages/sources/coinpaprika-custom/`. It has the [following files and folders](https://github.com/smartcontractkit/external-adapters-js/tree/develop/packages/examples/source):
+
+- `schemas` folder: contains `env.json` file. Parsed by the [README generator](https://github.com/smartcontractkit/external-adapters-js/tree/develop/packages/scripts#readme-generator) to automatically generate the README file of the source adapter.
+- `test` folder: contains all the tests.
+  - `e2e`folder: Tests that run the adapter and send end to end requests using live API endpoints.
+  - `integration` folder: Tests that run the adapter and send end to end requests using mocked API endpoints.
+  - `unit` folder: Tests that test particular endpoints or helpfer funtions from the adapter.
+- `src` folder: main source folder.
+  - `config` folder
+    - `includes.json`:
+    - `index.ts`:
+    - `limits.json`:
+    - `symbols.json`:
+  - `endpoint` folder:
+    - `example.ts`:
+    - `index.ts`:
+  - `adapter.ts`: contains the main functions needed to run the adapter. You don't need to modify this file.
+  - `index.ts`: entry point to the adapter when the server is started. You don't need to modify this file.
+  - `types.ts`
+
 
 ### Requesting Data
 
 When an external adapter receives a request from the Chainlink node, the JSON payload will include the following objects:
 
-- `data` (guaranteed to be present but may be empty)
-- `meta` (optional, depends on job type)
-- `responseURL` (optional, will be supplied if job supports asynchronous callbacks)
+- `data` (guaranteed to be present but may be empty. See [AdapterRequestData type](https://github.com/smartcontractkit/external-adapters-js/blob/develop/packages/core/types/@chainlink/index.d.ts) )
+- `meta` (optional. See [AdapterRequestMeta type](https://github.com/smartcontractkit/external-adapters-js/blob/develop/packages/core/types/@chainlink/index.d.ts))
+- `metricsMeta` (optional. See [AdapterMetricsMeta type](https://github.com/smartcontractkit/external-adapters-js/blob/develop/packages/core/types/@chainlink/index.d.ts))
+- `debug` (Optional. See [AdapterDebug type](https://github.com/smartcontractkit/external-adapters-js/blob/develop/packages/core/types/@chainlink/index.d.ts))
+- `rateLimitMaxAge` (Optional)
 - `id` (optional, can be nice to use for EA logging to help debug job runs)
 
 #### Examples
 
 ```json
-{"data":{}}
+{ "data": {} }
 ```
 
 ```json
-{"data":{}, "responseURL": "http://localhost:6688/v2/runs/278c97ffadb54a5bbb93cfec5f7b5503"}
-```
-
-```json
-{"data":{"foo": 42}, "meta":{"bar": "baz"}, "id": "2d38ecdb-975c-4f99-801c-b916a429947c"}
+{ "data": { "foo": 42 }, "meta": { "bar": "baz" }, "id": "2d38ecdb-975c-4f99-801c-b916a429947c" }
 ```
 
 Additional data may be specified in the spec to be utilized by the adapter. This can be useful for requesting data from a REST endpoint where the keys and values can be specified by the requester. For example, if the REST endpoint supports the following:
@@ -101,14 +138,13 @@ If the external adapter wants to use the response URL to send data later, it may
 
 ```json
 {
-    "pending": true
+  "pending": true
 }
 ```
 
 In this case, the job run on Chainlink side will be put into a `pending` state, awaiting data which can be delivered at a later date.
 
 When the external adapter is ready, it should callback to the node to resume the JobRun using an HTTP PATCH request to the `responseURL` field. This will resume the job on the Chainlink side.
-
 
 ```json
 {
@@ -139,35 +175,35 @@ Here is a complete example of a simple external adapter written as a serverless 
 let request = require('request');
 
 exports.myExternalAdapter = (req, res) => {
-  const url = "https://some-api.example.com/api";
-  const coin = req.body.data.coin || "";
-  const market = req.body.data.market || "";
+  const url = 'https://some-api.example.com/api';
+  const coin = req.body.data.coin || '';
+  const market = req.body.data.market || '';
   let requestObj = {
     coin: coin,
-    market: market
+    market: market,
   };
   let headerObj = {
-    "API_KEY": "abcd-efgh-ijkl-mnop-qrst-uvwy"
+    API_KEY: 'abcd-efgh-ijkl-mnop-qrst-uvwy',
   };
   let options = {
-      url: url,
-      headers: headerObj,
-      qs: requestObj,
-      json: true
+    url: url,
+    headers: headerObj,
+    qs: requestObj,
+    json: true,
   };
 
   request(options, (error, response, body) => {
     if (error || response.statusCode >= 400) {
-        let errorData = {
-            jobRunID: req.body.id,
-            status: "errored",
-            error: body
-        };
-        res.status(response.statusCode).send(errorData);
+      let errorData = {
+        jobRunID: req.body.id,
+        status: 'errored',
+        error: body,
+      };
+      res.status(response.statusCode).send(errorData);
     } else {
       let returnData = {
         jobRunID: req.body.id,
-        data: body
+        data: body,
       };
       res.status(response.statusCode).send(returnData);
     }
