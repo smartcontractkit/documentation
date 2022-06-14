@@ -6,7 +6,7 @@ title: "Enabling HTTPS Connections"
 permalink: "docs/enabling-https-connections/"
 whatsnext: {"Miscellaneous":"/docs/miscellaneous/"}
 ---
-This guide will walk you through how to generate your own self-signed certificates for use by the Chainlink node. You can also substitute self-signed certificates with certificates of your own, like those created by <a href="https://letsencrypt.org/" target="_blank" rel="noreferrer, noopener">Let's Encrypt</a>.
+This guide will walk you through how to generate your own self-signed certificates for use by the Chainlink node. You can also substitute self-signed certificates with certificates of your own, like those created by <a href="https://letsencrypt.org/" target="_blank">Let's Encrypt</a>.
 
 > 📘 Important
 >
