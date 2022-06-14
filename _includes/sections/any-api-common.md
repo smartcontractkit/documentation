@@ -15,4 +15,4 @@ The [`setChainlinkToken`](/docs/chainlink-framework/#setchainlinktoken) function
 
 Each job is unique and returns different types of data. For example, a job that returns a `bytes32` variable from an API would have a different `jobId` than a job that retrieved the same data, but in the form of a `uint256` variable.
 
-[market.link](https://market.link/) provides a searchable catalog of nodes and their subsequent return types.
+Check the [Find Existing Jobs page](/docs/listing-services/) to learn how to find a job suitable to your use case.
