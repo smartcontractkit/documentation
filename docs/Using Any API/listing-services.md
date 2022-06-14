@@ -19,9 +19,10 @@ This page explains how to find an existing Oracle Job to suit the needs of your 
 
 - [Introduction to Oracles](#introduction-to-oracles)
 - [Oracle Jobs and Types of Data Available](#oracle-jobs-and-types-of-data-available)
-- [Find a job](#find-a-job)
-  - [Community node operators](#community-node-operators)
-  - [Alternatives on testnets](#alternatives-on-testnets)
+  - [Data provider nodes](data-provider-nodes)
+  - [Find a job](#find-a-job)
+    - [Community node operators](#community-node-operators)
+    - [Alternatives on testnets](#alternatives-on-testnets)
 
 ## Introduction to Oracles
 
