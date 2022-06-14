@@ -19,7 +19,7 @@ This page explains how to find an existing Oracle Job to suit the needs of your 
 
 - [Introduction to Oracles](#introduction-to-oracles)
 - [Oracle Jobs and Types of Data Available](#oracle-jobs-and-types-of-data-available)
-  - [Data provider nodes](data-provider-nodes)
+  - [Data provider nodes](#data-provider-nodes)
   - [Find a job](#find-a-job)
     - [Community node operators](#community-node-operators)
     - [Alternatives on testnets](#alternatives-on-testnets)
@@ -36,7 +36,7 @@ Oracles [jobs](/docs/jobs/) can be specialized even further by implementing the 
 
 Chainlink has facilitated the launch of several oracle data services that allow dApps to access rich data from external data sources through provider-owned nodes. The full list of such provider nodes is available here:
 
-- [Data Provider Node List](../data-provider-nodes/#data-provider-nodes-list)
+- [Data Provider Node List](/docs/data-provider-nodes/#data-provider-nodes-list)
 
 ### Find a job
 
