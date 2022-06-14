@@ -28,7 +28,7 @@ This page explains how to find an existing Oracle Job to suit the needs of your 
 
 Oracles enable smart contracts to retrieve data from the outside world. Each oracle node can be configured to perform a wide range of tasks depending on the adapters it supports. For example, if your contract needs to make an HTTP GET request, it needs to use an oracle that supports the HTTP GET adapter.
 
-Oracles [jobs](/docs/jobs/) can be specialized even further by implementing the configuration using [External Adapters](/docs/external-adapters/). For example, an Oracle job could implement URL, parameters, and conversion to Solidity compatible data, to retrieve a very specific piece of data from a specific API endpoint. Consuming a job like this is demonstrated in [Make an Existing Job Request](/docs/existing-job-request/).
+Oracles [jobs](/docs/jobs/) can be specialized even further by implementing the configuration using [External Adapters](/docs/external-adapters/). For example, an Oracle job could implement URL, parameters, and conversion to Solidity compatible data, to retrieve a very specific piece of data from a specific API endpoint. This process is demonstrated in [Make an Existing Job Request](/docs/existing-job-request/).
 
 ## Oracle Jobs and Types of Data Available
 
@@ -49,5 +49,5 @@ To find an Oracle Job that is pre-configured for your use case and available on 
 On testnets, several alternatives are provided:
 
 - Chainlink Labs DevRel nodes are listed [here](/docs/decentralized-oracles-ethereum-mainnet/). If you don't find a job suitable to your need then join [Chainlink operator-requests discord channel](https://discord.com/invite/kEneq3Kg) or check the other alternatives below.
-- You can also deploy testnet nodes and external adapters with just a few cliks on [naas.link](https://naas.link/). You will have to write your own [jobs](/docs/jobs/): To help you get going, each [ANY API tutorial](/docs/make-a-http-get-request/) has a its corresponding job attached to it. **Note:** [naas.link](https://naas.link) is managed by [linkpool.io](https://linkpool.io/), head to the contact section at the bottom of the page if you need more help.
-- Run your own testnet nodes as explained [here](/docs/running-a-chainlink-node/). You will have to write your own [jobs](/docs/jobs/): To help you get going, each [ANY API tutorial](/docs/make-a-http-get-request/) has a its corresponding job attached to it.
+- You can also deploy testnet nodes and external adapters on [naas.link](https://naas.link/). You must write your own [jobs](/docs/jobs/): To help you get started, each [ANY API tutorial](/docs/make-a-http-get-request/) has a corresponding job attached to it. **Note:** [naas.link](https://naas.link) is managed by [linkpool.io](https://linkpool.io/). Refer to the contact section at the bottom of the page for more assistance.
+- Run your own testnet nodes as explained [here](/docs/running-a-chainlink-node/). You must write your own [jobs](/docs/jobs/): To help you get started, each [ANY API tutorial](/docs/make-a-http-get-request/) has a corresponding job attached to it.
