@@ -52,7 +52,6 @@ Your node applies configuration settings using following hierarchy:
   - [TELEMETRY_INGRESS_USE_BATCH_SEND](#telemetry_ingress_use_batch_send)
 - [Chains](#chains)
   - [SOLANA_ENABLED](#solana_enabled)
-  - [TERRA_ENABLED](#terra_enabled)
   - [EVM_ENABLED](#evm_enabled)
 - [Database Settings](#database-settings)
   - [MIGRATE_DATABASE](#migrate_database)
@@ -175,7 +174,6 @@ Your node applies configuration settings using following hierarchy:
     - [FM_SIMULATE_TRANSACTIONS](#fm_simulate_transactions)
     - [OCR_SIMULATE_TRANSACTIONS](#ocr_simulate_transactions)
 - [Job Pipeline and tasks](#job-pipeline-and-tasks)
-  - [DEFAULT_HTTP_ALLOW_UNRESTRICTED_NETWORK_ACCESS](#default_http_allow_unrestricted_network_access)
   - [DEFAULT_HTTP_LIMIT](#default_http_limit)
   - [DEFAULT_HTTP_TIMEOUT](#default_http_timeout)
   - [FEATURE_EXTERNAL_INITIATORS](#feature_external_initiators)
@@ -333,14 +331,6 @@ Toggles sending telemetry to the ingress server using the batch client.
 - Default: `"false"`
 
 Enables Solana support.
-
-### TERRA_ENABLED
-
-> 🚧 Not intended for use on the Terra mainnet.
-
-- Default: `"false"`
-
-Enables Terra support.
 
 ### EVM_ENABLED
 
@@ -1403,16 +1393,6 @@ NOTE: This overrides the setting for _all_ chains, it is not currently possible 
 `OCR_SIMULATE_TRANSACTIONS` allows to enable transaction simulation for OCR.
 
 ## Job Pipeline and tasks
-
-### DEFAULT_HTTP_ALLOW_UNRESTRICTED_NETWORK_ACCESS
-
-- Default: `"false"`
-
-By default, Chainlink nodes do not allow the `http` adapter to connect to local IP addresses for security reasons (because the URL can come from on-chain, which is an untrusted source). This can be overridden on a per-task basis by setting the `AllowUnrestrictedNetworkAccess` key, or globally by setting the environment variable `DEFAULT_HTTP_ALLOW_UNRESTRICTED_NETWORK_ACCESS=true`.
-
-It is recommended that this be left disabled.
-
-NOTE: In older versions of Chainlink, it was required to set this in order to allow connections to bridges/external adapters on the local network. This requirement has been lifted and this environment variable now applies ONLY to `http` tasks. `bridge` tasks are always allows to connect to the local network.
 
 ### DEFAULT_HTTP_LIMIT
 

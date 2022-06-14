@@ -4,9 +4,6 @@ section: ethereum
 ---
 
 {% case metadata.ecosystem %}
-  {% when "terra" %}
-     <p>To learn how to implement these feeds, see the <a href="/docs/terra/using-data-feeds-terra/">Terra Examples for Consuming Data Feeds</a>.</p>
-     <p>To obtain tokens on the Terra Bombay Testnet, see the <a href="https://faucet.terra.money/">Terra Testnet Faucet</a>. For these feeds, use the <strong>Bombay-12</strong> testnet.</p>
   {% when "solana" %}
      <p>To learn how to implement these feeds, see the <a href="/docs/solana/using-data-feeds-solana/">Solana Examples for Consuming Data Feeds</a>.</p>
      <p>To learn how to obtain SOL tokens on the Solana Devnet, see the <a href="https://docs.solana.com/cli/transfer-tokens#airdrop-some-tokens-to-get-started">Solana Documentation</a>.</p>
@@ -99,18 +96,17 @@ section: ethereum
      </rdme-callout>
 {% endcase %}
 
-{% if metadata.ecosystem != "terra" and metadata.ecosystem != "solana" %}
-  <div id="categories">
-      <p>Data feeds reside in the following categories:</p>
-      <ul>
-        <li>🟢 <a href="/docs/selecting-data-feeds/#🟢-verified-feeds"><strong>Verified Feeds</strong></a>: Feeds that follow a standardized data feeds workflow</li>
-        <li>🟡 <a href="/docs/selecting-data-feeds/#🟡-monitored-feeds"><strong>Monitored Feeds</strong></a>: Feeds under review by the Chainlink Labs team to support the stability of the broader ecosystem</li>
-        <li>🔵 <a href="/docs/selecting-data-feeds/#-custom-feeds"><strong>Custom Feeds</strong></a>: Feeds built to serve a specific use case and might not be suitable for general use</li>
-        <li>⚫ <a href="/docs/selecting-data-feeds/#-specialized-feeds"><strong>Specialized Feeds</strong></a>: Purpose-built feeds that might rely on contracts maintained by external entities and require in-depth understanding of composition methodology before use</li>
-      </ul>
-      <p>See the <a href="/docs/selecting-data-feeds/">Selecting Quality Data Feeds</a> page for complete details about each category.</p>
-  </div>
-{% endif %}
+
+<div id="categories">
+    <p>Data feeds reside in the following categories:</p>
+    <ul>
+      <li>🟢 <a href="/docs/selecting-data-feeds/#🟢-verified-feeds"><strong>Verified Feeds</strong></a>: Feeds that follow a standardized data feeds workflow</li>
+      <li>🟡 <a href="/docs/selecting-data-feeds/#🟡-monitored-feeds"><strong>Monitored Feeds</strong></a>: Feeds under review by the Chainlink Labs team to support the stability of the broader ecosystem</li>
+      <li>🔵 <a href="/docs/selecting-data-feeds/#-custom-feeds"><strong>Custom Feeds</strong></a>: Feeds built to serve a specific use case and might not be suitable for general use</li>
+      <li>⚫ <a href="/docs/selecting-data-feeds/#-specialized-feeds"><strong>Specialized Feeds</strong></a>: Purpose-built feeds that might rely on contracts maintained by external entities and require in-depth understanding of composition methodology before use</li>
+    </ul>
+    <p>See the <a href="/docs/selecting-data-feeds/">Selecting Quality Data Feeds</a> page for complete details about each category.</p>
+</div>
 
 <div id="feed-data">
     Loading feeds...
@@ -201,6 +197,8 @@ section: ethereum
     let path = 'https://cl-docs-addresses.web.app/addresses.json';
     if(window.location.host === 'localhost:4200') {
         path = '/addresses/addresses.json';
+    }else if(window.location.host.includes('chainlinklabs.vercel.app')){
+        path = 'https://raw.githubusercontent.com/smartcontractkit/documentation/addresses-preview/_src/addresses/addresses-preview.json';
     }
     fetch(path)
     .then(response => response.json())

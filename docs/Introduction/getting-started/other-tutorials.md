@@ -115,7 +115,6 @@ Looking for more ways to use Chainlink? Here are some resources that discuss Cha
 
 - [77 Use Cases by Chainlink](https://blog.chain.link/44-ways-to-enhance-your-smart-contract-with-chainlink/)
 - [Past Hackathon Winning Projects](/docs/example-projects)
-- [Chainlink Marketplace](https://market.link/)
 
 ## Outreach
 

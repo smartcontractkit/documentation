@@ -48,7 +48,6 @@ New? See the [Getting Started Guide](/docs/conceptual-overview/).
 ## Inspiration
 - [77 Use Cases by Chainlink](https://blog.chain.link/44-ways-to-enhance-your-smart-contract-with-chainlink/)
 - [Past winners & code](/docs/example-projects)
-- [Chainlink Marketplace](https://market.link/)
 - [Chainlink docs](/)
 
 ### The chainlink community is some of the most inviting groups of engineers always looking to help you grow to the next stage.

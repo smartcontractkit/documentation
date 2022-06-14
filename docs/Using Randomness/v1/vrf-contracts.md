@@ -6,8 +6,6 @@ title: "Chainlink VRF Contract Addresses [v1]"
 permalink: "docs/vrf-contracts/v1/"
 metadata:
   title: "Chainlink VRF Contract Addresses"
-  image:
-    0: "/files/OpenGraph_V3.png"
 ---
 
 > 🚧 VRF v2 replaces and enhances VRF v1.

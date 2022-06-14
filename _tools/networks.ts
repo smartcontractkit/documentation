@@ -170,22 +170,15 @@ export const NETWORKS = [
     feedType: "Account",
     networks: [
       {
+        name: "Solana Mainnet",
+        url: "https://solscan.io/account/%s",
+        source: "directory-solana-mainnet.json",
+        networkType: "mainnet",
+      },
+      {
         name: "Solana Devnet",
         url: "https://solscan.io/account/%s?cluster=devnet",
         source: "directory-solana-devnet.json",
-        networkType: "testnet",
-      },
-    ],
-  },
-  {
-    page: "data-feeds-terra",
-    title: "Terra Data Feeds",
-    feedType: "Proxy",
-    networks: [
-      {
-        name: "Terra Bombay Testnet",
-        url: "https://finder.terra.money/bombay-12/address/%s",
-        source: "directory-terra-testnet-bombay.json",
         networkType: "testnet",
       },
     ],
