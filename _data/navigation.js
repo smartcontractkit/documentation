@@ -107,6 +107,12 @@ module.exports = {
           {
             title: 'Feed Registry',
             url: '/docs/feed-registry/',
+            children: [
+              {
+                title: 'Feed Registry Functions',
+                url: '/docs/feed-registry-functions/'
+              }
+            ]
           },
           {
             title: 'API Reference',
