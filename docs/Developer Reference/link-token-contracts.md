@@ -262,7 +262,7 @@ ETH is used to pay for transactions on the Arbitrum mainnet. You can use the [Ar
 >
 > Testnet LINK is available from https://faucets.chain.link/arbitrum-rinkeby
 
-Testnet ETH is used to pay for transactions on the Arbitrum Rinkeby testnet. You can use the [Arbitrum Bridge](https://bridge.arbitrum.io/) to transfer testnet ETH and LINK from Ethereum Rinkeby to Arbitrum mainnet.
+Testnet ETH is used to pay for transactions on the Arbitrum Rinkeby testnet. You can use the [Arbitrum Bridge](https://bridge.arbitrum.io/) to transfer testnet ETH and LINK from Ethereum Rinkeby to Arbitrum Rinkeby.
 
 |Parameter|Value|
 |:---|:---|
