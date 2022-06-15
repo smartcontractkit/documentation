@@ -42,7 +42,7 @@ Chainlink has facilitated the launch of several oracle data services that allow 
 
 #### Community node operators
 
-To find an Oracle Job that is pre-configured for your use case and available on the right network, join the [Chainlink operator-requests discord channel](https://discord.com/invite/kEneq3Kg) to directly communicate with community node operators.
+To find an Oracle Job that is pre-configured for your use case and available on the right network, join the [Chainlink operator-requests discord channel](https://discord.gg/eGcxsdZzKR) to directly communicate with community node operators.
 
 #### Alternatives on testnets
 
