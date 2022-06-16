@@ -6,7 +6,7 @@ title: "Running a Chainlink Node"
 permalink: "docs/running-a-chainlink-node/"
 whatsnext: {
   "Fulfilling Requests":"/docs/fulfilling-requests/",
-  "Optimizing EVN Performance":"/docs/optimizing-evm-performance/",
+  "Optimizing EVN Performance":"/docs/evm-performance-configuration/",
   "Performing System Maintenance":"/docs/performing-system-maintenance/",
   "Miscellaneous":"/docs/miscellaneous/",
   "Security and Operation Best Practices":"/docs/best-security-practices/"

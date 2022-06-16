@@ -23,7 +23,7 @@ The most basic Chainlink node deployment uses the default configuration on only 
 
 - [Using multiple nodes](#using-multiple-nodes)
 - [Automatic load balancing and failover](#automatic-load-balancing-and-failover)
-- [Resolving websocket issues and HTTP URLs](#websocket-issues-and-http-urls)
+- [Configuring websocket and HTTP URLs](#configuring-websockets-and-http-urls)
 - [Increasing transaction throughput](#increasing-transaction-throughput)
   - [Increase ETH_MAX_QUEUED_TRANSACTIONS](#increase-eth_max_queued_transactions)
   - [Increase ETH_MAX_IN_FLIGHT_TRANSACTIONS](#increasing-transaction-throughput)
@@ -45,7 +45,7 @@ Transaction broadcasts are always sent to every single primary node and send-onl
 
 Here is an example for how to specifiy the [`EVM_NODES` environment variable](/docs/configuration-variables/#evm_nodes):
 
-```shell
+```text
 export EVM_NODES='
 [
   {
@@ -115,7 +115,7 @@ NODE_POLL_FAILURE_THRESHOLD="5"
 NODE_POLL_INTERVAL="10s"
 ```
 
-## Resolving websocket issues and HTTP URLs
+## Configuring websocket and HTTP URLs
 
 Ideally, every primary node specifies an HTTP URL in addition to the websocket URL. It is not recommended to configure primary nodes with *only* a websocket URL. Routing all traffic over only a websocket can cause problems. As a best practices, every primary node must have both websocket and HTTP URLs specified. This allows Chainlink to route almost all RPC calls over HTTP, which tends to be more robust and reliable. The websocket URL is used only for subscriptions. Both URLs must point to the same node because they are bundled together and have the same liveness state.
 
@@ -169,7 +169,7 @@ The default is set conservatively at `16` because this is a pessimistic minimum 
 
 You can also improve transaction throughput by optimizing RPC nodes. Configure your RPC node to **never** evict local transactions. For example, you can use the following example configurations:
 
-```shell Go-Ethereum
+```text Go-Ethereum
 [Eth.TxPool]
 Locals = ["0xYourNodeAddress1", "0xYourNodeAddress2"]  # Add your node addresses here
 NoLocals = false # Disabled by default but might as well make sure
@@ -182,7 +182,7 @@ AccountQueue = 64 # Increase this as necessary
 GlobalQueue = 1024 # Increase this as necessary
 Lifetime = 10800000000000 # Default 3h, this is probably ok, you might even consider reducing it
 ```
-```shell Parity and OpenEthereum
+```text Parity and OpenEthereum
 tx_queue_locals = ["0xYourNodeAddress1", "0xYourNodeAddress2"] # Add your node addresses here
 tx_queue_size = 8192 # Increase this as necessary
 tx_queue_per_sender = 16 # Highly recommended to increase this, must be greater than or equal to Chainlink's ETH_MAX_IN_FLIGHT_TRANSACTIONS setting
