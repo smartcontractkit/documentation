@@ -420,8 +420,8 @@ module.exports = {
             url: '/docs/performing-system-maintenance/',
           },
           {
-            url: '/docs/connecting-to-a-remote-database/',
             title: 'Connecting to a Remote Database',
+            url: '/docs/connecting-to-a-remote-database/',
           },
           {
             title: 'Configuring Nodes',
@@ -436,13 +436,13 @@ module.exports = {
             url: '/docs/best-security-practices/',
           },
           {
+            title: 'Optimizing EVM Performance',
+            url: '/docs/evm-performance-configuration/',
+          },
+          {
             title: 'Best Practices for Nodes on AWS',
             url: '/docs/best-practices-aws/',
           },
-	  {
-	    title: 'EVM Performance Configuration',
-	    url: '/docs/evm-performance-configuration/',
-	  },
           {
             title: 'Miscellaneous',
             url: '/docs/miscellaneous/',
