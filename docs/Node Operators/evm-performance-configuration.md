@@ -23,7 +23,7 @@ The most basic Chainlink node deployment uses the default configuration on only 
 
 - [Using multiple nodes](#using-multiple-nodes)
 - [Automatic load balancing and failover](#automatic-load-balancing-and-failover)
-- [Configuring websocket and HTTP URLs](#configuring-websockets-and-http-urls)
+- [Configuring websocket and HTTP URLs](#configuring-websocket-and-http-urls)
 - [Increasing transaction throughput](#increasing-transaction-throughput)
   - [Increase ETH_MAX_QUEUED_TRANSACTIONS](#increase-eth_max_queued_transactions)
   - [Increase ETH_MAX_IN_FLIGHT_TRANSACTIONS](#increasing-transaction-throughput)
