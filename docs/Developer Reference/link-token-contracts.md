@@ -44,7 +44,7 @@ The LINK token is an ERC677 token that inherits functionality from the ERC20 tok
 
 ## Kovan
 
-> 🚰Kovan Faucets
+> 🚰 Kovan Faucets
 >
 > Testnet LINK are available from https://faucets.chain.link/kovan
 > Testnet ETH are available from https://faucets.chain.link/kovan
@@ -59,7 +59,7 @@ The LINK token is an ERC677 token that inherits functionality from the ERC20 tok
 
 ## Rinkeby
 
-> 🚰Rinkeby Faucets
+> 🚰 Rinkeby Faucets
 >
 > Testnet LINK is available from https://faucets.chain.link/rinkeby
 > Testnet ETH is available from: https://faucets.chain.link/rinkeby
@@ -107,7 +107,7 @@ LINK is native to Ethereum, so to use LINK on other chains, it must be bridged. 
 
 ### Testnet
 
-> 🚰BNB Chain Faucet
+> 🚰 BNB Chain Faucet
 >
 > Testnet LINK is available from https://faucets.chain.link/chapel
 
@@ -121,13 +121,15 @@ LINK is native to Ethereum, so to use LINK on other chains, it must be bridged. 
 
 ## Polygon (Matic)
 
-> 📘 Important
->
-> The LINK provided by the [Polygon (Matic) Bridge](https://wallet.polygon.technology/bridge) is not ERC-677 compatible, so cannot be used with Chainlink oracles. However, it can be [**converted to the official LINK token on Polygon (Matic) using Chainlink's PegSwap service**](https://pegswap.chain.link/)
-
-You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blank"> watch this video </a>.
-
 ### Mainnet
+
+MATIC is used to pay for transactions on Polygon mainnet. You can use the [Polygon Bridge](https://wallet.polygon.technology/bridge) to transfer tokens to Polygon mainnet and then use [Polygon Gas Swap](https://wallet.polygon.technology/gas-swap/) to swap supported tokens to MATIC.
+
+> 🚧 ERC-677 LINK on Polygon
+>
+> The LINK provided by the [Polygon (Matic) Bridge](https://wallet.polygon.technology/bridge) is not ERC-677 compatible, you cannot use it with Chainlink services. However, you can convert LINK to the official ERC-677 compatible LINK token by using the [**Chainlink PegSwap service**](https://pegswap.chain.link/).
+>
+> Watch the [Moving Chainlink Cross-Chains](https://www.youtube.com/watch?v=WKvIGkBWRUA) video to learn more.
 
 |Parameter|Value|
 |:---|:---|
@@ -139,7 +141,7 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 
 ### Mumbai Testnet
 
-> 🚰Mumbai Faucet
+> 🚰 Mumbai Faucet
 >
 > Testnet LINK and MATIC are available from the [Polygon faucet](https://faucet.polygon.technology/) and https://faucets.chain.link/mumbai.
 
@@ -155,9 +157,7 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 
 ### Mainnet
 
-> 🌉Token Bridge
->
-> Supported token bridge at https://tokenbridge.rsk.co/
+RBTC is used to pay for transactions on RSK mainnet. Use [RSK’s built in PowPeg](https://developers.rsk.co/guides/get-crypto-on-rsk/powpeg-btc-rbtc/) to transfer BTC to RSK mainnet as RBTC. You can use the [RSK bridge](https://tokenbridge.rsk.co/) to send LINK from Ethereum mainnet to RSK mainnet.
 
 |Parameter|Value|
 |:---|:---|
@@ -171,13 +171,7 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 
 ### Mainnet
 
-> 🚰Gnosis Chain (xDai) Faucet
->
-> Free xDai for transactions: https://blockscout.com/poa/xdai/faucet
->
-> 🌉OmniBridge
->
-> Supported bridge: https://omni.xdaichain.com/
+xDAI is used to pay for transactions on Gnosis Chain mainnet. Use the [xDai Bridge](https://bridge.gnosischain.com/) to send DAI from Ethereum mainnet to Gnosis Chain mainnet and convert it to xDAI. Use [OmniBridge](https://omni.gnosischain.com/bridge) to send LINK from Ethereum Mainnet to Gnosis Chain mainnet.
 
 |Parameter|Value|
 |:---|:---|
@@ -191,6 +185,8 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 
 ### Mainnet
 
+AVAX is the token you use to pay for transactions on Avalanche mainnet. You can use the [Avalanche Bridge](https://bridge.avax.network/) to transfer LINK from Ethereum Mainnet to Avalanche mainnet.
+
 |Parameter|Value|
 |:---|:---|
 |`ETH_CHAIN_ID`|`43114`|
@@ -201,10 +197,9 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 
 ### Fuji Testnet
 
-> 🚰Avax Faucet
+> 🚰 Avax Faucet
 >
 > Testnet LINK is available from https://faucets.chain.link/fuji
->
 
 |Parameter|Value|
 |:---|:---|
@@ -218,10 +213,12 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 
 ### Fantom Mainnet
 
+FTM is used to pay for transactions on Fantom Mainnet. Use [bridge.multichain.org](https://bridge.multichain.org/#/router) to transfer FTM and LINK to Fantom mainnet.
+
 > 🚧 ERC-677 LINK on Fantom
 >
 > You must use ERC-677 LINK on Fantom. ERC-20 LINK will not work with Chainlink services.
-> Use [bridge.multichain.org](https://bridge.multichain.org/#/router) to send LINK to the Fantom network and be sure to select LINK-ERC677 as the token you will receive on the Fantom mainnet.
+> When you use [bridge.multichain.org](https://bridge.multichain.org/#/router) to send LINK to the Fantom network, be sure to select LINK-ERC677 as the token you will receive on Fantom mainnet.
 
 |Parameter|Value|
 |:---|:---|
@@ -233,7 +230,7 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 
 ### Fantom Testnet
 
-> 🚰Fantom Faucet
+> 🚰 Fantom Faucet
 >
 > Testnet LINK is available from https://faucets.chain.link/fantom-testnet  
 
@@ -249,26 +246,28 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 
 ### Arbitrum Mainnet
 
+ETH is used to pay for transactions on the Arbitrum mainnet. You can use the [Arbitrum Bridge](https://bridge.arbitrum.io/) to transfer ETH and LINK to from Ethereum mainnet to Arbitrum mainnet.
+
 |Parameter|Value|
 |:---|:---|
 |`ETH_CHAIN_ID`|`42161`|
-|Address|[`0xf97f4df75117a78c1A5a0DBb814Af92458539FB4`](https://explorer.arbitrum.io/address/0xf97f4df75117a78c1A5a0DBb814Af92458539FB4)|
+|Address|[`0xf97f4df75117a78c1A5a0DBb814Af92458539FB4`](https://arbiscan.io/address/0xf97f4df75117a78c1A5a0DBb814Af92458539FB4)|
 |Name|ChainLink Token on Arbitrum Mainnet|
 |Symbol|LINK|
 |Decimals|18|
 
 ### Rinkeby Testnet
 
-> 🚰Arbitrum Faucet on Rinkeby
+> 🚰 Arbitrum Faucet on Rinkeby
 >
 > Testnet LINK is available from https://faucets.chain.link/arbitrum-rinkeby
->
-> Supported bridge: https://bridge.arbitrum.io
+
+Testnet ETH is used to pay for transactions on the Arbitrum Rinkeby testnet. You can use the [Arbitrum Bridge](https://bridge.arbitrum.io/) to transfer testnet ETH and LINK from Ethereum Rinkeby to Arbitrum Rinkeby.
 
 |Parameter|Value|
 |:---|:---|
 |`ETH_CHAIN_ID`|`421611`|
-|Address|[`0x615fBe6372676474d9e6933d310469c9b68e9726`](https://rinkeby-explorer.arbitrum.io/address/0x615fBe6372676474d9e6933d310469c9b68e9726)|
+|Address|[`0x615fBe6372676474d9e6933d310469c9b68e9726`](https://testnet.arbiscan.io/address/0x615fBe6372676474d9e6933d310469c9b68e9726)|
 |Name|ChainLink Token on Arbitrum Rinkeby|
 |Symbol|LINK|
 |Decimals|18|
@@ -289,6 +288,8 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 
 ### Mainnet
 
+ETH is used to pay for transactions on Optimism. Use the [Optimism Bridge](https://app.optimism.io/bridge) to transfer ETH and LINK from Ethereum Mainnet to Optimism mainnet.
+
 |Parameter|Value|
 |:---|:---|
 |`ETH_CHAIN_ID`|`10`|
@@ -298,6 +299,8 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 |Decimals|18|
 
 ### Kovan Testnet
+
+Testnet ETH is used to pay for transactions on Optimism. Use the [Optimism Bridge](https://app.optimism.io/bridge) to transfer testnet ETH and LINK from Ethereum Kovan to Optimistic Kovan.
 
 |Parameter|Value|
 |:---|:---|
@@ -311,6 +314,8 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 
 ### Mainnet
 
+ONE is used to pay for transactions on Harmony mainnet. You can use the [Harmony Bridge](https://bridge.harmony.one/) to transfer ONE and LINK token from Ethereum Mainnet to Harmony mainnet.
+
 |Parameter|Value|
 |:---|:---|
 |`ETH_CHAIN_ID`|`1666600000`|
@@ -321,7 +326,7 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 
 ### Testnet
 
-> 🚰Harmony Testnet Faucet
+> 🚰 Harmony Testnet Faucet
 >
 > Testnet LINK is available from https://faucets.chain.link/harmony-testnet
 
@@ -337,6 +342,8 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 
 ### Mainnet
 
+MOVR is used to pay transaction fees on Moonriver mainnet. You can use [bridge.multichain.org](https://bridge.multichain.org/#/router) to transfer LINK to Moonriver mainnet.
+
 |Parameter|Value|
 |:---|:---|
 |`ETH_CHAIN_ID`|`1285`|
@@ -348,6 +355,8 @@ You can also <a href="https://www.youtube.com/watch?v=WKvIGkBWRUA" target="_blan
 ## Moonbeam
 
 ### Mainnet
+
+GLMR is used to pay transaction fees on Moonbeam mainnet.
 
 |Parameter|Value|
 |:---|:---|
