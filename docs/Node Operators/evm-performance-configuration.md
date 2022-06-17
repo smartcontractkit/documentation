@@ -29,6 +29,7 @@ The most basic Chainlink node deployment uses the default configuration on only 
   - [Increase ETH_MAX_IN_FLIGHT_TRANSACTIONS](#increasing-transaction-throughput)
 - [Optimizing RPC nodes](#optimizing-rpc-nodes)
 - [Remove rejections on expensive transactions](#remove-rejections-on-expensive-transactions)
+- [Adjusting minimum outgoing confirmations for high throughput jobs](#adjusting-minimum-outgoing-confirmations-for-high-throughput-jobs)
 - [Increase ORM_MAX_OPEN_CONNS and ORM_MAX_IDLE_CONNS](#increase-orm_max_open_conns-and-orm_max_idle_conns)
 
 ## Using multiple nodes
