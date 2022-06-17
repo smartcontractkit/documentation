@@ -33,15 +33,17 @@ The most basic Chainlink node deployment uses the default configuration on only 
 
 ## Using multiple nodes
 
-Providing multiple primary nodes can improve performance and reliability, and is supported in Chainlink node version 1.3.0 and later. Chainlink nodes support configurations with multiple primary nodes and send-only nodes with automatic liveness detection and failover. It is no longer necessary to run a load balancing failover RPC proxy between Chainlink and its EVM RPC nodes.
+> 📘 Providing multiple primary nodes can improve performance and reliability.
+
+Chainlink node version 1.3.0 and later support configurations with multiple primary nodes and send-only nodes with automatic liveness detection and failover. It is no longer necessary to run a load balancing failover RPC proxy between Chainlink and its EVM RPC nodes.
 
 If you are using a failover proxy transparently for commercial node provider services, it will continue to work properly as long as the RPC you are talking to acts just like a standard RPC node.
 
 You can have as many primary nodes as you want. Requests are evenly distributed across all nodes, so the performance increase will be linear as you add more nodes. If a node fails with no heads for several minutes or a failed liveness check, it is removed from the live pool and all requests are routed to one of the live nodes. If no live nodes are available, the system attempts to use nodes from the list of failed nodes at random.
 
-You can configure as many send-only nodes as you want. Send-only nodes only broadcast transactions and do not process regular RPC calls. Specifying additional send-only nodes uses a minimum number of RPC calls and can help to include transactions faster. Send-only nodes also act as backup if your primary node starts blackholing transactions.
+You can configure as many send-only nodes as you want. Send-only nodes only broadcast transactions and do not process regular RPC calls. Specifying additional send-only nodes uses a minimum number of RPC calls and can help to include transactions faster. Send-only nodes also act as backup if your primary node starts to blackhole transactions.
 
-Transaction broadcasts are always sent to every single primary node and send-only node. It is redundant to specify the same URL for a send-only node as an existing primary node, and it has no effect.
+> 📘 Transaction broadcasts are always sent to every primary node and send-only node. It is redundant to specify the same URL for a send-only node as an existing primary node, and it has no effect.
 
 Here is an example for how to specifiy the [`EVM_NODES` environment variable](/docs/configuration-variables/#evm_nodes):
 
@@ -117,7 +119,9 @@ NODE_POLL_INTERVAL="10s"
 
 ## Configuring websocket and HTTP URLs
 
-Ideally, every primary node specifies an HTTP URL in addition to the websocket URL. It is not recommended to configure primary nodes with *only* a websocket URL. Routing all traffic over only a websocket can cause problems. As a best practices, every primary node must have both websocket and HTTP URLs specified. This allows Chainlink to route almost all RPC calls over HTTP, which tends to be more robust and reliable. The websocket URL is used only for subscriptions. Both URLs must point to the same node because they are bundled together and have the same liveness state.
+> 📘 Ideally, every primary node specifies an HTTP URL in addition to the websocket URL.
+
+It is not recommended to configure primary nodes with *only* a websocket URL. Routing all traffic over only a websocket can cause problems. As a best practices, every primary node must have both websocket and HTTP URLs specified. This allows Chainlink to route almost all RPC calls over HTTP, which tends to be more robust and reliable. The websocket URL is used only for subscriptions. Both URLs must point to the same node because they are bundled together and have the same liveness state.
 
 If you enabled HTTP URLs on all your primary nodes, you can increase the values for the following environment variables:
 
@@ -135,7 +139,7 @@ ETH_LOG_BACKFILL_BATCH_SIZE=1000
 
 > 🚧 REMINDER:
 >
-> Do not modify these values unless *all* primary nodes are configured with HTTP urls!
+> Do not modify these values unless *all* primary nodes are configured with HTTP URLs.
 
 ## Increasing transaction throughput
 
@@ -143,7 +147,7 @@ By default, Chainlink has conservative limits because it must be compliant with 
 
 Before you make any changes to your Chainlink configuration, you must ensure that *all* of your primary and send-only nodes are configured to handle the increased throughput.
 
-The best way to improve transaction throughput is to keep the default configuration and use multiple keys to transmit. Chainlink supports an arbitrary number of keys for any given chain. By default, tasks will round-robin through keys, but you can assign them individually to keys as well. Assigning tasks to keys is the preferred way to improve throughput because increasing the max number of in-flight requests can have complicated effects based on the mempool conmfigurations of other RPC nodes. If you are unable to distribute transmission load across multiple keys, try the following options to increase throughput.
+> 📘 The best way to improve transaction throughput is to keep the default configuration and use multiple keys to transmit. Chainlink supports an arbitrary number of keys for any given chain. By default, tasks will round-robin through keys, but you can assign them individually to keys as well. Assigning tasks to keys is the preferred way to improve throughput because increasing the max number of in-flight requests can have complicated effects based on the mempool conmfigurations of other RPC nodes. If you are unable to distribute transmission load across multiple keys, try the following options to increase throughput.
 
 ### Increase `ETH_MAX_QUEUED_TRANSACTIONS`
 
