@@ -4,7 +4,10 @@ section: nodeOperator
 date: Last Modified
 title: "Run an Ethereum Client"
 permalink: "docs/run-an-ethereum-client/"
-whatsnext: {"Running a Chainlink Node":"/docs/running-a-chainlink-node/"}
+whatsnext: {
+  "Running a Chainlink Node":"/docs/running-a-chainlink-node/",
+  "Optimizing Performance":"/docs/evm-performance-configuration/",
+}
 ---
 In order to run a Chainlink node, it must be able to connect to an Ethereum client with an active websocket connection. This is accomplished by running either [Geth](https://geth.ethereum.org/), [Parity](https://www.parity.io/), [Nethermind](https://nethermind.io/), or using a 3rd party connection. The examples below show how to run Geth, Parity and Nethermind in their official Docker containers for each network that they support.
 
