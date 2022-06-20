@@ -12,7 +12,7 @@ whatsnext:
     'Large Responses': '/docs/large-responses/',
     'Make an Existing Job Request': '/docs/existing-job-request/',
     'API Reference': '/docs/chainlink-framework/',
-    'Contract Addresses': '/docs/decentralized-oracles-ethereum-mainnet/',
+    'Testnet Nodes and Jobs': '/docs/any-api-testnet-nodes/',
   }
 metadata:
   title: 'Make a GET Request'

@@ -26,15 +26,15 @@ contract FetchFromArray is ChainlinkClient, ConfirmedOwner {
     /**
      * @notice Initialize the link token and target oracle
      *
-     * Kovan Testnet details:
-     * Link Token: 0xa36085F69e2889c224210F603D836748e7dC0088
-     * Oracle: 0x74EcC8Bdeb76F2C6760eD2dc8A46ca5e581fA656 (Chainlink DevRel)
+     * Rinkeby Testnet details:
+     * Link Token: 0x01BE23585060835E02B77ef475b0Cc51aA1e0709
+     * Oracle: 0xf3FBB7f3391F62C8fe53f89B41dFC8159EE9653f (Chainlink DevRel)
      * jobId: 7d80a6386ef543a3abb52817f6707e3b
      *
      */
     constructor() ConfirmedOwner(msg.sender) {
-        setChainlinkToken(0xa36085F69e2889c224210F603D836748e7dC0088);
-        setChainlinkOracle(0x74EcC8Bdeb76F2C6760eD2dc8A46ca5e581fA656);
+        setChainlinkToken(0x01BE23585060835E02B77ef475b0Cc51aA1e0709);
+        setChainlinkOracle(0xf3FBB7f3391F62C8fe53f89B41dFC8159EE9653f);
         jobId = '7d80a6386ef543a3abb52817f6707e3b';
         fee = (1 * LINK_DIVISIBILITY) / 10; // 0,1 * 10**18 (Varies by network and job)
     }

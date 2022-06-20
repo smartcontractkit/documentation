@@ -11,7 +11,7 @@ whatsnext:
     'Large Responses': '/docs/large-responses/',
     'Make an Existing Job Request': '/docs/existing-job-request/',
     'API Reference': '/docs/chainlink-framework/',
-    'Contract Addresses': '/docs/decentralized-oracles-ethereum-mainnet/',
+    'Testnet Nodes and Jobs': '/docs/any-api-testnet-nodes/',
   }
 metadata:
   title: 'Single Word Response'
@@ -80,7 +80,7 @@ To consume an API with multiple responses, your contract must import [ChainlinkC
 
 Assume that a user wants to call the API above and retrieve only the 24h ETH trading volume from the response.
 
-```solidity Kovan
+```solidity Rinkeby
 {% include 'samples/APIRequests/APIConsumer.sol' %}
 ```
 
@@ -93,10 +93,10 @@ To use this contract:
 
 1. Open the [contract in Remix](https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/APIConsumer.sol).
 
-1. Compile and deploy the contract using the Injected Web3 environment. The contract includes all the configuration variables for the _Kovan_ testnet. Make sure your wallet is set to use _Kovan_. The _constructor_ sets the following parameters:
+1. Compile and deploy the contract using the Injected Web3 environment. The contract includes all the configuration variables for the _Rinkeby_ testnet. Make sure your wallet is set to use _Rinkeby_. The _constructor_ sets the following parameters:
 
-   - The Chainlink Token address for _Kovan_ by calling the [`setChainlinkToken`](/docs/chainlink-framework/#setchainlinktoken) function.
-   - The Oracle contract address for _Kovan_ by calling the [`setChainlinkOracle`](/docs/chainlink-framework/#setchainlinkoracle) function.
+   - The Chainlink Token address for _Rinkeby_ by calling the [`setChainlinkToken`](/docs/chainlink-framework/#setchainlinktoken) function.
+   - The Oracle contract address for _Rinkeby_ by calling the [`setChainlinkOracle`](/docs/chainlink-framework/#setchainlinkoracle) function.
    - The `jobId`: A specific job for the oracle node to run. In this case, you must call a job that is configured to call a public API, parse a number from the response and remove any decimals from it. You can find the job spec for the Chainlink node [here](/docs/direct-request-get-uint256/).
 
 1. Fund your contract with 0.1 LINK. To learn how to send LINK to contracts, read the [Fund Your Contracts](/docs/fund-your-contract/) page.
