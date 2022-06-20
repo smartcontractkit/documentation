@@ -2,45 +2,42 @@
 layout: nodes.liquid
 section: ethereum
 date: Last Modified
-title: 'Contract Addresses'
-permalink: 'docs/decentralized-oracles-ethereum-mainnet/'
+title: 'Testnet Nodes and Jobs'
+permalink: 'docs/any-api-testnet-nodes/'
 metadata:
-  title: 'Contract Addresses'
-  description: 'Addresses for ANY API devrel jobs'
-  linkToWallet: true
+  title: 'Testnet Nodes and Jobs'
+  description: 'Addresses for ANY API testnet nodes and jobs'
   image:
     0: '/files/72d4bd9-link.png'
 ---
 
-## Overview
+The Chainlink Development Relations team maintains several testnet nodes and jobs that you can use to test your implementation quickly.
 
-This page details example addresses and jobs that are supported by oracles on various networks, so you can test your implementation quickly and easily.
-
-![Chainlink Market Logo](/files/afe3efe-marketlink.jpg)
-
-## Mainnet
-
-> 🚧 Important
+> 🚰 Link token address and Faucet details
 >
-> We strongly recommend that you deploy to a [testnet](#testnets) first, then move to mainnet.
+> To retrieve the link token address or get faucet details for your testnet of choice, see the [LINK Token Contracts](/docs/link-token-contracts/) page.
 
-LINK address: <a class="erc-token-address" id="1_0x514910771af9ca656af840dff83e8264ecf986ca" href="https://etherscan.io/token/0x514910771af9ca656af840dff83e8264ecf986ca">`0x514910771af9ca656af840dff83e8264ecf986ca`</a>
+**Table of Contents**
 
-## Testnets
+- [Operator contracts](#operator-contracts)
+- [Jobs](#jobs)
 
-Each request on the test networks cost 0.1 LINK. Each oracle will wait for 1 confirmation before processing a request.
+## Operator Contracts
 
-These are examples which enable you to deploy and test quickly.
+Testnet [Operator contracts](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/Operator.sol) are deployed and maintained on the following networks:
 
-### Kovan
+| Testnet          | Oracle Address                                                                                                                  |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Ethereum Rinkeby | [`0xf3FBB7f3391F62C8fe53f89B41dFC8159EE9653f`](https://rinkeby.etherscan.io/address/0xf3FBB7f3391F62C8fe53f89B41dFC8159EE9653f) |
+| Ethereum Kovan   | [`0x74EcC8Bdeb76F2C6760eD2dc8A46ca5e581fA656`](https://kovan.etherscan.io/address/0x74EcC8Bdeb76F2C6760eD2dc8A46ca5e581fA656)   |
 
-Kovan LINK address: <a class="erc-token-address" id="42_0xa36085F69e2889c224210F603D836748e7dC0088" href="https://kovan.etherscan.io/token/0xa36085F69e2889c224210F603D836748e7dC0088">`0xa36085F69e2889c224210F603D836748e7dC0088`</a>
+## Jobs
 
-For Faucet details, please refer to [LINK Token Contracts](../link-token-contracts/).
+To make testing simple, jobs are configured with the following properties:
 
-| Chainlink Node Operator                | Oracle Address                                                                                                                |
-| -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| [Chainlink Devrel](https://chain.link) | [`0x74EcC8Bdeb76F2C6760eD2dc8A46ca5e581fA656`](https://kovan.etherscan.io/address/0x74EcC8Bdeb76F2C6760eD2dc8A46ca5e581fA656) |
+- Each request on testnets costs 0.1 LINK.
+- Each oracle will wait for 1 confirmation before processing a request.
+- Jobs have the same IDs accross testnets.
 
 <br>
 

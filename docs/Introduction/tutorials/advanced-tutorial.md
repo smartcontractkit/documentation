@@ -95,7 +95,7 @@ Let's walk through a real example, where you will retrieve 24 volumes of the [ET
 
 4. [ETH ABI Encode](/docs/jobs/task-types/eth-abi-encode/) formats the input into an integer and then converts it into Solidity's `uint256` format. Example: `0xc618a1e4`
 
-5. [ETH Tx](/docs/jobs/task-types/eth-tx/) takes the given input, places it into the data field of the transaction, signs a transaction, and broadcasts it to the network. Example: [transaction result](https://kovan.etherscan.io/tx/0xf36ec811db8bde1245b6aa16bc052d4fbab287b220cf194bb91ae452f1fad084)
+5. [ETH Tx](/docs/jobs/task-types/eth-tx/) takes the given input, places it into the data field of the transaction, signs a transaction, and broadcasts it to the network. Example: [transaction result](https://rinkeby.etherscan.io/tx/0xec0e33cce33f6dda6c7339703415ab563f7b0e08a11b65ea06473d3d01547f4f)
 
 **Note: Some tasks accept parameters to be passed to them to inform them how to run.** Example: [JSON Parse](/docs/jobs/task-types/jsonparse/) accepts a `path` parameter which informs the task where to find the data in the JSON object.
 
@@ -154,7 +154,7 @@ More on External Adapters can be found [here](/docs/external-adapters/).
 ## 4. How can I use an Oracle Data Service?
 
 Chainlink has facilitated the launch of several new oracle data services that allow dApps to access rich data from external data sources. For instance, you can create a smart contract that checks Google's DNS service to determine if a given domain is owned by a given blockchain address using oracle job without having to specify the URL inside the contract.
-Join the [operator-requests discord channel](https://discord.gg/eGcxsdZzKR) to directly communicate with community node operators. 
+Join the [operator-requests discord channel](https://discord.gg/eGcxsdZzKR) to directly communicate with community node operators.
 A full example on Kovan testnet can be found [here](/docs/dns-ownership-oracle/).
 
 ## 5. Further Reading

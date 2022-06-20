@@ -8,7 +8,7 @@ whatsnext:
   {
     'Make an Existing Job Request': '/docs/existing-job-request/',
     'API Reference': '/docs/chainlink-framework/',
-    'Contract Addresses': '/docs/decentralized-oracles-ethereum-mainnet/',
+    'Testnet Nodes and Jobs': '/docs/any-api-testnet-nodes/',
   }
 ---
 
@@ -53,7 +53,7 @@ Fetch the value of _image_. To consume an API, your contract must import [Chainl
 >
 > Making a GET request will fail unless your deployed contract has enough LINK to pay for it. **Learn how to [Acquire testnet LINK](../acquire-link/) and [Fund your contract](../fund-your-contract/)**.
 
-```solidity Kovan
+```solidity Rinkeby
 {% include 'samples/APIRequests/GenericBigWord.sol' %}
 ```
 
@@ -66,10 +66,10 @@ To use this contract:
 
 1. Open the [contract in Remix](https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/GenericBigWord.sol).
 
-1. Compile and deploy the contract using the Injected Web3 environment. The contract includes all the configuration variables for the _Kovan_ testnet. Make sure your wallet is set to use _Kovan_. The _constructor_ sets the following parameters:
+1. Compile and deploy the contract using the Injected Web3 environment. The contract includes all the configuration variables for the _Rinkeby_ testnet. Make sure your wallet is set to use _Rinkeby_. The _constructor_ sets the following parameters:
 
-   - The Chainlink Token address for _Kovan_ by calling the [`setChainlinkToken`](/docs/chainlink-framework/#setchainlinktoken) function.
-   - The Oracle contract address for _Kovan_ by calling the [`setChainlinkOracle`](/docs/chainlink-framework/#setchainlinkoracle) function.
+   - The Chainlink Token address for _Rinkeby_ by calling the [`setChainlinkToken`](/docs/chainlink-framework/#setchainlinktoken) function.
+   - The Oracle contract address for _Rinkeby_ by calling the [`setChainlinkOracle`](/docs/chainlink-framework/#setchainlinkoracle) function.
    - The `jobId`: A specific job for the oracle node to run. In this case, the _data_ is a _bytes_ data type, so you must call a job that calls an API and returns _bytes_. You can find the job spec for the Chainlink node in this example [here](/docs/direct-request-get-bytes/).
 
 1. Fund your contract with 0.1 LINK. To learn how to send LINK to contracts, read the [Fund Your Contracts](/docs/fund-your-contract/) page.

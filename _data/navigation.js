@@ -248,12 +248,12 @@ module.exports = {
             url: '/docs/listing-services/',
           },
           {
-            title: 'API Reference',
-            url: '/docs/chainlink-framework/',
+            title: 'Testnet Nodes and Jobs',
+            url: '/docs/any-api-testnet-nodes/',
           },
           {
-            title: 'Contract Addresses',
-            url: '/docs/decentralized-oracles-ethereum-mainnet/',
+            title: 'API Reference',
+            url: '/docs/chainlink-framework/',
           },
         ],
       },
