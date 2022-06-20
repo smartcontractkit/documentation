@@ -4,6 +4,12 @@ section: ethereum
 date: Last Modified
 title: 'Contract Addresses'
 permalink: 'docs/decentralized-oracles-ethereum-mainnet/'
+metadata:
+  title: 'Contract Addresses'
+  description: 'Addresses for ANY API devrel jobs'
+  linkToWallet: true
+  image:
+    0: '/files/72d4bd9-link.png'
 ---
 
 ## Overview
