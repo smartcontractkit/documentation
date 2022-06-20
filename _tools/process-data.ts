@@ -48,6 +48,13 @@ interface ResultProxy {
   feedType: string;
 }
 
+const categories = [
+  "verified",
+  "monitored",
+  "custom",
+  "specialized"
+];
+
 function load(filename: string): DataFile {
   const file = `data-source/${filename}`;
   const result = JSON.parse(fs.readFileSync(file, { encoding: 'utf8' }));
@@ -115,6 +122,10 @@ for (let page of targetData) {
           ))
         ) {
           threshold = threshold / 10000000;
+        }
+
+        if(contract.docs?.feedCategory && !categories.includes(contract.docs?.feedCategory)) {
+          contract.docs.feedCategory = '';
         }
 
         // Set the threshold to deviationThreshold if it's specified (deviationThreshold or

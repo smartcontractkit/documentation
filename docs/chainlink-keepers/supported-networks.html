@@ -5,6 +5,7 @@ date: Last Modified
 title: 'Supported Blockchain Networks'
 whatsnext:
   {
+    'Keepers Economics': '/docs/chainlink-keepers/keeper-economics/',
     'FAQs': '/docs/chainlink-keepers/faqs/',
   }
 networks:
@@ -16,7 +17,7 @@ networks:
 
 {% markdown %}
 
-# Keepers Supported Networks
+# Overview
 
 Chainlink Keepers are currently available on the following networks:
 
@@ -36,8 +37,21 @@ Chainlink Keepers are currently available on the following networks:
 
 If you are interested in using Keepers but need it on a different blockchain or network, [contact us](https://forms.gle/WadxnzzjHPtta5Zd9) and let us know.
 
+# Parameters
+
+- **Payment Premium** (`paymentPremiumPPB`): This premium is applied on top of the gas cost paid by the Keeper to perform your Upkeep
+- **Block Count Per Turn** (`blockCountPerTurn`): The number of blocks in each turn before the Upkeep is rotated to the next Keeper
+- **Check Gas Limit** (`checkGasLimit`): The maximum amount of gas that can be used by your checkUpkeep for off-chain computation.
+- **Call Gas Limit** (`callGasLimit`): The maximum amount of gas that can be used by the client contract’s performUpkeep for the on-chain transaction. You can set an upper limit on your Upkeep during registration, but this number must not exceed the call gas limit on the KeeperRegistry.
+- **Gas Ceiling Multiplier** (`gasCeilingMultiplier`): Establishes a ceiling for the maximum price based on the on-chain fast gas feed.
+
 # Configurations
 These configurations may change as we grow our users and the network as a whole.
+
+- [Ethereum Mainnet](#ethereum-mainnet)
+- [Polygon Mainnet](#polygon-mainnet)
+- [BNB Chain](#bnb-chain)
+- [Avalanche](#avalanche-mainnet)
 
 {% endmarkdown %}
 
@@ -46,17 +60,13 @@ These configurations may change as we grow our users and the network as a whole.
 {% markdown %}
 ### {{network[0]}}
 
-
-* **Payment Premium (paymentPremiumPPB):** <span id="show-{{network[1]}}-paymentPremiumPPB"></span>% gas premium
-    This premium is applied on top of the gas cost paid by the Keeper to perform your Upkeep
-* **Block Count Per Turn (blockCountPerTurn):** <span id="show-{{network[1]}}-blockCountPerTurn"></span>
-    The number of blocks in each turn before the Upkeep is rotated to the next Keeper
-* **Check Gas Limit (checkGasLimit):** <span id="show-{{network[1]}}-checkGasLimit"></span>
-    The maximum amount of gas that can be used by your checkUpkeep for off-chain computation.
-* **Call Gas Limit (callGasLimit):** <span>5,000,000</span> <!-- @TODO render this programatically. <span id="show-callGasLimit"></span> -->
-    The maximum amount of gas that can be used by the client contract’s performUpkeep for the on-chain transaction. You can set an upper limit on your Upkeep during registration, but this number must not exceed the call gas limit on the KeeperRegistry.
-* **Gas Ceiling Multiplier (gasCeilingMultiplier):** <span id="show-{{network[1]}}-gasCeilingMultiplier"></span>
-    Establishes a ceiling for the maximum price based on the on-chain fast gas feed.
+| Item                  | Value                                                                                                                   |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Payment Premium       | <span id="show-{{network[1]}}-paymentPremiumPPB"></span>                                                                |
+| Block Count Per Turn  | <span id="show-{{network[1]}}-blockCountPerTurn"></span>                                                                |
+| Check Gas Limit       | <span id="show-{{network[1]}}-checkGasLimit"></span>                                                                    |
+| Call Gas Limit        | <span>5,000,000</span>                                                                                                  |
+| Gas Ceiling Multiplier| <span id="show-{{network[1]}}-gasCeilingMultiplier"></span>                                                             |
 
 {% endmarkdown %}
 {% endfor %}
@@ -64,32 +74,26 @@ These configurations may change as we grow our users and the network as a whole.
 {% markdown %}
 ### BNB Chain
 
-* **Payment Premium (paymentPremiumPPB):** <span>30</span>% gas premium
-    This premium is applied on top of the gas cost paid by the Keeper to perform your Upkeep
-* **Block Count Per Turn (blockCountPerTurn):** <span>10</span>
-    The number of blocks in each turn before the Upkeep is rotated to the next Keeper
-* **Check Gas Limit (checkGasLimit):** <span>6,500,000</span>
-    The maximum amount of gas that can be used by your checkUpkeep for off-chain computation.
-* **Call Gas Limit (callGasLimit):** <span>5,000,000</span> <!-- @TODO render this programatically. <span id="show-callGasLimit"></span> -->
-    The maximum amount of gas that can be used by the client contract’s performUpkeep for the on-chain transaction. You can set an upper limit on your Upkeep during registration, but this number must not exceed the call gas limit on the KeeperRegistry.
-* **Gas Ceiling Multiplier (gasCeilingMultiplier):** <span>3</span>
-    Establishes a ceiling for the maximum price based on the on-chain fast gas feed.
+| Item                  | Value                                                                                                                   |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Payment Premium       | 30                                                              |
+| Block Count Per Turn  | 10                                                                |
+| Check Gas Limit       | 6,500,000                                                                    |
+| Call Gas Limit        | 5,000,000                                                                                                 |
+| Gas Ceiling Multiplier| 3                                                            |
 
 {% endmarkdown %}
 
 {% markdown %}
-### Avalanche
+### Avalanche Mainnet
 
-* **Payment Premium (paymentPremiumPPB):** <span>40</span>% gas premium
-    This premium is applied on top of the gas cost paid by the Keeper to perform your Upkeep
-* **Block Count Per Turn (blockCountPerTurn):** <span>200</span>
-    The number of blocks in each turn before the Upkeep is rotated to the next Keeper
-* **Check Gas Limit (checkGasLimit):** <span>6,500,000</span>
-    The maximum amount of gas that can be used by your checkUpkeep for off-chain computation.
-* **Call Gas Limit (callGasLimit):** <span>5,000,000</span> <!-- @TODO render this programatically. <span id="show-callGasLimit"></span> -->
-    The maximum amount of gas that can be used by the client contract’s performUpkeep for the on-chain transaction. You can set an upper limit on your Upkeep during registration, but this number must not exceed the call gas limit on the KeeperRegistry.
-* **Gas Ceiling Multiplier (gasCeilingMultiplier):** <span>2</span>
-    Establishes a ceiling for the maximum price based on the on-chain fast gas feed.
+| Item                  | Value                                                                                                                   |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Payment Premium       | 40                                                                |
+| Block Count Per Turn  | 10                                                               |
+| Check Gas Limit       | 6,500,000                                                                 |
+| Call Gas Limit        | 5,000,000                                                                                                 |
+| Gas Ceiling Multiplier| 2                                                             |
 
 {% endmarkdown %}
 
