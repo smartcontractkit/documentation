@@ -1,46 +1,65 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
-import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
-import "@chainlink/contracts/src/v0.8/interfaces/FlagsInterface.sol";
+import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV2V3Interface.sol";
 
 /**
  * Find information on LINK Token Contracts here: https://docs.chain.link/docs/link-token-contracts/
  */
 
 contract ArbitrumPriceConsumer {
-	// Identifier of the Sequencer offline flag on the Flags contract 
-    address constant private FLAG_ARBITRUM_SEQ_OFFLINE = address(bytes20(bytes32(uint256(keccak256("chainlink.flags.arbitrum-seq-offline")) - 1)));
-    AggregatorV3Interface internal priceFeed;
-    FlagsInterface internal chainlinkFlags;
-    
+	// Identifier of the Sequencer offline flag on the Flags contract
+    AggregatorV2V3Interface internal priceFeed;
+    AggregatorV2V3Interface internal sequencerUptimeFeed;
+
     /**
-     * Network: Arbitrum Rinkeby
-     * Aggregator: ETH/USD
-     * Agg Address: 0x5f0423B1a6935dc5596e7A24d98532b67A0AeFd8
-     * Flags Address: 0x491B1dDA0A8fa069bbC1125133A975BF4e85a91b
+     * Network: Rinkeby
+     * Data Feed: BTC/USD
+     * Data Feed Proxy Address: 0x2431452A0010a43878bF198e170F6319Af6d27F4
+     * Sequencer Uptime Proxy Address: 0x13E99C19833F557672B67C70508061A2E1e54162
+		 * For a list of available sequencer proxy addresses, see:
+		 * https://docs.chain.link/docs/l2-sequencer-flag/
      */
     constructor() {
-        priceFeed = AggregatorV3Interface(0x5f0423B1a6935dc5596e7A24d98532b67A0AeFd8);
-        chainlinkFlags = FlagsInterface(0x491B1dDA0A8fa069bbC1125133A975BF4e85a91b);
+        priceFeed = AggregatorV2V3Interface(0x2431452A0010a43878bF198e170F6319Af6d27F4);
+        sequencerUptimeFeed = AggregatorV2V3Interface(0x13E99C19833F557672B67C70508061A2E1e54162);
     }
-    
+
     /**
      * Returns the latest price
      */
-    function getThePrice() public view returns (int) {
-        bool isRaised = chainlinkFlags.getFlag(FLAG_ARBITRUM_SEQ_OFFLINE);
-        if (isRaised) {
-		        // If flag is raised we shouldn't perform any critical operations
-            revert("Chainlink feeds are not being updated");
+    function getLatestPrice() public view returns (int) {
+        if (checkSequencerState()) {
+		        // If the sequencer is down, do not perform any critical operations
+            revert("L2 sequencer down: Chainlink feeds are not being updated");
         }
         (
-            uint80 roundID, 
+            uint80 roundID,
             int price,
             uint startedAt,
             uint timeStamp,
             uint80 answeredInRound
         ) = priceFeed.latestRoundData();
         return price;
+    }
+
+		/**
+     * Check if the L2 sequencer is running
+     */
+    function checkSequencerState() public view returns (bool sequencerIsUp) {
+        (
+        uint80 roundId,
+        int256 answer,
+        uint256 startedAt,
+        uint256 updatedAt,
+        uint80 answeredInRound
+    ) = sequencerUptimeFeed.latestRoundData();
+
+        // Answer == 0: Sequencer is up
+        // Snswer == 1: Sequencer is down
+        if (answer == 0 && (block.timestamp - updatedAt) < 3600) {
+            return true;
+        }
+        return false;
     }
 }

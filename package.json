@@ -5,8 +5,8 @@
   "private": true,
   "scripts": {
     "test": "npx hardhat compile",
-    "serve": "NODE_ENV=development concurrently \"watchify _src/index.ts -p [ tsify ] -o _src/index.js\" \"watchify _src/keepers-configuration.ts -p [ tsify ] -o _src/keepers-configuration.js\" \"watchify _src/animate-chain-transitions.ts -p [ tsify ] -o _src/animate-chain-transitions.js\" \"npx @11ty/eleventy --serve --port=4200\"",
-    "build": "browserify _src/index.ts -t [ uglifyify ] -p [ tsify ] -o _src/index.js && browserify _src/keepers-configuration.ts -t [ uglifyify ] -p [ tsify ] -o _src/keepers-configuration.js && browserify _src/animate-chain-transitions.ts -t [ uglifyify ] -p [ tsify ] -o _src/animate-chain-transitions.js && rm -rf _site && npx @11ty/eleventy",
+    "serve": "NODE_ENV=development concurrently \"watchify _src/index.ts -p [ tsify ] -o _src/index.js\" \"watchify _src/keepers-configuration.ts -p [ tsify ] -o _src/keepers-configuration.js\" \"watchify _src/animate-chain-transitions.ts -p [ tsify ] -o _src/animate-chain-transitions.js\" \"watchify _src/link-to-wallet.ts -p [ tinyify --no-flat ] -p [ tsify ] -o _src/link-to-wallet.js\" \"npx @11ty/eleventy --serve --port=4200\"",
+    "build": "browserify _src/index.ts -t [ uglifyify ] -p [ tsify ] -o _src/index.js && browserify _src/keepers-configuration.ts -t [ uglifyify ] -p [ tsify ] -o _src/keepers-configuration.js && browserify _src/animate-chain-transitions.ts -t [ uglifyify ] -p [ tsify ] -o _src/animate-chain-transitions.js && browserify _src/link-to-wallet.ts  -p [ tinyify --no-flat ] -p [ tsify ] -o _src/link-to-wallet.js && rm -rf _site && npx @11ty/eleventy",
     "deploy": "yarn build && firebase deploy",
     "process": "yarn ts-node _tools/process-data.ts",
     "linkcheck": "yarn ts-node _tools/linkcheck.ts"
@@ -20,6 +20,8 @@
   "dependencies": {
     "@11ty/eleventy": "^1.0.1",
     "@chainlink/contracts": "^0.4.1",
+    "@metamask/detect-provider": "^1.2.0",
+    "@metamask/providers": "^8.1.1",
     "@nomiclabs/hardhat-ethers": "^2.0.6",
     "@nomiclabs/hardhat-waffle": "^2.0.3",
     "@openzeppelin/contracts": "^4.6.0",
@@ -39,6 +41,7 @@
     "html-minifier": "^4.0.0",
     "react": "^18.1.0",
     "react-dom": "^18.1.0",
+    "tinyify": "^3.0.0",
     "ts-node": "^10.7.0",
     "tsify": "^5.0.4",
     "typescript": "^4.6.4",

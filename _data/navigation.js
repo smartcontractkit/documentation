@@ -170,6 +170,10 @@ module.exports = {
               },
             ],
           },
+          {
+            title: 'L2 Sequencer Uptime Feeds',
+            url: '/docs/l2-sequencer-flag/',
+          },
         ],
       },
       {
@@ -420,8 +424,8 @@ module.exports = {
             url: '/docs/performing-system-maintenance/',
           },
           {
-            url: '/docs/connecting-to-a-remote-database/',
             title: 'Connecting to a Remote Database',
+            url: '/docs/connecting-to-a-remote-database/',
           },
           {
             title: 'Configuring Nodes',
@@ -434,6 +438,10 @@ module.exports = {
           {
             title: 'Security and Operation Best Practices',
             url: '/docs/best-security-practices/',
+          },
+          {
+            title: 'Optimizing EVM Performance',
+            url: '/docs/evm-performance-configuration/',
           },
           {
             title: 'Best Practices for Nodes on AWS',

@@ -1,4 +1,3 @@
-
 // Bundle all of the scripts we need to load at startup
 import './prism.js';
 import './prism-jpv2.js';

@@ -2,9 +2,13 @@
 layout: nodes.liquid
 section: ethereum
 date: Last Modified
-title: "Find Existing Jobs"
-permalink: "docs/listing-services/"
-whatsnext: {"API Reference":"/docs/chainlink-framework/", "Contract Addresses":"/docs/decentralized-oracles-ethereum-mainnet/"}
+title: 'Find Existing Jobs'
+permalink: 'docs/listing-services/'
+whatsnext:
+  {
+    'API Reference': '/docs/chainlink-framework/',
+    'Contract Addresses': '/docs/decentralized-oracles-ethereum-mainnet/',
+  }
 ---
 
 ## Overview
@@ -12,28 +16,38 @@ whatsnext: {"API Reference":"/docs/chainlink-framework/", "Contract Addresses":"
 This page explains how to find an existing Oracle Job to suit the needs of your API call.
 
 **Table of Contents**
-+ [Introduction to Oracles](#introduction-to-oracles)
-+ [Oracle Jobs and Types of Data Available](#oracle-jobs-and-types-of-data-available)
+
+- [Introduction to Oracles](#introduction-to-oracles)
+- [Oracle Jobs and Types of Data Available](#oracle-jobs-and-types-of-data-available)
+  - [Data provider nodes](#data-provider-nodes)
+  - [Find a job](#find-a-job)
+    - [Community node operators](#community-node-operators)
+    - [Alternatives on testnets](#alternatives-on-testnets)
 
 ## Introduction to Oracles
 
 Oracles enable smart contracts to retrieve data from the outside world. Each oracle node can be configured to perform a wide range of tasks depending on the adapters it supports. For example, if your contract needs to make an HTTP GET request, it needs to use an oracle that supports the HTTP GET adapter.
 
-Oracles jobs can be specialized even further by implementing the configuration using [External Adapters](../developers/). For example, an Oracle job could implement URL, parameters, and conversion to Solidity compatible data, to retrieve a very specific piece of data from a specific API endpoint. Consuming a job like this is demonstrated in [Make an Existing Job Request](../existing-job-request/).
+Oracles [jobs](/docs/jobs/) can be specialized even further by implementing the configuration using [External Adapters](/docs/external-adapters/). For example, an Oracle job could implement URL, parameters, and conversion to Solidity compatible data, to retrieve a very specific piece of data from a specific API endpoint. This process is demonstrated in [Make an Existing Job Request](/docs/existing-job-request/).
 
 ## Oracle Jobs and Types of Data Available
 
+### Data provider nodes
+
 Chainlink has facilitated the launch of several oracle data services that allow dApps to access rich data from external data sources through provider-owned nodes. The full list of such provider nodes is available here:
 
-* [Data Provider Node List](../data-provider-nodes/#data-provider-nodes-list)
+- [Data Provider Node List](/docs/data-provider-nodes/#data-provider-nodes-list)
 
-To find an Oracle Job that is pre-configured for your use case and available on the right network, join the [Chainlink operator-requests discord channel](https://discord.com/invite/kEneq3Kg) to directly communicate with community node operators. 
+### Find a job
 
-Additionally, here are some independent listing services to help find Oracle Jobs that are pre-configured to call the APIs and endpoints you wish to access in your smart contracts:
+#### Community node operators
 
-* [Chainlink Oracle Reputation](https://reputation.link/)
-* [CL Adapters](https://chainlinkadapters.com/)
+To find an Oracle Job that is pre-configured for your use case and available on the right network, join the [Chainlink operator-requests discord channel](https://discord.gg/eGcxsdZzKR) to directly communicate with community node operators.
 
-Your smart contracts can obtain a wide range of data from a vast number of data providers. Here are some examples of data widely consumed through Chainlink oracles today.
+#### Alternatives on testnets
 
-Implementation information for these can be found in the listing services above.
+On testnets, several alternatives are provided:
+
+- Chainlink Labs DevRel nodes are listed [here](/docs/decentralized-oracles-ethereum-mainnet/). If you don't find a job suitable to your need then join [Chainlink operator-requests discord channel](https://discord.gg/eGcxsdZzKR) or check the other alternatives below.
+- You can also deploy testnet nodes and external adapters on [naas.link](https://naas.link/). You must write your own [jobs](/docs/jobs/): To help you get started, each [ANY API tutorial](/docs/make-a-http-get-request/) has a corresponding job attached to it. **Note:** [naas.link](https://naas.link) is managed by [linkpool.io](https://linkpool.io/). Refer to the contact section at the bottom of the page for more assistance.
+- Run your own testnet nodes as explained [here](/docs/running-a-chainlink-node/). You must write your own [jobs](/docs/jobs/): To help you get started, each [ANY API tutorial](/docs/make-a-http-get-request/) has a corresponding job attached to it.

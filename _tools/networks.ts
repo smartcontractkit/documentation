@@ -139,7 +139,7 @@ export const NETWORKS = [
       },
       {
         name: "Arbitrum Rinkeby",
-        url: "https://rinkeby-explorer.arbitrum.io/address/%s",
+        url: "http://testnet.arbiscan.io/address/%s",
         source: "directory-ethereum-testnet-rinkeby-arbitrum-1.json",
         networkType: "testnet",
       },
