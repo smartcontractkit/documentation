@@ -4,6 +4,12 @@ section: ethereum
 date: Last Modified
 title: 'Contract Addresses'
 permalink: 'docs/decentralized-oracles-ethereum-mainnet/'
+metadata:
+  title: 'Contract Addresses'
+  description: 'Addresses for ANY API devrel jobs'
+  linkToWallet: true
+  image:
+    0: '/files/72d4bd9-link.png'
 ---
 
 ## Overview
@@ -18,7 +24,7 @@ This page details example addresses and jobs that are supported by oracles on va
 >
 > We strongly recommend that you deploy to a [testnet](#testnets) first, then move to mainnet.
 
-LINK address:  [`0x514910771af9ca656af840dff83e8264ecf986ca`](https://etherscan.io/token/0x514910771af9ca656af840dff83e8264ecf986ca)
+LINK address: <a class="erc-token-address" id="1_0x514910771af9ca656af840dff83e8264ecf986ca" href="https://etherscan.io/token/0x514910771af9ca656af840dff83e8264ecf986ca">`0x514910771af9ca656af840dff83e8264ecf986ca`</a>
 
 ## Testnets
 
@@ -28,7 +34,7 @@ These are examples which enable you to deploy and test quickly.
 
 ### Kovan
 
-Kovan LINK address: [`0xa36085F69e2889c224210F603D836748e7dC0088`](https://kovan.etherscan.io/address/0xa36085F69e2889c224210F603D836748e7dC0088)
+Kovan LINK address: <a class="erc-token-address" id="42_0xa36085F69e2889c224210F603D836748e7dC0088" href="https://kovan.etherscan.io/token/0xa36085F69e2889c224210F603D836748e7dC0088">`0xa36085F69e2889c224210F603D836748e7dC0088`</a>
 
 For Faucet details, please refer to [LINK Token Contracts](../link-token-contracts/).
 
