@@ -19,12 +19,12 @@ contract ATestnetConsumer is ChainlinkClient, ConfirmedOwner {
     event RequestEthereumLastMarket(bytes32 indexed requestId, bytes32 indexed market);
 
     /**
-     *  KOVAN
-     *@dev LINK address in Kovan network: 0xa36085F69e2889c224210F603D836748e7dC0088
+     *  Rinkeby
+     *@dev LINK address in Rinkeby network: 0x01BE23585060835E02B77ef475b0Cc51aA1e0709
      * @dev Check https://docs.chain.link/docs/link-token-contracts/ for LINK address for the right network
      */
     constructor() ConfirmedOwner(msg.sender) {
-        setChainlinkToken(0xa36085F69e2889c224210F603D836748e7dC0088);
+        setChainlinkToken(0x01BE23585060835E02B77ef475b0Cc51aA1e0709);
     }
 
     function requestEthereumPrice(address _oracle, string memory _jobId) public onlyOwner {

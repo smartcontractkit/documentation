@@ -56,7 +56,8 @@ contract KrakenChainlink is ChainlinkClient {
   uint256 oraclePayment;
 
   constructor(uint256 _oraclePayment) public {
-    setChainlinkToken(0xa36085F69e2889c224210F603D836748e7dC0088);
+    // Rinkeby LINK Token Contract
+    setChainlinkToken(0x01BE23585060835E02B77ef475b0Cc51aA1e0709);
     oraclePayment = _oraclePayment;
   }
   // Additional functions here:
@@ -74,7 +75,8 @@ contract KrakenChainlink is ChainlinkClient {
   uint256 oraclePayment;
 
   constructor(uint256 _oraclePayment) public {
-    setChainlinkToken(0xa36085F69e2889c224210F603D836748e7dC0088);
+    // Rinkeby LINK Token Contract
+    setChainlinkToken(0x01BE23585060835E02B77ef475b0Cc51aA1e0709);
     oraclePayment = _oraclePayment;
   }
   // Additional functions here:
@@ -92,7 +94,8 @@ contract KrakenChainlink is ChainlinkClient {
   uint256 oraclePayment;
 
   constructor(uint256 _oraclePayment) public {
-    setChainlinkToken(0xa36085F69e2889c224210F603D836748e7dC0088);
+    // Rinkeby LINK Token Contract
+    setChainlinkToken(0x01BE23585060835E02B77ef475b0Cc51aA1e0709);
     oraclePayment = _oraclePayment;
   }
   // Additional functions here:

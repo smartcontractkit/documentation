@@ -9,9 +9,9 @@ whatsnext: {
   "Optimizing Performance":"/docs/evm-performance-configuration/",
 }
 ---
-In order to run a Chainlink node, it must be able to connect to an Ethereum client with an active websocket connection. This is accomplished by running either [Geth](https://geth.ethereum.org/), [Parity](https://www.parity.io/), [Nethermind](https://nethermind.io/), or using a 3rd party connection. The examples below show how to run Geth, Parity and Nethermind in their official Docker containers for each network that they support.
+In order to run a Chainlink node, it must be able to connect to an Ethereum client with an active websocket connection. This is accomplished by running either [Geth](https://geth.ethereum.org/), [Nethermind](https://nethermind.io/), or using a 3rd party connection. The examples below show how to run Geth and Nethermind in their official Docker containers for each network that they support.
 
-We would recommend to use one of the external services for your Ethereum client, since running one on your own managed machine will consume a lot of resources. If you do choose to run either Geth, Parity or Nethermind with their native clients, please be sure to enable the websockets API, since it is required for the Chainlink node to communicate with the Ethereum blockchain.
+We would recommend to use one of the external services for your Ethereum client, since running one on your own managed machine will consume a lot of resources. If you do choose to run either Geth, or Nethermind with their native clients, please be sure to enable the websockets API, since it is required for the Chainlink node to communicate with the Ethereum blockchain.
 
 ## Geth
 
@@ -45,53 +45,6 @@ docker run --name eth -p 8546:8546 -v ~/.geth-rinkeby:/geth -it \
 docker run --name eth -p 8546:8546 -v ~/.geth:/geth -it \
            ethereum/client-go --syncmode fast --ws --ipcdisable \
            --ws.addr 0.0.0.0 --ws.origins="*" --datadir /geth
-```
-
-Once the Ethereum client is running, you can use `Ctrl + P, Ctrl + Q` to detach from the container without stopping it. You will need to leave the container running for the Chainlink node to connect to it.
-
-If the container was stopped and you need to run it again, you can simply use the following command:
-
-```bash
-docker start -i eth
-```
-
-Return to [Running a Chainlink Node](../running-a-chainlink-node/).
-
-## Parity
-
-[OpenEthereum's Documentation](https://openethereum.github.io/index)
-
-*The OpenEthereum client can be used for the Kovan test network, as well as the Ethereum main network.*
-
-Download the latest version:
-
-```
-docker pull openethereum/openethereum:stable
-```
-
-Create a local directory to persist the data:
-
-```text Kovan
-mkdir ~/.openethereum-kovan
-```
-```text Mainnet
-mkdir ~/.parity
-```
-
-Run the container:
-
-```shell Kovan
-docker run --name eth -p 8546:8546 \
-           -v ~/.openethereum-kovan/:/home/openethereum/.local/share/io.parity.ethereum/ \
-           -it openethereum/openethereum:latest --chain=kovan \
-           --ws-interface=all --ws-origins="all" \
-           --base-path /home/openethereum/.local/share/io.parity.ethereum/
-```
-```shell Mainnet
-docker run --name eth -p 8546:8546 \
-           -v ~/.parity:/home/parity/.local/share/io.parity.ethereum/ \
-           -it parity/parity:stable --ws-interface=all --ws-origins="all" \
-           --base-path /home/parity/.local/share/io.parity.ethereum/
 ```
 
 Once the Ethereum client is running, you can use `Ctrl + P, Ctrl + Q` to detach from the container without stopping it. You will need to leave the container running for the Chainlink node to connect to it.

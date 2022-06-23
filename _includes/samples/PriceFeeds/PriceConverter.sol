@@ -4,11 +4,11 @@ pragma solidity ^0.8.7;
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 /**
  * THIS EXAMPLE USES UN-AUDITED CODE.
- * Network: Kovan
+ * Network: Rinkeby
  * Base: BTC/USD
- * Base Address: 0x6135b13325bfC4B00278B4abC5e20bbce2D6580e
+ * Base Address: 0xECe365B379E1dD183B20fc5f022230C044d51404
  * Quote: EUR/USD
- * Quote Address: 0x0c15Ab9A0DB086e062194c273CC79f41597Bbf13
+ * Quote Address: 0x78F9e60608bF48a1155b4B2A5e31F32318a1d85F
  * Decimals: 8
  */
 

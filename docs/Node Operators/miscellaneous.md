@@ -202,5 +202,5 @@ If there is already a key in your database and you want to import another key, y
 ## Full example in detached mode
 
 ```shell
-cd ~/.chainlink-kovan && docker run --restart=always  -p 6688:6688 -d --name kovan-primary -v ~/.chainlink-kovan:/chainlink -it --env-file=.env smartcontract/chainlink:1.0.0 local n -p /chainlink/.password
+cd ~/.chainlink-rinkeby && docker run --restart=always  -p 6688:6688 -d --name rinkeby-primary -v ~/.chainlink-rinkeby:/chainlink -it --env-file=.env smartcontract/chainlink:1.0.0 local n -p /chainlink/.password
 ```

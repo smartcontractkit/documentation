@@ -143,7 +143,6 @@ Your node applies configuration settings using following hierarchy:
 - [EVM Gas Controls](#evm-gas-controls)
   - [Configuring your ETH node](#configuring-your-eth-node)
     - [go-ethereum](#go-ethereum)
-    - [parity/openethereum](#parityopenethereum)
   - [EVM_EIP1559_DYNAMIC_FEES](#evm_eip1559_dynamic_fees)
     - [Technical details](#technical-details-1)
   - [ETH_GAS_BUMP_PERCENT](#eth_gas_bump_percent)
@@ -1087,19 +1086,6 @@ GlobalQueue = 1024 # Increase this as necessary
 Lifetime = 10800000000000 # Default 3h, this is probably ok, you might even consider reducing it
 ```
 
-#### parity/openethereum
-
-Relevant settings for parity and openethereum (and forks such as xDai)
-
-```toml
-tx_queue_locals = ["0xYourNodeAddress1", "0xYourNodeAddress2"] # Add your node addresses here
-tx_queue_size = 8192 # Increase this as necessary
-tx_queue_per_sender = 16 # Highly recommended to increase this, must be greater than or equal to Chainlink's ETH_MAX_IN_FLIGHT_TRANSACTIONS setting
-tx_queue_mem_limit = 4 # In MB. Highly recommended to increase this or set to 0 to disable the mem limit entirely
-tx_queue_no_early_reject = true # Recommended to set this
-tx_queue_no_unfamiliar_locals = false # This is disabled by default but might as well make sure
-```
-
 ### EVM_EIP1559_DYNAMIC_FEES
 
 - Default: _automatic based on chain ID_
@@ -1238,7 +1224,7 @@ Chainlink nodes will never pay more than this for a transaction.
 
 Controls how many transactions are allowed to be "in-flight" i.e. broadcast but unconfirmed at any one time. You can consider this a form of transaction throttling.
 
-The default is set conservatively at 16 because this is a pessimistic minimum that both geth and parity will hold without evicting local transactions. If your node is falling behind and you need higher throughput, you can increase this setting, but you MUST make sure that your ETH node is configured properly otherwise you can get nonce gapped and your node will get stuck.
+The default is set conservatively at 16 because this is a pessimistic minimum that geth will hold without evicting local transactions. If your node is falling behind and you need higher throughput, you can increase this setting, but you MUST make sure that your ETH node is configured properly otherwise you can get nonce gapped and your node will get stuck.
 
 0 value disables the limit. Use with caution.
 
