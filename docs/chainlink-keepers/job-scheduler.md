@@ -10,7 +10,7 @@ whatsnext:
 ---
 
 
-Learn how to register a contract with the Chainlink Keepers network and automate it using the Keepers job scheduler. Before you begin, learn how to [create a Keeper-compatible contract](../compatible-contracts).
+Learn how to register a contract with the Chainlink Keepers network and automate it using the Keepers job scheduler.
 
 **Table of Contents**
 
@@ -33,10 +33,10 @@ If you do not already have a wallet connected with the Keepers network, the inte
 
 # Trigger Selection
 
-Once you have successfully connected your wallet, you will have options to create a trigger mechanism for automation. The trigger specifies what Keeper Nodes should look at to determine if your Upkeep should be performed. The page presents two options:
+Once you have successfully connected your wallet, you will have options to select a trigger mechanism for automation. The trigger specifies what Keeper Nodes should look at to determine if your Upkeep should be performed. 
 
-- [Time-based triggers](#using-time-based-triggers): Uses a time schedule (CRON) to execute your smart contract function according to the schedule
-- [Custom logic triggers](#using-custom-logic-triggers): Uses a Keeper-compatible contract that you deployed to determine when to perform your Upkeep.
+- [Time-based triggers](#using-time-based-triggers) use a time schedule (CRON) to execute deployed smart contract function according to the schedule
+- [Custom logic triggers](#using-custom-logic-triggers) use a Keeper-compatible contract that you deployed to determine when to perform your Upkeep.
 
 To learn how to create Keeper-compatible contracts, see [Making Keepers-compatible Contracts](../compatible-contracts).
 
@@ -50,7 +50,35 @@ When you select the time-based trigger, you are prompted to enter a *contract ad
 
 ## Specifying the Time Schedule
 
-After you successfully enter your contract address and ABI, specify your time schedule in the form of a [CRON expression](https://docs.oracle.com/cd/E12058_01/doc/doc.1014/e12030/cron_expressions.htm). After you enter your CRON expression, click **Next**.
+After you successfully enter your contract address and ABI, specify your time schedule in the form of a CRON expression. CRON expressions are a shorthand way to create a time schedule. Use the provided example buttons to experiment with different schedules and then create your own.
+
+```
+Cron jobs are interpreted according to this format:
+
+  ┌───────────── minute (0 - 59)
+  │ ┌───────────── hour (0 - 23)
+  │ │ ┌───────────── day of the month (1 - 31)
+  │ │ │ ┌───────────── month (1 - 12)
+  │ │ │ │ ┌───────────── day of the week (0 - 6) (Sunday to Saturday)
+  │ │ │ │ │
+  │ │ │ │ │
+  │ │ │ │ │
+  * * * * *
+
+All times are in UTC
+
+- can be used for range e.g. "0 8-16 * * *"
+/ can be used for interval e.g. "0 */2 * * *"
+, can be used for list e.g. "0 17 * * 0,2,4"
+
+  Special limitations:
+    * there is no year field
+    * no special characters: ? L W #
+    * lists can have a max length of 26
+    * no words like JAN / FEB or MON / TUES
+```
+
+After you enter your CRON expression, click **Next**.
 
 ![Keepers Cron Expression](/images/contract-devs/keeper/keeper-cron-expression.png)
 
