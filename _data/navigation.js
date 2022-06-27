@@ -277,6 +277,10 @@ module.exports = {
             url: '/docs/chainlink-keepers/manage-upkeeps/',
           },
           {
+            title: 'Job Scheduler',
+            url: '/docs/chainlink-keepers/job-scheduler/',
+          },
+          {
             title: 'Utility Contracts',
             url: '/docs/chainlink-keepers/util-overview/',
             children: [
