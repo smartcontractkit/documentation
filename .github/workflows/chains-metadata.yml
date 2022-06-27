@@ -1,0 +1,38 @@
+name: Check if chains metadata is up to date
+
+on:
+  schedule:
+    - cron: '59 23 * * */7'
+
+jobs:
+  check-chains-metadata:
+    permissions:
+      pull-requests: write
+    name: Check if chains metadata is up to date
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b # v3.0.2
+      - name: Install Dependencies
+        run: yarn
+      - name: Compare current chains metadata with the source
+        run: yarn compare-chains-metadata
+      - name: Check if new chains metadata file
+        id: compare_chains
+        run: |
+          if test -f "./_src/reference/chainsToBe.json"; then
+            cp "./_src/reference/chainsToBe.json" "./_src/reference/chains.json"
+            echo "::set-output name=createPR::true"
+          fi
+      - name: Create PR
+        if: ${{ steps.compare_chains.createPR }}
+        run: |
+          timestamp=$(date +%Y%m%d%H%M)
+          git config user.name chainlink-docs
+          git config user.email chainlink-docs@users.noreply.github.com
+          branch="new_chains_metadata_${timestamp}"
+          git checkout -b ${branch}
+          git add ./_src/reference/chains.json
+          git commit -m "chains metadata updated"
+          git push --set-upstream origin ${branch}
+          gh pr create "Update chains metadata ${timestamp}" --body "New chains metadata available. Please review and merge"
