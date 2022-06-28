@@ -57,7 +57,7 @@ compareChainsMetadata().then(async (res) => {
     const chainsTobePath = normalize('./_src/reference/chainsToBe.json');
     await writeFile(
       chainsTobePath,
-      format(JSON.stringify(res.toBeChainsMetadata, null, 2), {
+      format(JSON.stringify(res.toBeChainsMetadata), {
         parser: 'json',
         semi: true,
         trailingComma: 'es5',
