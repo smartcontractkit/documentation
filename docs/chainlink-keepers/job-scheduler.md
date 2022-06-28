@@ -88,7 +88,7 @@ To complete the upkeep registration process using time-based triggers, you must 
 
 > 📘 Job Scheduler Gas requirements
 >
-> When you create an upkeep through Job Scheduler, Chainlink Keepers deploys a new CronUpkeep contract from our [CronUpkeepFactory](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/factories/CronUpkeepFactory.sol) to manage your time schedule and ensure it is Keepers-compatible. This contract uses roughly 110K gas per call, and we thus recommend adding 150K additional gas to the gas limit of the function you are automating. For funding on Mainnet, you need ERC-677 LINK. Many token bridges give you ERC-20 LINK tokens. Use PegSwap to [convert Chainlink tokens (LINK) to be ERC-677 compatible](https://pegswap.chain.link/). To fund on a supported testnet, get [LINK](../../link-token-contracts/) for the testnet you are using from our [faucet](https://faucets.chain.link/).
+> When you create an upkeep through Job Scheduler, Chainlink Keepers deploys a new CronUpkeep contract from our [CronUpkeepFactory](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/factories/CronUpkeepFactory.sol) to manage your time schedule and ensure it is Keepers-compatible. This contract uses roughly 110K gas per call, and we thus recommend adding 150K additional gas to the gas limit of the function you are automating.
 
 ![Keepers Upkeep Details](/images/contract-devs/keeper/keeper-upkeep-details.png)
 
