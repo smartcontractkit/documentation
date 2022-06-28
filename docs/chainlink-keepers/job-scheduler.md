@@ -9,7 +9,6 @@ whatsnext:
   }
 ---
 
-
 Learn how to register a contract with the Chainlink Keepers network and automate it using the Keepers job scheduler.
 
 **Table of Contents**
@@ -21,7 +20,7 @@ Learn how to register a contract with the Chainlink Keepers network and automate
 
 # Register a new Upkeep
 
-To use the job scheduler, you must register a new upkeep on the Keepers network. On the landing page of the Keepers interface, click the blue **Register new Upkeep** button. 
+To use the job scheduler, you must register a new upkeep on the Keepers network. On the landing page of the Keepers interface, click the blue **Register new Upkeep** button.
 
 ![Keepers UI Landing](/images/contract-devs/keeper/keeper-ui-landing.png)
 
@@ -33,7 +32,7 @@ If you do not already have a wallet connected with the Keepers network, the inte
 
 # Trigger Selection
 
-Once you have successfully connected your wallet, you will have options to select a trigger mechanism for automation. The trigger specifies what Keeper Nodes should look at to determine if your Upkeep should be performed. 
+After you have successfully connected your wallet, you will have options to select a trigger mechanism for automation. The trigger specifies what Keeper Nodes should look at to determine if your Upkeep should be performed.
 
 - [Time-based triggers](#using-time-based-triggers) use a time schedule (CRON) to execute deployed smart contract function according to the schedule
 - [Custom logic triggers](#using-custom-logic-triggers) use a Keeper-compatible contract that you deployed to determine when to perform your Upkeep.
@@ -85,6 +84,10 @@ After you enter your CRON expression, click **Next**.
 ## Entering Upkeep Details
 
 To complete the upkeep registration process using time-based triggers, you must enter some information about your upkeep including its name, gas limit, starting balance, and contact information.
+
+> 📘 Job Scheduler Gas requirements
+>
+> When you create an upkeep through the Job Scheduler, Chainlink Keepers deploys a new `CronUpkeep` contract from the [CronUpkeepFactory](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/factories/CronUpkeepFactory.sol) to manage your time schedule and ensure that it is Keepers-compatible. This contract uses roughly 110K gas per call, so it is recommended to add 150K additional gas to the gas limit of the function you are automating.
 
 ![Keepers Upkeep Details](/images/contract-devs/keeper/keeper-upkeep-details.png)
 
