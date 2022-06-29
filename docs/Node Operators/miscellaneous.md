@@ -88,6 +88,75 @@ It will ask for your old password first, then ask for the new password and a con
 
 Once complete, you should see a message "Password updated."
 
+
+## Multi-user and Role Based Access Control (RBAC)
+
+The Chainlink node has the functionality to allow the root admin CLI user (and any additional admin users created) to create and assign tiers of role based access to new users. These new API users will be able to log in to the Operator UI independently.
+
+Users have a specific role tied to their account. There are four roles: `admin`, `edit`, `edit-minimal`, and `view`.
+
+If there are multiple users who need specific access to manage the Chainlink node instance, permissions and level of access can be set here.
+
+User management is configured through the use of the admin `chainlink admin users` command. Be sure to run `chainlink adamin login`. For example, a readonly user can be created with: `chainlink admin users create --email=operator-ui-read-only@test.com --role=view`.
+
+Below is a table of RBAC enabled actions and required permissions for each:
+
+| Action | Read | Edit Minimal | Edit | Admin |
+|:--- | :---: | :---: | :---: | :---: |
+| Update password  | X | X | X | X |
+| Create self API token  | X | X | X | X |
+| Delete self API token  | X | X | X | X |
+| List external initiators  | X | X | X | X |
+| Create external initiator  |   |   | X | X |
+| Delete external initiator  |   |   | X | X |
+| List bridges  | X | X | X | X |
+| View bridge  | X | X | X | X |
+| Create bridge  |   |   | X | X |
+| Edit bridge  |   |   | X | X |
+| Delete bridge  |   |   | X | X |
+| View config  | X | X | X | X |
+| Update config  |   |   |   | X |
+| Dump env/config  |   |   |   | X |
+| View transaction attempts  | X | X | X | X |
+| View transaction attempts EVM  | X | X | X | X |
+| View transactions  | X | X | X | X |
+| Replay a specific block number  |  | X | X | X |
+| List keys (CSA,ETH,OCR(2),P2P,Solana,Terra)  | X | X | X | X |
+| Create keys (CSA,ETH,OCR(2),P2P,Solana,Terra)  |   |   | X | X |
+| Delete keys (CSA,ETH,OCR(2),P2P,Solana,Terra)  |   |   |   | X |
+| Import keys (CSA,ETH,OCR(2),P2P,Solana,Terra)  |   |   |   | X |
+| Export keys (CSA,ETH,OCR(2),P2P,Solana,Terra)  |   |   |   | X |
+| List jobs | X | X | X | X |
+| View job | X | X | X | X |
+| Create job |  |  | X | X |
+| Delete job |  |   | X | X |
+| List pipeline runs | X | X | X | X |
+| View job runs | X | X | X | X |
+| Delete job spec errors |  |  | X | X |
+| View features | X | X | X | X |
+| View log | X | X | X | X |
+| Update log |   |   |   | X |
+| List chains | X | X | X | X |
+| View chain | X | X | X | X |
+| Create chain |   |   | X | X |
+| Update chain |   |   | X | X |
+| Delete chain |   |   | X | X |
+| View nodes | X | X | X | X |
+| Create node |  |  | X | X |
+| Update node |  |  | X | X |
+| Delete node |  |  | X | X |
+| View forwarders | X | X | X | X |
+| Create forwarder |   |   | X | X |
+| Delete forwarder |   |   | X | X |
+| Create job run |   | X | X | X |
+| Create Transfer EVM  |   |   |   | X |
+| Create Transfer Terra  |   |   |   | X |
+| Create Transfer Solana  |   |   |   | X |
+| Create user  |   |   |   | X |
+| Delete user  |   |   |   | X |
+| Edit user  |   |   |   | X |
+
+
 ## Use Named Chainlink Container
 
 Instead of allowing Docker to generate a name for your running container for you, you can provide a name with the `--name` option in your run command. For example, without the `--name` option, `docker ps` could reveal a name like:
