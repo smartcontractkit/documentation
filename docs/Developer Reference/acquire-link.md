@@ -30,7 +30,7 @@ MetaMask should now display the new LINK token balance.
 1. In Metmask, select the network where you want to receive testnet LINK.
 1. Click **Connect wallet** so the faucet app can detect the network and wallet address.
 1. If you want to receive testnet funds at a different address, paste it in the **Wallet address** section. This field defaults to your connected wallet address.
-1. In the **Reqeust type** section, select the testnet funds that you want to receive.
+1. In the **Request type** section, select the testnet funds that you want to receive.
 1. Complete the Captcha and click **Send request**. The funds are transferred from the faucet to the wallet address that you specified.
 
 After the transaction is confirmed on-chain, the faucet app shows "Request complete" and the transaction hash of your request.
