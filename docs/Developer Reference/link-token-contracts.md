@@ -44,20 +44,6 @@ The LINK token is an ERC677 token that inherits functionality from the ERC20 tok
 | Symbol         | LINK                                                                                                                                                                                                         |
 | Decimals       | 18                                                                                                                                                                                                           |
 
-## Kovan
-
-> 🚰 Kovan Faucets
->
-> Testnet LINK are available from https://faucets.chain.link/kovan
-> Testnet ETH are available from https://faucets.chain.link/kovan
-
-| Parameter      | Value                                                                                                                                                                                                               |
-| :------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `ETH_CHAIN_ID` | `42`                                                                                                                                                                                                                |
-| Address        | <a class="erc-token-address" id="42_0xa36085F69e2889c224210F603D836748e7dC0088" href="https://kovan.etherscan.io/token/0xa36085F69e2889c224210F603D836748e7dC0088">`0xa36085F69e2889c224210F603D836748e7dC0088`</a> |
-| Name           | ChainLink Token                                                                                                                                                                                                     |
-| Symbol         | LINK                                                                                                                                                                                                                |
-| Decimals       | 18                                                                                                                                                                                                                  |
 
 ## Rinkeby
 
@@ -74,6 +60,23 @@ The LINK token is an ERC677 token that inherits functionality from the ERC20 tok
 | Name           | ChainLink Token                                                                                                                                                                                                      |
 | Symbol         | LINK                                                                                                                                                                                                                 |
 | Decimals       | 18                                                                                                                                                                                                                   |
+
+## Kovan (Deprecated)
+
+The Kovan network is [officially deprecated](https://ethereum.org/en/developers/docs/networks/#kovan) and will no longer be supported on some platforms like [Alchemy](https://www.alchemy.com/the-merge). Currently, [Rinkeby](#rinkeby) is the recommended testnet for Chainlink on Ethereum.
+
+> 🚰 Kovan Faucets
+>
+> Testnet LINK are available from https://faucets.chain.link/kovan
+> Testnet ETH are available from https://faucets.chain.link/kovan
+
+| Parameter      | Value                                                                                                                                                                                                               |
+| :------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `ETH_CHAIN_ID` | `42`                                                                                                                                                                                                                |
+| Address        | <a class="erc-token-address" id="42_0xa36085F69e2889c224210F603D836748e7dC0088" href="https://kovan.etherscan.io/token/0xa36085F69e2889c224210F603D836748e7dC0088">`0xa36085F69e2889c224210F603D836748e7dC0088`</a> |
+| Name           | ChainLink Token                                                                                                                                                                                                     |
+| Symbol         | LINK                                                                                                                                                                                                                |
+| Decimals       | 18                                                                                                                                                                                                                  |
 
 ## Goerli
 
@@ -298,7 +301,7 @@ ETH is used to pay for transactions on Optimism. Use the [Optimism Bridge](https
 | Symbol         | LINK                                                                                                                                                                                                                       |
 | Decimals       | 18                                                                                                                                                                                                                         |
 
-### Kovan Testnet
+### Optimism Kovan Testnet
 
 Testnet ETH is used to pay for transactions on Optimism. Use the [Optimism Bridge](https://app.optimism.io/bridge) to transfer testnet ETH and LINK from Ethereum Kovan to Optimistic Kovan.
 
