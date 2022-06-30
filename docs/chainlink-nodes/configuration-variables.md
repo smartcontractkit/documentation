@@ -559,7 +559,7 @@ Previous versions of Chainlink nodes wrote JSON logs with a unix timestamp. As o
 When set, this environment variable configures and enables an optional HTTP logger which is used specifcally to send audit log events. Audit logs events are emitted when specific actions are performed by any of the users through the node's API. The value of this variable should be a full URL. Log items will be sent via POST
 
 There are audit log implemented for the following events:
-  - Auth & Sessions (new session, login success, login failed, 2FA enrolled, 2Fa failed, password reset, password reset failed, etc.)
+  - Auth & Sessions (new session, login success, login failed, 2FA enrolled, 2FA failed, password reset, password reset failed, etc.)
   - CRUD actions for all resources (add/create/delete resources such as bridges, nodes, keys)
   - Sensitive actions (keys exported/imported, config changed, log level changed, environment dumped)
 
