@@ -31,7 +31,7 @@ This guide shows you how to write, deploy, and run a smart contract that consume
 
 ## Examine the sample contract
 
-The following code describes a contract that obtains the latest ETH / USD price using the Kovan testnet.
+The following code describes a contract that obtains the latest ETH / USD price using the Rinkeby testnet.
 
 ```solidity
 {% include 'samples/PriceFeeds/PriceConsumerV3.sol' %}
@@ -43,13 +43,13 @@ The contract has the following components:
 
 + The `constructor() {}` initializes an interface object named `priceFeed` that uses `AggregatorV3Interface` and connects specifically to a proxy aggregator contract that is already deployed at `0x9326BFA02ADD2366b30bacB125260Af641031331`. The interface allows your contract to run functions on that deployed aggregator contract.
 
-+ The `getLatestPrice()` function calls your `priceFeed` object and runs the `latestRoundData()` function. When you deploy the contract, it initializes the `priceFeed` object to point to the aggregator at `0x9326BFA02ADD2366b30bacB125260Af641031331`, which is the proxy address for the Kovan ETH / USD data feed. Your contract connects to that address and executes the function. The aggregator connects with several oracle nodes and aggregates the pricing data from those nodes. The response from the aggregator includes several variables, but `getLatestPrice()` returns only the `price` variable.
++ The `getLatestPrice()` function calls your `priceFeed` object and runs the `latestRoundData()` function. When you deploy the contract, it initializes the `priceFeed` object to point to the aggregator at `0x9326BFA02ADD2366b30bacB125260Af641031331`, which is the proxy address for the Rinkeby ETH / USD data feed. Your contract connects to that address and executes the function. The aggregator connects with several oracle nodes and aggregates the pricing data from those nodes. The response from the aggregator includes several variables, but `getLatestPrice()` returns only the `price` variable.
 
 ## Compile, deploy, and run the contract
 
-> 🚧 If you have not already configured your MetaMask wallet and funded it with testnet ETH, follow the instructions in the Deploy Your First Smart Contract to set that up. You can get testnet ETH at https://faucets.chain.link/kovan/.
+> 🚧 If you have not already configured your MetaMask wallet and funded it with testnet ETH, follow the instructions in the Deploy Your First Smart Contract to set that up. You can get testnet ETH at https://faucets.chain.link/rinkeby/.
 
-Deploy the `PriceConsumerV3` smart contract on the Kovan testnet.
+Deploy the `PriceConsumerV3` smart contract on the Rinkeby testnet.
 
 1. [Open the example contract](https://remix.ethereum.org/#url=https://docs.chain.link/samples/PriceFeeds/PriceConsumerV3.sol) in Remix. Remix opens and shows the contents of the smart contract.
 
@@ -69,7 +69,7 @@ Deploy the `PriceConsumerV3` smart contract on the Kovan testnet.
 1. Because the example contract has several imports, Remix might select another contract to deploy by default. In the **Contract** section, select the `PriceConsumerV3` contract to make sure that Remix deploys the correct contract.
     ![Screenshot showing PriceConsumerV3 as the contract to deploy.](/images/getting-started/selectPriceConsumerV3.png)
 
-1. Click **Deploy** to deploy the contract to the Kovan testnet. MetaMask opens and asks you to confirm payment for deploying the contract. Make sure MetaMask is set to the Kovan network before you accept the transaction. Because these transactions are on the blockchain, they are not reversible.
+1. Click **Deploy** to deploy the contract to the Rinkeby testnet. MetaMask opens and asks you to confirm payment for deploying the contract. Make sure MetaMask is set to the Rinkeby network before you accept the transaction. Because these transactions are on the blockchain, they are not reversible.
     ![Screenshot of the Deploy button for PriceConsumerV3.](/images/getting-started/deployPriceConsumerV3.png)
 
 1. In the MetaMask prompt, click **Confirm** to approve the transaction and spend your testnet ETH required to deploy the contract.
