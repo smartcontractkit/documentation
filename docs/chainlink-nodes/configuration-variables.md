@@ -77,9 +77,9 @@ Your node applies configuration settings using following hierarchy:
   - [LOG_FILE_MAX_AGE](#log_file_max_age)
   - [LOG_FILE_MAX_BACKUPS](#log_file_max_backups)
   - [LOG_UNIX_TS](#log_unix_ts)
-  - [AUDIT_LOGS_HEC_FORWARDER_URL](#audit_logs_hec_forwarder_url)
-  - [AUDIT_LOGS_HEC_FORWARDER_HEADERS](#audit_logs_hec_forwarder_headers)
-  - [AUDIT_LOGS_HEC_FORWARDER_JSON_WRAPPER_KEY](#audit_logs_hec_forwarder_json_wrapper_key)
+  - [AUDIT_LOGS_FORWARDER_URL](#audit_logs_forwarder_url)
+  - [AUDIT_LOGS_FORWARDER_HEADERS](#audit_logs_forwarder_headers)
+  - [AUDIT_LOGS_FORWARDER_JSON_WRAPPER_KEY](#audit_logs_forwarder_json_wrapper_key)
 - [Nurse service (auto-pprof)](#nurse-service-auto-pprof)
   - [AUTO_PPROF_ENABLED](#auto_pprof_enabled)
   - [AUTO_PPROF_PROFILE_ROOT](#auto_pprof_profile_root)
@@ -552,7 +552,7 @@ Determines the maximum number of old log files to retain. Keeping this config wi
 
 Previous versions of Chainlink nodes wrote JSON logs with a unix timestamp. As of v1.1.0 and up, the default has changed to use ISO8601 timestamps for better readability. Setting `LOG_UNIX_TS=true` will enable the old behavior.
 
-### AUDIT_LOGS_HEC_FORWARDER_URL
+### AUDIT_LOGS_FORWARDER_URL
 
 - Default: _none_
 
@@ -567,19 +567,19 @@ A full list of audit log enum types can be found in the source within the `audit
 
 The following `AUDIT_LOGS_*` environment variables below configure this optional audit log HTTP forwarder.
 
-### AUDIT_LOGS_HEC_FORWARDER_HEADERS
+### AUDIT_LOGS_FORWARDER_HEADERS
 
 - Default: _none_
 
-An optional list of HTTP headers to be added for every optional audit log event. If the above `AUDIT_LOGS_HEC_FORWARDER_URL` is set, audit log events will be POSTed to that URL, and will include headers specified in this environment variable. One example use case is auth for example: ```AUDIT_LOGS_HEC_FORWARDER_HEADERS=Authorization {{token}}```.
+An optional list of HTTP headers to be added for every optional audit log event. If the above `AUDIT_LOGS_FORWARDER_URL` is set, audit log events will be POSTed to that URL, and will include headers specified in this environment variable. One example use case is auth for example: ```AUDIT_LOGS_FORWARDER_HEADERS=Authorization {{token}}```.
 
-The environment variable is delimited on `\n` for specifying multiple headers, and key/value are split on space.
+Header keys and values are delimited on ||, and multiple headers can be added with a forward slash delimiter ('\\').
 
-### AUDIT_LOGS_HEC_FORWARDER_JSON_WRAPPER_KEY
+### AUDIT_LOGS_FORWARDER_JSON_WRAPPER_KEY
 
 - Default: _none_
 
-When the audit log HTTP forwarder is enabled, if there is a value set for this optional environment variable then the POST body will be wrapped in a dictionary in a field specified by the value of set variable. This is to help enable specific logging service integrations that may require the event JSON in a special shape. For example: `AUDIT_LOGS_HEC_FORWARDER_JSON_WRAPPER_KEY=event` will create the POST body:
+When the audit log HTTP forwarder is enabled, if there is a value set for this optional environment variable then the POST body will be wrapped in a dictionary in a field specified by the value of set variable. This is to help enable specific logging service integrations that may require the event JSON in a special shape. For example: `AUDIT_LOGS_FORWARDER_JSON_WRAPPER_KEY=event` will create the POST body:
 ```
 {
   "event": {
