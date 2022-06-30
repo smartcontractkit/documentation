@@ -5,7 +5,7 @@ date: Last Modified
 title: 'Chainlink Keepers Job Scheduler'
 whatsnext:
   {
-    'FAQs': '/docs/chainlink-keepers/faqs/',
+    'Custom logic automation': '/docs/chainlink-keepers/compatible-contracts/',
   }
 ---
 
