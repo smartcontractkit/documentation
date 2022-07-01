@@ -2,7 +2,7 @@
 layout: nodes.liquid
 section: ethereum
 date: Last Modified
-title: '`EthBalanceMonitor` Utility Contract'
+title: 'EthBalanceMonitor Utility Contract'
 whatsnext:
   {
     'FAQs': '/docs/chainlink-keepers/faqs/',
