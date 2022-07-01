@@ -168,6 +168,10 @@ module.exports = {
                 title: 'Moonbeam Data Feeds',
                 url: '/docs/data-feeds-moonbeam/',
               },
+              {
+                title: 'Metis Data Feeds',
+                url: '/docs/data-feeds-metis/',
+              },
             ],
           },
           {
@@ -275,6 +279,10 @@ module.exports = {
           {
             title: 'Manage your Upkeeps',
             url: '/docs/chainlink-keepers/manage-upkeeps/',
+          },
+          {
+            title: 'Job Scheduler',
+            url: '/docs/chainlink-keepers/job-scheduler/',
           },
           {
             title: 'Utility Contracts',

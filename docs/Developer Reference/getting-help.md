@@ -2,7 +2,7 @@
 layout: nodes.liquid
 section: ethereum
 date: Last Modified
-title: "Getting Support"
+title: "Getting Help"
 permalink: "docs/getting-help/"
 ---
 ## Where do I go to get help and support?
@@ -43,7 +43,7 @@ Here is an example of a poorly formatted question:
 Here is that same question with better formatting:
 
 > Title: Remix Solidity Compile Error - Source File Requires Different Compiler Version
-> I'm [following this guide](/docs/deploy-your-first-contract/), and I'm unable to compile my solidity code in [Remix](https://remix.ethereum.org/). 
+> I'm [following this guide](/docs/deploy-your-first-contract/), and I'm unable to compile my solidity code in [Remix](https://remix.ethereum.org/).
 > Here is the code:
 > ```javascript
 > pragma solidity 0.6.7;

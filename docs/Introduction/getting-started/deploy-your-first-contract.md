@@ -40,7 +40,7 @@ This guide walks you through each step, but you must install and fund your MetaM
 
 ## Install and fund your MetaMask wallet
 
-Deploying smart contracts on-chain requires a wallet and ETH. The ETH pays for the work required by the Ethereum network to add the contract to the blockchain and store the variables. The wallet holds the ETH that you need to pay for the transaction. Install MetaMask, configure it to use the [Kovan test network](https://kovan-testnet.github.io/website/), and fund your wallet with free testnet ETH.
+Deploying smart contracts on-chain requires a wallet and ETH. The ETH pays for the work required by the Ethereum network to add the contract to the blockchain and store the variables. The wallet holds the ETH that you need to pay for the transaction. Install MetaMask, configure it to use the [Rinkeby test network](https://www.rinkeby.io), and fund your wallet with free testnet ETH.
 
 1. [Install and configure the MetaMask extension](https://metamask.io/download) in your browser.
 
@@ -49,10 +49,10 @@ Deploying smart contracts on-chain requires a wallet and ETH. The ETH pays for t
 
 1. Follow the instructions in MetaMask to create a new MetaMask wallet. The new wallet includes a 12-word mnemonic phrase. This phrase is the key to your wallet. Copy that phrase down in a very secure location that only you can access. You can use this phrase to retrieve your wallet later or add it to another browser.
 
-1. Set MetaMask to use the Kovan test network.
-    ![Screenshot showing the network selection menu in MetaMask. The Kovan Test Network is selected.](/images/getting-started/selectKovan.png)
+1. Set MetaMask to use the Rinkeby test network.
+    ![Screenshot showing the network selection menu in MetaMask. The Rinkeby Test Network is selected.](/images/getting-started/selectRinkeby.png)
 
-1. Go to the [Kovan Chainlink Faucet](https://faucets.chain.link/kovan/) and follow the steps to send 0.1 test ETH to your MetaMask wallet address. You can copy your wallet address by clicking your account name in MetaMask. After the faucet completes the transaction, you should have 0.1 ETH in your MetaMask wallet on the Kovan testnet.
+1. Go to the [Rinkeby Chainlink Faucet](https://faucets.chain.link/Rinkeby/) and follow the steps to send 0.1 test ETH to your MetaMask wallet address. You can copy your wallet address by clicking your account name in MetaMask. After the faucet completes the transaction, you should have 0.1 ETH in your MetaMask wallet on the Rinkeby testnet.
     ![Screenshot showing a wallet with a balance of 0.1 ETH.](/images/getting-started/fundedWallet.png)
 
 Now that you configured your wallet and funded it with testnet ETH, you can write, compile, and deploy your contract.
@@ -87,7 +87,7 @@ Your first contract is a simple `HelloWorld.sol` example. This example shows you
 1. Next to the **Deploy** button, enter a message that you want to send with the smart contract when you deploy it. This contract has a constructor that sets an initial message when you deploy the contract.
     ![Screenshot of the Deploy button with "Hello world!" as the defined message.](/images/getting-started/deployHelloWorld.png)
 
-1. Click the **Deploy** button to deploy the contract and its initial message to the blockchain network. MetaMask opens and asks you to confirm payment to deploy the contract. Make sure MetaMask is set to the Kovan network before you accept the transaction. Because these transactions are on the blockchain, they are not reversible.
+1. Click the **Deploy** button to deploy the contract and its initial message to the blockchain network. MetaMask opens and asks you to confirm payment to deploy the contract. Make sure MetaMask is set to the Rinkeby network before you accept the transaction. Because these transactions are on the blockchain, they are not reversible.
 
 1. In the MetaMask prompt, click **Confirm** to approve the transaction and spend your testnet ETH required to deploy the contract.
     ![Screenshot showing Metamask asking you to confirm the transaction.](/images/getting-started/confirmTransaction.png)
@@ -98,7 +98,7 @@ Your first contract is a simple `HelloWorld.sol` example. This example shows you
 1. Click the `message` variable. Remix retrieves and prints the initial message that you set.
     ![Screenshot showing the message function and the returned "Hello World" message.](/images/getting-started/runHelloWorld.png)
 
-The contract has an address just like your wallet address. If you save this address, you can return to your deployed contract at any time to retrieve variables or execute functions. To see details about your deployed contract, copy the contract address from the list in Remix and search for it in the [Etherscan Kovan Testnet Explorer](https://kovan.etherscan.io/).
+The contract has an address just like your wallet address. If you save this address, you can return to your deployed contract at any time to retrieve variables or execute functions. To see details about your deployed contract, copy the contract address from the list in Remix and search for it in the [Etherscan Rinkeby Testnet Explorer](https://rinkeby.etherscan.io/).
 
 ## Run functions in your contract
 

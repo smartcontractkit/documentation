@@ -227,5 +227,18 @@ export const NETWORKS = [
         networkType: "mainnet",
       },
     ],
-  }
+  },
+  {
+    page: "data-feeds-andromeda",
+    title: "Moonriver Data Feeds",
+    feedType: "Proxy",
+    networks: [
+      {
+        name: "Metis Mainnet",
+        url: "https://andromeda-explorer.metis.io/address/%s",
+        source: "directory-ethereum-mainnet-andromeda-1.json",
+        networkType: "mainnet",
+      },
+    ],
+  },
 ];
