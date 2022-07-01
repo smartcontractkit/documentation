@@ -9,7 +9,8 @@
     "build": "browserify _src/index.ts -t [ uglifyify ] -p [ tsify ] -o _src/index.js && browserify _src/keepers-configuration.ts -t [ uglifyify ] -p [ tsify ] -o _src/keepers-configuration.js && browserify _src/animate-chain-transitions.ts -t [ uglifyify ] -p [ tsify ] -o _src/animate-chain-transitions.js && browserify _src/link-to-wallet.ts  -p [ tinyify --no-flat ] -p [ tsify ] -o _src/link-to-wallet.js && rm -rf _site && npx @11ty/eleventy",
     "deploy": "yarn build && firebase deploy",
     "process": "yarn ts-node _tools/process-data.ts",
-    "linkcheck": "yarn ts-node _tools/linkcheck.ts"
+    "linkcheck": "yarn ts-node _tools/linkcheck.ts",
+    "compare-chains-metadata": "npx ts-node _src/chains-metadata.ts"
   },
   "keywords": [
     "chainlink",
@@ -39,6 +40,7 @@
     "graphql": "^16.5.0",
     "hardhat": "^2.9.5",
     "html-minifier": "^4.0.0",
+    "lodash": "^4.17.21",
     "react": "^18.1.0",
     "react-dom": "^18.1.0",
     "tinyify": "^3.0.0",
@@ -57,5 +59,8 @@
     "trailingComma": "es5",
     "singleQuote": true,
     "printWidth": 120
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.14.182"
   }
 }

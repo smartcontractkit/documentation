@@ -1,0 +1,45 @@
+name: Check if chains metadata is up to date
+
+on:
+  schedule:
+    - cron: '59 23 * * */7'
+  workflow_dispatch:
+
+jobs:
+  check-chains-metadata:
+    permissions:
+      pull-requests: write
+      contents: write
+    name: Check if chains metadata is up to date
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b # v3.0.2
+      - name: Install Dependencies
+        run: yarn
+      - name: Compare current chains metadata with the source
+        run: yarn compare-chains-metadata
+      - name: Check if new chains metadata file
+        id: compare_chains
+        run: |
+          set -x
+          if test -f "./_src/reference/chainsToBe.json"; then
+            cp "./_src/reference/chainsToBe.json" "./_src/reference/chains.json"
+            echo "::set-output name=createPR::true"
+            timestamp=$(date +%Y%m%d%H%M)
+            echo "::set-output name=timestamp::${timestamp}"
+          fi
+      - if: ${{ steps.compare_chains.outputs.createPR }}
+        id: chains_metadata_pr
+        name: Create pull request
+        uses: peter-evans/create-pull-request@9825ae65b1cb54b543b938503728b432a0176d29 # v3.1.0
+        with:
+          branch: 'chains_metadata/pr-${{ steps.compare_chains.outputs.timestamp }}'
+          commit-message: 'chains metadata updated'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          title: 'Update chains metadata ${{ steps.compare_chains.outputs.timestamp }}'
+          delete-branch: true
+          body: 'New chains metadata available. Please review and merge'
+          labels: |
+            enhancement
+            ready to merge

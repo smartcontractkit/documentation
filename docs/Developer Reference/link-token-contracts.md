@@ -45,7 +45,6 @@ The LINK token is an ERC677 token that inherits functionality from the ERC20 tok
 | Symbol         | LINK                                                                                                                                                                                                         |
 | Decimals       | 18                                                                                                                                                                                                           |
 
-
 ## Rinkeby
 
 > 🚰 Rinkeby Faucets
@@ -370,17 +369,16 @@ GLMR is used to pay transaction fees on Moonbeam mainnet.
 | Symbol         | LINK                                                                                                                                                                                                             |
 | Decimals       | 18                                                                                                                                                                                                               |
 
-
 ## Metis
 
 ### Mainnet
 
 METIS is the currency that you use to pay for transactions on Metis mainnet. You can use the [Metis Bridge](https://bridge.metis.io/) to transfer METIS and LINK from Ethereum Mainnet to Metis mainnet.
 
-| Parameter      | Value                                                                                                                                                                                                            |
-| :------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ETH_CHAIN_ID` | `1088`                                                                                                                                                                                                           |
-| Address        | <a href="https://andromeda-explorer.metis.io/address/0x79892E8A3Aea66C8F6893fa49eC6208ef07EC046">`0x79892E8A3Aea66C8F6893fa49eC6208ef07EC046`</a> |
-| Name           | Chainlink Token on Metis Mainnet                                                                                                                                                                              |
-| Symbol         | LINK                                                                                                                                                                                                             |
-| Decimals       | 18                                                                                                                                                                                                               |
+| Parameter      | Value                                                                                                                                                                                                                             |
+| :------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ETH_CHAIN_ID` | `1088`                                                                                                                                                                                                                            |
+| Address        | <a class="erc-token-address" id="1088_0x79892E8A3Aea66C8F6893fa49eC6208ef07EC046"  href="https://andromeda-explorer.metis.io/address/0x79892E8A3Aea66C8F6893fa49eC6208ef07EC046">`0x79892E8A3Aea66C8F6893fa49eC6208ef07EC046`</a> |
+| Name           | Chainlink Token on Metis Mainnet                                                                                                                                                                                                  |
+| Symbol         | LINK                                                                                                                                                                                                                              |
+| Decimals       | 18                                                                                                                                                                                                                                |
