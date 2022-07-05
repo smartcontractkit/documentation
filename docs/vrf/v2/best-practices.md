@@ -96,3 +96,50 @@ function fulfillRandomWords(
   s_requestIndexToRandomWords[requestNumber] = randomWords;
 }
 ```
+
+## Processing Different Functions VRF Requests
+
+If you want to have multiple VRF requests in different functions, create a mapping between `requestId` and the `functionId`. This `functionId` could be a uint256 of your choice or the hash of the function name like `keccak256("FunctionName")`. This way, you can have different functions making requests and different logic for each request. When handling different logic in your `fulfillRandomWords` function, keep in mind the your `callbackGasLimit` and appropriate `keyHash` set.
+
+```solidity
+uint256 public variableA;
+uint256 public variableB;
+bytes32 public UPDATE_VARIABLE_A_ID = keccak256("updateVariableA");
+bytes32 public UPDATE_VARIABLE_B_ID = keccak256("updateVariableB");
+mapping(uint256 => bytes32) public requestIdToFunctionId;
+
+function updateVariableA() public {
+  uint256 requestId = COORDINATOR.requestRandomWords(
+      keyHash,
+      s_subscriptionId,
+      requestConfirmations,
+      callBackGasLimit,
+      numWords
+  );
+  requestIdToFunctionId[requestId] = UPDATE_VARIABLE_A_ID;
+}
+
+function updateVariableB() public {
+  uint256 requestId = COORDINATOR.requestRandomWords(
+      keyHash,
+      s_subscriptionId,
+      requestConfirmations,
+      callBackGasLimit,
+      numWords
+  );
+  requestIdToFunctionId[requestId] = UPDATE_VARIABLE_B_ID;
+}
+
+function fulfillRandomWords(uint256 requestId, uint256[] memory randomWords)
+        internal
+        override
+  {
+      if (requestIdToFunctionId[requestId] == UPDATE_VARIABLE_A_ID) {
+          variableA = randomWords[0];
+      }
+      if (requestIdToFunctionId[requestId] == UPDATE_VARIABLE_B_ID) {
+          variableB = randomWords[0];
+      }
+}
+
+```
