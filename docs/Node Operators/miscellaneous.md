@@ -93,7 +93,7 @@ Once complete, you should see a message "Password updated."
 
 The Chainlink node has the functionality to allow the root admin CLI user (and any additional admin users created) to create and assign tiers of role based access to new users. These new API users will be able to log in to the Operator UI independently.
 
-Users have a specific role tied to their account. There are four roles: `admin`, `edit`, `edit-minimal`, and `view`.
+Users have a specific role tied to their account. There are four roles: `admin`, `edit`, `run`, and `view`.
 
 If there are multiple users who need specific access to manage the Chainlink node instance, permissions and level of access can be set here.
 
@@ -101,7 +101,7 @@ User management is configured through the use of the admin `chainlink admin user
 
 Below is a table of RBAC enabled actions and required permissions for each:
 
-| Action | Read | Edit Minimal | Edit | Admin |
+| Action | Read | Run | Edit | Admin |
 |:--- | :---: | :---: | :---: | :---: |
 | Update password  | X | X | X | X |
 | Create self API token  | X | X | X | X |
