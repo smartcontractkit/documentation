@@ -4,21 +4,19 @@ section: ethereum
 date: Last Modified
 title: 'Manage your Upkeeps'
 whatsnext:
-  {
-    'FAQ': '/docs/chainlink-keepers/faqs/',
-  }
+  { 'Build flexible contracts': '/docs/chainlink-keepers/flexible-upkeeps/', 'FAQ': '/docs/chainlink-keepers/faqs/' }
 ---
 
 ## Overview
 
 Manage your Upkeeps to get the best performance.
 
-
 **Table of Contents**
-+ [Fund your Upkeep](#fund-your-upkeep)
-+ [Maintain a Minimum Balance](#maintain-a-minimum-balance)
-+ [Withdraw funds](#withdraw-funds)
-+ [Interacting directly with the Keepers Registry](#interacting-directly-with-the-keepers-registry)
+
+- [Fund your Upkeep](#fund-your-upkeep)
+- [Maintain a Minimum Balance](#maintain-a-minimum-balance)
+- [Withdraw funds](#withdraw-funds)
+- [Interacting directly with the Keepers Registry](#interacting-directly-with-the-keepers-registry)
 
 ## Fund your Upkeep
 
@@ -30,18 +28,18 @@ You must monitor the balance of your Upkeep. If the Upkeep LINK balance drops be
 
 Follow these steps to fund your Upkeep:
 
-  1. **Click `View Upkeep`** or go to the [Chainlink Keepers App](https://keepers.chain.link) and click on your recently registered Upkeep under My Upkeeps.
+1. **Click `View Upkeep`** or go to the [Chainlink Keepers App](https://keepers.chain.link) and click on your recently registered Upkeep under My Upkeeps.
 
-  1. **Click the `Add funds` button**
+1. **Click the `Add funds` button**
 
-  1. **Approve the LINK spend allowance**
-    ![Approve LINK Spend Allowance](/images/contract-devs/keeper/keeper-approve-allowance.png)
+1. **Approve the LINK spend allowance**
+   ![Approve LINK Spend Allowance](/images/contract-devs/keeper/keeper-approve-allowance.png)
 
-  1. **Confirm the LINK transfer** by sending funds to the Chainlink Keeper Network Registry
-    ![Confirm LINK Transfer](/images/contract-devs/keeper/keeper-confirm-transfer.png)
+1. **Confirm the LINK transfer** by sending funds to the Chainlink Keeper Network Registry
+   ![Confirm LINK Transfer](/images/contract-devs/keeper/keeper-confirm-transfer.png)
 
-  1. **Receive a success message** and verify that the funds were added to the Upkeep
-    ![Funds Added Successful Message](/images/contract-devs/keeper/keeper-add-funds.png)
+1. **Receive a success message** and verify that the funds were added to the Upkeep
+   ![Funds Added Successful Message](/images/contract-devs/keeper/keeper-add-funds.png)
 
 ## Maintain a Minimum Balance
 
@@ -53,7 +51,6 @@ To account for Upkeep execution over time and possible extended gas spikes, main
 
 To withdraw funds, the Upkeep administrator have to cancel the Upkeep first. There is a 50 block delay once an Upkeep has been cancelled before funds can be withdrawn. Once 50 blocks have passed, select **Withdraw funds**.
 
-
 ## Interacting directly with the Keepers Registry
 
-After registration, you can interact directly with the [registry contract](https://etherscan.io/address/0x7b3EC232b08BD7b4b3305BE0C044D907B2DF960B#code) functions such as `cancelUpkeep` and `addFunds` using your **Upkeep ID**.** Note the Registry Address might change when we release a new contract with additional functionality.
+After registration, you can interact directly with the [registry contract](https://etherscan.io/address/0x7b3EC232b08BD7b4b3305BE0C044D907B2DF960B#code) functions such as `cancelUpkeep` and `addFunds` using your **Upkeep ID**. The Registry Address might change when new contracts are deployed with new functionality.

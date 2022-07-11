@@ -5,7 +5,7 @@ date: Last Modified
 title: 'Keepers Utility Contracts'
 whatsnext:
   {
-    '`EthBalanceMonitor`': '/docs/chainlink-keepers/utility-contracts/',
+    'EthBalanceMonitor': '/docs/chainlink-keepers/utility-contracts/',
   }
 ---
 

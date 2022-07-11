@@ -160,7 +160,7 @@ You can perform complex and broad off-chain computation, then execute on-chain s
 
 We recommend that you revalidate the conditions and data in `performUpkeep` before work is performed. By default the `performUpkeep` is `external` and thus any party can call it, so revalidation is recommended. If you send data from your `checkUpkeep` to your `performUpkeep` and this data drives a critical function, please ensure you put adequate checks in place.
 
-### Trigger ONLY when conditions are met
+### Perform ONLY when conditions are met
 
 Some actions must be performed only when specific conditions are met. Check all of the preconditions within `performUpkeep` to ensure that state change occurs only when necessary.
 
@@ -168,13 +168,13 @@ In this pattern, it is undesirable for the state change to occur until the next 
 
 For example, if you have a contract where you create a timer in `checkUpkeep` that is designed to start a game at a specific time, validate the condition to ensure third-party calls to your `performUpkeep` function do not start the game at a different time.
 
-### Trigger ONLY when data is verified
+### Perform ONLY when data is verified
 
 Some actions must be performed using data you intend to use. Revalidate that the `performData` is allowed before execution.
 
 For example, if you have a `performUpkeep` that funds a wallet and the address of the wallet is received via the `performData` parameter, ensure you have a list of permissable addresses to compare against to prevent third-party calling your function to send money to their address.
 
-### When triggering is not harmful
+### When performing is not harmful
 
 Sometimes actions must be performed when conditions are met, but performing actions when conditions are not met is still acceptable. Condition checks within `performUpkeep` might not be required, but it can still be a good practice to short circuit expensive and unnecessary on-chain processing when it is not required.
 
