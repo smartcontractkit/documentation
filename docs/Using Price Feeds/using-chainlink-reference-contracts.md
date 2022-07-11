@@ -51,7 +51,7 @@ You can call the `latestRoundData()` function directly on the aggregator, but it
 
 The aggregator contract has several variables and functions that might be useful for your application. Although aggregator contracts are similar for each data feed, some aggregators have different variables. Use the `typeAndVersion()` function on the aggregator to identify what type of aggregator it is and what version it is running.
 
-Always check the contract source code and configuration to understand how specific data feeds operate. For example, the [aggregator contract for BTC/USD on Arbitrum](https://arbiscan.io/address/0x942d00008d658dbb40745bbec89a93c253f9b882#code) is different from the aggregators on other networks. The [contract on Kovan for BTC/USD](https://kovan.etherscan.io/address/0x222d3bd9bc8aef87afa9c8e4c7468da3f2c7130d#code) is also different from the contracts on other testnets and the Ethereum Mainnet.
+Always check the contract source code and configuration to understand how specific data feeds operate. For example, the [aggregator contract for BTC/USD on Arbitrum](https://arbiscan.io/address/0x942d00008d658dbb40745bbec89a93c253f9b882#code) is different from the aggregators on other networks.
 
 For examples of the contracts that are typically used in aggregator deployments, see the [libocr repository](https://github.com/smartcontractkit/libocr/blob/master/contract/) on GitHub.
 
@@ -83,7 +83,7 @@ Configure your application to detect when the reported answer is close to reachi
 
 ### Check the timestamp of the latest answer
 
-The aggregator updates its `latestAnswer` when the value deviates beyond a specified threshold or when the heartbeat idle time has passed. You can find the heartbeat and deviation values for each data feed at [data.chain.link](https://data.chain.link/) or in the [Contract Addresses](/docs/reference-contracts/) lists.
+Chainlink Price Feeds do not provide streaming data. Rather, the aggregator updates its `latestAnswer` when the value deviates beyond a specified threshold or when the heartbeat idle time has passed. You can find the heartbeat and deviation values for each data feed at [data.chain.link](https://data.chain.link/) or in the [Contract Addresses](/docs/reference-contracts/) lists.
 
 Your application should track the `latestTimestamp` variable or use the `updatedAt` value from the `latestRoundData()` function to make sure that the latest answer is recent enough for your application to use it. If your application detects that the reported answer is not updated within the heartbeat or within time limits that you determine are acceptable for your application, pause operation or switch to an alternate operation mode while identifying the cause of the delay.
 

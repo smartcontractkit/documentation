@@ -16,19 +16,19 @@ contract KrakenChainlink is ChainlinkClient, ConfirmedOwner {
     uint256 public currentPrice;
 
     /**
-     * Network: Kovan
+     * Network: Rinkeby
      * Oracle:
      *      Name:           ...
      *      Listing URL:    ...
-     *      Address:        0x2f90A6D021db21e1B2A077c5a37B3C7E75D15b7e
+     *      Address:        0x7AFe1118Ea78C1eae84ca8feE5C65Bc76CcF879e
      * Job:
      *      Name:           Kraken Rates
      *      Listing URL:    ...
-     *      ID:             8f4eeda1a8724077a0560ee84eb006b4
+     *      ID:             49ea116156cd44be997e7670a5dde80d
      *      Fee:            1 LINK
      */
     constructor(uint256 _oraclePayment) ConfirmedOwner(msg.sender) {
-        setChainlinkToken(0xa36085F69e2889c224210F603D836748e7dC0088);
+        setChainlinkToken(0x01BE23585060835E02B77ef475b0Cc51aA1e0709);
         oraclePayment = _oraclePayment;
     }
 

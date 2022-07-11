@@ -31,6 +31,7 @@ The LINK token is an ERC677 token that inherits functionality from the ERC20 tok
 - [Harmony](#harmony)
 - [Moonriver](#moonriver)
 - [Moonbeam](#moonbeam)
+- [Metis](#metis)
 
 # Ethereum
 
@@ -40,24 +41,9 @@ The LINK token is an ERC677 token that inherits functionality from the ERC20 tok
 | :------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `ETH_CHAIN_ID` | `1`                                                                                                                                                                                                          |
 | Address        | <a class="erc-token-address" id="1_0x514910771af9ca656af840dff83e8264ecf986ca" href="https://etherscan.io/token/0x514910771af9ca656af840dff83e8264ecf986ca">`0x514910771af9ca656af840dff83e8264ecf986ca`</a> |
-| Name           | ChainLink Token                                                                                                                                                                                              |
+| Name           | Chainlink Token                                                                                                                                                                                              |
 | Symbol         | LINK                                                                                                                                                                                                         |
 | Decimals       | 18                                                                                                                                                                                                           |
-
-## Kovan
-
-> 🚰 Kovan Faucets
->
-> Testnet LINK are available from https://faucets.chain.link/kovan
-> Testnet ETH are available from https://faucets.chain.link/kovan
-
-| Parameter      | Value                                                                                                                                                                                                               |
-| :------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `ETH_CHAIN_ID` | `42`                                                                                                                                                                                                                |
-| Address        | <a class="erc-token-address" id="42_0xa36085F69e2889c224210F603D836748e7dC0088" href="https://kovan.etherscan.io/token/0xa36085F69e2889c224210F603D836748e7dC0088">`0xa36085F69e2889c224210F603D836748e7dC0088`</a> |
-| Name           | ChainLink Token                                                                                                                                                                                                     |
-| Symbol         | LINK                                                                                                                                                                                                                |
-| Decimals       | 18                                                                                                                                                                                                                  |
 
 ## Rinkeby
 
@@ -71,9 +57,26 @@ The LINK token is an ERC677 token that inherits functionality from the ERC20 tok
 | :------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `ETH_CHAIN_ID` | `4`                                                                                                                                                                                                                  |
 | Address        | <a class="erc-token-address" id="4_0x01BE23585060835E02B77ef475b0Cc51aA1e0709" href="https://rinkeby.etherscan.io/token/0x01BE23585060835E02B77ef475b0Cc51aA1e0709">`0x01BE23585060835E02B77ef475b0Cc51aA1e0709`</a> |
-| Name           | ChainLink Token                                                                                                                                                                                                      |
+| Name           | Chainlink Token                                                                                                                                                                                                      |
 | Symbol         | LINK                                                                                                                                                                                                                 |
 | Decimals       | 18                                                                                                                                                                                                                   |
+
+## Kovan (Deprecated)
+
+The Kovan network is [officially deprecated](https://ethereum.org/en/developers/docs/networks/#kovan) and will no longer be supported on some platforms like [Alchemy](https://www.alchemy.com/the-merge). Currently, [Rinkeby](#rinkeby) is the recommended testnet for Chainlink on Ethereum.
+
+> 🚰 Kovan Faucets
+>
+> Testnet LINK are available from https://faucets.chain.link/kovan
+> Testnet ETH are available from https://faucets.chain.link/kovan
+
+| Parameter      | Value                                                                                                                                                                                                               |
+| :------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `ETH_CHAIN_ID` | `42`                                                                                                                                                                                                                |
+| Address        | <a class="erc-token-address" id="42_0xa36085F69e2889c224210F603D836748e7dC0088" href="https://kovan.etherscan.io/token/0xa36085F69e2889c224210F603D836748e7dC0088">`0xa36085F69e2889c224210F603D836748e7dC0088`</a> |
+| Name           | Chainlink Token                                                                                                                                                                                                     |
+| Symbol         | LINK                                                                                                                                                                                                                |
+| Decimals       | 18                                                                                                                                                                                                                  |
 
 ## Goerli
 
@@ -81,7 +84,7 @@ The LINK token is an ERC677 token that inherits functionality from the ERC20 tok
 | :------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `ETH_CHAIN_ID` | `5`                                                                                                                                                                                                                   |
 | Address        | <a class="erc-token-address" id="5_0x326c977e6efc84e512bb9c30f76e30c160ed06fb" href="https://goerli.etherscan.io/address/0x326c977e6efc84e512bb9c30f76e30c160ed06fb">`0x326c977e6efc84e512bb9c30f76e30c160ed06fb`</a> |
-| Name           | ChainLink Token                                                                                                                                                                                                       |
+| Name           | Chainlink Token                                                                                                                                                                                                       |
 | Symbol         | LINK                                                                                                                                                                                                                  |
 | Decimals       | 18                                                                                                                                                                                                                    |
 
@@ -101,7 +104,7 @@ LINK is native to Ethereum, so to use LINK on other chains, it must be bridged. 
 | :------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `ETH_CHAIN_ID` | `56`                                                                                                                                                                                                         |
 | Address        | <a class="erc-token-address" id="56_0x404460c6a5ede2d891e8297795264fde62adbb75" href="https://bscscan.com/token/0x404460c6a5ede2d891e8297795264fde62adbb75">`0x404460c6a5ede2d891e8297795264fde62adbb75`</a> |
-| Name           | ChainLink Token                                                                                                                                                                                              |
+| Name           | Chainlink Token                                                                                                                                                                                              |
 | Symbol         | LINK                                                                                                                                                                                                         |
 | Decimals       | 18                                                                                                                                                                                                           |
 
@@ -115,7 +118,7 @@ LINK is native to Ethereum, so to use LINK on other chains, it must be bridged. 
 | :------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `ETH_CHAIN_ID` | `97`                                                                                                                                                                                                                   |
 | Address        | <a class="erc-token-address" id="97_0x84b9b910527ad5c03a9ca831909e21e236ea7b06" href="https://testnet.bscscan.com/address/0x84b9b910527ad5c03a9ca831909e21e236ea7b06">`0x84b9b910527ad5c03a9ca831909e21e236ea7b06`</a> |
-| Name           | ChainLink Token                                                                                                                                                                                                        |
+| Name           | Chainlink Token                                                                                                                                                                                                        |
 | Symbol         | LINK                                                                                                                                                                                                                   |
 | Decimals       | 18                                                                                                                                                                                                                     |
 
@@ -135,7 +138,7 @@ MATIC is used to pay for transactions on Polygon mainnet. You can use the [Polyg
 | :------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `ETH_CHAIN_ID` | `137`                                                                                                                                                                                                               |
 | Address        | <a class="erc-token-address" id="137_0xb0897686c545045afc77cf20ec7a532e3120e0f1" href="https://polygonscan.com/address/0xb0897686c545045afc77cf20ec7a532e3120e0f1">`0xb0897686c545045afc77cf20ec7a532e3120e0f1`</a> |
-| Name           | ChainLink Token                                                                                                                                                                                                     |
+| Name           | Chainlink Token                                                                                                                                                                                                     |
 | Symbol         | LINK                                                                                                                                                                                                                |
 | Decimals       | 18                                                                                                                                                                                                                  |
 
@@ -149,7 +152,7 @@ MATIC is used to pay for transactions on Polygon mainnet. You can use the [Polyg
 | :------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `ETH_CHAIN_ID` | `80001`                                                                                                                                                                                                                       |
 | Address        | <a class="erc-token-address" id="80001_0x326C977E6efc84E512bB9C30f76E30c160eD06FB" href="https://mumbai.polygonscan.com/address/0x326C977E6efc84E512bB9C30f76E30c160eD06FB">`0x326C977E6efc84E512bB9C30f76E30c160eD06FB `</a> |
-| Name           | ChainLink Token                                                                                                                                                                                                               |
+| Name           | Chainlink Token                                                                                                                                                                                                               |
 | Symbol         | LINK                                                                                                                                                                                                                          |
 | Decimals       | 18                                                                                                                                                                                                                            |
 
@@ -177,7 +180,7 @@ xDAI is used to pay for transactions on Gnosis Chain mainnet. Use the [xDai Brid
 | :------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `ETH_CHAIN_ID` | `100`                                                                                                                                                                                                                       |
 | Address        | <a class="erc-token-address" id="100_0xE2e73A1c69ecF83F464EFCE6A5be353a37cA09b2" href="https://blockscout.com/poa/xdai/address/0xE2e73A1c69ecF83F464EFCE6A5be353a37cA09b2">`0xE2e73A1c69ecF83F464EFCE6A5be353a37cA09b2`</a> |
-| Name           | ChainLink Token on Gnosis Chain (xDai)                                                                                                                                                                                      |
+| Name           | Chainlink Token on Gnosis Chain (xDai)                                                                                                                                                                                      |
 | Symbol         | LINK                                                                                                                                                                                                                        |
 | Decimals       | 18                                                                                                                                                                                                                          |
 
@@ -191,7 +194,7 @@ AVAX is the token you use to pay for transactions on Avalanche mainnet. You can 
 | :------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `ETH_CHAIN_ID` | `43114`                                                                                                                                                                                                            |
 | Address        | <a class="erc-token-address" id="43114_0x5947BB275c521040051D82396192181b413227A3" href="https://snowtrace.io/address/0x5947BB275c521040051D82396192181b413227A3">`0x5947BB275c521040051D82396192181b413227A3`</a> |
-| Name           | ChainLink Token on Avalanche                                                                                                                                                                                       |
+| Name           | Chainlink Token on Avalanche                                                                                                                                                                                       |
 | Symbol         | LINK                                                                                                                                                                                                               |
 | Decimals       | 18                                                                                                                                                                                                                 |
 
@@ -205,7 +208,7 @@ AVAX is the token you use to pay for transactions on Avalanche mainnet. You can 
 | :------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `ETH_CHAIN_ID` | `43113`                                                                                                                                                                                                                    |
 | Address        | <a class="erc-token-address" id="43113_0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846" href="https://testnet.snowtrace.io/address/0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846">`0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846`</a> |
-| Name           | ChainLink Token on Avalanche                                                                                                                                                                                               |
+| Name           | Chainlink Token on Avalanche                                                                                                                                                                                               |
 | Symbol         | LINK                                                                                                                                                                                                                       |
 | Decimals       | 18                                                                                                                                                                                                                         |
 
@@ -224,7 +227,7 @@ FTM is used to pay for transactions on Fantom Mainnet. Use [bridge.multichain.or
 | :------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `ETH_CHAIN_ID` | `250`                                                                                                                                                                                                           |
 | Address        | <a class="erc-token-address" id="250_0x6F43FF82CCA38001B6699a8AC47A2d0E66939407" href="https://ftmscan.com/address/0x6F43FF82CCA38001B6699a8AC47A2d0E66939407">`0x6F43FF82CCA38001B6699a8AC47A2d0E66939407`</a> |
-| Name           | ChainLink Token on Fantom                                                                                                                                                                                       |
+| Name           | Chainlink Token on Fantom                                                                                                                                                                                       |
 | Symbol         | LINK                                                                                                                                                                                                            |
 | Decimals       | 18                                                                                                                                                                                                              |
 
@@ -238,7 +241,7 @@ FTM is used to pay for transactions on Fantom Mainnet. Use [bridge.multichain.or
 | :------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `ETH_CHAIN_ID` | `4002`                                                                                                                                                                                                                   |
 | Address        | <a class="erc-token-address" id="4002_0xfaFedb041c0DD4fA2Dc0d87a6B0979Ee6FA7af5F" href="https://testnet.ftmscan.com/address/0xfaFedb041c0DD4fA2Dc0d87a6B0979Ee6FA7af5F">`0xfaFedb041c0DD4fA2Dc0d87a6B0979Ee6FA7af5F`</a> |
-| Name           | ChainLink Token on Fantom                                                                                                                                                                                                |
+| Name           | Chainlink Token on Fantom                                                                                                                                                                                                |
 | Symbol         | LINK                                                                                                                                                                                                                     |
 | Decimals       | 18                                                                                                                                                                                                                       |
 
@@ -252,7 +255,7 @@ ETH is used to pay for transactions on the Arbitrum mainnet. You can use the [Ar
 | :------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `ETH_CHAIN_ID` | `42161`                                                                                                                                                                                                                    |
 | Address        | <a class="erc-token-address" id="42161_0xf97f4df75117a78c1A5a0DBb814Af92458539FB4" href="https://explorer.arbitrum.io/address/0xf97f4df75117a78c1A5a0DBb814Af92458539FB4">`0xf97f4df75117a78c1A5a0DBb814Af92458539FB4`</a> |
-| Name           | ChainLink Token on Arbitrum Mainnet                                                                                                                                                                                        |
+| Name           | Chainlink Token on Arbitrum Mainnet                                                                                                                                                                                        |
 | Symbol         | LINK                                                                                                                                                                                                                       |
 | Decimals       | 18                                                                                                                                                                                                                         |
 
@@ -268,7 +271,7 @@ Testnet ETH is used to pay for transactions on the Arbitrum Rinkeby testnet. You
 | :------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `ETH_CHAIN_ID` | `421611`                                                                                                                                                                                                                            |
 | Address        | <a class="erc-token-address" id="421611_0x615fBe6372676474d9e6933d310469c9b68e9726" href="https://rinkeby-explorer.arbitrum.io/address/0x615fBe6372676474d9e6933d310469c9b68e9726">`0x615fBe6372676474d9e6933d310469c9b68e9726`</a> |
-| Name           | ChainLink Token on Arbitrum Rinkeby                                                                                                                                                                                                 |
+| Name           | Chainlink Token on Arbitrum Rinkeby                                                                                                                                                                                                 |
 | Symbol         | LINK                                                                                                                                                                                                                                |
 | Decimals       | 18                                                                                                                                                                                                                                  |
 
@@ -294,11 +297,11 @@ ETH is used to pay for transactions on Optimism. Use the [Optimism Bridge](https
 | :------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `ETH_CHAIN_ID` | `10`                                                                                                                                                                                                                       |
 | Address        | <a class="erc-token-address" id="10_0x350a791Bfc2C21F9Ed5d10980Dad2e2638ffa7f6" href="https://optimistic.etherscan.io/address/0x350a791Bfc2C21F9Ed5d10980Dad2e2638ffa7f6">`0x350a791Bfc2C21F9Ed5d10980Dad2e2638ffa7f6`</a> |
-| Name           | ChainLink Token on Optimism Mainnet                                                                                                                                                                                        |
+| Name           | Chainlink Token on Optimism Mainnet                                                                                                                                                                                        |
 | Symbol         | LINK                                                                                                                                                                                                                       |
 | Decimals       | 18                                                                                                                                                                                                                         |
 
-### Kovan Testnet
+### Optimism Kovan Testnet
 
 Testnet ETH is used to pay for transactions on Optimism. Use the [Optimism Bridge](https://app.optimism.io/bridge) to transfer testnet ETH and LINK from Ethereum Kovan to Optimistic Kovan.
 
@@ -306,7 +309,7 @@ Testnet ETH is used to pay for transactions on Optimism. Use the [Optimism Bridg
 | :------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `ETH_CHAIN_ID` | `69`                                                                                                                                                                                                                             |
 | Address        | <a class="erc-token-address" id="69_0x4911b761993b9c8c0d14Ba2d86902AF6B0074F5B" href="https://kovan-optimistic.etherscan.io/address/0x4911b761993b9c8c0d14Ba2d86902AF6B0074F5B">`0x4911b761993b9c8c0d14Ba2d86902AF6B0074F5B`</a> |
-| Name           | ChainLink Token on Optimism Kovan                                                                                                                                                                                                |
+| Name           | Chainlink Token on Optimism Kovan                                                                                                                                                                                                |
 | Symbol         | LINK                                                                                                                                                                                                                             |
 | Decimals       | 18                                                                                                                                                                                                                               |
 
@@ -320,7 +323,7 @@ ONE is used to pay for transactions on Harmony mainnet. You can use the [Harmony
 | :------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `ETH_CHAIN_ID` | `1666600000`                                                                                                                                                                                                                    |
 | Address        | <a class="erc-token-address" id="1666600000_0x218532a12a389a4a92fC0C5Fb22901D1c19198aA" href="https://explorer.harmony.one/address/0x218532a12a389a4a92fC0C5Fb22901D1c19198aA">`0x218532a12a389a4a92fC0C5Fb22901D1c19198aA`</a> |
-| Name           | ChainLink Token on Harmony Mainnet                                                                                                                                                                                              |
+| Name           | Chainlink Token on Harmony Mainnet                                                                                                                                                                                              |
 | Symbol         | LINK                                                                                                                                                                                                                            |
 | Decimals       | 18                                                                                                                                                                                                                              |
 
@@ -334,7 +337,7 @@ ONE is used to pay for transactions on Harmony mainnet. You can use the [Harmony
 | :------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `ETH_CHAIN_ID` | `1666700000`                                                                                                                                                                                                                            |
 | Address        | <a class="erc-token-address" id="1666700000_0x8b12Ac23BFe11cAb03a634C1F117D64a7f2cFD3e" href="https://explorer.testnet.harmony.one/address/0x8b12Ac23BFe11cAb03a634C1F117D64a7f2cFD3e">`0x8b12Ac23BFe11cAb03a634C1F117D64a7f2cFD3e`</a> |
-| Name           | ChainLink Token on Harmony Testnet                                                                                                                                                                                                      |
+| Name           | Chainlink Token on Harmony Testnet                                                                                                                                                                                                      |
 | Symbol         | LINK                                                                                                                                                                                                                                    |
 | Decimals       | 18                                                                                                                                                                                                                                      |
 
@@ -348,7 +351,7 @@ MOVR is used to pay transaction fees on Moonriver mainnet. You can use [bridge.m
 | :------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `ETH_CHAIN_ID` | `1285`                                                                                                                                                                                                                     |
 | Address        | <a class="erc-token-address" id="1285_0x8b12Ac23BFe11cAb03a634C1F117D64a7f2cFD3e" href="https://moonriver.moonscan.io/address/0x8b12Ac23BFe11cAb03a634C1F117D64a7f2cFD3e">`0x8b12Ac23BFe11cAb03a634C1F117D64a7f2cFD3e`</a> |
-| Name           | ChainLink Token on Moonriver Mainnet                                                                                                                                                                                       |
+| Name           | Chainlink Token on Moonriver Mainnet                                                                                                                                                                                       |
 | Symbol         | LINK                                                                                                                                                                                                                       |
 | Decimals       | 18                                                                                                                                                                                                                         |
 
@@ -362,6 +365,20 @@ GLMR is used to pay transaction fees on Moonbeam mainnet.
 | :------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `ETH_CHAIN_ID` | `1284`                                                                                                                                                                                                           |
 | Address        | <a class="erc-token-address" id="1284_0x012414A392F9FA442a3109f1320c439C45518aC3" href="https://moonscan.io/address/0x012414A392F9FA442a3109f1320c439C45518aC3">`0x012414A392F9FA442a3109f1320c439C45518aC3`</a> |
-| Name           | ChainLink Token on Moonbeam Mainnet                                                                                                                                                                              |
+| Name           | Chainlink Token on Moonbeam Mainnet                                                                                                                                                                              |
 | Symbol         | LINK                                                                                                                                                                                                             |
 | Decimals       | 18                                                                                                                                                                                                               |
+
+## Metis
+
+### Mainnet
+
+METIS is the currency that you use to pay for transactions on Metis mainnet. You can use the [Metis Bridge](https://bridge.metis.io/) to transfer METIS and LINK from Ethereum Mainnet to Metis mainnet.
+
+| Parameter      | Value                                                                                                                                                                                                                             |
+| :------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ETH_CHAIN_ID` | `1088`                                                                                                                                                                                                                            |
+| Address        | <a class="erc-token-address" id="1088_0x79892E8A3Aea66C8F6893fa49eC6208ef07EC046"  href="https://andromeda-explorer.metis.io/address/0x79892E8A3Aea66C8F6893fa49eC6208ef07EC046">`0x79892E8A3Aea66C8F6893fa49eC6208ef07EC046`</a> |
+| Name           | Chainlink Token on Metis Mainnet                                                                                                                                                                                                  |
+| Symbol         | LINK                                                                                                                                                                                                                              |
+| Decimals       | 18                                                                                                                                                                                                                                |

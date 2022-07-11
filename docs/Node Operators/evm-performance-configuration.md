@@ -166,7 +166,7 @@ Do not set `ETH_MAX_QUEUED_TRANSACTIONS` too high. It acts as a sanity limit and
 
 `ETH_MAX_IN_FLIGHT_TRANSACTIONS` controls how many transactions are allowed to be broadcast but unconfirmed at any one time. This is a form of transaction throttling.
 
-The default is set conservatively at `16` because this is a pessimistic minimum that both go-ethereum and Parity will hold without evicting local transactions. If your node is falling behind and not able to get transactions in as fast as they are created, you can increase this setting.
+The default is set conservatively at `16` because this is a pessimistic minimum that go-ethereum will hold without evicting local transactions. If your node is falling behind and not able to get transactions in as fast as they are created, you can increase this setting.
 
 > 🚧 If you increase `ETH_MAX_IN_FLIGHT_TRANSACTIONS` you must make sure that your ETH node is configured properly otherwise you can get nonce-gapped and your node will get stuck.
 
@@ -186,14 +186,6 @@ GlobalSlots = 4096 # Increase this as necessary
 AccountQueue = 64 # Increase this as necessary
 GlobalQueue = 1024 # Increase this as necessary
 Lifetime = 10800000000000 # Default 3h, this is probably ok, you might even consider reducing it
-```
-```text Parity and OpenEthereum
-tx_queue_locals = ["0xYourNodeAddress1", "0xYourNodeAddress2"] # Add your node addresses here
-tx_queue_size = 8192 # Increase this as necessary
-tx_queue_per_sender = 16 # Highly recommended to increase this, must be greater than or equal to Chainlink's ETH_MAX_IN_FLIGHT_TRANSACTIONS setting
-tx_queue_mem_limit = 4 # In MB. Highly recommended to increase this or set to 0 to disable the mem limit entirely
-tx_queue_no_early_reject = true # Recommended to set this
-tx_queue_no_unfamiliar_locals = false # This is disabled by default but might as well make sure
 ```
 
 If you are using another RPC node, such as Besu or Nethermind, you must look at the documentation for that node to ensure that it will keep at least as many transactions in the mempool for the Chainlink node keys as you have set in `ETH_MAX_IN_FLIGHT_TRANSACTIONS`.
