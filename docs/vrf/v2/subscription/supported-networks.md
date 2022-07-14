@@ -2,8 +2,8 @@
 layout: nodes.liquid
 section: ethereum
 date: Last Modified
-title: 'Supported Networks'
-permalink: 'docs/vrf/v2/supported-networks/'
+title: 'Configuration'
+permalink: 'docs/vrf/v2/subscription/supported-networks/'
 metadata:
   title: 'Chainlink VRF v2 Supported Networks'
   linkToWallet: true
@@ -11,13 +11,13 @@ metadata:
     0: '/files/OpenGraph_V3.png'
 ---
 
-{% include 'sections/vrf-v2-common.md' %}
+{% include 'sections/vrf-v2-subscription-common.md' %}
 
 Chainlink VRF allows you to integrate provably fair and verifiably random data in your smart contract.
 
 For implementation details, read [Introduction to Chainlink VRF](/docs/vrf/v2/introduction/).
 
-## Coordinator parameters
+## Coordinator Parameters
 
 These parameters are configured in the coordinator contract. You can view these values by running `getConfig` on the coordinator or by viewing the coordinator contracts in a blockchain explorer.
 
@@ -26,9 +26,10 @@ These parameters are configured in the coordinator contract. You can view these 
 - `uint32 stalenessSeconds`: How long the coordinator waits until we consider the ETH/LINK price used for converting gas costs to LINK is stale and use `fallbackWeiPerUnitLink`
 - `uint32 gasAfterPaymentCalculation`: How much gas is used outside of the payment calculation. This covers the additional operations required to decrement the subscription balance and increment the balance for the oracle that handled the request.
 
-## Fee parameters
+## Fee Parameters
 
 Fee parameters are configured in the coordinator contract and specify the premium you pay per request in addition to the gas cost for the transaction. You can view them by running `getFeeConfig` on the coordinator. The `uint32 fulfillmentFlatFeeLinkPPMTier1` parameter defines the fees per request specified in millionths of LINK.
+The details for calculating the total transaction cost can be found [here](/docs/vrf/v2/subscription/#request-and-receive-data).
 
 ## Configurations
 
