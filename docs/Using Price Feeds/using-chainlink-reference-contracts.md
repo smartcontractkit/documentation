@@ -2,7 +2,7 @@
 layout: nodes.liquid
 section: ethereum
 date: Last Modified
-title: "Introduction to Data Feeds"
+title: "Chainlink Data Feeds Documentation"
 permalink: "docs/using-chainlink-reference-contracts/"
 whatsnext: {"Get the Latest Price":"/docs/get-the-latest-price/", "API Reference":"/docs/price-feeds-api-reference/", "Contract Addresses":"/docs/reference-contracts/"}
 metadata:
@@ -11,7 +11,7 @@ metadata:
 ---
 ![Chainlink Abstract Banner](/files/2306b8b-Decentralized_Oracles_V3.png)
 
-## Connect your contracts to the outside world
+## What are Data Feeds!
 
 Chainlink Data Feeds are the quickest way to connect your smart contracts to the real-world data such as asset prices. One use for data feeds is to retrieve the latest pricing data of an asset in a single call and use that data either on-chain in a smart contract or off-chain in another application of your choice.
 
@@ -19,15 +19,15 @@ If you already have a project started and would like to integrate Chainlink, you
 
 See the [Data Feeds Contract Addresses](/docs/reference-contracts/) page for a list of networks and proxy addresses.  
 
-## Retrieve the latest asset prices
+## Retrieve the Latest Asset Prices
 
-Often, smart contracts need to act in real-time on data such as prices of assets. This is especially true in [DeFi](https://defi.chain.link/).
+Oftentimes, smart contracts need to act in real-time on data such as prices of assets. This is especially true in [DeFi](https://defi.chain.link/).
 
 For example, [Synthetix](https://www.synthetix.io/) uses Data Feeds to determine prices on their derivatives platform. Lending and borrowing platforms like [AAVE](https://aave.com/) use Data Feeds to ensure the total value of the collateral.
 
 Data Feeds aggregate many data sources and publish them on-chain using a combination of the [Decentralized Data Model](/docs/architecture-decentralized-model/) and [Off-Chain Reporting](/docs/off-chain-reporting/).
 
-## Components of a data feed
+## Components of a Data Feed
 
 Data Feeds are an example of a decentralized oracle network and include the following components:
 
@@ -37,7 +37,7 @@ Data Feeds are an example of a decentralized oracle network and include the foll
 
 To learn how to create a consumer contract that uses an existing data feed, read the [Using Data Feeds](../get-the-latest-price/) documentation.
 
-## Reading proxy and aggregator configurations
+## Reading Proxy and Aggregator Configurations
 
 Because the proxy and aggregator contracts are all on-chain, you can see the current configuration by reading the variables through an [ABI](https://docs.soliditylang.org/en/latest/abi-spec.html) or using a blockchain explorer for your network. For example, you can see the [BTC/USD proxy configuration](https://etherscan.io/address/0xF4030086522a5bEEa4988F8cA5B36dbC97BeE88c#readContract) on the Ethereum network using Etherscan.
 
@@ -57,7 +57,7 @@ For examples of the contracts that are typically used in aggregator deployments,
 
 For a complete list of functions and variables available on most aggregator contracts, see the [Data Feeds API Reference](/docs/price-feeds-api-reference/#accesscontrolledoffchainaggregator).
 
-## Updates to proxy and aggregator contracts
+## Updates to Proxy and Aggregator Contracts
 
 To accommodate the dynamic nature of off-chain environments, Chainlink Data Feeds are updated from time to time to add new features and capabilities as well as respond to externalities such as token migrations, protocol rebrands, extreme market events, and upstream issues with data or node operations.
 
@@ -81,7 +81,7 @@ The data feed aggregator includes both [`minAnswer` and `maxAnswer` values](http
 
 Configure your application to detect when the reported answer is close to reaching `minAnswer` or `maxAnswer` and issue an alert so you can respond to a potential market event. Separately, configure your application to detect and respond to extreme price volatility or prices that are outside of your acceptable limits.
 
-### Check the timestamp of the latest answer
+### Check the Timestamp of the Latest Answer
 
 Chainlink Price Feeds do not provide streaming data. Rather, the aggregator updates its `latestAnswer` when the value deviates beyond a specified threshold or when the heartbeat idle time has passed. You can find the heartbeat and deviation values for each data feed at [data.chain.link](https://data.chain.link/) or in the [Contract Addresses](/docs/reference-contracts/) lists.
 
