@@ -81,7 +81,7 @@ If you plan on using one of these feeds and would like to get a more detailed un
 
 ### ⭕ Deprecating
 
-These feeds are being [deprecated](/docs/reference-contracts/#deprecation-of-chainlink-data-feeds) on a specific date. To find the deprecation dates for specific feeds, see the complete [deprecation list](/docs/deprecating-feeds/) or the [data feeds lists](/docs/reference-contracts/) for each network.
+These feeds are being [deprecated](/docs/reference-contracts/#deprecation-of-chainlink-data-feeds). To find the deprecation dates for specific feeds, see the complete [deprecation list](/docs/deprecating-feeds/) or the [data feeds lists](/docs/reference-contracts/) for each network.
 
 ## Risk Mitigation
 
@@ -162,6 +162,7 @@ Data Feed performance relies on the chains they are deployed on. Periods of high
 Routine maintenance is carried out on Chainlink Data Feeds, including decommissioning, on an ad-hoc basis. These maintenance periods might require users to take action in order to maintain business continuity.
 
 Notifications are sent to inform users regarding such occurrences, and it is strongly encouraged for users to provide their contact information before utilizing data feeds. Without providing contact information, users will be unable to receive notifications around important price feed updates.
+
 If you are using price feeds but have not provided your contact information, you can do so [here](https://chainlinkcommunity.typeform.com/s/dataFeedQs).
 
 ### Fast Gas Reliability
