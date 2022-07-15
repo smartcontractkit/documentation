@@ -11,13 +11,21 @@ metadata:
 ---
 ![Chainlink Abstract Banner](/files/2306b8b-Decentralized_Oracles_V3.png)
 
-## What are Data Feeds!
-
 Chainlink Data Feeds are the quickest way to connect your smart contracts to the real-world data such as asset prices. One use for data feeds is to retrieve the latest pricing data of an asset in a single call and use that data either on-chain in a smart contract or off-chain in another application of your choice.
 
 If you already have a project started and would like to integrate Chainlink, you can [add Chainlink to your existing project](../create-a-chainlinked-project/#install-into-existing-projects) by using the [`chainlink` NPM package](https://www.npmjs.com/package/@chainlink/contracts).
 
 See the [Data Feeds Contract Addresses](/docs/reference-contracts/) page for a list of networks and proxy addresses.  
+
+**Topics**
+- [Retrieve the Latest Asset Prices](#retrieve-the-latest-asset-prices) 
+- [Components of a Data Feed](#components-of-a-data-feed)
+- [Reading Proxy and Aggregator Configurations](#reading-proxy-and-aggregator-configurations)
+- [Components of an Aggregator](#components-of-an-aggregator)
+- [Updates to Proxy and Aggregator Contracts](#updates-to-proxy-and-aggregator-contracts)
+- [Monitoring Data Feeds](#monitoring-data-feeds)
+- [Check the Latest Answer against Reasonable Limits](#check-the-latest-answer-against-reasonable-limits)
+- [Check the Timestamp of the Latest Answer](#check-the-timestamp-of-the-latest-answer)
 
 ## Retrieve the Latest Asset Prices
 
@@ -47,7 +55,7 @@ The proxy contract points to an aggregator. This allows you to retrieve data thr
 
 You can call the `latestRoundData()` function directly on the aggregator, but it is a best practice to use the proxy instead so that changes to the aggregator do not affect your application. Similar to the proxy contract, the aggregator contract has a `latestAnswer` variable, `owner` address, `latestTimestamp` variable, and several others.
 
-## Components of an aggregator
+## Components of an Aggregator
 
 The aggregator contract has several variables and functions that might be useful for your application. Although aggregator contracts are similar for each data feed, some aggregators have different variables. Use the `typeAndVersion()` function on the aggregator to identify what type of aggregator it is and what version it is running.
 
@@ -75,7 +83,7 @@ When you build applications and protocols that depend on data feeds, include mon
 
 Create your own monitoring alerts based on deviations in the answers that data feeds provide. This will notify you when potential issues occur so you can respond to them.
 
-### Check the latest answer against reasonable limits
+### Check the Latest Answer against Reasonable Limits
 
 The data feed aggregator includes both [`minAnswer` and `maxAnswer` values](https://github.com/smartcontractkit/libocr/blob/9e4afd8896f365b964bdf769ca28f373a3fb0300/contract/AccessControlledOffchainAggregator.sol#L33). These variables prevent the aggregator from updating the `latestAnswer` outside the agreed range of acceptable values, but they do not stop your application from reading the most recent answer.
 
