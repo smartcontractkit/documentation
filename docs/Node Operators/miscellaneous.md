@@ -101,7 +101,7 @@ User management is configured through the use of the admin `chainlink admin user
 
 Below is a table of RBAC enabled actions and required permissions for each:
 
-| Action | Read | Run | Edit | Admin |
+| Action | Read | Run | Run | Admin |
 |:--- | :---: | :---: | :---: | :---: |
 | Update password  | X | X | X | X |
 | Create self API token  | X | X | X | X |
@@ -155,6 +155,9 @@ Below is a table of RBAC enabled actions and required permissions for each:
 | Create user  |   |   |   | X |
 | Delete user  |   |   |   | X |
 | Edit user  |   |   |   | X |
+
+
+The run command allows for minimal interaction, only enabling the ability to replay a specific block number and kick off a job run. 
 
 
 ## Use Named Chainlink Container
