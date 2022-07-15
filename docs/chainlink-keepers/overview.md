@@ -39,6 +39,8 @@ Keepers take responsibility for Upkeeps in turns. Each turn is counted in blocks
 
 During every block the Keeper will check if the Upkeep is eligible using off-chain compute (a simulation), and then broadcast them on-chain when eligible.
 
+Transaction executions on chain are not limited to once per turn. Your Upkeeps can execute on-chain multiple times per turn. This creates a system that is secure and highly available and ensures that transactions are confirmed on-chain even during times of network congestion. 
+
 Once a Keeper has performed an Upkeep, it cannot do so again until another Keeper on the network has subsequently performed the same Upkeep. This protects against a faulty or malicious Keeper from taking repeated action on a given Upkeep.
 
 ## Supported Networks and Cost
