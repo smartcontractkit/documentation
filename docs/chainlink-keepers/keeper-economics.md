@@ -23,7 +23,7 @@ Chainlink Keepers do not compete with one another, but rather work together to e
 
 ## Minimum balance
 
-The Keepers network is designed to perform your Upkeep even when gas prices spike and the minimum balance in LINK reflects the best estimate of the cost to perform your Upkeep when gas prices spike. To ensure your upkeep is monitored and performed, please ensure your Upkeep's balance is above this minimum balance.
+The Keepers network is designed to perform your Upkeep even when gas prices spike. The minimum balance in LINK reflects the best estimate of the cost to perform your Upkeep when gas prices spike. To ensure your upkeep is monitored and performed, ensure that your Upkeep's balance is above this minimum balance.
 
 The minimum balance is calculated using the current fast gas price, the Gas Limit you entered for your Upkeep, the max gas multiplier, and the for conversion to LINK. To find the latest value for the `gasCeilingMultiplier`, see the [Registry Configuration](../supported-networks/#configurations).
 
