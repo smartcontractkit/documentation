@@ -15,7 +15,7 @@ Your Upkeep has a LINK (ERC-677) balance. Every time a Keeper executes your `per
 
 ## Cost of using Keepers
 
-When a Keeper executes your `performUpkeep` function, the Keeper Registry will deduct the Upkeep's total gas cost in LINK as well as a percentage premium from your Upkeep’s LINK balance and allocate it to the Keeper’s address. The total gas cost in LINK is the gas price of the transaction multiplied by the sum of the gas used for the transaction and an 80K gas overhead for the Keeper call gas used. This is converted to LINK using Chainlink Data Feeds. The percentage premium is to compensate the Keeper for monitoring and performing your Upkeep. The percentage premium varies by network and is listed in our [Supported Networks](../supported-networks/#configurations) page.
+When a keeper executes your `performUpkeep` function, the Keeper Registry will deduct the upkeep's total gas cost in LINK as well as a percentage premium from your Upkeep’s LINK balance and allocate it to the keeper’s address. The total gas cost in LINK is the gas price of the transaction multiplied by the sum of the gas used for the transaction and an 80K gas overhead for the keeper call gas used. This is converted to LINK using Chainlink Data Feeds. The percentage premium is to compensate the keeper for monitoring and performing your Upkeep. The percentage premium varies by network and is listed in our [Supported Networks](../supported-networks/#configurations) page.
 
 ## No node competition
 
@@ -23,7 +23,7 @@ Chainlink Keepers do not compete with one another, but rather work together to e
 
 ## Minimum balance
 
-The Keepers network is designed to perform your Upkeep even when gas prices spike. The minimum balance in LINK reflects the best estimate of the cost to perform your Upkeep when gas prices spike. To ensure your upkeep is monitored and performed, ensure that your Upkeep's balance is above this minimum balance.
+The Keepers network is designed to perform your upkeep even when gas prices spike. The minimum balance in LINK reflects the best estimate of the cost to perform your upkeep when gas prices spike. To ensure your upkeep is monitored and performed, ensure that your upkeep's balance is above this minimum balance.
 
 The minimum balance is calculated using the current fast gas price, the Gas Limit you entered for your Upkeep, the max gas multiplier, and the for conversion to LINK. To find the latest value for the `gasCeilingMultiplier`, see the [Registry Configuration](../supported-networks/#configurations).
 
