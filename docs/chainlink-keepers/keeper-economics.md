@@ -11,7 +11,7 @@ whatsnext:
 
 ## How Funding Works
 
-Your Upkeep has a LINK (ERC-677) balance and every time a Keeper executes your `performUpkeep` function, your LINK balance will be reduced. You can add funds using the Keepers app or by directly calling the `addFunds()` function on the `KeeperRegistry` contract. Anyone can call the `addFunds()` function.
+Your Upkeep has a LINK (ERC-677) balance. Every time a Keeper executes your `performUpkeep` function, your LINK balance will be reduced. You can add funds using the Keepers app or by directly calling the `addFunds()` function on the `KeeperRegistry` contract. Anyone can call the `addFunds()` function.
 
 ## Cost of using Keepers
 
