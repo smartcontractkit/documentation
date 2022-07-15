@@ -27,13 +27,13 @@ The Keepers Network is designed to perform your upkeep even when gas prices spik
 
 The minimum balance is calculated using the current fast gas price, the gas limit you entered for your upkeep, the max gas multiplier, and the for conversion to LINK. To find the latest value for the `gasCeilingMultiplier`, see the [Registry Configuration](../supported-networks/#configurations) page.
 
-Follow [maintain a minimum balance](../manage-upkeeps/#maintain-a-minimum-balance) to ensure your Upkeep is funded.
+Follow [maintain a minimum balance](../manage-upkeeps/#maintain-a-minimum-balance) to ensure that your upkeep is funded.
 
 ## Price selection and Gas Bumping
 
-Chainlink Keeper nodes select the gas price dynamically based on the prices of transactions within the last several blocks. This optimizes the gas price based on current network conditions. Keepers are configured to select a price based on a target percentile.
+Keeper nodes select the gas price dynamically based on the prices of transactions within the last several blocks. This optimizes the gas price based on current network conditions. Keepers are configured to select a price based on a target percentile.
 
-If the Keeper node does not see the `performUpkeep` transaction get confirmed within the next few blocks, it automatically replaces the transaction and bumps the gas price. This process repeats until the transaction is confirmed.
+If the keeper node does not see the `performUpkeep` transaction get confirmed within the next few blocks, it automatically replaces the transaction and bumps the gas price. This process repeats until the transaction is confirmed.
 
 ## ERC-677 Link
 
