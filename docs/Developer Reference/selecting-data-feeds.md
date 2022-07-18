@@ -163,7 +163,7 @@ Routine maintenance is carried out on Chainlink Data Feeds, including decommissi
 
 Notifications are sent to inform users regarding such occurrences, and it is strongly encouraged for users to provide their contact information before utilizing data feeds. Without providing contact information, users will be unable to receive notifications around important price feed updates.
 
-If you are using price feeds but have not provided your contact information, you can do so [here](https://chainlinkcommunity.typeform.com/s/dataFeedQs).
+If you are using price feeds but have not provided your contact information, you can do so [here](https://chainlinkcommunity.typeform.com/unknownDfUsers).
 
 ### Fast Gas Reliability
 
