@@ -1,0 +1,13 @@
+---
+import { Code } from 'astro/components';
+
+const { src, lang } = Astro.props;
+const url = new URL(Astro.request.url);
+const data = await (await fetch(`${url.origin}${src}`)).text()
+---
+
+<Code code={data.toString()} lang={lang} />
+<div class="remix-callout">
+    <a href={`https://remix.ethereum.org/#url=${url.origin}${src}`} target="_blank">Open in Remix</a>
+    <a href="/docs/conceptual-overview/#what-is-remix">What is Remix?</a>
+</div>
