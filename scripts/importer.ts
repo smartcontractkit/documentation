@@ -31,27 +31,47 @@ const getAllFiles = function (dirPath: string) {
   return arrayOfFiles;
 };
 
-const replaceBlockquotes = (fileLines: string[]) => {
-  /**
-   * This:
-        > 👍 Requirements
-        >
-        > This guide requires basic knowledge about smart contracts. If you are new to smart contract development, read the [Consuming Data Feeds](/docs/consuming-data-feeds/) and [Random Numbers](/docs/intermediates-tutorial/) guides before you begin.
+function updateFrontmatter(fileAsLines: string[], pathInProject: string) {
+  const fileLines = fileAsLines;
+  const normalizedPath = pathInProject.split("/11ty/")[1];
+  const folderDepthToSrc = normalizedPath.split("/");
+  const importPrefix = folderDepthToSrc.map((_) => "../").join("");
+  console.log({ normalizedPath });
 
-    * Becomes this:
-        :::notes Requirements
-        This guide requires basic knowledge about smart contracts. If you are new to smart contract development, read the [Consuming Data Feeds](/docs/consuming-data-feeds/) and [Random Numbers](/docs/intermediates-tutorial/) guides before you begin.
-        :::
-    */
+  for (let i = 0; i < fileLines.length; i++) {
+    const currLine = fileLines[i];
+    if (currLine.indexOf("layout: nodes.liquid") === 0) {
+      fileLines[i] = ["layout: ", importPrefix, "layout/.astro"].join("");
+    }
+  }
 
+  return fileLines;
+}
+
+/**
+ * This:
+      > 👍 Requirements
+      >
+      > This guide requires basic knowledge about smart contracts. If you are new to smart contract development, read the [Consuming Data Feeds](/docs/consuming-data-feeds/) and [Random Numbers](/docs/intermediates-tutorial/) guides before you begin.
+
+  * Becomes this:
+      :::notes Requirements
+      This guide requires basic knowledge about smart contracts. If you are new to smart contract development, read the [Consuming Data Feeds](/docs/consuming-data-feeds/) and [Random Numbers](/docs/intermediates-tutorial/) guides before you begin.
+      :::
+  */
+const replaceBlockquotes = (fileAsLines: string[]) => {
   const emojis = {
     "> 📘": ":::info",
+    "> ℹ️": ":::info",
     "> 👍": ":::okay",
     "> 🚧": ":::warn",
     "> ❗️": ":::error",
-    "> 🚰 ": ":::faucet",
+    // TODO: figure out what this maps to
+    "> 🚰 ": ":::okay",
   };
   const directiveCloseTag = ":::";
+
+  const fileLines = fileAsLines;
 
   for (let i = 0; i < fileLines.length; i++) {
     const currLine = fileLines[i];
@@ -77,25 +97,23 @@ const replaceBlockquotes = (fileLines: string[]) => {
   return fileLines;
 };
 
-const replaceYoutube = () => {
-  /**
-   * This:
-   * https://www.youtube.com/watch?v=ay4rXZhAefs
-   * Becomes this:
-   * <YouTube id="https://www.youtube.com/watch?v=ay4rXZhAefs" />
-   */
-};
+/**
+ * This:
+ * https://www.youtube.com/watch?v=ay4rXZhAefs
+ * Becomes this:
+ * <YouTube id="https://www.youtube.com/watch?v=ay4rXZhAefs" />
+ */
+const replaceYoutube = () => {};
 
-const replaceRemixCode = () => {
-  /**
-   * This:
-   * ```solidity
-   *   {% include 'samples/PriceFeeds/PriceConsumerV3.sol' %}
-   *  ```
-   * Becomes this:
-   * <CodeSample src='/samples/PriceFeeds/PriceConsumerV3.sol' />
-   */
-};
+/**
+ * This:
+ * ```solidity
+ *   {% include 'samples/PriceFeeds/PriceConsumerV3.sol' %}
+ *  ```
+ * Becomes this:
+ * <CodeSample src='/samples/PriceFeeds/PriceConsumerV3.sol' />
+ */
+const replaceRemixCode = () => {};
 
 function convertToListOfStrings(path: string) {
   const data = fs.readFileSync(path, "utf8");
@@ -127,16 +145,23 @@ function importFiles() {
       return;
     }
     const pathInProject = path.split(process.cwd())[1];
+    // console.log({ pathInProject });
 
-    const fileLines = convertToListOfStrings(path);
-    let parsedFile;
-    // replace the frontmatter with the propper template reference
+    // const fileLines = convertToListOfStrings(path);
+    let parsedFile = convertToListOfStrings(path);
+
+    // update the frontmatter with the propper template reference
+    parsedFile = updateFrontmatter(parsedFile, pathInProject);
+
     // replace blockquotes from ReadMe renderer with new generic directives
-    parsedFile = replaceBlockquotes(fileLines);
+    parsedFile = replaceBlockquotes(parsedFile);
+
     // replace youtube urls with the Astro YouTube emmbed component
     //replaceYoutube();
+
     // replace remix code examples with our custom CodeSample component
-    //replaceRemixCode();
+    replaceRemixCode();
+
     // remove permalink from frontmatter and create redirect object for vercel
     writeToDestination(parsedFile, pathInProject);
     // if its HTML, good luck
