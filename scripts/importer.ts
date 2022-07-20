@@ -31,7 +31,7 @@ const getAllFiles = function (dirPath: string) {
   return arrayOfFiles;
 };
 
-const replaceBlockquotes = () => {
+const replaceBlockquotes = (fileLines: string[]) => {
   /**
    * This:
         > 👍 Requirements
@@ -43,6 +43,38 @@ const replaceBlockquotes = () => {
         This guide requires basic knowledge about smart contracts. If you are new to smart contract development, read the [Consuming Data Feeds](/docs/consuming-data-feeds/) and [Random Numbers](/docs/intermediates-tutorial/) guides before you begin.
         :::
     */
+
+  const emojis = {
+    "> 📘": ":::info",
+    "> 👍": ":::okay",
+    "> 🚧": ":::warn",
+    "> ❗️": ":::error",
+    "> 🚰 ": ":::faucet",
+  };
+  const directiveCloseTag = ":::";
+
+  for (let i = 0; i < fileLines.length; i++) {
+    const currLine = fileLines[i];
+    Object.keys(emojis).forEach((emoji) => {
+      if (currLine.indexOf(emoji) === 0) {
+        // Brad approved this
+        fileLines[i] = fileLines[i].replace(emoji, emojis[emoji]);
+
+        let nexLineCounter = i + 1;
+        while (fileLines[nexLineCounter].indexOf(">") === 0) {
+          fileLines[nexLineCounter] = fileLines[nexLineCounter].replace(
+            "> ",
+            ""
+          );
+          nexLineCounter++;
+        }
+
+        // add close tag to directive
+        fileLines.splice(nexLineCounter, 0, directiveCloseTag);
+      }
+    });
+  }
+  return fileLines;
 };
 
 const replaceYoutube = () => {
@@ -79,7 +111,6 @@ function writeToDestination(listOfLines: string[], fileName?: string) {
   tempPath.pop();
 
   const targetDir = tempPath.join("/");
-  console.log({ fileName, newPath, targetDir });
 
   fs.mkdirSync(targetDir, { recursive: true });
   fs.writeFileSync(newPath, listOfLines.join("\r\n"));
@@ -88,9 +119,7 @@ function writeToDestination(listOfLines: string[], fileName?: string) {
 function importFiles() {
   prepareFileSystem();
   const pathToLook = path.join(process.cwd(), "11ty", "docs");
-  //   console.log(pathToLook);
   const filePaths = getAllFiles(pathToLook);
-  //   console.log(filePaths);
 
   filePaths.forEach(function (path) {
     // if the file is markdown
@@ -98,19 +127,18 @@ function importFiles() {
       return;
     }
     const pathInProject = path.split(process.cwd())[1];
-    console.log({ pathInProject });
 
     const fileLines = convertToListOfStrings(path);
-
+    let parsedFile;
     // replace the frontmatter with the propper template reference
     // replace blockquotes from ReadMe renderer with new generic directives
-    //replaceBlockquotes();
+    parsedFile = replaceBlockquotes(fileLines);
     // replace youtube urls with the Astro YouTube emmbed component
     //replaceYoutube();
     // replace remix code examples with our custom CodeSample component
     //replaceRemixCode();
     // remove permalink from frontmatter and create redirect object for vercel
-    writeToDestination(fileLines, pathInProject);
+    writeToDestination(parsedFile, pathInProject);
     // if its HTML, good luck
   });
 }
