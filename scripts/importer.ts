@@ -113,7 +113,22 @@ const replaceYoutube = () => {};
  * Becomes this:
  * <CodeSample src='/samples/PriceFeeds/PriceConsumerV3.sol' />
  */
-const replaceRemixCode = () => {};
+const replaceRemixCode = (fileAsLines: string[]) => {
+  const fileLines = fileAsLines;
+
+  for (let i = 0; i < fileLines.length; i++) {
+    const currLine = fileLines[i];
+
+    if (currLine.indexOf("{% include 'samples/") > 0) {
+      fileLines[i] = currLine
+        .replace("{% include '", "<CodeSample src='/")
+        .replace("%}", "/>");
+      // remove triple-tilde from previous line and pass language as a parameter
+      // remove triple-tilde from next line
+    }
+  }
+  return fileLines;
+};
 
 function convertToListOfStrings(path: string) {
   const data = fs.readFileSync(path, "utf8");
@@ -160,7 +175,7 @@ function importFiles() {
     //replaceYoutube();
 
     // replace remix code examples with our custom CodeSample component
-    replaceRemixCode();
+    parsedFile = replaceRemixCode(parsedFile);
 
     // remove permalink from frontmatter and create redirect object for vercel
     writeToDestination(parsedFile, pathInProject);
