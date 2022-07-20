@@ -2,8 +2,8 @@
 layout: nodes.liquid
 section: nodeOperator
 date: Last Modified
-title: "Mode Task"
-permalink: "docs/jobs/task-types/mode/"
+title: 'Mode Task'
+permalink: 'docs/jobs/task-types/mode/'
 ---
 
 Accepts multiple numerical inputs and returns the mode (most common) of them. If more than one value occur the maximum number of times, it returns all of them.
@@ -27,7 +27,7 @@ A map containing two keys:
 **Example**
 
 ```jpv2
-my_median_task [type="median"
+my_mode_task [type="mode"
                 values=<[ $(fetch1), $(fetch2), $(fetch3), $(fetch4), $(fetch5), $(fetch6), $(fetch7), $(fetch8) ]>
                 allowedFaults=3]
 ```
@@ -36,7 +36,7 @@ Given a `values` array containing `[ 2, 5, 2, "foo", "foo" "bar", "foo", 2 ]`, t
 
 ```json
 {
-    "results": [ 2, "foo" ],
-    "occurrences": 3
+  "results": [2, "foo"],
+  "occurrences": 3
 }
-````
+```
