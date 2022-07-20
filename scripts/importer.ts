@@ -8,6 +8,13 @@ import * as path from "path";
  * 4. Write the files out into another directory
  */
 
+function prepareFileSystem() {
+  const tempPath = `${process.cwd()}/temp/`;
+  if (fs.existsSync(tempPath)) {
+    fs.rmdirSync(tempPath, { recursive: true });
+  }
+}
+
 const getAllFiles = function (dirPath: string) {
   const files = fs.readdirSync(dirPath);
 
@@ -61,27 +68,38 @@ const replaceRemixCode = () => {
 function convertToListOfStrings(path: string) {
   const data = fs.readFileSync(path, "utf8");
   const separateLines = data.split(/\r?\n|\r|\n/g);
-  console.log(separateLines);
+  //   console.log(separateLines);
   return separateLines;
 }
 
 function writeToDestination(listOfLines: string[], fileName?: string) {
-  const newPath = `${process.cwd()}/temp/${fileName}`;
+  const newPath = `${process.cwd()}/temp${fileName}`;
+
+  let tempPath = newPath.split("/");
+  tempPath.pop();
+
+  const targetDir = tempPath.join("/");
+  console.log({ fileName, newPath, targetDir });
+
+  fs.mkdirSync(targetDir, { recursive: true });
   fs.writeFileSync(newPath, listOfLines.join("\r\n"));
 }
 
 function importFiles() {
+  prepareFileSystem();
   const pathToLook = path.join(process.cwd(), "11ty", "docs");
-  console.log(pathToLook);
+  //   console.log(pathToLook);
   const filePaths = getAllFiles(pathToLook);
-  console.log(filePaths);
+  //   console.log(filePaths);
 
   filePaths.forEach(function (path) {
     // if the file is markdown
     if (path.indexOf(".md") === -1) {
       return;
     }
-    const fileName = path.split("/").at(-1);
+    const pathInProject = path.split(process.cwd())[1];
+    console.log({ pathInProject });
+
     const fileLines = convertToListOfStrings(path);
 
     // replace the frontmatter with the propper template reference
@@ -92,7 +110,7 @@ function importFiles() {
     // replace remix code examples with our custom CodeSample component
     //replaceRemixCode();
     // remove permalink from frontmatter and create redirect object for vercel
-    writeToDestination(fileLines, fileName);
+    writeToDestination(fileLines, pathInProject);
     // if its HTML, good luck
   });
 }

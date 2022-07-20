@@ -8,6 +8,12 @@ var path = require("path");
  * 3. Do the editing
  * 4. Write the files out into another directory
  */
+function prepareFileSystem() {
+    var tempPath = "".concat(process.cwd(), "/temp/");
+    if (fs.existsSync(tempPath)) {
+        fs.rmdirSync(tempPath, { recursive: true });
+    }
+}
 var getAllFiles = function (dirPath) {
     var files = fs.readdirSync(dirPath);
     var arrayOfFiles = [];
@@ -53,25 +59,33 @@ var replaceRemixCode = function () {
      */
 };
 function convertToListOfStrings(path) {
-    fs.readFile(path, "utf8", function (err, data) {
-        if (err)
-            throw err;
-        console.log(data);
-        var separateLines = data.split(/\r?\n|\r|\n/g);
-        console.log(separateLines);
-        return separateLines;
-    });
+    var data = fs.readFileSync(path, "utf8");
+    var separateLines = data.split(/\r?\n|\r|\n/g);
+    //   console.log(separateLines);
+    return separateLines;
+}
+function writeToDestination(listOfLines, fileName) {
+    var newPath = "".concat(process.cwd(), "/temp").concat(fileName);
+    var tempPath = newPath.split("/");
+    tempPath.pop();
+    var targetDir = tempPath.join("/");
+    console.log({ fileName: fileName, newPath: newPath, targetDir: targetDir });
+    fs.mkdirSync(targetDir, { recursive: true });
+    fs.writeFileSync(newPath, listOfLines.join("\r\n"));
 }
 function importFiles() {
+    prepareFileSystem();
     var pathToLook = path.join(process.cwd(), "11ty", "docs");
-    console.log(pathToLook);
+    //   console.log(pathToLook);
     var filePaths = getAllFiles(pathToLook);
-    console.log(filePaths);
+    //   console.log(filePaths);
     filePaths.forEach(function (path) {
         // if the file is markdown
         if (path.indexOf(".md") === -1) {
             return;
         }
+        var pathInProject = path.split(process.cwd())[1];
+        console.log({ pathInProject: pathInProject });
         var fileLines = convertToListOfStrings(path);
         // replace the frontmatter with the propper template reference
         // replace blockquotes from ReadMe renderer with new generic directives
@@ -81,6 +95,7 @@ function importFiles() {
         // replace remix code examples with our custom CodeSample component
         //replaceRemixCode();
         // remove permalink from frontmatter and create redirect object for vercel
+        writeToDestination(fileLines, pathInProject);
         // if its HTML, good luck
     });
 }
