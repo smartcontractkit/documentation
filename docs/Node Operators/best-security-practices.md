@@ -5,7 +5,21 @@ date: Last Modified
 title: "Security and Operation Best Practices"
 permalink: "docs/best-security-practices/"
 ---
-The following information provides a set of security and operation best practices that node operators need to use at a minimum to enhance the security and reliability of their infrastructure.
+
+**Table of Contents**
+- [Overview](#overview)
+- [Restricting Access](#restricting-access)
+- [Failover Capabilities](#failover-capabilities)
+- [Disaster Recoverty](#disaster-recovery)
+- [Active Monitoring](#active-monitoring)
+- [Frequent Updates](#frequent-updates)
+- [Jobs and Config](#jobs-and-config)
+- [Addresses](#addresses)
+- [Infrastructure as Code (IaC)](#infrastructure-as-code-iac)
+
+## Overview
+
+The page provides a set of security and operation best practices that node operators need to use at a minimum to enhance the security and reliability of their infrastructure.
 
 ## Restricting Access
 
