@@ -96,3 +96,5 @@ Running a Chainlink node works well if you template out your infrastructure usin
 - [SDL Chainlink Kubernetes Deployment](https://github.com/securedatalinks/ChainlinkKubernetes)
 - [LinkPool's Terraform Provider](https://github.com/linkpoolio/terraform-provider-chainlink)
 - [Ansible hardened Chainlink](https://github.com/WilsonBillkia/bane)
+- [Terraform module for serverless OCR node on AWS](https://github.com/ChainOrion/terraform-aws-chainlink-node)
+- [Terraform module for serverless adapters on AWS](https://github.com/ChainOrion/terraform-aws-chainlink-ea)
