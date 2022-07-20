@@ -25,6 +25,10 @@ To get your hands on the code right away, you can skip this overview:
 - [Deploy Your First Smart Contract](/docs/deploy-your-first-contract/): If you are new to smart contracts, deploy your first smart contract in an interactive web development environment.
 - [Learn how to use Data Feeds](/docs/consuming-data-feeds/): If you are already familiar with smart contracts and want to learn how to create _hybrid_ smart contracts, use Chainlink Data Feeds to get asset price data on-chain.
 
+:::note{.warning}
+if you chose xxx, you should also use yyy somewhere…
+:::
+
 <YouTube id="https://www.youtube.com/watch?v=rFXSEEQG9YE" />
 
 ## Table of Contents
