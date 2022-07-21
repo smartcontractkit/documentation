@@ -110,7 +110,7 @@ const replaceYoutube = (fileAsLines: string[]) => {
     const currLine = fileLines[i];
     if (currLine.trim().indexOf("https://www.youtube.com/watch?v") === 0) {
       console.log("youtube match", currLine);
-      fileLines[i] = `<YouTube id="${currLine.trim()} />`;
+      fileLines[i] = `<YouTube id="${currLine.trim()}" />`;
       console.log("youtube converted", fileLines[i]);
     }
   }
@@ -147,7 +147,7 @@ const replaceRemixCode = (fileAsLines: string[]) => {
       }
 
       // replace import for CodeSample component and add language code
-      fileLines[i] = fileLines[i].replace("{% include '", "<CodeSample src='/");
+      fileLines[i] = fileLines[i].replace("{% include '", "<CodeSample src='");
       if (!!languageCode) {
         fileLines[i] = fileLines[i].replace("%}", `lang="${languageCode}" />`);
       } else {

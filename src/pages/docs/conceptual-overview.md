@@ -25,11 +25,9 @@ To get your hands on the code right away, you can skip this overview:
 - [Deploy Your First Smart Contract](/docs/deploy-your-first-contract/): If you are new to smart contracts, deploy your first smart contract in an interactive web development environment.
 - [Learn how to use Data Feeds](/docs/consuming-data-feeds/): If you are already familiar with smart contracts and want to learn how to create _hybrid_ smart contracts, use Chainlink Data Feeds to get asset price data on-chain.
 
-:::note{.warning}
-if you chose xxx, you should also use yyy somewhere…
-:::
-
+<p>
 <YouTube id="https://www.youtube.com/watch?v=rFXSEEQG9YE" />
+</p>
 
 ## Table of Contents
 
@@ -67,7 +65,12 @@ Some networks are not EVM-compatible and use languages other than Solidity for s
 
 The structure of a smart contract is similar to that of a class in Javascript, with a few differences. For example, the following `HelloWorld` contract is a simple smart contract that stores a single variable and includes a function to update the value of that variable.
 
-<CodeSample src='/samples/Tutorials/HelloWorld.sol' />
+<CodeSample src='samples/Tutorials/HelloWorld.sol' lang="solidity" />
+
+<div class="remix-callout">
+  <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/Tutorials/HelloWorld.sol" target="_blank" >Open in Remix</a>
+  <a href="/docs/conceptual-overview/#what-is-remix" >What is Remix?</a>
+</div>
 
 ### Solidity versions
 
@@ -137,7 +140,12 @@ Functions use visibility modifiers to define the access level. Learn more about 
 
 An **interface** is another concept that is familiar to programmers of other languages. Interfaces define functions without their implementation, which leaves inheriting contracts to define the actual implementation themselves. This makes it easier to know what functions to call in a contract. Here's an example of an interface:
 
-<CodeSample src='/samples/Tutorials/Test.sol' />
+<CodeSample src='samples/Tutorials/Test.sol' lang="solidity" />
+
+<div class="remix-callout">
+  <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/Tutorials/Test.sol" target="_blank">Open in Remix</a>
+  <a href="/docs/conceptual-overview/#what-is-remix" >What is Remix?</a>
+</div>
 
 For this example, `override` is necessary in the `Test` contract function because it overrides the base function contained in the `numberComparison` interface. The contract uses `pure` instead of `view` because the `isSameNum` function in the `Test` contract does not return a storage variable.
 
@@ -176,9 +184,9 @@ Smart contracts also use oracles to get other capabilities on-chain:
 ## What is Remix?
 
 <p>
-  https://www.youtube.com/watch?v=JWJWT9cwFbo
+<YouTube id="https://www.youtube.com/watch?v=JWJWT9cwFbo" />
 </p>
-
+ 
 [Remix](https://remix.ethereum.org/) is a web IDE (integrated development environment) for creating, running, and debugging smart contracts in the browser. It is developed and maintained by the Ethereum foundation. Remix allows Solidity developers to write smart contracts without a development machine since everything required is included in the web interface. It allows for a simplified method of interacting with deployed contracts, without the need for a command line interface. Remix also has support for samples. This means that Remix can load code from Github.
 
 To learn how to use Remix, see the [Deploying Your First Smart Contract

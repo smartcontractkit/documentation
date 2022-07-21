@@ -129,7 +129,7 @@ var replaceRemixCode = function (fileAsLines) {
                 fileLines[i + 1] = nextLine.replace("```", "");
             }
             // replace import for CodeSample component and add language code
-            fileLines[i] = fileLines[i].replace("{% include '", "<CodeSample src='/");
+            fileLines[i] = fileLines[i].replace("{% include '", "<CodeSample src='");
             if (!!languageCode) {
                 fileLines[i] = fileLines[i].replace("%}", "lang=\"".concat(languageCode, "\" />"));
             }
