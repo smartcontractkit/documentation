@@ -137,14 +137,7 @@ Functions use visibility modifiers to define the access level. Learn more about 
 
 An **interface** is another concept that is familiar to programmers of other languages. Interfaces define functions without their implementation, which leaves inheriting contracts to define the actual implementation themselves. This makes it easier to know what functions to call in a contract. Here's an example of an interface:
 
-```solidity
-{% include 'samples/Tutorials/Test.sol' %}
-```
-
-<div class="remix-callout">
-  <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/Tutorials/Test.sol" target="_blank">Open in Remix</a>
-  <a href="/docs/conceptual-overview/#what-is-remix" >What is Remix?</a>
-</div>
+<CodeSample src='/samples/Tutorials/Test.sol' />
 
 For this example, `override` is necessary in the `Test` contract function because it overrides the base function contained in the `numberComparison` interface. The contract uses `pure` instead of `view` because the `isSameNum` function in the `Test` contract does not return a storage variable.
 
