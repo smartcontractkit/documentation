@@ -31,6 +31,7 @@ function myRemarkPlugin() {
 }
 
 export default defineConfig({
+  site: "https://docs.chain.link",
   integrations: [
     // Enable Preact to support Preact JSX components.
     preact(),
