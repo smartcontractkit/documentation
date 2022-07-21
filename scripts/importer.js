@@ -92,7 +92,17 @@ var replaceBlockquotes = function (fileAsLines) {
  * Becomes this:
  * <YouTube id="https://www.youtube.com/watch?v=ay4rXZhAefs" />
  */
-var replaceYoutube = function () { };
+var replaceYoutube = function (fileAsLines) {
+    var fileLines = fileAsLines;
+    var youtubeUrlRegex = "^((?:https?:)?//)?((?:www|m).)?((?:youtube(-nocookie)?.com|youtu.be))(/(?:[w-]+?v=|embed/|v/)?)([w-]+)(S+)?$";
+    for (var i = 0; i < fileLines.length; i++) {
+        var currLine = fileLines[i];
+        if (currLine.match(youtubeUrlRegex)) {
+            console.log("youtube match");
+        }
+    }
+    return fileLines;
+};
 /**
  * This:
  * ```solidity
@@ -150,19 +160,18 @@ function importFiles() {
     var filePaths = getAllFiles(pathToLook);
     filePaths.forEach(function (path) {
         // if the file is markdown
-        if (path.indexOf(".md") === -1) {
-            return;
-        }
+        // if (path.indexOf(".md") === -1) {
+        //   return;
+        // }
         var pathInProject = path.split(process.cwd())[1];
         // console.log({ pathInProject });
-        // const fileLines = convertToListOfStrings(path);
         var parsedFile = convertToListOfStrings(path);
         // update the frontmatter with the propper template reference
         parsedFile = updateFrontmatter(parsedFile, pathInProject);
         // replace blockquotes from ReadMe renderer with new generic directives
         parsedFile = replaceBlockquotes(parsedFile);
         // replace youtube urls with the Astro YouTube emmbed component
-        //replaceYoutube();
+        parsedFile = replaceYoutube(parsedFile);
         // replace remix code examples with our custom CodeSample component
         parsedFile = replaceRemixCode(parsedFile);
         // remove permalink from frontmatter and create redirect object for vercel
