@@ -33,7 +33,6 @@ function updateFrontmatter(fileAsLines, pathInProject) {
     var folderDepthToSrc = normalizedPath.split("/");
     var importPrefix = folderDepthToSrc.map(function (_) { return "../"; }).join("");
     console.log({ normalizedPath: normalizedPath });
-    console.log({ importPrefix: importPrefix });
     for (var i = 0; i < fileLines.length; i++) {
         var currLine = fileLines[i];
         if (currLine.indexOf("layout: nodes.liquid") === 0) {
@@ -56,8 +55,10 @@ function updateFrontmatter(fileAsLines, pathInProject) {
 var replaceBlockquotes = function (fileAsLines) {
     var emojis = {
         "> 📘": ":::info",
+        "> ℹ️": ":::info",
         "> 👍": ":::okay",
         "> 🚧": ":::warn",
+        "> ⚠️": ":::warn",
         "> ❗️": ":::error",
         // TODO: figure out what this maps to
         "> 🚰 ": ":::okay"
@@ -72,7 +73,7 @@ var replaceBlockquotes = function (fileAsLines) {
                 fileLines[i] = fileLines[i].replace(emoji, emojis[emoji]);
                 var nexLineCounter = i + 1;
                 while (fileLines[nexLineCounter].indexOf(">") === 0) {
-                    fileLines[nexLineCounter] = fileLines[nexLineCounter].replace("> ", "");
+                    fileLines[nexLineCounter] = fileLines[nexLineCounter].replace(">", "");
                     nexLineCounter++;
                 }
                 // add close tag to directive
@@ -100,7 +101,35 @@ var replaceYoutube = function () { };
  * Becomes this:
  * <CodeSample src='/samples/PriceFeeds/PriceConsumerV3.sol' />
  */
-var replaceRemixCode = function () { };
+var replaceRemixCode = function (fileAsLines) {
+    var fileLines = fileAsLines;
+    for (var i = 0; i < fileLines.length; i++) {
+        var currLine = fileLines[i];
+        if (currLine.indexOf("{% include 'samples/") > -1) {
+            // remove triple-tilde from previous line and extract language code
+            var languageCode = undefined;
+            var prevLine = fileLines[i - 1];
+            if (prevLine.indexOf("```") === 0) {
+                languageCode = prevLine.replace("```", "").split(" ")[0];
+                fileLines[i - 1] = "";
+            }
+            // remove triple-tilde from next line
+            var nextLine = fileLines[i + 1];
+            if (nextLine.indexOf("```") === 0) {
+                fileLines[i + 1] = nextLine.replace("```", "");
+            }
+            // replace import for CodeSample component and add language code
+            fileLines[i] = fileLines[i].replace("{% include '", "<CodeSample src='/");
+            if (!!languageCode) {
+                fileLines[i] = fileLines[i].replace("%}", "lang=\"".concat(languageCode, "\" />"));
+            }
+            else {
+                fileLines[i] = fileLines[i].replace("%}", "/>");
+            }
+        }
+    }
+    return fileLines;
+};
 function convertToListOfStrings(path) {
     var data = fs.readFileSync(path, "utf8");
     var separateLines = data.split(/\r?\n|\r|\n/g);
@@ -128,14 +157,14 @@ function importFiles() {
         // console.log({ pathInProject });
         // const fileLines = convertToListOfStrings(path);
         var parsedFile = convertToListOfStrings(path);
-        // replace the frontmatter with the propper template reference
+        // update the frontmatter with the propper template reference
         parsedFile = updateFrontmatter(parsedFile, pathInProject);
         // replace blockquotes from ReadMe renderer with new generic directives
         parsedFile = replaceBlockquotes(parsedFile);
         // replace youtube urls with the Astro YouTube emmbed component
         //replaceYoutube();
         // replace remix code examples with our custom CodeSample component
-        //replaceRemixCode();
+        parsedFile = replaceRemixCode(parsedFile);
         // remove permalink from frontmatter and create redirect object for vercel
         writeToDestination(parsedFile, pathInProject);
         // if its HTML, good luck

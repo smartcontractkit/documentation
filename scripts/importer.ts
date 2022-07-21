@@ -65,6 +65,7 @@ const replaceBlockquotes = (fileAsLines: string[]) => {
     "> ℹ️": ":::info",
     "> 👍": ":::okay",
     "> 🚧": ":::warn",
+    "> ⚠️": ":::warn",
     "> ❗️": ":::error",
     // TODO: figure out what this maps to
     "> 🚰 ": ":::okay",
@@ -83,7 +84,7 @@ const replaceBlockquotes = (fileAsLines: string[]) => {
         let nexLineCounter = i + 1;
         while (fileLines[nexLineCounter].indexOf(">") === 0) {
           fileLines[nexLineCounter] = fileLines[nexLineCounter].replace(
-            "> ",
+            ">",
             ""
           );
           nexLineCounter++;
@@ -119,12 +120,28 @@ const replaceRemixCode = (fileAsLines: string[]) => {
   for (let i = 0; i < fileLines.length; i++) {
     const currLine = fileLines[i];
 
-    if (currLine.indexOf("{% include 'samples/") > 0) {
-      fileLines[i] = currLine
-        .replace("{% include '", "<CodeSample src='/")
-        .replace("%}", "/>");
-      // remove triple-tilde from previous line and pass language as a parameter
+    if (currLine.indexOf("{% include 'samples/") > -1) {
+      // remove triple-tilde from previous line and extract language code
+      let languageCode = undefined;
+      const prevLine = fileLines[i - 1];
+      if (prevLine.indexOf("```") === 0) {
+        languageCode = prevLine.replace("```", "").split(" ")[0];
+        fileLines[i - 1] = "";
+      }
+
       // remove triple-tilde from next line
+      const nextLine = fileLines[i + 1];
+      if (nextLine.indexOf("```") === 0) {
+        fileLines[i + 1] = nextLine.replace("```", "");
+      }
+
+      // replace import for CodeSample component and add language code
+      fileLines[i] = fileLines[i].replace("{% include '", "<CodeSample src='/");
+      if (!!languageCode) {
+        fileLines[i] = fileLines[i].replace("%}", `lang="${languageCode}" />`);
+      } else {
+        fileLines[i] = fileLines[i].replace("%}", `/>`);
+      }
     }
   }
   return fileLines;
