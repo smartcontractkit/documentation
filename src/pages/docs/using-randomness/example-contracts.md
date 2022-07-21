@@ -1,5 +1,5 @@
 ---
-layout: ../../layouts/MainLayout.astro
+layout: ../../../layouts/MainLayout.astro
 section: ethereum
 date: Last Modified
 title: "Example Contracts"

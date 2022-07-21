@@ -1,5 +1,5 @@
 ---
-layout: ../../layouts/MainLayout.astro
+layout: ../../../../layouts/MainLayout.astro
 section: legacy
 date: Last Modified
 title: "Introduction to Chainlink VRF [v1]"

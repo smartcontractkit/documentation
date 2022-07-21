@@ -1,9 +1,14 @@
 ---
 import { Code } from 'astro/components';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 
 const { src, lang } = Astro.props;
 const url = new URL(Astro.request.url);
-const data = await (await fetch(`${url.origin}${src}`)).text()
+// const data = await (await fetch(`${url.origin}${src}`)).text()
+// const data = (await import(`../${src}`).then(data => data.text()))
+const data = await fs.readFile(path.join(process.cwd(), "public", src), 'utf-8');
+
 ---
 
 <Code code={data.toString()} lang={lang} />
