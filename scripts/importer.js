@@ -32,7 +32,6 @@ function updateFrontmatter(fileAsLines, pathInProject) {
     var normalizedPath = pathInProject.split("/11ty/")[1];
     var folderDepthToSrc = normalizedPath.split("/");
     var importPrefix = folderDepthToSrc.map(function (_) { return "../"; }).join("");
-    console.log({ normalizedPath: normalizedPath });
     for (var i = 0; i < fileLines.length; i++) {
         var currLine = fileLines[i];
         if (currLine.indexOf("layout: nodes.liquid") === 0) {
@@ -94,11 +93,12 @@ var replaceBlockquotes = function (fileAsLines) {
  */
 var replaceYoutube = function (fileAsLines) {
     var fileLines = fileAsLines;
-    var youtubeUrlRegex = "^((?:https?:)?//)?((?:www|m).)?((?:youtube(-nocookie)?.com|youtu.be))(/(?:[w-]+?v=|embed/|v/)?)([w-]+)(S+)?$";
     for (var i = 0; i < fileLines.length; i++) {
         var currLine = fileLines[i];
-        if (currLine.match(youtubeUrlRegex)) {
-            console.log("youtube match");
+        if (currLine.trim().indexOf("https://www.youtube.com/watch?v") === 0) {
+            console.log("youtube match", currLine);
+            fileLines[i] = "<YouTube id=\"".concat(currLine.trim(), " />");
+            console.log("youtube converted", fileLines[i]);
         }
     }
     return fileLines;

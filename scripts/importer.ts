@@ -36,7 +36,6 @@ function updateFrontmatter(fileAsLines: string[], pathInProject: string) {
   const normalizedPath = pathInProject.split("/11ty/")[1];
   const folderDepthToSrc = normalizedPath.split("/");
   const importPrefix = folderDepthToSrc.map((_) => "../").join("");
-  console.log({ normalizedPath });
 
   for (let i = 0; i < fileLines.length; i++) {
     const currLine = fileLines[i];
@@ -106,12 +105,13 @@ const replaceBlockquotes = (fileAsLines: string[]) => {
  */
 const replaceYoutube = (fileAsLines: string[]) => {
   const fileLines = fileAsLines;
-  const youtubeUrlRegex =
-    "^((?:https?:)?//)?((?:www|m).)?((?:youtube(-nocookie)?.com|youtu.be))(/(?:[w-]+?v=|embed/|v/)?)([w-]+)(S+)?$";
+
   for (let i = 0; i < fileLines.length; i++) {
     const currLine = fileLines[i];
-    if (currLine.match(youtubeUrlRegex)) {
-      console.log("youtube match");
+    if (currLine.trim().indexOf("https://www.youtube.com/watch?v") === 0) {
+      console.log("youtube match", currLine);
+      fileLines[i] = `<YouTube id="${currLine.trim()} />`;
+      console.log("youtube converted", fileLines[i]);
     }
   }
   return fileLines;

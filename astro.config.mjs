@@ -39,14 +39,8 @@ export default defineConfig({
     embeds(),
     AutoImport({
       imports: [
-        // Import a component’s default export
-        // generates:
-        // import A from './src/components/A.astro';
         "./src/components/CodeSample/CodeSample.astro",
         {
-          // Import a module’s named exports
-          // generates:
-          // import { Tweet, YouTube } from 'astro-embed';
           "astro-embed": ["Tweet", "YouTube"],
         },
       ],
@@ -58,7 +52,7 @@ export default defineConfig({
       "remark-gfm",
       "remark-smartypants",
       "remark-directive",
-      // myRemarkPlugin,
+      myRemarkPlugin,
     ],
   },
 });
