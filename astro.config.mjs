@@ -55,5 +55,9 @@ export default defineConfig({
       "remark-directive",
       myRemarkPlugin,
     ],
+    rehypePlugins: [
+      "rehype-slug",
+      ["rehype-autolink-headings", { behavior: "prepend" }],
+    ],
   },
 });
