@@ -12,10 +12,8 @@ contract PriceConsumerWithL2Sequencer {
     AggregatorV2V3Interface internal priceFeed;
     AggregatorV2V3Interface internal sequencerUptimeFeed;
 
-    uint256 private constant STALENESS_THRESHOLD = 1800;
     uint256 private constant GRACE_PERIOD_TIME = 3600;
 
-    error StaleFeed();
     error GracePeriodNotOver();
 
     /**
@@ -57,16 +55,9 @@ contract PriceConsumerWithL2Sequencer {
             /*uint80 roundId*/,
             int256 answer,
             uint256 startedAt,
-            uint256 updatedAt,
+            /*uint256 updatedAt*/,
             /*uint80 answeredInRound*/
         ) = sequencerUptimeFeed.latestRoundData();
-
-        // Feed should update every half an hour.  Consumers are free
-        // to define another threshold.
-        uint256 timeSinceLastUpdate = block.timestamp - updatedAt;
-        if (timeSinceLastUpdate > STALENESS_THRESHOLD) {
-            revert StaleFeed();
-        }
 
         // Answer == 0: Sequencer is up
         // Answer == 1: Sequencer is down

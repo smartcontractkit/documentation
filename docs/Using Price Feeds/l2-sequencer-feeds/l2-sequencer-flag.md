@@ -23,8 +23,6 @@ Because not all L2 networks are architected the same way, the Arbitrum sequencer
 - [Optimism and Metis](#optimism-and-metis)
   - [Architecture on Optimism and Metis](#architecture-on-optimism-and-metis)
   - [Handling outages on Optimism and Metis](#handling-outages-on-optimism-and-metis)
-    - [L1 to L2 transactions](#l1-to-l2-transactions)
-    - [Direct Sequencer Transactions](#direct-sequencer-transactions)
   - [Example code for Optimism and Metis](#example-code-for-optimism-and-metis)
 
 ## Arbitrum
@@ -83,7 +81,7 @@ You can find proxy addresses for the Optimism/Metis L2 sequencer feeds at the fo
 
 ### Architecture on Optimism and Metis
 
-On Optimism and Metis, he sequencer’s status is relayed from L1 to L2 where the consumer can retrieve it.
+On Optimism and Metis, the sequencer’s status is relayed from L1 to L2 where the consumer can retrieve it.
 
 ![L2 Sequencer Feed Diagram](/images/data-feed/l2-diagram-optimism-metis.png)
 
@@ -109,13 +107,6 @@ On Optimism and Metis, he sequencer’s status is relayed from L1 to L2 where th
 
 ### Handling outages on Optimism and Metis
 
-There are two scenarios that need to be handled whenever the Sequencer goes down:
-
-- [L1 to L2 transactions](#l1-to-l2-transactions)
-- [Direct Sequencer Transactions](#direct-sequencer-transactions)
-
-#### L1 to L2 transactions
-
 If the sequencer is down, messages cannot be transmitted from L1 to L2 and **no L2 transactions are executed**. Instead, messages are enqueued in the `CanonicalTransactionChain` on L1 and only processed in the order they arrived later when the sequencer comes back up. As long as the message from the validator on L1 is already enqueued in the `CTC`, the flag on the sequencer uptime feed on L2 will be guaranteed to be flipped prior to any subsequent transactions. The transaction that flips the flag on the uptime feed will be executed before transactions that were enqueued after it. This is further explained in the diagrams below.
 
 When the Sequencer is down, all L2 transactions sent from the L1 network wait in the pending queue.
@@ -131,19 +122,6 @@ After the sequencer comes back up, it moves moves all transactions in the pendin
 1. Because **TX3** happens before **TX4**, **TX4** will read the status of the Sequencer as being down and responds accordingly.
 
 ![L2 Sequencer Feed Diagram](/images/data-feed/seq-down-2.png)
-
-#### Direct Sequencer Transactions
-
-In addition to enqueuing transactions onto the `CTC` contract on L1, users can also directly send transactions to the Sequencer to have them immediately execute ahead of the transaction sent from L1. A malicious sequencer could delay enqueued transactions for an indefinite amount of time while still processing other L2 transactions. This breaks the core assumption that the uptime feed’s transaction to flip the Sequencer flag will run before other L2 transactions are executed. A malicious actor could take advantage of this by directly submitting a transaction to the sequencer and running as if the sequencer is still healthy.
-
-The solution to this problem is to allow consumers to check for the feed’s freshness in their smart contracts. This can be done by calling the feed’s `latestRoundData` function and inspecting the `updatedAt` fields to make sure that it has been updated within a specified threshold. The feed is expected to update every 30 minutes, but you can set a threshold higher than that. An example of how to do this is shown in the [example code for Optimism and Metis](#example-code-for-optimism-and-metis).
-
-Do not confuse the `startedAt` and `updatedAt` fields. These fields are defined as follows:
-
-- `startedAt` is the **L1 timestamp** when the round was created. Use this to determine the timestamp when the sequencer changed state.
-- `updatedAt` is the **L2 timestamp** when the round was last updated. Use this to determine the feed’s freshness. The answer for `updatedAt` will be 0 for invalid rounds or an integer value representing the epoch seconds for valid rounds. Feeds are expected to update at least once every 24 hours, so consumers **should not** set their update threshold lower than this.
-
-In summary, the above fields allow smart contracts to determine if the value the feed is returning is fresh and whether or not it should be trusted.
 
 ### Example code for Optimism and Metis
 
