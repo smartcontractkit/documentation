@@ -35,7 +35,8 @@ See [shared fields](/docs/jobs/#shared-fields).
 
 - `contractAddress`: The address of the `OffchainReportingAggregator` contract.
 - `evmChainID`: The chain ID of the EVM chain in which the job will operate.
-- `p2pBootstrapPeers`: A list of libp2p dial addresses of the other bootstrap nodes helping oracle nodes find one another on the network.
+- `p2pBootstrapPeers`: A list of libp2p v1 dial addresses of the other bootstrap nodes helping oracle nodes find one another on the network.
+- `p2pv2Bootstrappeers`: A list of libp2p v2 dial addresses of the other bootstrap nodes helping oracle nodes find one another on the network.
 - `isBootstrapPeer`: This must be set to `true`.
 
 **Job type specific pipeline variables**
@@ -98,7 +99,8 @@ See [shared fields](/docs/jobs/#shared-fields).
 - `contractAddress`: The address of the `OffchainReportingAggregator` contract.
 - `evmChainID`: The chain ID of the EVM chain in which the job will operate.
 - `p2pPeerID`: The base58-encoded libp2p public key of this node.
-- `p2pBootstrapPeers`: A list of libp2p dial addresses of the other bootstrap nodes helping oracle nodes find one another on the network.
+- `p2pBootstrapPeers`: A list of libp2p v1 dial addresses of bootstrap nodes helping oracle nodes find one another on the network.
+- `p2pv2Bootstrappers`: A list of libp2p v2 dial addresses of bootstrap nodes helping oracle nodes find one another on the network.
 - `keyBundleID`: The hash of the OCR key bundle to be used by this node. The Chainlink node keystore manages these key bundles. Use the node **Key Management** UI or the `chainlink keys ocr` sub-commands in the CLI to create and manage key bundles.
 - `monitoringEndpoint`: The URL of the telemetry endpoint to send OCR metrics to.
 - `transmitterAddress`: The Ethereum address from which to send aggregated submissions to the OCR contract.
