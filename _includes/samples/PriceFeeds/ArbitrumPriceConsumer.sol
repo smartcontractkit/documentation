@@ -62,7 +62,7 @@ contract ArbitrumPriceConsumer {
     ) = sequencerUptimeFeed.latestRoundData();
 
         // Answer == 0: Sequencer is up
-        // Snswer == 1: Sequencer is down
+        // Answer == 1: Sequencer is down
         if (answer == 0 && (block.timestamp - updatedAt) < 3600) {
             return true;
         }
