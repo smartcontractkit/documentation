@@ -29,11 +29,11 @@ This example teaches you how to automate the process of compounding arbitrary yi
 
 [Batch NFT Reveal repository](https://github.com/hackbg/chainlink-keepers-templates/tree/main/batch-nft-reveal#chainlink-keepers-template-batch-nft-reveal)
 
-This example teaches how to use both [Chainlink VRF](/docs/chainlink-vrf/) and Chainlink Keepers together. By using Keepers with batch NFT reveals, you can automate and further decentralize your NFTs.
+This example teaches how to use [Chainlink VRF](/docs/chainlink-vrf/) and Chainlink Keepers together. Using Keepers with batch NFT reveals, you can automate and further decentralize your NFTs.
 
 ### Dynamic NFTs
 
-[Dynamic NFTs](https://github.com/smartcontractkit/smart-contract-examples/tree/main/dynamic-nft#dynamic-nfts)
+[Dynamic NFTs repository](https://github.com/smartcontractkit/smart-contract-examples/tree/main/dynamic-nft#dynamic-nfts)
 
 <p>
 https://www.youtube.com/watch?v=E7Rm1LUKhj4
