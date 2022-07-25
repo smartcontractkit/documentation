@@ -19,6 +19,18 @@ You can write your first smart contract and run it in your browser without any k
 >
 > If you are already familiar with how to deploy Smart Contracts and use MetaMask, you can skip to the [Consuming Data Feeds](/docs/consuming-data-feeds/) guide to learn how to connect your smart contracts to Chainlink data feeds.
 
+:::note[more info]{ }
+Already know Solidity and have MetaMask configured?
+
+If you are already familiar with how to deploy Smart Contracts and use MetaMask, you can skip to the [Consuming Data Feeds](/docs/consuming-data-feeds/) guide to learn how to connect your smart contracts to Chainlink data feeds.
+:::
+
+:::warning[more warning]{ }
+Already know Solidity and have MetaMask configured?
+
+If you are already familiar with how to deploy Smart Contracts and use MetaMask, you can skip to the [Consuming Data Feeds](/docs/consuming-data-feeds/) guide to learn how to connect your smart contracts to Chainlink data feeds.
+:::
+
 **Table of Contents**
 
 - [Overview](#overview)
