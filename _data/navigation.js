@@ -554,7 +554,6 @@ module.exports = {
                 title: 'Divide',
                 url: '/docs/jobs/task-types/divide/',
               },
-
               {
                 title: 'Any',
                 url: '/docs/jobs/task-types/any/',
@@ -574,6 +573,22 @@ module.exports = {
               {
                 title: 'Sum',
                 url: '/docs/jobs/task-types/sum/',
+              },
+              {
+                title: 'Hex Decode',
+                url: '/docs/jobs/task-types/hexdecode/',
+              },
+              {
+                title: 'Base64 Decode',
+                url: '/docs/jobs/task-types/base64decode/',
+              },
+              {
+                title: 'Uppercase',
+                url: '/docs/jobs/task-types/uppercase/',
+              },
+              {
+                title: 'Lowercase',
+                url: '/docs/jobs/task-types/lowercase/',
               },
             ],
           },
