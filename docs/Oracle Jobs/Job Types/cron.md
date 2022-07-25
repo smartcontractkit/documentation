@@ -6,9 +6,7 @@ title: "Cron Jobs"
 permalink: "docs/jobs/types/cron/"
 ---
 
-> ✅ NOTE
->
-> If you're interested in scheduling a contract function call, we recommend using the [Chainlink Job Scheduler](https://keepers.chain.link/new-time-based). The Job Scheduler leverages the [Chainlink Keepers](/docs/chainlink-keepers/introduction) network to execute deployed contract calls on a cron schedule that you define.
+> ✅ If you need to schedule a contract function call, use the [Chainlink Job Scheduler](https://keepers.chain.link/new-time-based). The Job Scheduler uses the [Chainlink Keepers](/docs/chainlink-keepers/introduction) network to execute deployed contract calls on a cron schedule that you define.
 
 Executes a job on a schedule. Does not rely on any kind of external trigger.
 
