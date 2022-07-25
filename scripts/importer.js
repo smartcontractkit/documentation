@@ -73,7 +73,7 @@ var replaceBlockquotes = function (fileAsLines) {
     var _loop_1 = function (i) {
         var currLine = fileLines[i];
         Object.keys(emojis).forEach(function (emoji) {
-            if (currLine.indexOf(emoji) === 0) {
+            if (currLine.indexOf(emoji) > -1) {
                 // Brad approved this
                 fileLines[i] = fileLines[i].replace(emoji, "".concat(emojis[emoji], "[")) + "]";
                 console.log(fileLines[i]);

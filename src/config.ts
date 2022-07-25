@@ -112,20 +112,18 @@ export const SIDEBAR = {
     {
       text: "Chainlink Architecture",
       link: "docs/architecture-overview/",
-      children: [
-        {
-          text: "Basic Request Model",
-          link: "docs/architecture-request-model/",
-        },
-        {
-          text: "Decentralized Data Model",
-          link: "docs/architecture-decentralized-model/",
-        },
-        {
-          text: "Off-Chain Reporting",
-          link: "docs/off-chain-reporting/",
-        },
-      ],
+    },
+    {
+      text: "Basic Request Model",
+      link: "docs/architecture-request-model/",
+    },
+    {
+      text: "Decentralized Data Model",
+      link: "docs/architecture-decentralized-model/",
+    },
+    {
+      text: "Off-Chain Reporting",
+      link: "docs/off-chain-reporting/",
     },
   ],
 };

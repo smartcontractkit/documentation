@@ -79,6 +79,7 @@ const replaceBlockquotes = (fileAsLines: string[]) => {
 
   const fileLines = fileAsLines;
 
+  // TODO: update this to handle indentation
   for (let i = 0; i < fileLines.length; i++) {
     const currLine = fileLines[i];
     Object.keys(emojis).forEach((emoji) => {

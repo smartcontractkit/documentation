@@ -2,11 +2,9 @@
 layout: ../../layouts/MainLayout.astro
 section: ethereum
 date: Last Modified
-title: 'Making Keepers-compatible Contracts'
+title: "Making Keepers-compatible Contracts"
 whatsnext:
-  {
-    'Register your Upkeep': '/docs/chainlink-keepers/register-upkeep/',
-  }
+  { "Register your Upkeep": "/docs/chainlink-keepers/register-upkeep/" }
 ---
 
 ## Overview
@@ -14,38 +12,35 @@ whatsnext:
 Learn how to make smart contracts **Keepers-compatible** with the `KeeperCompatibleInterface` and its functions.
 
 **Table of Contents**
-+ [Example Contract](#example-contract)
-+ [Functions](#functions)
-  + [`checkUpkeep` function](#checkupkeep-function)
-    + [`checkData`](#checkdata)
-    + [`performData`](#performdata)
-  + [`performUpkeep` function](#performupkeep-function)
-    + [`performData`](#performdata-1)
-+ [Best practices](#best-practices)
-  + [Revalidate `performUpkeep`](#revalidate-performupkeep)
-  + [Test your contract](#test-your-contract)
 
+- [Example Contract](#example-contract)
+- [Functions](#functions)
+  - [`checkUpkeep` function](#checkupkeep-function)
+    - [`checkData`](#checkdata)
+    - [`performData`](#performdata)
+  - [`performUpkeep` function](#performupkeep-function)
+    - [`performData`](#performdata-1)
+- [Best practices](#best-practices)
+  - [Revalidate `performUpkeep`](#revalidate-performupkeep)
+  - [Test your contract](#test-your-contract)
 
 ## Example Contract
 
 Keepers-compatible contracts must meet the following requirements:
 
-* Import `KeepersCompatible.sol`. You can refer to the [Chainlink Contracts](https://github.com/smartcontractkit/chainlink/tree/develop/contracts/src) on GitHub to find the latest version.
-* Use the `KeepersCompatibleInterface` from the library to ensure your `checkUpkeep` and `performUpkeep`function definitions match the definitions expected by the Keepers Network.
-* Include a `checkUpkeep` function that contains the logic that will be executed off-chain to see if `performUpkeep` should be executed. `checkUpkeep` can use on-chain data and a specified `checkData` parameter to perform complex calculations off-chain and then send the result to `performUpkeep` as `performData`.
-* Include a `performUpkeep` function that will be executed on-chain when `checkUpkeep` returns `true`. Because `performUpkeep` is external, users are advised to revalidate conditions and performData.
+- Import `KeepersCompatible.sol`. You can refer to the [Chainlink Contracts](https://github.com/smartcontractkit/chainlink/tree/develop/contracts/src) on GitHub to find the latest version.
+- Use the `KeepersCompatibleInterface` from the library to ensure your `checkUpkeep` and `performUpkeep`function definitions match the definitions expected by the Keepers Network.
+- Include a `checkUpkeep` function that contains the logic that will be executed off-chain to see if `performUpkeep` should be executed. `checkUpkeep` can use on-chain data and a specified `checkData` parameter to perform complex calculations off-chain and then send the result to `performUpkeep` as `performData`.
+- Include a `performUpkeep` function that will be executed on-chain when `checkUpkeep` returns `true`. Because `performUpkeep` is external, users are advised to revalidate conditions and performData.
 
 Use these elements to create a Keepers-compatible contract that will automatically increment a counter after every `updateInterval` seconds. After you register the contract as an Upkeep, the Keepers Network simulates our `checkUpkeep` off-chain during every block to determine if the `updateInterval` time has passed since the last increment (timestamp). When `checkUpkeep` returns true, the Keepers Network calls `performUpkeep` on-chain and increments the counter. This cycle repeats until the Upkeep is cancelled or runs out of funding.
 
-
-
 <CodeSample src='samples/Keepers/KeepersCounter.sol' lang="solidity" />
 
-
-<div class="remix-callout">
+<!-- <div class="remix-callout">
     <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/Keepers/KeepersCounter.sol" >Open in Remix</a>
     <a href="/docs/conceptual-overview/#what-is-remix" > What is Remix?</a>
-</div>
+</div> -->
 
 Compile and deploy your own Keepers Counter onto a [supported Testnet](../supported-networks).
 
@@ -57,13 +52,12 @@ To see more complex examples, go to the [utility contracts](../utility-contracts
 
 We will now look at each function in a Keepers-compatible contract in detail.
 
-
 ## Functions
 
-| Function Name                   | Description                                                          |
-| ------------------------------- | -------------------------------------------------------------------- |
-| [checkUpkeep](#checkupkeep-function)     | Runs off-chain at every block to determine if the `performUpkeep` function should be called on-chain.                     |
-| [performUpkeep](#performupkeep-function) | Contains the logic that should be executed on-chain when `checkUpkeep` returns true. |
+| Function Name                            | Description                                                                                           |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| [checkUpkeep](#checkupkeep-function)     | Runs off-chain at every block to determine if the `performUpkeep` function should be called on-chain. |
+| [performUpkeep](#performupkeep-function) | Contains the logic that should be executed on-chain when `checkUpkeep` returns true.                  |
 
 ### `checkUpkeep` function
 
@@ -71,7 +65,7 @@ This function contains the logic that runs off-chain during every block as an `e
 
 :::info[ Gas limits for `checkUpkeep`]
 
- The `checkUpkeep` function is subject to the `checkGasLimit` in the [registry configuration](/docs/chainlink-keepers/supported-networks/#configurations).
+The `checkUpkeep` function is subject to the `checkGasLimit` in the [registry configuration](/docs/chainlink-keepers/supported-networks/#configurations).
 
 :::
 
@@ -131,11 +125,11 @@ When `checkUpkeep` returns `upkeepNeeded == true`, the Keeper node broadcasts a 
 
 :::info[ Gas limits for `performUpkeep`]
 
- During registration you have to specify the maximum gas limit that we should allow your contract to use. We simulate `performUpkeep` during `checkUpkeep` and if the gas exceeds this limit the function will not execute on-chain. One method to determine your upkeep's gas limit is to simulate the `performUpkeep` function and add enough overhead to take into account increases that might happen due to changes in `performData` or on-chain data. The gas limit you specify cannot exceed the `callGasLimit` in the [configuration of the registry](/docs/chainlink-keepers/supported-networks/#configurations).
+During registration you have to specify the maximum gas limit that we should allow your contract to use. We simulate `performUpkeep` during `checkUpkeep` and if the gas exceeds this limit the function will not execute on-chain. One method to determine your upkeep's gas limit is to simulate the `performUpkeep` function and add enough overhead to take into account increases that might happen due to changes in `performData` or on-chain data. The gas limit you specify cannot exceed the `callGasLimit` in the [configuration of the registry](/docs/chainlink-keepers/supported-networks/#configurations).
 
 :::
 
-Ensure that your `performUpkeep` is *idempotent*. Your `performUpkeep` function should change state such that `checkUpkeep` will not return `true` for the same subset of work once said work is complete. Otherwise the Upkeep will remain eligible and result in multiple performances by the Keeper Network on the exactly same subset of work. As a best practice, always [revalidate](#revalidate-performupkeep) conditions for your Upkeep at the start of your `performUpkeep` function.
+Ensure that your `performUpkeep` is _idempotent_. Your `performUpkeep` function should change state such that `checkUpkeep` will not return `true` for the same subset of work once said work is complete. Otherwise the Upkeep will remain eligible and result in multiple performances by the Keeper Network on the exactly same subset of work. As a best practice, always [revalidate](#revalidate-performupkeep) conditions for your Upkeep at the start of your `performUpkeep` function.
 
 ```solidity
 function performUpkeep(
@@ -156,7 +150,6 @@ You can perform complex and broad off-chain computation, then execute on-chain s
   For example, if you have a "top up" contract that ensures several hundred account balances never decrease below a threshold, pass the list of accounts that meet the conditions so that the `performUpkeep` function validates and tops up only a small subset of the accounts.
 
 - **Identify the subset of states that must be updated**: If your contract maintains complicated objects such as arrays and structs, or stores a lot of data, you should read through your storage objects within your `checkUpkeep` and run your proprietary logic to determine if they require updates or maintenance. After that is complete, you can pass the known list of objects that require updates through the `performData` function.
-
 
 ## Best practices
 
