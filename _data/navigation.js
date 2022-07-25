@@ -99,14 +99,16 @@ module.exports = {
           {
             title: 'Using Data Feeds',
             url: '/docs/get-the-latest-price/',
+            children: [
+              {
+                title: 'Data Feeds API Reference',
+                url: '/docs/price-feeds-api-reference/',
+              }
+            ]
           },
           {
             title: 'Historical Price Data',
             url: '/docs/historical-price-data/',
-          },
-          {
-            title: 'Data Feeds API Reference',
-            url: '/docs/price-feeds-api-reference/',
           },
           {
             title: 'Feed Registry',
