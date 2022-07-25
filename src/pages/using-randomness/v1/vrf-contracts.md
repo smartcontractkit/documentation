@@ -8,9 +8,10 @@ metadata:
   title: "Chainlink VRF Contract Addresses"
 ---
 
-:::warn VRF v2 replaces and enhances VRF v1.
+:::warn[ VRF v2 replaces and enhances VRF v1.]
 
  See the [VRF v2 documentation](/docs/vrf-contracts/) to learn more.
+
 :::
 
 Chainlink VRF allows you to integrate provably-fair and verifiably random data in your smart contract.
@@ -19,9 +20,10 @@ For implementation details, read [Introduction to Chainlink VRF](/docs/chainlink
 
 ## Polygon (Matic) Mainnet
 
-:::info Important
+:::info[ Important]
 
  The LINK provided by the [Polygon (Matic) Bridge](https://wallet.polygon.technology/bridge) is not ERC-677 compatible, so cannot be used with Chainlink oracles. However, it can be [**converted to the official LINK token on Polygon (Matic) using Chainlink's PegSwap service**](https://pegswap.chain.link/)
+
 :::
 
 |Item|Value|
@@ -31,9 +33,10 @@ For implementation details, read [Introduction to Chainlink VRF](/docs/chainlink
 |Key Hash|`0xf86195cf7690c55907b2b611ebb7343a6f649bff128701cc542f0569e2c549da`|
 |Fee|0.0001 LINK|
 
-:::info VRF Response Times on Polygon
+:::info[ VRF Response Times on Polygon]
 
  VRF responses are generated after 10 block confirmations on Polygon by default. Please [get in touch with us](https://chainlinkcommunity.typeform.com/to/OYQO67EF?page=docs-VRF) if you require VRF responses to be generated after a higher number of block confirmations, based on what you feel is best for achieving secure finality times on Polygon.
+
 :::
 
 ## Polygon (Matic) Mumbai Testnet
@@ -51,9 +54,10 @@ For implementation details, read [Introduction to Chainlink VRF](/docs/chainlink
 
 ## BNB Chain Mainnet
 
-:::info Important
+:::info[ Important]
 
  The LINK provided by the [BNB Chain Bridge](https://www.bnbchain.world/en/bridge) is not ERC-677 compatible, so cannot be used with Chainlink oracles. However, it can be [**converted to the official LINK token on BNB Chain using Chainlink's PegSwap service**](https://pegswap.chain.link/).
+
 :::
 
 |Item|Value|
@@ -63,16 +67,18 @@ For implementation details, read [Introduction to Chainlink VRF](/docs/chainlink
 |Key Hash|`0xc251acd21ec4fb7f31bb8868288bfdbaeb4fbfec2df3735ddbd4f7dc8d60103c`|
 |Fee|0.2 LINK - initial fees on BNB Chain are meant to cover the highest gas cost prices. To use VRF more efficiently, please [contact us](https://chainlinkcommunity.typeform.com/to/OYQO67EF?page=docs-VRF)|
 
-:::info Early Access
+:::info[ Early Access]
 
  For the most efficient consumption of Chainlink VRF on BNB Chain, please contact us using [this form](https://chainlinkcommunity.typeform.com/to/OYQO67EF?page=docs-VRF) to create a payment channel, through which we can provide VRF to you at the cost of BNB Chain network gas fees. You will only be paying in LINK for the gas costs incurred by the Chainlink node from calling your smart contract.
+
 :::
 
 ## BNB Chain Testnet
 
-:::okayBNB Chain Faucet
+:::okay[BNB Chain Faucet]
 
  Testnet LINK is available from https://faucets.chain.link/chapel
+
 :::
 
 |Item|Value|
@@ -91,9 +97,10 @@ For implementation details, read [Introduction to Chainlink VRF](/docs/chainlink
 |Key Hash|`0xAA77729D3466CA35AE8D28B3BBAC7CC36A5031EFDC430821C02BC31A238AF445`|
 |Fee|2 LINK - initial fees on Ethereum are meant to cover the highest gas cost prices. To use VRF more efficiently, please [contact us](https://chainlinkcommunity.typeform.com/to/OYQO67EF?page=docs-VRF)|
 
-:::info Early Access
+:::info[ Early Access]
 
  For the most efficient consumption of Chainlink VRF on Ethereum, please contact us using [this form](https://chainlinkcommunity.typeform.com/to/OYQO67EF?page=docs-VRF) to create a payment channel, through which we can provide VRF to you at the cost of Ethereum network gas fees. You will only be paying in LINK for the gas costs incurred by the Chainlink node from calling your smart contract.
+
 :::
 
 ## Kovan

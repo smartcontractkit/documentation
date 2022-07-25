@@ -9,13 +9,15 @@ whatsnext: {"Building External Initiators":"/docs/building-external-initiators/"
 
 External initiators allow jobs in a node to be initiated depending on some external condition. The ability to create and add external initiators to Chainlink nodes enables blockchain agnostic cross-chain compatibility.
 
-:::warn Note
+:::warn[ Note]
 
  At this time of writing, external initiators do not show up in the bridges tab. However, they act exactly the same as if they did.
+
 :::
 
-:::warn NOTE
+:::warn[ NOTE]
  External initiators are disabled on nodes by default. Set the `FEATURE_EXTERNAL_INITIATORS=true` [configuration variable](/docs/configuration-variables/#feature_external_initiators) to enable this feature.
+
 :::
 
 Initiator Bridges handle the authentication to and from the External Initiator and where to send the messages. When creating a Bridge two parameters are required:

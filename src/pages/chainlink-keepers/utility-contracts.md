@@ -35,9 +35,10 @@ You can open the contract in Remix:
     <a href="/docs/conceptual-overview/#what-is-remix" >What is Remix?</a>
 </div>
 
-:::warn Note on Owner Settings
+:::warn[ Note on Owner Settings]
 
  Aside from certain features listed below, only owners can withdraw funds and pause or unpause the contract. If the contract is paused or unpaused, it will affect `checkUpkeep`, `performUpkeep`, and `topUp` functions.
+
 :::
 
 ## Functions

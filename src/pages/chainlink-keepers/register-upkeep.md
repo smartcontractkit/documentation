@@ -50,9 +50,10 @@ After you register your contract as an Upkeep on the Keepers Registry, the Keepe
 1. **Click `Register upkeep`** and confirm the transaction in MetaMask.
     ![Upkeep Registration Success Message](/images/contract-devs/keeper/keeper-registration-submitted.png)
 
-:::info Registration Onboarding Note
+:::info[ Registration Onboarding Note]
 
  Registrations on a testnet will be approved immediately. Mainnet registrations will be reviewed by our onboarding team before being approved. We are working towards a fully self-serve model.
+
 :::
 
 After your Upkeep is approved, you will receive an Upkeep ID and be registered on the Registry. Providing that your Upkeep is appropriately funded, the Keepers Network will monitor it. You must monitor the balance of your Upkeep. If the balance drops below the **Minimum Balance**, the Keepers Network will not perform the Upkeep. See [Manage Your Upkeeps](../manage-upkeeps) to learn how to manage your Upkeeps.

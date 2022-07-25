@@ -84,7 +84,8 @@ const replaceBlockquotes = (fileAsLines: string[]) => {
     Object.keys(emojis).forEach((emoji) => {
       if (currLine.indexOf(emoji) === 0) {
         // Brad approved this
-        fileLines[i] = fileLines[i].replace(emoji, emojis[emoji]);
+        fileLines[i] = fileLines[i].replace(emoji, `${emojis[emoji]}[`) + "]";
+        console.log(fileLines[i]);
 
         let nexLineCounter = i + 1;
         while (fileLines[nexLineCounter].indexOf(">") === 0) {
@@ -96,7 +97,8 @@ const replaceBlockquotes = (fileAsLines: string[]) => {
         }
 
         // add close tag to directive
-        fileLines.splice(nexLineCounter, 0, directiveCloseTag);
+        fileLines.splice(nexLineCounter, 0, "");
+        fileLines.splice(nexLineCounter + 1, 0, directiveCloseTag);
       }
     });
   }
@@ -164,6 +166,15 @@ const replaceRemixCode = (fileAsLines: string[]) => {
   return fileLines;
 };
 
+function generateRedirect(fileAsLines: string[]) {
+  const fileLines = fileAsLines;
+  for (let i = 0; i < fileLines.length; i++) {
+    if (fileLines[i].indexOf("permalink:") === 0) {
+      console.log(fileLines[i]);
+    }
+  }
+}
+
 function convertToListOfStrings(path: string) {
   const data = fs.readFileSync(path, "utf8");
   const separateLines = data.split(/\r?\n|\r|\n/g);
@@ -190,7 +201,14 @@ function importFiles() {
   prepareFileSystem();
   const pathToLook = path.join(process.cwd(), "11ty", "docs");
   const filePaths = getAllFiles(pathToLook);
-
+  const redirects = [];
+  // "redirects": [
+  //   {
+  //     "source": "/view-source",
+  //     "destination": "https://github.com/vercel/vercel",
+  //     "statusCode": 301
+  //   }
+  // ]
   filePaths.forEach(function (path) {
     // if the file is markdown
     // if (path.indexOf(".md") === -1) {
@@ -212,6 +230,8 @@ function importFiles() {
 
     // replace remix code examples with our custom CodeSample component
     parsedFile = replaceRemixCode(parsedFile);
+
+    const redirect = generateRedirect(parsedFile);
 
     // remove permalink from frontmatter and create redirect object for vercel
     writeToDestination(parsedFile, pathInProject);

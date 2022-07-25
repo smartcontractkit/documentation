@@ -13,9 +13,10 @@ metadata:
     0: "/files/1a63254-link.png"
 ---
 
-:::okay New to smart contracts?
+:::okay[ New to smart contracts?]
 
  This tutorial assumes that you know how to create and deploy basic smart contracts. If you are new to smart contract development, learn how to [Deploy Your First Smart Contract](/docs/deploy-your-first-contract/) before you start this guide.
+
 :::
 
 ## Overview
@@ -48,7 +49,8 @@ The contract has the following components:
 
 ## Compile, deploy, and run the contract
 
-:::warn If you have not already configured your MetaMask wallet and funded it with testnet ETH, follow the instructions in the Deploy Your First Smart Contract to set that up. You can get testnet ETH at https://faucets.chain.link/rinkeby/.
+:::warn[ If you have not already configured your MetaMask wallet and funded it with testnet ETH, follow the instructions in the Deploy Your First Smart Contract to set that up. You can get testnet ETH at https://faucets.chain.link/rinkeby/.]
+
 :::
 
 Deploy the `PriceConsumerV3` smart contract on the Rinkeby testnet.

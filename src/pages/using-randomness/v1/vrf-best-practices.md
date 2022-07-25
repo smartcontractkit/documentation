@@ -9,9 +9,10 @@ metadata:
   description: "Best pracices for using Chainlink VRF."
 ---
 
-:::warn VRF v2 replaces and enhances VRF v1.
+:::warn[ VRF v2 replaces and enhances VRF v1.]
 
  See the [VRF v2 documentation](/docs/chainlink-vrf-best-practices/) to learn more.
+
 :::
 
 Best are the practices for using Chainlink VRF.

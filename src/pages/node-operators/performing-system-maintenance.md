@@ -11,9 +11,10 @@ You might occasionally need to restart the system that the Chainlink node runs o
 
 ## Maintenance and Image Update Example
 
-:::info Note
+:::info[ Note]
 
  This example uses Docker to run the Chainlink node, see the [Running a Chainlink Node](../running-a-chainlink-node/) page for instructions on how to set it up.
+
 :::
 
 First, find the most recent Chainlink image on [Docker Hub](https://hub.docker.com/r/smartcontract/chainlink/) and pull that Docker image. For version 1.1.0:
@@ -77,9 +78,10 @@ When the log messages on the first node indicate that it is waiting for the data
 
 ## Failover Node Example
 
-:::info Note
+:::info[ Note]
 
  This example uses Docker to run the Chainlink node, see the [Running a Chainlink Node](../running-a-chainlink-node/) page for instructions on how to set it up.
+
 :::
 
 You might want to run multiple instances of the Chainlink node on the same machine. If one instance goes down, the second instance can automatically pick up requests. Building off the concepts in the previous example, use Docker to have primary and a secondary containers referencing the same database URL.

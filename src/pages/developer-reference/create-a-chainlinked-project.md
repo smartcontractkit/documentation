@@ -10,9 +10,10 @@ whatsnext: {"Introduction to Data Feeds":"/docs/using-chainlink-reference-contra
 
 This page explains how to install and use the [Chainlink Library](../chainlink-framework/) in your projects, either manually or via the user of the Chainlink Starter Kits.
 
-:::info Important
+:::info[ Important]
 
  If you're new to smart contract development and want a step-by-step guide, try out our [Getting Started](/docs/conceptual-overview/) guide.
+
 :::
 
 # Install into Existing Projects

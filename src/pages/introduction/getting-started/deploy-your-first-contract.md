@@ -14,9 +14,10 @@ metadata:
 
 You can write your first smart contract and run it in your browser without any knowledge about Ethereum or blockchains. This guide shows you how easy it is to develop smart contracts using the [Solidity language](https://soliditylang.org/), a [MetaMask wallet](https://metamask.io) and the [Remix Development Environment](https://remix.ethereum.org/). You can use all of these tools in your browser for free with no signup required.
 
-:::info Already know Solidity and have MetaMask configured?
+:::info[ Already know Solidity and have MetaMask configured?]
 
  If you are already familiar with how to deploy Smart Contracts and use MetaMask, you can skip to the [Consuming Data Feeds](/docs/consuming-data-feeds/) guide to learn how to connect your smart contracts to Chainlink data feeds.
+
 :::
 
 **Table of Contents**

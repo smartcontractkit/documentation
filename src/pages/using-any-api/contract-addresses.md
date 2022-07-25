@@ -13,9 +13,10 @@ metadata:
 
 The Chainlink Development Relations team maintains several testnet nodes and jobs that you can use to test your implementation quickly.
 
-:::okayLink token address and Faucet details
+:::okay[Link token address and Faucet details]
 
  To retrieve the link token address or get faucet details for your testnet of choice, see the [LINK Token Contracts](/docs/link-token-contracts/) page.
+
 :::
 
 **Table of Contents**

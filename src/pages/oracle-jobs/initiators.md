@@ -9,10 +9,11 @@ whatsnext: {"Introduction to External Initiators":"/docs/external-initiators-int
 
 # REMOVED
 
-:::error v1 Jobs are removed
+:::error[ v1 Jobs are removed]
  The initiators for v1 Jobs are removed for Chainlink nodes running version 1.0.0 and later. Use [v2 job types](/docs/jobs) instead.
 
  See the [v2 jobs migration page](/docs/jobs/migration-v1-v2) to learn how to migrate to v2 jobs.
+
 :::
 
 ## Initiators

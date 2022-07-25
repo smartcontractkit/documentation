@@ -123,7 +123,8 @@ You can add jobs to your Chainlink node in the Chainlink Operator GUI. The [ATes
 
 ## Create a request to your node
 
-:::info If you're going through this guide on Ethereum mainnet, the `ATestnetConsumer.sol` contract will still work. However, understand that you're sending real LINK to yourself. **Be sure to practice on the test networks multiple times before attempting to run a node on mainnet.**
+:::info[ If you're going through this guide on Ethereum mainnet, the `ATestnetConsumer.sol` contract will still work. However, understand that you're sending real LINK to yourself. **Be sure to practice on the test networks multiple times before attempting to run a node on mainnet.**]
+
 :::
 
 After you add jobs to your node, you can use the node to fulfill requests. This section shows what a requester does when they send requests to your node. It is also a way to test and make sure that your node is functioning correctly.

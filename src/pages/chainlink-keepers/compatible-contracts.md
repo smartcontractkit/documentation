@@ -69,9 +69,10 @@ We will now look at each function in a Keepers-compatible contract in detail.
 
 This function contains the logic that runs off-chain during every block as an `eth_call`[(link)](https://eth.wiki/json-rpc/API#eth_call) to determine if `performUpkeep` should be executed on-chain. To reduce on-chain gas usage, attempt to do your gas intensive calculations off-chain in `checkUpkeep` and pass the result to `performUpkeep` on-chain.
 
-:::info Gas limits for `checkUpkeep`
+:::info[ Gas limits for `checkUpkeep`]
 
  The `checkUpkeep` function is subject to the `checkGasLimit` in the [registry configuration](/docs/chainlink-keepers/supported-networks/#configurations).
+
 :::
 
 Because `checkUpkeep` is only off-chain in simulation it is best to treat this as a `view` function and not modify any state. This might not always be possible if you want to use more advanced Solidity features like `DelegateCall`[(link)](https://docs.soliditylang.org/en/latest/introduction-to-smart-contracts.html#delegatecall-callcode-and-libraries). It is a best practice to import the `KeeperCompatible.sol`[(link)](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/KeeperCompatible.sol) contract and use the `cannotExecute` modifier to ensure that the method can be used only for simulation purposes.
@@ -128,9 +129,10 @@ You can create a highly flexible off-chain computation infrastructure that can p
 
 When `checkUpkeep` returns `upkeepNeeded == true`, the Keeper node broadcasts a transaction to the blockchain to execute your `performUpkeep` function on-chain with `performData` as an input.
 
-:::info Gas limits for `performUpkeep`
+:::info[ Gas limits for `performUpkeep`]
 
  During registration you have to specify the maximum gas limit that we should allow your contract to use. We simulate `performUpkeep` during `checkUpkeep` and if the gas exceeds this limit the function will not execute on-chain. One method to determine your upkeep's gas limit is to simulate the `performUpkeep` function and add enough overhead to take into account increases that might happen due to changes in `performData` or on-chain data. The gas limit you specify cannot exceed the `callGasLimit` in the [configuration of the registry](/docs/chainlink-keepers/supported-networks/#configurations).
+
 :::
 
 Ensure that your `performUpkeep` is *idempotent*. Your `performUpkeep` function should change state such that `checkUpkeep` will not return `true` for the same subset of work once said work is complete. Otherwise the Upkeep will remain eligible and result in multiple performances by the Keeper Network on the exactly same subset of work. As a best practice, always [revalidate](#revalidate-performupkeep) conditions for your Upkeep at the start of your `performUpkeep` function.

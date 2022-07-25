@@ -75,14 +75,16 @@ var replaceBlockquotes = function (fileAsLines) {
         Object.keys(emojis).forEach(function (emoji) {
             if (currLine.indexOf(emoji) === 0) {
                 // Brad approved this
-                fileLines[i] = fileLines[i].replace(emoji, emojis[emoji]);
+                fileLines[i] = fileLines[i].replace(emoji, "".concat(emojis[emoji], "[")) + "]";
+                console.log(fileLines[i]);
                 var nexLineCounter = i + 1;
                 while (fileLines[nexLineCounter].indexOf(">") === 0) {
                     fileLines[nexLineCounter] = fileLines[nexLineCounter].replace(">", "");
                     nexLineCounter++;
                 }
                 // add close tag to directive
-                fileLines.splice(nexLineCounter, 0, directiveCloseTag);
+                fileLines.splice(nexLineCounter, 0, "");
+                fileLines.splice(nexLineCounter + 1, 0, directiveCloseTag);
             }
         });
     };
@@ -146,6 +148,14 @@ var replaceRemixCode = function (fileAsLines) {
     }
     return fileLines;
 };
+function generateRedirect(fileAsLines) {
+    var fileLines = fileAsLines;
+    for (var i = 0; i < fileLines.length; i++) {
+        if (fileLines[i].indexOf("permalink:") === 0) {
+            console.log(fileLines[i]);
+        }
+    }
+}
 function convertToListOfStrings(path) {
     var data = fs.readFileSync(path, "utf8");
     var separateLines = data.split(/\r?\n|\r|\n/g);
@@ -166,6 +176,14 @@ function importFiles() {
     prepareFileSystem();
     var pathToLook = path.join(process.cwd(), "11ty", "docs");
     var filePaths = getAllFiles(pathToLook);
+    var redirects = [];
+    // "redirects": [
+    //   {
+    //     "source": "/view-source",
+    //     "destination": "https://github.com/vercel/vercel",
+    //     "statusCode": 301
+    //   }
+    // ]
     filePaths.forEach(function (path) {
         // if the file is markdown
         // if (path.indexOf(".md") === -1) {
@@ -182,6 +200,7 @@ function importFiles() {
         parsedFile = replaceYoutube(parsedFile);
         // replace remix code examples with our custom CodeSample component
         parsedFile = replaceRemixCode(parsedFile);
+        var redirect = generateRedirect(parsedFile);
         // remove permalink from frontmatter and create redirect object for vercel
         writeToDestination(parsedFile, pathInProject);
         // if its HTML, good luck

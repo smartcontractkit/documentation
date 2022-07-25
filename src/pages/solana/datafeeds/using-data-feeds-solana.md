@@ -39,9 +39,10 @@ You can [add data feeds to an existing project](#adding-data-feeds-on-chain-in-a
 
 You can read Chainlink Data Feed data on-chain in your existing project using the [Chainlink Solana Crate](https://crates.io/crates/chainlink_solana).
 
-:::warn Reading feed data
+:::warn[ Reading feed data]
 
  Although you can directly query the data feed accounts, you should not rely on the memory layout always being the same as it currently is. Based on this, the recommendation is to always use the consumer library queries below.
+
 :::
 
 Import the Chainlink Solana Crate into your project and use the code sample to make function calls.

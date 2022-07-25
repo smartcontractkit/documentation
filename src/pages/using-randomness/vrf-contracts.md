@@ -11,9 +11,10 @@ metadata:
     0: '/files/OpenGraph_V3.png'
 ---
 
-:::info You are viewing the VRF v2 guide.
+:::info[ You are viewing the VRF v2 guide.]
 
  If you are using v1, see the [VRF v1 guide](./v1).
+
 :::
 
 Chainlink VRF allows you to integrate provably fair and verifiably random data in your smart contract.
@@ -94,9 +95,10 @@ Fee parameters are configured in the coordinator contract and specify the premiu
 
 ### BNB Chain testnet
 
-:::okayBNB Chain Faucet
+:::okay[BNB Chain Faucet]
 
  Testnet LINK is available from https://faucets.chain.link/chapel
+
 :::
 
 | Item                  | Value                                                                                                                                                                                                                  |
@@ -111,9 +113,10 @@ Fee parameters are configured in the coordinator contract and specify the premiu
 
 ### Polygon (Matic) Mainnet
 
-:::info Important
+:::info[ Important]
 
  The LINK provided by the [Polygon (Matic) Bridge](https://wallet.polygon.technology/bridge) is not ERC-677 compatible, so cannot be used with Chainlink oracles. However, it can be [**converted to the official LINK token on Polygon (Matic) using Chainlink's PegSwap service**](https://pegswap.chain.link/)
+
 :::
 
 | Item                  | Value                                                                                                                                                                                                               |
@@ -160,9 +163,10 @@ Fee parameters are configured in the coordinator contract and specify the premiu
 
 ### Avalanche Fuji Testnet
 
-:::okayAvax Fuji Faucet
+:::okay[Avax Fuji Faucet]
 
  Testnet LINK is available from https://faucets.chain.link/fuji
+
 :::
 
 | Item                  | Value                                                                                                                                                                                                                      |
@@ -177,10 +181,11 @@ Fee parameters are configured in the coordinator contract and specify the premiu
 
 ### Fantom Mainnet
 
-:::warn ERC-677 LINK on Fantom
+:::warn[ ERC-677 LINK on Fantom]
 
  You must use ERC-677 LINK on Fantom. ERC-20 LINK will not work with Chainlink services.
  Use [bridge.multichain.org](https://bridge.multichain.org/#/router) to send LINK to the Fantom network and be sure to select LINK-ERC677 as the token you will receive on the Fantom mainnet.
+
 :::
 
 | Item                  | Value                                                                                                                                                                                                         |
@@ -197,9 +202,10 @@ Fee parameters are configured in the coordinator contract and specify the premiu
 
 ### Fantom Testnet
 
-:::okayFantom Testnet Faucet
+:::okay[Fantom Testnet Faucet]
 
  Testnet LINK is available from https://faucets.chain.link/fantom-testnet
+
 :::
 
 | Item                  | Value                                                                                                                                                                                                                    |

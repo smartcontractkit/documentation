@@ -9,9 +9,10 @@ metadata:
   description: "How to generate a random number inside a smart contract using Chainlink VRF."
 ---
 
-:::warn VRF v2 replaces and enhances VRF v1.
+:::warn[ VRF v2 replaces and enhances VRF v1.]
 
  See the [VRF v2 documentation](/docs/get-a-random-number/) to learn more.
+
 :::
 
 This page explains how to get a random number inside a smart contract using Chainlink VRF.
@@ -31,9 +32,10 @@ Note, the below values have to be configured correctly for VRF requests to work.
 - `Key Hash` - public key against which randomness is generated
 - `Fee` - fee required to fulfill a VRF request
 
-:::warn Security Considerations
+:::warn[ Security Considerations]
 
  Be sure to look your contract over with [these security considerations](/docs/vrf-security-considerations/v1) in mind!
+
 :::
 
 >❗️ Remember to fund your contract with LINK!
@@ -49,9 +51,10 @@ Note, the below values have to be configured correctly for VRF requests to work.
       <a href="/docs/conceptual-overview/#what-is-remix">What is Remix?</a>
 </div>
 
-:::warn Maximum Gas for Callback
+:::warn[ Maximum Gas for Callback]
 
  If your `fulfillRandomness` function uses more than 200k gas, the transaction will fail.
+
 :::
 
 ## Getting More Randomness

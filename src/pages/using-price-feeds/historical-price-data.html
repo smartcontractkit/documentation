@@ -56,9 +56,10 @@ where:
 - `aggregatorRoundId` is the aggregator `roundId`. The id starts at 1.
 - `roundId` is the computed round id. From the above formula, you can think of it as a large number containing the `phaseId` and the `aggregatorRoundId`.
 
-:::info Note
+:::info[ Note]
 
  The example formula above ensures that no matter how many times the underlying aggregator changes, the proxy `roundId` will always increase.
+
 :::
 
 ** Example:**
@@ -92,9 +93,10 @@ roundId = (phaseId << 64n) | aggregatorRoundId // returns 73786976294838206465n
 
 Loop over the [`getRoundData` function](/docs/price-feeds-api-reference/#getrounddata). Start at _73786976294838206465_ and increment it until you get a revert. This means that you reached the last round for the underlying aggregator. The same process could be repeated for previous `phaseIds` (3,2,1).
 
-:::warn Looping on-chain
+:::warn[ Looping on-chain]
 
  The examples showed how to loop off-chain to fetch all historical data from a given proxy. You could also write a similar code on-chain, but be aware that this could cause **very high gas prices** if a state is changed within the same function.
+
 :::
 
 
@@ -108,10 +110,11 @@ The [`getRoundData` function](/docs/price-feeds-api-reference/#getrounddata) ret
 - `startedAt`: The timestamp when the round started.
 - `updatedAt`: The timestamp when the answer was computed.
 
-:::warn Important
+:::warn[ Important]
 
  A read can revert if the caller is requesting the details of a round that was invalid or has not yet been answered. If you are deriving a round ID without having observed it before, the round might not be complete. To check the round, validate that the timestamp on that round is not 0.
  In a best-case scenario, rounds update chronologically. However, a round can time out if it doesn't reach consensus. Technically, that is a timed out round that carries over the answer from the previous round.
+
 :::
 
 ### Solidity

@@ -47,11 +47,12 @@ The LINK token is an ERC677 token that inherits functionality from the ERC20 tok
 
 ## Rinkeby
 
-:::okayRinkeby Faucets
+:::okay[Rinkeby Faucets]
 
  Testnet LINK is available from https://faucets.chain.link/rinkeby
  Testnet ETH is available from: https://faucets.chain.link/rinkeby
  Backup Testnet ETH Faucets: https://rinkeby-faucet.com/, https://app.mycrypto.com/faucet
+
 :::
 
 | Parameter      | Value                                                                                                                                                                                                                |
@@ -66,10 +67,11 @@ The LINK token is an ERC677 token that inherits functionality from the ERC20 tok
 
 The Kovan network is [officially deprecated](https://ethereum.org/en/developers/docs/networks/#kovan) and will no longer be supported on some platforms like [Alchemy](https://www.alchemy.com/the-merge). Currently, [Rinkeby](#rinkeby) is the recommended testnet for Chainlink on Ethereum.
 
-:::okayKovan Faucets
+:::okay[Kovan Faucets]
 
  Testnet LINK are available from https://faucets.chain.link/kovan
  Testnet ETH are available from https://faucets.chain.link/kovan
+
 :::
 
 | Parameter      | Value                                                                                                                                                                                                               |
@@ -98,9 +100,10 @@ LINK is native to Ethereum, so to use LINK on other chains, it must be bridged. 
 
 ### Mainnet
 
-:::info Important
+:::info[ Important]
 
  The LINK provided by the [BNB Chain Bridge](https://www.bnbchain.world/en/bridge) is not ERC-677 compatible, so cannot be used with Chainlink oracles. However, it can be [**converted to the official LINK token on BNB Chain using Chainlink's PegSwap service**](https://pegswap.chain.link/).
+
 :::
 
 | Parameter      | Value                                                                                                                                                                                                        |
@@ -113,9 +116,10 @@ LINK is native to Ethereum, so to use LINK on other chains, it must be bridged. 
 
 ### Testnet
 
-:::okayBNB Chain Faucet
+:::okay[BNB Chain Faucet]
 
  Testnet LINK is available from https://faucets.chain.link/chapel
+
 :::
 
 | Parameter      | Value                                                                                                                                                                                                                  |
@@ -132,11 +136,12 @@ LINK is native to Ethereum, so to use LINK on other chains, it must be bridged. 
 
 MATIC is used to pay for transactions on Polygon mainnet. You can use the [Polygon Bridge](https://wallet.polygon.technology/bridge) to transfer tokens to Polygon mainnet and then use [Polygon Gas Swap](https://wallet.polygon.technology/gas-swap/) to swap supported tokens to MATIC.
 
-:::warn ERC-677 LINK on Polygon
+:::warn[ ERC-677 LINK on Polygon]
 
  The LINK provided by the [Polygon (Matic) Bridge](https://wallet.polygon.technology/bridge) is not ERC-677 compatible, you cannot use it with Chainlink services. However, you can convert LINK to the official ERC-677 compatible LINK token by using the [**Chainlink PegSwap service**](https://pegswap.chain.link/).
 
  Watch the [Moving Chainlink Cross-Chains](https://www.youtube.com/watch?v=WKvIGkBWRUA) video to learn more.
+
 :::
 
 | Parameter      | Value                                                                                                                                                                                                               |
@@ -149,9 +154,10 @@ MATIC is used to pay for transactions on Polygon mainnet. You can use the [Polyg
 
 ### Mumbai Testnet
 
-:::okayMumbai Faucet
+:::okay[Mumbai Faucet]
 
  Testnet LINK and MATIC are available from the [Polygon faucet](https://faucet.polygon.technology/) and https://faucets.chain.link/mumbai.
+
 :::
 
 | Parameter      | Value                                                                                                                                                                                                                         |
@@ -206,9 +212,10 @@ AVAX is the token you use to pay for transactions on Avalanche mainnet. You can 
 
 ### Fuji Testnet
 
-:::okayAvax Faucet
+:::okay[Avax Faucet]
 
  Testnet LINK is available from https://faucets.chain.link/fuji
+
 :::
 
 | Parameter      | Value                                                                                                                                                                                                                      |
@@ -225,10 +232,11 @@ AVAX is the token you use to pay for transactions on Avalanche mainnet. You can 
 
 FTM is used to pay for transactions on Fantom Mainnet. Use [bridge.multichain.org](https://bridge.multichain.org/#/router) to transfer FTM and LINK to Fantom mainnet.
 
-:::warn ERC-677 LINK on Fantom
+:::warn[ ERC-677 LINK on Fantom]
 
  You must use ERC-677 LINK on Fantom. ERC-20 LINK will not work with Chainlink services.
  When you use [bridge.multichain.org](https://bridge.multichain.org/#/router) to send LINK to the Fantom network, be sure to select LINK-ERC677 as the token you will receive on Fantom mainnet.
+
 :::
 
 | Parameter      | Value                                                                                                                                                                                                           |
@@ -241,9 +249,10 @@ FTM is used to pay for transactions on Fantom Mainnet. Use [bridge.multichain.or
 
 ### Fantom Testnet
 
-:::okayFantom Faucet
+:::okay[Fantom Faucet]
 
  Testnet LINK is available from https://faucets.chain.link/fantom-testnet
+
 :::
 
 | Parameter      | Value                                                                                                                                                                                                                    |
@@ -270,9 +279,10 @@ ETH is used to pay for transactions on the Arbitrum mainnet. You can use the [Ar
 
 ### Rinkeby Testnet
 
-:::okayArbitrum Faucet on Rinkeby
+:::okay[Arbitrum Faucet on Rinkeby]
 
  Testnet LINK is available from https://faucets.chain.link/arbitrum-rinkeby
+
 :::
 
 Testnet ETH is used to pay for transactions on the Arbitrum Rinkeby testnet. You can use the [Arbitrum Bridge](https://bridge.arbitrum.io/) to transfer testnet ETH and LINK from Ethereum Rinkeby to Arbitrum Rinkeby.
@@ -339,9 +349,10 @@ ONE is used to pay for transactions on Harmony mainnet. You can use the [Harmony
 
 ### Testnet
 
-:::okayHarmony Testnet Faucet
+:::okay[Harmony Testnet Faucet]
 
  Testnet LINK is available from https://faucets.chain.link/harmony-testnet
+
 :::
 
 | Parameter      | Value                                                                                                                                                                                                                                   |

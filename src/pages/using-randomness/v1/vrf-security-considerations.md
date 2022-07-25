@@ -6,9 +6,10 @@ title: "VRF Security Considerations [v1]"
 permalink: "docs/vrf-security-considerations/v1/"
 ---
 
-:::warn VRF v2 replaces and enhances VRF v1.
+:::warn[ VRF v2 replaces and enhances VRF v1.]
 
  See the [VRF v2 documentation](/docs/vrf-security-considerations/) to learn more.
+
 :::
 
 Gaining access to high quality randomness on-chain requires a solution like Chainlink's VRF, but it also requires you to understand some of the ways that randonmess generation can be manipulated by miners/validators. Here are some of the top security considerations you should review in your project.
@@ -32,8 +33,9 @@ We recommend using the `requestID` to match randomness requests with their corre
 
 ## Choose a safe block confirmation time, which will vary between blockchains
 
-:::warnCustomizing block confirmation time
+:::warn[Customizing block confirmation time]
  [Reach out to customize your VRF block confirmation time](https://chainlinkcommunity.typeform.com/to/OYQO67EF) as this configuration must be done on the node side, and cannot be configured as part of a VRF request.
+
 :::
 
 In principle, miners and validators of your underlying blockchain could rewrite the chain's history to put a randomness request from your contract into a different block, which would result in a different VRF output. Note that this does not enable a miner to determine the random value in advance. It only enables them to get a fresh random value that may or not be to their advantage. By way of analogy, they can only re-roll the dice, not predetermine or predict which side it will land on.

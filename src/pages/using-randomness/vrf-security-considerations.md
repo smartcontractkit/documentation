@@ -6,9 +6,10 @@ title: "VRF Security Considerations"
 permalink: "docs/vrf-security-considerations/"
 ---
 
-:::info You are viewing the VRF v2 guide.
+:::info[ You are viewing the VRF v2 guide.]
 
  If you are using v1, see the [VRF v1 guide](./v1).
+
 :::
 
 Gaining access to high quality randomness on-chain requires a solution like Chainlink's VRF, but it also requires you to understand some of the ways that miners or validators can potentially manipulate randomness generation. Here are some of the top security considerations you should review in your project.

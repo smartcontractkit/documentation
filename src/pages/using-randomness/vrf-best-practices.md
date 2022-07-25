@@ -9,9 +9,10 @@ metadata:
   description: "Best pracices for using Chainlink VRF."
 ---
 
-:::info You are viewing the VRF v2 guide.
+:::info[ You are viewing the VRF v2 guide.]
 
  If you are using v1, see the [VRF v1 guide](./v1).
+
 :::
 
 These are example best practices for using Chainlink VRF. To explore more applications of VRF, refer to our [blog](https://blog.chain.link/).

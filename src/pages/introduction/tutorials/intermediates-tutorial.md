@@ -20,9 +20,10 @@ metadata:
     0: '/files/2a242f1-link.png'
 ---
 
-:::okay Requirements
+:::okay[ Requirements]
 
  This guide assumes that you have basic knowledge about writing and deploying smart contracts. If you are new to smart contract development, read the [Consuming Data Feeds](/docs/consuming-data-feeds/) guide before you begin.
+
 :::
 
 <p>
@@ -365,9 +366,10 @@ Then click the `Deploy` button and use your Metamask account to confirm the tran
 
 **Note**: You should [have some Rinkeby ETH](/docs/deploy-your-first-contract/#install-and-fund-your-metamask-wallet) in your Metamask account to pay for the GAS.
 
-:::info Address, Key Hashes and more
+:::info[ Address, Key Hashes and more]
 
  For a full reference of the addresses, key hashes and fees for each network, see [VRF Contract Addresses](/docs/vrf-contracts/#configurations).
+
 :::
 
 At this point, your contract should be successfully deployed. However, it can't request anything because it is not yet approved to use the LINK balance in your subscription. If you click `rollDice`, the transaction will revert.

@@ -11,9 +11,10 @@ metadata:
 ---
 ![Chainlink Abstract Banner](/files/a4c6c80-85d09b6-19facd8-banner.png)
 
-:::warn VRF v2 replaces and enhances VRF v1.
+:::warn[ VRF v2 replaces and enhances VRF v1.]
 
  See the [VRF v2 documentation](/docs/chainlink-vrf/) to learn more.
+
 :::
 
 ## Generate Random Numbers in your Smart Contracts

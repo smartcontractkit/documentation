@@ -35,9 +35,10 @@ You can [add data feeds to an existing off-chain project](#adding-data-feeds-to-
 
 You can read Chainlink Data Feeds off-chain in your existing project by using the [Chainlink Solana NPM library](https://www.npmjs.com/package/@chainlink/solana-sdk).
 
-:::warn Reading feed data
+:::warn[ Reading feed data]
 
  Although you can directly query the data feed accounts, you should not rely on the memory layout always being the same as it currently is. Based on this, the recommendation is to always use the consumer library.
+
 :::
 
 Install the necessary components and include the example code in your project. Optionally, you can run the example code by itself to learn how it works before you integrate it with your project.

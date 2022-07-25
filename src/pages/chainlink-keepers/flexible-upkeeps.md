@@ -31,10 +31,11 @@ This guide assumes you have a basic understanding of [Chainlink Keepers](https:/
 
 Chainlink Keepers are supported on several [networks](../supported-networks).
 
-:::info ERC677 Link
+:::info[ ERC677 Link]
 
  - Get [LINK](/docs/link-token-contracts/) on the supported testnet that you want to use.
  - For funding on Mainnet, you need ERC-677 LINK. Many token bridges give you ERC-20 LINK tokens. Use PegSwap to [convert Chainlink tokens (LINK) to be ERC-677 compatible](https://pegswap.chain.link/).
+
 :::
 
 ## Problem: On-chain computation leads to high gas fees
@@ -92,10 +93,11 @@ Modify the contract and move the computation to the `checkUpkeep()` function. Th
 - The `checkUpkeep()` function receives [`checkData`](/docs/chainlink-keepers/compatible-contracts/#checkdata), which passes arbitrary bytes to the function. Pass a `lowerBound` and an `upperBound` to scope the work to a sub-array of `balances`. This creates several upkeeps with different values of `checkData`. The function loops over the sub-array and looks for the indexes of the elements that require re-balancing and calculates the required `increments`. Then, it returns `upkeepNeeded == true` and `performData`, which is calculated by encoding `indexes` and `increments`. Note that `checkUpkeep()` is a view function, so computation does not consume any gas.
 - The `performUpkeep()` function takes [performData](/docs/chainlink-keepers/compatible-contracts/#performdata-1) as a parameter and decodes it to fetch the `indexes` and the `increments`.
 
-:::warn **Note on `performData`**
+:::warn[ **Note on `performData`**]
 
  This data should always be validated against the contract’s current state to ensure that `performUpkeep()` is idempotent. It also blocks malicious keepers from sending non-valid data. This example, tests that the state is correct after re-balancing:
  `require(_balance == LIMIT, "Provided increment not correct");`
+
 :::
 
 

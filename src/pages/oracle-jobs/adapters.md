@@ -9,10 +9,11 @@ whatsnext: { 'Introduction to External Adapters': '/docs/external-adapters/', 'I
 
 # REMOVED
 
-:::error v1 Jobs are removed
+:::error[ v1 Jobs are removed]
  The adapters or JSON adapters for v1 Jobs are removed for Chainlink nodes running version 1.0.0 and later. Use [v2 job tasks](/docs/tasks) instead.
 
  See the [v2 jobs migration page](/docs/jobs/migration-v1-v2) to learn how to migrate to v2 jobs.
+
 :::
 
 ## Adapters
@@ -166,9 +167,10 @@ The core adapter will report the body of a successful `GET` request to the speci
 - `extPath`: takes a slash-delimited string or array of strings to be appended to the job's URL.
 - `headers`: takes a object containing keys as strings and values as arrays of strings.
 
-:::warn Headers
+:::warn[ Headers]
 
  Currently not available on-chain. Available for job specs only.
+
 :::
 
 #### Solidity Example
@@ -193,8 +195,9 @@ req.add("extPath", "price/BTC/USD");
 }
 ```
 
-:::warn NOTE
+:::warn[ NOTE]
  For security, since the URL may come from an untrusted source, HTTPGet imposes some restrictions on which IPs may be fetched. Local network and multicast IPs are disallowed by default and attempting to connect will result in an error.
+
 :::
 
 If you really must access one of these IPs, you can use the `HTTPGetWithUnrestrictedNetworkAccess` adapter instead.
@@ -211,9 +214,10 @@ The core adapter will report the body of a successful `POST` request to the spec
 - `extPath`: takes a slash-delimited string or array of strings to be appended to the job's URL.
 - `body`: the JSON body (as a string) that will be used as the data in the request.
 
-:::warn Headers & Body
+:::warn[ Headers & Body]
 
  Currently not available on-chain. Available for job specs only.
+
 :::
 
 #### Solidity Example
@@ -240,8 +244,9 @@ req.add("extPath", "price/BTC/USD");
 }
 ```
 
-:::warn NOTE
+:::warn[ NOTE]
  For security, since the URL may come from an untrusted source, HTTPPost imposes some restrictions on which IPs may be fetched. Local network and multicast IPs are disallowed by default and attempting to connect will result in an error.
+
 :::
 
 If you really must access one of these IPs, you can use the `HTTPPostWithUnrestrictedNetworkAccess` adapter instead.
@@ -279,7 +284,8 @@ Or the following for a single comma-delimited string:
 req.add("path", "RAW,ETH,USD,LASTMARKET");
 ```
 
-:::warn Note: Chainlink nodes prior to 1.0.0 support dot-delimited strings instead of comma-delimited strings.
+:::warn[ Note: Chainlink nodes prior to 1.0.0 support dot-delimited strings instead of comma-delimited strings.]
+
 :::
 
 #### Job Specification Example
@@ -368,9 +374,10 @@ This can be useful for inverting outputs, e.g. if your API only offers a USD/ETH
 
 The core adapter will pause the current task pipeline for the given duration.
 
-:::warn ENABLE_EXPERIMENTAL_ADAPTERS
+:::warn[ ENABLE_EXPERIMENTAL_ADAPTERS]
 
  You must set `ENABLE_EXPERIMENTAL_ADAPTERS=true` in order to use the sleep adapter
+
 :::
 
 #### Parameters

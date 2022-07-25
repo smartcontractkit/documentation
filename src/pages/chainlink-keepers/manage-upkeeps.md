@@ -22,9 +22,10 @@ Manage your Upkeeps to get the best performance.
 
 You must monitor the balance of your Upkeep. If the Upkeep LINK balance drops below the [minimum balance](../keeper-economics/#minimum-balance), the Keepers Network will not perform the Upkeep.
 
-:::info ERC677 Link
+:::info[ ERC677 Link]
 
  For funding on Mainnet, you need ERC-677 LINK. Many token bridges give you ERC-20 LINK tokens. Use PegSwap to [convert Chainlink tokens (LINK) to be ERC-677 compatible](https://pegswap.chain.link/). To fund on a supported testnet, get [LINK](../../link-token-contracts/) for the testnet you are using from our [faucet](https://faucets.chain.link/).
+
 :::
 
 Follow these steps to fund your Upkeep:

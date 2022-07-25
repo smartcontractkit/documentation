@@ -9,9 +9,10 @@ metadata:
   description: "Example contracts for generating a random number inside a smart contract using Chainlink VRF."
 ---
 
-:::info You are viewing the VRF v2 guide.
+:::info[ You are viewing the VRF v2 guide.]
 
  If you are using v1, see the [VRF v1 guide](/docs/get-a-random-number/v1/).
+
 :::
 
 How you manage the subscription depends on your randomness needs. You can configure your subscriptions using the [Subscription Manager](https://vrf.chain.link), but these examples demonstrate how to create your subscription and add your consumer contracts programmatically. For these examples, the contract owns and manages the subscription. You can still view the subscriptions in the [Subscription Manager](https://vrf.chain.link). Any wallet can provide funding to those subscriptions.
@@ -89,7 +90,8 @@ You can fund a subscription and request randomness in a single transaction. This
 
 Add this function to your contracts if you need to provide funding simultaneously with your requests. The `transferAndCall()` function sends LINK from your contract to the subscription, and the `requestRandomWords()` function requests the random words. Your contract still needs the `fulfillRandomWords()` callback function to receive the random values.
 
-:::warn Security Considerations
+:::warn[ Security Considerations]
 
  Be sure to review your contract with the [security considerations](/docs/vrf-security-considerations/) in mind.
+
 :::

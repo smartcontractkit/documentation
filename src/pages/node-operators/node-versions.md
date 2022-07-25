@@ -124,9 +124,10 @@ You can find a list of release notes for Chainlink nodes in the [smartcontractki
 
 **[v1.2.0 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v1.2.0)**
 
-:::warn Not for use on Solana or Terra
+:::warn[ Not for use on Solana or Terra]
 
  Although this release provides `SOLANA_ENABLED` and `TERRA_ENABLED` environment variables, these are not intended for use on Solana or Terra mainnets.
+
 :::
 
 Significant changes:

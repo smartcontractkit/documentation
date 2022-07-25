@@ -22,10 +22,11 @@ You will need to specify two headers:
 
 ## JSON jobs (REMOVED)
 
-:::error v1 Jobs are removed
+:::error[ v1 Jobs are removed]
  The initiators for v1 Jobs are removed for Chainlink nodes running version 1.0.0 and later. Use [v2 jobs](/docs/jobs) instead.
 
  See the [v2 jobs migration page](/docs/jobs/migration-v1-v2) to learn how to migrate to v2 jobs.
+
 :::
 
 We will be using the <a href="https://github.com/smartcontractkit/external-initiator">Chainlink external initiator</a> repo for reference. You can see some examples of existing initiators in the <a href="https://github.com/smartcontractkit/external-initiator/tree/master/blockchain" >blockchain</a> folder.

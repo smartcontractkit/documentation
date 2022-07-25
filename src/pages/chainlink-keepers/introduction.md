@@ -70,14 +70,16 @@ To use a custom logic trigger, you will need to make your contract [Keepers-comp
 
 1. For more details on custom logic automation, click [here](../compatible-contracts/).
 
-:::error **WARNING**
+:::error[ **WARNING**]
 
  Do **NOT** attempt to send LINK to your contract like you do with [VRF](../../get-a-random-number/). For Chainlink Keepers, contracts are funded via the registry rather than within your contract.
+
 :::
 
-:::warn Registration Onboarding Note
+:::warn[ Registration Onboarding Note]
 
  Registrations on a testnet will be approved immediately. Mainnet registrations will be reviewed by our onboarding team before being approved. We are working towards a fully self-serve model.
+
 :::
 
 ## Supported Networks and Costs

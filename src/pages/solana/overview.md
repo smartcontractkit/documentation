@@ -15,7 +15,8 @@ Chainlink provides data feeds on the [Solana](https://solana.com/) network. Chai
 
 Solana programs are stateless, so you don't always need to deploy your program to the network to test it. You can deploy and test your programs on a [Solana Test Validator](https://docs.solana.com/developing/test-validator). However, to use Chainlink products on Solana, you must deploy your contract on-chain to one of the [supported Solana clusters](#chainlink-products-and-solana-clusters).
 
-:::info Please note that Price Feeds performance relies on the chains they are deployed on. Periods of high network congestion may impact the frequency of Chainlink Price Feeds. Subscribe to [Solana status](https://status.solana.com/) notifications to stay updated on system performance.
+:::info[ Please note that Price Feeds performance relies on the chains they are deployed on. Periods of high network congestion may impact the frequency of Chainlink Price Feeds. Subscribe to [Solana status](https://status.solana.com/) notifications to stay updated on system performance.]
+
 :::
 
 To learn how to mitigate risk to your applications, read the [Selecting Quality Data Feeds](/docs/selecting-data-feeds/) page.

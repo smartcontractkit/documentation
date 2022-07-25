@@ -15,9 +15,10 @@ metadata:
 
 The most basic Chainlink node deployment uses the default configuration on only a single primary node with a websocket URL. This configuration is appropriate for small or simple workloads with only a few jobs that execute infrequently. If you need to run hundreds of jobs and thousands of transactions per hour, your Chainlink and RPC nodes will require a more advanced configuration. This guide explains how to configure Chainlink and your EVM nodes for high reliability and throughput.
 
-:::info Note:
+:::info[ Note:]
 
  Ethereum clients have bugs. Much work is done on the Chainlink node software to mitigate bugs in various different RPC implementations. This guide helps you understand how to mitigate and work around these bugs.
+
 :::
 
 **Table of Contents**
@@ -35,7 +36,8 @@ The most basic Chainlink node deployment uses the default configuration on only 
 
 ## Using multiple nodes
 
-:::info Providing multiple primary nodes can improve performance and reliability.
+:::info[ Providing multiple primary nodes can improve performance and reliability.]
+
 :::
 
 Chainlink node version 1.3.0 and later support configurations with multiple primary nodes and send-only nodes with automatic liveness detection and failover. It is no longer necessary to run a load balancing failover RPC proxy between Chainlink and its EVM RPC nodes.
@@ -46,7 +48,8 @@ You can have as many primary nodes as you want. Requests are evenly distributed 
 
 You can configure as many send-only nodes as you want. Send-only nodes only broadcast transactions and do not process regular RPC calls. Specifying additional send-only nodes uses a minimum number of RPC calls and can help to include transactions faster. Send-only nodes also act as backup if your primary node starts to blackhole transactions.
 
-:::info Transaction broadcasts are always sent to every primary node and send-only node. It is redundant to specify the same URL for a send-only node as an existing primary node, and it has no effect.
+:::info[ Transaction broadcasts are always sent to every primary node and send-only node. It is redundant to specify the same URL for a send-only node as an existing primary node, and it has no effect.]
+
 :::
 
 Here is an example for how to specifiy the [`EVM_NODES` environment variable](/docs/configuration-variables/#evm_nodes):
@@ -123,7 +126,8 @@ NODE_POLL_INTERVAL="10s"
 
 ## Configuring websocket and HTTP URLs
 
-:::info Ideally, every primary node specifies an HTTP URL in addition to the websocket URL.
+:::info[ Ideally, every primary node specifies an HTTP URL in addition to the websocket URL.]
+
 :::
 
 It is not recommended to configure primary nodes with *only* a websocket URL. Routing all traffic over only a websocket can cause problems. As a best practices, every primary node must have both websocket and HTTP URLs specified. This allows Chainlink to route almost all RPC calls over HTTP, which tends to be more robust and reliable. The websocket URL is used only for subscriptions. Both URLs must point to the same node because they are bundled together and have the same liveness state.
@@ -142,9 +146,10 @@ BLOCK_HISTORY_ESTIMATOR_BATCH_SIZE=100
 ETH_LOG_BACKFILL_BATCH_SIZE=1000
 ```
 
-:::warn REMINDER:
+:::warn[ REMINDER:]
 
  Do not modify these values unless *all* primary nodes are configured with HTTP URLs.
+
 :::
 
 ## Increasing transaction throughput
@@ -153,7 +158,8 @@ By default, Chainlink has conservative limits because it must be compliant with 
 
 Before you make any changes to your Chainlink configuration, you must ensure that *all* of your primary and send-only nodes are configured to handle the increased throughput.
 
-:::info The best way to improve transaction throughput is to keep the default configuration and use multiple keys to transmit. Chainlink supports an arbitrary number of keys for any given chain. By default, tasks will round-robin through keys, but you can assign them individually to keys as well. Assigning tasks to keys is the preferred way to improve throughput because increasing the max number of in-flight requests can have complicated effects based on the mempool conmfigurations of other RPC nodes. If you are unable to distribute transmission load across multiple keys, try the following options to increase throughput.
+:::info[ The best way to improve transaction throughput is to keep the default configuration and use multiple keys to transmit. Chainlink supports an arbitrary number of keys for any given chain. By default, tasks will round-robin through keys, but you can assign them individually to keys as well. Assigning tasks to keys is the preferred way to improve throughput because increasing the max number of in-flight requests can have complicated effects based on the mempool conmfigurations of other RPC nodes. If you are unable to distribute transmission load across multiple keys, try the following options to increase throughput.]
+
 :::
 
 ### Increase `ETH_MAX_QUEUED_TRANSACTIONS`
@@ -174,7 +180,8 @@ Do not set `ETH_MAX_QUEUED_TRANSACTIONS` too high. It acts as a sanity limit and
 
 The default is set conservatively at `16` because this is a pessimistic minimum that go-ethereum will hold without evicting local transactions. If your node is falling behind and not able to get transactions in as fast as they are created, you can increase this setting.
 
-:::warn If you increase `ETH_MAX_IN_FLIGHT_TRANSACTIONS` you must make sure that your ETH node is configured properly otherwise you can get nonce-gapped and your node will get stuck.
+:::warn[ If you increase `ETH_MAX_IN_FLIGHT_TRANSACTIONS` you must make sure that your ETH node is configured properly otherwise you can get nonce-gapped and your node will get stuck.]
+
 :::
 
 ## Optimizing RPC nodes
@@ -221,7 +228,8 @@ Set the task label similiarly to the following example:
 
 Note that this only affects the presentation of jobs, and whether they are marked as errored or not. It has no effect on inclusion of the transaction, which is handled with separate logic.
 
-:::warn Do not confuse `minConfirmations` set on the task with transaction inclusion. The transaction manager always attempts to get every transaction mined up to `EVMFinalityDepth`. `minConfirmations` on the task is a task-specific view of when the transaction that can be considered final, which might be fewer blocks than `EVMFinalityDepth`.
+:::warn[ Do not confuse `minConfirmations` set on the task with transaction inclusion. The transaction manager always attempts to get every transaction mined up to `EVMFinalityDepth`. `minConfirmations` on the task is a task-specific view of when the transaction that can be considered final, which might be fewer blocks than `EVMFinalityDepth`.]
+
 :::
 
 ## Increase `ORM_MAX_OPEN_CONNS` and `ORM_MAX_IDLE_CONNS`

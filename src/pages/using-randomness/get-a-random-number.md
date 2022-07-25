@@ -9,9 +9,10 @@ metadata:
   description: "How to generate a random number inside a smart contract using Chainlink VRF."
 ---
 
-:::info You are viewing the VRF v2 guide.
+:::info[ You are viewing the VRF v2 guide.]
 
  If you are using v1, see the [VRF v1 guide](./v1).
+
 :::
 
 This guide explains how to get random values using a simple contract to request and receive random values from Chainlink VRF v2. For more advanced examples with programmatic subscription configuration, see the [Example Contracts](/docs/chainlink-vrf/example-contracts/) page. To explore more applications of VRF, refer to our [blog](https://blog.chain.link/).
@@ -110,8 +111,9 @@ The deployed contract requests random values from Chainlink VRF, receives those 
 
 You deployed a simple contract that can request and receive random values from Chainlink VRF. To see more advanced examples where the contract can complete the entire process including subscription setup and management, see the [Example Contracts](/docs/chainlink-vrf/example-contracts/) page.
 
-:::info Note on Requesting Randomness
+:::info[ Note on Requesting Randomness]
  Do not re-request randomness even if you do **not** receive an answer right away. Doing so would give the VRF service provider the option to withhold a VRF fulfillment, if it doesn't like the outcome, and wait for the re-request in the hopes that it gets a better outcome. This is similar to the considerations with block confirmation time. For more information, see the [VRF Security Considerations](../vrf-security-considerations) page.
+
 :::
 
 ## Analyzing the contract
@@ -149,9 +151,10 @@ The contract includes the following functions:
 
 - `fulfillRandomWords()`: Receives random values and stores them with your contract.
 
-:::warn Security Considerations
+:::warn[ Security Considerations]
 
  Be sure to review your contracts to make sure they follow the best practices on the [security considerations](/docs/vrf-security-considerations/) page.
+
 :::
 
 ## Clean up

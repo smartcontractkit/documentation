@@ -154,9 +154,10 @@ ALLOW_ORIGINS=*" > ~/.chainlink/.env
 
 #### Set your Ethereum Client URL
 
-:::warn Using an external Ethereum client?
+:::warn[ Using an external Ethereum client?]
 
  If you're using a 3rd party service to connect to the blockchain, skip to the [External Provider](#ethereum-client-as-an-external-provider) section to set the `ETH_URL` environment variable. We provide general guidance, but you will need to obtain the websocket connection string to add to your environment file.
+
 :::
 
 #### Ethereum Client on the Same Machine
@@ -193,9 +194,10 @@ echo "ETH_URL=CHANGEME" >> ~/.chainlink-kovan/.env
 echo "ETH_URL=CHANGEME" >> ~/.chainlink/.env
 ```
 
-:::warn Running Chainlink Node on Ganache
+:::warn[ Running Chainlink Node on Ganache]
 
  Ganache is a mock testnet and it doesn't work with Chainlink because of that. To use the features of the network, you need to deploy your contract on a real environment: one of the testnets or mainnets. The full list of supported environments can be found [here](../link-token-contracts/).
+
 :::
 
 #### Set the Remote DATABASE_URL Config
@@ -208,9 +210,10 @@ You will need to connect your Chainlink node with a remote PostgreSQL database. 
 - `$PORT`: The port that the database is listening on
 - `$DATABASE`: The database to use for the Chainlink node (i.e. "postgres")
 
-:::warn Important
+:::warn[ Important]
 
  If you're testing you can add `?sslmode=disable` to the end of your `DATABASE_URL`. However you should *never* do this on a production node.
+
 :::
 
 ```shell Rinkeby
@@ -237,16 +240,18 @@ cd ~/.chainlink-kovan && docker run -p 6688:6688 -v ~/.chainlink-kovan:/chainlin
 cd ~/.chainlink && docker run -p 6688:6688 -v ~/.chainlink:/chainlink -it --env-file=.env smartcontract/chainlink:<version> local n
 ```
 
-:::info Local Database
+:::info[ Local Database]
 
  If you're running a local database you may need to add the `--network host` flag to the command above.
+
 :::
 
 The first time running the image, it will ask you for a password and confirmation. This will be your wallet password that you can use to unlock the keystore file generated for you. Then, you'll be prompted to enter an API Email and Password. This will be used to expose the API for the GUI interface, and will be used every time you log into your node. When running the node again, you can supply the `-p` option with a path to a text file containing the wallet key password, and a `-a` option, pointing to a text file containing the API email and password. Instructions on how to do that are [here](../miscellaneous/#use-password-and-api-files-on-startup).
 
-:::info Important
+:::info[ Important]
 
  You will need to send some ETH to your node's address in order for it to fulfill requests. You can view your node's ETH address when the node starts up or on the Configuration page of the GUI.
+
 :::
 
 You can now connect to your Chainlink node's UI interface by navigating to [http://localhost:6688](http://localhost:6688). If using a VPS, you can create a [SSH tunnel](https://www.howtogeek.com/168145/how-to-use-ssh-tunneling/) to your node for `6688:localhost:6688` to enable connectivity to the GUI. Typically this is done with `ssh -i $KEY $USER@$REMOTE-IP -L 6688:localhost:6688 -N`. A SSH tunnel is recommended over opening up ports specific to the Chainlink node to be public facing. See the [Security and Operation Best Practices](../best-security-practices/) page for more details on how to secure your node.

@@ -9,10 +9,11 @@ whatsnext: {"Core Adapters":"/docs/core-adapters/", "Initiators":"/docs/initiato
 
 # REMOVED
 
-:::error v1 Jobs are removed
+:::error[ v1 Jobs are removed]
  The v1 job spec or JSON spec removed for Chainlink nodes running version 1.0.0 and later. If you are still running this type of job, migrate them to v2 specs.
 
  See the [v2 jobs migration page](/docs/jobs/migration-v1-v2) to learn how to migrate to v2 jobs.
+
 :::
 
 ## What is a job?

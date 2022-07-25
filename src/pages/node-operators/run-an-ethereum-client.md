@@ -205,8 +205,9 @@ ETH_URL=wss://your-node-name.quiknode.pro/security-hash/
 
 ## Configuring your ETH node
 
-:::warn Warning
+:::warn[ Warning]
  By default, go-ethereum rejects transactions that exceed the built-in RPC gas/txfee caps. The node will fatally error transactions if this happens. If you ever exceed the caps, the node will miss transactions.
+
 :::
 
 At a minimum, disable the default RPC gas and txfee caps on your ETH node. This can be done in the TOML file as seen below, or by running go-ethereum with the command line arguments: `--rpc.gascap=0 --rpc.txfeecap=0`.

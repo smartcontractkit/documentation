@@ -5,9 +5,10 @@ date: Last Modified
 title: "Hackathon Resources"
 permalink: "docs/hackathon-resources/"
 ---
-:::okay Note on Resources
+:::okay[ Note on Resources]
 
  For a comprehensive list of resources, refer to the [Learning Resources](../other-tutorials/) page.
+
 :::
 
 ### Hackathon & Project Resources

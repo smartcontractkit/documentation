@@ -85,9 +85,10 @@ After you enter your CRON expression, click **Next**.
 
 To complete the upkeep registration process using time-based triggers, you must enter some information about your upkeep including its name, gas limit, starting balance, and contact information.
 
-:::info Job Scheduler Gas requirements
+:::info[ Job Scheduler Gas requirements]
 
  When you create an upkeep through the Job Scheduler, Chainlink Keepers deploys a new `CronUpkeep` contract from the [CronUpkeepFactory](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/factories/CronUpkeepFactory.sol) to manage your time schedule and ensure that it is Keepers-compatible. This contract uses roughly 110K gas per call, so it is recommended to add 150K additional gas to the gas limit of the function you are automating.
+
 :::
 
 ![Keepers Upkeep Details](/images/contract-devs/keeper/keeper-upkeep-details.png)

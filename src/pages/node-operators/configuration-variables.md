@@ -325,7 +325,8 @@ Toggles sending telemetry to the ingress server using the batch client.
 
 ### SOLANA_ENABLED
 
-:::warn Not intended for use on the Solana mainnet.
+:::warn[ Not intended for use on the Solana mainnet.]
+
 :::
 
 - Default: `"false"`
@@ -780,9 +781,10 @@ This should be set to the HTTP URL that points to the same ETH node as the prima
 
 ### EVM_NODES
 
-:::warn WARNING
+:::warn[ WARNING]
 
  Setting this environment variable will **COMPLETELY ERASE** your `evm_nodes` table on every boot and repopulate from the given data to nullify any runtime modifications. This is a temporary solution until this configuration can be defined in a file in the future.
+
 :::
 
 - Default: _none_
@@ -1000,8 +1002,9 @@ You can override this on a per-job basis.
 
 `MIN_INCOMING_CONFIRMATIONS=1` would kick off a job after seeing the transaction in just one block.
 
-:::warn NOTE
+:::warn[ NOTE]
  The lowest value allowed here is 1, since setting to 0 would imply that logs are processed from the mempool before they are even mined into a block, which isn't possible with Chainlink's current architecture.
+
 :::
 
 ### MIN_OUTGOING_CONFIRMATIONS
@@ -1017,17 +1020,19 @@ This can be overridden on a per-task basis by setting the `MinRequiredOutgoingCo
 
 ### MINIMUM_CONTRACT_PAYMENT_LINK_JUELS
 
-:::warn NOTE
+:::warn[ NOTE]
  This has replaced the formerly used MINIMUM_CONTRACT_PAYMENT
+
 :::
 
 - Default: _automatically set based on Chain ID, typically 10000000000000 (0.00001 LINK) on all chains except ETH Mainnet, Kovan, Goerli, and Rinkeby, where it is 100000000000000000 (0.1 LINK)._
 
 For jobs that use the `EthTx` adapter, this is the minimum payment amount in order for the node to accept and process the job. Since there are no decimals on the EVM, the value is represented like wei.
 
-:::warn Note
+:::warn[ Note]
 
  Keep in mind, the Chainlink node currently responds with a 500,000 gas limit. Under pricing your node could mean it spends more in ETH (on gas) than it earns in LINK.
+
 :::
 
 ### NODE_NO_NEW_HEADS_THRESHOLD
@@ -1633,9 +1638,10 @@ The environment variables in this section apply only when running CLI commands t
 
 ### ADMIN_CREDENTIALS_FILE
 
-:::warn Deprecated:
+:::warn[ Deprecated:]
 
  This environment variable is deprecated and will be removed in a future release. Use the `--admin-credentials-file FILE` CLI argument instead.
+
 :::
 
 
@@ -1652,9 +1658,10 @@ mysecurepassw0rd
 
 ### CLIENT_NODE_URL
 
-:::warn Deprecated:
+:::warn[ Deprecated:]
 
  This environment variable is deprecated and will be removed in a future release. Use the `--remote-node-url URL` CLI argument instead.
+
 :::
 
 - Default: `"http://localhost:6688"`
@@ -1663,9 +1670,10 @@ This is the URL that you will use to interact with the node, including the GUI. 
 
 ### INSECURE_SKIP_VERIFY
 
-:::warn Deprecated:
+:::warn[ Deprecated:]
 
  This environment variable is deprecated and will be removed in a future release. Use the `--insecure-skip-verify` CLI argument instead.
+
 :::
 
 - Default: `"false"`
@@ -1676,16 +1684,18 @@ It is not recommended to change this unless you know what you are doing.
 
 ## Notes on setting environment variables
 
-:::warn NOTE
+:::warn[ NOTE]
  Some environment variables require a duration. A duration string is a possibly signed sequence of decimal numbers, each with optional fraction and a unit suffix, such as "300ms", "-1.5h" or "2h45m". Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h". Some examples:
+
 :::
 
 `10ms`
 `1h15m`
 `42m30s`
 
-:::warn NOTE
+:::warn[ NOTE]
  Some configuration variables require a file size. A file size string is an unsigned integer (123) or a float (12.3) followed by a unit suffix. Valid file size units are "b", "kb", "mb", "gb", and "tb". If the unit is omitted, it is assumed to be "b" (bytes). Capitalization does not matter. Some examples:
+
 :::
 
 `123gb`

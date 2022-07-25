@@ -11,9 +11,10 @@ metadata:
 
 Chainlink Data Feed contracts are updated on a regular basis by multiple Chainlink nodes. For implementation details, read [Introduction to Data Feeds](../using-chainlink-reference-contracts/). Chainlink is a blockchain agnostic technology. This page lists the blockchain networks that Chainlink Data Feeds are currently live on, and the details of where to access them.
 
-:::info LINK token on multiple chains
+:::info[ LINK token on multiple chains]
 
  See the [LINK Token Contracts](../link-token-contracts/) page for the details of LINK on each blockchain.
+
 :::
 
 ## Available networks
