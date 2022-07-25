@@ -1,6 +1,7 @@
 ---
 import MoreMenu from "../RightSidebar/MoreMenu.astro";
 import TableOfContents from "../RightSidebar/TableOfContents.tsx";
+import WhatsNext from "./WhatsNext.astro";
 
 const { content, githubEditUrl } = Astro.props;
 const title = content.title;
@@ -15,8 +16,9 @@ const whatsNext = content.whatsnext;
 			<TableOfContents client:media="(max-width: 50em)" {headers} />
 		</nav>
 		<slot />
-	
-		{whatsNext?.title}
+
+		{JSON.stringify(whatsNext)}
+		<WhatsNext content={whatsNext} />
 	</section>
 	<nav class="block sm:hidden">
 		<MoreMenu editHref={githubEditUrl} />
@@ -32,9 +34,11 @@ const whatsNext = content.whatsnext;
 		display: flex;
 		flex-direction: column;
 	}
-	.content > section {
+
+	.content>section {
 		margin-bottom: 4rem;
 	}
+
 	.block {
 		display: block;
 	}

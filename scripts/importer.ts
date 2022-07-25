@@ -35,12 +35,18 @@ function updateFrontmatter(fileAsLines: string[], pathInProject: string) {
   const fileLines = fileAsLines;
   const normalizedPath = pathInProject.split("/11ty/")[1];
   const folderDepthToSrc = normalizedPath.split("/");
-  const importPrefix = folderDepthToSrc.map((_) => "../").join("");
+  const importPrefix = new Array(folderDepthToSrc.length - 1)
+    .fill("../")
+    .join("");
 
   for (let i = 0; i < fileLines.length; i++) {
     const currLine = fileLines[i];
     if (currLine.indexOf("layout: nodes.liquid") === 0) {
-      fileLines[i] = ["layout: ", importPrefix, "layout/.astro"].join("");
+      fileLines[i] = [
+        "layout: ",
+        importPrefix,
+        "layouts/MainLayout.astro",
+      ].join("");
     }
   }
 
@@ -166,7 +172,10 @@ function convertToListOfStrings(path: string) {
 }
 
 function writeToDestination(listOfLines: string[], fileName?: string) {
-  const newPath = `${process.cwd()}/temp${fileName}`;
+  const parsedFileName = fileName.toLowerCase().replace(/ /g, "-");
+  console.log({ parsedFileName });
+
+  const newPath = `${process.cwd()}/temp${parsedFileName}`;
 
   let tempPath = newPath.split("/");
   tempPath.pop();

@@ -31,11 +31,17 @@ function updateFrontmatter(fileAsLines, pathInProject) {
     var fileLines = fileAsLines;
     var normalizedPath = pathInProject.split("/11ty/")[1];
     var folderDepthToSrc = normalizedPath.split("/");
-    var importPrefix = folderDepthToSrc.map(function (_) { return "../"; }).join("");
+    var importPrefix = new Array(folderDepthToSrc.length - 1)
+        .fill("../")
+        .join("");
     for (var i = 0; i < fileLines.length; i++) {
         var currLine = fileLines[i];
         if (currLine.indexOf("layout: nodes.liquid") === 0) {
-            fileLines[i] = ["layout: ", importPrefix, "layout/.astro"].join("");
+            fileLines[i] = [
+                "layout: ",
+                importPrefix,
+                "layouts/MainLayout.astro",
+            ].join("");
         }
     }
     return fileLines;
@@ -97,7 +103,7 @@ var replaceYoutube = function (fileAsLines) {
         var currLine = fileLines[i];
         if (currLine.trim().indexOf("https://www.youtube.com/watch?v") === 0) {
             console.log("youtube match", currLine);
-            fileLines[i] = "<YouTube id=\"".concat(currLine.trim(), " />");
+            fileLines[i] = "<YouTube id=\"".concat(currLine.trim(), "\" />");
             console.log("youtube converted", fileLines[i]);
         }
     }
@@ -147,7 +153,9 @@ function convertToListOfStrings(path) {
     return separateLines;
 }
 function writeToDestination(listOfLines, fileName) {
-    var newPath = "".concat(process.cwd(), "/temp").concat(fileName);
+    var parsedFileName = fileName.toLowerCase().replace(/ /g, "-");
+    console.log({ parsedFileName: parsedFileName });
+    var newPath = "".concat(process.cwd(), "/temp").concat(parsedFileName);
     var tempPath = newPath.split("/");
     tempPath.pop();
     var targetDir = tempPath.join("/");
