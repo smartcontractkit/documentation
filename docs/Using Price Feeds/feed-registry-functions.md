@@ -9,8 +9,6 @@ metadata:
   description: "Chainlink Feed Registry Functions"
 ---
 
-## Overview
-
 This guide outlines the functions which can be used with Chainlink's Feed Registry. You can learn more about the feed registry [here](../feed-registry).
 
 ## Functions
@@ -32,7 +30,6 @@ This guide outlines the functions which can be used with Chainlink's Feed Regist
 |[getNextRoundId](#getnextroundid)| Returns the next round id of a base / quote pair given a specified round.|
 |[getCurrentPhaseId](#getcurrentphaseid)| Returns the current phase id of a base / quote pair.|
 ___
-
 
 ### decimals
 

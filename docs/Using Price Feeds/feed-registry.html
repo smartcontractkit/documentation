@@ -10,22 +10,22 @@ metadata:
 ---
 {% markdown %}
 
+The Chainlink Feed Registry is an on-chain mapping of assets to feeds. It enables you to query Chainlink data feeds from asset addresses directly, without needing to know the feed contract addresses. They enable smart contracts to get the latest price of an asset in a single call, from a single contract.
+
+![Feed Registry Diagram](/files/feed-registry.png)
+
+> 📘 The Feed Registry only lists feeds with a canonical token address on a network. Non-token feeds such as stock indexes are not supported because they do not have a canonical token address.
+
+For a complete list of functions and parameters for the `FeedRegistryInterface` contract, see the [Feed Registry API Reference](/docs/feed-registry-functions/).
+
 **Table of Contents**
-- [Overview](#overview)
+
 - [Base and Quote](#base-and-quote)
 - [Code Examples](#code-examples)
 - [Contract addresses](#contract-addresses)
 - [API Reference](#api-reference)
 
-# Overview
-
-![Feed Registry Diagram](/files/feed-registry.png)
-
-The Chainlink Feed Registry is an on-chain mapping of assets to feeds. It enables you to query Chainlink data feeds from asset addresses directly, without needing to know the feed contract addresses. They enable smart contracts to get the latest price of an asset in a single call, from a single contract.
-
-> 📘 The Feed Registry only lists feeds with a canonical token address on a network. Non-token feeds such as stock indexes are not supported because they do not have a canonical token address.
-
-# Base and Quote
+## Base and Quote
 
 The Feed Registry fully supports the [`AggregatorV3Interface`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol) API for multiple feeds. It maps feeds from `base` and `quote` address pairs. To get the latest LINK / USD round data from the registry, call:
 
@@ -57,17 +57,17 @@ latestRoundData(0x514910771AF9Ca656af840dff83E8264EcF986CA, 0xEeeeeEeeeEeEeeEeEe
 latestRoundData(0xa36085f69e2889c224210f603d836748e7dc0088, 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE)
 ```
 
-## Denominations library
+### Denominations library
 
 A [`Denominations`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/Denominations.sol) Solidity library is available for you to fetch currency identifiers which lack a canonical Ethereum address:
-
 
 ```solidity
 {% include 'samples/FeedRegistry/Denominations.sol' %}
 ```
-# Code Examples
 
-## Solidity
+## Code Examples
+
+### Solidity
 
 To consume price data from the Feed Registry, your smart contract should reference [`FeedRegistryInterface`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/interfaces/FeedRegistryInterface.sol), which defines the external functions implemented by the Feed Registry.
 
@@ -84,14 +84,14 @@ To consume price data from the Feed Registry, your smart contract should referen
 
 {% markdown %}
 
-## Solidity Hardhat Example
+### Solidity Hardhat Example
 
 > 📘 Note
 >
 > You can find a working Feed Registry Hardhat project [here](https://github.com/smartcontractkit/feed-registry-example). Clone the repo and follow the setup instructions to run the example locally.
 
 
-## Javascript
+### Javascript
 
 ```javascript Mainnet
 {% include 'samples/FeedRegistry/PriceConsumer.js' %}
@@ -111,7 +111,7 @@ To consume price data from the Feed Registry, your smart contract should referen
 
 {% markdown %}
 
-# Contract Addresses
+## Contract Addresses
 
 This section lists the blockchains that Chainlink Feed Registry are currently available on.
 
@@ -120,8 +120,8 @@ This section lists the blockchains that Chainlink Feed Registry are currently av
 |Ethereum Mainnet|[`0x47Fb2585D2C56Fe188D0E6ec628a38b74fCeeeDf`](https://etherscan.io/address/0x47Fb2585D2C56Fe188D0E6ec628a38b74fCeeeDf)|
 |Ethereum Kovan|[`0xAa7F6f7f507457a1EE157fE97F6c7DB2BEec5cD0`](https://kovan.etherscan.io/address/0xAa7F6f7f507457a1EE157fE97F6c7DB2BEec5cD0)|
 
-# API Reference
+## API Reference
 
-API reference for [`FeedRegistryInterface`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/interfaces/FeedRegistryInterface.sol).
+For a complete list of functions and parameters for the `FeedRegistryInterface` contract, see the [Feed Registry API Reference](/docs/feed-registry-functions/). Optionally, see the [`FeedRegistryInterface` contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/interfaces/FeedRegistryInterface.sol) on GitHub.
 
 {% endmarkdown %}
