@@ -78,6 +78,9 @@ Your node applies configuration settings using following hierarchy:
   - [LOG_FILE_MAX_AGE](#log_file_max_age)
   - [LOG_FILE_MAX_BACKUPS](#log_file_max_backups)
   - [LOG_UNIX_TS](#log_unix_ts)
+  - [AUDIT_LOGS_FORWARDER_URL](#audit_logs_forwarder_url)
+  - [AUDIT_LOGS_FORWARDER_HEADERS](#audit_logs_forwarder_headers)
+  - [AUDIT_LOGS_FORWARDER_JSON_WRAPPER_KEY](#audit_logs_forwarder_json_wrapper_key)
 - [Nurse service (auto-pprof)](#nurse-service-auto-pprof)
   - [AUTO_PPROF_ENABLED](#auto_pprof_enabled)
   - [AUTO_PPROF_PROFILE_ROOT](#auto_pprof_profile_root)
@@ -542,6 +545,43 @@ Determines the maximum number of old log files to retain. Keeping this config wi
 - Default: `"false"`
 
 Previous versions of Chainlink nodes wrote JSON logs with a unix timestamp. As of v1.1.0 and up, the default has changed to use ISO8601 timestamps for better readability. Setting `LOG_UNIX_TS=true` will enable the old behavior.
+
+### AUDIT_LOGS_FORWARDER_URL
+
+- Default: _none_
+
+When set, this environment variable configures and enables an optional HTTP logger which is used specifcally to send audit log events. Audit logs events are emitted when specific actions are performed by any of the users through the node's API. The value of this variable should be a full URL. Log items will be sent via POST
+
+There are audit log implemented for the following events:
+  - Auth & Sessions (new session, login success, login failed, 2FA enrolled, 2FA failed, password reset, password reset failed, etc.)
+  - CRUD actions for all resources (add/create/delete resources such as bridges, nodes, keys)
+  - Sensitive actions (keys exported/imported, config changed, log level changed, environment dumped)
+
+A full list of audit log enum types can be found in the source within the `audit` package (`audit_types.go`).
+
+The following `AUDIT_LOGS_*` environment variables below configure this optional audit log HTTP forwarder.
+
+### AUDIT_LOGS_FORWARDER_HEADERS
+
+- Default: _none_
+
+An optional list of HTTP headers to be added for every optional audit log event. If the above `AUDIT_LOGS_FORWARDER_URL` is set, audit log events will be POSTed to that URL, and will include headers specified in this environment variable. One example use case is auth for example: ```AUDIT_LOGS_FORWARDER_HEADERS=Authorization {{token}}```.
+
+Header keys and values are delimited on ||, and multiple headers can be added with a forward slash delimiter ('\\').
+
+### AUDIT_LOGS_FORWARDER_JSON_WRAPPER_KEY
+
+- Default: _none_
+
+When the audit log HTTP forwarder is enabled, if there is a value set for this optional environment variable then the POST body will be wrapped in a dictionary in a field specified by the value of set variable. This is to help enable specific logging service integrations that may require the event JSON in a special shape. For example: `AUDIT_LOGS_FORWARDER_JSON_WRAPPER_KEY=event` will create the POST body:
+```
+{
+  "event": {
+    "eventID":  EVENT_ID_ENUM,
+    "data": ...
+  }
+}
+```
 
 ## Nurse service (auto-pprof)
 
@@ -1108,7 +1148,7 @@ Chainlink's implementation of EIP-1559 works as follows:
 
 If you are using FixedPriceEstimator:
 - With gas bumping disabled, it will submit all transactions with `feecap=ETH_MAX_GAS_PRICE_WEI` and `tipcap=EVM_GAS_TIP_CAP_DEFAULT`
-- With gas bumping enabled, it will submit all transactions initially with `feecap=EVM_GAS_FEE_CAP_DEFAULT` and `tipcap=EVM_GAS_TIP_CAP_DEFAULT`.  
+- With gas bumping enabled, it will submit all transactions initially with `feecap=EVM_GAS_FEE_CAP_DEFAULT` and `tipcap=EVM_GAS_TIP_CAP_DEFAULT`.
 
 If you are using BlockHistoryEstimator (default for most chains):
 - With gas bumping disabled, it will submit all transactions with `feecap=ETH_MAX_GAS_PRICE_WEI` and `tipcap=<calculated using past blocks>`
