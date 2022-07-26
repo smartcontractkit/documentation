@@ -13,7 +13,7 @@ metadata:
 >
 > If you are using v1, see the [VRF v1 guide](./v1).
 
-These are example best practices for using Chainlink VRF.
+These are example best practices for using Chainlink VRF. To explore more applications of VRF, refer to our [blog](https://blog.chain.link/).
 
 ## Getting a random number within a range
 

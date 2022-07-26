@@ -19,6 +19,8 @@ If you already have a project started and would like to integrate Chainlink, you
 
 See the [Data Feeds Contract Addresses](/docs/reference-contracts/) page for a list of networks and proxy addresses.  
 
+For important updates regarding the use of Chainlink Price Feeds, users should join the official Chainlink Discord and subscribe to the data-feeds-user-notifications channel: https://discord.gg/Dqy5N9UbsR
+
 ## Retrieve the latest asset prices
 
 Often, smart contracts need to act in real-time on data such as prices of assets. This is especially true in [DeFi](https://defi.chain.link/).

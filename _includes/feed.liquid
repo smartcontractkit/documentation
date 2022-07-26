@@ -14,10 +14,9 @@ section: ethereum
 
 <p>Notes:</p>
 <ul>
-<li>Off-chain equity and ETF assets are traded only during standard market hours from 9:30AM to 4:00PM EDT Monday through Friday.</li>
-<li>Assets on the Forex (Foreign Exchange) markets are traded only from 5PM EDT on Sunday through 4PM EDT on Friday.</li>
+<li>Off-chain equity and ETF assets are traded only during standard market hours from 9:30AM to 4:00PM EDT Monday through Friday. Using these feeds outside of those windows is not recommended.</li>
+<li>Assets on the Forex (Foreign Exchange) markets are traded only from 5PM EDT on Sunday through 4PM EDT on Friday. Additionally, some currencies might trade only during local central bank opening hours. It is not advised to use Forex feeds outside of market hours for the specific currency.</li>
 </ul>
-<p>Using these feeds outside of those windows is not recommended.</p>
 
 <style>
     table {
@@ -81,6 +80,19 @@ section: ethereum
       min-width: 107px;
     }
 
+    hr.shutDate {
+        margin: 2px;
+        border: 0;
+        height: 1px;
+        background: #dfe2e5;
+    }
+
+    div.shutDate {
+        font-size: 11px;
+        text-align: center;
+        line-height: 1.25em;
+    }
+
 </style>
 
 {% case metadata.l2healthflag %}
@@ -103,6 +115,7 @@ section: ethereum
       <li>🟡 <a href="/docs/selecting-data-feeds/#🟡-monitored-feeds"><strong>Monitored Feeds</strong></a>: Feeds under review by the Chainlink Labs team to support the stability of the broader ecosystem</li>
       <li>🔵 <a href="/docs/selecting-data-feeds/#-custom-feeds"><strong>Custom Feeds</strong></a>: Feeds built to serve a specific use case and might not be suitable for general use</li>
       <li>⚫ <a href="/docs/selecting-data-feeds/#-specialized-feeds"><strong>Specialized Feeds</strong></a>: Purpose-built feeds that might rely on contracts maintained by external entities and require in-depth understanding of composition methodology before use</li>
+      <li>⭕ <a href="/docs/reference-contracts/#deprecation-of-chainlink-data-feeds"><strong>Deprecating</strong></a>: These feeds are scheduled for deprecation.</li>
     </ul>
     <p>See the <a href="/docs/selecting-data-feeds/">Selecting Quality Data Feeds</a> page for complete details about each category.</p>
 </div>
@@ -118,7 +131,8 @@ section: ethereum
         "verified": '<span class="hovertext feed-category" data-hover="Verified"><a href="/docs/selecting-data-feeds/#🟢-verified-feeds" alt="Verified" target="_blank">🟢</a></span>',
         "monitored": '<span class="hovertext feed-category" data-hover="Monitored"><a href="/docs/selecting-data-feeds/#🟡-monitored-feeds" alt="Monitored" target="_blank">🟡</a></span>',
         "custom": '<span class="hovertext feed-category" data-hover="Custom"><a href="/docs/selecting-data-feeds/#-custom-feeds" alt="Custom" target="_blank">🔵</a></span>',
-        "specialized": '<span class="hovertext feed-category" data-hover="Specialized"><a href="/docs/selecting-data-feeds/#-specialized-feeds" alt="Specialized" target="_blank">⚫</a></span>'
+        "specialized": '<span class="hovertext feed-category" data-hover="Specialized"><a href="/docs/selecting-data-feeds/#-specialized-feeds" alt="Specialized" target="_blank">⚫</a></span>',
+        "deprecating": '<span class="hovertext feed-category" data-hover="Deprecating"><a href="#categories" alt="Deprecating" target="_blank">⭕</a></span>'
     }
     render = (data) => {
         let html = '';
@@ -131,7 +145,9 @@ section: ethereum
                     for(let proxy of network.proxies) {
                         proxyList += `
                         <tr id="${network.name} ${proxy.pair}">
-                            <td><div class="proxy-pair-column">${feedCategories[proxy.feedCategory] || ''}<code class="proxy-pair">${proxy.pair}</code></div></td>
+                            <td><div class="proxy-pair-column">${feedCategories[proxy.feedCategory] || ''}<code class="proxy-pair">${proxy.pair}</code></div>
+                            ${ proxy.shutdownDate ? '<hr class="shutDate"><div class="shutDate">Deprecating:<br/>' + proxy.shutdownDate + '</div>' : '' }
+                            </td>
                             <td><code>${proxy.assetName}</code></td>
                             <td><code>${proxy.feedType}</code></td>
                             <td ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.deviationThreshold ? (proxy.deviationThreshold + '%') : 'N/A'}</td>

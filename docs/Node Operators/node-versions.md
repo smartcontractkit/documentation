@@ -12,7 +12,17 @@ metadata:
 
 You can find a list of release notes for Chainlink nodes in the [smartcontractkit GitHub repository](https://github.com/smartcontractkit/chainlink/releases). Docker images are available in the [Chainlink Docker hub](https://hub.docker.com/r/smartcontract/chainlink/tags).
 
-## Changes to v1.5.0
+## Changes in v1.6.0 nodes
+
+**[v1.6.0 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v1.6.0)**
+
+- Simplified password complexity requirements. All passwords used with Chainlink must meet the following requirements:
+    - Must be 16 characters or more
+    - Must not contain leading or trailing whitespace
+    - User passwords must not contain the user's API email
+- Simplified the Keepers job spec by removing the observation source from the required parameters.
+
+## Changes in v1.5.0 nodes
 
 **[v1.5.0 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v1.5.0)**
 
@@ -81,14 +91,14 @@ You can find a list of release notes for Chainlink nodes in the [smartcontractki
 
     This setting might have a minor impact on performance for very high throughput chains. If you don't care about reporting task status in the UI, set `minConfirmations=0` in your job specs. For more details, see the [Optimizing EVM Performance](/docs/evm-performance-configuration/#adjusting-minimum-outgoing-confirmations-for-high-throughput-jobs) page.
 
-## Changes to v1.4.1
+## Changes in v1.4.1 nodes
 
 **[v1.4.1 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v1.4.1)**
 
 - Added a fix to ensure that a failed `EthSubscribe` does not register `(*rpc.ClientSubscription)(nil)`, which leads to a panic when unsubscribing.
 - Fix parsing of float values on job specs.
 
-## Changes to v1.4.0
+## Changes in v1.4.0 nodes
 
 **[v1.4.0 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v1.4.0)**
 
@@ -98,7 +108,7 @@ You can find a list of release notes for Chainlink nodes in the [smartcontractki
 - Keeper upkeep order can now be shuffled. See [KEEPER_TURN_FLAG_ENABLED](/docs/configuration-variables/#keeper_turn_flag_enabled) for details.
 - Several fixes. See the [release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v1.4.0) for a full list of changes.
 
-## Changes to v1.3.0 nodes
+## Changes in v1.3.0 nodes
 
 **[v1.3.0 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v1.3.0)**
 
@@ -110,7 +120,7 @@ You can find a list of release notes for Chainlink nodes in the [smartcontractki
 - EIP-1559 is now enabled by default on the Ethereum Mainnet. See the [EVM_EIP1559_DYNAMIC_FEES](/docs/configuration-variables/#evm_eip1559_dynamic_fees) documentation for details.
 - Added new Keepers feature that includes gas price in calls to `checkUpkeep()`. To enable the feature, set [KEEPER_CHECK_UPKEEP_GAS_PRICE_FEATURE_ENABLED](/docs/configuration-variables#keeper_check_upkeep_gas_price_feature_enabled) to `true`. Use this setting *only* on Polygon networks.
 
-## Changes to v1.2.0 nodes
+## Changes in v1.2.0 nodes
 
 **[v1.2.0 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v1.2.0)**
 
@@ -128,7 +138,7 @@ Significant changes:
 
 See the [v1.2.0 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v1.2.0) for a complete list of changes and fixes.
 
-## Changes to v1.1.0 nodes
+## Changes in v1.1.0 nodes
 
 **[v1.1.0 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v1.1.0)**
 
@@ -176,7 +186,7 @@ Before you upgrade your nodes to v1.1.0, be aware of the following requirements:
 
 See the [v1.1.0 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v1.1.0) for a complete list of changes and fixes.
 
-## Changes to v1.0.0 and v1.0.1 nodes
+## Changes in v1.0.0 and v1.0.1 nodes
 
 **[v1.0.0 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v1.0.0)**
 **[v1.0.1 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v1.0.1)**
