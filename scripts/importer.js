@@ -73,10 +73,10 @@ var replaceBlockquotes = function (fileAsLines) {
     var _loop_1 = function (i) {
         var currLine = fileLines[i];
         Object.keys(emojis).forEach(function (emoji) {
-            if (currLine.indexOf(emoji) > -1) {
+            if (currLine.indexOf(emoji) === 0) {
                 // Brad approved this
                 fileLines[i] = fileLines[i].replace(emoji, "".concat(emojis[emoji], "[")) + "]";
-                console.log(fileLines[i]);
+                // console.log(fileLines[i]);
                 var nexLineCounter = i + 1;
                 while (fileLines[nexLineCounter].indexOf(">") === 0) {
                     fileLines[nexLineCounter] = fileLines[nexLineCounter].replace(">", "");
@@ -88,6 +88,7 @@ var replaceBlockquotes = function (fileAsLines) {
             }
         });
     };
+    // TODO: update this to handle indentation
     for (var i = 0; i < fileLines.length; i++) {
         _loop_1(i);
     }
@@ -104,9 +105,9 @@ var replaceYoutube = function (fileAsLines) {
     for (var i = 0; i < fileLines.length; i++) {
         var currLine = fileLines[i];
         if (currLine.trim().indexOf("https://www.youtube.com/watch?v") === 0) {
-            console.log("youtube match", currLine);
+            // console.log("youtube match", currLine);
             fileLines[i] = "<YouTube id=\"".concat(currLine.trim(), "\" />");
-            console.log("youtube converted", fileLines[i]);
+            // console.log("youtube converted", fileLines[i]);
         }
     }
     return fileLines;
@@ -148,11 +149,33 @@ var replaceRemixCode = function (fileAsLines) {
     }
     return fileLines;
 };
-function generateRedirect(fileAsLines) {
+// "redirects": [
+//   {
+//     "source": "/view-source",
+//     "destination": "https://github.com/vercel/vercel",
+//     "statusCode": 301
+//   }
+// ]
+function generateRedirect(fileAsLines, fileName) {
+    var parsedFileName = fileName
+        .toLowerCase()
+        .replace(/ /g, "-")
+        .split("/11ty/docs/")[1]
+        .replace(".md", "")
+        .replace(".html", "");
     var fileLines = fileAsLines;
     for (var i = 0; i < fileLines.length; i++) {
         if (fileLines[i].indexOf("permalink:") === 0) {
-            console.log(fileLines[i]);
+            var permalink = fileLines[i]
+                .split("permalink:")[1]
+                .trim()
+                .replace(/['"]+/g, "");
+            return {
+                source: permalink,
+                destination: parsedFileName,
+                statusCode: 301
+            };
+            console.log({ parsedFileName: parsedFileName, permalink: permalink });
         }
     }
 }
@@ -164,7 +187,7 @@ function convertToListOfStrings(path) {
 }
 function writeToDestination(listOfLines, fileName) {
     var parsedFileName = fileName.toLowerCase().replace(/ /g, "-");
-    console.log({ parsedFileName: parsedFileName });
+    // console.log({ parsedFileName });
     var newPath = "".concat(process.cwd(), "/temp").concat(parsedFileName);
     var tempPath = newPath.split("/");
     tempPath.pop();
@@ -177,13 +200,6 @@ function importFiles() {
     var pathToLook = path.join(process.cwd(), "11ty", "docs");
     var filePaths = getAllFiles(pathToLook);
     var redirects = [];
-    // "redirects": [
-    //   {
-    //     "source": "/view-source",
-    //     "destination": "https://github.com/vercel/vercel",
-    //     "statusCode": 301
-    //   }
-    // ]
     filePaths.forEach(function (path) {
         // if the file is markdown
         // if (path.indexOf(".md") === -1) {
@@ -200,11 +216,13 @@ function importFiles() {
         parsedFile = replaceYoutube(parsedFile);
         // replace remix code examples with our custom CodeSample component
         parsedFile = replaceRemixCode(parsedFile);
-        var redirect = generateRedirect(parsedFile);
+        var redirect = generateRedirect(parsedFile, pathInProject);
+        redirects.push(redirect);
         // remove permalink from frontmatter and create redirect object for vercel
         writeToDestination(parsedFile, pathInProject);
         // if its HTML, good luck
     });
+    console.log(redirects);
 }
 importFiles();
 module.exports = {};

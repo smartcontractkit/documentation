@@ -86,7 +86,7 @@ const replaceBlockquotes = (fileAsLines: string[]) => {
       if (currLine.indexOf(emoji) === 0) {
         // Brad approved this
         fileLines[i] = fileLines[i].replace(emoji, `${emojis[emoji]}[`) + "]";
-        console.log(fileLines[i]);
+        // console.log(fileLines[i]);
 
         let nexLineCounter = i + 1;
         while (fileLines[nexLineCounter].indexOf(">") === 0) {
@@ -118,9 +118,9 @@ const replaceYoutube = (fileAsLines: string[]) => {
   for (let i = 0; i < fileLines.length; i++) {
     const currLine = fileLines[i];
     if (currLine.trim().indexOf("https://www.youtube.com/watch?v") === 0) {
-      console.log("youtube match", currLine);
+      // console.log("youtube match", currLine);
       fileLines[i] = `<YouTube id="${currLine.trim()}" />`;
-      console.log("youtube converted", fileLines[i]);
+      // console.log("youtube converted", fileLines[i]);
     }
   }
   return fileLines;
@@ -167,11 +167,35 @@ const replaceRemixCode = (fileAsLines: string[]) => {
   return fileLines;
 };
 
-function generateRedirect(fileAsLines: string[]) {
+// "redirects": [
+//   {
+//     "source": "/view-source",
+//     "destination": "https://github.com/vercel/vercel",
+//     "statusCode": 301
+//   }
+// ]
+function generateRedirect(fileAsLines: string[], fileName?: string) {
+  const parsedFileName = fileName
+    .toLowerCase()
+    .replace(/ /g, "-")
+    .split("/11ty/docs/")[1]
+    .replace(".md", "")
+    .replace(".html", "");
+
   const fileLines = fileAsLines;
   for (let i = 0; i < fileLines.length; i++) {
     if (fileLines[i].indexOf("permalink:") === 0) {
-      console.log(fileLines[i]);
+      const permalink = fileLines[i]
+        .split("permalink:")[1]
+        .trim()
+        .replace(/['"]+/g, "");
+
+      return {
+        source: permalink,
+        destination: parsedFileName,
+        statusCode: 301,
+      };
+      console.log({ parsedFileName, permalink });
     }
   }
 }
@@ -185,7 +209,7 @@ function convertToListOfStrings(path: string) {
 
 function writeToDestination(listOfLines: string[], fileName?: string) {
   const parsedFileName = fileName.toLowerCase().replace(/ /g, "-");
-  console.log({ parsedFileName });
+  // console.log({ parsedFileName });
 
   const newPath = `${process.cwd()}/temp${parsedFileName}`;
 
@@ -203,13 +227,7 @@ function importFiles() {
   const pathToLook = path.join(process.cwd(), "11ty", "docs");
   const filePaths = getAllFiles(pathToLook);
   const redirects = [];
-  // "redirects": [
-  //   {
-  //     "source": "/view-source",
-  //     "destination": "https://github.com/vercel/vercel",
-  //     "statusCode": 301
-  //   }
-  // ]
+
   filePaths.forEach(function (path) {
     // if the file is markdown
     // if (path.indexOf(".md") === -1) {
@@ -232,12 +250,14 @@ function importFiles() {
     // replace remix code examples with our custom CodeSample component
     parsedFile = replaceRemixCode(parsedFile);
 
-    const redirect = generateRedirect(parsedFile);
-
+    const redirect = generateRedirect(parsedFile, pathInProject);
+    redirects.push(redirect);
     // remove permalink from frontmatter and create redirect object for vercel
     writeToDestination(parsedFile, pathInProject);
     // if its HTML, good luck
   });
+
+  console.log(redirects);
 }
 
 importFiles();
