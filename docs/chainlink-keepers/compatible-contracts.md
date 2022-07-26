@@ -50,7 +50,7 @@ Use these elements to create a Keepers-compatible contract that will automatical
 Compile and deploy your own Keepers Counter onto a [supported Testnet](../supported-networks).
 
 1. In the Remix example, select the compile tab on the left and press the compile button. Make sure that your contract compiles without any errors. Note that the Warning messages in this example are acceptable and will not block the deployment.
-1. Select the **Deploy** tab and deploy the `Counter` smart contract in the `injected web3` environment. When deploying the contract, specify the `updateInterval` value. For this example, set a short interval of 60. This is the interval at which the `performUpkeep` function will be called.
+1. Select the **Deploy** tab and deploy the `Counter` smart contract in the `Injected Provider - Metamask` environment. When deploying the contract, specify the `updateInterval` value. For this example, set a short interval of 60. This is the interval at which the `performUpkeep` function will be called.
 1. After deployment is complete, copy the address of the deployed contract. This address is required to [register](../register-upkeep/) your upkeep.
 
 To see more complex examples, go to the [utility contracts](../utility-contracts) page.

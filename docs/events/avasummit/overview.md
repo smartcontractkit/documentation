@@ -103,7 +103,7 @@ To use this contract:
 
 1. Open the [contract in Remix](https://remix.ethereum.org/#url=https://docs.chain.link/samples/events/avasummit/VRFv2SubscriptionManager.sol).
 
-1. Compile and deploy the contract using the Injected Web3 environment. The contract includes all the configuration variables you need, but you can edit them if necessary. Notice that this contract automatically creates a new subscription when you deploy it. Read the `s_subscriptionId` variable to find the contract subscription ID.
+1. Compile and deploy the contract using the Injected Provider environment. The contract includes all the configuration variables you need, but you can edit them if necessary. Notice that this contract automatically creates a new subscription when you deploy it. Read the `s_subscriptionId` variable to find the contract subscription ID.
 
 1. Fund your contract with at least two testnet LINK as shown [here](/docs/fund-your-contract/). Call the `getLinkBalance()` function to verify: it should return `2000000000000000000`.
 
