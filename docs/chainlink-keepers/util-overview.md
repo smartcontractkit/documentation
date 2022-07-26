@@ -3,10 +3,7 @@ layout: nodes.liquid
 section: ethereum
 date: Last Modified
 title: 'Example Keepers Contracts'
-whatsnext:
-  {
-    'EthBalanceMonitor': '/docs/chainlink-keepers/utility-contracts/',
-  }
+whatsnext: { 'EthBalanceMonitor': '/docs/chainlink-keepers/utility-contracts/' }
 ---
 
 These contracts are tools to help you quickly deploy Keepers for specific use-cases. This list will be updated as more contracts become available.
@@ -29,7 +26,7 @@ This example teaches you how to automate the process of compounding arbitrary yi
 
 [Batch NFT Reveal repository](https://github.com/hackbg/chainlink-keepers-templates/tree/main/batch-nft-reveal#chainlink-keepers-template-batch-nft-reveal)
 
-This example teaches how to use [Chainlink VRF](/docs/chainlink-vrf/) and Chainlink Keepers together. Using Keepers with batch NFT reveals, you can automate and further decentralize your NFTs.
+This example teaches how to use [Chainlink VRF](/docs/vrf/v2/introduction/) and Chainlink Keepers together. Using Keepers with batch NFT reveals, you can automate and further decentralize your NFTs.
 
 ### Dynamic NFTs
 

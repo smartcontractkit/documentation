@@ -174,7 +174,7 @@ Chainlink data feeds are sources of data [aggregated from many independent Chain
 
 Smart contracts also use oracles to get other capabilities on-chain:
 
-- [Generate Verifiable Random Numbers (VRF)](/docs/chainlink-vrf/): Use Chainlink VRF to consume randomness in your smart contracts.
+- [Generate Verifiable Random Numbers (VRF)](/docs/vrf/v2/introduction/): Use Chainlink VRF to consume randomness in your smart contracts.
 - [Call External APIs (Any API)](/docs/request-and-receive-data/): Request & Receive data from any API using the Chainlink contract library.
 - [Automate Smart Contract Functions (Keepers)](/docs/chainlink-keepers/introduction/): Automating smart contract functions and regular contract maintenance.
 

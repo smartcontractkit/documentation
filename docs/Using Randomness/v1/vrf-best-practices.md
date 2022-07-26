@@ -2,16 +2,16 @@
 layout: nodes.liquid
 section: legacy
 date: Last Modified
-title: "VRF Best Practices [v1]"
-permalink: "docs/chainlink-vrf-best-practices/v1/"
+title: 'VRF Best Practices [v1]'
+permalink: 'docs/vrf/v1/best-practices/'
 metadata:
-  title: "Chainlink VRF API Reference"
-  description: "Best pracices for using Chainlink VRF."
+  title: 'Chainlink VRF API Reference'
+  description: 'Best pracices for using Chainlink VRF.'
 ---
 
 > 🚧 VRF v2 replaces and enhances VRF v1.
 >
-> See the [VRF v2 documentation](/docs/chainlink-vrf-best-practices/) to learn more.
+> See the [VRF v2 documentation](/docs/vrf/v2/introduction/) to learn more.
 
 Best are the practices for using Chainlink VRF.
 

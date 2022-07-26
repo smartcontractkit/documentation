@@ -2,10 +2,16 @@
 layout: nodes.liquid
 section: ethereum
 date: Last Modified
-title: "Install Frameworks"
-permalink: "docs/create-a-chainlinked-project/"
-whatsnext: {"Introduction to Data Feeds":"/docs/using-chainlink-reference-contracts/", "Introduction to Chainlink VRF":"/docs/chainlink-vrf/", "Introduction to Using Any API":"/docs/request-and-receive-data/"}
+title: 'Install Frameworks'
+permalink: 'docs/create-a-chainlinked-project/'
+whatsnext:
+  {
+    'Introduction to Data Feeds': '/docs/using-chainlink-reference-contracts/',
+    'Introduction to Chainlink VRF': '/docs/vrf/v2/introduction/',
+    'Introduction to Using Any API': '/docs/request-and-receive-data/',
+  }
 ---
+
 ![Starter Kits Logos](/files/c6e99c5-Untitled_design_23.png)
 
 This page explains how to install and use the [Chainlink Library](../chainlink-framework/) in your projects, either manually or via the user of the Chainlink Starter Kits.
@@ -54,7 +60,8 @@ cd hardhat-starter-kit
 For instructions on how to use the starter kit, refer to the [Hardhat starter kit README](https://github.com/smartcontractkit/hardhat-starter-kit/blob/main/README.md).
 
 For more details on how to use Chainlink with Hardhat, see our blog post about [How to use Hardhat with Chainlink](https://blog.chain.link/using-chainlink-with-hardhat/).
-___
+
+---
 
 ## Brownie Starter Kit
 
@@ -68,10 +75,12 @@ cd MyChainlinkProject/
 brownie bake chainlink-mix
 cd chainlink-mix
 ```
+
 For instructions on how to use the starter kit, refer to the [Brownie starter kit README](https://github.com/smartcontractkit/chainlink-mix/blob/master/README.md).
 
 For more details on how to use Chainlink with Brownie, see the [Develop a DeFi Project Using Python](https://blog.chain.link/develop-python-defi-project/) blog post.
-___
+
+---
 
 ## Truffle Starter Kit
 
@@ -92,7 +101,8 @@ truffle unbox smartcontractkit/truffle-starter-kit
 For instructions on how to use the starter kit, refer to the [Truffle starter kit README](https://github.com/smartcontractkit/truffle-starter-kit/blob/master/README.md).
 
 For more details on how to use Chainlink with Truffle, see our blog post about [Using Truffle to interact with Chainlink Smart Contracts](https://www.trufflesuite.com/blog/using-truffle-to-interact-with-chainlink-smart-contracts).
-___
+
+---
 
 ## DappTools Starter Kit
 
@@ -102,16 +112,17 @@ To learn more about DappTools, refer to the [DappTools Documentation](https://da
 
 1. After you install the tools, clone the starter kit and install the dependencies:
 
-      ```shell
-      git clone https://github.com/smartcontractkit/dapptools-starter-kit
-      cd dapptools-starter-kit
-      make # This installs the project's dependencies.
-      ```
+   ```shell
+   git clone https://github.com/smartcontractkit/dapptools-starter-kit
+   cd dapptools-starter-kit
+   make # This installs the project's dependencies.
+   ```
 
 For instructions on how to use the starter kit, refer to the DappTools starter kit [README](https://github.com/smartcontractkit/dapptools-starter-kit#readme).
 
 For more details on how to use Chainlink with DappTools, see the [How To Use DappTools](https://blog.chain.link/how-to-use-dapptools/) blog post.
-___
+
+---
 
 ## Foundry Starter Kit
 
@@ -121,15 +132,15 @@ To learn more about Foundry, refer to the [Foundry Documentation](https://onbjer
 
 1. After you install Foundry, clone the starter kit and install the project dependencies:
 
-      ```shell
-      git clone https://github.com/smartcontractkit/foundry-starter-kit
-      cd foundry-starter-kit
-      make # This installs the project's dependencies.
-      ```
+   ```shell
+   git clone https://github.com/smartcontractkit/foundry-starter-kit
+   cd foundry-starter-kit
+   make # This installs the project's dependencies.
+   ```
 
 For instructions on how to use the starter kit, refer to the [Foundry starter kit README](https://github.com/smartcontractkit/foundry-starter-kit#readme).
 
-___
+---
 
 # Using Chainlink Contracts
 
@@ -137,7 +148,7 @@ Once you have the Chainlink library installed, you can leverage the Chainlink ec
 
 If you're interested in retrieving up to date crypto prices in your contracts, learn more about our [Data Feeds](../using-chainlink-reference-contracts/).
 
-If you need to consume randomness in your contracts, learn about [Chainlink VRF](../chainlink-vrf/).
+If you need to consume randomness in your contracts, learn about [Chainlink VRF](/docs/vrf/v2/introduction/).
 
 And if you want your contracts to retrieve data from off-chain APIs, learn about [Using Any API](../request-and-receive-data/).
 

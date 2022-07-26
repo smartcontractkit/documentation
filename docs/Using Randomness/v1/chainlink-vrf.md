@@ -2,27 +2,34 @@
 layout: nodes.liquid
 section: legacy
 date: Last Modified
-title: "Introduction to Chainlink VRF [v1]"
-permalink: "docs/chainlink-vrf/v1/"
-whatsnext: {"Get a Random Number":"/docs/get-a-random-number/v1/", "API Reference":"/docs/chainlink-vrf-api-reference/v1/", "Contract Addresses":"/docs/vrf-contracts/v1/"}
+title: 'Introduction to Chainlink VRF [v1]'
+permalink: 'docs/vrf/v1/introduction/'
+whatsnext:
+  {
+    'Get a Random Number': '/docs/vrf/v1/get-a-random-number/',
+    'API Reference': '/docs/vrf/v1/api-reference/',
+    'Configuration': '/docs/vrf/v1/configuration/',
+  }
 metadata:
-  title: "Generate Random Numbers for Smart Contracts using Chainlink VRF"
-  description: "Learn how to securely generate random numbers for your smart contract with Chainlink VRF (an RNG). This guide uses Solidity code examples."
+  title: 'Generate Random Numbers for Smart Contracts using Chainlink VRF'
+  description: 'Learn how to securely generate random numbers for your smart contract with Chainlink VRF (an RNG). This guide uses Solidity code examples.'
 ---
+
 ![Chainlink Abstract Banner](/files/a4c6c80-85d09b6-19facd8-banner.png)
 
 > 🚧 VRF v2 replaces and enhances VRF v1.
 >
-> See the [VRF v2 documentation](/docs/chainlink-vrf/) to learn more.
+> See the [VRF v2 documentation](/docs/vrf/v2/introduction/) to learn more.
 
 ## Generate Random Numbers in your Smart Contracts
 
 Chainlink VRF (Verifiable Random Function) is a provably-fair and verifiable source of randomness designed for smart contracts. Smart contract developers can use Chainlink VRF as a tamper-proof random number generator (RNG) to build reliable smart contracts for any applications which rely on unpredictable outcomes:
-*  Blockchain games and NFTs
-*  Random assignment of duties and resources (e.g. randomly assigning judges to cases)
-*  Choosing a representative sample for consensus mechanisms
 
-Learn how to write smart contracts that consume random numbers: [Get a Random Number](/docs/get-a-random-number/v1/).
+- Blockchain games and NFTs
+- Random assignment of duties and resources (e.g. randomly assigning judges to cases)
+- Choosing a representative sample for consensus mechanisms
+
+Learn how to write smart contracts that consume random numbers: [Get a Random Number](/docs/vrf/v1/get-a-random-number/).
 
 ## On-chain Verification of Randomness
 

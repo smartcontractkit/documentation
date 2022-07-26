@@ -43,7 +43,7 @@ permalink: /ethereum/
           <p>
             Use Chainlink VRF to consume randomness in your smart contracts.
           </p>
-          <a href="/docs/chainlink-vrf/">
+          <a href="/docs/vrf/v2/introduction/">
             <div class="arrowed-text">
                 Learn More
                 <img class="cta-learnmore-arrow" src="/images/card-icons/navigation-arrow-right.svg" loading="lazy" alt="Right arrow">

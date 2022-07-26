@@ -2,8 +2,8 @@
 layout: nodes.liquid
 section: ethereum
 date: Last Modified
-title: 'Contract Addresses'
-permalink: 'docs/vrf-contracts/'
+title: 'Configuration'
+permalink: 'docs/vrf/v2/subscription/configuration/'
 metadata:
   title: 'Chainlink VRF Contract Addresses'
   linkToWallet: true
@@ -11,13 +11,21 @@ metadata:
     0: '/files/OpenGraph_V3.png'
 ---
 
-> ℹ️ You are viewing the VRF v2 guide.
+> ℹ️You are viewing the VRF v2 guide - Subscription method.
 >
-> If you are using v1, see the [VRF v1 guide](./v1).
+> - To learn how to request random numbers without a subscription, see the [Ad-hoc Method](/docs/vrf/v2/ad-hoc/) guide.
+>
+> - If you are using v1, see the [VRF v1 guide](/docs/vrf/v1/introduction/).
 
 Chainlink VRF allows you to integrate provably fair and verifiably random data in your smart contract.
 
-For implementation details, read [Introduction to Chainlink VRF](/docs/chainlink-vrf/).
+For implementation details, read [Introduction to Chainlink VRF v2 Subscription method](/docs/vrf/v2/subscription/).
+
+**Table of contents**
+
+- [Coordinator Parameters](#coordinator-parameters)
+- [Fee Parameters](#fee-parameters)
+- [Configurations](#configurations)
 
 ## Coordinator Parameters
 
@@ -28,9 +36,10 @@ These parameters are configured in the coordinator contract. You can view these 
 - `uint32 stalenessSeconds`: How long the coordinator waits until we consider the ETH/LINK price used for converting gas costs to LINK is stale and use `fallbackWeiPerUnitLink`
 - `uint32 gasAfterPaymentCalculation`: How much gas is used outside of the payment calculation. This covers the additional operations required to decrement the subscription balance and increment the balance for the oracle that handled the request.
 
-## Fee parameters
+## Fee Parameters
 
 Fee parameters are configured in the coordinator contract and specify the premium you pay per request in addition to the gas cost for the transaction. You can view them by running `getFeeConfig` on the coordinator. The `uint32 fulfillmentFlatFeeLinkPPMTier1` parameter defines the fees per request specified in millionths of LINK.
+The details for calculating the total transaction cost can be found [here](/docs/vrf/v2/subscription/#request-and-receive-data).
 
 ## Configurations
 

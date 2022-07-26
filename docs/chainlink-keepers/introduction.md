@@ -72,7 +72,7 @@ To use a custom logic trigger, you will need to make your contract [Keepers-comp
 
 > ❗️ **WARNING**
 >
-> Do **NOT** attempt to send LINK to your contract like you do with [VRF](../../get-a-random-number/). For Chainlink Keepers, contracts are funded via the registry rather than within your contract.
+> Do **NOT** attempt to send LINK to your contract. For Chainlink Keepers, contracts are funded via the registry rather than within your contract.
 
 > ⚠️ Registration Onboarding Note
 >
