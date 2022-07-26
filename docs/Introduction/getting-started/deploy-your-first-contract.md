@@ -81,8 +81,8 @@ Your first contract is a simple `HelloWorld.sol` example. This example shows you
 1. After Remix compiles the contract, deploy it. On the left side of Remix, click the **Deploy and Run** tab to view the deployment settings.
     ![Screenshot of the Deploy tab and its settings.](/images/getting-started/selectSolidityDeploy.png)
 
-1. In the deployment settings, select the **Injected Web3** environment. This tells Remix that you want to deploy your contract to the blockchain that you configured in MetaMask. You could optionally use one of the Javascript VM options, but they run in a virtual environment with no connection to an actual blockchain or Chainlink oracles.
-    ![Screenshot showing the Injected Web3 environment selected.](/images/getting-started/selectWeb3.png)
+1. In the deployment settings, select the **Injected Provider** environment. This tells Remix that you want to deploy your contract to the blockchain that you configured in MetaMask. You could optionally use one of the Javascript VM options, but they run in a virtual environment with no connection to an actual blockchain or Chainlink oracles.
+    ![Screenshot showing the Injected Provider environment selected.](/images/getting-started/selectWeb3.png)
 
 1. Next to the **Deploy** button, enter a message that you want to send with the smart contract when you deploy it. This contract has a constructor that sets an initial message when you deploy the contract.
     ![Screenshot of the Deploy button with "Hello world!" as the defined message.](/images/getting-started/deployHelloWorld.png)
