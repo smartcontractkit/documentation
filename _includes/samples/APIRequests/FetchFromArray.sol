@@ -10,9 +10,11 @@ import '@chainlink/contracts/src/v0.8/ConfirmedOwner.sol';
  */
 
 /**
- * THIS IS AN EXAMPLE CONTRACT WHICH USES HARDCODED VALUES FOR CLARITY.
- * PLEASE DO NOT USE THIS CODE IN PRODUCTION.
+ * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
+ * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
+ * DO NOT USE THIS CODE IN PRODUCTION.
  */
+
 contract FetchFromArray is ChainlinkClient, ConfirmedOwner {
     using Chainlink for Chainlink.Request;
 

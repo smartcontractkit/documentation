@@ -7,8 +7,14 @@ import '@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol';
 /**
  * @notice A Chainlink VRF consumer which uses randomness to mimic the rolling
  * of a 20 sided dice
- * @dev This is only an example implementation and not necessarily suitable for mainnet.
  */
+
+/**
+ * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
+ * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
+ * DO NOT USE THIS CODE IN PRODUCTION.
+ */
+
 contract VRFD20 is VRFConsumerBaseV2 {
     uint256 private constant ROLL_IN_PROGRESS = 42;
 

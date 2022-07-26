@@ -10,6 +10,13 @@ import "@openzeppelin/contracts/security/Pausable.sol";
  * @title The EthBalanceMonitor contract
  * @notice A keeper-compatible contract that monitors and funds eth addresses
  */
+
+/**
+ * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
+ * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
+ * DO NOT USE THIS CODE IN PRODUCTION.
+ */
+
 contract EthBalanceMonitor is ConfirmedOwner, Pausable, KeeperCompatibleInterface {
   // observed limit of 45K + 10k buffer
   uint256 private constant MIN_GAS_FOR_TRANSFER = 55_000;

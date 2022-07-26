@@ -5,10 +5,15 @@ import '@chainlink/contracts/src/v0.8/interfaces/KeeperCompatibleInterface.sol';
 /**
  * @dev Example contract which perform most of the computation in `checkUpkeep`
  *
- * @notice Only for illustration purposes. Code is not audited and must not be used for production projects
- *
  * @notice important to implement {KeeperCompatibleInterface}
  */
+
+/**
+ * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
+ * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
+ * DO NOT USE THIS CODE IN PRODUCTION.
+ */
+
 contract BalancerOffChain is KeeperCompatibleInterface {
     uint256 public constant SIZE = 1000;
     uint256 public constant LIMIT = 1000;

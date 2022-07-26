@@ -8,9 +8,15 @@ import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
  * Find information on LINK Token Contracts and get the latest ETH and LINK faucets here: https://docs.chain.link/docs/link-token-contracts/
  */
 
+/**
+ * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
+ * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
+ * DO NOT USE THIS CODE IN PRODUCTION.
+ */
+
 contract Weather is ChainlinkClient {
     using Chainlink for Chainlink.Request;
-    
+
     bytes32 public avgTempJobId;
     uint256 public avgTemp;
     bytes32 public totalRainJobId;
@@ -18,11 +24,11 @@ contract Weather is ChainlinkClient {
     bytes32 public hailJobId;
     uint256 public hail;
     uint256 public fee;
-    
+
     event AvgTemp(uint256 _result);
     event TotalRain(uint256 _result);
     event Hail(uint256 _result);
-    
+
     constructor(
         address _link,
         address _oracle,
@@ -54,7 +60,7 @@ contract Weather is ChainlinkClient {
         req.add("column", "temp");
         sendChainlinkRequest(req, fee);
     }
-    
+
     function fulfillAvgTemp(
         bytes32 _requestId,
         uint256 _result
@@ -62,7 +68,7 @@ contract Weather is ChainlinkClient {
         avgTemp = _result;
         emit AvgTemp(_result);
     }
-    
+
     function requestTotalRain(
         string memory _from,
         string memory _to
@@ -78,7 +84,7 @@ contract Weather is ChainlinkClient {
         req.add("column", "prcp");
         sendChainlinkRequest(req, fee);
     }
-    
+
     function fulfillTotalRain(
         bytes32 _requestId,
         uint256 _result
@@ -86,7 +92,7 @@ contract Weather is ChainlinkClient {
         totalRain = _result;
         emit TotalRain(_result);
     }
-    
+
     function requestHail(
         string memory _from,
         string memory _to
@@ -102,7 +108,7 @@ contract Weather is ChainlinkClient {
         req.add("column", "hail");
         sendChainlinkRequest(req, fee);
     }
-    
+
     function fulfillHail(
         bytes32 _requestId,
         uint256 _result

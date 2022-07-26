@@ -1,3 +1,9 @@
+/**
+ * THIS IS EXAMPLE CODE THAT USES HARDCODED VALUES FOR CLARITY.
+ * THIS IS EXAMPLE CODE THAT USES UN-AUDITED CODE.
+ * DO NOT USE THIS CODE IN PRODUCTION.
+ */
+
 use chainlink_solana as chainlink;
 
 use solana_program::{

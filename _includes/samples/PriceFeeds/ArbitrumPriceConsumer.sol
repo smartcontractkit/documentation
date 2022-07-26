@@ -7,6 +7,12 @@ import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV2V3Interface.sol";
  * Find information on LINK Token Contracts here: https://docs.chain.link/docs/link-token-contracts/
  */
 
+/**
+ * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
+ * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
+ * DO NOT USE THIS CODE IN PRODUCTION.
+ */
+
 contract ArbitrumPriceConsumer {
 	// Identifier of the Sequencer offline flag on the Flags contract
     AggregatorV2V3Interface internal priceFeed;

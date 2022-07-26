@@ -11,15 +11,15 @@ export const NETWORKS = [
         networkType: "mainnet",
       },
       {
-        name: "Kovan Testnet",
-        url: "https://kovan.etherscan.io/address/%s",
-        source: "directory-kovan.json",
-        networkType: "testnet",
-      },
-      {
         name: "Rinkeby Testnet",
         url: "https://rinkeby.etherscan.io/address/%s",
         source: "directory-rinkeby.json",
+        networkType: "testnet",
+      },
+      {
+        name: "Kovan Testnet",
+        url: "https://kovan.etherscan.io/address/%s",
+        source: "directory-kovan.json",
         networkType: "testnet",
       },
     ],

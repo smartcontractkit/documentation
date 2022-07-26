@@ -9,6 +9,11 @@ import '@chainlink/contracts/src/v0.8/ConfirmedOwner.sol';
  * Find information on LINK Token Contracts and get the latest ETH and LINK faucets here: https://docs.chain.link/docs/link-token-contracts/
  */
 
+/**
+ * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
+ * DO NOT USE THIS CODE IN PRODUCTION.
+ */
+
 contract FinageChainlink is ChainlinkClient, ConfirmedOwner {
     using Chainlink for Chainlink.Request;
 
