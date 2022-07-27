@@ -9,7 +9,7 @@ whatsnext:
     'Large Responses': '/docs/large-responses/',
     'Make an Existing Job Request': '/docs/existing-job-request/',
     'API Reference': '/docs/chainlink-framework/',
-    'Testnet Nodes and Jobs': '/docs/any-api-testnet-oracles/',
+    'Testnet Oracles': '/docs/any-api-testnet-oracles/',
   }
 ---
 
