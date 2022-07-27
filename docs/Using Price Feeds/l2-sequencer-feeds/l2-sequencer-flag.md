@@ -67,7 +67,7 @@ This example includes a modified `getLatestPrice` function that reverts if the `
 - 0: The sequencer is up
 - 1: The sequencer is down
 
-The `startedAt` timestamp is the block timestamp when the answer updated on the L1 network, Ethereum Mainnet. Use this to ensure the latest answer is recent enough to be trustworthy. In this example, subtract `startedAt` from the `block.timestamp` and revert the request if the result is greater than the `STALENESS_THRESHOLD`.
+The `startedAt` timestamp indicates when the sequencer changed status. On Arbitrum, use this timestamp to ensure the latest answer is recent enough to be trustworthy. In this example, subtract `startedAt` from the `block.timestamp` and revert the request if the result is greater than the `STALENESS_THRESHOLD`.
 
 ```solidity
 uint256 timeSinceUpdated = block.timestamp - startedAt;
@@ -147,7 +147,7 @@ This example includes a modified `getLatestPrice` function that reverts if `chec
 - 0: The sequencer is up
 - 1: The sequencer is down
 
-On Optimism and Metis, the `startedAt` timestamp indicates when the sequencer changed status. This timestamp returns `0` if a round is invalid. When the sequencer comes back up after an outage, wait for the `GRACE_PERIOD` to pass before accepting answers from the price data feed. Subtract `startedAt` from `block.timestamp` and revert the request if the result is less than the `GRACE_PERIOD`.
+The `startedAt` timestamp indicates when the sequencer changed status. This timestamp returns `0` if a round is invalid. When the sequencer comes back up after an outage on Optimism or Metis, wait for the `GRACE_PERIOD` to pass before accepting answers from the price data feed. Subtract `startedAt` from `block.timestamp` and revert the request if the result is less than the `GRACE_PERIOD`.
 
 ```solidity
 uint256 timeSinceUp = block.timestamp - startedAt;
