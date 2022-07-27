@@ -8,10 +8,16 @@ import '@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol';
 
 /**
  *  An example of a consumer contract that also owns and manages the subscription
- *  @notice code not audited and contains hardcoded values. Not to be used in production!
  *
  *. @notice works as-is on Avalanche Fuji testnet. Please replace hardcoded values if you run it on another testnet
  **/
+
+/**
+ * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
+ * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
+ * DO NOT USE THIS CODE IN PRODUCTION.
+ */
+
 contract VRFv2SubscriptionManager is VRFConsumerBaseV2 {
     VRFCoordinatorV2Interface COORDINATOR;
     LinkTokenInterface LINKTOKEN;
