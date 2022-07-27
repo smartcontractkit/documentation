@@ -37,7 +37,7 @@ When an external adapter receives a request from the Chainlink node, the JSON pa
 
 Additional data may be specified in the spec to be utilized by the adapter. This can be useful for requesting data from a REST endpoint where the keys and values can be specified by the requester. For example, if the REST endpoint supports the following:
 
-```
+```text
 https://example.com/api/:parent/:child
 ```
 
@@ -54,7 +54,7 @@ Then the payload to the external adapter would need:
 
 The values for `:parent` and `:child` can be used within the adapter to dynamically build the URL for the request. This same concept can also be applied to URLs with query values. For example:
 
-```
+```text
 https://example.com/api/?parent=myParentValue&child=myChildValue
 ```
 
@@ -175,7 +175,7 @@ exports.myExternalAdapter = (req, res) => {
 
 If given "ETH" as the value for `coin` and "USD" as the value for `market`, this external adapter will build the following URL for the request:
 
-```
+```text
 https://some-api.example.com/api?coin=ETH&market=USD
 ```
 
