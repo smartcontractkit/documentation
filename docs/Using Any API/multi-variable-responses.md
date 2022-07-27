@@ -72,7 +72,7 @@ To use this contract:
 
 1. [Open the contract in Remix](https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/MultiWordConsumer.sol).
 
-1. Compile and deploy the contract using the Injected Web3 environment. The contract includes all the configuration variables for the _Rinkeby_ testnet. Make sure your wallet is set to use _Rinkeby_. The _constructor_ sets the following parameters:
+1. Compile and deploy the contract using the Injected Provider environment. The contract includes all the configuration variables for the _Rinkeby_ testnet. Make sure your wallet is set to use _Rinkeby_. The _constructor_ sets the following parameters:
 
    - The Chainlink Token address for _Rinkeby_ by calling the [`setChainlinkToken`](/docs/chainlink-framework/#setchainlinktoken) function.
    - The Oracle contract address for _Rinkeby_ by calling the [`setChainlinkOracle`](/docs/chainlink-framework/#setchainlinkoracle) function.

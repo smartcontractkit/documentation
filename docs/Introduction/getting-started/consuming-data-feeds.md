@@ -63,8 +63,8 @@ Deploy the `PriceConsumerV3` smart contract on the Rinkeby testnet.
 1. Use the default compiler settings. Click the **Compile PriceConsumerV3.sol** button to compile the contract. Remix automatically detects the correct compiler version depending on the `pragma` that you specify in the contract. You can ignore warnings about unused local variables in this example.
     ![Screenshot of the Compile button.](/images/getting-started/compilePriceConsumerV3.png)
 
-1. On the **Deploy** tab, select the **Injected Web3** environment. This contract specifically requires Web3 because it connects with another contract on the blockchain. Running in a JavaScript VM will not work.
-    ![Screenshot showing the Injected Web3 environment selected.](/images/getting-started/selectWeb3.png)
+1. On the **Deploy** tab, select the **Injected Provider** environment. This contract specifically requires Web3 because it connects with another contract on the blockchain. Running in a JavaScript VM will not work.
+    ![Screenshot showing the Injected Provider environment selected.](/images/getting-started/selectWeb3.png)
 
 1. Because the example contract has several imports, Remix might select another contract to deploy by default. In the **Contract** section, select the `PriceConsumerV3` contract to make sure that Remix deploys the correct contract.
     ![Screenshot showing PriceConsumerV3 as the contract to deploy.](/images/getting-started/selectPriceConsumerV3.png)

@@ -2,19 +2,21 @@
 layout: nodes.liquid
 section: ethereum
 date: Last Modified
-title: 'EthBalanceMonitor Utility Contract'
+title: 'EthBalanceMonitor Contract'
 whatsnext:
   {
     'FAQs': '/docs/chainlink-keepers/faqs/',
   }
 ---
 
-## Overview
 This guide explains the use case for the [`EthBalanceMonitor` contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/upkeeps/EthBalanceMonitor.sol). This Keeper contract monitors and funds Ethereum addresses that developers might need to top up frequently based on a configurable threshold. As a result, nodes are funded automatically.
 
 After deploying the contract, developers can go to [keepers.chain.link](https://keepers.chain.link/) to register Upkeep and run the contract. To take full advantage of the Keepers automation infrastructure, read all of the documentation to understand the features of Chainlink Keepers.
 
+To find other example contracts, see the [Example Keepers Contracts](/docs/chainlink-keepers/util-overview/) page.
+
 **Table of Contents**
+
 + [`EthBalanceMonitor` Properties](#ethbalancemonitor-properties)
 + [Functions](#functions)
   + [`setWatchList` Function](#setwatchlist-function)
@@ -23,6 +25,7 @@ After deploying the contract, developers can go to [keepers.chain.link](https:/
   + [`topUp` Function](#topup-function)
 
 ## `EthBalanceMonitor` Properties
+
 `EthBalanceMonitor` is ownable, pausable, and Keepers-compatible:
 
 - **Ownable**: The contract has an owner address, and provides basic authorization control functions. This simplifies the implementation of *user permissions* and allows for transer of ownership.
@@ -40,6 +43,7 @@ You can open the contract in Remix:
 > Aside from certain features listed below, only owners can withdraw funds and pause or unpause the contract. If the contract is paused or unpaused, it will affect `checkUpkeep`, `performUpkeep`, and `topUp` functions.
 
 ## Functions
+
 Functions with an asterisk (`*`) denote features that only the owner can change. Click on each function to learn more about its parameters and design patterns:
 
 | Function Name                   | Description                                                          |
@@ -62,6 +66,7 @@ Below are the feed functions in `EthBalanceMonitor`:
 ### `setWatchList` Function
 
 #### Parameters
+
 | Name                            | Description                                                  | Suggested Setting              |
 | ------------------------------- | ------------------------------------------------------------ | ------------------------------ |
 | `addresses`                    | The list of addresses to watch | (not applicable) |
@@ -73,6 +78,7 @@ Only the owner can `setWatchList`. Each of the parameters should be set with dis
 ### `setKeeperRegistryAddress` Function
 
 #### Parameters
+
 | Name                            | Description                                                          |
 | ------------------------------- | -------------------------------------------------------------------- |
 | `keeperRegistryAddress`         | Address that requires updating in `KeeperRegistry`                   |
@@ -82,6 +88,7 @@ Only the `keeperRegistryAddress` can `performUpkeep`, which is a *global setting
 ### `setMinWaitPeriodSeconds` Function
 
 #### Parameters
+
 | Name                            | Description                                                  | Suggested Setting              |
 | ------------------------------- | ------------------------------------------------------------ | ------------------------------ |
 | `period`                        | Minimum wait period (in seconds) for addresses between funding |  3600 (1 hour)               |
@@ -91,6 +98,7 @@ Only the `keeperRegistryAddress` can `performUpkeep`, which is a *global setting
 ### `topUp` Function
 
 #### Parameters
+
 | Name                            | Description                                                          |
 | ------------------------------- | -------------------------------------------------------------------- |
 | `needsFunding`                  | List of addresses to fund (addresses must be pre-approved)           |
