@@ -252,8 +252,8 @@ module.exports = {
             url: '/docs/listing-services/',
           },
           {
-            title: 'Testnet Nodes and Jobs',
-            url: '/docs/any-api-testnet-nodes/',
+            title: 'Testnet Oracles',
+            url: '/docs/any-api-testnet-oracles',
           },
           {
             title: 'API Reference',

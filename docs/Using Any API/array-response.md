@@ -9,13 +9,15 @@ whatsnext:
     'Large Responses': '/docs/large-responses/',
     'Make an Existing Job Request': '/docs/existing-job-request/',
     'API Reference': '/docs/chainlink-framework/',
-    'Testnet Nodes and Jobs': '/docs/any-api-testnet-nodes/',
+    'Testnet Nodes and Jobs': '/docs/any-api-testnet-oracles/',
   }
 ---
 
 ## Overview
 
 This guide explains how to make an HTTP GET request to an external API, that returns a _json_ array, from a smart contract, using Chainlink's [Request & Receive Data](../request-and-receive-data/) cycle and then receive the needed data from the array.
+
+{% include 'sections/any-api-common-archi.md' %}
 
 {% include 'sections/any-api-common-table-contents.md' %}
 

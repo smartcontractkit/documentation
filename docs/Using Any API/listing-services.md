@@ -4,11 +4,7 @@ section: ethereum
 date: Last Modified
 title: 'Find Existing Jobs'
 permalink: 'docs/listing-services/'
-whatsnext:
-  {
-    'API Reference': '/docs/chainlink-framework/',
-    'Testnet Nodes and Jobs': '/docs/any-api-testnet-nodes/',
-  }
+whatsnext: { 'API Reference': '/docs/chainlink-framework/', 'Testnet Nodes and Jobs': '/docs/any-api-testnet-oracles/' }
 ---
 
 ## Overview
@@ -48,6 +44,6 @@ To find an Oracle Job that is pre-configured for your use case and available on 
 
 On testnets, several alternatives are provided:
 
-- The Chainlink Development Relations team maintains [testnet nodes and jobs](/docs/any-api-testnet-nodes/) that you can use to test implementations. If you don't find a suitable job for your needs, join [Chainlink operator-requests discord channel](https://discord.gg/eGcxsdZzKR) or check the other alternatives below.
+- The Chainlink Development Relations team maintains [testnet nodes and jobs](/docs/any-api-testnet-oracles/) that you can use to test implementations. If you don't find a suitable job for your needs, join [Chainlink operator-requests discord channel](https://discord.gg/eGcxsdZzKR) or check the other alternatives below.
 - You can also deploy testnet nodes and external adapters on [naas.link](https://naas.link/). You must write your own [jobs](/docs/jobs/): To help you get started, each [ANY API tutorial](/docs/make-a-http-get-request/) has a corresponding job attached to it. **Note:** [naas.link](https://naas.link) is managed by [linkpool.io](https://linkpool.io/). Refer to the contact section at the bottom of the page for more assistance.
 - Run your own testnet nodes as explained [here](/docs/running-a-chainlink-node/). You must write your own [jobs](/docs/jobs/): To help you get started, each [ANY API tutorial](/docs/make-a-http-get-request/) has a corresponding job attached to it.

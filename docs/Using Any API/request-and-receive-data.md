@@ -9,7 +9,7 @@ whatsnext:
     'Make a GET Request': '/docs/make-a-http-get-request/',
     'Make an Existing Job Request': '/docs/existing-job-request/',
     'API Reference': '/docs/chainlink-framework/',
-    'Testnet Nodes and Jobs': '/docs/any-api-testnet-nodes/',
+    'Testnet Nodes and Jobs': '/docs/any-api-testnet-oracles/',
   }
 metadata:
   title: 'Request and Receive API Data with Chainlink'
@@ -26,7 +26,9 @@ Chainlink enables your contracts to access to _any_ external data source through
 
 Whether your contract requires sports results, the latest weather, or any other publicly available data, the [Chainlink contract library](https://github.com/smartcontractkit/chainlink/tree/master/contracts) provides the tools required for your contract to consume it.
 
-> ⚠️ Note on Price Feed Data
+{% include 'sections/any-api-common-archi.md' %}
+
+> 📘 Note on Price Feed Data
 >
 > If your smart contracts need access to price feed data, try using [Chainlink Data Feeds](../using-chainlink-reference-contracts/).
 
@@ -42,8 +44,8 @@ Outlined below are multiple ways developers can connect smart contracts to off-c
 
 | Request Type                                                         | Description                                                                                                                                                                                                                                                                            |
 | -------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [HTTP GET Single Word Response](/docs/single-word-response/)         | This guide explains how to make an HTTP GET request and parse the _json_ response to retrieve the value of one single attribute.                                                                                                                                                          |
-| [HTTP GET Multi-Variable Responses](/docs/multi-variable-responses/) | This guide explains how to make an HTTP GET request and parse the _json_ response to retrieve the values of multiple attributes.                                                                                                                                                  |
+| [HTTP GET Single Word Response](/docs/single-word-response/)         | This guide explains how to make an HTTP GET request and parse the _json_ response to retrieve the value of one single attribute.                                                                                                                                                       |
+| [HTTP GET Multi-Variable Responses](/docs/multi-variable-responses/) | This guide explains how to make an HTTP GET request and parse the _json_ response to retrieve the values of multiple attributes.                                                                                                                                                       |
 | [HTTP GET Element in Array Response](/docs/api-array-response/)      | This guide explains how to make an HTTP GET request that returns a _json_ array and parse it to retrieve the target element's value.                                                                                                                                                   |
 | [HTTP GET Large Reponses](/docs/large-responses/)                    | This guide explains how to make an HTTP Get request that returns a _json_ containing an arbitrary-length raw byte data and parse it to return the data as _bytes_ data type.                                                                                                           |
 | [Existing Job Request](/docs/existing-job-request/)                  | This guide explains how to call a job that leverages [External adapters](/docs/external-adapters/) and returns the relevant data to the smart contract. This allows building succinct smart contracts that do not need to comprehend the URL or the response format of the target API. |
@@ -51,6 +53,5 @@ Outlined below are multiple ways developers can connect smart contracts to off-c
 ### Building External Adapters
 
 To learn more about building external adapters and adding them to nodes, refer to the [External Adapters](../external-adapters/) documentation.
-
 
 To understand different use cases for using any API, refer to [Other Tutorials](/docs/other-tutorials/).

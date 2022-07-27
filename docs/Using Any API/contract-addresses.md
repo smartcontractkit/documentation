@@ -2,16 +2,16 @@
 layout: nodes.liquid
 section: ethereum
 date: Last Modified
-title: 'Testnet Nodes and Jobs'
-permalink: 'docs/any-api-testnet-nodes/'
+title: 'Testnet Oracles'
+permalink: 'docs/any-api-testnet-oracles/'
 metadata:
-  title: 'Testnet Nodes and Jobs'
-  description: 'Addresses for ANY API testnet nodes and jobs'
+  title: 'Testnet Oracles'
+  description: 'Chainlink Development Relations testnet oracles'
   image:
     0: '/files/72d4bd9-link.png'
 ---
 
-The Chainlink Development Relations team maintains several testnet nodes and jobs that you can use to test your implementation quickly.
+The Chainlink Development Relations team maintains several testnet oracles that you can use to test your implementation quickly.
 
 > 🚰 Link token address and Faucet details
 >
