@@ -4,8 +4,8 @@ pragma solidity ^0.8.7;
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV2V3Interface.sol";
 
 /**
- * Find information on LINK Token Contracts here: https://docs.chain.link/docs/link-token-contracts/
- */
+* Find information on LINK Token Contracts here: https://docs.chain.link/docs/link-token-contracts/
+*/
 
 /**
  * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
@@ -15,57 +15,52 @@ import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV2V3Interface.sol";
 
 contract ArbitrumPriceConsumer {
 	// Identifier of the Sequencer offline flag on the Flags contract
-    AggregatorV2V3Interface internal priceFeed;
-    AggregatorV2V3Interface internal sequencerUptimeFeed;
+  AggregatorV2V3Interface internal priceFeed;
+  AggregatorV2V3Interface internal sequencerUptimeFeed;
 
-    /**
-     * Network: Rinkeby
-     * Data Feed: BTC/USD
-     * Data Feed Proxy Address: 0x2431452A0010a43878bF198e170F6319Af6d27F4
-     * Sequencer Uptime Proxy Address: 0x13E99C19833F557672B67C70508061A2E1e54162
-		 * For a list of available sequencer proxy addresses, see:
-		 * https://docs.chain.link/docs/l2-sequencer-flag/
-     */
-    constructor() {
-        priceFeed = AggregatorV2V3Interface(0x2431452A0010a43878bF198e170F6319Af6d27F4);
-        sequencerUptimeFeed = AggregatorV2V3Interface(0x13E99C19833F557672B67C70508061A2E1e54162);
-    }
+  uint256 private constant STALENESS_THRESHOLD = 3600;
 
-    /**
-     * Returns the latest price
-     */
-    function getLatestPrice() public view returns (int) {
-        if (!checkSequencerState()) {
-		        // If the sequencer is down, do not perform any critical operations
-            revert("L2 sequencer down: Chainlink feeds are not being updated");
-        }
-        (
-            uint80 roundID,
-            int price,
-            uint startedAt,
-            uint timeStamp,
-            uint80 answeredInRound
-        ) = priceFeed.latestRoundData();
-        return price;
-    }
+  error StaleL2SequencerFeed();
 
-		/**
-     * Check if the L2 sequencer is running
-     */
-    function checkSequencerState() public view returns (bool sequencerIsUp) {
-        (
-        uint80 roundId,
-        int256 answer,
-        uint256 startedAt,
-        uint256 updatedAt,
-        uint80 answeredInRound
+  /**
+  * Network: Rinkeby
+  * Data Feed: BTC/USD
+  * Data Feed Proxy Address: 0xECe365B379E1dD183B20fc5f022230C044d51404
+  * Sequencer Uptime Proxy Address: 0x13E99C19833F557672B67C70508061A2E1e54162
+  * For a list of available sequencer proxy addresses, see:
+  * https://docs.chain.link/docs/l2-sequencer-flag/
+  */
+  constructor() {
+    priceFeed = AggregatorV2V3Interface(0xECe365B379E1dD183B20fc5f022230C044d51404);
+    sequencerUptimeFeed = AggregatorV2V3Interface(0x13E99C19833F557672B67C70508061A2E1e54162);
+  }
+
+  /**
+  * Checks the sequencer status and returns the latest price
+  */
+  function getLatestPrice() public view returns (int) {
+    (
+      /*uint80 roundId*/,
+      int256 answer,
+      uint256 startedAt,
+      /*uint256 updatedAt*/,
+      /*uint80 answeredInRound*/
     ) = sequencerUptimeFeed.latestRoundData();
 
-        // Answer == 0: Sequencer is up
-        // Answer == 1: Sequencer is down
-        if (answer == 0 && (block.timestamp - updatedAt) < 3600) {
-            return true;
-        }
-        return false;
+    // Answer == 0: Sequencer is up
+    // Answer == 1: Sequencer is down
+    bool isSequencerUp = answer == 0;
+    uint256 timeSinceUpdated = block.timestamp - startedAt;
+    if (isSequencerUp && timeSinceUpdated > STALENESS_THRESHOLD) {
+      revert StaleL2SequencerFeed();
     }
+    (
+      /*uint80 roundID*/,
+      int price,
+      /*uint startedAt*/,
+      /*uint timeStamp*/,
+      /*uint80 answeredInRound*/
+    ) = priceFeed.latestRoundData();
+    return price;
+  }
 }
