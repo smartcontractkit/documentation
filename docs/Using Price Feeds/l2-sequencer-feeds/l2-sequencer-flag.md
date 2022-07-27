@@ -12,7 +12,7 @@ If a sequencer becomes unavailable, it is impossible to access read/write APIs t
 
 To help your applications identify when the sequencer is unavailable, you can use a data feed that tracks the last known status of the sequencer at a given point in time. This is to allow customers to prevent mass liquidations by providing a grace period to allow customers to react to such an event.
 
-Because not all L2 networks are architected the same way, the Arbitrum sequencer feed behaves slightly differently than the Optimism and Metis sequencer feeds. The architecutre and process for handling outages is different. Follow the guide for your specific L2 network.
+Because not all L2 networks are architected the same way, the Arbitrum sequencer feed behaves slightly differently than the Optimism and Metis sequencer feeds. The architecutre and process for handling outages is different. Follow the instructions for your specific network; either [Arbitrum](#arbitrum) or [Optimism and Metis](#optimism-and-metis).
 
 **Table of Contents**
 
