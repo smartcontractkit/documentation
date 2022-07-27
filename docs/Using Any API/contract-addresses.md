@@ -6,7 +6,7 @@ title: 'Testnet Oracles'
 permalink: 'docs/any-api-testnet-oracles/'
 metadata:
   title: 'Testnet Oracles'
-  description: 'Chainlink Development Relations testnet oracles'
+  description: 'Chainlink Developer Relations testnet oracles'
   image:
     0: '/files/72d4bd9-link.png'
 ---
