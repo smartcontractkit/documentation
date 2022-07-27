@@ -12,7 +12,7 @@ If a sequencer becomes unavailable, it is impossible to access read/write APIs t
 
 To help your applications identify when the sequencer is unavailable, you can use a data feed that tracks the last known status of the sequencer at a given point in time. This is to allow customers to prevent mass liquidations by providing a grace period to allow customers to react to such an event.
 
-Because not all L2 networks are architected the same way, the Arbitrum sequencer feed behaves slightly differently than the Optimism and Metis sequencer feeds. The architecutre and process for handling outages is different. Follow the instructions for your specific network; either [Arbitrum](#arbitrum) or [Optimism and Metis](#optimism-and-metis).
+Because not all L2 networks are architected the same way, the Arbitrum sequencer feed behaves slightly differently than the Optimism and Metis sequencer feeds. The architecture and process for handling outages is different. Follow the instructions for your specific network; either [Arbitrum](#arbitrum) or [Optimism and Metis](#optimism-and-metis).
 
 **Table of Contents**
 
@@ -54,7 +54,7 @@ If the Arbitrum network becomes unavailable, the `ArbitrumValidator` contract co
 Create your consumer contract for uptime feeds similarly to contracts you would use for other Chainlink data feeds. You will need the following items:
 
 - The [sequencer uptime feed proxy address](#arbitrum): This contract on the L2 network
-- A contract that imports the [`AggregatorV2V3Interface.sol` contract](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/interfaces/AggregatorV2V3Interface.sol): Use this interface to create a `flagsFeed` object that points to the sequencer feed proxy.
+- A contract that imports the [`AggregatorV2V3Interface.sol` contract](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/interfaces/AggregatorV2V3Interface.sol): Use this interface to create a `sequencerUptimeFeed` object that points to the sequencer feed proxy.
 
 You can use the sequencer uptime feed on Arbitrum, but this example uses an Ethereum Rinkeby testnet feed for development and testing purposes.
 
@@ -62,13 +62,20 @@ You can use the sequencer uptime feed on Arbitrum, but this example uses an Ethe
 {% include 'samples/PriceFeeds/ArbitrumPriceConsumer.sol' %}
 ```
 
-This example includes a modified `getLatestPrice` function that reverts if `checkSequencerState` returns false. The `checkSequencerState` function reads the answer from the sequencer uptime feed and returns either a `1` or a `0`.
+This example includes a modified `getLatestPrice` function that reverts if the `STALENESS_THRESHOLD` is exceeded. The `checkSequencerState` function reads the answer from the sequencer uptime feed and returns either a `1` or a `0`.
 
 - 0: The sequencer is up
 - 1: The sequencer is down
 
-The `updatedAt` timestamp is the block timestamp when the answer updated on the L1 network, Ethereum Mainnet. Use this to ensure the latest answer is recent enough to be trustworthy.
+The `startedAt` timestamp is the block timestamp when the answer updated on the L1 network, Ethereum Mainnet. Use this to ensure the latest answer is recent enough to be trustworthy. In this example, subtract `startedAt` from the `block.timestamp` and revert the request if the result is greater than the `STALENESS_THRESHOLD`.
 
+```solidity
+bool isSequencerUp = answer == 0;
+uint256 timeSinceUpdated = block.timestamp - startedAt;
+if (isSequencerUp && timeSinceUpdated > STALENESS_THRESHOLD) {
+  revert StaleL2SequencerFeed();
+}
+```
 
 ## Optimism and Metis
 
@@ -89,7 +96,7 @@ On Optimism and Metis, the sequencer’s status is relayed from L1 to L2 where t
 
 1. A network of node operators runs the external adapter to post the latest sequencer status to the `AggregatorProxy` contract and relays the status to the `Aggregator` contract.  The `Aggregator` contract calls the `validate` function in the `OptimismValidator` contract.  
 
-1. The `optimismValidator` contract calls the `sendMessage` function in the `L1CrossDomainMessenger` contract. This message contains instructions to call the `updateStatus(bool status, uint64 timestamp)` function in the sequencer uptime feed deployed on the L2 network.
+1. The `OptimismValidator` contract calls the `sendMessage` function in the `L1CrossDomainMessenger` contract. This message contains instructions to call the `updateStatus(bool status, uint64 timestamp)` function in the sequencer uptime feed deployed on the L2 network.
 
 1. The `L1CrossDomainMessenger` contract calls the `enqueue` function to enqueue a new message to the `CanonicalTransactionChain`.
 
@@ -141,4 +148,12 @@ This example includes a modified `getLatestPrice` function that reverts if `chec
 - 0: The sequencer is up
 - 1: The sequencer is down
 
-The `updatedAt` timestamp is the block timestamp when the answer updated on the L1 network. Use this to ensure the latest answer is recent enough to be trustworthy. The `startedAt` timestamp indicates when the sequencer changed status. These timestamps return `0` if a round is invalid.
+On Optimism and Metis, the `startedAt` timestamp indicates when the sequencer changed status. This timestamp returns `0` if a round is invalid. When the sequencer comes back up after an outage, wait for the `GRACE_PERIOD` to pass before accepting answers from the price data feed. Subtract `startedAt` from `block.timestamp` and revert the request if the result is less than the `GRACE_PERIOD`.
+
+```solidity
+bool isSequencerUp = answer == 0;
+uint256 timeSinceUp = block.timestamp - startedAt;
+if (isSequencerUp && timeSinceUp <= GRACE_PERIOD_TIME) {
+  revert GracePeriodNotOver();
+}
+```
