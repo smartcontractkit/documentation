@@ -35,7 +35,7 @@ contract ArbitrumPriceConsumer {
      * Returns the latest price
      */
     function getLatestPrice() public view returns (int) {
-        if (checkSequencerState()) {
+        if (!checkSequencerState()) {
 		        // If the sequencer is down, do not perform any critical operations
             revert("L2 sequencer down: Chainlink feeds are not being updated");
         }
