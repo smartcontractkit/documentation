@@ -74,13 +74,17 @@ To use a custom logic trigger, you will need to make your contract [Keepers-comp
 >
 > Do **NOT** attempt to send LINK to your contract like you do with [VRF](../../get-a-random-number/). For Chainlink Keepers, contracts are funded via the registry rather than within your contract.
 
-> 🚧 Registration Onboarding Note
->
-> Registrations on a testnet will be approved immediately. Mainnet registrations will be reviewed by our onboarding team before being approved. We are working towards a fully self-serve model.
+  > 🚧 Funding Upkeep
+    >
+    > You should fund your contract with more LINK that you anticipate you will need. The network will not check or perform your Upkeep if your balance is too low based on current exchange rates. View the [Keepers economics](../keeper-economics) page to learn more about the cost of using Keepers.
+
+  > 🚧 ERC677 Link
+    >
+    > For registration on Mainnet, you need ERC-677 LINK. Many token bridges give you ERC-20 LINK tokens. Use PegSwap to [convert Chainlink tokens (LINK) to be ERC-677 compatible](https://pegswap.chain.link/). To register on a supported testnet, get [LINK](../../link-token-contracts/) for the testnet you are using from our [faucet](https://faucets.chain.link/).
 
 ## Supported Networks and Costs
 
-For a list of blockchains that is supported by Chainlink Keepers, see the [Supported Networks](../supported-networks)  page. To learn more about the cost of using Chainlink Keepers, see the [Keepers Economics](../keeper-economics) page.
+For a list of blockchains that is supported by Chainlink Keepers, see the [Supported Networks](../supported-networks) page. To learn more about the cost of using Chainlink Keepers, see the [Keepers Economics](../keeper-economics) page.
 
 ## Questions and Examples
 
