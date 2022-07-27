@@ -70,9 +70,8 @@ This example includes a modified `getLatestPrice` function that reverts if the `
 The `startedAt` timestamp is the block timestamp when the answer updated on the L1 network, Ethereum Mainnet. Use this to ensure the latest answer is recent enough to be trustworthy. In this example, subtract `startedAt` from the `block.timestamp` and revert the request if the result is greater than the `STALENESS_THRESHOLD`.
 
 ```solidity
-bool isSequencerUp = answer == 0;
 uint256 timeSinceUpdated = block.timestamp - startedAt;
-if (isSequencerUp && timeSinceUpdated > STALENESS_THRESHOLD) {
+if (timeSinceUpdated > STALENESS_THRESHOLD) {
   revert StaleL2SequencerFeed();
 }
 ```
@@ -151,9 +150,8 @@ This example includes a modified `getLatestPrice` function that reverts if `chec
 On Optimism and Metis, the `startedAt` timestamp indicates when the sequencer changed status. This timestamp returns `0` if a round is invalid. When the sequencer comes back up after an outage, wait for the `GRACE_PERIOD` to pass before accepting answers from the price data feed. Subtract `startedAt` from `block.timestamp` and revert the request if the result is less than the `GRACE_PERIOD`.
 
 ```solidity
-bool isSequencerUp = answer == 0;
 uint256 timeSinceUp = block.timestamp - startedAt;
-if (isSequencerUp && timeSinceUp <= GRACE_PERIOD_TIME) {
+if (timeSinceUp <= GRACE_PERIOD_TIME) {
   revert GracePeriodNotOver();
 }
 ```

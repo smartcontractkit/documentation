@@ -14,12 +14,13 @@ import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV2V3Interface.sol";
  */
 
 contract ArbitrumPriceConsumer {
-	// Identifier of the Sequencer offline flag on the Flags contract
+  // Identifier of the Sequencer offline flag on the Flags contract
   AggregatorV2V3Interface internal priceFeed;
   AggregatorV2V3Interface internal sequencerUptimeFeed;
 
   uint256 private constant STALENESS_THRESHOLD = 3600;
 
+  error SequencerDown();
   error StaleL2SequencerFeed();
 
   /**
@@ -50,10 +51,16 @@ contract ArbitrumPriceConsumer {
     // Answer == 0: Sequencer is up
     // Answer == 1: Sequencer is down
     bool isSequencerUp = answer == 0;
+    if (!isSequencerUp) {
+      revert SequencerDown();
+    }
+
+    // Make sure the sequencer status is not stale.
     uint256 timeSinceUpdated = block.timestamp - startedAt;
-    if (isSequencerUp && timeSinceUpdated > STALENESS_THRESHOLD) {
+    if (timeSinceUpdated > STALENESS_THRESHOLD) {
       revert StaleL2SequencerFeed();
     }
+
     (
       /*uint80 roundID*/,
       int price,

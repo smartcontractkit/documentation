@@ -14,6 +14,7 @@ contract OptimismMetisPriceConsumer {
 
   uint256 private constant GRACE_PERIOD_TIME = 3600;
 
+  error SequencerDown();
   error GracePeriodNotOver();
 
   /**
@@ -44,10 +45,16 @@ contract OptimismMetisPriceConsumer {
     // Answer == 0: Sequencer is up
     // Answer == 1: Sequencer is down
     bool isSequencerUp = answer == 0;
+    if (!isSequencerUp) {
+      revert SequencerDown();
+    }
+
+    // Make sure the grace period has passed after the sequencer is back up.
     uint256 timeSinceUp = block.timestamp - startedAt;
-    if (isSequencerUp && timeSinceUp <= GRACE_PERIOD_TIME) {
+    if (timeSinceUp <= GRACE_PERIOD_TIME) {
       revert GracePeriodNotOver();
     }
+
     (
       /*uint80 roundID*/,
       int price,
