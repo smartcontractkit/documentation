@@ -2,12 +2,15 @@
 layout: nodes.liquid
 section: ethereum
 date: Last Modified
-title: 'Making Keepers-compatible Contracts'
+title: 'Creating Keepers-compatible contracts'
 whatsnext:
   {
-    'Register your Upkeep': '/docs/chainlink-keepers/register-upkeep/',
+
+    'Build flexible contracts': '/docs/chainlink-keepers/flexible-upkeeps/', 'FAQ': '/docs/chainlink-keepers/faqs/', 'Register custom logic Upkeep': '/docs/chainlink-keepers/register-upkeep/'
   }
 ---
+
+Use custom logic to allow Keepers to determine when to execute your smart contract functions.
 
 ## Overview
 
@@ -50,8 +53,8 @@ Use these elements to create a Keepers-compatible contract that will automatical
 Compile and deploy your own Keepers Counter onto a [supported Testnet](../supported-networks).
 
 1. In the Remix example, select the compile tab on the left and press the compile button. Make sure that your contract compiles without any errors. Note that the Warning messages in this example are acceptable and will not block the deployment.
-1. Select the **Deploy** tab and deploy the `Counter` smart contract in the `Injected Provider` environment. When deploying the contract, specify the `updateInterval` value. For this example, set a short interval of 60. This is the interval at which the `performUpkeep` function will be called.
-1. After deployment is complete, copy the address of the deployed contract. This address is required to [register](../register-upkeep/) your upkeep.
+1. Select the **Deploy** tab and deploy the `Counter` smart contract in the `injected web3` environment. When deploying the contract, specify the `updateInterval` value. For this example, set a short interval of 60. This is the interval at which the `performUpkeep` function will be called.
+1. After deployment is complete, copy the address of the deployed contract. This address is required to register your upkeep.
 
 To see more complex examples, go to the [utility contracts](../utility-contracts) page.
 
@@ -101,7 +104,7 @@ Below are the parameters and return values of the `checkUpkeep` function. Click 
 
 #### `checkData`
 
-You can pass information into your `checkUpkeep` function from your [Upkeep Registration](../register-upkeep/) to execute different code paths. For example, to check the balance on an specific address, set the `checkData` to abi encode of the address.
+You can pass information into your `checkUpkeep` function from your [Upkeep Registration](../register-upkeep/) to execute different code paths. For example, to check the balance on an specific address, set the `checkData` to abi encode of the address. To learn how to create flexible Upkeeps with checkData, please see out [flexible upkeeps](../flexible-upkeeps/) page.
 
 ```solidity Rinkeby
 {% include 'snippets/Keepers/checkData.sol' %}

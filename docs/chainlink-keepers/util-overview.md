@@ -2,7 +2,7 @@
 layout: nodes.liquid
 section: ethereum
 date: Last Modified
-title: 'Example Keepers Contracts'
+title: 'Chainlink Keepers Example Contracts'
 whatsnext:
   {
     'EthBalanceMonitor': '/docs/chainlink-keepers/utility-contracts/',

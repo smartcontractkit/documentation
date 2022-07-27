@@ -4,7 +4,7 @@ section: ethereum
 date: Last Modified
 title: 'Manage your Upkeeps'
 whatsnext:
-  { 'Build flexible contracts': '/docs/chainlink-keepers/flexible-upkeeps/', 'FAQ': '/docs/chainlink-keepers/faqs/' }
+  { 'Keepers economics': '/docs/chainlink-keepers/keeper-economics/' }
 ---
 
 ## Overview

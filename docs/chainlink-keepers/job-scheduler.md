@@ -5,11 +5,11 @@ date: Last Modified
 title: 'Chainlink Keepers Job Scheduler'
 whatsnext:
   {
-    'Custom logic automation': '/docs/chainlink-keepers/compatible-contracts/',
+    'Manage your Upkeeps': '/docs/chainlink-keepers/manage-upkeeps/',
   }
 ---
 
-Learn how to register a contract with the Chainlink Keepers network and automate it using the Keepers job scheduler.
+Execute smart contract functions based on a time schedule.
 
 **Table of Contents**
 
