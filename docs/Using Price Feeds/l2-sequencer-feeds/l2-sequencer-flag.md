@@ -14,7 +14,7 @@ To help your applications identify when the sequencer is unavailable, you can us
 
 Because not all L2 networks are architected the same way, the Arbitrum sequencer feed behaves slightly differently than the Optimism and Metis sequencer feeds. The architecutre and process for handling outages is different. Follow the guide for your specific L2 network.
 
-**Table of contents**
+**Table of Contents**
 
 - [Arbitrum](#arbitrum)
   - [Architecture on Arbitrum](#architecture-on-arbitrum)
