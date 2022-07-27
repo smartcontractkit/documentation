@@ -11,7 +11,7 @@ whatsnext:
     'Large Responses': '/docs/large-responses/',
     'Make an Existing Job Request': '/docs/existing-job-request/',
     'API Reference': '/docs/chainlink-framework/',
-    'Testnet Nodes and Jobs': '/docs/any-api-testnet-nodes/',
+    'Testnet Oracles': '/docs/any-api-testnet-oracles/',
   }
 metadata:
   title: 'Single Word Response'
@@ -23,6 +23,8 @@ metadata:
 ## Overview
 
 This guide explains how to make an HTTP GET request to an external API from a smart contract using Chainlink's [Request & Receive Data](/docs/request-and-receive-data/) cycle and receive a single response.
+
+{% include 'sections/any-api-common-prereq.md' %}
 
 {% include 'sections/any-api-common-table-contents.md' %}
 
