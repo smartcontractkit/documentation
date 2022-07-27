@@ -5,6 +5,12 @@ pragma solidity ^0.8.7;
 // ./interfaces/KeeperCompatibleInterface.sol
 import "@chainlink/contracts/src/v0.8/KeeperCompatible.sol";
 
+/**
+ * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
+ * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
+ * DO NOT USE THIS CODE IN PRODUCTION.
+ */
+
 contract Counter is KeeperCompatibleInterface {
     /**
     * Public counter variable

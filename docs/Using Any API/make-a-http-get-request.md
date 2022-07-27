@@ -12,7 +12,7 @@ whatsnext:
     'Large Responses': '/docs/large-responses/',
     'Make an Existing Job Request': '/docs/existing-job-request/',
     'API Reference': '/docs/chainlink-framework/',
-    'Testnet Nodes and Jobs': '/docs/any-api-testnet-nodes/',
+    'Testnet Oracles': '/docs/any-api-testnet-oracles/',
   }
 metadata:
   title: 'Make a GET Request'
@@ -24,6 +24,8 @@ metadata:
 ## Overview
 
 This series of guides explains how to make HTTP GET requests to external APIs from smart contracts, using Chainlink's [Request & Receive Data](../request-and-receive-data/) cycle.
+
+{% include 'sections/any-api-common-prereq.md' %}
 
 **Table of Contents**
 

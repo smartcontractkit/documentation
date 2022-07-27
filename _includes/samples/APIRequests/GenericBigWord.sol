@@ -10,8 +10,11 @@ import '@chainlink/contracts/src/v0.8/ConfirmedOwner.sol';
  */
 
 /**
- * @notice DO NOT USE THIS CODE IN PRODUCTION. This is an example contract.
+ * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
+ * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
+ * DO NOT USE THIS CODE IN PRODUCTION.
  */
+
 contract GenericLargeResponse is ChainlinkClient, ConfirmedOwner {
     using Chainlink for Chainlink.Request;
 
