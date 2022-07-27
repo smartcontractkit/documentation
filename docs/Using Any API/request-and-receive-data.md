@@ -26,7 +26,7 @@ Chainlink enables your contracts to access to _any_ external data source through
 
 Whether your contract requires sports results, the latest weather, or any other publicly available data, the [Chainlink contract library](https://github.com/smartcontractkit/chainlink/tree/master/contracts) provides the tools required for your contract to consume it.
 
-{% include 'sections/any-api-common-archi.md' %}
+{% include 'sections/any-api-common-prereq.md' %}
 
 > 📘 Note on Price Feed Data
 >

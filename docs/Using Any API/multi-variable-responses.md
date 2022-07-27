@@ -19,7 +19,7 @@ whatsnext:
 This guide explains how to make an HTTP GET request to an external API from a smart contract, using Chainlink's [Request & Receive Data](/docs/request-and-receive-data/) cycle and then receive multiple responses.
 This is known as **multi-variable** or **multi-word** responses.
 
-{% include 'sections/any-api-common-archi.md' %}
+{% include 'sections/any-api-common-prereq.md' %}
 
 {% include 'sections/any-api-common-table-contents.md' %}
 

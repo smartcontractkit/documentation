@@ -25,7 +25,7 @@ metadata:
 
 This series of guides explains how to make HTTP GET requests to external APIs from smart contracts, using Chainlink's [Request & Receive Data](../request-and-receive-data/) cycle.
 
-{% include 'sections/any-api-common-archi.md' %}
+{% include 'sections/any-api-common-prereq.md' %}
 
 **Table of Contents**
 

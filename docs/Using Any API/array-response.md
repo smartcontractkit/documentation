@@ -17,7 +17,7 @@ whatsnext:
 
 This guide explains how to make an HTTP GET request to an external API, that returns a _json_ array, from a smart contract, using Chainlink's [Request & Receive Data](../request-and-receive-data/) cycle and then receive the needed data from the array.
 
-{% include 'sections/any-api-common-archi.md' %}
+{% include 'sections/any-api-common-prereq.md' %}
 
 {% include 'sections/any-api-common-table-contents.md' %}
 

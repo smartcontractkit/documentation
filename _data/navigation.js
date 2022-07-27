@@ -253,7 +253,7 @@ module.exports = {
           },
           {
             title: 'Testnet Oracles',
-            url: '/docs/any-api-testnet-oracles',
+            url: '/docs/any-api-testnet-oracles/',
           },
           {
             title: 'API Reference',

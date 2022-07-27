@@ -21,7 +21,7 @@ metadata:
 
 Using an _existing_ Oracle Job makes your smart contract code more succinct. This page explains how to retrieve the gas price from an existing Chainlink job that calls [etherscan gas tracker API](https://docs.etherscan.io/api-endpoints/gas-tracker#get-gas-oracle).
 
-{% include 'sections/any-api-common-archi.md' %}
+{% include 'sections/any-api-common-prereq.md' %}
 
 {% include 'sections/any-api-common-table-contents.md' %}
 
