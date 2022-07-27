@@ -11,7 +11,7 @@ An external initiator can trigger a run for any webhook job that it has been lin
 
 The URL for triggering a run is such:
 
-```
+```shell
 curl -X POST -H "Content-Type: application/json" --data '{"myKey": "myVal"}' http://localhost:6688/v2/jobs/<job external UUID>/runs
 ```
 
@@ -31,12 +31,14 @@ We will be using the <a href="https://github.com/smartcontractkit/external-initi
 
 External initiators are simple web initiators that can be activated by any job instead of just one. To set one up, you need to have a service similar to an external adapter that sends an `HTTPPost` message runs API call to your chainlink node service. Here is a sample URL for a web job could look like:
 
-```
+```shell
 curl -b cookiefile -X POST -H "Content-Type: application/json" --data '{"myKey":"myVal"}' http://localhost:6688/v2/jobs/%s/runs
 ```
+
 Where `%s` is the jobId.
 
 External initiators make the same API call, with 2 added headers:
+
 1. "X-Chainlink-EA-AccessKey"
 1. "X-Chainlink-EA-Secret"
 
@@ -44,7 +46,7 @@ These are keys generated when you register your external initiator with your nod
 
 Triggering a run through an external initiator is as simple as making this API call to your node. All jobs with this EI configured will then be kicked off in this way. A simple external initiator in psedo code could look like this:
 
-```
+```text
 while(True):
     send_api_call_with_external_initiator_access_key_headers()
     sleep(4)

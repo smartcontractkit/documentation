@@ -98,7 +98,7 @@ Alternatively, you can run a health check on your node using `curl` and make sur
 curl -XGET localhost:6688/health | jq '.'
 ```
 
-```
+```json
 % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
 100  1900  100  1900    0     0   927k      0 --:--:-- --:--:-- --:--:--  927k
@@ -203,7 +203,6 @@ You can find more details with maintenance and examples in the [Performing Syste
 
 Additionally, follow the directions in the [User Guide for Linux Instances](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/install-updates.html) to keep your Amazon Linux instance software up to date.
 
-
 ## Backup and Restore
 
 ### Database Backup
@@ -248,7 +247,6 @@ In the AWS console, if the **SSL certificate with AWS Certificate Manager** is s
 
 ### Amazon Devops Guru
 
-In the AWS console, if the **Amazon DevOps Guru** is set to `false`, you can leave **AdministerAccountId** and **EmailAddress** as is. 
+In the AWS console, if the **Amazon DevOps Guru** is set to `false`, you can leave **AdministerAccountId** and **EmailAddress** as is.
 
 ![Amazon Devops Guru](/images/node-operators/amazon-devops-guru.png)
-

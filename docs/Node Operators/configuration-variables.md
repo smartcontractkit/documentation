@@ -1250,7 +1250,7 @@ Chainlink nodes will never pay less than this for a transaction.
 
 It is possible to force the Chainlink node to use a fixed gas price by setting a combination of these, e.g.
 
-```
+```text
 EVM_EIP1559_DYNAMIC_FEES=false
 ETH_MAX_GAS_PRICE_WEI=100
 ETH_MIN_GAS_PRICE_WEI=100
@@ -1356,7 +1356,7 @@ To enable for FM or OCR:
 
 To enable in the pipeline, use the `simulate=true` option like so:
 
-```
+```toml
 submit [type=ethtx to="0xDeadDeadDeadDeadDeadDeadDeadDead" data="0xDead" simulate=true]
 ```
 
@@ -1639,7 +1639,8 @@ The environment variables in this section apply only when running CLI commands t
 
 The file should contain two lines, the first line is the username and second line is the password.
 e.g.
-```
+
+```text
 myusername@example.com
 mysecurepassw0rd
 ```
