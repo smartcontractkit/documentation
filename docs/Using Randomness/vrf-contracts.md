@@ -45,6 +45,7 @@ Fee parameters are configured in the coordinator contract and specify the premiu
 - [Avalanche Fuji testnet](#avalanche-fuji-testnet)
 - [Fantom mainnet](#fantom-mainnet)
 - [Fantom testnet](#fantom-testnet)
+- [Klaytn Baobab testnet](#klaytn-baobab-testnet)
 
 ### Ethereum Mainnet
 
@@ -231,7 +232,6 @@ The Rinkeby network is [officially deprecated](https://ethereum.org/en/developer
 | VRF Coordinator       | [`0xbd13f08b8352A3635218ab9418E340c60d6Eb418`](https://testnet.ftmscan.com/address/0xbd13f08b8352a3635218ab9418e340c60d6eb418)                                                                                           |
 | 3000 gwei Key Hash    | `0x121a143066e0f2f08b620784af77cccb35c6242460b4a8ee251b4b416abaebd4`                                                                                                                                                     |
 | Premium               | 0.0005 LINK                                                                                                                                                                                                              |
-| Max Gas Limit         | 2,500,000                                                                                                                                                                                                                |
 | Minimum Confirmations | 1                                                                                                                                                                                                                        |
 | Maximum Confirmations | 200                                                                                                                                                                                                                      |
 | Maximum Random Values | 500                                                                                                                                                                                                                      |
