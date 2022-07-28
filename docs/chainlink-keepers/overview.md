@@ -19,7 +19,7 @@ There are three main actors in the ecosystem:
 - **Keepers registry**: The contract that you use to [register](../register-upkeep/) and manage **upkeeps**.
 - **Keepers**: Nodes in the Keepers Network that service registered and funded upkeeps in the Keepers registry. Keepers use the same Node Operators as Chainlink Data Feeds.
 
-The following diagram describes the architecture of the Keeper network. The Chainlink Keepers Registry governs the actors on the network and compensates Keepers for performing successful upkeeps. Developers can register upkeeps, and Node Operators can register as Keepers.
+The following diagram describes the architecture of the Keeper network. The Chainlink Keepers Registry governs the actors on the network and compensates Keepers for performing successful upkeeps. Developers are now able to register upkeep.
 
 ![keeper-overview](/images/contract-devs/keeper/keeper-overview.png)
 
