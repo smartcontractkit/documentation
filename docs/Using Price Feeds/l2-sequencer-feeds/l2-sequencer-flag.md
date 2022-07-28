@@ -33,7 +33,7 @@ You can find proxy addresses for the L2 sequencer feeds at the following address
 
 The diagram below shows how these feeds update and how a consumer retrieves the status of the Arbitrum sequencer.
 
-![L2 Sequencer Feed Diagram](/images/data-feed/l2-diagram-arbitrum.png)
+![L2 Sequencer Feed Diagram](/images/data-feed/l2-diagram-arbitrum.webp)
 
 1. Chainlink nodes trigger an OCR round every 30s and update the sequencer status by calling the `validate` function in the [`ArbitrumValidator` contract](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/dev/ArbitrumValidator.sol) by calling it through the [`ValidatorProxy` contract](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/ValidatorProxy.sol).
 1. The `ArbitrumValidator` checks to see if the latest update is different from the previous update. If it detects a difference, it places a message in the [Arbitrum inbox contract](https://developer.offchainlabs.com/docs/inside_arbitrum#the-big-picture).
@@ -48,7 +48,7 @@ If the Arbitrum network becomes unavailable, the `ArbitrumValidator` contract co
 
 On Optimism and Metis, the sequencer’s status is relayed from L1 to L2 where the consumer can retrieve it.
 
-![L2 Sequencer Feed Diagram](/images/data-feed/l2-diagram-optimism-metis.png)
+![L2 Sequencer Feed Diagram](/images/data-feed/l2-diagram-optimism-metis.webp)
 
 **On the L1 network:**
 
@@ -79,14 +79,14 @@ When the Sequencer is down, all L2 transactions sent from the L1 network wait in
 1. **TX3** contains Chainlink’s transaction to set the status of the sequencer as being down on L2.
 1. **TX4** is a transaction made by a consumer that is dependent on the sequencer status.
 
-![L2 Sequencer Feed Diagram](/images/data-feed/seq-down-1.png)
+![L2 Sequencer Feed Diagram](/images/data-feed/seq-down-1.webp)
 
 After the sequencer comes back up, it moves moves all transactions in the pending queue to the processed queue.
 
 1. Transactions are processed in the order they arrived so **TX3** is processed before **TX4**.
 1. Because **TX3** happens before **TX4**, **TX4** will read the status of the Sequencer as being down and responds accordingly.
 
-![L2 Sequencer Feed Diagram](/images/data-feed/seq-down-2.png)
+![L2 Sequencer Feed Diagram](/images/data-feed/seq-down-2.webp)
 
 ## Example code
 
