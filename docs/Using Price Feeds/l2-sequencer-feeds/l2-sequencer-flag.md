@@ -99,6 +99,11 @@ Create the consumer contract for sequencer uptime feeds similarly to contracts y
 {% include 'samples/PriceFeeds/PriceConsumerWithSequencerCheck.sol' %}
 ```
 
+<div class="remix-callout">
+      <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/PriceFeeds/PriceConsumerWithSequencerCheck.sol" target="_blank" >Open in Remix</a>
+      <a href="/docs/conceptual-overview/#what-is-remix">What is Remix?</a>
+</div>
+
 The `sequencerUptimeFeed` object returns the following values:
 
 - `answer`: A variable with a value of either `1` or `0`
