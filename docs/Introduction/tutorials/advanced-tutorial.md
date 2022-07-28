@@ -15,7 +15,7 @@ metadata:
     0: '/files/04b8e56-cl.png'
 ---
 
-> 👍 Requirements
+> 📘 Requirements
 >
 > This guide requires basic knowledge about smart contracts. If you are new to smart contract development, read the [Consuming Data Feeds](/docs/consuming-data-feeds/) and [Random Numbers](/docs/intermediates-tutorial/) guides before you begin.
 

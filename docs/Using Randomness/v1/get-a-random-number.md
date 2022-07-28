@@ -34,7 +34,7 @@ Note, the below values have to be configured correctly for VRF requests to work.
 >
 > Be sure to look your contract over with [these security considerations](/docs/vrf-security-considerations/v1) in mind!
 
->❗️ Remember to fund your contract with LINK!
+> 🚧 Remember to fund your contract with LINK!
 >
 > Requesting randomness will fail unless your deployed contract has enough LINK to pay for it. **Learn how to [Acquire testnet LINK](/docs/acquire-link/) and [Fund your contract](/docs/fund-your-contract/)**.
 

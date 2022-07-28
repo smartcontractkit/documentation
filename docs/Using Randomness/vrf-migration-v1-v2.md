@@ -6,7 +6,7 @@ title: "Migrating to VRF v2"
 permalink: "docs/chainlink-vrf/migration-vrf-v1-v2/"
 ---
 
-> ℹ️ You are viewing the VRF v2 guide.
+> 📘 You are viewing the VRF v2 guide.
 >
 > If you are using v1, see the [VRF v1 guide](/docs/chainlink-vrf/v1/).
 

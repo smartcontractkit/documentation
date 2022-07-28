@@ -49,7 +49,7 @@ Use Chainlink VRF to build reliable smart contracts for any applications that re
 
 Check the [developer documentation](/docs/chainlink-vrf/) to learn how to use Chainlink VRF.
 
-> 📘The [Subscription Manager User-Interface](https://vrf.chain.link/) is not available for Avalanche yet.
+> 📘 The [Subscription Manager User-Interface](https://vrf.chain.link/) is not available for Avalanche yet.
 > <br>This guide explains how to test Chainlink VRF programmatically on the [Avalanche Fuji Testnet](https://docs.avax.network/build/tutorials/platform/fuji-workflow/).
 
 ### Requirements
