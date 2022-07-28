@@ -285,7 +285,7 @@ module.exports = {
             url: '/docs/chainlink-keepers/compatible-contracts/',
           },
           {
-            title: 'Register a Custom logic Upkeep',
+            title: 'Register a Custom Logic Upkeep',
             url: '/docs/chainlink-keepers/register-upkeep/',
           },
           {

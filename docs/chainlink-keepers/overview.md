@@ -11,21 +11,21 @@ whatsnext:
 
 ## Overview
 
-Chainlink Keepers enable smart contract developers to execute their smart contract functions based on conditions specified by the developers, without having to create and maintain their own centralized stack. Chainlink Keepers is highly reliable and decentralized, supported by an industry leading team, and enables developers to move faster.
+Chainlink Keepers enable you to execute smart contract functions based on conditions that you specify without having to create and maintain your own centralized stack. Chainlink Keepers is highly reliable and decentralized, supported by an industry leading team, and enables developers to deploy applications faster.
 
 There are three main actors in the ecosystem:
 
-- **Upkeeps**: These are the jobs or tasks that developers want to execute on-chain, such as calling their smart contract function if a specific set of conditions have been met.
-- **Keepers registry**: The contract through which developers can [register](../register-upkeep/), and manage, their **Upkeeps**.
-- **Keepers**: Nodes in the Keepers Network that service registered and funded Upkeeps in the Keepers registry. Keepers use the same Node Operators as Chainlink Data Feeds, which secures billions of dollars in DeFi.
+- **Upkeeps**: These are the jobs or tasks that you execute on-chain. For example, you can call a smart contract function if a specific set of conditions are met.
+- **Keepers registry**: The contract that you use to [register](../register-upkeep/) and manage **upkeeps**.
+- **Keepers**: Nodes in the Keepers Network that service registered and funded upkeeps in the Keepers registry. Keepers use the same Node Operators as Chainlink Data Feeds.
 
-The diagram below describes the architecture of the Keeper network. The Chainlink Keepers Registry is responsible for governing the actors on the network and compensating Keepers for performing successful Upkeeps. Developers can register their Upkeeps, and Node Operators can register as Keepers.
+The following diagram describes the architecture of the Keeper network. The Chainlink Keepers Registry governs the actors on the network and compensates Keepers for performing successful upkeeps. Developers can register upkeeps, and Node Operators can register as Keepers.
 
 ![keeper-overview](/images/contract-devs/keeper/keeper-overview.png)
 
 ## Keeper Contracts
 
-Keepers use these contracts, and you can find them in the [Chainlink repository](https://github.com/smartcontractkit/chainlink/tree/develop/contracts/src/v0.8). For details on how to use them see the [Keepers-compatible Contracts](../compatible-contracts/) page.
+Keepers use these contracts. You can find them in the [Chainlink repository](https://github.com/smartcontractkit/chainlink/tree/develop/contracts/src/v0.8). For details about how to use them, see the [Keepers-compatible Contracts](../compatible-contracts/) page.
 
 + `KeeperCompatible.sol`[(link)](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/KeeperCompatible.sol): Imports the following contracts:
   + `KeeperBase.sol`[(link)](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/KeeperBase.sol): Enables the use of the `cannotExecute` modifier. Import this contract if you need for this modifier. See the [`checkUpkeep` function](/docs/chainlink-keepers/compatible-contracts#checkupkeep-function) for details.
@@ -35,17 +35,17 @@ Keepers use these contracts, and you can find them in the [Chainlink repository]
 
 ## How it works
 
-Keepers follow a turn-taking algorithm to to service Upkeeps. A turn is a number of blocks and you can find the block count perturn for your network in the [configuration](../supported-networks/#configurations) section. During a turn a Upkeeps on the Registry are randomly split and ordered into buckets, and assigned to a Keeper to service them. Even if a Keeper goes down, we have built-in redundancy and your Upkeep will be performed by the next Keeper in line.
+Keepers follow a turn-taking algorithm to service upkeeps. A turn is a number of blocks and you can find the block count per turn for your network in the [configuration](../supported-networks/#configurations) section. During a turn a Upkeeps on the registry are randomly split, ordered into buckets, and assigned to a keeper to service them. Even if a Keeper goes down, the network has built-in redundancy and your Upkeep will be performed by the next keeper in line.
 
-During every block the Keeper will review all of the Upkeeps in its bucket to determine which are eligible. This check is done "off-chain" using a geth simulation. The Keeper will check both the checkUpkeep and performUpkeep conditions independently via simulation and if both are true (eligible) and the upkeep is funded, then the Keeper will proceed to execute the transaction on-chain.
+During every block, the keeper reviews all of the upkeeps in its bucket to determine which upkeeps are eligible. This check is done off-chain using a geth simulation. The keeper checks both the `checkUpkeep` and `performUpkeep` conditions independently using simulation. If both are true (eligible), and the upkeep is funded, the keeper proceeds to execute the transaction on-chain.
 
-While only one Keeper will monitor an Upkeep at any point during a turn, an Upkeep can have multiple on-chain transaction executions oper turn. This is accomplished with a buddy-system. After a transaction has been confirmed, the next Keeper in the line will monitor the Upkeep and once a new transaction has been confirmed the previous Keeper will step in again to monitor the upkeep until the end of the turn, or another transaction confirmation. This creates a system that is secure and highly available. Note that if a node goes faulty and executes a transaction that was not eligible, the next node would not execute a transaction, and thus break the process.
+While only one Keeper monitors an upkeep at any point during a turn, an upkeep can have multiple on-chain transaction executions per turn. This is accomplished with a buddy-system. After a transaction is confirmed, the next keeper in the line monitors the upkeep. After a new transaction is confirmed, the previous keeper steps in again to monitor the upkeep until the end of the turn or until another transaction confirmation is complete. This creates a system that is secure and highly available. If a node becomes faulty and executes a transaction that is not eligible, the next node does not execute a transaction, which breaks the process.
 
-Keepers use the same transaction manager mechanism built and used by Chainlink Data Feeds. This creates a hyper-reliable automation service that can execute and confirm transactions even during intense gas spikes as well as on chains with significant reorgs. This mechanism has been in use in Chainlink Labs for multiple years, battle hardened, and the team continuously improves on it.
+Keepers use the same transaction manager mechanism built and used by Chainlink Data Feeds. This creates a hyper-reliable automation service that can execute and confirm transactions even during intense gas spikes or on chains with significant reorgs. This mechanism has been in use in Chainlink Labs for multiple years, is battle hardened, and the team continuously improves on it.
 
 ## Internal monitoring
 
-Internally Chainlink Keepers also uses its own monitoring and alerting mechanisms to maintain a health network and ensure developers get the reliability that they expect.
+Internally, Chainlink Keepers also uses its own monitoring and alerting mechanisms to maintain a health network and ensure developers get the reliability that they expect.
 
 ## Supported Networks and Cost
 

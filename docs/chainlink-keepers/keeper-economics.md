@@ -20,7 +20,7 @@ When a keeper executes your `performUpkeep` function, the Keeper Registry will d
 
 ## Minimum Spend Requirement
 
-There is a minimum spend requirement per Upkeep to prevent misuse of the Keepers network. The minimum amount required is currently 0.1 LINK on any Upkeep that is registered. If your Upkeep does not pay at least this amount for executiouns, 0.1 LINK will not be withdrawable when you cancel. If you spend more than 0.1 LINK you will be able to withdraw all remaining LINK, even after additional funds are added, once you cancel.
+There is a minimum spend requirement per upkeep to prevent misuse of the Keepers network. The minimum amount required is 0.1 LINK on any upkeep that is registered. If your upkeep does not pay at least this amount to execute functions, 0.1 LINK will not be withdrawable when you cancel. If you spend more than 0.1 LINK, you will be able to withdraw all remaining LINK after you cancel even after additional funds are added.
 
 ## No node competition
 
