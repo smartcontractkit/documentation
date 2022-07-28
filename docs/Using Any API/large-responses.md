@@ -51,7 +51,7 @@ Fetch the value of _image_. To consume an API, your contract must import [Chainl
 - Task parameters
 - Callback function signature
 
-> ❗️ Note on Funding Contracts
+> 🚧 Note on Funding Contracts
 >
 > Making a GET request will fail unless your deployed contract has enough LINK to pay for it. **Learn how to [Acquire testnet LINK](../acquire-link/) and [Fund your contract](../fund-your-contract/)**.
 

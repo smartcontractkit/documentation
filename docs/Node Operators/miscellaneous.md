@@ -56,9 +56,7 @@ If no jobs have been added, you will receive the following output, otherwise, th
 
 ## Transfer funds from node wallet.
 
-> 🚧 Note
->
-> If using Docker, you will first need to follow the [Execute Commands Running Docker](#execute-commands-running-docker) guide to enter the running container.
+> 🚧 If using Docker, you will first need to follow the [Execute Commands Running Docker](#execute-commands-running-docker) guide to enter the running container.
 
 To transfer funds from the node wallet to another address, use the following CLI command:
 
@@ -70,9 +68,7 @@ This method is the preferred way to interact with your node wallet. Using other 
 
 ## Change your API password
 
-> 🚧 Note
->
-> If using Docker, you will first need to follow the [Execute Commands Running Docker](#execute-commands-running-docker) guide to enter the running container.
+> 🚧 If using Docker, you will first need to follow the [Execute Commands Running Docker](#execute-commands-running-docker) guide to enter the running container.
 
 In order to change your password, you first need to log into the CLI by running:
 

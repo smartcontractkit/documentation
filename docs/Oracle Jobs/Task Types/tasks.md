@@ -8,8 +8,7 @@ permalink: "docs/tasks/"
 
 ## What is a Task?
 
-> ✅ NOTE
-> Tasks replace the [core adapters](/docs/core-adapters/) from v1 jobs.
+> 📘 Tasks replace the [core adapters](/docs/core-adapters/) from v1 jobs.
 
 Tasks are a replacement for core adapters that is more flexible. Tasks can be composed in arbitrary order into [pipelines](/docs/jobs/task-types/pipelines/). Pipelines consist of one or more threads of execution where tasks are executed in a well-defined order.
 

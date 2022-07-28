@@ -11,7 +11,7 @@ metadata:
     0: '/files/OpenGraph_V3.png'
 ---
 
-> ℹ️ You are viewing the VRF v2 guide.
+> 📘 You are viewing the VRF v2 guide.
 >
 > If you are using v1, see the [VRF v1 guide](./v1).
 

@@ -13,7 +13,7 @@ metadata:
     0: "/files/1a63254-link.png"
 ---
 
-> 👍 New to smart contracts?
+> 📘 New to smart contracts?
 >
 > This tutorial assumes that you know how to create and deploy basic smart contracts. If you are new to smart contract development, learn how to [Deploy Your First Smart Contract](/docs/deploy-your-first-contract/) before you start this guide.
 
