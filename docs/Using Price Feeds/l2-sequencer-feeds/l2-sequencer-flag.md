@@ -76,15 +76,15 @@ If the sequencer is down, messages cannot be transmitted from L1 to L2 and **no 
 
 When the Sequencer is down, all L2 transactions sent from the L1 network wait in the pending queue.
 
-1. **TX3** contains Chainlink’s transaction to set the status of the sequencer as being down on L2.
-1. **TX4** is a transaction made by a consumer that is dependent on the sequencer status.
+1. **Transaction 3** contains Chainlink’s transaction to set the status of the sequencer as being down on L2.
+1. **Transaction 4** is a transaction made by a consumer that is dependent on the sequencer status.
 
 ![L2 Sequencer Feed Diagram](/images/data-feed/seq-down-1.webp)
 
 After the sequencer comes back up, it moves moves all transactions in the pending queue to the processed queue.
 
-1. Transactions are processed in the order they arrived so **TX3** is processed before **TX4**.
-1. Because **TX3** happens before **TX4**, **TX4** will read the status of the Sequencer as being down and responds accordingly.
+1. Transactions are processed in the order they arrived so **Transaction 3** is processed before **Transaction 4**.
+1. Because **Transaction 3** happens before **Transaction 4**, **Transaction 4** will read the status of the Sequencer as being down and responds accordingly.
 
 ![L2 Sequencer Feed Diagram](/images/data-feed/seq-down-2.webp)
 
