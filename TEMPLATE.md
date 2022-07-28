@@ -13,7 +13,8 @@ metadata:
 *This doc is meant to be used as a template for creating a tutorial doc. Contributors should emulate the structure of this document when creating new pages. The content of this doc comes from the [Getting Started Guides](https://github.com/smartcontractkit/documentation/tree/main/docs/Introduction/getting-started/).*
 
 *Prerequisites should have its own block at the beginning of the tutorial. Tell the user what tools are required, what knowledge they should already have, and where to go if they need previous reading. Provide links to the other docs pages.*
-> 👍 Prerequisites
+
+> 📘 Prerequisites
 >
 > This tutorial requires .... If you're unfamiliar with these concepts, follow ...
 > or
@@ -26,10 +27,7 @@ metadata:
 
 *If a portion of the YouTube video is deprecated or out-of-date, add a note alerting the user.*
 
-> 🚧 Note
->
-> The video uses a seed phrase to request randomness. This feature is deprecated. Refer to the code in this tutorial for the most up to date procedures.
-
+> 🚧 The video uses a seed phrase to request randomness. This feature is deprecated. Refer to the code in this tutorial for the most up to date procedures.
 
 # Overview
 

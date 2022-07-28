@@ -191,8 +191,7 @@ req.add("extPath", "price/BTC/USD");
 }
 ```
 
-> ⚠️ NOTE
-> For security, since the URL may come from an untrusted source, HTTPGet imposes some restrictions on which IPs may be fetched. Local network and multicast IPs are disallowed by default and attempting to connect will result in an error.
+> 🚧 For security, because the URL can come from an untrusted source, HTTPGet imposes some restrictions on which IPs may be fetched. Local network and multicast IPs are disallowed by default and attempting to connect will result in an error.
 
 If you really must access one of these IPs, you can use the `HTTPGetWithUnrestrictedNetworkAccess` adapter instead.
 
@@ -236,8 +235,7 @@ req.add("extPath", "price/BTC/USD");
 }
 ```
 
-> ⚠️ NOTE
-> For security, since the URL may come from an untrusted source, HTTPPost imposes some restrictions on which IPs may be fetched. Local network and multicast IPs are disallowed by default and attempting to connect will result in an error.
+> 🚧 For security, because the URL can come from an untrusted source, HTTPPost imposes some restrictions on which IPs can be fetched. Local network and multicast IPs are disallowed by default and attempting to connect will result in an error.
 
 If you really must access one of these IPs, you can use the `HTTPPostWithUnrestrictedNetworkAccess` adapter instead.
 

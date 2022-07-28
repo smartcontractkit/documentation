@@ -998,7 +998,7 @@ You can override this on a per-job basis.
 
 `MIN_INCOMING_CONFIRMATIONS=1` would kick off a job after seeing the transaction in just one block.
 
-> ⚠️ NOTE
+> 🚧 NOTE
 > The lowest value allowed here is 1, since setting to 0 would imply that logs are processed from the mempool before they are even mined into a block, which isn't possible with Chainlink's current architecture.
 
 ### MIN_OUTGOING_CONFIRMATIONS
@@ -1014,7 +1014,7 @@ This can be overridden on a per-task basis by setting the `MinRequiredOutgoingCo
 
 ### MINIMUM_CONTRACT_PAYMENT_LINK_JUELS
 
-> ⚠️ NOTE
+> 🚧 NOTE
 > This has replaced the formerly used MINIMUM_CONTRACT_PAYMENT
 
 - Default: _automatically set based on Chain ID, typically 10000000000000 (0.00001 LINK) on all chains except ETH Mainnet, Kovan, Goerli, and Rinkeby, where it is 100000000000000000 (0.1 LINK)._
@@ -1669,14 +1669,14 @@ It is not recommended to change this unless you know what you are doing.
 
 ## Notes on setting environment variables
 
-> ⚠️ NOTE
+> 🚧 NOTE
 > Some environment variables require a duration. A duration string is a possibly signed sequence of decimal numbers, each with optional fraction and a unit suffix, such as "300ms", "-1.5h" or "2h45m". Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h". Some examples:
 
 `10ms`
 `1h15m`
 `42m30s`
 
-> ⚠️ NOTE
+> 🚧 NOTE
 > Some configuration variables require a file size. A file size string is an unsigned integer (123) or a float (12.3) followed by a unit suffix. Valid file size units are "b", "kb", "mb", "gb", and "tb". If the unit is omitted, it is assumed to be "b" (bytes). Capitalization does not matter. Some examples:
 
 `123gb`
