@@ -12,29 +12,24 @@ If a sequencer becomes unavailable, it is impossible to access read/write APIs t
 
 To help your applications identify when the sequencer is unavailable, you can use a data feed that tracks the last known status of the sequencer at a given point in time. This is to allow customers to prevent mass liquidations by providing a grace period to allow customers to react to such an event.
 
-Because not all L2 networks are architected the same way, the Arbitrum sequencer feed behaves slightly differently than the Optimism and Metis sequencer feeds. The architecture and process for handling outages is different. Follow the instructions for your specific network; either [Arbitrum](#arbitrum) or [Optimism and Metis](#optimism-and-metis).
-
 **Table of Contents**
 
+- [Available networks](#available-networks)
 - [Arbitrum](#arbitrum)
-  - [Architecture on Arbitrum](#architecture-on-arbitrum)
   - [Handling Arbitrum outages](#handling-arbitrum-outages)
-  - [Example code for Arbitrum](#example-code-for-arbitrum)
 - [Optimism and Metis](#optimism-and-metis)
-  - [Architecture on Optimism and Metis](#architecture-on-optimism-and-metis)
   - [Handling outages on Optimism and Metis](#handling-outages-on-optimism-and-metis)
-  - [Example code for Optimism and Metis](#example-code-for-optimism-and-metis)
+- [Example code](#example-code)
 
-## Arbitrum
+## Available networks
 
-Although the proxy contracts are similar, the L2 sequencer uptime feed on Arbitrum behaves differently than the feeds on [Optimism and Metis](#optimism-and-metis).
+You can find proxy addresses for the L2 sequencer feeds at the following addresses:
 
-You can find proxy addresses for the Arbitrum sequencer uptime feeds at the following addresses:
+- Arbitrum: [0xFdB631F5EE196F0ed6FAa767959853A9F217697D](https://arbiscan.io/address/0xfdb631f5ee196f0ed6faa767959853a9f217697d)
+- Optimism Mainnet: [0x371EAD81c9102C9BF4874A9075FFFf170F2Ee389](https://optimistic.etherscan.io/address/0x371EAD81c9102C9BF4874A9075FFFf170F2Ee389)
+- Metis Andromeda: [0x58218ea7422255EBE94e56b504035a784b7AA204](https://andromeda-explorer.metis.io/address/0x58218ea7422255EBE94e56b504035a784b7AA204)
 
-- Arbitrum mainnet: [0xFdB631F5EE196F0ed6FAa767959853A9F217697D](https://arbiscan.io/address/0xfdb631f5ee196f0ed6faa767959853a9f217697d)
-- Ethereum Rinkeby testnet: [0x13E99C19833F557672B67C70508061A2E1e54162](https://rinkeby.etherscan.io/address/0x13E99C19833F557672B67C70508061A2E1e54162)
-
-### Architecture on Arbitrum
+### Arbitrum
 
 The diagram below shows how these feeds update and how a consumer retrieves the status of the Arbitrum sequencer.
 
@@ -49,43 +44,7 @@ The diagram below shows how these feeds update and how a consumer retrieves the 
 
 If the Arbitrum network becomes unavailable, the `ArbitrumValidator` contract continues to send messages to the L2 network through the delayed inbox on L1. This message stays there until the sequencer is back up again. When the sequencer comes back online after downtime, it processes all transactions from the delayed inbox before it accepts new transactions. The message that signals when the sequencer is down will be processed before any new messages with transactions that require the sequencer to be operational.
 
-### Example code for Arbitrum
-
-Create your consumer contract for uptime feeds similarly to contracts you would use for other Chainlink data feeds. You will need the following items:
-
-- The [sequencer uptime feed proxy address](#arbitrum): This contract on the L2 network
-- A contract that imports the [`AggregatorV2V3Interface.sol` contract](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/interfaces/AggregatorV2V3Interface.sol): Use this interface to create a `sequencerUptimeFeed` object that points to the sequencer feed proxy.
-
-You can use the sequencer uptime feed on Arbitrum, but this example uses an Ethereum Rinkeby testnet feed for development and testing purposes.
-
-```solidity
-{% include 'samples/PriceFeeds/ArbitrumPriceConsumer.sol' %}
-```
-
-This example includes a modified `getLatestPrice` function that reverts if the `STALENESS_THRESHOLD` is exceeded. The `checkSequencerState` function reads the answer from the sequencer uptime feed and returns either a `1` or a `0`.
-
-- 0: The sequencer is up
-- 1: The sequencer is down
-
-The `startedAt` timestamp indicates when the sequencer changed status. On Arbitrum, use this timestamp to ensure the latest answer is recent enough to be trustworthy. In this example, subtract `startedAt` from the `block.timestamp` and revert the request if the result is greater than the `STALENESS_THRESHOLD`.
-
-```solidity
-uint256 timeSinceUpdated = block.timestamp - startedAt;
-if (timeSinceUpdated > STALENESS_THRESHOLD) {
-  revert StaleL2SequencerFeed();
-}
-```
-
 ## Optimism and Metis
-
-Although the proxy contracts are similar, the L2 sequencer uptime feed on Optimism and Metis behave differently than the [sequencer feeds on Arbitrum](#arbitrum). Metis is a fork of Optimism, so they share the same architecture.
-
-You can find proxy addresses for the Optimism/Metis L2 sequencer feeds at the following addresses:
-
-- Optimism Mainnet: [0x371EAD81c9102C9BF4874A9075FFFf170F2Ee389](https://optimistic.etherscan.io/address/0x371EAD81c9102C9BF4874A9075FFFf170F2Ee389)
-- Metis Andromeda: [0x58218ea7422255EBE94e56b504035a784b7AA204](https://andromeda-explorer.metis.io/address/0x58218ea7422255EBE94e56b504035a784b7AA204)
-
-### Architecture on Optimism and Metis
 
 On Optimism and Metis, the sequencer’s status is relayed from L1 to L2 where the consumer can retrieve it.
 
@@ -129,29 +88,22 @@ After the sequencer comes back up, it moves moves all transactions in the pendin
 
 ![L2 Sequencer Feed Diagram](/images/data-feed/seq-down-2.png)
 
-### Example code for Optimism and Metis
+## Example code
 
-Create your consumer contract for uptime feeds similarly to contracts you would use for other Chainlink data feeds. You will need the following items:
+Create the consumer contract for sequencer uptime feeds similarly to contracts you use for [Chainlink Data Feeds](/docs/get-the-latest-price/#solidity). Configure the constructor using the following variables:
 
-- The [sequencer uptime feed proxy address](#arbitrum): This contract is on the L2 network.
-- A contract that imports the [`AggregatorV2V3Interface.sol` contract](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/interfaces/AggregatorV2V3Interface.sol): Use this interface to create a `flagsFeed` object that points to the sequencer feed proxy.
+- Configure the `sequencerUptimeFeed` object with the [sequencer uptime feed proxy address](#available-networks) for your L2 network.
+- Configure the `priceFeed` object with one of the [Data Feed proxy addresses](/docs/reference-contracts/) that are available for your network.
 
-You can use the sequencer uptime feed on mainnet L2 feeds, but this example uses an Ethereum Rinkeby testnet feed for development and testing purposes.
-
-```solidity Mainnet
-{% include 'samples/PriceFeeds/OptimismMetisPriceConsumer.sol' %}
+```solidity L2
+{% include 'samples/PriceFeeds/PriceConsumerWithSequencerCheck.sol' %}
 ```
 
-This example includes a modified `getLatestPrice` function that reverts if `checkSequencerState` returns false. The `checkSequencerState` function reads the answer from the sequencer uptime feed and returns either a `1` or a `0`.
+The `sequencerUptimeFeed` object returns the following values:
 
-- 0: The sequencer is up
-- 1: The sequencer is down
+- `answer`: A variable with a value of either `1` or `0`
+  - 0: The sequencer is up
+  - 1: The sequencer is down
+- `startedAt`: This timestamp indicates when the sequencer changed status. This timestamp returns `0` if a round is invalid. When the sequencer comes back up after an outage, wait for the `GRACE_PERIOD_TIME` to pass before accepting answers from the price data feed. Subtract `startedAt` from `block.timestamp` and revert the request if the result is less than the `GRACE_PERIOD_TIME`.
 
-The `startedAt` timestamp indicates when the sequencer changed status. This timestamp returns `0` if a round is invalid. When the sequencer comes back up after an outage on Optimism or Metis, wait for the `GRACE_PERIOD` to pass before accepting answers from the price data feed. Subtract `startedAt` from `block.timestamp` and revert the request if the result is less than the `GRACE_PERIOD`.
-
-```solidity
-uint256 timeSinceUp = block.timestamp - startedAt;
-if (timeSinceUp <= GRACE_PERIOD_TIME) {
-  revert GracePeriodNotOver();
-}
-```
+If the sequencer is up and the `GRACE_PERIOD_TIME` has passed, the function retrieves the latest price from the data feed using the `priceFeed` object.
