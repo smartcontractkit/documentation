@@ -4,7 +4,7 @@ section: ethereum
 date: Last Modified
 title: "Chainlink Data Feeds Documentation"
 permalink: "docs/using-chainlink-reference-contracts/"
-whatsnext: {"Get the latest price of a data feed":"/docs/get-the-latest-price/", "Learn more about API references for using Chainlink Data Feeds in smart contracts":"/docs/price-feeds-api-reference/", "Retrieve contract addresses to use Chainlink Data Feeds":"/docs/reference-contracts/"}
+whatsnext: {"Get the latest price of a Data Feed":"/docs/get-the-latest-price/", "Learn more about API references for using Data Feeds":"/docs/price-feeds-api-reference/", "Retrieve contract addresses to use Data Feeds":"/docs/reference-contracts/"}
 metadata:
   title: "Introduction to Data Feeds"
   description: "Add data to your smart contracts and applications. Chainlink data feeds include BTC/USD, BTC/ETH, ETH/USD and more!"
