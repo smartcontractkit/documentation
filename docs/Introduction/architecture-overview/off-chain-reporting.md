@@ -20,7 +20,7 @@ The report contained in the aggregate transaction is signed by a quorum of oracl
 
 ## What is OCR?
 
-> 📘A simple analogy
+> 📘 A simple analogy
 >
 > Imagine ordering 10 items from an online store. Each item is packaged separately and posted separately, meaning postage and packaging costs must be applied to each one, and the carrier has to transport 10 different boxes.
 >

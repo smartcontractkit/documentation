@@ -21,7 +21,7 @@ We would recommend to use one of the external services for your Ethereum client,
 
 Download the latest version:
 
-```
+```shell
 docker pull ethereum/client-go:latest
 ```
 
@@ -51,7 +51,7 @@ Once the Ethereum client is running, you can use `Ctrl + P, Ctrl + Q` to detach 
 
 If the container was stopped and you need to run it again, you can simply use the following command:
 
-```bash
+```shell
 docker start -i eth
 ```
 
@@ -101,7 +101,7 @@ After the Ethereum client is running, you can use `Ctrl + P, Ctrl + Q` to detach
 
 If the container was stopped and you need to run it again, use the following command to start it:
 
-```bash
+```shell
 docker start -i eth
 ```
 

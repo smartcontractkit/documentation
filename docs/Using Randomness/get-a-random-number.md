@@ -9,7 +9,7 @@ metadata:
   description: "How to generate a random number inside a smart contract using Chainlink VRF."
 ---
 
-> ℹ️ You are viewing the VRF v2 guide.
+> 📘 You are viewing the VRF v2 guide.
 >
 > If you are using v1, see the [VRF v1 guide](./v1).
 
@@ -77,7 +77,7 @@ Build and deploy the contract on Rinkeby.
 
 1. On the **Compile** tab in Remix, compile the `VRFv2Consumer.sol` contract.
 
-1. Configure your deployment. On the **Deploy** tab in Remix, select the **Injected Web3 Environment**, select the `VRFv2Consumer` contract from the contract list, and specify your `subscriptionId` so the constructor can set it.
+1. Configure your deployment. On the **Deploy** tab in Remix, select the **Injected Provider Environment**, select the `VRFv2Consumer` contract from the contract list, and specify your `subscriptionId` so the constructor can set it.
 
     ![Example showing the deploy button with the subscriptionID field filled in Remix](/images/vrf/deployWithSubscriptionId.png)
 

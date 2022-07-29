@@ -25,6 +25,7 @@ interface DataFile {
         feedCategory?: string;
         feedType?: string;
         hidden?: boolean;
+        shutdownDate?: string;
       };
       transmissionsAccount?: string;
     };
@@ -46,14 +47,8 @@ interface ResultProxy {
   proxy: string;
   feedCategory: string;
   feedType: string;
+  shutdownDate?: string;
 }
-
-const categories = [
-  "verified",
-  "monitored",
-  "custom",
-  "specialized"
-];
 
 function load(filename: string): DataFile {
   const file = `data-source/${filename}`;
@@ -103,6 +98,7 @@ for (let page of targetData) {
         assetName?: string;
         feedCategory: string;
         feedType?: string;
+        shutdownDate?: string;
       };
     } = {};
     for (let contractKey of Object.keys(contents.contracts)) {
@@ -124,10 +120,6 @@ for (let page of targetData) {
           threshold = threshold / 10000000;
         }
 
-        if(contract.docs?.feedCategory && !categories.includes(contract.docs?.feedCategory)) {
-          contract.docs.feedCategory = '';
-        }
-
         // Set the threshold to deviationThreshold if it's specified (deviationThreshold or
         // relativeDeviationThresholdPPB should be set)
         liveContracts[contractKey] = {
@@ -137,6 +129,7 @@ for (let page of targetData) {
           assetName: contract.docs?.assetName,
           feedCategory: contract.docs?.feedCategory || "",
           feedType: contract.docs?.feedType || "-",
+          shutdownDate: contract.docs?.shutdownDate,
 
         };
         if (contract.v3Facade) {
@@ -147,6 +140,7 @@ for (let page of targetData) {
             assetName: contract.docs?.assetName,
             feedCategory: contract.docs?.feedCategory || "",
             feedType: contract.docs?.feedType || "-",
+            shutdownDate: contract.docs?.shutdownDate,
           };
         }
       }
@@ -168,6 +162,7 @@ for (let page of targetData) {
             proxy: proxyKey,
             feedCategory: liveContracts[proxy.aggregator].feedCategory || "",
             feedType: liveContracts[proxy.aggregator].feedType || "-",
+            shutdownDate: liveContracts[proxy.aggregator].shutdownDate,
           });
         }
       }
@@ -185,6 +180,7 @@ for (let page of targetData) {
             proxy: contract.transmissionsAccount || contractKey,
             feedCategory: contract.docs?.feedCategory || "",
             feedType: contract.docs?.feedType || "-",
+            shutdownDate: contract.docs?.shutdownDate,
           });
         }
       }

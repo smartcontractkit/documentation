@@ -79,3 +79,5 @@ Don't get discouraged if your question gets downvoted or removed. This just mean
 ## 5. Ask the community
 
 And lastly, you can always ask the question in the [Discord](https://discord.gg/2YHSAey) and see if there is a community member who might be able to help you out. One of the best ways to ask the community is to drop a link to your Stack Overflow question, issue, or the forum where you're asking a Chainlink question. Remember, these are community members, and they are helping because they are wonderful and kind individuals!
+
+For important updates regarding the use of Chainlink Price Feeds, users should join the official Chainlink Discord and subscribe to the data-feeds-user-notifications channel: https://discord.gg/Dqy5N9UbsR

@@ -9,7 +9,7 @@ metadata:
   description: "Example contracts for generating a random number inside a smart contract using Chainlink VRF."
 ---
 
-> ℹ️ You are viewing the VRF v2 guide.
+> 📘 You are viewing the VRF v2 guide.
 >
 > If you are using v1, see the [VRF v1 guide](/docs/get-a-random-number/v1/).
 
@@ -53,7 +53,7 @@ To use this contract, compile and deploy it in Remix.
 
 1. Open the contract in [Remix](https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFv2SubscriptionManager.sol).
 
-1. Compile and deploy the contract using the Injected Web3 environment. The contract includes all of the configuration variables that you need, but you can edit them if necessary. For a full list of available configuration variables, see the [Contract Addresses](/docs/vrf-contracts/) page.
+1. Compile and deploy the contract using the Injected Provider environment. The contract includes all of the configuration variables that you need, but you can edit them if necessary. For a full list of available configuration variables, see the [Contract Addresses](/docs/vrf-contracts/) page.
 
     This contract automatically creates a new subscription when you deploy it. Read the `s_subscriptionId` variable to find your subscription ID. You can use this value to find the subscription in the [Subscription Manager](https://vrf.chain.link).
 

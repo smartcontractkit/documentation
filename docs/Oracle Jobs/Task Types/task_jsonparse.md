@@ -29,8 +29,9 @@ my_json_task [type="jsonparse"
               path="data,0,price"]
 ```
 
-Given the a `data` value of
-```
+This task returns `123.45` (float64) when given the following example `data` value:
+
+```json
 {
     "data": [
         {"price": 123.45},
@@ -38,4 +39,3 @@ Given the a `data` value of
     ]
 }
 ```
-...the above task will return `123.45` (float64).

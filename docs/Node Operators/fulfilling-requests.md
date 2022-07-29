@@ -46,7 +46,7 @@ Your node works with several different types of addresses. Each address type has
 
 1. On the **Deploy and Run** tab, configure the following settings:
 
-   - Select "Injected Web3" as your **Environment**. The Javascript VM environment cannot access your oracle node.
+   - Select "Injected Provider" as your **Environment**. The Javascript VM environment cannot access your oracle node.
    - Select the "Oracle" contract from the **Contract** menu.
    - Copy the LINK token contract address for the network you are using and paste it into the `address_link` field next to the **Deploy** button. Use one of the following network addresses:
 
@@ -135,7 +135,7 @@ After you add jobs to your node, you can use the node to fulfill requests. This 
 
 1. On the **Deploy and Run** tab, configure the following settings:
 
-   - Select "Injected Web3" as your environment.
+   - Select "Injected Provider" as your environment.
    - Select "ATestnetConsumer" from the **Contract** menu.
 
 1. Click **Deploy**. MetaMask prompts you to confirm the transaction.

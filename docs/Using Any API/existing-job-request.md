@@ -8,7 +8,7 @@ whatsnext:
   {
     'Find Existing Jobs': '/docs/listing-services/',
     'API Reference': '/docs/chainlink-framework/',
-    'Testnet Nodes and Jobs': '/docs/any-api-testnet-nodes/',
+    'Testnet Oracles': '/docs/any-api-testnet-oracles/',
   }
 metadata:
   title: 'Make an Existing Job Request'
@@ -20,6 +20,8 @@ metadata:
 ## Overview
 
 Using an _existing_ Oracle Job makes your smart contract code more succinct. This page explains how to retrieve the gas price from an existing Chainlink job that calls [etherscan gas tracker API](https://docs.etherscan.io/api-endpoints/gas-tracker#get-gas-oracle).
+
+{% include 'sections/any-api-common-prereq.md' %}
 
 {% include 'sections/any-api-common-table-contents.md' %}
 
@@ -63,7 +65,7 @@ To consume an API, your contract must import [ChainlinkClient.sol](https://githu
 - Task parameters
 - Callback function signature
 
-> ❗️ Note on Funding Contracts
+> 🚧 Note on Funding Contracts
 >
 > Making a GET request will fail unless your deployed contract has enough LINK to pay for it. **Learn how to [Acquire testnet LINK](../acquire-link/) and [Fund your contract](../fund-your-contract/)**.
 
@@ -80,7 +82,7 @@ To use this contract:
 
 1. Open the [contract in Remix](https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/GetGasPrice.sol).
 
-1. Compile and deploy the contract using the Injected Web3 environment. The contract includes all the configuration variables for the _Rinkeby_ testnet. Make sure your wallet is set to use _Rinkeby_. The _constructor_ sets the following parameters:
+1. Compile and deploy the contract using the Injected Provider environment. The contract includes all the configuration variables for the _Rinkeby_ testnet. Make sure your wallet is set to use _Rinkeby_. The _constructor_ sets the following parameters:
 
    - The Chainlink Token address for _Rinkeby_ by calling the [`setChainlinkToken`](/docs/chainlink-framework/#setchainlinktoken) function.
    - The Oracle contract address for _Rinkeby_ by calling the [`setChainlinkOracle`](/docs/chainlink-framework/#setchainlinkoracle) function.

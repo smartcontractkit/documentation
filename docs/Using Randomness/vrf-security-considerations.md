@@ -6,7 +6,7 @@ title: "VRF Security Considerations"
 permalink: "docs/vrf-security-considerations/"
 ---
 
-> ℹ️ You are viewing the VRF v2 guide.
+> 📘 You are viewing the VRF v2 guide.
 >
 > If you are using v1, see the [VRF v1 guide](./v1).
 

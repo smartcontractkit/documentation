@@ -998,7 +998,7 @@ You can override this on a per-job basis.
 
 `MIN_INCOMING_CONFIRMATIONS=1` would kick off a job after seeing the transaction in just one block.
 
-> ⚠️ NOTE
+> 🚧 NOTE
 > The lowest value allowed here is 1, since setting to 0 would imply that logs are processed from the mempool before they are even mined into a block, which isn't possible with Chainlink's current architecture.
 
 ### MIN_OUTGOING_CONFIRMATIONS
@@ -1014,7 +1014,7 @@ This can be overridden on a per-task basis by setting the `MinRequiredOutgoingCo
 
 ### MINIMUM_CONTRACT_PAYMENT_LINK_JUELS
 
-> ⚠️ NOTE
+> 🚧 NOTE
 > This has replaced the formerly used MINIMUM_CONTRACT_PAYMENT
 
 - Default: _automatically set based on Chain ID, typically 10000000000000 (0.00001 LINK) on all chains except ETH Mainnet, Kovan, Goerli, and Rinkeby, where it is 100000000000000000 (0.1 LINK)._
@@ -1250,7 +1250,7 @@ Chainlink nodes will never pay less than this for a transaction.
 
 It is possible to force the Chainlink node to use a fixed gas price by setting a combination of these, e.g.
 
-```
+```text
 EVM_EIP1559_DYNAMIC_FEES=false
 ETH_MAX_GAS_PRICE_WEI=100
 ETH_MIN_GAS_PRICE_WEI=100
@@ -1356,7 +1356,7 @@ To enable for FM or OCR:
 
 To enable in the pipeline, use the `simulate=true` option like so:
 
-```
+```toml
 submit [type=ethtx to="0xDeadDeadDeadDeadDeadDeadDeadDead" data="0xDead" simulate=true]
 ```
 
@@ -1639,7 +1639,8 @@ The environment variables in this section apply only when running CLI commands t
 
 The file should contain two lines, the first line is the username and second line is the password.
 e.g.
-```
+
+```text
 myusername@example.com
 mysecurepassw0rd
 ```
@@ -1668,14 +1669,14 @@ It is not recommended to change this unless you know what you are doing.
 
 ## Notes on setting environment variables
 
-> ⚠️ NOTE
+> 🚧 NOTE
 > Some environment variables require a duration. A duration string is a possibly signed sequence of decimal numbers, each with optional fraction and a unit suffix, such as "300ms", "-1.5h" or "2h45m". Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h". Some examples:
 
 `10ms`
 `1h15m`
 `42m30s`
 
-> ⚠️ NOTE
+> 🚧 NOTE
 > Some configuration variables require a file size. A file size string is an unsigned integer (123) or a float (12.3) followed by a unit suffix. Valid file size units are "b", "kb", "mb", "gb", and "tb". If the unit is omitted, it is assumed to be "b" (bytes). Capitalization does not matter. Some examples:
 
 `123gb`

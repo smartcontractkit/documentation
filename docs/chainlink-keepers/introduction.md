@@ -74,7 +74,7 @@ To use a custom logic trigger, you will need to make your contract [Keepers-comp
 >
 > Do **NOT** attempt to send LINK to your contract like you do with [VRF](../../get-a-random-number/). For Chainlink Keepers, contracts are funded via the registry rather than within your contract.
 
-> ⚠️ Registration Onboarding Note
+> 🚧 Registration Onboarding Note
 >
 > Registrations on a testnet will be approved immediately. Mainnet registrations will be reviewed by our onboarding team before being approved. We are working towards a fully self-serve model.
 

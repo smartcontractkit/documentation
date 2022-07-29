@@ -48,7 +48,7 @@ You can configure as many send-only nodes as you want. Send-only nodes only broa
 
 Here is an example for how to specifiy the [`EVM_NODES` environment variable](/docs/configuration-variables/#evm_nodes):
 
-```text
+```shell
 export EVM_NODES='
 [
   {
@@ -90,17 +90,15 @@ export EVM_NODES='
 
 Send-only nodes are used for broadcasting transactions only, and must support the following RPC calls:
 
-```
-eth_chainId (should return the chain ID)
-eth_sendRawTransaction (both regular and batched)
-web3_clientVersion (can return any arbitrary string)
-```
+- `eth_chainId`: Returns the chain ID
+- `eth_sendRawTransaction`: Both regular and batched
+- `web3_clientVersion`: Can return any arbitrary string
 
 ## Automatic load balancing and failover
 
 Chainlink node version 1.3.0 and above has built in failover and load balancing for primary nodes. Chainlink always uses round-robin requests across all primary nodes. Chainlink monitors when nodes go offline and stops routing requests to those nodes. If you don’t want to use Chainlink’s built-in failover, or you want to use an external proxy instead, you can disable failover completely using the following environment variables:
 
-```
+```text
 NODE_NO_NEW_HEADS_THRESHOLD=0
 NODE_POLL_FAILURE_THRESHOLD=0
 NODE_POLL_INTERVAL=0
@@ -112,7 +110,7 @@ NODE_POLL_INTERVAL=0
 
 By default, these environment variables use the following values:
 
-```
+```text
 NODE_NO_NEW_HEADS_THRESHOLD="3m"
 NODE_POLL_FAILURE_THRESHOLD="5"
 NODE_POLL_INTERVAL="10s"
@@ -132,7 +130,7 @@ If you enabled HTTP URLs on all your primary nodes, you can increase the values 
 
 By default, these config variables are set conservatively to avoid overflowing websocket frames. In HTTP mode, there are no such limitations. You might be able to improve performance with increased values similar to the following example:
 
-```
+```text
 ETH_RPC_DEFAULT_BATCH_SIZE=1000
 BLOCK_HISTORY_ESTIMATOR_BATCH_SIZE=100
 ETH_LOG_BACKFILL_BATCH_SIZE=1000
@@ -198,7 +196,7 @@ By default, go-ethereum rejects transactions that exceed its built-in RPC gas or
 
 Disable the default RPC gas and txfee caps on your ETH node in the config using the TOML snippet shown below, or by running go-ethereum with the command line arguments: `--rpc.gascap=0 --rpc.txfeecap=0`.
 
-```
+```text
 [Eth]
 RPCGasCap = 0
 RPCTxFeeCap = 0.0
@@ -220,7 +218,7 @@ Note that this only affects the presentation of jobs, and whether they are marke
 
 Chainlink can be configured to allow more concurrent database connections than the default. This might improve performance, but be careful not to exceed postgres connection limits. These variables have the following default values:
 
-```
+```text
 ORM_MAX_OPEN_CONNS=20
 ORM_MAX_IDLE_CONNS=10
 ```

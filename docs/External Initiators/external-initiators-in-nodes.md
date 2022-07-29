@@ -6,20 +6,19 @@ title: "Adding External Initiators to Nodes"
 permalink: "docs/external-initiators-in-nodes/"
 ---
 
-> ⚠️ NOTE
-> External initiators are disabled on nodes by default. Set the `FEATURE_EXTERNAL_INITIATORS=true` [configuration variable](/docs/configuration-variables/#feature_external_initiators) to enable this feature.
+> 🚧 External initiators are disabled on nodes by default. Set the `FEATURE_EXTERNAL_INITIATORS=true` [configuration variable](/docs/configuration-variables/#feature_external_initiators) to enable this feature.
 
 ## Creating an external initiator
 
 To create an external initiator you must use the remote API. You can do this yourself, like so:
 
-```
+```text
 POST http://<your chainlink node>/v2/external_initiators -d <PAYLOAD>
 ```
 
 where payload is a JSON blob that contains:
 
-```
+```json
 {
   "name": <MANDATORY UNIQUE NAME>,
   "url": <OPTIONAL EXTERNAL INITIATOR URL>
@@ -30,20 +29,21 @@ If a URL is provided, Chainlink will notify this URL of added and deleted jobs t
 
 On creation:
 
-```
+```text
 POST <URL> -d {"jobId": <job external UUID>, "type": <name of external initiator>, "params": <optional arbitrary JSON specified at job creation time>}
 ```
 
 On deletion:
 
-```
+```text
 DELETE <URL>/<job external UUID>
 ```
 
 You can use the chainlink client for convenience to access this API.
 
 Enter the [Chainlink nodes CLI](/docs/miscellaneous/#execute-commands-running-docker) and run the following command
-```
+
+```shell
 chainlink initiators create <NAME> <URL>
 ```
 
@@ -62,7 +62,7 @@ You now can use `ei_name` as an initiator in your jobspec.
 
 Set a new `.env` file, and add the respective values
 
-```
+```text
 EI_DATABASEURL=postgresql://$USERNAME:$PASSWORD@$SERVER:$PORT/$DATABASE
 EI_CHAINLINKURL=http://localhost:6688
 EI_IC_ACCESSKEY=<INSERT KEY>
@@ -70,6 +70,7 @@ EI_IC_SECRET=<INSERT KEY>
 EI_CI_ACCESSKEY=<INSERT KEY>
 EI_CI_SECRET=<INSERT KEY>
 ```
+
 At the time of writing, the output should be in order. For example, in from the output above, `EI_IC_ACCESSKEY=a4846e85727e46b48889c6e28b555696` and so on.
 
 Start your EI.
@@ -82,19 +83,19 @@ To try a real-life example, feel free to follow along with the <a href="https://
 
 <a href="https://github.com/smartcontractkit/chainlink/wiki/External-Initiators">Additional external initiator reference</a>
 
-> ⚠️ NOTE
-> The External Initiator can only initiate [webhook jobs](/docs/jobs/types/webhook) that have been linked to it. Trying to initiate a job that is not linked will give an unauthorised error.
+> 🚧 The External Initiator can only initiate [webhook jobs](/docs/jobs/types/webhook) that have been linked to it. Trying to initiate a job that is not linked will give an unauthorised error.
 
 ## Deleting an external initiator
 
 To delete an external initiator you must use the remote API. You can do this yourself, like so:
 
-```
+```text
 DELETE http://<your chainlink node>/v2/external_initiators/<external initiator name>
 ```
 
 You can alternatively use the chainlink client for convenience:
-```
+
+```shell
 chainlink initiators destroy <NAME>
 ```
 
@@ -102,11 +103,12 @@ chainlink initiators destroy <NAME>
 
 To see your installed external initiators:
 
-```
+```text
 GET http://<your chainlink node>/v2/external_initiators?size=100&page=1
 ```
 
 Or, using the chainlink client:
-```
+
+```shell
 chainlink initiators list
 ```

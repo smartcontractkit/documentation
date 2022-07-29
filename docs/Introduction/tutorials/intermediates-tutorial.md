@@ -20,7 +20,7 @@ metadata:
     0: '/files/2a242f1-link.png'
 ---
 
-> 👍 Requirements
+> 📘 Requirements
 >
 > This guide assumes that you have basic knowledge about writing and deploying smart contracts. If you are new to smart contract development, read the [Consuming Data Feeds](/docs/consuming-data-feeds/) guide before you begin.
 

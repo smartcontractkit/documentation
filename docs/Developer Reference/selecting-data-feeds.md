@@ -25,6 +25,8 @@ Data feeds are grouped into the following categories based on the level of risk 
 + [Custom Feeds](#-custom-feeds)
 + [Specialized Feeds](#-specialized-feeds)
 
+> 📘 For important updates regarding the use of Chainlink Price Feeds, users should join the official Chainlink Discord and subscribe to the [data-feeds-user-notifications channel](https://discord.gg/Dqy5N9UbsR).
+
 ### 🟢 Verified Feeds
 
 These are data feeds that follow a standardized data feeds workflow. Chainlink node operators each query several sources for the market price and aggregate the estimates provided by those sources.
@@ -79,6 +81,10 @@ These feeds are monitored and well-supported, but they might not meet the same l
 
 If you plan on using one of these feeds and would like to get a more detailed understanding, [contact the Chainlink Labs team](https://chainlinkcommunity.typeform.com/to/OYQO67EF?page=market-data-feeds).
 
+### ⭕ Deprecating
+
+These feeds are being [deprecated](/docs/reference-contracts/#deprecation-of-chainlink-data-feeds). To find the deprecation dates for specific feeds, see the complete [deprecation list](/docs/deprecating-feeds/) or the [data feeds lists](/docs/reference-contracts/) for each network.
+
 ## Risk Mitigation
 
 As a development best practice, design your systems and smart contracts to be resilient and mitigate risk to your protocol and your users. Ensure that your systems can tolerate known and unknown exceptions that might occur. Some examples include but are not limited to volatile market conditions, the degraded performance of infrastructure, chains, or networks, and any other upstream outage related to data providers or node operators. You bear responsibility for any manner in which you use the Chainlink Network, its software, and documentation.
@@ -94,6 +100,8 @@ Below are some examples of tooling that Chainlink users have put in place:
 - **Soak testing:** Users are strongly advised to thoroughly test price feed integrations and incorporate a [soak period](https://en.wikipedia.org/wiki/Soak_testing) prior to providing access to end users or securing value.
 
 For more detailed information about some of these examples, see the [Monitoring data feeds](/docs/using-chainlink-reference-contracts/#monitoring-data-feeds) documentation.
+
+For important updates regarding the use of Chainlink Price Feeds, users should join the official Chainlink Discord and subscribe to the data-feeds-user-notifications channel: https://discord.gg/Dqy5N9UbsR
 
 ## Chainlink Community Deployments
 
@@ -118,6 +126,7 @@ If your smart contracts use data feeds, assess those data feeds for the followin
 - [Crypto Actions](#crypto-actions)
 - [Market Failures Resulting from Extreme Events](#market-failures-resulting-from-extreme-events)
 - [Periods of High Network Congestion](#periods-of-high-network-congestion)
+- [Unknown and Known Users](#unknown-and-known-users)
 - [Fast Gas Reliability](#fast-gas-reliability)
 
 ### Liquidity and its Distribution
@@ -149,6 +158,14 @@ Users should be aware of inherently increased risk during such periods of high v
 ### Periods of High Network Congestion
 
 Data Feed performance relies on the chains they are deployed on. Periods of high network congestion might impact the frequency of Chainlink Price Feeds. It is advised that you configure your applications to detect such chain performance issues and to respond appropriately.
+
+### Unknown and Known Users
+
+Routine maintenance is carried out on Chainlink Data Feeds, including decommissioning, on an ad-hoc basis. These maintenance periods might require users to take action in order to maintain business continuity.
+
+Notifications are sent to inform users regarding such occurrences, and it is strongly encouraged for users to provide their contact information before utilizing data feeds. Without providing contact information, users will be unable to receive notifications around important price feed updates.
+
+If you are using price feeds but have not provided your contact information, you can do so [here](https://chainlinkcommunity.typeform.com/unknownDfUsers).
 
 ### Fast Gas Reliability
 

@@ -5,7 +5,7 @@ date: Last Modified
 title: "Hackathon Resources"
 permalink: "docs/hackathon-resources/"
 ---
-> 👍 Note on Resources
+> 📘 Note on Resources
 >
 > For a comprehensive list of resources, refer to the [Learning Resources](../other-tutorials/) page.
 
