@@ -18,16 +18,16 @@ If you already have a project started and would like to integrate Chainlink, you
 See the [Data Feeds Contract Addresses](/docs/reference-contracts/) page for a list of networks and proxy addresses.  
 
 **Topics**
-- [Retrieve the Latest Asset Prices](#retrieve-the-latest-asset-prices) 
-- [Components of a Data Feed](#components-of-a-data-feed)
-- [Reading Proxy and Aggregator Configurations](#reading-proxy-and-aggregator-configurations)
-- [Components of an Aggregator](#components-of-an-aggregator)
-- [Updates to Proxy and Aggregator Contracts](#updates-to-proxy-and-aggregator-contracts)
-- [Monitoring Data Feeds](#monitoring-data-feeds)
-- [Check the Latest Answer against Reasonable Limits](#check-the-latest-answer-against-reasonable-limits)
-- [Check the Timestamp of the Latest Answer](#check-the-timestamp-of-the-latest-answer)
+- [Retrieve the latest asset prices](#retrieve-the-latest-asset-prices) 
+- [Components of a data feed](#components-of-a-data-feed)
+- [Reading proxy and aggregator Configurations](#reading-proxy-and-aggregator-configurations)
+- [Components of an aggregator](#components-of-an-aggregator)
+- [Updates to proxy and aggregator contracts](#updates-to-proxy-and-aggregator-contracts)
+- [Monitoring data feeds](#monitoring-data-feeds)
+- [Check the latest answer against reasonable limits](#check-the-latest-answer-against-reasonable-limits)
+- [Check the timestamp of the latest answer](#check-the-timestamp-of-the-latest-answer)
 
-## Retrieve the Latest Asset Prices
+## Retrieve the latest asset prices
 
 Oftentimes, smart contracts need to act in real-time on data such as prices of assets. This is especially true in [DeFi](https://defi.chain.link/).
 
@@ -35,7 +35,7 @@ For example, [Synthetix](https://www.synthetix.io/) uses Data Feeds to determine
 
 Data Feeds aggregate many data sources and publish them on-chain using a combination of the [Decentralized Data Model](/docs/architecture-decentralized-model/) and [Off-Chain Reporting](/docs/off-chain-reporting/).
 
-## Components of a Data Feed
+## Components of a data feed
 
 Data Feeds are an example of a decentralized oracle network and include the following components:
 
@@ -45,7 +45,7 @@ Data Feeds are an example of a decentralized oracle network and include the foll
 
 To learn how to create a consumer contract that uses an existing data feed, read the [Using Data Feeds](../get-the-latest-price/) documentation.
 
-## Reading Proxy and Aggregator Configurations
+## Reading proxy and aggregator configurations
 
 Because the proxy and aggregator contracts are all on-chain, you can see the current configuration by reading the variables through an [ABI](https://docs.soliditylang.org/en/latest/abi-spec.html) or using a blockchain explorer for your network. For example, you can see the [BTC/USD proxy configuration](https://etherscan.io/address/0xF4030086522a5bEEa4988F8cA5B36dbC97BeE88c#readContract) on the Ethereum network using Etherscan.
 
@@ -55,7 +55,7 @@ The proxy contract points to an aggregator. This allows you to retrieve data thr
 
 You can call the `latestRoundData()` function directly on the aggregator, but it is a best practice to use the proxy instead so that changes to the aggregator do not affect your application. Similar to the proxy contract, the aggregator contract has a `latestAnswer` variable, `owner` address, `latestTimestamp` variable, and several others.
 
-## Components of an Aggregator
+## Components of an aggregator
 
 The aggregator contract has several variables and functions that might be useful for your application. Although aggregator contracts are similar for each data feed, some aggregators have different variables. Use the `typeAndVersion()` function on the aggregator to identify what type of aggregator it is and what version it is running.
 
@@ -65,7 +65,7 @@ For examples of the contracts that are typically used in aggregator deployments,
 
 For a complete list of functions and variables available on most aggregator contracts, see the [Data Feeds API Reference](/docs/price-feeds-api-reference/#accesscontrolledoffchainaggregator).
 
-## Updates to Proxy and Aggregator Contracts
+## Updates to proxy and aggregator contracts
 
 To accommodate the dynamic nature of off-chain environments, Chainlink Data Feeds are updated from time to time to add new features and capabilities as well as respond to externalities such as token migrations, protocol rebrands, extreme market events, and upstream issues with data or node operations.
 
@@ -77,19 +77,19 @@ If you [view the multisig contract](https://etherscan.io/address/0x21f73d42eb58b
 
 The multisig-coordinated upgradability of Chainlink Data Feeds involves time-tested processes that balance collusion-resistance with the flexibility required to implement improvements and swiftly react to external conditions. The approach taken to upgradability will continue to evolve over time to meet user requirements.
 
-## Monitoring Data Feeds
+## Monitoring data feeds
 
 When you build applications and protocols that depend on data feeds, include monitoring and safeguards to protect against the negative impact of extreme market events, possible malicious activity on third-party venues or contracts, potential delays, and outages.
 
 Create your own monitoring alerts based on deviations in the answers that data feeds provide. This will notify you when potential issues occur so you can respond to them.
 
-### Check the Latest Answer against Reasonable Limits
+### Check the latest answer against reasonable limits
 
 The data feed aggregator includes both [`minAnswer` and `maxAnswer` values](https://github.com/smartcontractkit/libocr/blob/9e4afd8896f365b964bdf769ca28f373a3fb0300/contract/AccessControlledOffchainAggregator.sol#L33). These variables prevent the aggregator from updating the `latestAnswer` outside the agreed range of acceptable values, but they do not stop your application from reading the most recent answer.
 
 Configure your application to detect when the reported answer is close to reaching `minAnswer` or `maxAnswer` and issue an alert so you can respond to a potential market event. Separately, configure your application to detect and respond to extreme price volatility or prices that are outside of your acceptable limits.
 
-### Check the Timestamp of the Latest Answer
+### Check the timestamp of the latest answer
 
 Chainlink Price Feeds do not provide streaming data. Rather, the aggregator updates its `latestAnswer` when the value deviates beyond a specified threshold or when the heartbeat idle time has passed. You can find the heartbeat and deviation values for each data feed at [data.chain.link](https://data.chain.link/) or in the [Contract Addresses](/docs/reference-contracts/) lists.
 
