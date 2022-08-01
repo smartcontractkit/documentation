@@ -15,7 +15,7 @@ This guide explains how to register a custom logic trigger upkeep using a [Keepe
 
 **Table of Contents**
 + [Register Contract with UI](#register-contract-with-ui)
-+ [Register Contract Programatically ](#register-contract-programatically)
++ [Register Contract Programmatically ](#register-contract-programmatically)
 
 ## Register Contract with UI
 
@@ -62,7 +62,7 @@ This guide explains how to register a custom logic trigger upkeep using a [Keepe
 
 After your Upkeep is approved, you will receive an Upkeep ID and be registered on the Registry. Providing that your Upkeep is appropriately funded, the Keepers Network will monitor it. You must monitor the balance of your Upkeep. If the balance drops below the **Minimum Balance**, the Keepers Network will not perform the Upkeep. See [Manage Your Upkeeps](../manage-upkeeps) to learn how to manage your Upkeeps.
 
-## Register Contract Programatically
+## Register Contract Programmatically
 
 This example displays a Keeper-compatible contract which can create Upkeep and receive an Upkeep ID when auto-approval is turned on.
 
