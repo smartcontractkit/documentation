@@ -4,7 +4,11 @@ section: ethereum
 date: Last Modified
 title: "Chainlink Data Feeds Documentation"
 permalink: "docs/using-chainlink-reference-contracts/"
-whatsnext: {"Get the latest price of a Data Feed":"/docs/get-the-latest-price/", "Learn more about API references for using Data Feeds":"/docs/price-feeds-api-reference/", "Retrieve contract addresses to use Data Feeds":"/docs/reference-contracts/"}
+whatsnext: {
+  "Get the latest price of a Data Feed":"/docs/get-the-latest-price/",
+  "Learn more about API references for using Data Feeds":"/docs/price-feeds-api-reference/",
+  "Retrieve contract addresses to use Data Feeds":"/docs/reference-contracts/"
+}
 metadata:
   title: "Introduction to Data Feeds"
   description: "Add data to your smart contracts and applications. Chainlink data feeds include BTC/USD, BTC/ETH, ETH/USD and more!"
@@ -29,7 +33,7 @@ See the [Data Feeds Contract Addresses](/docs/reference-contracts/) page for a l
 
 ## Retrieve the Latest Asset Prices
 
-Oftentimes, smart contracts need to act in real-time on data such as prices of assets. This is especially true in [DeFi](https://defi.chain.link/).
+Smart contracts often act in real-time on data such as prices of assets. This is especially true in [DeFi](https://defi.chain.link/).
 
 For example, [Synthetix](https://www.synthetix.io/) uses Data Feeds to determine prices on their derivatives platform. Lending and borrowing platforms like [AAVE](https://aave.com/) use Data Feeds to ensure the total value of the collateral.
 
