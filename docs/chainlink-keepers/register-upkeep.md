@@ -11,13 +11,13 @@ whatsnext:
 
 ## Overview
 
-This guide explains how to register a custom logic trigger upkeep using a [Keepers-compatible contract](../compatible-contracts).
+This guide explains how to register a [Keepers-compatible contract](../compatible-contracts) with the Chainlink Keeper Network. You can use the Keepers Registry or your own smart contract to register your contract and create an Upkeep.
 
 **Table of Contents**
-+ [Register Contract with UI](#register-contract-with-ui)
++ [Register Contract with Registry](#register-contract-with-registry)
 + [Register Contract Programmatically ](#register-contract-programmatically)
 
-## Register Contract with UI
+## Register Contract with Registry
 
 <div class="remix-callout">
     <a href="https://keepers.chain.link" >Open the Chainlink Keepers App</a>
