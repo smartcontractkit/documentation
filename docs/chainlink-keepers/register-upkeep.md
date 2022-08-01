@@ -14,9 +14,10 @@ whatsnext:
 This guide explains how to register a custom logic trigger upkeep using a [Keepers-compatible contract](../compatible-contracts).
 
 **Table of Contents**
-+ [Register Contract](#register-contract)
++ [Register Contract with UI](#register-contract-with-ui)
++ [Register Contract Programatically ](#register-contract-programatically)
 
-## Register Contract
+## Register Contract with UI
 
 <div class="remix-callout">
     <a href="https://keepers.chain.link" >Open the Chainlink Keepers App</a>
@@ -35,7 +36,7 @@ This guide explains how to register a custom logic trigger upkeep using a [Keepe
 1. **Complete the required details:**
 
     - **Upkeep name**: This will be publicly visible in the Keepers app.
-    - **Gas limit**: This is the maximum amount of gas that your transaction requires to execute on chain. This limit cannot exceed the `performGasLimit` value configured on the [registry](/docs/chainlink-keepers/supported-networks/#configurations). Before the network executes your transaction on chain, it simulates the transaction. If the gas required to execute your transaction exceeds the gas limit that you specified, your transaction will not be confirmed. Developers also have the ability to update `performGasLimit` for an upkeep. Consider running your function on a testnet to see how much gas it uses before you select a gas limit. This can be changed afterwards. 
+    - **Gas limit**: This is the maximum amount of gas that your transaction requires to execute on chain. This limit cannot exceed the `performGasLimit` value configured on the [registry](/docs/chainlink-keepers/supported-networks/#configurations). Before the network executes your transaction on chain, it simulates the transaction. If the gas required to execute your transaction exceeds the gas limit that you specified, your transaction will not be confirmed. Developers also have the ability to update `performGasLimit` for an upkeep. Consider running your function on a testnet to see how much gas it uses before you select a gas limit. This can be changed afterwards.
     - **Starting balance (LINK)**: Specify a LINK starting balance to fund your upkeep. See the [LINK Token Contracts](/docs/link-token-contracts/) page to find the correct contract address and access faucets for testnet LINK. This field is required. You must have LINK before you can use the Keepers service.
     - **Check data**: This field is provided as an input for when your `checkUpkeep` function is simulated. Either leave this field blank or specify a hexadecimal value starting with `0x`. To learn how to make flexible upkeeps using `checkData`, see the [Flexible Upkeeps](../flexible-upkeeps) guide.
     - **Your email address**: This email address will be encrypted and is used to send you an email when your upkeep is underfunded.
@@ -59,8 +60,89 @@ This guide explains how to register a custom logic trigger upkeep using a [Keepe
 >
 > Registrations on testnets are approved immediately. Mainnet upkeeps are automatically approved after you register them. With auto-approval you must optimize and test your contracts before going live. Follow the [best practices](../compatible-contracts/#best-practices) when creating an Upkeep. Please test your Upkeeps before going to production.
 
-> 🚧 Minimum Spend Requirement Note
->
-> There is a minimum spend requirement per upkeep to prevent misuse of the Keepers network. The minimum amount required is currently 0.1 LINK on any Upkeep that you register. If you do not spend at least this amount, 0.1 LINK will not be withdrawable when you cancel. If you spend more than 0.1 LINK you will be able to withdraw all remaining LINK, even after additional funds are added, once you cancel.
-
 After your Upkeep is approved, you will receive an Upkeep ID and be registered on the Registry. Providing that your Upkeep is appropriately funded, the Keepers Network will monitor it. You must monitor the balance of your Upkeep. If the balance drops below the **Minimum Balance**, the Keepers Network will not perform the Upkeep. See [Manage Your Upkeeps](../manage-upkeeps) to learn how to manage your Upkeeps.
+
+## Register Contract Programatically
+
+This example displays a Keeper-compatible contract which can create Upkeep and receive an Upkeep ID when auto-approval is turned on.
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.6;
+
+import {KeeperRegistryInterface, State, Config} from "../interfaces/KeeperRegistryInterface.sol";
+import {LinkTokenInterface} from "../interfaces/LinkTokenInterface.sol";
+
+interface KeeperRegistrarInterface {
+  function register(
+    string memory name,
+    bytes calldata encryptedEmail,
+    address upkeepContract,
+    uint32 gasLimit,
+    address adminAddress,
+    bytes calldata checkData,
+    uint96 amount,
+    uint8 source,
+    address sender
+  ) external;
+}
+
+contract UpkeepIDConsumerExample {
+  LinkTokenInterface public immutable i_link;
+  address public immutable i_registrar;
+  KeeperRegistryInterface public immutable i_registry;
+  bytes4 registerSig = bytes4(keccak256("register(string,bytes,address,uint32,address,bytes,uint96,uint8,address)"));
+
+  constructor(
+    LinkTokenInterface link,
+    address registrar,
+    KeeperRegistryInterface registry
+  ) {
+    i_link = link;
+    i_registrar = registrar;
+    i_registry = registry;
+  }
+
+  function registerAndPredictID(
+    string memory name,
+    bytes calldata encryptedEmail,
+    address upkeepContract,
+    uint32 gasLimit,
+    address adminAddress,
+    bytes calldata checkData,
+    uint96 amount,
+    uint8 source,
+    address sender
+  ) public {
+    (State memory state, Config memory _c, address[] memory _k) = i_registry.getState();
+    uint256 oldNonce = state.nonce;
+    i_link.transferAndCall(
+      i_registrar,
+      5 ether,
+      abi.encodeWithSelector(
+        registerSig,
+        name,
+        encryptedEmail,
+        upkeepContract,
+        gasLimit,
+        adminAddress,
+        checkData,
+        amount,
+        source,
+        sender
+      )
+    );
+    (state, _c, _k) = i_registry.getState();
+    uint256 newNonce = state.nonce;
+    if (newNonce == oldNonce + 1) {
+      // auto approve enabled
+      uint256 upkeepID = uint256(
+        keccak256(abi.encodePacked(blockhash(block.number - 1), address(i_registry), oldNonce))
+      );
+      // DEV - Use the upkeepID however you see fit
+    } else {
+      revert("auto-approve disabled");
+    }
+  }
+}
+```
