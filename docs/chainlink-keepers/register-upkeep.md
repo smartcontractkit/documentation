@@ -73,84 +73,22 @@ This example displays a smart contract which can create Upkeep and receive an Up
 ```solidity
 {% include 'samples/Keepers/UpkeepIDConsumerExample.sol' %}
 ```
-import {KeeperRegistryInterface, State, Config} from "../interfaces/KeeperRegistryInterface.sol";
-import {LinkTokenInterface} from "../interfaces/LinkTokenInterface.sol";
-
-interface KeeperRegistrarInterface {
-  function register(
-    string memory name,
-    bytes calldata encryptedEmail,
-    address upkeepContract,
-    uint32 gasLimit,
-    address adminAddress,
-    bytes calldata checkData,
-    uint96 amount,
-    uint8 source,
-    address sender
-  ) external;
-}
-
-contract UpkeepIDConsumerExample {
-  LinkTokenInterface public immutable i_link;
-  address public immutable i_registrar;
-  KeeperRegistryInterface public immutable i_registry;
-  bytes4 registerSig = bytes4(keccak256("register(string,bytes,address,uint32,address,bytes,uint96,uint8,address)"));
-
-  constructor(
-    LinkTokenInterface link,
-    address registrar,
-    KeeperRegistryInterface registry
-  ) {
-    i_link = link;
-    i_registrar = registrar;
-    i_registry = registry;
-  }
-
-  function registerAndPredictID(
-    string memory name,
-    bytes calldata encryptedEmail,
-    address upkeepContract,
-    uint32 gasLimit,
-    address adminAddress,
-    bytes calldata checkData,
-    uint96 amount,
-    uint8 source,
-    address sender
-  ) public {
-    (State memory state, Config memory _c, address[] memory _k) = i_registry.getState();
-    uint256 oldNonce = state.nonce;
-    i_link.transferAndCall(
-      i_registrar,
-      5 ether,
-      abi.encodeWithSelector(
-        registerSig,
-        name,
-        encryptedEmail,
-        upkeepContract,
-        gasLimit,
-        adminAddress,
-        checkData,
-        amount,
-        source,
-        sender
-      )
-    );
-    (state, _c, _k) = i_registry.getState();
-    uint256 newNonce = state.nonce;
-    if (newNonce == oldNonce + 1) {
-      // auto approve enabled
-      uint256 upkeepID = uint256(
-        keccak256(abi.encodePacked(blockhash(block.number - 1), address(i_registry), oldNonce))
-      );
-      // DEV - Use the upkeepID however you see fit
-    } else {
-      revert("auto-approve disabled");
-    }
-  }
-}
-```
 
 <div class="remix-callout">
     <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/Keepers/UpkeepIDConsumerExample.sol" >Open in Remix</a>
     <a href="/docs/conceptual-overview/#what-is-remix" > What is Remix?</a>
 </div>
+
+### `registerAndPredictID` Parameters
+
+| Name                   | Description                                                          |
+| ---------------------- | -------------------------------------------------------------------- |
+| `name`                 | Name of Upkeep         |
+| `encryptedEmail`       | Email address which received Upkeep notifications; this will be encrypted          |
+| `upkeepContract`       | Address of contract which requires Upkeep           |
+| `gasLimit`             | The maximum amount of gas that will be used to execute your function on-chain          |
+| `adminAddress`         | Address for admin        |
+| `checkData`            | Fixed and specified at Upkeep registration and used in every checkUpkeep. Can be empty (0x)          |
+| `amount`               | A LINK starting balance to fund your Upkeep          |
+| `source`               | Source of funding for Upkeep          |
+| `sender`               | Address of sender
