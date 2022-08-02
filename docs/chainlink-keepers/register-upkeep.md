@@ -73,3 +73,17 @@ This example displays a smart contract which can create Upkeep and receive an Up
     <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/Keepers/UpkeepIDConsumerExample.sol" >Open in Remix</a>
     <a href="/docs/conceptual-overview/#what-is-remix" > What is Remix?</a>
 </div>
+
+### `registerAndPredictID` Parameters
+
+| Name                   | Description                                                          |
+| ---------------------- | -------------------------------------------------------------------- |
+| `name`                 | Name of Upkeep         |
+| `encryptedEmail`       | Email address which received Upkeep notifications; this will be encrypted          |
+| `upkeepContract`       | Address of contract which requires Upkeep           |
+| `gasLimit`             | The maximum amount of gas that will be used to execute your function on-chain          |
+| `adminAddress`         | Address for admin        |
+| `checkData`            | Fixed and specified at Upkeep registration and used in every checkUpkeep. Can be empty (0x)          |
+| `amount`               | A LINK starting balance to fund your Upkeep          |
+| `source`               | Source of funding for Upkeep          |
+| `sender`               | Address of sender
