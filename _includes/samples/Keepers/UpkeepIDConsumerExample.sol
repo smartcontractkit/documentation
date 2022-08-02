@@ -1,8 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.6;
 
-import {KeeperRegistryInterface, State, Config} from "../interfaces/KeeperRegistryInterface.sol";
-import {LinkTokenInterface} from "../interfaces/LinkTokenInterface.sol";
+// UpkeepIDConsumerExample.sol imports functions from both ./KeeperRegistryInterface.sol and
+// ./interfaces/LinkTokenInterface.sol
+
+/**
+ * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
+ * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
+ * DO NOT USE THIS CODE IN PRODUCTION.
+ */
+
+import {KeeperRegistryInterface, State, Config} from "@chainlink/contracts/src/v0.8/interfaces/KeeperRegistryInterface.sol";
+import {LinkTokenInterface} from "@chainlink/contracts/src/v0.8/interfaces/LinkTokenInterface.sol";
 
 interface KeeperRegistrarInterface {
   function register(
