@@ -64,12 +64,15 @@ After your Upkeep is approved, you will receive an Upkeep ID and be registered o
 
 ## Register Contract Programmatically
 
-This example displays a Keeper-compatible contract which can create Upkeep and receive an Upkeep ID when auto-approval is turned on.
+This example displays a smart contract which can create Upkeep and receive an Upkeep ID when auto-approval is turned on. To register your contract with the Keepers network programmatically, you will need to ensure your contract is Keeper-compatible and
+
+> 🚧 ERC677 Link
+>
+> For registration on Mainnet, you need ERC-677 LINK. Many token bridges give you ERC-20 LINK tokens. Use PegSwap to [convert Chainlink tokens (LINK) to be ERC-677 compatible](https://pegswap.chain.link/). To register on a supported testnet, get [LINK](../../link-token-contracts/) for the testnet you are using from our [faucet](https://faucets.chain.link/).
 
 ```solidity
-// SPDX-License-Identifier: MIT
-pragma solidity 0.8.6;
-
+{% include 'samples/Keepers/UpkeepIDConsumerExample.sol' %}
+```
 import {KeeperRegistryInterface, State, Config} from "../interfaces/KeeperRegistryInterface.sol";
 import {LinkTokenInterface} from "../interfaces/LinkTokenInterface.sol";
 
@@ -146,3 +149,8 @@ contract UpkeepIDConsumerExample {
   }
 }
 ```
+
+<div class="remix-callout">
+    <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/Keepers/UpkeepIDConsumerExample.sol" >Open in Remix</a>
+    <a href="/docs/conceptual-overview/#what-is-remix" > What is Remix?</a>
+</div>
