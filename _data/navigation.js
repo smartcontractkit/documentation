@@ -99,6 +99,12 @@ module.exports = {
           {
             title: 'Using Data Feeds',
             url: '/docs/get-the-latest-price/',
+            children: [
+              {
+                title: 'Data Feeds API Reference',
+                url: '/docs/price-feeds-api-reference/',
+              }
+            ]
           },
           {
             title: 'Historical Price Data',
@@ -107,10 +113,12 @@ module.exports = {
           {
             title: 'Feed Registry',
             url: '/docs/feed-registry/',
-          },
-          {
-            title: 'API Reference',
-            url: '/docs/price-feeds-api-reference/',
+            children: [
+              {
+                title: 'Feed Registry API Reference',
+                url: '/docs/feed-registry-functions/'
+              }
+            ]
           },
           {
             title: 'Using ENS with Data Feeds',
