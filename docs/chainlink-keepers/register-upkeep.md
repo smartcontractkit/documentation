@@ -84,4 +84,4 @@ You can dynamically create and manage Upkeeps from within your own dApp. To do t
 | `checkData`            | ABI-encoded fixed and specified at Upkeep registration and used in every checkUpkeep. Can be empty (0x)          |
 | `amount`               | The amount of LINK (in Wei) to fund your Upkeep. The minimum amount is 5 LINK. To fund 5 LINK please set this to 5000000000000000000       |
 | `source`               | Not in use in programmatic registration. Please specify with `0`.           |
-| `sender`               | Address of sender |
+| `sender`               | Please use your wallet address as the sender address. This will not determine who the admin of the upkeep is. |
