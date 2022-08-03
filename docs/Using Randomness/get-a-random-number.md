@@ -17,12 +17,13 @@ This guide explains how to get random values using a simple contract to request 
 
 **Topics**
 
-+ [Requirements](#requirements)
-+ [Create and fund a subscription](#create-and-fund-a-subscription)
-+ [Create and deploy a VRF v2 compatible contract](#create-and-deploy-a-vrf-v2-compatible-contract)
-+ [Request random values](#request-random-values)
-+ [Analyzing the contract](#analyzing-the-contract)
-+ [Clean up](#clean-up)
+- [Requirements](#requirements)
+- [Create and fund a subscription](#create-and-fund-a-subscription)
+- [Create and deploy a VRF v2 compatible contract](#create-and-deploy-a-vrf-v2-compatible-contract)
+- [Request random values](#request-random-values)
+- [Analyzing the contract](#analyzing-the-contract)
+- [Clean up](#clean-up)
+- [Vyper Example](#vyper-example)
 
 ## Requirements
 
@@ -160,3 +161,11 @@ After you are done with this contract and the subscription, you can retrieve the
 1. Under your subscription details, click **Cancel subscription**. A field opens asking which wallet address you want to send the remaining funds to.
 
 1. Enter your wallet address and click **Cancel subscription**. MetaMask opens and asks you to confirm the transaction. After you approve the transaction, Chainlink VRF closes your subscription account and sends the remaining LINK to your wallet.
+
+## Vyper Example
+
+You'd need to import the `VRFCoordinatorV2` vyper interface, [you can find it here](https://github.com/smartcontractkit/apeworx-starter-kit/blob/main/contracts/interfaces/VRFCoordinatorV2.vy). 
+
+```python
+{% include 'samples/VRF/VRFv2Consumer.vy' %}
+```
