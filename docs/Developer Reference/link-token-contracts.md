@@ -55,12 +55,13 @@ The LINK token is an ERC677 token that inherits functionality from the ERC20 tok
 | Symbol         | LINK                                                                                                                                                                                                                  |
 | Decimals       | 18                                                                                                                                                                                                                    |
 
-## Rinkeby
+## Rinkeby (Deprecated)
+
+The Rinkeby network is [officially deprecated](https://ethereum.org/en/developers/docs/networks/#rinkeby) and will no longer be supported on some platforms. [Goerli](#goerli) is the recommended testnet for Chainlink on Ethereum.
 
 > 🚰 Rinkeby Faucets
 >
-> Testnet LINK is available from https://faucets.chain.link/rinkeby
-> Testnet ETH is available from: https://faucets.chain.link/rinkeby
+> Testnet LINK and ETH are available from https://faucets.chain.link/rinkeby
 > Backup Testnet ETH Faucets: https://rinkeby-faucet.com/, https://app.mycrypto.com/faucet
 
 | Parameter      | Value                                                                                                                                                                                                                |
@@ -73,7 +74,7 @@ The LINK token is an ERC677 token that inherits functionality from the ERC20 tok
 
 ## Kovan (Deprecated)
 
-The Kovan network is [officially deprecated](https://ethereum.org/en/developers/docs/networks/#kovan) and will no longer be supported on some platforms like [Alchemy](https://www.alchemy.com/the-merge). Currently, [Rinkeby](#rinkeby) is the recommended testnet for Chainlink on Ethereum.
+The Kovan network is [officially deprecated](https://ethereum.org/en/developers/docs/networks/#kovan) and will no longer be supported on some platforms. [Goerli](#goerli) is the recommended testnet for Chainlink on Ethereum.
 
 > 🚰 Kovan Faucets
 >

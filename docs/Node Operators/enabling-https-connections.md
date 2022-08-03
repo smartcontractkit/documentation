@@ -14,6 +14,9 @@ This guide will walk you through how to generate your own self-signed certificat
 
 Create a directory `tls/` within your local Chainlink directory:
 
+```text Goerli
+mkdir ~/.chainlink-goerli/tls
+```
 ```text Rinkeby
 mkdir ~/.chainlink-rinkeby/tls
 ```
@@ -26,6 +29,12 @@ mkdir ~/.chainlink/tls
 
 Run this command to create a `server.crt` and `server.key` file in the previously created directory:
 
+```shell Goerli
+openssl req -x509 -out  ~/.chainlink-goerli/tls/server.crt  -keyout ~/.chainlink-goerli/tls/server.key \
+  -newkey rsa:2048 -nodes -sha256 -days 365 \
+  -subj '/CN=localhost' -extensions EXT -config <( \
+   printf "[dn]\nCN=localhost\n[req]\ndistinguished_name = dn\n[EXT]\nsubjectAltName=DNS:localhost\nkeyUsage=digitalSignature\nextendedKeyUsage=serverAuth")
+```
 ```shell Rinkeby
 openssl req -x509 -out  ~/.chainlink-rinkeby/tls/server.crt  -keyout ~/.chainlink-rinkeby/tls/server.key \
   -newkey rsa:2048 -nodes -sha256 -days 365 \
@@ -66,6 +75,9 @@ code": "sed -i '/SECURE_COOKIES=false/d' .env
 
 Finally, update your run command to forward port 6689 to the container instead of 6688:
 
+```shell Goerli
+cd ~/.chainlink-goerli && docker run -p 6689:6689 -v ~/.chainlink-goerli:/chainlink -it --env-file=.env smartcontract/chainlink local n
+```
 ```shell Rinkeby
 cd ~/.chainlink-rinkeby && docker run -p 6689:6689 -v ~/.chainlink-rinkeby:/chainlink -it --env-file=.env smartcontract/chainlink local n
 ```

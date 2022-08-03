@@ -38,6 +38,9 @@ Look under the PORTS label to see the ports in use by the running container, in 
 
 Now start the second instance of the node. The local port option has been modified so that both containers run simultaneously.
 
+```shell Goerli
+cd ~/.chainlink-goerli && docker run -p 6687:6688 -v ~/.chainlink-goerli:/chainlink -it --env-file=.env smartcontract/chainlink local n
+```
 ```shell Rinkeby
 cd ~/.chainlink-rinkeby && docker run -p 6687:6688 -v ~/.chainlink-rinkeby:/chainlink -it --env-file=.env smartcontract/chainlink local n
 ```
@@ -62,6 +65,9 @@ At this point, you're now running the latest image on your secondary container. 
 
 Next, you will simply need to run the container again with the local port 6688 in order to go back to normal operations.
 
+```shell Goerli
+cd ~/.chainlink-goerli && docker run -p 6688:6688 -v ~/.chainlink-goerli:/chainlink -it --env-file=.env smartcontract/chainlink local n
+```
 ```shell Rinkeby
 cd ~/.chainlink-rinkeby && docker run -p 6688:6688 -v ~/.chainlink-rinkeby:/chainlink -it --env-file=.env smartcontract/chainlink local n
 ```
@@ -86,6 +92,9 @@ Use the default `DATABASE_LOCKING_MODE=advisorylock` setting unless you want to 
 
 Run the Chainlink node with a name option specified:
 
+```shell Goerli
+cd ~/.chainlink-goerli && docker run --name chainlink -p 6688:6688 -v ~/.chainlink-goerli:/chainlink -it --env-file=.env smartcontract/chainlink local n
+```
 ```shell Rinkeby
 cd ~/.chainlink-rinkeby && docker run --name chainlink -p 6688:6688 -v ~/.chainlink-rinkeby:/chainlink -it --env-file=.env smartcontract/chainlink local n
 ```
@@ -111,6 +120,9 @@ Output (truncated):
 
 This will remain your primary Chainlink container, and should always use port 6688 (unless configured otherwise). For the secondary instance, you will run the container in the same way, but with a different name and a different local port:
 
+```shell Goerli
+cd ~/.chainlink-goerli && docker run --name secondary -p 6687:6688 -v ~/.chainlink-goerli:/chainlink -it --env-file=.env smartcontract/chainlink local n
+```
 ```shell Rinkeby
 cd ~/.chainlink-rinkeby && docker run --name secondary -p 6687:6688 -v ~/.chainlink-rinkeby:/chainlink -it --env-file=.env smartcontract/chainlink local n
 ```

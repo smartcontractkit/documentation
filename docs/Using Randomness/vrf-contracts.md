@@ -35,6 +35,7 @@ Fee parameters are configured in the coordinator contract and specify the premiu
 ## Configurations
 
 - [Ethereum Mainnet](#ethereum-mainnet)
+- [Goerli testnet](#goerli-testnet)
 - [Rinkeby testnet](#rinkeby-testnet)
 - [BNB Chain](#bnb-chain)
 - [BNB Chain testnet](#bnb-chain-testnet)
@@ -59,12 +60,27 @@ Fee parameters are configured in the coordinator contract and specify the premiu
 | Maximum Confirmations | 200                                                                                                                                                                                                          |
 | Maximum Random Values | 500                                                                                                                                                                                                          |
 
+### Goerli testnet
+
+> 🚰 Goerli Faucets
+>
+> Testnet LINK and ETH are available from https://faucets.chain.link/goerli
+
+| Item                  | Value                                                                                                                                                                                                                |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| LINK Token            | <a class="erc-token-address" id="5_0x326c977e6efc84e512bb9c30f76e30c160ed06fb" href="https://goerli.etherscan.io/token/0x326C977E6efc84E512bB9C30f76E30c160eD06FB">`0x326C977E6efc84E512bB9C30f76E30c160eD06FB`</a> |
+| VRF Coordinator       | [`0x2Ca8E0C643bDe4C2E08ab1fA0da3401AdAD7734D`](https://goerli.etherscan.io/address/0x2Ca8E0C643bDe4C2E08ab1fA0da3401AdAD7734D)                                                                                      |
+| 30 gwei Key Hash      | `0x79d3d8832d904592c0bf9818b621522c988bb8b0c05cdc3b15aea1b6e8db0c15`                                                                                                                                                 |
+| Premium               | 0.25 LINK                                                                                                                                                                                                            |
+| Minimum Confirmations | 3                                                                                                                                                                                                                    |
+| Maximum Confirmations | 200                                                                                                                                                                                                                  |
+| Maximum Random Values | 500                                                                                                                                                                                                                  |
+
 ### Rinkeby testnet
 
 > 🚰Rinkeby Faucets
 >
-> Testnet LINK is available from https://faucets.chain.link/rinkeby
-> Testnet ETH is available from: https://faucets.chain.link/rinkeby
+> Testnet LINK and ETH are available from https://faucets.chain.link/rinkeby
 > Backup Testnet ETH Faucets: https://rinkeby-faucet.com/, https://app.mycrypto.com/faucet
 
 | Item                  | Value                                                                                                                                                                                                                |
