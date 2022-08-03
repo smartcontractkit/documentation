@@ -28,8 +28,8 @@ See the [Data Feeds Contract Addresses](/docs/reference-contracts/) page for a l
 - [Components of an aggregator](#components-of-an-aggregator)
 - [Updates to proxy and aggregator contracts](#updates-to-proxy-and-aggregator-contracts)
 - [Monitoring data feeds](#monitoring-data-feeds)
-- [Check the latest answer against reasonable limits](#check-the-latest-answer-against-reasonable-limits)
-- [Check the timestamp of the latest answer](#check-the-timestamp-of-the-latest-answer)
+  - [Check the latest answer against reasonable limits](#check-the-latest-answer-against-reasonable-limits)
+  - [Check the timestamp of the latest answer](#check-the-timestamp-of-the-latest-answer)
 
 ## Retrieve the latest asset prices
 
