@@ -63,7 +63,7 @@ To use a custom logic trigger, you will need to make your contract [Keepers-comp
         <a href="https://keepers.chain.link" >Open the Chainlink Keepers App</a>
     </div>
 
-1. [Register](../register-upkeep/) a new Upkeep in the [Chainlink Keepers App](https://keepers.chain.link) and select a **custom logic** trigger. Provide the address of your [Keepers-compatible](../compatible-contracts/) contract and complete the remaining details. Your Upkeep name will be visible to all, but your email and Project Name will not be visible to all. Ensure you specify the appropriate gas limit for your function to execute on chain.
+1. [Register](../register-upkeep/) a new Upkeep in the [Chainlink Keepers App](https://keepers.chain.link) and select a **custom logic** trigger. Provide the address of your [Keepers-compatible](../compatible-contracts/) contract and complete the remaining details. Your upkeep name will be publicly visible, but your email and project name will not be publicly visible. Ensure you specify the appropriate gas limit for your function to execute on chain.
 
 1. Fund your Upkeep with [ERC-677 LINK](../../link-token-contracts/).
 
