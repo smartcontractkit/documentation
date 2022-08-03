@@ -47,6 +47,11 @@ The LINK token is an ERC677 token that inherits functionality from the ERC20 tok
 
 ## Goerli
 
+> 🚰 Goerli Faucets
+>
+> Testnet LINK is available from https://faucets.chain.link/goerli
+> Testnet ETH is available from https://goerlifaucet.com/ or faucets listed at https://faucetlink.to/goerli.
+
 | Parameter      | Value                                                                                                                                                                                                                 |
 | :------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `ETH_CHAIN_ID` | `5`                                                                                                                                                                                                                   |

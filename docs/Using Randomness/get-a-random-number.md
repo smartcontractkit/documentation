@@ -48,7 +48,7 @@ For this example, create a new subscription on the Goerli testnet.
 
 1. Open MetaMask and set it to use the Goerli testnet. The Subscription Manager detects your network based on the active network in MetaMask.
 
-1. Check MetaMask to make sure you have testnet ETH and LINK on Goerli. If you need testnet funds, you can get them from [faucets.chain.link](https://faucets.chain.link/goerli).
+1. Check MetaMask to make sure you have testnet ETH and LINK on Goerli. You can get testnet ETH and LINK at one of the available [Goerli faucets](/docs/link-token-contracts/#goerli).
 
 1. Open the [Subscription Manager](https://vrf.chain.link) page.
 

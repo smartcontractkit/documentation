@@ -93,7 +93,8 @@ For implementation details, read [Introduction to Chainlink VRF](/docs/chainlink
 
 > 🚰 Goerli Faucets
 >
-> Testnet LINK and ETH are available from https://faucets.chain.link/goerli
+> Testnet LINK is available from https://faucets.chain.link/goerli
+> Testnet ETH is available from https://goerlifaucet.com/ or faucets listed at https://faucetlink.to/goerli.
 
 |Item|Value|
 |---|---|
