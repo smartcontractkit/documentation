@@ -45,7 +45,7 @@ Before you begin, deploy the contract that you want to automate. You will also n
 
 1. Specify the time schedule using [CRON](../job-scheduler/#specifying-the-time-schedule).
 
-1. Complete the remaining details. Your Upkeep name will be visible to all, but your email and Project Name will not be visible to all. Your gas limit needs to include an extra [150K](../job-scheduler/#entering-upkeep-details) for execution.
+1. Complete the remaining details. Your upkeep name will be publicly visible, but your email and project name will not be publicly visible. Your gas limit needs to include an extra [150K](../job-scheduler/#entering-upkeep-details) for execution.
 
 1. Fund your Upkeep with [ERC-677 LINK](../../link-token-contracts/).
 
