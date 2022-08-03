@@ -77,7 +77,7 @@ To use a custom logic trigger, you will need to make your contract [Keepers-comp
 
   > 🚧 Funding Upkeep
     >
-    > You should fund your contract with more LINK than you anticipate you will need. The network will not check or perform your upkeep if your balance is too low based on current exchange rates. View the [Keepers Economics](../keeper-economics) page to learn more about the cost of using Keepers.
+    > Fund your contract with more LINK than you anticipate you will need. The network will not check or perform your upkeep if your balance is too low based on current exchange rates. View the [Keepers Economics](../keeper-economics) page to learn more about the cost of using Keepers.
 
   > 🚧 ERC677 Link
     >
