@@ -277,15 +277,15 @@ module.exports = {
             url: '/docs/chainlink-keepers/introduction/',
           },
           {
-            title: 'Using a time schedule to automate',
+            title: 'Time-based Automation',
             url: '/docs/chainlink-keepers/job-scheduler/',
           },
           {
-            title: 'Using custom logic to automate',
+            title: 'Custom Logic Automation',
             url: '/docs/chainlink-keepers/register-upkeep/',
           },
           {
-            title: 'Keepers-compatible contracts for custom logic',
+            title: 'Create Keepers-compatible Contracts',
             url: '/docs/chainlink-keepers/compatible-contracts/',
           },
 
