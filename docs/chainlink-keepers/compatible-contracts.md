@@ -6,7 +6,7 @@ title: 'Creating Keepers-compatible contracts'
 whatsnext:
   {
 
-    'Build flexible contracts': '/docs/chainlink-keepers/flexible-upkeeps/', 'FAQ': '/docs/chainlink-keepers/faqs/', 'Register a Custom Logic Upkeep': '/docs/chainlink-keepers/register-upkeep/'
+    'Build flexible contracts': '/docs/chainlink-keepers/flexible-upkeeps/', 'Manage your Upkeeps': '/docs/chainlink-keepers/manage-upkeeps/',
   }
 ---
 

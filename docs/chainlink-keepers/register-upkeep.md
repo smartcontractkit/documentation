@@ -5,25 +5,25 @@ date: Last Modified
 title: 'Register a Custom Logic Upkeep'
 whatsnext:
   {
-    'Manage your Upkeeps': '/docs/chainlink-keepers/manage-upkeeps/',
+    'Create a Keepers-compatible contract for custom logic Upkeep': '/docs/chainlink-keepers/compatible-contracts/',
   }
 ---
 
 ## Overview
 
-This guide explains how to register a [Keepers-compatible contract](../compatible-contracts) with the Chainlink Keeper Network. You can use the Keepers Registry or your own smart contract to register your contract and create an Upkeep.
+This guide explains how to register a Custom logic Upkeep that uses a [Keepers-compatible contract](../compatible-contracts). You can either register it from the Keepers App, or from within a contract that you have deployed.
 
 **Table of Contents**
-+ [Register Contract with Registry](#register-contract-with-registry)
-+ [Register Contract Programmatically ](#register-contract-programmatically)
++ [Register an Upkeep using the Keepers App](#register-an-upkeep-in-the-keepers-app)
++ [Register an Upkeep using your own deployed contract](#register-an-upkeep-using-your-own-deployed-contract)
 
-## Register Contract with Registry
+## Register an Upkeep using the Keepers App
 
 <div class="remix-callout">
     <a href="https://keepers.chain.link" >Open the Chainlink Keepers App</a>
 </div>
 
-1. **Connect your wallet** with the button in the top right corner and choose a chain. For a list of supported networks, see the [Supported Blockchain Networks](../supported-networks) section. The Chain Keepers App also lists the currently supported networks.
+1. **Connect your wallet** using the button in the top right corner and choose a network. For a list of supported networks, see the [Supported Blockchain Networks](../supported-networks) section. The Chainlink Keepers App also lists the currently supported networks.
   ![Connect With Metamask](/images/contract-devs/keeper/keeper-metamask.png)
 
 1. **Click the Register New Upkeep button**
@@ -47,28 +47,21 @@ This guide explains how to register a [Keepers-compatible contract](../compatibl
 
     > 🚧 ERC677 Link
     >
-    > For registration on Mainnet, you need ERC-677 LINK. Many token bridges give you ERC-20 LINK tokens. Use PegSwap to [convert Chainlink tokens (LINK) to be ERC-677 compatible](https://pegswap.chain.link/). To register on a supported testnet, get [LINK](../../link-token-contracts/) for the testnet you are using from [faucets.chain.link](https://faucets.chain.link/).
+    > Fund your Upkeep with more LINK than you anticipate you will need. The network will not check or perform your upkeep if your balance is too low based on current exchange rates. View the [Keepers Economics](../keeper-economics) page to learn more about the cost of using Keepers.
 
     > 🚧 Testing and best practices
     >
-    > Follow the [best practices](../compatible-contracts/#best-practices) when creating a Keepers-compatible contract and test your Upkeeps on a testnet before deploying them to a mainnet.
+    > Follow the [best practices](../compatible-contracts/#best-practices) when creating a Keepers-compatible contract and test your Upkeep on a testnet before deploying it to a mainnet.
 
 1. **Click `Register upkeep`** and confirm the transaction in MetaMask.
     ![Upkeep Registration Success Message](/images/contract-devs/keeper/keeper-registration-submitted.png)
 
-> 📘 Registration Onboarding Note
->
-> Registrations on testnets are approved immediately. Mainnet upkeeps are automatically approved after you register them. With auto-approval you must optimize and test your contracts before going live. Follow the [best practices](../compatible-contracts/#best-practices) when creating an Upkeep. Please test your Upkeeps before going to production.
+Your Upkeeps will be displayed in your list of Active Upkeeps. You must monitor the balance of your Upkeep. If the balance drops below the **Minimum Balance**, the Keepers Network will not perform the Upkeep. See [Manage Your Upkeeps](../manage-upkeeps) to learn how to manage your Upkeeps.
 
-After your Upkeep is approved, you will receive an Upkeep ID and be registered on the Registry. Providing that your Upkeep is appropriately funded, the Keepers Network will monitor it. You must monitor the balance of your Upkeep. If the balance drops below the **Minimum Balance**, the Keepers Network will not perform the Upkeep. See [Manage Your Upkeeps](../manage-upkeeps) to learn how to manage your Upkeeps.
+## Register an Upkeep using your own deployed contract
 
-## Register Contract Programmatically
+You can dynamically create and manage Upkeeps from within your own dApp. To do this you will need to keep track of the Upkeep ID as your contract will use this to subsequently interact with the Keepers registry. The following example displays a smart contract that can create an Upkeep and determine the Upkeep ID. Note your contract should be Keepers-compatible you will need [ERC-677 LINK](../../link-token-contracts/) to fund the Upkeep. You can get creative and even have your Upkeep check its own balance and fund itself by interacting with the registry.
 
-This example displays a smart contract which can create Upkeep and receive an Upkeep ID when auto-approval is turned on. To register your contract with the Keepers network programmatically, you will need to ensure your contract is Keeper-compatible and
-
-> 🚧 ERC677 Link
->
-> For registration on Mainnet, you need ERC-677 LINK. Many token bridges give you ERC-20 LINK tokens. Use PegSwap to [convert Chainlink tokens (LINK) to be ERC-677 compatible](https://pegswap.chain.link/). To register on a supported testnet, get [LINK](../../link-token-contracts/) for the testnet you are using from our [faucet](https://faucets.chain.link/).
 
 ```solidity
 {% include 'samples/Keepers/UpkeepIDConsumerExample.sol' %}
@@ -84,11 +77,11 @@ This example displays a smart contract which can create Upkeep and receive an Up
 | Name                   | Description                                                          |
 | ---------------------- | -------------------------------------------------------------------- |
 | `name`                 | Name of Upkeep         |
-| `encryptedEmail`       | Email address which received Upkeep notifications; this will be encrypted          |
-| `upkeepContract`       | Address of contract which requires Upkeep           |
+| `encryptedEmail`       | Not in use in programmatic registration. Please specify 0x           |
+| `upkeepContract`       | Address of Keepers-compatible contract that will be automated           |
 | `gasLimit`             | The maximum amount of gas that will be used to execute your function on-chain          |
-| `adminAddress`         | Address for admin        |
-| `checkData`            | Fixed and specified at Upkeep registration and used in every checkUpkeep. Can be empty (0x)          |
-| `amount`               | A LINK starting balance to fund your Upkeep          |
-| `source`               | Source of funding for Upkeep          |
+| `adminAddress`         | Address for Upkeep administrator        |
+| `checkData`            | ABI-encoded fixed and specified at Upkeep registration and used in every checkUpkeep. Can be empty (0x)          |
+| `amount`               | The amount of LINK (in Wei) to fund your Upkeep. The minimum amount is 5 LINK. To fund 5 LINK please set this to 5000000000000000000 (that is 5 with 18 zeros)        |
+| `source`               | Not in use in programmatic registration, Please specify 0.           |
 | `sender`               | Address of sender

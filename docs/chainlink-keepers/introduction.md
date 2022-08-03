@@ -5,8 +5,7 @@ date: Last Modified
 title: 'Introduction to Chainlink Keepers'
 whatsnext:
   {
-    'Register a time-based Upkeep': '/docs/chainlink-keepers/job-scheduler/',
-    'Create a Keepers-compatible contract for custom logic Upkeep': '/docs/chainlink-keepers/compatible-contracts/','Keepers architecture': '/docs/chainlink-keepers/overview/', 'Keepers economics': '/docs/chainlink-keepers/keeper-economics/'
+    'Register a time-based Upkeep': '/docs/chainlink-keepers/job-scheduler/','Register a Custom Logic Upkeep': '/docs/chainlink-keepers/register-upkeep/','Create a Keepers-compatible contract for custom logic Upkeep': '/docs/chainlink-keepers/compatible-contracts/','Keepers architecture': '/docs/chainlink-keepers/overview/', 'Keepers economics': '/docs/chainlink-keepers/keeper-economics/'
 
   }
 ---
@@ -20,16 +19,16 @@ To learn more about how the Chainlink Keepers Network automates your smart contr
 
 + [Select a Trigger](#select-a-trigger)
   + [Time-based Trigger](#time-based-trigger)
-  + [Custom Logic Trigger](#custom-logic-trigger)
+  + [Custom logic Trigger](#custom-logic-trigger)
 + [Supported Networks and Costs](#supported-networks-and-costs)
 + [Questions and Examples](#questions-and-examples)
 
 ## Select a Trigger
 
-Chainlink Keepers can execute smart contract functions according to a time schedule (time-based trigger), or execute smart contract functions using custom logic (custom logic trigger) that you provide.
+Chainlink Keepers will reliably execute smart contract functions using a variety of triggers.
 
-- [Time-based trigger](#time-based-trigger): If your contract function needs to run repeatedly using a pre-specified time schedule, use a [time based trigger](#time-based-trigger). Your contract does not need to be [Keepers-compatible](../compatible-contracts/).
-- [Custom logic trigger](#custom-logic-trigger): If your contract requires custom logic to run, use a [custom logic trigger](#custom-logic-trigger) and make sure your contract is [Keepers-compatible](../compatible-contracts/). Examples of this include checking the balance on a contract, only executing limit orders when their levels are met, or changing the state of certain entities based on some on-chain conditions.
+- [Time-based trigger](#time-based-trigger): Use a [time based trigger](#time-based-trigger) if you want Keepers to execute your function according to a time schedule. We simply call it the Job Scheduler and it is a throwback to the Ethereum Alarm Clock. Your contract does not need to be [Keepers-compatible](../compatible-contracts/).
+- [Custom logic trigger](#custom-logic-trigger): Use [custom logic trigger](#custom-logic-trigger) if you want to provide custom solidity logic that Keepers will evaluate (off-chain) to determine when to execute your function on-chain. Your contract should be [Keepers-compatible](../compatible-contracts/). Custom logic examples include checking the balance on a contract, only executing limit orders when their levels are met, any one of our [coded examples](../util-overview.md), and many many more.
 
 ### Time-based Trigger
 
@@ -41,13 +40,13 @@ Before you begin, deploy the contract that you want to automate. You will also n
         <a href="https://keepers.chain.link" >Open the Chainlink Keepers App</a>
     </div>
 
-1. [Register](../job-scheduler/) a new Upkeep in the [Chainlink Keepers App](https://keepers.chain.link) and select a **Time-based** trigger. Provide the address of your deployed contract, provide the ABI if it is not verified, and choose the function that you want to automate alogn with the relevant function inputs, if any.
+1. [Register](../job-scheduler/) a new Upkeep in the [Chainlink Keepers App](https://keepers.chain.link) and select **Time-based** trigger. Provide the address of your deployed contract, provide the ABI if it is not verified, and choose the function that you want to automate along with the relevant function inputs, if any.
 
 1. Specify the time schedule using [CRON](../job-scheduler/#specifying-the-time-schedule).
 
 1. Complete the remaining details. Your upkeep name will be publicly visible, but your email and project name will not be publicly visible. Your gas limit needs to include an extra [150K](../job-scheduler/#entering-upkeep-details) for execution.
 
-1. Fund your Upkeep with [ERC-677 LINK](../../link-token-contracts/).
+1. Fund your Upkeep with ERC-677 LINK. See the [LINK token contracts](../../link-token-contracts/) page to determine where to acquire ERC-677 LINK.
 
 1. After your Upkeep is registered, [manage](../manage-upkeeps/) it in the Keepers App.
 
@@ -63,13 +62,13 @@ To use a custom logic trigger, you will need to make your contract [Keepers-comp
         <a href="https://keepers.chain.link" >Open the Chainlink Keepers App</a>
     </div>
 
-1. [Register](../register-upkeep/) a new Upkeep in the [Chainlink Keepers App](https://keepers.chain.link) and select a **custom logic** trigger. Provide the address of your [Keepers-compatible](../compatible-contracts/) contract and complete the remaining details. Your upkeep name will be publicly visible, but your email and project name will not be publicly visible. Ensure you specify the appropriate gas limit for your function to execute on chain.
+1. [Register](../register-upkeep/) a new Upkeep in the [Chainlink Keepers App](https://keepers.chain.link) and select **Custom logic** trigger. Provide the address of your [Keepers-compatible](../compatible-contracts/) contract and complete the remaining details. Your upkeep name will be publicly visible, but your email and project name will **not** be publicly visible. Ensure you specify the appropriate gas limit for your function to execute on chain.
 
-1. Fund your Upkeep with [ERC-677 LINK](../../link-token-contracts/).
+1. Fund your Upkeep with ERC-677 LINK. See the [LINK token contracts](../../link-token-contracts/) page to determine where to acquire ERC-677 LINK.
 
 1. After your Upkeep is registered, [manage](../manage-upkeeps/) it in the Keepers App.
 
-1. For more details on custom-logic automation, click [here](../compatible-contracts/).
+1. For more details on custom logic automation, click [here](../compatible-contracts/).
 
 > ❗️ **WARNING**
 >
@@ -77,11 +76,11 @@ To use a custom logic trigger, you will need to make your contract [Keepers-comp
 
   > 🚧 Funding Upkeep
     >
-    > Fund your contract with more LINK than you anticipate you will need. The network will not check or perform your upkeep if your balance is too low based on current exchange rates. View the [Keepers Economics](../keeper-economics) page to learn more about the cost of using Keepers.
+    > Fund your Upkeep with more LINK than you anticipate you will need. The network will not check or perform your upkeep if your balance is too low based on current exchange rates. View the [Keepers Economics](../keeper-economics) page to learn more about the cost of using Keepers.
 
   > 🚧 ERC677 Link
     >
-    > For registration on a mainnet, you must use ERC-677 LINK. Many token bridges give you ERC-20 LINK tokens. Use PegSwap to [convert Chainlink tokens (LINK) to be ERC-677 compatible](https://pegswap.chain.link/). To register on a supported testnet, get [LINK](../../link-token-contracts/) from [faucets.chain.link](https://faucets.chain.link/).
+    > For registration you must use ERC-677 LINK. Read our [LINK](../../link-token-contracts/) page to determine where to acquire mainnet LINK, or visit our [faucets.chain.link](https://faucets.chain.link/) for testnet LINK.
 
 ## Supported Networks and Costs
 

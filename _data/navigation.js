@@ -277,22 +277,22 @@ module.exports = {
             url: '/docs/chainlink-keepers/introduction/',
           },
           {
-            title: 'Automation using Time-based trigger',
+            title: 'Using a time schedule to automate',
             url: '/docs/chainlink-keepers/job-scheduler/',
           },
           {
-            title: 'Keepers-compatible contracts for custom logic automation',
-            url: '/docs/chainlink-keepers/compatible-contracts/',
-          },
-          {
-            title: 'Register a Custom Logic Upkeep',
+            title: 'Using custom logic to automate',
             url: '/docs/chainlink-keepers/register-upkeep/',
           },
+          {
+            title: 'Keepers-compatible contracts for custom logic',
+            url: '/docs/chainlink-keepers/compatible-contracts/',
+          },
+
           {
             title: 'Manage your Upkeeps',
             url: '/docs/chainlink-keepers/manage-upkeeps/',
           },
-
           {
             title: 'Creating Flexible Upkeeps',
             url: '/docs/chainlink-keepers/flexible-upkeeps/',

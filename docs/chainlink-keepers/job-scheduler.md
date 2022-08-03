@@ -5,51 +5,46 @@ date: Last Modified
 title: 'Chainlink Keepers Job Scheduler'
 whatsnext:
   {
-    'Manage your Upkeeps': '/docs/chainlink-keepers/manage-upkeeps/',
+    'Register a Custom Logic Upkeep': '/docs/chainlink-keepers/register-upkeep/',
   }
 ---
 
-Execute smart contract functions based on a time schedule.
+This guide explains how to register a time-based Upkeep that executes according to a time schedule that you provide.
 
 **Table of Contents**
 
 + [Register a new Upkeep](#register-a-new-upkeep)
 + [Trigger Selection](#trigger-selection)
 + [Using Time-Based Triggers](#using-time-based-triggers)
-+ [Using Custom Logic Triggers](#using-custom-logic-triggers)
+
 
 # Register a new Upkeep
 
-To use the job scheduler, you must register a new upkeep on the Keepers network. On the landing page of the Keepers interface, click the blue **Register new Upkeep** button.
+To use the job scheduler, you must register a new upkeep on the Keepers network. In the Keepers App, click the blue **Register new Upkeep** button.
 
-![Keepers UI Landing](/images/contract-devs/keeper/keeper-ui-landing.png)
+![Keepers App](/images/contract-devs/keeper/keeper-ui-landing.png)
 
 ## Connecting your Wallet
 
 If you do not already have a wallet connected with the Keepers network, the interface will prompt you to do so. Click the **Connect Wallet** button and follow the remaining prompts to connect your wallet to the network.
 
-![Keepers Connect Waller](/images/contract-devs/keeper/keeper-connect-wallet.png)
+![Keepers Connect Wallet](/images/contract-devs/keeper/keeper-connect-wallet.png)
 
 # Trigger Selection
 
-After you have successfully connected your wallet, you will have options to select a trigger mechanism for automation. The trigger specifies what Keeper Nodes should look at to determine if your Upkeep should be performed.
-
-- [Time-based triggers](#using-time-based-triggers) use a time schedule (CRON) to execute deployed smart contract function according to the schedule
-- [Custom logic triggers](#using-custom-logic-triggers) use a Keeper-compatible contract that you deployed to determine when to perform your Upkeep.
-
-To learn how to create Keeper-compatible contracts, see [Making Keepers-compatible Contracts](../compatible-contracts).
+After you have successfully connected your wallet, please select time-based trigger.
 
 ![Keepers Trigger Selection](/images/contract-devs/keeper/keeper-trigger-selection.png)
 
 # Using Time-Based Triggers
 
-When you select the time-based trigger, you are prompted to enter a *contract address*. This is the address of the deployed contract that contains the function that you want Keepers to execute. If you did not verify the contract on chain, you will also need to paste the [Application Binary Interface](https://docs.soliditylang.org/en/develop/abi-spec.html) (ABI) of the deployed contract into the corresponding text box.
+When you select the time-based trigger, you are prompted to enter a *contract address*. Provide the address of the contract you want to execute. If you did not verify the contract on chain, you will need to paste the [Application Binary Interface](https://docs.soliditylang.org/en/develop/abi-spec.html) (ABI) of the deployed contract into the corresponding text box. Select the function name that you want to execute and provide any static inputs. If you want to use dynamic inputs please see [Custom logic Upkeeps](../register-upkeep.md)
 
 ![Keepers Time Based Trigger](/images/contract-devs/keeper/keeper-time-based-trigger.png)
 
 ## Specifying the Time Schedule
 
-After you successfully enter your contract address and ABI, specify your time schedule in the form of a CRON expression. CRON expressions are a shorthand way to create a time schedule. Use the provided example buttons to experiment with different schedules and then create your own.
+After you successfully entered your contract address and ABI, specify your time schedule in the form of a CRON expression. CRON expressions are a shorthand way to create a time schedule. Use the provided example buttons to experiment with different schedules and then create your own.
 
 ```
 Cron jobs are interpreted according to this format:
@@ -83,7 +78,7 @@ After you enter your CRON expression, click **Next**.
 
 ## Entering Upkeep Details
 
-To complete the upkeep registration process using time-based triggers, you must enter some information about your upkeep including its name, gas limit, starting balance, and contact information.
+To complete the upkeep registration process, you must enter some information about your upkeep including its name, gas limit, starting balance LINK, and contact information.
 
 > 📘 Job Scheduler Gas requirements
 >
@@ -91,6 +86,6 @@ To complete the upkeep registration process using time-based triggers, you must 
 
 ![Keepers Upkeep Details](/images/contract-devs/keeper/keeper-upkeep-details.png)
 
-# Using Custom Logic Triggers
-
-To use custom logic triggers, you must enter the address of your Keeper-compatible contract. Learn how to create a Keeper-compatible contract [here](../compatible-contracts).
+  > 🚧 ERC677 Link
+    >
+    > For registration you must use ERC-677 LINK. Read our [LINK](../../link-token-contracts/) page to determine where to acquire mainnet LINK, or visit our [faucets.chain.link](https://faucets.chain.link/) for testnet LINK.
