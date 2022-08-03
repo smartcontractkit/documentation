@@ -81,7 +81,7 @@ To use a custom logic trigger, you will need to make your contract [Keepers-comp
 
   > 🚧 ERC677 Link
     >
-    > For registration on Mainnet, you must use ERC-677 LINK. Many token bridges give you ERC-20 LINK tokens. Use PegSwap to [convert Chainlink tokens (LINK) to be ERC-677 compatible](https://pegswap.chain.link/). To register on a supported testnet, get [LINK](../../link-token-contracts/) from [faucets.chain.link](https://faucets.chain.link/).
+    > For registration on a mainnet, you must use ERC-677 LINK. Many token bridges give you ERC-20 LINK tokens. Use PegSwap to [convert Chainlink tokens (LINK) to be ERC-677 compatible](https://pegswap.chain.link/). To register on a supported testnet, get [LINK](../../link-token-contracts/) from [faucets.chain.link](https://faucets.chain.link/).
 
 ## Supported Networks and Costs
 
