@@ -56,11 +56,11 @@ This guide explains how to register a Custom logic Upkeep that uses a [Keepers-c
 1. **Click `Register upkeep`** and confirm the transaction in MetaMask.
     ![Upkeep Registration Success Message](/images/contract-devs/keeper/keeper-registration-submitted.png)
 
-Your Upkeeps will be displayed in your list of Active Upkeeps. You must monitor the balance of your Upkeep. If the balance drops below the **Minimum Balance**, the Keepers Network will not perform the Upkeep. See [Manage Your Upkeeps](../manage-upkeeps) to learn how to manage your Upkeeps.
+Your Upkeeps will be displayed in your list of Active Upkeeps. You must monitor the balance of your Upkeep. If the balance drops below the **minimum balance**, the Keepers Network will not perform the Upkeep. See [Manage Your Upkeeps](../manage-upkeeps) to learn how to manage your Upkeeps.
 
 ## Register an Upkeep using your own deployed contract
 
-You can dynamically create and manage Upkeeps from within your own dApp. To do this you will need to keep track of the Upkeep ID as your contract will use this to subsequently interact with the Keepers registry. The following example displays a smart contract that can create an Upkeep and determine the Upkeep ID. Note your contract should be Keepers-compatible you will need [ERC-677 LINK](../../link-token-contracts/) to fund the Upkeep. You can get creative and even have your Upkeep check its own balance and fund itself by interacting with the registry.
+You can dynamically create and manage Upkeeps from within your own dApp. To do this you will need to keep track of the Upkeep ID as your contract will use this to subsequently interact with the Keepers registry. The following example displays a smart contract that can create an Upkeep and determine the Upkeep ID. Note your contract should be Keepers-compatible you will need [ERC-677 LINK](../../link-token-contracts/) to fund the Upkeep. You can also program your Upkeep to check its own balance and fund itself by interacting with the registry.
 
 
 ```solidity
