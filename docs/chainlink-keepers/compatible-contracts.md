@@ -2,12 +2,15 @@
 layout: nodes.liquid
 section: ethereum
 date: Last Modified
-title: 'Making Keepers-compatible Contracts'
+title: 'Creating Keepers-compatible contracts'
 whatsnext:
   {
-    'Register your Upkeep': '/docs/chainlink-keepers/register-upkeep/',
+
+    'Build flexible contracts': '/docs/chainlink-keepers/flexible-upkeeps/', 'Manage your Upkeeps': '/docs/chainlink-keepers/manage-upkeeps/',
   }
 ---
+
+Use custom logic to allow Keepers to determine when to execute your smart contract functions.
 
 ## Overview
 
@@ -35,7 +38,7 @@ Keepers-compatible contracts must meet the following requirements:
 * Include a `checkUpkeep` function that contains the logic that will be executed off-chain to see if `performUpkeep` should be executed. `checkUpkeep` can use on-chain data and a specified `checkData` parameter to perform complex calculations off-chain and then send the result to `performUpkeep` as `performData`.
 * Include a `performUpkeep` function that will be executed on-chain when `checkUpkeep` returns `true`. Because `performUpkeep` is external, users are advised to revalidate conditions and performData.
 
-Use these elements to create a Keepers-compatible contract that will automatically increment a counter after every `updateInterval` seconds. After you register the contract as an Upkeep, the Keepers Network simulates our `checkUpkeep` off-chain during every block to determine if the `updateInterval` time has passed since the last increment (timestamp). When `checkUpkeep` returns true, the Keepers Network calls `performUpkeep` on-chain and increments the counter. This cycle repeats until the Upkeep is cancelled or runs out of funding.
+Use these elements to create a Keepers-compatible contract that will automatically increment a counter after every `updateInterval` seconds. After you register the contract as an upkeep, the Keepers Network simulates our `checkUpkeep` off-chain during every block to determine if the `updateInterval` time has passed since the last increment (timestamp). When `checkUpkeep` returns true, the Keepers Network calls `performUpkeep` on-chain and increments the counter. This cycle repeats until the upkeep is cancelled or runs out of funding.
 
 
 ```solidity
@@ -50,8 +53,8 @@ Use these elements to create a Keepers-compatible contract that will automatical
 Compile and deploy your own Keepers Counter onto a [supported Testnet](../supported-networks).
 
 1. In the Remix example, select the compile tab on the left and press the compile button. Make sure that your contract compiles without any errors. Note that the Warning messages in this example are acceptable and will not block the deployment.
-1. Select the **Deploy** tab and deploy the `Counter` smart contract in the `Injected Provider` environment. When deploying the contract, specify the `updateInterval` value. For this example, set a short interval of 60. This is the interval at which the `performUpkeep` function will be called.
-1. After deployment is complete, copy the address of the deployed contract. This address is required to [register](../register-upkeep/) your upkeep.
+1. Select the **Deploy** tab and deploy the `Counter` smart contract in the `injected web3` environment. When deploying the contract, specify the `updateInterval` value. For this example, set a short interval of 60. This is the interval at which the `performUpkeep` function will be called.
+1. After deployment is complete, copy the address of the deployed contract. This address is required to register your upkeep.
 
 To see more complex examples, go to the [utility contracts](../utility-contracts) page.
 
@@ -92,7 +95,7 @@ Below are the parameters and return values of the `checkUpkeep` function. Click 
 
 **Parameters:**
 
-- [`checkData`](#checkdata): Fixed and specified at Upkeep registration and used in every `checkUpkeep`. Can be empty (0x).
+- [`checkData`](#checkdata): Fixed and specified at upkeep registration and used in every `checkUpkeep`. Can be empty (0x).
 
 **Return Values:**
 
@@ -101,7 +104,7 @@ Below are the parameters and return values of the `checkUpkeep` function. Click 
 
 #### `checkData`
 
-You can pass information into your `checkUpkeep` function from your [Upkeep Registration](../register-upkeep/) to execute different code paths. For example, to check the balance on an specific address, set the `checkData` to abi encode of the address.
+You can pass information into your `checkUpkeep` function from your [upkeep registration](../register-upkeep/) to execute different code paths. For example, to check the balance on an specific address, set the `checkData` to abi encode of the address. To learn how to create flexible upkeeps with checkData, please see out [flexible upkeeps](../flexible-upkeeps/) page.
 
 ```solidity Rinkeby
 {% include 'snippets/Keepers/checkData.sol' %}
@@ -109,13 +112,13 @@ You can pass information into your `checkUpkeep` function from your [Upkeep Regi
 
 Tips on using `checkData`:
 
-- **Managing unbounded upkeeps**: Limit the problem set of your on-chain execution by creating a range bound for your Upkeep to check and perform. This allows you to keep within predefined gas limits, which creates a predictable upper bound gas cost on your transactions. Break apart your problem into multiple Upkeep registrations to limit the scope of work.
+- **Managing unbounded upkeeps**: Limit the problem set of your on-chain execution by creating a range bound for your upkeep to check and perform. This allows you to keep within predefined gas limits, which creates a predictable upper bound gas cost on your transactions. Break apart your problem into multiple upkeep registrations to limit the scope of work.
 
-  **Example**: You could create an Upkeep for each subset of addresses that you want to service. The ranges could be 0 to 49, 50 to 99, and 100 to 149.
+  **Example**: You could create an upkeep for each subset of addresses that you want to service. The ranges could be 0 to 49, 50 to 99, and 100 to 149.
 
 - **Managing code paths**: Pass in data to your `checkUpkeep` to make your contract logic go down different code paths. This can be used in creative ways based on your use case needs.
 
-  **Example**: You could support multiple types of Upkeep within a single contract and pass a function selector through the `checkData` function.
+  **Example**: You could support multiple types of upkeep within a single contract and pass a function selector through the `checkData` function.
 
 #### `performData`
 
@@ -131,7 +134,7 @@ When `checkUpkeep` returns `upkeepNeeded == true`, the Keeper node broadcasts a 
 >
 > During registration you have to specify the maximum gas limit that we should allow your contract to use. We simulate `performUpkeep` during `checkUpkeep` and if the gas exceeds this limit the function will not execute on-chain. One method to determine your upkeep's gas limit is to simulate the `performUpkeep` function and add enough overhead to take into account increases that might happen due to changes in `performData` or on-chain data. The gas limit you specify cannot exceed the `callGasLimit` in the [configuration of the registry](/docs/chainlink-keepers/supported-networks/#configurations).
 
-Ensure that your `performUpkeep` is *idempotent*. Your `performUpkeep` function should change state such that `checkUpkeep` will not return `true` for the same subset of work once said work is complete. Otherwise the Upkeep will remain eligible and result in multiple performances by the Keeper Network on the exactly same subset of work. As a best practice, always [revalidate](#revalidate-performupkeep) conditions for your Upkeep at the start of your `performUpkeep` function.
+Ensure that your `performUpkeep` is *idempotent*. Your `performUpkeep` function should change state such that `checkUpkeep` will not return `true` for the same subset of work once said work is complete. Otherwise the Upkeep will remain eligible and result in multiple performances by the Keeper Network on the exactly same subset of work. As a best practice, always [revalidate](#revalidate-performupkeep) conditions for your upkeep at the start of your `performUpkeep` function.
 
 ```solidity
 function performUpkeep(
