@@ -6,7 +6,7 @@ title: "Ethereum Proof-of-Stake Merge"
 permalink: "docs/ethereum-proof-of-stake-merge/"
 ---
 
-The [Ethereum Merge](https://ethmerge.com/) is an upcoming network upgrade in which the Proof-of-Work (PoW) consensus layer of the Ethereum blockchain will be replaced with a new Proof-of-Stake (PoS) consensus layer. To ensure continuity for Chainlink protocol users on Ethereum, Chainlink Labs is following a rigorous quality assurance process in preparation of the Merge.
+The [Ethereum Merge](https://ethereum.org/en/upgrades/merge/) is an upcoming network upgrade in which the Proof-of-Work (PoW) consensus layer of the Ethereum blockchain will be replaced with a new Proof-of-Stake (PoS) consensus layer. To ensure continuity for Chainlink protocol users on Ethereum, Chainlink Labs is following a rigorous quality assurance process in preparation of the Merge.
 
 The Chainlink protocol and its services will remain operational on the Ethereum blockchain during and after the Merge to the PoS consensus layer. Users should be aware that forked versions of the Ethereum blockchain, including PoW forks, will not be supported by the Chainlink protocol. This is aligned with both the Ethereum Foundation’s and broader Ethereum community’s decision, achieved via social consensus, to upgrade the Ethereum blockchain to PoS consensus.
 
