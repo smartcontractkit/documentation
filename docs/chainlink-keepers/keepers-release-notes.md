@@ -14,18 +14,18 @@ whatsnext:
 
 **Chainlink Keepers release notes:**
 
-- [V1.2](#v12---2022-08-04)
+- [V1.2](#2022-08-04---v12)
   - [Manually migrating upkeeps from V1.1 to V1.2](#manually-migrating-upkeeps-from-v11-to-v12)
-- [Underfunded upkeep email notifications](#underfunded-upkeep-notifications---2022-07-21)
-- [Keepers on Fantom](#keepers-on-fantom---2022-06-29)
-- [Keepers on Avalanche](#keepers-on-avalanche---2022-06-09)
-- [Keepers on Ethereum Rinkeby](#keepers-on-ethereum-rinkeby---2022-02-01)
-- [Keepers on Binance Smart Chain and Polygon](#keepers-on-binance-smart-chain-and-polygon---2021-11-18)
-- [Keepers v1.1 launch on Ethereum](#keepers-v11-launch-on-ethereum---2021-08-05)
+- [Underfunded upkeep email notifications](#2022-07-21---underfunded-upkeep-notifications)
+- [Keepers on Fantom](#2022-06-29---keepers-on-fantom)
+- [Keepers on Avalanche](#2022-06-09---keepers-on-avalanche)
+- [Keepers on Ethereum Rinkeby](#2022-02-01---keepers-on-ethereum-rinkeby)
+- [Keepers on Binance Smart Chain and Polygon](#2021-11-18---keepers-on-binance-smart-chain-and-polygon)
+- [Keepers v1.1 launch on Ethereum](#2021-08-05---keepers-v11-launch-on-ethereum)
 - [Questions](#questions)
 
 
-## V1.2 - 2022-08-04
+## 2022-08-04 - V1.2
 
 Keepers Registry v1.2 launched on Ethereum, Binance Smart Chain, Polygon, Avalanche, and Fantom
 
@@ -47,27 +47,27 @@ Keepers Registry v1.2 launched on Ethereum, Binance Smart Chain, Polygon, Avalan
 
 If your upkeep ID has 77 digits, it is already migrated to V1.2 and no further action is required. If your upkeep ID has less than 4 digits, your upkeep is on the v1.1 registry. To migrate your upkeep from Keepers v1.1 to Keepers v1.2, you can cancel it in the Keepers App, and register an exact copy of the upkeep in the Keepers App. While you can see upkeeps from both v1.1 and v1.2 in the [Keepers App](https://keepers.chain.link), all new upkeeps in the Keepers App will be automatically created on Keepers v1.2.
 
-## Underfunded upkeep notifications - 2022-07-21
+## 2022-07-21 - Underfunded upkeep notifications
 
 You will now receive notifications to the email address you register in your upkeep when your upkeep is underfunded. We are limiting notifications on the same upkeep to once per week.
 
-## Keepers on Fantom - 2022-06-29
+## 2022-06-29 - Keepers on Fantom
 
 Chainlink Keepers is live on the Fantom Network, [Mainnet](https://keepers.chain.link/fantom) and [Testnet](https://keepers.chain.link/fantom-testnet).
 
-## Keepers on Avalanche - 2022-06-09
+## 2022-06-09 - Keepers on Avalanche
 
 Chainlink Keepers is live on the Avalanche Network, [Mainnet](https://keepers.chain.link/avalanche) and [Testnet](https://keepers.chain.link/fuji).
 
-## Keepers on Ethereum Rinkeby - 2022-02-01
+## 2022-02-01 - Keepers on Ethereum Rinkeby
 
 Chainlink Keepers is live on [Ethereum Rinkeby](https://keepers.chain.link/rinkeby).
 
-## Keepers on Binance Smart Chain and Polygon - 2021-11-18
+## 2021-11-18 - Keepers on Binance Smart Chain and Polygon
 
 Chainlink Keepers is live on the both Binance Smart Chain [Mainnet](https://keepers.chain.link/bsc) and [Testnet](https://keepers.chain.link/chapel), and Polygon [Mainnet](https://keepers.chain.link/polygon) and [Testnet](https://keepers.chain.link/mumbai).
 
-## Keepers v1.1 launch on Ethereum - 2021-08-05
+## 2021-08-05 - Keepers v1.1 launch on Ethereum
 
 Chainlink Keepers officially launched on [Ethereum Mainnet](https://keepers.chain.link/mainnet) and [Ethereum Kovan](https://keepers.chain.link/kovan).
 
