@@ -87,6 +87,10 @@ module.exports = {
               },
             ],
           },
+          {
+            title: 'Ethereum Proof-of-Stake Merge',
+            url: '/docs/ethereum-proof-of-stake-merge/',
+          },
         ],
       },
       {
