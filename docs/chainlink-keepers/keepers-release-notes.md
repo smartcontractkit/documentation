@@ -19,7 +19,7 @@ whatsnext:
 - [Underfunded upkeep email notifications](#2022-07-21---underfunded-upkeep-notifications)
 - [Keepers on Fantom](#2022-06-29---keepers-on-fantom)
 - [Keepers on Avalanche](#2022-06-09---keepers-on-avalanche)
-- [Keepers on Ethereum Rinkeby](#2022-02-01---keepers-on-ethereum-rinkeby)
+- [Keepers on Ethereum Rinkeby](#2022-03-01---keepers-on-ethereum-rinkeby)
 - [Keepers on Binance Smart Chain and Polygon](#2021-11-18---keepers-on-binance-smart-chain-and-polygon)
 - [Keepers v1.1 launch on Ethereum](#2021-08-05---keepers-v11-launch-on-ethereum)
 - [Questions](#questions)
@@ -31,7 +31,7 @@ Keepers Registry v1.2 launched on Ethereum, Binance Smart Chain, Polygon, Avalan
 
 - **Automatic upkeep registration approval**: All upkeeps on supported mainnets are now automatically approved.
 
-- **Programmatic control**: With automatic approval, you can now dynamically create, manage, and fund upkeeps from within your dApps and even have an upkeep fund itself. Learn more [here](../register-upkeep/#register-an-upkeep-using-your-own-deployed-contract).
+- **Programmatic control**: With automatic approval, you can now dynamically create, manage, and fund upkeeps from within your dApps and even have an upkeep fund itself. Learn more [here](/docs/chainlink-keepers/register-upkeep/#register-an-upkeep-using-your-own-deployed-contract).
 
 - **Advanced turn-taking algorithm**: Our turn taking algorithm now supports upkeeps that require high-frequency execution.
 

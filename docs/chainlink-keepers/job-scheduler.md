@@ -38,7 +38,7 @@ After you have successfully connected your wallet, please select time-based trig
 
 # Using Time-Based Triggers
 
-When you select the time-based trigger, you are prompted to enter a *contract address*. Provide the address of the contract you want to execute. If you did not verify the contract on chain, you will need to paste the [Application Binary Interface](https://docs.soliditylang.org/en/develop/abi-spec.html) (ABI) of the deployed contract into the corresponding text box. Select the function name that you want to execute and provide any static inputs. If you want to use dynamic inputs please see [Custom logic Upkeeps](../register-upkeep.md)
+When you select the time-based trigger, you are prompted to enter a *contract address*. Provide the address of the contract you want to execute. If you did not verify the contract on chain, you will need to paste the [Application Binary Interface](https://docs.soliditylang.org/en/develop/abi-spec.html) (ABI) of the deployed contract into the corresponding text box. Select the function name that you want to execute and provide any static inputs. If you want to use dynamic inputs please see [Custom logic Upkeeps](/docs/chainlink-keepers/register-upkeep/)
 
 ![Keepers Time Based Trigger](/images/contract-devs/keeper/keeper-time-based-trigger.png)
 

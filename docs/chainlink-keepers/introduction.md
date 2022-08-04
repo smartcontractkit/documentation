@@ -28,7 +28,7 @@ To learn more about how the Chainlink Keepers Network automates your smart contr
 Chainlink Keepers will reliably execute smart contract functions using a variety of triggers.
 
 - [Time-based trigger](#time-based-trigger): Use a [time based trigger](#time-based-trigger) if you want Keepers to execute your function according to a time schedule. We simply call it the Job Scheduler and it is a throwback to the Ethereum Alarm Clock. Your contract does not need to be [Keepers-compatible](../compatible-contracts/).
-- [Custom logic trigger](#custom-logic-trigger): Use [custom logic trigger](#custom-logic-trigger) if you want to provide custom solidity logic that Keepers will evaluate (off-chain) to determine when to execute your function on-chain. Your contract should be [Keepers-compatible](../compatible-contracts/). Custom logic examples include checking the balance on a contract, only executing limit orders when their levels are met, any one of our [coded examples](../util-overview.md), and many many more.
+- [Custom logic trigger](#custom-logic-trigger): Use [custom logic trigger](#custom-logic-trigger) if you want to provide custom solidity logic that Keepers will evaluate (off-chain) to determine when to execute your function on-chain. Your contract should be [Keepers-compatible](../compatible-contracts/). Custom logic examples include checking the balance on a contract, only executing limit orders when their levels are met, any one of our [coded examples](/docs/chainlink-keepers/util-overview), and many many more.
 
 ### Time-based Trigger
 
