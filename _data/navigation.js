@@ -320,6 +320,10 @@ module.exports = {
             url: '/docs/chainlink-keepers/keeper-economics/',
           },
           {
+            title: 'Keepers Release Notes',
+            url: '/docs/chainlink-keepers/keepers-release-notes/',
+          },
+          {
             title: 'FAQs',
             url: '/docs/chainlink-keepers/faqs/',
           },

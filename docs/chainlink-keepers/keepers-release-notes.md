@@ -1,0 +1,77 @@
+---
+layout: nodes.liquid
+section: ethereum
+date: Last Modified
+title: 'Chainlink Keepers Release Notes'
+whatsnext:
+  {
+    'Register a time-based upkeep': '/docs/chainlink-keepers/job-scheduler/','Register a Custom Logic Upkeep': '/docs/chainlink-keepers/register-upkeep/',
+
+  }
+---
+![Chainlink Keeper Network Banner](/images/contract-devs/generic-banner.png)
+
+
+**Chainlink Keepers** release notes
+
+**Table of Contents**
+
+- [V1.2](#v1.2)
+  - [Manually migrating upkeeps from V1.1 to V1.2](#manually-migrating-upkeeps-from-v1.1-to-v1.2)
+- [Underfunded upkeep email notifications](#underfunded-upkeep-email-notifications)
+- [Keepers on Fantom](#fantom)
+- [Keepers on Avalanche](#avalanche)
+- [Keepers on Binance Smart Chain and Polygon](#bnb-and-polygon)
+- [Keepers v1.1 launch on Ethereum](#keepers-v1.1-launch-on-ethereum)
+- [Questions](#questions)
+
+
+## V1.2 - 2022-08-04
+
+Keepers Registry v1.2 launched on Ethereum, Binance Smart Chain, Polygon, Avalanche, and Fantom
+
+- **Automatic upkeep registration approval**: All upkeeps on supported mainnets are now automatically approved.
+
+- **Programmatic control**: With automatic approval, you can now dynamically create, manage, and fund upkeeps from within your dApps and even have an upkeep fund itself. Learn more [here](../register-upkeep/#register-an-upkeep-using-your-own-deployed-contract).
+
+- **Advanced turn-taking algorithm**: Our turn taking algorithm now supports upkeeps that require high-frequency execution.
+
+- **Durable ID and user-triggered migration**: All upkeeps created in versions v1.2 and later will have durable IDs. V1.2 also supports user-triggered migration to future registry versions to make it easier to migrate to a new Keepers Registry and benefit from new features. Future migrations can still retain the existing ID. The ID is now a hash in format of a 77 digit integer.
+
+- **Configurable upkeeps**: You can now edit the gas limit of your upkeep to easily customize your upkeep to fit your needs without having to create a new upkeep.
+
+- **Off-chain compute improvements**: The off-chain compute sequence is improved for higher-fidelity representation of the gas and logic before transactions are submitted on-chain. This helps to reduce reverts and reduce fees.
+
+- **Minimum spend requirement**: As part of the mission to continuously enhance the security of the Chainlink Network for all participants, a minimum spend requirement of 0.1 LINK is being introduced to discourage network spam. If a canceled upkeep does not meet the minimum spend requirement, 0.1 LINK is reserved for node operators. If more than the minimum amount is spent on an upkeep, the full remaining balance on the upkeep is withdrawable when the upkeep is canceled.
+
+### Manually migrating upkeeps from V1.1 to V1.2
+
+If your upkeep ID has 77 digits, it is already migrated to V1.2 and no further action is required. If your upkeep ID has less than 4 digits, your upkeep is on the v1.1 registry. To migrate your upkeep from Keepers v1.1 to Keepers v1.2, you can cancel it in the Keepers App, and register an exact copy of the upkeep in the Keepers App. While you can see upkeeps from both v1.1 and v1.2 in the [Keepers App](https://keepers.chain.link), all new upkeeps in the Keepers App will be automatically created on Keepers v1.2.
+
+## Underfunded upkeep email notifications - 2022-07-21
+
+You will now receive notifications to the email address you register in your upkeep when your upkeep is underfunded. We are limiting notifications on the same upkeep to once per week.
+
+## Keepers on Fantom - 2022-06-29
+
+Chainlink Keepers is live on the Fantom Network, [Mainnet](https://keepers.chain.link/fantom) and [Testnet](https://keepers.chain.link/fantom-testnet).
+
+## Keepers on Avalanche - 2022-06-09
+
+Chainlink Keepers is live on the Avalanche Network, [Mainnet](https://keepers.chain.link/avalanche) and [Testnet](https://keepers.chain.link/fuji).
+
+## Keepers on Ethereum Rinkeby - 2022-02-01
+
+Chainlink Keepers is live on [Ethereum Rinkeby](https://keepers.chain.link/rinkeby).
+
+## Keepers on Binance Smart Chain and Polygon - 2021-11-18
+
+Chainlink Keepers is live on the both Binance Smart Chain [Mainnet](https://keepers.chain.link/bsc) and [Testnet](https://keepers.chain.link/chapel), and Polygon [Mainnet](https://keepers.chain.link/polygon) and [Testnet](https://keepers.chain.link/mumbai).
+
+## Keepers v1.1 launch on Ethereum - 2021-08-05
+
+Chainlink Keepers officially launched on [Ethereum Mainnet](https://keepers.chain.link/mainnet) and [Ethereum Kovan](https://keepers.chain.link/kovan).
+
+## Questions
+
+If you have questions, read the [Keepers Frequently Asked Questions](../faqs/) page. You can also ask questions in the [#keepers channel](https://discord.com/channels/592041321326182401/821350860302581771) in our [Discord server](https://discord.gg/qj9qarT), or [contact us](https://forms.gle/WadxnzzjHPtta5Zd9) for assistance with registration.
