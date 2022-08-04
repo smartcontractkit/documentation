@@ -202,6 +202,9 @@ RPCGasCap = 0
 RPCTxFeeCap = 0.0
 ```
 
+> 🚧 If you are using `Nethermind` instead of `go-ethereum` you should be aware that the `gascap` flag behaves differently, resulting in errors like [this one](https://github.com/NethermindEth/nethermind/issues/4307).
+> In this case, just set `gascap` to a high number like `5000000000` or just don't set it at all, to avoid issues.
+
 ## Adjusting minimum outgoing confirmations for high throughput jobs
 
 `ethtx` tasks have a `minConfirmations` label that can be adjusted. You can get a minor performance boost if you set this label to `0`. Use this if you do not need to wait for confirmations on your `ethtx` tasks. For example, if you don't need the receipt or don’t care about failing the task if the transaction reverts on-chain, you can set `minConfirmations` to `0`.
