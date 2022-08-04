@@ -87,6 +87,10 @@ module.exports = {
               },
             ],
           },
+          {
+            title: 'Ethereum Proof-of-Stake Merge',
+            url: '/docs/ethereum-proof-of-stake-merge/',
+          },
         ],
       },
       {
@@ -277,27 +281,28 @@ module.exports = {
             url: '/docs/chainlink-keepers/introduction/',
           },
           {
-            title: 'Keepers-compatible Contracts',
-            url: '/docs/chainlink-keepers/compatible-contracts/',
+            title: 'Time-based Automation',
+            url: '/docs/chainlink-keepers/job-scheduler/',
           },
           {
-            title: 'Register an Upkeep',
+            title: 'Custom Logic Automation',
             url: '/docs/chainlink-keepers/register-upkeep/',
           },
+          {
+            title: 'Create Keepers-compatible Contracts',
+            url: '/docs/chainlink-keepers/compatible-contracts/',
+          },
+
           {
             title: 'Manage your Upkeeps',
             url: '/docs/chainlink-keepers/manage-upkeeps/',
           },
           {
-            title: 'Job Scheduler',
-            url: '/docs/chainlink-keepers/job-scheduler/',
-          },
-          {
-            title: 'Making Flexible Contracts',
+            title: 'Creating Flexible Upkeeps',
             url: '/docs/chainlink-keepers/flexible-upkeeps/',
           },
           {
-            title: 'Utility Contracts',
+            title: 'Example Contracts',
             url: '/docs/chainlink-keepers/util-overview/',
             children: [
               {
@@ -317,6 +322,10 @@ module.exports = {
           {
             title: 'Keepers Economics',
             url: '/docs/chainlink-keepers/keeper-economics/',
+          },
+          {
+            title: 'Keepers Release Notes',
+            url: '/docs/chainlink-keepers/keepers-release-notes/',
           },
           {
             title: 'FAQs',

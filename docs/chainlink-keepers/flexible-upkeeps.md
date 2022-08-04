@@ -3,14 +3,10 @@ layout: nodes.liquid
 section: ethereum
 date: Last Modified
 title: 'Making flexible, secure, and low-cost contracts'
-whatsnext: { 'Utility Contracts': '/docs/chainlink-keepers/util-overview/', 'FAQs': '/docs/chainlink-keepers/faqs/' }
+whatsnext: { 'Example Contracts': '/docs/chainlink-keepers/util-overview/', 'FAQs': '/docs/chainlink-keepers/faqs/' }
 ---
 
 In this guide, you will learn how the flexibility of [Chainlink Keepers](https://chain.link/keepers) enables important design patterns that reduce gas fees, enhance the resilience of dApps, and improve end-user experience. Smart contracts themselves cannot self-trigger their functions at arbitrary times or under arbitrary conditions. Transactions can only be initiated by another account.
-
-On August 5th, 2021, Chainlink Keepers was [announced](https://blog.chain.link/chainlink-keepers-is-now-live-on-mainnet/) as an important [hybrid smart contract](https://blog.chain.link/hybrid-smart-contracts-explained/) innovation. By using Chainlink Keepers, you don’t need to rely on centralized services or implement the infrastructure yourself to automate on-chain functions.
-
-Several DeFi projects already live on [Ethereum Mainnet](https://keepers.chain.link/mainnet), [Polygon Mainnet](https://keepers.chain.link/polygon), and [Binance Smart Chain Mainnet](https://keepers.chain.link/bsc) benefit from the decentralized and secure automation of Chainlink Keepers.
 
 Start by integrating an example contract to Chainlink Keepers that has not yet been optimized. Then, deploy a comparison contract that shows you how to properly use the flexibility of Chainlink Keepers to perform complex computations without paying high gas fees.
 
