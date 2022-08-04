@@ -2,16 +2,18 @@
 layout: nodes.liquid
 section: ethereum
 date: Last Modified
-title: "Introduction to Data Feeds"
+title: "Chainlink Data Feeds Documentation"
 permalink: "docs/using-chainlink-reference-contracts/"
-whatsnext: {"Get the Latest Price":"/docs/get-the-latest-price/", "API Reference":"/docs/price-feeds-api-reference/", "Contract Addresses":"/docs/reference-contracts/"}
+whatsnext: {
+  "Get the latest price of a Data Feed":"/docs/get-the-latest-price/",
+  "Learn more about API references for using Data Feeds":"/docs/price-feeds-api-reference/",
+  "Retrieve contract addresses to use Data Feeds":"/docs/reference-contracts/"
+}
 metadata:
   title: "Introduction to Data Feeds"
   description: "Add data to your smart contracts and applications. Chainlink data feeds include BTC/USD, BTC/ETH, ETH/USD and more!"
 ---
 ![Chainlink Abstract Banner](/files/2306b8b-Decentralized_Oracles_V3.png)
-
-## Connect your contracts to the outside world
 
 Chainlink Data Feeds are the quickest way to connect your smart contracts to the real-world data such as asset prices. One use for data feeds is to retrieve the latest pricing data of an asset in a single call and use that data either on-chain in a smart contract or off-chain in another application of your choice.
 
@@ -19,11 +21,19 @@ If you already have a project started and would like to integrate Chainlink, you
 
 See the [Data Feeds Contract Addresses](/docs/reference-contracts/) page for a list of networks and proxy addresses.  
 
-For important updates regarding the use of Chainlink Price Feeds, users should join the official Chainlink Discord and subscribe to the data-feeds-user-notifications channel: https://discord.gg/Dqy5N9UbsR
+**Topics**
+- [Retrieve the latest asset prices](#retrieve-the-latest-asset-prices) 
+- [Components of a data feed](#components-of-a-data-feed)
+- [Reading proxy and aggregator Configurations](#reading-proxy-and-aggregator-configurations)
+- [Components of an aggregator](#components-of-an-aggregator)
+- [Updates to proxy and aggregator contracts](#updates-to-proxy-and-aggregator-contracts)
+- [Monitoring data feeds](#monitoring-data-feeds)
+  - [Check the latest answer against reasonable limits](#check-the-latest-answer-against-reasonable-limits)
+  - [Check the timestamp of the latest answer](#check-the-timestamp-of-the-latest-answer)
 
 ## Retrieve the latest asset prices
 
-Often, smart contracts need to act in real-time on data such as prices of assets. This is especially true in [DeFi](https://defi.chain.link/).
+Smart contracts often act in real-time on data such as prices of assets. This is especially true in [DeFi](https://defi.chain.link/).
 
 For example, [Synthetix](https://www.synthetix.io/) uses Data Feeds to determine prices on their derivatives platform. Lending and borrowing platforms like [AAVE](https://aave.com/) use Data Feeds to ensure the total value of the collateral.
 
@@ -71,7 +81,7 @@ If you [view the multisig contract](https://etherscan.io/address/0x21f73d42eb58b
 
 The multisig-coordinated upgradability of Chainlink Data Feeds involves time-tested processes that balance collusion-resistance with the flexibility required to implement improvements and swiftly react to external conditions. The approach taken to upgradability will continue to evolve over time to meet user requirements.
 
-## Monitoring Data Feeds
+## Monitoring data feeds
 
 When you build applications and protocols that depend on data feeds, include monitoring and safeguards to protect against the negative impact of extreme market events, possible malicious activity on third-party venues or contracts, potential delays, and outages.
 
