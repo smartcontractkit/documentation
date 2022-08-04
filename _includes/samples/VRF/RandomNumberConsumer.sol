@@ -26,7 +26,7 @@ contract RandomNumberConsumer is VRFConsumerBase {
      * Network: Goerli
      * Chainlink VRF Coordinator address: 0x2Ca8E0C643bDe4C2E08ab1fA0da3401AdAD7734D
      * LINK token address: 0x326C977E6efc84E512bB9C30f76E30c160eD06FB
-     * Key Hash: 0x2ed0feb3e7fd2022120aa84fab1945545a9f2ffc9076fd6156fa96eaff4c1311
+     * Key Hash: 0x79d3d8832d904592c0bf9818b621522c988bb8b0c05cdc3b15aea1b6e8db0c15
      */
     constructor()
         VRFConsumerBase(
