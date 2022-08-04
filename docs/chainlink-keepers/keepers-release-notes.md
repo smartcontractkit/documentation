@@ -14,8 +14,8 @@ whatsnext:
 
 **Chainlink Keepers release notes:**
 
-- [V1.2](#2022-08-04---v12)
-  - [Manually migrating upkeeps from V1.1 to V1.2](#manually-migrating-upkeeps-from-v11-to-v12)
+- [v1.2 release](#2022-08-04---v12-release)
+  - [Manually migrating upkeeps from v1.1 to v1.2](#manually-migrating-upkeeps-from-v11-to-v12)
 - [Underfunded upkeep email notifications](#2022-07-21---underfunded-upkeep-notifications)
 - [Keepers on Fantom](#2022-06-29---keepers-on-fantom)
 - [Keepers on Avalanche](#2022-06-09---keepers-on-avalanche)
@@ -25,7 +25,7 @@ whatsnext:
 - [Questions](#questions)
 
 
-## 2022-08-04 - V1.2
+## 2022-08-04 - v1.2 Release
 
 Keepers Registry v1.2 launched on Ethereum, Binance Smart Chain, Polygon, Avalanche, and Fantom
 
@@ -35,7 +35,7 @@ Keepers Registry v1.2 launched on Ethereum, Binance Smart Chain, Polygon, Avalan
 
 - **Advanced turn-taking algorithm**: Our turn taking algorithm now supports upkeeps that require high-frequency execution.
 
-- **Durable ID and user-triggered migration**: All upkeeps created in versions v1.2 and later will have durable IDs. V1.2 also supports user-triggered migration to future registry versions to make it easier to migrate to a new Keepers Registry and benefit from new features. Future migrations can still retain the existing ID. The ID is now a hash in format of a 77 digit integer.
+- **Durable ID and user-triggered migration**: All upkeeps created in versions v1.2 and later will have durable IDs. v1.2 also supports user-triggered migration to future registry versions to make it easier to migrate to a new Keepers Registry and benefit from new features. Future migrations can still retain the existing ID. The ID is now a hash in format of a 77 digit integer.
 
 - **Configurable upkeeps**: You can now edit the gas limit of your upkeep to easily customize your upkeep to fit your needs without having to create a new upkeep.
 
@@ -43,9 +43,9 @@ Keepers Registry v1.2 launched on Ethereum, Binance Smart Chain, Polygon, Avalan
 
 - **Minimum spend requirement**: As part of the mission to continuously enhance the security of the Chainlink Network for all participants, a minimum spend requirement of 0.1 LINK is being introduced to discourage network spam. If a canceled upkeep does not meet the minimum spend requirement, 0.1 LINK is reserved for node operators. If more than the minimum amount is spent on an upkeep, the full remaining balance on the upkeep is withdrawable when the upkeep is canceled.
 
-### Manually migrating upkeeps from V1.1 to V1.2
+### Manually migrating upkeeps from v1.1 to v1.2
 
-If your upkeep ID has 77 digits, it is already migrated to V1.2 and no further action is required. If your upkeep ID has less than 4 digits, your upkeep is on the v1.1 registry. To migrate your upkeep from Keepers v1.1 to Keepers v1.2, you can cancel it in the Keepers App, and register an exact copy of the upkeep in the Keepers App. While you can see upkeeps from both v1.1 and v1.2 in the [Keepers App](https://keepers.chain.link), all new upkeeps in the Keepers App will be automatically created on Keepers v1.2.
+If your upkeep ID has 77 digits, it is already migrated to v1.2 and no further action is required. If your upkeep ID has less than 4 digits, your upkeep is on the v1.1 registry. To migrate your upkeep from Keepers v1.1 to Keepers v1.2, you can cancel it in the Keepers App, and register an exact copy of the upkeep in the Keepers App. While you can see upkeeps from both v1.1 and v1.2 in the [Keepers App](https://keepers.chain.link), all new upkeeps in the Keepers App will be automatically created on Keepers v1.2.
 
 ## 2022-07-21 - Underfunded upkeep notifications
 
