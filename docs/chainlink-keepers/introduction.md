@@ -11,7 +11,7 @@ whatsnext:
 ---
 ![Chainlink Keeper Network Banner](/images/contract-devs/generic-banner.png)
 
-**Chainlink Keepers** enables conditional execution of your smart contracts functions through a hyper-reliable and decentralized automation platform that uses the same external network of node operators that secures $ billions in value. Building on Chainlink Keepers will help you get to market faster so you don't have to deal with the setup cost, ongoing maintenance, and risks associated with a centralized automation stack. To take full advantage of the Keepers automation infrastructure, read all of the documentation to understand the features of Chainlink Keepers.
+**Chainlink Keepers** enables conditional execution of your smart contracts functions through a hyper-reliable and decentralized automation platform that uses the same external network of node operators that secures billions in value. Building on Chainlink Keepers will help you get to market faster so you don't have to deal with the setup cost, ongoing maintenance, and risks associated with a centralized automation stack. To take full advantage of the Keepers automation infrastructure, read all of the documentation to understand the features of Chainlink Keepers.
 
 To learn more about how the Chainlink Keepers Network automates your smart contracts, read the [Chainlink Keepers Architecture](../overview) page.
 
