@@ -2,7 +2,7 @@
 layout: nodes.liquid
 section: ethereum
 date: Last Modified
-title: 'Chainlink Keepers Frequently Asked Questions'
+title: 'Frequently Asked Questions'
 ---
 
 ## Will Chainlink Keepers work for my use case?
@@ -23,7 +23,7 @@ See the [Keepers Economics](../keeper-economics) page to learn more about the co
 
 ## How do I determine the Gas Limit for my Upkeep?
 
-The **Gas Limit** specified during Upkeep Registration is the maximum amount of gas that will be used to execute your function on-chain. We simulate `performUpkeep` during `checkUpkeep` and if the gas exceeds this limit the function will not execute on-chain. One method to determine your Upkeep's Gas Limit is to simulate the `performUpkeep` function and add enough overhead to take into account increases that might happen due to changes in `performData` or on-chain data.
+The **Gas Limit** specified during Upkeep Registration is the maximum amount of gas that will be used to execute your function on-chain. We simulate `performUpkeep` and if the gas exceeds this limit the function will not execute on-chain. One method to determine your Upkeep's Gas Limit is to simulate the `performUpkeep` function and add enough overhead to take into account increases that might happen due to changes in `performData` or on-chain data.
 
 
 ## What is the maximum Gas that my `checkUpkeep` can use?

@@ -11,35 +11,41 @@ whatsnext:
 
 ## Overview
 
-Chainlink Keepers allow smart contracts to outsource regular maintenance tasks in a trust minimized and decentralized manner. The network aims to provide a protocol for incentivization of execution and governance of execution within the Keeper ecosystem.
+Chainlink Keepers enable you to execute smart contract functions based on conditions that you specify without having to create and maintain your own centralized stack. Chainlink Keepers is highly reliable and decentralized, supported by an industry leading team, and enables developers to deploy applications faster.
 
 There are three main actors in the ecosystem:
 
-- **Upkeeps**: These are the maintenance tasks that smart contracts need external entities to service for them. These tasks are just functions on a smart contract and these contracts should be [Keepers-compatible](../compatible-contracts/).
-- **Keepers registry**: The contract through which anyone can [register](../register-upkeep/), and manage, their **Upkeeps**.
-- **Keepers**: Nodes in the Keepers Network that service registered and funded Upkeeps in the Keepers registry.
+- **Upkeeps**: These are the jobs or tasks that you execute on-chain. For example, you can call a smart contract function if a specific set of conditions are met.
+- **Keepers registry**: The contract that you use to [register](../register-upkeep/) and manage **upkeeps**.
+- **Keepers**: Nodes in the Keepers Network that service registered and funded upkeeps in the Keepers registry. Keepers use the same Node Operators as Chainlink Data Feeds.
 
-The diagram below describes the architecture of the Keeper network. It is responsible for governing the actors on the network and compensating Keepers for performing successful Upkeeps. Clients can register for Upkeep and node operators can register as Keepers.
+The following diagram describes the architecture of the Keeper network. The Chainlink Keepers Registry governs the actors on the network and compensates Keepers for performing successful upkeeps. Developers can register their Upkeeps, and Node Operators can register as Keepers.
 
 ![keeper-overview](/images/contract-devs/keeper/keeper-overview.png)
 
 ## Keeper Contracts
 
-There are several contracts to be aware of. You can find them in the [Chainlink repository](https://github.com/smartcontractkit/chainlink/tree/develop/contracts/src/v0.8). For details on how to use them see the [Keepers-compatible Contracts](../compatible-contracts/) page.
+Keepers use these contracts. You can find them in the [Chainlink repository](https://github.com/smartcontractkit/chainlink/tree/develop/contracts/src/v0.8). For details about how to use them, see the [Keepers-compatible Contracts](../compatible-contracts/) page.
 
 + `KeeperCompatible.sol`[(link)](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/KeeperCompatible.sol): Imports the following contracts:
   + `KeeperBase.sol`[(link)](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/KeeperBase.sol): Enables the use of the `cannotExecute` modifier. Import this contract if you need for this modifier. See the [`checkUpkeep` function](/docs/chainlink-keepers/compatible-contracts#checkupkeep-function) for details.
   + `KeeperCompatibleInterface.sol`[(link)](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/interfaces/KeeperCompatibleInterface.sol): The interface to be implemented in order to make your contract Keepers-compatible. Import this contract for type safety.
-+ `KeeperRegistry.sol`[(link)](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/KeeperRegistry.sol): The registry contract that tracks all registered Upkeeps and the Keepers that can perform them.
-+ `UpkeepRegistrationRequests.sol`[(link)](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/UpkeepRegistrationRequests.sol): The registration contract that allows users to register and configure their Upkeep with the associated `KeeperRegistry` contract.
++ `KeeperRegistry.sol`[(link)](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/KeeperRegistry.sol): The registry contract that tracks all registered Upkeeps and the Keepers that can perform them.
++ `KeeperRegistrar.sol`[(link)](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/KeeperRegistrar.sol): The Registrar contract coverns the registration of new Upkeeps on the associated `KeeperRegistry` contract. Users who want to register Upkeeps by directly calling the deployed contract have to call the Transfer-and-Call function on the respective ERC-677 LINK contract configured on the Registrar and ensure they pass the correct encoded function call and inputs. 
 
 ## How it works
 
-Keepers take responsibility for Upkeeps in turns. Each turn is counted in blocks. See the [configuration](../supported-networks/#configurations) section to find the current block count per turn for your network. The registered Upkeeps are broken into buckets based on the number of Keepers on the network. At the end of each turn, the buckets rotate from one Keeper to the next. Even if a Keeper goes down, we have built-in redundancy and your Upkeep will be performed by the next Keeper in line.
+Keepers follow a turn-taking algorithm to service upkeeps. A turn is a number of blocks and you can find the block count per turn for your network in the [configuration](../supported-networks/#configurations) section. During a turn a Upkeeps on the registry are randomly split, ordered into buckets, and assigned to a keeper to service them. Even if a Keeper goes down, the network has built-in redundancy and your Upkeep will be performed by the next keeper in line.
 
-During every block the Keeper will check if the Upkeep is eligible using off-chain compute (a simulation), and then broadcast them on-chain when eligible.
+During every block, the keeper reviews all of the upkeeps in its bucket to determine which upkeeps are eligible. This check is done off-chain using a geth simulation. The keeper checks both the `checkUpkeep` and `performUpkeep` conditions independently using simulation. If both are true (eligible), and the upkeep is funded, the keeper proceeds to execute the transaction on-chain.
 
-Once a Keeper has performed an Upkeep, it cannot do so again until another Keeper on the network has subsequently performed the same Upkeep. This protects against a faulty or malicious Keeper from taking repeated action on a given Upkeep.
+While only one Keeper monitors an upkeep at any point during a turn, an upkeep can have multiple on-chain transaction executions per turn. This is accomplished with a buddy-system. After a transaction is confirmed, the next keeper in the line monitors the upkeep. After a new transaction is confirmed, the previous keeper steps in again to monitor the upkeep until the end of the turn or until another transaction confirmation is complete. This creates a system that is secure and highly available. If a node becomes faulty and executes a transaction that is not eligible, the next node does not execute a transaction, which breaks the process.
+
+Keepers use the same transaction manager mechanism built and used by Chainlink Data Feeds. This creates a hyper-reliable automation service that can execute and confirm transactions even during intense gas spikes or on chains with significant reorgs. This mechanism has been in use in Chainlink Labs for multiple years, is battle hardened, and the team continuously improves on it.
+
+## Internal monitoring
+
+Internally, Chainlink Keepers also uses its own monitoring and alerting mechanisms to maintain a health network and ensure developers get the reliability that they expect.
 
 ## Supported Networks and Cost
 
