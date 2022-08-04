@@ -59,7 +59,7 @@ Chainlink Keepers is live on the Fantom Network, [Mainnet](https://keepers.chain
 
 Chainlink Keepers is live on the Avalanche Network, [Mainnet](https://keepers.chain.link/avalanche) and [Testnet](https://keepers.chain.link/fuji).
 
-## 2022-02-01 - Keepers on Ethereum Rinkeby
+## 2022-03-01 - Keepers on Ethereum Rinkeby
 
 Chainlink Keepers is live on [Ethereum Rinkeby](https://keepers.chain.link/rinkeby).
 
