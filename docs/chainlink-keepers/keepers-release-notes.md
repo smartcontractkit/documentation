@@ -12,17 +12,16 @@ whatsnext:
 ![Chainlink Keeper Network Banner](/images/contract-devs/generic-banner.png)
 
 
-**Chainlink Keepers** release notes
+**Chainlink Keepers release notes:**
 
-**Table of Contents**
-
-- [V1.2](#v1.2)
-  - [Manually migrating upkeeps from V1.1 to V1.2](#manually-migrating-upkeeps-from-v1.1-to-v1.2)
-- [Underfunded upkeep email notifications](#underfunded-upkeep-email-notifications)
-- [Keepers on Fantom](#fantom)
-- [Keepers on Avalanche](#avalanche)
-- [Keepers on Binance Smart Chain and Polygon](#bnb-and-polygon)
-- [Keepers v1.1 launch on Ethereum](#keepers-v1.1-launch-on-ethereum)
+- [V1.2](#v12---2022-08-04)
+  - [Manually migrating upkeeps from V1.1 to V1.2](#manually-migrating-upkeeps-from-v11-to-v12)
+- [Underfunded upkeep email notifications](#underfunded-upkeep-notifications---2022-07-21)
+- [Keepers on Fantom](#keepers-on-fantom---2022-06-29)
+- [Keepers on Avalanche](#keepers-on-avalanche---2022-06-09)
+- [Keepers on Ethereum Rinkeby](#keepers-on-ethereum-rinkeby---2022-02-01)
+- [Keepers on Binance Smart Chain and Polygon](#keepers-on-binance-smart-chain-and-polygon---2021-11-18)
+- [Keepers v1.1 launch on Ethereum](#keepers-v11-launch-on-ethereum---2021-08-05)
 - [Questions](#questions)
 
 
@@ -48,7 +47,7 @@ Keepers Registry v1.2 launched on Ethereum, Binance Smart Chain, Polygon, Avalan
 
 If your upkeep ID has 77 digits, it is already migrated to V1.2 and no further action is required. If your upkeep ID has less than 4 digits, your upkeep is on the v1.1 registry. To migrate your upkeep from Keepers v1.1 to Keepers v1.2, you can cancel it in the Keepers App, and register an exact copy of the upkeep in the Keepers App. While you can see upkeeps from both v1.1 and v1.2 in the [Keepers App](https://keepers.chain.link), all new upkeeps in the Keepers App will be automatically created on Keepers v1.2.
 
-## Underfunded upkeep email notifications - 2022-07-21
+## Underfunded upkeep notifications - 2022-07-21
 
 You will now receive notifications to the email address you register in your upkeep when your upkeep is underfunded. We are limiting notifications on the same upkeep to once per week.
 
