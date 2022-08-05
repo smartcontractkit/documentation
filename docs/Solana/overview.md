@@ -19,7 +19,7 @@ Solana programs are stateless, so you don't always need to deploy your program t
 
 To learn how to mitigate risk to your applications, read the [Selecting Quality Data Feeds](/docs/selecting-data-feeds/) page.
 
-## Table of Contents
+**Topics**
 
 + [Chainlink products and Solana clusters](#chainlink-products-and-solana-clusters)
 + [Languages, tools, and frameworks](#languages-tools-and-frameworks)

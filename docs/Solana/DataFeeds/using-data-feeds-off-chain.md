@@ -19,7 +19,7 @@ To get the full list of Chainlink Data Feeds on Solana, see the [Solana Feeds](/
 
 {% include 'data-quality.md' %}
 
-**Table of contents:**
+**Topics**
 
 - [The Chainlink Data Feeds Store Program](#the-chainlink-data-feeds-store-program)
 - [Adding data feeds to an existing off-chain project](#adding-data-feeds-to-an-existing-off-chain-project)

@@ -16,7 +16,7 @@ Use custom logic to allow Keepers to determine when to execute your smart contra
 
 Learn how to make smart contracts **Keepers-compatible** with the `KeeperCompatibleInterface` and its functions.
 
-**Table of Contents**
+**Topics**
 + [Example Contract](#example-contract)
 + [Functions](#functions)
   + [`checkUpkeep` function](#checkupkeep-function)

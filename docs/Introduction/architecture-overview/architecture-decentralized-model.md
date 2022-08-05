@@ -16,7 +16,7 @@ metadata:
 
 This page describes how data aggregation is applied to produce Chainlink Data Feeds and provides more insight as to how price feeds are updated.
 
-**Table of Contents**
+**Topics**
 
 - [Data Aggregation](#data-aggregation)
 - [Shared Data Resource](#shared-data-resource)

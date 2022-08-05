@@ -17,7 +17,7 @@ The Chainlink Development Relations team maintains several testnet oracles that 
 >
 > To retrieve the link token address or get faucet details for your testnet of choice, see the [LINK Token Contracts](/docs/link-token-contracts/) page.
 
-**Table of Contents**
+**Topics**
 
 - [Operator contracts](#operator-contracts)
 - [Jobs](#jobs)

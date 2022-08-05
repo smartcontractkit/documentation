@@ -27,7 +27,7 @@ This series of guides explains how to make HTTP GET requests to external APIs fr
 
 {% include 'sections/any-api-common-prereq.md' %}
 
-**Table of Contents**
+**Topics**
 
 - [Examples](#examples)
   - [Single Word Response](#single-word-response)

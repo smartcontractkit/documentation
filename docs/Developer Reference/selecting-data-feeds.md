@@ -9,7 +9,7 @@ excerpt: "Learn how to assess data feeds that you use in your smart contracts."
 
 When you design your applications, consider the quality of the data that you use in your smart contracts. Ultimately you are responsible for identifying and assessing the accuracy, availability, and quality of data that you choose to consume via the Chainlink Network. Note that all feeds contain some inherent risk. Read the [Risk Mitigation](#risk-mitigation) and [Evaluating Data Sources](#evaluating-data-sources-and-risks) sections when making design decisions. Chainlink lists decentralized data feeds in the documentation to help developers build new applications integrated with data.
 
-## Table of Contents
+**Topics**
 
 + [Data Feed Categories](#data-feed-categories)
 + [Risk Mitigation](#risk-mitigation)

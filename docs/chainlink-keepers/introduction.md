@@ -15,7 +15,7 @@ whatsnext:
 
 To learn more about how the Chainlink Keepers Network automates your smart contracts, read the [Chainlink Keepers Architecture](../overview) page.
 
-**Table of Contents**
+**Topics**
 
 + [Select a Trigger](#select-a-trigger)
   + [Time-based Trigger](#time-based-trigger)
