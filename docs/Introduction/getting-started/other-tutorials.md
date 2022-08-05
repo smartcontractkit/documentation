@@ -8,7 +8,7 @@ permalink: "docs/other-tutorials/"
 
 Welcome to the Resources page. This is a list of links and pages that you might need to help you throughout your learning journey. If you're new to Chainlink, start with the [Getting Started](/docs/conceptual-overview/) guide to better understand the products and services Chainlink offers. This page contains more resources, inspiration, and outreach information to further your learning.
 
-**Table of Contents**
+**Topics**
 
 + [Smart Contract Learning Materials](#smart-contract-learning-materials)
   + [Video Tutorials](#video-tutorials)

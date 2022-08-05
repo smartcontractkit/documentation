@@ -27,7 +27,7 @@ metadata:
 
 In this guide, you will learn how to request data from a public API in a smart contract. This includes understanding what Tasks and External adapters are and how Oracle Jobs use them. You will also learn how to find the Oracle Jobs and Tasks for your contract and how to request data from an Oracle Job.
 
-**Table of Contents**
+**Topics**
 
 - [Overview](#overview)
 - [1. How does the request and receive cycle work for API calls?](#1-how-does-the-request-and-receive-cycle-work-for-api-calls)

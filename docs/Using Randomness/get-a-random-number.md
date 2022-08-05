@@ -15,7 +15,7 @@ metadata:
 
 This guide explains how to get random values using a simple contract to request and receive random values from Chainlink VRF v2. For more advanced examples with programmatic subscription configuration, see the [Example Contracts](/docs/chainlink-vrf/example-contracts/) page. To explore more applications of VRF, refer to our [blog](https://blog.chain.link/).
 
-**Table of contents**
+**Topics**
 
 + [Requirements](#requirements)
 + [Create and fund a subscription](#create-and-fund-a-subscription)

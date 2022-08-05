@@ -16,7 +16,7 @@ LINK tokens are used to pay node operators for retrieving data for smart contrac
 
 The LINK token is an ERC677 token that inherits functionality from the ERC20 token standard and allows token transfers to contain a data payload. Read more about the [ERC677 transferAndCall token standard](https://github.com/ethereum/EIPs/issues/677).
 
-**Table of Contents**
+**Topics**
 
 - [Ethereum](#ethereum)
 - [BNB Chain](#bnb-chain)

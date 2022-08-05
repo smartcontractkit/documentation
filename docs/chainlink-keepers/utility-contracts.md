@@ -15,7 +15,7 @@ After deploying the contract, developers can go to [keepers.chain.link](https:/
 
 To find other example contracts, see the [Example Keepers Contracts](/docs/chainlink-keepers/util-overview/) page.
 
-**Table of Contents**
+**Topics**
 
 + [`EthBalanceMonitor` Properties](#ethbalancemonitor-properties)
 + [Functions](#functions)

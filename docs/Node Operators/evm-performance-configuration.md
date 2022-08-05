@@ -19,7 +19,7 @@ The most basic Chainlink node deployment uses the default configuration on only 
 >
 > Ethereum clients have bugs. Much work is done on the Chainlink node software to mitigate bugs in various different RPC implementations. This guide helps you understand how to mitigate and work around these bugs.
 
-**Table of Contents**
+**Topics**
 
 - [Using multiple nodes](#using-multiple-nodes)
 - [Automatic load balancing and failover](#automatic-load-balancing-and-failover)

@@ -36,7 +36,7 @@ metadata:
 *Example:*
 In this tutorial, you will write and deploy a Chainlink smart contract to an Ethereum testnet.
 
-**Table of Contents**
+**Topics**
 
 *Table of contents are generated automatically using vscode markdown: https://github.com/yzhang-gh/vscode-markdown make sure settings are changed so that only header1 are in TOC.*
 

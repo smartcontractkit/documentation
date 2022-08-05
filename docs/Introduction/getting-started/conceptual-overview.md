@@ -24,7 +24,7 @@ To get your hands on the code right away, you can skip this overview:
   https://www.youtube.com/watch?v=rFXSEEQG9YE
 </p>
 
-## Table of Contents
+**Topics**
 
 + [What is a smart contract? What is a hybrid smart contract?](#what-is-a-smart-contract-what-is-a-hybrid-smart-contract)
 + [What language is a smart contract written in?](#what-language-is-a-smart-contract-written-in)

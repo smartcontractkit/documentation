@@ -10,7 +10,7 @@ In this guide, you will learn how the flexibility of [Chainlink Keepers](https:/
 
 Start by integrating an example contract to Chainlink Keepers that has not yet been optimized. Then, deploy a comparison contract that shows you how to properly use the flexibility of Chainlink Keepers to perform complex computations without paying high gas fees.
 
-**Table of Contents**
+**Topics**
 
 - [Prerequisites](#prerequisites)
 - [Problem: On-chain computation leads to high gas fees](#problem-on-chain-computation-leads-to-high-gas-fees)

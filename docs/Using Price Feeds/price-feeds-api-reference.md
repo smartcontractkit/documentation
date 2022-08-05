@@ -10,7 +10,7 @@ metadata:
 
 When you use data feeds, retrieve the feeds through the `AggregatorV3Interface` and the proxy address. Optionally, you can call variables and functions in the `AccessControlledOffchainAggregator` contract to get information about the aggregator behind the proxy.
 
-**Table of Contents**
+**Topics**
 
 + [AggregatorV3Interface contract](#aggregatorv3interface)
 + [AccessControlledOffchainAggregator contract](#accesscontrolledoffchainaggregator)

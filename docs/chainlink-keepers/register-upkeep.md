@@ -13,7 +13,7 @@ whatsnext:
 
 This guide explains how to register a Custom logic Upkeep that uses a [Keepers-compatible contract](../compatible-contracts). You can either register it from the Keepers App, or from within a contract that you have deployed.
 
-**Table of Contents**
+**Topics**
 + [Register an Upkeep using the Keepers App](#register-an-upkeep-using-the-keepers-app)
 + [Register an Upkeep using your own deployed contract](#register-an-upkeep-using-your-own-deployed-contract)
 
