@@ -5,13 +5,10 @@ pragma solidity 0.8.6;
 // ./interfaces/LinkTokenInterface.sol
 
 /**
- * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
- * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
- * DO NOT USE THIS CODE IN PRODUCTION.
- */
-
-import {KeeperRegistryInterface, State, Config} from "@chainlink/contracts/src/v0.8/interfaces/KeeperRegistryInterface.sol";
-import {LinkTokenInterface} from "@chainlink/contracts/src/v0.8/interfaces/LinkTokenInterface.sol";
+* THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
+* THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
+* DO NOT USE THIS CODE IN PRODUCTION.
+*/
 
 interface KeeperRegistrarInterface {
   function register(
@@ -32,8 +29,6 @@ contract UpkeepIDConsumerExample {
   address public immutable registrar;
   KeeperRegistryInterface public immutable i_registry;
   bytes4 registerSig = KeeperRegistrarInterface.register.selector;
-
-  bytes public bytesAre;
 
   constructor(
     LinkTokenInterface _link,
@@ -58,7 +53,6 @@ contract UpkeepIDConsumerExample {
   ) public {
     (State memory state, Config memory _c, address[] memory _k) = i_registry.getState();
     uint256 oldNonce = state.nonce;
-
     bytes memory payload = abi.encode(
       name,
       encryptedEmail,
@@ -70,7 +64,7 @@ contract UpkeepIDConsumerExample {
       source,
       sender
     );
-
+    s
     i_link.transferAndCall(registrar, amount, bytes.concat(registerSig, payload));
     (state, _c, _k) = i_registry.getState();
     uint256 newNonce = state.nonce;
