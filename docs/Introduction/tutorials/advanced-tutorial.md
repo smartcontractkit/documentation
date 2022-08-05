@@ -95,7 +95,7 @@ Let's walk through a real example, where you will retrieve 24 volumes of the [ET
 
 4. [ETH ABI Encode](/docs/jobs/task-types/eth-abi-encode/) formats the input into an integer and then converts it into Solidity's `uint256` format. Example: `0xc618a1e4`
 
-5. [ETH Tx](/docs/jobs/task-types/eth-tx/) takes the given input, places it into the data field of the transaction, signs a transaction, and broadcasts it to the network. Example: [transaction result](https://rinkeby.etherscan.io/tx/0xec0e33cce33f6dda6c7339703415ab563f7b0e08a11b65ea06473d3d01547f4f)
+5. [ETH Tx](/docs/jobs/task-types/eth-tx/) takes the given input, places it into the data field of the transaction, signs a transaction, and broadcasts it to the network. Example: [transaction result](https://goerli.etherscan.io/tx/0x5f2023b665e0ae336665ded73fafa90ef752ac33487b9240f34b82f93a77c8ca)
 
 **Note: Some tasks accept parameters to be passed to them to inform them how to run.** Example: [JSON Parse](/docs/jobs/task-types/jsonparse/) accepts a `path` parameter which informs the task where to find the data in the JSON object.
 
