@@ -2,11 +2,18 @@
 layout: nodes.liquid
 section: ethereum
 date: Last Modified
-title: "Get a Random Number"
-permalink: "docs/get-a-random-number/"
-whatsnext: {"Example Contracts":"/docs/chainlink-vrf/example-contracts/", "Security Considerations":"/docs/vrf-security-considerations/", "Best Practices":"/docs/chainlink-vrf-best-practices/", "Migrating from VRF v1 to v2":"/docs/chainlink-vrf/migration-vrf-v1-v2/" , "Contract Addresses":"/docs/vrf-contracts/"}
+title: 'Get a Random Number'
+permalink: 'docs/get-a-random-number/'
+whatsnext:
+  {
+    'Example Contracts': '/docs/chainlink-vrf/example-contracts/',
+    'Security Considerations': '/docs/vrf-security-considerations/',
+    'Best Practices': '/docs/chainlink-vrf-best-practices/',
+    'Migrating from VRF v1 to v2': '/docs/chainlink-vrf/migration-vrf-v1-v2/',
+    'Contract Addresses': '/docs/vrf-contracts/',
+  }
 metadata:
-  description: "How to generate a random number inside a smart contract using Chainlink VRF."
+  description: 'How to generate a random number inside a smart contract using Chainlink VRF.'
 ---
 
 > 📘 You are viewing the VRF v2 guide.
@@ -71,22 +78,22 @@ Build and deploy the contract on Rinkeby.
 
 1. Open the `VRFv2Consumer.sol`[(link)](https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFv2Consumer.sol) contract in Remix.
 
-    <div class="remix-callout">
-          <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFv2Consumer.sol" target="_blank" >Open in Remix</a>
-          <a href="/docs/conceptual-overview/#what-is-remix">What is Remix?</a>
-    </div>
+<div class="remix-callout">
+      <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFv2Consumer.sol" target="_blank" >Open in Remix</a>
+      <a href="/docs/conceptual-overview/#what-is-remix">What is Remix?</a>
+</div>
 
 1. On the **Compile** tab in Remix, compile the `VRFv2Consumer.sol` contract.
 
 1. Configure your deployment. On the **Deploy** tab in Remix, select the **Injected Provider Environment**, select the `VRFv2Consumer` contract from the contract list, and specify your `subscriptionId` so the constructor can set it.
 
-    ![Example showing the deploy button with the subscriptionID field filled in Remix](/images/vrf/deployWithSubscriptionId.png)
+   ![Example showing the deploy button with the subscriptionID field filled in Remix](/images/vrf/deployWithSubscriptionId.png)
 
 1. Click the **Deploy** button to deploy your contract on-chain. MetaMask opens and asks you to confirm the transaction.
 
 1. After you deploy your contract, copy the address from the **Deployed Contracts** list in Remix. Before you can request randomness from VRF v2, you must add this address as an approved consumer on your subscription account.
 
-    ![Example showing the contract address listed under the Contracts list in Remix](/images/vrf/getContractAddress.png)
+   ![Example showing the contract address listed under the Contracts list in Remix](/images/vrf/getContractAddress.png)
 
 1. In the [Subscription Manager](https://vrf.chain.link/), click the ID of your new subscription under the **My Subscriptions** list. The subscription details page opens.
 
@@ -104,7 +111,7 @@ The deployed contract requests random values from Chainlink VRF, receives those 
 
 1. Click the `requestRandomWords()` function to send the request for random values to Chainlink VRF. MetaMask opens and asks you to confirm the transaction. After you approve the transaction, Chainlink VRF processes your request. Chainlink VRF fulfills the request and returns the random values to your contract in a callback to the `fulfillRandomWords()` function.
 
-    Depending on current testnet conditions, it might take a few minutes for the callback to return the requested random values to your contract. You can see a list of pending requests for your subscription ID in the [Subscription Manager](https://vrf.chain.link/).
+   Depending on current testnet conditions, it might take a few minutes for the callback to return the requested random values to your contract. You can see a list of pending requests for your subscription ID in the [Subscription Manager](https://vrf.chain.link/).
 
 1. After the oracle returns the random values to your contract, the `s_randomWords` variable stores an array with all of the requested random values. Specify the index of the array that you want to display and click `s_randomWords` to print the value. Because this example requests two random values, check the value at index `0` and then check the value at index `1`.
 
@@ -164,8 +171,5 @@ After you are done with this contract and the subscription, you can retrieve the
 
 ## Vyper Example
 
-You'd need to import the `VRFCoordinatorV2` vyper interface, [you can find it here](https://github.com/smartcontractkit/apeworx-starter-kit/blob/main/contracts/interfaces/VRFCoordinatorV2.vy). 
-
-```python
-{% include 'samples/VRF/VRFv2Consumer.vy' %}
-```
+You'd need to import the `VRFCoordinatorV2` vyper interface, you can find it  [here](https://github.com/smartcontractkit/apeworx-starter-kit/blob/main/contracts/interfaces/VRFCoordinatorV2.vy).
+You can find a `VRFConsumerV2` example [here](https://github.com/smartcontractkit/apeworx-starter-kit/blob/main/contracts/VRFConsumerV2.vy). Read the _**apeworx-starter-kit**_ [README](https://github.com/smartcontractkit/apeworx-starter-kit) to learn how to run the example.

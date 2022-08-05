@@ -157,11 +157,10 @@ You can perform complex and broad off-chain computation, then execute on-chain s
 
 ## Vyper Example
 
-> Note: For vyper, be sure the checkdata array size is correct. Vyper does not support dynamic arrays.
+> 🚧 Note on arrays:
+> Make sure the checkdata array size is correct. Vyper does not support dynamic arrays.
 
-```solidity
-{% include 'samples/Keepers/KeepersCounter.vy' %}
-```
+You can find a `KeepersConsumer` example [here](https://github.com/smartcontractkit/apeworx-starter-kit/blob/main/contracts/KeepersConsumer.vy). Read the _**apeworx-starter-kit**_ [README](https://github.com/smartcontractkit/apeworx-starter-kit) to learn how to run the example.
 
 ## Best practices
 
