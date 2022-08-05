@@ -4,6 +4,9 @@ pragma solidity 0.8.6;
 // UpkeepIDConsumerExample.sol imports functions from both ./KeeperRegistryInterface.sol and
 // ./interfaces/LinkTokenInterface.sol
 
+import {KeeperRegistryInterface, State, Config} from "@chainlink/contracts/src/v0.8/interfaces/KeeperRegistryInterface.sol";
+import {LinkTokenInterface} from "@chainlink/contracts/src/v0.8/interfaces/LinkTokenInterface.sol";
+
 /**
 * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
 * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
