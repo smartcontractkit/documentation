@@ -56,7 +56,7 @@ Fetch the value of _image_. To consume an API, your contract must import [Chainl
 >
 > Making a GET request will fail unless your deployed contract has enough LINK to pay for it. **Learn how to [Acquire testnet LINK](../acquire-link/) and [Fund your contract](../fund-your-contract/)**.
 
-```solidity Rinkeby
+```solidity Goerli
 {% include 'samples/APIRequests/GenericBigWord.sol' %}
 ```
 
@@ -69,10 +69,10 @@ To use this contract:
 
 1. Open the [contract in Remix](https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/GenericBigWord.sol).
 
-1. Compile and deploy the contract using the Injected Provider environment. The contract includes all the configuration variables for the _Rinkeby_ testnet. Make sure your wallet is set to use _Rinkeby_. The _constructor_ sets the following parameters:
+1. Compile and deploy the contract using the Injected Provider environment. The contract includes all the configuration variables for the _Goerli_ testnet. Make sure your wallet is set to use _Goerli_. The _constructor_ sets the following parameters:
 
-   - The Chainlink Token address for _Rinkeby_ by calling the [`setChainlinkToken`](/docs/chainlink-framework/#setchainlinktoken) function.
-   - The Oracle contract address for _Rinkeby_ by calling the [`setChainlinkOracle`](/docs/chainlink-framework/#setchainlinkoracle) function.
+   - The Chainlink Token address for _Goerli_ by calling the [`setChainlinkToken`](/docs/chainlink-framework/#setchainlinktoken) function.
+   - The Oracle contract address for _Goerli_ by calling the [`setChainlinkOracle`](/docs/chainlink-framework/#setchainlinkoracle) function.
    - The `jobId`: A specific job for the oracle node to run. In this case, the _data_ is a _bytes_ data type, so you must call a job that calls an API and returns _bytes_. We will be using a generic **_GET>bytes_** job that can be found [here](/docs/any-api-testnet-oracles/#jobs).
 
 1. Fund your contract with 0.1 LINK. To learn how to send LINK to contracts, read the [Fund Your Contracts](/docs/fund-your-contract/) page.

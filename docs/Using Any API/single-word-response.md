@@ -83,7 +83,7 @@ To consume an API with multiple responses, your contract must import [ChainlinkC
 
 Assume that a user wants to call the API above and retrieve only the 24h ETH trading volume from the response.
 
-```solidity Rinkeby
+```solidity Goerli
 {% include 'samples/APIRequests/APIConsumer.sol' %}
 ```
 
@@ -96,10 +96,10 @@ To use this contract:
 
 1. Open the [contract in Remix](https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/APIConsumer.sol).
 
-1. Compile and deploy the contract using the Injected Provider environment. The contract includes all the configuration variables for the _Rinkeby_ testnet. Make sure your wallet is set to use _Rinkeby_. The _constructor_ sets the following parameters:
+1. Compile and deploy the contract using the Injected Provider environment. The contract includes all the configuration variables for the _Goerli_ testnet. Make sure your wallet is set to use _Goerli_. The _constructor_ sets the following parameters:
 
-   - The Chainlink Token address for _Rinkeby_ by calling the [`setChainlinkToken`](/docs/chainlink-framework/#setchainlinktoken) function.
-   - The Oracle contract address for _Rinkeby_ by calling the [`setChainlinkOracle`](/docs/chainlink-framework/#setchainlinkoracle) function.
+   - The Chainlink Token address for _Goerli_ by calling the [`setChainlinkToken`](/docs/chainlink-framework/#setchainlinktoken) function.
+   - The Oracle contract address for _Goerli_ by calling the [`setChainlinkOracle`](/docs/chainlink-framework/#setchainlinkoracle) function.
    - The `jobId`: A specific job for the oracle node to run. In this case, you must call a job that is configured to call a public API, parse a number from the response and remove any decimals from it. We are going to use a generic **_GET>uint256_** job that can be found [here](/docs/any-api-testnet-oracles/#jobs).
 
 1. Fund your contract with 0.1 LINK. To learn how to send LINK to contracts, read the [Fund Your Contracts](/docs/fund-your-contract/) page.
