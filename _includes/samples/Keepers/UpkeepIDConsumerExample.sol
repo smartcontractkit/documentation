@@ -29,18 +29,20 @@ interface KeeperRegistrarInterface {
 
 contract UpkeepIDConsumerExample {
   LinkTokenInterface public immutable i_link;
-  address public immutable i_registrar;
+  address public immutable registrar;
   KeeperRegistryInterface public immutable i_registry;
-  bytes4 registerSig = bytes4(keccak256("register(string,bytes,address,uint32,address,bytes,uint96,uint8,address)"));
+  bytes4 registerSig = KeeperRegistrarInterface.register.selector;
+
+  bytes public bytesAre;
 
   constructor(
-    LinkTokenInterface link,
-    address registrar,
-    KeeperRegistryInterface registry
+    LinkTokenInterface _link,
+    address _registrar,
+    KeeperRegistryInterface _registry
   ) {
-    i_link = link;
-    i_registrar = registrar;
-    i_registry = registry;
+    i_link = _link;
+    registrar = _registrar;
+    i_registry = _registry;
   }
 
   function registerAndPredictID(
@@ -56,28 +58,25 @@ contract UpkeepIDConsumerExample {
   ) public {
     (State memory state, Config memory _c, address[] memory _k) = i_registry.getState();
     uint256 oldNonce = state.nonce;
-    i_link.transferAndCall(
-      i_registrar,
-      5 ether,
-      abi.encodeWithSelector(
-        registerSig,
-        name,
-        encryptedEmail,
-        upkeepContract,
-        gasLimit,
-        adminAddress,
-        checkData,
-        amount,
-        source,
-        sender
-      )
+
+    bytes memory payload = abi.encode(
+      name,
+      encryptedEmail,
+      upkeepContract,
+      gasLimit,
+      adminAddress,
+      checkData,
+      amount,
+      source,
+      sender
     );
+
+    i_link.transferAndCall(registrar, amount, bytes.concat(registerSig, payload));
     (state, _c, _k) = i_registry.getState();
     uint256 newNonce = state.nonce;
     if (newNonce == oldNonce + 1) {
-      // auto approve enabled
       uint256 upkeepID = uint256(
-        keccak256(abi.encodePacked(blockhash(block.number - 1), address(i_registry), oldNonce))
+        keccak256(abi.encodePacked(blockhash(block.number - 1), address(i_registry), uint32(oldNonce)))
       );
       // DEV - Use the upkeepID however you see fit
     } else {
