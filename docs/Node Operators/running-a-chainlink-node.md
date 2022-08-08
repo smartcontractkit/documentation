@@ -194,7 +194,7 @@ echo "ETH_URL=CHANGEME" >> ~/.chainlink/.env
 
 > 🚧 Running Chainlink Node on Ganache
 >
-> Ganache is a mock testnet and it doesn't work with Chainlink because of that. To use the features of the network, you need to deploy your contract on a real environment: one of the testnets or mainnets. The full list of supported environments can be found [here](../link-token-contracts/).
+> Ganache is a mock testnet. Although you can run nodes on Ganache, it is not officially supported. Most node operators should use one of the supported [testnets](/docs/link-token-contracts/) for development and testing.
 
 #### Set the Remote DATABASE_URL Config
 
