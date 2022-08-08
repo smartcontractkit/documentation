@@ -12,6 +12,48 @@ metadata:
 
 You can find a list of release notes for Chainlink nodes in the [smartcontractkit GitHub repository](https://github.com/smartcontractkit/chainlink/releases). Docker images are available in the [Chainlink Docker hub](https://hub.docker.com/r/smartcontract/chainlink/tags).
 
+## Changes in v1.7.0 nodes
+
+**[v1.7.0 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v1.7.0)**
+
+### Added
+
+- `p2pv2Bootstrappers` is added as a new optional property of OCR1 job specs. The default can still be specified with the [`P2PV2_BOOTSTRAPPERS` environment variable](/docs/configuration-variables/#p2pv2_bootstrappers).
+
+- Added official support for the [Sepolia testnet](https://sepolia.dev/) on Chainlink nodes.
+
+- Added [`hexdecode` task](/docs/jobs/task-types/hexdecode/) and the [`base64decode` task](docs/jobs/task-types/base64decode/) (pipeline).
+
+- Added support for the Besu execution client. Although Chainlink supports Besu, Besu itself has several issues that can make it unreliable. For additional context, see the following issues:
+    - [hyperledger/besu/issues/4212](https://github.com/hyperledger/besu/issues/4212)
+    - [hyperledger/besu/issues/4192](https://github.com/hyperledger/besu/issues/4192)
+    - [hyperledger/besu/issues/4114](https://github.com/hyperledger/besu/issues/4114)
+
+- Added [Multi-user and Role Based Access Control](/docs/miscellaneous/#multi-user-and-role-based-access-control-rbac) functionality. This allows the root admin CLI user and additional admin users to create and assign tiers of role-based access to new users. These new API users are able to log in to the Operator UI independently and can each have specific roles tied to their account. There are four roles: `admin`, `edit`, `run`, and `view`.
+  - User management can be configured through the use of the new admin CLI command `chainlink admin users`. Be sure to run `chainlink adamin login`. For example, a readonly user can be created with: `chainlink admin users create --email=operator-ui-read-only@test.com --role=view`.
+  - Updated documentation repo with a break down of actions to required role level
+
+- Added gas limit control for individual job specs and individual job types. The following rule of precedence is applied:
+
+    1. The task-specific parameter `gasLimit` overrides anything else when specified. For example, the `ethtx` task has a `gasLimit` parameter that overrides the other defaults for this specific task.
+    1. The job-spec attribute `gasLimit` applies only to a specific job spec.
+    1. The job-type `ETH_GAS_LIMIT_*_JOB_TYPE` limits affect any jobs of the corresponding type:
+
+    ```
+    ETH_GAS_LIMIT_OCR_JOB_TYPE    # EVM.GasEstimator.LimitOCRJobType
+    ETH_GAS_LIMIT_DR_JOB_TYPE     # EVM.GasEstimator.LimitDRJobType
+    ETH_GAS_LIMIT_VRF_JOB_TYPE    # EVM.GasEstimator.LimitVRFJobType
+    ETH_GAS_LIMIT_FM_JOB_TYPE     # EVM.GasEstimator.LimitFMJobType
+    ETH_GAS_LIMIT_KEEPER_JOB_TYPE # EVM.GasEstimator.LimitKeeperJobType
+    ```
+
+    1. The global `ETH_GAS_LIMIT_DEFAULT` (`EVM.GasEstimator.LimitDefault`) value is used only when the preceding rules are not set.
+
+### Fixed
+
+- Addressed a very rare bug where using multiple nodes with differently configured RPC tx fee caps could cause missed transactions. Ensure that your RPC nodes have no caps. For more information, see the [performance and tuning guide](https://docs.chain.link/docs/evm-performance-configuration/).
+- Improved handling of unknown transaction error types to make Chainlink more robust in certain cases on unsupported chains or RPC clients.
+
 ## Changes in v1.6.0 nodes
 
 **[v1.6.0 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v1.6.0)**
