@@ -22,7 +22,7 @@ You can find a list of release notes for Chainlink nodes in the [smartcontractki
 
 - Added official support for the [Sepolia testnet](https://sepolia.dev/) on Chainlink nodes.
 
-- Added [`hexdecode` task](/docs/jobs/task-types/hexdecode/) and the [`base64decode` task](docs/jobs/task-types/base64decode/) (pipeline).
+- Added [`hexdecode` task](/docs/jobs/task-types/hexdecode/) and the [`base64decode` task](/docs/jobs/task-types/base64decode/) (pipeline).
 
 - Added support for the Besu execution client. Although Chainlink supports Besu, Besu itself has several issues that can make it unreliable. For additional context, see the following issues:
     - [hyperledger/besu/issues/4212](https://github.com/hyperledger/besu/issues/4212)
