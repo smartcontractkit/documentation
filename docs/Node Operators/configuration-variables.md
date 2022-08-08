@@ -159,6 +159,11 @@ Your node applies configuration settings using following hierarchy:
   - [ETH_MAX_IN_FLIGHT_TRANSACTIONS](#eth_max_in_flight_transactions)
   - [ETH_MAX_QUEUED_TRANSACTIONS](#eth_max_queued_transactions)
   - [ETH_MIN_GAS_PRICE_WEI](#eth_min_gas_price_wei)
+  - [ETH_GAS_LIMIT_OCR_JOB_TYPE](#eth_gas_limit_ocr_job_type)
+  - [ETH_GAS_LIMIT_DR_JOB_TYPE](#eth_gas_limit_dr_job_type)
+  - [ETH_GAS_LIMIT_VRF_JOB_TYPE](#eth_gas_limit_vrf_job_type)
+  - [ETH_GAS_LIMIT_FM_JOB_TYPE](#eth_gas_limit_fm_job_type)
+  - [ETH_GAS_LIMIT_KEEPER_JOB_TYPE](#eth_gas_limit_keeper_job_type)
   - [ETH_NONCE_AUTO_SYNC](#eth_nonce_auto_sync)
   - [ETH_USE_FORWARDERS](#eth_use_forwarders)
 - [EVM/Ethereum Gas Price Estimation](#evmethereum-gas-price-estimation)
@@ -1257,6 +1262,36 @@ ETH_GAS_PRICE_DEFAULT=100
 ETH_GAS_BUMP_THRESHOLD=0
 GAS_ESTIMATOR_MODE="FixedPrice"
 ```
+
+### ETH_GAS_LIMIT_OCR_JOB_TYPE
+
+- Default: _none_
+
+Overrides the [default gas limit](#eth_gas_limit_default) for OCR jobs. This environment variable does not override task-specific or job-specific `gasLimit` parameters or attributes.
+
+### ETH_GAS_LIMIT_DR_JOB_TYPE
+
+- Default: _none_
+
+Overrides the [default gas limit](#eth_gas_limit_default) for direct request jobs. This environment variable does not override task-specific or job-specific `gasLimit` parameters or attributes.
+
+### ETH_GAS_LIMIT_VRF_JOB_TYPE
+
+- Default: _none_
+
+Overrides the [default gas limit](#eth_gas_limit_default) for VRF jobs. This environment variable does not override task-specific or job-specific `gasLimit` parameters or attributes.
+
+### ETH_GAS_LIMIT_FM_JOB_TYPE
+
+- Default: _none_
+
+Overrides the [default gas limit](#eth_gas_limit_default) for Flux Monitor jobs. This environment variable does not override task-specific or job-specific `gasLimit` parameters or attributes.
+
+### ETH_GAS_LIMIT_KEEPER_JOB_TYPE
+
+- Default: _none_
+
+Overrides the [default gas limit](#eth_gas_limit_default) for Keeper jobs. This environment variable does not override task-specific or job-specific `gasLimit` parameters or attributes.
 
 ### ETH_NONCE_AUTO_SYNC
 
