@@ -37,15 +37,13 @@ You can find a list of release notes for Chainlink nodes in the [smartcontractki
 
     1. The task-specific parameter `gasLimit` overrides anything else when specified. For example, the `ethtx` task has a `gasLimit` parameter that overrides the other defaults for this specific task.
     1. The job-spec attribute `gasLimit` applies only to a specific job spec.
-    1. The job-type `ETH_GAS_LIMIT_*_JOB_TYPE` limits affect any jobs of the corresponding type:
+    1. The job-type limits affect any jobs of the corresponding type. The following environment variables are available:
 
-        ```shell
-        ETH_GAS_LIMIT_OCR_JOB_TYPE    # EVM.GasEstimator.LimitOCRJobType
-        ETH_GAS_LIMIT_DR_JOB_TYPE     # EVM.GasEstimator.LimitDRJobType
-        ETH_GAS_LIMIT_VRF_JOB_TYPE    # EVM.GasEstimator.LimitVRFJobType
-        ETH_GAS_LIMIT_FM_JOB_TYPE     # EVM.GasEstimator.LimitFMJobType
-        ETH_GAS_LIMIT_KEEPER_JOB_TYPE # EVM.GasEstimator.LimitKeeperJobType
-        ```
+        - [ETH_GAS_LIMIT_OCR_JOB_TYPE](/docs/configuration-variables/#eth_gas_limit_ocr_job_type)
+        - [ETH_GAS_LIMIT_DR_JOB_TYPE](/docs/configuration-variables/#eth_gas_limit_dr_job_type)
+        - [ETH_GAS_LIMIT_VRF_JOB_TYPE](/docs/configuration-variables/#eth_gas_limit_vrf_job_type)
+        - [ETH_GAS_LIMIT_FM_JOB_TYPE](/docs/configuration-variables/#eth_gas_limit_fm_job_type)
+        - [ETH_GAS_LIMIT_KEEPER_JOB_TYPE](/docs/configuration-variables/#eth_gas_limit_keeper_job_type)
 
     1. The global `ETH_GAS_LIMIT_DEFAULT` (`EVM.GasEstimator.LimitDefault`) value is used only when the preceding rules are not set.
 

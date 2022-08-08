@@ -91,15 +91,19 @@ Once complete, you should see a message "Password updated."
 
 ## Multi-user and Role Based Access Control (RBAC)
 
-The Chainlink node has the functionality to allow the root admin CLI user (and any additional admin users created) to create and assign tiers of role based access to new users. These new API users will be able to log in to the Operator UI independently.
+Chainlink Nodes allow the root admin CLI user and any additional admin users to create and assign tiers of role-based access to new users. These new API users can able to log in to the Operator UI independently.
 
-Users have a specific role tied to their account. There are four roles: `admin`, `edit`, `run`, and `view`.
+Each user has a specific role assigned to their account. There are four roles: `admin`, `edit`, `run`, and `view`.
 
-If there are multiple users who need specific access to manage the Chainlink node instance, permissions and level of access can be set here.
+If there are multiple users who need specific access to manage the Chainlink Node instance, permissions and level of access can be set here.
 
-User management is configured through the use of the admin `chainlink admin users` command. Be sure to run `chainlink adamin login`. For example, a readonly user can be created with: `chainlink admin users create --email=operator-ui-read-only@test.com --role=view`.
+User management is configured through the use of the admin `chainlink admin users` command. Run `chainlink adamin login` before you set user roles for other accounts. For example, a read-only user can be created with the following command:
 
-Below is a table of RBAC enabled actions and required permissions for each:
+```shell
+chainlink admin users create --email=operator-ui-read-only@test.com --role=view
+```
+
+Specific actions are enabled to check role-based access before they execute. The following table lists the actions that have role-based access and the role that is required to run that action:
 
 | Action | Read | Run | Run | Admin |
 |:--- | :---: | :---: | :---: | :---: |
@@ -156,9 +160,7 @@ Below is a table of RBAC enabled actions and required permissions for each:
 | Delete user  |   |   |   | X |
 | Edit user  |   |   |   | X |
 
-
-The run command allows for minimal interaction, only enabling the ability to replay a specific block number and kick off a job run. 
-
+The run command allows for minimal interaction and only enables the ability to replay a specific block number and kick off a job run.
 
 ## Use Named Chainlink Container
 
