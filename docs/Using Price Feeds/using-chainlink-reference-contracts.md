@@ -15,7 +15,7 @@ metadata:
 ---
 ![Chainlink Abstract Banner](/files/2306b8b-Decentralized_Oracles_V3.png)
 
-Chainlink Data Feeds are the quickest way to connect your smart contracts to the real-world data such as asset prices. One use for data feeds is to retrieve the latest pricing data of an asset in a single call and use that data either on-chain in a smart contract or off-chain in another application of your choice.
+**Chainlink Data Feeds** are the quickest way to connect your smart contracts to the real-world data such as asset prices. One use for data feeds is to retrieve the latest pricing data of an asset in a single call and use that data either on-chain in a smart contract or off-chain in another application of your choice.
 
 If you already have a project started and would like to integrate Chainlink, you can [add Chainlink to your existing project](../create-a-chainlinked-project/#install-into-existing-projects) by using the [`chainlink` NPM package](https://www.npmjs.com/package/@chainlink/contracts).
 

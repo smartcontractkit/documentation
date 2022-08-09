@@ -17,20 +17,20 @@ To learn more about how the Chainlink Keepers Network automates your smart contr
 
 **Topics**
 
-+ [Select a Trigger](#select-a-trigger)
-  + [Time-based Trigger](#time-based-trigger)
-  + [Custom logic Trigger](#custom-logic-trigger)
-+ [Supported Networks and Costs](#supported-networks-and-costs)
-+ [Questions and Examples](#questions-and-examples)
++ [Select a trigger](#select-a-trigger)
+  + [Time-based trigger](#time-based-trigger)
+  + [Custom logic trigger](#custom-logic-trigger)
++ [Supported networks and costs](#supported-networks-and-costs)
++ [Questions and examples](#questions-and-examples)
 
-## Select a Trigger
+## Select a trigger
 
 Chainlink Keepers will reliably execute smart contract functions using a variety of triggers.
 
 - [Time-based trigger](#time-based-trigger): Use a [time based trigger](#time-based-trigger) if you want Keepers to execute your function according to a time schedule. We simply call it the Job Scheduler and it is a throwback to the Ethereum Alarm Clock. Your contract does not need to be [Keepers-compatible](../compatible-contracts/).
 - [Custom logic trigger](#custom-logic-trigger): Use [custom logic trigger](#custom-logic-trigger) if you want to provide custom solidity logic that Keepers will evaluate (off-chain) to determine when to execute your function on-chain. Your contract should be [Keepers-compatible](../compatible-contracts/). Custom logic examples include checking the balance on a contract, only executing limit orders when their levels are met, any one of our [coded examples](/docs/chainlink-keepers/util-overview), and many many more.
 
-### Time-based Trigger
+### Time-based trigger
 
 Before you begin, deploy the contract that you want to automate. You will also need the ABI for your contract if it has not been verified. Your contract does not have to be [Keepers-compatible](../compatible-contracts/).
 
@@ -52,7 +52,7 @@ Before you begin, deploy the contract that you want to automate. You will also n
 
 For more details on time-based automation, click [here](../job-scheduler/).
 
-### Custom logic Trigger
+### Custom logic trigger
 
 To use a custom logic trigger, you will need to make your contract [Keepers-compatible](../compatible-contracts/).
 
@@ -82,11 +82,11 @@ To use a custom logic trigger, you will need to make your contract [Keepers-comp
 >
 > For registration you must use ERC-677 LINK. Read our [LINK](../../link-token-contracts/) page to determine where to acquire mainnet LINK, or visit our [faucets.chain.link](https://faucets.chain.link/) for testnet LINK.
 
-## Supported Networks and Costs
+## Supported networks and costs
 
 For a list of blockchains that is supported by Chainlink Keepers, see the [Supported Networks](../supported-networks) page. To learn more about the cost of using Chainlink Keepers, see the [Keepers Economics](../keeper-economics) page.
 
-## Questions and Examples
+## Questions and examples
 
 If you have questions, read the [Keepers Frequently Asked Questions](../faqs/) page, ask them in the [#keepers channel](https://discord.com/channels/592041321326182401/821350860302581771) in our [Discord server](https://discord.gg/qj9qarT), or [reach out to us](https://forms.gle/WadxnzzjHPtta5Zd9).
 
