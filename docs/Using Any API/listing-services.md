@@ -4,7 +4,12 @@ section: ethereum
 date: Last Modified
 title: 'Find Existing Jobs'
 permalink: 'docs/listing-services/'
-whatsnext: { 'API Reference': '/docs/chainlink-framework/', 'Testnet Oracles': '/docs/any-api-testnet-oracles/' }
+whatsnext:
+  {
+    'API Reference': '/docs/chainlink-framework/',
+    'Testnet Oracles': '/docs/any-api-testnet-oracles/',
+    'Data Provider Nodes': '/docs/data-provider-nodes/',
+  }
 ---
 
 ## Overview
