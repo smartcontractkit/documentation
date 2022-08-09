@@ -100,7 +100,7 @@ To use this contract:
 
    - The Chainlink Token address for _Rinkeby_ by calling the [`setChainlinkToken`](/docs/chainlink-framework/#setchainlinktoken) function.
    - The Oracle contract address for _Rinkeby_ by calling the [`setChainlinkOracle`](/docs/chainlink-framework/#setchainlinkoracle) function.
-   - The `jobId`: A specific job for the oracle node to run. In this case, you must call a job that is configured to call a public API, parse a number from the response and remove any decimals from it. You can find the job spec for the Chainlink node [here](/docs/direct-request-get-uint256/).
+   - The `jobId`: A specific job for the oracle node to run. In this case, you must call a job that is configured to call a public API, parse a number from the response and remove any decimals from it. We are going to use a generic **_GET>uint256_** job that can be found [here](/docs/any-api-testnet-oracles/#jobs).
 
 1. Fund your contract with 0.1 LINK. To learn how to send LINK to contracts, read the [Fund Your Contracts](/docs/fund-your-contract/) page.
 
@@ -110,7 +110,7 @@ To use this contract:
 
    - The `req.add("get", "<cryptocompareURL>")` request parameter provides the oracle node with the [url](https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETH&tsyms=USD) where to fetch the _ETH-USD_ trading info.
    - The `req.add('path', 'RAW,ETH,USD,VOLUME24HOUR')` request parameter tells the oracle node where to fetch the 24h ETH volume in the _json_ response. It uses a [JSONPath expression](https://jsonpath.com/) with comma(,) delimited string for nested objects. For example: `'RAW,ETH,USD,VOLUME24HOUR'`.
-   - The `req.addInt('times', timesAmount)` request parameter provides the oracle node with the multiplier `timesAmount` by which the fetched volume is multiplied. Use this to remove any decimals from the volume.
+   - The `req.addInt('times', timesAmount)` request parameter provides the oracle node with the multiplier `timesAmount` by which the fetched volume is multiplied. Use this to remove any decimals from the volume. **_Note_**: The `times` parameter is mandatory. If the API that you call returns a number without any decimals then provide `1`as `timesAmount`.
      The `APIConsumer` in the example above is flexible enough to call any public API as long as the URL in _get_, _path_, and _timesAmounnt_ are correct.
 
 1. After few seconds, call the `volume` function. You should get a non-zero response.
