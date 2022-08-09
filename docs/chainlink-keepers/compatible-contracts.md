@@ -30,7 +30,7 @@ Learn how to make smart contracts **Keepers-compatible** with the `KeeperCompati
   - [Revalidate `performUpkeep`](#revalidate-performupkeep)
   - [Test your contract](#test-your-contract)
 
-## Example Contract
+## Example contract
 
 Keepers-compatible contracts must meet the following requirements:
 
@@ -155,7 +155,7 @@ You can perform complex and broad off-chain computation, then execute on-chain s
 
 - **Identify the subset of states that must be updated**: If your contract maintains complicated objects such as arrays and structs, or stores a lot of data, you should read through your storage objects within your `checkUpkeep` and run your proprietary logic to determine if they require updates or maintenance. After that is complete, you can pass the known list of objects that require updates through the `performData` function.
 
-## Vyper Example
+## Vyper example
 
 > 🚧 Note on arrays:
 > Make sure the checkdata array size is correct. Vyper does not support dynamic arrays.

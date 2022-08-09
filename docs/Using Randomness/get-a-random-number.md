@@ -169,7 +169,7 @@ After you are done with this contract and the subscription, you can retrieve the
 
 1. Enter your wallet address and click **Cancel subscription**. MetaMask opens and asks you to confirm the transaction. After you approve the transaction, Chainlink VRF closes your subscription account and sends the remaining LINK to your wallet.
 
-## Vyper Example
+## Vyper example
 
 You must import the `VRFCoordinatorV2` Vyper interface. You can find it  [here](https://github.com/smartcontractkit/apeworx-starter-kit/blob/main/contracts/interfaces/VRFCoordinatorV2.vy).
 You can find a `VRFConsumerV2` example [here](https://github.com/smartcontractkit/apeworx-starter-kit/blob/main/contracts/VRFConsumerV2.vy). Read the _**apeworx-starter-kit**_ [README](https://github.com/smartcontractkit/apeworx-starter-kit) to learn how to run the example.
