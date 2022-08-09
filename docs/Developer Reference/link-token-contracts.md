@@ -327,20 +327,6 @@ ONE is used to pay for transactions on Harmony mainnet. You can use the [Harmony
 | Symbol         | LINK                                                                                                                                                                                                                            |
 | Decimals       | 18                                                                                                                                                                                                                              |
 
-### Testnet
-
-> 🚰 Harmony Testnet Faucet
->
-> Testnet LINK is available from https://faucets.chain.link/harmony-testnet
-
-| Parameter      | Value                                                                                                                                                                                                                                   |
-| :------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ETH_CHAIN_ID` | `1666700000`                                                                                                                                                                                                                            |
-| Address        | <a class="erc-token-address" id="1666700000_0x8b12Ac23BFe11cAb03a634C1F117D64a7f2cFD3e" href="https://explorer.testnet.harmony.one/address/0x8b12Ac23BFe11cAb03a634C1F117D64a7f2cFD3e">`0x8b12Ac23BFe11cAb03a634C1F117D64a7f2cFD3e`</a> |
-| Name           | Chainlink Token on Harmony Testnet                                                                                                                                                                                                      |
-| Symbol         | LINK                                                                                                                                                                                                                                    |
-| Decimals       | 18                                                                                                                                                                                                                                      |
-
 ## Moonriver
 
 ### Mainnet
