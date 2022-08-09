@@ -107,8 +107,8 @@ module.exports = {
               {
                 title: 'Data Feeds API Reference',
                 url: '/docs/price-feeds-api-reference/',
-              }
-            ]
+              },
+            ],
           },
           {
             title: 'Historical Price Data',
@@ -120,9 +120,9 @@ module.exports = {
             children: [
               {
                 title: 'Feed Registry API Reference',
-                url: '/docs/feed-registry-functions/'
-              }
-            ]
+                url: '/docs/feed-registry-functions/',
+              },
+            ],
           },
           {
             title: 'Using ENS with Data Feeds',
@@ -268,6 +268,10 @@ module.exports = {
             url: '/docs/any-api-testnet-oracles/',
           },
           {
+            title: 'Data Provider Nodes',
+            url: '/docs/data-provider-nodes/',
+          },
+          {
             title: 'API Reference',
             url: '/docs/chainlink-framework/',
           },
@@ -363,10 +367,6 @@ module.exports = {
           {
             title: 'Getting Help',
             url: '/docs/getting-help/',
-          },
-          {
-            title: 'Data Provider Nodes',
-            url: '/docs/data-provider-nodes/',
           },
           {
             title: 'Selecting Data Feeds',

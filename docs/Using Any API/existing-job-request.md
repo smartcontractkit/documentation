@@ -9,6 +9,7 @@ whatsnext:
     'Find Existing Jobs': '/docs/listing-services/',
     'API Reference': '/docs/chainlink-framework/',
     'Testnet Oracles': '/docs/any-api-testnet-oracles/',
+    'Data Provider Nodes': '/docs/data-provider-nodes/',
   }
 metadata:
   title: 'Make an Existing Job Request'

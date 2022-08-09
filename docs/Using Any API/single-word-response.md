@@ -12,6 +12,7 @@ whatsnext:
     'Make an Existing Job Request': '/docs/existing-job-request/',
     'API Reference': '/docs/chainlink-framework/',
     'Testnet Oracles': '/docs/any-api-testnet-oracles/',
+    'Data Provider Nodes': '/docs/data-provider-nodes/',
   }
 metadata:
   title: 'Single Word Response'
