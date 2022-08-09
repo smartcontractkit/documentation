@@ -171,5 +171,5 @@ After you are done with this contract and the subscription, you can retrieve the
 
 ## Vyper Example
 
-You'd need to import the `VRFCoordinatorV2` vyper interface, you can find it  [here](https://github.com/smartcontractkit/apeworx-starter-kit/blob/main/contracts/interfaces/VRFCoordinatorV2.vy).
+You must import the `VRFCoordinatorV2` Vyper interface. You can find it  [here](https://github.com/smartcontractkit/apeworx-starter-kit/blob/main/contracts/interfaces/VRFCoordinatorV2.vy).
 You can find a `VRFConsumerV2` example [here](https://github.com/smartcontractkit/apeworx-starter-kit/blob/main/contracts/VRFConsumerV2.vy). Read the _**apeworx-starter-kit**_ [README](https://github.com/smartcontractkit/apeworx-starter-kit) to learn how to run the example.
