@@ -10,7 +10,7 @@ whatsnext: {
   "Retrieve contract addresses to use Data Feeds":"/docs/reference-contracts/"
 }
 metadata:
-  title: "Introduction to Data Feeds"
+  title: "Chainlink Data Feeds Documentation"
   description: "Add data to your smart contracts and applications. Chainlink data feeds include BTC/USD, BTC/ETH, ETH/USD and more!"
 ---
 ![Chainlink Abstract Banner](/files/2306b8b-Decentralized_Oracles_V3.png)

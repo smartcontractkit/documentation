@@ -2,7 +2,7 @@
 layout: nodes.liquid
 section: ethereum
 date: Last Modified
-title: 'Introduction to Chainlink Keepers'
+title: 'Chainlink Keepers Documentation'
 whatsnext:
   {
     'Register a time-based Upkeep': '/docs/chainlink-keepers/job-scheduler/','Register a Custom Logic Upkeep': '/docs/chainlink-keepers/register-upkeep/','Create a Keepers-compatible contract for custom logic Upkeep': '/docs/chainlink-keepers/compatible-contracts/','Keepers architecture': '/docs/chainlink-keepers/overview/', 'Keepers economics': '/docs/chainlink-keepers/keeper-economics/'

@@ -2,7 +2,7 @@
 layout: nodes.liquid
 section: ethereum
 date: Last Modified
-title: "Introduction to Chainlink VRF"
+title: "Chainlink VRF Documentation"
 permalink: "docs/chainlink-vrf/"
 whatsnext: {"Get a Random Number":"/docs/get-a-random-number/", "Contract Addresses":"/docs/vrf-contracts/"}
 metadata:
