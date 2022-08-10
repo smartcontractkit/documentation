@@ -2,10 +2,10 @@
 layout: nodes.liquid
 section: ethereum
 date: Last Modified
-title: "Data Feeds Contract Addresses"
+title: "Supported Blockchain Networks"
 permalink: "docs/reference-contracts/"
 metadata:
-  title: "Data Feeds Contract Addresses"
+  title: "Data Feeds Supported Networks"
   description: "A list of links to data feed addresses for Data Feed aggregator contracts on supported networks."
 ---
 

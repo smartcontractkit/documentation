@@ -671,7 +671,7 @@ module.exports = {
             url: '/docs/chainlink-vrf-best-practices/v1/',
           },
           {
-            title: 'Contract Addresses',
+            title: 'Supported Networks',
             url: '/docs/vrf-contracts/v1/',
           },
           {

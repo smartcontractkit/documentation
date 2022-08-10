@@ -2,10 +2,10 @@
 layout: nodes.liquid
 section: ethereum
 date: Last Modified
-title: 'Contract Addresses'
+title: 'Supported Networks'
 permalink: 'docs/vrf-contracts/'
 metadata:
-  title: 'Chainlink VRF Contract Addresses'
+  title: 'Chainlink VRF Supported Networks'
   linkToWallet: true
   image:
     0: '/files/OpenGraph_V3.png'

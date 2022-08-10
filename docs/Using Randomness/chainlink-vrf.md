@@ -31,34 +31,10 @@ To learn more about the benefits of Chainlink VRF v2, see our blog post [Chainli
 
 **Topics**
 
-- [Supported networks](#supported-networks)
 - [Subscriptions](#subscriptions)
 - [Subscription billing](#subscription-billing)
 - [Limits](#limits)
-
-## Supported networks
-
-Chainlink VRF v2 is currently available on the following networks:
-
-- Ethereum:
-  - [Mainnet](/docs/vrf-contracts/#ethereum-mainnet)
-  - [Rinkeby testnet](/docs/vrf-contracts/#rinkeby-testnet)
-- BNB Chain:
-  - [Mainnet](/docs/vrf-contracts/#bnb-chain)
-  - [Testnet](/docs/vrf-contracts/#bnb-chain-testnet)
-- Polygon (Matic):
-  - [Mainnet](/docs/vrf-contracts/#polygon-matic-mainnet)
-  - [Mumbai Testnet](/docs/vrf-contracts/#polygon-matic-mumbai-testnet)
-- Avalanche:
-  - [Avalanche Mainnet](/docs/vrf-contracts/#avalanche-mainnet)
-  - [Avalanche Fuji Testnet](/docs/vrf-contracts/#avalanche-fuji-testnet)
-- Fantom:
-  - [Fantom Mainnet](/docs/vrf-contracts/#fantom-mainnet)
-  - [Fantom Testnet](/docs/vrf-contracts/#fantom-testnet)
-
-See the [Contract Addresses](/docs/vrf-contracts) page for a complete list of coordinator addresses and gas price limits.
-
-To learn when VRF v2 becomes available on more networks, follow us on [Twitter](https://twitter.com/chainlink) or sign up for our [mailing list](/docs/developer-communications/).
+- [Supported networks](#supported-networks)
 
 ## Subscriptions
 
@@ -135,5 +111,12 @@ You can see the configuration for each network on the [Contract Addresses](/docs
 - Each coordinator has a `MAX_NUM_WORDS` parameter that limits the maximum number of random values you can receive in each request.
 - Each coordinator has a `maxGasLimit` parameter, which is the maximum allowed `callbackGasLimit` value for your requests.
 - You must specify a sufficient `callbackGasLimit` to fund the callback request to your consumer contract. This depends on the number of random values you request and how you process them in your `fulfillRandomWords()` function. If your `callbackGasLimit` is not sufficient, the callback fails but your subscription is still charged for the work done to generate your requested random values.
+
+## Supported networks
+
+See the [Supported Networks](/docs/vrf-contracts) page for a complete list of coordinator addresses and gas price limits.
+
+To learn when VRF v2 becomes available on more networks, follow us on [Twitter](https://twitter.com/chainlink) or sign up for our [mailing list](/docs/developer-communications/).
+
 
 To understand different use cases for Chainlink VRF, refer to [Other Tutorials](/docs/other-tutorials/).
