@@ -7,9 +7,10 @@ permalink: 'docs/request-and-receive-data/'
 whatsnext:
   {
     'Make a GET Request': '/docs/make-a-http-get-request/',
-    'Make an Existing Job Request': '/docs/existing-job-request/',
     'API Reference': '/docs/chainlink-framework/',
+    'Find Existing Jobs': '/docs/listing-services/',
     'Testnet Oracles': '/docs/any-api-testnet-oracles/',
+    'Data Provider Nodes': '/docs/data-provider-nodes/',
   }
 metadata:
   title: 'Request and Receive API Data with Chainlink'
