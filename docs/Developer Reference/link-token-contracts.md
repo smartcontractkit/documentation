@@ -40,10 +40,20 @@ The LINK token is an ERC677 token that inherits functionality from the ERC20 tok
 | Parameter      | Value                                                                                                                                                                                                        |
 | :------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `ETH_CHAIN_ID` | `1`                                                                                                                                                                                                          |
-| Address        | <a class="erc-token-address" id="1_0x514910771af9ca656af840dff83e8264ecf986ca" href="https://etherscan.io/token/0x514910771af9ca656af840dff83e8264ecf986ca">`0x514910771af9ca656af840dff83e8264ecf986ca`</a> |
+| Address        | <a class="erc-token-address" id="1_0x514910771AF9Ca656af840dff83E8264EcF986CA" href="https://etherscan.io/token/0x514910771AF9Ca656af840dff83E8264EcF986CA">`0x514910771AF9Ca656af840dff83E8264EcF986CA`</a> |
 | Name           | Chainlink Token                                                                                                                                                                                              |
 | Symbol         | LINK                                                                                                                                                                                                         |
 | Decimals       | 18                                                                                                                                                                                                           |
+
+## Goerli
+
+| Parameter      | Value                                                                                                                                                                                                                 |
+| :------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ETH_CHAIN_ID` | `5`                                                                                                                                                                                                                   |
+| Address        | <a class="erc-token-address" id="5_0x326C977E6efc84E512bB9C30f76E30c160eD06FB" href="https://goerli.etherscan.io/address/0x326C977E6efc84E512bB9C30f76E30c160eD06FB">`0x326C977E6efc84E512bB9C30f76E30c160eD06FB`</a> |
+| Name           | Chainlink Token                                                                                                                                                                                                       |
+| Symbol         | LINK                                                                                                                                                                                                                  |
+| Decimals       | 18                                                                                                                                                                                                                    |
 
 ## Rinkeby
 
@@ -77,16 +87,6 @@ The Kovan network is [officially deprecated](https://ethereum.org/en/developers/
 | Name           | Chainlink Token                                                                                                                                                                                                     |
 | Symbol         | LINK                                                                                                                                                                                                                |
 | Decimals       | 18                                                                                                                                                                                                                  |
-
-## Goerli
-
-| Parameter      | Value                                                                                                                                                                                                                 |
-| :------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ETH_CHAIN_ID` | `5`                                                                                                                                                                                                                   |
-| Address        | <a class="erc-token-address" id="5_0x326c977e6efc84e512bb9c30f76e30c160ed06fb" href="https://goerli.etherscan.io/address/0x326c977e6efc84e512bb9c30f76e30c160ed06fb">`0x326c977e6efc84e512bb9c30f76e30c160ed06fb`</a> |
-| Name           | Chainlink Token                                                                                                                                                                                                       |
-| Symbol         | LINK                                                                                                                                                                                                                  |
-| Decimals       | 18                                                                                                                                                                                                                    |
 
 # Other EVM Chains
 
