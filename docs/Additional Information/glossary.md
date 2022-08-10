@@ -8,7 +8,7 @@ permalink: "docs/glossary/"
 
 > ❗️ The adapters or JSON adapters for v1 Jobs are removed for Chainlink nodes running version 1.0.0 and later. Use [v2 job tasks](/docs/tasks) instead.
 
-An Adapter or [Task](#task) is a piece of software responsible for executing a specific piece of functionality. A Chainlink node comes with a number of Adapters built-in, commonly known as Core Adapters, but can also be extended via [Bridges](/docs/node-operators/) to connect with user-defined [External Adapters](#external-adapter).
+An adapter or [task](#task) is a piece of software responsible for executing a specific piece of functionality. A Chainlink node comes with a number of Adapters built-in, commonly known as Core Adapters, but can also be extended via [Bridges](/docs/node-operators/) to connect with user-defined [External Adapters](#external-adapter).
 
 ### Answer
 
