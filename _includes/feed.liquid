@@ -98,15 +98,6 @@ section: ethereum
 
 </style>
 
-{% case metadata.l2healthflag %}
-  {% when "arbitrum" or "optimism" or "metis" %}
-     <rdme-callout theme="warn">
-         <p>As a best practice, use the L2 sequencer feed to verify the status of the sequencer when running applications on L2 networks. See the <a href="/docs/l2-sequencer-flag/">L2 Sequencer Uptime Feeds</a> page for examples.
-         </p>
-     </rdme-callout>
-{% endcase %}
-
-
 <div id="categories">
     <p>Data feeds reside in the following categories:</p>
     <ul>
@@ -118,6 +109,14 @@ section: ethereum
     </ul>
     <p>See the <a href="/docs/selecting-data-feeds/">Selecting Quality Data Feeds</a> page for complete details about each category.</p>
 </div>
+
+
+{% if metadata.l2healthflag == "arbitrum" or metadata.l2healthflag == "optimism" or metadata.l2healthflag == "metis" %}
+<rdme-callout theme="warn">
+   <p>This is an L2 network. As a best practice, use the L2 sequencer feed to verify the status of the sequencer when running applications on L2 networks. See the <a href="/docs/l2-sequencer-flag/">L2 Sequencer Uptime Feeds</a> page for examples.
+   </p>
+</rdme-callout>
+{% endif %}
 
 <div id="feed-data">
     Loading feeds...
