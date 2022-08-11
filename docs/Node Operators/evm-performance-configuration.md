@@ -203,7 +203,7 @@ RPCTxFeeCap = 0.0
 ```
 
 > 🚧 If you are using `Nethermind` instead of `go-ethereum` you should be aware that the `gascap` flag behaves differently, resulting in errors like [this one](https://github.com/NethermindEth/nethermind/issues/4307).
-> In this case, just set `gascap` to a high number like `5000000000` or just don't set it at all, to avoid issues.
+> In this case, you can set `gascap` to a very large number like `5000000000`.
 
 ## Adjusting minimum outgoing confirmations for high throughput jobs
 
