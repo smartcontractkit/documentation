@@ -21,7 +21,7 @@ The Chainlink Development Relations team maintains several testnet oracles that 
 
 - [Operator contracts](#operator-contracts)
 - [Jobs](#jobs)
-  - [Job ids](#job-ids)
+  - [Job IDs](#job-ids)
   - [Examples](#examples)
 
 ## Operator Contracts
@@ -40,7 +40,7 @@ Testnet [Operator contracts](https://github.com/smartcontractkit/chainlink/blob/
 
 ## Jobs
 
-### Job ids
+### Job IDs
 
 To make testing simple, jobs are configured with the following properties:
 
