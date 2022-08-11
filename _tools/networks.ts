@@ -156,12 +156,6 @@ export const NETWORKS = [
         source: "directory-harmony-mainnet-0.json",
         networkType: "mainnet",
       },
-      {
-        name: "Harmony Testnet",
-        url: "https://explorer.testnet.harmony.one/#/address/%s",
-        source: "directory-harmony-testnet-shard-0.json",
-        networkType: "testnet",
-      },
     ],
   },
   {
