@@ -67,8 +67,7 @@ A full example can be found [here](/docs/large-responses/).
 
 ##### Request method
 
-```Solidity
-// UN-AUDITED CODE. DO NOT USE IN PRODUCTION
+```solidity
 function request() public {
   Chainlink.Request memory req = buildChainlinkRequest('7da2702f37fd48e5b1b9a5715e3509b6', address(this), this.fulfill.selector);
   req.add(
@@ -82,8 +81,7 @@ function request() public {
 
 ##### Callback method
 
-```Solidity
-// UN-AUDITED CODE. DO NOT USE IN PRODUCTION
+```solidity
 bytes public data;
 string public imageUrl;
 function fulfill(bytes32 requestId, bytes memory bytesData) public recordChainlinkFulfillment(requestId) {
@@ -98,8 +96,7 @@ A full example can be found [here](/docs/single-word-response/).
 
 ##### Request method
 
-```Solidity
-// UN-AUDITED CODE. DO NOT USE IN PRODUCTION
+```solidity
 function request() public {
   Chainlink.Request memory req = buildChainlinkRequest('ca98366cc7314957b8c012c72f05aeeb', address(this), this.fulfill.selector);
   req.add(
@@ -114,8 +111,7 @@ function request() public {
 
 ##### Callback method
 
-```Solidity
-// UN-AUDITED CODE. DO NOT USE IN PRODUCTION
+```solidity
 uint256 public volume;
 function fulfill(bytes32 _requestId, uint256 _volume) public recordChainlinkFulfillment(_requestId) {
   volume = _volume;
@@ -126,8 +122,7 @@ function fulfill(bytes32 _requestId, uint256 _volume) public recordChainlinkFulf
 
 ##### Request method
 
-```Solidity
-// UN-AUDITED CODE. DO NOT USE IN PRODUCTION
+```solidity
 function request() public {
   Chainlink.Request memory req = buildChainlinkRequest('fcf4140d696d44b687012232948bdd5d', address(this), this.fulfill.selector);
   req.add(
@@ -142,8 +137,7 @@ function request() public {
 
 ##### Callback method
 
-```Solidity
-// UN-AUDITED CODE. DO NOT USE IN PRODUCTION
+```solidity
 int256 public volume;
 function fulfill(bytes32 _requestId, int256 _volume) public recordChainlinkFulfillment(_requestId) {
   volume = _volume;
@@ -154,8 +148,7 @@ function fulfill(bytes32 _requestId, int256 _volume) public recordChainlinkFulfi
 
 ##### Request method
 
-```Solidity
-// UN-AUDITED CODE. DO NOT USE IN PRODUCTION
+```solidity
 function request() public {
   Chainlink.Request memory req = buildChainlinkRequest('c1c5e92880894eb6b27d3cae19670aa3', address(this), this.fulfill.selector);
   req.add(
@@ -169,8 +162,7 @@ function request() public {
 
 ##### Callback method
 
-```Solidity
-// UN-AUDITED CODE. DO NOT USE IN PRODUCTION
+```solidity
 bool public approved;
 function fulfill(bytes32 _requestId, bool _approved) public recordChainlinkFulfillment(_requestId) {
   approved = _approved;
@@ -183,8 +175,7 @@ A full example can be found [here](/docs/api-array-response/).
 
 ##### Request method
 
-```Solidity
-// UN-AUDITED CODE. DO NOT USE IN PRODUCTION
+```solidity
 function request() public {
   Chainlink.Request memory req = buildChainlinkRequest('7d80a6386ef543a3abb52817f6707e3b', address(this), this.fulfill.selector);
   req.add(
@@ -198,8 +189,7 @@ function request() public {
 
 ##### Callback method
 
-```Solidity
-// UN-AUDITED CODE. DO NOT USE IN PRODUCTION
+```solidity
 string public id;
 function fulfill(bytes32 _requestId, string memory _id) public recordChainlinkFulfillment(_requestId) {
   id = _id;
