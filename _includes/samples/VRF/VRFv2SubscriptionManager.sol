@@ -18,7 +18,7 @@ contract VRFv2SubscriptionManager is VRFConsumerBaseV2 {
 
   // Goerli coordinator. For other networks,
   // see https://docs.chain.link/docs/vrf-contracts/#configurations
-  address vrfCoordinator = 0x6168499c0cFfCaCD319c818142124B7A15E857ab;
+  address vrfCoordinator = 0x2Ca8E0C643bDe4C2E08ab1fA0da3401AdAD7734D;
 
   // Goerli LINK token contract. For other networks, see
   // https://docs.chain.link/docs/vrf-contracts/#configurations
