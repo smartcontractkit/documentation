@@ -107,8 +107,8 @@ This example is adapted for [Goerli testnet](/docs/vrf-contracts/#goerli-testnet
 
 ```solidity
 uint64 s_subscriptionId;
-address vrfCoordinator = 0x2bce784e69d2Ff36c71edcB9F88358dB0DfB55b4;
-bytes32 s_keyHash = 0x0476f9a745b61ea5c0ab224d3a6e4c99f0b02fce4da01143a4f70aa80ae76e8a;
+address vrfCoordinator = 0x2Ca8E0C643bDe4C2E08ab1fA0da3401AdAD7734D;
+bytes32 s_keyHash = 0x79d3d8832d904592c0bf9818b621522c988bb8b0c05cdc3b15aea1b6e8db0c15;
 uint32 callbackGasLimit = 40000;
 uint16 requestConfirmations = 3;
 uint32 numWords =  1;
