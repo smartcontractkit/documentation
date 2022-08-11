@@ -24,17 +24,17 @@ contract RandomNumberConsumer is VRFConsumerBase {
      * Constructor inherits VRFConsumerBase
      *
      * Network: Goerli
-     * Chainlink VRF Coordinator address: 0x2Ca8E0C643bDe4C2E08ab1fA0da3401AdAD7734D
+     * Chainlink VRF Coordinator address: 0x2bce784e69d2Ff36c71edcB9F88358dB0DfB55b4
      * LINK token address: 0x326C977E6efc84E512bB9C30f76E30c160eD06FB
-     * Key Hash: 0x79d3d8832d904592c0bf9818b621522c988bb8b0c05cdc3b15aea1b6e8db0c15
+     * Key Hash: 0x0476f9a745b61ea5c0ab224d3a6e4c99f0b02fce4da01143a4f70aa80ae76e8a
      */
     constructor()
         VRFConsumerBase(
-            0x2Ca8E0C643bDe4C2E08ab1fA0da3401AdAD7734D, // VRF Coordinator
+            0x2bce784e69d2Ff36c71edcB9F88358dB0DfB55b4, // VRF Coordinator
             0x326C977E6efc84E512bB9C30f76E30c160eD06FB  // LINK Token
         )
     {
-        keyHash = 0x79d3d8832d904592c0bf9818b621522c988bb8b0c05cdc3b15aea1b6e8db0c15;
+        keyHash = 0x0476f9a745b61ea5c0ab224d3a6e4c99f0b02fce4da01143a4f70aa80ae76e8a;
         fee = 0.1 * 10 ** 18; // 0.1 LINK (Varies by network)
     }
 
