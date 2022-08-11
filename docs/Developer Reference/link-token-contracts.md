@@ -16,7 +16,7 @@ LINK tokens are used to pay node operators for retrieving data for smart contrac
 
 The LINK token is an ERC677 token that inherits functionality from the ERC20 token standard and allows token transfers to contain a data payload. Read more about the [ERC677 transferAndCall token standard](https://github.com/ethereum/EIPs/issues/677).
 
-**Table of Contents**
+**Topics**
 
 - [Ethereum](#ethereum)
 - [BNB Chain](#bnb-chain)
@@ -40,10 +40,20 @@ The LINK token is an ERC677 token that inherits functionality from the ERC20 tok
 | Parameter      | Value                                                                                                                                                                                                        |
 | :------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `ETH_CHAIN_ID` | `1`                                                                                                                                                                                                          |
-| Address        | <a class="erc-token-address" id="1_0x514910771af9ca656af840dff83e8264ecf986ca" href="https://etherscan.io/token/0x514910771af9ca656af840dff83e8264ecf986ca">`0x514910771af9ca656af840dff83e8264ecf986ca`</a> |
+| Address        | <a class="erc-token-address" id="1_0x514910771AF9Ca656af840dff83E8264EcF986CA" href="https://etherscan.io/token/0x514910771AF9Ca656af840dff83E8264EcF986CA">`0x514910771AF9Ca656af840dff83E8264EcF986CA`</a> |
 | Name           | Chainlink Token                                                                                                                                                                                              |
 | Symbol         | LINK                                                                                                                                                                                                         |
 | Decimals       | 18                                                                                                                                                                                                           |
+
+## Goerli
+
+| Parameter      | Value                                                                                                                                                                                                                 |
+| :------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ETH_CHAIN_ID` | `5`                                                                                                                                                                                                                   |
+| Address        | <a class="erc-token-address" id="5_0x326C977E6efc84E512bB9C30f76E30c160eD06FB" href="https://goerli.etherscan.io/address/0x326C977E6efc84E512bB9C30f76E30c160eD06FB">`0x326C977E6efc84E512bB9C30f76E30c160eD06FB`</a> |
+| Name           | Chainlink Token                                                                                                                                                                                                       |
+| Symbol         | LINK                                                                                                                                                                                                                  |
+| Decimals       | 18                                                                                                                                                                                                                    |
 
 ## Rinkeby
 
@@ -77,16 +87,6 @@ The Kovan network is [officially deprecated](https://ethereum.org/en/developers/
 | Name           | Chainlink Token                                                                                                                                                                                                     |
 | Symbol         | LINK                                                                                                                                                                                                                |
 | Decimals       | 18                                                                                                                                                                                                                  |
-
-## Goerli
-
-| Parameter      | Value                                                                                                                                                                                                                 |
-| :------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ETH_CHAIN_ID` | `5`                                                                                                                                                                                                                   |
-| Address        | <a class="erc-token-address" id="5_0x326c977e6efc84e512bb9c30f76e30c160ed06fb" href="https://goerli.etherscan.io/address/0x326c977e6efc84e512bb9c30f76e30c160ed06fb">`0x326c977e6efc84e512bb9c30f76e30c160ed06fb`</a> |
-| Name           | Chainlink Token                                                                                                                                                                                                       |
-| Symbol         | LINK                                                                                                                                                                                                                  |
-| Decimals       | 18                                                                                                                                                                                                                    |
 
 # Other EVM Chains
 
@@ -326,20 +326,6 @@ ONE is used to pay for transactions on Harmony mainnet. You can use the [Harmony
 | Name           | Chainlink Token on Harmony Mainnet                                                                                                                                                                                              |
 | Symbol         | LINK                                                                                                                                                                                                                            |
 | Decimals       | 18                                                                                                                                                                                                                              |
-
-### Testnet
-
-> 🚰 Harmony Testnet Faucet
->
-> Testnet LINK is available from https://faucets.chain.link/harmony-testnet
-
-| Parameter      | Value                                                                                                                                                                                                                                   |
-| :------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ETH_CHAIN_ID` | `1666700000`                                                                                                                                                                                                                            |
-| Address        | <a class="erc-token-address" id="1666700000_0x8b12Ac23BFe11cAb03a634C1F117D64a7f2cFD3e" href="https://explorer.testnet.harmony.one/address/0x8b12Ac23BFe11cAb03a634C1F117D64a7f2cFD3e">`0x8b12Ac23BFe11cAb03a634C1F117D64a7f2cFD3e`</a> |
-| Name           | Chainlink Token on Harmony Testnet                                                                                                                                                                                                      |
-| Symbol         | LINK                                                                                                                                                                                                                                    |
-| Decimals       | 18                                                                                                                                                                                                                                      |
 
 ## Moonriver
 

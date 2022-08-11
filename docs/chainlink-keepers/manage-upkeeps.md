@@ -11,7 +11,7 @@ whatsnext:
 
 Manage your Upkeeps to get the best performance.
 
-**Table of Contents**
+**Topics**
 
 - [Fund your Upkeep](#fund-your-upkeep)
 - [Maintain a Minimum Balance](#maintain-a-minimum-balance)

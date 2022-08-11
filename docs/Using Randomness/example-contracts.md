@@ -15,7 +15,7 @@ metadata:
 
 How you manage the subscription depends on your randomness needs. You can configure your subscriptions using the [Subscription Manager](https://vrf.chain.link), but these examples demonstrate how to create your subscription and add your consumer contracts programmatically. For these examples, the contract owns and manages the subscription. You can still view the subscriptions in the [Subscription Manager](https://vrf.chain.link). Any wallet can provide funding to those subscriptions.
 
-**Table of contents**
+**Topics**
 
 - [Modifying subscriptions and configurations](#modifying-subscriptions-and-configurations)
 - [Subscription manager contract](#subscription-manager-contract)

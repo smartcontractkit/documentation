@@ -13,6 +13,7 @@ whatsnext:
     'Make an Existing Job Request': '/docs/existing-job-request/',
     'API Reference': '/docs/chainlink-framework/',
     'Testnet Oracles': '/docs/any-api-testnet-oracles/',
+    'Data Provider Nodes': '/docs/data-provider-nodes/',
   }
 metadata:
   title: 'Make a GET Request'
@@ -27,7 +28,7 @@ This series of guides explains how to make HTTP GET requests to external APIs fr
 
 {% include 'sections/any-api-common-prereq.md' %}
 
-**Table of Contents**
+**Topics**
 
 - [Examples](#examples)
   - [Single Word Response](#single-word-response)

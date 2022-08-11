@@ -11,7 +11,7 @@ whatsnext:
 
 This guide explains how to register a time-based Upkeep that executes according to a time schedule that you provide.
 
-**Table of Contents**
+**Topics**
 
 + [Register a new Upkeep](#register-a-new-upkeep)
 + [Trigger Selection](#trigger-selection)

@@ -4,14 +4,19 @@ section: ethereum
 date: Last Modified
 title: 'Find Existing Jobs'
 permalink: 'docs/listing-services/'
-whatsnext: { 'API Reference': '/docs/chainlink-framework/', 'Testnet Oracles': '/docs/any-api-testnet-oracles/' }
+whatsnext:
+  {
+    'API Reference': '/docs/chainlink-framework/',
+    'Testnet Oracles': '/docs/any-api-testnet-oracles/',
+    'Data Provider Nodes': '/docs/data-provider-nodes/',
+  }
 ---
 
 ## Overview
 
 This page explains how to find an existing Oracle Job to suit the needs of your API call.
 
-**Table of Contents**
+**Topics**
 
 - [Introduction to Oracles](#introduction-to-oracles)
 - [Oracle Jobs and Types of Data Available](#oracle-jobs-and-types-of-data-available)

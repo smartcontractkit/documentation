@@ -6,7 +6,7 @@ title: "Best Practices for Deploying Nodes on AWS"
 permalink: "docs/best-practices-aws/"
 ---
 
-**Table of Contents**
+**Topics**
 
 - [Overview](#overview)
 - [Created Resources](#created-resources)

@@ -12,7 +12,7 @@ If a sequencer becomes unavailable, it is impossible to access read/write APIs t
 
 To help your applications identify when the sequencer is unavailable, you can use a data feed that tracks the last known status of the sequencer at a given point in time. This is to allow customers to prevent mass liquidations by providing a grace period to allow customers to react to such an event.
 
-**Table of Contents**
+**Topics**
 
 - [Available networks](#available-networks)
 - [Arbitrum](#arbitrum)

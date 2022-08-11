@@ -5,8 +5,8 @@ date: Last Modified
 title: 'Creating Keepers-compatible contracts'
 whatsnext:
   {
-
-    'Build flexible contracts': '/docs/chainlink-keepers/flexible-upkeeps/', 'Manage your Upkeeps': '/docs/chainlink-keepers/manage-upkeeps/',
+    'Build flexible contracts': '/docs/chainlink-keepers/flexible-upkeeps/',
+    'Manage your Upkeeps': '/docs/chainlink-keepers/manage-upkeeps/',
   }
 ---
 
@@ -16,30 +16,30 @@ Use custom logic to allow Keepers to determine when to execute your smart contra
 
 Learn how to make smart contracts **Keepers-compatible** with the `KeeperCompatibleInterface` and its functions.
 
-**Table of Contents**
-+ [Example Contract](#example-contract)
-+ [Functions](#functions)
-  + [`checkUpkeep` function](#checkupkeep-function)
-    + [`checkData`](#checkdata)
-    + [`performData`](#performdata)
-  + [`performUpkeep` function](#performupkeep-function)
-    + [`performData`](#performdata-1)
-+ [Best practices](#best-practices)
-  + [Revalidate `performUpkeep`](#revalidate-performupkeep)
-  + [Test your contract](#test-your-contract)
+**Topics**
 
+- [Example Contract](#example-contract)
+- [Functions](#functions)
+  - [`checkUpkeep` function](#checkupkeep-function)
+    - [`checkData`](#checkdata)
+    - [`performData`](#performdata)
+  - [`performUpkeep` function](#performupkeep-function)
+    - [`performData`](#performdata-1)
+- [Vyper Example](#vyper-example)
+- [Best practices](#best-practices)
+  - [Revalidate `performUpkeep`](#revalidate-performupkeep)
+  - [Test your contract](#test-your-contract)
 
-## Example Contract
+## Example contract
 
 Keepers-compatible contracts must meet the following requirements:
 
-* Import `KeepersCompatible.sol`. You can refer to the [Chainlink Contracts](https://github.com/smartcontractkit/chainlink/tree/develop/contracts/src) on GitHub to find the latest version.
-* Use the `KeepersCompatibleInterface` from the library to ensure your `checkUpkeep` and `performUpkeep`function definitions match the definitions expected by the Keepers Network.
-* Include a `checkUpkeep` function that contains the logic that will be executed off-chain to see if `performUpkeep` should be executed. `checkUpkeep` can use on-chain data and a specified `checkData` parameter to perform complex calculations off-chain and then send the result to `performUpkeep` as `performData`.
-* Include a `performUpkeep` function that will be executed on-chain when `checkUpkeep` returns `true`. Because `performUpkeep` is external, users are advised to revalidate conditions and performData.
+- Import `KeepersCompatible.sol`. You can refer to the [Chainlink Contracts](https://github.com/smartcontractkit/chainlink/tree/develop/contracts/src) on GitHub to find the latest version.
+- Use the `KeepersCompatibleInterface` from the library to ensure your `checkUpkeep` and `performUpkeep`function definitions match the definitions expected by the Keepers Network.
+- Include a `checkUpkeep` function that contains the logic that will be executed off-chain to see if `performUpkeep` should be executed. `checkUpkeep` can use on-chain data and a specified `checkData` parameter to perform complex calculations off-chain and then send the result to `performUpkeep` as `performData`.
+- Include a `performUpkeep` function that will be executed on-chain when `checkUpkeep` returns `true`. Because `performUpkeep` is external, users are advised to revalidate conditions and performData.
 
 Use these elements to create a Keepers-compatible contract that will automatically increment a counter after every `updateInterval` seconds. After you register the contract as an upkeep, the Keepers Network simulates our `checkUpkeep` off-chain during every block to determine if the `updateInterval` time has passed since the last increment (timestamp). When `checkUpkeep` returns true, the Keepers Network calls `performUpkeep` on-chain and increments the counter. This cycle repeats until the upkeep is cancelled or runs out of funding.
-
 
 ```solidity
 {% include 'samples/Keepers/KeepersCounter.sol' %}
@@ -60,13 +60,12 @@ To see more complex examples, go to the [utility contracts](../utility-contracts
 
 We will now look at each function in a Keepers-compatible contract in detail.
 
-
 ## Functions
 
-| Function Name                   | Description                                                          |
-| ------------------------------- | -------------------------------------------------------------------- |
-| [checkUpkeep](#checkupkeep-function)     | Runs off-chain at every block to determine if the `performUpkeep` function should be called on-chain.                     |
-| [performUpkeep](#performupkeep-function) | Contains the logic that should be executed on-chain when `checkUpkeep` returns true. |
+| Function Name                            | Description                                                                                           |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| [checkUpkeep](#checkupkeep-function)     | Runs off-chain at every block to determine if the `performUpkeep` function should be called on-chain. |
+| [performUpkeep](#performupkeep-function) | Contains the logic that should be executed on-chain when `checkUpkeep` returns true.                  |
 
 ### `checkUpkeep` function
 
@@ -134,7 +133,7 @@ When `checkUpkeep` returns `upkeepNeeded == true`, the Keeper node broadcasts a 
 >
 > During registration you have to specify the maximum gas limit that we should allow your contract to use. We simulate `performUpkeep` during `checkUpkeep` and if the gas exceeds this limit the function will not execute on-chain. One method to determine your upkeep's gas limit is to simulate the `performUpkeep` function and add enough overhead to take into account increases that might happen due to changes in `performData` or on-chain data. The gas limit you specify cannot exceed the `callGasLimit` in the [configuration of the registry](/docs/chainlink-keepers/supported-networks/#configurations).
 
-Ensure that your `performUpkeep` is *idempotent*. Your `performUpkeep` function should change state such that `checkUpkeep` will not return `true` for the same subset of work once said work is complete. Otherwise the Upkeep will remain eligible and result in multiple performances by the Keeper Network on the exactly same subset of work. As a best practice, always [revalidate](#revalidate-performupkeep) conditions for your upkeep at the start of your `performUpkeep` function.
+Ensure that your `performUpkeep` is _idempotent_. Your `performUpkeep` function should change state such that `checkUpkeep` will not return `true` for the same subset of work once said work is complete. Otherwise the Upkeep will remain eligible and result in multiple performances by the Keeper Network on the exactly same subset of work. As a best practice, always [revalidate](#revalidate-performupkeep) conditions for your upkeep at the start of your `performUpkeep` function.
 
 ```solidity
 function performUpkeep(
@@ -156,6 +155,12 @@ You can perform complex and broad off-chain computation, then execute on-chain s
 
 - **Identify the subset of states that must be updated**: If your contract maintains complicated objects such as arrays and structs, or stores a lot of data, you should read through your storage objects within your `checkUpkeep` and run your proprietary logic to determine if they require updates or maintenance. After that is complete, you can pass the known list of objects that require updates through the `performData` function.
 
+## Vyper example
+
+> 🚧 Note on arrays:
+> Make sure the checkdata array size is correct. Vyper does not support dynamic arrays.
+
+You can find a `KeepersConsumer` example [here](https://github.com/smartcontractkit/apeworx-starter-kit/blob/main/contracts/KeepersConsumer.vy). Read the _**apeworx-starter-kit**_ [README](https://github.com/smartcontractkit/apeworx-starter-kit) to learn how to run the example.
 
 ## Best practices
 

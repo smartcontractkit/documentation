@@ -23,7 +23,7 @@ When you connect a smart contract to real-world services or off-chain data, you 
 
 This guide shows you how to write, deploy, and run a smart contract that consumes data from a price data feed.
 
-## Table of Contents
+**Topics**
 
 + [Overview](#overview)
 + [Examine the sample contract](#examine-the-sample-contract)

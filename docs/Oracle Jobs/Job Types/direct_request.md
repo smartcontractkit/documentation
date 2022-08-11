@@ -8,7 +8,7 @@ permalink: 'docs/jobs/types/direct-request/'
 
 Executes a job upon receipt of an explicit request made by a user. The request is detected via a log emitted by an Oracle or Operator contract. This is similar to the legacy ethlog/runlog style of jobs.
 
-**Table of Contents**
+**Topics**
 
 - [Spec format](#spec-format)
   - [Shared fields](#shared-fields)

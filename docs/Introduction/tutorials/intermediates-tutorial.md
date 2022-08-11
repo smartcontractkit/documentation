@@ -34,7 +34,7 @@ metadata:
 
 In this guide, you will learn about generating randomness on blockchains. This includes learning how to implement a Request and Receive cycle with Chainlink oracles and how to consume random numbers with Chainlink VRF in smart contracts.
 
-**Table of Contents**
+**Topics**
 
 - [Overview](#overview)
 - [1. How is randomness generated on blockchains? What is Chainlink VRF?](#1-how-is-randomness-generated-on-blockchains-what-is-chainlink-vrf)

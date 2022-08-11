@@ -11,7 +11,7 @@ permalink: "docs/dns-ownership-oracle/"
 This oracle checks Google’s DNS service to determine if a given domain is owned by a given blockchain address. Each address is stored in a _TXT record_.
 This guide explains how to call the _DNS ownership oracle_ and verify that a given address owns a specific domain. For instance, we will confirm that the address _0xf75519f611776c22275474151a04183665b7feDe_ owns _www5.infernos.io_.  **Note** that the source of data is [google dns](https://dns.google/resolve?name=www5.infernos.io&type=TXT).
 
-**Table of Contents**
+**Topics**
 
 - [Overview](#overview)
 - [Requirements](#requirements)
