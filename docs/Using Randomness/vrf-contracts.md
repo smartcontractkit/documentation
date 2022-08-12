@@ -36,7 +36,7 @@ Fee parameters are configured in the coordinator contract and specify the premiu
 
 - [Ethereum Mainnet](#ethereum-mainnet)
 - [Goerli testnet](#goerli-testnet)
-- [Rinkeby testnet](#rinkeby-testnet)
+- [Rinkeby testnet](#rinkeby-testnet-deprecated)
 - [BNB Chain](#bnb-chain)
 - [BNB Chain testnet](#bnb-chain-testnet)
 - [Polygon Mainnet](#polygon-matic-mainnet)
@@ -79,7 +79,7 @@ Fee parameters are configured in the coordinator contract and specify the premiu
 
 ### Rinkeby testnet (Deprecated)
 
-The Rinkeby network is [officially deprecated](https://ethereum.org/en/developers/docs/networks/#rinkeby) and will no longer be supported on some platforms. [Goerli](#goerli) is the recommended testnet for Chainlink on Ethereum.
+The Rinkeby network is [officially deprecated](https://ethereum.org/en/developers/docs/networks/#rinkeby) and is no longer be supported. [Goerli](#goerli-testnet) is the recommended testnet for Chainlink on Ethereum.
 
 > 🚰Rinkeby Faucets
 >

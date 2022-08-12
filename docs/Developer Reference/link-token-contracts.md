@@ -62,7 +62,7 @@ The LINK token is an ERC677 token that inherits functionality from the ERC20 tok
 
 ## Rinkeby (Deprecated)
 
-The Rinkeby network is [officially deprecated](https://ethereum.org/en/developers/docs/networks/#rinkeby) and will no longer be supported on some platforms. [Goerli](#goerli) is the recommended testnet for Chainlink on Ethereum.
+The Rinkeby network is [officially deprecated](https://ethereum.org/en/developers/docs/networks/#rinkeby) and is no longer supported. [Goerli](#goerli) is the recommended testnet for Chainlink on Ethereum.
 
 > 🚰 Rinkeby Faucets
 >
@@ -79,7 +79,7 @@ The Rinkeby network is [officially deprecated](https://ethereum.org/en/developer
 
 ## Kovan (Deprecated)
 
-The Kovan network is [officially deprecated](https://ethereum.org/en/developers/docs/networks/#kovan) and will no longer be supported on some platforms. [Goerli](#goerli) is the recommended testnet for Chainlink on Ethereum.
+The Kovan network is [officially deprecated](https://ethereum.org/en/developers/docs/networks/#kovan) and is no longer supported. [Goerli](#goerli) is the recommended testnet for Chainlink on Ethereum.
 
 > 🚰 Kovan Faucets
 >

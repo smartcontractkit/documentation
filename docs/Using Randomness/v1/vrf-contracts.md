@@ -106,7 +106,7 @@ For implementation details, read [Introduction to Chainlink VRF](/docs/chainlink
 
 ## Rinkeby (Deprecated)
 
-The Rinkeby network is [officially deprecated](https://ethereum.org/en/developers/docs/networks/#rinkeby) and will no longer be supported on some platforms. [Goerli](#goerli) is the recommended testnet for Chainlink on Ethereum.
+The Rinkeby network is [officially deprecated](https://ethereum.org/en/developers/docs/networks/#rinkeby) and is no longer supported. [Goerli](#goerli) is the recommended testnet for Chainlink on Ethereum.
 
 > 🚰 Rinkeby Faucets
 >
@@ -122,7 +122,7 @@ The Rinkeby network is [officially deprecated](https://ethereum.org/en/developer
 
 ## Kovan (Deprecated)
 
-The Kovan network is [officially deprecated](https://ethereum.org/en/developers/docs/networks/#kovan) and will no longer be supported on some platforms. [Goerli](#goerli) is the recommended testnet for Chainlink on Ethereum.
+The Kovan network is [officially deprecated](https://ethereum.org/en/developers/docs/networks/#kovan) and is no longer supported. [Goerli](#goerli) is the recommended testnet for Chainlink on Ethereum.
 
 > 🚰 Kovan Faucets
 >
