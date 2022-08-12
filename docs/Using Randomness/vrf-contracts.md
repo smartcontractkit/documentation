@@ -77,7 +77,9 @@ Fee parameters are configured in the coordinator contract and specify the premiu
 | Maximum Confirmations | 200                                                                                                                                                                                                                  |
 | Maximum Random Values | 500                                                                                                                                                                                                                  |
 
-### Rinkeby testnet
+### Rinkeby testnet (Deprecated)
+
+The Rinkeby network is [officially deprecated](https://ethereum.org/en/developers/docs/networks/#rinkeby) and will no longer be supported on some platforms. [Goerli](#goerli) is the recommended testnet for Chainlink on Ethereum.
 
 > 🚰Rinkeby Faucets
 >
