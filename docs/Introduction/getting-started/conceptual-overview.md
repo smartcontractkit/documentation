@@ -13,13 +13,13 @@ metadata:
     0: "/files/1a63254-link.png"
 ---
 
-Welcome to the Smart Contract Getting Started guide. This overview explains the basic concepts of smart contract development and oracle networks.
+Welcome to the Smart Contract Getting Started Guide! This overview explains the basic concepts of smart contract development and oracle networks.
 
 **Skip ahead**
-To get your hands on the code right away, you can skip this overview:
+To get your hands on the code right away, you can skip this overview. Otherwise, proceed here:
 - [Deploy Your First Smart Contract](/docs/deploy-your-first-contract/): If you are new to smart contracts, deploy your first smart contract in an interactive web development environment.
 - [Learn how to use Data Feeds](/docs/consuming-data-feeds/): If you are already familiar with smart contracts and want to learn how to create *hybrid* smart contracts, use Chainlink Data Feeds to get asset price data on-chain.
-
+- Watch this video to learn the basics about Chainlink, Ethereum, and smart contracts in general.
 <p>
   https://www.youtube.com/watch?v=rFXSEEQG9YE
 </p>
@@ -40,9 +40,9 @@ To get your hands on the code right away, you can skip this overview:
 
 When deployed to a blockchain, a *smart contract* is a set of instructions that can be executed without intervention from third parties. The smart contract code defines how it responds to input, just like the code of any other computer program.
 
-A valuable feature of smart contracts is that they can store and manage on-chain assets (like [ETH or ERC20 tokens](https://ethereum.org/en/developers/docs/standards/tokens/erc-20/)), just like you can with an Ethereum wallet. Because they have an on-chain address like a wallet, they can do everything any other address can. This enables you to program automated actions when receiving and transferring assets.
+A valuable feature of smart contracts is that they can store and manage on-chain assets (like [ETH or ERC20 tokens](https://ethereum.org/en/developers/docs/standards/tokens/erc-20/)), just like you can with an Ethereum wallet. Because they have an on-chain address like a wallet, smart contracts can do everything any other address can. This enables you to program automated actions when receiving and transferring assets.
 
-Smart contracts can connect to real-world market prices of assets to produce powerful applications. Securely connecting smart contracts with off-chain data and services is what makes them *hybrid* smart contracts. This is done using oracles.
+Smart contracts can connect to real-world market prices of assets to produce powerful applications. Oracles securely connect smart contracts with off-chain data and services, making them *hybrid* smart contracts.
 
 ## What language is a smart contract written in?
 
@@ -130,7 +130,7 @@ function updateMessage(string memory newMessage) public {
 }
 ```
 
-Functions use visibility modifiers to define the access level. Learn more about functions visibility [here](https://docs.soliditylang.org/en/latest/contracts.html#function-visibility). 
+Functions use visibility modifiers to define the access level. Learn more about functions visibility [here](https://docs.soliditylang.org/en/latest/contracts.html#function-visibility).
 
 ### Interfaces
 
