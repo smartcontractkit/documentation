@@ -81,7 +81,7 @@ Fee parameters are configured in the coordinator contract and specify the premiu
 
 The Rinkeby network is [officially deprecated](https://ethereum.org/en/developers/docs/networks/#rinkeby) and is no longer be supported. [Goerli](#goerli-testnet) is the recommended testnet for Chainlink on Ethereum.
 
-> 🚰Rinkeby Faucets
+> 🚰 Rinkeby Faucets
 >
 > Testnet LINK and ETH are available from https://faucets.chain.link/rinkeby
 > Backup Testnet ETH Faucets: https://rinkeby-faucet.com/, https://app.mycrypto.com/faucet
@@ -146,7 +146,7 @@ The Rinkeby network is [officially deprecated](https://ethereum.org/en/developer
 
 ### Polygon (Matic) Mumbai Testnet
 
-> 🚰Mumbai Faucet
+> 🚰 Mumbai Faucet
 >
 > Testnet LINK and MATIC are available from the [Polygon faucet](https://faucet.polygon.technology/) and https://faucets.chain.link/mumbai.
 
