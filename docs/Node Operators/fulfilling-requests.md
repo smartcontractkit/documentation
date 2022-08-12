@@ -129,7 +129,7 @@ After you add jobs to your node, you can use the node to fulfill requests. This 
 
 1. Open [ATestnetConsumer.sol in Remix](https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/ATestnetConsumer.sol).
 
-1. Note that `setChainlinkToken(0x01BE23585060835E02B77ef475b0Cc51aA1e0709)` is configured for _Rinkeby_. Fetch the Link token address for the network you are deploying into from the [Link token contracts page](/docs/link-token-contracts).
+1. Note that `setChainlinkToken(0x326C977E6efc84E512bB9C30f76E30c160eD06FB)` is configured for _Goerli_. Fetch the Link token address for the network you are deploying into from the [Link token contracts page](/docs/link-token-contracts).
 
 1. On the **Compiler** tab, click the **Compile** button for `ATestnetConsumer.sol`.
 

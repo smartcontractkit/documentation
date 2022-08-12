@@ -38,17 +38,17 @@ This guide assumes that you know how to create and deploy smart contracts on Eth
 
 - [The Remix IDE](https://remix.ethereum.org/)
 - [MetaMask](https://metamask.io/)
-- [Rinkeby testnet ETH](/docs/link-token-contracts/#rinkeby)
+- [Goerli testnet ETH](/docs/link-token-contracts/#goerli)
 
 If you are new to developing smart contracts on Ethereum, see the [Getting Started](/docs/conceptual-overview/) guide to learn the basics.
 
 ## Create and fund a subscription
 
-For this example, create a new subscription on the Rinkeby testnet.
+For this example, create a new subscription on the Goerli testnet.
 
-1. Open MetaMask and set it to use the Rinkeby testnet. The Subscription Manager detects your network based on the active network in MetaMask.
+1. Open MetaMask and set it to use the Goerli testnet. The Subscription Manager detects your network based on the active network in MetaMask.
 
-1. Check MetaMask to make sure you have testnet ETH and LINK on Rinkeby. If you need testnet funds, you can get them from [faucets.chain.link](https://faucets.chain.link/rinkeby).
+1. Check MetaMask to make sure you have testnet ETH and LINK on Goerli. You can get testnet ETH and LINK at one of the available [Goerli faucets](/docs/link-token-contracts/#goerli).
 
 1. Open the [Subscription Manager](https://vrf.chain.link) page.
 
@@ -74,7 +74,7 @@ For this example, use the [VRFv2Consumer.sol](https://remix.ethereum.org/#url=ht
 
 The contract also includes pre-configured values for the necessary request parameters such as `vrfCoordinator` address, `link` token contract address, and gas lane `keyHash`. You can change these parameters if you want to experiment on different testnets, but for this example you only need to specify `subscriptionId` when you deploy the contract.
 
-Build and deploy the contract on Rinkeby.
+Build and deploy the contract on Goerli.
 
 1. Open the `VRFv2Consumer.sol`[(link)](https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFv2Consumer.sol) contract in Remix.
 

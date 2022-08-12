@@ -111,6 +111,9 @@ Once you have your Ethereum client running and fully synced, you're ready to run
 
 Create a local directory to hold the Chainlink data:
 
+```shell Goerli
+mkdir ~/.chainlink-goerli
+```
 ```shell Rinkeby
 mkdir ~/.chainlink-rinkeby
 ```
@@ -127,6 +130,14 @@ mkdir ~/.chainlink
 
 Run the following as a command to create an environment file and populate with variables specific to the network you're running on. For a full list of available configuration variables, click [here](../configuration-variables/).
 
+```shell Goerli
+echo "ROOT=/chainlink
+LOG_LEVEL=debug
+ETH_CHAIN_ID=5
+CHAINLINK_TLS_PORT=0
+SECURE_COOKIES=false
+ALLOW_ORIGINS=*" > ~/.chainlink-goerli/.env
+```
 ```shell Rinkeby
 echo "ROOT=/chainlink
 LOG_LEVEL=debug
@@ -168,6 +179,9 @@ ETH_CONTAINER_IP=$(docker inspect --format '{{ "{{ .NetworkSettings.IPAddress " 
 
 Then run the following command to add the Ethereum client's URL to your environment file. If you are using an external Ethereum client, use the External tab below, and update `$ETH_CONTAINER_IP` to the websocket address used for connectivity.
 
+```shell Goerli
+echo "ETH_URL=ws://$ETH_CONTAINER_IP:8546" >> ~/.chainlink-goerli/.env
+```
 ```shell Rinkeby
 echo "ETH_URL=ws://$ETH_CONTAINER_IP:8546" >> ~/.chainlink-rinkeby/.env
 ```
@@ -182,6 +196,9 @@ echo "ETH_URL=ws://$ETH_CONTAINER_IP:8546" >> ~/.chainlink/.env
 
 If you are using an external provider for connectivity to the Ethereum blockchain or you are running an Ethereum client on a separate instance, you may use the command below for your network. Be sure to update the value for `CHANGEME` to the value given by your provider or the address and port of your separate instance.
 
+```shell Goerli
+echo "ETH_URL=CHANGEME" >> ~/.chainlink-goerli/.env
+```
 ```shell Rinkeby
 echo "ETH_URL=CHANGEME" >> ~/.chainlink-rinkeby/.env
 ```
@@ -210,6 +227,9 @@ You will need to connect your Chainlink node with a remote PostgreSQL database. 
 >
 > If you're testing you can add `?sslmode=disable` to the end of your `DATABASE_URL`. However you should *never* do this on a production node.
 
+```shell Goerli
+echo "DATABASE_URL=postgresql://$USERNAME:$PASSWORD@$SERVER:$PORT/$DATABASE" >> ~/.chainlink-goerli/.env
+```
 ```shell Rinkeby
 echo "DATABASE_URL=postgresql://$USERNAME:$PASSWORD@$SERVER:$PORT/$DATABASE" >> ~/.chainlink-rinkeby/.env
 ```
@@ -224,6 +244,9 @@ echo "DATABASE_URL=postgresql://$USERNAME:$PASSWORD@$SERVER:$PORT/$DATABASE" >> 
 
 Now you can run the Docker image. Replace `<version>` with your desired version. Tag versions are available in the [Chainlink docker hub](https://hub.docker.com/r/smartcontract/chainlink/tags). *The `latest` version does not work.*
 
+```shell Goerli
+cd ~/.chainlink-goerli && docker run -p 6688:6688 -v ~/.chainlink-goerli:/chainlink -it --env-file=.env smartcontract/chainlink:<version> local n
+```
 ```shell Rinkeby
 cd ~/.chainlink-rinkeby && docker run -p 6688:6688 -v ~/.chainlink-rinkeby:/chainlink -it --env-file=.env smartcontract/chainlink:<version> local n
 ```

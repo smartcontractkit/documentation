@@ -83,10 +83,10 @@ To use this contract:
 
 1. Open the [contract in Remix](https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/GetGasPrice.sol).
 
-1. Compile and deploy the contract using the Injected Provider environment. The contract includes all the configuration variables for the _Rinkeby_ testnet. Make sure your wallet is set to use _Rinkeby_. The _constructor_ sets the following parameters:
+1. Compile and deploy the contract using the Injected Provider environment. The contract includes all the configuration variables for the _Goerli_ testnet. Make sure your wallet is set to use _Goerli_. The _constructor_ sets the following parameters:
 
-   - The Chainlink Token address for _Rinkeby_ by calling the [`setChainlinkToken`](/docs/chainlink-framework/#setchainlinktoken) function.
-   - The Oracle contract address for _Rinkeby_ by calling the [`setChainlinkOracle`](/docs/chainlink-framework/#setchainlinkoracle) function.
+   - The Chainlink Token address for _Goerli_ by calling the [`setChainlinkToken`](/docs/chainlink-framework/#setchainlinktoken) function.
+   - The Oracle contract address for _Goerli_ by calling the [`setChainlinkOracle`](/docs/chainlink-framework/#setchainlinkoracle) function.
    - The `jobId`: A specific job for the oracle node to run. In this case, the job is very specific to the use case as it returns the gas prices. You can find the job spec for the Chainlink node [here](/docs/direct-request-existing-job/).
 
 1. Fund your contract with 0.1 LINK. To learn how to send LINK to contracts, read the [Fund Your Contracts](/docs/fund-your-contract/) page.

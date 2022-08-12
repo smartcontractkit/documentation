@@ -18,7 +18,7 @@ Some smart contracts require funding at their addresses so they can operate with
 ## Send funds to your contract
 
 1. Open MetaMask.
-1. Select the network that you want to send funds on. For example, select the Rinkeby testnet.
+1. Select the network that you want to send funds on. For example, select the Goerli testnet.
 1. Click the **Send** button to initiate a transaction.
 1. Paste your contract address in the address field.
 1. In the **Asset** drop down menu, select the type of asset that you need to send to your contract. For example, you can send LINK. If LINK is not listed, follow the guide to [Acquire testnet LINK](/docs/acquire-link/).

@@ -17,16 +17,16 @@ When you use data feeds, retrieve the feeds through the `AggregatorV3Interface` 
 
 ## AggregatorV3Interface
 
-Import this interface to your contract and use it to run functions in the proxy contract. Create the interface object by pointing to the proxy address. For example, on Rinkeby you could create the interface object in the constructor of your contract using the following example:
+Import this interface to your contract and use it to run functions in the proxy contract. Create the interface object by pointing to the proxy address. For example, on Goerli you could create the interface object in the constructor of your contract using the following example:
 
 ```solidity Solidity
 /**
- * Network: Rinkeby
+ * Network: Goerli
  * Data Feed: BTC/USD
- * Address: 0xECe365B379E1dD183B20fc5f022230C044d51404
+ * Address: 0xA39434A63A52E749F02807ae27335515BA4b07F7
  */
 constructor() {
-    priceFeed = AggregatorV3Interface(0xECe365B379E1dD183B20fc5f022230C044d51404);
+    priceFeed = AggregatorV3Interface(0xA39434A63A52E749F02807ae27335515BA4b07F7);
 }
 ```
 

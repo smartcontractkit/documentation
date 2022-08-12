@@ -105,7 +105,7 @@ Below are the parameters and return values of the `checkUpkeep` function. Click 
 
 You can pass information into your `checkUpkeep` function from your [upkeep registration](../register-upkeep/) to execute different code paths. For example, to check the balance on an specific address, set the `checkData` to abi encode of the address. To learn how to create flexible upkeeps with checkData, please see out [flexible upkeeps](../flexible-upkeeps/) page.
 
-```solidity Rinkeby
+```solidity Goerli
 {% include 'snippets/Keepers/checkData.sol' %}
 ```
 

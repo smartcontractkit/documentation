@@ -80,7 +80,7 @@ The contract will have the following functions:
 ### Create and fund a subscription
 
 Chainlink VRF requests receive funding from subscription accounts. The [Subscription Manager](https://vrf.chain.link) lets you create an account and pre-pay your use of Chainlink VRF requests.
-For this example, create a new subscription on the Rinkeby testnet as explained [here](/docs/get-a-random-number/#create-and-fund-a-subscription).
+For this example, create a new subscription on the Goerli testnet as explained [here](/docs/get-a-random-number/#create-and-fund-a-subscription).
 
 ### Importing `VRFConsumerBaseV2` and `VRFCoordinatorV2Interface`
 
@@ -103,12 +103,12 @@ contract VRFD20 is VRFConsumerBaseV2 {
 
 ### Contract variables
 
-This example is adapted for [Rinkeby testnet](/docs/vrf-contracts/#rinkeby-testnet) but you can change the configuration and make it run for any [supported network](/docs/vrf-contracts/#configurations).
+This example is adapted for [Goerli testnet](/docs/vrf-contracts/#goerli-testnet) but you can change the configuration and make it run for any [supported network](/docs/vrf-contracts/#configurations).
 
 ```solidity
 uint64 s_subscriptionId;
-address vrfCoordinator = 0x6168499c0cFfCaCD319c818142124B7A15E857ab;
-bytes32 s_keyHash = 0xd89b2bf150e3b9e13446986e571fb9cab24b13cea0a43ea20a6049a85cc807cc;
+address vrfCoordinator = 0x2Ca8E0C643bDe4C2E08ab1fA0da3401AdAD7734D;
+bytes32 s_keyHash = 0x79d3d8832d904592c0bf9818b621522c988bb8b0c05cdc3b15aea1b6e8db0c15;
 uint32 callbackGasLimit = 40000;
 uint16 requestConfirmations = 3;
 uint32 numWords =  1;
@@ -354,7 +354,7 @@ Once compiled, you'll see a dropdown menu that looks like this in the deploy pan
 
 ![Remix contract selected](/files/intermediates-tutorial-01.png)
 
-Select the `VRFD20` contract or the name that you gave to your contract. You will deploy this contract on the Rinkeby test network.
+Select the `VRFD20` contract or the name that you gave to your contract. You will deploy this contract on the Goerli test network.
 
 Click the caret arrow on the right hand side of **Deploy** to expand the parameter fields, and paste your subscription id.
 
@@ -362,7 +362,7 @@ Click the caret arrow on the right hand side of **Deploy** to expand the paramet
 
 Then click the `Deploy` button and use your Metamask account to confirm the transaction.
 
-**Note**: You should [have some Rinkeby ETH](/docs/deploy-your-first-contract/#install-and-fund-your-metamask-wallet) in your Metamask account to pay for the GAS.
+**Note**: You should [have some Goerli ETH](/docs/deploy-your-first-contract/#install-and-fund-your-metamask-wallet) in your Metamask account to pay for the GAS.
 
 > 📘 Address, Key Hashes and more
 >

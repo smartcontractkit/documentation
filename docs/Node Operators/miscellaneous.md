@@ -180,6 +180,9 @@ However, if we add `--name chainlink` to our run command, `docker ps` gives us:
 
 This can be easily accomplished by using the following example run command:
 
+```shell Goerli
+cd ~/.chainlink-goerli && docker run --name chainlink -p 6688:6688 -v ~/.chainlink-goerli:/chainlink -it --env-file=.env smartcontract/chainlink local n
+```
 ```shell Rinkeby
 cd ~/.chainlink-rinkeby && docker run --name chainlink -p 6688:6688 -v ~/.chainlink-rinkeby:/chainlink -it --env-file=.env smartcontract/chainlink local n
 ```
@@ -212,6 +215,9 @@ The Chainlink node can be supplied with files for the wallet password and API em
 >
 > Change the values within the quotes to something unique for your node.
 
+```shell Goerli
+echo "user@example.com" > ~/.chainlink-goerli/.api
+```
 ```shell Rinkeby
 echo "user@example.com" > ~/.chainlink-rinkeby/.api
 ```
@@ -224,6 +230,9 @@ echo "user@example.com" > ~/.chainlink/.api
 
 Then add the password line by running:
 
+```shell Goerli
+echo "password" >> ~/.chainlink-goerli/.api
+```
 ```shell Rinkeby
 echo "password" >> ~/.chainlink-rinkeby/.api
 ```
@@ -236,6 +245,9 @@ echo "password" >> ~/.chainlink/.api
 
 Create the password file by running the following:
 
+```shell Goerli
+echo "my_wallet_password" > ~/.chainlink-goerli/.password
+```
 ```shell Rinkeby
 echo "my_wallet_password" > ~/.chainlink-rinkeby/.password
 ```
@@ -248,6 +260,9 @@ echo "my_wallet_password" > ~/.chainlink/.password
 
 Finally, in order to use the password and API files upon running the node, add `-p /chainlink/.password -a /chainlink/.api` to your run command, like so:
 
+```shell Goerli
+cd ~/.chainlink-goerli && docker run -p 6688:6688 -v ~/.chainlink-goerli:/chainlink -it --env-file=.env smartcontract/chainlink local n -p /chainlink/.password -a /chainlink/.api
+```
 ```shell Rinkeby
 cd ~/.chainlink-rinkeby && docker run -p 6688:6688 -v ~/.chainlink-rinkeby:/chainlink -it --env-file=.env smartcontract/chainlink local n -p /chainlink/.password -a /chainlink/.api
 ```
@@ -272,5 +287,5 @@ If there is already a key in your database and you want to import another key, y
 ## Full example in detached mode
 
 ```shell
-cd ~/.chainlink-rinkeby && docker run --restart=always  -p 6688:6688 -d --name rinkeby-primary -v ~/.chainlink-rinkeby:/chainlink -it --env-file=.env smartcontract/chainlink:1.0.0 local n -p /chainlink/.password
+cd ~/.chainlink-goerli && docker run --restart=always  -p 6688:6688 -d --name goerli-primary -v ~/.chainlink-goerli:/chainlink -it --env-file=.env smartcontract/chainlink:1.0.0 local n -p /chainlink/.password
 ```

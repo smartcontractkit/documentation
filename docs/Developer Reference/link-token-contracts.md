@@ -47,20 +47,26 @@ The LINK token is an ERC677 token that inherits functionality from the ERC20 tok
 
 ## Goerli
 
+> 🚰 Goerli Faucets
+>
+> Testnet LINK is available from https://faucets.chain.link/goerli
+> Testnet ETH is available from https://goerlifaucet.com/ or faucets listed at https://faucetlink.to/goerli.
+
 | Parameter      | Value                                                                                                                                                                                                                 |
 | :------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `ETH_CHAIN_ID` | `5`                                                                                                                                                                                                                   |
-| Address        | <a class="erc-token-address" id="5_0x326C977E6efc84E512bB9C30f76E30c160eD06FB" href="https://goerli.etherscan.io/address/0x326C977E6efc84E512bB9C30f76E30c160eD06FB">`0x326C977E6efc84E512bB9C30f76E30c160eD06FB`</a> |
+| Address        | <a class="erc-token-address" id="5_0x326C977E6efc84E512bB9C30f76E30c160eD06FB" href="https://goerli.etherscan.io/token/0x326C977E6efc84E512bB9C30f76E30c160eD06FB">`0x326C977E6efc84E512bB9C30f76E30c160eD06FB`</a> |
 | Name           | Chainlink Token                                                                                                                                                                                                       |
 | Symbol         | LINK                                                                                                                                                                                                                  |
 | Decimals       | 18                                                                                                                                                                                                                    |
 
-## Rinkeby
+## Rinkeby (Deprecated)
+
+The Rinkeby network is [officially deprecated](https://ethereum.org/en/developers/docs/networks/#rinkeby) and is no longer supported. [Goerli](#goerli) is the recommended testnet for Chainlink on Ethereum.
 
 > 🚰 Rinkeby Faucets
 >
-> Testnet LINK is available from https://faucets.chain.link/rinkeby
-> Testnet ETH is available from: https://faucets.chain.link/rinkeby
+> Testnet LINK and ETH are available from https://faucets.chain.link/rinkeby
 > Backup Testnet ETH Faucets: https://rinkeby-faucet.com/, https://app.mycrypto.com/faucet
 
 | Parameter      | Value                                                                                                                                                                                                                |
@@ -73,7 +79,7 @@ The LINK token is an ERC677 token that inherits functionality from the ERC20 tok
 
 ## Kovan (Deprecated)
 
-The Kovan network is [officially deprecated](https://ethereum.org/en/developers/docs/networks/#kovan) and will no longer be supported on some platforms like [Alchemy](https://www.alchemy.com/the-merge). Currently, [Rinkeby](#rinkeby) is the recommended testnet for Chainlink on Ethereum.
+The Kovan network is [officially deprecated](https://ethereum.org/en/developers/docs/networks/#kovan) and is no longer supported. [Goerli](#goerli) is the recommended testnet for Chainlink on Ethereum.
 
 > 🚰 Kovan Faucets
 >
