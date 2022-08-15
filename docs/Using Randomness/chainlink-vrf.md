@@ -95,7 +95,7 @@ These variables depend on current network conditions, your specified limit on ca
 
 Requests to Chainlink VRF v2 follow the [Request & Receive Data](/docs/request-and-receive-data/) cycle. The VRF coordinator processes the request and determines the final charge to your subscription using the following steps:
 
-1. You submit your request with a specified gas lane `keyHash` and the `callbackGasLimit`. If your request is urgent, specify a gas lane with a higher gas price limit. The `callbackGasLimit` depends on the size of your request. Generally, a limit of 100,000 gas is appropriate. Verification gas has a hard upper limit of 200,000 gas.
+1. You submit your request with a specified gas lane `keyHash` and the `callbackGasLimit`. If your request is urgent, specify a gas lane with a higher gas price limit. The `callbackGasLimit` depends on the size of your request. Generally, a limit of 100,000 gas is appropriate. Verification gas has a hard upper limit of 200,000 gas, and it is used to calculate minimum LINK balance for VRF subscriptions. `callbackGasLimit` has a hard upper limit as 2,500,000 gas.
 
 1. The coordinator starts the transaction and bumps the gas price until the transaction is complete. The coordinator will not exceed the gas price limit of your selected gas lane. If your request cannot be completed at your specified gas limit, resubmit the request with a different gas lane or wait until gas prices fall below your current gas lane limits.
 
