@@ -123,7 +123,7 @@ If your smart contracts use data feeds, assess those data feeds for the followin
 
 - [Liquidity and its Distribution](#liquidity-and-its-distribution)
 - [Single Source Data Providers](#single-source-data-providers)
-- [Crypto Actions](#crypto-actions)
+- [Crypto and Blockchain Actions](#crypto-and-blockchain-actions)
 - [Market Failures Resulting from Extreme Events](#market-failures-resulting-from-extreme-events)
 - [Periods of High Network Congestion](#periods-of-high-network-congestion)
 - [Unknown and Known Users](#unknown-and-known-users)
