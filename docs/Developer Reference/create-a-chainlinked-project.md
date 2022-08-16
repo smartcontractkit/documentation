@@ -8,7 +8,7 @@ whatsnext: {"Introduction to Data Feeds":"/docs/using-chainlink-reference-contra
 ---
 ![Starter Kits Logos](/files/c6e99c5-Untitled_design_23.png)
 
-This page explains how to install and use the [Chainlink Library](../chainlink-framework/) in your projects, either manually or via the user of the Chainlink Starter Kits.
+This page explains how to install and use the [Chainlink Library](/docs/any-api/api-reference/) in your projects, either manually or via the user of the Chainlink Starter Kits.
 
 > 📘 Important
 >
@@ -139,7 +139,7 @@ If you're interested in retrieving up to date crypto prices in your contracts, l
 
 If you need to consume randomness in your contracts, learn about [Chainlink VRF](../chainlink-vrf/).
 
-And if you want your contracts to retrieve data from off-chain APIs, learn about [Using Any API](../request-and-receive-data/).
+And if you want your contracts to retrieve data from off-chain APIs, learn about [Using Any API](/docs/any-api/introduction/).
 
 # Testing Chainlink Contracts
 

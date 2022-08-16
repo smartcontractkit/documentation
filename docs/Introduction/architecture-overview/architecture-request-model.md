@@ -21,7 +21,7 @@ All source code is open source and available in the [Chainlink Github repository
 
 The client constructs and makes a request to a known Chainlink oracle through the `transferAndCall` function, implemented by the LINK token. This request contains encoded information that is required for the cycle to succeed. In the `ChainlinkClient` contract, this call is initiated with a call to `sendChainlinkRequestTo`.
 
-To build your own client contract using `ChainlinkClient`, see [Introduction to Using Any API](../request-and-receive-data/), or view the [ChainlinkClient API Reference](../chainlink-framework/) for the `ChainlinkClient` contract.
+To build your own client contract using `ChainlinkClient`, see [Introduction to Using Any API](/docs/any-api/introduction/), or view the [ChainlinkClient API Reference](/docs/any-api/api-reference/) for the `ChainlinkClient` contract.
 
 ### LINK Token
 
@@ -41,7 +41,7 @@ The client contract that initiates this cycle must create a request with the fol
 - The job ID, so the oracle knows which tasks to perform.
 - The callback function, which the oracle sends the response to.
 
-To learn about how to find oracles to suit your needs, see [Find Existing Jobs](../listing-services/).
+To learn about how to find oracles to suit your needs, see [Find Existing Jobs](/docs/any-api/find-oracle/).
 
 Oracle contracts are responsible for handling on-chain requests made through the LINK token, by implementing `onTokenTransfer` as a <a href="https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.6/LinkTokenReceiver.sol" target="_blank">`LinkTokenReceiver`</a>. Upon execution of this function, the oracle contract **emits an `OracleRequest` event** containing information about the request. This event is crucial, as it is monitored by the off-chain oracle node which acts upon it.
 
