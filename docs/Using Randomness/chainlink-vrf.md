@@ -123,7 +123,7 @@ Requests to Chainlink VRF v2 follow the [Request & Receive Data](/docs/request-a
 - `keyHash`: Identifier that maps to a job and a private key on the VRF node and that represents a specified gas lane. If your request is urgent, specify a gas lane with a higher gas price limit. The configuration for your network can be found [here](/docs/vrf-contracts/#configurations).
 - `s_subscriptionId`: The subscription ID that the consuming contract is registered to. LINK funds are deducted from this subscription.
 - `requestConfirmations`: The number of block confirmations the oracle node will wait to respond. The minimum and maximum confirmations for your network can be found [here](/docs/vrf-contracts/#configurations).
-- `callbackGasLimit`: The maximum amount of gas a user is willing to pay for completing the callback VRF function.
+- `callbackGasLimit`: The maximum amount of gas a user is willing to pay for completing the callback VRF function. Note that you cannot put a value larger than `maxGasLimit` of the VRF Coordinator contract (read [coordinator contract limits](#coordinator-contract-limits) for more details).
 - `numWords`: The number of random numbers to request. The maximum random values that can be requested for your network can be found [here](/docs/vrf-contracts/#configurations).
 
 2. The VRF coordinator emits an event.
