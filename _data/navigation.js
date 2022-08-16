@@ -265,7 +265,7 @@ module.exports = {
           },
           {
             title: 'Testnet Oracles',
-            url: '/docs/any-api/devrel-testnet-oracles/',
+            url: '/docs/any-api/testnet-oracles/',
           },
           {
             title: 'Data Provider Nodes',

@@ -9,7 +9,7 @@ whatsnext:
     'Make a GET Request': '/docs/any-api/get-request/introduction/',
     'API Reference': '/docs/any-api/api-reference/',
     'Find Existing Jobs': '/docs/any-api/find-oracle/',
-    'Testnet Oracles': '/docs/any-api/devrel-testnet-oracles/',
+    'Testnet Oracles': '/docs/any-api/testnet-oracles/',
     'Data Provider Nodes': '/docs/any-api/data-providers/introduction/',
   }
 metadata:

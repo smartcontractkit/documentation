@@ -8,7 +8,7 @@ whatsnext:
   {
     'Make an Existing Job Request': '/docs/any-api/get-request/examples/existing-job-request/',
     'API Reference': '/docs/any-api/api-reference/',
-    'Testnet Oracles': '/docs/any-api/devrel-testnet-oracles/',
+    'Testnet Oracles': '/docs/any-api/testnet-oracles/',
     'Data Provider Nodes': '/docs/any-api/data-providers/introduction/',
   }
 ---
@@ -73,7 +73,7 @@ To use this contract:
 
    - The Chainlink Token address for _Goerli_ by calling the [`setChainlinkToken`](/docs/any-api/api-reference/#setchainlinktoken) function.
    - The Oracle contract address for _Goerli_ by calling the [`setChainlinkOracle`](/docs/any-api/api-reference/#setchainlinkoracle) function.
-   - The `jobId`: A specific job for the oracle node to run. In this case, the _data_ is a _bytes_ data type, so you must call a job that calls an API and returns _bytes_. We will be using a generic **_GET>bytes_** job that can be found [here](/docs/any-api/devrel-testnet-oracles/#jobs).
+   - The `jobId`: A specific job for the oracle node to run. In this case, the _data_ is a _bytes_ data type, so you must call a job that calls an API and returns _bytes_. We will be using a generic **_GET>bytes_** job that can be found [here](/docs/any-api/testnet-oracles/#jobs).
 
 1. Fund your contract with 0.1 LINK. To learn how to send LINK to contracts, read the [Fund Your Contracts](/docs/fund-your-contract/) page.
 

@@ -12,7 +12,7 @@ whatsnext:
     'Large Responses': '/docs/any-api/get-request/examples/large-responses/',
     'Make an Existing Job Request': '/docs/any-api/get-request/examples/existing-job-request/',
     'API Reference': '/docs/any-api/api-reference/',
-    'Testnet Oracles': '/docs/any-api/devrel-testnet-oracles/',
+    'Testnet Oracles': '/docs/any-api/testnet-oracles/',
     'Data Provider Nodes': '/docs/any-api/data-providers/introduction/',
   }
 metadata:

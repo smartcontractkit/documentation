@@ -8,7 +8,7 @@ whatsnext:
   {
     'Find Existing Jobs': '/docs/any-api/find-oracle/',
     'API Reference': '/docs/any-api/api-reference/',
-    'Testnet Oracles': '/docs/any-api/devrel-testnet-oracles/',
+    'Testnet Oracles': '/docs/any-api/testnet-oracles/',
     'Data Provider Nodes': '/docs/any-api/data-providers/introduction/',
   }
 metadata:
