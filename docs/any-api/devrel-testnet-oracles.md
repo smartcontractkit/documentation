@@ -3,7 +3,7 @@ layout: nodes.liquid
 section: ethereum
 date: Last Modified
 title: 'Testnet Oracles'
-permalink: 'docs/any-api-testnet-oracles/'
+permalink: 'docs/any-api/devrel-testnet-oracles/'
 metadata:
   title: 'Testnet Oracles'
   description: 'Chainlink Developer Relations testnet oracles'
@@ -63,7 +63,7 @@ To make testing simple, jobs are configured with the following properties:
 
 #### Get > bytes
 
-A full example can be found [here](/docs/large-responses/).
+A full example can be found [here](/docs/any-api/get-request/examples/large-responses/).
 
 ##### Request method
 
@@ -92,7 +92,7 @@ function fulfill(bytes32 requestId, bytes memory bytesData) public recordChainli
 
 #### Get > uint256
 
-A full example can be found [here](/docs/single-word-response/).
+A full example can be found [here](/docs/any-api/get-request/examples/single-word-response/).
 
 ##### Request method
 
@@ -171,7 +171,7 @@ function fulfill(bytes32 _requestId, bool _approved) public recordChainlinkFulfi
 
 #### Get > string
 
-A full example can be found [here](/docs/api-array-response/).
+A full example can be found [here](/docs/any-api/get-request/examples/api-array-response/).
 
 ##### Request method
 

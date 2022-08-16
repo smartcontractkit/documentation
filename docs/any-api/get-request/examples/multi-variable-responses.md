@@ -3,20 +3,20 @@ layout: nodes.liquid
 section: ethereum
 date: Last Modified
 title: 'Multi-Variable Responses'
-permalink: 'docs/multi-variable-responses/'
+permalink: 'docs/any-api/get-request/examples/multi-variable-responses/'
 whatsnext:
   {
-    'Fetch data from an Array': '/docs/api-array-response/',
-    'Large Responses': '/docs/large-responses/',
-    'Make an Existing Job Request': '/docs/existing-job-request/',
-    'API Reference': '/docs/chainlink-framework/',
-    'Testnet Oracles': '/docs/any-api-testnet-oracles/',
+    'Fetch data from an Array': '/docs/any-api/get-request/examples/api-array-response/',
+    'Large Responses': '/docs/any-api/get-request/examples/large-responses/',
+    'Make an Existing Job Request': '/docs/any-api/get-request/examples/existing-job-request/',
+    'API Reference': '/docs/any-api/api-reference/',
+    'Testnet Oracles': '/docs/any-api/devrel-testnet-oracles/',
   }
 ---
 
 ## Overview
 
-This guide explains how to make an HTTP GET request to an external API from a smart contract, using Chainlink's [Request & Receive Data](/docs/request-and-receive-data/) cycle and then receive multiple responses.
+This guide explains how to make an HTTP GET request to an external API from a smart contract, using Chainlink's [Request & Receive Data](/docs/any-api/introduction/) cycle and then receive multiple responses.
 This is known as **multi-variable** or **multi-word** responses.
 
 {% include 'sections/any-api-common-prereq.md' %}
@@ -57,9 +57,9 @@ To consume an API with multiple responses, your contract should inherit from [Ch
 
 > 🚧 Note on Funding Contracts
 >
-> Making a GET request will fail unless your deployed contract has enough LINK to pay for it. **Learn how to [Acquire testnet LINK](../acquire-link/) and [Fund your contract](../fund-your-contract/)**.
+> Making a GET request will fail unless your deployed contract has enough LINK to pay for it. **Learn how to [Acquire testnet LINK](/docs/acquire-link/) and [Fund your contract](/docs/fund-your-contract/)**.
 
-Assume that a user wants to obtain the ETH price quoted against three different currencies: _BTC_ , _USD_ and _EUR_. If they use only a single-word job, it would require three different requests. For a comparison, see the [Single Word Response](/docs/single-word-response/) example. To make these requests more efficient, use multi-word responses to do it all in a single request as shown in the following example:
+Assume that a user wants to obtain the ETH price quoted against three different currencies: _BTC_ , _USD_ and _EUR_. If they use only a single-word job, it would require three different requests. For a comparison, see the [Single Word Response](/docs/any-api/get-request/examples/single-word-response/) example. To make these requests more efficient, use multi-word responses to do it all in a single request as shown in the following example:
 
 ```solidity Goerli
 {% include 'samples/APIRequests/MultiWordConsumer.sol' %}
@@ -76,8 +76,8 @@ To use this contract:
 
 1. Compile and deploy the contract using the Injected Provider environment. The contract includes all the configuration variables for the _Goerli_ testnet. Make sure your wallet is set to use _Goerli_. The _constructor_ sets the following parameters:
 
-   - The Chainlink Token address for _Goerli_ by calling the [`setChainlinkToken`](/docs/chainlink-framework/#setchainlinktoken) function.
-   - The Oracle contract address for _Goerli_ by calling the [`setChainlinkOracle`](/docs/chainlink-framework/#setchainlinkoracle) function.
+   - The Chainlink Token address for _Goerli_ by calling the [`setChainlinkToken`](/docs/any-api/api-reference/#setchainlinktoken) function.
+   - The Oracle contract address for _Goerli_ by calling the [`setChainlinkOracle`](/docs/any-api/api-reference/#setchainlinkoracle) function.
    - The `jobId`: A specific job for the oracle node to run. In this case, you must call a job that is specifically configured to return _ETH_ price against _BTC_, _USD_ and _EUR_. You can find the job spec for the Chainlink node [here](/docs/direct-request-multi-word/).
 
 1. Fund your contract with 0.1 LINK. To learn how to send LINK to contracts, read the [Fund Your Contracts](/docs/fund-your-contract/) page.

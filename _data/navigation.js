@@ -56,7 +56,7 @@ module.exports = {
           },
           {
             title: 'Connect to Public API Data',
-            url: '/docs/request-and-receive-data/',
+            url: '/docs/any-api/introduction/',
           },
           {
             title: 'Run a Chainlink Node',
@@ -231,49 +231,49 @@ module.exports = {
         contents: [
           {
             title: 'Introduction to Using Any API',
-            url: '/docs/request-and-receive-data/',
+            url: '/docs/any-api/introduction/',
           },
           {
             title: 'Make a GET Request',
-            url: '/docs/make-a-http-get-request/',
+            url: '/docs/any-api/get-request/introduction/',
             children: [
               {
                 title: 'Single Word Response',
-                url: '/docs/single-word-response/',
+                url: '/docs/any-api/get-request/examples/single-word-response/',
               },
               {
                 title: 'Multi-Variable Responses',
-                url: '/docs/multi-variable-responses/',
+                url: '/docs/any-api/get-request/examples/multi-variable-responses/',
               },
               {
                 title: 'Array Response',
-                url: '/docs/api-array-response/',
+                url: '/docs/any-api/get-request/examples/api-array-response/',
               },
               {
                 title: 'Large Responses',
-                url: '/docs/large-responses/',
+                url: '/docs/any-api/get-request/examples/large-responses/',
               },
               {
                 title: 'Existing Job Request',
-                url: '/docs/existing-job-request/',
+                url: '/docs/any-api/get-request/examples/existing-job-request/',
               },
             ],
           },
           {
             title: 'Find Existing Jobs',
-            url: '/docs/listing-services/',
+            url: '/docs/any-api/find-oracle/',
           },
           {
             title: 'Testnet Oracles',
-            url: '/docs/any-api-testnet-oracles/',
+            url: '/docs/any-api/devrel-testnet-oracles/',
           },
           {
             title: 'Data Provider Nodes',
-            url: '/docs/data-provider-nodes/',
+            url: '/docs/any-api/data-providers/introduction/',
           },
           {
             title: 'API Reference',
-            url: '/docs/chainlink-framework/',
+            url: '/docs/any-api/api-reference/',
           },
         ],
       },

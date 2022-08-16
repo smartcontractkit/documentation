@@ -3,20 +3,20 @@ layout: nodes.liquid
 section: ethereum
 date: Last Modified
 title: 'Array Response'
-permalink: 'docs/api-array-response/'
+permalink: 'docs/any-api/get-request/examples/api-array-response/'
 whatsnext:
   {
-    'Large Responses': '/docs/large-responses/',
-    'Make an Existing Job Request': '/docs/existing-job-request/',
-    'API Reference': '/docs/chainlink-framework/',
-    'Testnet Oracles': '/docs/any-api-testnet-oracles/',
-    'Data Provider Nodes': '/docs/data-provider-nodes/',
+    'Large Responses': '/docs/any-api/get-request/examples/large-responses/',
+    'Make an Existing Job Request': '/docs/any-api/get-request/examples/existing-job-request/',
+    'API Reference': '/docs/any-api/api-reference/',
+    'Testnet Oracles': '/docs/any-api/devrel-testnet-oracles/',
+    'Data Provider Nodes': '/docs/any-api/data-providers/introduction/',
   }
 ---
 
 ## Overview
 
-This guide explains how to make an HTTP GET request to an external API, that returns a _json_ array, from a smart contract, using Chainlink's [Request & Receive Data](../request-and-receive-data/) cycle and then receive the needed data from the array.
+This guide explains how to make an HTTP GET request to an external API, that returns a _json_ array, from a smart contract, using Chainlink's [Request & Receive Data](/docs/any-api/introduction/) cycle and then receive the needed data from the array.
 
 {% include 'sections/any-api-common-prereq.md' %}
 
@@ -67,7 +67,7 @@ Fetch the _id_ of the first element. To consume an API, your contract must impor
 
 > 🚧 Note on Funding Contracts
 >
-> Making a GET request will fail unless your deployed contract has enough LINK to pay for it. **Learn how to [Acquire testnet LINK](../acquire-link/) and [Fund your contract](../fund-your-contract/)**.
+> Making a GET request will fail unless your deployed contract has enough LINK to pay for it. **Learn how to [Acquire testnet LINK](/docs/acquire-link/) and [Fund your contract](/docs/fund-your-contract/)**.
 
 ```solidity Goerli
 {% include 'samples/APIRequests/FetchFromArray.sol' %}
@@ -84,9 +84,9 @@ To use this contract:
 
 1. Compile and deploy the contract using the Injected Provider environment. The contract includes all the configuration variables for the _Goerli_ testnet. Make sure your wallet is set to use _Goerli_. The _constructor_ sets the following parameters:
 
-   - The Chainlink Token address for _Goerli_ by calling the [`setChainlinkToken`](/docs/chainlink-framework/#setchainlinktoken) function.
-   - The Oracle contract address for _Goerli_ by calling the [`setChainlinkOracle`](/docs/chainlink-framework/#setchainlinkoracle) function.
-   - The `jobId`: A specific job for the oracle node to run. In this case, the _id_ is a _string_ data type, so you must call a job that calls an API and returns a _string_. We will be using a generic **_GET>string_** job that can be found [here](/docs/any-api-testnet-oracles/#jobs).
+   - The Chainlink Token address for _Goerli_ by calling the [`setChainlinkToken`](/docs/any-api/api-reference/#setchainlinktoken) function.
+   - The Oracle contract address for _Goerli_ by calling the [`setChainlinkOracle`](/docs/any-api/api-reference/#setchainlinkoracle) function.
+   - The `jobId`: A specific job for the oracle node to run. In this case, the _id_ is a _string_ data type, so you must call a job that calls an API and returns a _string_. We will be using a generic **_GET>string_** job that can be found [here](/docs/any-api/devrel-testnet-oracles/#jobs).
 
 1. Fund your contract with 0.1 LINK. To learn how to send LINK to contracts, read the [Fund Your Contracts](/docs/fund-your-contract/) page.
 

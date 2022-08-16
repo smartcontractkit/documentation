@@ -93,7 +93,7 @@ These variables depend on current network conditions, your specified limit on ca
 
 - **Callback gas limit:** Specifies the maximum amount of gas you are willing to spend on the callback request. Define this limit by specifying the `callbackGasLimit` value in your request.
 
-Requests to Chainlink VRF v2 follow the [Request & Receive Data](/docs/request-and-receive-data/) cycle. The VRF coordinator processes the request and determines the final charge to your subscription using the following steps:
+Requests to Chainlink VRF v2 follow the [Request & Receive Data](/docs/any-api/introduction/) cycle. The VRF coordinator processes the request and determines the final charge to your subscription using the following steps:
 
 1. You submit your request with a specified gas lane `keyHash` and the `callbackGasLimit`. If your request is urgent, specify a gas lane with a higher gas price limit. The `callbackGasLimit` depends on the size of your request. Generally, a limit of 100,000 gas is appropriate. Verification gas has a hard upper limit of 200,000 gas.
 

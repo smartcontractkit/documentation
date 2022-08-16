@@ -4,7 +4,7 @@ section: ethereum
 date: Last Modified
 title: "Install Frameworks"
 permalink: "docs/create-a-chainlinked-project/"
-whatsnext: {"Introduction to Data Feeds":"/docs/using-chainlink-reference-contracts/", "Introduction to Chainlink VRF":"/docs/chainlink-vrf/", "Introduction to Using Any API":"/docs/request-and-receive-data/"}
+whatsnext: {"Introduction to Data Feeds":"/docs/using-chainlink-reference-contracts/", "Introduction to Chainlink VRF":"/docs/chainlink-vrf/", "Introduction to Using Any API":"/docs/any-api/introduction/"}
 ---
 ![Starter Kits Logos](/files/c6e99c5-Untitled_design_23.png)
 
