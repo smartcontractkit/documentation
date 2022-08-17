@@ -68,7 +68,8 @@ You can dynamically create and manage Upkeeps from within your own dApp. To do t
 You must meet the following prerequisites to ensure that this example will work:
 
 
-* Ensure you use the LINK, registry and registrar addresses for your network.
+- Correct [LINK token contract](../../link-token-contracts/)
+- [Registry and registrar addresses for your network](#Registry-and-Registrar-Addresses) 
   - LINK address per network can be found [here](../../link-token-contracts/).
   - Registry and registrar addresses are [here](#Registry-and-Registrar-Addresses) and you can also see them in the Keepers App.
 * Ensure your contract has enough [ERC-677 LINK](../../link-token-contracts/) to fund the Upkeep at creation. The minimum amount is 5 LINK.
