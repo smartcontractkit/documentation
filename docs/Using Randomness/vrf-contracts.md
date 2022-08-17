@@ -19,7 +19,7 @@ Chainlink VRF allows you to integrate provably fair and verifiably random data i
 
 For implementation details, read [Introduction to Chainlink VRF](/docs/chainlink-vrf/).
 
-## Coordinator Parameters
+## Coordinator parameters
 
 These parameters are configured in the coordinator contract. You can view these values by running `getConfig` on the coordinator or by viewing the coordinator contracts in a blockchain explorer.
 
@@ -39,12 +39,12 @@ Fee parameters are configured in the coordinator contract and specify the premiu
 - [Rinkeby testnet](#rinkeby-testnet-deprecated)
 - [BNB Chain](#bnb-chain)
 - [BNB Chain testnet](#bnb-chain-testnet)
-- [Polygon Mainnet](#polygon-matic-mainnet)
-- [Polygon Mumbai Testnet](#polygon-matic-mumbai-testnet)
-- [Avalanche Mainnet](#avalanche-mainnet)
-- [Avalanche Fuji Testnet](#avalanche-fuji-testnet)
-- [Fantom Mainnet](#fantom-mainnet)
-- [Fantom Testnet](#fantom-testnet)
+- [Polygon mainnet](#polygon-matic-mainnet)
+- [Polygon Mumbai testnet](#polygon-matic-mumbai-testnet)
+- [Avalanche mainnet](#avalanche-mainnet)
+- [Avalanche Fuji testnet](#avalanche-fuji-testnet)
+- [Fantom mainnet](#fantom-mainnet)
+- [Fantom testnet](#fantom-testnet)
 
 ### Ethereum Mainnet
 
@@ -56,6 +56,7 @@ Fee parameters are configured in the coordinator contract and specify the premiu
 | 500 gwei Key Hash     | `0xff8dedfbfa60af186cf3c830acbc32c05aae823045ae5ea7da1e45fbfaba4f92`                                                                                                                                         |
 | 1000 gwei Key Hash    | `0x9fe0eebf5e446e3c998ec9bb19951541aee00bb90ea201ae456421a2ded86805`                                                                                                                                         |
 | Premium               | 0.25 LINK                                                                                                                                                                                                    |
+| Max Gas Limit         | 2,500,000                                                                                                                                                                                                    |
 | Minimum Confirmations | 3                                                                                                                                                                                                            |
 | Maximum Confirmations | 200                                                                                                                                                                                                          |
 | Maximum Random Values | 500                                                                                                                                                                                                          |
@@ -67,15 +68,16 @@ Fee parameters are configured in the coordinator contract and specify the premiu
 > Testnet LINK is available from https://faucets.chain.link/goerli
 > Testnet ETH is available from https://goerlifaucet.com/ or faucets listed at https://faucetlink.to/goerli.
 
-| Item                  | Value                                                                                                                                                                                                                |
-| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Item                  | Value                                                                                                                                                                                                               |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | LINK Token            | <a class="erc-token-address" id="5_0x326C977E6efc84E512bB9C30f76E30c160eD06FB" href="https://goerli.etherscan.io/token/0x326C977E6efc84E512bB9C30f76E30c160eD06FB">`0x326C977E6efc84E512bB9C30f76E30c160eD06FB`</a> |
 | VRF Coordinator       | [`0x2Ca8E0C643bDe4C2E08ab1fA0da3401AdAD7734D`](https://goerli.etherscan.io/address/0x2Ca8E0C643bDe4C2E08ab1fA0da3401AdAD7734D)                                                                                      |
-| 30 gwei Key Hash      | `0x79d3d8832d904592c0bf9818b621522c988bb8b0c05cdc3b15aea1b6e8db0c15`                                                                                                                                                 |
-| Premium               | 0.25 LINK                                                                                                                                                                                                            |
-| Minimum Confirmations | 3                                                                                                                                                                                                                    |
-| Maximum Confirmations | 200                                                                                                                                                                                                                  |
-| Maximum Random Values | 500                                                                                                                                                                                                                  |
+| 30 gwei Key Hash      | `0x79d3d8832d904592c0bf9818b621522c988bb8b0c05cdc3b15aea1b6e8db0c15`                                                                                                                                                |
+| Premium               | 0.25 LINK                                                                                                                                                                                                           |
+| Max Gas Limit         | 2,500,000                                                                                                                                                                                                           |
+| Minimum Confirmations | 3                                                                                                                                                                                                                   |
+| Maximum Confirmations | 200                                                                                                                                                                                                                 |
+| Maximum Random Values | 500                                                                                                                                                                                                                 |
 
 ### Rinkeby testnet (Deprecated)
 
@@ -92,6 +94,7 @@ The Rinkeby network is [officially deprecated](https://ethereum.org/en/developer
 | VRF Coordinator       | [`0x6168499c0cFfCaCD319c818142124B7A15E857ab`](https://rinkeby.etherscan.io/address/0x6168499c0cFfCaCD319c818142124B7A15E857ab)                                                                                      |
 | 30 gwei Key Hash      | `0xd89b2bf150e3b9e13446986e571fb9cab24b13cea0a43ea20a6049a85cc807cc`                                                                                                                                                 |
 | Premium               | 0.25 LINK                                                                                                                                                                                                            |
+| Max Gas Limit         | 2,500,000                                                                                                                                                                                                            |
 | Minimum Confirmations | 3                                                                                                                                                                                                                    |
 | Maximum Confirmations | 200                                                                                                                                                                                                                  |
 | Maximum Random Values | 500                                                                                                                                                                                                                  |
@@ -106,6 +109,7 @@ The Rinkeby network is [officially deprecated](https://ethereum.org/en/developer
 | 500 gwei Key Hash     | `0xba6e730de88d94a5510ae6613898bfb0c3de5d16e609c5b7da808747125506f7`                                                                                                                                         |
 | 1000 gwei Key Hash    | `0x17cd473250a9a479dc7f234c64332ed4bc8af9e8ded7556aa6e66d83da49f470`                                                                                                                                         |
 | Premium               | 0.005 LINK                                                                                                                                                                                                   |
+| Max Gas Limit         | 2,500,000                                                                                                                                                                                                    |
 | Minimum Confirmations | 3                                                                                                                                                                                                            |
 | Maximum Confirmations | 200                                                                                                                                                                                                          |
 | Maximum Random Values | 500                                                                                                                                                                                                          |
@@ -122,11 +126,12 @@ The Rinkeby network is [officially deprecated](https://ethereum.org/en/developer
 | VRF Coordinator       | [`0x6A2AAd07396B36Fe02a22b33cf443582f682c82f`](https://testnet.bscscan.com/address/0x6A2AAd07396B36Fe02a22b33cf443582f682c82f)                                                                                         |
 | 50 gwei Key Hash      | `0xd4bb89654db74673a187bd804519e65e3f71a52bc55f11da7601a13dcf505314`                                                                                                                                                   |
 | Premium               | 0.005 LINK                                                                                                                                                                                                             |
+| Max Gas Limit         | 2,500,000                                                                                                                                                                                                              |
 | Minimum Confirmations | 3                                                                                                                                                                                                                      |
 | Maximum Confirmations | 200                                                                                                                                                                                                                    |
 | Maximum Random Values | 500                                                                                                                                                                                                                    |
 
-### Polygon (Matic) Mainnet
+### Polygon (Matic) mainnet
 
 > 📘 Important
 >
@@ -140,11 +145,12 @@ The Rinkeby network is [officially deprecated](https://ethereum.org/en/developer
 | 500 gwei Key Hash     | `0xcc294a196eeeb44da2888d17c0625cc88d70d9760a69d58d853ba6581a9ab0cd`                                                                                                                                                |
 | 1000 gwei Key Hash    | `0xd729dc84e21ae57ffb6be0053bf2b0668aa2aaf300a2a7b2ddf7dc0bb6e875a8`                                                                                                                                                |
 | Premium               | 0.0005 LINK                                                                                                                                                                                                         |
+| Max Gas Limit         | 2,500,000                                                                                                                                                                                                           |
 | Minimum Confirmations | 3                                                                                                                                                                                                                   |
 | Maximum Confirmations | 200                                                                                                                                                                                                                 |
 | Maximum Random Values | 500                                                                                                                                                                                                                 |
 
-### Polygon (Matic) Mumbai Testnet
+### Polygon (Matic) Mumbai testnet
 
 > 🚰 Mumbai Faucet
 >
@@ -156,11 +162,12 @@ The Rinkeby network is [officially deprecated](https://ethereum.org/en/developer
 | VRF Coordinator       | [`0x7a1BaC17Ccc5b313516C5E16fb24f7659aA5ebed`](https://mumbai.polygonscan.com/address/0x7a1BaC17Ccc5b313516C5E16fb24f7659aA5ebed)                                                                                             |
 | 500 gwei Key Hash     | `0x4b09e658ed251bcafeebbc69400383d49f344ace09b9576fe248bb02c003fe9f`                                                                                                                                                          |
 | Premium               | 0.0005 LINK                                                                                                                                                                                                                   |
+| Max Gas Limit         | 2,500,000                                                                                                                                                                                                                     |
 | Minimum Confirmations | 3                                                                                                                                                                                                                             |
 | Maximum Confirmations | 200                                                                                                                                                                                                                           |
 | Maximum Random Values | 500                                                                                                                                                                                                                           |
 
-### Avalanche Mainnet
+### Avalanche mainnet
 
 | Item                  | Value                                                                                                                                                                                                              |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -170,11 +177,12 @@ The Rinkeby network is [officially deprecated](https://ethereum.org/en/developer
 | 500 gwei Key Hash     | `0x89630569c9567e43c4fe7b1633258df9f2531b62f2352fa721cf3162ee4ecb46`                                                                                                                                               |
 | 1000 gwei Key Hash    | `0x06eb0e2ea7cca202fc7c8258397a36f33d88568d2522b37aaa3b14ff6ee1b696`                                                                                                                                               |
 | Premium               | 0.005 LINK                                                                                                                                                                                                         |
+| Max Gas Limit         | 2,500,000                                                                                                                                                                                                          |
 | Minimum Confirmations | 1                                                                                                                                                                                                                  |
 | Maximum Confirmations | 200                                                                                                                                                                                                                |
 | Maximum Random Values | 500                                                                                                                                                                                                                |
 
-### Avalanche Fuji Testnet
+### Avalanche Fuji testnet
 
 > 🚰 Avax Fuji Faucet
 >
@@ -186,11 +194,12 @@ The Rinkeby network is [officially deprecated](https://ethereum.org/en/developer
 | VRF Coordinator       | [`0x2eD832Ba664535e5886b75D64C46EB9a228C2610`](https://testnet.snowtrace.io/address/0x2eD832Ba664535e5886b75D64C46EB9a228C2610)                                                                                            |
 | 300 gwei Key Hash     | `0x354d2f95da55398f44b7cff77da56283d9c6c829a4bdf1bbcaf2ad6a4d081f61`                                                                                                                                                       |
 | Premium               | 0.005 LINK                                                                                                                                                                                                                 |
+| Max Gas Limit         | 2,500,000                                                                                                                                                                                                                  |
 | Minimum Confirmations | 1                                                                                                                                                                                                                          |
 | Maximum Confirmations | 200                                                                                                                                                                                                                        |
 | Maximum Random Values | 500                                                                                                                                                                                                                        |
 
-### Fantom Mainnet
+### Fantom mainnet
 
 > 🚧 ERC-677 LINK on Fantom
 >
@@ -205,11 +214,12 @@ The Rinkeby network is [officially deprecated](https://ethereum.org/en/developer
 | 10000 gwei Key Hash   | `0x5881eea62f9876043df723cf89f0c2bb6f950da25e9dfe66995c24f919c8f8ab`                                                                                                                                          |
 | 20000 gwei Key Hash   | `0x64ae04e5dba58bc08ba2d53eb33fe95bf71f5002789692fe78fb3778f16121c9`                                                                                                                                          |
 | Premium               | 0.0005 LINK                                                                                                                                                                                                   |
+| Max Gas Limit         | 2,500,000                                                                                                                                                                                                     |
 | Minimum Confirmations | 1                                                                                                                                                                                                             |
 | Maximum Confirmations | 200                                                                                                                                                                                                           |
 | Maximum Random Values | 500                                                                                                                                                                                                           |
 
-### Fantom Testnet
+### Fantom testnet
 
 > 🚰 Fantom Testnet Faucet
 >
@@ -221,6 +231,7 @@ The Rinkeby network is [officially deprecated](https://ethereum.org/en/developer
 | VRF Coordinator       | [`0xbd13f08b8352A3635218ab9418E340c60d6Eb418`](https://testnet.ftmscan.com/address/0xbd13f08b8352a3635218ab9418e340c60d6eb418)                                                                                           |
 | 3000 gwei Key Hash    | `0x121a143066e0f2f08b620784af77cccb35c6242460b4a8ee251b4b416abaebd4`                                                                                                                                                     |
 | Premium               | 0.0005 LINK                                                                                                                                                                                                              |
+| Max Gas Limit         | 2,500,000                                                                                                                                                                                                                |
 | Minimum Confirmations | 1                                                                                                                                                                                                                        |
 | Maximum Confirmations | 200                                                                                                                                                                                                                      |
 | Maximum Random Values | 500                                                                                                                                                                                                                      |
