@@ -24,8 +24,8 @@ Chainlink VRF (Verifiable Random Function) is a provably fair and verifiable ran
 - [Supported networks](#supported-networks)
 - [Subscriptions](#subscriptions)
 - [Subscription billing](#subscription-billing)
-- [Request and Receive Data](#request-and-receive-data)
-  - [End To End Diagram](#end-to-end-diagram)
+- [Request and receive data](#request-and-receive-data)
+  - [End-to-end diagram](#end-to-end-diagram)
   - [Explanation](#explanation)
 - [Limits](#limits)
 
@@ -98,9 +98,9 @@ The gas price depends on current network conditions. The callback gas depends on
 
 - **Callback gas limit:** Specifies the maximum amount of gas you are willing to spend on the callback request. Define this limit by specifying the `callbackGasLimit` value in your request.
 
-## Request and Receive Data
+## Request and receive data
 
-### End To End Diagram
+### End-to-end diagram
 
 ![VRF v2 subscription method end-to-end diagram](/images/vrf/v2-subscription-e2e.webp)
 
