@@ -70,7 +70,6 @@ You must meet the following prerequisites to ensure that this example will work:
 
 - Correct [LINK token contract](../../link-token-contracts/)
 - [Registry and registrar addresses for your network](#Registry-and-Registrar-Addresses) 
-  - LINK address per network can be found [here](../../link-token-contracts/).
 * Ensure your contract has enough [ERC-677 LINK](../../link-token-contracts/) to fund the Upkeep at creation. The minimum amount is 5 LINK.
 
 Tip: Consider fetching the LINK address and Registrar address from the intended Registry at run-time.
