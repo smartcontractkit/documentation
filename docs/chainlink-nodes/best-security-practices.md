@@ -93,7 +93,7 @@ The following are suggestions for job specifications and configuration settings 
 Running a Chainlink node works well if you template out your infrastructure using tools like Kubernetes or Terraform. The following repositories can assist you with doing that:
 
 - [Pega88's Kubernetes & Terraform setup](https://github.com/Pega88/chainlink-gcp)
-- [SDL Chainlink Kubernetes Deployment](https://github.com/mycelium-ethereums/ChainlinkKubernetes)
+- [SDL Chainlink Kubernetes Deployment](https://github.com/mycelium-ethereum/ChainlinkKubernetes)
 - [LinkPool's Terraform Provider](https://github.com/linkpoolio/terraform-provider-chainlink)
 - [Ansible hardened Chainlink](https://github.com/WilsonBillkia/bane)
 - [Terraform module for serverless OCR node on AWS](https://github.com/ChainOrion/terraform-aws-chainlink-node)
