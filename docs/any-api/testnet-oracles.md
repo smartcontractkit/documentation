@@ -11,11 +11,11 @@ metadata:
     0: '/files/72d4bd9-link.png'
 ---
 
-The Chainlink Development Relations team maintains several testnet oracles that you can use to test your implementation quickly.
+The Chainlink Developer Relations team maintains several testnet oracles that you can use to test your implementation quickly.
 
 > 🚰 Link token address and Faucet details
 >
-> To retrieve the link token address or get faucet details for your testnet of choice, see the [LINK Token Contracts](/docs/link-token-contracts/) page.
+> To retrieve the LINK token address or get faucet details for your testnet of choice, see the [LINK Token Contracts](/docs/link-token-contracts/) page.
 
 **Topics**
 
