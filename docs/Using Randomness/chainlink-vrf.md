@@ -76,7 +76,7 @@ VRF v2 requests receive funding from subscription accounts. The [Subscription Ma
 
 Subscriptions have the following core concepts:
 
-- **Subscription id**: 64-bit unsigned integer representing the unique identifier of the subscription.
+- **Subscription ID**: 64-bit unsigned integer representing the unique identifier of the subscription.
 - **Subscription accounts:** An account that holds LINK tokens and makes them available to fund requests to Chainlink VRF v2 coordinators.
 - **Subscription owner:** The wallet address that creates and manages a subscription account. Any account can add LINK to the subscription balance, but only the owner can add approved consumers or withdraw funds.
 - **Consumers:** Contracts that are approved to use funding from your subscription account.

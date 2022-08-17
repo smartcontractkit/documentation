@@ -19,7 +19,7 @@ Chainlink VRF allows you to integrate provably fair and verifiably random data i
 
 For implementation details, read [Introduction to Chainlink VRF](/docs/chainlink-vrf/).
 
-## Coordinator Parameters
+## Coordinator parameters
 
 These parameters are configured in the coordinator contract. You can view these values by running `getConfig` on the coordinator or by viewing the coordinator contracts in a blockchain explorer.
 
@@ -28,7 +28,7 @@ These parameters are configured in the coordinator contract. You can view these 
 - `uint32 stalenessSeconds`: How long the coordinator waits until we consider the ETH/LINK price used for converting gas costs to LINK is stale and use `fallbackWeiPerUnitLink`
 - `uint32 gasAfterPaymentCalculation`: How much gas is used outside of the payment calculation. This covers the additional operations required to decrement the subscription balance and increment the balance for the oracle that handled the request.
 
-## Fee Parameters
+## Fee parameters
 
 Fee parameters are configured in the coordinator contract and specify the premium you pay per request in addition to the gas cost for the transaction. You can view them by running `getFeeConfig` on the coordinator. The `uint32 fulfillmentFlatFeeLinkPPMTier1` parameter defines the fees per request specified in millionths of LINK.
 
@@ -39,12 +39,12 @@ Fee parameters are configured in the coordinator contract and specify the premiu
 - [Rinkeby testnet](#rinkeby-testnet-deprecated)
 - [BNB Chain](#bnb-chain)
 - [BNB Chain testnet](#bnb-chain-testnet)
-- [Polygon Mainnet](#polygon-matic-mainnet)
-- [Polygon Mumbai Testnet](#polygon-matic-mumbai-testnet)
-- [Avalanche Mainnet](#avalanche-mainnet)
-- [Avalanche Fuji Testnet](#avalanche-fuji-testnet)
-- [Fantom Mainnet](#fantom-mainnet)
-- [Fantom Testnet](#fantom-testnet)
+- [Polygon mainnet](#polygon-matic-mainnet)
+- [Polygon Mumbai testnet](#polygon-matic-mumbai-testnet)
+- [Avalanche mainnet](#avalanche-mainnet)
+- [Avalanche Fuji testnet](#avalanche-fuji-testnet)
+- [Fantom mainnet](#fantom-mainnet)
+- [Fantom testnet](#fantom-testnet)
 
 ### Ethereum Mainnet
 
@@ -131,7 +131,7 @@ The Rinkeby network is [officially deprecated](https://ethereum.org/en/developer
 | Maximum Confirmations | 200                                                                                                                                                                                                                    |
 | Maximum Random Values | 500                                                                                                                                                                                                                    |
 
-### Polygon (Matic) Mainnet
+### Polygon (Matic) mainnet
 
 > 📘 Important
 >
@@ -150,7 +150,7 @@ The Rinkeby network is [officially deprecated](https://ethereum.org/en/developer
 | Maximum Confirmations | 200                                                                                                                                                                                                                 |
 | Maximum Random Values | 500                                                                                                                                                                                                                 |
 
-### Polygon (Matic) Mumbai Testnet
+### Polygon (Matic) Mumbai testnet
 
 > 🚰 Mumbai Faucet
 >
@@ -167,7 +167,7 @@ The Rinkeby network is [officially deprecated](https://ethereum.org/en/developer
 | Maximum Confirmations | 200                                                                                                                                                                                                                           |
 | Maximum Random Values | 500                                                                                                                                                                                                                           |
 
-### Avalanche Mainnet
+### Avalanche mainnet
 
 | Item                  | Value                                                                                                                                                                                                              |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -182,7 +182,7 @@ The Rinkeby network is [officially deprecated](https://ethereum.org/en/developer
 | Maximum Confirmations | 200                                                                                                                                                                                                                |
 | Maximum Random Values | 500                                                                                                                                                                                                                |
 
-### Avalanche Fuji Testnet
+### Avalanche Fuji testnet
 
 > 🚰 Avax Fuji Faucet
 >
@@ -199,7 +199,7 @@ The Rinkeby network is [officially deprecated](https://ethereum.org/en/developer
 | Maximum Confirmations | 200                                                                                                                                                                                                                        |
 | Maximum Random Values | 500                                                                                                                                                                                                                        |
 
-### Fantom Mainnet
+### Fantom mainnet
 
 > 🚧 ERC-677 LINK on Fantom
 >
@@ -219,7 +219,7 @@ The Rinkeby network is [officially deprecated](https://ethereum.org/en/developer
 | Maximum Confirmations | 200                                                                                                                                                                                                           |
 | Maximum Random Values | 500                                                                                                                                                                                                           |
 
-### Fantom Testnet
+### Fantom testnet
 
 > 🚰 Fantom Testnet Faucet
 >
