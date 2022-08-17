@@ -81,7 +81,7 @@ See [shared fields](/docs/jobs/#shared-fields).
 
 Let's assume that a user makes a request to an oracle to call a public API, retrieve a number from the response, remove any decimals and return _uint256_.
 
-- The smart contract example can be found [here](/docs/single-word-response/).
+- The smart contract example can be found [here](/docs/any-api/get-request/examples/single-word-response/).
 - The job spec example can be found [here](/docs/direct-request-get-uint256/).
 
 ### Get > Int256 Job
@@ -100,26 +100,26 @@ Let's assume that a user makes a request to an oracle to call a public API, retr
 
 Let's assume that a user makes a request to an oracle and would like to fetch a _string_ from the response.
 
-- The smart contract example can be found [here](/docs/api-array-response/).
+- The smart contract example can be found [here](/docs/any-api/get-request/examples/api-array-response/).
 - The job spec example can be found [here](/docs/direct-request-get-string/).
 
 ### Get > Bytes Job
 
 Let's assume that a user makes a request to an oracle and would like to fetch _bytes_ from the response (meaning a response that contains an arbitrary-length raw byte data).
 
-- The smart contract example can be found [here](/docs/large-responses/).
+- The smart contract example can be found [here](/docs/any-api/get-request/examples/large-responses/).
 - The job spec example can be found [here](/docs/direct-request-get-bytes/).
 
 ### Multi-Word Job
 
 Let's assume that a user makes a request to an oracle and would like to fetch multiple words in one single request.
 
-- The smart contract example can be found [here](/docs/multi-variable-responses/).
+- The smart contract example can be found [here](/docs/any-api/get-request/examples/multi-variable-responses/).
 - The job spec example can be found [here](/docs/direct-request-multi-word/).
 
 ### Existing Job
 
 Using an _existing_ Oracle Job makes your smart contract code more succinct. Let's assume that a user makes a request to an oracle that leverages [Etherscan External Adapter](https://github.com/smartcontractkit/external-adapters-js/tree/develop/packages/sources/etherscan) to retrieve the gas price.
 
-- The smart contract example can be found [here](/docs/existing-job-request/).
+- The smart contract example can be found [here](/docs/any-api/get-request/examples/existing-job-request/).
 - The job spec example can be found [here](/docs/direct-request-existing-job/).

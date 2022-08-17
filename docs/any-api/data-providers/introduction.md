@@ -3,7 +3,7 @@ layout: nodes.liquid
 section: ethereum
 date: Last Modified
 title: 'Data Provider Nodes'
-permalink: 'docs/data-provider-nodes/'
+permalink: 'docs/any-api/data-providers/introduction/'
 ---
 
 # Overview
@@ -18,8 +18,8 @@ Data provider nodes allow customizable, on-demand API calls and the ability to d
 
 | Data Category | Name                                                                                             | Supported Blockchains        |
 | ------------- | ------------------------------------------------------------------------------------------------ | ---------------------------- |
-| Crypto        | [Kraken Rates Oracle Node](../kraken-rates-oracle-node)                                          | Ethereum                     |
-| DNS Lookup    | [DNS Ownership Oracle](../dns-ownership-oracle)                                                  | Ethereum, BNB Chain, Polygon |
+| Crypto        | [Kraken Rates Oracle Node](/docs/any-api/data-providers/kraken-rates/)                                          | Ethereum                     |
+| DNS Lookup    | [DNS Ownership Oracle](/docs/any-api/data-providers/dns-ownership/)                                                  | Ethereum, BNB Chain, Polygon |
 | Equities      | [dxFeed Price Oracle](https://market.link/nodes/dxFeed/integrations)                             | Ethereum, BNB Chain          |
 | Equities      | [Finage Global Market Data Oracle](https://market.link/nodes/Finage/integrations)                | Ethereum, BNB Chain          |
 | Equities      | [Tiingo EOD Stock Price Oracle](https://market.link/nodes/Tiingo/integrations)                   | Ethereum, BNB Chain          |
@@ -32,4 +32,4 @@ Data provider nodes allow customizable, on-demand API calls and the ability to d
 | Sports        | [SportMonks Sports Data Oracle](https://market.link/nodes/SportMonks/integrations)               | Ethereum, BNB Chain          |
 | Sports        | [SportsDataIO Oracle](https://market.link/nodes/SportsDataIO/integrations)                       | Ethereum, Polygon            |
 | Sports        | [TheRunDown Oracle Node](https://market.link/nodes/TheRundown/integrations)                      | Ethereum, Polygon            |
-| Weather       | [Google Weather Oracle](../google-weather)                                                       | Ethereum                     |
+| Weather       | [Google Weather Oracle](/docs/any-api/data-providers/google-weather/)                                                       | Ethereum                     |

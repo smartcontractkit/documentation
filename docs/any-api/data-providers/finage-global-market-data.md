@@ -3,7 +3,7 @@ layout: nodes.liquid
 section: ethereum
 date: Last Modified
 title: 'Finage Global Market Data Oracle'
-permalink: 'docs/finage-global-market-data-oracle/'
+permalink: 'docs/any-api/data-providers/finage-global-market-data/'
 ---
 
 Finage is a leading real-time stock, forex, and cryptocurrency data provider. They offer market data for 60,000+ securities, and a broad selection of data such as financial statements, Ownership, News Sentiments, Earning Call Transcripts and Mergers and Acquisitions. This oracle will initially provide a given stock’s performance relative to its sector’s performance.
@@ -11,7 +11,7 @@ Finage is a leading real-time stock, forex, and cryptocurrency data provider. Th
 # Steps For Using This Oracle
 
 - Write and deploy your contract using the network details below
-- Fund it with [LINK](../link-token-contracts/)
+- Fund it with [LINK](/docs/link-token-contracts/)
 - Call your [request method](./#chainlink-examples)
 
 # Network Details
@@ -103,10 +103,10 @@ contract FinageChainlink is ChainlinkClient {
 # Tasks
 
 - [Finage external adapter](https://github.com/smartcontractkit/external-adapters-js/tree/develop/packages/sources/finage)
-- [Copy](../core-adapters/#copy)
-- [Multiply](../core-adapters/#multiply)
-- [EthInt256](../core-adapters/#ethint256)
-- [EthTx](../core-adapters/#ethtx)
+- [Copy](/docs/core-adapters/#copy)
+- [Multiply](/docs/core-adapters/#multiply)
+- [EthInt256](/docs/core-adapters/#ethint256)
+- [EthTx](/docs/core-adapters/#ethtx)
 
 # Request Parameters
 

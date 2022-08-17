@@ -16,7 +16,7 @@ Chainlink connects smart contracts with external data using its decentralized or
 
 The [Basic Request Model](../architecture-request-model/) describes the on-chain architecture of requesting data from a single oracle source.
 
-To learn how to make a GET request using a single oracle, see [Make a GET Request](../make-a-http-get-request/).
+To learn how to make a GET request using a single oracle, see [Make a GET Request](/docs/any-api/get-request/introduction/).
 
 ## Decentralized Data Model
 

@@ -3,7 +3,7 @@ layout: nodes.liquid
 section: ethereum
 date: Last Modified
 title: 'Kraken Rates Oracle Node'
-permalink: 'docs/kraken-rates-oracle-node/'
+permalink: 'docs/any-api/data-providers/kraken-rates/'
 metadata:
   image:
     0: '/files/2713d5c-cl.png'
@@ -14,7 +14,7 @@ This Chainlink has a dedicated connection to <a href="https://blog.cfbenchmarks.
 # Steps for using this oracle
 
 - Write and deploy your contract using the network details below
-- Fund it with [LINK](../link-token-contracts/)
+- Fund it with [LINK](/docs/link-token-contracts/)
 - Call your [request method](./#chainlink-examples)
 
 # Network Details
@@ -110,10 +110,10 @@ contract KrakenChainlink is ChainlinkClient {
 
 # Tasks
 
-- [Kraken](../external-adapters/)
-- [Multiply](../core-adapters/#multiply)
-- [EthUint256](../core-adapters/#ethuint256)
-- [EthTx](../core-adapters/#ethtx)
+- [Kraken](/docs/external-adapters/)
+- [Multiply](/docs/core-adapters/#multiply)
+- [EthUint256](/docs/core-adapters/#ethuint256)
+- [EthTx](/docs/core-adapters/#ethtx)
 
 # Request Parameters
 
