@@ -77,7 +77,7 @@ permalink: /ethereum/
             Request &amp; Receive data from any API using the Chainlink contract
             library.
           </p>
-          <a href="/docs/request-and-receive-data/">
+          <a href="/docs/any-api/introduction/">
             <div class="arrowed-text">
                 Learn More
                 <img class="cta-learnmore-arrow" src="/images/card-icons/navigation-arrow-right.svg" loading="lazy" alt="Right arrow">
