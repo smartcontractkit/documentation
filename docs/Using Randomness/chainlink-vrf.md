@@ -116,21 +116,21 @@ The Chainlink VRF v2 solution uses both off-chain and on-chain components:
 
 #### Explanation
 
-Requests to Chainlink VRF v2 follow the [Request & Receive Data](/docs/request-and-receive-data/) cycle. The VRF coordinator processes the request and determines the final charge to your subscription using the following steps:
+Requests to Chainlink VRF v2 follow the [Request and Receive Data](/docs/any-api/introduction/) cycle. The VRF coordinator processes the request and determines the final charge to your subscription using the following steps:
 
 1. The consuming contract must inherit [VRFConsumerBaseV2](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/VRFConsumerBaseV2.sol) and implement the `fulfillRandomWords` function, which is the _callback VRF function_. Submit your VRF request by calling `requestRandomWords` of the [VRF Coordinator](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/VRFCoordinatorV2.sol) with:
 
-- `keyHash`: Identifier that maps to a job and a private key on the VRF node and that represents a specified gas lane. If your request is urgent, specify a gas lane with a higher gas price limit. The configuration for your network can be found [here](/docs/vrf-contracts/#configurations).
-- `s_subscriptionId`: The subscription ID that the consuming contract is registered to. LINK funds are deducted from this subscription.
-- `requestConfirmations`: The number of block confirmations the oracle node will wait to respond. The minimum and maximum confirmations for your network can be found [here](/docs/vrf-contracts/#configurations).
-- `callbackGasLimit`: The maximum amount of gas a user is willing to pay for completing the callback VRF function. Note that you cannot put a value larger than `maxGasLimit` of the VRF Coordinator contract (read [coordinator contract limits](#coordinator-contract-limits) for more details).
-- `numWords`: The number of random numbers to request. The maximum random values that can be requested for your network can be found [here](/docs/vrf-contracts/#configurations).
+    - `keyHash`: Identifier that maps to a job and a private key on the VRF node and that represents a specified gas lane. If your request is urgent, specify a gas lane with a higher gas price limit. The configuration for your network can be found [here](/docs/vrf-contracts/#configurations).
+    - `s_subscriptionId`: The subscription ID that the consuming contract is registered to. LINK funds are deducted from this subscription.
+    - `requestConfirmations`: The number of block confirmations the oracle node will wait to respond. The minimum and maximum confirmations for your network can be found [here](/docs/vrf-contracts/#configurations).
+    - `callbackGasLimit`: The maximum amount of gas a user is willing to pay for completing the callback VRF function. Note that you cannot put a value larger than `maxGasLimit` of the VRF Coordinator contract (read [coordinator contract limits](#coordinator-contract-limits) for more details).
+    - `numWords`: The number of random numbers to request. The maximum random values that can be requested for your network can be found [here](/docs/vrf-contracts/#configurations).
 
-2. The VRF coordinator emits an event.
+1. The VRF coordinator emits an event.
 
-3. The event is picked up by the VRF node and will wait for the specified number of block confirmations to respond back to the VRF coordinator with the random values and a proof (`requestConfirmations`).
+1. The event is picked up by the VRF node and will wait for the specified number of block confirmations to respond back to the VRF coordinator with the random values and a proof (`requestConfirmations`).
 
-4. The VRF coordinator verifies the proof on-chain then calls back the consuming contract `fulfillRandomWords` function.
+1. The VRF coordinator verifies the proof on-chain then calls back the consuming contract `fulfillRandomWords` function.
    After the request is complete, the final gas cost is recorded based on how much gas is required for the verification and callback. The total gas cost in wei for your request uses the following formula:
 
    ```

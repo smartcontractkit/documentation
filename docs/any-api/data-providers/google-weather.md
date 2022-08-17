@@ -3,7 +3,7 @@ layout: nodes.liquid
 section: ethereum
 date: Last Modified
 title: "Google Weather Oracle"
-permalink: "docs/google-weather/"
+permalink: "docs/any-api/data-providers/google-weather/"
 ---
 
 
@@ -49,7 +49,7 @@ You will need to use the following LINK token address, oracle address, and JobSp
 # Steps For Using This Oracle
 
 - Write and deploy your contract using the network details above.
-- Fund it with [LINK](../link-token-contracts/)
+- Fund it with [LINK](/docs/link-token-contracts/)
 - Call your request method
 
 

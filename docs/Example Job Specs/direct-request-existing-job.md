@@ -11,7 +11,7 @@ This is an example v2 (TOML) job spec for returning gas price using [etherscan](
 - Uses an [external adapter](/docs/external-adapters/) to consume the etherscan API: [EtherScan External Adapter](https://github.com/smartcontractkit/external-adapters-js/tree/develop/packages/sources/etherscan). Note that this is done using the [bridge](/docs/jobs/task-types/bridge/) task: `type="bridge" name="etherscan"`.
 - Calls the `fulfillOracleRequest2` function. If you are a node operator, use an [Operator contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/Operator.sol) with this job.
 
-To test this job spec from a smart contract, see this [Example](/docs/existing-job-request/).
+To test this job spec from a smart contract, see this [Example](/docs/any-api/get-request/examples/existing-job-request/).
 
 ```jpv2
 type = "directrequest"

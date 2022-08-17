@@ -7,8 +7,8 @@ permalink: 'docs/advanced-tutorial/'
 excerpt: 'Calling APIs from Smart Contracts'
 whatsnext:
   {
-    'Make a GET Request': '/docs/make-a-http-get-request/',
-    'Make an Existing Job Request': '/docs/existing-job-request/',
+    'Make a GET Request': '/docs/any-api/get-request/introduction/',
+    'Make an Existing Job Request': '/docs/any-api/get-request/examples/existing-job-request/',
   }
 metadata:
   image:
@@ -120,13 +120,13 @@ Here is a breakdown of each component of this contract:
 
 **Note:** The calling contract should own enough LINK to pay the fee, which by default is 0.1 LINK. You can use [this tutorial](/docs/fund-your-contract/) to learn how to fund your contract.
 
-This is an example of a basic HTTP GET request. However, it requires defining the API URL directly in the smart contract. This can, in fact, be extracted and configured on the Job level inside the Oracle node. You can follow the _APIConsumer_ tutorial [here](/docs/single-word-response/).
+This is an example of a basic HTTP GET request. However, it requires defining the API URL directly in the smart contract. This can, in fact, be extracted and configured on the Job level inside the Oracle node. You can follow the _APIConsumer_ tutorial [here](/docs/any-api/get-request/examples/single-word-response/).
 
 ### External Adapters
 
 Here are some examples nodes with external adapters:
 
-- [Google Weather Data](https://docs.chain.link/docs/google-weather/)
+- [Google Weather Data](https://docs.chain.link/docs/any-api/data-providers/google-weather/)
 - [Associated Press](https://market.link/nodes/The%20Associated%20Press/integrations)
 
 If all the parameters are defined within the Oracle job, the only things a smart contract needs to define to consume are:
@@ -148,14 +148,14 @@ function requestVolumeData() public returns (bytes32 requestId) {
 }
 ```
 
-You can follow a full _Existing Job Tutorial_ [here](/docs/existing-job-request/).
+You can follow a full _Existing Job Tutorial_ [here](/docs/any-api/get-request/examples/existing-job-request/).
 More on External Adapters can be found [here](/docs/external-adapters/).
 
 ## 4. How can I use an Oracle Data Service?
 
 Chainlink has facilitated the launch of several new oracle data services that allow dApps to access rich data from external data sources. For instance, you can create a smart contract that checks Google's DNS service to determine if a given domain is owned by a given blockchain address using oracle job without having to specify the URL inside the contract.
 Join the [operator-requests discord channel](https://discord.gg/eGcxsdZzKR) to directly communicate with community node operators.
-A full example on Kovan testnet can be found [here](/docs/dns-ownership-oracle/).
+A full example on Kovan testnet can be found [here](/docs/any-api/data-providers/dns-ownership/).
 
 ## 5. Further Reading
 
