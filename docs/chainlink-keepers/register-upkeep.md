@@ -65,7 +65,7 @@ You can dynamically create and manage Upkeeps from within your own dApp. To do t
 
 ### Prerequisites 
 
-You need to meet these prerequisites to ensure the code snippet will work.
+You must meet the following prerequisites to ensure that this example will work:
 
 
 * Ensure you use the LINK, registry and registrar addresses for your network.
