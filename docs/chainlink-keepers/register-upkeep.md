@@ -65,18 +65,16 @@ You can dynamically create and manage Upkeeps from within your own dApp. To do t
 
 ### Prerequisites 
 
-You must meet the following prerequisites to ensure that this example will work:
-
+Your contract must meet the following requirements to ensure that this example will work:
 
 - Correct [LINK token contract](../../link-token-contracts/)
 - [Registry and registrar addresses for your network](#registry-and-registrar-addresses) 
-**Note**: Make sure your contract has enough [ERC-677 LINK](../../link-token-contracts/) to fund the Upkeep at creation. _The minimum amount is 5 LINK._
 
-Tip: Consider fetching the LINK address and Registrar address from the intended Registry at run-time.
+Optionally, you can fetch the LINK address and registrar address from the intended registry at run-time.
 
+> 📘 Make sure your contract has enough [ERC-677 LINK](../../link-token-contracts/) to fund the Upkeep at creation. _The minimum amount is 5 LINK._
 
 ### Code example
-
 
 ```solidity
 {% include 'samples/Keepers/UpkeepIDConsumerExample.sol' %}
