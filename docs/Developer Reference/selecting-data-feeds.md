@@ -123,7 +123,7 @@ If your smart contracts use data feeds, assess those data feeds for the followin
 
 - [Liquidity and its Distribution](#liquidity-and-its-distribution)
 - [Single Source Data Providers](#single-source-data-providers)
-- [Crypto Actions](#crypto-actions)
+- [Crypto and Blockchain Actions](#crypto-and-blockchain-actions)
 - [Market Failures Resulting from Extreme Events](#market-failures-resulting-from-extreme-events)
 - [Periods of High Network Congestion](#periods-of-high-network-congestion)
 - [Unknown and Known Users](#unknown-and-known-users)
@@ -135,23 +135,25 @@ If your smart contract relies on pricing data for a specific asset, make sure th
 
 Some data feeds obtain their pricing data from individual exchanges rather than from aggregated price tracking services that gather their data from multiple exchanges. These are marked as such in the docs page for that feed. Assess the liquidity and reliability of that specific exchange.
 
-**Liquidity migrations** occur when a project moves its tokens from one liquidity provider (such as a DEX, a CEX, or a new DeFi application) to another. When liquidity migrations occur, it can result in low liquidity in the original pool, making the asset susceptible to market manipulation. If your project is considering a liquidity migration, you should coordinate with relevant stakeholders, including liquidity providers, exchanges, oracle node operators, and users, to ensure prices are accurately reported throughout the migration.
+_Liquidity migrations_ occur when a project moves its tokens from one liquidity provider (such as a DEX, a CEX, or a new DeFi application) to another. When liquidity migrations occur, it can result in low liquidity in the original pool, making the asset susceptible to market manipulation. If your project is considering a liquidity migration, you should coordinate with relevant stakeholders, including liquidity providers, exchanges, oracle node operators, and users, to ensure prices are accurately reported throughout the migration.
 
-Design and test your contracts to handle price spikes and implement risk management measures to protect your assets. For example, create mock tests that return a wide variety of oracle responses.
+Feeds for assets with low market liquidity where data providers exhibit an abnormal price spread may, on occasion, see a price oscillate between two or more price points within regular intervals. To mitigate risk associated with such price oscillation, users must regularly monitor & assess the quality of an asset’s liquidity.
+
+Design and test your contracts to handle price spikes and implement risk management measures to protect your assets. For example, create mock tests that return various oracle responses.
 
 ### Single Source Data Providers
 
 Some data providers use a single data source, which might be necessary if only one source exists off-chain for a specific type of data. Evaluate data providers to make sure they provide high-quality data that your smart contracts can rely on. Any error or omission in the provider's data might negatively impact your application and its users.
 
-### Crypto Actions
+### Crypto and Blockchain Actions
 
-Price data quality is subject to crypto actions by the crypto project teams. Crypto actions are similar to [corporate actions](https://en.wikipedia.org/wiki/Corporate_action) but are specific to cryptocurrency projects. Sustaining data quality is dependent on data sources implementing the necessary adjustments related to token renaming, token swaps, redenominations, splits, and other migrations that teams who govern the token might undertake.
+Price data quality is subject to crypto actions by the crypto and blockchain project teams. Crypto actions are similar to [corporate actions](https://en.wikipedia.org/wiki/Corporate_action) but are specific to cryptocurrency and blockchain projects, such as token renaming, token swaps, redenominations, splits, network upgrades, and other migrations that teams who govern the blockchain or token might undertake
 
-For example, when a project upgrades to a new version of their token, this results in a *token migration*. When token migrations occur, they require building a new price feed to ensure that the token price is accurately reported. When considering a token migration, or other crypto action, projects should proactively reach out to relevant stakeholders to ensure the asset price is accurately reported throughout the process.
+Sustaining data quality is dependent on data sources implementing the necessary adjustments related to such actions. For example, when a project upgrades to a new version of their token, this results in a *token migration*. When token migrations occur, they require building a new price feed to ensure that the token price is accurately reported. Similarly, actions by blockchain project teams, such as forks or upgrades to the network, may require new price feeds to ensure continuity and data quality. When considering a token migration, fork, network upgrade, or other crypto action, projects should proactively reach out to relevant stakeholders to ensure the asset price is accurately reported throughout the process.
 
 ### Market Failures Resulting from Extreme Events
 
-Users are strongly advised to set up monitoring and alerts in the event of unexpected market failures. Black swan events or extreme market conditions may trigger unanticipated outcomes such as liquidity pools becoming unbalanced, unexpected re-weighting of indices, abnormal behavior by exchanges, or the de-pegging of synthetic assets and currencies from their intended exchange rates.
+Users are strongly advised to set up monitoring and alerts in the event of unexpected market failures. Black swan events, hacks, coordinated attacks, or extreme market conditions may trigger unanticipated outcomes such as liquidity pools becoming unbalanced, unexpected re-weighting of indices, abnormal behavior by centralized or decentralized exchanges, or the de-pegging of synthetic assets and currencies from their intended exchange rates.
 
 Users should be aware of inherently increased risk during such periods of high volatility and market failure.
 
@@ -163,9 +165,23 @@ Data Feed performance relies on the chains they are deployed on. Periods of high
 
 Routine maintenance is carried out on Chainlink Data Feeds, including decommissioning, on an ad-hoc basis. These maintenance periods might require users to take action in order to maintain business continuity.
 
-Notifications are sent to inform users regarding such occurrences, and it is strongly encouraged for users to provide their contact information before utilizing data feeds. Without providing contact information, users will be unable to receive notifications around important price feed updates.
+Notifications are sent to inform known users regarding such occurrences, and it is strongly encouraged for all users, including those users utilizing data feeds for off-chain purposes, [to provide their contact information](https://chainlinkcommunity.typeform.com/unknownDfUsers?typeform-source=docs.chain.link) before utilizing data feeds. Without providing contact information, users will be unable to receive notifications regarding important price feed updates.
 
-If you are using price feeds but have not provided your contact information, you can do so [here](https://chainlinkcommunity.typeform.com/unknownDfUsers).
+If you are using price feeds but have not provided your contact information, you can do so [here](https://chainlinkcommunity.typeform.com/unknownDfUsers?typeform-source=docs.chain.link). Users that fail to provide notification information do so at their own risk.
+
+### Extreme Events Causing Price Deviations in Wrapped or Bridged Assets
+
+Chainlink Price Feeds are designed to provide the market-wide price of various assets, as determined by a volume-weighted average across a wide range of exchanges. On blockchain networks where assets are wrapped and/or bridged from another environment using a cross-chain token bridge, Chainlink Price Feeds on that blockchain will continue to report the market-wide price of the underlying asset as opposed to the price of the wrapped/bridged asset. This methodology reduces risks around market manipulation because wrapped/bridged tokens are often less liquid than the underlying asset.
+
+However, users should be aware that certain extreme events may result in price deviations between the wrapped/bridged asset and its underlying counterpart. For example, the exploitation or hack of a cross-chain token bridge may cause a collapse in demand for a particular wrapped asset. As such, users should construct their applications with safeguards, such as proactively pausing functionality, to mitigate risk during such scenarios.
+
+One mechanism for securing a protocol utilizing wrapped assets is by incorporating [Chainlink Proof of Reserve](https://chain.link/proof-of-reserve). Chainlink Proof of Reserve enables the real-time reserve monitoring of off-chain and cross-chain assets, including those that have been wrapped/bridged. By comparing the wrapped token’s supply against a Chainlink Proof of Reserve feed, protocols can ensure that these assets are properly collateralized at all times.
+
+### Front Running Risk
+
+Front running (when a third party benefits from prior access to information about a transaction) is a known risk inherent to specific blockchain applications. Chainlink Data Feeds are optimized to prioritize high levels of data quality and reliability over latency.
+
+To mitigate the risk associated with front running, users building highly latency-dependent applications should assess whether the configuration of data feeds meets their needed specifications for speed and frequency.
 
 ### Fast Gas Reliability
 

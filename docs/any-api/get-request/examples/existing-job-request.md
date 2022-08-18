@@ -3,13 +3,13 @@ layout: nodes.liquid
 section: ethereum
 date: Last Modified
 title: 'Existing Job Request'
-permalink: 'docs/existing-job-request/'
+permalink: 'docs/any-api/get-request/examples/existing-job-request/'
 whatsnext:
   {
-    'Find Existing Jobs': '/docs/listing-services/',
-    'API Reference': '/docs/chainlink-framework/',
-    'Testnet Oracles': '/docs/any-api-testnet-oracles/',
-    'Data Provider Nodes': '/docs/data-provider-nodes/',
+    'Find Existing Jobs': '/docs/any-api/find-oracle/',
+    'API Reference': '/docs/any-api/api-reference/',
+    'Testnet Oracles': '/docs/any-api/testnet-oracles/',
+    'Data Provider Nodes': '/docs/any-api/data-providers/introduction/',
   }
 metadata:
   title: 'Make an Existing Job Request'
@@ -28,7 +28,7 @@ Using an _existing_ Oracle Job makes your smart contract code more succinct. Thi
 
 ## Example
 
-In [Single Word Response Example](/docs/single-word-response/), the example contract code declared which URL to use, where to find the data in the response, and how to convert it so that it can be represented on-chain.
+In [Single Word Response Example](/docs/any-api/get-request/examples/single-word-response/), the example contract code declared which URL to use, where to find the data in the response, and how to convert it so that it can be represented on-chain.
 
 This example uses an existing job that is pre-configured to make requests to get [the gas price](https://docs.etherscan.io/api-endpoints/gas-tracker#get-gas-oracle). Using specialized jobs makes your contracts succinct and more simple.
 
@@ -68,7 +68,7 @@ To consume an API, your contract must import [ChainlinkClient.sol](https://githu
 
 > 🚧 Note on Funding Contracts
 >
-> Making a GET request will fail unless your deployed contract has enough LINK to pay for it. **Learn how to [Acquire testnet LINK](../acquire-link/) and [Fund your contract](../fund-your-contract/)**.
+> Making a GET request will fail unless your deployed contract has enough LINK to pay for it. **Learn how to [Acquire testnet LINK](/docs/acquire-link/) and [Fund your contract](/docs/fund-your-contract/)**.
 
 ```solidity
 {% include 'samples/APIRequests/GetGasPrice.sol' %}
@@ -85,8 +85,8 @@ To use this contract:
 
 1. Compile and deploy the contract using the Injected Provider environment. The contract includes all the configuration variables for the _Goerli_ testnet. Make sure your wallet is set to use _Goerli_. The _constructor_ sets the following parameters:
 
-   - The Chainlink Token address for _Goerli_ by calling the [`setChainlinkToken`](/docs/chainlink-framework/#setchainlinktoken) function.
-   - The Oracle contract address for _Goerli_ by calling the [`setChainlinkOracle`](/docs/chainlink-framework/#setchainlinkoracle) function.
+   - The Chainlink Token address for _Goerli_ by calling the [`setChainlinkToken`](/docs/any-api/api-reference/#setchainlinktoken) function.
+   - The Oracle contract address for _Goerli_ by calling the [`setChainlinkOracle`](/docs/any-api/api-reference/#setchainlinkoracle) function.
    - The `jobId`: A specific job for the oracle node to run. In this case, the job is very specific to the use case as it returns the gas prices. You can find the job spec for the Chainlink node [here](/docs/direct-request-existing-job/).
 
 1. Fund your contract with 0.1 LINK. To learn how to send LINK to contracts, read the [Fund Your Contracts](/docs/fund-your-contract/) page.

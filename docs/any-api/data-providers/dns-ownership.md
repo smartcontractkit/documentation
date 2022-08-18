@@ -3,7 +3,7 @@ layout: nodes.liquid
 section: ethereum
 date: Last Modified
 title: "DNS Ownership Oracle"
-permalink: "docs/dns-ownership-oracle/"
+permalink: "docs/any-api/data-providers/dns-ownership/"
 ---
 
 ## Overview

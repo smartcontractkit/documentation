@@ -3,7 +3,7 @@ layout: nodes.liquid
 section: ethereum
 date: Last Modified
 title: 'ChainlinkClient API Reference'
-permalink: 'docs/chainlink-framework/'
+permalink: 'docs/any-api/api-reference/'
 ---
 API reference for [`ChainlinkClient`](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/ChainlinkClient.sol).
 
@@ -85,7 +85,7 @@ setChainlinkToken(
 )
 ```
 
-Sets the stored address for the LINK token which is used to send requests to Oracles. There are different token addresses on different network. See [LINK Token Contracts](../link-token-contracts/) for the address of the LINK token on the network you're deploying to.
+Sets the stored address for the LINK token which is used to send requests to Oracles. There are different token addresses on different network. See [LINK Token Contracts](/docs/link-token-contracts/) for the address of the LINK token on the network you're deploying to.
 
 ```solidity example
 constructor(address _link)
@@ -105,7 +105,7 @@ function buildChainlinkRequest(
 ) returns (Chainlink.Request memory request)
 ```
 
-Instantiates a Request from the Chainlink contract. A [Request](#chainlinkrequest) is a struct which contains the necessary parameters to be sent to the oracle contract. The `buildChainlinkRequest` function takes an ID, which can be a [Job ID](../jobs/), a callback address to receive the resulting data, and a callback function signature to call on the callback address.
+Instantiates a Request from the Chainlink contract. A [Request](#chainlinkrequest) is a struct which contains the necessary parameters to be sent to the oracle contract. The `buildChainlinkRequest` function takes an ID, which can be a [Job ID](/docs/jobs/), a callback address to receive the resulting data, and a callback function signature to call on the callback address.
 
 ```solidity example
 function requestPrice()
