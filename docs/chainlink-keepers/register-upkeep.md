@@ -65,7 +65,7 @@ You can dynamically create and manage Upkeeps from within your own dApp. To do t
 
 ### Prerequisites 
 
-Your contract must meet the following requirements to ensure that this example will work:
+Find the following addresses for your network:
 
 - Correct [LINK token contract](../../link-token-contracts/)
 - [Registry and registrar addresses for your network](#registry-and-registrar-addresses) 
