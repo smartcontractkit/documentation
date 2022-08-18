@@ -51,8 +51,7 @@ contract UpkeepIDConsumerExample {
     address adminAddress,
     bytes calldata checkData,
     uint96 amount,
-    uint8 source,
-    address sender
+    uint8 source
   ) public {
     (State memory state, Config memory _c, address[] memory _k) = i_registry.getState();
     uint256 oldNonce = state.nonce;
@@ -65,7 +64,7 @@ contract UpkeepIDConsumerExample {
       checkData,
       amount,
       source,
-      sender
+      address(this)
     );
     
     i_link.transferAndCall(registrar, amount, bytes.concat(registerSig, payload));
