@@ -232,6 +232,24 @@ The Rinkeby network is [officially deprecated](https://ethereum.org/en/developer
 | VRF Coordinator       | [`0xbd13f08b8352A3635218ab9418E340c60d6Eb418`](https://testnet.ftmscan.com/address/0xbd13f08b8352a3635218ab9418e340c60d6eb418)                                                                                           |
 | 3000 gwei Key Hash    | `0x121a143066e0f2f08b620784af77cccb35c6242460b4a8ee251b4b416abaebd4`                                                                                                                                                     |
 | Premium               | 0.0005 LINK                                                                                                                                                                                                              |
+| Max Gas Limit         | 2,500,000                                                                                                                                                                                                                |
+| Minimum Confirmations | 1                                                                                                                                                                                                                        |
+| Maximum Confirmations | 200                                                                                                                                                                                                                      |
+| Maximum Random Values | 500                                                                                                                                                                                                                      |
+
+### Klaytn Baobab testnet
+
+> 🚰 Klaytn Testnet Faucet
+>
+> Testnet LINK is available from [facuets.chain.link](https://faucets.chain.link/klaytn). Use the [KLAY Faucet](https://baobab.wallet.klaytn.foundation/faucet) to obtain testnet KLAY.
+
+| Item                  | Value                                                                                                                                                                                                                    |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| LINK Token            | <a class="erc-token-address" id="1001_0x04c5046a1f4e3fff094c26dfcaa75ef293932f18" href="https://baobab.scope.klaytn.com/token/0x04c5046a1f4e3fff094c26dfcaa75ef293932f18">`0x04c5046a1f4e3fff094c26dfcaa75ef293932f18`</a> |
+| VRF Coordinator       | [`0x771143FcB645128b07E41D79D82BE707ad8bDa1C`](https://baobab.scope.klaytn.com/address/0x771143FcB645128b07E41D79D82BE707ad8bDa1C)                                                                                       |
+| 3000 gwei Key Hash    | `0x9be50e2346ee6abe000e6d3a34245e1d232c669703efc44660a413854427027c`                                                                                                                                                     |
+| Premium               | 0.005 LINK                                                                                                                                                                                                               |
+| Max Gas Limit         | 2,500,000                                                                                                                                                                                                                |
 | Minimum Confirmations | 1                                                                                                                                                                                                                        |
 | Maximum Confirmations | 200                                                                                                                                                                                                                      |
 | Maximum Random Values | 500                                                                                                                                                                                                                      |
