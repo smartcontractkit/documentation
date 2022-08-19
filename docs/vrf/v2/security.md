@@ -2,22 +2,22 @@
 layout: nodes.liquid
 section: ethereum
 date: Last Modified
-title: "VRF Security Considerations"
-permalink: "docs/vrf-security-considerations/"
+title: 'VRF Security Considerations'
+permalink: 'docs/vrf-security-considerations/'
 ---
 
 > 📘 You are viewing the VRF v2 guide.
 >
-> If you are using v1, see the [VRF v1 guide](./v1).
+> If you are using v1, see the [VRF v1 guide](/docs/vrf/v1/introduction/).
 
 Gaining access to high quality randomness on-chain requires a solution like Chainlink's VRF, but it also requires you to understand some of the ways that miners or validators can potentially manipulate randomness generation. Here are some of the top security considerations you should review in your project.
 
-* [Use `requestId` to match randomness requests with their fulfillment in order](#use-requestid-to-match-randomness-requests-with-their-fulfillment-in-order)
-* [Choose a safe block confirmation time, which will vary between blockchains](#choose-a-safe-block-confirmation-time-which-will-vary-between-blockchains)
-* [Do not re-request randomness, even if you don't get an answer right away](#do-not-re-request-randomness-even-if-you-dont-get-an-answer-right-away)
-* [Don't accept bids/bets/inputs after you have made a randomness request](#dont-accept-bidsbetsinputs-after-you-have-made-a-randomness-request)
-* [The `fulfillRandomWords` function must not revert](#fulfillrandomwords-must-not-revert)
-* [Use `VRFConsumerBaseV2` in your contract to interact with the VRF service](#use-vrfconsumerbasev2-in-your-contract-to-interact-with-the-vrf-service)
+- [Use `requestId` to match randomness requests with their fulfillment in order](#use-requestid-to-match-randomness-requests-with-their-fulfillment-in-order)
+- [Choose a safe block confirmation time, which will vary between blockchains](#choose-a-safe-block-confirmation-time-which-will-vary-between-blockchains)
+- [Do not re-request randomness, even if you don't get an answer right away](#do-not-re-request-randomness-even-if-you-dont-get-an-answer-right-away)
+- [Don't accept bids/bets/inputs after you have made a randomness request](#dont-accept-bidsbetsinputs-after-you-have-made-a-randomness-request)
+- [The `fulfillRandomWords` function must not revert](#fulfillrandomwords-must-not-revert)
+- [Use `VRFConsumerBaseV2` in your contract to interact with the VRF service](#use-vrfconsumerbasev2-in-your-contract-to-interact-with-the-vrf-service)
 
 ## Use `requestId` to match randomness requests with their fulfillment in order
 
@@ -35,7 +35,7 @@ In principle, miners/validators of your underlying blockchain could rewrite the 
 
 You must choose an appropriate confirmation time for the randomness requests you make. Confirmation time is how many blocks the VRF service waits before writing a fulfillment to the chain to make potential rewrite attacks unprofitable in the context of your application and its value-at-risk.
 
-On Ethereum, rewrites are very expensive due to the very high rate of work performed by Ethereum's proof-of-work. The hashrate of the Ethereum network is currently 630 trillion hashes per second, and any attacker would have to control at least 51% of that for the duration of the attack. Therefore, major centralized exchanges consider a __20-block confirmation time__ as highly secure for deposit confirmation times. The block confirmation time required from one use case to the next may differ.
+On Ethereum, rewrites are very expensive due to the very high rate of work performed by Ethereum's proof-of-work. The hashrate of the Ethereum network is currently 630 trillion hashes per second, and any attacker would have to control at least 51% of that for the duration of the attack. Therefore, major centralized exchanges consider a **20-block confirmation time** as highly secure for deposit confirmation times. The block confirmation time required from one use case to the next may differ.
 
 <!-- TODO: Remove comment for Polygon and BSC
 
@@ -61,7 +61,7 @@ Consider the example of a contract that mints a random NFT in response to a user
 The contract should:
 
 1. Record whatever actions of the user may affect the generated NFT.
-1. __Stop accepting further user actions that might affect the generated NFT__ and issue a randomness request.
+1. **Stop accepting further user actions that might affect the generated NFT** and issue a randomness request.
 1. On randomness fulfillment, mint the NFT.
 
 Generally speaking, whenever an outcome in your contract depends on some user-supplied inputs and randomness, the contract should not accept any additional user-supplied inputs after it submits the randomness request.

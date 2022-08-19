@@ -3,7 +3,7 @@ layout: nodes.liquid
 section: legacy
 date: Last Modified
 title: "VRF Best Practices [v1]"
-permalink: "docs/chainlink-vrf-best-practices/v1/"
+permalink: "docs/vrf/v1/best-practices/"
 metadata:
   title: "Chainlink VRF API Reference"
   description: "Best pracices for using Chainlink VRF."

@@ -2,16 +2,22 @@
 layout: nodes.liquid
 section: ethereum
 date: Last Modified
-title: "Example Contracts"
-permalink: "docs/chainlink-vrf/example-contracts/"
-whatsnext: {"Security Considerations":"/docs/vrf-security-considerations/", "Best Practices":"/docs/chainlink-vrf-best-practices/", "Migrating from VRF v1 to v2":"/docs/chainlink-vrf/migration-vrf-v1-v2/", "Contract Addresses":"/docs/vrf-contracts/"}
+title: 'Example Contracts'
+permalink: 'docs/chainlink-vrf/example-contracts/'
+whatsnext:
+  {
+    'Security Considerations': '/docs/vrf-security-considerations/',
+    'Best Practices': '/docs/chainlink-vrf-best-practices/',
+    'Migrating from VRF v1 to v2': '/docs/chainlink-vrf/migration-vrf-v1-v2/',
+    'Contract Addresses': '/docs/vrf-contracts/',
+  }
 metadata:
-  description: "Example contracts for generating a random number inside a smart contract using Chainlink VRF."
+  description: 'Example contracts for generating a random number inside a smart contract using Chainlink VRF.'
 ---
 
 > 📘 You are viewing the VRF v2 guide.
 >
-> If you are using v1, see the [VRF v1 guide](/docs/get-a-random-number/v1/).
+> If you are using v1, see the [VRF v1 guide](/docs/vrf/v1/introduction/).
 
 How you manage the subscription depends on your randomness needs. You can configure your subscriptions using the [Subscription Manager](https://vrf.chain.link), but these examples demonstrate how to create your subscription and add your consumer contracts programmatically. For these examples, the contract owns and manages the subscription. You can still view the subscriptions in the [Subscription Manager](https://vrf.chain.link). Any wallet can provide funding to those subscriptions.
 
@@ -55,7 +61,7 @@ To use this contract, compile and deploy it in Remix.
 
 1. Compile and deploy the contract using the Injected Provider environment. The contract includes all of the configuration variables that you need, but you can edit them if necessary. For a full list of available configuration variables, see the [Contract Addresses](/docs/vrf-contracts/) page.
 
-    This contract automatically creates a new subscription when you deploy it. Read the `s_subscriptionId` variable to find your subscription ID. You can use this value to find the subscription in the [Subscription Manager](https://vrf.chain.link).
+   This contract automatically creates a new subscription when you deploy it. Read the `s_subscriptionId` variable to find your subscription ID. You can use this value to find the subscription in the [Subscription Manager](https://vrf.chain.link).
 
 1. In this example, the `topUpSubscription()` function sends LINK from your contract to the subscription. Fund your contract with at least three testnet LINK. Alternatively, you can send LINK directly to the subscription in the [Subscription Manager](https://vrf.chain.link). Any address can provide funding to a subscription balance. If you need testnet LINK, you can get it from the [Chainlink faucet](https://faucets.chain.link/goerli).
 
@@ -63,16 +69,16 @@ To use this contract, compile and deploy it in Remix.
 
 1. Create and deploy a consumer contract that includes the following components:
 
-    - The `requestRandomWords()` function and the required variables and your subscription ID
-    - The `fulfillRandomWords()` callback function
+   - The `requestRandomWords()` function and the required variables and your subscription ID
+   - The `fulfillRandomWords()` callback function
 
-    You can use the example from the [Get a Random Number](/docs/get-a-random-number/#analyzing-the-contract) guide.
+   You can use the example from the [Get a Random Number](/docs/get-a-random-number/#analyzing-the-contract) guide.
 
 1. After you deploy the consumer contract, add it to the subscription as an approved consumer using the `addConsumer()` function on your subscription manager contract. Specify the address of your consumer contract.
 
 1. On the consumer contract, run the `requestRandomWords()` function to request and receive random values. The request might take several minutes to process. Track pending request status in the [Subscription Manager](https://vrf.chain.link) app.
 
-    The consumer contract can continue to make requests until your subscription balance runs out. The subscription manager contract must maintain sufficient balance in the subscription so that the consumers can continue to operate.
+   The consumer contract can continue to make requests until your subscription balance runs out. The subscription manager contract must maintain sufficient balance in the subscription so that the consumers can continue to operate.
 
 1. When you are done with your contracts and the subscription, run the `cancelSubscription()` to close the subscription and send the remaining LINK to your wallet address. Specify the address of the receiving wallet.
 

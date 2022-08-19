@@ -656,27 +656,27 @@ module.exports = {
         contents: [
           {
             title: 'Introduction to Chainlink VRF',
-            url: '/docs/chainlink-vrf/v1/',
+            url: '/docs/vrf/v1/introduction/',
           },
           {
             title: 'Get a Random Number',
-            url: '/docs/get-a-random-number/v1/',
+            url: '/docs/vrf/v1/examples/get-a-random-number/',
           },
           {
             title: 'Security Considerations',
-            url: '/docs/vrf-security-considerations/v1/',
+            url: '/docs/vrf/v1/security/',
           },
           {
             title: 'Best Practices',
-            url: '/docs/chainlink-vrf-best-practices/v1/',
+            url: '/docs/vrf/v1/best-practices/',
           },
           {
-            title: 'Contract Addresses',
-            url: '/docs/vrf-contracts/v1/',
+            title: 'Supported Networks',
+            url: '/docs/vrf/v1/supported-networks/',
           },
           {
             title: 'API Reference',
-            url: '/docs/chainlink-vrf-api-reference/v1/',
+            url: '/docs/vrf/v1/api-reference/',
           },
         ],
       },

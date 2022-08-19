@@ -3,7 +3,7 @@ layout: nodes.liquid
 section: legacy
 date: Last Modified
 title: "VRF Security Considerations [v1]"
-permalink: "docs/vrf-security-considerations/v1/"
+permalink: "docs/vrf/v1/security/"
 ---
 
 > 🚧 VRF v2 replaces and enhances VRF v1.
