@@ -40,9 +40,9 @@ Before you begin, deploy the contract that you want to automate. You will also n
 
 1. Open the Chainlink Keepers app.
 
-<div class="remix-callout">
-    <a href="https://keepers.chain.link" >Open the Chainlink Keepers App</a>
-</div>
+    <div class="remix-callout">
+        <a href="https://keepers.chain.link" >Open the Chainlink Keepers App</a>
+    </div>
 
 1. [Register](../job-scheduler/) a new Upkeep in the [Chainlink Keepers App](https://keepers.chain.link) and select **Time-based** trigger. Provide the address of your deployed contract, provide the ABI if it is not verified, and choose the function that you want to automate along with the relevant function inputs, if any.
 
@@ -62,9 +62,9 @@ To use a custom logic trigger, you will need to make your contract [Keepers-comp
 
 1. Open the Chainlink Keepers app.
 
-<div class="remix-callout">
-    <a href="https://keepers.chain.link" >Open the Chainlink Keepers App</a>
-</div>
+    <div class="remix-callout">
+        <a href="https://keepers.chain.link" >Open the Chainlink Keepers App</a>
+    </div>
 
 1. [Register](../register-upkeep/) a new Upkeep in the [Chainlink Keepers App](https://keepers.chain.link) and select **Custom logic** trigger. Provide the address of your [Keepers-compatible](../compatible-contracts/) contract and complete the remaining details. Your upkeep name will be publicly visible, but your email and project name will **not** be publicly visible. Ensure you specify the appropriate gas limit for your function to execute on chain.
 
