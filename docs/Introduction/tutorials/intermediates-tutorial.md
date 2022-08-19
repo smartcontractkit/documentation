@@ -7,11 +7,11 @@ permalink: 'docs/intermediates-tutorial/'
 excerpt: 'Using Chainlink VRF'
 whatsnext:
   {
-    'Get a Random Number': '/docs/get-a-random-number/',
-    'Example Contracts': '/docs/chainlink-vrf/example-contracts/',
-    'Security Considerations': '/docs/vrf-security-considerations/',
-    'Best Practices': '/docs/chainlink-vrf-best-practices/',
-    'Contract Addresses': '/docs/vrf-contracts/',
+    'Get a Random Number': '/docs/vrf/v2/examples/get-a-random-number/',
+    'Programmatic Subscription': '/docs/vrf/v2/examples/programmatic-subscription/',
+    'Security Considerations': '/docs/vrf/v2/security/',
+    'Best Practices': '/docs/vrf/v2/best-practices/',
+    'Supported Networks': '/docs/vrf/v2/supported-networks/',
   }
 metadata:
   title: 'Random Numbers: Using Chainlink VRF'
@@ -59,7 +59,7 @@ Randomness, on the other hand, cannot be reference data. If the result of random
 ## 3. What is the payment process for generating a random number?
 
 VRF requests receive funding from subscription accounts. The [Subscription Manager](https://vrf.chain.link) lets you create an account and pre-pay for VRF requests, so that funding of all your application requests are managed in a single location.
-To learn more about VRF requests funding, see [Subscriptions](/docs/chainlink-vrf/#subscriptions), [Subscription billing](/docs/chainlink-vrf/#subscription-billing).
+To learn more about VRF requests funding, see [Subscriptions](/docs/vrf/v2/introduction/#subscriptions), [Subscription billing](/docs/vrf/v2/introduction/#subscription-billing).
 
 ## 4. How can I use Chainlink VRF?
 
@@ -80,7 +80,7 @@ The contract will have the following functions:
 ### Create and fund a subscription
 
 Chainlink VRF requests receive funding from subscription accounts. The [Subscription Manager](https://vrf.chain.link) lets you create an account and pre-pay your use of Chainlink VRF requests.
-For this example, create a new subscription on the Goerli testnet as explained [here](/docs/get-a-random-number/#create-and-fund-a-subscription).
+For this example, create a new subscription on the Goerli testnet as explained [here](/docs/vrf/v2/examples/get-a-random-number/#create-and-fund-a-subscription).
 
 ### Importing `VRFConsumerBaseV2` and `VRFCoordinatorV2Interface`
 
@@ -103,7 +103,7 @@ contract VRFD20 is VRFConsumerBaseV2 {
 
 ### Contract variables
 
-This example is adapted for [Goerli testnet](/docs/vrf-contracts/#goerli-testnet) but you can change the configuration and make it run for any [supported network](/docs/vrf-contracts/#configurations).
+This example is adapted for [Goerli testnet](/docs/vrf/v2/supported-networks/#goerli-testnet) but you can change the configuration and make it run for any [supported network](/docs/vrf/v2/supported-networks/#configurations).
 
 ```solidity
 uint64 s_subscriptionId;
@@ -366,7 +366,7 @@ Then click the `Deploy` button and use your Metamask account to confirm the tran
 
 > 📘 Address, Key Hashes and more
 >
-> For a full reference of the addresses, key hashes and fees for each network, see [VRF Contract Addresses](/docs/vrf-contracts/#configurations).
+> For a full reference of the addresses, key hashes and fees for each network, see [VRF Supported Networks](/docs/vrf/v2/supported-networks/#configurations).
 
 At this point, your contract should be successfully deployed. However, it can't request anything because it is not yet approved to use the LINK balance in your subscription. If you click `rollDice`, the transaction will revert.
 

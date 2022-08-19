@@ -3,7 +3,7 @@ layout: nodes.liquid
 section: ethereum
 date: Last Modified
 title: 'VRF Security Considerations'
-permalink: 'docs/vrf-security-considerations/'
+permalink: 'docs/vrf/v2/security/'
 ---
 
 > 📘 You are viewing the VRF v2 guide.

@@ -11,7 +11,7 @@ metadata:
 
 > 🚧 VRF v2 replaces and enhances VRF v1.
 >
-> See the [VRF v2 documentation](/docs/chainlink-vrf) to learn more.
+> See the [VRF v2 documentation](/docs/vrf/v2/introduction) to learn more.
 
 API reference for [`VRFConsumerBase`](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/VRFConsumerBase.sol).
 

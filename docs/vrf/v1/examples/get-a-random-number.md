@@ -4,14 +4,14 @@ section: legacy
 date: Last Modified
 title: "Get a Random Number [v1]"
 permalink: "docs/vrf/v1/examples/get-a-random-number/"
-whatsnext: {"API Reference":"/docs/vrf/v1/api-reference/", "Contract Addresses":"/docs/vrf/v1/supported-networks/"}
+whatsnext: {"API Reference":"/docs/vrf/v1/api-reference/", "Supported Networks":"/docs/vrf/v1/supported-networks/"}
 metadata:
   description: "How to generate a random number inside a smart contract using Chainlink VRF."
 ---
 
 > 🚧 VRF v2 replaces and enhances VRF v1.
 >
-> See the [VRF v2 documentation](/docs/get-a-random-number/) to learn more.
+> See the [VRF v2 documentation](/docs/vrf/v2/examples/get-a-random-number/) to learn more.
 
 This page explains how to get a random number inside a smart contract using Chainlink VRF.
 

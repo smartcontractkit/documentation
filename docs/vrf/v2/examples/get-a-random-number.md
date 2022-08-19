@@ -3,14 +3,14 @@ layout: nodes.liquid
 section: ethereum
 date: Last Modified
 title: 'Get a Random Number'
-permalink: 'docs/get-a-random-number/'
+permalink: 'docs/vrf/v2/examples/get-a-random-number/'
 whatsnext:
   {
-    'Example Contracts': '/docs/chainlink-vrf/example-contracts/',
-    'Security Considerations': '/docs/vrf-security-considerations/',
-    'Best Practices': '/docs/chainlink-vrf-best-practices/',
-    'Migrating from VRF v1 to v2': '/docs/chainlink-vrf/migration-vrf-v1-v2/',
-    'Contract Addresses': '/docs/vrf-contracts/',
+    'Programmatic Subscription': '/docs/vrf/v2/examples/programmatic-subscription/',
+    'Security Considerations': '/docs/vrf/v2/security/',
+    'Best Practices': '/docs/vrf/v2/best-practices/',
+    'Migrating from VRF v1 to v2': '/docs/vrf/v2/migration-from-v1/',
+    'Supported Networks': '/docs/vrf/v2/supported-networks/',
   }
 metadata:
   description: 'How to generate a random number inside a smart contract using Chainlink VRF.'
@@ -20,7 +20,7 @@ metadata:
 >
 > If you are using v1, see the [VRF v1 guide](/docs/vrf/v1/introduction/).
 
-This guide explains how to get random values using a simple contract to request and receive random values from Chainlink VRF v2. For more advanced examples with programmatic subscription configuration, see the [Example Contracts](/docs/chainlink-vrf/example-contracts/) page. To explore more applications of VRF, refer to our [blog](https://blog.chain.link/).
+This guide explains how to get random values using a simple contract to request and receive random values from Chainlink VRF v2. For more advanced examples with programmatic subscription configuration, see the [Programmatic Subscription](/docs/vrf/v2/examples/programmatic-subscription/) page. To explore more applications of VRF, refer to our [blog](https://blog.chain.link/).
 
 **Topics**
 
@@ -78,10 +78,10 @@ Build and deploy the contract on Goerli.
 
 1. Open the [`VRFv2Consumer.sol` contract](https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFv2Consumer.sol) in Remix.
 
-    <div class="remix-callout">
-          <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFv2Consumer.sol" target="_blank" >Open in Remix</a>
-          <a href="/docs/conceptual-overview/#what-is-remix">What is Remix?</a>
-    </div>
+<div class="remix-callout">
+      <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFv2Consumer.sol" target="_blank" >Open in Remix</a>
+      <a href="/docs/conceptual-overview/#what-is-remix">What is Remix?</a>
+</div>
 
 1. On the **Compile** tab in Remix, compile the `VRFv2Consumer.sol` contract.
 
@@ -115,10 +115,10 @@ The deployed contract requests random values from Chainlink VRF, receives those 
 
 1. After the oracle returns the random values to your contract, the `s_randomWords` variable stores an array with all of the requested random values. Specify the index of the array that you want to display and click `s_randomWords` to print the value. Because this example requests two random values, check the value at index `0` and then check the value at index `1`.
 
-You deployed a simple contract that can request and receive random values from Chainlink VRF. To see more advanced examples where the contract can complete the entire process including subscription setup and management, see the [Example Contracts](/docs/chainlink-vrf/example-contracts/) page.
+You deployed a simple contract that can request and receive random values from Chainlink VRF. To see more advanced examples where the contract can complete the entire process including subscription setup and management, see the [Programmatic Subscription](/docs/vrf/v2/examples/programmatic-subscription/) page.
 
 > 📘 Note on Requesting Randomness
-> Do not re-request randomness even if you do **not** receive an answer right away. Doing so would give the VRF service provider the option to withhold a VRF fulfillment, if it doesn't like the outcome, and wait for the re-request in the hopes that it gets a better outcome. This is similar to the considerations with block confirmation time. For more information, see the [VRF Security Considerations](../vrf-security-considerations) page.
+> Do not re-request randomness even if you do **not** receive an answer right away. Doing so would give the VRF service provider the option to withhold a VRF fulfillment, if it doesn't like the outcome, and wait for the re-request in the hopes that it gets a better outcome. This is similar to the considerations with block confirmation time. For more information, see the [VRF Security Considerations](/docs/vrf/v2/security/) page.
 
 ## Analyzing the contract
 
@@ -133,7 +133,7 @@ In this example, your MetaMask wallet is the subscription owner and you created 
       <a href="/docs/conceptual-overview/#what-is-remix">What is Remix?</a>
 </div>
 
-The parameters define how your requests will be processed. You can find the values for your network in the [VRF Contract Addresses](/docs/vrf-contracts) page.
+The parameters define how your requests will be processed. You can find the values for your network in the [VRF Supported Networks](/docs/vrf/v2/supported-networks) page.
 
 - `uint64 s_subscriptionId`: The subscription ID that this contract uses for funding requests.
 
@@ -157,7 +157,7 @@ The contract includes the following functions:
 
 > 🚧 Security Considerations
 >
-> Be sure to review your contracts to make sure they follow the best practices on the [security considerations](/docs/vrf-security-considerations/) page.
+> Be sure to review your contracts to make sure they follow the best practices on the [security considerations](/docs/vrf/v2/security/) page.
 
 ## Clean up
 
@@ -171,5 +171,5 @@ After you are done with this contract and the subscription, you can retrieve the
 
 ## Vyper example
 
-You must import the `VRFCoordinatorV2` Vyper interface. You can find it  [here](https://github.com/smartcontractkit/apeworx-starter-kit/blob/main/contracts/interfaces/VRFCoordinatorV2.vy).
+You must import the `VRFCoordinatorV2` Vyper interface. You can find it [here](https://github.com/smartcontractkit/apeworx-starter-kit/blob/main/contracts/interfaces/VRFCoordinatorV2.vy).
 You can find a `VRFConsumerV2` example [here](https://github.com/smartcontractkit/apeworx-starter-kit/blob/main/contracts/VRFConsumerV2.vy). Read the _**apeworx-starter-kit**_ [README](https://github.com/smartcontractkit/apeworx-starter-kit) to learn how to run the example.

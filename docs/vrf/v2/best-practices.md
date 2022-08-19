@@ -3,7 +3,7 @@ layout: nodes.liquid
 section: ethereum
 date: Last Modified
 title: 'VRF Best Practices'
-permalink: 'docs/chainlink-vrf-best-practices/'
+permalink: 'docs/vrf/v2/best-practices/'
 metadata:
   title: 'Chainlink VRF API Reference'
   description: 'Best pracices for using Chainlink VRF.'
@@ -31,7 +31,7 @@ function fulfillRandomWords(
 
 ## Getting multiple random values
 
-If you want to get multiple random values from a single VRF request, you can request this directly with the `numWords` argument. See the [Get a Random Number](/docs/get-a-random-number/) guide for an example where one request returns multiple random values.
+If you want to get multiple random values from a single VRF request, you can request this directly with the `numWords` argument. See the [Get a Random Number](/docs/vrf/v2/examples/get-a-random-number/) guide for an example where one request returns multiple random values.
 
 ## Processing simultaneous VRF requests
 
