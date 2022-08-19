@@ -241,7 +241,7 @@ The Rinkeby network is [officially deprecated](https://ethereum.org/en/developer
 
 > 🚰 Klaytn Testnet Faucet
 >
-> Testnet LINK is available from [facuets.chain.link](https://faucets.chain.link/klaytn). Use the [KLAY Faucet](https://baobab.wallet.klaytn.foundation/faucet) to obtain testnet KLAY.
+> Testnet LINK is available from [facuets.chain.link](https://faucets.chain.link/klaytn-testnet). Use the [KLAY Faucet](https://baobab.wallet.klaytn.foundation/faucet) to obtain testnet KLAY.
 
 | Item                  | Value                                                                                                                                                                                                                    |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
