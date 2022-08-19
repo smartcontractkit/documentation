@@ -48,7 +48,7 @@ module.exports = {
           },
           {
             title: 'Chainlink VRF',
-            url: '/docs/chainlink-vrf/',
+            url: '/docs/vrf/v2/introduction/',
           },
           {
             title: 'Chainlink Keepers',
