@@ -32,6 +32,7 @@ The LINK token is an ERC677 token that inherits functionality from the ERC20 tok
 - [Moonriver](#moonriver)
 - [Moonbeam](#moonbeam)
 - [Metis](#metis)
+- [Klaytn](#klaytn)
 
 # Ethereum
 
@@ -374,3 +375,16 @@ METIS is the currency that you use to pay for transactions on Metis mainnet. You
 | Name           | Chainlink Token on Metis Mainnet                                                                                                                                                                                                  |
 | Symbol         | LINK                                                                                                                                                                                                                              |
 | Decimals       | 18                                                                                                                                                                                                                                |
+## Klaytn
+
+### Baobab testnet
+
+KLAY is the currency that you use to pay for transactions on Klaytn testnet. Testnet LINK is available from [facuets.chain.link](https://faucets.chain.link/arbitrum-rinkeby). Use the [KLAY Faucet](https://baobab.wallet.klaytn.foundation/faucet) to obtain testnet KLAY.
+
+| Parameter      | Value                                                                                                                                                                                                                             |
+| :------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ETH_CHAIN_ID` | `1001`                                                                                                                                                                                                                            |
+| Address        | <a class="erc-token-address" id="1001_0x04c5046A1f4E3fFf094c26dFCAA75eF293932f18"  href="https://baobab.scope.klaytn.com/token/0x04c5046A1f4E3fFf094c26dFCAA75eF293932f18">`0x04c5046A1f4E3fFf094c26dFCAA75eF293932f18`</a> |
+| Name           | Chainlink Token on the Klaytn testnet                                                                                                                                                                                                  |
+| Symbol         | LINK                                                                                                                                                                                                                              |
+| Decimals       | 18                                                                                                                                  

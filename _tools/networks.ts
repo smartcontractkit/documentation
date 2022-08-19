@@ -241,4 +241,17 @@ export const NETWORKS = [
       },
     ],
   },
+  {
+    page: "data-feeds-klaytn",
+    title: "Klaytn Data Feeds",
+    feedType: "Proxy",
+    networks: [
+      {
+        name: "Klaytn Baobab testnet",
+        url: "https://baobab.scope.klaytn.com/account/%s",
+        source: "directory-klaytn-testnet-baobab.json",
+        networkType: "testnet",
+      },
+    ],
+  },
 ];

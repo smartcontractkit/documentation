@@ -184,6 +184,10 @@ module.exports = {
                 title: 'Metis Data Feeds',
                 url: '/docs/data-feeds-metis/',
               },
+              {
+                title: 'Klaytn Data Feeds',
+                url: '/docs/data-feeds-klaytn/',
+              },
             ],
           },
           {
