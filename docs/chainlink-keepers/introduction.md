@@ -5,10 +5,14 @@ date: Last Modified
 title: 'Introduction to Chainlink Keepers'
 whatsnext:
   {
-    'Register a time-based Upkeep': '/docs/chainlink-keepers/job-scheduler/','Register a Custom Logic Upkeep': '/docs/chainlink-keepers/register-upkeep/','Create a Keepers-compatible contract for custom logic Upkeep': '/docs/chainlink-keepers/compatible-contracts/','Keepers architecture': '/docs/chainlink-keepers/overview/', 'Keepers economics': '/docs/chainlink-keepers/keeper-economics/'
-
+    'Register a time-based Upkeep': '/docs/chainlink-keepers/job-scheduler/',
+    'Register a Custom Logic Upkeep': '/docs/chainlink-keepers/register-upkeep/',
+    'Create a Keepers-compatible contract for custom logic Upkeep': '/docs/chainlink-keepers/compatible-contracts/',
+    'Keepers architecture': '/docs/chainlink-keepers/overview/',
+    'Keepers economics': '/docs/chainlink-keepers/keeper-economics/',
   }
 ---
+
 ![Chainlink Keeper Network Banner](/images/contract-devs/generic-banner.png)
 
 **Chainlink Keepers** enables conditional execution of your smart contracts functions through a hyper-reliable and decentralized automation platform that uses the same external network of node operators that secures billions in value. Building on Chainlink Keepers will help you get to market faster so you don't have to deal with the setup cost, ongoing maintenance, and risks associated with a centralized automation stack. To take full advantage of the Keepers automation infrastructure, read all of the documentation to understand the features of Chainlink Keepers.
@@ -17,11 +21,11 @@ To learn more about how the Chainlink Keepers Network automates your smart contr
 
 **Topics**
 
-+ [Select a Trigger](#select-a-trigger)
-  + [Time-based Trigger](#time-based-trigger)
-  + [Custom logic Trigger](#custom-logic-trigger)
-+ [Supported Networks and Costs](#supported-networks-and-costs)
-+ [Questions and Examples](#questions-and-examples)
+- [Select a Trigger](#select-a-trigger)
+  - [Time-based Trigger](#time-based-trigger)
+  - [Custom logic Trigger](#custom-logic-trigger)
+- [Supported Networks and Costs](#supported-networks-and-costs)
+- [Questions and Examples](#questions-and-examples)
 
 ## Select a Trigger
 
@@ -36,9 +40,9 @@ Before you begin, deploy the contract that you want to automate. You will also n
 
 1. Open the Chainlink Keepers app.
 
-    <div class="remix-callout">
-        <a href="https://keepers.chain.link" >Open the Chainlink Keepers App</a>
-    </div>
+<div class="remix-callout">
+    <a href="https://keepers.chain.link" >Open the Chainlink Keepers App</a>
+</div>
 
 1. [Register](../job-scheduler/) a new Upkeep in the [Chainlink Keepers App](https://keepers.chain.link) and select **Time-based** trigger. Provide the address of your deployed contract, provide the ABI if it is not verified, and choose the function that you want to automate along with the relevant function inputs, if any.
 
@@ -58,9 +62,9 @@ To use a custom logic trigger, you will need to make your contract [Keepers-comp
 
 1. Open the Chainlink Keepers app.
 
-    <div class="remix-callout">
-        <a href="https://keepers.chain.link" >Open the Chainlink Keepers App</a>
-    </div>
+<div class="remix-callout">
+    <a href="https://keepers.chain.link" >Open the Chainlink Keepers App</a>
+</div>
 
 1. [Register](../register-upkeep/) a new Upkeep in the [Chainlink Keepers App](https://keepers.chain.link) and select **Custom logic** trigger. Provide the address of your [Keepers-compatible](../compatible-contracts/) contract and complete the remaining details. Your upkeep name will be publicly visible, but your email and project name will **not** be publicly visible. Ensure you specify the appropriate gas limit for your function to execute on chain.
 
@@ -72,7 +76,7 @@ To use a custom logic trigger, you will need to make your contract [Keepers-comp
 
 > ❗️ **WARNING**
 >
-> Do **NOT** attempt to send LINK to your contract like you do with [VRF](../../get-a-random-number/). For Chainlink Keepers, contracts are funded via the registry rather than within your contract.
+> Do **NOT** attempt to send LINK to your contract. For Chainlink Keepers, contracts are funded via the registry rather than within your contract.
 
 > 🚧 Funding Upkeep
 >

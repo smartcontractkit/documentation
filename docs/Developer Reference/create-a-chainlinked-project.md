@@ -137,7 +137,7 @@ Once you have the Chainlink library installed, you can leverage the Chainlink ec
 
 If you're interested in retrieving up to date crypto prices in your contracts, learn more about our [Data Feeds](../using-chainlink-reference-contracts/).
 
-If you need to consume randomness in your contracts, learn about [Chainlink VRF](../chainlink-vrf/).
+If you need to consume randomness in your contracts, learn about [Chainlink VRF](/docs/vrf/v2/introduction/).
 
 And if you want your contracts to retrieve data from off-chain APIs, learn about [Using Any API](/docs/any-api/introduction/).
 
