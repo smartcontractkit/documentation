@@ -47,7 +47,7 @@ Chainlink VRF (Verifiable Random Function) is a provably fair and verifiable ran
 
 Use Chainlink VRF to build reliable smart contracts for any applications that rely on unpredictable outcomes. Also, check our blog to learn how Chainlink VRF enables [35+ Blockchain RNG Use Cases](https://blog.chain.link/blockchain-rng-use-cases-enabled-by-chainlink-vrf/).
 
-Check the [developer documentation](/docs/chainlink-vrf/) to learn how to use Chainlink VRF.
+Check the [developer documentation](/docs/vrf/v2/introduction/) to learn how to use Chainlink VRF.
 
 > 📘 The [Subscription Manager User-Interface](https://vrf.chain.link/) is not available for Avalanche yet.
 > <br>This guide explains how to test Chainlink VRF programmatically on the [Avalanche Fuji Testnet](https://docs.avax.network/build/tutorials/platform/fuji-workflow/).
@@ -118,7 +118,7 @@ To use this contract:
 
 ### Configuration
 
-Below a summary of the configuration of Chainlink VRF on Avalanche Fuji Testnet. Check the [developer documentation](/docs/vrf-contracts/#coordinator-parameters) for a more detailed explanation.
+Below a summary of the configuration of Chainlink VRF on Avalanche Fuji Testnet. Check the [developer documentation](/docs/vrf/v2/supported-networks/#coordinator-parameters) for a more detailed explanation.
 
 | Item                  | Value                                                                                                                         |
 | --------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
@@ -138,7 +138,7 @@ When you are done with your contracts and the subscription, run the `cancelSubsc
 
 When you create your own contracts that use Chainlink VRF, always review them with the latest security considerations and best practices in mind.
 
-- [Security Considerations](/docs/vrf-security-considerations/).
-- [Best Practices](/docs/chainlink-vrf-best-practices/).
+- [Security Considerations](/docs/vrf/v2/security/).
+- [Best Practices](/docs/vrf/v2/best-practices/).
 
 If you have questions, post them to [Stackoverflow](https://stackoverflow.com/questions/tagged/chainlink) or join our [Discord](https://discord.com/invite/aSK4zew) to participate in technical discussions.

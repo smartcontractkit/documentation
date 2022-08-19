@@ -3,7 +3,7 @@ layout: nodes.liquid
 section: legacy
 date: Last Modified
 title: "Chainlink VRF API Reference [v1]"
-permalink: "docs/chainlink-vrf-api-reference/v1/"
+permalink: "docs/vrf/v1/api-reference/"
 metadata:
   title: "Chainlink VRF API Reference"
   description: "API reference for VRFConsumerBase."
@@ -11,7 +11,7 @@ metadata:
 
 > 🚧 VRF v2 replaces and enhances VRF v1.
 >
-> See the [VRF v2 documentation](/docs/chainlink-vrf) to learn more.
+> See the [VRF v2 documentation](/docs/vrf/v2/introduction) to learn more.
 
 API reference for [`VRFConsumerBase`](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/VRFConsumerBase.sol).
 
@@ -40,7 +40,7 @@ Initialize your consumer contract.
 constructor(address _vrfCoordinator, address _link) public
 ```
 
-* `_vrfCoordinator`: Address of the Chainlink VRF Coordinator. See [Chainlink VRF Addresses](/docs/vrf-contracts/v1/) for details.
+* `_vrfCoordinator`: Address of the Chainlink VRF Coordinator. See [Chainlink VRF Addresses](/docs/vrf/v1/supported-networks/) for details.
 * `_link`: Address of the LINK token. See [LINK Token Addresses](/docs/link-token-contracts/) for details.
 
 ___
@@ -57,7 +57,7 @@ function requestRandomness(bytes32 _keyHash, uint256 _fee)
     public returns (bytes32 requestId)
 ```
 
-* `_keyHash`: The public key against which randomness is generated. See [Chainlink VRF Addresses](/docs/vrf-contracts/v1) for details.
+* `_keyHash`: The public key against which randomness is generated. See [Chainlink VRF Addresses](/docs/vrf/v1/supported-networks) for details.
 * `_fee`: The fee, in LINK, for the request. Specified by the oracle.
 * `RETURN`: The ID unique to a single request.
 
@@ -78,4 +78,4 @@ ___
 
 ### Maximizing security
 
-Chainlink VRF provides powerful security guarantees and is easy to integrate. However, smart contract security is a nuanced topic. You can read about the [top security considerations for VRF](/docs/vrf-security-considerations/v1).
+Chainlink VRF provides powerful security guarantees and is easy to integrate. However, smart contract security is a nuanced topic. You can read about the [top security considerations for VRF](/docs/vrf/v1/security).
