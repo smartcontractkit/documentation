@@ -12,6 +12,14 @@ metadata:
 
 You can find a list of release notes for Chainlink nodes in the [smartcontractkit GitHub repository](https://github.com/smartcontractkit/chainlink/releases). Docker images are available in the [Chainlink Docker hub](https://hub.docker.com/r/smartcontract/chainlink/tags).
 
+## Changes in v1.7.1 nodes
+
+**[v1.7.1 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v1.7.1)**
+
+### Fixed
+
+- Arbitrum Nitro client error support
+
 ## Changes in v1.7.0 nodes
 
 **[v1.7.0 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v1.7.0)**
