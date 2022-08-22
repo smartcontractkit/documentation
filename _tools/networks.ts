@@ -195,9 +195,9 @@ export const NETWORKS = [
         networkType: "mainnet",
       },
       {
-        name: "Optimism Kovan",
-        url: "https://kovan-optimistic.etherscan.io/address/%s",
-        source: "directory-ethereum-testnet-kovan-optimism-1.json",
+        name: "Optimism Goerli",
+        url: "https://blockscout.com/optimism/goerli/address/%s",
+        source: "directory-ethereum-testnet-goerli-optimism-1.json",
         networkType: "testnet",
       },
     ],
