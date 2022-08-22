@@ -19,7 +19,11 @@ metadata:
 
 If you already have a project started and would like to integrate Chainlink, you can [add Chainlink to your existing project](../create-a-chainlinked-project/#install-into-existing-projects) by using the [`chainlink` NPM package](https://www.npmjs.com/package/@chainlink/contracts).
 
-See the [Data Feeds Contract Addresses](/docs/reference-contracts/) page for a list of networks and proxy addresses.  
+See the [Data Feeds Contract Addresses](/docs/reference-contracts/) page for a list of networks and proxy addresses. 
+
+<p>
+https://youtu.be/xL96sTwQ5Ho
+</p>
 
 **Topics**
 - [Retrieve the latest asset prices](#retrieve-the-latest-asset-prices) 
