@@ -21,10 +21,6 @@ If you already have a project started and would like to integrate Chainlink, you
 
 See the [Data Feeds Contract Addresses](/docs/reference-contracts/) page for a list of networks and proxy addresses. 
 
-<p>
-https://youtu.be/xL96sTwQ5Ho
-</p>
-
 **Topics**
 - [Retrieve the latest asset prices](#retrieve-the-latest-asset-prices) 
 - [Components of a data feed](#components-of-a-data-feed)
