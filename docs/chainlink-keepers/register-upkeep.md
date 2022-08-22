@@ -68,7 +68,7 @@ You can dynamically create and manage Upkeeps from within your own dApp. To do t
 Find the following addresses for your network:
 
 - Correct [LINK token contract](../../link-token-contracts/)
-- [Registry and registrar addresses for your network](#registry-and-registrar-addresses) 
+- [Registry and registrar addresses for your network](../supported-networks/#registry-and-registrar-addresses) 
 
 Optionally, you can fetch the LINK address and registrar address from the intended registry at run-time.
 
