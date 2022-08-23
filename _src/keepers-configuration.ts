@@ -3,11 +3,23 @@ declare var Web3: any;
 
 document.addEventListener('DOMContentLoaded', () => {
   const contracts: { [key: string]: any } = {
-    ethereum: new new Web3('https://eth-mainnet.alchemyapi.io/v2/-_DxqjsKfWsDxYbz-KDGe_BH5OLlZT0-').eth.Contract(
+    ethereum: new new Web3('https://rpc.ankr.com/eth').eth.Contract(
       abi,
       '0x7b3EC232b08BD7b4b3305BE0C044D907B2DF960B'
     ),
-    polygon: new new Web3('https://polygon-mainnet.g.alchemy.com/v2/vn3HPO5qapvV6DMx4Wp6izedOAIKuDxN').eth.Contract(
+    polygon: new new Web3('https://rpc.ankr.com/polygon').eth.Contract(
+      abi,
+      '0x7b3EC232b08BD7b4b3305BE0C044D907B2DF960B'
+    ),
+    bnbchain: new new Web3('https://rpc.ankr.com/bsc').eth.Contract(
+      abi,
+      '0x7b3EC232b08BD7b4b3305BE0C044D907B2DF960B'
+    ),
+    avalanche: new new Web3('https://rpc.ankr.com/avalanche').eth.Contract(
+      abi,
+      '0x409CF388DaB66275dA3e44005D182c12EeAa12A0'
+    ),
+    fantom: new new Web3('https://rpc.ankr.com/fantom').eth.Contract(
       abi,
       '0x7b3EC232b08BD7b4b3305BE0C044D907B2DF960B'
     ),
