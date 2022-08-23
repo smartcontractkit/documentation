@@ -47,7 +47,7 @@ The contract has the following components:
 
 ## Compile, deploy, and run the contract
 
-> 🚧 If you have not already configured your MetaMask wallet and funded it with testnet ETH, follow the instructions in the Deploy Your First Smart Contract to set that up. You can get testnet ETH at one of the available [Goerli faucets](/docs/link-token-contracts/#goerli).
+> 🚧 If you have not already configured your MetaMask wallet and funded it with testnet ETH, follow the instructions in the Deploy Your First Smart Contract to set that up. You can get testnet ETH at one of the available [Goerli faucets](/docs/link-token-contracts/#goerli-testnet).
 
 Deploy the `PriceConsumerV3` smart contract on the Goerli testnet.
 
