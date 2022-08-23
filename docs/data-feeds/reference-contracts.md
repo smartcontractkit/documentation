@@ -31,10 +31,31 @@ Data feeds are available on the following networks:
   - [Harmony Data Feeds](../harmony-price-feeds/)
   - [Optimism Data Feeds](../optimism-price-feeds/)
   - [Moonriver Data Feeds](../data-feeds-moonriver/)
+  - [Moonbeam Data Feeds](../data-feeds-moonbeam/)
+  - [Metis Data Feeds](../data-feeds-metis/)
 - Other chains
   - [Solana Data Feeds](/docs/solana/data-feeds-solana/)
 
 {% include 'data-quality.md' %}
+
+## Network status
+
+Track the status of these networks at the following URLs:
+
+- Ethereum: https://ethstats.net/
+- BNB Chain: https://bscscan.freshstatus.io/
+- Polygon: https://polygon.io/system
+- Gnosis Chain: https://blockscout.com/xdai/mainnet/
+- HECO Chain: https://hecoinfo.com/
+- Avalanche: https://status.avax.network/
+- Fantom: https://ftmscan.com/
+- Arbitrum: https://arbiscan.freshstatus.io/
+- Harmony: https://status.harmony.one/
+- Optimism: https://status.optimism.io/
+- Moonriver: https://moonriver.moonscan.io/
+- Moonbeam: https://moonscan.io/
+- Metis: https://andromeda-explorer.metis.io/
+- Solana: https://status.solana.com/
 
 ## Data Feed categories
 
