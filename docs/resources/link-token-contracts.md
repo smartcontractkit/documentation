@@ -334,7 +334,7 @@ MOVR is used to pay transaction fees on Moonriver mainnet. You can use [bridge.m
 | Name           | Chainlink Token on Moonriver Mainnet                                                                                                                                                                                       |
 | Symbol         | LINK                                                                                                                                                                                                                       |
 | Decimals       | 18                                                                                                                                                                                                                         |
-| Network status | [moonriver.moonscan.io](https://moonriver.moonscan.io/)                                                                                                                                                                    |
+| Network status | [moonscan.freshstatus.io](https://moonscan.freshstatus.io/)                                                                                                                                                                    |
 
 ## Moonbeam
 
@@ -349,7 +349,7 @@ GLMR is used to pay transaction fees on Moonbeam mainnet.
 | Name           | Chainlink Token on Moonbeam Mainnet                                                                                                                                                                              |
 | Symbol         | LINK                                                                                                                                                                                                             |
 | Decimals       | 18                                                                                                                                                                                                               |
-| Network status | [moonscan.io](https://moonscan.io/)                                                                                                                                                                              |
+| Network status | [moonscan.freshstatus.io](https://moonscan.freshstatus.io/)                                                                                                                                                                              |
 
 ## Metis
 

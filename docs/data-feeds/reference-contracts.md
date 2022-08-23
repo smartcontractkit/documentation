@@ -50,10 +50,10 @@ Track the status of these networks at the following URLs:
 - Avalanche: https://status.avax.network/
 - Fantom: https://ftmscan.com/
 - Arbitrum: https://arbiscan.freshstatus.io/
-- Harmony: https://status.harmony.one/
 - Optimism: https://status.optimism.io/
-- Moonriver: https://moonriver.moonscan.io/
-- Moonbeam: https://moonscan.io/
+- Harmony: https://status.harmony.one/
+- Moonriver: https://moonscan.freshstatus.io/
+- Moonbeam: https://moonscan.freshstatus.io/
 - Metis: https://andromeda-explorer.metis.io/
 - Solana: https://status.solana.com/
 
