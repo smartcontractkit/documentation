@@ -60,7 +60,7 @@ Testnet LINK is available at [faucets.chain.link](https://faucets.chain.link/goe
 
 ### Rinkeby testnet (Deprecated)
 
-The Rinkeby network is [officially deprecated](https://ethereum.org/en/developers/docs/networks/#rinkeby) and is no longer supported. [Goerli](#goerli) is the recommended testnet for Chainlink on Ethereum.
+> 🚧 The Rinkeby network is [officially deprecated](https://ethereum.org/en/developers/docs/networks/#rinkeby) and is no longer supported. [Goerli](#goerli) is the recommended testnet for Chainlink on Ethereum.
 
 Testnet LINK and ETH are available at [faucets.chain.link](https://faucets.chain.link/rinkeby). Testnet ETH is also available at [rinkeby-faucet.com](https://rinkeby-faucet.com/) and [app.mycrypto.com/faucet](https://app.mycrypto.com/faucet).
 
@@ -74,7 +74,7 @@ Testnet LINK and ETH are available at [faucets.chain.link](https://faucets.chain
 
 ### Kovan testnet (Deprecated)
 
-The Kovan network is [officially deprecated](https://ethereum.org/en/developers/docs/networks/#kovan) and is no longer supported. [Goerli](#goerli) is the recommended testnet for Chainlink on Ethereum.
+> 🚧 The Kovan network is [officially deprecated](https://ethereum.org/en/developers/docs/networks/#kovan) and is no longer supported. [Goerli](#goerli) is the recommended testnet for Chainlink on Ethereum.
 
 Testnet LINK and ETH are available at [faucets.chain.link](https://faucets.chain.link/kovan).
 
