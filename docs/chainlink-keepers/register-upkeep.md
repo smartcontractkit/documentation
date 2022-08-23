@@ -19,6 +19,8 @@ This guide explains how to register a Custom logic Upkeep that uses a [Keepers-c
 
 ## Register an Upkeep using the Keepers App
 
+![Register Upkeep GIF](/images/contract-devs/keeper/register-upkeep.gif)
+
 <div class="remix-callout">
     <a href="https://keepers.chain.link" >Open the Chainlink Keepers App</a>
 </div>
