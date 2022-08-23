@@ -12,7 +12,7 @@ Welcome to the Resources page. This is a list of links and pages that you might 
 
 + [Smart Contract Learning Materials](#smart-contract-learning-materials)
   + [Video Tutorials](#video-tutorials)
-  + [Application Projects](#application-projects)
+  + [Applications](#applications)
   + [Game Resources](#game-resources)
   + [Coding Bootcamps](#coding-bootcamps)
   + [Starter Kits](#starter-kits)
