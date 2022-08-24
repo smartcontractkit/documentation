@@ -133,7 +133,7 @@ function requestPrice()
 
 ### buildOperatorRequest
 
-> 📘 This function is similar to `buildChainlinkRequest`[function](#buildChainlinkRequest). One major difference is that `buildOperatorRequest` does not allow setting up the address of the callback. The callback address is set to the address of the calling contract.
+> 📘 This function is similar to `buildChainlinkRequest`[function](#buildchainlinkrequest). One major difference is that `buildOperatorRequest` does not allow setting up the address of the callback. The callback address is set to the address of the calling contract.
 > It is recommended to use `buildOperatorRequest` but make sure the oracle you are contacting is an `Operator` [contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/Operator.sol).
 
 ```solidity example
@@ -218,7 +218,7 @@ function requestPriceFrom(address _oracle)
 
 ### sendOperatorRequest
 
-> 📘 This function is similar to `sendChainlinkRequest`[function](#sendChainlinkRequest).
+> 📘 This function is similar to `sendChainlinkRequest`[function](#sendchainlinkrequest).
 > It is recommended to use `sendOperatorRequest` but make sure the oracle you are contacting is an `Operator` [contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/Operator.sol).
 
 ```solidity
@@ -248,7 +248,7 @@ function requestPrice()
 
 ### sendOperatorRequestTo
 
-> 📘 This function is similar to `sendChainlinkRequestTo`[function](#sendChainlinkRequestTo).
+> 📘 This function is similar to `sendChainlinkRequestTo`[function](#sendchainlinkrequestto).
 > It is recommended to use `sendOperatorRequestTo` but make sure the oracle you are contacting is an `Operator` [contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/Operator.sol).
 
 ```solidity
@@ -259,7 +259,7 @@ function sendChainlinkRequestTo(
 ) returns (bytes32 requestId)
 ```
 
-Similar to [sendOperatorRequest](#sendOperatorRequest), `sendOperatorRequestTo` sends a [Request](#chainlinkrequest) but allows the target oracle to be specified. It requires an address, a Request, and an amount, and returns the `requestId`. This allows a requesting contract to create and track requests sent to multiple oracle contract addresses.
+Similar to [sendOperatorRequest](#sendoperatorrequest), `sendOperatorRequestTo` sends a [Request](#chainlinkrequest) but allows the target oracle to be specified. It requires an address, a Request, and an amount, and returns the `requestId`. This allows a requesting contract to create and track requests sent to multiple oracle contract addresses.
 
 `sendOperatorRequestTo` emits a [ChainlinkRequested](#chainlinkrequested) event containing the request ID, if you would like to use it in your Web3 application.
 
