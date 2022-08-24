@@ -38,25 +38,6 @@ Data feeds are available on the following networks:
 
 {% include 'data-quality.md' %}
 
-## Network status
-
-Track the status of these networks at the following URLs:
-
-- Ethereum: https://ethstats.net/
-- BNB Chain: https://bscscan.freshstatus.io/
-- Polygon: https://polygon.io/system
-- Gnosis Chain: https://blockscout.com/xdai/mainnet/
-- HECO Chain: https://hecoinfo.com/
-- Avalanche: https://status.avax.network/
-- Fantom: https://ftmscan.com/
-- Arbitrum: https://arbiscan.freshstatus.io/
-- Optimism: https://status.optimism.io/
-- Harmony: https://status.harmony.one/
-- Moonriver: https://moonscan.freshstatus.io/
-- Moonbeam: https://moonscan.freshstatus.io/
-- Metis: https://andromeda-explorer.metis.io/
-- Solana: https://status.solana.com/
-
 ## Data Feed categories
 
 This categorization is put in place to inform users about the intended use cases of feeds and help to highlight some of the inherent market risks surrounding the data quality of these feeds.
