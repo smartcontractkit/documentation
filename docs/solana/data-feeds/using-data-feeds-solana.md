@@ -17,8 +17,6 @@ Chainlink Data Feeds are the quickest way to connect your smart contracts to the
 
 To get the full list of available Chainlink Data Feeds on Solana, see the [Solana Feeds](/docs/solana/data-feeds-solana/) page. View the program that owns the Chainlink Data Feeds in the [Solana Devnet Explorer](https://solscan.io/account/HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny?cluster=devnet), or the [Solana Mainnet Explorer](https://solscan.io/account/HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny).
 
-Track the status of the Solana network at [status.solana.com/](https://status.solana.com/).
-
 {% include 'data-quality.md' %}
 
 **Topics**
