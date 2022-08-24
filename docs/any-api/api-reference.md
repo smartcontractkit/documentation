@@ -143,7 +143,7 @@ function buildOperatorRequest(
 ) returns (Chainlink.Request memory request)
 ```
 
-Instantiates a Request from the Chainlink contract. A [Request](#chainlinkrequest) is a struct which contains the necessary parameters to be sent to the oracle contract. The `buildOperatorRequest` function takes an ID, which can be a [Job ID](/docs/jobs/), and a callback function signature to call on the calling contract address.
+Instantiates a _Request_ from the Chainlink contract. A [Request](#chainlinkrequest) is a struct that contains the necessary parameters to be sent to the oracle contract. The `buildOperatorRequest` function takes an ID, which can be a [Job ID](/docs/jobs/), and a callback function signature to call on the calling contract address.
 
 ```solidity example
 function requestPrice()
@@ -228,11 +228,11 @@ function sendOperatorRequest(
 ) returns (bytes32 requestId)
 ```
 
-Sends the request payload to the stored oracle address. It takes a [Chainlink.Request](#chainlinkrequest) and the amount of LINK to send amount as parameters. The request is serialized and calls `operatorRequest` on the address stored in `chainlinkOracleAddress` via the LINK token's `transferAndCall` method.
+The `sendOperatorRequest` function sends the request payload to the stored oracle address. It takes a [Chainlink.Request](#chainlinkrequest) and the amount of LINK to send amount as parameters. The request is serialized and calls `operatorRequest` on the address stored in `chainlinkOracleAddress` using the LINK token's `transferAndCall` method.
 
-`sendOperatorRequest` returns the ID of the request. If your application needs to, your contract can store that ID, but you don't need to. The ChainlinkClient helpers will store the ID under the hood, along with the oracle address, and use them when you call `recordChainlinkFulfillment` in your callback function to make sure only that the address you want can call your Chainlink callback function.
+`sendOperatorRequest` returns the ID of the request. Optionally, your contract can store the ID if your application needs it. The `ChainlinkClient` helpers store the ID and the oracle address and use them when you call `recordChainlinkFulfillment` in your callback function. This ensures that only the specified address can call your Chainlink callback function.
 
-`sendOperatorRequest` emits a [ChainlinkRequested](#chainlinkrequested) event containing the request ID, if you would like to use it in your Web3 application.
+`sendOperatorRequest` emits a [ChainlinkRequested](#chainlinkrequested) event containing the request ID that you can use in your Web3 application.
 
 ```solidity example
 function requestPrice()
@@ -249,7 +249,7 @@ function requestPrice()
 ### sendOperatorRequestTo
 
 > 📘 This function is similar to `sendChainlinkRequestTo`[function](#sendchainlinkrequestto).
-> It is recommended to use `sendOperatorRequestTo` but make sure the oracle you are contacting is an `Operator` [contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/Operator.sol).
+> It is recommended to use `sendOperatorRequestTo`, but make sure the oracle you are contacting is an `Operator` [contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/Operator.sol).
 
 ```solidity
 function sendChainlinkRequestTo(
@@ -261,7 +261,7 @@ function sendChainlinkRequestTo(
 
 Similar to [sendOperatorRequest](#sendoperatorrequest), `sendOperatorRequestTo` sends a [Request](#chainlinkrequest) but allows the target oracle to be specified. It requires an address, a Request, and an amount, and returns the `requestId`. This allows a requesting contract to create and track requests sent to multiple oracle contract addresses.
 
-`sendOperatorRequestTo` emits a [ChainlinkRequested](#chainlinkrequested) event containing the request ID, if you would like to use it in your Web3 application.
+`sendOperatorRequestTo` emits a [ChainlinkRequested](#chainlinkrequested) event containing a request ID that you can use in your Web3 application.
 
 ```solidity example
 function requestPriceFrom(address _oracle)
