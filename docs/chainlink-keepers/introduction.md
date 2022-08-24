@@ -38,6 +38,8 @@ Chainlink Keepers will reliably execute smart contract functions using a variety
 
 Before you begin, deploy the contract that you want to automate. You will also need the ABI for your contract if it has not been verified. Your contract does not have to be [Keepers-compatible](../compatible-contracts/).
 
+![Register Upkeep GIF](/images/contract-devs/keeper/register-upkeep.gif)
+
 1. Open the Chainlink Keepers app.
 
     <div class="remix-callout">
