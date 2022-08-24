@@ -24,12 +24,12 @@ contract ATestnetConsumer is ChainlinkClient, ConfirmedOwner {
     event RequestEthereumLastMarket(bytes32 indexed requestId, bytes32 indexed market);
 
     /**
-     *  Rinkeby
-     *@dev LINK address in Rinkeby network: 0x01BE23585060835E02B77ef475b0Cc51aA1e0709
+     *  Goerli
+     *@dev LINK address in Goerli network: 0x326C977E6efc84E512bB9C30f76E30c160eD06FB
      * @dev Check https://docs.chain.link/docs/link-token-contracts/ for LINK address for the right network
      */
     constructor() ConfirmedOwner(msg.sender) {
-        setChainlinkToken(0x01BE23585060835E02B77ef475b0Cc51aA1e0709);
+        setChainlinkToken(0x326C977E6efc84E512bB9C30f76E30c160eD06FB);
     }
 
     function requestEthereumPrice(address _oracle, string memory _jobId) public onlyOwner {

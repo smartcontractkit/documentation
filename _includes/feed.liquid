@@ -98,19 +98,6 @@ section: ethereum
 
 </style>
 
-{% case metadata.l2healthflag %}
-  {% when "arbitrum" %}
-     <rdme-callout theme="warn">
-         <p>As a best practice, use the L2 sequencer feed to verify the status of the sequencer when running applications on the Arbitrum network. See the <a href="/docs/l2-sequencer-flag/">L2 Sequencer Uptime Feeds</a> page for examples.
-         </p>
-     </rdme-callout>
-  {% when "optimism" %}
-     <rdme-callout theme="warn">
-         <p>Optimism uses an optimistic rollup protocol, but there is no L2 Sequencer Health Flag available at this time.</p>
-     </rdme-callout>
-{% endcase %}
-
-
 <div id="categories">
     <p>Data feeds reside in the following categories:</p>
     <ul>
@@ -121,6 +108,21 @@ section: ethereum
       <li>⭕ <a href="/docs/reference-contracts/#deprecation-of-chainlink-data-feeds"><strong>Deprecating</strong></a>: These feeds are scheduled for deprecation.</li>
     </ul>
     <p>See the <a href="/docs/selecting-data-feeds/">Selecting Quality Data Feeds</a> page for complete details about each category.</p>
+</div>
+
+
+{% if metadata.l2healthflag == "arbitrum" or metadata.l2healthflag == "optimism" or metadata.l2healthflag == "metis" %}
+<rdme-callout theme="warn">
+   <p>This is an L2 network. As a best practice, use the L2 sequencer feed to verify the status of the sequencer when running applications on L2 networks. See the <a href="/docs/l2-sequencer-flag/">L2 Sequencer Uptime Feeds</a> page for examples.
+   </p>
+</rdme-callout>
+{% endif %}
+
+<div id="categories">
+<rdme-callout theme="info">
+   <p>Please review the <a href="https://docs.chain.link/docs/selecting-data-feeds/#risk-mitigation">risk mitigation documentation</a> and <a href="https://chain.link/terms">chain.link/terms</a> for more detail on the risks of using data feeds and your responsibilities for risk mitigation.
+   </p>
+</rdme-callout>
 </div>
 
 <div id="feed-data">
@@ -142,6 +144,9 @@ section: ethereum
         if(data["{{stub}}"]) {
             for(let network of data["{{stub}}"].networks) {
                 html += `<h2 id="${network.name}">${network.name} <a class="anchor" href="#${network.name}"><img src="/images/link.svg" alt="Link to this section"></a></h2>`;
+                if(network.name == "Kovan Testnet (Deprecated)" || network.name == "Rinkeby Testnet (Deprecated)") {
+                    html += `<rdme-callout theme="warn"><p>This network is <a href="https://ethereum.org/en/developers/docs/networks/#ethereum-testnets" target="_blank" rel="noopener">officially deprecated</a> and is no longer supported. <a href="#Goerli%20Testnet">Goerli</a> is the recommended testnet for Chainlink on Ethereum.</p></rdme-callout>`
+                }
                 html += `<label><input type="checkbox" class="extra" ${showExtraDetails ? 'checked="checked"' : ''}>Show more details</input></label>`;
                 let proxyList = '';
                 if(network.networkType == "mainnet") {

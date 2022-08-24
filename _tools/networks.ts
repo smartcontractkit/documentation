@@ -11,13 +11,19 @@ export const NETWORKS = [
         networkType: "mainnet",
       },
       {
-        name: "Rinkeby Testnet",
+        name: "Goerli Testnet",
+        url: "https://goerli.etherscan.io/address/%s",
+        source: "directory-goerli.json",
+        networkType: "testnet",
+      },
+      {
+        name: "Rinkeby Testnet (Deprecated)",
         url: "https://rinkeby.etherscan.io/address/%s",
         source: "directory-rinkeby.json",
         networkType: "testnet",
       },
       {
-        name: "Kovan Testnet",
+        name: "Kovan Testnet (Deprecated)",
         url: "https://kovan.etherscan.io/address/%s",
         source: "directory-kovan.json",
         networkType: "testnet",
@@ -119,7 +125,7 @@ export const NETWORKS = [
         networkType: "mainnet",
       },
       {
-        name: "Fantom Data Feeds",
+        name: "Fantom Testnet",
         url: "https://testnet.ftmscan.com/address/%s",
         source: "directory-fantom-testnet.json",
         networkType: "testnet",
@@ -232,6 +238,19 @@ export const NETWORKS = [
         url: "https://andromeda-explorer.metis.io/address/%s",
         source: "directory-ethereum-mainnet-andromeda-1.json",
         networkType: "mainnet",
+      },
+    ],
+  },
+  {
+    page: "data-feeds-klaytn",
+    title: "Klaytn Data Feeds",
+    feedType: "Proxy",
+    networks: [
+      {
+        name: "Klaytn Baobab testnet",
+        url: "https://baobab.scope.klaytn.com/account/%s",
+        source: "directory-klaytn-testnet-baobab.json",
+        networkType: "testnet",
       },
     ],
   },

@@ -63,6 +63,19 @@ Your Upkeeps will be displayed in your list of Active Upkeeps. You must monitor 
 You can dynamically create and manage Upkeeps from within your own dApp. To do this you will need to keep track of the Upkeep ID as your contract will use this to subsequently interact with the Keepers registry. The following example displays a smart contract that can create an Upkeep and determine the Upkeep ID. Note your contract should be Keepers-compatible you will need [ERC-677 LINK](../../link-token-contracts/) to fund the Upkeep. You can also program your Upkeep to check its own balance and fund itself by interacting with the registry.
 
 
+### Prerequisites 
+
+Find the following addresses for your network:
+
+- Correct [LINK token contract](../../link-token-contracts/)
+- [Registry and registrar addresses for your network](../supported-networks/#registry-and-registrar-addresses) 
+
+Optionally, you can fetch the LINK address and registrar address from the intended registry at run-time.
+
+> 📘 Make sure your contract has enough [ERC-677 LINK](../../link-token-contracts/) to fund the Upkeep at creation. _The minimum amount is 5 LINK._
+
+### Code example
+
 ```solidity
 {% include 'samples/Keepers/UpkeepIDConsumerExample.sol' %}
 ```
@@ -84,20 +97,5 @@ You can dynamically create and manage Upkeeps from within your own dApp. To do t
 | `checkData`            | ABI-encoded fixed and specified at Upkeep registration and used in every checkUpkeep. Can be empty (0x)          |
 | `amount`               | The amount of LINK (in Wei) to fund your Upkeep. The minimum amount is 5 LINK. To fund 5 LINK please set this to 5000000000000000000       |
 | `source`               | Not in use in programmatic registration. Please specify with `0`.           |
-| `sender`               | Please use your contract address as the sender address. This will not determine who the admin of the upkeep is. |
 
-### Registry and Registrar Addresses
-
-| Name                               | Registry Address                              | Registrar Address                                       |
-| ---------------------------------- | --------------------------------------------- | ------------------------------------------------------- |
-| Ethereum Mainnet                   |  [0x02777053d6764996e594c3E88AF1D58D5363a2e6](https://etherscan.io/address/0x02777053d6764996e594c3E88AF1D58D5363a2e6)  | [0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d](https://etherscan.io/address/0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d) |
-| Rinkeby Testnet                    | [0x02777053d6764996e594c3E88AF1D58D5363a2e6](https://rinkeby.etherscan.io/address/0x02777053d6764996e594c3E88AF1D58D5363a2e6) | [0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d](https://rinkeby.etherscan.io/address/0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d)| 
-| Kovan Testnet                      | [0x02777053d6764996e594c3E88AF1D58D5363a2e6](https://kovan.etherscan.io/address/0x02777053d6764996e594c3E88AF1D58D5363a2e6) | [0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d](https://kovan.etherscan.io/address/0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d) | 
-| Polygon Mainnet                    | [0x02777053d6764996e594c3E88AF1D58D5363a2e6](https://polygonscan.com/address/0x02777053d6764996e594c3E88AF1D58D5363a2e6) | [0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d](https://polygonscan.com/address/0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d) | 
-| Polygon Mumbai Testnet                    | [0x02777053d6764996e594c3E88AF1D58D5363a2e6](https://mumbai.polygonscan.com/address/0x02777053d6764996e594c3E88AF1D58D5363a2e6) | [0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d](https://mumbai.polygonscan.com/address/0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d) | 
-| BNB Chain Mainnet                    | [0x02777053d6764996e594c3E88AF1D58D5363a2e6](https://bscscan.com/address/0x02777053d6764996e594c3E88AF1D58D5363a2e6) | [0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d](https://bscscan.com/address/0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d) | 
-| BNB Chain Testnet                    | [0x02777053d6764996e594c3E88AF1D58D5363a2e6](https://testnet.bscscan.com/address/0x02777053d6764996e594c3E88AF1D58D5363a2e6) | [0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d](https://testnet.bscscan.com/address/0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d) | 
-| Avalanche Mainnet                 | [0x02777053d6764996e594c3E88AF1D58D5363a2e6](https://snowtrace.io/address/0x02777053d6764996e594c3E88AF1D58D5363a2e6) | [0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d](https://snowtrace.io/address/0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d) | 
-| Avalanche Fuji Testnet                 | [0x02777053d6764996e594c3E88AF1D58D5363a2e6](https://testnet.snowtrace.io/address/0x02777053d6764996e594c3E88AF1D58D5363a2e6) | [0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d](https://testnet.snowtrace.io/address/0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d) | 
-| Fantom Mainnet                 | [0x02777053d6764996e594c3E88AF1D58D5363a2e6](https://ftmscan.com/address/0x02777053d6764996e594c3E88AF1D58D5363a2e6) | [0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d](https://ftmscan.com/address/0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d) | 
-| Fantom Testnet                 | [0x02777053d6764996e594c3E88AF1D58D5363a2e6](https://testnet.ftmscan.com/address/0x02777053d6764996e594c3E88AF1D58D5363a2e6) | [0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d](https://testnet.ftmscan.com/address/0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d) | 
+Refer to the [Supported Networks](../supported-networks/#registry-and-registrar-addresses) page to find the correct registry and registrar addresses for your contract.

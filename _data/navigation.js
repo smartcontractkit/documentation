@@ -48,7 +48,7 @@ module.exports = {
           },
           {
             title: 'Chainlink VRF',
-            url: '/docs/chainlink-vrf/',
+            url: '/docs/vrf/v2/introduction/',
           },
           {
             title: 'Chainlink Keepers',
@@ -56,7 +56,7 @@ module.exports = {
           },
           {
             title: 'Connect to Public API Data',
-            url: '/docs/request-and-receive-data/',
+            url: '/docs/any-api/introduction/',
           },
           {
             title: 'Run a Chainlink Node',
@@ -184,6 +184,10 @@ module.exports = {
                 title: 'Metis Data Feeds',
                 url: '/docs/data-feeds-metis/',
               },
+              {
+                title: 'Klaytn Data Feeds',
+                url: '/docs/data-feeds-klaytn/',
+              },
             ],
           },
           {
@@ -198,31 +202,31 @@ module.exports = {
         contents: [
           {
             title: 'Introduction to Chainlink VRF',
-            url: '/docs/chainlink-vrf/',
+            url: '/docs/vrf/v2/introduction/',
           },
           {
             title: 'Get a Random Number',
-            url: '/docs/get-a-random-number/',
+            url: '/docs/vrf/v2/examples/get-a-random-number/',
           },
           {
-            title: 'Example Contracts',
-            url: '/docs/chainlink-vrf/example-contracts/',
+            title: 'Programmatic Subscription',
+            url: '/docs/vrf/v2/examples/programmatic-subscription/',
           },
           {
             title: 'Security Considerations',
-            url: '/docs/vrf-security-considerations/',
+            url: '/docs/vrf/v2/security/',
           },
           {
             title: 'Best Practices',
-            url: '/docs/chainlink-vrf-best-practices/',
+            url: '/docs/vrf/v2/best-practices/',
           },
           {
-            title: 'Contract Addresses',
-            url: '/docs/vrf-contracts/',
+            title: 'Supported Networks',
+            url: '/docs/vrf/v2/supported-networks/',
           },
           {
             title: 'Migrating to VRF v2',
-            url: '/docs/chainlink-vrf/migration-vrf-v1-v2/',
+            url: '/docs/vrf/v2/migration-from-v1/',
           },
         ],
       },
@@ -231,49 +235,49 @@ module.exports = {
         contents: [
           {
             title: 'Introduction to Using Any API',
-            url: '/docs/request-and-receive-data/',
+            url: '/docs/any-api/introduction/',
           },
           {
             title: 'Make a GET Request',
-            url: '/docs/make-a-http-get-request/',
+            url: '/docs/any-api/get-request/introduction/',
             children: [
               {
                 title: 'Single Word Response',
-                url: '/docs/single-word-response/',
+                url: '/docs/any-api/get-request/examples/single-word-response/',
               },
               {
                 title: 'Multi-Variable Responses',
-                url: '/docs/multi-variable-responses/',
+                url: '/docs/any-api/get-request/examples/multi-variable-responses/',
               },
               {
                 title: 'Array Response',
-                url: '/docs/api-array-response/',
+                url: '/docs/any-api/get-request/examples/api-array-response/',
               },
               {
                 title: 'Large Responses',
-                url: '/docs/large-responses/',
+                url: '/docs/any-api/get-request/examples/large-responses/',
               },
               {
                 title: 'Existing Job Request',
-                url: '/docs/existing-job-request/',
+                url: '/docs/any-api/get-request/examples/existing-job-request/',
               },
             ],
           },
           {
             title: 'Find Existing Jobs',
-            url: '/docs/listing-services/',
+            url: '/docs/any-api/find-oracle/',
           },
           {
             title: 'Testnet Oracles',
-            url: '/docs/any-api-testnet-oracles/',
+            url: '/docs/any-api/testnet-oracles/',
           },
           {
             title: 'Data Provider Nodes',
-            url: '/docs/data-provider-nodes/',
+            url: '/docs/any-api/data-providers/introduction/',
           },
           {
             title: 'API Reference',
-            url: '/docs/chainlink-framework/',
+            url: '/docs/any-api/api-reference/',
           },
         ],
       },
@@ -656,27 +660,27 @@ module.exports = {
         contents: [
           {
             title: 'Introduction to Chainlink VRF',
-            url: '/docs/chainlink-vrf/v1/',
+            url: '/docs/vrf/v1/introduction/',
           },
           {
             title: 'Get a Random Number',
-            url: '/docs/get-a-random-number/v1/',
+            url: '/docs/vrf/v1/examples/get-a-random-number/',
           },
           {
             title: 'Security Considerations',
-            url: '/docs/vrf-security-considerations/v1/',
+            url: '/docs/vrf/v1/security/',
           },
           {
             title: 'Best Practices',
-            url: '/docs/chainlink-vrf-best-practices/v1/',
+            url: '/docs/vrf/v1/best-practices/',
           },
           {
-            title: 'Contract Addresses',
-            url: '/docs/vrf-contracts/v1/',
+            title: 'Supported Networks',
+            url: '/docs/vrf/v1/supported-networks/',
           },
           {
             title: 'API Reference',
-            url: '/docs/chainlink-vrf-api-reference/v1/',
+            url: '/docs/vrf/v1/api-reference/',
           },
         ],
       },
