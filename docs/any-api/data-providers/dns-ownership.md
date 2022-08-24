@@ -26,7 +26,7 @@ This guide assumes that you know how to create and deploy smart contracts on the
 
 - [The Remix IDE](https://remix.ethereum.org/)
 - [MetaMask](https://metamask.io/)
-- [Kovan Link tokens](/docs/link-token-contracts/#kovan-deprecated)
+- [Kovan Link tokens](/docs/link-token-contracts/#kovan-testnet-deprecated)
 
 You should be familiar with the [Chainlink Basic Request Model](/docs/architecture-request-model/). If you are new to developing smart contracts on Ethereum, see the [Getting Started](/docs/conceptual-overview/) guide to learn the basics.
 
