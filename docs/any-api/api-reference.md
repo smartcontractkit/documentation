@@ -5,26 +5,32 @@ date: Last Modified
 title: 'ChainlinkClient API Reference'
 permalink: 'docs/any-api/api-reference/'
 ---
-API reference for [`ChainlinkClient`](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/ChainlinkClient.sol).
+
+> 📘 API reference for `ChainlinkClient` [contract](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/ChainlinkClient.sol).
+>
+> `ChainlinkClient` contracts can communicate with legacy `Oracle` [contracts](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.4/Oracle.sol) or `Operator` [contracts](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/Operator.sol).
 
 ## Index
 
 ### Methods
 
-| Name                                                          | Description                                                                               |
-| :------------------------------------------------------------ | :---------------------------------------------------------------------------------------- |
-| [setChainlinkOracle](#setchainlinkoracle)                     | Sets the stored address for the oracle contract                                           |
-| [setChainlinkToken](#setchainlinktoken)                       | Sets the stored address for the LINK token                                                |
-| [buildChainlinkRequest](#buildchainlinkrequest)               | Instantiates a Request object with the required parameters                                |
-| [sendChainlinkRequest](#sendchainlinkrequest)                 | Sends the request payload to the stored address stored as chainlinkOracleAddress          |
-| [sendChainlinkRequestTo](#sendchainlinkrequestto)             | Sends a request to the oracle address specified                                           |
-| [validateChainlinkCallback](#validatechainlinkcallback)       | Secures the fulfillment callback to make sure it is only called by permissioned senders   |
-| [addChainlinkExternalRequest](#addchainlinkexternalrequest)   | Allows a Chainlinked contract to track unfulfilled requests that it hasn't created itself |
-| [cancelChainlinkRequest](#cancelchainlinkrequest)             | Cancels Chainlink requests attempting to contact an unresponsive node                     |
-| [useChainlinkWithENS](#usechainlinkwithens)                   | Looks up the addresses of the LINK token and Oracle contract through ENS                  |
-| [updateChainlinkOracleWithENS](#updatechainlinkoraclewithens) | Updates the stored oracle address with the latest address resolved through ENS            |
-| [chainlinkTokenAddress](#chainlinktokenaddress)               | Returns the stored address of the LINK token                                              |
-| [chainlinkOracleAddress](#chainlinkoracleaddress)             | Returns the stored address of the oracle contract                                         |
+| Name                                                          | Description                                                                                                                                                                                                                        |
+| :------------------------------------------------------------ | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [setChainlinkOracle](#setchainlinkoracle)                     | Sets the stored address for the oracle contract                                                                                                                                                                                    |
+| [setChainlinkToken](#setchainlinktoken)                       | Sets the stored address for the LINK token                                                                                                                                                                                         |
+| [buildChainlinkRequest](#buildchainlinkrequest)               | Instantiates a Request object with the required parameters                                                                                                                                                                         |
+| [buildOperatorRequest](#buildoperatorrequest)                 | Instantiates a Request object with the required parameters. **Note** the oracle must be an `Operator` [contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/Operator.sol)                       |
+| [sendChainlinkRequest](#sendchainlinkrequest)                 | Sends the request payload to the stored address stored as chainlinkOracleAddress                                                                                                                                                   |
+| [sendChainlinkRequestTo](#sendchainlinkrequestto)             | Sends a request to the oracle address specified                                                                                                                                                                                    |
+| [sendOperatorRequest](#sendoperatorrequest)                   | Sends the request payload to the stored address stored as chainlinkOracleAddress. **Note** the oracle must be an `Operator` [contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/Operator.sol) |
+| [sendOperatorRequestTo](#sendoperatorrequestto)               | Sends a request to the oracle address specified. **Note** the oracle must be an `Operator` [contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/Operator.sol)                                  |
+| [validateChainlinkCallback](#validatechainlinkcallback)       | Secures the fulfillment callback to make sure it is only called by permissioned senders                                                                                                                                            |
+| [addChainlinkExternalRequest](#addchainlinkexternalrequest)   | Allows a Chainlinked contract to track unfulfilled requests that it hasn't created itself                                                                                                                                          |
+| [cancelChainlinkRequest](#cancelchainlinkrequest)             | Cancels Chainlink requests attempting to contact an unresponsive node                                                                                                                                                              |
+| [useChainlinkWithENS](#usechainlinkwithens)                   | Looks up the addresses of the LINK token and Oracle contract through ENS                                                                                                                                                           |
+| [updateChainlinkOracleWithENS](#updatechainlinkoraclewithens) | Updates the stored oracle address with the latest address resolved through ENS                                                                                                                                                     |
+| [chainlinkTokenAddress](#chainlinktokenaddress)               | Returns the stored address of the LINK token                                                                                                                                                                                       |
+| [chainlinkOracleAddress](#chainlinkoracleaddress)             | Returns the stored address of the oracle contract                                                                                                                                                                                  |
 
 ### Events
 
@@ -97,6 +103,8 @@ constructor(address _link)
 
 ### buildChainlinkRequest
 
+> 📘 Use `buildOperatorRequest` [function](#buildoperatorrequest) if the oracle is an `Operator` [contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/Operator.sol).
+
 ```solidity example
 function buildChainlinkRequest(
     bytes32 _jobId,
@@ -123,7 +131,37 @@ function requestPrice()
 }
 ```
 
+### buildOperatorRequest
+
+> 📘 This function is similar to `buildChainlinkRequest`[function](#buildChainlinkRequest). One major difference is that `buildOperatorRequest` does not allow setting up the address of the callback. The callback address is set to the address of the calling contract.
+> It is recommended to use `buildOperatorRequest` but make sure the oracle you are contacting is an `Operator` [contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/Operator.sol).
+
+```solidity example
+function buildOperatorRequest(
+    bytes32 _jobId,
+    bytes4 _callbackFunctionSignature
+) returns (Chainlink.Request memory request)
+```
+
+Instantiates a Request from the Chainlink contract. A [Request](#chainlinkrequest) is a struct which contains the necessary parameters to be sent to the oracle contract. The `buildOperatorRequest` function takes an ID, which can be a [Job ID](/docs/jobs/), and a callback function signature to call on the calling contract address.
+
+```solidity example
+function requestPrice()
+  public
+{
+  bytes32 jobId = "493610cff14346f786f88ed791ab7704";
+  bytes4 selector = this.myCallback.selector;
+  // build a request that calls the myCallback function defined
+  //   below by specifying the function selector of myCallback
+  Chainlink.Request memory request = buildOperatorRequest(
+    jobId,
+    selector);
+}
+```
+
 ### sendChainlinkRequest
+
+> 📘 Use `sendOperatorRequest` [function](#sendoperatorrequest) if the oracle is an `Operator` [contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/Operator.sol).
 
 ```solidity
 function sendChainlinkRequest(
@@ -152,6 +190,8 @@ function requestPrice()
 
 ### sendChainlinkRequestTo
 
+> 📘 Use `sendOperatorRequestTo` [function](#sendoperatorrequestto) if the oracle is an `Operator` [contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/Operator.sol).
+
 ```solidity
 function sendChainlinkRequestTo(
   address _oracle,
@@ -173,6 +213,65 @@ function requestPriceFrom(address _oracle)
 
   // send the request that you just built to a specified oracle
   sendChainlinkRequestTo(_oracle, request, paymentAmount);
+}
+```
+
+### sendOperatorRequest
+
+> 📘 This function is similar to `sendChainlinkRequest`[function](#sendChainlinkRequest).
+> It is recommended to use `sendOperatorRequest` but make sure the oracle you are contacting is an `Operator` [contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/Operator.sol).
+
+```solidity
+function sendOperatorRequest(
+    Chainlink.Request memory _req,
+    uint256 _payment
+) returns (bytes32 requestId)
+```
+
+Sends the request payload to the stored oracle address. It takes a [Chainlink.Request](#chainlinkrequest) and the amount of LINK to send amount as parameters. The request is serialized and calls `operatorRequest` on the address stored in `chainlinkOracleAddress` via the LINK token's `transferAndCall` method.
+
+`sendOperatorRequest` returns the ID of the request. If your application needs to, your contract can store that ID, but you don't need to. The ChainlinkClient helpers will store the ID under the hood, along with the oracle address, and use them when you call `recordChainlinkFulfillment` in your callback function to make sure only that the address you want can call your Chainlink callback function.
+
+`sendOperatorRequest` emits a [ChainlinkRequested](#chainlinkrequested) event containing the request ID, if you would like to use it in your Web3 application.
+
+```solidity example
+function requestPrice()
+  public
+{
+  Chainlink.Request memory request = buildOperatorRequest(jobId, this.callback.selector);
+  uint256 paymentAmount = 1 * LINK_DIVISIBILITY / 10; // Equivalent to 0.1 LINK
+
+  // send the request that you just built
+  sendOperatorRequest(request, paymentAmount);
+}
+```
+
+### sendOperatorRequestTo
+
+> 📘 This function is similar to `sendChainlinkRequestTo`[function](#sendChainlinkRequestTo).
+> It is recommended to use `sendOperatorRequestTo` but make sure the oracle you are contacting is an `Operator` [contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/Operator.sol).
+
+```solidity
+function sendChainlinkRequestTo(
+  address _oracle,
+  Chainlink.Request memory _req,
+  uint256 _payment
+) returns (bytes32 requestId)
+```
+
+Similar to [sendOperatorRequest](#sendOperatorRequest), `sendOperatorRequestTo` sends a [Request](#chainlinkrequest) but allows the target oracle to be specified. It requires an address, a Request, and an amount, and returns the `requestId`. This allows a requesting contract to create and track requests sent to multiple oracle contract addresses.
+
+`sendOperatorRequestTo` emits a [ChainlinkRequested](#chainlinkrequested) event containing the request ID, if you would like to use it in your Web3 application.
+
+```solidity example
+function requestPriceFrom(address _oracle)
+  public
+{
+  Chainlink.Request memory request = buildOperatorRequest(jobId, this.callback.callbackSelector);
+  uint256 paymentAmount = 1 * LINK_DIVISIBILITY; // = 1 LINK
+
+  // send the request that you just built to a specified oracle
+  sendOperatorRequestTo(_oracle, request, paymentAmount);
 }
 ```
 
