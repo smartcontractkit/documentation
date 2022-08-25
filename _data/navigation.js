@@ -119,6 +119,16 @@ module.exports = {
             ],
           },
           {
+            title: 'Proof of Reserve Feeds',
+            url: '/docs/data-feeds/proof-of-reserve/',
+            children: [
+              {
+                title: 'Contract Addresses',
+                url: '/docs/data-feeds/proof-of-reserve/addresses/',
+              },
+            ],
+          },
+          {
             title: 'L2 Sequencer Uptime Feeds',
             url: '/docs/data-feeds/l2-sequencer-feeds/',
           },
