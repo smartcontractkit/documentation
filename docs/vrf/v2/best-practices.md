@@ -99,62 +99,8 @@ function fulfillRandomWords(
 
 ## Processing VRF responses through different execution paths
 
-If you want to process VRF responses depending on predetermined conditions, you can create an `enum`. When requesting for randomness, map each `requestId` to an enum. This way, you can handle different execution paths in `fulfillRandomWords`.
+If you want to process VRF responses depending on predetermined conditions, you can create an `enum`. When requesting for randomness, map each `requestId` to an enum. This way, you can handle different execution paths in `fulfillRandomWords`. See the following example:
 
 ```solidity
-enum Logic { A, B, C}
-
-uint256 public variableA;
-uint256 public variableB;
-uint256 public variableC;
-
-mapping(uint256 => Logic) public requests;
-
-function updateVariableA() public {
-  uint256 requestId = COORDINATOR.requestRandomWords(
-      keyHash,
-      s_subscriptionId,
-      requestConfirmations,
-      callBackGasLimit,
-      1 //numWords
-  );
-  requests[requestId] = Logic.A;
-}
-
-function updateVariableB() public {
-  uint256 requestId = COORDINATOR.requestRandomWords(
-      keyHash,
-      s_subscriptionId,
-      requestConfirmations,
-      callBackGasLimit,
-      1 //numWords
-  );
-  requests[requestId] = Logic.B;
-}
-
-function updateVariableC() public {
-  uint256 requestId = COORDINATOR.requestRandomWords(
-      keyHash,
-      s_subscriptionId,
-      requestConfirmations,
-      callBackGasLimit,
-      1 //numWords
-  );
-  requests[requestId] = Logic.C;
-}
-
-function fulfillRandomWords(uint256 requestId, uint256[] memory randomWords)
-        internal
-        override
-  {
-    Logic logic = requests[requestId];
-    if(logic == Logic.A){
-      variableA = randomWords[0];
-    }else if(logic == Logic.B){
-      variableB = randomWords[0];
-    }else if(logic == Logic.C){
-      variableC = randomWords[0];
-    }
-}
-
+{% include 'samples/VRF/VRFv2MultiplePaths.sol' %}
 ```
