@@ -17,15 +17,15 @@ metadata:
 
 ![Chainlink Abstract Banner](/files/2306b8b-Decentralized_Oracles_V3.png)
 
-**Chainlink Data Feeds** are the quickest way to connect your smart contracts to the real-world data such as asset prices. One use for data feeds is to retrieve the latest pricing data of an asset in a single call and use that data either on-chain in a smart contract or off-chain in another application of your choice.
+**Chainlink Data Feeds** are the quickest way to connect your smart contracts to the real-world data such as asset prices, reserve balances, and L2 sequencer health.
 
 If you already have a project started and would like to integrate Chainlink, you can [add Chainlink to your existing project](../create-a-chainlinked-project/#install-into-existing-projects) by using the [`@chainlink/contracts` NPM package](https://www.npmjs.com/package/@chainlink/contracts).
 
-See the [Data Feeds Contract Addresses](/docs/reference-contracts/) page for a list of networks and proxy addresses.
-
 **Topics**
 
-- [Retrieve the latest asset prices](#retrieve-the-latest-asset-prices)
+- [Types of data feeds](#types-of-data-feeds)
+  - [Price feeds](#price-feeds)
+  - [L2 sequencer uptime feeds](#l2-sequencer-uptime-feeds)
 - [Components of a data feed](#components-of-a-data-feed)
 - [Reading proxy and aggregator Configurations](#reading-proxy-and-aggregator-configurations)
 - [Components of an aggregator](#components-of-an-aggregator)
@@ -34,13 +34,38 @@ See the [Data Feeds Contract Addresses](/docs/reference-contracts/) page for a l
   - [Check the latest answer against reasonable limits](#check-the-latest-answer-against-reasonable-limits)
   - [Check the timestamp of the latest answer](#check-the-timestamp-of-the-latest-answer)
 
-## Retrieve the latest asset prices
+## Types of data feeds
+
+Data feeds provide many different types of data for your applications.
+
+- [Price feeds](#price-feeds)
+- [L2 sequencer uptime feeds](#l2-sequencer-uptime-feeds)
+
+### Price feeds
+
+See the [Data Feeds Contract Addresses](/docs/reference-contracts/) page for a list of networks and proxy addresses.  
 
 Smart contracts often act in real-time on data such as prices of assets. This is especially true in [DeFi](https://defi.chain.link/).
 
 For example, [Synthetix](https://www.synthetix.io/) uses Data Feeds to determine prices on their derivatives platform. Lending and borrowing platforms like [AAVE](https://aave.com/) use Data Feeds to ensure the total value of the collateral.
 
 Data Feeds aggregate many data sources and publish them on-chain using a combination of the [Decentralized Data Model](/docs/architecture-decentralized-model/) and [Off-Chain Reporting](/docs/off-chain-reporting/).
+
+To learn how to use price feeds, see the [Price Feeds](/docs/get-the-latest-price/) documentation.
+
+<div class="remix-callout">
+    <a href="/docs/get-the-latest-price/">Price Feeds</a>
+</div>
+
+### L2 sequencer uptime feeds
+
+L2 sequencer feeds track the last known status of the sequencer on an L2 network at a given point in time. This helps you prevent mass liquidations by providing a grace period to allow customers to react to these events.
+
+To learn how to use L2 sequencer uptime feeds feeds, see the [L2 Sequencer Uptime Feeds](/docs/l2-sequencer-flag/) documentation.
+
+<div class="remix-callout">
+    <a href="/docs/l2-sequencer-flag/">L2 Sequencer Uptime Feeds</a>
+</div>
 
 ## Components of a data feed
 
