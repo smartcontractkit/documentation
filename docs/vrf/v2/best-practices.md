@@ -97,16 +97,18 @@ function fulfillRandomWords(
 }
 ```
 
-## Processing Different Functions VRF Requests
+## Processing VRF responses through different execution paths
 
-If you want to have multiple VRF requests in different functions, create a mapping between `requestId` and the `functionId`. This `functionId` could be a uint256 of your choice or the hash of the function name like `keccak256("FunctionName")`. This way, you can have different functions making requests and different logic for each request. When handling different logic in your `fulfillRandomWords` function, keep in mind the your `callbackGasLimit` and appropriate `keyHash` set.
+If you want to process VRF responses depending on predetermined conditions, you can create an `enum`. When requesting for randomness, map each `requestId` to an enum. This way, you can handle different execution paths in `fulfillRandomWords`.
 
 ```solidity
+enum Logic { A, B, C}
+
 uint256 public variableA;
 uint256 public variableB;
-bytes32 public UPDATE_VARIABLE_A_ID = keccak256("updateVariableA");
-bytes32 public UPDATE_VARIABLE_B_ID = keccak256("updateVariableB");
-mapping(uint256 => bytes32) public requestIdToFunctionId;
+uint256 public variableC;
+
+mapping(uint256 => Logic) public requests;
 
 function updateVariableA() public {
   uint256 requestId = COORDINATOR.requestRandomWords(
@@ -114,9 +116,9 @@ function updateVariableA() public {
       s_subscriptionId,
       requestConfirmations,
       callBackGasLimit,
-      numWords
+      1 //numWords
   );
-  requestIdToFunctionId[requestId] = UPDATE_VARIABLE_A_ID;
+  requests[requestId] = Logic.A;
 }
 
 function updateVariableB() public {
@@ -125,21 +127,34 @@ function updateVariableB() public {
       s_subscriptionId,
       requestConfirmations,
       callBackGasLimit,
-      numWords
+      1 //numWords
   );
-  requestIdToFunctionId[requestId] = UPDATE_VARIABLE_B_ID;
+  requests[requestId] = Logic.B;
+}
+
+function updateVariableC() public {
+  uint256 requestId = COORDINATOR.requestRandomWords(
+      keyHash,
+      s_subscriptionId,
+      requestConfirmations,
+      callBackGasLimit,
+      1 //numWords
+  );
+  requests[requestId] = Logic.C;
 }
 
 function fulfillRandomWords(uint256 requestId, uint256[] memory randomWords)
         internal
         override
   {
-      if (requestIdToFunctionId[requestId] == UPDATE_VARIABLE_A_ID) {
-          variableA = randomWords[0];
-      }
-      if (requestIdToFunctionId[requestId] == UPDATE_VARIABLE_B_ID) {
-          variableB = randomWords[0];
-      }
+    Logic logic = requests[requestId];
+    if(logic == Logic.A){
+      variableA = randomWords[0];
+    }else if(logic == Logic.B){
+      variableB = randomWords[0];
+    }else if(logic == Logic.C){
+      variableC = randomWords[0];
+    }
 }
 
 ```
