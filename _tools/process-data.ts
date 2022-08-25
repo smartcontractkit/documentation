@@ -170,6 +170,7 @@ for (let page of targetData) {
     // Then make a list of only the proxies that are live
     const proxyList: ResultProxy[] = [];
     const porProxyList: ResultProxy[] = [];
+    const nftFloorProxyList: ResultProxy[] = [];
     if (contents.proxies) {
       for (let proxyKey of Object.keys(contents.proxies)) {
         const proxy = contents.proxies[proxyKey];
@@ -190,9 +191,11 @@ for (let page of targetData) {
             shutdownDate: liveContracts[proxy.aggregator].shutdownDate,
           }
 
-          // Create a serpate proxy list for PoR feeds
+          // Create a serpate proxy list for Price Feeds, PoR Feeds, and NFT Floor Feeds
           if (liveContracts[proxy.aggregator].porType) {
             porProxyList.push(proxyDetails);
+          }else if (liveContracts[proxy.aggregator].nftFloorUnits) {
+            nftFloorProxyList.push(proxyDetails);
           }else {
             proxyList.push(proxyDetails);
           }
@@ -223,6 +226,12 @@ for (let page of targetData) {
           // Create a serpate proxy list for PoR feeds
           if (contract.docs?.porType) {
             porProxyList.push(proxyDetails);
+
+          }
+          
+          // Create a serpate proxy list for NFT Floor Price Feeds
+          if (contract.docs?.nftFloorUnits) {
+            nftFloorProxyList.push(proxyDetails);
           }else {
             proxyList.push(proxyDetails);
           }
@@ -249,6 +258,16 @@ for (let page of targetData) {
         dataType: "por",
         networkType: network.networkType,
         proxies: porProxyList,
+      });
+    }
+    if (nftFloorProxyList.length){
+      nftFloorProxyList.sort((a, b) => (a.pair < b.pair ? -1 : 1));
+      finalResult[page.page].networks.push({
+        name: network.name,
+        url: network.url,
+        dataType: "nftFloor",
+        networkType: network.networkType,
+        proxies: nftFloorProxyList,
       });
     }
   }

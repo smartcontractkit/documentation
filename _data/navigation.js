@@ -129,6 +129,16 @@ module.exports = {
             ],
           },
           {
+            title: 'NFT Floor Pricing Feeds',
+            url: '/docs/data-feeds/nft-floor-price/',
+            children: [
+              {
+                title: 'Contract Addresses',
+                url: '/docs/data-feeds/nft-floor-price/addresses/',
+              },
+            ],
+          },
+          {
             title: 'L2 Sequencer Uptime Feeds',
             url: '/docs/data-feeds/l2-sequencer-feeds/',
           },

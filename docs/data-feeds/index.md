@@ -26,6 +26,7 @@ If you already have a project started and would like to integrate Chainlink, you
 - [Types of data feeds](#types-of-data-feeds)
   - [Price Feeds](#price-feeds) 
   - [Proof of Reserve Feeds](#proof-of-reserve-feeds)
+  - [NFT Floor Pricing Feeds](#nft-floor-pricing-feeds)
   - [L2 sequencer uptime feeds](#l2-sequencer-uptime-feeds)
 - [Components of a data feed](#components-of-a-data-feed)
 - [Reading proxy and aggregator Configurations](#reading-proxy-and-aggregator-configurations)
@@ -67,6 +68,16 @@ To learn more about Proof of Reserve Feeds, see the [Proof of Reserve](/docs/dat
 
 <div class="remix-callout">
     <a href="/docs/data-feeds/proof-of-reserve/">Proof of Reserve Feeds</a>
+</div>
+
+### NFT Floor Pricing Feeds
+
+NFT Floor Pricing Feeds provide the price of the lowest priced NFT available in a collection. These feeds operate similarly to [Price Feeds](/docs/data-feeds/price-feeds/) so you can use the [AggregatorV3Interface.sol](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol) contract to retrieve price answers.
+
+To learn more, see the [NFT Floor Pricing Feeds](/docs/data-feeds/nft-floor-price/) documentation.
+
+<div class="remix-callout">
+    <a href="/docs/data-feeds/nft-floor-price/">NFT Floor Pricing Feeds</a>
 </div>
 
 ### L2 sequencer uptime feeds
