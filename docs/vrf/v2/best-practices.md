@@ -104,3 +104,8 @@ If you want to process VRF responses depending on predetermined conditions, you 
 ```solidity
 {% include 'samples/VRF/VRFv2MultiplePaths.sol' %}
 ```
+
+<div class="remix-callout">
+  <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFv2MultiplePaths.sol" target="_blank" >Open in Remix</a>
+  <a href="/docs/conceptual-overview/#what-is-remix">What is Remix?</a>
+</div>
