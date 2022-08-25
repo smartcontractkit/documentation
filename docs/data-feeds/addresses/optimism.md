@@ -6,6 +6,7 @@ stub: optimism-price-feeds
 permalink: "docs/optimism-price-feeds/"
 metadata:
   l2healthflag: "optimism"
+  networkstatusurl: "https://status.optimism.io/"
   description: "Chainlink Data Feeds on Optimism"
 date: Last Modified
 ---

@@ -45,6 +45,7 @@ The LINK token is an ERC677 token that inherits functionality from the ERC20 tok
 | Name           | Chainlink Token                                                                                                                                                                                              |
 | Symbol         | LINK                                                                                                                                                                                                         |
 | Decimals       | 18                                                                                                                                                                                                           |
+| Network status | [ethstats.net](https://ethstats.net/)                                                                                                                                                                        |
 
 ### Goerli testnet
 
@@ -53,7 +54,7 @@ Testnet LINK is available at [faucets.chain.link](https://faucets.chain.link/goe
 | Parameter      | Value                                                                                                                                                                                                                 |
 | :------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `ETH_CHAIN_ID` | `5`                                                                                                                                                                                                                   |
-| Address        | <a class="erc-token-address" id="5_0x326C977E6efc84E512bB9C30f76E30c160eD06FB" href="https://goerli.etherscan.io/token/0x326C977E6efc84E512bB9C30f76E30c160eD06FB">`0x326C977E6efc84E512bB9C30f76E30c160eD06FB`</a> |
+| Address        | <a class="erc-token-address" id="5_0x326C977E6efc84E512bB9C30f76E30c160eD06FB" href="https://goerli.etherscan.io/token/0x326C977E6efc84E512bB9C30f76E30c160eD06FB">`0x326C977E6efc84E512bB9C30f76E30c160eD06FB`</a>   |
 | Name           | Chainlink Token                                                                                                                                                                                                       |
 | Symbol         | LINK                                                                                                                                                                                                                  |
 | Decimals       | 18                                                                                                                                                                                                                    |
@@ -103,6 +104,7 @@ BNB is used to pay for transactions on the BNB Chain mainnet.
 | Name           | Chainlink Token                                                                                                                                                                                              |
 | Symbol         | LINK                                                                                                                                                                                                         |
 | Decimals       | 18                                                                                                                                                                                                           |
+| Network status | [bscscan.freshstatus.io](https://bscscan.freshstatus.io/)                                                                                                                                                    |
 
 ### BNB Chain testnet
 
@@ -135,6 +137,7 @@ MATIC is used to pay for transactions on Polygon. You can use the [Polygon Bridg
 | Name           | Chainlink Token                                                                                                                                                                                                     |
 | Symbol         | LINK                                                                                                                                                                                                                |
 | Decimals       | 18                                                                                                                                                                                                                  |
+| Network status | [polygon.io/system](https://polygon.io/system)                                                                                                                                                                      |
 
 ### Mumbai testnet
 
@@ -175,6 +178,7 @@ xDAI is used to pay for transactions on Gnosis Chain mainnet. Use the [xDai Brid
 | Name           | Chainlink Token on Gnosis Chain (xDai)                                                                                                                                                                                      |
 | Symbol         | LINK                                                                                                                                                                                                                        |
 | Decimals       | 18                                                                                                                                                                                                                          |
+| Network status | [blockscout.com/xdai/mainnet](https://blockscout.com/xdai/mainnet/)                                                                                                                                                         |
 
 ## Avalanche
 
@@ -189,6 +193,7 @@ AVAX is the token you use to pay for transactions on Avalanche mainnet. Use the 
 | Name           | Chainlink Token on Avalanche                                                                                                                                                                                       |
 | Symbol         | LINK                                                                                                                                                                                                               |
 | Decimals       | 18                                                                                                                                                                                                                 |
+| Network status | [status.avax.network](https://status.avax.network/)                                                                                                                                                                |
 
 ### Fuji testnet
 
@@ -220,6 +225,7 @@ FTM is used to pay for transactions on Fantom Mainnet. Use [bridge.multichain.or
 | Name           | Chainlink Token on Fantom                                                                                                                                                                                       |
 | Symbol         | LINK                                                                                                                                                                                                            |
 | Decimals       | 18                                                                                                                                                                                                              |
+| Network status | [ftmscan.com](https://ftmscan.com/)                                                                                                                                                                             |
 
 ### Fantom testnet
 
@@ -246,6 +252,7 @@ ETH is used to pay for transactions on the Arbitrum mainnet. You can use the [Ar
 | Name           | Chainlink Token on Arbitrum Mainnet                                                                                                                                                                                        |
 | Symbol         | LINK                                                                                                                                                                                                                       |
 | Decimals       | 18                                                                                                                                                                                                                         |
+| Network status | [arbiscan.freshstatus.io](https://arbiscan.freshstatus.io/)                                                                                                                                                                |
 
 ### Arbitrum Rinkeby testnet
 
@@ -270,6 +277,7 @@ Testnet LINK is available at [faucets.chain.link](https://faucets.chain.link/arb
 | Name           | Heco-Peg LINK Token                                                                                                                                                                                              |
 | Symbol         | LINK                                                                                                                                                                                                             |
 | Decimals       | 18                                                                                                                                                                                                               |
+| Network status | [hecoinfo.com](https://hecoinfo.com/)                                                                                                                                                                            |
 
 ## Optimism
 
@@ -284,6 +292,7 @@ ETH is used to pay for transactions on Optimism. Use the [Optimism Bridge](https
 | Name           | Chainlink Token on Optimism Mainnet                                                                                                                                                                                        |
 | Symbol         | LINK                                                                                                                                                                                                                       |
 | Decimals       | 18                                                                                                                                                                                                                         |
+| Network status | [status.optimism.io](https://status.optimism.io/)                                                                                                                                                                          |
 
 ### Optimism Kovan testnet
 
@@ -310,6 +319,7 @@ ONE is used to pay for transactions on Harmony mainnet. You can use the [Harmony
 | Name           | Chainlink Token on Harmony Mainnet                                                                                                                                                                                              |
 | Symbol         | LINK                                                                                                                                                                                                                            |
 | Decimals       | 18                                                                                                                                                                                                                              |
+| Network status | [status.harmony.one](https://status.harmony.one/)                                                                                                                                                                               |
 
 ## Moonriver
 
@@ -324,6 +334,7 @@ MOVR is used to pay transaction fees on Moonriver mainnet. You can use [bridge.m
 | Name           | Chainlink Token on Moonriver Mainnet                                                                                                                                                                                       |
 | Symbol         | LINK                                                                                                                                                                                                                       |
 | Decimals       | 18                                                                                                                                                                                                                         |
+| Network status | [moonscan.freshstatus.io](https://moonscan.freshstatus.io/)                                                                                                                                                                |
 
 ## Moonbeam
 
@@ -338,6 +349,7 @@ GLMR is used to pay transaction fees on Moonbeam mainnet.
 | Name           | Chainlink Token on Moonbeam Mainnet                                                                                                                                                                              |
 | Symbol         | LINK                                                                                                                                                                                                             |
 | Decimals       | 18                                                                                                                                                                                                               |
+| Network status | [moonscan.freshstatus.io](https://moonscan.freshstatus.io/)                                                                                                                                                      |
 
 ## Metis
 
@@ -352,16 +364,19 @@ METIS is the currency that you use to pay for transactions on Metis mainnet. You
 | Name           | Chainlink Token on Metis Mainnet                                                                                                                                                                                                  |
 | Symbol         | LINK                                                                                                                                                                                                                              |
 | Decimals       | 18                                                                                                                                                                                                                                |
+| Network status | [andromeda-explorer.metis.io](https://andromeda-explorer.metis.io/)                                                                                                                                                               |
+
 ## Klaytn
 
 ### Baobab testnet
 
-KLAY is the currency that you use to pay for transactions on Klaytn testnet. Testnet LINK is available from [facuets.chain.link](https://faucets.chain.link/arbitrum-rinkeby). Use the [KLAY Faucet](https://baobab.wallet.klaytn.foundation/faucet) to obtain testnet KLAY.
+KLAY is the currency that you use to pay for transactions on Klaytn testnet. Testnet LINK is available from [facuets.chain.link](https://faucets.chain.link/klaytn-testnet). Use the [KLAY Faucet](https://baobab.wallet.klaytn.foundation/faucet) to obtain testnet KLAY.
 
 | Parameter      | Value                                                                                                                                                                                                                             |
 | :------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `ETH_CHAIN_ID` | `1001`                                                                                                                                                                                                                            |
-| Address        | <a class="erc-token-address" id="1001_0x04c5046A1f4E3fFf094c26dFCAA75eF293932f18"  href="https://baobab.scope.klaytn.com/token/0x04c5046A1f4E3fFf094c26dFCAA75eF293932f18">`0x04c5046A1f4E3fFf094c26dFCAA75eF293932f18`</a> |
-| Name           | Chainlink Token on the Klaytn testnet                                                                                                                                                                                                  |
+| Address        | <a class="erc-token-address" id="1001_0x04c5046A1f4E3fFf094c26dFCAA75eF293932f18"  href="https://baobab.scope.klaytn.com/token/0x04c5046A1f4E3fFf094c26dFCAA75eF293932f18">`0x04c5046A1f4E3fFf094c26dFCAA75eF293932f18`</a>       |
+| Name           | Chainlink Token on the Klaytn testnet                                                                                                                                                                                             |
 | Symbol         | LINK                                                                                                                                                                                                                              |
-| Decimals       | 18                                                                                                                                  
+| Decimals       | 18                                                                                                                                                                                                                                |
+| Network status | [status.klaytnapi.com](https://status.klaytnapi.com/)                                                                                                                                                                             |
