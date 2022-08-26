@@ -16,9 +16,7 @@ metadata:
   description: 'How to generate a random number inside a smart contract using Chainlink VRF.'
 ---
 
-> 📘 You are viewing the VRF v2 guide.
->
-> If you are using v1, see the [VRF v1 guide](/docs/vrf/v1/introduction/).
+{% include 'sections/vrf-v2-common.md' %}
 
 This guide explains how to get random values using a simple contract to request and receive random values from Chainlink VRF v2. For more advanced examples with programmatic subscription configuration, see the [Programmatic Subscription](/docs/vrf/v2/examples/programmatic-subscription/) page. To explore more applications of VRF, refer to our [blog](https://blog.chain.link/).
 
