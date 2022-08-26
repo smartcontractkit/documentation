@@ -46,7 +46,7 @@ See the example in the [Subscription manager contract](#subscription-manager-con
 
 In this example, the contract operates as a subscription owner and can run functions to add consumer contracts to the subscription. The consumer contracts must include the `requestRandomWords()` function with the correct coordinator parameters and the correct subscription ID to request random values and use the subscription balance. The consumer contracts must also include the `fulfillRandomWords()` function to receive the random values.
 
-Subscription owners and consumers do not have to be separate. This contract not only allows adding consumers with `addConsumer(address consumerAddress)` but can also act as a consumer by running its own `requestRandomWords()` function. This example contract includes functions in the `constructor()` that creates the subscription and adds itself as a consumer automatically when you deploy it (see `createNewSubscription()`).
+Subscription owners and consumers do not have to be separate. This contract not only allows adding consumers with `addConsumer(address consumerAddress)` but can also act as a consumer by running its own `requestRandomWords()` function. This example contract includes a `createNewSubscription()` function in the `constructor()` that creates the subscription and adds itself as a consumer automatically when you deploy it.
 
 ```solidity
 {% include 'samples/VRF/VRFv2SubscriptionManager.sol' %}
@@ -73,7 +73,7 @@ To use this contract, compile and deploy it in Remix.
 
 1. Note that you can also add and test consumer contracts using the same programmatic subscription. To do so:
 
-   1. create and deploy a consumer contract that includes the following components:
+   1. Create and deploy a consumer contract that includes the following components:
 
       - The `requestRandomWords()` function and the required variables and your subscription ID.
       - The `fulfillRandomWords()` callback function.
