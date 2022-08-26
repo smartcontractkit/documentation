@@ -16,9 +16,7 @@ metadata:
   description: 'How to generate a random number inside a smart contract using Chainlink VRF.'
 ---
 
-> 📘 You are viewing the VRF v2 guide.
->
-> If you are using v1, see the [VRF v1 guide](/docs/vrf/v1/introduction/).
+{% include 'sections/vrf-v2-common.md' %}
 
 This guide explains how to get random values using a simple contract to request and receive random values from Chainlink VRF v2. For more advanced examples with programmatic subscription configuration, see the [Programmatic Subscription](/docs/vrf/v2/examples/programmatic-subscription/) page. To explore more applications of VRF, refer to our [blog](https://blog.chain.link/).
 
@@ -78,10 +76,10 @@ Build and deploy the contract on Goerli.
 
 1. Open the [`VRFv2Consumer.sol` contract](https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFv2Consumer.sol) in Remix.
 
-    <div class="remix-callout">
-          <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFv2Consumer.sol" target="_blank" >Open in Remix</a>
-          <a href="/docs/conceptual-overview/#what-is-remix">What is Remix?</a>
-    </div>
+<div class="remix-callout">
+      <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFv2Consumer.sol" target="_blank" >Open in Remix</a>
+      <a href="/docs/conceptual-overview/#what-is-remix">What is Remix?</a>
+</div>
 
 1. On the **Compile** tab in Remix, compile the `VRFv2Consumer.sol` contract.
 
