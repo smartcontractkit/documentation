@@ -31,11 +31,7 @@ This guide shows you how to write, deploy, and run a smart contract that consume
 
 ## Examine the sample contract
 
-<<<<<<< HEAD:docs/Introduction/getting-started/consuming-data-feeds.md
 The code below describes a contract that obtains the latest ETH / USD price using the Rinkeby testnet.
-=======
-The following code describes a contract that obtains the latest ETH / USD price using the Goerli testnet.
->>>>>>> main:docs/getting-started/consuming-data-feeds.md
 
 ```solidity
 {% include 'samples/PriceFeeds/PriceConsumerV3.sol' %}
@@ -45,7 +41,6 @@ The contract contains these components:
 
 + The `import` line imports an interface named `AggregatorV3Interface`. Interfaces define functions without their implementation, which requires the inheriting contracts to define the actual implementation themselves. In this case, `AggregatorV3Interface` requires that all v3 Aggregators contain the function `latestRoundData`. You can [see the complete code](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol) for the `AggregatorV3Interface` on GitHub.
 
-<<<<<<< HEAD:docs/Introduction/getting-started/consuming-data-feeds.md
 + The `constructor() {}` initializes the interface object named `priceFeed` that uses `AggregatorV3Interface` and connects specifically to a proxy aggregator contract already deployed at `0x9326BFA02ADD2366b30bacB125260Af641031331`. The interface allows the contract to run functions on that deployed aggregator contract.
 
 + The `getLatestPrice()` function calls the `priceFeed` object and runs the `latestRoundData()` function. When you deploy the contract, it initializes the `priceFeed` object to point to the aggregator at `0x9326BFA02ADD2366b30bacB125260Af641031331`, which is the proxy address for the Rinkeby ETH / USD data feed. The contract connects to that address and executes the function. The aggregator connects with several oracle nodes and aggregates the pricing data from those nodes. The response from the aggregator includes several variables, but `getLatestPrice()` returns only the `price` variable.
@@ -53,15 +48,6 @@ The contract contains these components:
 ## Compile, deploy, and run the contract
 
 > 🚧 If you have not already configured your MetaMask wallet and funded it with testnet ETH, follow the instructions in the Deploy Your First Smart Contract section to set that up. You can get testnet ETH at https://faucets.chain.link/rinkeby/.
-=======
-+ The `constructor() {}` initializes an interface object named `priceFeed` that uses `AggregatorV3Interface` and connects specifically to a proxy aggregator contract that is already deployed at `0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e`. The interface allows your contract to run functions on that deployed aggregator contract.
-
-+ The `getLatestPrice()` function calls your `priceFeed` object and runs the `latestRoundData()` function. When you deploy the contract, it initializes the `priceFeed` object to point to the aggregator at `0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e`, which is the proxy address for the Goerli ETH / USD data feed. Your contract connects to that address and executes the function. The aggregator connects with several oracle nodes and aggregates the pricing data from those nodes. The response from the aggregator includes several variables, but `getLatestPrice()` returns only the `price` variable.
-
-## Compile, deploy, and run the contract
-
-> 🚧 If you have not already configured your MetaMask wallet and funded it with testnet ETH, follow the instructions in the Deploy Your First Smart Contract to set that up. You can get testnet ETH at one of the available [Goerli faucets](/docs/link-token-contracts/#goerli-testnet).
->>>>>>> main:docs/getting-started/consuming-data-feeds.md
 
 Deploy the `PriceConsumerV3` smart contract on the Goerli testnet.
 
