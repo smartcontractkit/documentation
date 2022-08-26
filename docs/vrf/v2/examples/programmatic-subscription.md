@@ -88,7 +88,7 @@ To use this contract, compile and deploy it in Remix.
 
    1. If you need to remove consumer contracts from the subscription, use the `removeConsumer()` function. Specify the address of the consumer contract to be removed.
 
-1. When you are done with your contracts and the subscription, run the `cancelSubscription()` to close the subscription and send the remaining LINK to your wallet address. Specify the address of the receiving wallet.
+1. When you are done with your contracts and the subscription, run the `cancelSubscription()` function to close the subscription and send the remaining LINK to your wallet address. Specify the address of the receiving wallet.
 
 ## Funding and requesting simultaneously
 
