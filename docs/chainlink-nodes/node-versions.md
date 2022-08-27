@@ -21,7 +21,7 @@ You can find a list of release notes for Chainlink nodes in the [smartcontractki
 - Added the `hexencode` and `base64encode` tasks (pipeline). See the [Hex Encode Task](/docs/jobs/task-types/hexencode/) and [Hex Decode Task](/docs/jobs/task-types/hexdecode/) pages for examples.
 - `forwardingAllowed` per job attribute to allow forwarding txs submitted by the job.
 - Added `Arbitrum Goerli` configuration support.
-- Added the [`NODE_SELECTION_MODE` (`EVM.NodePool.SelectionMode`) environment variable](/docs/configuration-variables/#advisory_lock_check_interval#node_selection_mode), which controls node picking strategy. Supported values:
+- Added the [`NODE_SELECTION_MODE` (`EVM.NodePool.SelectionMode`) environment variable](/docs/configuration-variables/#node_selection_mode), which controls node picking strategy. Supported values:
   - `HighestHead` (default) mode picks a node having the highest reported head number among other alive nodes. When several nodes have the same latest head number, the strategy sticks to the last used node. This mode requires `NODE_NO_NEW_HEADS_THRESHOLD` to be configured, otherwise it will always use the first alive node.
   - `RoundRobin` mode simply iterates among available alive nodes. This was the default behavior prior to this release. 
 - New `evm keys chain` command. This can also be accessed at `/v2/keys/evm/chain`. This command has the following uses:
@@ -37,12 +37,12 @@ You can find a list of release notes for Chainlink nodes in the [smartcontractki
 
 - `chainlink admin users update` command is replaced with `chainlink admin users chrole` (only the role can be changed for a user)
 - Keypath now supports paths with any depth, instead of limiting it to 2.
-- `Arbitrum` chains are no longer restricted to only `FixedPrice` `GAS_ESTIMATOR_MODE`
+- `Arbitrum` chains are no longer restricted to only `FixedPrice` `GAS_ESTIMATOR_MODE`.
 - Updated `Arbitrum Rinkeby & Mainnet` configurations for Nitro.
 
 ### Removed
 
-- The `setnextnonce` local client command has been removed, and replaced by a more general key/chain client command.
+- The `setnextnonce` local client command is removed and is replaced by the more general `evm keys chain` command client command.
 
 
 ## Changes in v1.7.1 nodes
