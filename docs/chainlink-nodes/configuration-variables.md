@@ -139,6 +139,7 @@ Your node applies configuration settings using following hierarchy:
   - [NODE_NO_NEW_HEADS_THRESHOLD](#node_no_new_heads_threshold)
   - [NODE_POLL_FAILURE_THRESHOLD](#node_poll_failure_threshold)
   - [NODE_POLL_INTERVAL](#node_poll_interval)
+  - [NODE_SELECTION_MODE](#node_selection_mode)
 - [EVM Gas Controls](#evm-gas-controls)
   - [Configuring your ETH node](#configuring-your-eth-node)
     - [go-ethereum](#go-ethereum)
@@ -1058,6 +1059,15 @@ Set to zero to disable poll checking.
 Controls how often to poll the node to check for liveness.
 
 Set to zero to disable poll checking.
+
+### NODE_SELECTION_MODE
+
+- Default: `"HighestHead"`
+
+Controls controls node picking strategy. Supported values:
+
+- `HighestHead` (default) mode picks a node having the highest reported head number among other alive nodes. When several nodes have the same latest head number, the strategy sticks to the last used node. This mode requires `NODE_NO_NEW_HEADS_THRESHOLD` to be configured, otherwise it will always use the first alive node.
+- `RoundRobin` mode simply iterates among available alive nodes. This was the default behavior prior to this release. 
 
 ## EVM Gas Controls
 
