@@ -79,8 +79,9 @@ The contract will have the following functions:
 
 ### Create and fund a subscription
 
-Chainlink VRF requests receive funding from subscription accounts. The [Subscription Manager](https://vrf.chain.link) lets you create an account and pre-pay your use of Chainlink VRF requests.
-For this example, create a new subscription on the Goerli testnet as explained [here](/docs/vrf/v2/examples/get-a-random-number/#create-and-fund-a-subscription).
+Chainlink VRF requests receive funding from subscription accounts. Use the [Subscription Manager](https://vrf.chain.link) to create an account and pre-pay your use of Chainlink VRF requests.
+
+For this example, create a new subscription on the Goerli testnet, as explained [here](/docs/vrf/v2/examples/get-a-random-number/#create-and-fund-a-subscription).
 
 ### Importing `VRFConsumerBaseV2` and `VRFCoordinatorV2Interface`
 
@@ -103,7 +104,7 @@ contract VRFD20 is VRFConsumerBaseV2 {
 
 ### Contract variables
 
-This example is adapted for [Goerli testnet](/docs/vrf/v2/supported-networks/#goerli-testnet) but you can change the configuration and make it run for any [supported network](/docs/vrf/v2/supported-networks/#configurations).
+This example is adapted for [Goerli testnet](/docs/vrf/v2/supported-networks/#goerli-testnet), but you can change the configuration and make it run for any [supported network](/docs/vrf/v2/supported-networks/#configurations).
 
 ```solidity
 uint64 s_subscriptionId;
@@ -114,10 +115,10 @@ uint16 requestConfirmations = 3;
 uint32 numWords =  1;
 ```
 
-- `uint64 s_subscriptionId`: The subscription ID that this contract uses for funding requests. Initialized in the `constructor`.
+- `uint64 s_subscriptionId`: The subscription ID that this contract uses for funding requests, which is initialized in the `constructor`.
 - `address vrfCoordinator`: The address of the Chainlink VRF Coordinator contract.
 - `bytes32 s_keyHash`: The gas lane key hash value, which is the maximum gas price you are willing to pay for a request in wei. It functions as an ID of the off-chain VRF job that runs in response to requests.
-- `uint32 callbackGasLimit`: The limit for how much gas to use for the callback request to your contract's `fulfillRandomWords` function. It must be less than the `maxGasLimit` on the coordinator contract. Adjust this value for larger requests depending on how your `fulfillRandomWords` function processes and stores the received random values. If your `callbackGasLimit` is not sufficient, the callback will fail and your subscription is still charged for the work done to generate your requested random values.
+- `uint32 callbackGasLimit`: The limit for how much gas to use for the callback request to your contract's `fulfillRandomWords` function. It must be less than the `maxGasLimit` on the coordinator contract. Adjust this value for larger requests depending on how your `fulfillRandomWords` function processes and stores the received random values. If your `callbackGasLimit` is not sufficient, the callback will fail, and your subscription is still charged for the work done to generate your requested random values.
 - `uint16 requestConfirmations`: How many confirmations the Chainlink node should wait before responding. The longer the node waits, the more secure the random value is. It must be greater than the `minimumRequestBlockConfirmations` limit on the coordinator contract.
 - `uint32 numWords`: How many random values to request. If you can use several random values in a single callback, you can reduce the amount of gas that you spend per random value. In this example, each transaction requests one random value.
 
@@ -133,8 +134,8 @@ mapping(address => uint256) private s_results;
 
 ### Initializing the contract
 
-The coordinator and subscription id must be initialized in the `constructor` of the contract. To use `VRFConsumerBaseV2` properly, you must also pass the VRF coordinator address into its constructor.
-The address that creates the smart contract is the owner of the contract. the modifier `onlyOwner()` checks that only the owner is allowed to do some tasks.
+The coordinator and subscription ID must be initialized in the `constructor` of the contract. To use `VRFConsumerBaseV2` properly, you must also pass the VRF coordinator address into its constructor.
+The address that creates the smart contract is the owner of the contract. The modifier `onlyOwner()` verifies that only the contract owner is allowed to perform certain tasks.
 
 ```solidity
 // SPDX-License-Identifier: MIT
@@ -164,14 +165,14 @@ contract VRFD20 is VRFConsumerBaseV2 {
 
 ### `rollDice` function
 
-The `rollDice` function will complete the following tasks:
+The `rollDice` function completes these tasks:
 
-1. Check if the roller has already rolled since each roller can only ever be assigned to a single house.
-1. Request randomness by calling the VRF coordinator.
-1. Store the `requestId` and roller address.
-1. Emit an event to signal that the dice is rolling.
+1. Checks whether the roller has already rolled because each roller can only ever be assigned to a single house.
+1. Requests randomness by calling the VRF coordinator.
+1. Stores the `requestId` and roller address.
+1. Emits an event to signal that the dice is rolling.
 
-You must add a `ROLL_IN_PROGRESS` constant to signify that the dice has been rolled but the result is not yet returned. Also add a `DiceRolled` event to the contract.
+You must add a `ROLL_IN_PROGRESS` constant to signify that the dice has been rolled, but the result is not yet returned. Also, add a `DiceRolled` event to the contract.
 
 Only the owner of the contract can execute the `rollDice` function.
 
@@ -216,11 +217,11 @@ contract VRFD20 is VRFConsumerBaseV2 {
 
 ### `fulfillRandomWords` function
 
-`fulfillRandomWords` is a special function defined within the `VRFConsumerBaseV2` contract that our contract extends from. The coordinator sends the result of our generated `randomWords` back to `fulfillRandomWords`. You will implement some functionality here to deal with the result:
+`fulfillRandomWords` is a special function defined within the `VRFConsumerBaseV2` contract that our contract extends. The coordinator sends the result of our generated `randomWords` back to `fulfillRandomWords`. You need to change some details of the contract here to get the desired result:
 
 1. Change the result to a number between 1 and 20 inclusively. Note that `randomWords` is an array that could contain several random values. In this example, request 1 random value.
 1. Assign the transformed value to the address in the `s_results` mapping variable.
-1. Emit a `DiceLanded` event.
+1. Trigger a `DiceLanded` event.
 
 ```solidity
 // SPDX-License-Identifier: MIT
@@ -263,9 +264,9 @@ contract VRFD20 is VRFConsumerBaseV2 {
 
 ### `house` function
 
-Finally, the `house` function returns the house of an address.
+Finally, the `house` function returns the house name for a specific address.
 
-To have a list of the house's names, create the `getHouseName` function that is called in the `house` function.
+To have a list of all of the house names, create the `getHouseName` function that is called in the `house` function.
 
 ```solidity
 // SPDX-License-Identifier: MIT
@@ -339,12 +340,12 @@ contract VRFD20 is VRFConsumerBaseV2 {
 }
 ```
 
+You have now completed all necessary functions to generate randomness and assign the user a _Game of Thrones_ house. We've added a few helper functions in there to make using the contract easier and more flexible. You can deploy and interact with the complete contract in Remix.
+
 <div class="remix-callout">
   <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFD20.sol" target="_blank" >Open in Remix</a>
   <a href="/docs/conceptual-overview/#what-is-remix" >What is Remix?</a>
 </div>
-
-You have now completed all necessary functions to generate randomness and assign the user a _Game of Thrones_ house. We've added a few helper functions in there to make using the contract easier and more flexible. You can deploy and interact with the complete contract in Remix.
 
 ## 5. How do I deploy to testnet?
 
