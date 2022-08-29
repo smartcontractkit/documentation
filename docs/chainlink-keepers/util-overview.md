@@ -9,7 +9,7 @@ whatsnext:
   }
 ---
 
-These contracts are tools to help you quickly deploy Keepers for specific use-cases. This list will be updated as more contracts become available. For more resources on Keepers, including videos and tutorials, click [here](/docs/getting-started/other-tutorials).
+These contracts are tools to help you quickly deploy Keepers for specific use-cases. This list will be updated as more contracts become available. For more resources on Keepers, including videos and tutorials, click [here](/docs/other-tutorials).
 
 ## Contracts
 
