@@ -17,8 +17,7 @@ This guide explains how to register a time-based Upkeep that executes according 
 + [Trigger Selection](#trigger-selection)
 + [Using Time-Based Triggers](#using-time-based-triggers)
 
-![Job Scheduler Video](/images/contract-devs/keeper/job-scheduler.mp4)
-
+<embed src="/images/contract-devs/keeper/job-scheduler.webp">
 
 # Register a new Upkeep
 
