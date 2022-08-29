@@ -1058,7 +1058,7 @@ Set to zero to disable poll checking.
 
 - Default: `"HighestHead"`
 
-Controls controls node picking strategy. Supported values:
+Controls node picking strategy. Supported values:
 
 - `HighestHead` (default) mode picks a node having the highest reported head number among other alive nodes. When several nodes have the same latest head number, the strategy sticks to the last used node. This mode requires `NODE_NO_NEW_HEADS_THRESHOLD` to be configured, otherwise it will always use the first alive node.
 - `RoundRobin` mode simply iterates among available alive nodes. This was the default behavior prior to this release. 
