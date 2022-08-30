@@ -196,7 +196,7 @@ export const NETWORKS = [
       },
       {
         name: "Optimism Goerli",
-        url: "https://blockscout.com/optimism/goerli/address/%s",
+        url: "https://goerli-optimism.etherscan.io/address/%s",
         source: "directory-ethereum-testnet-goerli-optimism-1.json",
         networkType: "testnet",
       },

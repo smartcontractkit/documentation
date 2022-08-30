@@ -294,15 +294,15 @@ ETH is used to pay for transactions on Optimism. Use the [Optimism Bridge](https
 | Decimals       | 18                                                                                                                                                                                                                         |
 | Network status | [status.optimism.io](https://status.optimism.io/)                                                                                                                                                                          |
 
-### Optimism Kovan testnet
+### Optimism Goerli testnet
 
-Testnet ETH is used to pay for transactions on Optimism. Use the [Optimism Bridge](https://app.optimism.io/bridge) to transfer testnet ETH and LINK from Ethereum Kovan to Optimistic Kovan.
+Testnet ETH is used to pay for transactions on Optimism. Use the [Optimism Bridge](https://app.optimism.io/bridge) to transfer testnet ETH and LINK from Ethereum Goerli to Optimistim Goerli.
 
 | Parameter      | Value                                                                                                                                                                                                                            |
 | :------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ETH_CHAIN_ID` | `69`                                                                                                                                                                                                                             |
-| Address        | <a class="erc-token-address" id="69_0x4911b761993b9c8c0d14Ba2d86902AF6B0074F5B" href="https://kovan-optimistic.etherscan.io/address/0x4911b761993b9c8c0d14Ba2d86902AF6B0074F5B">`0x4911b761993b9c8c0d14Ba2d86902AF6B0074F5B`</a> |
-| Name           | Chainlink Token on Optimism Kovan                                                                                                                                                                                                |
+| `ETH_CHAIN_ID` | `420`                                                                                                                                                                                                                             |
+| Address        | <a class="erc-token-address" id="420_0xdc2cc710e42857672e7907cf474a69b63b93089f" href="https://goerli-optimism.etherscan.io/token/0xdc2cc710e42857672e7907cf474a69b63b93089f">`0xdc2cc710e42857672e7907cf474a69b63b93089f`</a> |
+| Name           | Chainlink Token on Optimism Goerli                                                                                                                                                                                                |
 | Symbol         | LINK                                                                                                                                                                                                                             |
 | Decimals       | 18                                                                                                                                                                                                                               |
 
