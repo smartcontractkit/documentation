@@ -2,8 +2,8 @@
 layout: nodes.liquid
 section: nodeOperator
 date: Last Modified
-title: "Bridge Task"
-permalink: "docs/jobs/task-types/bridge/"
+title: 'Bridge Task'
+permalink: 'docs/jobs/task-types/bridge/'
 ---
 
 Bridge tasks make HTTP POST requests to pre-configured URLs. Bridges can be configured via the UI or the CLI, and are referred to by a simple user-specified name. This is the way that most jobs interact with [External Adapters](/docs/external-adapters/).

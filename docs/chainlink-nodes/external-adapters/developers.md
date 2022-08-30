@@ -2,15 +2,16 @@
 layout: nodes.liquid
 section: nodeOperator
 date: Last Modified
-title: "Building External Adapters"
-permalink: "docs/developers/"
-whatsnext: {"Bridges: Adding External Adapters to Nodes":"/docs/node-operators/"}
+title: 'Building External Adapters'
+permalink: 'docs/developers/'
+whatsnext: { 'Bridges: Adding External Adapters to Nodes': '/docs/node-operators/' }
 ---
+
 Developers of external adapters will need to know how the Chainlink node requests data from it, and how the data should be formatted for a response. External adapters can be written in any language, and even run on separate machines, to include serverless functions.
 
 Here is our external adapters monorepo which contains many examples to help get you started:
 
-* <a href="https://github.com/smartcontractkit/external-adapters-js" target="_blank">Official Chainlink External Adapter Monorepo (NodeJS)</a>
+- <a href="https://github.com/smartcontractkit/external-adapters-js" target="_blank">Official Chainlink External Adapter Monorepo (NodeJS)</a>
 
 ### Requesting Data
 
@@ -24,19 +25,20 @@ When an external adapter receives a request from the Chainlink node, the JSON pa
 #### Examples
 
 ```json
-{"data":{}}
+{ "data": {} }
 ```
 
 ```json
-{"data":{}, "responseURL": "http://localhost:6688/v2/runs/278c97ffadb54a5bbb93cfec5f7b5503"}
+{ "data": {}, "responseURL": "http://localhost:6688/v2/runs/278c97ffadb54a5bbb93cfec5f7b5503" }
 ```
 
 ```json
-{"data":{"foo": 42}, "meta":{"bar": "baz"}, "id": "2d38ecdb-975c-4f99-801c-b916a429947c"}
+{ "data": { "foo": 42 }, "meta": { "bar": "baz" }, "id": "2d38ecdb-975c-4f99-801c-b916a429947c" }
 ```
 
 Additional data may be specified in the spec to be utilized by the adapter. This can be useful for requesting data from a REST endpoint where the keys and values can be specified by the requester. For example, if the REST endpoint supports the following:
 
+<!-- prettier-ignore -->
 ```text
 https://example.com/api/:parent/:child
 ```
@@ -54,6 +56,7 @@ Then the payload to the external adapter would need:
 
 The values for `:parent` and `:child` can be used within the adapter to dynamically build the URL for the request. This same concept can also be applied to URLs with query values. For example:
 
+<!-- prettier-ignore -->
 ```text
 https://example.com/api/?parent=myParentValue&child=myChildValue
 ```
@@ -99,14 +102,13 @@ If the external adapter wants to use the response URL to send data later, it may
 
 ```json
 {
-    "pending": true
+  "pending": true
 }
 ```
 
 In this case, the job run on Chainlink side will be put into a `pending` state, awaiting data which can be delivered at a later date.
 
 When the external adapter is ready, it should callback to the node to resume the JobRun using an HTTP PATCH request to the `responseURL` field. This will resume the job on the Chainlink side.
-
 
 ```json
 {
@@ -137,35 +139,35 @@ Here is a complete example of a simple external adapter written as a serverless 
 let request = require('request');
 
 exports.myExternalAdapter = (req, res) => {
-  const url = "https://some-api.example.com/api";
-  const coin = req.body.data.coin || "";
-  const market = req.body.data.market || "";
+  const url = 'https://some-api.example.com/api';
+  const coin = req.body.data.coin || '';
+  const market = req.body.data.market || '';
   let requestObj = {
     coin: coin,
-    market: market
+    market: market,
   };
   let headerObj = {
-    "API_KEY": "abcd-efgh-ijkl-mnop-qrst-uvwy"
+    API_KEY: 'abcd-efgh-ijkl-mnop-qrst-uvwy',
   };
   let options = {
-      url: url,
-      headers: headerObj,
-      qs: requestObj,
-      json: true
+    url: url,
+    headers: headerObj,
+    qs: requestObj,
+    json: true,
   };
 
   request(options, (error, response, body) => {
     if (error || response.statusCode >= 400) {
-        let errorData = {
-            jobRunID: req.body.id,
-            status: "errored",
-            error: body
-        };
-        res.status(response.statusCode).send(errorData);
+      let errorData = {
+        jobRunID: req.body.id,
+        status: 'errored',
+        error: body,
+      };
+      res.status(response.statusCode).send(errorData);
     } else {
       let returnData = {
         jobRunID: req.body.id,
-        data: body
+        data: body,
       };
       res.status(response.statusCode).send(returnData);
     }
@@ -175,6 +177,7 @@ exports.myExternalAdapter = (req, res) => {
 
 If given "ETH" as the value for `coin` and "USD" as the value for `market`, this external adapter will build the following URL for the request:
 
+<!-- prettier-ignore -->
 ```text
 https://some-api.example.com/api?coin=ETH&market=USD
 ```

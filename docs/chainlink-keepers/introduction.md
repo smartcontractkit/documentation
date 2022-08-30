@@ -39,10 +39,10 @@ Chainlink Keepers will reliably execute smart contract functions using a variety
 Before you begin, deploy the contract that you want to automate. You will also need the ABI for your contract if it has not been verified. Your contract does not have to be [Keepers-compatible](../compatible-contracts/).
 
 1. Open the Chainlink Keepers app.
-
-    <div class="remix-callout">
-        <a href="https://keepers.chain.link" >Open the Chainlink Keepers App</a>
-    </div>
+    <!-- prettier-ignore -->
+   <div class="remix-callout">
+       <a href="https://keepers.chain.link" >Open the Chainlink Keepers App</a>
+   </div>
 
 1. [Register](../job-scheduler/) a new Upkeep in the [Chainlink Keepers App](https://keepers.chain.link) and select **Time-based** trigger. Provide the address of your deployed contract, provide the ABI if it is not verified, and choose the function that you want to automate along with the relevant function inputs, if any.
 
@@ -61,8 +61,8 @@ For more details on time-based automation, click [here](../job-scheduler/).
 To use a custom logic trigger, you will need to make your contract [Keepers-compatible](../compatible-contracts/).
 
 1. Open the Chainlink Keepers app.
-
-    <div class="remix-callout">
+   <!-- prettier-ignore -->
+   <div class="remix-callout">
         <a href="https://keepers.chain.link" >Open the Chainlink Keepers App</a>
     </div>
 

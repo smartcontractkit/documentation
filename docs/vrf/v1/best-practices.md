@@ -2,11 +2,11 @@
 layout: nodes.liquid
 section: legacy
 date: Last Modified
-title: "VRF Best Practices [v1]"
-permalink: "docs/vrf/v1/best-practices/"
+title: 'VRF Best Practices [v1]'
+permalink: 'docs/vrf/v1/best-practices/'
 metadata:
-  title: "Chainlink VRF API Reference"
-  description: "Best pracices for using Chainlink VRF."
+  title: 'Chainlink VRF API Reference'
+  description: 'Best pracices for using Chainlink VRF.'
 ---
 
 > 🚧 VRF v2 replaces and enhances VRF v1.
@@ -19,6 +19,7 @@ Best are the practices for using Chainlink VRF.
 
 If you need to generate a random number within a given range, you use [modulo](https://docs.soliditylang.org/en/v0.6.0/types.html) to define the limits of your range. Below you can see how to get a random number between 1 and 50.
 
+<!-- prettier-ignore -->
 ```solidity
 uint256 public randomResult;
 
@@ -31,6 +32,7 @@ function fulfillRandomness(bytes32 requestId, uint256 randomness) internal overr
 
 If you want to get multiple random numbers from a single VRF response, you should create an array where the `randomValue` is your original returned VRF number and `n` is the desired number of random numbers.
 
+<!-- prettier-ignore -->
 ```solidity
 function expand(uint256 randomValue, uint256 n) public pure returns (uint256[] memory expandedValues) {
     expandedValues = new uint256[](n);
@@ -45,6 +47,7 @@ function expand(uint256 randomValue, uint256 n) public pure returns (uint256[] m
 
 If you want to have multiple VRF requests in flight, you might want to create a mapping between the `requestId` and the address of the requester.
 
+<!-- prettier-ignore -->
 ```solidity
 mapping(bytes32 => address) public requestIdToAddress;
 
@@ -61,6 +64,7 @@ function fulfillRandomness(bytes32 requestId, uint256 randomness) internal overr
 
 If you want to keep order when a request was made, you might want to use a mapping of `requestId` to the index/order of this request.
 
+<!-- prettier-ignore -->
 ```solidity
 mapping(bytes32 => uint256) public requestIdToRequestNumberIndex;
 uint256 public requestCounter;
@@ -79,6 +83,7 @@ function fulfillRandomness(bytes32 requestId, uint256 randomness) internal overr
 
 If you want to keep generated random numbers of several VRF requests, you might want to use a mapping of `requestId` to the returned random number.
 
+<!-- prettier-ignore -->
 ```solidity
 mapping(bytes32 => uint256) public requestIdToRandomNumber;
 

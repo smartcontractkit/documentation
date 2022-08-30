@@ -46,6 +46,7 @@ JobID: contact `dataproviders@chain.link` for details
 
 Import `ChainlinkClient.sol` into your contract so you can inherit the Chainlink behavior.
 
+<!-- prettier-ignore -->
 ```solidity Solidity 4
 pragma solidity ^0.4.24;
 
@@ -65,6 +66,7 @@ contract KrakenChainlink is ChainlinkClient {
 }
 ```
 
+<!-- prettier-ignore -->
 ```solidity Solidity 5
 pragma solidity ^0.5.0;
 
@@ -84,6 +86,7 @@ contract KrakenChainlink is ChainlinkClient {
 }
 ```
 
+<!-- prettier-ignore -->
 ```solidity Solidity 6
 pragma solidity ^0.6.0;
 
@@ -103,6 +106,7 @@ contract KrakenChainlink is ChainlinkClient {
 }
 ```
 
+<!-- prettier-ignore -->
 <div class="remix-callout">
   <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/DataProviders/Kraken.sol" target="_blank" >Open in Remix</a>
   <a href="/docs/conceptual-overview/#what-is-remix" >What is Remix?</a>
@@ -125,6 +129,7 @@ Use the `index` parameter to request the desired index from Kraken.
 
 To obtain KXBTUSD index, use the `DEFI_KXBTUSD` identifier.
 
+<!-- prettier-ignore -->
 ```solidity
 req.add("index", "DEFI_KXBTUSD");
 ```
@@ -154,6 +159,7 @@ The amount to multiply the result by (since Solidity does not handle decimals).
 
 #### Solidity example
 
+<!-- prettier-ignore -->
 ```solidity
 req.addInt("times", 100);
 ```
@@ -162,6 +168,7 @@ req.addInt("times", 100);
 
 The examples below show how to create a request for the Chainlink node.
 
+<!-- prettier-ignore -->
 ```solidity
 function requestPrice
 (
@@ -181,6 +188,7 @@ function requestPrice
 
 Here is an example of the fulfill method:
 
+<!-- prettier-ignore -->
 ```solidity
 uint256 public currentPrice;
 

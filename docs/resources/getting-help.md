@@ -2,9 +2,10 @@
 layout: nodes.liquid
 section: ethereum
 date: Last Modified
-title: "Getting Help"
-permalink: "docs/getting-help/"
+title: 'Getting Help'
+permalink: 'docs/getting-help/'
 ---
+
 ## Where do I go to get help and support?
 
 If you run into issues and the available documentation, videos, and code repositories are not able to assist you, the best way to get help is to follow the support escalation process in this document. Sometimes you might have a question that is too theoretical or hasn't been solved, so you might not always get what you're looking for!
@@ -22,6 +23,7 @@ Often someone else has asked the same question that you're asking. If you copy a
 This is only applicable if you're working with a certain set of code. For example, if you're having an issue working with the [Chainlink Hardhat Starter kit](https://github.com/smartcontractkit/hardhat-starter-kit), open an issue on the repo explaining exactly what's going on and someone might have the answer that you need.
 
 When writing issues, remember to:
+
 - Keep titles short
 - Be clear and concise about the issue that you are encountering
 - Format your issue description. Use [three backticks (```)](https://www.freecodecamp.org/news/how-to-format-code-in-markdown/#code-blocks) to format your code or log output.
@@ -45,6 +47,7 @@ Here is that same question with better formatting:
 > Title: Remix Solidity Compile Error - Source File Requires Different Compiler Version
 > I'm [following this guide](/docs/deploy-your-first-contract/), and I'm unable to compile my solidity code in [Remix](https://remix.ethereum.org/).
 > Here is the code:
+>
 > ```javascript
 > pragma solidity 0.6.7;
 >
@@ -58,8 +61,8 @@ Here is that same question with better formatting:
 >    function updateMessage(string memory newMessage) public {
 >        message = newMessage;
 >    }
->}
->```
+> }
+> ```
 >
 > And the error I'm getting is as follows:
 >

@@ -23,6 +23,7 @@ Executes a job upon receipt of an explicit request made by a user. The request i
 
 ## Spec format
 
+<!-- prettier-ignore -->
 ```jpv2
 type                = "directrequest"
 schemaVersion       = 1

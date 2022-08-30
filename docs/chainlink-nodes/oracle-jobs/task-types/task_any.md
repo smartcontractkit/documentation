@@ -3,7 +3,7 @@ layout: nodes.liquid
 section: nodeOperator
 date: Last Modified
 title: "'Any' Task"
-permalink: "docs/jobs/task-types/any/"
+permalink: 'docs/jobs/task-types/any/'
 ---
 
 Returns a random value from the set of inputs passed in.
@@ -34,4 +34,3 @@ fetch3 -> pick_any
 ```
 
 `pick_any` will return either the result of `fetch1`, `fetch2`, or `fetch3`.
-

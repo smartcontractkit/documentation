@@ -52,6 +52,7 @@ Subscription owners and consumers do not have to be separate. This contract not 
 {% include 'samples/VRF/VRFv2SubscriptionManager.sol' %}
 ```
 
+<!-- prettier-ignore -->
 <div class="remix-callout">
       <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFv2SubscriptionManager.sol" target="_blank" >Open in Remix</a>
       <a href="/docs/conceptual-overview/#what-is-remix">What is Remix?</a>

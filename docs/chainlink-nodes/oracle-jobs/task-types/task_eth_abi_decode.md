@@ -2,8 +2,8 @@
 layout: nodes.liquid
 section: nodeOperator
 date: Last Modified
-title: "ETH ABI Decode Task"
-permalink: "docs/jobs/task-types/eth-abi-decode/"
+title: 'ETH ABI Decode Task'
+permalink: 'docs/jobs/task-types/eth-abi-decode/'
 ---
 
 Decodes a ETH ABI-encoded payload, typically the result of an [ETH Call task](/docs/jobs/task-types/eth-call/).
@@ -11,11 +11,11 @@ Decodes a ETH ABI-encoded payload, typically the result of an [ETH Call task](/d
 **Parameters**
 
 - `abi`: a canonical ETH ABI argument string. Should be formatted exactly as in Solidity. Each argument must be named. Examples:
-    - `uint256 foo, bytes32 bar, address[] baz`
-    - `address a, uint80[3][] u, bytes b, bytes32 b32`
+  - `uint256 foo, bytes32 bar, address[] baz`
+  - `address a, uint80[3][] u, bytes b, bytes32 b32`
 - `data`: the ABI-encoded payload to decode. Can be:
-    - a byte array
-    - a hex-encoded string beginning with `0x`
+  - a byte array
+  - a hex-encoded string beginning with `0x`
 
 **Outputs**
 

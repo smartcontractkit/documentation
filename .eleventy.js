@@ -7,13 +7,11 @@ module.exports = function (eleventyConfig) {
   eleventyConfig.setLibrary('md', { render: rdmd.html });
 
   eleventyConfig.addFilter('squash', require('./_includes/squash.js'));
-  eleventyConfig.addFilter('date', (date, dateFormat) =>
-    format(date, dateFormat)
-  );
+  eleventyConfig.addFilter('date', (date, dateFormat) => format(date, dateFormat));
   eleventyConfig.addPlugin(embedYouTube);
   eleventyConfig.addPassthroughCopy({ _src: '/' });
 
-  eleventyConfig.addPassthroughCopy( {"_includes/samples": "samples"} );
+  eleventyConfig.addPassthroughCopy({ '_includes/samples': 'samples' });
 
   // Allow us to put rendered markdown in HTML
   eleventyConfig.addPairedShortcode('markdown', (content) => {

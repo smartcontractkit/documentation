@@ -17,6 +17,7 @@ These are example best practices for using Chainlink VRF. To explore more applic
 
 If you need to generate a random number within a given range, use [modulo](https://docs.soliditylang.org/en/v0.8.7/types.html#modulo) to define the limits of your range. Below you can see how to get a random number in a range from 1 to 50.
 
+<!-- prettier-ignore -->
 ```solidity
 function fulfillRandomWords(
   uint256, /* requestId */
@@ -35,6 +36,7 @@ If you want to get multiple random values from a single VRF request, you can req
 
 If you want to have multiple VRF requests processing simultaneously, create a mapping between `requestId` and the response. You might also create a mapping between the `requestId` and the address of the requester to track which address made each request.
 
+<!-- prettier-ignore -->
 ```solidity
 mapping(uint256 => uint256[]) public s_requestIdToRandomWords;
 mapping(uint256 => address) public s_requestIdToAddress;
@@ -69,6 +71,7 @@ function fulfillRandomWords(
 
 You could also map the `requestId` to an index to keep track of the order in which a request was made.
 
+<!-- prettier-ignore -->
 ```solidity
 mapping(uint256 => uint256) s_requestIdToRequestIndex;
 mapping(uint256 => uint256[]) public s_requestIndexToRandomWords;
@@ -103,6 +106,7 @@ If you want to process VRF responses depending on predetermined conditions, you 
 {% include 'samples/VRF/VRFv2MultiplePaths.sol' %}
 ```
 
+<!-- prettier-ignore -->
 <div class="remix-callout">
   <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFv2MultiplePaths.sol" target="_blank" >Open in Remix</a>
   <a href="/docs/conceptual-overview/#what-is-remix">What is Remix?</a>

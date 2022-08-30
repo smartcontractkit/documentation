@@ -2,8 +2,8 @@
 layout: nodes.liquid
 section: nodeOperator
 date: Last Modified
-title: "HTTP Task"
-permalink: "docs/jobs/task-types/http/"
+title: 'HTTP Task'
+permalink: 'docs/jobs/task-types/http/'
 ---
 
 HTTP tasks make HTTP requests to arbitrary URLs.

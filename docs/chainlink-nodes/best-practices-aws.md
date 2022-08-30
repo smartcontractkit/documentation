@@ -2,8 +2,8 @@
 layout: nodes.liquid
 section: nodeOperator
 date: Last Modified
-title: "Best Practices for Deploying Nodes on AWS"
-permalink: "docs/best-practices-aws/"
+title: 'Best Practices for Deploying Nodes on AWS'
+permalink: 'docs/best-practices-aws/'
 ---
 
 **Topics**
@@ -22,6 +22,7 @@ permalink: "docs/best-practices-aws/"
 
 You can deploy a Chainlink node on the AWS Cloud using [AWS Quick Start](https://aws.amazon.com/quickstart) to deploy a highly available and secure Chainlink node on the AWS Cloud.
 
+<!-- prettier-ignore -->
 <div class="remix-callout">
     <a href="https://aws.amazon.com/quickstart/architecture/chainlink-node/" >Deploy a Chainlink Node on AWS</a>
 </div>
@@ -39,6 +40,7 @@ Because these resources are public facing, you should review security and best p
 ## IAM Roles
 
 The Quick Start creates the following IAM roles:
+
 - **Administration Role:** Grants the provided administrator ID with administrator access
 - **Execution Role:** Grants cloudformation.amazonaws.com the administration role to extend the functionality of stacks by enabling create, update, or delete stacks across multiple accounts and regions with a single operation
 - **Chainlink Node Role:**
@@ -49,6 +51,7 @@ The Quick Start creates the following IAM roles:
 ## Billable Services
 
 The Quick Start has the following billable services. Click on each link to learn about the pricing model for each service:
+
 - [**Amazon EC2**](https://aws.amazon.com/ec2/pricing/?nc2=type_a)
 - [**Amazon Virtual Private Cloud (VPC)**](https://aws.amazon.com/vpc/pricing/)
 - [**Amazon Aurora PostgreSQL-Compatible DB**](https://aws.amazon.com/rds/aurora/pricing/)
@@ -56,8 +59,8 @@ The Quick Start has the following billable services. Click on each link to learn
 - [**AWS Secrets Manager**](https://aws.amazon.com/secrets-manager/pricing/?nc1=h_ls)
 - [**AWS Key Management Service**](https://aws.amazon.com/kms/pricing/?nc2=type_a)
 - [**Amazon CloudWatch**](https://aws.amazon.com/cloudwatch/pricing/?nc2=type_a)
-- (*Optional* if you are not using a public certificate with AWS Certificate Manager) [**Application Load Balancer**](https://aws.amazon.com/elasticloadbalancing/pricing/?nc=sn&loc=3)
-- (*Optional*) [**Amazon Devops Guru**](https://aws.amazon.com/devops-guru/pricing/?nc=sn&loc=3&refid=0c5ce5de-7dc6-4ce5-95c9-29c9047095fc~ha_awssm-10495_event_prospect)
+- (_Optional_ if you are not using a public certificate with AWS Certificate Manager) [**Application Load Balancer**](https://aws.amazon.com/elasticloadbalancing/pricing/?nc=sn&loc=3)
+- (_Optional_) [**Amazon Devops Guru**](https://aws.amazon.com/devops-guru/pricing/?nc=sn&loc=3&refid=0c5ce5de-7dc6-4ce5-95c9-29c9047095fc~ha_awssm-10495_event_prospect)
 
 You are responsible for the cost of the AWS services and any third-party licenses that you use while running this Quick Start. There is no additional cost for using the Quick Start.
 
@@ -65,18 +68,20 @@ AWS maintains service limits for each account to help guarantee the availability
 
 For more information, visit [Manage Service Limits](https://aws.amazon.com/premiumsupport/knowledge-center/manage-service-limits/).
 
-
 ## Best Practices
 
 ### Do not run as the root user
+
 The operations on the Chainlink node do not require the root user so it is recommended to use the default user or run as a non-root user.
 
 ### Protect your AWS account
+
 As a best security practice, [rotate programmatic system credentials](https://aws.amazon.com/blogs/security/how-to-rotate-access-keys-for-iam-users/) and [cryptographic keys](https://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html).
 
 If you enable Amazon Devops Guru, the Quick Start deploys an AWS managed customer key (CMK) that is used for the Amazon SNS topic for DevOps Guru. The default setting is automatically set to rotate this KMS key every year.
 
 ### Monitor your Chainlink node's health
+
 Run regular health checks of your Chainlink node.
 
 We recommend using a monitoring solution to track the health of your Chainlink node, such as [Prometheus](https://prometheus.io/docs/prometheus/latest/getting_started/) or [Grafana](https://grafana.com/docs/grafana/latest/getting-started/getting-started-prometheus/). Chainlink exposes metrics on the `/metrics` endpoint of the UI. By default, that's http://localhost:6688/metrics.
@@ -94,10 +99,12 @@ scrape_configs:
 
 Alternatively, you can run a health check on your node using `curl` and make sure the checks are `passing`. You can replace `localhost:6688` with the load balancer endpoint if you are using a domain.
 
+<!-- prettier-ignore -->
 ```shell
 curl -XGET localhost:6688/health | jq '.'
 ```
 
+<!-- prettier-ignore -->
 ```json
 % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
@@ -140,7 +147,6 @@ curl -XGET localhost:6688/health | jq '.'
 
 To check the status of your Chainlink node container, use the `docker ps` command.
 
-
 ## Recovering or Upgrading your Chainlink Node Container
 
 Tag versions for Chainlink node releases are available in the [Chainlink docker hub](https://hub.docker.com/r/smartcontract/chainlink/tags)
@@ -149,6 +155,7 @@ If the Chainlink node containers are stopped or if you need to start up a new in
 
 ### Generating the `.env` file
 
+<!-- prettier-ignore -->
 ```shell
 cd /home/ec2-user/.chainlink/ && ./create-env.sh \
 ${chainNetwork} \
@@ -162,6 +169,7 @@ ${psqlDb}
 
 ### Generating the `.password` file
 
+<!-- prettier-ignore -->
 ```shell
 cd /home/ec2-user/.chainlink/ && ./create-password.sh \
 $(aws secretsmanager get-secret-value --secret-id WalletSecret --query "SecretString" --output text)
@@ -169,6 +177,7 @@ $(aws secretsmanager get-secret-value --secret-id WalletSecret --query "SecretSt
 
 ### Generating the `.api` file
 
+<!-- prettier-ignore -->
 ```shell
 cd /home/ec2-user/.chainlink/ && ./create-api.sh \
 ${apiUser} \
@@ -179,12 +188,14 @@ $(aws secretsmanager get-secret-value --secret-id ApiSecret --query "SecretStrin
 
 This process is required when you update the container to a newer release.
 
+<!-- prettier-ignore -->
 ```shell
 docker stop chainlink && docker rm chainlink
 ```
 
 ### Starting the Chainlink node container in Docker
 
+<!-- prettier-ignore -->
 ```shell
 latestimage=$(curl -s -S "https://registry.hub.docker.com/v2/repositories/smartcontract/chainlink/tags/" | jq -r '."results"[]["name"]' | head -n 1)
 cd /home/ec2-user/.chainlink && docker run -d \

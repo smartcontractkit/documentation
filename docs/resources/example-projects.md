@@ -70,11 +70,11 @@ The [Hack Money hackathon](https://ethglobal.online/), read our [blog here!](htt
 
 Read our [blog post here](https://blog.chain.link/showcasing-the-winning-projects-from-the-ethdenver-2020-hackathon/).
 
-| Name                          | Description                                                                                    | GitHub                                                         |
-| :---------------------------- | :--------------------------------------------------------------------------------------------- | :------------------------------------------------------------- |
-| **InsuraLink**<br />🥇        | Data-driven insurance agreements that use Chainlink oracles to bridge IoT and smart contracts. | [Go](https://github.com/mycelium-ethereum/insuralink-contracts)  |
-| **1x.ag**<br />🥈             | Build leveraged trade positions across different lending platforms.                            | [Go](https://github.com/1x-ag/solidity-contracts)              |
-| **We Watch in Public Spaces** | Tracking system for calculating event attendance.                                              | [Go](https://github.com/iainnash/ethdenver-we-watch-in-public) |
+| Name                          | Description                                                                                    | GitHub                                                          |
+| :---------------------------- | :--------------------------------------------------------------------------------------------- | :-------------------------------------------------------------- |
+| **InsuraLink**<br />🥇        | Data-driven insurance agreements that use Chainlink oracles to bridge IoT and smart contracts. | [Go](https://github.com/mycelium-ethereum/insuralink-contracts) |
+| **1x.ag**<br />🥈             | Build leveraged trade positions across different lending platforms.                            | [Go](https://github.com/1x-ag/solidity-contracts)               |
+| **We Watch in Public Spaces** | Tracking system for calculating event attendance.                                              | [Go](https://github.com/iainnash/ethdenver-we-watch-in-public)  |
 
 ## Chainlink Virtual Hackathon 2019
 
@@ -85,7 +85,7 @@ Read our [blog post here](https://blog.chain.link/winners-of-the-chainlink-virtu
 | **LinkPal**<br />🥇           | A smart contract uses Chainlink oracles to confirm that the PayPal invoice has been paid.      | [Go](https://github.com/vvoluom/LinkPal)                                                |
 | **Cerebus Wallet**<br />🥈    | Two-factor authorization for crypto transactions using phone push notifications.               | [Go](https://github.com/MikaelLazarev/cerberus)                                         |
 | **Flyt**<br />🥉              | Flight insurance.                                                                              | [Go](https://github.com/robin-thomas/flyt)                                              |
-| **Link Total Return Swap**    | A Defi platform which enables Chainlink Node Operators to hedge against LINK price volatility. | [Go](https://github.com/mycelium-ethereum/LinkTRS)                                        |
+| **Link Total Return Swap**    | A Defi platform which enables Chainlink Node Operators to hedge against LINK price volatility. | [Go](https://github.com/mycelium-ethereum/LinkTRS)                                      |
 | **Smart Marketing Campaigns** | Use Google Analytics data to make payments to marketing agencies.                              | [Go](https://coinlist.co/build/chainlink/projects/6106f616-f9d8-4fec-85d7-c9f98bf8bd9e) |
 | **Steam Trader**              | Trustless trading of digital items.                                                            | [Go](https://github.com/brent-riva/Steam-Trader)                                        |
 | **Contractor**                | Constructor of smart contracts.                                                                | [Go](https://github.com/alekcangp/ChainLinkContractor)                                  |

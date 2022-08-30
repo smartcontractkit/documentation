@@ -2,12 +2,12 @@
 layout: nodes.liquid
 section: nodeOperator
 date: Last Modified
-title: "Node Versions and Upgrades"
-permalink: "docs/node-versions/"
-whatsnext: {"Running a Chainlink Node":"/docs/running-a-chainlink-node/"}
+title: 'Node Versions and Upgrades'
+permalink: 'docs/node-versions/'
+whatsnext: { 'Running a Chainlink Node': '/docs/running-a-chainlink-node/' }
 metadata:
-  title: "Node Versions and Release Notes"
-  description: "Details about various node versions and how to migrate between them."
+  title: 'Node Versions and Release Notes'
+  description: 'Details about various node versions and how to migrate between them.'
 ---
 
 You can find a list of release notes for Chainlink nodes in the [smartcontractkit GitHub repository](https://github.com/smartcontractkit/chainlink/releases). Docker images are available in the [Chainlink Docker hub](https://hub.docker.com/r/smartcontract/chainlink/tags).
@@ -33,27 +33,29 @@ You can find a list of release notes for Chainlink nodes in the [smartcontractki
 - Added [`hexdecode` task](/docs/jobs/task-types/hexdecode/) and the [`base64decode` task](/docs/jobs/task-types/base64decode/) (pipeline).
 
 - Added support for the Besu execution client. Although Chainlink supports Besu, Besu itself has several issues that can make it unreliable. For additional context, see the following issues:
-    - [hyperledger/besu/issues/4212](https://github.com/hyperledger/besu/issues/4212)
-    - [hyperledger/besu/issues/4192](https://github.com/hyperledger/besu/issues/4192)
-    - [hyperledger/besu/issues/4114](https://github.com/hyperledger/besu/issues/4114)
+
+  - [hyperledger/besu/issues/4212](https://github.com/hyperledger/besu/issues/4212)
+  - [hyperledger/besu/issues/4192](https://github.com/hyperledger/besu/issues/4192)
+  - [hyperledger/besu/issues/4114](https://github.com/hyperledger/besu/issues/4114)
 
 - Added [Multi-user and Role Based Access Control](/docs/miscellaneous/#multi-user-and-role-based-access-control-rbac) functionality. This allows the root admin CLI user and additional admin users to create and assign tiers of role-based access to new users. These new API users are able to log in to the Operator UI independently and can each have specific roles tied to their account. There are four roles: `admin`, `edit`, `run`, and `view`.
+
   - User management can be configured through the use of the new admin CLI command `chainlink admin users`. Be sure to run `chainlink adamin login`. For example, a readonly user can be created with: `chainlink admin users create --email=operator-ui-read-only@test.com --role=view`.
   - Updated documentation repo with a break down of actions to required role level
 
 - Added gas limit control for individual job specs and individual job types. The following rule of precedence is applied:
 
-    1. The task-specific parameter `gasLimit` overrides anything else when specified. For example, the `ethtx` task has a `gasLimit` parameter that overrides the other defaults for this specific task.
-    1. The job-spec attribute `gasLimit` applies only to a specific job spec.
-    1. The job-type limits affect any jobs of the corresponding type. The following environment variables are available:
+  1. The task-specific parameter `gasLimit` overrides anything else when specified. For example, the `ethtx` task has a `gasLimit` parameter that overrides the other defaults for this specific task.
+  1. The job-spec attribute `gasLimit` applies only to a specific job spec.
+  1. The job-type limits affect any jobs of the corresponding type. The following environment variables are available:
 
-        - [ETH_GAS_LIMIT_OCR_JOB_TYPE](/docs/configuration-variables/#eth_gas_limit_ocr_job_type)
-        - [ETH_GAS_LIMIT_DR_JOB_TYPE](/docs/configuration-variables/#eth_gas_limit_dr_job_type)
-        - [ETH_GAS_LIMIT_VRF_JOB_TYPE](/docs/configuration-variables/#eth_gas_limit_vrf_job_type)
-        - [ETH_GAS_LIMIT_FM_JOB_TYPE](/docs/configuration-variables/#eth_gas_limit_fm_job_type)
-        - [ETH_GAS_LIMIT_KEEPER_JOB_TYPE](/docs/configuration-variables/#eth_gas_limit_keeper_job_type)
+     - [ETH_GAS_LIMIT_OCR_JOB_TYPE](/docs/configuration-variables/#eth_gas_limit_ocr_job_type)
+     - [ETH_GAS_LIMIT_DR_JOB_TYPE](/docs/configuration-variables/#eth_gas_limit_dr_job_type)
+     - [ETH_GAS_LIMIT_VRF_JOB_TYPE](/docs/configuration-variables/#eth_gas_limit_vrf_job_type)
+     - [ETH_GAS_LIMIT_FM_JOB_TYPE](/docs/configuration-variables/#eth_gas_limit_fm_job_type)
+     - [ETH_GAS_LIMIT_KEEPER_JOB_TYPE](/docs/configuration-variables/#eth_gas_limit_keeper_job_type)
 
-    1. The global `ETH_GAS_LIMIT_DEFAULT` (`EVM.GasEstimator.LimitDefault`) value is used only when the preceding rules are not set.
+  1. The global `ETH_GAS_LIMIT_DEFAULT` (`EVM.GasEstimator.LimitDefault`) value is used only when the preceding rules are not set.
 
 ### Fixed
 
@@ -65,9 +67,9 @@ You can find a list of release notes for Chainlink nodes in the [smartcontractki
 **[v1.6.0 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v1.6.0)**
 
 - Simplified password complexity requirements. All passwords used with Chainlink must meet the following requirements:
-    - Must be 16 characters or more
-    - Must not contain leading or trailing whitespace
-    - User passwords must not contain the user's API email
+  - Must be 16 characters or more
+  - Must not contain leading or trailing whitespace
+  - User passwords must not contain the user's API email
 - Simplified the Keepers job spec by removing the observation source from the required parameters.
 
 ## Changes in v1.5.0 nodes
@@ -75,15 +77,16 @@ You can find a list of release notes for Chainlink nodes in the [smartcontractki
 **[v1.5.0 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v1.5.0)**
 
 - Chainlink will not boot if the Postgres database password is missing or insecure. Passwords must conform to the following rules:
-    - Must be longer than 12 characters
-    - Must comprise at least 3 of the following items:
-        - Lowercase characters
-        - Uppercase characters
-        - Numbers
-        - Symbols
-    - Must not comprise:
-    	  - More than three identical consecutive characters
-    	  - Leading or trailing whitespace (note that a trailing newline in the password file, if present, will be ignored)
+
+  - Must be longer than 12 characters
+  - Must comprise at least 3 of the following items:
+    - Lowercase characters
+    - Uppercase characters
+    - Numbers
+    - Symbols
+  - Must not comprise:
+    - More than three identical consecutive characters
+    - Leading or trailing whitespace (note that a trailing newline in the password file, if present, will be ignored)
 
   For backward compatibility, you can bypass this check at your own risk by setting `SKIP_DATABASE_PASSWORD_COMPLEXITY_CHECK=true`.
 
@@ -104,24 +107,25 @@ You can find a list of release notes for Chainlink nodes in the [smartcontractki
 - Added the [`ETH_USE_FORWARDERS` config](/docs/configuration-variables/#eth_use_forwarders) option to enable transactions forwarding contracts.
 
 - In the `directrequest` job pipeline, three new block variables are available:
+
   - `$(jobRun.blockReceiptsRoot)` : the root of the receipts trie of the block (hash)
   - `$(jobRun.blockTransactionsRoot)` : the root of the transaction trie of the block (hash)
   - `$(jobRun.blockStateRoot)` : the root of the final state trie of the block (hash)
 
 - `ethtx` tasks can now be configured to error if the transaction reverts on-chain. You must set `failOnRevert=true` on the task to enable this behavior:
 
-    `foo [type=ethtx failOnRevert=true ...]`
+  `foo [type=ethtx failOnRevert=true ...]`
 
-    The `ethtx` task now works as follows:
+  The `ethtx` task now works as follows:
 
-    - If `minConfirmations == 0`, task always succeeds and nil is passed as output.
-    - If `minConfirmations > 0`, the receipt is passed through as output.
-    - If `minConfirmations > 0` and `failOnRevert=true` then the `ethtx` task will error on revert.
-    - If `minConfirmations` is not set on the task, the chain default will be used which is usually 12 and always greater than 0.
+  - If `minConfirmations == 0`, task always succeeds and nil is passed as output.
+  - If `minConfirmations > 0`, the receipt is passed through as output.
+  - If `minConfirmations > 0` and `failOnRevert=true` then the `ethtx` task will error on revert.
+  - If `minConfirmations` is not set on the task, the chain default will be used which is usually 12 and always greater than 0.
 
 - `http` task now allows specification of request headers. Use it like the following example:
 
-    `foo [type=http headers="[\\"X-Header-1\\", \\"value1\\", \\"X-Header-2\\", \\"value2\\"]"]`.
+  `foo [type=http headers="[\\"X-Header-1\\", \\"value1\\", \\"X-Header-2\\", \\"value2\\"]"]`.
 
 ### Fixed
 
@@ -137,7 +141,7 @@ You can find a list of release notes for Chainlink nodes in the [smartcontractki
 
 - `MIN_OUTGOING_CONFIRMATIONS` has been removed and no longer has any effect. The [`ETH_FINALITY_DEPTH` environment variable](/docs/configuration-variables/#eth_finality_depth) is now used as the default for `ethtx` confirmations instead. You can override this on a per-task basis by setting `minConfirmations` in the task definition. For example, `foo [type=ethtx minConfirmations=42 ...]`.
 
-    This setting might have a minor impact on performance for very high throughput chains. If you don't care about reporting task status in the UI, set `minConfirmations=0` in your job specs. For more details, see the [Optimizing EVM Performance](/docs/evm-performance-configuration/#adjusting-minimum-outgoing-confirmations-for-high-throughput-jobs) page.
+  This setting might have a minor impact on performance for very high throughput chains. If you don't care about reporting task status in the UI, set `minConfirmations=0` in your job specs. For more details, see the [Optimizing EVM Performance](/docs/evm-performance-configuration/#adjusting-minimum-outgoing-confirmations-for-high-throughput-jobs) page.
 
 ## Changes in v1.4.1 nodes
 
@@ -166,7 +170,7 @@ You can find a list of release notes for Chainlink nodes in the [smartcontractki
 - Changed default locking mode to "dual". See the [DATABASE_LOCKING_MODE](/docs/configuration-variables/#database_locking_mode) documentation for details.
 - Specifying multiple EVM RPC nodes with the same URL is no longer supported. If you see `ERROR 0106_evm_node_uniqueness.sql: failed to run SQL migration`, you have multiple nodes specified with the same URL and you must fix this before proceeding with the upgrade.
 - EIP-1559 is now enabled by default on the Ethereum Mainnet. See the [EVM_EIP1559_DYNAMIC_FEES](/docs/configuration-variables/#evm_eip1559_dynamic_fees) documentation for details.
-- Added new Keepers feature that includes gas price in calls to `checkUpkeep()`. To enable the feature, set [KEEPER_CHECK_UPKEEP_GAS_PRICE_FEATURE_ENABLED](/docs/configuration-variables#keeper_check_upkeep_gas_price_feature_enabled) to `true`. Use this setting *only* on Polygon networks.
+- Added new Keepers feature that includes gas price in calls to `checkUpkeep()`. To enable the feature, set [KEEPER_CHECK_UPKEEP_GAS_PRICE_FEATURE_ENABLED](/docs/configuration-variables#keeper_check_upkeep_gas_price_feature_enabled) to `true`. Use this setting _only_ on Polygon networks.
 
 ## Changes in v1.2.0 nodes
 

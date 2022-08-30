@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
-import '@chainlink/contracts/src/v0.8/ChainlinkClient.sol';
-import '@chainlink/contracts/src/v0.8/ConfirmedOwner.sol';
+import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
+import "@chainlink/contracts/src/v0.8/ConfirmedOwner.sol";
 
 /**
  * Request testnet LINK and ETH here: https://faucets.chain.link/
@@ -43,13 +43,20 @@ contract KrakenChainlink is ChainlinkClient, ConfirmedOwner {
         bytes32 _jobId,
         string memory _index
     ) public onlyOwner {
-        Chainlink.Request memory req = buildChainlinkRequest(_jobId, address(this), this.fulfill.selector);
-        req.add('index', _index);
-        req.addInt('times', 100);
+        Chainlink.Request memory req = buildChainlinkRequest(
+            _jobId,
+            address(this),
+            this.fulfill.selector
+        );
+        req.add("index", _index);
+        req.addInt("times", 100);
         sendChainlinkRequestTo(_oracle, req, oraclePayment);
     }
 
-    function fulfill(bytes32 _requestId, uint256 _price) public recordChainlinkFulfillment(_requestId) {
+    function fulfill(bytes32 _requestId, uint256 _price)
+        public
+        recordChainlinkFulfillment(_requestId)
+    {
         currentPrice = _price;
     }
 }

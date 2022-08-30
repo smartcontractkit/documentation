@@ -2,9 +2,10 @@
 layout: nodes.liquid
 section: nodeOperator
 date: Last Modified
-title: "Security and Operation Best Practices"
-permalink: "docs/best-security-practices/"
+title: 'Security and Operation Best Practices'
+permalink: 'docs/best-security-practices/'
 ---
+
 The following information provides a set of security and operation best practices that node operators need to use at a minimum to enhance the security and reliability of their infrastructure.
 
 ## Restricting Access
@@ -34,8 +35,8 @@ To ensure there is very minimal downtime, failover capabilities are required on 
 **Ethereum-specific:**
 
 - Ethereum client websocket connectivity is fronted by a load balancer, used by the Chainlink nodes. [Here is an example on how to set up a load balancer](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/tutorial-target-ecs-containers.html).
-    - If a VPN and internal routing is configured, SSL is not needed but still recommended, as all traffic is purely internal.
-    - If both Ethereum and Chainlink nodes are public facing without a VPN, SSL is required to ensure that no communication between both can be intercepted.
+  - If a VPN and internal routing is configured, SSL is not needed but still recommended, as all traffic is purely internal.
+  - If both Ethereum and Chainlink nodes are public facing without a VPN, SSL is required to ensure that no communication between both can be intercepted.
 
 ## Disaster Recovery
 

@@ -2,15 +2,16 @@
 layout: nodes.liquid
 section: solana
 date: Last Modified
-title: "Using Data Feeds Off-Chain (Solana)"
-permalink: "docs/solana/using-data-feeds-off-chain/"
-whatsnext: {
-  "Use data feeds on-chain":"/docs/solana/using-data-feeds-solana/",
-  "See the available data feeds on Solana":"/docs/solana/data-feeds-solana/"
-}
+title: 'Using Data Feeds Off-Chain (Solana)'
+permalink: 'docs/solana/using-data-feeds-off-chain/'
+whatsnext:
+  {
+    'Use data feeds on-chain': '/docs/solana/using-data-feeds-solana/',
+    'See the available data feeds on Solana': '/docs/solana/data-feeds-solana/',
+  }
 metadata:
-  title: "Using Data Feeds Off-Chain (Solana)"
-  description: "How to use Chainlink Data Feeds in your off-chain applications."
+  title: 'Using Data Feeds Off-Chain (Solana)'
+  description: 'How to use Chainlink Data Feeds in your off-chain applications.'
 ---
 
 Chainlink Data Feeds are the quickest way to access market prices for real-world assets. This guide demonstrates how to read Chainlink Data Feeds on the Solana Devnet using off-chain examples in the [Chainlink Solana Starter Kit](https://github.com/smartcontractkit/solana-starter-kit). To learn how to use Data Feeds in your on-chain Solana programs, see the [Using Data Feeds On-Chain](/docs/solana/using-data-feeds-solana/) guide.
@@ -43,62 +44,73 @@ Install the necessary components and include the example code in your project. O
 
 1. Install the latest Mainnet version of [the Solana CLI](https://github.com/solana-labs/solana/releases) and export the path to the CLI:
 
-    ```sh
+   <!-- prettier-ignore -->
+   ```sh
     sh -c "$(curl -sSfL https://release.solana.com/v1.9.28/install)" &&
     export PATH="~/.local/share/solana/install/active_release/bin:$PATH"
     ```
 
-    Run `solana --version` to make sure the Solana CLI is installed correctly.
+   Run `solana --version` to make sure the Solana CLI is installed correctly.
 
-    ```sh
+   <!-- prettier-ignore -->
+   ```sh
     solana --version
     ```
 
 1. Install [Node.js 14 or higher](https://nodejs.org/en/download/). Run `node --version` to verify which version you have installed:
 
-    ```sh
+   <!-- prettier-ignore -->
+   ```sh
     node --version
     ```
 
 1. Change to your project directory or create a new directory.
 
-    ```sh
+   <!-- prettier-ignore -->
+   ```sh
     mkdir off-chain-project && cd off-chain-project
     ```
 
 1. Optionally [install Yarn](https://classic.yarnpkg.com/lang/en/docs/install/) to use as a package manager and initialize yarn if your project does not already have a `package.json` file:
 
-    ```sh
+   <!-- prettier-ignore -->
+   ```sh
     npm install -g yarn && yarn init
     ```
 
 1. Add the [Anchor library](https://www.npmjs.com/package/@project-serum/anchor) to your project:
 
-    ```sh yarn
+   <!-- prettier-ignore -->
+   ```sh yarn
     yarn add @project-serum/anchor
     ```
-    ```sh npm
+
+   <!-- prettier-ignore -->
+   ```sh npm
     npm i @project-serum/anchor
     ```
 
 1. Add the [Chainlink Solana NPM library](https://www.npmjs.com/package/@chainlink/solana-sdk) to your project:
-
-    ```sh yarn
+   <!-- prettier-ignore -->
+   ```sh yarn
     yarn add @chainlink/solana-sdk
     ```
-    ```sh npm
+
+   <!-- prettier-ignore -->
+   ```sh npm
     npm i -g @chainlink/solana-sdk
     ```
 
 1. Create a temporary Solana wallet to use for this example. Alternatively, if you have an existing wallet that you want to use, locate the path to your [keypair](https://docs.solana.com/terminology#keypair) file and use it as the keypair for the rest of this guide.
-
-    ```sh
+   <!-- prettier-ignore -->
+   ```sh
     solana-keygen new --outfile ./id.json
     ```
 
 1. Set the [Anchor environment variables](https://www.twilio.com/blog/2017/01/how-to-set-environment-variables.html). Anchor uses these to determine which wallet to use and how to get a connection to a Solana cluster. Because this example does not generate or sign any transactions, no lamports are required. The wallet is required only by the Anchor library. For a list of available networks and endpoints, see the [Solana Cluster RPC Endpoints](https://docs.solana.com/cluster/rpc-endpoints) documentation.
 
-    ```sh
+   <!-- prettier-ignore -->
+   ```sh
     export ANCHOR_PROVIDER_URL=https://api.devnet.solana.com &&
     export ANCHOR_WALLET=./id.json
     ```
@@ -108,15 +120,19 @@ Install the necessary components and include the example code in your project. O
 ```javascript JavaScript
 {% include 'samples/Solana/PriceFeeds/off-chain-read.js' %}
 ```
+
 ```typescript TypeScript
 {% include 'samples/Solana/PriceFeeds/off-chain-read.ts' %}
 ```
 
 You can run these examples using the following commands:
 
+<!-- prettier-ignore -->
 ```sh JavaScript
 node javascript-example.js
 ```
+
+<!-- prettier-ignore -->
 ```sh TypeScript
 yarn add ts-node typescript && yarn ts-node typescript-example.ts
 ```
@@ -135,20 +151,23 @@ Before you begin, set up your environment for development on Solana:
 
 1. Install the latest Mainnet version of [the Solana CLI](https://github.com/solana-labs/solana/releases) and export the path to the CLI:
 
-    ```sh
+   <!-- prettier-ignore -->
+   ```sh
     sh -c "$(curl -sSfL https://release.solana.com/v1.9.28/install)" &&
     export PATH="~/.local/share/solana/install/active_release/bin:$PATH"
     ```
 
-    Run `solana --version` to make sure the Solana CLI is installed correctly.
+   Run `solana --version` to make sure the Solana CLI is installed correctly.
 
-    ```sh
+   <!-- prettier-ignore -->
+   ```sh
     solana --version
     ```
 
 1. Install [Node.js 14 or higher](https://nodejs.org/en/download/). Run `node --version` to verify which version you have installed:
 
-    ```sh
+   <!-- prettier-ignore -->
+   ```sh
     node --version
     ```
 
@@ -156,7 +175,8 @@ Before you begin, set up your environment for development on Solana:
 
 1. Install [Yarn](https://classic.yarnpkg.com/lang/en/docs/install/) to simplify package management and run code samples in the Starter Kit.
 
-    ```sh
+   <!-- prettier-ignore -->
+   ```sh
     npm install -g yarn
     ```
 
@@ -166,44 +186,52 @@ After you install the required tools, clone the example code from the [solana-st
 
 1. In a terminal, clone the [solana-starter-kit](https://github.com/smartcontractkit/solana-starter-kit) repository and change to the `solana-starter-kit` directory:
 
-    ```sh
+   <!-- prettier-ignore -->
+   ```sh
     git clone https://github.com/smartcontractkit/solana-starter-kit &&
     cd ./solana-starter-kit
     ```
 
-    You can see the complete code for the example on [GitHub](https://github.com/smartcontractkit/solana-starter-kit/).
+   You can see the complete code for the example on [GitHub](https://github.com/smartcontractkit/solana-starter-kit/).
 
 1. In the `./solana-starter-kit` directory, install Node.js dependencies defined in the `package.json` file:
 
-    ```sh
+   <!-- prettier-ignore -->
+   ```sh
     yarn install
     ```
 
 1. Create a temporary Solana wallet file to use for this example. Because your application runs off-chain and does not run any functions or alter data on-chain, the wallet does not require any SOL tokens to function.
 
-    ```sh
+   <!-- prettier-ignore -->
+   ```sh
     solana-keygen new --outfile ./id.json
     ```
 
 1. Set the [Anchor environment variables](https://www.twilio.com/blog/2017/01/how-to-set-environment-variables.html). Anchor uses these to determine which wallet to use and Solana cluster to use. Take note that because we are not generating or signing any transactions, the wallet isn't used, it's just required by the Anchor library. For a list of available networks and endpoints, see the [Solana Cluster RPC Endpoints](https://docs.solana.com/cluster/rpc-endpoints) documentation.
 
-    ```sh Solana Devnet
+   <!-- prettier-ignore -->
+   ```sh Solana Devnet
     export ANCHOR_PROVIDER_URL=https://api.devnet.solana.com &&
     export ANCHOR_WALLET=./id.json
     ```
 
 1. Run the example:
 
-    ```sh JavaScript
+   <!-- prettier-ignore -->
+   ```sh JavaScript
     node read-data.js
     ```
-    ```sh TypeScript
+
+   <!-- prettier-ignore -->
+   ```sh TypeScript
     yarn run read-data
     ```
 
-    The example code retrieves and prints the current price feed data until you close the application:
+   The example code retrieves and prints the current price feed data until you close the application:
 
-    ```
+   <!-- prettier-ignore -->
+   ```
     4027000000
     4026439929
     4026476542

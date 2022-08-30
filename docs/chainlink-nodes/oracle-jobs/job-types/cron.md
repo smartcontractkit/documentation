@@ -2,8 +2,8 @@
 layout: nodes.liquid
 section: nodeOperator
 date: Last Modified
-title: "Solidity Cron Jobs"
-permalink: "docs/jobs/types/cron/"
+title: 'Solidity Cron Jobs'
+permalink: 'docs/jobs/types/cron/'
 ---
 
 > 📘 If you need to schedule a contract function call, use the [Chainlink Job Scheduler](https://keepers.chain.link/new-time-based). The Job Scheduler uses the [Chainlink Keepers](/docs/chainlink-keepers/introduction) network to execute deployed contract calls on a cron schedule that you define, such as an Ethereum cron job for your dApp.
@@ -12,6 +12,7 @@ Executes a job on a schedule. Does not rely on any kind of external trigger.
 
 **Spec format**
 
+<!-- prettier-ignore -->
 ```jpv2
 type            = "cron"
 schemaVersion   = 1
@@ -33,8 +34,8 @@ See [shared fields](/docs/jobs/#shared-fields).
 **Unique fields**
 
 - `schedule`: the frequency with which the job is to be run. There are two ways to specify this:
-    - Traditional UNIX cron format, but with 6 fields, not 5. The extra field allows for "seconds" granularity. **Note:** you _must_ specify the `CRON_TZ=...` parameter if you use this format.
-    - `@` shorthand, e.g. `@every 1h`. This shorthand does not take account of the node's timezone, rather, it simply begins counting down the moment that the job is added to the node (or the node is rebooted). As such, no `CRON_TZ` parameter is needed.
+  - Traditional UNIX cron format, but with 6 fields, not 5. The extra field allows for "seconds" granularity. **Note:** you _must_ specify the `CRON_TZ=...` parameter if you use this format.
+  - `@` shorthand, e.g. `@every 1h`. This shorthand does not take account of the node's timezone, rather, it simply begins counting down the moment that the job is added to the node (or the node is rebooted). As such, no `CRON_TZ` parameter is needed.
 
 For all supported schedules, please refer to the [cron library documentation](https://pkg.go.dev/github.com/robfig/cron?utm_source=godoc).
 

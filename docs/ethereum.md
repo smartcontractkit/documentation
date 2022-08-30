@@ -1,7 +1,7 @@
 ---
 layout: nodes.liquid
 section: ethereum
-title: "Chainlink on EVM (Ethereum) Chains"
+title: 'Chainlink on EVM (Ethereum) Chains'
 date: Last Modified
 permalink: /ethereum/
 ---

@@ -2,15 +2,21 @@
 layout: nodes.liquid
 section: nodeOperator
 date: Last Modified
-title: "External Adapters in Solidity"
-permalink: "docs/contract-creators/"
-whatsnext: {"Building External Adapters":"/docs/developers/", "Bridges: Adding External Adapters to Nodes":"/docs/node-operators/"}
+title: 'External Adapters in Solidity'
+permalink: 'docs/contract-creators/'
+whatsnext:
+  {
+    'Building External Adapters': '/docs/developers/',
+    'Bridges: Adding External Adapters to Nodes': '/docs/node-operators/',
+  }
 ---
+
 ### Using parameters with an External Adapter
 
 As a contract creator, using an external adapter is no different than creating a request for any other job spec. You will simply need to know which parameters are supported by the adapter. Notice the method below uses `req.add` to create a run parameter for each required value.
 
-```javascript
+<!-- prettier-ignore -->
+```solidity
 function requestMWAPrice(string _coin, string _market)
   public
   onlyOwner
@@ -28,19 +34,19 @@ function requestMWAPrice(string _coin, string _market)
 
 ### Using the Copy adapter with an External Adapter
 
-The [Copy](../core-adapters/#copy) adapter allows for the same functionality of the [JsonParse](../core-adapters/#jsonparse)  adapter but for getting data from the external adapter's response.
+The [Copy](../core-adapters/#copy) adapter allows for the same functionality of the [JsonParse](../core-adapters/#jsonparse) adapter but for getting data from the external adapter's response.
 
 For example, if an adapter returns JSON data like what is below:
 
 ```json
 {
-    "firstValue": "SomeValue",
-    "details": {
-        "close": "100",
-        "open": "110",
-        "current": "111"
-    },
-    "other": "GetData"
+  "firstValue": "SomeValue",
+  "details": {
+    "close": "100",
+    "open": "110",
+    "current": "111"
+  },
+  "other": "GetData"
 }
 ```
 
@@ -52,7 +58,8 @@ And you wanted the value in the field "open", you would specify the path for the
 
 In Solidity, this would look like:
 
-```javascript
+<!-- prettier-ignore -->
+```solidity
 string[] memory path = new string[](2);
 path[0] = "details";
 path[1] = "open";
@@ -61,6 +68,7 @@ run.addStringArray("copyPath", path);
 
 Or you can use dot-notation <a href="https://jsonpath.com/" target="_blank">JSONPath</a> to simplify it:
 
-```javascript
+<!-- prettier-ignore -->
+```solidity
 run.add("copyPath", "details.open");
 ```

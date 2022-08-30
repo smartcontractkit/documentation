@@ -2,14 +2,14 @@
 layout: nodes.liquid
 section: ethereum
 date: Last Modified
-title: "DNS Ownership Oracle"
-permalink: "docs/any-api/data-providers/dns-ownership/"
+title: 'DNS Ownership Oracle'
+permalink: 'docs/any-api/data-providers/dns-ownership/'
 ---
 
 ## Overview
 
 This oracle checks Google’s DNS service to determine if a given domain is owned by a given blockchain address. Each address is stored in a _TXT record_.
-This guide explains how to call the _DNS ownership oracle_ and verify that a given address owns a specific domain. For instance, we will confirm that the address _0xf75519f611776c22275474151a04183665b7feDe_ owns _www5.infernos.io_.  **Note** that the source of data is [google dns](https://dns.google/resolve?name=www5.infernos.io&type=TXT).
+This guide explains how to call the _DNS ownership oracle_ and verify that a given address owns a specific domain. For instance, we will confirm that the address _0xf75519f611776c22275474151a04183665b7feDe_ owns _www5.infernos.io_. **Note** that the source of data is [google dns](https://dns.google/resolve?name=www5.infernos.io&type=TXT).
 
 **Topics**
 
@@ -18,7 +18,6 @@ This guide explains how to call the _DNS ownership oracle_ and verify that a giv
 - [DNS Ownership Contract](#dns-ownership-contract)
 - [Network Details](#network-details)
 - [Job](#job)
-
 
 ## Requirements
 
@@ -43,6 +42,7 @@ This example operates using the following steps:
 {% include 'samples/DataProviders/DnsOwnership.sol' %}
 ```
 
+<!-- prettier-ignore -->
 <div class="remix-callout">
   <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/DataProviders/DnsOwnership.sol" target="_blank" >Open in Remix</a>
   <a href="/docs/conceptual-overview/#what-is-remix" >What is Remix?</a>
@@ -61,7 +61,7 @@ JobID: `6ca2e68622bd421d98c648f056ee7c76`
 
 #### Ethereum Kovan Testnet
 
-Payment Amount: 0.1  LINK  
+Payment Amount: 0.1 LINK  
 LINK Token Address: `{{variables.KOVAN_LINK_TOKEN}}`
 Oracle Address: `0xff07c97631ff3bab5e5e5660cdf47aded8d4d4fd`  
 JobID: `791bd73c8a1349859f09b1cb87304f71`
@@ -71,14 +71,14 @@ JobID: `791bd73c8a1349859f09b1cb87304f71`
 Payment Amount: 0.1 LINK  
 LINK Token address:`{{variables.BINANCE_MAINNET_LINK_TOKEN}}`
 Oracle Address: `0x63B72AF260E8b40A7b89E238FeB53448A97b03D2`  
-JobID: `fb06afd5a9df4e6cb156f6b797b63a24`  
+JobID: `fb06afd5a9df4e6cb156f6b797b63a24`
 
 #### Polygon (Matic) Mainnet
 
 Payment Amount: 0.1 LINK  
 LINK Token Address: `{{variables.MATIC_MAINNET_LINK_TOKEN}}`
 Oracle Address: `0x63B72AF260E8b40A7b89E238FeB53448A97b03D2`  
-JobID: `f3daed2990114e98906aaf21c4172da3`  
+JobID: `f3daed2990114e98906aaf21c4172da3`
 
 ## Job
 
@@ -91,6 +91,7 @@ The _DNS Ownership_ node uses a [Chainlink v2 direct-request job](/docs/jobs/typ
 - [ETH ABI Encode](/docs/jobs/task-types/eth-abi-encode/)
 - [EthTx](/docs/jobs/task-types/eth-tx/)
 
+<!-- prettier-ignore -->
 ```jpv2
 type = "directrequest"
 schemaVersion = 1

@@ -51,13 +51,13 @@ The LINK token is an ERC677 token that inherits functionality from the ERC20 tok
 
 Testnet LINK is available at [faucets.chain.link](https://faucets.chain.link/goerli). Testnet ETH is available at [goerlifaucet.com](https://goerlifaucet.com/) or the faucets listed at [faucetlink.to/goerli](https://faucetlink.to/goerli).
 
-| Parameter      | Value                                                                                                                                                                                                                 |
-| :------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ETH_CHAIN_ID` | `5`                                                                                                                                                                                                                   |
-| Address        | <a class="erc-token-address" id="5_0x326C977E6efc84E512bB9C30f76E30c160eD06FB" href="https://goerli.etherscan.io/token/0x326C977E6efc84E512bB9C30f76E30c160eD06FB">`0x326C977E6efc84E512bB9C30f76E30c160eD06FB`</a>   |
-| Name           | Chainlink Token                                                                                                                                                                                                       |
-| Symbol         | LINK                                                                                                                                                                                                                  |
-| Decimals       | 18                                                                                                                                                                                                                    |
+| Parameter      | Value                                                                                                                                                                                                               |
+| :------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `ETH_CHAIN_ID` | `5`                                                                                                                                                                                                                 |
+| Address        | <a class="erc-token-address" id="5_0x326C977E6efc84E512bB9C30f76E30c160eD06FB" href="https://goerli.etherscan.io/token/0x326C977E6efc84E512bB9C30f76E30c160eD06FB">`0x326C977E6efc84E512bB9C30f76E30c160eD06FB`</a> |
+| Name           | Chainlink Token                                                                                                                                                                                                     |
+| Symbol         | LINK                                                                                                                                                                                                                |
+| Decimals       | 18                                                                                                                                                                                                                  |
 
 ### Rinkeby testnet (Deprecated)
 
@@ -372,11 +372,11 @@ METIS is the currency that you use to pay for transactions on Metis mainnet. You
 
 KLAY is the currency that you use to pay for transactions on Klaytn testnet. Testnet LINK is available from [facuets.chain.link](https://faucets.chain.link/klaytn-testnet). Use the [KLAY Faucet](https://baobab.wallet.klaytn.foundation/faucet) to obtain testnet KLAY.
 
-| Parameter      | Value                                                                                                                                                                                                                             |
-| :------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ETH_CHAIN_ID` | `1001`                                                                                                                                                                                                                            |
-| Address        | <a class="erc-token-address" id="1001_0x04c5046A1f4E3fFf094c26dFCAA75eF293932f18"  href="https://baobab.scope.klaytn.com/token/0x04c5046A1f4E3fFf094c26dFCAA75eF293932f18">`0x04c5046A1f4E3fFf094c26dFCAA75eF293932f18`</a>       |
-| Name           | Chainlink Token on the Klaytn testnet                                                                                                                                                                                             |
-| Symbol         | LINK                                                                                                                                                                                                                              |
-| Decimals       | 18                                                                                                                                                                                                                                |
-| Network status | [status.klaytnapi.com](https://status.klaytnapi.com/)                                                                                                                                                                             |
+| Parameter      | Value                                                                                                                                                                                                                       |
+| :------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ETH_CHAIN_ID` | `1001`                                                                                                                                                                                                                      |
+| Address        | <a class="erc-token-address" id="1001_0x04c5046A1f4E3fFf094c26dFCAA75eF293932f18"  href="https://baobab.scope.klaytn.com/token/0x04c5046A1f4E3fFf094c26dFCAA75eF293932f18">`0x04c5046A1f4E3fFf094c26dFCAA75eF293932f18`</a> |
+| Name           | Chainlink Token on the Klaytn testnet                                                                                                                                                                                       |
+| Symbol         | LINK                                                                                                                                                                                                                        |
+| Decimals       | 18                                                                                                                                                                                                                          |
+| Network status | [status.klaytnapi.com](https://status.klaytnapi.com/)                                                                                                                                                                       |

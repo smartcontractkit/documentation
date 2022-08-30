@@ -107,6 +107,7 @@ Let's see what this looks like in a contract:
 {% include 'samples/APIRequests/APIConsumer.sol' %}
 ```
 
+ <!-- prettier-ignore -->
 <div class="remix-callout">
   <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/APIConsumer.sol" target="_blank" >Open in Remix</a>
   <a href="/docs/conceptual-overview/#what-is-remix" >What is Remix?</a>
@@ -138,6 +139,7 @@ If all the parameters are defined within the Oracle job, the only things a smart
 
 This will make your smart contract much more succinct. The `requestVolumeData` function from the code example [above](#contract-example) would look more like this:
 
+<!-- prettier-ignore -->
 ```solidity
 function requestVolumeData() public returns (bytes32 requestId) {
     Chainlink.Request memory req = buildChainlinkRequest(jobId, address(this), this.fulfill.selector);

@@ -2,9 +2,9 @@
 layout: nodes.liquid
 section: nodeOperator
 date: Last Modified
-title: "Performing System Maintenance"
-permalink: "docs/performing-system-maintenance/"
-whatsnext: {"Connecting to a Remote Database":"/docs/connecting-to-a-remote-database/"}
+title: 'Performing System Maintenance'
+permalink: 'docs/performing-system-maintenance/'
+whatsnext: { 'Connecting to a Remote Database': '/docs/connecting-to-a-remote-database/' }
 ---
 
 You might occasionally need to restart the system that the Chainlink node runs on. To restart without any downtime for completing requests, perform the upgrade as a series of steps that passes database access to a new instance while the first instance is down.
@@ -17,18 +17,21 @@ You might occasionally need to restart the system that the Chainlink node runs o
 
 First, find the most recent Chainlink image on [Docker Hub](https://hub.docker.com/r/smartcontract/chainlink/) and pull that Docker image. For version 1.1.0:
 
+<!-- prettier-ignore -->
 ```shell
 docker pull smartcontract/chainlink:1.1.0
 ```
 
 Then, check what port the existing container is running on:
 
+<!-- prettier-ignore -->
 ```shell
 docker ps
 ```
 
 Output:
 
+<!-- prettier-ignore -->
 ```
 CONTAINER ID        IMAGE                            COMMAND                  CREATED             STATUS              PORTS                    NAMES
 2d203191c1d6        smartcontract/chainlink:latest   "./chainlink-launche…"   26 seconds ago      Up 25 seconds       0.0.0.0:6688->6688/tcp   jovial_shirley
@@ -38,15 +41,22 @@ Look under the PORTS label to see the ports in use by the running container, in 
 
 Now start the second instance of the node. The local port option has been modified so that both containers run simultaneously.
 
+<!-- prettier-ignore -->
 ```shell Goerli
 cd ~/.chainlink-goerli && docker run -p 6687:6688 -v ~/.chainlink-goerli:/chainlink -it --env-file=.env smartcontract/chainlink local n
 ```
+
+<!-- prettier-ignore -->
 ```shell Rinkeby
 cd ~/.chainlink-rinkeby && docker run -p 6687:6688 -v ~/.chainlink-rinkeby:/chainlink -it --env-file=.env smartcontract/chainlink local n
 ```
+
+<!-- prettier-ignore -->
 ```shell Kovan
 cd ~/.chainlink-kovan && docker run -p 6687:6688 -v ~/.chainlink-kovan:/chainlink -it --env-file=.env smartcontract/chainlink local n
 ```
+
+<!-- prettier-ignore -->
 ```shell Mainnet
 cd ~/.chainlink && docker run -p 6687:6688 -v ~/.chainlink:/chainlink -it --env-file=.env smartcontract/chainlink local n
 ```
@@ -55,6 +65,7 @@ The log messages on the second node instance inform you that it is waiting for t
 
 Now you can shut down the first node instance. We'll use the name given earlier and kill the container. Note that your container name will likely be different.
 
+<!-- prettier-ignore -->
 ```shell
 docker kill jovial_shirley
 ```
@@ -65,15 +76,22 @@ At this point, you're now running the latest image on your secondary container. 
 
 Next, you will simply need to run the container again with the local port 6688 in order to go back to normal operations.
 
+<!-- prettier-ignore -->
 ```shell Goerli
 cd ~/.chainlink-goerli && docker run -p 6688:6688 -v ~/.chainlink-goerli:/chainlink -it --env-file=.env smartcontract/chainlink local n
 ```
+
+<!-- prettier-ignore -->
 ```shell Rinkeby
 cd ~/.chainlink-rinkeby && docker run -p 6688:6688 -v ~/.chainlink-rinkeby:/chainlink -it --env-file=.env smartcontract/chainlink local n
 ```
+
+<!-- prettier-ignore -->
 ```shell Kovan
 cd ~/.chainlink-kovan && docker run -p 6688:6688 -v ~/.chainlink-kovan:/chainlink -it --env-file=.env smartcontract/chainlink local n
 ```
+
+<!-- prettier-ignore -->
 ```shell Mainnet
 cd ~/.chainlink && docker run -p 6688:6688 -v ~/.chainlink:/chainlink -it --env-file=.env smartcontract/chainlink local n
 ```
@@ -92,27 +110,36 @@ Use the default `DATABASE_LOCKING_MODE=advisorylock` setting unless you want to 
 
 Run the Chainlink node with a name option specified:
 
+<!-- prettier-ignore -->
 ```shell Goerli
 cd ~/.chainlink-goerli && docker run --name chainlink -p 6688:6688 -v ~/.chainlink-goerli:/chainlink -it --env-file=.env smartcontract/chainlink local n
 ```
+
+<!-- prettier-ignore -->
 ```shell Rinkeby
 cd ~/.chainlink-rinkeby && docker run --name chainlink -p 6688:6688 -v ~/.chainlink-rinkeby:/chainlink -it --env-file=.env smartcontract/chainlink local n
 ```
+
+<!-- prettier-ignore -->
 ```shell Kovan
 cd ~/.chainlink-kovan && docker run --name chainlink -p 6688:6688 -v ~/.chainlink-kovan:/chainlink -it --env-file=.env smartcontract/chainlink local n
 ```
+
+<!-- prettier-ignore -->
 ```shell Mainnet
 cd ~/.chainlink && docker run --name chainlink -p 6688:6688 -v ~/.chainlink:/chainlink -it --env-file=.env smartcontract/chainlink local n
 ```
 
 You will now notice that you no longer receive a randomly generated name from Docker:
 
+<!-- prettier-ignore -->
 ```shell
 docker ps
 ```
 
 Output (truncated):
 
+<!-- prettier-ignore -->
 ```
 ... NAMES
 ... chainlink
@@ -120,15 +147,22 @@ Output (truncated):
 
 This will remain your primary Chainlink container, and should always use port 6688 (unless configured otherwise). For the secondary instance, you will run the container in the same way, but with a different name and a different local port:
 
+<!-- prettier-ignore -->
 ```shell Goerli
 cd ~/.chainlink-goerli && docker run --name secondary -p 6687:6688 -v ~/.chainlink-goerli:/chainlink -it --env-file=.env smartcontract/chainlink local n
 ```
+
+<!-- prettier-ignore -->
 ```shell Rinkeby
 cd ~/.chainlink-rinkeby && docker run --name secondary -p 6687:6688 -v ~/.chainlink-rinkeby:/chainlink -it --env-file=.env smartcontract/chainlink local n
 ```
+
+<!-- prettier-ignore -->
 ```shell Kovan
 cd ~/.chainlink-kovan && docker run --name secondary -p 6687:6688 -v ~/.chainlink-kovan:/chainlink -it --env-file=.env smartcontract/chainlink local n
 ```
+
+<!-- prettier-ignore -->
 ```shell Mainnet
 cd ~/.chainlink && docker run --name secondary -p 6687:6688 -v ~/.chainlink:/chainlink -it --env-file=.env smartcontract/chainlink local n
 ```
@@ -137,6 +171,7 @@ Notice the `--name secondary` was used for this container and the local port is 
 
 Running `docker ps` now reveals two named containers running (output truncated):
 
+<!-- prettier-ignore -->
 ```
 ... NAMES
 ... secondary
@@ -145,18 +180,21 @@ Running `docker ps` now reveals two named containers running (output truncated):
 
 If your primary container goes down, the secondary one will automatically take over. To start the primary container again, simply run:
 
+<!-- prettier-ignore -->
 ```shell
 docker start -i chainlink
 ```
 
 This will start the container, but the secondary node still has a lock on the database. To give the primary container access, you can restart the secondary container:
 
+<!-- prettier-ignore -->
 ```shell
 docker restart secondary -t 0
 ```
 
 The primary container takes control of the database and resumes operation. You can attach to the secondary container using `docker attach`:
 
+<!-- prettier-ignore -->
 ```shell
 docker attach secondary
 ```

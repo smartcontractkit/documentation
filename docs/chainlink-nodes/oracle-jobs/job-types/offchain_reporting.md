@@ -2,8 +2,8 @@
 layout: nodes.liquid
 section: nodeOperator
 date: Last Modified
-title: "Off-chain Reporting Jobs"
-permalink: "docs/jobs/types/offchain-reporting/"
+title: 'Off-chain Reporting Jobs'
+permalink: 'docs/jobs/types/offchain-reporting/'
 ---
 
 OCR jobs (off-chain reporting jobs) are used very similarly to Flux Monitor jobs. They update data feeds with aggregated data from many Chainlink oracle nodes. However, they do this aggregation using a cryptographically-secure off-chain protocol that makes it possible for only a single node to submit all answers from all participating nodes during each round (with proofs that the other nodes' answers were legitimately provided by those nodes), which saves a significant amount of gas.
@@ -16,6 +16,7 @@ Every OCR cluster requires at least one bootstrap node as a kind of "rallying po
 
 **Spec format**
 
+<!-- prettier-ignore -->
 ```jpv2
 type               = "offchainreporting"
 schemaVersion      = 1
@@ -51,6 +52,7 @@ Oracle nodes, on the other hand, are responsible for submitting answers.
 
 **Spec format**
 
+<!-- prettier-ignore -->
 ```jpv2
 type               = "offchainreporting"
 schemaVersion      = 1

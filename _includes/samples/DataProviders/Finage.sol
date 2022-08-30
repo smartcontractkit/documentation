@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
-import '@chainlink/contracts/src/v0.8/ChainlinkClient.sol';
-import '@chainlink/contracts/src/v0.8/ConfirmedOwner.sol';
+import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
+import "@chainlink/contracts/src/v0.8/ConfirmedOwner.sol";
 
 /**
  * Request testnet LINK and ETH here: https://faucets.chain.link/
@@ -41,12 +41,19 @@ contract FinageChainlink is ChainlinkClient, ConfirmedOwner {
         bytes32 _jobId,
         string memory _symbol
     ) public onlyOwner {
-        Chainlink.Request memory req = buildChainlinkRequest(_jobId, address(this), this.fulfill.selector);
-        req.add('symbol', _symbol);
+        Chainlink.Request memory req = buildChainlinkRequest(
+            _jobId,
+            address(this),
+            this.fulfill.selector
+        );
+        req.add("symbol", _symbol);
         sendChainlinkRequestTo(_oracle, req, oraclePayment);
     }
 
-    function fulfill(bytes32 _requestId, int256 _data) public recordChainlinkFulfillment(_requestId) {
+    function fulfill(bytes32 _requestId, int256 _data)
+        public
+        recordChainlinkFulfillment(_requestId)
+    {
         data = _data;
     }
 }

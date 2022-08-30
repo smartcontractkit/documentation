@@ -2,8 +2,8 @@
 layout: nodes.liquid
 section: nodeOperator
 date: Last Modified
-title: "Tasks"
-permalink: "docs/tasks/"
+title: 'Tasks'
+permalink: 'docs/tasks/'
 ---
 
 ## What is a Task?

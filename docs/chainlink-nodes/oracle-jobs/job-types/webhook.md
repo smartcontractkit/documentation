@@ -2,8 +2,8 @@
 layout: nodes.liquid
 section: nodeOperator
 date: Last Modified
-title: "Webhook Jobs"
-permalink: "docs/jobs/types/webhook/"
+title: 'Webhook Jobs'
+permalink: 'docs/jobs/types/webhook/'
 ---
 
 Webhook jobs can be initiated by HTTP request, either by a user or external initiator.
@@ -12,6 +12,7 @@ Webhook jobs can be initiated by HTTP request, either by a user or external init
 
 This is an example webhook job:
 
+<!-- prettier-ignore -->
 ```jpv2
 type            = "webhook"
 schemaVersion   = 1

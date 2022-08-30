@@ -2,12 +2,18 @@
 layout: nodes.liquid
 section: ethereum
 date: Last Modified
-title: "Data Feeds Architecture"
-permalink: "docs/architecture-overview/"
-whatsnext: {"Basic Request Model":"/docs/architecture-request-model/", "Decentralized Data Model":"/docs/architecture-decentralized-model/", "Off-Chain Reporting":"/docs/off-chain-reporting/"}
+title: 'Data Feeds Architecture'
+permalink: 'docs/architecture-overview/'
+whatsnext:
+  {
+    'Basic Request Model': '/docs/architecture-request-model/',
+    'Decentralized Data Model': '/docs/architecture-decentralized-model/',
+    'Off-Chain Reporting': '/docs/off-chain-reporting/',
+  }
 metadata:
-  title: "Data Feeds Architecture"
+  title: 'Data Feeds Architecture'
 ---
+
 ![Request Model Banner](/files/8c35025-Request__Receive_Data.png)
 
 ## Basic Request Model

@@ -25,7 +25,6 @@ See the [Keepers Economics](../keeper-economics) page to learn more about the co
 
 The **Gas Limit** specified during Upkeep Registration is the maximum amount of gas that will be used to execute your function on-chain. We simulate `performUpkeep` and if the gas exceeds this limit the function will not execute on-chain. One method to determine your Upkeep's Gas Limit is to simulate the `performUpkeep` function and add enough overhead to take into account increases that might happen due to changes in `performData` or on-chain data.
 
-
 ## What is the maximum Gas that my `checkUpkeep` can use?
 
 `checkUpkeep` is subject to the `checkGasLimit` in the [configuration of the registry](/docs/chainlink-keepers/supported-networks/#configurations).
@@ -33,7 +32,6 @@ The **Gas Limit** specified during Upkeep Registration is the maximum amount of 
 ## What is the maximum Gas that my `performUpkeep` can use?
 
 `performUpkeep` is subject to the `callGasLimit` in the [configuration of the registry](/docs/chainlink-keepers/supported-networks/#configurations).
-
 
 ## How often will my Upkeep be checked off-chain to see if it should be executed on-chain?
 
@@ -75,16 +73,13 @@ See [Fund your Upkeep](../manage-upkeeps/#fund-your-upkeep).
 
 See [Withdraw funds](../manage-upkeeps/#withdraw-funds).
 
-
 ## My Upkeep stopped performing. How can I debug it?
 
 The simplest way to test your function is to call it yourself and see if it executes. To do so, deploy the contract to a testnet and debug the function. If you can call the function successfully, then Chainlink Keepers will also be able to call it. If your function is working, but the Upkeep is not executing, your Upkeep might be underfunded. See the [Fund your Upkeep](../manage-upkeeps/#fund-your-upkeep) section to learn how to fund your Upkeep.
 
-
 ## How do I join the Chainlink Keepers Network as a node operator?
 
 We are not accepting new Keepers at this time, but be sure to sign up for our [mailing list](/docs/developer-communications/), or join our [Discord server](https://discord.gg/qj9qarT) to be notified when this becomes available.
-
 
 ## Why won't the Keepers App recognize the LINK in my wallet?
 

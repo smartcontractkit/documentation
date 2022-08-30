@@ -2,10 +2,9 @@
 layout: nodes.liquid
 section: ethereum
 date: Last Modified
-title: "Google Weather Oracle"
-permalink: "docs/any-api/data-providers/google-weather/"
+title: 'Google Weather Oracle'
+permalink: 'docs/any-api/data-providers/google-weather/'
 ---
-
 
 You can use Chainlink to digest weather information using [Google Cloud Public Datasets](https://cloud.google.com/public-datasets). We have a sample brownie repo showing how to interact with the contracts available in our [gcp-weather brownie repo](https://github.com/PatrickAlphaC/gcp-weather). More information on this oracle can be found in the following [Google Cloud article](https://medium.com/google-cloud/hedging-against-bad-weather-with-cloud-datasets-and-blockchain-oracles-7ba3e0150304).
 
@@ -45,13 +44,11 @@ You will need to use the following LINK token address, oracle address, and JobSp
 | Fee                       | `1000000000000000000` (1 LINK)                                                                                        |
 | Node Operator             | `0x6767eDa1C1d0070cEbdFE1CB3a55e4B63FA02C3E`                                                                          |
 
-
 # Steps For Using This Oracle
 
 - Write and deploy your contract using the network details above.
 - Fund it with [LINK](/docs/link-token-contracts/)
 - Call your request method
-
 
 # Create your Chainlinked contract
 
@@ -61,11 +58,11 @@ Import `ChainlinkClient.sol` into your contract so you can inherit the `Chainlin
 {% include 'samples/DataProviders/GoogleWeather.sol' %}
 ```
 
+<!-- prettier-ignore -->
 <div class="remix-callout">
   <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/DataProviders/GoogleWeather.sol" target="_blank" >Open in Remix</a>
   <a href="/docs/conceptual-overview/#what-is-remix" >What is Remix?</a>
 </div>
-
 
 # Jobs
 
@@ -75,6 +72,7 @@ Import `ChainlinkClient.sol` into your contract so you can inherit the `Chainlin
 
 1. `gcp-weather`: Makes a call to the google weather dataset
    1. Parameters:
+
 ```json
 {
   "geoJson": {
@@ -84,18 +82,15 @@ Import `ChainlinkClient.sol` into your contract so you can inherit the `Chainlin
         "type": "Feature",
         "geometry": {
           "type": "Point",
-          "coordinates": [
-            5.325622558593749,
-            60.3887552979679
-          ]
+          "coordinates": [5.325622558593749, 60.3887552979679]
         },
-        "properties": {
-        }
+        "properties": {}
       }
     ]
   }
 }
 ```
+
 2. `multiply`: Multiples the output - set to `1000000000000000000`
 3. `ethuint256`: Turns the result into a `uint256`
 4. `ethTx`: Sends the TX to the blockchain
@@ -106,6 +101,7 @@ Import `ChainlinkClient.sol` into your contract so you can inherit the `Chainlin
 
 1. `gcp-weather`: Makes a call to the google weather dataset
    1. Parameters
+
 ```json
 {
   "geoJson": {
@@ -117,52 +113,25 @@ Import `ChainlinkClient.sol` into your contract so you can inherit the `Chainlin
           "type": "Polygon",
           "coordinates": [
             {
-              "0": [
-                5.2796173095703125,
-                60.40673218057448
-              ],
-              "1": [
-                5.164947509765625,
-                60.383665698324926
-              ],
-              "2": [
-                5.17730712890625,
-                60.211509994185604
-              ],
-              "3": [
-                5.401153564453124,
-                60.27694067255946
-              ],
-              "4": [
-                5.6188201904296875,
-                60.436558668419984
-              ],
-              "5": [
-                5.526123046875,
-                60.42842688461354
-              ],
-              "6": [
-                5.3002166748046875,
-                60.5387098888639
-              ],
-              "7": [
-                5.238418579101562,
-                60.4951151199491
-              ],
-              "8": [
-                5.2796173095703125,
-                60.40673218057448
-              ]
+              "0": [5.2796173095703125, 60.40673218057448],
+              "1": [5.164947509765625, 60.383665698324926],
+              "2": [5.17730712890625, 60.211509994185604],
+              "3": [5.401153564453124, 60.27694067255946],
+              "4": [5.6188201904296875, 60.436558668419984],
+              "5": [5.526123046875, 60.42842688461354],
+              "6": [5.3002166748046875, 60.5387098888639],
+              "7": [5.238418579101562, 60.4951151199491],
+              "8": [5.2796173095703125, 60.40673218057448]
             }
           ]
         },
-        "properties": {
-        }
+        "properties": {}
       }
     ]
   }
 }
 ```
+
 2. `ethuint256`: Turns the result into a `uint256`
 3. `ethTx`: Sends the TX to the blockchain
 
@@ -172,6 +141,7 @@ Import `ChainlinkClient.sol` into your contract so you can inherit the `Chainlin
 
 1. `gcp-weather`: Makes a call to the google weather dataset
    1. Parameters:
+
 ```json
 {
   "geoJson": {
@@ -183,52 +153,25 @@ Import `ChainlinkClient.sol` into your contract so you can inherit the `Chainlin
           "type": "Polygon",
           "coordinates": [
             {
-              "0": [
-                5.2796173095703125,
-                60.40673218057448
-              ],
-              "1": [
-                5.164947509765625,
-                60.383665698324926
-              ],
-              "2": [
-                5.17730712890625,
-                60.211509994185604
-              ],
-              "3": [
-                5.401153564453124,
-                60.27694067255946
-              ],
-              "4": [
-                5.6188201904296875,
-                60.436558668419984
-              ],
-              "5": [
-                5.526123046875,
-                60.42842688461354
-              ],
-              "6": [
-                5.3002166748046875,
-                60.5387098888639
-              ],
-              "7": [
-                5.238418579101562,
-                60.4951151199491
-              ],
-              "8": [
-                5.2796173095703125,
-                60.40673218057448
-              ]
+              "0": [5.2796173095703125, 60.40673218057448],
+              "1": [5.164947509765625, 60.383665698324926],
+              "2": [5.17730712890625, 60.211509994185604],
+              "3": [5.401153564453124, 60.27694067255946],
+              "4": [5.6188201904296875, 60.436558668419984],
+              "5": [5.526123046875, 60.42842688461354],
+              "6": [5.3002166748046875, 60.5387098888639],
+              "7": [5.238418579101562, 60.4951151199491],
+              "8": [5.2796173095703125, 60.40673218057448]
             }
           ]
         },
-        "properties": {
-        }
+        "properties": {}
       }
     ]
   }
 }
 ```
+
 2. `multiply`: Multiples the output - set to `1000000000000000000`
 3. `ethuint256`: Turns the result into a `uint256`
 4. `ethTx`: Sends the TX to the blockchain
@@ -244,14 +187,13 @@ Import `ChainlinkClient.sol` into your contract so you can inherit the `Chainlin
 
 # Input Parameters
 
-
 | Required? |    Name    |                                                                                    Description                                                                                     |                                                                  Options                                                                  | Defaults to |
 | :-------: | :--------: | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------------------------------------: | :---------: |
-|     ✅     | `geoJson`  |                                                                A GeoJSON object containing the geographies to query                                                                |                                                                                                                                           |             |
-|     ✅     | `dateFrom` |                                                             The date to query data from (inclusive) in ISO 8601 format                                                             |                                                                                                                                           |             |
-|     ✅     |  `dateTo`  |                                                              The date to query data to (inclusive) in ISO 8601 format                                                              |                                                                                                                                           |             |
-|     ✅     |  `method`  |                                                                      Which method to use to aggregate data in                                                                      |                                                        `AVG`, `SUM`, `MIN`, `MAX`                                                         |             |
-|     ✅     |  `field`   |                                                                          Which column to fetch data from                                                                           | [Data available](https://github.com/smartcontractkit/external-adapters-js/tree/develop/packages/composites/google-weather#data-available) |             |
+|    ✅     | `geoJson`  |                                                                A GeoJSON object containing the geographies to query                                                                |                                                                                                                                           |             |
+|    ✅     | `dateFrom` |                                                             The date to query data from (inclusive) in ISO 8601 format                                                             |                                                                                                                                           |             |
+|    ✅     |  `dateTo`  |                                                              The date to query data to (inclusive) in ISO 8601 format                                                              |                                                                                                                                           |             |
+|    ✅     |  `method`  |                                                                      Which method to use to aggregate data in                                                                      |                                                        `AVG`, `SUM`, `MIN`, `MAX`                                                         |             |
+|    ✅     |  `field`   |                                                                          Which column to fetch data from                                                                           | [Data available](https://github.com/smartcontractkit/external-adapters-js/tree/develop/packages/composites/google-weather#data-available) |             |
 |           |  `units`   | What unit system to return the result in ([conversions](https://github.com/smartcontractkit/external-adapters-js/tree/develop/packages/composites/google-weather#unit-conversion)) |                                                           `imperial`, `metric`                                                            | `imperial`  |
 
 Please see the [Google weather external adapter](https://github.com/smartcontractkit/external-adapters-js/tree/develop/packages/composites/google-weather) to see information about parameters that can be used with these jobs.

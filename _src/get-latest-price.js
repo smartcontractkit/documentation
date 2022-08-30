@@ -1,8 +1,6 @@
 function getLatestPrice() {
-  document.getElementById('get-price-field').value = 'loading...'
-  const web3 = new Web3(
-    'https://rpc.ankr.com/eth_goerli'
-  )
+  document.getElementById('get-price-field').value = 'loading...';
+  const web3 = new Web3('https://rpc.ankr.com/eth_goerli');
   const aggregatorV3InterfaceABI = [
     {
       inputs: [],
@@ -51,14 +49,14 @@ function getLatestPrice() {
       stateMutability: 'view',
       type: 'function',
     },
-  ]
-  const addr = '0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e'
-  const priceFeed = new web3.eth.Contract(aggregatorV3InterfaceABI, addr)
+  ];
+  const addr = '0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e';
+  const priceFeed = new web3.eth.Contract(aggregatorV3InterfaceABI, addr);
 
   priceFeed.methods
     .latestRoundData()
     .call()
     .then((roundData) => {
-      document.getElementById('get-price-field').value = roundData.answer
-    })
+      document.getElementById('get-price-field').value = roundData.answer;
+    });
 }

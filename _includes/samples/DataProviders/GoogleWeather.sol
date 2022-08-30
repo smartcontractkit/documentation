@@ -45,10 +45,7 @@ contract Weather is ChainlinkClient {
         fee = _fee;
     }
 
-    function requestAvgTemp(
-        string memory _from,
-        string memory _to
-    ) external {
+    function requestAvgTemp(string memory _from, string memory _to) external {
         Chainlink.Request memory req = buildChainlinkRequest(
             avgTempJobId,
             address(this),
@@ -61,18 +58,15 @@ contract Weather is ChainlinkClient {
         sendChainlinkRequest(req, fee);
     }
 
-    function fulfillAvgTemp(
-        bytes32 _requestId,
-        uint256 _result
-    ) external recordChainlinkFulfillment(_requestId) {
+    function fulfillAvgTemp(bytes32 _requestId, uint256 _result)
+        external
+        recordChainlinkFulfillment(_requestId)
+    {
         avgTemp = _result;
         emit AvgTemp(_result);
     }
 
-    function requestTotalRain(
-        string memory _from,
-        string memory _to
-    ) external {
+    function requestTotalRain(string memory _from, string memory _to) external {
         Chainlink.Request memory req = buildChainlinkRequest(
             totalRainJobId,
             address(this),
@@ -85,18 +79,15 @@ contract Weather is ChainlinkClient {
         sendChainlinkRequest(req, fee);
     }
 
-    function fulfillTotalRain(
-        bytes32 _requestId,
-        uint256 _result
-    ) external recordChainlinkFulfillment(_requestId) {
+    function fulfillTotalRain(bytes32 _requestId, uint256 _result)
+        external
+        recordChainlinkFulfillment(_requestId)
+    {
         totalRain = _result;
         emit TotalRain(_result);
     }
 
-    function requestHail(
-        string memory _from,
-        string memory _to
-    ) external {
+    function requestHail(string memory _from, string memory _to) external {
         Chainlink.Request memory req = buildChainlinkRequest(
             hailJobId,
             address(this),
@@ -109,10 +100,10 @@ contract Weather is ChainlinkClient {
         sendChainlinkRequest(req, fee);
     }
 
-    function fulfillHail(
-        bytes32 _requestId,
-        uint256 _result
-    ) external recordChainlinkFulfillment(_requestId) {
+    function fulfillHail(bytes32 _requestId, uint256 _result)
+        external
+        recordChainlinkFulfillment(_requestId)
+    {
         hail = _result;
         emit Hail(_result);
     }

@@ -75,8 +75,8 @@ The contract also includes pre-configured values for the necessary request param
 Build and deploy the contract on Goerli.
 
 1. Open the [`VRFv2Consumer.sol` contract](https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFv2Consumer.sol) in Remix.
-
-    <div class="remix-callout">
+   <!-- prettier-ignore -->
+   <div class="remix-callout">
           <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFv2Consumer.sol" target="_blank" >Open in Remix</a>
           <a href="/docs/conceptual-overview/#what-is-remix">What is Remix?</a>
     </div>
@@ -126,6 +126,7 @@ In this example, your MetaMask wallet is the subscription owner and you created 
 {% include 'samples/VRF/VRFv2Consumer.sol' %}
 ```
 
+<!-- prettier-ignore -->
 <div class="remix-callout">
       <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFv2Consumer.sol" target="_blank" >Open in Remix</a>
       <a href="/docs/conceptual-overview/#what-is-remix">What is Remix?</a>

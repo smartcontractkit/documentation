@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
-import '@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol';
-import '@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol';
+import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
+import "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol";
 
 /**
  * @notice A Chainlink VRF consumer which uses randomness to mimic the rolling
@@ -30,7 +30,8 @@ contract VRFD20 is VRFConsumerBaseV2 {
     // The gas lane to use, which specifies the maximum gas price to bump to.
     // For a list of available gas lanes on each network,
     // see https://docs.chain.link/docs/vrf-contracts/#configurations
-    bytes32 s_keyHash = 0x79d3d8832d904592c0bf9818b621522c988bb8b0c05cdc3b15aea1b6e8db0c15;
+    bytes32 s_keyHash =
+        0x79d3d8832d904592c0bf9818b621522c988bb8b0c05cdc3b15aea1b6e8db0c15;
 
     // Depends on the number of requested values that you want sent to the
     // fulfillRandomWords() function. Storing each word costs about 20,000 gas,
@@ -77,8 +78,12 @@ contract VRFD20 is VRFConsumerBaseV2 {
      *
      * @param roller address of the roller
      */
-    function rollDice(address roller) public onlyOwner returns (uint256 requestId) {
-        require(s_results[roller] == 0, 'Already rolled');
+    function rollDice(address roller)
+        public
+        onlyOwner
+        returns (uint256 requestId)
+    {
+        require(s_results[roller] == 0, "Already rolled");
         // Will revert if subscription is not set and funded.
         requestId = COORDINATOR.requestRandomWords(
             s_keyHash,
@@ -106,7 +111,10 @@ contract VRFD20 is VRFConsumerBaseV2 {
      * @param requestId uint256
      * @param randomWords  uint256[] The random result returned by the oracle.
      */
-    function fulfillRandomWords(uint256 requestId, uint256[] memory randomWords) internal override {
+    function fulfillRandomWords(uint256 requestId, uint256[] memory randomWords)
+        internal
+        override
+    {
         uint256 d20Value = (randomWords[0] % 20) + 1;
         s_results[s_rollers[requestId]] = d20Value;
         emit DiceLanded(requestId, d20Value);
@@ -118,8 +126,8 @@ contract VRFD20 is VRFConsumerBaseV2 {
      * @return house as a string
      */
     function house(address player) public view returns (string memory) {
-        require(s_results[player] != 0, 'Dice not rolled');
-        require(s_results[player] != ROLL_IN_PROGRESS, 'Roll in progress');
+        require(s_results[player] != 0, "Dice not rolled");
+        require(s_results[player] != ROLL_IN_PROGRESS, "Roll in progress");
         return getHouseName(s_results[player]);
     }
 
@@ -130,26 +138,26 @@ contract VRFD20 is VRFConsumerBaseV2 {
      */
     function getHouseName(uint256 id) private pure returns (string memory) {
         string[20] memory houseNames = [
-            'Targaryen',
-            'Lannister',
-            'Stark',
-            'Tyrell',
-            'Baratheon',
-            'Martell',
-            'Tully',
-            'Bolton',
-            'Greyjoy',
-            'Arryn',
-            'Frey',
-            'Mormont',
-            'Tarley',
-            'Dayne',
-            'Umber',
-            'Valeryon',
-            'Manderly',
-            'Clegane',
-            'Glover',
-            'Karstark'
+            "Targaryen",
+            "Lannister",
+            "Stark",
+            "Tyrell",
+            "Baratheon",
+            "Martell",
+            "Tully",
+            "Bolton",
+            "Greyjoy",
+            "Arryn",
+            "Frey",
+            "Mormont",
+            "Tarley",
+            "Dayne",
+            "Umber",
+            "Valeryon",
+            "Manderly",
+            "Clegane",
+            "Glover",
+            "Karstark"
         ];
         return houseNames[id - 1];
     }

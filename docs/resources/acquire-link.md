@@ -2,13 +2,12 @@
 layout: nodes.liquid
 section: ethereum
 date: Last Modified
-title: "Acquire testnet LINK"
-permalink: "docs/acquire-link/"
-whatsnext: {"Deploy your first contract":"/docs/deploy-your-first-contract/"}
+title: 'Acquire testnet LINK'
+permalink: 'docs/acquire-link/'
+whatsnext: { 'Deploy your first contract': '/docs/deploy-your-first-contract/' }
 ---
 
 The Getting Started guides show you how to send ETH on the Goerli testnet, but some contracts might require you to use LINK token instead. This page shows you how to obtain testnet LINK and send it to your MetaMask wallet.
-
 
 ## Configure MetaMask to use LINK tokens
 
@@ -18,7 +17,7 @@ To see your LINK token balance in MetaMask, you must manually add the token.
 1. At the bottom of the MetaMask windows, click **Import tokens**.
 1. Find the LINK token contract address for the network that you want to use. On Goerli the LINK token address is: `0x326C977E6efc84E512bB9C30f76E30c160eD06FB`. See the [LINK Token Contracts](/docs/link-token-contracts/) page to find addresses for different testnets.
 1. Paste the token contract address into MetaMask in the Token Address input. The token symbol and decimals of precision will auto-populate.
-    ![Metamask Custom Tokens Screen](/images/getting-started/metamaskImportTokens.webp)
+   ![Metamask Custom Tokens Screen](/images/getting-started/metamaskImportTokens.webp)
 1. Click **Next**. A new window will appears, showing the LINK token details.
 1. Click **Import Tokens** to confirm adding the new token.
 

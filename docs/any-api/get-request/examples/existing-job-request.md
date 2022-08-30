@@ -74,6 +74,7 @@ To consume an API, your contract must import [ChainlinkClient.sol](https://githu
 {% include 'samples/APIRequests/GetGasPrice.sol' %}
 ```
 
+<!-- prettier-ignore -->
 <div class="remix-callout">
     <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/GetGasPrice.sol" target="_blank" >Open in Remix</a>
     <a href="/docs/conceptual-overview/#what-is-remix" >What is Remix?</a>

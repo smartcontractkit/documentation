@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
-import '@chainlink/contracts/src/v0.8/interfaces/KeeperCompatibleInterface.sol';
+import "@chainlink/contracts/src/v0.8/interfaces/KeeperCompatibleInterface.sol";
 
 /**
  * @dev Example contract which perform most of the computation in `checkUpkeep`
@@ -35,7 +35,7 @@ contract BalancerOffChain is KeeperCompatibleInterface {
     /// @dev withdraw an `amount`from multiple elements of the `balances` array. The elements are provided in `indexes`
     function withdraw(uint256 amount, uint256[] memory indexes) public {
         for (uint256 i = 0; i < indexes.length; i++) {
-            require(indexes[i] < SIZE, 'Provided index out of bound');
+            require(indexes[i] < SIZE, "Provided index out of bound");
             balances[indexes[i]] -= amount;
         }
     }
@@ -53,8 +53,14 @@ contract BalancerOffChain is KeeperCompatibleInterface {
         returns (bool upkeepNeeded, bytes memory performData)
     {
         // perform the computation to a subarray of `balances`. This opens the possibility of having several checkUpkeeps done at the same time
-        (uint256 lowerBound, uint256 upperBound) = abi.decode(checkData, (uint256, uint256));
-        require(upperBound < SIZE && lowerBound < upperBound, 'Lowerbound and Upperbound not correct');
+        (uint256 lowerBound, uint256 upperBound) = abi.decode(
+            checkData,
+            (uint256, uint256)
+        );
+        require(
+            upperBound < SIZE && lowerBound < upperBound,
+            "Lowerbound and Upperbound not correct"
+        );
         // first get number of elements requiring updates
         uint256 counter;
         for (uint256 i = 0; i < upperBound - lowerBound + 1; i++) {
@@ -92,9 +98,15 @@ contract BalancerOffChain is KeeperCompatibleInterface {
      *  @dev return `upkeepNeeded`if rebalancing must be done and `performData` which contains an array of increments. This will be used in `performUpkeep`
      */
     function performUpkeep(bytes calldata performData) external override {
-        (uint256[] memory indexes, uint256[] memory increments) = abi.decode(performData, (uint256[], uint256[]));
+        (uint256[] memory indexes, uint256[] memory increments) = abi.decode(
+            performData,
+            (uint256[], uint256[])
+        );
         // important to always check that the data provided by the keepers is not corrupted.
-        require(indexes.length == increments.length, "indexes and increments arrays' lengths not equal");
+        require(
+            indexes.length == increments.length,
+            "indexes and increments arrays' lengths not equal"
+        );
 
         uint256 _balance;
         uint256 _liquidity = liquidity;
@@ -102,7 +114,7 @@ contract BalancerOffChain is KeeperCompatibleInterface {
         for (uint256 i = 0; i < indexes.length; i++) {
             _balance = balances[indexes[i]] + increments[i];
             // important to always check that the data provided by the keepers is not corrupted. Here we check that after rebalancing, the balance of the element is equal to the LIMIT
-            require(_balance == LIMIT, 'Provided increment not correct');
+            require(_balance == LIMIT, "Provided increment not correct");
             _liquidity -= increments[i];
             balances[indexes[i]] = _balance;
         }

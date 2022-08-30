@@ -8,18 +8,22 @@ pragma solidity 0.8.7;
  */
 
 interface numberComparison {
-   function isSameNum(uint a, uint b) external view returns(bool);
+    function isSameNum(uint256 a, uint256 b) external view returns (bool);
 }
 
 contract Test is numberComparison {
+    constructor() {}
 
-   constructor() {}
-
-   function isSameNum(uint a, uint b) override external pure returns(bool){
-      if (a == b) {
-        return true;
-      } else {
-        return false;
-      }
-   }
+    function isSameNum(uint256 a, uint256 b)
+        external
+        pure
+        override
+        returns (bool)
+    {
+        if (a == b) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 }

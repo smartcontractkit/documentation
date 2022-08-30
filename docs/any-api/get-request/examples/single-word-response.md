@@ -87,6 +87,7 @@ Assume that a user wants to call the API above and retrieve only the 24h ETH tra
 {% include 'samples/APIRequests/APIConsumer.sol' %}
 ```
 
+<!-- prettier-ignore -->
 <div class="remix-callout">
     <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/APIConsumer.sol" target="_blank" >Open in Remix</a>
     <a href="/docs/conceptual-overview/#what-is-remix" >What is Remix?</a>

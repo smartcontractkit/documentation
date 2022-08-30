@@ -60,6 +60,7 @@ Fetch the value of _image_. To consume an API, your contract must import [Chainl
 {% include 'samples/APIRequests/GenericBigWord.sol' %}
 ```
 
+<!-- prettier-ignore -->
 <div class="remix-callout">
     <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/GenericBigWord.sol" target="_blank" >Open in Remix</a>
     <a href="/docs/conceptual-overview/#what-is-remix" >What is Remix?</a>

@@ -2,8 +2,8 @@
 layout: nodes.liquid
 section: nodeOperator
 date: Last Modified
-title: "CBOR Parse Task"
-permalink: "docs/jobs/task-types/cborparse/"
+title: 'CBOR Parse Task'
+permalink: 'docs/jobs/task-types/cborparse/'
 ---
 
 CBOR Parse tasks parse a CBOR payload, typically as part of a Direct Request workflow. In Direct Request, a user makes an on-chain request using a `ChainlinkClient` contract, which encodes the request parameters as CBOR. See below for an example.

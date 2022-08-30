@@ -2,8 +2,8 @@
 layout: nodes.liquid
 section: nodeOperator
 date: Last Modified
-title: "Configuring Chainlink Nodes"
-permalink: "docs/configuration-variables/"
+title: 'Configuring Chainlink Nodes'
+permalink: 'docs/configuration-variables/'
 ---
 
 Recent versions of the Chainlink node use sensible defaults for most configuration variables. You do not need to change much to get a standard deployment working.
@@ -174,8 +174,8 @@ Your node applies configuration settings using following hierarchy:
   - [BLOCK_HISTORY_ESTIMATOR_EIP1559_FEE_CAP_BUFFER_BLOCKS](#block_history_estimator_eip1559_fee_cap_buffer_blocks)
   - [BLOCK_HISTORY_ESTIMATOR_TRANSACTION_PERCENTILE](#block_history_estimator_transaction_percentile)
 - [EVM/Ethereum Transaction Simulation](#evmethereum-transaction-simulation)
-    - [FM_SIMULATE_TRANSACTIONS](#fm_simulate_transactions)
-    - [OCR_SIMULATE_TRANSACTIONS](#ocr_simulate_transactions)
+  - [FM_SIMULATE_TRANSACTIONS](#fm_simulate_transactions)
+  - [OCR_SIMULATE_TRANSACTIONS](#ocr_simulate_transactions)
 - [Job Pipeline and tasks](#job-pipeline-and-tasks)
   - [DEFAULT_HTTP_LIMIT](#default_http_limit)
   - [DEFAULT_HTTP_TIMEOUT](#default_http_timeout)
@@ -907,7 +907,6 @@ This variable specifies the number of blocks before the current head that the lo
 This variable enables skipping of very long log backfills. For example, this happens in a situation when the node is started after being offline for a long time.
 This might be useful on fast chains and if only recent chain events are relevant
 
-
 ### ETH_TX_REAPER_INTERVAL
 
 NOTE: This overrides the setting for _all_ chains, you might want to set this on a per-chain basis using the API, [CLI](/docs/configuration-variables/#cli-client), or GUI instead
@@ -1117,10 +1116,12 @@ In EIP-1559 mode, the total price for the transaction is the minimum of base fee
 Chainlink's implementation of EIP-1559 works as follows:
 
 If you are using FixedPriceEstimator:
+
 - With gas bumping disabled, it will submit all transactions with `feecap=ETH_MAX_GAS_PRICE_WEI` and `tipcap=EVM_GAS_TIP_CAP_DEFAULT`
-- With gas bumping enabled, it will submit all transactions initially with `feecap=EVM_GAS_FEE_CAP_DEFAULT` and `tipcap=EVM_GAS_TIP_CAP_DEFAULT`.  
+- With gas bumping enabled, it will submit all transactions initially with `feecap=EVM_GAS_FEE_CAP_DEFAULT` and `tipcap=EVM_GAS_TIP_CAP_DEFAULT`.
 
 If you are using BlockHistoryEstimator (default for most chains):
+
 - With gas bumping disabled, it will submit all transactions with `feecap=ETH_MAX_GAS_PRICE_WEI` and `tipcap=<calculated using past blocks>`
 - With gas bumping enabled (default for most chains) it will submit all transactions initially with `feecap=current block base fee * (1.125 ^ N)` where N is configurable by setting BLOCK_HISTORY_ESTIMATOR_EIP1559_FEE_CAP_BUFFER_BLOCKS but defaults to `gas bump threshold+1` and `tipcap=<calculated using past blocks>`
 
@@ -1578,7 +1579,7 @@ Example: `P2PV2_LISTEN_ADDRESSES=1.2.3.4:9999 [a52d:0:a88:1274::abcd]:1337`
 
 - Default: `"false"`
 
-Use this setting *only* on Polygon networks.
+Use this setting _only_ on Polygon networks.
 
 Includes gas price in calls to `checkUpkeep()` when set to `true`.
 
@@ -1671,7 +1672,6 @@ The environment variables in this section apply only when running CLI commands t
 > 🚧 Deprecated:
 >
 > This environment variable is deprecated and will be removed in a future release. Use the `--admin-credentials-file FILE` CLI argument instead.
-
 
 - Default: `$ROOT/apicredentials`
 

@@ -2,24 +2,25 @@
 layout: nodes.liquid
 section: ethereum
 date: Last Modified
-title: "Data Feeds API Reference"
-permalink: "docs/price-feeds-api-reference/"
+title: 'Data Feeds API Reference'
+permalink: 'docs/price-feeds-api-reference/'
 metadata:
-  description: "API reference for using Chainlink Data Feeds in smart contracts."
+  description: 'API reference for using Chainlink Data Feeds in smart contracts.'
 ---
 
 When you use data feeds, retrieve the feeds through the `AggregatorV3Interface` and the proxy address. Optionally, you can call variables and functions in the `AccessControlledOffchainAggregator` contract to get information about the aggregator behind the proxy.
 
 **Topics**
 
-+ [AggregatorV3Interface contract](#aggregatorv3interface)
-+ [AccessControlledOffchainAggregator contract](#accesscontrolledoffchainaggregator)
+- [AggregatorV3Interface contract](#aggregatorv3interface)
+- [AccessControlledOffchainAggregator contract](#accesscontrolledoffchainaggregator)
 
 ## AggregatorV3Interface
 
 Import this interface to your contract and use it to run functions in the proxy contract. Create the interface object by pointing to the proxy address. For example, on Goerli you could create the interface object in the constructor of your contract using the following example:
 
-```solidity Solidity
+<!-- prettier-ignore -->
+```solidity
 /**
  * Network: Goerli
  * Data Feed: BTC/USD
@@ -36,38 +37,41 @@ You can see the code for the [`AggregatorV3Interface` contract](https://github.c
 
 ### Functions in AggregatorV3Interface
 
-|Name|Description|
-|---|---|
-|[decimals](#decimals)|The number of decimals in the response.|
-|[description](#description)|The description of the aggregator that the proxy points to.|
-|[getRoundData](#getrounddata)|Get data from a specific round.|
-|[latestRoundData](#latestrounddata)|Get data from the latest round.|
-|[version](#version)|The version representing the type of aggregator the proxy points to.|
+| Name                                | Description                                                          |
+| ----------------------------------- | -------------------------------------------------------------------- |
+| [decimals](#decimals)               | The number of decimals in the response.                              |
+| [description](#description)         | The description of the aggregator that the proxy points to.          |
+| [getRoundData](#getrounddata)       | Get data from a specific round.                                      |
+| [latestRoundData](#latestrounddata) | Get data from the latest round.                                      |
+| [version](#version)                 | The version representing the type of aggregator the proxy points to. |
 
 #### decimals
 
 Get the number of decimals present in the response value.
 
-```solidity Solidity
+<!-- prettier-ignore -->
+```solidity
 function decimals() external view returns (uint8);
 ```
 
-* `RETURN`: The number of decimals.
+- `RETURN`: The number of decimals.
 
 #### description
 
 Get the description of the underlying aggregator that the proxy points to.
 
-```solidity Solidity
+<!-- prettier-ignore -->
+```solidity
 function description() external view returns (string memory);
 ```
 
-* `RETURN`: The description of the underlying aggregator.
+- `RETURN`: The description of the underlying aggregator.
 
 #### getRoundData
 
 Get data about a specific round, using the `roundId`.
 
+<!-- prettier-ignore -->
 ```solidity Solidity
 function getRoundData(uint80 _roundId)
   external
@@ -83,20 +87,21 @@ function getRoundData(uint80 _roundId)
 
 **Parameters:**
 
-* `_roundId`: The round ID
+- `_roundId`: The round ID
 
 **Return values:**
 
-* `roundId`: The round ID
-* `answer`: The answer for this round
-* `startedAt`: Timestamp of when the round started
-* `updatedAt`: Timestamp of when the round was updated
-* `answeredInRound`: The round ID in which the answer was computed
+- `roundId`: The round ID
+- `answer`: The answer for this round
+- `startedAt`: Timestamp of when the round started
+- `updatedAt`: Timestamp of when the round was updated
+- `answeredInRound`: The round ID in which the answer was computed
 
 #### latestRoundData
 
 Get the price from the latest round.
 
+<!-- prettier-ignore -->
 ```solidity Solidity
 function latestRoundData() external view
     returns (
@@ -110,21 +115,22 @@ function latestRoundData() external view
 
 **Return values:**
 
-* `roundId`: The round ID.
-* `answer`: The price.
-* `startedAt`: Timestamp of when the round started.
-* `updatedAt`: Timestamp of when the round was updated.
-* `answeredInRound`: The round ID of the round in which the answer was computed.
+- `roundId`: The round ID.
+- `answer`: The price.
+- `startedAt`: Timestamp of when the round started.
+- `updatedAt`: Timestamp of when the round was updated.
+- `answeredInRound`: The round ID of the round in which the answer was computed.
 
 #### version
 
 The version representing the type of aggregator the proxy points to.
 
+<!-- prettier-ignore -->
 ```solidity Solidity
 function version() external view returns (uint256)
 ```
 
-* `RETURN`: The version number.
+- `RETURN`: The version number.
 
 ## AccessControlledOffchainAggregator
 
@@ -144,45 +150,46 @@ A simple way to read the variables or functions is to get the ABI from a blockch
 
 **Variables:**
 
-|Name|Description|
-|---|---|
-|LINK|The address for the LINK token contract on a specific network.|
-|billingAccessController|The address for the billingAccessController, which limits access to the [billing configuration](https://github.com/smartcontractkit/libocr/blob/master/contract/OffchainAggregatorBilling.sol) for the aggregator.|
-|checkEnabled|A boolean that indicates if access is limited to addresses on the internal access list.|
-|maxAnswer|The highest median answer that the aggregator will accept. This prevents the aggregator from accepting extreme erroneous values.|
-|minAnswer|The lowest median answer that the aggregator will accept. This prevents the aggregator from accepting extreme erroneous values.|
-|owner|The address that owns this aggregator contract. This controls which address can execute specific functions.|
+| Name                    | Description                                                                                                                                                                                                        |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| LINK                    | The address for the LINK token contract on a specific network.                                                                                                                                                     |
+| billingAccessController | The address for the billingAccessController, which limits access to the [billing configuration](https://github.com/smartcontractkit/libocr/blob/master/contract/OffchainAggregatorBilling.sol) for the aggregator. |
+| checkEnabled            | A boolean that indicates if access is limited to addresses on the internal access list.                                                                                                                            |
+| maxAnswer               | The highest median answer that the aggregator will accept. This prevents the aggregator from accepting extreme erroneous values.                                                                                   |
+| minAnswer               | The lowest median answer that the aggregator will accept. This prevents the aggregator from accepting extreme erroneous values.                                                                                    |
+| owner                   | The address that owns this aggregator contract. This controls which address can execute specific functions.                                                                                                        |
 
 **Functions:**
 
-|Name|Description|
-|---|---|
-|[decimals](#decimals-1)|Return the number of digits of precision for the stored answer. Answers are stored in fixed-point format.|
-|[description](#description-1)|Return a description for this data feed. Usually this is an asset pair for a price feed.|
-|[getAnswer](#getanswer)|Get an answer from a specific aggregator round. Use this to get historical data.|
-|[getBilling](#getbilling)|Retrieve the current billing configuration.|
-|[getRoundData](#getrounddata-1)|Get the full information for a specific aggregator round including the answer and update timestamps. Use this to get the full historical data for a round.|
-|[getTimestamp](#gettimestamp)|Get the block timestamp from a specific aggregator round.|
-|[hasAccess](#hasaccess)|Check if an address has internal access.|
-|[latestAnswer](#latestanswer)|Return the most recent answer accepted by the aggregator.|
-|[latestConfigDetails](#latestconfigdetails)|Return information about the current off-chain reporting protocol configuration.|
-|[latestRound](#latestround)|Return the `roundID` for the most recent aggregator round.|
-|[latestRoundData](#latestrounddata-1)|Get the full information for the most recent round including the answer and update timestamps.|
-|[latestTimestamp](#latesttimestamp)|Get the block timestamp when the last answer was accepted.|
-|[latestTransmissionDetails](#latesttransmissiondetails)|Get information about the most recent answer.|
-|[linkAvailableForPayment](#linkavailableforpayment)|Get the amount of LINK on this contract that is available to make payments to oracles. This value can be negative if there are outstanding payment obligations.|
-|[oracleObservationCount](#oracleobservationcount)|Returns the number of observations that oracle is due to be reimbursed for.|
-|[owedPayment](#owedpayment)|Returns how much LINK an oracle is owed for its observations.|
-|[requesterAccessController](#requesteraccesscontroller)|Returns the address for the access controller contract.|
-|[transmitters](#transmitters)|The oracle addresses that can report answers to this aggregator.|
-|[typeAndVersion](#typeandversion)|Returns the aggregator type and version. Many aggregators are `AccessControlledOffchainAggregator 3.0.0`, but there are other variants in production. The version is for the type of aggregator, and different from the contract `version`.|
-|[validatorConfig](#validatorconfig)|Returns the address and the gas limit for the validator contract.|
-|[version](#version-1)|Returns the contract version. This is different from the `typeAndVersion` for the aggregator.|
+| Name                                                    | Description                                                                                                                                                                                                                                 |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [decimals](#decimals-1)                                 | Return the number of digits of precision for the stored answer. Answers are stored in fixed-point format.                                                                                                                                   |
+| [description](#description-1)                           | Return a description for this data feed. Usually this is an asset pair for a price feed.                                                                                                                                                    |
+| [getAnswer](#getanswer)                                 | Get an answer from a specific aggregator round. Use this to get historical data.                                                                                                                                                            |
+| [getBilling](#getbilling)                               | Retrieve the current billing configuration.                                                                                                                                                                                                 |
+| [getRoundData](#getrounddata-1)                         | Get the full information for a specific aggregator round including the answer and update timestamps. Use this to get the full historical data for a round.                                                                                  |
+| [getTimestamp](#gettimestamp)                           | Get the block timestamp from a specific aggregator round.                                                                                                                                                                                   |
+| [hasAccess](#hasaccess)                                 | Check if an address has internal access.                                                                                                                                                                                                    |
+| [latestAnswer](#latestanswer)                           | Return the most recent answer accepted by the aggregator.                                                                                                                                                                                   |
+| [latestConfigDetails](#latestconfigdetails)             | Return information about the current off-chain reporting protocol configuration.                                                                                                                                                            |
+| [latestRound](#latestround)                             | Return the `roundID` for the most recent aggregator round.                                                                                                                                                                                  |
+| [latestRoundData](#latestrounddata-1)                   | Get the full information for the most recent round including the answer and update timestamps.                                                                                                                                              |
+| [latestTimestamp](#latesttimestamp)                     | Get the block timestamp when the last answer was accepted.                                                                                                                                                                                  |
+| [latestTransmissionDetails](#latesttransmissiondetails) | Get information about the most recent answer.                                                                                                                                                                                               |
+| [linkAvailableForPayment](#linkavailableforpayment)     | Get the amount of LINK on this contract that is available to make payments to oracles. This value can be negative if there are outstanding payment obligations.                                                                             |
+| [oracleObservationCount](#oracleobservationcount)       | Returns the number of observations that oracle is due to be reimbursed for.                                                                                                                                                                 |
+| [owedPayment](#owedpayment)                             | Returns how much LINK an oracle is owed for its observations.                                                                                                                                                                               |
+| [requesterAccessController](#requesteraccesscontroller) | Returns the address for the access controller contract.                                                                                                                                                                                     |
+| [transmitters](#transmitters)                           | The oracle addresses that can report answers to this aggregator.                                                                                                                                                                            |
+| [typeAndVersion](#typeandversion)                       | Returns the aggregator type and version. Many aggregators are `AccessControlledOffchainAggregator 3.0.0`, but there are other variants in production. The version is for the type of aggregator, and different from the contract `version`. |
+| [validatorConfig](#validatorconfig)                     | Returns the address and the gas limit for the validator contract.                                                                                                                                                                           |
+| [version](#version-1)                                   | Returns the contract version. This is different from the `typeAndVersion` for the aggregator.                                                                                                                                               |
 
 #### decimals
 
 Return the number of digits of precision for the stored answer. Answers are stored in fixed-point format.
 
+<!-- prettier-ignore -->
 ```solidity Solidity
 function decimals() external view returns (uint8 decimalPlaces);
 ```
@@ -191,6 +198,7 @@ function decimals() external view returns (uint8 decimalPlaces);
 
 Return a description for this data feed. Usually this is an asset pair for a price feed.
 
+<!-- prettier-ignore -->
 ```solidity Solidity
 function description()
   public
@@ -207,6 +215,7 @@ function description()
 
 Get an answer from a specific aggregator round. Use this to get historical data.
 
+<!-- prettier-ignore -->
 ```solidity Solidity
 function getAnswer(uint256 _roundId)
   public
@@ -223,6 +232,7 @@ function getAnswer(uint256 _roundId)
 
 Retrieve the current billing configuration.
 
+<!-- prettier-ignore -->
 ```solidity Solidity
 function getBilling()
   external
@@ -250,6 +260,7 @@ function getBilling()
 
 Get the full information for a specific aggregator round including the answer and update timestamps. Use this to get the full historical data for a round.
 
+<!-- prettier-ignore -->
 ```solidity Solidity
 function getRoundData(uint80 _roundId)
   public
@@ -272,7 +283,8 @@ function getRoundData(uint80 _roundId)
 
 Get the block timestamp from a specific aggregator round.
 
-```solidity Solidity
+<!-- prettier-ignore -->
+```soliditySolidity
 function getTimestamp(uint256 _roundId)
   public
   override
@@ -288,6 +300,7 @@ function getTimestamp(uint256 _roundId)
 
 Check if an address has internal access.
 
+<!-- prettier-ignore -->
 ```solidity Solidity
 function hasAccess(
   address _user,
@@ -307,6 +320,7 @@ function hasAccess(
 
 Return the most recent answer accepted by the aggregator.
 
+<!-- prettier-ignore -->
 ```solidity Solidity
 function latestAnswer()
   public
@@ -323,6 +337,7 @@ function latestAnswer()
 
 Return information about the current off-chain reporting protocol configuration.
 
+<!-- prettier-ignore -->
 ```solidity Solidity
 function latestConfigDetails()
   external
@@ -341,6 +356,7 @@ function latestConfigDetails()
 
 Return the `roundID` for the most recent aggregator round.
 
+<!-- prettier-ignore -->
 ```solidity Solidity
 function latestRound()
   public
@@ -357,6 +373,7 @@ function latestRound()
 
 Get the full information for the most recent round including the answer and update timestamps.
 
+<!-- prettier-ignore -->
 ```solidity Solidity
 function latestRoundData()
   public
@@ -379,6 +396,7 @@ function latestRoundData()
 
 Get the block timestamp when the last answer was accepted.
 
+<!-- prettier-ignore -->
 ```solidity Solidity
 function latestTimestamp()
   public
@@ -395,6 +413,7 @@ function latestTimestamp()
 
 Get information about the most recent answer.
 
+<!-- prettier-ignore -->
 ```solidity Solidity
 function latestTransmissionDetails()
   external
@@ -422,6 +441,7 @@ function latestTransmissionDetails()
 
 Get the amount of LINK on this contract that is available to make payments to oracles. This value can be negative if there are outstanding payment obligations.
 
+<!-- prettier-ignore -->
 ```solidity Solidity
 function linkAvailableForPayment()
   external
@@ -442,6 +462,7 @@ function linkAvailableForPayment()
 
 Returns the number of observations that oracle is due to be reimbursed for.
 
+<!-- prettier-ignore -->
 ```solidity Solidity
 function oracleObservationCount(address _signerOrTransmitter)
   external
@@ -458,6 +479,7 @@ function oracleObservationCount(address _signerOrTransmitter)
 
 Returns how much LINK an oracle is owed for its observations.
 
+<!-- prettier-ignore -->
 ```solidity Solidity
 function owedPayment(address _transmitter)
   public
@@ -480,6 +502,7 @@ function owedPayment(address _transmitter)
 
 Returns the address for the access controller contract.
 
+<!-- prettier-ignore -->
 ```solidity Solidity
 function requesterAccessController()
   external
@@ -494,6 +517,7 @@ function requesterAccessController()
 
 The oracle addresses that can report answers to this aggregator.
 
+<!-- prettier-ignore -->
 ```solidity Solidity
 function transmitters()
   external
@@ -508,6 +532,7 @@ function transmitters()
 
 Returns the aggregator type and version. Many aggregators are `AccessControlledOffchainAggregator 2.0.0`, but there are other variants in production. The version is for the type of aggregator, and different from the contract `version`.
 
+<!-- prettier-ignore -->
 ```solidity Solidity
 function typeAndVersion()
   external
@@ -524,6 +549,7 @@ function typeAndVersion()
 
 Returns the address and the gas limit for the validator contract.
 
+<!-- prettier-ignore -->
 ```solidity Solidity
 function validatorConfig()
   external
@@ -539,6 +565,7 @@ function validatorConfig()
 
 Returns the contract version. This is different from the `typeAndVersion` for the aggregator.
 
+<!-- prettier-ignore -->
 ```solidity Solidity
 function version() external view returns (uint256);
 ```

@@ -2,12 +2,12 @@
 layout: nodes.liquid
 section: ethereum
 date: Last Modified
-title: "Off-Chain Reporting"
-permalink: "docs/off-chain-reporting/"
-whatsnext: {"Using Data Feeds":"/docs/get-the-latest-price/"}
+title: 'Off-Chain Reporting'
+permalink: 'docs/off-chain-reporting/'
+whatsnext: { 'Using Data Feeds': '/docs/get-the-latest-price/' }
 metadata:
   image:
-    0: "/files/fb73165-cl.png"
+    0: '/files/fb73165-cl.png'
 ---
 
 Off-Chain Reporting (OCR) is a significant step towards increasing the decentralization and scalability of Chainlink networks. See the [OCR Protocol Paper](https://research.chain.link/ocr.pdf) for a technical deep dive.

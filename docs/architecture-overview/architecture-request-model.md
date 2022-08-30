@@ -2,11 +2,16 @@
 layout: nodes.liquid
 section: ethereum
 date: Last Modified
-title: "Basic Request Model"
-permalink: "docs/architecture-request-model/"
-whatsnext: {"Make a GET Request":"/docs/any-api/get-request/introduction/", "Decentralized Data Model":"/docs/architecture-decentralized-model/", "Off-Chain Reporting":"/docs/off-chain-reporting/"}
+title: 'Basic Request Model'
+permalink: 'docs/architecture-request-model/'
+whatsnext:
+  {
+    'Make a GET Request': '/docs/any-api/get-request/introduction/',
+    'Decentralized Data Model': '/docs/architecture-decentralized-model/',
+    'Off-Chain Reporting': '/docs/off-chain-reporting/',
+  }
 metadata:
-  title: "Chainlink Basic Request Model"
+  title: 'Chainlink Basic Request Model'
 ---
 
 ## Contracts Overview

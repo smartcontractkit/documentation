@@ -3,8 +3,7 @@ layout: nodes.liquid
 section: ethereum
 date: Last Modified
 title: 'Manage your Upkeeps'
-whatsnext:
-  { 'Keepers economics': '/docs/chainlink-keepers/keeper-economics/' }
+whatsnext: { 'Keepers economics': '/docs/chainlink-keepers/keeper-economics/' }
 ---
 
 ## Overview
@@ -45,7 +44,7 @@ Follow these steps to fund your Upkeep:
 
 Each Upkeep has a [minimum balance](../keeper-economics/#minimum-balance) to ensure that an Upkeeps will still run should a sudden spike occur. If your Upkeep LINK balance drops below this amount, the Upkeep will not be performed.
 
-To account for Upkeep execution over time and possible extended gas spikes, maintain an Upkeep LINK balance that is 3 to 5 times the minimum balance. Note if you have an upkeep that performs frequently you may want to increase the buffer to ensure a reasonable interval before you need to fund again.  Developers also have the ability to update `performGasLimit` for an upkeep.
+To account for Upkeep execution over time and possible extended gas spikes, maintain an Upkeep LINK balance that is 3 to 5 times the minimum balance. Note if you have an upkeep that performs frequently you may want to increase the buffer to ensure a reasonable interval before you need to fund again. Developers also have the ability to update `performGasLimit` for an upkeep.
 
 ## Withdraw funds
 

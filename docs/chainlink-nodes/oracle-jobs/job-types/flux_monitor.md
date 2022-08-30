@@ -2,8 +2,8 @@
 layout: nodes.liquid
 section: nodeOperator
 date: Last Modified
-title: "Flux Monitor Jobs"
-permalink: "docs/jobs/types/flux-monitor/"
+title: 'Flux Monitor Jobs'
+permalink: 'docs/jobs/types/flux-monitor/'
 ---
 
 The Flux Monitor job type is for continually-updating data feeds that aggregate responses from multiple oracles. The oracles servicing the feed submit rounds based on several triggers:
@@ -11,11 +11,12 @@ The Flux Monitor job type is for continually-updating data feeds that aggregate 
 - An occasional poll, which must show that there has been sufficient deviation from an off-chain data source before a new result is submitted
 - New rounds initiated by other oracles on the feeds. If another oracle notices sufficient deviation, all other oracles will submit their current observations as well.
 - A heartbeat, which ensures that even if no deviation occurs, we submit a new result to prove liveness. This can take one of two forms:
-    - The "idle timer", which begins counting down each time a round is started
-    - The "drumbeat", which simply ticks at a steady interval, much like a `cron` job
+  - The "idle timer", which begins counting down each time a round is started
+  - The "drumbeat", which simply ticks at a steady interval, much like a `cron` job
 
 **Spec format**
 
+<!-- prettier-ignore -->
 ```jpv2
 type              = "fluxmonitor"
 schemaVersion     = 1
@@ -68,8 +69,8 @@ See [shared fields](/docs/jobs/#shared-fields).
 - `pollTimerPeriod`: the frequency with which the off-chain data source is checked for deviation against the previously submitted on-chain answer.
 - `pollTimerDisabled`: whether the occasional deviation check is used to trigger new rounds.
 - **Notes:**
-    - For duration parameters, the maximum unit of time is `h` (hour). Durations of a day or longer must be expressed in hours.
-    - If no time unit is provided, the default unit is nanoseconds, which is almost never what you want.
+  - For duration parameters, the maximum unit of time is `h` (hour). Durations of a day or longer must be expressed in hours.
+  - If no time unit is provided, the default unit is nanoseconds, which is almost never what you want.
 
 **Job type specific pipeline variables**
 

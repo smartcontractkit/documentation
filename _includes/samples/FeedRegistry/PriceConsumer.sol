@@ -24,12 +24,12 @@ contract PriceConsumer {
     /**
      * Returns the ETH / USD price
      */
-    function getEthUsdPrice() public view returns (int) {
+    function getEthUsdPrice() public view returns (int256) {
         (
             uint80 roundID,
-            int price,
-            uint startedAt,
-            uint timeStamp,
+            int256 price,
+            uint256 startedAt,
+            uint256 timeStamp,
             uint80 answeredInRound
         ) = registry.latestRoundData(Denominations.ETH, Denominations.USD);
         return price;
@@ -38,12 +38,16 @@ contract PriceConsumer {
     /**
      * Returns the latest price
      */
-    function getPrice(address base, address quote) public view returns (int) {
+    function getPrice(address base, address quote)
+        public
+        view
+        returns (int256)
+    {
         (
             uint80 roundID,
-            int price,
-            uint startedAt,
-            uint timeStamp,
+            int256 price,
+            uint256 startedAt,
+            uint256 timeStamp,
             uint80 answeredInRound
         ) = registry.latestRoundData(base, quote);
         return price;

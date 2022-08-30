@@ -2,8 +2,8 @@
 layout: nodes.liquid
 section: ethereum
 date: Last Modified
-title: "Fund Your Contracts"
-permalink: "docs/fund-your-contract/"
+title: 'Fund Your Contracts'
+permalink: 'docs/fund-your-contract/'
 ---
 
 Some smart contracts require funding at their addresses so they can operate without you having to call functions manually and pay for the transactions through MetaMask. This guide explains how to fund Solidity contracts with LINK or ETH.

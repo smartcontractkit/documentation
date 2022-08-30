@@ -2,9 +2,9 @@
 layout: nodes.liquid
 section: nodeOperator
 date: Last Modified
-title: "Building External Initiators"
-permalink: "docs/building-external-initiators/"
-whatsnext: {"Adding External Initiators to Nodes":"/docs/external-initiators-in-nodes/"}
+title: 'Building External Initiators'
+permalink: 'docs/building-external-initiators/'
+whatsnext: { 'Adding External Initiators to Nodes': '/docs/external-initiators-in-nodes/' }
 ---
 
 An external initiator can trigger a run for any webhook job that it has been linked to.

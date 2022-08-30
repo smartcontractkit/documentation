@@ -2,10 +2,11 @@
 layout: nodes.liquid
 section: nodeOperator
 date: Last Modified
-title: "Enabling HTTPS Connections"
-permalink: "docs/enabling-https-connections/"
-whatsnext: {"Miscellaneous":"/docs/miscellaneous/"}
+title: 'Enabling HTTPS Connections'
+permalink: 'docs/enabling-https-connections/'
+whatsnext: { 'Miscellaneous': '/docs/miscellaneous/' }
 ---
+
 This guide will walk you through how to generate your own self-signed certificates for use by the Chainlink node. You can also substitute self-signed certificates with certificates of your own, like those created by <a href="https://letsencrypt.org/" target="_blank">Let's Encrypt</a>.
 
 > 📘 Important
@@ -14,39 +15,53 @@ This guide will walk you through how to generate your own self-signed certificat
 
 Create a directory `tls/` within your local Chainlink directory:
 
+<!-- prettier-ignore -->
 ```text Goerli
 mkdir ~/.chainlink-goerli/tls
 ```
+
+<!-- prettier-ignore -->
 ```text Rinkeby
 mkdir ~/.chainlink-rinkeby/tls
 ```
+
+<!-- prettier-ignore -->
 ```text Kovan
 mkdir ~/.chainlink-kovan/tls
 ```
+
+<!-- prettier-ignore -->
 ```text Mainnet
 mkdir ~/.chainlink/tls
 ```
 
 Run this command to create a `server.crt` and `server.key` file in the previously created directory:
 
+<!-- prettier-ignore -->
 ```shell Goerli
 openssl req -x509 -out  ~/.chainlink-goerli/tls/server.crt  -keyout ~/.chainlink-goerli/tls/server.key \
   -newkey rsa:2048 -nodes -sha256 -days 365 \
   -subj '/CN=localhost' -extensions EXT -config <( \
    printf "[dn]\nCN=localhost\n[req]\ndistinguished_name = dn\n[EXT]\nsubjectAltName=DNS:localhost\nkeyUsage=digitalSignature\nextendedKeyUsage=serverAuth")
 ```
+
+<!-- prettier-ignore -->
 ```shell Rinkeby
 openssl req -x509 -out  ~/.chainlink-rinkeby/tls/server.crt  -keyout ~/.chainlink-rinkeby/tls/server.key \
   -newkey rsa:2048 -nodes -sha256 -days 365 \
   -subj '/CN=localhost' -extensions EXT -config <( \
    printf "[dn]\nCN=localhost\n[req]\ndistinguished_name = dn\n[EXT]\nsubjectAltName=DNS:localhost\nkeyUsage=digitalSignature\nextendedKeyUsage=serverAuth")
 ```
+
+<!-- prettier-ignore -->
 ```shell Kovan
 openssl req -x509 -out  ~/.chainlink-kovan/tls/server.crt  -keyout ~/.chainlink-kovan/tls/server.key \
   -newkey rsa:2048 -nodes -sha256 -days 365 \
   -subj '/CN=localhost' -extensions EXT -config <( \
    printf "[dn]\nCN=localhost\n[req]\ndistinguished_name = dn\n[EXT]\nsubjectAltName=DNS:localhost\nkeyUsage=digitalSignature\nextendedKeyUsage=serverAuth")
 ```
+
+<!-- prettier-ignore -->
 ```shell Mainnet
 openssl req -x509 -out  ~/.chainlink/tls/server.crt  -keyout ~/.chainlink/tls/server.key \
   -newkey rsa:2048 -nodes -sha256 -days 365 \
@@ -56,6 +71,7 @@ openssl req -x509 -out  ~/.chainlink/tls/server.crt  -keyout ~/.chainlink/tls/se
 
 Next, add the `TLS_CERT_PATH` and `TLS_KEY_PATH` environment variables to your `.env` file.
 
+<!-- prettier-ignore -->
 ```shell Shell
 echo "TLS_CERT_PATH=/chainlink/tls/server.crt
 TLS_KEY_PATH=/chainlink/tls/server.key" >> .env
@@ -63,27 +79,36 @@ TLS_KEY_PATH=/chainlink/tls/server.key" >> .env
 
 If `CHAINLINK_TLS_PORT=0` is present in your `.env` file, remove it by running:
 
+<!-- prettier-ignore -->
 ```shell Shell
 sed -i '/CHAINLINK_TLS_PORT=0/d' .env
 ```
 
 Also remove the line that disables `SECURE_COOKIES` by running:
 
+<!-- prettier-ignore -->
 ```shell Shell
 code": "sed -i '/SECURE_COOKIES=false/d' .env
 ```
 
 Finally, update your run command to forward port 6689 to the container instead of 6688:
 
+<!-- prettier-ignore -->
 ```shell Goerli
 cd ~/.chainlink-goerli && docker run -p 6689:6689 -v ~/.chainlink-goerli:/chainlink -it --env-file=.env smartcontract/chainlink local n
 ```
+
+<!-- prettier-ignore -->
 ```shell Rinkeby
 cd ~/.chainlink-rinkeby && docker run -p 6689:6689 -v ~/.chainlink-rinkeby:/chainlink -it --env-file=.env smartcontract/chainlink local n
 ```
+
+<!-- prettier-ignore -->
 ```shell Kovan
 cd ~/.chainlink-kovan && docker run -p 6689:6689 -v ~/.chainlink-kovan:/chainlink -it --env-file=.env smartcontract/chainlink local n
 ```
+
+<!-- prettier-ignore -->
 ```shell Mainnet
 cd ~/.chainlink && docker run -p 6689:6689 -v ~/.chainlink:/chainlink -it --env-file=.env smartcontract/chainlink local n
 ```

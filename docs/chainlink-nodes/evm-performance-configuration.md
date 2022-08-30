@@ -4,10 +4,11 @@ section: nodeOperator
 date: Last Modified
 title: 'Optimizing EVM Performance'
 permalink: 'docs/evm-performance-configuration/'
-whatsnext: {
-  "Performing System Maintenance":"/docs/performing-system-maintenance/",
-  "Security and Operation Best Practices":"/docs/best-security-practices/"
-}
+whatsnext:
+  {
+    'Performing System Maintenance': '/docs/performing-system-maintenance/',
+    'Security and Operation Best Practices': '/docs/best-security-practices/',
+  }
 metadata:
   title: 'Optimizing EVM Performance'
   description: 'Configure your Chainlink and EVM nodes for high throughput and reliability'
@@ -120,7 +121,7 @@ NODE_POLL_INTERVAL="10s"
 
 > 📘 Ideally, every primary node specifies an HTTP URL in addition to the websocket URL.
 
-It is not recommended to configure primary nodes with *only* a websocket URL. Routing all traffic over only a websocket can cause problems. As a best practices, every primary node must have both websocket and HTTP URLs specified. This allows Chainlink to route almost all RPC calls over HTTP, which tends to be more robust and reliable. The websocket URL is used only for subscriptions. Both URLs must point to the same node because they are bundled together and have the same liveness state.
+It is not recommended to configure primary nodes with _only_ a websocket URL. Routing all traffic over only a websocket can cause problems. As a best practices, every primary node must have both websocket and HTTP URLs specified. This allows Chainlink to route almost all RPC calls over HTTP, which tends to be more robust and reliable. The websocket URL is used only for subscriptions. Both URLs must point to the same node because they are bundled together and have the same liveness state.
 
 If you enabled HTTP URLs on all your primary nodes, you can increase the values for the following environment variables:
 
@@ -138,13 +139,13 @@ ETH_LOG_BACKFILL_BATCH_SIZE=1000
 
 > 🚧 REMINDER:
 >
-> Do not modify these values unless *all* primary nodes are configured with HTTP URLs.
+> Do not modify these values unless _all_ primary nodes are configured with HTTP URLs.
 
 ## Increasing transaction throughput
 
 By default, Chainlink has conservative limits because it must be compliant with standard out-of-the-box RPC configurations. This limits transaction throughput and the performance of some RPC calls.
 
-Before you make any changes to your Chainlink configuration, you must ensure that *all* of your primary and send-only nodes are configured to handle the increased throughput.
+Before you make any changes to your Chainlink configuration, you must ensure that _all_ of your primary and send-only nodes are configured to handle the increased throughput.
 
 > 📘 The best way to improve transaction throughput is to keep the default configuration and use multiple keys to transmit. Chainlink supports an arbitrary number of keys for any given chain. By default, tasks will round-robin through keys, but you can assign them individually to keys as well. Assigning tasks to keys is the preferred way to improve throughput because increasing the max number of in-flight requests can have complicated effects based on the mempool conmfigurations of other RPC nodes. If you are unable to distribute transmission load across multiple keys, try the following options to increase throughput.
 

@@ -46,6 +46,7 @@ This core adapter compares a user-specified value with the value from the previo
 
 #### Solidity Example
 
+<!-- prettier-ignore -->
 ```solidity
 req.addInt("value", 10000);
 req.add("operator", "gte");
@@ -69,6 +70,7 @@ For the JSON object:
 
 You would use the following for an array of strings:
 
+<!-- prettier-ignore -->
 ```solidity
 string[] memory path = new string[](4);
 path[0] = "RAW";
@@ -80,6 +82,7 @@ req.addStringArray("copyPath", path);
 
 Or the following for a single comma-delimited string:
 
+<!-- prettier-ignore -->
 ```solidity
 req.add("copyPath", "RAW,ETH,USD,LASTMARKET");
 ```
@@ -105,6 +108,7 @@ For arrays, you can access the path of an array by using the index. If this is y
 
 You could get the `"value"` by:
 
+<!-- prettier-ignore -->
 ```solidity
 req.add("copyPath", "endpoint.0.path");
 ```
@@ -171,6 +175,7 @@ The core adapter will report the body of a successful `GET` request to the speci
 
 #### Solidity Example
 
+<!-- prettier-ignore -->
 ```solidity
 req.add("get", "http://example.com");
 req.add("queryParams", "firstKey=firstVal&secondKey=secondVal");
@@ -213,6 +218,7 @@ The core adapter will report the body of a successful `POST` request to the spec
 
 #### Solidity Example
 
+<!-- prettier-ignore -->
 ```solidity
 req.add("post", "http://post.example.com");
 req.add("queryParams", "firstKey=firstVal&secondKey=secondVal");
@@ -257,6 +263,7 @@ For the stringified JSON:
 
 You would use the following for an array of strings:
 
+<!-- prettier-ignore -->
 ```solidity
 string[] memory path = new string[](4);
 path[0] = "RAW";
@@ -268,6 +275,7 @@ req.addStringArray("path", path);
 
 Or the following for a single comma-delimited string:
 
+<!-- prettier-ignore -->
 ```solidity
 req.add("path", "RAW,ETH,USD,LASTMARKET");
 ```
@@ -287,6 +295,7 @@ req.add("path", "RAW,ETH,USD,LASTMARKET");
 
 #### Parsing Arrays
 
+<!-- prettier-ignore -->
 ```solidity
 req.add("path", "3,standardId");
 ```
@@ -324,6 +333,7 @@ The core adapter parses the input into a float and then multiplies it by the `ti
 
 #### Solidity Example
 
+<!-- prettier-ignore -->
 ```solidity
 run.addInt("times", 100);
 ```
@@ -370,6 +380,7 @@ The core adapter will pause the current task pipeline for the given duration.
 
 #### Solidity Example
 
+<!-- prettier-ignore -->
 ```solidity
 req.addUint("until", now + 1 hours);
 ```

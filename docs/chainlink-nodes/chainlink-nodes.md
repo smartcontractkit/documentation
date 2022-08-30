@@ -2,7 +2,7 @@
 layout: nodes.liquid
 section: nodeOperator
 date: Last Modified
-title: "Chainlink Nodes"
+title: 'Chainlink Nodes'
 permalink: /chainlink-nodes/
 ---
 

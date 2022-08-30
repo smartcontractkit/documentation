@@ -65,6 +65,7 @@ Assume that a user wants to obtain the ETH price quoted against three different 
 {% include 'samples/APIRequests/MultiWordConsumer.sol' %}
 ```
 
+<!-- prettier-ignore -->
 <div class="remix-callout">
     <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/MultiWordConsumer.sol" target="_blank" >Open in Remix</a>
     <a href="/docs/conceptual-overview/#what-is-remix" >What is Remix?</a>

@@ -3,10 +3,7 @@ layout: nodes.liquid
 section: ethereum
 date: Last Modified
 title: 'Chainlink Keepers Economics'
-whatsnext:
-  {
-    'FAQs': '/docs/chainlink-keepers/faqs/',
-  }
+whatsnext: { 'FAQs': '/docs/chainlink-keepers/faqs/' }
 ---
 
 ## How Funding Works
@@ -16,7 +13,6 @@ Your upkeep has a LINK (ERC-677) balance. Every time a keeper executes your `per
 ## Cost of using Keepers
 
 When a keeper executes your `performUpkeep` function, the Keeper Registry will deduct the upkeep's total gas cost in LINK as well as a percentage premium from your upkeep’s LINK balance and allocate it to the keeper’s address. The total gas cost in LINK is the gas price of the transaction multiplied by the sum of the gas used for the transaction and an 80K gas overhead for the keeper call gas used. This is converted to LINK using Chainlink Data Feeds. The percentage premium is to compensate the keeper for monitoring and performing your upkeep. The percentage premium varies by network and is listed in our [Supported Networks](../supported-networks/#configurations) page.
-
 
 ## Minimum Spend Requirement
 

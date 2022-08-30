@@ -2,8 +2,8 @@
 layout: nodes.liquid
 section: nodeOperator
 date: Last Modified
-title: "ETH Call Task"
-permalink: "docs/jobs/task-types/eth-call/"
+title: 'ETH Call Task'
+permalink: 'docs/jobs/task-types/eth-call/'
 ---
 
 Makes a non-mutating contract call to the specified contract with the specified data payload.

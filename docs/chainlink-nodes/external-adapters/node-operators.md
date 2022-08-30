@@ -2,9 +2,10 @@
 layout: nodes.liquid
 section: nodeOperator
 date: Last Modified
-title: "Bridges: Adding External Adapters to Nodes"
-permalink: "docs/node-operators/"
+title: 'Bridges: Adding External Adapters to Nodes'
+permalink: 'docs/node-operators/'
 ---
+
 You can add external adapters to a Chainlink node by creating a bridge in the Node Operators Interface. Each bridge must have a unique name and a URL for the external adapter. If a job has a [Bridge Task](/docs/jobs/task-types/bridge/), the node searches for a bridge by name and uses that bridge as your external adapter. Bridge names are case insensitive.
 
 To create a bridge on the node, go to the **Create Bridge** tab in the Node Operators Interface. Specify a name for the bridge, the URL for your external adapter, and optionally specify the minimum contract payment and number of confirmations for the bridge. Minimum contract payment is a fee paid in LINK for the Chainlink node making a call to the external adapter via the bridge. This fee is in addition to the fee specified at the global node level for processing job requests.
@@ -15,6 +16,7 @@ The bridge name must be unique to the local node. The bridge URL is the URL of y
 
 To add jobs that use the bridge, add a [Bridge Task](/docs/jobs/task-types/bridge/) to your job. The `bridge` task defined in the example below is defined as `fetch` and the name of the bridge is `soccer-data`.
 
+<!-- prettier-ignore -->
 ```jpv2
 type = "directrequest"
 schemaVersion = 1
@@ -48,15 +50,19 @@ Since `soccer-data` is a bridge task, each node that has this job defined needs 
 The easiest way to test if your external adapter is working is to use a [Webhook Job](/docs/jobs/types/webhook/).
 
 As an example, assume you have an external adapter named `soccer-data` that is registered in the `bridges` section and it takes one parameter named `playerId`. In solidity, you would pass the parameter with the following request:
+
+<!-- prettier-ignore -->
 ```solidity
 request.add("playerId","12345678")
 ```
+
 How can you test the adapter on your node?
 
 The easiest way is to setup a [Webhook Job](/docs/jobs/types/webhook/) that uses the external adapter, and manually set the parameter.
 
 > Note: You might need to set the [configuration variable](/docs/configuration-variables/) `FEATURE_WEBHOOK_V2=true` in your `.env` file.
 
+<!-- prettier-ignore -->
 ```jpv2
 type = "webhook"
 schemaVersion = 1
@@ -73,7 +79,6 @@ Adding the following into the TOML spec manually sets the parameters passed into
 ```json
 requestData="{\\"id\\": \\"0\\", \\"data\\": { \\"playerId\\": \\"12345678\\"}}"
 ```
-
 
 There will be a big `Run` button on your job definition, which you can use to kick off the job.
 

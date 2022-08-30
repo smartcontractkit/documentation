@@ -2,9 +2,9 @@
 layout: nodes.liquid
 section: legacy
 date: Last Modified
-title: "Initiators [v1]"
-permalink: "docs/initiators/"
-whatsnext: {"Introduction to External Initiators":"/docs/external-initiators-introduction/"}
+title: 'Initiators [v1]'
+permalink: 'docs/initiators/'
+whatsnext: { 'Introduction to External Initiators': '/docs/external-initiators-introduction/' }
 ---
 
 # REMOVED
@@ -22,7 +22,7 @@ The `Cron` initiator is a simple way to schedule recurring job runs, using [stan
 
 ### Cron Parameters
 
-`Cron` takes one parameter, `schedule` which is a cron like schedule string. The `Cron`‘s  `schedule` is follows  [standard cron syntax](https://en.wikipedia.org/wiki/Cron#Overview) but prepends an timezone to be specified with `CRON_TZ`, with an optional field for seconds. For example: `CRON_TZ=UTC */10 * * * *` would run every 10 minutes with the timezone set to UTC. `CRON_TZ=UTC */30 * * * * *`  would run every 30 seconds.
+`Cron` takes one parameter, `schedule` which is a cron like schedule string. The `Cron`‘s `schedule` is follows [standard cron syntax](https://en.wikipedia.org/wiki/Cron#Overview) but prepends an timezone to be specified with `CRON_TZ`, with an optional field for seconds. For example: `CRON_TZ=UTC */10 * * * *` would run every 10 minutes with the timezone set to UTC. `CRON_TZ=UTC */30 * * * * *` would run every 30 seconds.
 
 ### Example
 
@@ -87,7 +87,7 @@ The `fluxmonitor` initiator performs 3 functions:
 2. Using that aggregated result to determine if an on-chain update needs to be made (as defined by a threshold)
 3. Updates on-chain values based on a heartbeat
 
-The `fluxmonitor` is the current  initiator used by the [Chainlink Data Feeds](https://feeds.chain.link/)
+The `fluxmonitor` is the current initiator used by the [Chainlink Data Feeds](https://feeds.chain.link/)
 
 ### FluxMonitor Parameters
 
@@ -104,37 +104,37 @@ The `fluxmonitor` is the current  initiator used by the [Chainlink Data Feeds](h
 
 ```json
 {
-      "type": "fluxmonitor",
-      "params": {
-        "address": "0x7777a77dea5ee3c093e21d77660b5579c21f770b",
-        "requestData": {
-          "data": {
-            "from": "DAI",
-            "to": "ETH"
-          }
-        },
-        "feeds": [
-          {
-            "bridge": "cryptocompare_cl_ea"
-          },
-          {
-            "bridge": "amberdata_cl_ea"
-          },
-          {
-            "bridge": "coinapi_cl_ea"
-          }
-        ],
-        "threshold": 1,
-        "absoluteThreshold": 0,
-        "precision": 18,
-        "pollTimer": {
-          "period": "1m0s"
-        },
-        "idleTimer": {
-          "duration": "24h0m0s"
-        }
+  "type": "fluxmonitor",
+  "params": {
+    "address": "0x7777a77dea5ee3c093e21d77660b5579c21f770b",
+    "requestData": {
+      "data": {
+        "from": "DAI",
+        "to": "ETH"
       }
+    },
+    "feeds": [
+      {
+        "bridge": "cryptocompare_cl_ea"
+      },
+      {
+        "bridge": "amberdata_cl_ea"
+      },
+      {
+        "bridge": "coinapi_cl_ea"
+      }
+    ],
+    "threshold": 1,
+    "absoluteThreshold": 0,
+    "precision": 18,
+    "pollTimer": {
+      "period": "1m0s"
+    },
+    "idleTimer": {
+      "duration": "24h0m0s"
     }
+  }
+}
 ```
 
 ## RunAt
@@ -168,7 +168,7 @@ A new run created by a `RunLog` is automatically given the parameters needed for
 
 ### RunLog Parameters
 
-`RunLog` initiators take an optional `address` parameter and `requesters` parameter. The `address` parameter is a single Ethereum address and the `requesters` parameter is an array of Ethereum addresses.  By adding the `address` parameter, you make the event filter of the RunLog initiator more restrictive, only listening for events from that address, instead of any address. By adding the `requesters` parameter, you only allow requests to come from an address within the array.
+`RunLog` initiators take an optional `address` parameter and `requesters` parameter. The `address` parameter is a single Ethereum address and the `requesters` parameter is an array of Ethereum addresses. By adding the `address` parameter, you make the event filter of the RunLog initiator more restrictive, only listening for events from that address, instead of any address. By adding the `requesters` parameter, you only allow requests to come from an address within the array.
 
 ### Example
 

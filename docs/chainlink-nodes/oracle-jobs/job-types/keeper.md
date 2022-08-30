@@ -2,8 +2,8 @@
 layout: nodes.liquid
 section: nodeOperator
 date: Last Modified
-title: "Keeper Jobs"
-permalink: "docs/jobs/types/keeper/"
+title: 'Keeper Jobs'
+permalink: 'docs/jobs/types/keeper/'
 ---
 
 Keeper jobs occasionally poll a smart contract method that expresses whether something in the contract is ready for some on-chain action to be performed. When it's ready, the job executes that on-chain action.
@@ -18,6 +18,7 @@ Examples:
 
 **Spec format**
 
+<!-- prettier-ignore -->
 ```jpv2
 type            = "keeper"
 schemaVersion   = 1

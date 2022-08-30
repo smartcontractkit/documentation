@@ -2,8 +2,8 @@
 layout: nodes.liquid
 section: nodeOperator
 date: Last Modified
-title: "Mean Task"
-permalink: "docs/jobs/task-types/mean/"
+title: 'Mean Task'
+permalink: 'docs/jobs/task-types/mean/'
 ---
 
 Accepts multiple numerical inputs and returns the mean (average) of them.

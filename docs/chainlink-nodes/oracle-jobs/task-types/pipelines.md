@@ -2,8 +2,8 @@
 layout: nodes.liquid
 section: nodeOperator
 date: Last Modified
-title: "Job Pipelines"
-permalink: "docs/jobs/task-types/pipelines/"
+title: 'Job Pipelines'
+permalink: 'docs/jobs/task-types/pipelines/'
 ---
 
 ## Writing pipelines

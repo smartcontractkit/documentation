@@ -2,8 +2,8 @@
 layout: nodes.liquid
 section: nodeOperator
 date: Last Modified
-title: "ETH Tx Task"
-permalink: "docs/jobs/task-types/eth-tx/"
+title: 'ETH Tx Task'
+permalink: 'docs/jobs/task-types/eth-tx/'
 ---
 
 Makes a mutating transaction to the specified contract with the specified data payload. The transaction is guaranteed to succeed eventually.

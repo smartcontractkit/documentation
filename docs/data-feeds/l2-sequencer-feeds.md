@@ -2,8 +2,8 @@
 layout: nodes.liquid
 section: ethereum
 date: Last Modified
-title: "L2 Sequencer Uptime Feeds"
-permalink: "docs/l2-sequencer-flag/"
+title: 'L2 Sequencer Uptime Feeds'
+permalink: 'docs/l2-sequencer-flag/'
 ---
 
 Optimistic rollup protocols move all execution off the layer 1 (L1) Ethereum chain, complete execution on a layer 2 (L2) chain, and return the results of the L2 execution back to the L1. These protocols have a [sequencer](https://community.optimism.io/docs/how-optimism-works/#block-production) that executes and rolls up the L2 transactions by batching multiple transactions into a single transaction.
@@ -57,7 +57,7 @@ On Optimism and Metis, the sequencer’s status is relayed from L1 to L2 where t
 
 **On the L1 network:**
 
-1. A network of node operators runs the external adapter to post the latest sequencer status to the `AggregatorProxy` contract and relays the status to the `Aggregator` contract.  The `Aggregator` contract calls the `validate` function in the `OptimismValidator` contract.  
+1. A network of node operators runs the external adapter to post the latest sequencer status to the `AggregatorProxy` contract and relays the status to the `Aggregator` contract. The `Aggregator` contract calls the `validate` function in the `OptimismValidator` contract.
 
 1. The `OptimismValidator` contract calls the `sendMessage` function in the `L1CrossDomainMessenger` contract. This message contains instructions to call the `updateStatus(bool status, uint64 timestamp)` function in the sequencer uptime feed deployed on the L2 network.
 
@@ -71,7 +71,7 @@ On Optimism and Metis, the sequencer’s status is relayed from L1 to L2 where t
 
 1. The `L2CrossDomainMessenger` contract relays the message to the `OptimismSequencerUptimeFeed` contract.
 
-1. The message relayed by the `L2CrossDomainMessenger` contains instructions to call `updateStatus` in the `OptimismSequencerUptimeFeed` contract.  
+1. The message relayed by the `L2CrossDomainMessenger` contains instructions to call `updateStatus` in the `OptimismSequencerUptimeFeed` contract.
 
 1. Consumers can then read from the `AggregatorProxy` contract, which fetches the latest round data from the `OptimismSequencerUptimeFeed` contract.
 
@@ -104,6 +104,7 @@ Create the consumer contract for sequencer uptime feeds similarly to contracts y
 {% include 'samples/PriceFeeds/PriceConsumerWithSequencerCheck.sol' %}
 ```
 
+<!-- prettier-ignore -->
 <div class="remix-callout">
       <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/PriceFeeds/PriceConsumerWithSequencerCheck.sol" target="_blank" >Open in Remix</a>
       <a href="/docs/conceptual-overview/#what-is-remix">What is Remix?</a>

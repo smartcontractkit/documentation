@@ -41,6 +41,7 @@ JobID: `55d23024c541439ca28b456044d01304`
 
 Import `ChainlinkClient.sol` into your contract so you can inherit the Chainlink behavior.
 
+<!-- prettier-ignore -->
 ```solidity Solidity 4
 pragma solidity ^0.4.24;
 
@@ -59,6 +60,7 @@ contract FinageChainlink is ChainlinkClient {
 }
 ```
 
+<!-- prettier-ignore -->
 ```solidity Solidity 5
 pragma solidity ^0.5.0;
 
@@ -77,6 +79,7 @@ contract FinageChainlink is ChainlinkClient {
 }
 ```
 
+<!-- prettier-ignore -->
 ```solidity Solidity 6
 pragma solidity ^0.6.0;
 
@@ -95,6 +98,7 @@ contract FinageChainlink is ChainlinkClient {
 }
 ```
 
+<!-- prettier-ignore -->
 <div class="remix-callout">
     <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/DataProviders/Finage.sol" target="_blank" >Open in Remix</a>
     <a href="/docs/conceptual-overview/#what-is-remix" >What is Remix?</a>
@@ -124,6 +128,7 @@ The examples below show how to create a request for the Chainlink node.
 
 ### `requestData` function
 
+<!-- prettier-ignore -->
 ```solidity
 function requestData
 (
@@ -142,6 +147,7 @@ function requestData
 
 ### `fulfill` function
 
+<!-- prettier-ignore -->
 ```solidity
 int256 public data;
 

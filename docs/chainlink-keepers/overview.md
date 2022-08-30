@@ -3,10 +3,7 @@ layout: nodes.liquid
 section: ethereum
 date: Last Modified
 title: 'Chainlink Keepers Architecture'
-whatsnext:
-  {
-    'FAQs': '/docs/chainlink-keepers/faqs/',
-  }
+whatsnext: { 'FAQs': '/docs/chainlink-keepers/faqs/' }
 ---
 
 ## Overview
@@ -27,11 +24,11 @@ The following diagram describes the architecture of the Keeper network. The Chai
 
 Keepers use these contracts. You can find them in the [Chainlink repository](https://github.com/smartcontractkit/chainlink/tree/develop/contracts/src/v0.8). For details about how to use them, see the [Keepers-compatible Contracts](../compatible-contracts/) page.
 
-+ `KeeperCompatible.sol`[(link)](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/KeeperCompatible.sol): Imports the following contracts:
-  + `KeeperBase.sol`[(link)](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/KeeperBase.sol): Enables the use of the `cannotExecute` modifier. Import this contract if you need for this modifier. See the [`checkUpkeep` function](/docs/chainlink-keepers/compatible-contracts#checkupkeep-function) for details.
-  + `KeeperCompatibleInterface.sol`[(link)](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/interfaces/KeeperCompatibleInterface.sol): The interface to be implemented in order to make your contract keepers-compatible. Import this contract for type safety.
-+ `KeeperRegistry.sol`[(link)](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/KeeperRegistry.sol): The registry contract that tracks all registered upkeeps and the keepers that can perform them.
-+ `KeeperRegistrar.sol`[(link)](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/KeeperRegistrar.sol): The Registrar contract governs the registration of new upkeeps on the associated `KeeperRegistry` contract. Users who want to register Upkeeps by directly calling the deployed contract have to call the Transfer-and-Call function on the respective ERC-677 LINK contract configured on the Registrar and ensure they pass the correct encoded function call and inputs. 
+- `KeeperCompatible.sol`[(link)](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/KeeperCompatible.sol): Imports the following contracts:
+  - `KeeperBase.sol`[(link)](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/KeeperBase.sol): Enables the use of the `cannotExecute` modifier. Import this contract if you need for this modifier. See the [`checkUpkeep` function](/docs/chainlink-keepers/compatible-contracts#checkupkeep-function) for details.
+  - `KeeperCompatibleInterface.sol`[(link)](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/interfaces/KeeperCompatibleInterface.sol): The interface to be implemented in order to make your contract keepers-compatible. Import this contract for type safety.
+- `KeeperRegistry.sol`[(link)](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/KeeperRegistry.sol): The registry contract that tracks all registered upkeeps and the keepers that can perform them.
+- `KeeperRegistrar.sol`[(link)](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/KeeperRegistrar.sol): The Registrar contract governs the registration of new upkeeps on the associated `KeeperRegistry` contract. Users who want to register Upkeeps by directly calling the deployed contract have to call the Transfer-and-Call function on the respective ERC-677 LINK contract configured on the Registrar and ensure they pass the correct encoded function call and inputs.
 
 ## How it works
 

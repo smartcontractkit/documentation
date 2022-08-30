@@ -45,6 +45,7 @@ Use these elements to create a Keepers-compatible contract that will automatical
 {% include 'samples/Keepers/KeepersCounter.sol' %}
 ```
 
+<!-- prettier-ignore -->
 <div class="remix-callout">
     <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/Keepers/KeepersCounter.sol" >Open in Remix</a>
     <a href="/docs/conceptual-overview/#what-is-remix" > What is Remix?</a>
@@ -77,6 +78,7 @@ This function contains the logic that runs off-chain during every block as an `e
 
 Because `checkUpkeep` is only off-chain in simulation it is best to treat this as a `view` function and not modify any state. This might not always be possible if you want to use more advanced Solidity features like `DelegateCall`[(link)](https://docs.soliditylang.org/en/latest/introduction-to-smart-contracts.html#delegatecall-callcode-and-libraries). It is a best practice to import the `KeeperCompatible.sol`[(link)](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/KeeperCompatible.sol) contract and use the `cannotExecute` modifier to ensure that the method can be used only for simulation purposes.
 
+<!-- prettier-ignore -->
 ```solidity
 function checkUpkeep(
   bytes calldata checkData
@@ -135,6 +137,7 @@ When `checkUpkeep` returns `upkeepNeeded == true`, the Keeper node broadcasts a 
 
 Ensure that your `performUpkeep` is _idempotent_. Your `performUpkeep` function should change state such that `checkUpkeep` will not return `true` for the same subset of work once said work is complete. Otherwise the Upkeep will remain eligible and result in multiple performances by the Keeper Network on the exactly same subset of work. As a best practice, always [revalidate](#revalidate-performupkeep) conditions for your upkeep at the start of your `performUpkeep` function.
 
+<!-- prettier-ignore -->
 ```solidity
 function performUpkeep(
   bytes calldata performData

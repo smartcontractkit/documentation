@@ -2,8 +2,8 @@
 layout: nodes.liquid
 section: nodeOperator
 date: Last Modified
-title: "Adding External Initiators to Nodes"
-permalink: "docs/external-initiators-in-nodes/"
+title: 'Adding External Initiators to Nodes'
+permalink: 'docs/external-initiators-in-nodes/'
 ---
 
 > 🚧 External initiators are disabled on nodes by default. Set the `FEATURE_EXTERNAL_INITIATORS=true` [configuration variable](/docs/configuration-variables/#feature_external_initiators) to enable this feature.

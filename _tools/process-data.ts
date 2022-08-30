@@ -83,7 +83,7 @@ for (let page of targetData) {
   finalResult[page.page] = {
     title: page.title,
     feedType: page.feedType,
-    networks: []
+    networks: [],
   };
 
   for (let network of page.networks) {
@@ -127,10 +127,9 @@ for (let page of targetData) {
           heartbeat: contract.heartbeat ? contract.heartbeat : contract.config?.maxContractValueAge || '',
           decimals: contract.decimals,
           assetName: contract.docs?.assetName,
-          feedCategory: contract.docs?.feedCategory || "",
-          feedType: contract.docs?.feedType || "-",
+          feedCategory: contract.docs?.feedCategory || '',
+          feedType: contract.docs?.feedType || '-',
           shutdownDate: contract.docs?.shutdownDate,
-
         };
         if (contract.v3Facade) {
           liveContracts[contract.v3Facade] = {
@@ -138,8 +137,8 @@ for (let page of targetData) {
             heartbeat: contract.heartbeat,
             decimals: contract.decimals,
             assetName: contract.docs?.assetName,
-            feedCategory: contract.docs?.feedCategory || "",
-            feedType: contract.docs?.feedType || "-",
+            feedCategory: contract.docs?.feedCategory || '',
+            feedType: contract.docs?.feedType || '-',
             shutdownDate: contract.docs?.shutdownDate,
           };
         }
@@ -151,17 +150,16 @@ for (let page of targetData) {
     if (contents.proxies) {
       for (let proxyKey of Object.keys(contents.proxies)) {
         const proxy = contents.proxies[proxyKey];
-        if (liveContracts[proxy.aggregator] && !proxy.name.includes("Healthcheck")) {
-
+        if (liveContracts[proxy.aggregator] && !proxy.name.includes('Healthcheck')) {
           proxyList.push({
             pair: proxy.name,
-            assetName: liveContracts[proxy.aggregator].assetName || "",
+            assetName: liveContracts[proxy.aggregator].assetName || '',
             deviationThreshold: liveContracts[proxy.aggregator].deviationThreshold,
             heartbeat: liveContracts[proxy.aggregator].heartbeat,
             decimals: liveContracts[proxy.aggregator].decimals,
             proxy: proxyKey,
-            feedCategory: liveContracts[proxy.aggregator].feedCategory || "",
-            feedType: liveContracts[proxy.aggregator].feedType || "-",
+            feedCategory: liveContracts[proxy.aggregator].feedCategory || '',
+            feedType: liveContracts[proxy.aggregator].feedType || '-',
             shutdownDate: liveContracts[proxy.aggregator].shutdownDate,
           });
         }
@@ -172,14 +170,14 @@ for (let page of targetData) {
         if (!contract.docs?.hidden && contract.status === 'live') {
           proxyList.push({
             pair: contract.name,
-            assetName: contract.docs?.assetName || "",
+            assetName: contract.docs?.assetName || '',
             deviationThreshold: liveContracts[contractKey]?.deviationThreshold,
             heartbeat: liveContracts[contractKey]?.heartbeat,
             decimals: liveContracts[contractKey]?.decimals,
             // Use transmissionsAccount for Solana; contractKey otherwise
             proxy: contract.transmissionsAccount || contractKey,
-            feedCategory: contract.docs?.feedCategory || "",
-            feedType: contract.docs?.feedType || "-",
+            feedCategory: contract.docs?.feedCategory || '',
+            feedType: contract.docs?.feedType || '-',
             shutdownDate: contract.docs?.shutdownDate,
           });
         }

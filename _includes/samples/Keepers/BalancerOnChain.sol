@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
-import '@chainlink/contracts/src/v0.8/interfaces/KeeperCompatibleInterface.sol';
+import "@chainlink/contracts/src/v0.8/interfaces/KeeperCompatibleInterface.sol";
 
 /**
  * @dev Example contract which perform all the computation in `performUpkeep`
@@ -34,7 +34,7 @@ contract BalancerOnChain is KeeperCompatibleInterface {
     /// @dev withdraw an `amount`from multiple elements of `balances` array. The elements are provided in `indexes`
     function withdraw(uint256 amount, uint256[] memory indexes) public {
         for (uint256 i = 0; i < indexes.length; i++) {
-            require(indexes[i] < SIZE, 'Provided index out of bound');
+            require(indexes[i] < SIZE, "Provided index out of bound");
             balances[indexes[i]] -= amount;
         }
     }
@@ -42,7 +42,12 @@ contract BalancerOnChain is KeeperCompatibleInterface {
     /// @dev this method is called by the keepers to check if `performUpkeep` should be performed
     function checkUpkeep(
         bytes calldata /* checkData */
-    ) external view override returns (bool upkeepNeeded, bytes memory performData) {
+    )
+        external
+        view
+        override
+        returns (bool upkeepNeeded, bytes memory performData)
+    {
         upkeepNeeded = false;
         for (uint256 i = 0; i < SIZE && !upkeepNeeded; i++) {
             if (balances[i] < LIMIT) {
@@ -50,7 +55,7 @@ contract BalancerOnChain is KeeperCompatibleInterface {
                 upkeepNeeded = true;
             }
         }
-        return (upkeepNeeded, '');
+        return (upkeepNeeded, "");
     }
 
     /// @dev this method is called by the keepers. it increases all elements which balances are lower than the LIMIT

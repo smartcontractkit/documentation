@@ -2,28 +2,28 @@
 layout: nodes.liquid
 section: ethereum
 date: Last Modified
-title: "Selecting Quality Data Feeds"
-permalink: "docs/selecting-data-feeds/"
-excerpt: "Learn how to assess data feeds that you use in your smart contracts."
+title: 'Selecting Quality Data Feeds'
+permalink: 'docs/selecting-data-feeds/'
+excerpt: 'Learn how to assess data feeds that you use in your smart contracts.'
 ---
 
 When you design your applications, consider the quality of the data that you use in your smart contracts. Ultimately you are responsible for identifying and assessing the accuracy, availability, and quality of data that you choose to consume via the Chainlink Network. Note that all feeds contain some inherent risk. Read the [Risk Mitigation](#risk-mitigation) and [Evaluating Data Sources](#evaluating-data-sources-and-risks) sections when making design decisions. Chainlink lists decentralized data feeds in the documentation to help developers build new applications integrated with data.
 
 **Topics**
 
-+ [Data Feed Categories](#data-feed-categories)
-+ [Risk Mitigation](#risk-mitigation)
-+ [Chainlink Community Deployments](#chainlink-community-deployments)
-+ [Evaluating Data Sources and Risks](#evaluating-data-sources-and-risks)
+- [Data Feed Categories](#data-feed-categories)
+- [Risk Mitigation](#risk-mitigation)
+- [Chainlink Community Deployments](#chainlink-community-deployments)
+- [Evaluating Data Sources and Risks](#evaluating-data-sources-and-risks)
 
 ## Data Feed Categories
 
 Data feeds are grouped into the following categories based on the level of risk from lowest to highest:
 
-+ [Verified Feeds](#🟢-verified-feeds)
-+ [Monitored Feeds](#🟡-monitored-feeds)
-+ [Custom Feeds](#-custom-feeds)
-+ [Specialized Feeds](#-specialized-feeds)
+- [Verified Feeds](#🟢-verified-feeds)
+- [Monitored Feeds](#🟡-monitored-feeds)
+- [Custom Feeds](#-custom-feeds)
+- [Specialized Feeds](#-specialized-feeds)
 
 > 📘 For important updates regarding the use of Chainlink Price Feeds, users should join the official Chainlink Discord and subscribe to the [data-feeds-user-notifications channel](https://discord.gg/Dqy5N9UbsR).
 
@@ -44,7 +44,7 @@ Inherent risks might still exist based on your use case, the blockchain on which
 
 ### 🟡 Monitored Feeds
 
-Feeds under the monitored category are *under review* by the Chainlink Labs team to support the stability of the broader ecosystem. While generally resilient and distributed, these feeds carry additional risk.
+Feeds under the monitored category are _under review_ by the Chainlink Labs team to support the stability of the broader ecosystem. While generally resilient and distributed, these feeds carry additional risk.
 
 Data feeds might be under review for the following reasons:
 
@@ -149,7 +149,7 @@ Some data providers use a single data source, which might be necessary if only o
 
 Price data quality is subject to crypto actions by the crypto and blockchain project teams. Crypto actions are similar to [corporate actions](https://en.wikipedia.org/wiki/Corporate_action) but are specific to cryptocurrency and blockchain projects, such as token renaming, token swaps, redenominations, splits, network upgrades, and other migrations that teams who govern the blockchain or token might undertake
 
-Sustaining data quality is dependent on data sources implementing the necessary adjustments related to such actions. For example, when a project upgrades to a new version of their token, this results in a *token migration*. When token migrations occur, they require building a new price feed to ensure that the token price is accurately reported. Similarly, actions by blockchain project teams, such as forks or upgrades to the network, may require new price feeds to ensure continuity and data quality. When considering a token migration, fork, network upgrade, or other crypto action, projects should proactively reach out to relevant stakeholders to ensure the asset price is accurately reported throughout the process.
+Sustaining data quality is dependent on data sources implementing the necessary adjustments related to such actions. For example, when a project upgrades to a new version of their token, this results in a _token migration_. When token migrations occur, they require building a new price feed to ensure that the token price is accurately reported. Similarly, actions by blockchain project teams, such as forks or upgrades to the network, may require new price feeds to ensure continuity and data quality. When considering a token migration, fork, network upgrade, or other crypto action, projects should proactively reach out to relevant stakeholders to ensure the asset price is accurately reported throughout the process.
 
 ### Market Failures Resulting from Extreme Events
 

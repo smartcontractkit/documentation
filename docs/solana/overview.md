@@ -2,13 +2,14 @@
 layout: nodes.liquid
 section: solana
 date: Last Modified
-title: "Overview"
-permalink: "docs/solana/"
-whatsnext: {
-  "Use data feeds off-chain":"/docs/solana/using-data-feeds-off-chain/",
-  "Use data feeds on-chain":"/docs/solana/using-data-feeds-solana/",
-  "See the available data feeds on Solana":"/docs/solana/data-feeds-solana/"
-}
+title: 'Overview'
+permalink: 'docs/solana/'
+whatsnext:
+  {
+    'Use data feeds off-chain': '/docs/solana/using-data-feeds-off-chain/',
+    'Use data feeds on-chain': '/docs/solana/using-data-feeds-solana/',
+    'See the available data feeds on Solana': '/docs/solana/data-feeds-solana/',
+  }
 ---
 
 Chainlink provides data feeds on the [Solana](https://solana.com/) network. Chainlink data feeds on Solana employ [Off-Chain Reporting (OCR)](/docs/off-chain-reporting/) to aggregate data from data providers who pull from both centralized and decentralized exchanges. Chainlink’s Solana deployment has no dependencies on external blockchain networks such as Ethereum. In Solana, storage and smart contract logic are separate. Programs store all the logic similar to an EVM (Ethereum) smart contract. The accounts store all the data. Compared to Solidity, the combination of an account and a program is equivalent to a smart contract on an EVM chain. State and logic are separate in Solana.
@@ -21,9 +22,9 @@ To learn how to mitigate risk to your applications, read the [Selecting Quality 
 
 **Topics**
 
-+ [Chainlink products and Solana clusters](#chainlink-products-and-solana-clusters)
-+ [Languages, tools, and frameworks](#languages-tools-and-frameworks)
-+ [Solana wallets](#solana-wallets)
+- [Chainlink products and Solana clusters](#chainlink-products-and-solana-clusters)
+- [Languages, tools, and frameworks](#languages-tools-and-frameworks)
+- [Solana wallets](#solana-wallets)
 
 ## Chainlink products and Solana clusters
 
@@ -51,6 +52,7 @@ The examples in the Chainlink documentation use the following languages, tools, 
 
 When developing applications to use Chainlink products on Solana, always use a [Mainnet release](https://github.com/solana-labs/solana/releases) version of the Solana CLI that is equal to or greater than the version currently running on your target cluster. Use `solana --version` and `solana cluster-version` to check CLI and cluster versions:
 
+<!-- prettier-ignore -->
 ```sh
 solana --version
 solana-cli 1.9.28 (src:b576e9cc; feat:320703611)
@@ -70,6 +72,7 @@ When you use Chainlink on Solana, you need a [Solana wallet](https://docs.solana
 
 If you have existing wallets that you want to use for the guides in the Chainlink documentation, find your wallet keypair and make it available in your development environment as a file. You can point [Anchor](https://project-serum.github.io/anchor/getting-started/introduction.html) and the [Solana CLI](https://docs.solana.com/cli) to a specific keypair when you deploy or manage your Solana programs.
 
+<!-- prettier-ignore -->
 ```sh
 anchor build
 ⋮

@@ -2,9 +2,9 @@
 
 pragma solidity ^0.8.7;
 
-import '@chainlink/contracts/src/v0.8/interfaces/LinkTokenInterface.sol';
-import '@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol';
-import '@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol';
+import "@chainlink/contracts/src/v0.8/interfaces/LinkTokenInterface.sol";
+import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
+import "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol";
 
 /**
  *  An example of a consumer contract that also owns and manages the subscription
@@ -33,7 +33,8 @@ contract VRFv2SubscriptionManager is VRFConsumerBaseV2 {
     // The gas lane to use, which specifies the maximum gas price to bump to.
     // For a list of available gas lanes on each network,
     // see https://docs.chain.link/docs/vrf-contracts/#configurations
-    bytes32 keyHash = 0x354d2f95da55398f44b7cff77da56283d9c6c829a4bdf1bbcaf2ad6a4d081f61;
+    bytes32 keyHash =
+        0x354d2f95da55398f44b7cff77da56283d9c6c829a4bdf1bbcaf2ad6a4d081f61;
 
     // A reasonable default is 100000, but this value could be different
     // on other networks.
@@ -82,7 +83,7 @@ contract VRFv2SubscriptionManager is VRFConsumerBaseV2 {
 
     // Create a new subscription
     function createNewSubscription() public onlyOwner {
-        require(s_subscriptionId == 0, 'A subscription already exist');
+        require(s_subscriptionId == 0, "A subscription already exist");
         // Create a subscription with a new subscription ID.
         address[] memory consumers = new address[](1);
         consumers[0] = address(this);
@@ -108,7 +109,10 @@ contract VRFv2SubscriptionManager is VRFConsumerBaseV2 {
     // check if pending requests Exist
     function pendingRequestExists() external view returns (bool) {
         (, bytes memory returnData) = address(COORDINATOR).staticcall(
-            abi.encodeWithSignature('pendingRequestExists(uint64)', s_subscriptionId)
+            abi.encodeWithSignature(
+                "pendingRequestExists(uint64)",
+                s_subscriptionId
+            )
         );
         return abi.decode(returnData, (bool));
     }
@@ -116,7 +120,11 @@ contract VRFv2SubscriptionManager is VRFConsumerBaseV2 {
     // Assumes this contract owns link. This function must be called to fund the subscription
     // 1000000000000000000 = 1 LINK
     function topUpSubscription(uint256 amount) external onlyOwner {
-        LINKTOKEN.transferAndCall(address(COORDINATOR), amount, abi.encode(s_subscriptionId));
+        LINKTOKEN.transferAndCall(
+            address(COORDINATOR),
+            amount,
+            abi.encode(s_subscriptionId)
+        );
     }
 
     // Add a consumer contract to the subscription.
@@ -131,7 +139,10 @@ contract VRFv2SubscriptionManager is VRFConsumerBaseV2 {
 
     // Cancel the subscription and send the remaining LINK to a wallet address.
     function cancelSubscription(address receivingWallet) external onlyOwner {
-        require(s_subscriptionId > 0, 'A subscription does not exist for this contract');
+        require(
+            s_subscriptionId > 0,
+            "A subscription does not exist for this contract"
+        );
         COORDINATOR.cancelSubscription(s_subscriptionId, receivingWallet);
         s_subscriptionId = 0;
     }

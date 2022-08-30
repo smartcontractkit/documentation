@@ -1,9 +1,10 @@
 ---
 layout: nodes.liquid
 date: Last Modified
-title: "Glossary"
-permalink: "docs/glossary/"
+title: 'Glossary'
+permalink: 'docs/glossary/'
 ---
+
 ### Adapter
 
 > ❗️ The adapters or JSON adapters for v1 Jobs are removed for Chainlink nodes running version 1.0.0 and later. Use [v2 job tasks](/docs/tasks) instead.
@@ -22,8 +23,7 @@ If you would like to add a new External Adapter to your node, you create a new B
 
 ### Consumer (Contract)
 
-Recipient of an [Answer](#answer) provided by an [Oracle](#oracle). The Consumer is commonly a contract, and is also commonly the same [entity that requested the Answer](#requester), but does not have to be. We have a helper function, `
-addExternalRequest`, that gives consuming contracts the ability to safely check answers it receives without requesting them itself.
+Recipient of an [Answer](#answer) provided by an [Oracle](#oracle). The Consumer is commonly a contract, and is also commonly the same [entity that requested the Answer](#requester), but does not have to be. We have a helper function, ` addExternalRequest`, that gives consuming contracts the ability to safely check answers it receives without requesting them itself.
 
 ### Encumbrance Parameters
 

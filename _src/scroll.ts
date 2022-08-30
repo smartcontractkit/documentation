@@ -1,13 +1,9 @@
 const fixNavHeight = () => {
-  const nav = document.querySelector<HTMLElement>('navigation')
+  const nav = document.querySelector<HTMLElement>('navigation');
   if (nav) {
-    const remainingVisibleTopBar =
-      nav.getBoundingClientRect().top -
-      window.scrollY;
+    const remainingVisibleTopBar = nav.getBoundingClientRect().top - window.scrollY;
     if (remainingVisibleTopBar > 0) {
-      nav.style[
-        'height'
-      ] = `calc( 100vh - ${remainingVisibleTopBar}px)`;
+      nav.style['height'] = `calc( 100vh - ${remainingVisibleTopBar}px)`;
     } else {
       nav.style['height'] = '';
     }

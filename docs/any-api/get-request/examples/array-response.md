@@ -73,6 +73,7 @@ Fetch the _id_ of the first element. To consume an API, your contract must impor
 {% include 'samples/APIRequests/FetchFromArray.sol' %}
 ```
 
+<!-- prettier-ignore -->
 <div class="remix-callout">
     <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/FetchFromArray.sol" target="_blank" >Open in Remix</a>
     <a href="/docs/conceptual-overview/#what-is-remix" >What is Remix?</a>

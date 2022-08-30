@@ -6,7 +6,7 @@ const server = spawn('yarn', ['serve'], {
 });
 
 let external = false;
-if(argv[argv.length - 1] === '-e') {
+if (argv[argv.length - 1] === '-e') {
   external = true;
 }
 
@@ -24,9 +24,9 @@ server.stdout.on('data', (data) => {
       program = 'linkcheck-win';
     }
     const args = [':4200'];
-    if(external) {
-        args.push('-e');
-        console.log('Also checking external links.');
+    if (external) {
+      args.push('-e');
+      console.log('Also checking external links.');
     }
     const checker = spawn(program, args, {
       stdio: ['ignore', 'pipe', 'ignore'],

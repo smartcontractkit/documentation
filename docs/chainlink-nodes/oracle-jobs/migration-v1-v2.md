@@ -2,8 +2,8 @@
 layout: nodes.liquid
 section: nodeOperator
 date: Last Modified
-title: "Migrating to v2 Jobs"
-permalink: "docs/jobs/migration-v1-v2/"
+title: 'Migrating to v2 Jobs'
+permalink: 'docs/jobs/migration-v1-v2/'
 ---
 
 Chainlink nodes with version 1.0.0 and later support v2 jobs in TOML format. Support for v1 jobs in JSON format is removed.
@@ -24,7 +24,7 @@ The v2 Job Specs support expanding functionality in Chainlink nodes and prefer e
 
 ### DAG dependencies and variables
 
-v2 jobs require the author to specify dependencies using [DOT syntax](https://en.wikipedia.org/wiki/DOT_(graph_description_language)). If a task needs data produced by another task, this must be specified using DOT.
+v2 jobs require the author to specify dependencies using [DOT syntax](<https://en.wikipedia.org/wiki/DOT_(graph_description_language)>). If a task needs data produced by another task, this must be specified using DOT.
 
 To facilitate explicitness, v2 jobs require the author to specify inputs to tasks using `$(variable)` syntax. For example, if an `http` task feeds data into a `jsonparse` task, it must be specified like the following example:
 
@@ -63,7 +63,6 @@ submit_btcusd [type="bridge"
                requestData="{\\"data\\":{\\"value\\": $(foo), \\"price\\": $(bar), \\"timestamp\\": $(baz)}}"
                ]
 ```
-
 
 ### Misc. notes
 
@@ -109,6 +108,7 @@ This spec relies on CBOR-encoded on-chain values for the `httpget` URL and `json
 ```
 
 Notes:
+
 - In v1, the job ID is randomly generated at creation time. In v2 jobs, the job ID can be manually specified or the Chainlink node will automatically generate it.
 - In v2, the `ethbytes32` task and all of the other ABI encoding tasks are now encapsulated in the `ethabiencode` task with much more flexibility. See the [ETH ABI Encode task](/docs/jobs/task-types/eth-abi-encode/) page to learn more.
 
@@ -165,9 +165,7 @@ observationSource   = """
     {
       "type": "JSONParse",
       "params": {
-        "path": [
-          "last"
-        ]
+        "path": ["last"]
       }
     },
     {
@@ -242,10 +240,7 @@ observationSource   = """
     {
       "type": "JsonParse",
       "params": {
-        "path": [
-          "data",
-          "price"
-        ]
+        "path": ["data", "price"]
       }
     },
     {

@@ -48,6 +48,7 @@ The contract has the following components:
 {% include 'samples/Keepers/BalancerOnChain.sol' %}
 ```
 
+<!-- prettier-ignore -->
 <div class="remix-callout">
     <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/Keepers/BalancerOnChain.sol" >Open in Remix</a>
     <a href="/docs/conceptual-overview/#what-is-remix" >What is Remix?</a>
@@ -76,7 +77,7 @@ Test this example using the following steps:
 In this example, the `performUpkeep()` function used **2,481,379** gas. This example has two main issues:
 
 - All computation is done in `performUpkeep()`. This is a state modifying function which leads to high gas consumption.
-- This example is simple, but looping over large arrays with state updates can cause the transaction to hit the gas limit of the [network](../supported-networks), which prevents `performUpkeep` from running successfully.  
+- This example is simple, but looping over large arrays with state updates can cause the transaction to hit the gas limit of the [network](../supported-networks), which prevents `performUpkeep` from running successfully.
 
 To reduce these gas fees and avoid running out of gas, you can make some simple changes to the contract.
 
@@ -96,6 +97,7 @@ Modify the contract and move the computation to the `checkUpkeep()` function. Th
 {% include 'samples/Keepers/BalancerOffChain.sol' %}
 ```
 
+<!-- prettier-ignore -->
 <div class="remix-callout">
     <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/Keepers/BalancerOffChain.sol" >Open in Remix</a>
     <a href="/docs/conceptual-overview/#what-is-remix" >What is Remix?</a>

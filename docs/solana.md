@@ -1,7 +1,7 @@
 ---
 layout: nodes.liquid
 section: solana
-title: "Chainlink on Solana"
+title: 'Chainlink on Solana'
 date: Last Modified
 permalink: /solana/
 ---

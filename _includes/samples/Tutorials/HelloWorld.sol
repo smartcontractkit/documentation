@@ -8,13 +8,13 @@ pragma solidity 0.8.7;
  */
 
 contract HelloWorld {
-  string public message;
+    string public message;
 
-  constructor(string memory initialMessage) {
-    message = initialMessage;
-  }
+    constructor(string memory initialMessage) {
+        message = initialMessage;
+    }
 
-  function updateMessage(string memory newMessage) public {
-    message = newMessage;
-  }
+    function updateMessage(string memory newMessage) public {
+        message = newMessage;
+    }
 }

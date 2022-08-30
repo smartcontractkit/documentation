@@ -2,8 +2,8 @@
 layout: nodes.liquid
 section: nodeOperator
 date: Last Modified
-title: "Uppercase Task"
-permalink: "docs/jobs/task-types/uppercase/"
+title: 'Uppercase Task'
+permalink: 'docs/jobs/task-types/uppercase/'
 ---
 
 Accepts a string and returns an uppercase string.

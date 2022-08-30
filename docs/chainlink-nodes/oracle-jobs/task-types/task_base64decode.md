@@ -2,8 +2,8 @@
 layout: nodes.liquid
 section: nodeOperator
 date: Last Modified
-title: "Base64 Decode Task"
-permalink: "docs/jobs/task-types/base64decode/"
+title: 'Base64 Decode Task'
+permalink: 'docs/jobs/task-types/base64decode/'
 ---
 
 Accepts a base64 encoded string and returns decoded bytes.

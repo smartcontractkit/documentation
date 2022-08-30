@@ -3,8 +3,8 @@
 // It shows how to setup multiple execution paths for handling a response.
 pragma solidity ^0.8.7;
 
-import '@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol';
-import '@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol';
+import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
+import "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol";
 
 /**
  * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
@@ -25,7 +25,8 @@ contract VRFv2MultiplePaths is VRFConsumerBaseV2 {
     // The gas lane to use, which specifies the maximum gas price to bump to.
     // For a list of available gas lanes on each network,
     // see https://docs.chain.link/docs/vrf/v2/supported-networks/#configurations
-    bytes32 keyHash = 0x79d3d8832d904592c0bf9818b621522c988bb8b0c05cdc3b15aea1b6e8db0c15;
+    bytes32 keyHash =
+        0x79d3d8832d904592c0bf9818b621522c988bb8b0c05cdc3b15aea1b6e8db0c15;
 
     uint32 callbackGasLimit = 100_000;
 
@@ -76,7 +77,10 @@ contract VRFv2MultiplePaths is VRFConsumerBaseV2 {
         }
     }
 
-    function fulfillRandomWords(uint256 requestId, uint256[] memory randomWords) internal override {
+    function fulfillRandomWords(uint256 requestId, uint256[] memory randomWords)
+        internal
+        override
+    {
         Variable variable = requests[requestId];
         if (variable == Variable.A) {
             fulfillA(requestId, randomWords[0]);

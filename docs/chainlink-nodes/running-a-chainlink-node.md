@@ -2,18 +2,19 @@
 layout: nodes.liquid
 section: nodeOperator
 date: Last Modified
-title: "Running a Chainlink Node"
-permalink: "docs/running-a-chainlink-node/"
-whatsnext: {
-  "Fulfilling Requests":"/docs/fulfilling-requests/",
-  "Optimizing EVN Performance":"/docs/evm-performance-configuration/",
-  "Performing System Maintenance":"/docs/performing-system-maintenance/",
-  "Miscellaneous":"/docs/miscellaneous/",
-  "Security and Operation Best Practices":"/docs/best-security-practices/"
-}
+title: 'Running a Chainlink Node'
+permalink: 'docs/running-a-chainlink-node/'
+whatsnext:
+  {
+    'Fulfilling Requests': '/docs/fulfilling-requests/',
+    'Optimizing EVN Performance': '/docs/evm-performance-configuration/',
+    'Performing System Maintenance': '/docs/performing-system-maintenance/',
+    'Miscellaneous': '/docs/miscellaneous/',
+    'Security and Operation Best Practices': '/docs/best-security-practices/',
+  }
 metadata:
-  title: "Running a Chainlink Node"
-  description: "Run your own Chainlink node using this guide which explains the requirements and basics for getting started."
+  title: 'Running a Chainlink Node'
+  description: 'Run your own Chainlink node using this guide which explains the requirements and basics for getting started.'
 ---
 
 In this section, we'll explain the requirements and basics for running your own Chainlink node.
@@ -37,7 +38,7 @@ Requesters can specify an amount of LINK that all nodes must deposit as a penalt
 Your Chainlink node should be run on a server that has a public IP address, and meets the following CPU and memory requirements:
 
 - Minimum: To get started running a Chainlink node, you will need a machine with at least **2 cores** and **4 GB of RAM**.
-- Recommended: The requirements for running a Chainlink node scale as the number of jobs your node services also scales. For nodes with over 100 jobs, you will need at least **4 cores** and **8GB of RAM**.  
+- Recommended: The requirements for running a Chainlink node scale as the number of jobs your node services also scales. For nodes with over 100 jobs, you will need at least **4 cores** and **8GB of RAM**.
 
 ### PostgreSQL Database Requirements
 
@@ -65,7 +66,7 @@ It's recommended to run the Chainlink node with [Docker](https://www.docker.com/
 ### Requirements
 
 - [Docker-CE](https://docs.docker.com/install/). Quick instructions for setting up Docker are below:
-
+  <!-- prettier-ignore -->
   ```shell Amazon Linux 2
   sudo amazon-linux-extras install -y docker
   sudo systemctl start docker
@@ -73,6 +74,7 @@ It's recommended to run the Chainlink node with [Docker](https://www.docker.com/
   exit
   # log in again
   ```
+
   ```shell CentOS
   curl -sSL https://get.docker.com/ | sh
   sudo systemctl start docker
@@ -80,12 +82,16 @@ It's recommended to run the Chainlink node with [Docker](https://www.docker.com/
   exit
   # log in again
   ```
+
+  <!-- prettier-ignore -->
   ```shell Debian
   curl -sSL https://get.docker.com/ | sh
   sudo usermod -aG docker $USER
   exit
   # log in again
   ```
+
+  <!-- prettier-ignore -->
   ```shell Fedora
   curl -sSL https://get.docker.com/ | sh
   sudo systemctl start docker
@@ -93,6 +99,8 @@ It's recommended to run the Chainlink node with [Docker](https://www.docker.com/
   exit
   # log in again
   ```
+
+  <!-- prettier-ignore -->
   ```shell Ubuntu
   curl -sSL https://get.docker.com/ | sh
   sudo usermod -aG docker $USER
@@ -111,25 +119,33 @@ Once you have your Ethereum client running and fully synced, you're ready to run
 
 Create a local directory to hold the Chainlink data:
 
+<!-- prettier-ignore -->
 ```shell Goerli
 mkdir ~/.chainlink-goerli
 ```
+
+<!-- prettier-ignore -->
 ```shell Rinkeby
 mkdir ~/.chainlink-rinkeby
 ```
+
+<!-- prettier-ignore -->
 ```shell Kovan
 mkdir ~/.chainlink-kovan
 ```
+
+<!-- prettier-ignore -->
 ```shell Mainnet
 mkdir ~/.chainlink
 ```
 
-> **_Other Supported Networks:_**  Chainlink is blockchain agnostic technology. The [LINK Token Contracts](../link-token-contracts/) page details networks which support the LINK token. You can setup your node to provide data to any of these blockchains.
+> **_Other Supported Networks:_** Chainlink is blockchain agnostic technology. The [LINK Token Contracts](../link-token-contracts/) page details networks which support the LINK token. You can setup your node to provide data to any of these blockchains.
 
 #### Create an Environment File
 
 Run the following as a command to create an environment file and populate with variables specific to the network you're running on. For a full list of available configuration variables, click [here](../configuration-variables/).
 
+<!-- prettier-ignore -->
 ```shell Goerli
 echo "ROOT=/chainlink
 LOG_LEVEL=debug
@@ -138,6 +154,8 @@ CHAINLINK_TLS_PORT=0
 SECURE_COOKIES=false
 ALLOW_ORIGINS=*" > ~/.chainlink-goerli/.env
 ```
+
+<!-- prettier-ignore -->
 ```shell Rinkeby
 echo "ROOT=/chainlink
 LOG_LEVEL=debug
@@ -146,6 +164,8 @@ CHAINLINK_TLS_PORT=0
 SECURE_COOKIES=false
 ALLOW_ORIGINS=*" > ~/.chainlink-rinkeby/.env
 ```
+
+<!-- prettier-ignore -->
 ```shell Kovan
 echo "ROOT=/chainlink
 LOG_LEVEL=debug
@@ -154,6 +174,8 @@ CHAINLINK_TLS_PORT=0
 SECURE_COOKIES=false
 ALLOW_ORIGINS=*" > ~/.chainlink-kovan/.env
 ```
+
+<!-- prettier-ignore -->
 ```shell Mainnet
 echo "ROOT=/chainlink
 LOG_LEVEL=debug
@@ -179,15 +201,22 @@ ETH_CONTAINER_IP=$(docker inspect --format '{{ "{{ .NetworkSettings.IPAddress " 
 
 Then run the following command to add the Ethereum client's URL to your environment file. If you are using an external Ethereum client, use the External tab below, and update `$ETH_CONTAINER_IP` to the websocket address used for connectivity.
 
+<!-- prettier-ignore -->
 ```shell Goerli
 echo "ETH_URL=ws://$ETH_CONTAINER_IP:8546" >> ~/.chainlink-goerli/.env
 ```
+
+<!-- prettier-ignore -->
 ```shell Rinkeby
 echo "ETH_URL=ws://$ETH_CONTAINER_IP:8546" >> ~/.chainlink-rinkeby/.env
 ```
+
+<!-- prettier-ignore -->
 ```shell Kovan
 echo "ETH_URL=ws://$ETH_CONTAINER_IP:8546" >> ~/.chainlink-kovan/.env
 ```
+
+<!-- prettier-ignore -->
 ```shell Mainnet
 echo "ETH_URL=ws://$ETH_CONTAINER_IP:8546" >> ~/.chainlink/.env
 ```
@@ -196,15 +225,22 @@ echo "ETH_URL=ws://$ETH_CONTAINER_IP:8546" >> ~/.chainlink/.env
 
 If you are using an external provider for connectivity to the Ethereum blockchain or you are running an Ethereum client on a separate instance, you may use the command below for your network. Be sure to update the value for `CHANGEME` to the value given by your provider or the address and port of your separate instance.
 
+<!-- prettier-ignore -->
 ```shell Goerli
 echo "ETH_URL=CHANGEME" >> ~/.chainlink-goerli/.env
 ```
+
+<!-- prettier-ignore -->
 ```shell Rinkeby
 echo "ETH_URL=CHANGEME" >> ~/.chainlink-rinkeby/.env
 ```
+
+<!-- prettier-ignore -->
 ```shell Kovan
 echo "ETH_URL=CHANGEME" >> ~/.chainlink-kovan/.env
 ```
+
+<!-- prettier-ignore -->
 ```shell Mainnet
 echo "ETH_URL=CHANGEME" >> ~/.chainlink/.env
 ```
@@ -225,34 +261,48 @@ You will need to connect your Chainlink node with a remote PostgreSQL database. 
 
 > 🚧 Important
 >
-> If you're testing you can add `?sslmode=disable` to the end of your `DATABASE_URL`. However you should *never* do this on a production node.
+> If you're testing you can add `?sslmode=disable` to the end of your `DATABASE_URL`. However you should _never_ do this on a production node.
 
+<!-- prettier-ignore -->
 ```shell Goerli
 echo "DATABASE_URL=postgresql://$USERNAME:$PASSWORD@$SERVER:$PORT/$DATABASE" >> ~/.chainlink-goerli/.env
 ```
+
+<!-- prettier-ignore -->
 ```shell Rinkeby
 echo "DATABASE_URL=postgresql://$USERNAME:$PASSWORD@$SERVER:$PORT/$DATABASE" >> ~/.chainlink-rinkeby/.env
 ```
+
+<!-- prettier-ignore -->
 ```shell Kovan
 echo "DATABASE_URL=postgresql://$USERNAME:$PASSWORD@$SERVER:$PORT/$DATABASE" >> ~/.chainlink-kovan/.env
 ```
+
+<!-- prettier-ignore -->
 ```shell Mainnet
 echo "DATABASE_URL=postgresql://$USERNAME:$PASSWORD@$SERVER:$PORT/$DATABASE" >> ~/.chainlink/.env
 ```
 
 #### Start the Chainlink Node
 
-Now you can run the Docker image. Replace `<version>` with your desired version. Tag versions are available in the [Chainlink docker hub](https://hub.docker.com/r/smartcontract/chainlink/tags). *The `latest` version does not work.*
+Now you can run the Docker image. Replace `<version>` with your desired version. Tag versions are available in the [Chainlink docker hub](https://hub.docker.com/r/smartcontract/chainlink/tags). _The `latest` version does not work._
 
+<!-- prettier-ignore -->
 ```shell Goerli
 cd ~/.chainlink-goerli && docker run -p 6688:6688 -v ~/.chainlink-goerli:/chainlink -it --env-file=.env smartcontract/chainlink:<version> local n
 ```
+
+<!-- prettier-ignore -->
 ```shell Rinkeby
 cd ~/.chainlink-rinkeby && docker run -p 6688:6688 -v ~/.chainlink-rinkeby:/chainlink -it --env-file=.env smartcontract/chainlink:<version> local n
 ```
+
+<!-- prettier-ignore -->
 ```shell Kovan
 cd ~/.chainlink-kovan && docker run -p 6688:6688 -v ~/.chainlink-kovan:/chainlink -it --env-file=.env smartcontract/chainlink:<version> local n
 ```
+
+<!-- prettier-ignore -->
 ```shell Mainnet
 cd ~/.chainlink && docker run -p 6688:6688 -v ~/.chainlink:/chainlink -it --env-file=.env smartcontract/chainlink:<version> local n
 ```

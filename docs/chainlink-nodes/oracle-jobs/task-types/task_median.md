@@ -2,8 +2,8 @@
 layout: nodes.liquid
 section: nodeOperator
 date: Last Modified
-title: "Median Task"
-permalink: "docs/jobs/task-types/median/"
+title: 'Median Task'
+permalink: 'docs/jobs/task-types/median/'
 ---
 
 Accepts multiple numerical inputs and returns the median of them.

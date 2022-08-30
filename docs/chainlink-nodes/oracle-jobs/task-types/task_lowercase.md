@@ -2,8 +2,8 @@
 layout: nodes.liquid
 section: nodeOperator
 date: Last Modified
-title: "Lowercase Task"
-permalink: "docs/jobs/task-types/lowercase/"
+title: 'Lowercase Task'
+permalink: 'docs/jobs/task-types/lowercase/'
 ---
 
 Accepts a string and returns a lowercase string.

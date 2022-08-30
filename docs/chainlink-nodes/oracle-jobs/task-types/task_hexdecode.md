@@ -2,8 +2,8 @@
 layout: nodes.liquid
 section: nodeOperator
 date: Last Modified
-title: "Hex Decode Task"
-permalink: "docs/jobs/task-types/hexdecode/"
+title: 'Hex Decode Task'
+permalink: 'docs/jobs/task-types/hexdecode/'
 ---
 
 Accepts a hexadecimal encoded string and returns decoded bytes.
