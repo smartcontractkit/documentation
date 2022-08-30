@@ -68,7 +68,7 @@ You can dynamically create and manage Upkeeps from within your own dApp. To do t
 Find the following addresses for your network:
 
 - Correct [LINK token contract](../../link-token-contracts/)
-- [Registry and registrar addresses for your network](#registry-and-registrar-addresses) 
+- [Registry and registrar addresses for your network](../supported-networks/#registry-and-registrar-addresses) 
 
 Optionally, you can fetch the LINK address and registrar address from the intended registry at run-time.
 
@@ -98,20 +98,4 @@ Optionally, you can fetch the LINK address and registrar address from the intend
 | `amount`               | The amount of LINK (in Wei) to fund your Upkeep. The minimum amount is 5 LINK. To fund 5 LINK please set this to 5000000000000000000       |
 | `source`               | Not in use in programmatic registration. Please specify with `0`.           |
 
-
-### Registry and Registrar Addresses
-
-| Name                               | Registry Address                              | Registrar Address                                       |
-| ---------------------------------- | --------------------------------------------- | ------------------------------------------------------- |
-| Ethereum Mainnet                   |  [0x02777053d6764996e594c3E88AF1D58D5363a2e6](https://etherscan.io/address/0x02777053d6764996e594c3E88AF1D58D5363a2e6)  | [0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d](https://etherscan.io/address/0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d) |
-| Goerli Testnet                    | [0x02777053d6764996e594c3E88AF1D58D5363a2e6](https://goerli.etherscan.io/address/0x02777053d6764996e594c3E88AF1D58D5363a2e6) | [0x9806cf6fBc89aBF286e8140C42174B94836e36F2](https://goerli.etherscan.io/address/0x9806cf6fBc89aBF286e8140C42174B94836e36F2)|
-| Rinkeby Testnet (Deprecated)            | [0x02777053d6764996e594c3E88AF1D58D5363a2e6](https://rinkeby.etherscan.io/address/0x02777053d6764996e594c3E88AF1D58D5363a2e6) | [0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d](https://rinkeby.etherscan.io/address/0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d)|
-| Kovan Testnet (Deprecated)               | [0x02777053d6764996e594c3E88AF1D58D5363a2e6](https://kovan.etherscan.io/address/0x02777053d6764996e594c3E88AF1D58D5363a2e6) | [0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d](https://kovan.etherscan.io/address/0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d) |
-| Polygon Mainnet                    | [0x02777053d6764996e594c3E88AF1D58D5363a2e6](https://polygonscan.com/address/0x02777053d6764996e594c3E88AF1D58D5363a2e6) | [0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d](https://polygonscan.com/address/0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d) |
-| Polygon Mumbai Testnet                    | [0x02777053d6764996e594c3E88AF1D58D5363a2e6](https://mumbai.polygonscan.com/address/0x02777053d6764996e594c3E88AF1D58D5363a2e6) | [0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d](https://mumbai.polygonscan.com/address/0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d) |
-| BNB Chain Mainnet                    | [0x02777053d6764996e594c3E88AF1D58D5363a2e6](https://bscscan.com/address/0x02777053d6764996e594c3E88AF1D58D5363a2e6) | [0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d](https://bscscan.com/address/0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d) |
-| BNB Chain Testnet                    | [0x02777053d6764996e594c3E88AF1D58D5363a2e6](https://testnet.bscscan.com/address/0x02777053d6764996e594c3E88AF1D58D5363a2e6) | [0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d](https://testnet.bscscan.com/address/0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d) |
-| Avalanche Mainnet                 | [0x02777053d6764996e594c3E88AF1D58D5363a2e6](https://snowtrace.io/address/0x02777053d6764996e594c3E88AF1D58D5363a2e6) | [0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d](https://snowtrace.io/address/0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d) |
-| Avalanche Fuji Testnet                 | [0x02777053d6764996e594c3E88AF1D58D5363a2e6](https://testnet.snowtrace.io/address/0x02777053d6764996e594c3E88AF1D58D5363a2e6) | [0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d](https://testnet.snowtrace.io/address/0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d) |
-| Fantom Mainnet                 | [0x02777053d6764996e594c3E88AF1D58D5363a2e6](https://ftmscan.com/address/0x02777053d6764996e594c3E88AF1D58D5363a2e6) | [0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d](https://ftmscan.com/address/0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d) |
-| Fantom Testnet                 | [0x02777053d6764996e594c3E88AF1D58D5363a2e6](https://testnet.ftmscan.com/address/0x02777053d6764996e594c3E88AF1D58D5363a2e6) | [0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d](https://testnet.ftmscan.com/address/0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d) |
+Refer to the [Supported Networks](../supported-networks/#registry-and-registrar-addresses) page to find the correct registry and registrar addresses for your contract.

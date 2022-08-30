@@ -53,4 +53,4 @@ To withdraw funds, the Upkeep administrator have to cancel the Upkeep first. The
 
 ## Interacting directly with the Keepers Registry
 
-After registration, you can interact directly with the [registry contract](https://etherscan.io/address/0x7b3EC232b08BD7b4b3305BE0C044D907B2DF960B#code) functions such as `cancelUpkeep` and `addFunds` using your **Upkeep ID**. The Registry Address might change when new contracts are deployed with new functionality.
+After registration, you can interact directly with the [registry contract](../supported-networks/#registry-and-registrar-addresses) functions such as `cancelUpkeep` and `addFunds` using your **Upkeep ID**. The Registry Address might change when new contracts are deployed with new functionality.

@@ -16,9 +16,7 @@ metadata:
   description: 'How to generate a random number inside a smart contract using Chainlink VRF.'
 ---
 
-> 📘 You are viewing the VRF v2 guide.
->
-> If you are using v1, see the [VRF v1 guide](/docs/vrf/v1/introduction/).
+{% include 'sections/vrf-v2-common.md' %}
 
 This guide explains how to get random values using a simple contract to request and receive random values from Chainlink VRF v2. For more advanced examples with programmatic subscription configuration, see the [Programmatic Subscription](/docs/vrf/v2/examples/programmatic-subscription/) page. To explore more applications of VRF, refer to our [blog](https://blog.chain.link/).
 
@@ -38,7 +36,7 @@ This guide assumes that you know how to create and deploy smart contracts on Eth
 
 - [The Remix IDE](https://remix.ethereum.org/)
 - [MetaMask](https://metamask.io/)
-- [Goerli testnet ETH](/docs/link-token-contracts/#goerli)
+- [Goerli testnet ETH](/docs/link-token-contracts/#goerli-testnet)
 
 If you are new to developing smart contracts on Ethereum, see the [Getting Started](/docs/conceptual-overview/) guide to learn the basics.
 
@@ -48,7 +46,7 @@ For this example, create a new subscription on the Goerli testnet.
 
 1. Open MetaMask and set it to use the Goerli testnet. The Subscription Manager detects your network based on the active network in MetaMask.
 
-1. Check MetaMask to make sure you have testnet ETH and LINK on Goerli. You can get testnet ETH and LINK at one of the available [Goerli faucets](/docs/link-token-contracts/#goerli).
+1. Check MetaMask to make sure you have testnet ETH and LINK on Goerli. You can get testnet ETH and LINK at one of the available [Goerli faucets](/docs/link-token-contracts/#goerli-testnet).
 
 1. Open the [Subscription Manager](https://vrf.chain.link) page.
 

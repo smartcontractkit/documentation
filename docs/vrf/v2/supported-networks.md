@@ -11,9 +11,7 @@ metadata:
     0: '/files/OpenGraph_V3.png'
 ---
 
-> 📘 You are viewing the VRF v2 guide.
->
-> If you are using v1, see the [VRF v1 guide](/docs/vrf/v1/introduction/).
+{% include 'sections/vrf-v2-common.md' %}
 
 Chainlink VRF allows you to integrate provably fair and verifiably random data in your smart contract.
 
@@ -243,13 +241,13 @@ The Rinkeby network is [officially deprecated](https://ethereum.org/en/developer
 >
 > Testnet LINK is available from [facuets.chain.link](https://faucets.chain.link/klaytn-testnet). Use the [KLAY Faucet](https://baobab.wallet.klaytn.foundation/faucet) to obtain testnet KLAY.
 
-| Item                  | Value                                                                                                                                                                                                                    |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Item                  | Value                                                                                                                                                                                                                      |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | LINK Token            | <a class="erc-token-address" id="1001_0x04c5046A1f4E3fFf094c26dFCAA75eF293932f18" href="https://baobab.scope.klaytn.com/token/0x04c5046A1f4E3fFf094c26dFCAA75eF293932f18">`0x04c5046A1f4E3fFf094c26dFCAA75eF293932f18`</a> |
-| VRF Coordinator       | [`0x771143FcB645128b07E41D79D82BE707ad8bDa1C`](https://baobab.scope.klaytn.com/address/0x771143FcB645128b07E41D79D82BE707ad8bDa1C)                                                                                       |
-| 3000 gwei Key Hash    | `0x9be50e2346ee6abe000e6d3a34245e1d232c669703efc44660a413854427027c`                                                                                                                                                     |
-| Premium               | 0.005 LINK                                                                                                                                                                                                               |
-| Max Gas Limit         | 2,500,000                                                                                                                                                                                                                |
-| Minimum Confirmations | 1                                                                                                                                                                                                                        |
-| Maximum Confirmations | 200                                                                                                                                                                                                                      |
-| Maximum Random Values | 500                                                                                                                                                                                                                      |
+| VRF Coordinator       | [`0x771143FcB645128b07E41D79D82BE707ad8bDa1C`](https://baobab.scope.klaytn.com/address/0x771143FcB645128b07E41D79D82BE707ad8bDa1C)                                                                                         |
+| 750 gwei Key Hash     | `0x9be50e2346ee6abe000e6d3a34245e1d232c669703efc44660a413854427027c`                                                                                                                                                       |
+| Premium               | 0.005 LINK                                                                                                                                                                                                                 |
+| Max Gas Limit         | 2,500,000                                                                                                                                                                                                                  |
+| Minimum Confirmations | 1                                                                                                                                                                                                                          |
+| Maximum Confirmations | 200                                                                                                                                                                                                                        |
+| Maximum Random Values | 500                                                                                                                                                                                                                        |

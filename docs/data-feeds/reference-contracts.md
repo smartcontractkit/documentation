@@ -31,6 +31,8 @@ Data feeds are available on the following networks:
   - [Harmony Data Feeds](../harmony-price-feeds/)
   - [Optimism Data Feeds](../optimism-price-feeds/)
   - [Moonriver Data Feeds](../data-feeds-moonriver/)
+  - [Moonbeam Data Feeds](../data-feeds-moonbeam/)
+  - [Metis Data Feeds](../data-feeds-metis/)
 - Other chains
   - [Solana Data Feeds](/docs/solana/data-feeds-solana/)
 
