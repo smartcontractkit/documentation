@@ -296,7 +296,7 @@ ETH is used to pay for transactions on Optimism. Use the [Optimism Bridge](https
 
 ### Optimism Goerli testnet
 
-Testnet ETH is used to pay for transactions on Optimism. Use the [Optimism Bridge](https://app.optimism.io/bridge) to transfer testnet ETH and LINK from Ethereum Goerli to Optimistim Goerli.
+Testnet ETH is used to pay for transactions on Optimism. Use the [Optimism Bridge](https://app.optimism.io/bridge) to transfer testnet ETH and LINK from Ethereum Goerli to Optimistim Goerli. Select Optimism Goerli in your wallet to access the Optimism Goerli bridge.
 
 | Parameter      | Value                                                                                                                                                                                                                            |
 | :------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
