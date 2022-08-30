@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     faders.push(element);
   });
   // Setup any faders on the page
-  for (let fader of faders) {
+  for (const fader of faders) {
     // Setup to only show first one
     (<HTMLElement>fader.children[0]).style.opacity = '1';
     for (let i = 1; i < fader.children.length; i++) {

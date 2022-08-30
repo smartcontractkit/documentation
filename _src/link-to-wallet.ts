@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { MetaMaskInpageProvider } from '@metamask/providers';
 import detectEthereumProvider from '@metamask/detect-provider';
 import { BigNumberish, ethers } from 'ethers';
@@ -227,7 +228,7 @@ window.onload = async () => {
   // Support only Metamask extension for now.
   if (!ethereum || !ethereum.isMetaMask) return;
 
-  let provider = new ethers.providers.Web3Provider(ethereum as any, 'any');
+  const provider = new ethers.providers.Web3Provider(ethereum as any, 'any');
 
   let detectedChainId: string | number | null = (await ethereum.request({ method: 'eth_chainId' })) as string | null;
   if (!detectedChainId) {
@@ -273,6 +274,7 @@ window.onload = async () => {
       }
       return;
     }
+    // eslint-disable-next-line prefer-const
     let [chainId, address] = id.split(separator);
     chainId = toHex(parseInt(chainId));
     if (!isChainIdFormatValid(chainId)) {

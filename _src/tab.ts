@@ -1,10 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
   const list = document.querySelectorAll<HTMLElement>('code-tabs');
-  for (let item of Array.from(list)) {
+  for (const item of Array.from(list)) {
     const tabs = Array.from(item.querySelectorAll('pre'));
     const tabBar = document.createElement('div');
     tabBar.classList.add('tab-bar');
-    for (let tab of tabs) {
+    for (const tab of tabs) {
       const tabHandle = document.createElement('span');
       const code = tab.querySelector('code');
       const meta = code?.getAttribute('meta');
@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       tabBar.appendChild(tabHandle);
       tabHandle.addEventListener('click', (event) => {
-        for (let node of tabs) {
+        for (const node of tabs) {
           if (node === tab) {
             node.style['display'] = 'block';
           } else {

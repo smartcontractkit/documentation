@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
   const list = document.querySelectorAll<HTMLElement>('.notification');
-  for (let notification of Array.from(list)) {
+  for (const notification of Array.from(list)) {
     const key = notification.getAttribute('key');
 
     // Dates are parsed as UTC, so let's offset them to match Eastern Time

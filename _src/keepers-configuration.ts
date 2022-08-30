@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { abi } from './keepers-abi';
-declare var Web3: any;
+declare let Web3: any;
 
 document.addEventListener('DOMContentLoaded', () => {
   const contracts: { [key: string]: any } = {
@@ -16,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
     fantom: new new Web3('https://rpc.ankr.com/fantom').eth.Contract(abi, '0x7b3EC232b08BD7b4b3305BE0C044D907B2DF960B'),
   };
 
-  for (let key of Object.keys(contracts)) {
+  for (const key of Object.keys(contracts)) {
     contracts[key].methods
       .getConfig()
       .call()
@@ -27,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 const renderConfigs = (network: string, configs: any) => {
-  for (let key of Object.keys(configs)) {
+  for (const key of Object.keys(configs)) {
     const node = document.getElementById(`show-${network}-${key}`);
     if (node) {
       node.innerHTML = new Number(configs[key]).toLocaleString();

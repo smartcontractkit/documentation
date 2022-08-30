@@ -4,7 +4,7 @@
   "description": "",
   "private": true,
   "scripts": {
-    "test": "npx hardhat compile",
+    "sol:compile": "npx hardhat compile",
     "serve": "NODE_ENV=development concurrently \"watchify _src/index.ts -p [ tsify ] -o _src/index.js\" \"watchify _src/keepers-configuration.ts -p [ tsify ] -o _src/keepers-configuration.js\" \"watchify _src/animate-chain-transitions.ts -p [ tsify ] -o _src/animate-chain-transitions.js\" \"watchify _src/link-to-wallet.ts -p [ tinyify --no-flat ] -p [ tsify ] -o _src/link-to-wallet.js\" \"npx @11ty/eleventy --serve --port=4200\"",
     "build": "browserify _src/index.ts -t [ uglifyify ] -p [ tsify ] -o _src/index.js && browserify _src/keepers-configuration.ts -t [ uglifyify ] -p [ tsify ] -o _src/keepers-configuration.js && browserify _src/animate-chain-transitions.ts -t [ uglifyify ] -p [ tsify ] -o _src/animate-chain-transitions.js && browserify _src/link-to-wallet.ts  -p [ tinyify --no-flat ] -p [ tsify ] -o _src/link-to-wallet.js && rm -rf _site && npx @11ty/eleventy",
     "deploy": "yarn build && firebase deploy",
@@ -12,7 +12,13 @@
     "linkcheck": "yarn ts-node _tools/linkcheck.ts",
     "compare-chains-metadata": "npx ts-node _src/chains-metadata.ts",
     "format:check": "prettier --check .",
-    "format:fix": "prettier --write ."
+    "format:fix": "prettier --write .",
+    "lint": "yarn eslint .",
+    "lint:fix": "yarn lint --fix",
+    "lint-ts": "eslint --ext ts .",
+    "lint-ts:fix": "yarn lint-ts --fix",
+    "lint-solc": "solhint '_includes/samples/**/*.sol'",
+    "prepare": "husky install"
   },
   "keywords": [
     "chainlink",
@@ -58,7 +64,23 @@
   "engineStrict": true,
   "devDependencies": {
     "@types/lodash": "^4.14.182",
+    "@typescript-eslint/eslint-plugin": "^5.36.1",
+    "@typescript-eslint/parser": "^5.36.1",
+    "eslint": "^8.23.0",
+    "eslint-config-prettier": "^8.5.0",
+    "husky": "^8.0.0",
+    "lint-staged": "^13.0.3",
     "prettier": "^2.7.1",
-    "prettier-plugin-solidity": "^1.0.0-beta.24"
+    "prettier-plugin-solidity": "^1.0.0-beta.24",
+    "solhint": "^3.3.7",
+    "solhint-plugin-prettier": "^0.0.5"
+  },
+  "lint-staged": {
+    "*.{css,md,yml,yaml}": "prettier --write",
+    "*.{js,ts,json}": [
+      "prettier --write",
+      "eslint"
+    ],
+    "*.sol": "solhint"
   }
 }

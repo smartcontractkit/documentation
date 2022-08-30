@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 const NEWSLETTER_URL = 'https://hooks.zapier.com/hooks/catch/10015000/bb8efqc';
 const tag1 = 'Developers';
 const tag2 = 'Developer Docs';
@@ -12,7 +13,7 @@ function handleSubscribeSubmit(event: any) {
     subscribeButton.value = 'Please Wait...';
   }
 
-  var email = new FormData(event.target).get('Email');
+  const email = new FormData(event.target).get('Email');
 
   fetch(NEWSLETTER_URL, {
     mode: 'no-cors',

@@ -34,7 +34,7 @@ server.stdout.on('data', (data) => {
     checker.stdout.on('data', (checkerData) => {
       stdout.write(checkerData.toString());
     });
-    checker.on('exit', (code, other) => {
+    checker.on('exit', (code) => {
       console.log('linkcheck finished');
       server.stdout.destroy();
       server.kill();

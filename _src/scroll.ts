@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 const fixNavHeight = () => {
   const nav = document.querySelector<HTMLElement>('navigation');
   if (nav) {
@@ -20,6 +21,6 @@ document.addEventListener('DOMContentLoaded', () => {
     fixNavHeight();
   }
 });
-document.addEventListener('scroll', (event) => {
+document.addEventListener('scroll', () => {
   window.requestAnimationFrame(fixNavHeight);
 });
