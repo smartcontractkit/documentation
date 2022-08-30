@@ -2,14 +2,14 @@
 layout: nodes.liquid
 section: ethereum
 date: Last Modified
-title: 'Chainlink Keepers Example Contracts'
+title: 'Chainlink Automation Example Contracts'
 whatsnext:
   {
     'EthBalanceMonitor': '/docs/chainlink-keepers/utility-contracts/',
   }
 ---
 
-These contracts are tools to help you quickly deploy Keepers for specific use-cases. This list will be updated as more contracts become available.
+These contracts are tools to help you quickly deploy Chainlink Automation for specific use-cases. This list will be updated as more contracts become available.
 
 ## Contracts
 
@@ -23,13 +23,13 @@ This utility contract reviews the balances of a list of addresses and automatica
 
 [Vault Harvester repository](https://github.com/hackbg/chainlink-keepers-templates/tree/main/vault-harvester#chainlink-keepers-template-vault-harvester)
 
-This example teaches you how to automate the process of compounding arbitrary yield farm reward tokens back into an initially deposited asset. Using Keepers to automate this process makes it more trustless and decentralized.
+This example teaches you how to automate the process of compounding arbitrary yield farm reward tokens back into an initially deposited asset. Using Chainlink Automation to automate this process makes it more trustless and decentralized.
 
 ### Batch NFT Reveal
 
 [Batch NFT Reveal repository](https://github.com/hackbg/chainlink-keepers-templates/tree/main/batch-nft-reveal#chainlink-keepers-template-batch-nft-reveal)
 
-This example teaches how to use [Chainlink VRF](/docs/vrf/v2/introduction/) and Chainlink Keepers together. Using Keepers with batch NFT reveals, you can automate and further decentralize your NFTs.
+This example teaches how to use [Chainlink VRF](/docs/vrf/v2/introduction/) and Chainlink Automation together. Using Chainlink Automation with batch NFT reveals, you can automate and further decentralize your NFTs.
 
 ### Dynamic NFTs
 
@@ -39,4 +39,4 @@ This example teaches how to use [Chainlink VRF](/docs/vrf/v2/introduction/) and 
 https://www.youtube.com/watch?v=E7Rm1LUKhj4
 <p>
 
-This example teaches you how to create dynamic NFTs using Keepers.
+This example teaches you how to create dynamic NFTs using Chainlink Automation.

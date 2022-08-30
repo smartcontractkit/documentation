@@ -20,7 +20,7 @@ Manage your Upkeeps to get the best performance.
 
 ## Fund your Upkeep
 
-You must monitor the balance of your Upkeep. If the Upkeep LINK balance drops below the [minimum balance](../keeper-economics/#minimum-balance), the Keepers Network will not perform the Upkeep.
+You must monitor the balance of your Upkeep. If the Upkeep LINK balance drops below the [minimum balance](../keeper-economics/#minimum-balance), the Chainlink Automation Network will not perform the Upkeep.
 
 > 📘 ERC677 Link
 >
@@ -28,7 +28,7 @@ You must monitor the balance of your Upkeep. If the Upkeep LINK balance drops be
 
 Follow these steps to fund your Upkeep:
 
-1. **Click `View Upkeep`** or go to the [Chainlink Keepers App](https://keepers.chain.link) and click on your recently registered Upkeep under My Upkeeps.
+1. **Click `View Upkeep`** or go to the [Chainlink Automation App](https://keepers.chain.link) and click on your recently registered Upkeep under My Upkeeps.
 
 1. **Click the `Add funds` button**
 

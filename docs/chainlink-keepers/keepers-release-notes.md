@@ -2,7 +2,7 @@
 layout: nodes.liquid
 section: ethereum
 date: Last Modified
-title: 'Chainlink Keepers Release Notes'
+title: 'Chainlink Automation Release Notes'
 whatsnext:
   {
     'Register a time-based upkeep': '/docs/chainlink-keepers/job-scheduler/','Register a Custom Logic Upkeep': '/docs/chainlink-keepers/register-upkeep/',
@@ -12,7 +12,7 @@ whatsnext:
 ![Chainlink Keeper Network Banner](/images/contract-devs/generic-banner.png)
 
 
-**Chainlink Keepers release notes:**
+**Chainlink Automation release notes:**
 
 - [v1.2 release](#2022-08-04---v12-release)
   - [Manually migrating upkeeps from v1.1 to v1.2](#manually-migrating-upkeeps-from-v11-to-v12)

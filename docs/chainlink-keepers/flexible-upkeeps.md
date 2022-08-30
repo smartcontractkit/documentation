@@ -6,9 +6,9 @@ title: 'Making flexible, secure, and low-cost contracts'
 whatsnext: { 'Example Contracts': '/docs/chainlink-keepers/util-overview/', 'FAQs': '/docs/chainlink-keepers/faqs/' }
 ---
 
-In this guide, you will learn how the flexibility of [Chainlink Keepers](https://chain.link/keepers) enables important design patterns that reduce gas fees, enhance the resilience of dApps, and improve end-user experience. Smart contracts themselves cannot self-trigger their functions at arbitrary times or under arbitrary conditions. Transactions can only be initiated by another account.
+In this guide, you will learn how the flexibility of [Chainlink Automation](https://chain.link/keepers) enables important design patterns that reduce gas fees, enhance the resilience of dApps, and improve end-user experience. Smart contracts themselves cannot self-trigger their functions at arbitrary times or under arbitrary conditions. Transactions can only be initiated by another account.
 
-Start by integrating an example contract to Chainlink Keepers that has not yet been optimized. Then, deploy a comparison contract that shows you how to properly use the flexibility of Chainlink Keepers to perform complex computations without paying high gas fees.
+Start by integrating an example contract to Chainlink Automation that has not yet been optimized. Then, deploy a comparison contract that shows you how to properly use the flexibility of Chainlink Automation to perform complex computations without paying high gas fees.
 
 **Topics**
 
@@ -19,13 +19,13 @@ Start by integrating an example contract to Chainlink Keepers that has not yet b
 
 ## Prerequisites
 
-This guide assumes you have a basic understanding of [Chainlink Keepers](https://chain.link/keepers). If you are new to Keepers, complete the following guides first:
+This guide assumes you have a basic understanding of [Chainlink Automation](https://chain.link/keepers). If you are new to Keepers, complete the following guides first:
 
 - Know how to [deploy solidity contracts using Remix and Metamask](/docs/deploy-your-first-contract/)
-- Learn how to make [Keepers-Compatible Contracts](/docs/chainlink-keepers/compatible-contracts/)
+- Learn how to make [Automation-Compatible Contracts](/docs/chainlink-keepers/compatible-contracts/)
 - [Register UpKeep for a Contract](/docs/chainlink-keepers/register-upkeep/)
 
-Chainlink Keepers are supported on several [networks](../supported-networks).
+Chainlink Automation is supported on several [networks](../supported-networks).
 
 > 📘 ERC677 Link
 >
@@ -34,13 +34,13 @@ Chainlink Keepers are supported on several [networks](../supported-networks).
 
 ## Problem: On-chain computation leads to high gas fees
 
-In the guide for [Making Keepers-compatible Contracts](/docs/chainlink-keepers/compatible-contracts/), you deployed a basic [counter contract](/docs/chainlink-keepers/compatible-contracts/#example-contract) and verified that the counter increments every 30 seconds. However, more complex use cases can require looping over arrays or performing expensive computation. This leads to expensive gas fees and can increase the premium that end-users have to pay to use your dApp. To illustrate this, deploy an example contract that maintains internal balances.
+In the guide for [Making Automation-compatible Contracts](/docs/chainlink-keepers/compatible-contracts/), you deployed a basic [counter contract](/docs/chainlink-keepers/compatible-contracts/#example-contract) and verified that the counter increments every 30 seconds. However, more complex use cases can require looping over arrays or performing expensive computation. This leads to expensive gas fees and can increase the premium that end-users have to pay to use your dApp. To illustrate this, deploy an example contract that maintains internal balances.
 
 The contract has the following components:
 
 - A fixed-size(1000) array `balances` with each element of the array starting with a balance of 1000.
 - The `withdraw()` function decreases the balance of one or more indexes in the `balances` array. Use this to simulate changes to the balance of each element in the array.
-- Keepers are responsible for regularly re-balancing the elements using two functions:
+- Automation Nodes are responsible for regularly re-balancing the elements using two functions:
   - The `checkUpkeep()` function checks if the contract requires work to be done. If one array element has a balance of less than `LIMIT`, the function returns `upkeepNeeded == true`.
   - The `performUpkeep()` function to re-balances the elements. To demonstrate how this computation can cause high gas fees, this example does all of the computation within the transaction. The function finds all of the elements that are less than `LIMIT`, decreases the contract `liquidity`, and increases every found element to equal `LIMIT`.
 
@@ -135,4 +135,4 @@ In this example the total gas used by each `performUpkeep()` function was 133,46
 
 ## Conclusion
 
-Using Chainlink Keepers efficiently not only allows you to reduce the gas fees, but also keeps them within predictable limits. That’s the reason why [several Defi protocols](https://chainlinktoday.com/prominent-founders-examine-chainlink-keepers-role-in-defis-evolution/) outsource their maintenance tasks to Chainlink Keepers.
+Using Chainlink Automation efficiently not only allows you to reduce the gas fees, but also keeps them within predictable limits. That’s the reason why [several Defi protocols](https://chainlinktoday.com/prominent-founders-examine-chainlink-keepers-role-in-defis-evolution/) outsource their maintenance tasks to Chainlink Automation.

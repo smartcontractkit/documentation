@@ -2,7 +2,7 @@
 layout: nodes.liquid
 section: ethereum
 date: Last Modified
-title: 'Chainlink Keepers Economics'
+title: 'Chainlink Automation Economics'
 whatsnext:
   {
     'FAQs': '/docs/chainlink-keepers/faqs/',
@@ -11,24 +11,24 @@ whatsnext:
 
 ## How Funding Works
 
-Your upkeep has a LINK (ERC-677) balance. Every time a keeper executes your `performUpkeep` function, your LINK balance will be reduced. You can add funds using the Keepers App or by directly calling the `addFunds()` function on the `KeeperRegistry` contract. Anyone can call the `addFunds()` function.
+Your upkeep has a LINK (ERC-677) balance. Every time an Automation Node executes your `performUpkeep` function, your LINK balance will be reduced. You can add funds using the Chainlink Automation App or by directly calling the `addFunds()` function on the `AutomationRegistry` contract. Anyone can call the `addFunds()` function.
 
 ## Cost of using Keepers
 
-When a keeper executes your `performUpkeep` function, the Keeper Registry will deduct the upkeep's total gas cost in LINK as well as a percentage premium from your upkeep’s LINK balance and allocate it to the keeper’s address. The total gas cost in LINK is the gas price of the transaction multiplied by the sum of the gas used for the transaction and an 80K gas overhead for the keeper call gas used. This is converted to LINK using Chainlink Data Feeds. The percentage premium is to compensate the keeper for monitoring and performing your upkeep. The percentage premium varies by network and is listed in our [Supported Networks](../supported-networks/#configurations) page.
+When an Automation Node executes your `performUpkeep` function, the Chainlink Automation Registry will deduct the upkeep's total gas cost in LINK as well as a percentage premium from your upkeep’s LINK balance and allocate it to the Automation Node's address. The total gas cost in LINK is the gas price of the transaction multiplied by the sum of the gas used for the transaction and an 80K gas overhead for the Automation Node call gas used. This is converted to LINK using Chainlink Data Feeds. The percentage premium is to compensate the Automation Node for monitoring and performing your upkeep. The percentage premium varies by network and is listed in our [Supported Networks](../supported-networks/#configurations) page.
 
 
 ## Minimum Spend Requirement
 
-There is a minimum spend requirement per upkeep to prevent misuse of the Keepers network. The minimum amount required is 0.1 LINK on any upkeep that is registered. If your upkeep does not pay at least this amount to execute functions, 0.1 LINK will not be withdrawable when you cancel. If you spend more than 0.1 LINK, you will be able to withdraw all remaining LINK after you cancel even after additional funds are added.
+There is a minimum spend requirement per upkeep to prevent misuse of the Chainlink Automation network. The minimum amount required is 0.1 LINK on any upkeep that is registered. If your upkeep does not pay at least this amount to execute functions, 0.1 LINK will not be withdrawable when you cancel. If you spend more than 0.1 LINK, you will be able to withdraw all remaining LINK after you cancel even after additional funds are added.
 
 ## No node competition
 
-Individual keepers do not compete with one another, but rather work together to ensure all registered upkeeps are performed. This makes costs more predictable upfront, enabling you to estimate costs based on the expected gas consumption.
+Individual Automation Nodes do not compete with one another, but rather work together to ensure all registered upkeeps are performed. This makes costs more predictable upfront, enabling you to estimate costs based on the expected gas consumption.
 
 ## Minimum balance
 
-The Keepers Network is designed to perform your upkeep even when gas prices spike. The minimum balance in LINK reflects the best estimate of the cost to perform your upkeep when gas prices spike. To ensure your upkeep is monitored and performed, ensure that your upkeep's balance is above this minimum balance.
+The Chainlink Automation Network is designed to perform your upkeep even when gas prices spike. The minimum balance in LINK reflects the best estimate of the cost to perform your upkeep when gas prices spike. To ensure your upkeep is monitored and performed, ensure that your upkeep's balance is above this minimum balance.
 
 The minimum balance is calculated using the current fast gas price, the gas limit you entered for your upkeep, the max gas multiplier, and the for conversion to LINK. To find the latest value for the `gasCeilingMultiplier`, see the [Registry Configuration](../supported-networks/#configurations) page.
 
@@ -36,9 +36,9 @@ Follow [maintain a minimum balance](../manage-upkeeps/#maintain-a-minimum-balanc
 
 ## Price selection and Gas Bumping
 
-Keeper nodes select the gas price dynamically based on the prices of transactions within the last several blocks. This optimizes the gas price based on current network conditions. Keepers are configured to select a price based on a target percentile.
+Automation Nodes select the gas price dynamically based on the prices of transactions within the last several blocks. This optimizes the gas price based on current network conditions. Automation Nodes are configured to select a price based on a target percentile.
 
-If the keeper node does not see the `performUpkeep` transaction get confirmed within the next few blocks, it automatically replaces the transaction and bumps the gas price. This process repeats until the transaction is confirmed.
+If the Automation Node does not see the `performUpkeep` transaction get confirmed within the next few blocks, it automatically replaces the transaction and bumps the gas price. This process repeats until the transaction is confirmed.
 
 ## ERC-677 Link
 

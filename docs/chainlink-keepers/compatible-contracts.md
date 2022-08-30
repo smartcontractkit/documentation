@@ -2,7 +2,7 @@
 layout: nodes.liquid
 section: ethereum
 date: Last Modified
-title: 'Creating Keepers-compatible contracts'
+title: 'Creating Automation-compatible contracts'
 whatsnext:
   {
     'Build flexible contracts': '/docs/chainlink-keepers/flexible-upkeeps/',
@@ -10,11 +10,11 @@ whatsnext:
   }
 ---
 
-Use custom logic to allow Keepers to determine when to execute your smart contract functions.
+Use custom logic to allow Chainlink Automation to determine when to execute your smart contract functions.
 
 ## Overview
 
-Learn how to make smart contracts **Keepers-compatible** with the `KeeperCompatibleInterface` and its functions.
+Learn how to make smart contracts **Automation-compatible** with the `KeeperCompatibleInterface` and its functions.
 
 **Topics**
 
@@ -32,14 +32,14 @@ Learn how to make smart contracts **Keepers-compatible** with the `KeeperCompati
 
 ## Example contract
 
-Keepers-compatible contracts must meet the following requirements:
+Automation-compatible contracts must meet the following requirements:
 
-- Import `KeeperCompatible.sol`. You can refer to the [Chainlink Contracts](https://github.com/smartcontractkit/chainlink/tree/develop/contracts/src) on GitHub to find the latest version.
-- Use the `KeeperCompatibleInterface` from the library to ensure your `checkUpkeep` and `performUpkeep`function definitions match the definitions expected by the Keepers Network.
+- Import `AutomationCompatible.sol`. You can refer to the [Chainlink Contracts](https://github.com/smartcontractkit/chainlink/tree/develop/contracts/src) on GitHub to find the latest version.
+- Use the `AutomationCompatibleInterface` from the library to ensure your `checkUpkeep` and `performUpkeep`function definitions match the definitions expected by the Keepers Network.
 - Include a `checkUpkeep` function that contains the logic that will be executed off-chain to see if `performUpkeep` should be executed. `checkUpkeep` can use on-chain data and a specified `checkData` parameter to perform complex calculations off-chain and then send the result to `performUpkeep` as `performData`.
 - Include a `performUpkeep` function that will be executed on-chain when `checkUpkeep` returns `true`. Because `performUpkeep` is external, users are advised to revalidate conditions and performData.
 
-Use these elements to create a Keepers-compatible contract that will automatically increment a counter after every `updateInterval` seconds. After you register the contract as an upkeep, the Keepers Network simulates our `checkUpkeep` off-chain during every block to determine if the `updateInterval` time has passed since the last increment (timestamp). When `checkUpkeep` returns true, the Keepers Network calls `performUpkeep` on-chain and increments the counter. This cycle repeats until the upkeep is cancelled or runs out of funding.
+Use these elements to create an Automation-compatible contract that will automatically increment a counter after every `updateInterval` seconds. After you register the contract as an upkeep, the Keepers Network simulates our `checkUpkeep` off-chain during every block to determine if the `updateInterval` time has passed since the last increment (timestamp). When `checkUpkeep` returns true, the Keepers Network calls `performUpkeep` on-chain and increments the counter. This cycle repeats until the upkeep is cancelled or runs out of funding.
 
 ```solidity
 {% include 'samples/Keepers/KeepersCounter.sol' %}
@@ -50,7 +50,7 @@ Use these elements to create a Keepers-compatible contract that will automatical
     <a href="/docs/conceptual-overview/#what-is-remix" > What is Remix?</a>
 </div>
 
-Compile and deploy your own Keepers Counter onto a [supported Testnet](../supported-networks).
+Compile and deploy your own Automation Counter onto a [supported Testnet](../supported-networks).
 
 1. In the Remix example, select the compile tab on the left and press the compile button. Make sure that your contract compiles without any errors. Note that the Warning messages in this example are acceptable and will not block the deployment.
 1. Select the **Deploy** tab and deploy the `Counter` smart contract in the `injected web3` environment. When deploying the contract, specify the `updateInterval` value. For this example, set a short interval of 60. This is the interval at which the `performUpkeep` function will be called.
@@ -58,7 +58,7 @@ Compile and deploy your own Keepers Counter onto a [supported Testnet](../suppor
 
 To see more complex examples, go to the [utility contracts](../utility-contracts) page.
 
-We will now look at each function in a Keepers-compatible contract in detail.
+We will now look at each function in an Automation-compatible contract in detail.
 
 ## Functions
 
@@ -75,7 +75,7 @@ This function contains the logic that runs off-chain during every block as an `e
 >
 > The `checkUpkeep` function is subject to the `checkGasLimit` in the [registry configuration](/docs/chainlink-keepers/supported-networks/#configurations).
 
-Because `checkUpkeep` is only off-chain in simulation it is best to treat this as a `view` function and not modify any state. This might not always be possible if you want to use more advanced Solidity features like `DelegateCall`[(link)](https://docs.soliditylang.org/en/latest/introduction-to-smart-contracts.html#delegatecall-callcode-and-libraries). It is a best practice to import the `KeeperCompatible.sol`[(link)](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/KeeperCompatible.sol) contract and use the `cannotExecute` modifier to ensure that the method can be used only for simulation purposes.
+Because `checkUpkeep` is only off-chain in simulation it is best to treat this as a `view` function and not modify any state. This might not always be possible if you want to use more advanced Solidity features like `DelegateCall`[(link)](https://docs.soliditylang.org/en/latest/introduction-to-smart-contracts.html#delegatecall-callcode-and-libraries). It is a best practice to import the `AutomationCompatible.sol`[(link)](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/KeeperCompatible.sol) contract and use the `cannotExecute` modifier to ensure that the method can be used only for simulation purposes.
 
 ```solidity
 function checkUpkeep(
@@ -127,13 +127,13 @@ You can create a highly flexible off-chain computation infrastructure that can p
 
 ### `performUpkeep` function
 
-When `checkUpkeep` returns `upkeepNeeded == true`, the Keeper node broadcasts a transaction to the blockchain to execute your `performUpkeep` function on-chain with `performData` as an input.
+When `checkUpkeep` returns `upkeepNeeded == true`, the Automation node broadcasts a transaction to the blockchain to execute your `performUpkeep` function on-chain with `performData` as an input.
 
 > 📘 Gas limits for `performUpkeep`
 >
 > During registration you have to specify the maximum gas limit that we should allow your contract to use. We simulate `performUpkeep` during `checkUpkeep` and if the gas exceeds this limit the function will not execute on-chain. One method to determine your upkeep's gas limit is to simulate the `performUpkeep` function and add enough overhead to take into account increases that might happen due to changes in `performData` or on-chain data. The gas limit you specify cannot exceed the `callGasLimit` in the [configuration of the registry](/docs/chainlink-keepers/supported-networks/#configurations).
 
-Ensure that your `performUpkeep` is _idempotent_. Your `performUpkeep` function should change state such that `checkUpkeep` will not return `true` for the same subset of work once said work is complete. Otherwise the Upkeep will remain eligible and result in multiple performances by the Keeper Network on the exactly same subset of work. As a best practice, always [revalidate](#revalidate-performupkeep) conditions for your upkeep at the start of your `performUpkeep` function.
+Ensure that your `performUpkeep` is _idempotent_. Your `performUpkeep` function should change state such that `checkUpkeep` will not return `true` for the same subset of work once said work is complete. Otherwise the Upkeep will remain eligible and result in multiple performances by the Chainlink Automation Network on the exactly same subset of work. As a best practice, always [revalidate](#revalidate-performupkeep) conditions for your upkeep at the start of your `performUpkeep` function.
 
 ```solidity
 function performUpkeep(
@@ -186,10 +186,10 @@ For example, if you have a `performUpkeep` that funds a wallet and the address o
 
 Sometimes actions must be performed when conditions are met, but performing actions when conditions are not met is still acceptable. Condition checks within `performUpkeep` might not be required, but it can still be a good practice to short circuit expensive and unnecessary on-chain processing when it is not required.
 
-It might be desirable to call `performUpkeep` when the `checkUpkeep` conditions haven't yet been tested by Chainlink Keepers, so any specific checks that you perform are entirely use case specific.
+It might be desirable to call `performUpkeep` when the `checkUpkeep` conditions haven't yet been tested by Chainlink Automation, so any specific checks that you perform are entirely use case specific.
 
 ### Test your contract
 
-As with all smart contract testing, it is important to test the boundaries of your smart contract in order to ensure it operates as intended. Similarly, it is important to make sure your Keepers-compatible contract operates within the parameters of the `KeeperRegistry`.
+As with all smart contract testing, it is important to test the boundaries of your smart contract in order to ensure it operates as intended. Similarly, it is important to make sure your Automation-compatible contract operates within the parameters of the `KeeperRegistry`.
 
-Test all of your mission-critical contracts, and stress-test the contract to confirm the performance and correct operation of your use case under load and adversarial conditions. The Chainlink Keeper Network will continue to operate under stress, but so should your contract. For a list of supported Testnet blockchains, please review the [supported networks page](../supported-networks).
+Test all of your mission-critical contracts, and stress-test the contract to confirm the performance and correct operation of your use case under load and adversarial conditions. The Chainlink Automation Network will continue to operate under stress, but so should your contract. For a list of supported Testnet blockchains, please review the [supported networks page](../supported-networks).

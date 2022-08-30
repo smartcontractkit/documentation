@@ -9,11 +9,11 @@ whatsnext:
   }
 ---
 
-This guide explains the use case for the [`EthBalanceMonitor` contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/upkeeps/EthBalanceMonitor.sol). This Keeper contract monitors and funds Ethereum addresses that developers might need to top up frequently based on a configurable threshold. As a result, nodes are funded automatically.
+This guide explains the use case for the [`EthBalanceMonitor` contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/upkeeps/EthBalanceMonitor.sol). This Automation contract monitors and funds Ethereum addresses that developers might need to top up frequently based on a configurable threshold. As a result, nodes are funded automatically.
 
-After deploying the contract, developers can go to [keepers.chain.link](https://keepers.chain.link/) to register Upkeep and run the contract. To take full advantage of the Keepers automation infrastructure, read all of the documentation to understand the features of Chainlink Keepers.
+After deploying the contract, developers can go to [keepers.chain.link](https://keepers.chain.link/) to register Upkeep and run the contract. To take full advantage of the Chainlink Automation infrastructure, read all of the documentation to understand the features of Chainlink Automation.
 
-To find other example contracts, see the [Example Keepers Contracts](/docs/chainlink-keepers/util-overview/) page.
+To find other example contracts, see the [Example Automation Contracts](/docs/chainlink-keepers/util-overview/) page.
 
 **Topics**
 
@@ -26,11 +26,11 @@ To find other example contracts, see the [Example Keepers Contracts](/docs/chain
 
 ## `EthBalanceMonitor` Properties
 
-`EthBalanceMonitor` is ownable, pausable, and Keepers-compatible:
+`EthBalanceMonitor` is ownable, pausable, and Automation-compatible:
 
 - **Ownable**: The contract has an owner address, and provides basic authorization control functions. This simplifies the implementation of *user permissions* and allows for transer of ownership.
 - **Pausable**: This feature allows the contract to implement a pause and unpause mechanism that the contract owner can trigger.
-- **Keepers-compatible**: The `KeeperCompatibleInterface` is necessary to create Keepers-compatible contracts. To learn more about the `KeeperCompatibleInterface` and its uses and functions, refer to [Making Keepers-compatible Contracts](../compatible-contracts/).
+- **Automation-compatible**: The `AutomationCompatibleInterface` is necessary to create Automation-compatible contracts. To learn more about the `AutomationCompatibleInterface` and its uses and functions, refer to [Making Automation-compatible Contracts](../compatible-contracts/).
 
 You can open the contract in Remix:
 <div class="remix-callout">
@@ -83,7 +83,7 @@ Only the owner can `setWatchList`. Each of the parameters should be set with dis
 | ------------------------------- | -------------------------------------------------------------------- |
 | `keeperRegistryAddress`         | Address that requires updating in `KeeperRegistry`                   |
 
-Only the `keeperRegistryAddress` can `performUpkeep`, which is a *global setting*. `KeeperRegistry` addresses can be found on the [Keepers app](https://keepers.chain.link/). However, only the owner can set a new `KeeperRegistry` after deployment.
+Only the `keeperRegistryAddress` can `performUpkeep`, which is a *global setting*. `KeeperRegistry` addresses can be found on the [Chainlink Automations app](https://keepers.chain.link/). However, only the owner can set a new `KeeperRegistry` after deployment.
 
 ### `setMinWaitPeriodSeconds` Function
 
@@ -103,4 +103,4 @@ Only the `keeperRegistryAddress` can `performUpkeep`, which is a *global setting
 | ------------------------------- | -------------------------------------------------------------------- |
 | `needsFunding`                  | List of addresses to fund (addresses must be pre-approved)           |
 
-Any address can trigger the `topUp` function. This is an intentional design pattern that shows how easy it is to make an existing contract Keepers-compatible while maintaining an open interface. All validations are performed before the funding is triggered. If the conditions are not met, any attempt to top up will revert.
+Any address can trigger the `topUp` function. This is an intentional design pattern that shows how easy it is to make an existing contract Automation-compatible while maintaining an open interface. All validations are performed before the funding is triggered. If the conditions are not met, any attempt to top up will revert.
