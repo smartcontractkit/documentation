@@ -20,7 +20,7 @@ When a keeper executes your `performUpkeep` function, the Keeper Registry will d
 
 ## Minimum spend for each registered Upkeep
 
-There is a small minimum spend of 0.1 LINK for each Upkeep that is registered on Keepers to prevent misuse of the Keepers network. If the total LINK spent across all transactions for your Upkeep does not exceed this amount, the difference between 0.1 LINK and amount spent in LINK will not be refunded when you cancel. If across all your Upkeep's transactions you spend more than 0.1 LINK, all remaining LINK will be refundable after you cancel. This amount is small by intention and we plan to keep it that way. If your Upkeep has any transaction, or even a few on the cheapest networks, you should comfortably exceed this amount.
+To prevent misuse of the Keepers network, each upkeep that you register requires a small minimum spend of 0.1 LINK across all upkeep transactions. If the total LINK spent across all transactions for your upkeep does not exceed this amount, the difference between 0.1 LINK and the amount spent in LINK is not refunded after you cancel the upkeep. If you spend more than 0.1 LINK across all of your upkeep's transactions, all remaining LINK is refundable after you cancel. This amount is intentionally small so that even a few upkeep transactions on the cheapest networks can easily exceed this amount.
 
 ## No node competition
 
