@@ -1,11 +1,11 @@
 ---
-import * as CONFIG from "../../config";
-import { MENU } from "../../config/index";
-import SkipToContent from "./SkipToContent.astro";
-import SidebarToggle from "./SidebarToggle.tsx";
-import Search from "./Search.tsx";
+import * as CONFIG from "../../config"
+import { MENU } from "../../config/index"
+import SkipToContent from "./SkipToContent.astro"
+import SidebarToggle from "./SidebarToggle.tsx"
+import Search from "./Search.tsx"
 
-const { currentPage } = Astro.props;
+const { currentPage } = Astro.props
 ---
 
 <header>
@@ -16,20 +16,32 @@ const { currentPage } = Astro.props;
 		</div>
 		<div class="logo flex">
 			<a href="/">
-				<h1>
-					<img src="/chainlink-docs.svg" style="height:40px" alt={CONFIG.SITE.title ?? "Documentation" } />
-				</h1>
+				<img
+					src="/chainlink-docs.svg"
+					style="height:40px"
+					alt={CONFIG.SITE.title ?? "Documentation"}
+				/>
 			</a>
 		</div>
-		<div style="flex-grow: 0.5;"></div>
-		{MENU.en.map(link=> <a href={link.link}>{link.text}</a>)}
+		<div class="spacer"></div>
+		<div class="navbar">
+			{MENU.en.map((link) => <a href={link.link}>{link.text}</a>)}
+		</div>
 		<div style="flex-grow: 0.5;"></div>
 
 		{CONFIG.ALGOLIA && (
-		<div class="search-item">
-			<Search client:idle />
-		</div>
+			<div class="search-item">
+				<Search client:idle />
+			</div>
 		)}
+		<a
+			href="https://github.com/smartcontractkit/documentation"
+			class="github-url"
+			target="_blank"
+			rel="nofollow"
+		>
+			<img src="/assets/github.svg" />
+		</a>
 	</nav>
 </header>
 
@@ -38,7 +50,7 @@ const { currentPage } = Astro.props;
 		z-index: 11;
 		height: var(--theme-navbar-height);
 		width: 100%;
-		background-color: var(--blue-900);
+		background-color: var(--white);
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -95,8 +107,15 @@ const { currentPage } = Astro.props;
 		max-width: 82em;
 		padding: 0 1rem;
 	}
+	.spacer {
+		display: none;
+		flex-grow: 0.5;
+	}
 
 	@media (min-width: 50em) {
+		.spacer {
+			display: block;
+		}
 		header {
 			position: static;
 			padding: 1rem 0rem;
@@ -117,6 +136,19 @@ const { currentPage } = Astro.props;
 		}
 	}
 
+	.navbar {
+		display: none;
+	}
+	@media (min-width: 50em) {
+		.navbar {
+			display: flex;
+			gap: 1rem;
+		}
+	}
+	.github-url {
+		width: 24px;
+	}
+
 	/** Style Algolia */
 	:root {
 		--docsearch-primary-color: var(--theme-accent);
@@ -128,7 +160,7 @@ const { currentPage } = Astro.props;
 		position: relative;
 		z-index: 10;
 		flex-grow: 1;
-		padding-right: 0.7rem;
+		/* padding-right: 0.7rem; */
 		display: flex;
 		max-width: 200px;
 	}

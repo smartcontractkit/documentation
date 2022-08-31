@@ -17,7 +17,7 @@ export type ProductCardProps = {
 export const ProductCard = (props: ProductCardProps) => {
   return (
     <section class={clsx("card", productCard.productCard)}>
-      <div>
+      <div class={clsx(productCard.firstCol)}>
         <img src={props.image} />
         <div class={productCard.ctaCol}>
           <h4>
@@ -44,7 +44,7 @@ export const ProductCard = (props: ProductCardProps) => {
       <div>
         <div class={productCard.networks}>
           <h6>Available on EVM Chains</h6>
-          <div class={productCard.chainWrapper}>
+          <div class={productCard.chainsWrapper}>
             {props.chains.map((chain) => (
               <img
                 src={`/assets/chains/${chain}.svg`}
