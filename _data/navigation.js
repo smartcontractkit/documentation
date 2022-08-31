@@ -213,6 +213,10 @@ module.exports = {
             url: '/docs/vrf/v2/examples/programmatic-subscription/',
           },
           {
+            title: 'Walkthrough the UI',
+            url: '/docs/vrf/v2/ui/',
+          },
+          {
             title: 'Security Considerations',
             url: '/docs/vrf/v2/security/',
           },
