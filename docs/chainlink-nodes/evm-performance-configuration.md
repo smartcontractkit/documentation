@@ -195,6 +195,9 @@ The recommended way to scale is to use more keys rather than increasing throughp
 By default, go-ethereum rejects transactions that exceed its built-in RPC gas or txfee caps. Chainlink nodes fatally error transactions if this happens. If you ever exceed the caps, your node will miss transactions.
 
 Disable the default RPC gas and txfee caps on your ETH node in the config using the TOML snippet shown below, or by running go-ethereum with the command line arguments: `--rpc.gascap=0 --rpc.txfeecap=0`.
+<details><summary>:warning: Arbitrum Differences</summary>
+`--node.rpc.gas-cap 0 --node.rpc.tx-fee-cap 0`
+</details>
 
 ```text
 [Eth]
