@@ -3,6 +3,7 @@ import preact from "@astrojs/preact"
 import react from "@astrojs/react"
 import { astroCallouts } from "./integrations/astro-callouts"
 import { solidityRemixCode } from "./integrations/solidity-remix"
+import { youtubeEmbed } from "./integrations/youtube-embed"
 import mdx from "@astrojs/mdx"
 
 import sitemap from "@astrojs/sitemap"
@@ -20,6 +21,7 @@ export default defineConfig({
     mdx(),
     astroCallouts(),
     solidityRemixCode(),
+    youtubeEmbed(),
   ],
   markdown: {
     remarkPlugins: ["remark-gfm", "remark-smartypants", "remark-directive"],

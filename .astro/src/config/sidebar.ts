@@ -3,26 +3,20 @@ export const SIDEBAR = {
     {
       section: "Getting Started",
       contents: [
-        {
-          title: "Overview",
-          url: "docs/conceptual-overview/",
-        },
+        { title: "Overview", url: "getting-started/conceptual-overview" },
         {
           title: "Deploy Your First Contract",
-          url: "docs/deploy-your-first-contract/",
+          url: "getting-started/deploy-your-first-contract",
         },
         {
           title: "Consuming Data Feeds",
-          url: "docs/consuming-data-feeds/",
+          url: "getting-started/consuming-data-feeds",
         },
         {
           title: "Get Random Numbers",
-          url: "docs/intermediates-tutorial/",
+          url: "getting-started/intermediates-tutorial",
         },
-        {
-          title: "API Calls",
-          url: "docs/advanced-tutorial/",
-        },
+        { title: "API Calls", url: "getting-started/advanced-tutorial" },
       ],
     },
     {
@@ -30,7 +24,7 @@ export const SIDEBAR = {
       contents: [
         {
           title: "Videos and Tutorials",
-          url: "docs/other-tutorials/",
+          url: "getting-started/other-tutorials",
         },
       ],
     },
@@ -39,19 +33,16 @@ export const SIDEBAR = {
       contents: [
         {
           title: "Chainlink Architecture",
-          url: "docs/architecture-overview/",
+          url: "architecture-overview/architecture-overview",
         },
         {
           title: "Data Feeds",
-          url: "docs/using-chainlink-reference-contracts/",
+          url: "data-feeds/using-chainlink-reference-contracts",
         },
-        {
-          title: "Chainlink VRF",
-          url: "docs/chainlink-vrf/",
-        },
+        { title: "Chainlink VRF", url: "docs/chainlink-vrf/" },
         {
           title: "Chainlink Keepers",
-          url: "docs/chainlink-keepers/introduction/",
+          url: "chainlink-keepers/introduction",
         },
         {
           title: "Connect to Public API Data",
@@ -59,7 +50,7 @@ export const SIDEBAR = {
         },
         {
           title: "Run a Chainlink Node",
-          url: "chainlink-nodes/",
+          url: "chainlink-nodes/chainlink-nodes",
         },
       ],
     },
@@ -70,19 +61,19 @@ export const SIDEBAR = {
       contents: [
         {
           title: "Chainlink Architecture",
-          url: "docs/architecture-overview/",
+          url: "architecture-overview/architecture-overview",
           children: [
             {
               title: "Basic Request Model",
-              url: "docs/architecture-request-model/",
+              url: "architecture-overview/architecture-request-model",
             },
             {
               title: "Decentralized Data Model",
-              url: "docs/architecture-decentralized-model/",
+              url: "architecture-overview/architecture-decentralized-model",
             },
             {
               title: "Off-Chain Reporting",
-              url: "docs/off-chain-reporting/",
+              url: "architecture-overview/off-chain-reporting",
             },
           ],
         },
@@ -93,104 +84,94 @@ export const SIDEBAR = {
       contents: [
         {
           title: "Introduction to Data Feeds",
-          url: "docs/using-chainlink-reference-contracts/",
+          url: "data-feeds/using-chainlink-reference-contracts",
         },
         {
           title: "Using Data Feeds",
-          url: "docs/get-the-latest-price/",
+          url: "data-feeds/get-the-latest-price",
         },
         {
           title: "Historical Price Data",
-          url: "docs/historical-price-data/",
+          url: "data-feeds/historical-price-data",
         },
         {
           title: "Feed Registry",
-          url: "docs/feed-registry/",
+          url: "data-feeds/feed-registry-functions",
         },
         {
           title: "API Reference",
-          url: "docs/price-feeds-api-reference/",
+          url: "data-feeds/price-feeds-api-reference",
         },
-        {
-          title: "Using ENS with Data Feeds",
-          url: "docs/ens/",
-        },
+        { title: "Using ENS with Data Feeds", url: "data-feeds/ens" },
         {
           title: "Contract Addresses",
-          url: "docs/reference-contracts/",
+          url: "data-feeds/reference-contracts",
           children: [
             {
               title: "Ethereum Data Feeds",
-              url: "docs/ethereum-addresses/",
+              url: "data-feeds/addresses/ethereum",
             },
             {
               title: "BNB Chain Data Feeds",
-              url: "docs/bnb-chain-addresses/",
+              url: "data-feeds/addresses/bnb-chain",
             },
             {
               title: "Polygon (Matic) Data Feeds",
-              url: "docs/matic-addresses/",
+              url: "data-feeds/addresses/matic",
             },
             {
               title: "Gnosis Chain (xDai) Data Feeds",
-              url: "docs/data-feeds-gnosis-chain/",
+              url: "data-feeds/addresses/gnosis-chain",
             },
             {
               title: "HECO Chain Data Feeds",
-              url: "docs/huobi-eco-chain-price-feeds/",
+              url: "data-feeds/addresses/huobi-eco-chain",
             },
             {
               title: "Avalanche Data Feeds",
-              url: "docs/avalanche-price-feeds/",
+              url: "data-feeds/addresses/avalanche",
             },
             {
               title: "Fantom Data Feeds",
-              url: "docs/fantom-price-feeds/",
+              url: "data-feeds/addresses/fantom",
             },
             {
               title: "Arbitrum Data Feeds",
-              url: "docs/arbitrum-price-feeds/",
+              url: "data-feeds/addresses/arbitrum",
             },
             {
               title: "Harmony Data Feeds",
-              url: "docs/harmony-price-feeds/",
+              url: "data-feeds/addresses/harmony",
             },
             {
               title: "Optimism Data Feeds",
-              url: "docs/optimism-price-feeds/",
+              url: "data-feeds/addresses/optimism",
             },
             {
               title: "Moonriver Data Feeds",
-              url: "docs/data-feeds-moonriver/",
+              url: "data-feeds/addresses/moonriver",
             },
             {
               title: "Moonbeam Data Feeds",
-              url: "docs/data-feeds-moonbeam/",
+              url: "data-feeds/addresses/moonbeam",
             },
-            {
-              title: "Metis Data Feeds",
-              url: "docs/data-feeds-metis/",
-            },
+            { title: "Metis Data Feeds", url: "data-feeds/addresses/metis" },
           ],
         },
         {
           title: "L2 Sequencer Uptime Feeds",
-          url: "docs/l2-sequencer-flag/",
+          url: "data-feeds/l2-sequencer-feeds",
         },
       ],
     },
     {
       section: "USING RANDOMNESS",
-
       contents: [
         {
           title: "Introduction to Chainlink VRF",
           url: "docs/chainlink-vrf/",
         },
-        {
-          title: "Get a Random Number",
-          url: "docs/get-a-random-number/",
-        },
+        { title: "Get a Random Number", url: "docs/get-a-random-number/" },
         {
           title: "Example Contracts",
           url: "docs/chainlink-vrf/example-contracts/",
@@ -203,10 +184,7 @@ export const SIDEBAR = {
           title: "Best Practices",
           url: "docs/chainlink-vrf-best-practices/",
         },
-        {
-          title: "Contract Addresses",
-          url: "docs/vrf-contracts/",
-        },
+        { title: "Contract Addresses", url: "docs/vrf-contracts/" },
         {
           title: "Migrating to VRF v2",
           url: "docs/chainlink-vrf/migration-vrf-v1-v2/",
@@ -232,32 +210,20 @@ export const SIDEBAR = {
               title: "Multi-Variable Responses",
               url: "docs/multi-variable-responses/",
             },
-            {
-              title: "Array Response",
-              url: "docs/api-array-response/",
-            },
-            {
-              title: "Large Responses",
-              url: "docs/large-responses/",
-            },
+            { title: "Array Response", url: "docs/api-array-response/" },
+            { title: "Large Responses", url: "docs/large-responses/" },
             {
               title: "Existing Job Request",
               url: "docs/existing-job-request/",
             },
           ],
         },
-        {
-          title: "Find Existing Jobs",
-          url: "docs/listing-services/",
-        },
+        { title: "Find Existing Jobs", url: "docs/listing-services/" },
         {
           title: "Testnet Nodes and Jobs",
           url: "docs/any-api-testnet-nodes/",
         },
-        {
-          title: "API Reference",
-          url: "docs/chainlink-framework/",
-        },
+        { title: "API Reference", url: "docs/chainlink-framework/" },
       ],
     },
     {
@@ -265,54 +231,48 @@ export const SIDEBAR = {
       contents: [
         {
           title: "Introduction to Chainlink Keepers",
-          url: "docs/chainlink-keepers/introduction/",
+          url: "chainlink-keepers/introduction",
         },
         {
           title: "Keepers-compatible Contracts",
-          url: "docs/chainlink-keepers/compatible-contracts/",
+          url: "chainlink-keepers/compatible-contracts",
         },
         {
           title: "Register an Upkeep",
-          url: "docs/chainlink-keepers/register-upkeep/",
+          url: "chainlink-keepers/register-upkeep",
         },
         {
           title: "Manage your Upkeeps",
-          url: "docs/chainlink-keepers/manage-upkeeps/",
+          url: "chainlink-keepers/manage-upkeeps",
         },
-        {
-          title: "Job Scheduler",
-          url: "docs/chainlink-keepers/job-scheduler/",
-        },
+        { title: "Job Scheduler", url: "chainlink-keepers/job-scheduler" },
         {
           title: "Making Flexible Contracts",
-          url: "docs/chainlink-keepers/flexible-upkeeps/",
+          url: "chainlink-keepers/flexible-upkeeps",
         },
         {
           title: "Utility Contracts",
-          url: "docs/chainlink-keepers/util-overview/",
+          url: "chainlink-keepers/util-overview",
           children: [
             {
               title: "EthBalanceMonitor",
-              url: "docs/chainlink-keepers/utility-contracts/",
+              url: "chainlink-keepers/utility-contracts",
             },
           ],
         },
         {
           title: "Keepers Architecture",
-          url: "docs/chainlink-keepers/overview/",
+          url: "chainlink-keepers/overview",
         },
         {
           title: "Supported Networks",
-          url: "docs/chainlink-keepers/supported-networks/",
+          url: "chainlink-keepers/supported-networks",
         },
         {
           title: "Keepers Economics",
-          url: "docs/chainlink-keepers/keeper-economics/",
+          url: "chainlink-keepers/keeper-economics",
         },
-        {
-          title: "FAQs",
-          url: "docs/chainlink-keepers/faqs/",
-        },
+        { title: "FAQs", url: "chainlink-keepers/faqs" },
       ],
     },
     {
@@ -320,47 +280,38 @@ export const SIDEBAR = {
       contents: [
         {
           title: "Videos and Tutorials",
-          url: "docs/other-tutorials/",
+          url: "getting-started/other-tutorials",
         },
-        {
-          title: "Acquire testnet LINK",
-          url: "docs/acquire-link/",
-        },
+        { title: "Acquire testnet LINK", url: "resources/acquire-link" },
         {
           title: "Fund Your Contracts",
-          url: "docs/fund-your-contract/",
+          url: "resources/fund-your-contract",
         },
         {
           title: "Install Frameworks",
-          url: "docs/create-a-chainlinked-project/",
+          url: "resources/create-a-chainlinked-project",
         },
         {
           title: "LINK Token Contracts",
-          url: "docs/link-token-contracts/",
+          url: "resources/link-token-contracts",
         },
         {
           title: "Developer Communications",
-          url: "docs/developer-communications/",
+          url: "resources/developer-communications",
         },
-        {
-          title: "Getting Help",
-          url: "docs/getting-help/",
-        },
-        {
-          title: "Data Provider Nodes",
-          url: "docs/data-provider-nodes/",
-        },
+        { title: "Getting Help", url: "resources/getting-help" },
+        { title: "Data Provider Nodes", url: "docs/data-provider-nodes/" },
         {
           title: "Selecting Data Feeds",
-          url: "docs/selecting-data-feeds/",
+          url: "resources/selecting-data-feeds",
         },
         {
           title: "Hackathon Resources",
-          url: "docs/hackathon-resources/",
+          url: "resources/hackathon-resources",
         },
         {
           title: "Contributing to Chainlink",
-          url: "docs/contributing-to-chainlink/",
+          url: "resources/contributing-to-chainlink",
         },
       ],
     },
@@ -369,10 +320,7 @@ export const SIDEBAR = {
     {
       section: "Solana",
       contents: [
-        {
-          title: "Overview",
-          url: "docs/solana/",
-        },
+        { title: "Overview", url: "solana/data-feeds/data-feeds-solana" },
       ],
     },
     {
@@ -380,32 +328,29 @@ export const SIDEBAR = {
       contents: [
         {
           title: "Using Data Feeds Off-Chain",
-          url: "docs/solana/using-data-feeds-off-chain/",
+          url: "solana/data-feeds/using-data-feeds-off-chain",
         },
         {
           title: "Using Data Feeds On-Chain",
-          url: "docs/solana/using-data-feeds-solana/",
+          url: "solana/data-feeds/using-data-feeds-solana",
         },
         {
           title: "Data Feed Addresses",
-          url: "docs/solana/data-feeds-solana/",
+          url: "solana/data-feeds/data-feeds-solana",
         },
       ],
     },
     {
       section: "Resources",
       contents: [
-        {
-          title: "Getting Help",
-          url: "docs/getting-help/",
-        },
+        { title: "Getting Help", url: "resources/getting-help" },
         {
           title: "Selecting Data Feeds",
-          url: "docs/selecting-data-feeds/",
+          url: "resources/selecting-data-feeds",
         },
         {
           title: "Contributing to Chainlink",
-          url: "docs/contributing-to-chainlink/",
+          url: "resources/contributing-to-chainlink",
         },
       ],
     },
@@ -414,54 +359,48 @@ export const SIDEBAR = {
     {
       section: "NODE OPERATORS",
       contents: [
-        {
-          title: "Node Versions",
-          url: "docs/node-versions/",
-        },
+        { title: "Node Versions", url: "chainlink-nodes/node-versions" },
         {
           title: "Running a Chainlink Node",
-          url: "docs/running-a-chainlink-node/",
+          url: "chainlink-nodes/running-a-chainlink-node",
         },
         {
           title: "Fulfilling Requests",
-          url: "docs/fulfilling-requests/",
+          url: "chainlink-nodes/fulfilling-requests",
         },
         {
           title: "Run an Ethereum Client",
-          url: "docs/run-an-ethereum-client/",
+          url: "chainlink-nodes/run-an-ethereum-client",
         },
         {
           title: "Performing System Maintenance",
-          url: "docs/performing-system-maintenance/",
+          url: "chainlink-nodes/performing-system-maintenance",
         },
         {
           title: "Connecting to a Remote Database",
-          url: "docs/connecting-to-a-remote-database/",
+          url: "chainlink-nodes/connecting-to-a-remote-database",
         },
         {
           title: "Configuring Nodes",
-          url: "docs/configuration-variables/",
+          url: "chainlink-nodes/configuration-variables",
         },
         {
           title: "Enabling HTTPS Connections",
-          url: "docs/enabling-https-connections/",
+          url: "chainlink-nodes/enabling-https-connections",
         },
         {
           title: "Security and Operation Best Practices",
-          url: "docs/best-security-practices/",
+          url: "chainlink-nodes/best-security-practices",
         },
         {
           title: "Optimizing EVM Performance",
-          url: "docs/evm-performance-configuration/",
+          url: "chainlink-nodes/evm-performance-configuration",
         },
         {
           title: "Best Practices for Nodes on AWS",
-          url: "docs/best-practices-aws/",
+          url: "chainlink-nodes/best-practices-aws",
         },
-        {
-          title: "Miscellaneous",
-          url: "docs/miscellaneous/",
-        },
+        { title: "Miscellaneous", url: "chainlink-nodes/miscellaneous" },
       ],
     },
     {
@@ -469,110 +408,109 @@ export const SIDEBAR = {
       contents: [
         {
           title: "Migrating to v2 Jobs",
-          url: "docs/jobs/migration-v1-v2/",
+          url: "chainlink-nodes/oracle-jobs/migration-v1-v2",
         },
         {
           title: "Jobs",
-          url: "docs/jobs/",
+          url: "chainlink-nodes/oracle-jobs/job-types/cron",
           children: [
             {
               title: "Cron",
-              url: "docs/jobs/types/cron/",
+              url: "chainlink-nodes/oracle-jobs/job-types/cron",
             },
             {
               title: "Direct Request",
-              url: "docs/jobs/types/direct-request/",
+              url: "chainlink-nodes/oracle-jobs/job-types/direct_request",
             },
             {
               title: "Flux Monitor",
-              url: "docs/jobs/types/flux-monitor/",
+              url: "chainlink-nodes/oracle-jobs/job-types/flux_monitor",
             },
             {
               title: "Keeper",
-              url: "docs/jobs/types/keeper/",
+              url: "chainlink-nodes/oracle-jobs/job-types/keeper",
             },
             {
               title: "Off-chain Reporting",
-              url: "docs/jobs/types/offchain-reporting/",
+              url: "chainlink-nodes/oracle-jobs/job-types/offchain_reporting",
             },
             {
               title: "Webhook",
-              url: "docs/jobs/types/webhook/",
+              url: "chainlink-nodes/oracle-jobs/job-types/webhook",
             },
           ],
         },
         {
-          url: "docs/tasks/",
+          url: "chainlink-nodes/oracle-jobs/task-types/tasks",
           title: "Tasks",
           children: [
             {
               title: "Job Pipelines",
-              url: "docs/jobs/task-types/pipelines/",
+              url: "chainlink-nodes/oracle-jobs/task-types/pipelines",
             },
             {
               title: "HTTP",
-              url: "docs/jobs/task-types/http/",
+              url: "chainlink-nodes/oracle-jobs/task-types/task_http",
             },
             {
               title: "Bridge",
-              url: "docs/jobs/task-types/bridge/",
+              url: "chainlink-nodes/oracle-jobs/task-types/task_bridge",
             },
             {
               title: "JSON Parse",
-              url: "docs/jobs/task-types/jsonparse/",
+              url: "chainlink-nodes/oracle-jobs/task-types/task_jsonparse",
             },
             {
               title: "CBOR Parse",
-              url: "docs/jobs/task-types/cborparse/",
+              url: "chainlink-nodes/oracle-jobs/task-types/task_cborparse",
             },
             {
               title: "ETH ABI Decode",
-              url: "docs/jobs/task-types/eth-abi-decode/",
+              url: "chainlink-nodes/oracle-jobs/task-types/task_eth_abi_decode",
             },
             {
               title: "ETH ABI Decode Log",
-              url: "docs/jobs/task-types/eth-abi-decode-log/",
+              url: "chainlink-nodes/oracle-jobs/task-types/task_eth_abi_decode_log",
             },
             {
               title: "ETH ABI Encode",
-              url: "docs/jobs/task-types/eth-abi-encode/",
+              url: "chainlink-nodes/oracle-jobs/task-types/task_eth_abi_encode",
             },
             {
               title: "ETH Call",
-              url: "docs/jobs/task-types/eth-call/",
+              url: "chainlink-nodes/oracle-jobs/task-types/task_eth_call",
             },
             {
               title: "ETH Tx",
-              url: "docs/jobs/task-types/eth-tx/",
+              url: "chainlink-nodes/oracle-jobs/task-types/task_eth_tx",
             },
             {
               title: "Multiply",
-              url: "docs/jobs/task-types/multiply/",
+              url: "chainlink-nodes/oracle-jobs/task-types/task_multiply",
             },
             {
               title: "Divide",
-              url: "docs/jobs/task-types/divide/",
+              url: "chainlink-nodes/oracle-jobs/task-types/task_divide",
             },
-
             {
               title: "Any",
-              url: "docs/jobs/task-types/any/",
+              url: "chainlink-nodes/oracle-jobs/task-types/task_any",
             },
             {
               title: "Mean",
-              url: "docs/jobs/task-types/mean/",
+              url: "chainlink-nodes/oracle-jobs/task-types/task_mean",
             },
             {
               title: "Median",
-              url: "docs/jobs/task-types/median/",
+              url: "chainlink-nodes/oracle-jobs/task-types/task_median",
             },
             {
               title: "Mode",
-              url: "docs/jobs/task-types/mode/",
+              url: "chainlink-nodes/oracle-jobs/task-types/task_mode",
             },
             {
               title: "Sum",
-              url: "docs/jobs/task-types/sum/",
+              url: "chainlink-nodes/oracle-jobs/task-types/task_sum",
             },
           ],
         },
@@ -583,19 +521,19 @@ export const SIDEBAR = {
       contents: [
         {
           title: "Introduction",
-          url: "docs/external-adapters/",
+          url: "chainlink-nodes/external-adapters/external-adapters",
         },
         {
           title: "External Adapters in Solidity",
-          url: "docs/contract-creators/",
+          url: "chainlink-nodes/external-adapters/contract-creators",
         },
         {
           title: "Building External Adapters",
-          url: "docs/developers/",
+          url: "chainlink-nodes/external-adapters/developers",
         },
         {
           title: "Bridges: Adding External Adapters to Nodes",
-          url: "docs/node-operators/",
+          url: "chainlink-nodes/external-adapters/node-operators",
         },
       ],
     },
@@ -604,15 +542,15 @@ export const SIDEBAR = {
       contents: [
         {
           title: "Introduction",
-          url: "docs/external-initiators-introduction/",
+          url: "chainlink-nodes/external-initiators/external-initiators-introduction",
         },
         {
           title: "Building External Initiators",
-          url: "docs/building-external-initiators/",
+          url: "chainlink-nodes/external-initiators/building-external-initiators",
         },
         {
           title: "Adding External Initiators to Nodes",
-          url: "docs/external-initiators-in-nodes/",
+          url: "chainlink-nodes/external-initiators/external-initiators-in-nodes",
         },
       ],
     },
@@ -637,10 +575,7 @@ export const SIDEBAR = {
           title: "Best Practices",
           url: "docs/chainlink-vrf-best-practices/v1/",
         },
-        {
-          title: "Contract Addresses",
-          url: "docs/vrf-contracts/v1/",
-        },
+        { title: "Contract Addresses", url: "docs/vrf-contracts/v1/" },
         {
           title: "API Reference",
           url: "docs/chainlink-vrf-api-reference/v1/",
@@ -652,17 +587,17 @@ export const SIDEBAR = {
       contents: [
         {
           title: "Job Specifications",
-          url: "docs/job-specifications/",
+          url: "chainlink-nodes/oracle-jobs/v1/job-specifications",
         },
         {
           title: "Core Adapters",
-          url: "docs/core-adapters/",
+          url: "chainlink-nodes/oracle-jobs/v1/adapters",
         },
         {
           title: "Initiators",
-          url: "docs/initiators/",
+          url: "chainlink-nodes/oracle-jobs/v1/initiators",
         },
       ],
     },
   ],
-};
+}
