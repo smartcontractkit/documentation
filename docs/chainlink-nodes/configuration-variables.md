@@ -843,6 +843,12 @@ EVM_NODES='
 '
 ```
 
+Usage of Docker requires the variable to be formatted as one line with no whitespaces and quotes wrapping it, as follows in the example:
+
+```bash
+EVM_NODES=[{"name":"primary_0_1","evmChainId":"0","wsUrl":"ws://test1.invalid","sendOnly":false},{"name":"primary_0_2","evmChainId":"0","wsUrl":"ws://test2.invalid","httpUrl":"https://test3.invalid","sendOnly":false},{"name":"primary_1337_1","evmChainId":"1337","wsUrl":"ws://test4.invalid","httpUrl":"http://test5.invalid","sendOnly":false}]
+```
+
 ### ETH_SECONDARY_URLS
 
 Only has effect if `ETH_URL` set. Otherwise, it can be set in the API, [CLI](/docs/configuration-variables/#cli-client), or GUI.
