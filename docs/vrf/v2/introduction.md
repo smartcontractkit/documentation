@@ -18,22 +18,7 @@ metadata:
 
 {% include 'sections/vrf-v2-common.md' %}
 
-Chainlink VRF (Verifiable Random Function) is a provably fair and verifiable random number generator (RNG) that enables smart contracts to access random values without compromising security or usability.
-
-**Topics**
-
-- [Overview](#overview)
-- [Supported networks](#supported-networks)
-- [Subscriptions](#subscriptions)
-- [Subscription billing](#subscription-billing)
-- [Request and receive data](#request-and-receive-data)
-  - [End-to-end diagram](#end-to-end-diagram)
-  - [Explanation](#explanation)
-- [Limits](#limits)
-
-## Overview
-
-For each request, Chainlink VRF generates one or more random values and cryptographic proof of how those values were determined. The proof is published and verified on-chain before any consuming applications can use it. This process ensures that results cannot be tampered with or manipulated by any single entity including oracle operators, miners, users, or smart contract developers.
+**Chainlink VRF (Verifiable Random Function)** is a provably fair and verifiable random number generator (RNG) that enables smart contracts to access random values without compromising security or usability. For each request, Chainlink VRF generates one or more random values and cryptographic proof of how those values were determined. The proof is published and verified on-chain before any consuming applications can use it. This process ensures that results cannot be tampered with or manipulated by any single entity including oracle operators, miners, users, or smart contract developers.
 
 Use Chainlink VRF to build reliable smart contracts for any applications that rely on unpredictable outcomes:
 
@@ -46,6 +31,16 @@ Use Chainlink VRF to build reliable smart contracts for any applications that re
 </p>
 
 To learn more about the benefits of Chainlink VRF v2, see our blog post [Chainlink VRF v2 Is Now Live on Mainnet](https://blog.chain.link/vrf-v2-mainnet-launch/). For help with your specific use case, [contact us](https://chainlinkcommunity.typeform.com/to/OYQO67EF?page=docs-footer) to connect with one of our Solutions Architects. You can also ask questions about Chainlink VRF on [Stack Overflow](https://stackoverflow.com/questions/ask?tags=chainlink).
+
+**Topics**
+
+- [Supported networks](#supported-networks)
+- [Subscriptions](#subscriptions)
+- [Subscription billing](#subscription-billing)
+- [Request and receive data](#request-and-receive-data)
+  - [End-to-end diagram](#end-to-end-diagram)
+  - [Explanation](#explanation)
+- [Limits](#limits)
 
 ## Supported networks
 
