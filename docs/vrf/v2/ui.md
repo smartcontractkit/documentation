@@ -9,12 +9,12 @@ metadata:
   description: 'Walkthrough Chainlink VRF v2 UI'
 ---
 
-The [VRF v2 Subscription Manager](https://vrf.chain.link) lets you create an account and pre-pay for VRF v2, so you don't provide funding each time your application requests randomness.
+The VRF v2 Subscription Manager is accessible on _https://vrf.chain.link_. It lets you create an account and pre-pay for VRF v2, so you don't provide funding each time your application requests randomness.
 This guide will walk you through the main sections of the UI.
 
 **Topics**
 
-- [Summary](#summary)
+- [Overview](#overview)
 - [Consumers](#consumers)
 - [Pending](#pending)
 - [History](#history)
@@ -22,9 +22,9 @@ This guide will walk you through the main sections of the UI.
   - [Events](#events)
   - [Failed requests](#failed-requests)
 
-## Summary
+## Overview
 
-<add-image>
+![VRF v2 ui overview](/images/vrf/v2-ui-overview.png)
 
 This shows an overview of the subscription:
 
@@ -39,7 +39,7 @@ You can also cancel your subscription from there. When you cancel your subscript
 
 ## Consumers
 
-<add-image>
+![VRF v2 ui consumers](/images/vrf/v2-ui-consumers.png)
 
 This shows the list of the subscription consumers:
 
@@ -52,7 +52,7 @@ You can also add/remove consumers from there.
 
 ## Pending
 
-<add-image>
+![VRF v2 ui pending](/images/vrf/v2-ui-pending.png)
 
 This list appears if there are pending requests:
 
@@ -67,7 +67,7 @@ This list appears if there are pending requests:
 
 ### Recent fulfillments
 
-<add-image>
+![VRF v2 ui recent fulfill](/images/vrf/v2-ui-recent-fulfill.png)
 
 Displays successful VRF fulfilments:
 
@@ -80,7 +80,7 @@ Displays successful VRF fulfilments:
 
 ### Events
 
-<add-image>
+![VRF v2 ui history events](/images/vrf/v2-ui-history-events.png)
 
 Displays events linked to the subscription. There are five main events:
 
@@ -105,7 +105,7 @@ The list displays:
 
 ### Failed requests
 
-<add-image>
+![VRF v2 ui history failed](/images/vrf/v2-ui-history-failed.png)
 
 Displays all failed requests:
 

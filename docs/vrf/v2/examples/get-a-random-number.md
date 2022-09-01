@@ -32,6 +32,8 @@ This guide explains how to get random values using a simple contract to request 
 
 ## Requirements
 
+{% include 'sections/vrf-v2-ui-callout.md' %}
+
 This guide assumes that you know how to create and deploy smart contracts on Ethereum testnets using the following tools:
 
 - [The Remix IDE](https://remix.ethereum.org/)
@@ -76,10 +78,10 @@ Build and deploy the contract on Goerli.
 
 1. Open the [`VRFv2Consumer.sol` contract](https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFv2Consumer.sol) in Remix.
 
-    <div class="remix-callout">
-          <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFv2Consumer.sol" target="_blank" >Open in Remix</a>
-          <a href="/docs/conceptual-overview/#what-is-remix">What is Remix?</a>
-    </div>
+<div class="remix-callout">
+      <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFv2Consumer.sol" target="_blank" >Open in Remix</a>
+      <a href="/docs/conceptual-overview/#what-is-remix">What is Remix?</a>
+</div>
 
 1. On the **Compile** tab in Remix, compile the `VRFv2Consumer.sol` contract.
 

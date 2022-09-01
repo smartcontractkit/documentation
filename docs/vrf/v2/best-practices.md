@@ -10,6 +10,7 @@ metadata:
 ---
 
 {% include 'sections/vrf-v2-common.md' %}
+{% include 'sections/vrf-v2-ui-callout.md' %}
 
 These are example best practices for using Chainlink VRF. To explore more applications of VRF, refer to our [blog](https://blog.chain.link/).
 
@@ -25,6 +26,7 @@ function fulfillRandomWords(
   // Assuming only one random word was requested.
   s_randomRange = (randomWords[0] % 50) + 1;
 }
+
 ```
 
 ## Getting multiple random values

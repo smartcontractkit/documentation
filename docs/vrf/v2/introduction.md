@@ -74,7 +74,7 @@ To learn when VRF v2 becomes available on more networks, follow us on [Twitter](
 
 ## Subscriptions
 
-VRF v2 requests receive funding from subscription accounts. The [Subscription Manager](https://vrf.chain.link) lets you create an account and pre-pay for VRF v2, so you don't provide funding each time your application requests randomness. This reduces the total gas cost to use VRF v2. It also provides a simple way to fund your use of Chainlink products from a single location, so you don't have to manage multiple wallets across several different systems and applications.
+VRF v2 requests receive funding from subscription accounts. The [Subscription Manager](/docs/vrf/v2/ui/) lets you create an account and pre-pay for VRF v2, so you don't provide funding each time your application requests randomness. This reduces the total gas cost to use VRF v2. It also provides a simple way to fund your use of Chainlink products from a single location, so you don't have to manage multiple wallets across several different systems and applications.
 
 Subscriptions have the following core concepts:
 
