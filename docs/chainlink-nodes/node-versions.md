@@ -18,7 +18,7 @@ You can find a list of release notes for Chainlink nodes in the [smartcontractki
 
 ### Added
 
-- Added the `hexencode` and `base64encode` tasks (pipeline). See the [Hex Encode Task](/docs/jobs/task-types/hexencode/) and [Hex Decode Task](/docs/jobs/task-types/hexdecode/) pages for examples.
+- Added the `hexencode` and `base64encode` tasks (pipeline). See the [Hex Encode Task](/docs/jobs/task-types/hexencode/) and [Base64 Encode Task](/docs/jobs/task-types/base64encode/) pages for examples.
 - `forwardingAllowed` per job attribute to allow forwarding txs submitted by the job.
 - Added `Arbitrum Goerli` configuration support.
 - Added the [`NODE_SELECTION_MODE` (`EVM.NodePool.SelectionMode`) environment variable](/docs/configuration-variables/#node_selection_mode), which controls node picking strategy. Supported values are:
