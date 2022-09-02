@@ -5,6 +5,7 @@ section: ethereum
 permalink: "/docs/ethereum-addresses/"
 stub: ethereum-addresses
 metadata:
+  networkstatusurl: "https://ethstats.net/"
   description: "Chainlink Data Feeds on Ethereum"
 date: Last Modified
 ---

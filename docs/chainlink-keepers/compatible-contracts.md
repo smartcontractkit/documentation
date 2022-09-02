@@ -34,8 +34,8 @@ Learn how to make smart contracts **Keepers-compatible** with the `KeeperCompati
 
 Keepers-compatible contracts must meet the following requirements:
 
-- Import `KeepersCompatible.sol`. You can refer to the [Chainlink Contracts](https://github.com/smartcontractkit/chainlink/tree/develop/contracts/src) on GitHub to find the latest version.
-- Use the `KeepersCompatibleInterface` from the library to ensure your `checkUpkeep` and `performUpkeep`function definitions match the definitions expected by the Keepers Network.
+- Import `KeeperCompatible.sol`. You can refer to the [Chainlink Contracts](https://github.com/smartcontractkit/chainlink/tree/develop/contracts/src) on GitHub to find the latest version.
+- Use the `KeeperCompatibleInterface` from the library to ensure your `checkUpkeep` and `performUpkeep`function definitions match the definitions expected by the Keepers Network.
 - Include a `checkUpkeep` function that contains the logic that will be executed off-chain to see if `performUpkeep` should be executed. `checkUpkeep` can use on-chain data and a specified `checkData` parameter to perform complex calculations off-chain and then send the result to `performUpkeep` as `performData`.
 - Include a `performUpkeep` function that will be executed on-chain when `checkUpkeep` returns `true`. Because `performUpkeep` is external, users are advised to revalidate conditions and performData.
 

@@ -9,9 +9,7 @@ metadata:
   description: 'Best pracices for using Chainlink VRF.'
 ---
 
-> 📘 You are viewing the VRF v2 guide.
->
-> If you are using v1, see the [VRF v1 guide](/docs/vrf/v1/introduction/).
+{% include 'sections/vrf-v2-common.md' %}
 
 These are example best practices for using Chainlink VRF. To explore more applications of VRF, refer to our [blog](https://blog.chain.link/).
 
@@ -96,3 +94,16 @@ function fulfillRandomWords(
   s_requestIndexToRandomWords[requestNumber] = randomWords;
 }
 ```
+
+## Processing VRF responses through different execution paths
+
+If you want to process VRF responses depending on predetermined conditions, you can create an `enum`. When requesting for randomness, map each `requestId` to an enum. This way, you can handle different execution paths in `fulfillRandomWords`. See the following example:
+
+```solidity
+{% include 'samples/VRF/VRFv2MultiplePaths.sol' %}
+```
+
+<div class="remix-callout">
+  <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFv2MultiplePaths.sol" target="_blank" >Open in Remix</a>
+  <a href="/docs/conceptual-overview/#what-is-remix">What is Remix?</a>
+</div>

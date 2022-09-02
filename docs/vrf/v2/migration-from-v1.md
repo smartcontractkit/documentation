@@ -6,9 +6,7 @@ title: 'Migrating to VRF v2'
 permalink: 'docs/vrf/v2/migration-from-v1/'
 ---
 
-> 📘 You are viewing the VRF v2 guide.
->
-> If you are using v1, see the [VRF v1 guide](/docs/vrf/v1/introduction/).
+{% include 'sections/vrf-v2-common.md' %}
 
 ## Comparison between VRF v1 and VRF v2
 
