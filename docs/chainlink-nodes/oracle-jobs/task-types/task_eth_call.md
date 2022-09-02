@@ -12,6 +12,7 @@ Makes a non-mutating contract call to the specified contract with the specified 
 
 - `contract`: the address of the contract to call.
 - `data`: the data to attach to the call (including the function selector).
+- `gas`: the amount of gas to attach to the transaction.
 
 **Outputs**
 
