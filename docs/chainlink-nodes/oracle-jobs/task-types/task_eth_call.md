@@ -27,7 +27,8 @@ encode_call  [type="ethabiencode"
 
 call          [type="ethcall"
                contract="0xa36085F69e2889c224210F603D836748e7dC0088"
-               data="$(encode_call)"]
+               data="$(encode_call)"
+               gas="1000"]
 
 decode_result [type="ethabidecode"
                abi="bool upkeepNeeded, bytes performData"
