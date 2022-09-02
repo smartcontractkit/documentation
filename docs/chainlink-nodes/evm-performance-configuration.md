@@ -202,7 +202,7 @@ RPCGasCap = 0
 RPCTxFeeCap = 0.0
 ```
 
-### *Arbitrum Differences
+### Arbitrum differences
 
 Arbitrum Nitro runs a fork of go-ethereum internally, but the original flags are not valid. These modified flags are equivalent:
 
