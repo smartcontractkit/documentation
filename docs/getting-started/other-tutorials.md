@@ -10,17 +10,17 @@ Welcome to the Resources page. This is a list of links and pages that you might 
 
 **Topics**
 
-+ [Smart Contract Learning Materials](#smart-contract-learning-materials)
-  + [Video Tutorials](#video-tutorials)
++ [Smart contract learning materials](#smart-contract-learning-materials)
+  + [Video tutorials](#video-tutorials)
   + [Applications](#applications)
-  + [Game Resources](#game-resources)
-  + [Coding Bootcamps](#coding-bootcamps)
-  + [Starter Kits](#starter-kits)
-  + [External Tutorials](#external-tutorials)
-  + [More Inspiration](#more-inspiration)
+  + [Game resources](#game-resources)
+  + [Coding bootcamps](#coding-bootcamps)
+  + [Starter kits](#starter-kits)
+  + [External tutorials](#external-tutorials)
+  + [More inspiration](#more-inspiration)
 + [Outreach](#outreach)
-  + [Get Support](#get-support)
-  + [Join the Community](#join-the-community)
+  + [Get support](#get-support)
+  + [Join the community](#join-the-community)
 
 
 ## Smart contract learning materials
