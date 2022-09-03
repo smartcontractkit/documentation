@@ -10,24 +10,24 @@ Welcome to the Resources page. This is a list of links and pages that you might 
 
 **Topics**
 
-+ [Smart Contract Learning Materials](#smart-contract-learning-materials)
-  + [Video Tutorials](#video-tutorials)
-  + [Application Projects](#application-projects)
-  + [Game Resources](#game-resources)
-  + [Coding Bootcamps](#coding-bootcamps)
-  + [Starter Kits](#starter-kits)
-  + [External Tutorials](#external-tutorials)
-  + [More Inspiration](#more-inspiration)
++ [Smart contract learning materials](#smart-contract-learning-materials)
+  + [Video tutorials](#video-tutorials)
+  + [Applications](#applications)
+  + [Game resources](#game-resources)
+  + [Coding bootcamps](#coding-bootcamps)
+  + [Starter kits](#starter-kits)
+  + [External tutorials](#external-tutorials)
+  + [More inspiration](#more-inspiration)
 + [Outreach](#outreach)
-  + [Get Support](#get-support)
-  + [Join the Community](#join-the-community)
+  + [Get support](#get-support)
+  + [Join the community](#join-the-community)
 
 
-## Smart Contract Learning Materials
+## Smart contract learning materials
 
 Videos, tutorials, examples, and bootcamps are a great way to get experience building smart contracts and using Chainlink products. The following learning materials are useful for expanding your knowledge.
 
-### Video Tutorials
+### Video tutorials
 
 We're constantly uploading new videos to our [YouTube](https://www.youtube.com/c/chainlink) channel. Here are some direct links to playlists that may be helpful if you're starting your Chainlink learning journey or if you're looking for interesting ways to apply Chainlink to your project:
 
@@ -41,10 +41,10 @@ We're constantly uploading new videos to our [YouTube](https://www.youtube.com/c
 - [Patrick Collins](https://www.youtube.com/watch?v=p36tXHX1JD8)
 - [Nader Dabit](https://www.youtube.com/watch?v=nS9xP1hxg3w)
 
-### Application Projects
+### Applications
 Below is a list of applications of Chainlink's products and services sorted by difficulty and type to help you navigate and search for projects that you might find interesting. See the [Chainlink Blog](https://blog.chain.link/) to stay up to date with new ways to use Chainlink.
 
-#### Data Feeds
+#### Data feeds
 | Name                                                                                                                                               | Type     | Difficulty |
 |:-------------------------------------------------------------------------------------------------------------------------------------------------- |:-------- |:---------- |
 | [How to Calculate Price Volatility for DeFi Variance Swaps](https://blog.chain.link/how-to-calculate-price-volatility-for-defi-variance-swaps/)    | DeFi     | Advanced   |
@@ -67,7 +67,7 @@ Below is a list of applications of Chainlink's products and services sorted by d
 | [Build, Deploy, and Sell Your Own Dynamic NFT](https://blog.chain.link/build-deploy-and-sell-your-own-dynamic-nft/)                | NFT | Advanced |
 | [How to Build a Blockchain Lottery](https://blog.chain.link/how-to-build-a-blockchain-lottery-2/)       | Gambling | Advanced   |
 
-#### API Requests
+#### API requests
 
 | Name                                                                                                                                                           | Type                 | Difficulty |
 | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |:-------------------- |:---------- |
@@ -84,19 +84,33 @@ Below is a list of applications of Chainlink's products and services sorted by d
 | [How to Connect a Tesla Vehicle API to a Smart Contract Via a Chainlink External Adapter](https://blog.chain.link/create-tesla-smart-contract-rental/)         | Transportation       | Advanced   |
 | [OAuth and API Authentication in Smart Contracts](https://blog.chain.link/oauth-and-api-authentication-in-smart-contracts-2/)                                                                                                                                                               |  Security                    |  Advanced          |
 
-### Game Resources
+#### Automation (Keepers)
+
+| Name                                                                                                                                                           | Type                 | Difficulty |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------- |:-------------------- |:---------- |
+| [Smart Contract Automation Master Class  Module #1](https://youtu.be/D3rMFshrj7c)   |   Automation         | Beginner     |
+| [Smart Contract Automation Master Class  Module #2](https://youtu.be/UT2qpUh0tmA/)   |   Automation | Beginner   |
+| [Entropyfi Saves Engineering Hours with Chainlink Keepers](https://medium.com/entropyfi/entropyfi-saves-engineering-hours-with-chainlink-keepers-6ec172a76249)               | Gaming | Medium   |
+| [Enabling Limit Orders on CivTrade With Chainlink Keepers](https://news.civfund.org/civtrade-with-chainlink-keepers-8b6c3965a92e)               | Trading | Medium   |
+| [Pickle Finance UniV3 Jars Powered by Chainlink Keepers](https://picklefinance.medium.com/pickle-finance-univ3-jars-powered-by-chainlink-keepers-8ce1756a2497)               | Finance | Medium   |
+| [JamonSwap Introduces New Limit Order Functionality Using Chainlink Keepers](https://medium.com/@JamonSwap/jamonswap-introduces-new-limit-order-functionality-using-chainlink-keepers-51bd94d75feb)               | DeFi | Medium   |
+| [How Cratos used Chainlink Keepers to automate the token vesting process](https://cratostoken.medium.com/how-cratos-used-chainlink-keepers-to-automate-the-token-vesting-process-69bcb3611161)               | DeFi | Medium   |
+| [Enabling automated NFT lotteries with Chainlink Keepers and VRF](https://czodiac.medium.com/enabling-automated-nft-lotteries-with-chainlink-keepers-and-vrf-34dcc191965b)  | NFT | Medium   |
+| [How ApeSwap Integrated Chainlink Keepers for BANANA Maximizer Vaults](https://ape-swap.medium.com/how-apeswap-integrated-chainlink-keepers-for-banana-maximizer-vaults-2e88abb34eca)               | DeFi | Medium   |
+
+### Game resources
 
 - [CryptoZombies](https://cryptozombies.io/)
 - [DamnVulnerableDefi](https://damnvulnerabledefi.xyz/challenges/8.html)
 - [Ethernaut](https://ethernaut.openzeppelin.com/)
 
-### Coding Bootcamps
+### Coding bootcamps
 
 - [ChainShot](https://www.chainshot.com/courses)
 - [Consensys Bootcamp](https://consensys.net/academy/bootcamp/)
 - [Ivan On Tech](https://academy.moralis.io/courses/chainlink-101)
 
-### Starter Kits
+### Starter kits
 
 Our Starter Kits help jumpstart your full-stack development process. You can get starter kits for Brownie (Python), Truffle (Javascript), and Hardhat (Javascript). See the [Engineering Tutorials](https://www.youtube.com/playlist?list=PLVP9aGDn-X0QwJVbQvuKr-zrh2_DV5M6J) playlist to learn more about each kit and how to use them.
 
@@ -104,12 +118,12 @@ Our Starter Kits help jumpstart your full-stack development process. You can get
 - [Chainlink Truffle Starter Kit (Javascript)](https://github.com/smartcontractkit/truffle-starter-kit)
 - [Chainlink Hardhat Starter Kit (Javascript)](https://github.com/smartcontractkit/hardhat-starter-kit)
 
-### External Tutorials
+### External tutorials
 
 - [Ethereum Developers](https://ethereum.org/en/developers/tutorials/)
 - [useWeb3](https://www.useweb3.xyz/)
 
-### More Inspiration
+### More inspiration
 
 Looking for more ways to use Chainlink? Here are some resources that discuss Chainlink's use cases as well as the winning projects we've had in our previous hackathons. There is also a link to the Marketplace where you can find the latest data provider nodes and explore the network.
 
@@ -120,13 +134,15 @@ Looking for more ways to use Chainlink? Here are some resources that discuss Cha
 
 The Chainlink community is an inviting group of engineers that is always looking to help users expand their knowledge on Chainlink and solve related issues. Refer back to the [Getting Help](/docs/getting-help) page for the latest information about how to get support.
 
-### Get Support
+### Get support
+
 - [Stack Overflow](https://stackoverflow.com/questions/tagged/chainlink)
 - [Stack Exchange Ethereum](https://ethereum.stackexchange.com/questions/tagged/chainlink)
 - [Hackathon Discord](https://discord.gg/h3AvTHj)
 - [Developer Discord](https://discord.gg/2YHSAey)
 
-### Join the Community
+### Join the community
+
 - [Twitter](https://mobile.twitter.com/chainlink)
 - [Reddit](https://www.reddit.com/r/Chainlink/)
 - [Telegram](https://t.me/chainlinkofficial)
