@@ -4,7 +4,11 @@ section: ethereum
 date: Last Modified
 title: 'Introduction to Chainlink VRF'
 permalink: 'docs/vrf/v2/introduction/'
-whatsnext: { 'Get a Random Number': '/docs/vrf/v2/examples/get-a-random-number/', 'Supported Networks': '/docs/vrf/v2/supported-networks/' }
+whatsnext:
+  {
+    'Get a Random Number': '/docs/vrf/v2/examples/get-a-random-number/',
+    'Supported Networks': '/docs/vrf/v2/supported-networks/',
+  }
 metadata:
   title: 'Generate Random Numbers for Smart Contracts using Chainlink VRF'
   description: 'Learn how to securely generate random numbers for your smart contract with Chainlink VRF (an RNG). This guide uses Solidity code examples.'
@@ -12,9 +16,7 @@ metadata:
 
 ![Chainlink](/files/a4c6c80-85d09b6-19facd8-banner.png)
 
-> 📘 You are viewing the VRF v2 guide.
->
-> If you are using v1, see the [VRF v1 guide](/docs/vrf/v1/introduction/).
+{% include 'sections/vrf-v2-common.md' %}
 
 Chainlink VRF (Verifiable Random Function) is a provably fair and verifiable random number generator (RNG) that enables smart contracts to access random values without compromising security or usability.
 

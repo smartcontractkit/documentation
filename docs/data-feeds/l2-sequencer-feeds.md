@@ -25,9 +25,14 @@ To help your applications identify when the sequencer is unavailable, you can us
 
 You can find proxy addresses for the L2 sequencer feeds at the following addresses:
 
-- Arbitrum: [0xFdB631F5EE196F0ed6FAa767959853A9F217697D](https://arbiscan.io/address/0xfdb631f5ee196f0ed6faa767959853a9f217697d)
-- Optimism Mainnet: [0x371EAD81c9102C9BF4874A9075FFFf170F2Ee389](https://optimistic.etherscan.io/address/0x371EAD81c9102C9BF4874A9075FFFf170F2Ee389)
-- Metis Andromeda: [0x58218ea7422255EBE94e56b504035a784b7AA204](https://andromeda-explorer.metis.io/address/0x58218ea7422255EBE94e56b504035a784b7AA204)
+- Arbitrum:
+  - Arbitrum mainnet: [0xFdB631F5EE196F0ed6FAa767959853A9F217697D](https://arbiscan.io/address/0xfdb631f5ee196f0ed6faa767959853a9f217697d)
+  - Arbitrum Rinkeby testnet: [0x9912bb73e2aD6aEa14d8D72d5826b8CBE3b6c4E2](https://testnet.arbiscan.io/address/0x9912bb73e2aD6aEa14d8D72d5826b8CBE3b6c4E2)
+- Optimism:
+  - Optimism mainnet: [0x371EAD81c9102C9BF4874A9075FFFf170F2Ee389](https://optimistic.etherscan.io/address/0x371EAD81c9102C9BF4874A9075FFFf170F2Ee389)
+  - Optimism Goerli testnet: [0x4C4814aa04433e0FB31310379a4D6946D5e1D353](https://blockscout.com/optimism/goerli/address/0x4C4814aa04433e0FB31310379a4D6946D5e1D353)
+- Metis:
+  - Andromeda mainnet: [0x58218ea7422255EBE94e56b504035a784b7AA204](https://andromeda-explorer.metis.io/address/0x58218ea7422255EBE94e56b504035a784b7AA204)
 
 ### Arbitrum
 
