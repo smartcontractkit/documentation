@@ -30,7 +30,7 @@ This guide will walk you through the main sections of the UI.
 
 ![VRF v2 ui overview](/images/vrf/v2-ui-overview.png)
 
-This shows an overview of the subscription:
+Subscription components:
 
 - **Status**: whether the subscription is still active or not.
 - **ID**: id of the subscription. Link token will be debited from this subscription id with each randomness request.
@@ -78,7 +78,7 @@ This list appears if there are pending requests:
 
 ![VRF v2 ui recent fulfill](/images/vrf/v2-ui-recent-fulfill.png)
 
-Displays successful VRF fulfilments:
+Components of successful VRF fulfillments:
 
 - **Time**: Time when the VRF request was successfully fulfilled.
 - **Consumer**: Contract address of the consumer originating the VRF request.
