@@ -28,13 +28,6 @@ LINK Token address: `{{variables.RINKEBY_LINK_TOKEN}}`
 Oracle address: `{{variables.RINKEBY_CHAINLINK_ORACLE}}`
 JobID: `49ea116156cd44be997e7670a5dde80d`
 
-#### Kovan
-
-Payment amount: 1 LINK
-LINK Token address: `{{variables.KOVAN_LINK_TOKEN}}`
-Oracle address: `{{variables.KOVAN_CHAINLINK_ORACLE}}`
-JobID: `8f4eeda1a8724077a0560ee84eb006b4`
-
 #### Mainnet
 
 Payment amount: 0.5 LINK

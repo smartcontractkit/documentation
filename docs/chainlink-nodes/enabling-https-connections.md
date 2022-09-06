@@ -20,9 +20,6 @@ mkdir ~/.chainlink-goerli/tls
 ```text Rinkeby
 mkdir ~/.chainlink-rinkeby/tls
 ```
-```text Kovan
-mkdir ~/.chainlink-kovan/tls
-```
 ```text Mainnet
 mkdir ~/.chainlink/tls
 ```
@@ -37,12 +34,6 @@ openssl req -x509 -out  ~/.chainlink-goerli/tls/server.crt  -keyout ~/.chainlink
 ```
 ```shell Rinkeby
 openssl req -x509 -out  ~/.chainlink-rinkeby/tls/server.crt  -keyout ~/.chainlink-rinkeby/tls/server.key \
-  -newkey rsa:2048 -nodes -sha256 -days 365 \
-  -subj '/CN=localhost' -extensions EXT -config <( \
-   printf "[dn]\nCN=localhost\n[req]\ndistinguished_name = dn\n[EXT]\nsubjectAltName=DNS:localhost\nkeyUsage=digitalSignature\nextendedKeyUsage=serverAuth")
-```
-```shell Kovan
-openssl req -x509 -out  ~/.chainlink-kovan/tls/server.crt  -keyout ~/.chainlink-kovan/tls/server.key \
   -newkey rsa:2048 -nodes -sha256 -days 365 \
   -subj '/CN=localhost' -extensions EXT -config <( \
    printf "[dn]\nCN=localhost\n[req]\ndistinguished_name = dn\n[EXT]\nsubjectAltName=DNS:localhost\nkeyUsage=digitalSignature\nextendedKeyUsage=serverAuth")
@@ -80,9 +71,6 @@ cd ~/.chainlink-goerli && docker run -p 6689:6689 -v ~/.chainlink-goerli:/chainl
 ```
 ```shell Rinkeby
 cd ~/.chainlink-rinkeby && docker run -p 6689:6689 -v ~/.chainlink-rinkeby:/chainlink -it --env-file=.env smartcontract/chainlink local n
-```
-```shell Kovan
-cd ~/.chainlink-kovan && docker run -p 6689:6689 -v ~/.chainlink-kovan:/chainlink -it --env-file=.env smartcontract/chainlink local n
 ```
 ```shell Mainnet
 cd ~/.chainlink && docker run -p 6689:6689 -v ~/.chainlink:/chainlink -it --env-file=.env smartcontract/chainlink local n

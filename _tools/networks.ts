@@ -22,12 +22,6 @@ export const NETWORKS = [
         source: "directory-rinkeby.json",
         networkType: "testnet",
       },
-      {
-        name: "Kovan Testnet (Deprecated)",
-        url: "https://kovan.etherscan.io/address/%s",
-        source: "directory-kovan.json",
-        networkType: "testnet",
-      },
     ],
   },
   {

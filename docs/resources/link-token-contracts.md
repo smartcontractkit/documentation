@@ -73,20 +73,6 @@ Testnet LINK and ETH are available at [faucets.chain.link](https://faucets.chain
 | Symbol         | LINK                                                                                                                                                                                                                 |
 | Decimals       | 18                                                                                                                                                                                                                   |
 
-### Kovan testnet (Deprecated)
-
-> 🚧 The Kovan network is [officially deprecated](https://ethereum.org/en/developers/docs/networks/#kovan) and is no longer supported. [Goerli](#goerli-testnet) is the recommended testnet for Chainlink on Ethereum.
-
-Testnet LINK and ETH are available at [faucets.chain.link](https://faucets.chain.link/kovan).
-
-| Parameter      | Value                                                                                                                                                                                                               |
-| :------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `ETH_CHAIN_ID` | `42`                                                                                                                                                                                                                |
-| Address        | <a class="erc-token-address" id="42_0xa36085F69e2889c224210F603D836748e7dC0088" href="https://kovan.etherscan.io/token/0xa36085F69e2889c224210F603D836748e7dC0088">`0xa36085F69e2889c224210F603D836748e7dC0088`</a> |
-| Name           | Chainlink Token                                                                                                                                                                                                     |
-| Symbol         | LINK                                                                                                                                                                                                                |
-| Decimals       | 18                                                                                                                                                                                                                  |
-
 ## BNB Chain
 
 ### BNB Chain mainnet

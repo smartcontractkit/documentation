@@ -187,9 +187,6 @@ cd ~/.chainlink-goerli && docker run --name chainlink -p 6688:6688 -v ~/.chainli
 ```shell Rinkeby
 cd ~/.chainlink-rinkeby && docker run --name chainlink -p 6688:6688 -v ~/.chainlink-rinkeby:/chainlink -it --env-file=.env smartcontract/chainlink local n
 ```
-```shell Kovan
-cd ~/.chainlink-kovan && docker run --name chainlink -p 6688:6688 -v ~/.chainlink-kovan:/chainlink -it --env-file=.env smartcontract/chainlink local n
-```
 ```shell Mainnet
 cd ~/.chainlink && docker run --name chainlink -p 6688:6688 -v ~/.chainlink:/chainlink -it --env-file=.env smartcontract/chainlink local n
 ```
@@ -222,9 +219,6 @@ echo "user@example.com" > ~/.chainlink-goerli/.api
 ```shell Rinkeby
 echo "user@example.com" > ~/.chainlink-rinkeby/.api
 ```
-```shell Kovan
-echo "user@example.com" > ~/.chainlink-kovan/.api
-```
 ```shell Mainnet
 echo "user@example.com" > ~/.chainlink/.api
 ```
@@ -236,9 +230,6 @@ echo "password" >> ~/.chainlink-goerli/.api
 ```
 ```shell Rinkeby
 echo "password" >> ~/.chainlink-rinkeby/.api
-```
-```shell Kovan
-echo "password" >> ~/.chainlink-kovan/.api
 ```
 ```shell Mainnet
 echo "password" >> ~/.chainlink/.api
@@ -252,9 +243,6 @@ echo "my_wallet_password" > ~/.chainlink-goerli/.password
 ```shell Rinkeby
 echo "my_wallet_password" > ~/.chainlink-rinkeby/.password
 ```
-```shell Kovan
-echo "my_wallet_password" > ~/.chainlink-kovan/.password
-```
 ```shell Mainnet
 echo "my_wallet_password" > ~/.chainlink/.password
 ```
@@ -266,9 +254,6 @@ cd ~/.chainlink-goerli && docker run -p 6688:6688 -v ~/.chainlink-goerli:/chainl
 ```
 ```shell Rinkeby
 cd ~/.chainlink-rinkeby && docker run -p 6688:6688 -v ~/.chainlink-rinkeby:/chainlink -it --env-file=.env smartcontract/chainlink local n -p /chainlink/.password -a /chainlink/.api
-```
-```shell Kovan
-cd ~/.chainlink-kovan && docker run -p 6688:6688 -v ~/.chainlink-kovan:/chainlink -it --env-file=.env smartcontract/chainlink local n -p /chainlink/.password -a /chainlink/.api
 ```
 ```shell Mainnet
 cd ~/.chainlink && docker run -p 6688:6688 -v ~/.chainlink:/chainlink -it --env-file=.env smartcontract/chainlink local n -p /chainlink/.password -a /chainlink/.api

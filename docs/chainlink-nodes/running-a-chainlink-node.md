@@ -117,9 +117,6 @@ mkdir ~/.chainlink-goerli
 ```shell Rinkeby
 mkdir ~/.chainlink-rinkeby
 ```
-```shell Kovan
-mkdir ~/.chainlink-kovan
-```
 ```shell Mainnet
 mkdir ~/.chainlink
 ```
@@ -145,14 +142,6 @@ ETH_CHAIN_ID=4
 CHAINLINK_TLS_PORT=0
 SECURE_COOKIES=false
 ALLOW_ORIGINS=*" > ~/.chainlink-rinkeby/.env
-```
-```shell Kovan
-echo "ROOT=/chainlink
-LOG_LEVEL=debug
-ETH_CHAIN_ID=42
-CHAINLINK_TLS_PORT=0
-SECURE_COOKIES=false
-ALLOW_ORIGINS=*" > ~/.chainlink-kovan/.env
 ```
 ```shell Mainnet
 echo "ROOT=/chainlink
@@ -185,9 +174,6 @@ echo "ETH_URL=ws://$ETH_CONTAINER_IP:8546" >> ~/.chainlink-goerli/.env
 ```shell Rinkeby
 echo "ETH_URL=ws://$ETH_CONTAINER_IP:8546" >> ~/.chainlink-rinkeby/.env
 ```
-```shell Kovan
-echo "ETH_URL=ws://$ETH_CONTAINER_IP:8546" >> ~/.chainlink-kovan/.env
-```
 ```shell Mainnet
 echo "ETH_URL=ws://$ETH_CONTAINER_IP:8546" >> ~/.chainlink/.env
 ```
@@ -201,9 +187,6 @@ echo "ETH_URL=CHANGEME" >> ~/.chainlink-goerli/.env
 ```
 ```shell Rinkeby
 echo "ETH_URL=CHANGEME" >> ~/.chainlink-rinkeby/.env
-```
-```shell Kovan
-echo "ETH_URL=CHANGEME" >> ~/.chainlink-kovan/.env
 ```
 ```shell Mainnet
 echo "ETH_URL=CHANGEME" >> ~/.chainlink/.env
@@ -233,9 +216,6 @@ echo "DATABASE_URL=postgresql://$USERNAME:$PASSWORD@$SERVER:$PORT/$DATABASE" >> 
 ```shell Rinkeby
 echo "DATABASE_URL=postgresql://$USERNAME:$PASSWORD@$SERVER:$PORT/$DATABASE" >> ~/.chainlink-rinkeby/.env
 ```
-```shell Kovan
-echo "DATABASE_URL=postgresql://$USERNAME:$PASSWORD@$SERVER:$PORT/$DATABASE" >> ~/.chainlink-kovan/.env
-```
 ```shell Mainnet
 echo "DATABASE_URL=postgresql://$USERNAME:$PASSWORD@$SERVER:$PORT/$DATABASE" >> ~/.chainlink/.env
 ```
@@ -249,9 +229,6 @@ cd ~/.chainlink-goerli && docker run -p 6688:6688 -v ~/.chainlink-goerli:/chainl
 ```
 ```shell Rinkeby
 cd ~/.chainlink-rinkeby && docker run -p 6688:6688 -v ~/.chainlink-rinkeby:/chainlink -it --env-file=.env smartcontract/chainlink:<version> local n
-```
-```shell Kovan
-cd ~/.chainlink-kovan && docker run -p 6688:6688 -v ~/.chainlink-kovan:/chainlink -it --env-file=.env smartcontract/chainlink:<version> local n
 ```
 ```shell Mainnet
 cd ~/.chainlink && docker run -p 6688:6688 -v ~/.chainlink:/chainlink -it --env-file=.env smartcontract/chainlink:<version> local n
