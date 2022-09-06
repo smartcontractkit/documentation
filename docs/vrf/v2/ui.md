@@ -9,7 +9,7 @@ metadata:
   description: 'Walkthrough Subscription Manager User Interface'
 ---
 
-The VRF v2 Subscription Manager is accessible on _https://vrf.chain.link_. It lets you create a subcription and pre-pay for VRF v2, so you don't need to provide funding each time your application requests randomness.
+The VRF v2 Subscription Manager is accessible on this [page](https://vrf.chain.link/). It lets you create a subcription and pre-pay for VRF v2, so you don't need to provide funding each time your application requests randomness.
 This guide will walk you through the main sections of the UI.
 
 > 📘 Troubleshooting
@@ -99,7 +99,7 @@ Displays events linked to the subscription. There are five main events:
 - Consumer removed.
 - Subscription canceled.
 
-The list displays:
+Components of VRF events:
 
 - **Time**: Time when the event was made.
 - **Event**: Event type.
@@ -116,7 +116,7 @@ The list displays:
 
 ![VRF v2 ui history failed](/images/vrf/v2-ui-history-failed.png)
 
-Displays all failed requests:
+Components of failed VRF requests:
 
 - **Time**: Time of the VRF request.
 - **Transaction Hash**: This can be either the transaction hash of the originating VRF request if the request was pending for over 24 hours _or_ the transaction hash of the VRF callback if the callback failed.
