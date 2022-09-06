@@ -1251,7 +1251,7 @@ If EIP1559 mode is enabled, and FixedPrice gas estimator is used, this env var c
 The default gas limit for outgoing transactions. This should not need to be changed in most cases.
 Some job types, such as Keeper jobs, might set their own gas limit unrelated to this value.
 
-### ETH_GAS_LIMIT_Max
+### ETH_GAS_LIMIT_MAX
 
 - Default: _automatically set based on Chain ID, typically 500000_
 
