@@ -9,12 +9,11 @@ metadata:
   description: 'Walkthrough Subscription Manager User Interface'
 ---
 
-The VRF v2 Subscription Manager is accessible on this [page](https://vrf.chain.link/). It lets you create a subcription and pre-pay for VRF v2, so you don't need to provide funding each time your application requests randomness.
-This guide will walk you through the main sections of the UI.
+The VRF v2 Subscription Manager is available at [vrf.chain.link](https://vrf.chain.link/). The Subscription Manager lets you create a subcription and pre-pay for VRF v2 so you don't need to provide funding each time your application requests randomness. This guide walks you through the main sections of the UI.
 
 > 📘 Troubleshooting
 >
-> Checkout [pending](#pending) and [failed requests](#failed-requests) sections to learn how to troubleshoot your VRF requests.
+> Read the [pending](#pending) and [failed requests](#failed-requests) sections to learn how to troubleshoot your VRF requests.
 
 **Topics**
 
@@ -28,100 +27,95 @@ This guide will walk you through the main sections of the UI.
 
 ## Overview
 
-![VRF v2 ui overview](/images/vrf/v2-ui-overview.png)
+![VRF v2 UI overview](/images/vrf/v2-ui-overview.png)
 
 Subscription components:
 
-- **Status**: whether the subscription is still active or not.
-- **ID**: id of the subscription. Link token will be debited from this subscription id with each randomness request.
-- **Admin**: Owner account address of the subscription id.
-- **Consumers**: number of the consuming contracts that are allowed to make VRF requests for your subscription.
-- **Fulfillment**: number of successful randomness requests.
-- **Balance**: Amount of Link tokens remaining for the subscription.
+- **Status**: Indicates if the subscription is still active or not.
+- **ID**: The unique subscription identifier. Approved consuming contracts use LINK from this subscription to pay for each randomness request.
+- **Admin**: The account address that owns this subscription ID.
+- **Consumers**: The number of consuming contracts that are approved to make VRF requests using this subscription.
+- **Fulfillment**: The number of successful randomness requests that are already completed.
+- **Balance**: The amount of LINK remaining to be used for requests that use this subscription.
 
-You can also cancel your subscription from here. When you cancel your subscription, you must specify the account address to receive the remaining balance. See [Clean up](/docs/vrf/v2/examples/get-a-random-number/#clean-up) to learn more.
+You can cancel your subscription in the user interface. When you cancel your subscription, specify the account address to receive the remaining balance. See the clean up instructions in the [Get a Random Number](/docs/vrf/v2/examples/get-a-random-number/#clean-up) guide to learn more.
 
 ## Consumers
 
-![VRF v2 ui consumers](/images/vrf/v2-ui-consumers.png)
+![VRF v2 UI consumers](/images/vrf/v2-ui-consumers.png)
 
-This shows a list of the consumer contracts allowed to request randomness from your subscription:
+The **Consumers** section lists the contracts that are allowed to use your subscription to pay for requests.
 
-- **Address**: Contract address of the consumer.
-- **Added**: Time when the consumer was added to the subscription.
+- **Address**: The address of the consuming contract.
+- **Added**: The time when the consumer was added to the subscription.
 - **Last fulfillment**: The last time a VRF request was fulfilled for the consumer.
-- **Total spent**: Total amount of Link tokens spent by the consumer.
+- **Total spent**: The total amount of LINK that has been used by the consuming contract.
 
-You can also add/remove consumers from here.
+You can use this section to add or remove consumers.
 
 ## Pending
 
-![VRF v2 ui pending](/images/vrf/v2-ui-pending.png)
+![VRF v2 UI pending](/images/vrf/v2-ui-pending.png)
 
-This list appears if there are pending requests:
+The **Pending** list appears if there are requests currently being processed.
 
-- **Time**: Time when the pending VRF request was made.
-- **Consumer**: Contract address of the consumer.
-- **Transaction hash**: Transaction hash of the pending VRF request.
-- **Status**: Timer informing the user when the pending VRF request will move to a failed status.
-
-  > ⚠️ Pending requests will fail after 24h.
-  >
-  >   </br>
-
-- **Max Cost**: Calculated total gas cost in Link based on the configuration. see [VRF v2 Limits](/docs/vrf/v2/introduction/#limits) for more details.
-- **Projected Balance**: Informs the user their subscription is underfunded and how many Link tokens they need to fund their subscription with.
+- **Time**: The time when the pending VRF request was made.
+- **Consumer**: The address of the consuming contract.
+- **Transaction hash**: The transaction hash of the pending VRF request.
+- **Status**: A timer that informs you when the pending VRF request will move to a failed status. Pending requests fail after 24h.
+- **Max Cost**: The calculated total gas cost in LINK based on the configuration. See [VRF v2 Limits](/docs/vrf/v2/introduction/#limits) for details.
+- **Projected Balance**: This indicates when the subscription is underfunded and how many LINK tokens are required to fund the subscription.
 
 ## History
 
 ### Recent fulfillments
 
-![VRF v2 ui recent fulfill](/images/vrf/v2-ui-recent-fulfill.png)
+![VRF v2 UI recent fulfill](/images/vrf/v2-ui-recent-fulfill.png)
 
-Components of successful VRF fulfillments:
+The **Recent fulfillments** tab shows the details for successful VRF fulfillments.
 
-- **Time**: Time when the VRF request was successfully fulfilled.
-- **Consumer**: Contract address of the consumer originating the VRF request.
-- **Transaction Hash**: Transaction hash of the VRF callback.
-- **Status**: In this case, the status will show _Success_.
-- **Spent**: Total Amount of Link tokens spent to fulfill the VRF request.
-- **Balance**: Link balance amount of the subscription after the VRF request was fulfilled.
+- **Time**: The time and block number indicating when the VRF request was successfully fulfilled.
+- **Consumer**: The address of the consuming contract that initiated the VRF request.
+- **Transaction Hash**: The transaction hash of the VRF callback.
+- **Status**: The status of the request. Recent fulfillments always show _Success_.
+- **Spent**: The total amount of LINK spent to fulfill the VRF request.
+- **Balance**: The LINK balance of the subscription after the VRF request was fulfilled.
 
 ### Events
 
 ![VRF v2 ui history events](/images/vrf/v2-ui-history-events.png)
 
-Displays events linked to the subscription. There are five main events:
+The **Events** tab displays events linked to the subscription. There are five main events:
 
-- Subscription created.
-- Subscription funded.
-- Consumer added.
-- Consumer removed.
-- Subscription canceled.
+- Subscription created
+- Subscription funded
+- Consumer added
+- Consumer removed
+- Subscription canceled
 
 Components of VRF events:
 
-- **Time**: Time when the event was made.
-- **Event**: Event type.
-- **Transaction Hash**: Transaction Hash of the event.
-- **Consumer**: Consumer contract address (Only relevant for _Consumer added_ and _Consumer canceled_ events).
+- **Time**: The time when the event happened.
+- **Event**: The type of the event.
+- **Transaction Hash**: The transaction hash for the event.
+- **Consumer**: The address of the consuming contract. This is used only for _Consumer added_ and _Consumer canceled_ events.
 - **Amount**:
-  - Amount of Link tokens added to the subscription balance (Only relevant for _Subscription funded_ events).
-  - Amount of Link tokens withdrawn from the subscription balance (Only relevant for _Subscription canceled_ events).
+  - For _Subscription funded_ events, this indicates the amount of LINK added to the subscription balance.
+  - For _Subscription canceled_ events, this indicates the amount of LINK withdrawn from the subscription balance.
 - **Balance**:
-  - Link balance amount of the subscription after it was funded (Only relevant for _Subscription funded_ events).
-  - Should display _0_ for _Subscription canceled_ events.
+  - For _Subscription funded_ events, this indicates the LINK balance of the subscription after it was funded.
+  - For _Subscription canceled_ events, this field should display _0_.
 
 ### Failed requests
 
-![VRF v2 ui history failed](/images/vrf/v2-ui-history-failed.png)
+![VRF v2 UI history failed](/images/vrf/v2-ui-history-failed.png)
 
-Components of failed VRF requests:
+The **Failed requests** tab displays failed VRF requests.
 
-- **Time**: Time of the VRF request.
+- **Time**: The time when the VRF request was made.
 - **Transaction Hash**: This can be either the transaction hash of the originating VRF request if the request was pending for over 24 hours _or_ the transaction hash of the VRF callback if the callback failed.
-- **Status**: In this case, the status will show _Failed_.
-- **Reason**: could be one of the following:
+- **Status**: The status of the request. Failed requests always show _Failed_.
+- **Reason**: The reason why the request failed. Requests fail for one of the following reasons:
   - Pending for over 24 hours
   - Wrong key hash specified
   - Callback gas limit set too low

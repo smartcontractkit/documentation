@@ -213,7 +213,7 @@ module.exports = {
             url: '/docs/vrf/v2/examples/programmatic-subscription/',
           },
           {
-            title: 'Subscription Manager User Interface',
+            title: 'Subscription Manager UI',
             url: '/docs/vrf/v2/ui/',
           },
           {

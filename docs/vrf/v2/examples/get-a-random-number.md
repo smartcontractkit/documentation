@@ -20,6 +20,8 @@ metadata:
 
 This guide explains how to get random values using a simple contract to request and receive random values from Chainlink VRF v2. For more advanced examples with programmatic subscription configuration, see the [Programmatic Subscription](/docs/vrf/v2/examples/programmatic-subscription/) page. To explore more applications of VRF, refer to our [blog](https://blog.chain.link/).
 
+{% include 'sections/vrf-v2-ui-callout.md' %}
+
 **Topics**
 
 - [Requirements](#requirements)
@@ -31,8 +33,6 @@ This guide explains how to get random values using a simple contract to request 
 - [Vyper Example](#vyper-example)
 
 ## Requirements
-
-{% include 'sections/vrf-v2-ui-callout.md' %}
 
 This guide assumes that you know how to create and deploy smart contracts on Ethereum testnets using the following tools:
 
@@ -50,7 +50,11 @@ For this example, create a new subscription on the Goerli testnet.
 
 1. Check MetaMask to make sure you have testnet ETH and LINK on Goerli. You can get testnet ETH and LINK at one of the available [Goerli faucets](/docs/link-token-contracts/#goerli-testnet).
 
-1. Open the [Subscription Manager](https://vrf.chain.link) page.
+1. Open the Subscription Manager at [vrf.chain.link](https://vrf.chain.link).
+
+    <div class="remix-callout">
+          <a href="https://vrf.chain.link" target="_blank" >Open the Subscription Manager</a>
+    </div>
 
 1. Click **Create Subscription** and follow the instructions to create a new subscription account. MetaMask opens and asks you to confirm payment to create the account on-chain. After you approve the transaction, the network confirms the creation of your subscription account on-chain.
 
@@ -78,10 +82,10 @@ Build and deploy the contract on Goerli.
 
 1. Open the [`VRFv2Consumer.sol` contract](https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFv2Consumer.sol) in Remix.
 
-<div class="remix-callout">
-      <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFv2Consumer.sol" target="_blank" >Open in Remix</a>
-      <a href="/docs/conceptual-overview/#what-is-remix">What is Remix?</a>
-</div>
+    <div class="remix-callout">
+          <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFv2Consumer.sol" target="_blank" >Open in Remix</a>
+          <a href="/docs/conceptual-overview/#what-is-remix">What is Remix?</a>
+    </div>
 
 1. On the **Compile** tab in Remix, compile the `VRFv2Consumer.sol` contract.
 
