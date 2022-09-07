@@ -18,9 +18,9 @@ Your upkeep has a LINK (ERC-677) balance. Every time a keeper executes your `per
 When a keeper executes your `performUpkeep` function, the Keeper Registry will deduct the upkeep's total gas cost in LINK as well as a percentage premium from your upkeep’s LINK balance and allocate it to the keeper’s address. The total gas cost in LINK is the gas price of the transaction multiplied by the sum of the gas used for the transaction and an 80K gas overhead for the keeper call gas used. This is converted to LINK using Chainlink Data Feeds. The percentage premium is to compensate the keeper for monitoring and performing your upkeep. The percentage premium varies by network and is listed in our [Supported Networks](../supported-networks/#configurations) page.
 
 
-## Minimum Spend Requirement
+## Minimum spend for each registered Upkeep
 
-There is a minimum spend requirement per upkeep to prevent misuse of the Keepers network. The minimum amount required is 0.1 LINK on any upkeep that is registered. If your upkeep does not pay at least this amount to execute functions, 0.1 LINK will not be withdrawable when you cancel. If you spend more than 0.1 LINK, you will be able to withdraw all remaining LINK after you cancel even after additional funds are added.
+To prevent misuse of the Keepers network, each upkeep that you register requires a small minimum spend of 0.1 LINK across all upkeep transactions. If the total LINK spent across all transactions for your upkeep does not exceed this amount, the difference between 0.1 LINK and the amount spent in LINK is not refunded after you cancel the upkeep. If you spend more than 0.1 LINK across all of your upkeep's transactions, all remaining LINK is refundable after you cancel. This amount is intentionally small so that even a few upkeep transactions on the cheapest networks can easily exceed this amount.
 
 ## No node competition
 

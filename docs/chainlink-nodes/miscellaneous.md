@@ -159,6 +159,7 @@ Specific actions are enabled to check role-based access before they execute. The
 | Create user  |   |   |   | X |
 | Delete user  |   |   |   | X |
 | Edit user  |   |   |   | X |
+| List users  |   |   |   | X |
 
 The run command allows for minimal interaction and only enables the ability to replay a specific block number and kick off a job run.
 

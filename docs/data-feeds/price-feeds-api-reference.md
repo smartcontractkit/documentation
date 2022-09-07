@@ -159,16 +159,16 @@ A simple way to read the variables or functions is to get the ABI from a blockch
 |---|---|
 |[decimals](#decimals-1)|Return the number of digits of precision for the stored answer. Answers are stored in fixed-point format.|
 |[description](#description-1)|Return a description for this data feed. Usually this is an asset pair for a price feed.|
-|[getAnswer](#getanswer)|Get an answer from a specific aggregator round. Use this to get historical data.|
+|[getAnswer](#getanswer)| (Deprecated) |
 |[getBilling](#getbilling)|Retrieve the current billing configuration.|
 |[getRoundData](#getrounddata-1)|Get the full information for a specific aggregator round including the answer and update timestamps. Use this to get the full historical data for a round.|
-|[getTimestamp](#gettimestamp)|Get the block timestamp from a specific aggregator round.|
+|[getTimestamp](#gettimestamp)| (Deprecated) |
 |[hasAccess](#hasaccess)|Check if an address has internal access.|
-|[latestAnswer](#latestanswer)|Return the most recent answer accepted by the aggregator.|
+|[latestAnswer](#latestanswer)| (Deprecated) |
 |[latestConfigDetails](#latestconfigdetails)|Return information about the current off-chain reporting protocol configuration.|
-|[latestRound](#latestround)|Return the `roundID` for the most recent aggregator round.|
+|[latestRound](#latestround)| (Deprecated) |
 |[latestRoundData](#latestrounddata-1)|Get the full information for the most recent round including the answer and update timestamps.|
-|[latestTimestamp](#latesttimestamp)|Get the block timestamp when the last answer was accepted.|
+|[latestTimestamp](#latesttimestamp)| (Deprecated) |
 |[latestTransmissionDetails](#latesttransmissiondetails)|Get information about the most recent answer.|
 |[linkAvailableForPayment](#linkavailableforpayment)|Get the amount of LINK on this contract that is available to make payments to oracles. This value can be negative if there are outstanding payment obligations.|
 |[oracleObservationCount](#oracleobservationcount)|Returns the number of observations that oracle is due to be reimbursed for.|
@@ -205,19 +205,7 @@ function description()
 
 #### getAnswer
 
-Get an answer from a specific aggregator round. Use this to get historical data.
-
-```solidity Solidity
-function getAnswer(uint256 _roundId)
-  public
-  override
-  view
-  checkAccess()
-  returns (int256)
-{
-  return super.getAnswer(_roundId);
-}
-```
+> 🚧 This function is deprecated.
 
 #### getBilling
 
@@ -270,19 +258,7 @@ function getRoundData(uint80 _roundId)
 
 #### getTimestamp
 
-Get the block timestamp from a specific aggregator round.
-
-```solidity Solidity
-function getTimestamp(uint256 _roundId)
-  public
-  override
-  view
-  checkAccess()
-  returns (uint256)
-{
-  return super.getTimestamp(_roundId);
-}
-```
+> 🚧 This function is deprecated.
 
 #### hasAccess
 
@@ -305,19 +281,7 @@ function hasAccess(
 
 #### latestAnswer
 
-Return the most recent answer accepted by the aggregator.
-
-```solidity Solidity
-function latestAnswer()
-  public
-  override
-  view
-  checkAccess()
-  returns (int256)
-{
-  return super.latestAnswer();
-}
-```
+> 🚧 This function is deprecated.
 
 #### latestConfigDetails
 
@@ -339,19 +303,7 @@ function latestConfigDetails()
 
 #### latestRound
 
-Return the `roundID` for the most recent aggregator round.
-
-```solidity Solidity
-function latestRound()
-  public
-  override
-  view
-  checkAccess()
-  returns (uint256)
-{
-  return super.latestRound();
-}
-```
+> 🚧 This function is deprecated.
 
 #### latestRoundData
 
@@ -377,19 +329,7 @@ function latestRoundData()
 
 #### latestTimestamp
 
-Get the block timestamp when the last answer was accepted.
-
-```solidity Solidity
-function latestTimestamp()
-  public
-  override
-  view
-  checkAccess()
-  returns (uint256)
-{
-  return super.latestTimestamp();
-}
-```
+> 🚧 This function is deprecated.
 
 #### latestTransmissionDetails
 
