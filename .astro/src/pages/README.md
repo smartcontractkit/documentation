@@ -2,7 +2,7 @@
 layout: ../layouts/MainLayout.astro
 section: gettingStarted
 date: Last Modified
-title: "Chainlink Overview"
+title: README
 excerpt: "Smart Contracts and Chainlink"
 whatsnext:
   {
@@ -76,7 +76,6 @@ warning
 
 ### Solidity Remix
 
-
 ::solidity-remix[/samples/PriceFeeds/PriceConsumerV3.sol]
 
 ```
@@ -84,6 +83,7 @@ warning
 ```
 
 ### Codetabs
+
 ````
   ```shell Rinkeby
   cd ~/.chainlink-rinkeby && docker run -p 6687:6688 -v ~/.chainlink-rinkeby:/chainlink -it --env-file=.env smartcontract/chainlink local n
@@ -99,9 +99,11 @@ warning
 ```shell Rinkeby
 cd ~/.chainlink-rinkeby && docker run -p 6687:6688 -v ~/.chainlink-rinkeby:/chainlink -it --env-file=.env smartcontract/chainlink local n
 ```
+
 ```shell Kovan
 cd ~/.chainlink-kovan && docker run -p 6687:6688 -v ~/.chainlink-kovan:/chainlink -it --env-file=.env smartcontract/chainlink local n
 ```
+
 ```shell Mainnet
 cd ~/.chainlink && docker run -p 6687:6688 -v ~/.chainlink:/chainlink -it --env-file=.env smartcontract/chainlink local n
 ```

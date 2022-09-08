@@ -1,0 +1,256 @@
+[
+  {
+    "title": "README",
+    "headings": [
+      {
+        "depth": 2,
+        "slug": "using-directives",
+        "text": "Using Directives"
+      },
+      {
+        "depth": 3,
+        "slug": "callouts",
+        "text": "Callouts"
+      },
+      {
+        "depth": 3,
+        "slug": "solidity-remix",
+        "text": "Solidity Remix"
+      },
+      {
+        "depth": 3,
+        "slug": "codetabs",
+        "text": "Codetabs"
+      }
+    ],
+    "url": "/README",
+    "section": "gettingStarted",
+    "description": "Learn the basic concepts about what smart contracts are and, how to write them, and how Chainlink oracles work with smart contracts.",
+    "content": "\n## Using Directives\n\nCustom markdown is written using directives. Theres two type of directives, `nodeDirectives` like the ones used in the callouts:\n\n```\n// usage\n:::directiveName[title]\ncontent\n:::\n\n//example\n:::tip[did you know?]\ntip\n:::\n```\n\nAnd `leafDirectives` like the ones used for solidityRemix examples\n\n```\n::solidity-remix[/samples/PriceFeeds/PriceConsumerV3.sol]\n```\n\n### Callouts\n\n:::tip[did you know?]\ntip\n:::\n\n:::danger[did you know?]\ndanger\n:::\n\n:::caution[did you know?]\ninfo\n:::\n\n:::note[did you know?]\nwarning\n:::\n\n```\n:::tip[did you know?]\ntip\n:::\n\n:::danger[did you know?]\ndanger\n:::\n\n:::caution[did you know?]\ninfo\n:::\n\n:::note[did you know?]\nwarning\n:::\n```\n\n### Solidity Remix\n\n<CodeSample src=\"/samples/PriceFeeds/PriceConsumerV3.sol\" />\n\n```\n<CodeSample src=\"/samples/PriceFeeds/PriceConsumerV3.sol\" />\n```\n\n### Codetabs\n\n````\n  ```shell Rinkeby\n  cd ~/.chainlink-rinkeby && docker run -p 6687:6688 -v ~/.chainlink-rinkeby:/chainlink -it --env-file=.env smartcontract/chainlink local n\n  ```\n  ```shell Kovan\n  cd ~/.chainlink-kovan && docker run -p 6687:6688 -v ~/.chainlink-kovan:/chainlink -it --env-file=.env smartcontract/chainlink local n\n  ```\n  ```shell Mainnet\n  cd ~/.chainlink && docker run -p 6687:6688 -v ~/.chainlink:/chainlink -it --env-file=.env smartcontract/chainlink local n\n  ```\n````\n\n```shell Rinkeby\ncd ~/.chainlink-rinkeby && docker run -p 6687:6688 -v ~/.chainlink-rinkeby:/chainlink -it --env-file=.env smartcontract/chainlink local n\n```\n\n```shell Kovan\ncd ~/.chainlink-kovan && docker run -p 6687:6688 -v ~/.chainlink-kovan:/chainlink -it --env-file=.env smartcontract/chainlink local n\n```\n\n```shell Mainnet\ncd ~/.chainlink && docker run -p 6687:6688 -v ~/.chainlink:/chainlink -it --env-file=.env smartcontract/chainlink local n\n```\n"
+  },
+  {
+    "title": "Chainlink Keepers Architecture",
+    "headings": [
+      {
+        "depth": 2,
+        "slug": "overview",
+        "text": "Overview"
+      },
+      {
+        "depth": 2,
+        "slug": "keeper-contracts",
+        "text": "Keeper Contracts"
+      },
+      {
+        "depth": 2,
+        "slug": "how-it-works",
+        "text": "How it works"
+      },
+      {
+        "depth": 2,
+        "slug": "internal-monitoring",
+        "text": "Internal monitoring"
+      },
+      {
+        "depth": 2,
+        "slug": "supported-networks-and-cost",
+        "text": "Supported Networks and Cost"
+      }
+    ],
+    "url": "/chainlink-keepers/overview",
+    "section": "ethereum",
+    "content": "\r\n## Overview\r\n\r\nChainlink Keepers enable you to execute smart contract functions based on conditions that you specify without having to create and maintain your own centralized stack. Chainlink Keepers is highly reliable and decentralized, supported by an industry leading team, and enables developers to deploy applications faster.\r\n\r\nThere are three main actors in the ecosystem:\r\n\r\n- **Upkeeps**: These are the jobs or tasks that you execute on-chain. For example, you can call a smart contract function if a specific set of conditions are met.\r\n- **Keepers registry**: The contract that you use to [register](../register-upkeep/) and manage **upkeeps**.\r\n- **Keepers**: Nodes in the Keepers Network that service registered and funded upkeeps in the Keepers registry. Keepers use the same Node Operators as Chainlink Data Feeds.\r\n\r\nThe following diagram describes the architecture of the Keeper network. The Chainlink Keepers Registry governs the actors on the network and compensates Keepers for performing successful upkeeps. Developers can register their Upkeeps, and Node Operators can register as Keepers.\r\n\r\n![keeper-overview](/images/contract-devs/keeper/keeper-overview.png)\r\n\r\n## Keeper Contracts\r\n\r\nKeepers use these contracts. You can find them in the [Chainlink repository](https://github.com/smartcontractkit/chainlink/tree/develop/contracts/src/v0.8). For details about how to use them, see the [Keepers-compatible Contracts](../compatible-contracts/) page.\r\n\r\n- `KeeperCompatible.sol`[(link)](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/KeeperCompatible.sol): Imports the following contracts:\r\n  - `KeeperBase.sol`[(link)](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/KeeperBase.sol): Enables the use of the `cannotExecute` modifier. Import this contract if you need for this modifier. See the [`checkUpkeep` function](/docs/chainlink-keepers/compatible-contracts#checkupkeep-function) for details.\r\n  - `KeeperCompatibleInterface.sol`[(link)](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/interfaces/KeeperCompatibleInterface.sol): The interface to be implemented in order to make your contract Keepers-compatible. Import this contract for type safety.\r\n- `KeeperRegistry.sol`[(link)](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/KeeperRegistry.sol): The registry contract that tracks all registered Upkeeps and the Keepers that can perform them.\r\n- `KeeperRegistrar.sol`[(link)](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/KeeperRegistrar.sol): The Registrar contract coverns the registration of new Upkeeps on the associated `KeeperRegistry` contract. Users who want to register Upkeeps by directly calling the deployed contract have to call the Transfer-and-Call function on the respective ERC-677 LINK contract configured on the Registrar and ensure they pass the correct encoded function call and inputs.\r\n\r\n## How it works\r\n\r\nKeepers follow a turn-taking algorithm to service upkeeps. A turn is a number of blocks and you can find the block count per turn for your network in the [configuration](../supported-networks/#configurations) section. During a turn a Upkeeps on the registry are randomly split, ordered into buckets, and assigned to a keeper to service them. Even if a Keeper goes down, the network has built-in redundancy and your Upkeep will be performed by the next keeper in line.\r\n\r\nDuring every block, the keeper reviews all of the upkeeps in its bucket to determine which upkeeps are eligible. This check is done off-chain using a geth simulation. The keeper checks both the `checkUpkeep` and `performUpkeep` conditions independently using simulation. If both are true (eligible), and the upkeep is funded, the keeper proceeds to execute the transaction on-chain.\r\n\r\nWhile only one Keeper monitors an upkeep at any point during a turn, an upkeep can have multiple on-chain transaction executions per turn. This is accomplished with a buddy-system. After a transaction is confirmed, the next keeper in the line monitors the upkeep. After a new transaction is confirmed, the previous keeper steps in again to monitor the upkeep until the end of the turn or until another transaction confirmation is complete. This creates a system that is secure and highly available. If a node becomes faulty and executes a transaction that is not eligible, the next node does not execute a transaction, which breaks the process.\r\n\r\nKeepers use the same transaction manager mechanism built and used by Chainlink Data Feeds. This creates a hyper-reliable automation service that can execute and confirm transactions even during intense gas spikes or on chains with significant reorgs. This mechanism has been in use in Chainlink Labs for multiple years, is battle hardened, and the team continuously improves on it.\r\n\r\n## Internal monitoring\r\n\r\nInternally, Chainlink Keepers also uses its own monitoring and alerting mechanisms to maintain a health network and ensure developers get the reliability that they expect.\r\n\r\n## Supported Networks and Cost\r\n\r\nFor a list of blockchains that is supported by Chainlink Keepers, please review the [supported networks page](./supported-networks). To learn more about the cost of using Chainlink Keepers, please review the [Keepers economics](./keeper-economics) page.\r\n"
+  },
+  {
+    "title": "Register a Custom Logic Upkeep",
+    "headings": [
+      {
+        "depth": 2,
+        "slug": "overview",
+        "text": "Overview"
+      },
+      {
+        "depth": 2,
+        "slug": "register-an-upkeep-using-the-keepers-app",
+        "text": "Register an Upkeep using the Keepers App"
+      },
+      {
+        "depth": 2,
+        "slug": "register-an-upkeep-using-your-own-deployed-contract",
+        "text": "Register an Upkeep using your own deployed contract"
+      },
+      {
+        "depth": 3,
+        "slug": "prerequisites",
+        "text": "Prerequisites"
+      },
+      {
+        "depth": 3,
+        "slug": "code-example",
+        "text": "Code example"
+      },
+      {
+        "depth": 3,
+        "slug": "registerandpredictid-parameters",
+        "text": "registerAndPredictID Parameters"
+      },
+      {
+        "depth": 3,
+        "slug": "registry-and-registrar-addresses",
+        "text": "Registry and Registrar Addresses"
+      }
+    ],
+    "url": "/chainlink-keepers/register-upkeep",
+    "section": "ethereum",
+    "content": "\r\n## Overview\r\n\r\nThis guide explains how to register a Custom logic Upkeep that uses a [Keepers-compatible contract](../compatible-contracts). You can either register it from the Keepers App, or from within a contract that you have deployed.\r\n\r\n**Topics**\r\n\r\n- [Register an Upkeep using the Keepers App](#register-an-upkeep-using-the-keepers-app)\r\n- [Register an Upkeep using your own deployed contract](#register-an-upkeep-using-your-own-deployed-contract)\r\n\r\n## Register an Upkeep using the Keepers App\r\n\r\n<div class=\"remix-callout\">\r\n    <a href=\"https://keepers.chain.link\" >Open the Chainlink Keepers App</a>\r\n</div>\r\n\r\n1. **Connect your wallet** using the button in the top right corner and choose a network. For a list of supported networks, see the [Supported Blockchain Networks](../supported-networks) section. The Chainlink Keepers App also lists the currently supported networks.\r\n   ![Connect With Metamask](/images/contract-devs/keeper/keeper-metamask.png)\r\n\r\n1. **Click the Register New Upkeep button**\r\n   ![Click Register New Upkeep](/images/contract-devs/keeper/keeper-register.png)\r\n\r\n1. **Select the custom logic trigger**\r\n\r\n1. **Provide the address of your [Keepers-compatible contract](../compatible-contracts)** You do not need to verify the contract on-chain, but it must be [Keepers-compatible](../compatible-contracts/).\r\n\r\n1. **Complete the required details:**\r\n\r\n   - **Upkeep name**: This will be publicly visible in the Keepers app.\r\n   - **Gas limit**: This is the maximum amount of gas that your transaction requires to execute on chain. This limit cannot exceed the `performGasLimit` value configured on the [registry](/docs/chainlink-keepers/supported-networks/#configurations). Before the network executes your transaction on chain, it simulates the transaction. If the gas required to execute your transaction exceeds the gas limit that you specified, your transaction will not be confirmed. Developers also have the ability to update `performGasLimit` for an upkeep. Consider running your function on a testnet to see how much gas it uses before you select a gas limit. This can be changed afterwards.\r\n   - **Starting balance (LINK)**: Specify a LINK starting balance to fund your upkeep. See the [LINK Token Contracts](/docs/link-token-contracts/) page to find the correct contract address and access faucets for testnet LINK. This field is required. You must have LINK before you can use the Keepers service.\r\n   - **Check data**: This field is provided as an input for when your `checkUpkeep` function is simulated. Either leave this field blank or specify a hexadecimal value starting with `0x`. To learn how to make flexible upkeeps using `checkData`, see the [Flexible Upkeeps](../flexible-upkeeps) guide.\r\n   - **Your email address**: This email address will be encrypted and is used to send you an email when your upkeep is underfunded.\r\n\r\n   :::caution[Funding Upkeep]\r\n\r\n   You should fund your contract with more LINK that you anticipate you will need. The network will not check or perform your Upkeep if your balance is too low based on current exchange rates. View the [Keepers economics](../keeper-economics) page to learn more about the cost of using Keepers.\r\n\r\n   :::\r\n\r\n   :::caution[ERC677 Link]\r\n\r\n   Fund your Upkeep with more LINK than you anticipate you will need. The network will not check or perform your upkeep if your balance is too low based on current exchange rates. View the [Keepers Economics](../keeper-economics) page to learn more about the cost of using Keepers.\r\n\r\n   :::\r\n\r\n   :::caution[Testing and best practices]\r\n\r\n   Follow the [best practices](../compatible-contracts/#best-practices) when creating a Keepers-compatible contract and test your Upkeep on a testnet before deploying it to a mainnet.\r\n\r\n   :::\r\n\r\n1. **Click `Register upkeep`** and confirm the transaction in MetaMask.\r\n   ![Upkeep Registration Success Message](/images/contract-devs/keeper/keeper-registration-submitted.png)\r\n\r\nYour Upkeeps will be displayed in your list of Active Upkeeps. You must monitor the balance of your Upkeep. If the balance drops below the **minimum balance**, the Keepers Network will not perform the Upkeep. See [Manage Your Upkeeps](../manage-upkeeps) to learn how to manage your Upkeeps.\r\n\r\n## Register an Upkeep using your own deployed contract\r\n\r\nYou can dynamically create and manage Upkeeps from within your own dApp. To do this you will need to keep track of the Upkeep ID as your contract will use this to subsequently interact with the Keepers registry. The following example displays a smart contract that can create an Upkeep and determine the Upkeep ID. Note your contract should be Keepers-compatible you will need [ERC-677 LINK](../../link-token-contracts/) to fund the Upkeep. You can also program your Upkeep to check its own balance and fund itself by interacting with the registry.\r\n\r\n### Prerequisites\r\n\r\nFind the following addresses for your network:\r\n\r\n- Correct [LINK token contract](../../link-token-contracts/)\r\n- [Registry and registrar addresses for your network](#registry-and-registrar-addresses)\r\n\r\nOptionally, you can fetch the LINK address and registrar address from the intended registry at run-time.\r\n\r\n:::note[ Make sure your contract has enough [ERC-677 LINK](../../link-token-contracts/) to fund the Upkeep at creation. _The minimum amount is 5 LINK._]\r\n\r\n:::\r\n\r\n### Code example\r\n\r\n<div class=\"remix-callout\">\r\n    <a href=\"https://remix.ethereum.org/#url=https://docs.chain.link/samples/Keepers/UpkeepIDConsumerExample.sol\" >Open in Remix</a>\r\n    <a href=\"/docs/conceptual-overview/#what-is-remix\" > What is Remix?</a>\r\n</div>\r\n\r\n### `registerAndPredictID` Parameters\r\n\r\n| Name             | Description                                                                                                                          |\r\n| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------ |\r\n| `name`           | Name of Upkeep                                                                                                                       |\r\n| `encryptedEmail` | Not in use in programmatic registration. Please specify with `0x`                                                                    |\r\n| `upkeepContract` | Address of Keepers-compatible contract that will be automated                                                                        |\r\n| `gasLimit`       | The maximum amount of gas that will be used to execute your function on-chain                                                        |\r\n| `adminAddress`   | Address for Upkeep administrator. Upkeep administrator can fund contract.                                                            |\r\n| `checkData`      | ABI-encoded fixed and specified at Upkeep registration and used in every checkUpkeep. Can be empty (0x)                              |\r\n| `amount`         | The amount of LINK (in Wei) to fund your Upkeep. The minimum amount is 5 LINK. To fund 5 LINK please set this to 5000000000000000000 |\r\n| `source`         | Not in use in programmatic registration. Please specify with `0`.                                                                    |\r\n\r\n### Registry and Registrar Addresses\r\n\r\n| Name                         | Registry Address                                                                                                                | Registrar Address                                                                                                               |\r\n| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |\r\n| Ethereum Mainnet             | [0x02777053d6764996e594c3E88AF1D58D5363a2e6](https://etherscan.io/address/0x02777053d6764996e594c3E88AF1D58D5363a2e6)           | [0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d](https://etherscan.io/address/0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d)           |\r\n| Goerli Testnet               | [0x02777053d6764996e594c3E88AF1D58D5363a2e6](https://goerli.etherscan.io/address/0x02777053d6764996e594c3E88AF1D58D5363a2e6)    | [0x9806cf6fBc89aBF286e8140C42174B94836e36F2](https://goerli.etherscan.io/address/0x9806cf6fBc89aBF286e8140C42174B94836e36F2)    |\r\n| Rinkeby Testnet (Deprecated) | [0x02777053d6764996e594c3E88AF1D58D5363a2e6](https://rinkeby.etherscan.io/address/0x02777053d6764996e594c3E88AF1D58D5363a2e6)   | [0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d](https://rinkeby.etherscan.io/address/0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d)   |\r\n| Kovan Testnet (Deprecated)   | [0x02777053d6764996e594c3E88AF1D58D5363a2e6](https://kovan.etherscan.io/address/0x02777053d6764996e594c3E88AF1D58D5363a2e6)     | [0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d](https://kovan.etherscan.io/address/0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d)     |\r\n| Polygon Mainnet              | [0x02777053d6764996e594c3E88AF1D58D5363a2e6](https://polygonscan.com/address/0x02777053d6764996e594c3E88AF1D58D5363a2e6)        | [0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d](https://polygonscan.com/address/0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d)        |\r\n| Polygon Mumbai Testnet       | [0x02777053d6764996e594c3E88AF1D58D5363a2e6](https://mumbai.polygonscan.com/address/0x02777053d6764996e594c3E88AF1D58D5363a2e6) | [0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d](https://mumbai.polygonscan.com/address/0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d) |\r\n| BNB Chain Mainnet            | [0x02777053d6764996e594c3E88AF1D58D5363a2e6](https://bscscan.com/address/0x02777053d6764996e594c3E88AF1D58D5363a2e6)            | [0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d](https://bscscan.com/address/0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d)            |\r\n| BNB Chain Testnet            | [0x02777053d6764996e594c3E88AF1D58D5363a2e6](https://testnet.bscscan.com/address/0x02777053d6764996e594c3E88AF1D58D5363a2e6)    | [0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d](https://testnet.bscscan.com/address/0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d)    |\r\n| Avalanche Mainnet            | [0x02777053d6764996e594c3E88AF1D58D5363a2e6](https://snowtrace.io/address/0x02777053d6764996e594c3E88AF1D58D5363a2e6)           | [0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d](https://snowtrace.io/address/0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d)           |\r\n| Avalanche Fuji Testnet       | [0x02777053d6764996e594c3E88AF1D58D5363a2e6](https://testnet.snowtrace.io/address/0x02777053d6764996e594c3E88AF1D58D5363a2e6)   | [0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d](https://testnet.snowtrace.io/address/0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d)   |\r\n| Fantom Mainnet               | [0x02777053d6764996e594c3E88AF1D58D5363a2e6](https://ftmscan.com/address/0x02777053d6764996e594c3E88AF1D58D5363a2e6)            | [0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d](https://ftmscan.com/address/0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d)            |\r\n| Fantom Testnet               | [0x02777053d6764996e594c3E88AF1D58D5363a2e6](https://testnet.ftmscan.com/address/0x02777053d6764996e594c3E88AF1D58D5363a2e6)    | [0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d](https://testnet.ftmscan.com/address/0xDb8e8e2ccb5C033938736aa89Fe4fa1eDfD15a1d)    |\r\n"
+  },
+  {
+    "title": "Arbitrum Price Feeds",
+    "headings": [],
+    "url": "/feeds-arbitrum",
+    "section": "ethereum",
+    "content": ""
+  },
+  {
+    "title": "Solana Price Feeds",
+    "headings": [],
+    "url": "/feeds-solana",
+    "section": "solana",
+    "content": ""
+  },
+  {
+    "title": "Ethereum Price Feeds",
+    "headings": [],
+    "url": "/feeds",
+    "section": "ethereum",
+    "content": ""
+  },
+  {
+    "title": "Chainlink Overview",
+    "headings": [
+      {
+        "depth": 1,
+        "slug": "lookup",
+        "text": "Lookup"
+      },
+      {
+        "depth": 1,
+        "slug": "manual-lookup",
+        "text": "Manual Lookup"
+      },
+      {
+        "depth": 1,
+        "slug": "naming-structure",
+        "text": "Naming Structure"
+      },
+      {
+        "depth": 2,
+        "slug": "subdomains",
+        "text": "Subdomains"
+      },
+      {
+        "depth": 1,
+        "slug": "architecture",
+        "text": "Architecture"
+      },
+      {
+        "depth": 2,
+        "slug": "resolver",
+        "text": "Resolver"
+      },
+      {
+        "depth": 2,
+        "slug": "listening-for-address-changes",
+        "text": "Listening for Address Changes"
+      },
+      {
+        "depth": 1,
+        "slug": "obtaining-addresses",
+        "text": "Obtaining Addresses"
+      },
+      {
+        "depth": 2,
+        "slug": "javascript",
+        "text": "Javascript"
+      },
+      {
+        "depth": 2,
+        "slug": "solidity",
+        "text": "Solidity"
+      }
+    ],
+    "url": "/ens",
+    "section": "gettingStarted",
+    "description": "Learn the basic concepts about what smart contracts are and, how to write them, and how Chainlink oracles work with smart contracts.",
+    "content": "---\nlayout: ../layouts/MainLayout.astro\nsection: gettingStarted\ndate: Last Modified\ntitle: \"Chainlink Overview\"\nexcerpt: \"Smart Contracts and Chainlink\"\nwhatsnext:\n  {\n    \"Deploy Your First Smart Contract\": \"/docs/deploy-your-first-contract/\",\n    \"Consuming Data Feeds\": \"/docs/consuming-data-feeds/\",\n  }\nmetadata:\n  title: \"Conceptual Overview\"\n  description: \"Learn the basic concepts about what smart contracts are and, how to write them, and how Chainlink oracles work with smart contracts.\"\n  image:\n    0: \"/files/1a63254-link.png\"\n---\n\nimport { EnsLookupForm } from \"../features/ens/components/EnsLookupForm.tsx\"\nimport { EnsManualLookupForm } from \"../features/ens/components/EnsManualLookupForm.tsx\"\n\n# Lookup\n\n<EnsLookupForm client:idle />\n\n# Manual Lookup\n\n<EnsManualLookupForm client:idle />\n\n# Naming Structure\n\nChainlink data feeds fall under the `data.eth` naming suffix. To obtain a specific feed address, prefix this with the assets in the feed, separated by a dash (-).\n\n| Pair      | ENS Domain Name    |\n| :-------- | :----------------- |\n| ETH / USD | `eth-usd.data.eth` |\n| BTC / USD | `btc-usd.data.eth` |\n| ...       | `...`              |\n\n## Subdomains\n\nBy default, the base name structure (`eth-usd.data.eth`) returns the proxy address for that feed. However, subdomains enable callers to retrieve other associated contract addresses, as shown in the following table.\n\n| Contract Addresses    | Subdomain Prefix | Example                       |\n| :-------------------- | :--------------- | :---------------------------- |\n| Proxy                 | `proxy`          | `proxy.eth-usd.data.eth`      |\n| Underlying aggregator | `aggregator`     | `aggregator.eth-usd.data.eth` |\n| Proposed aggregator   | `proposed`       | `proposed.eth-usd.data.eth`   |\n\n# Architecture\n\n## Resolver\n\nFor each network, there is a single Chainlink resolver, which does not change. Its address can be obtained using the `data.eth` domain. This resolver manages the subdomains associated with `data.eth`.\n\n| Network          | Resolver Address                                                                                                                                       |\n| :--------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------- |\n| Ethereum Mainnet | <a href=\"https://app.ens.domains/address/0x122eb74f9d0F1a5ed587F43D120C1c2BbDb9360B/\" target=\"_blank\">`0x122eb74f9d0F1a5ed587F43D120C1c2BbDb9360B`</a> |\n\n## Listening for Address Changes\n\nWhen a new aggregator is deployed for a specific feed, it is first proposed, and when accepted becomes the aggregator for that feed. During this process, the `proposed` and `aggregator` subdomains for that feed will change. With each change, the resolver emits an `AddrChanged` event, using the feed subdomain (for example: `eth-usd.data.eth`) as the indexed parameter.\n\n**Example**: If you want to listen for when the aggregator of the ETH / USD feed changes, set up a listener to track the `AddrChanged` event on the resolver, using a filter like this: `ethers.utils.namehash('aggregator.eth-usd.data.eth')`.\n\n# Obtaining Addresses\n\n> 🚧 Reverse Lookup\n>\n> Reverse lookup is not supported.\n\n:::warning[Reverse Lookup]\n\nReverse lookup is not supported.\n\n:::\n\n## Javascript\n\nThe example below uses Javascript Web3 library to interact with ENS. See the <a href=\"https://docs.ens.domains/dapp-developer-guide/resolving-names\" target=\"_blank\">ENS documentation</a> for the full list of languages and libraries libraries that support ENS.\n\nThis example logs the address of the data feed on the Ethereum mainnet for ETH / USD prices.\n\n```javascript\n{% include 'samples/PriceFeeds/ENSConsumer.js' %}\n```\n\n## Solidity\n\nIn Solidity, the address of the ENS registry must be known. According to <a href=\"https://docs.ens.domains/ens-deployments\" target=\"_blank\">ENS documentation</a>, this address is the same across Mainnet, Ropsten, Rinkeby and Goerli networks:\n\nENS registry address: <a href=\"https://etherscan.io/address/0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e\" target=\"_blank\">`0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e`</a>.\n\nAlso, instead of using readable string names like `eth-usd.data.eth`, resolvers accept bytes32 hash IDs for names. Hash IDs can be retrieved from <a href=\"https://thegraph.com/explorer/subgraph/ensdomains/ens\" target=\"_blank\">this subgraph</a> or via this npm package <a href=\"https://www.npmjs.com/package/@ensdomains/eth-ens-namehash\" target=\"_blank\">eth-ens-namehash</a>.\n\n\"ETH / USD\" hash: `0xf599f4cd075a34b92169cf57271da65a7a936c35e3f31e854447fbb3e7eb736d`\n\n::solidity-remix[/samples/PriceFeeds/ENSConsumer.sol]\n"
+  },
+  {
+    "title": "Chainlink Overview",
+    "headings": [
+      {
+        "depth": 1,
+        "slug": "mdx",
+        "text": "MDX"
+      },
+      {
+        "depth": 2,
+        "slug": "features",
+        "text": "Features"
+      },
+      {
+        "depth": 2,
+        "slug": "commands-cheatsheet",
+        "text": "Commands Cheatsheet"
+      },
+      {
+        "depth": 2,
+        "slug": "new-to-astro",
+        "text": "New to Astro?"
+      },
+      {
+        "depth": 2,
+        "slug": "customize-this-theme",
+        "text": "Customize This Theme"
+      },
+      {
+        "depth": 3,
+        "slug": "site-metadata",
+        "text": "Site metadata"
+      },
+      {
+        "depth": 3,
+        "slug": "css-styling",
+        "text": "CSS styling"
+      },
+      {
+        "depth": 2,
+        "slug": "page-metadata",
+        "text": "Page metadata"
+      },
+      {
+        "depth": 3,
+        "slug": "sidebar-navigation",
+        "text": "Sidebar navigation"
+      },
+      {
+        "depth": 3,
+        "slug": "multiple-languages-support",
+        "text": "Multiple Languages support"
+      },
+      {
+        "depth": 3,
+        "slug": "what-if-i-dont-plan-to-support-multiple-languages",
+        "text": "What if I don’t plan to support multiple languages?"
+      },
+      {
+        "depth": 3,
+        "slug": "search-powered-by-algolia",
+        "text": "Search (Powered by Algolia)"
+      }
+    ],
+    "url": "/rc",
+    "section": "gettingStarted",
+    "description": "Learn the basic concepts about what smart contracts are and, how to write them, and how Chainlink oracles work with smart contracts.",
+    "content": "---\nlayout: ../layouts/MainLayout.astro\nsection: gettingStarted\ndate: Last Modified\ntitle: \"Chainlink Overview\"\nexcerpt: \"Smart Contracts and Chainlink\"\nwhatsnext:\n  {\n    \"Deploy Your First Smart Contract\": \"/docs/deploy-your-first-contract/\",\n    \"Consuming Data Feeds\": \"/docs/consuming-data-feeds/\",\n  }\nmetadata:\n  title: \"Conceptual Overview\"\n  description: \"Learn the basic concepts about what smart contracts are and, how to write them, and how Chainlink oracles work with smart contracts.\"\n  image:\n    0: \"/files/1a63254-link.png\"\n---\n\n# MDX\n\n```bash\nnpm init astro -- --template docs\n```\n\n[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/withastro/astro/tree/latest/examples/docs)\n\n## Features\n\n- ✅ **Full Markdown support**\n- ✅ **Responsive mobile-friendly design**\n- ✅ **Sidebar navigation**\n- ✅ **Search (powered by Algolia)**\n- ✅ **Multi-language i18n**\n- ✅ **Automatic table of contents**\n- ✅ **Automatic list of contributors**\n- ✅ (and, best of all) **dark mode**\n\n## Commands Cheatsheet\n\nAll commands are run from the root of the project, from a terminal:\n\n| Command           | Action                                       |\n| :---------------- | :------------------------------------------- |\n| `npm install`     | Installs dependencies                        |\n| `npm run dev`     | Starts local dev server at `localhost:3000`  |\n| `npm run build`   | Build your production site to `./dist/`      |\n| `npm run preview` | Preview your build locally, before deploying |\n\nTo deploy your site to production, check out our [Deploy an Astro Website](https://docs.astro.build/guides/deploy) guide.\n\n## New to Astro?\n\nWelcome! Check out [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).\n\n## Customize This Theme\n\n### Site metadata\n\n`src/config.ts` contains several data objects that describe metadata about your site like title, description, default language, and Open Graph details. You can customize these to match your project.\n\n### CSS styling\n\nThe theme's look and feel is controlled by a few key variables that you can customize yourself. You'll find them in the `public/theme.css` CSS file.\n\nIf you've never worked with CSS variables before, give [MDN's guide on CSS variables](https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties) a quick read.\n\nThis theme uses a \"cool blue\" accent color by default. To customize this for your project, change the `--theme-accent` variable to whatever color you'd like:\n\n```diff\n/* public/theme.css */\n:root {\n  color-scheme: light;\n-  --theme-accent: hsla(var(--color-blue), 1);\n+  --theme-accent: hsla(var(--color-red), 1);   /* or: hsla(#FF0000, 1); */\n```\n\n## Page metadata\n\nAstro uses frontmatter in Markdown pages to choose layouts and pass properties to those layouts. If you are using the default layout, you can customize the page in many different ways to optimize SEO and other things. For example, you can use the `title` and `description` properties to set the document title, meta title, meta description, and Open Graph description.\n\n```markdown\n---\ntitle: Example title\ndescription: Really cool docs example that uses Astro\nlayout: ../../layouts/MainLayout.astro\n---\n\n# Page content...\n```\n\nFor more SEO related properties, look at `src/components/HeadSEO.astro`\n\n### Sidebar navigation\n\nThe sidebar navigation is controlled by the `SIDEBAR` variable in your `src/config.ts` file. You can customize the sidebar by modifying this object. A default, starter navigation has already been created for you.\n\n```ts\nexport const SIDEBAR = {\n  en: [\n    { text: \"Section Header\", header: true },\n    { text: \"Introduction\", link: \"en/introduction\" },\n    { text: \"Page 2\", link: \"en/page-2\" },\n    { text: \"Page 3\", link: \"en/page-3\" },\n\n    { text: \"Another Section\", header: true },\n    { text: \"Page 4\", link: \"en/page-4\" },\n  ],\n}\n```\n\nNote the top-level `en` key: This is needed for multi-language support. You can change it to whatever language you'd like, or add new languages as you go. More details on this below.\n\n### Multiple Languages support\n\nThe Astro docs template supports multiple langauges out of the box. The default theme only shows `en` documentation, but you can enable multi-language support features by adding a second language to your project.\n\nTo add a new language to your project, you'll want to extend the current `src/pages/[lang]/...` layout:\n\n```diff\n 📂 src/pages\n ┣ 📂 en\n ┃ ┣ 📜 page-1.md\n ┃ ┣ 📜 page-2.md\n ┃ ┣ 📜 page-3.astro\n+ ┣ 📂 es\n+ ┃ ┣ 📜 page-1.md\n+ ┃ ┣ 📜 page-2.md\n+ ┃ ┣ 📜 page-3.astro\n```\n\nYou'll also need to add the new language name to the `KNOWN_LANGUAGES` map in your `src/config.ts` file. This will enable your new language switcher in the site header.\n\n```diff\n// src/config.ts\nexport const KNOWN_LANGUAGES = {\n  English: 'en',\n+  Spanish: 'es',\n};\n```\n\nLast step: you'll need to add a new entry to your sidebar, to create the table of contents for that language. While duplicating every page might not sound ideal to everyone, this extra control allows you to create entirely custom content for every language.\n\n> Make sure the sidebar `link` value points to the correct language!\n\n```diff\n// src/config.ts\nexport const SIDEBAR = {\n  en: [\n    { text: 'Section Header', header: true, },\n    { text: 'Introduction', link: 'en/introduction' },\n    // ...\n  ],\n+  es: [\n+    { text: 'Encabezado de sección', header: true, },\n+    { text: 'Introducción', link: 'es/introduction' },\n+    // ...\n+  ],\n};\n\n// ...\n```\n\nIf you plan to use Spanish as the the default language, you just need to modify the redirect path in `src/pages/index.astro`:\n\n```diff\n<script>\n- window.location.pathname = `/en/introduction`;\n+ window.location.pathname = `/es/introduction`;\n</script>\n```\n\nYou can also remove the above script and write a landing page in Spanish instead.\n\n### What if I don't plan to support multiple languages?\n\nThat's totally fine! Not all projects need (or can support) multiple languages. You can continue to use this theme without ever adding a second language.\n\nIf that single language is not English, you can just replace `en` in directory layouts and configurations with the preferred language.\n\n### Search (Powered by Algolia)\n\n[Algolia](https://www.algolia.com/) offers a free service to qualified open source projects called [DocSearch](https://docsearch.algolia.com/). If you are accepted to the DocSearch program, provide your API Key & index name in `src/config.ts` and a search box will automatically appear in your site header.\n\nNote that Aglolia and Astro are not affiliated. We have no say over acceptance to the DocSearch program.\n\nIf you'd prefer to remove Algolia's search and replace it with your own, check out the `src/components/Header.astro` component to see where the component is added.\n"
+  }
+]

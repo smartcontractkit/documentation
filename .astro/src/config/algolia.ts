@@ -1,7 +1,5 @@
-// Uncomment this to enable site search.
-// See "Algolia" section of the README for more information.
 export const ALGOLIA = {
-  indexName: "XXXXXXXXXX",
-  appId: "XXXXXXXXXX",
-  apiKey: "XXXXXXXXXX",
+  indexName: "docs-test",
+  appId: "I9A62UQS9Z",
+  publicApiKey: "7bb7b9ebf829c3850536f540c6c33fb9",
 }

@@ -1,20 +1,24 @@
 ---
-import { Code } from "astro/components"
+import { Prism } from "@astrojs/prism"
+
 import fs from "node:fs/promises"
 import path from "node:path"
 
 const { src, lang } = Astro.props
 console.log(path.join(process.cwd(), "public", src))
 
-const data = await fs.readFile(path.join(process.cwd(), "public", src), "utf-8")
+const data = (
+  await fs.readFile(path.join(process.cwd(), "public", src), "utf-8")
+).toString()
 ---
 
-<Code code={data.toString()} lang={lang} />
+<Prism code={data} lang={lang} />
 <div class="remix-callout">
   <a
     href={`https://remix.ethereum.org/#url=https://docs.chain.link/${src}`}
     target="_blank"
-    >Open in Remix
+  >
+    Open in Remix
   </a>
   <a href="/docs/conceptual-overview/#what-is-remix">What is Remix?</a>
 </div>
