@@ -16,7 +16,7 @@ Manage your Upkeeps to get the best performance.
 - [Fund your Upkeep](#fund-your-upkeep)
 - [Maintain a Minimum Balance](#maintain-a-minimum-balance)
 - [Withdraw funds](#withdraw-funds)
-- [Interacting directly with the Keepers Registry](#interacting-directly-with-the-keepers-registry)
+- [Interacting directly with the Chainlink Automation Registry](#interacting-directly-with-the-chainlink-automation-registry)
 
 ## Fund your Upkeep
 
@@ -51,6 +51,6 @@ To account for Upkeep execution over time and possible extended gas spikes, main
 
 To withdraw funds, the Upkeep administrator have to cancel the Upkeep first. There is a 50 block delay once an Upkeep has been cancelled before funds can be withdrawn. Once 50 blocks have passed, select **Withdraw funds**.
 
-## Interacting directly with the Keepers Registry
+## Interacting directly with the Chainlink Automation Registry
 
 After registration, you can interact directly with the [registry contract](../supported-networks/#registry-and-registrar-addresses) functions such as `cancelUpkeep` and `addFunds` using your **Upkeep ID**. The Registry Address might change when new contracts are deployed with new functionality.

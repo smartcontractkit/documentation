@@ -13,7 +13,7 @@ whatsnext:
 
 Your upkeep has a LINK (ERC-677) balance. Every time an Automation Node executes your `performUpkeep` function, your LINK balance will be reduced. You can add funds using the Chainlink Automation App or by directly calling the `addFunds()` function on the `AutomationRegistry` contract. Anyone can call the `addFunds()` function.
 
-## Cost of using Keepers
+## Cost of using Chainlink Automation
 
 When an Automation Node executes your `performUpkeep` function, the Chainlink Automation Registry will deduct the upkeep's total gas cost in LINK as well as a percentage premium from your upkeep’s LINK balance and allocate it to the Automation Node's address. The total gas cost in LINK is the gas price of the transaction multiplied by the sum of the gas used for the transaction and an 80K gas overhead for the Automation Node call gas used. This is converted to LINK using Chainlink Data Feeds. The percentage premium is to compensate the Automation Node for monitoring and performing your upkeep. The percentage premium varies by network and is listed in our [Supported Networks](../supported-networks/#configurations) page.
 

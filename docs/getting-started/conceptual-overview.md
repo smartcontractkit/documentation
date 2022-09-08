@@ -176,7 +176,7 @@ Smart contracts also use oracles to get other capabilities on-chain:
 
 - [Generate Verifiable Random Numbers (VRF)](/docs/vrf/v2/introduction/): Use Chainlink VRF to consume randomness in your smart contracts.
 - [Call External APIs (Any API)](/docs/any-api/introduction/): Request & Receive data from any API using the Chainlink contract library.
-- [Automate Smart Contract Functions (Keepers)](/docs/chainlink-keepers/introduction/): Automating smart contract functions and regular contract maintenance.
+- [Automate Smart Contract Functions (Automation)](/docs/chainlink-keepers/introduction/): Automating smart contract functions and regular contract maintenance.
 
 ## What is Remix?
 

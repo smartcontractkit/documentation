@@ -65,7 +65,7 @@ Test this example using the following steps:
 
 1. Register the upkeep for your contract as explained [here](/docs/chainlink-keepers/register-upkeep/). Because this example has high gas requirements, specify the maximum allowed gas limit of `2,500,000`.
 
-1. After the registration is confirmed, Keepers performs the upkeep.
+1. After the registration is confirmed, Automation Nodes perform the upkeep.
 
    ![BalancerOnChain Upkeep History](/images/contract-devs/keeper/balancerOnChain-history.png)
 
@@ -89,7 +89,7 @@ Modify the contract and move the computation to the `checkUpkeep()` function. Th
 
 > 🚧 **Note on `performData`**
 >
-> This data should always be validated against the contract’s current state to ensure that `performUpkeep()` is idempotent. It also blocks malicious keepers from sending non-valid data. This example, tests that the state is correct after re-balancing:
+> This data should always be validated against the contract’s current state to ensure that `performUpkeep()` is idempotent. It also blocks malicious Automation Nodes from sending non-valid data. This example, tests that the state is correct after re-balancing:
 > `require(_balance == LIMIT, "Provided increment not correct");`
 
 ```solidity
@@ -107,7 +107,7 @@ Run this example to compare the gas fees:
 
 1. Withdraw 100 at 10,100,300,350,500,600,670,700,900. Pass `100,[10,100,300,350,500,600,670,700,900]` to the withdraw function the same way that you did for the [previous example](#problem-on-chain-computation-leads-to-high-gas-fees).
 
-1. Register three upkeeps for your contract as explained [here](/docs/chainlink-keepers/register-upkeep/). Because the keepers handle much of the computation off-chain, a gas limit of 200,000 is sufficient. For each registration, pass the following `checkData` values to specify which balance indexes the registration will monitor. **Note**: You must remove any breaking line when copying the values.
+1. Register three upkeeps for your contract as explained [here](/docs/chainlink-keepers/register-upkeep/). Because the Automation Nodes handle much of the computation off-chain, a gas limit of 200,000 is sufficient. For each registration, pass the following `checkData` values to specify which balance indexes the registration will monitor. **Note**: You must remove any breaking line when copying the values.
 
    | Upkeep Name             | CheckData(base16)                                                                                                                                      | Remark: calculated using [`abi.encode()`](https://docs.soliditylang.org/en/develop/abi-spec.html#strict-encoding-mode) |
    | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |

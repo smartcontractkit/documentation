@@ -14,6 +14,7 @@ whatsnext:
 
 **Chainlink Automation release notes:**
 
+- [Chainlink Keepers is now Chainlink Automation](#chainlink-keepers-is-now-chainlink-automation)
 - [v1.2 release](#2022-08-04---v12-release)
   - [Manually migrating upkeeps from v1.1 to v1.2](#manually-migrating-upkeeps-from-v11-to-v12)
 - [Underfunded upkeep email notifications](#2022-07-21---underfunded-upkeep-notifications)
@@ -24,6 +25,7 @@ whatsnext:
 - [Keepers v1.1 launch on Ethereum](#2021-08-05---keepers-v11-launch-on-ethereum)
 - [Questions](#questions)
 
+## Chainlink Keepers is now Chainlink Automation
 
 ## 2022-08-04 - v1.2 Release
 

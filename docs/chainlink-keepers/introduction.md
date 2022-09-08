@@ -31,7 +31,7 @@ To learn more about how the Chainlink Automation Network automates your smart co
 
 Chainlink Automation will reliably execute smart contract functions using a variety of triggers.
 
-- [Time-based trigger](#time-based-trigger): Use a [time based trigger](#time-based-trigger) if you want Keepers to execute your function according to a time schedule. We simply call it the Job Scheduler and it is a throwback to the Ethereum Alarm Clock. Your contract does not need to be [Automation-compatible](../compatible-contracts/).
+- [Time-based trigger](#time-based-trigger): Use a [time based trigger](#time-based-trigger) if you want Chainlink Automation to execute your function according to a time schedule. We simply call it the Job Scheduler and it is a throwback to the Ethereum Alarm Clock. Your contract does not need to be [Automation-compatible](../compatible-contracts/).
 - [Custom logic trigger](#custom-logic-trigger): Use [custom logic trigger](#custom-logic-trigger) if you want to provide custom solidity logic that Automation Nodes will evaluate (off-chain) to determine when to execute your function on-chain. Your contract should be [Automation-compatible](../compatible-contracts/). Custom logic examples include checking the balance on a contract, only executing limit orders when their levels are met, any one of our [coded examples](/docs/chainlink-keepers/util-overview), and many many more.
 
 ### Time-based Trigger
@@ -52,7 +52,7 @@ Before you begin, deploy the contract that you want to automate. You will also n
 
 1. Fund your Upkeep with ERC-677 LINK. See the [LINK token contracts](../../link-token-contracts/) page to determine where to acquire ERC-677 LINK.
 
-1. After your Upkeep is registered, [manage](../manage-upkeeps/) it in the Keepers App.
+1. After your Upkeep is registered, [manage](../manage-upkeeps/) it in the Chainlink Automation App.
 
 For more details on time-based automation, click [here](../job-scheduler/).
 
@@ -60,17 +60,17 @@ For more details on time-based automation, click [here](../job-scheduler/).
 
 To use a custom logic trigger, you will need to make your contract [Automation-compatible](../compatible-contracts/).
 
-1. Open the Chainlink Keepers app.
+1. Open the Chainlink Automation app.
 
     <div class="remix-callout">
-        <a href="https://keepers.chain.link" >Open the Chainlink Keepers App</a>
+        <a href="https://keepers.chain.link" >Open the Chainlink Automation App</a>
     </div>
 
 1. [Register](../register-upkeep/) a new Upkeep in the [Chainlink Automation App](https://keepers.chain.link) and select **Custom logic** trigger. Provide the address of your [Automation-compatible](../compatible-contracts/) contract and complete the remaining details. Your upkeep name will be publicly visible, but your email and project name will **not** be publicly visible. Ensure you specify the appropriate gas limit for your function to execute on chain.
 
 1. Fund your Upkeep with ERC-677 LINK. See the [LINK token contracts](../../link-token-contracts/) page to determine where to acquire ERC-677 LINK.
 
-1. After your Upkeep is registered, [manage](../manage-upkeeps/) it in the Keepers App.
+1. After your Upkeep is registered, [manage](../manage-upkeeps/) it in the Chainlink Automation App.
 
 1. For more details on custom logic automation, click [here](../compatible-contracts/).
 

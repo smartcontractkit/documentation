@@ -51,7 +51,7 @@ module.exports = {
             url: '/docs/vrf/v2/introduction/',
           },
           {
-            title: 'Chainlink Keepers',
+            title: 'Chainlink Automation',
             url: '/docs/chainlink-keepers/introduction/',
           },
           {
@@ -285,7 +285,7 @@ module.exports = {
         section: 'AUTOMATE CONTRACTS',
         contents: [
           {
-            title: 'Introduction to Chainlink Keepers',
+            title: 'Introduction to Chainlink Automation',
             url: '/docs/chainlink-keepers/introduction/',
           },
           {
@@ -297,7 +297,7 @@ module.exports = {
             url: '/docs/chainlink-keepers/register-upkeep/',
           },
           {
-            title: 'Create Keepers-compatible Contracts',
+            title: 'Create Automation-compatible Contracts',
             url: '/docs/chainlink-keepers/compatible-contracts/',
           },
 
@@ -320,7 +320,7 @@ module.exports = {
             ],
           },
           {
-            title: 'Keepers Architecture',
+            title: 'Automation Architecture',
             url: '/docs/chainlink-keepers/overview/',
           },
           {
@@ -328,11 +328,11 @@ module.exports = {
             url: '/docs/chainlink-keepers/supported-networks/',
           },
           {
-            title: 'Keepers Economics',
+            title: 'Automation Pricing',
             url: '/docs/chainlink-keepers/keeper-economics/',
           },
           {
-            title: 'Keepers Release Notes',
+            title: 'Automation Release Notes',
             url: '/docs/chainlink-keepers/keepers-release-notes/',
           },
           {

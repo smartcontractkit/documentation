@@ -5,7 +5,7 @@ date: Last Modified
 title: "Consuming Data Feeds"
 permalink: "docs/consuming-data-feeds/"
 excerpt: "Smart Contracts and Chainlink"
-whatsnext: {"Random Numbers: Using Chainlink VRF":"/docs/intermediates-tutorial/", "Connect contracts to Any API":"/docs/advanced-tutorial/", "Chaink Keepers":"/docs/chainlink-keepers/introduction/"}
+whatsnext: {"Random Numbers: Using Chainlink VRF":"/docs/intermediates-tutorial/", "Connect contracts to Any API":"/docs/advanced-tutorial/", "Chaink Automation":"/docs/chainlink-keepers/introduction/"}
 metadata:
   title: "Consuming Data Feeds"
   description: "Learn how to consume Chainlink Data Feeds in your smart contracts."
