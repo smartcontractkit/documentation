@@ -10,8 +10,6 @@ The [Ethereum Merge](https://ethereum.org/en/upgrades/merge/) is an upcoming net
 
 The Chainlink protocol and its services will remain operational on the Ethereum blockchain during and after the Merge to the PoS consensus layer. Users should be aware that forked versions of the Ethereum blockchain, including PoW forks, will not be supported by the Chainlink protocol. This is aligned with both the Ethereum Foundation’s and broader Ethereum community’s decision, achieved via social consensus, to upgrade the Ethereum blockchain to PoS consensus.
 
-For Ethereum developers and dApp teams who are unsure of their migration strategy surrounding the Merge, it is recommended that smart contract operations are paused to avoid unforeseen incidents and help protect end users. dApps operating on forked versions of Ethereum, including PoW forks, might behave in unexpected ways due to both protocol and application-level issues, introducing increased risk for users. Developers should also ensure that any external dependencies their contracts may rely upon will operate as expected during and after the Merge. Chainlink Labs will continue to monitor any developments surrounding the Ethereum Merge to ensure the utmost level of reliability of Chainlink services.
-
 Ethereum developers and dApp teams should, at minimum, take the following actions to avoid unforeseen incidents and help protect end users:
 
 - Review all external dependencies that their contracts may rely upon 
