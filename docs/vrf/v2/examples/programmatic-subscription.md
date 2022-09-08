@@ -17,7 +17,9 @@ metadata:
 
 {% include 'sections/vrf-v2-common.md' %}
 
-How you manage the subscription depends on your randomness needs. You can configure your subscriptions using the [Subscription Manager](https://vrf.chain.link), but these examples demonstrate how to create your subscription and add your consumer contracts programmatically. For these examples, the contract owns and manages the subscription. You can still view the subscriptions in the [Subscription Manager](https://vrf.chain.link). Any wallet can provide funding to those subscriptions.
+How you manage the subscription depends on your randomness needs. You can configure your subscriptions using the [Subscription Manager](/docs/vrf/v2/ui/), but these examples demonstrate how to create your subscription and add your consumer contracts programmatically. For these examples, the contract owns and manages the subscription. Any wallet can provide funding to those subscriptions.
+
+You can view and monitor your subscriptions in the [Subscription Manager](/docs/vrf/v2/ui/) even if you create them programmatically. Go to [vrf.chain.link](https://vrf.chain.link) to open the Subscription Manager.
 
 **Topics**
 
@@ -63,15 +65,15 @@ To use this contract, compile and deploy it in Remix.
 
 1. Compile and deploy the contract using the Injected Provider environment. The contract includes all of the configuration variables that you need, but you can edit them if necessary. For a full list of available configuration variables, see the [Supported Networks](/docs/vrf/v2/supported-networks/) page.
 
-   This contract automatically creates a new subscription when you deploy it. Read the `s_subscriptionId` variable to find your subscription ID. You can use this value to find the subscription in the [Subscription Manager](https://vrf.chain.link).
+   This contract automatically creates a new subscription when you deploy it. Read the `s_subscriptionId` variable to find your subscription ID. You can use this value to find the subscription at [vrf.chain.link](https://vrf.chain.link).
 
-1. In this example, the `topUpSubscription()` function sends LINK from your contract to the subscription. Fund your contract with at least three testnet LINK. Alternatively, you can send LINK directly to the subscription in the [Subscription Manager](https://vrf.chain.link). Any address can provide funding to a subscription balance. If you need testnet LINK, you can get it from the [Chainlink faucet](https://faucets.chain.link/goerli).
+1. In this example, the `topUpSubscription()` function sends LINK from your contract to the subscription. Fund your contract with at least three testnet LINK. Alternatively, you can send LINK directly to the subscription at [vrf.chain.link](https://vrf.chain.link). Any address can provide funding to a subscription balance. If you need testnet LINK, you can get it from the [Chainlink faucet](https://faucets.chain.link/goerli).
 
 1. Run the `topUpSubscription()` function to send LINK from your contract to your subscription balance. For this example, specify a value of `3000000000000000000`, which is equivalent to three LINK.
 
-1. Run the `requestRandomWords()` function. The request might take several minutes to process. Track pending request status in the [Subscription Manager](https://vrf.chain.link) app.
+1. Run the `requestRandomWords()` function. The request might take several minutes to process. Track the pending request status at [vrf.chain.link](https://vrf.chain.link).
 
-1. Note that you can also add and test consumer contracts using the same programmatic subscription. To do so:
+1. You can also add and test consumer contracts using the same programmatic subscription process:
 
    1. Create and deploy a consumer contract that includes the following components:
 
@@ -82,7 +84,7 @@ To use this contract, compile and deploy it in Remix.
 
    1. After you deploy the consumer contract, add it to the subscription as an approved consumer using the `addConsumer()` function on your subscription manager contract. Specify the address of your consumer contract.
 
-   1. On the consumer contract, run the `requestRandomWords()` function to request and receive random values. The request might take several minutes to process. Track pending request status in the [Subscription Manager](https://vrf.chain.link) app.
+   1. On the consumer contract, run the `requestRandomWords()` function to request and receive random values. The request might take several minutes to process. Track the pending request status at [vrf.chain.link](https://vrf.chain.link).
 
       The consumer contract can continue to make requests until your subscription balance runs out. The subscription manager contract must maintain sufficient balance in the subscription so that the consumers can continue to operate.
 
@@ -92,7 +94,7 @@ To use this contract, compile and deploy it in Remix.
 
 ## Funding and requesting simultaneously
 
-You can fund a subscription and request randomness in a single transaction. This is similar to how VRF v1 functions, but you must estimate how much the transaction might cost and determine the amount of funding to send to the subscription yourself. See the [Subscription billing](/docs/vrf/v2/introduction/#subscription-billing) page to learn how to estimate request costs.
+You can fund a subscription and request randomness in a single transaction. This is similar to how VRF v1 functions, but you must estimate how much the transaction might cost and determine the amount of funding to send to the subscription yourself. See the [Subscription Billing](/docs/vrf/v2/introduction/#subscription-billing) section to learn how to estimate costs for requests.
 
 ```solidity
 {% include 'snippets/VRF/VRFv2FundAndRequestFunction.sol' %}

@@ -12,7 +12,7 @@ permalink: 'docs/vrf/v2/migration-from-v1/'
 
 Chainlink VRF v2 includes several improvements and changes to the way you fund and request randomness for your smart contracts.
 
-- **Subscription management:** Chainlink VRF v2 introduces a [Subscription Manager](https://vrf.chain.link) application that allows smart contract applications to pre-fund multiple requests for randomness using a single LINK token balance. This reduces the gas fees for VRF requests by eliminating the need to transfer LINK tokens for each individual request. You transfer LINK tokens to the subscription balance only when it requires additional funding. Go to the [Subscription Manager](https://vrf.chain.link) to learn more.
+- **Subscription management:** Chainlink VRF v2 introduces a [Subscription Manager](/docs/vrf/v2/ui/) application that allows smart contract applications to pre-fund multiple requests for randomness using a single LINK token balance. This reduces the gas fees for VRF requests by eliminating the need to transfer LINK tokens for each individual request. You transfer LINK tokens to the subscription balance only when it requires additional funding. Read the [Subscription Manager](/docs/vrf/v2/ui/) page to learn more.
 
 - **Variable Callback Gas Limit:** Chainlink VRF v2 lets you adjust the callback gas limit when your smart contract application receives verifiable randomness. Consuming contracts can execute more complex logic in the callback request function that receives the random values. Tasks involving the delivered randomness are handled during the response process. The new gas limits are higher than the VRF V1 limit, and vary depending on the underlying blockchain you use. See the gas limits on the [VRF Supported Networks](/docs/vrf/v2/supported-networks) page.
 
@@ -26,9 +26,15 @@ Read the [Chainlink VRF v2 blog post](https://blog.chain.link/vrf-v2-mainnet-lau
 
 ## Updating your applications to use VRF v2
 
+{% include 'sections/vrf-v2-ui-callout.md' %}
+
 To modify your existing smart contract code to work with VRF v2, complete the following changes. See the [Get a Random Number](/docs/vrf/v2/examples/get-a-random-number/) guide for an example.
 
-1. Set up and fund a subscription in the [Subscription Manager](https://vrf.chain.link) application.
+1. Set up and fund a subscription in the Subscription Manager at [vrf.chain.link]https://vrf.chain.link).
+
+    <div class="remix-callout">
+          <a href="https://vrf.chain.link" target="_blank" >Open the Subscription Manager</a>
+    </div>
 
 1. Import the new [`VRFConsumerBaseV2.sol` contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/VRFConsumerBaseV2.sol) and remove the v1 `VRFConsumerBase.sol` import. This contract includes the `fulfillRandomWords` function.
 
