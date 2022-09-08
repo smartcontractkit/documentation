@@ -62,7 +62,7 @@ The **Pending** list appears if there are requests currently being processed.
 - **Time**: The time when the pending VRF request was made.
 - **Consumer**: The address of the consuming contract.
 - **Transaction hash**: The transaction hash of the pending VRF request.
-- **Status**: A timer that informs you when the pending VRF request will move to a failed status. Pending requests fail after 24h.
+- **Status**: A timer that informs you when the pending VRF request will move to a failed status. **Note**: Pending requests fail after 24h.
 - **Max Cost**: The calculated total gas cost in LINK based on the configuration. See [VRF v2 Limits](/docs/vrf/v2/introduction/#limits) for details.
 - **Projected Balance**: This indicates when the subscription is underfunded and how many LINK tokens are required to fund the subscription.
 
