@@ -41,7 +41,7 @@ Keepers Registry v1.2 launched on Ethereum, Binance Smart Chain, Polygon, Avalan
 
 - **Off-chain compute improvements**: The off-chain compute sequence is improved for higher-fidelity representation of the gas and logic before transactions are submitted on-chain. This helps to reduce reverts and reduce fees.
 
-- **Minimum spend requirement**: As part of the mission to continuously enhance the security of the Chainlink Network for all participants, each registered upkeep will have a minimum spend requirement of 0.1 LINK to discourage network spam. Note that an *upkeep* is the automation job itself. It is not a transaction. Each upkeep can have thousands of transactions. If an upkeep has not spent more than 0.1 LINK on transactions at the time of cancellation, then 0.1 LINK will be retained for the network. If more than 0.1 LINK has been spent by an upkeep, the full remaining balance of the upkeep will be withdrawable when the upkeep is canceled.
+- **Minimum spend requirement**: As part of the mission to continuously enhance the security of the Chainlink Network for all participants, each registered upkeep will have a minimum spend requirement of 0.1 LINK, in aggregate across all transactions for the upkeep, to discourage network spam. Note that an *upkeep* is the automation job itself. It is not a transaction. Each upkeep can have thousands of transactions. If an upkeep has not spent more than 0.1 LINK across all transactions at the time of cancellation, then 0.1 LINK will be retained for the network. If more than 0.1 LINK has been spent by an upkeep, the full remaining balance of the upkeep will be withdrawable when the upkeep is canceled.
 
 ### Manually migrating upkeeps from v1.1 to v1.2
 

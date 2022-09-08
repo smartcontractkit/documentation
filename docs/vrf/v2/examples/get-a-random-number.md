@@ -20,6 +20,8 @@ metadata:
 
 This guide explains how to get random values using a simple contract to request and receive random values from Chainlink VRF v2. For more advanced examples with programmatic subscription configuration, see the [Programmatic Subscription](/docs/vrf/v2/examples/programmatic-subscription/) page. To explore more applications of VRF, refer to our [blog](https://blog.chain.link/).
 
+{% include 'sections/vrf-v2-ui-callout.md' %}
+
 **Topics**
 
 - [Requirements](#requirements)
@@ -44,11 +46,15 @@ If you are new to developing smart contracts on Ethereum, see the [Getting Start
 
 For this example, create a new subscription on the Goerli testnet.
 
-1. Open MetaMask and set it to use the Goerli testnet. The Subscription Manager detects your network based on the active network in MetaMask.
+1. Open MetaMask and set it to use the Goerli testnet. The [Subscription Manager](/docs/vrf/v2/ui/) detects your network based on the active network in MetaMask.
 
 1. Check MetaMask to make sure you have testnet ETH and LINK on Goerli. You can get testnet ETH and LINK at one of the available [Goerli faucets](/docs/link-token-contracts/#goerli-testnet).
 
-1. Open the [Subscription Manager](https://vrf.chain.link) page.
+1. Open the Subscription Manager at [vrf.chain.link](https://vrf.chain.link).
+
+    <div class="remix-callout">
+          <a href="https://vrf.chain.link" target="_blank" >Open the Subscription Manager</a>
+    </div>
 
 1. Click **Create Subscription** and follow the instructions to create a new subscription account. MetaMask opens and asks you to confirm payment to create the account on-chain. After you approve the transaction, the network confirms the creation of your subscription account on-chain.
 
@@ -58,7 +64,7 @@ For this example, create a new subscription on the Goerli testnet.
 
 1. Record your subscription ID, which you need for your consumer contract. You will add the consumer to your subscription later.
 
-You can always find your subscription IDs, balances, and consumers on the [Subscription Manager](https://vrf.chain.link/) page.
+You can always find your subscription IDs, balances, and consumers at [vrf.chain.link](https://vrf.chain.link/).
 
 Now that you have a funded subscription account and your subscription ID, [create and deploy a VRF v2 compatible contract](#create-and-deploy-a-vrf-v2-compatible-contract).
 
@@ -93,9 +99,9 @@ Build and deploy the contract on Goerli.
 
    ![Example showing the contract address listed under the Contracts list in Remix](/images/vrf/getContractAddress.png)
 
-1. In the [Subscription Manager](https://vrf.chain.link/), click the ID of your new subscription under the **My Subscriptions** list. The subscription details page opens.
+1. Open the Subscription Manager at [vrf.chain.link](https://vrf.chain.link/) and click the ID of your new subscription under the **My Subscriptions** list. The subscription details page opens.
 
-1. Under the **Consumers** section of the Subscription Manager, click **Add consumer**.
+1. Under the **Consumers** section, click **Add consumer**.
 
 1. Enter the address of your consumer contract that you just deployed and click **Add consumer**. MetaMask opens and asks you to confirm the transaction.
 
@@ -109,7 +115,7 @@ The deployed contract requests random values from Chainlink VRF, receives those 
 
 1. Click the `requestRandomWords()` function to send the request for random values to Chainlink VRF. MetaMask opens and asks you to confirm the transaction. After you approve the transaction, Chainlink VRF processes your request. Chainlink VRF fulfills the request and returns the random values to your contract in a callback to the `fulfillRandomWords()` function.
 
-   Depending on current testnet conditions, it might take a few minutes for the callback to return the requested random values to your contract. You can see a list of pending requests for your subscription ID in the [Subscription Manager](https://vrf.chain.link/).
+   Depending on current testnet conditions, it might take a few minutes for the callback to return the requested random values to your contract. You can see a list of pending requests for your subscription ID at [vrf.chain.link](https://vrf.chain.link/).
 
 1. After the oracle returns the random values to your contract, the `s_randomWords` variable stores an array with all of the requested random values. Specify the index of the array that you want to display and click `s_randomWords` to print the value. Because this example requests two random values, check the value at index `0` and then check the value at index `1`.
 
@@ -161,7 +167,7 @@ The contract includes the following functions:
 
 After you are done with this contract and the subscription, you can retrieve the remaining testnet LINK to use with other examples.
 
-1. In the [Subscription Manager](https://vrf.chain.link/), click the ID of your new subscription under the **My Subscriptions** list. The subscription details page opens.
+1. Open the Subscription Manager at [vrf.chain.link](https://vrf.chain.link/) and click the ID of your new subscription under the **My Subscriptions** list. The subscription details page opens.
 
 1. Under your subscription details, click **Cancel subscription**. A field opens asking which wallet address you want to send the remaining funds to.
 

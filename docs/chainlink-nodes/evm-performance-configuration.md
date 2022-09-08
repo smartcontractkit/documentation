@@ -202,6 +202,13 @@ RPCGasCap = 0
 RPCTxFeeCap = 0.0
 ```
 
+### Arbitrum differences
+
+Arbitrum Nitro runs a fork of go-ethereum internally, but the original flags are not valid. These modified flags are equivalent:
+
+`--node.rpc.gas-cap 0 --node.rpc.tx-fee-cap 0`
+
+
 ## Adjusting minimum outgoing confirmations for high throughput jobs
 
 `ethtx` tasks have a `minConfirmations` label that can be adjusted. You can get a minor performance boost if you set this label to `0`. Use this if you do not need to wait for confirmations on your `ethtx` tasks. For example, if you don't need the receipt or don’t care about failing the task if the transaction reverts on-chain, you can set `minConfirmations` to `0`.

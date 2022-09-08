@@ -213,6 +213,10 @@ module.exports = {
             url: '/docs/vrf/v2/examples/programmatic-subscription/',
           },
           {
+            title: 'Subscription Manager UI',
+            url: '/docs/vrf/v2/ui/',
+          },
+          {
             title: 'Security Considerations',
             url: '/docs/vrf/v2/security/',
           },
@@ -600,8 +604,16 @@ module.exports = {
                 url: '/docs/jobs/task-types/hexdecode/',
               },
               {
+                title: 'Hex Encode',
+                url: '/docs/jobs/task-types/hexencode/',
+              },
+              {
                 title: 'Base64 Decode',
                 url: '/docs/jobs/task-types/base64decode/',
+              },
+              {
+                title: 'Base64 Encode',
+                url: '/docs/jobs/task-types/base64encode/',
               },
               {
                 title: 'Uppercase',
