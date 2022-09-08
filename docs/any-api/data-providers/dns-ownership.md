@@ -61,9 +61,9 @@ JobID: `6ca2e68622bd421d98c648f056ee7c76`
 
 #### Ethereum Goerli Testnet
 
-Payment Amount: 0.1 LINK  
-LINK Token Address: `{{variables.KOVAN_LINK_TOKEN}}`
-Oracle Address: `0xB9756312523826A566e222a34793E414A81c88E1`  
+Payment Amount: 0.1 LINK
+LINK Token Address: `{{variables.GOERLI_LINK_TOKEN}}`
+Oracle Address: `0xB9756312523826A566e222a34793E414A81c88E1`
 JobID: `d6fad25a95024aef81eb440f0ab0825e`
 
 #### BNB Chain Mainnet
