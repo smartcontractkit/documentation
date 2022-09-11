@@ -32,6 +32,7 @@ Whether your contract requires sports results, the latest weather, or any other 
 > If your smart contracts need access to price feed data, try using [Chainlink Data Feeds](/docs/using-chainlink-reference-contracts/).
 
 **Topics**
+
 - [Requesting off-chain data](#requesting-off-chain-data)
 - [Building external adapters](#building-external-adapters)
 
@@ -39,8 +40,8 @@ Whether your contract requires sports results, the latest weather, or any other 
 
 Outlined below are multiple ways developers can connect smart contracts to off-chain data feeds. Click a request type to learn more about it:
 
-| Request Type                                                         | Description                                                                                                                                                                                                                                                                            |
-| -------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Request Type                                                                                      | Description                                                                                                                                                                                                                                                                            |
+| ------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [HTTP GET Single Word Response](/docs/any-api/get-request/examples/single-word-response/)         | This guide explains how to make an HTTP GET request and parse the _json_ response to retrieve the value of one single attribute.                                                                                                                                                       |
 | [HTTP GET Multi-Variable Responses](/docs/any-api/get-request/examples/multi-variable-responses/) | This guide explains how to make an HTTP GET request and parse the _json_ response to retrieve the values of multiple attributes.                                                                                                                                                       |
 | [HTTP GET Element in Array Response](/docs/any-api/get-request/examples/api-array-response/)      | This guide explains how to make an HTTP GET request that returns a _json_ array and parse it to retrieve the target element's value.                                                                                                                                                   |
