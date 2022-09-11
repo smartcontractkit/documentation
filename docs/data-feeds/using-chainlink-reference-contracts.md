@@ -2,27 +2,30 @@
 layout: nodes.liquid
 section: ethereum
 date: Last Modified
-title: "Chainlink Data Feeds Documentation"
-permalink: "docs/using-chainlink-reference-contracts/"
-whatsnext: {
-  "Get the latest price of a Data Feed":"/docs/get-the-latest-price/",
-  "Learn more about API references for using Data Feeds":"/docs/price-feeds-api-reference/",
-  "Retrieve contract addresses to use Data Feeds":"/docs/reference-contracts/"
-}
+title: 'Chainlink Data Feeds Documentation'
+permalink: 'docs/using-chainlink-reference-contracts/'
+whatsnext:
+  {
+    'Get the latest price of a Data Feed': '/docs/get-the-latest-price/',
+    'Learn more about API references for using Data Feeds': '/docs/price-feeds-api-reference/',
+    'Retrieve contract addresses to use Data Feeds': '/docs/reference-contracts/',
+  }
 metadata:
-  title: "Introduction to Data Feeds"
-  description: "Add data to your smart contracts and applications. Chainlink data feeds include BTC/USD, BTC/ETH, ETH/USD and more!"
+  title: 'Chainlink Data Feeds Documentation'
+  description: 'Add data to your smart contracts and applications. Chainlink data feeds include BTC/USD, BTC/ETH, ETH/USD and more!'
 ---
+
 ![Chainlink Abstract Banner](/files/2306b8b-Decentralized_Oracles_V3.png)
 
-Chainlink Data Feeds are the quickest way to connect your smart contracts to the real-world data such as asset prices. One use for data feeds is to retrieve the latest pricing data of an asset in a single call and use that data either on-chain in a smart contract or off-chain in another application of your choice.
+**Chainlink Data Feeds** are the quickest way to connect your smart contracts to the real-world data such as asset prices. One use for data feeds is to retrieve the latest pricing data of an asset in a single call and use that data either on-chain in a smart contract or off-chain in another application of your choice.
 
 If you already have a project started and would like to integrate Chainlink, you can [add Chainlink to your existing project](../create-a-chainlinked-project/#install-into-existing-projects) by using the [`@chainlink/contracts` NPM package](https://www.npmjs.com/package/@chainlink/contracts).
 
-See the [Data Feeds Contract Addresses](/docs/reference-contracts/) page for a list of networks and proxy addresses.  
+See the [Data Feeds Contract Addresses](/docs/reference-contracts/) page for a list of networks and proxy addresses.
 
 **Topics**
-- [Retrieve the latest asset prices](#retrieve-the-latest-asset-prices) 
+
+- [Retrieve the latest asset prices](#retrieve-the-latest-asset-prices)
 - [Components of a data feed](#components-of-a-data-feed)
 - [Reading proxy and aggregator Configurations](#reading-proxy-and-aggregator-configurations)
 - [Components of an aggregator](#components-of-an-aggregator)
