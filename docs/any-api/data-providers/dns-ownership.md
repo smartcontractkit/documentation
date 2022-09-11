@@ -9,7 +9,7 @@ permalink: 'docs/any-api/data-providers/dns-ownership/'
 ## Overview
 
 This oracle checks Google’s DNS service to determine if a given domain is owned by a given blockchain address. Each address is stored in a _TXT record_.
-This guide explains how to call the _DNS ownership oracle_ and verify that a given address owns a specific domain. For instance, we will confirm that the address _0xf75519f611776c22275474151a04183665b7feDe_ owns _www5.infernos.io_. **Note** that the source of data is [google dns](https://dns.google/resolve?name=www5.infernos.io&type=TXT).
+This guide explains how to call the _DNS ownership oracle_ and verify that a given address owns a specific domain. For instance, we will confirm that the address _0xf75519f611776c22275474151a04183665b7feDe_ owns _www5.infernos.io_. **Note** that the source of data is [Google DNS](https://dns.google/resolve?name=www5.infernos.io&type=TXT).
 
 **Topics**
 
@@ -21,7 +21,7 @@ This guide explains how to call the _DNS ownership oracle_ and verify that a giv
 
 ## Requirements
 
-This guide assumes that you know how to create and deploy smart contracts on the Goerli Testnet using the following tools:
+This guide assumes that you know how to create and deploy smart contracts on the Goerli testnet using the following tools:
 
 - [The Remix IDE](https://remix.ethereum.org/)
 - [MetaMask](https://metamask.io/)
@@ -29,7 +29,7 @@ This guide assumes that you know how to create and deploy smart contracts on the
 
 You should be familiar with the [Chainlink Basic Request Model](/docs/architecture-request-model/). If you are new to developing smart contracts on Ethereum, see the [Getting Started](/docs/conceptual-overview/) guide to learn the basics.
 
-## DNS Ownership Contract
+## DNS ownership contract
 
 This example operates using the following steps:
 
@@ -48,7 +48,7 @@ This example operates using the following steps:
   <a href="/docs/conceptual-overview/#what-is-remix" >What is Remix?</a>
 </div>
 
-## Network Details
+## Network details
 
 The [DNS Ownership Contract example](#dns-ownership-contract) works on the _Goerli Testnet_. Below are the configuration for other chains.
 
@@ -59,21 +59,21 @@ LINK Token Address: `{{variables.MAINNET_LINK_TOKEN}}`
 Oracle Address: `0x240BaE5A27233Fd3aC5440B5a598467725F7D1cd`  
 JobID: `6ca2e68622bd421d98c648f056ee7c76`
 
-#### Ethereum Goerli Testnet
+#### Ethereum Goerli testnet
 
 Payment Amount: 0.1 LINK
 LINK Token Address: `{{variables.GOERLI_LINK_TOKEN}}`
 Oracle Address: `0xB9756312523826A566e222a34793E414A81c88E1`
 JobID: `d6fad25a95024aef81eb440f0ab0825e`
 
-#### BNB Chain Mainnet
+#### BNB Chain mainnet
 
 Payment Amount: 0.1 LINK  
 LINK Token address:`{{variables.BINANCE_MAINNET_LINK_TOKEN}}`
 Oracle Address: `0x63B72AF260E8b40A7b89E238FeB53448A97b03D2`  
 JobID: `fb06afd5a9df4e6cb156f6b797b63a24`
 
-#### Polygon (Matic) Mainnet
+#### Polygon (Matic) mainnet
 
 Payment Amount: 0.1 LINK  
 LINK Token Address: `{{variables.MATIC_MAINNET_LINK_TOKEN}}`

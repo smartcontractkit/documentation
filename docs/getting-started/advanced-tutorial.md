@@ -157,6 +157,8 @@ Chainlink has facilitated the launch of several new oracle data services that al
 
 Join the [operator-requests discord channel](https://discord.gg/eGcxsdZzKR) to directly communicate with community node operators.
 
+A full example on Goerli testnet can be found [here](/docs/any-api/data-providers/dns-ownership/).
+
 ## 5. Further Reading
 
 To learn more about connecting smart contracts to external APIs, read our blog posts:
