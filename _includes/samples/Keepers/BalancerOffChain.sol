@@ -40,7 +40,7 @@ contract BalancerOffChain is KeeperCompatibleInterface {
         }
     }
 
-    /* @dev this method is called by the keepers to check if `performUpkeep` must be done. Note that `checkData` is used to segment the computation to subarrays.
+    /* @dev this method is called by the Chainlink Automation Nodes to check if `performUpkeep` must be done. Note that `checkData` is used to segment the computation to subarrays.
      *
      *  @dev `checkData` is an encoded binary data and which contains the lower bound and upper bound on which to perform the computation
      *
@@ -83,7 +83,7 @@ contract BalancerOffChain is KeeperCompatibleInterface {
         return (upkeepNeeded, performData);
     }
 
-    /* @dev this method is called by the keepers. it increases all elements whose balances are lower than the LIMIT. Note that the elements are bounded by `lowerBound`and `upperBound`
+    /* @dev this method is called by the Automation Nodes. it increases all elements whose balances are lower than the LIMIT. Note that the elements are bounded by `lowerBound`and `upperBound`
      *  (provided by `performData`
      *
      *  @dev `performData` is an encoded binary data which contains the lower bound and upper bound of the subarray on which to perform the computation.
@@ -93,7 +93,7 @@ contract BalancerOffChain is KeeperCompatibleInterface {
      */
     function performUpkeep(bytes calldata performData) external override {
         (uint256[] memory indexes, uint256[] memory increments) = abi.decode(performData, (uint256[], uint256[]));
-        // important to always check that the data provided by the keepers is not corrupted.
+        // important to always check that the data provided by the Automation Node is not corrupted.
         require(indexes.length == increments.length, "indexes and increments arrays' lengths not equal");
 
         uint256 _balance;
@@ -101,7 +101,7 @@ contract BalancerOffChain is KeeperCompatibleInterface {
 
         for (uint256 i = 0; i < indexes.length; i++) {
             _balance = balances[indexes[i]] + increments[i];
-            // important to always check that the data provided by the keepers is not corrupted. Here we check that after rebalancing, the balance of the element is equal to the LIMIT
+            // important to always check that the data provided by the Automation Nodes is not corrupted. Here we check that after rebalancing, the balance of the element is equal to the LIMIT
             require(_balance == LIMIT, 'Provided increment not correct');
             _liquidity -= increments[i];
             balances[indexes[i]] = _balance;

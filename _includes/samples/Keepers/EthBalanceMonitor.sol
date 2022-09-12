@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/security/Pausable.sol";
 
 /**
  * @title The EthBalanceMonitor contract
- * @notice A keeper-compatible contract that monitors and funds eth addresses
+ * @notice A contract compatible with Chainlink Automation Network that monitors and funds eth addresses
  */
 
 /**
@@ -45,7 +45,7 @@ contract EthBalanceMonitor is ConfirmedOwner, Pausable, KeeperCompatibleInterfac
   mapping(address => Target) internal s_targets;
 
   /**
-   * @param keeperRegistryAddress The address of the keeper registry contract
+   * @param keeperRegistryAddress The address of the Chainlink Automation registry contract
    * @param minWaitPeriodSeconds The minimum wait period for addresses between funding
    */
   constructor(address keeperRegistryAddress, uint256 minWaitPeriodSeconds) ConfirmedOwner(msg.sender) {
@@ -151,7 +151,7 @@ contract EthBalanceMonitor is ConfirmedOwner, Pausable, KeeperCompatibleInterfac
   }
 
   /**
-   * @notice Get list of addresses that are underfunded and return keeper-compatible payload
+   * @notice Get list of addresses that are underfunded and return payload compatible with Chainlink Automation Network
    * @return upkeepNeeded signals if upkeep is needed, performData is an abi encoded list of addresses that need funds
    */
   function checkUpkeep(bytes calldata)
@@ -168,7 +168,7 @@ contract EthBalanceMonitor is ConfirmedOwner, Pausable, KeeperCompatibleInterfac
   }
 
   /**
-   * @notice Called by keeper to send funds to underfunded addresses
+   * @notice Called by Chainlink Automation Node to send funds to underfunded addresses
    * @param performData The abi encoded list of addresses to fund
    */
   function performUpkeep(bytes calldata performData) external override onlyKeeperRegistry whenNotPaused {
@@ -195,7 +195,7 @@ contract EthBalanceMonitor is ConfirmedOwner, Pausable, KeeperCompatibleInterfac
   }
 
   /**
-   * @notice Sets the keeper registry address
+   * @notice Sets the Chainlink Automation registry address
    */
   function setKeeperRegistryAddress(address keeperRegistryAddress) public onlyOwner {
     require(keeperRegistryAddress != address(0));
@@ -212,7 +212,7 @@ contract EthBalanceMonitor is ConfirmedOwner, Pausable, KeeperCompatibleInterfac
   }
 
   /**
-   * @notice Gets the keeper registry address
+   * @notice Gets the Chainlink Automation registry address
    */
   function getKeeperRegistryAddress() external view returns (address keeperRegistryAddress) {
     return s_keeperRegistryAddress;

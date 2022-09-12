@@ -47,7 +47,7 @@ Keepers Registry v1.2 launched on Ethereum, Binance Smart Chain, Polygon, Avalan
 
 ### Manually migrating upkeeps from v1.1 to v1.2
 
-If your upkeep ID has 77 digits, it is already migrated to v1.2 and no further action is required. If your upkeep ID has less than 4 digits, your upkeep is on the v1.1 registry. To migrate your upkeep from Keepers v1.1 to Keepers v1.2, you can cancel it in the Keepers App, and register an exact copy of the upkeep in the Keepers App. While you can see upkeeps from both v1.1 and v1.2 in the [Keepers App](https://keepers.chain.link), all new upkeeps in the Keepers App will be automatically created on Keepers v1.2.
+If your upkeep ID has 77 digits, it is already migrated to v1.2 and no further action is required. If your upkeep ID has less than 4 digits, your upkeep is on the v1.1 registry. To migrate your upkeep from Keepers v1.1 to Keepers v1.2, you can cancel it in the Keepers App, and register an exact copy of the upkeep in the Keepers App. While you can see upkeeps from both v1.1 and v1.2 in the [Keepers App](https://automation.chain.link), all new upkeeps in the Keepers App will be automatically created on Keepers v1.2.
 
 ## 2022-07-21 - Underfunded upkeep notifications
 
@@ -55,24 +55,24 @@ You will now receive notifications to the email address you register in your upk
 
 ## 2022-06-29 - Keepers on Fantom
 
-Chainlink Keepers is live on the Fantom Network, [Mainnet](https://keepers.chain.link/fantom) and [Testnet](https://keepers.chain.link/fantom-testnet).
+Chainlink Keepers is live on the Fantom Network, [Mainnet](https://automation.chain.link/fantom) and [Testnet](https://automation.chain.link/fantom-testnet).
 
 ## 2022-06-09 - Keepers on Avalanche
 
-Chainlink Keepers is live on the Avalanche Network, [Mainnet](https://keepers.chain.link/avalanche) and [Testnet](https://keepers.chain.link/fuji).
+Chainlink Keepers is live on the Avalanche Network, [Mainnet](https://automation.chain.link/avalanche) and [Testnet](https://automation.chain.link/fuji).
 
 ## 2022-03-01 - Keepers on Ethereum Rinkeby
 
-Chainlink Keepers is live on [Ethereum Rinkeby](https://keepers.chain.link/rinkeby).
+Chainlink Keepers is live on [Ethereum Rinkeby](https://automation.chain.link/rinkeby).
 
 ## 2021-11-18 - Keepers on Binance Smart Chain and Polygon
 
-Chainlink Keepers is live on the both Binance Smart Chain [Mainnet](https://keepers.chain.link/bsc) and [Testnet](https://keepers.chain.link/chapel), and Polygon [Mainnet](https://keepers.chain.link/polygon) and [Testnet](https://keepers.chain.link/mumbai).
+Chainlink Keepers is live on the both Binance Smart Chain [Mainnet](https://automation.chain.link/bsc) and [Testnet](https://automation.chain.link/chapel), and Polygon [Mainnet](https://automation.chain.link/polygon) and [Testnet](https://automation.chain.link/mumbai).
 
 ## 2021-08-05 - Keepers v1.1 launch on Ethereum
 
-Chainlink Keepers officially launched on [Ethereum Mainnet](https://keepers.chain.link/mainnet) and [Ethereum Kovan](https://keepers.chain.link/kovan).
+Chainlink Keepers officially launched on [Ethereum Mainnet](https://automation.chain.link/mainnet) and [Ethereum Kovan](https://automation.chain.link/kovan).
 
 ## Questions
 
-If you have questions, read the [Keepers Frequently Asked Questions](../faqs/) page. You can also ask questions in the [#keepers channel](https://discord.com/channels/592041321326182401/821350860302581771) in our [Discord server](https://discord.gg/qj9qarT), or [contact us](https://forms.gle/WadxnzzjHPtta5Zd9) for assistance with registration.
+If you have questions, read the [Chainlink Automation Frequently Asked Questions](../faqs/) page. You can also ask questions in the [#keepers channel](https://discord.com/channels/592041321326182401/821350860302581771) in our [Discord server](https://discord.gg/qj9qarT), or [contact us](https://forms.gle/WadxnzzjHPtta5Zd9) for assistance with registration.

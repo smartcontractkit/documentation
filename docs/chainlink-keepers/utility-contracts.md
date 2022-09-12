@@ -11,7 +11,7 @@ whatsnext:
 
 This guide explains the use case for the [`EthBalanceMonitor` contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/upkeeps/EthBalanceMonitor.sol). This Automation contract monitors and funds Ethereum addresses that developers might need to top up frequently based on a configurable threshold. As a result, nodes are funded automatically.
 
-After deploying the contract, developers can go to [keepers.chain.link](https://keepers.chain.link/) to register Upkeep and run the contract. To take full advantage of the Chainlink Automation infrastructure, read all of the documentation to understand the features of Chainlink Automation.
+After deploying the contract, developers can go to [automation.chain.link](https://automation.chain.link/) to register Upkeep and run the contract. To take full advantage of the Chainlink Automation infrastructure, read all of the documentation to understand the features of Chainlink Automation.
 
 To find other example contracts, see the [Example Automation Contracts](/docs/chainlink-keepers/util-overview/) page.
 
@@ -83,7 +83,7 @@ Only the owner can `setWatchList`. Each of the parameters should be set with dis
 | ------------------------------- | -------------------------------------------------------------------- |
 | `keeperRegistryAddress`         | Address that requires updating in `KeeperRegistry`                   |
 
-Only the `keeperRegistryAddress` can `performUpkeep`, which is a *global setting*. `KeeperRegistry` addresses can be found on the [Chainlink Automations app](https://keepers.chain.link/). However, only the owner can set a new `KeeperRegistry` after deployment.
+Only the `keeperRegistryAddress` can `performUpkeep`, which is a *global setting*. `KeeperRegistry` addresses can be found on the [Chainlink Automations app](https://automation.chain.link/). However, only the owner can set a new `KeeperRegistry` after deployment.
 
 ### `setMinWaitPeriodSeconds` Function
 

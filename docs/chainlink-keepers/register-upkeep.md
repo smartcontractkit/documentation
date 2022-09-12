@@ -20,7 +20,7 @@ This guide explains how to register a Custom logic Upkeep that uses an [Automati
 ## Register an Upkeep using the Chainlink Automation App
 
 <div class="remix-callout">
-    <a href="https://keepers.chain.link" >Open the Chainlink Automation App</a>
+    <a href="https://automation.chain.link" >Open the Chainlink Automation App</a>
 </div>
 
 1. **Connect your wallet** using the button in the top right corner and choose a network. For a list of supported networks, see the [Supported Blockchain Networks](../supported-networks) section. The Chainlink Automation App also lists the currently supported networks.

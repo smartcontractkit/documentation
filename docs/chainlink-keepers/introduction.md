@@ -41,10 +41,10 @@ Before you begin, deploy the contract that you want to automate. You will also n
 1. Open the Chainlink Automation app.
 
     <div class="remix-callout">
-        <a href="https://keepers.chain.link" >Open the Chainlink Automation App</a>
+        <a href="https://automation.chain.link" >Open the Chainlink Automation App</a>
     </div>
 
-1. [Register](../job-scheduler/) a new Upkeep in the [Chainlink Automation App](https://keepers.chain.link) and select **Time-based** trigger. Provide the address of your deployed contract, provide the ABI if it is not verified, and choose the function that you want to automate along with the relevant function inputs, if any.
+1. [Register](../job-scheduler/) a new Upkeep in the [Chainlink Automation App](https://automation.chain.link) and select **Time-based** trigger. Provide the address of your deployed contract, provide the ABI if it is not verified, and choose the function that you want to automate along with the relevant function inputs, if any.
 
 1. Specify the time schedule using [CRON](../job-scheduler/#specifying-the-time-schedule).
 
@@ -63,10 +63,10 @@ To use a custom logic trigger, you will need to make your contract [Automation-c
 1. Open the Chainlink Automation app.
 
     <div class="remix-callout">
-        <a href="https://keepers.chain.link" >Open the Chainlink Automation App</a>
+        <a href="https://automation.chain.link" >Open the Chainlink Automation App</a>
     </div>
 
-1. [Register](../register-upkeep/) a new Upkeep in the [Chainlink Automation App](https://keepers.chain.link) and select **Custom logic** trigger. Provide the address of your [Automation-compatible](../compatible-contracts/) contract and complete the remaining details. Your upkeep name will be publicly visible, but your email and project name will **not** be publicly visible. Ensure you specify the appropriate gas limit for your function to execute on chain.
+1. [Register](../register-upkeep/) a new Upkeep in the [Chainlink Automation App](https://automation.chain.link) and select **Custom logic** trigger. Provide the address of your [Automation-compatible](../compatible-contracts/) contract and complete the remaining details. Your upkeep name will be publicly visible, but your email and project name will **not** be publicly visible. Ensure you specify the appropriate gas limit for your function to execute on chain.
 
 1. Fund your Upkeep with ERC-677 LINK. See the [LINK token contracts](../../link-token-contracts/) page to determine where to acquire ERC-677 LINK.
 

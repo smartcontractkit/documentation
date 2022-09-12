@@ -39,7 +39,7 @@ contract BalancerOnChain is KeeperCompatibleInterface {
         }
     }
 
-    /// @dev this method is called by the keepers to check if `performUpkeep` should be performed
+    /// @dev this method is called by the Automation Nodes to check if `performUpkeep` should be performed
     function checkUpkeep(
         bytes calldata /* checkData */
     ) external view override returns (bool upkeepNeeded, bytes memory performData) {

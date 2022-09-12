@@ -28,14 +28,14 @@ You must monitor the balance of your Upkeep. If the Upkeep LINK balance drops be
 
 Follow these steps to fund your Upkeep:
 
-1. **Click `View Upkeep`** or go to the [Chainlink Automation App](https://keepers.chain.link) and click on your recently registered Upkeep under My Upkeeps.
+1. **Click `View Upkeep`** or go to the [Chainlink Automation App](https://automation.chain.link) and click on your recently registered Upkeep under My Upkeeps.
 
 1. **Click the `Add funds` button**
 
 1. **Approve the LINK spend allowance**
    ![Approve LINK Spend Allowance](/images/contract-devs/keeper/keeper-approve-allowance.png)
 
-1. **Confirm the LINK transfer** by sending funds to the Chainlink Keeper Network Registry
+1. **Confirm the LINK transfer** by sending funds to the Chainlink Automation Network Registry
    ![Confirm LINK Transfer](/images/contract-devs/keeper/keeper-confirm-transfer.png)
 
 1. **Receive a success message** and verify that the funds were added to the Upkeep

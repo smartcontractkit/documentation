@@ -11,7 +11,7 @@ For help with your specific use case, [contact us](https://chainlinkcommunity.ty
 
 ## I registered my upkeep successfully, but I can’t see it. How can I find my upkeeps?
 
-Open the [Chainlink Automation app](https://keepers.chain.link/) and ensure your wallet is connected. Also ensure that the wallet is set to use the network where you registered the Upkeep. Your Upkeep should be under the My Upkeeps tab.
+Open the [Chainlink Automation app](https://automation.chain.link/) and ensure your wallet is connected. Also ensure that the wallet is set to use the network where you registered the Upkeep. Your Upkeep should be under the My Upkeeps tab.
 
 ## Is the Chainlink Automation Network available on platforms other than Ethereum?
 
