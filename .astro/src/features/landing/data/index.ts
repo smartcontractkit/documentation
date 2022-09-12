@@ -60,13 +60,13 @@ export const evmProducts = [
     title: "External API Calls",
     description:
       "Request and receive data from any API using the Chainlink contract library",
-    learnMorelink: "",
+    learnMorelink: "/any-api/introduction/",
     image: externalApiLogo,
     links: [
-      ["Introduction to Using Any API", "#"],
-      ["Make a GET Request", "#"],
-      ["Find Existing Jobs", "#"],
-      ["API Reference", "#"],
+      ["Introduction to Using Any API", "/any-api/introduction/"],
+      ["Make a GET Request", "/any-api/get-request/introduction/"],
+      ["Find Existing Jobs", "/any-api/find-oracle/"],
+      ["API Reference", "/any-api/api-reference/"],
     ],
     chains: [...baseChains, ...extraChains],
   },

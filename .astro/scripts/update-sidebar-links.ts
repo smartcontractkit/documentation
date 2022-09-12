@@ -42,7 +42,10 @@ const updateSidebar = function () {
 const findRedirect = function (urlToCompare: string) {
   const result = redirects.find((redirect) => {
     return (
-      removeSlashes(redirect.source).indexOf(removeSlashes(urlToCompare)) > -1
+      removeSlashes(redirect.source).indexOf(removeSlashes(urlToCompare)) >
+        -1 &&
+      removeSlashes(redirect.source).length ===
+        removeSlashes(urlToCompare).length
     )
   })
   if (!!result) {

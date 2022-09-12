@@ -14,7 +14,12 @@ export async function getStaticPaths(): Promise<GetStaticPathsResult> {
   return redirects.redirects.map((entry) => {
     return {
       params: { redirect: sanitizeSource(entry.source) },
-      props: { to: entry.destination },
+      props: {
+        to:
+          entry.destination.charAt(0) === "/"
+            ? entry.destination
+            : "/" + entry.destination,
+      },
     }
   })
 }
