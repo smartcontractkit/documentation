@@ -56,7 +56,7 @@ The [DNS Ownership Contract example](#dns-ownership-contract) works on the _Goer
 
 Payment Amount: 2 LINK  
 LINK Token Address: `{{variables.MAINNET_LINK_TOKEN}}`
-Oracle Address: `0x240BaE5A27233Fd3aC5440B5a598467725F7D1cd`  
+Oracle Address: `0x1152c76A0B3acC9856B1d8ee9EbDf2A2d0a01cC3`  
 JobID: `6ca2e68622bd421d98c648f056ee7c76`
 
 #### Ethereum Goerli testnet
@@ -64,20 +64,20 @@ JobID: `6ca2e68622bd421d98c648f056ee7c76`
 Payment Amount: 0.1 LINK
 LINK Token Address: `{{variables.GOERLI_LINK_TOKEN}}`
 Oracle Address: `0xB9756312523826A566e222a34793E414A81c88E1`
-JobID: `d6fad25a95024aef81eb440f0ab0825e`
+JobID: `791bd73c8a1349859f09b1cb87304f71`
 
 #### BNB Chain mainnet
 
 Payment Amount: 0.1 LINK  
 LINK Token address:`{{variables.BINANCE_MAINNET_LINK_TOKEN}}`
-Oracle Address: `0x63B72AF260E8b40A7b89E238FeB53448A97b03D2`  
+Oracle Address: `0x63f9459471804835E35EFeB296314153063c25E3`  
 JobID: `fb06afd5a9df4e6cb156f6b797b63a24`
 
 #### Polygon (Matic) mainnet
 
 Payment Amount: 0.1 LINK  
 LINK Token Address: `{{variables.MATIC_MAINNET_LINK_TOKEN}}`
-Oracle Address: `0x63B72AF260E8b40A7b89E238FeB53448A97b03D2`  
+Oracle Address: `0x2984beb1d35d11B56973148A9022210Aecc26CE5`  
 JobID: `f3daed2990114e98906aaf21c4172da3`
 
 ## Job

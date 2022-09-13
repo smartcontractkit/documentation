@@ -27,16 +27,16 @@ contract DnsOwnershipChainlink is ChainlinkClient, ConfirmedOwner {
      * Oracle:
      *      Name:           LinkPool
      *      Listing URL:    https://market.link/nodes/323602b9-3831-4f8d-a66b-3fb7531649eb?network=42
-     *      Address:        0xfF07C97631Ff3bAb5e5e5660Cdf47AdEd8D4d4Fd
+     *      Address:        0xB9756312523826A566e222a34793E414A81c88E1
      * Job:
      *      Name:           DNS Record Check
-     *      ID:             d6fad25a95024aef81eb440f0ab0825e
+     *      ID:             791bd73c8a1349859f09b1cb87304f71
      *      Fee:            0.1 LINK
      */
     constructor() ConfirmedOwner(msg.sender) {
         setChainlinkToken(0x326C977E6efc84E512bB9C30f76E30c160eD06FB);
         setChainlinkOracle(0xB9756312523826A566e222a34793E414A81c88E1);
-        jobId = 'd6fad25a95024aef81eb440f0ab0825e';
+        jobId = '791bd73c8a1349859f09b1cb87304f71';
         oraclePayment = (1 * LINK_DIVISIBILITY) / 10; // 0,1 * 10**18 (Varies by network and job)
     }
 
