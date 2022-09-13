@@ -83,7 +83,7 @@ Only the owner can `setWatchList`. Each of the parameters should be set with dis
 | ------------------------------- | -------------------------------------------------------------------- |
 | `keeperRegistryAddress`         | Address that requires updating in `KeeperRegistry`                   |
 
-Only the `keeperRegistryAddress` can `performUpkeep`, which is a *global setting*. `KeeperRegistry` addresses can be found on the [Chainlink Automations app](https://automation.chain.link/). However, only the owner can set a new `KeeperRegistry` after deployment.
+Only the `keeperRegistryAddress` can `performUpkeep`, which is a *global setting*. `KeeperRegistry` addresses can be found on the [Chainlink Automation app](https://automation.chain.link/). However, only the owner can set a new `KeeperRegistry` after deployment.
 
 ### `setMinWaitPeriodSeconds` Function
 
