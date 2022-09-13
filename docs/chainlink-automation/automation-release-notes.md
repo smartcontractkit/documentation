@@ -5,7 +5,7 @@ date: Last Modified
 title: 'Chainlink Automation Release Notes'
 whatsnext:
   {
-    'Register a time-based upkeep': '/docs/chainlink-keepers/job-scheduler/','Register a Custom Logic Upkeep': '/docs/chainlink-keepers/register-upkeep/',
+    'Register a time-based upkeep': '/docs/chainlink-automation/job-scheduler/','Register a Custom Logic Upkeep': '/docs/chainlink-automation/register-upkeep/',
 
   }
 ---
@@ -33,7 +33,7 @@ Keepers Registry v1.2 launched on Ethereum, Binance Smart Chain, Polygon, Avalan
 
 - **Automatic upkeep registration approval**: All upkeeps on supported mainnets are now automatically approved.
 
-- **Programmatic control**: With automatic approval, you can now dynamically create, manage, and fund upkeeps from within your dApps and even have an upkeep fund itself. Learn more [here](/docs/chainlink-keepers/register-upkeep/#register-an-upkeep-using-your-own-deployed-contract).
+- **Programmatic control**: With automatic approval, you can now dynamically create, manage, and fund upkeeps from within your dApps and even have an upkeep fund itself. Learn more [here](/docs/chainlink-automation/register-upkeep/#register-an-upkeep-using-your-own-deployed-contract).
 
 - **Advanced turn-taking algorithm**: Our turn taking algorithm now supports upkeeps that require high-frequency execution.
 

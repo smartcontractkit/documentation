@@ -5,7 +5,7 @@ date: Last Modified
 title: 'EthBalanceMonitor Contract'
 whatsnext:
   {
-    'FAQs': '/docs/chainlink-keepers/faqs/',
+    'FAQs': '/docs/chainlink-automation/faqs/',
   }
 ---
 
@@ -13,7 +13,7 @@ This guide explains the use case for the [`EthBalanceMonitor` contract](https://
 
 After deploying the contract, developers can go to [automation.chain.link](https://automation.chain.link/) to register Upkeep and run the contract. To take full advantage of the Chainlink Automation infrastructure, read all of the documentation to understand the features of Chainlink Automation.
 
-To find other example contracts, see the [Example Automation Contracts](/docs/chainlink-keepers/util-overview/) page.
+To find other example contracts, see the [Example Automation Contracts](/docs/chainlink-automation/util-overview/) page.
 
 **Topics**
 

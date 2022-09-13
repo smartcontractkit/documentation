@@ -111,7 +111,7 @@ permalink: /ethereum/
         <p>
           Chainlink Automation provides smart contract developers, decentralized applications (dApps), and decentralized autonomous organizations (DAOs) with a highly reliable, decentralized, and cost-efficient method of automating smart contract functions and regular contract maintenance.
         </p>
-        <a href="/docs/chainlink-keepers/introduction/" class="cl-button--ghost">
+        <a href="/docs/chainlink-automation/introduction/" class="cl-button--ghost">
           Learn More
         </a>
       </div>

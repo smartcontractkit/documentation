@@ -19,7 +19,7 @@ Chainlink Automation is available on the networks listed in the [Supported Block
 
 ## How much does it cost to use Chainlink Automation?
 
-See the [Automation Economics](../keeper-economics) page to learn more about the cost of using Chainlink Automation.
+See the [Automation Economics](../automation-economics) page to learn more about the cost of using Chainlink Automation.
 
 ## How do I determine the Gas Limit for my Upkeep?
 
@@ -28,11 +28,11 @@ The **Gas Limit** specified during Upkeep Registration is the maximum amount of 
 
 ## What is the maximum Gas that my `checkUpkeep` can use?
 
-`checkUpkeep` is subject to the `checkGasLimit` in the [configuration of the registry](/docs/chainlink-keepers/supported-networks/#configurations).
+`checkUpkeep` is subject to the `checkGasLimit` in the [configuration of the registry](/docs/chainlink-automation/supported-networks/#configurations).
 
 ## What is the maximum Gas that my `performUpkeep` can use?
 
-`performUpkeep` is subject to the `callGasLimit` in the [configuration of the registry](/docs/chainlink-keepers/supported-networks/#configurations).
+`performUpkeep` is subject to the `callGasLimit` in the [configuration of the registry](/docs/chainlink-automation/supported-networks/#configurations).
 
 
 ## How often will my Upkeep be checked off-chain to see if it should be executed on-chain?
@@ -41,7 +41,7 @@ See [How it works](../overview/#how-it-works).
 
 ## How long will it take for my `performUpkeep` to be executed once it has been broadcasted on-chain?
 
-This depends on the network congestion, the amount of gas used by the `performUpkeep`, and the gas price specified when the transaction is broadcasted. See the [Price Selection and Gas Bumping](../keeper-economics/#price-selection-and-gas-bumping) documentation to learn about optimizing the chances of executing your `performUpkeep` function.
+This depends on the network congestion, the amount of gas used by the `performUpkeep`, and the gas price specified when the transaction is broadcasted. See the [Price Selection and Gas Bumping](../automation-economics/#price-selection-and-gas-bumping) documentation to learn about optimizing the chances of executing your `performUpkeep` function.
 
 ## Which contract will call my `performUpkeep` function on-chain?
 
@@ -57,7 +57,7 @@ Our preferred and recommended route before locking access to `performUpkeep`is [
 
 ## What gas price does Automation Node use to trigger the function?
 
-See the [Price Selection and Gas Bumping](../keeper-economics/#price-selection-and-gas-bumping) section to learn about the gas price used to trigger the function.
+See the [Price Selection and Gas Bumping](../automation-economics/#price-selection-and-gas-bumping) section to learn about the gas price used to trigger the function.
 
 ## How do you prevent Automation Nodes from racing against each other and escalating execution costs?
 
@@ -65,7 +65,7 @@ See [How it works](../overview/#how-it-works).
 
 ## How is the Upkeep minimum balance determined?
 
-See [Minimum balance](../keeper-economics/#minimum-balance).
+See [Minimum balance](../automation-economics/#minimum-balance).
 
 ## How do I fund my Upkeep?
 

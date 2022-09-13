@@ -5,7 +5,7 @@ date: Last Modified
 title: 'Register a Custom Logic Upkeep'
 whatsnext:
   {
-    'Create an Automation-compatible contract for custom logic Upkeep': '/docs/chainlink-keepers/compatible-contracts/',
+    'Create an Automation-compatible contract for custom logic Upkeep': '/docs/chainlink-automation/compatible-contracts/',
   }
 ---
 
@@ -36,18 +36,18 @@ This guide explains how to register a Custom logic Upkeep that uses an [Automati
 1. **Complete the required details:**
 
     - **Upkeep name**: This will be publicly visible in the Chainlink Automation app.
-    - **Gas limit**: This is the maximum amount of gas that your transaction requires to execute on chain. This limit cannot exceed the `performGasLimit` value configured on the [registry](/docs/chainlink-keepers/supported-networks/#configurations). Before the network executes your transaction on chain, it simulates the transaction. If the gas required to execute your transaction exceeds the gas limit that you specified, your transaction will not be confirmed. Developers also have the ability to update `performGasLimit` for an upkeep. Consider running your function on a testnet to see how much gas it uses before you select a gas limit. This can be changed afterwards.
+    - **Gas limit**: This is the maximum amount of gas that your transaction requires to execute on chain. This limit cannot exceed the `performGasLimit` value configured on the [registry](/docs/chainlink-automations/supported-networks/#configurations). Before the network executes your transaction on chain, it simulates the transaction. If the gas required to execute your transaction exceeds the gas limit that you specified, your transaction will not be confirmed. Developers also have the ability to update `performGasLimit` for an upkeep. Consider running your function on a testnet to see how much gas it uses before you select a gas limit. This can be changed afterwards.
     - **Starting balance (LINK)**: Specify a LINK starting balance to fund your upkeep. See the [LINK Token Contracts](/docs/link-token-contracts/) page to find the correct contract address and access faucets for testnet LINK. This field is required. You must have LINK before you can use the Chainlink Automation service.
     - **Check data**: This field is provided as an input for when your `checkUpkeep` function is simulated. Either leave this field blank or specify a hexadecimal value starting with `0x`. To learn how to make flexible upkeeps using `checkData`, see the [Flexible Upkeeps](../flexible-upkeeps) guide.
     - **Your email address**: This email address will be encrypted and is used to send you an email when your upkeep is underfunded.
 
     > 🚧 Funding Upkeep
     >
-    > You should fund your contract with more LINK that you anticipate you will need. The network will not check or perform your Upkeep if your balance is too low based on current exchange rates. View the [Automation economics](../keeper-economics) page to learn more about the cost of using Chainlink Automation.
+    > You should fund your contract with more LINK that you anticipate you will need. The network will not check or perform your Upkeep if your balance is too low based on current exchange rates. View the [Automation economics](../automation-economics) page to learn more about the cost of using Chainlink Automation.
 
     > 🚧 ERC677 Link
     >
-    > Fund your Upkeep with more LINK than you anticipate you will need. The network will not check or perform your upkeep if your balance is too low based on current exchange rates. View the [Automation Economics](../keeper-economics) page to learn more about the cost of using Chainlink Automation.
+    > Fund your Upkeep with more LINK than you anticipate you will need. The network will not check or perform your upkeep if your balance is too low based on current exchange rates. View the [Automation Economics](../automation-economics) page to learn more about the cost of using Chainlink Automation.
 
     > 🚧 Testing and best practices
     >

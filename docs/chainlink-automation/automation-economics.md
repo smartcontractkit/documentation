@@ -5,7 +5,7 @@ date: Last Modified
 title: 'Chainlink Automation Economics'
 whatsnext:
   {
-    'FAQs': '/docs/chainlink-keepers/faqs/',
+    'FAQs': '/docs/chainlink-automation/faqs/',
   }
 ---
 

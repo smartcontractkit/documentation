@@ -5,8 +5,8 @@ date: Last Modified
 title: 'Creating Automation-compatible contracts'
 whatsnext:
   {
-    'Build flexible contracts': '/docs/chainlink-keepers/flexible-upkeeps/',
-    'Manage your Upkeeps': '/docs/chainlink-keepers/manage-upkeeps/',
+    'Build flexible contracts': '/docs/chainlink-automation/flexible-upkeeps/',
+    'Manage your Upkeeps': '/docs/chainlink-automation/manage-upkeeps/',
   }
 ---
 
@@ -73,7 +73,7 @@ This function contains the logic that runs off-chain during every block as an `e
 
 > 📘 Gas limits for `checkUpkeep`
 >
-> The `checkUpkeep` function is subject to the `checkGasLimit` in the [registry configuration](/docs/chainlink-keepers/supported-networks/#configurations).
+> The `checkUpkeep` function is subject to the `checkGasLimit` in the [registry configuration](/docs/chainlink-automation/supported-networks/#configurations).
 
 Because `checkUpkeep` is only off-chain in simulation it is best to treat this as a `view` function and not modify any state. This might not always be possible if you want to use more advanced Solidity features like `DelegateCall`[(link)](https://docs.soliditylang.org/en/latest/introduction-to-smart-contracts.html#delegatecall-callcode-and-libraries). It is a best practice to import the `AutomationCompatible.sol`[(link)](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/KeeperCompatible.sol) contract and use the `cannotExecute` modifier to ensure that the method can be used only for simulation purposes.
 
@@ -131,7 +131,7 @@ When `checkUpkeep` returns `upkeepNeeded == true`, the Automation node broadcast
 
 > 📘 Gas limits for `performUpkeep`
 >
-> During registration you have to specify the maximum gas limit that we should allow your contract to use. We simulate `performUpkeep` during `checkUpkeep` and if the gas exceeds this limit the function will not execute on-chain. One method to determine your upkeep's gas limit is to simulate the `performUpkeep` function and add enough overhead to take into account increases that might happen due to changes in `performData` or on-chain data. The gas limit you specify cannot exceed the `callGasLimit` in the [configuration of the registry](/docs/chainlink-keepers/supported-networks/#configurations).
+> During registration you have to specify the maximum gas limit that we should allow your contract to use. We simulate `performUpkeep` during `checkUpkeep` and if the gas exceeds this limit the function will not execute on-chain. One method to determine your upkeep's gas limit is to simulate the `performUpkeep` function and add enough overhead to take into account increases that might happen due to changes in `performData` or on-chain data. The gas limit you specify cannot exceed the `callGasLimit` in the [configuration of the registry](/docs/chainlink-automation/supported-networks/#configurations).
 
 Ensure that your `performUpkeep` is _idempotent_. Your `performUpkeep` function should change state such that `checkUpkeep` will not return `true` for the same subset of work once said work is complete. Otherwise the Upkeep will remain eligible and result in multiple performances by the Chainlink Automation Network on the exactly same subset of work. As a best practice, always [revalidate](#revalidate-performupkeep) conditions for your upkeep at the start of your `performUpkeep` function.
 

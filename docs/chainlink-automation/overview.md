@@ -5,7 +5,7 @@ date: Last Modified
 title: 'Chainlink Automation Architecture'
 whatsnext:
   {
-    'FAQs': '/docs/chainlink-keepers/faqs/',
+    'FAQs': '/docs/chainlink-automation/faqs/',
   }
 ---
 
@@ -28,7 +28,7 @@ The following diagram describes the architecture of the Chainlink Automation Net
 Automation Nodes use these contracts. You can find them in the [Chainlink repository](https://github.com/smartcontractkit/chainlink/tree/develop/contracts/src/v0.8). For details about how to use them, see the [Automation-compatible Contracts](../compatible-contracts/) page.
 
 + `AutomationCompatible.sol`[(link)](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/KeeperCompatible.sol): Imports the following contracts:
-  + `AutomationBase.sol`[(link)](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/KeeperBase.sol): Enables the use of the `cannotExecute` modifier. Import this contract if you need for this modifier. See the [`checkUpkeep` function](/docs/chainlink-keepers/compatible-contracts#checkupkeep-function) for details.
+  + `AutomationBase.sol`[(link)](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/KeeperBase.sol): Enables the use of the `cannotExecute` modifier. Import this contract if you need for this modifier. See the [`checkUpkeep` function](/docs/chainlink-automation/compatible-contracts#checkupkeep-function) for details.
   + `AutomationCompatibleInterface.sol`[(link)](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/interfaces/KeeperCompatibleInterface.sol): The interface to be implemented in order to make your contract Automation-compatible. Import this contract for type safety.
 + `KeeperRegistry.sol`[(link)](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/KeeperRegistry.sol): The registry contract that tracks all registered Upkeeps and the Automation Nodes that can perform them.
 + `KeeperRegistrar.sol`[(link)](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/KeeperRegistrar.sol): The Registrar contract coverns the registration of new Upkeeps on the associated `KeeperRegistry` contract. Users who want to register Upkeeps by directly calling the deployed contract have to call the Transfer-and-Call function on the respective ERC-677 LINK contract configured on the Registrar and ensure they pass the correct encoded function call and inputs. 
@@ -49,4 +49,4 @@ Internally, Chainlink Automation also uses its own monitoring and alerting mecha
 
 ## Supported Networks and Cost
 
-For a list of blockchains that is supported by Chainlink Automation, please review the [supported networks page](../supported-networks). To learn more about the cost of using Chainlink Automation, please review the [Automation economics](../keeper-economics) page.
+For a list of blockchains that is supported by Chainlink Automation, please review the [supported networks page](../supported-networks). To learn more about the cost of using Chainlink Automation, please review the [Automation economics](../automation-economics) page.

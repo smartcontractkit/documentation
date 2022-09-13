@@ -52,7 +52,7 @@ module.exports = {
           },
           {
             title: 'Chainlink Automation',
-            url: '/docs/chainlink-keepers/introduction/',
+            url: '/docs/chainlink-automation/introduction/',
           },
           {
             title: 'Connect to Public API Data',
@@ -286,58 +286,58 @@ module.exports = {
         contents: [
           {
             title: 'Introduction to Chainlink Automation',
-            url: '/docs/chainlink-keepers/introduction/',
+            url: '/docs/chainlink-automation/introduction/',
           },
           {
             title: 'Time-based Automation',
-            url: '/docs/chainlink-keepers/job-scheduler/',
+            url: '/docs/chainlink-automation/job-scheduler/',
           },
           {
             title: 'Custom Logic Automation',
-            url: '/docs/chainlink-keepers/register-upkeep/',
+            url: '/docs/chainlink-automation/register-upkeep/',
           },
           {
             title: 'Create Automation-compatible Contracts',
-            url: '/docs/chainlink-keepers/compatible-contracts/',
+            url: '/docs/chainlink-automation/compatible-contracts/',
           },
 
           {
             title: 'Manage your Upkeeps',
-            url: '/docs/chainlink-keepers/manage-upkeeps/',
+            url: '/docs/chainlink-automation/manage-upkeeps/',
           },
           {
             title: 'Creating Flexible Upkeeps',
-            url: '/docs/chainlink-keepers/flexible-upkeeps/',
+            url: '/docs/chainlink-automation/flexible-upkeeps/',
           },
           {
             title: 'Example Contracts',
-            url: '/docs/chainlink-keepers/util-overview/',
+            url: '/docs/chainlink-automation/util-overview/',
             children: [
               {
                 title: 'EthBalanceMonitor',
-                url: '/docs/chainlink-keepers/utility-contracts/',
+                url: '/docs/chainlink-automation/utility-contracts/',
               },
             ],
           },
           {
             title: 'Automation Architecture',
-            url: '/docs/chainlink-keepers/overview/',
+            url: '/docs/chainlink-automation/overview/',
           },
           {
             title: 'Supported Networks',
-            url: '/docs/chainlink-keepers/supported-networks/',
+            url: '/docs/chainlink-automation/supported-networks/',
           },
           {
             title: 'Automation Pricing',
-            url: '/docs/chainlink-keepers/keeper-economics/',
+            url: '/docs/chainlink-automation/automation-economics/',
           },
           {
             title: 'Automation Release Notes',
-            url: '/docs/chainlink-keepers/keepers-release-notes/',
+            url: '/docs/chainlink-automation/automation-release-notes/',
           },
           {
             title: 'FAQs',
-            url: '/docs/chainlink-keepers/faqs/',
+            url: '/docs/chainlink-automation/faqs/',
           },
         ],
       },

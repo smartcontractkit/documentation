@@ -3,7 +3,7 @@ layout: nodes.liquid
 section: ethereum
 date: Last Modified
 title: 'Making flexible, secure, and low-cost contracts'
-whatsnext: { 'Example Contracts': '/docs/chainlink-keepers/util-overview/', 'FAQs': '/docs/chainlink-keepers/faqs/' }
+whatsnext: { 'Example Contracts': '/docs/chainlink-automation/util-overview/', 'FAQs': '/docs/chainlink-automation/faqs/' }
 ---
 
 In this guide, you will learn how the flexibility of [Chainlink Automation](https://chain.link/keepers) enables important design patterns that reduce gas fees, enhance the resilience of dApps, and improve end-user experience. Smart contracts themselves cannot self-trigger their functions at arbitrary times or under arbitrary conditions. Transactions can only be initiated by another account.
@@ -22,8 +22,8 @@ Start by integrating an example contract to Chainlink Automation that has not ye
 This guide assumes you have a basic understanding of [Chainlink Automation](https://chain.link/keepers). If you are new to Keepers, complete the following guides first:
 
 - Know how to [deploy solidity contracts using Remix and Metamask](/docs/deploy-your-first-contract/)
-- Learn how to make [Automation-Compatible Contracts](/docs/chainlink-keepers/compatible-contracts/)
-- [Register UpKeep for a Contract](/docs/chainlink-keepers/register-upkeep/)
+- Learn how to make [Automation-Compatible Contracts](/docs/chainlink-automation/compatible-contracts/)
+- [Register UpKeep for a Contract](/docs/chainlink-automation/register-upkeep/)
 
 Chainlink Automation is supported on several [networks](../supported-networks).
 
@@ -34,7 +34,7 @@ Chainlink Automation is supported on several [networks](../supported-networks).
 
 ## Problem: On-chain computation leads to high gas fees
 
-In the guide for [Making Automation-compatible Contracts](/docs/chainlink-keepers/compatible-contracts/), you deployed a basic [counter contract](/docs/chainlink-keepers/compatible-contracts/#example-contract) and verified that the counter increments every 30 seconds. However, more complex use cases can require looping over arrays or performing expensive computation. This leads to expensive gas fees and can increase the premium that end-users have to pay to use your dApp. To illustrate this, deploy an example contract that maintains internal balances.
+In the guide for [Making Automation-compatible Contracts](/docs/chainlink-automation/compatible-contracts/), you deployed a basic [counter contract](/docs/chainlink-automation/compatible-contracts/#example-contract) and verified that the counter increments every 30 seconds. However, more complex use cases can require looping over arrays or performing expensive computation. This leads to expensive gas fees and can increase the premium that end-users have to pay to use your dApp. To illustrate this, deploy an example contract that maintains internal balances.
 
 The contract has the following components:
 
@@ -63,7 +63,7 @@ Test this example using the following steps:
 
    You can also perform this step after registering the upkeep if you need to.
 
-1. Register the upkeep for your contract as explained [here](/docs/chainlink-keepers/register-upkeep/). Because this example has high gas requirements, specify the maximum allowed gas limit of `2,500,000`.
+1. Register the upkeep for your contract as explained [here](/docs/chainlink-automation/register-upkeep/). Because this example has high gas requirements, specify the maximum allowed gas limit of `2,500,000`.
 
 1. After the registration is confirmed, Automation Nodes perform the upkeep.
 
@@ -84,8 +84,8 @@ To reduce these gas fees and avoid running out of gas, you can make some simple 
 
 Modify the contract and move the computation to the `checkUpkeep()` function. This computation _doesn’t consume any gas_ and supports multiple upkeeps for the same contract to do the work in parallel. The main difference between this new contract and the previous contract are:
 
-- The `checkUpkeep()` function receives [`checkData`](/docs/chainlink-keepers/compatible-contracts/#checkdata), which passes arbitrary bytes to the function. Pass a `lowerBound` and an `upperBound` to scope the work to a sub-array of `balances`. This creates several upkeeps with different values of `checkData`. The function loops over the sub-array and looks for the indexes of the elements that require re-balancing and calculates the required `increments`. Then, it returns `upkeepNeeded == true` and `performData`, which is calculated by encoding `indexes` and `increments`. Note that `checkUpkeep()` is a view function, so computation does not consume any gas.
-- The `performUpkeep()` function takes [performData](/docs/chainlink-keepers/compatible-contracts/#performdata-1) as a parameter and decodes it to fetch the `indexes` and the `increments`.
+- The `checkUpkeep()` function receives [`checkData`](/docs/chainlink-automation/compatible-contracts/#checkdata), which passes arbitrary bytes to the function. Pass a `lowerBound` and an `upperBound` to scope the work to a sub-array of `balances`. This creates several upkeeps with different values of `checkData`. The function loops over the sub-array and looks for the indexes of the elements that require re-balancing and calculates the required `increments`. Then, it returns `upkeepNeeded == true` and `performData`, which is calculated by encoding `indexes` and `increments`. Note that `checkUpkeep()` is a view function, so computation does not consume any gas.
+- The `performUpkeep()` function takes [performData](/docs/chainlink-automation/compatible-contracts/#performdata-1) as a parameter and decodes it to fetch the `indexes` and the `increments`.
 
 > 🚧 **Note on `performData`**
 >
@@ -107,7 +107,7 @@ Run this example to compare the gas fees:
 
 1. Withdraw 100 at 10,100,300,350,500,600,670,700,900. Pass `100,[10,100,300,350,500,600,670,700,900]` to the withdraw function the same way that you did for the [previous example](#problem-on-chain-computation-leads-to-high-gas-fees).
 
-1. Register three upkeeps for your contract as explained [here](/docs/chainlink-keepers/register-upkeep/). Because the Automation Nodes handle much of the computation off-chain, a gas limit of 200,000 is sufficient. For each registration, pass the following `checkData` values to specify which balance indexes the registration will monitor. **Note**: You must remove any breaking line when copying the values.
+1. Register three upkeeps for your contract as explained [here](/docs/chainlink-automation/register-upkeep/). Because the Automation Nodes handle much of the computation off-chain, a gas limit of 200,000 is sufficient. For each registration, pass the following `checkData` values to specify which balance indexes the registration will monitor. **Note**: You must remove any breaking line when copying the values.
 
    | Upkeep Name             | CheckData(base16)                                                                                                                                      | Remark: calculated using [`abi.encode()`](https://docs.soliditylang.org/en/develop/abi-spec.html#strict-encoding-mode) |
    | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
