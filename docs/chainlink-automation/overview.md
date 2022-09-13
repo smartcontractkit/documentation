@@ -21,7 +21,7 @@ There are three main actors in the ecosystem:
 
 The following diagram describes the architecture of the Chainlink Automation Network. The Chainlink Automation Registry governs the actors on the network and compensates Automation Nodes for performing successful upkeeps. Developers can register their Upkeeps, and Node Operators can register as Automation Nodes.
 
-![keeper-overview](/images/contract-devs/keeper/keeper-overview.png)
+![automation-overview](/images/contract-devs/automation/automation-overview.png)
 
 ## Automation Contracts
 

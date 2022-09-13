@@ -34,7 +34,7 @@ To find other example contracts, see the [Example Automation Contracts](/docs/ch
 
 You can open the contract in Remix:
 <div class="remix-callout">
-    <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/Keepers/EthBalanceMonitor.sol" target="_blank" >Open in Remix</a>
+    <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/Automation/EthBalanceMonitor.sol" target="_blank" >Open in Remix</a>
     <a href="/docs/conceptual-overview/#what-is-remix" >What is Remix?</a>
 </div>
 

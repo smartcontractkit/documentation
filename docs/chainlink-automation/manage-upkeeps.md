@@ -33,13 +33,13 @@ Follow these steps to fund your Upkeep:
 1. **Click the `Add funds` button**
 
 1. **Approve the LINK spend allowance**
-   ![Approve LINK Spend Allowance](/images/contract-devs/keeper/keeper-approve-allowance.png)
+   ![Approve LINK Spend Allowance](/images/contract-devs/automation/automation-approve-allowance.png)
 
 1. **Confirm the LINK transfer** by sending funds to the Chainlink Automation Network Registry
-   ![Confirm LINK Transfer](/images/contract-devs/keeper/keeper-confirm-transfer.png)
+   ![Confirm LINK Transfer](/images/contract-devs/automation/automation-confirm-transfer.png)
 
 1. **Receive a success message** and verify that the funds were added to the Upkeep
-   ![Funds Added Successful Message](/images/contract-devs/keeper/keeper-add-funds.png)
+   ![Funds Added Successful Message](/images/contract-devs/automation/automation-add-funds.png)
 
 ## Maintain a Minimum Balance
 

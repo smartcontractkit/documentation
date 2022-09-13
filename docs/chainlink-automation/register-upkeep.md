@@ -24,10 +24,10 @@ This guide explains how to register a Custom logic Upkeep that uses an [Automati
 </div>
 
 1. **Connect your wallet** using the button in the top right corner and choose a network. For a list of supported networks, see the [Supported Blockchain Networks](../supported-networks) section. The Chainlink Automation App also lists the currently supported networks.
-  ![Connect With Metamask](/images/contract-devs/keeper/keeper-metamask.png)
+  ![Connect With Metamask](/images/contract-devs/automation/automation-metamask.png)
 
 1. **Click the Register New Upkeep button**
-  ![Click Register New Upkeep](/images/contract-devs/keeper/keeper-register.png)
+  ![Click Register New Upkeep](/images/contract-devs/automation/automation-register.png)
 
 1. **Select the custom logic trigger**
 
@@ -54,7 +54,7 @@ This guide explains how to register a Custom logic Upkeep that uses an [Automati
     > Follow the [best practices](../compatible-contracts/#best-practices) when creating an Automation-compatible contract and test your Upkeep on a testnet before deploying it to a mainnet.
 
 1. **Click `Register upkeep`** and confirm the transaction in MetaMask.
-    ![Upkeep Registration Success Message](/images/contract-devs/keeper/keeper-registration-submitted.png)
+    ![Upkeep Registration Success Message](/images/contract-devs/automation/automation-registration-submitted.png)
 
 Your Upkeeps will be displayed in your list of Active Upkeeps. You must monitor the balance of your Upkeep. If the balance drops below the **minimum balance**, the Chainlink Automation Network will not perform the Upkeep. See [Manage Your Upkeeps](../manage-upkeeps) to learn how to manage your Upkeeps.
 
@@ -77,11 +77,11 @@ Optionally, you can fetch the LINK address and registrar address from the intend
 ### Code example
 
 ```solidity
-{% include 'samples/Keepers/UpkeepIDConsumerExample.sol' %}
+{% include 'samples/Automation/UpkeepIDConsumerExample.sol' %}
 ```
 
 <div class="remix-callout">
-    <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/Keepers/UpkeepIDConsumerExample.sol" >Open in Remix</a>
+    <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/Automation/UpkeepIDConsumerExample.sol" >Open in Remix</a>
     <a href="/docs/conceptual-overview/#what-is-remix" > What is Remix?</a>
 </div>
 

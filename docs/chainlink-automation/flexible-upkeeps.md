@@ -45,11 +45,11 @@ The contract has the following components:
   - The `performUpkeep()` function to re-balances the elements. To demonstrate how this computation can cause high gas fees, this example does all of the computation within the transaction. The function finds all of the elements that are less than `LIMIT`, decreases the contract `liquidity`, and increases every found element to equal `LIMIT`.
 
 ```solidity
-{% include 'samples/Keepers/BalancerOnChain.sol' %}
+{% include 'samples/Automation/BalancerOnChain.sol' %}
 ```
 
 <div class="remix-callout">
-    <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/Keepers/BalancerOnChain.sol" >Open in Remix</a>
+    <a href="https://remix.ethereum.org/#url=https://docs.chain.link/Automation/Keepers/BalancerOnChain.sol" >Open in Remix</a>
     <a href="/docs/conceptual-overview/#what-is-remix" >What is Remix?</a>
 </div>
 
@@ -59,7 +59,7 @@ Test this example using the following steps:
 
 1. Before registering the upkeep for your contract, decrease the balances of some elements. This simulates a situation where upkeep is required. In Remix, Withdraw 100 at indexes 10,100,300,350,500,600,670,700,900. Pass `100,[10,100,300,350,500,600,670,700,900]` to the withdraw function:
 
-   ![Withdraw 100 at 10,100,300,350,500,600,670,700,900](/images/contract-devs/keeper/balancerOnChain-withdraw.png)
+   ![Withdraw 100 at 10,100,300,350,500,600,670,700,900](/images/contract-devs/automation/balancerOnChain-withdraw.png)
 
    You can also perform this step after registering the upkeep if you need to.
 
@@ -67,11 +67,11 @@ Test this example using the following steps:
 
 1. After the registration is confirmed, Automation Nodes perform the upkeep.
 
-   ![BalancerOnChain Upkeep History](/images/contract-devs/keeper/balancerOnChain-history.png)
+   ![BalancerOnChain Upkeep History](/images/contract-devs/automation/balancerOnChain-history.png)
 
 1. Click the transaction hash to see the transaction details in Etherscan. You can find how much gas was used in the upkeep transaction.
 
-   ![BalancerOnChain Gas](/images/contract-devs/keeper/balancerOnChain-gas.png)
+   ![BalancerOnChain Gas](/images/contract-devs/automation/balancerOnChain-gas.png)
 
 In this example, the `performUpkeep()` function used **2,481,379** gas. This example has two main issues:
 
@@ -93,11 +93,11 @@ Modify the contract and move the computation to the `checkUpkeep()` function. Th
 > `require(_balance == LIMIT, "Provided increment not correct");`
 
 ```solidity
-{% include 'samples/Keepers/BalancerOffChain.sol' %}
+{% include 'samples/Automation/BalancerOffChain.sol' %}
 ```
 
 <div class="remix-callout">
-    <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/Keepers/BalancerOffChain.sol" >Open in Remix</a>
+    <a href="https://remix.ethereum.org/#url=https://docs.chain.link/Automation/Keepers/BalancerOffChain.sol" >Open in Remix</a>
     <a href="/docs/conceptual-overview/#what-is-remix" >What is Remix?</a>
 </div>
 
@@ -117,19 +117,19 @@ Run this example to compare the gas fees:
 
 1. After the registration is confirmed, the three upkeeps run:
 
-   ![BalancerOffChain1 History](/images/contract-devs/keeper/balancerOffChain1-history.png 'balancerOffChainSubset1')
+   ![BalancerOffChain1 History](/images/contract-devs/automation/balancerOffChain1-history.png 'balancerOffChainSubset1')
 
-   ![BalancerOffChain2 History](/images/contract-devs/keeper/balancerOffChain2-history.png 'balancerOffChainSubset2')
+   ![BalancerOffChain2 History](/images/contract-devs/automation/balancerOffChain2-history.png 'balancerOffChainSubset2')
 
-   ![BalancerOffChain3 History](/images/contract-devs/keeper/balancerOffChain3-history.png 'balancerOffChainSubset3')
+   ![BalancerOffChain3 History](/images/contract-devs/automation/balancerOffChain3-history.png 'balancerOffChainSubset3')
 
 1. Click each transaction hash to see the details of each transaction in Etherscan. Find the gas used by each of the upkeep transactions:
 
-   ![BalancerOffChain1 Gas](/images/contract-devs/keeper/balancerOffChain1-gas.png 'balancerOffChainSubset1')
+   ![BalancerOffChain1 Gas](/images/contract-devs/automation/balancerOffChain1-gas.png 'balancerOffChainSubset1')
 
-   ![BalancerOffChain2 Gas](/images/contract-devs/keeper/balancerOffChain2-gas.png 'balancerOffChainSubset2')
+   ![BalancerOffChain2 Gas](/images/contract-devs/automation/balancerOffChain2-gas.png 'balancerOffChainSubset2')
 
-   ![BalancerOffChain3 Gas](/images/contract-devs/keeper/balancerOffChain3-gas.png 'balancerOffChainSubset3')
+   ![BalancerOffChain3 Gas](/images/contract-devs/automation/balancerOffChain3-gas.png 'balancerOffChainSubset3')
 
 In this example the total gas used by each `performUpkeep()` function was 133,464 + 133,488 + 133,488 = **400,440**. This is an improvement of about 84% compared to the previous example, which used **2,481,379** gas.
 
