@@ -27,6 +27,19 @@ whatsnext:
 
 ## Chainlink Keepers is now Chainlink Automation
 
+Chainlink Keepers has been renamed to **Chainlink Automation**. The table below describes what terms under the former Keepers naming system translate to under the current Automation naming system:
+
+| Keepers Term                   | Automation Term                                                           |
+| -------------------------------| ------------------------------------------------------------------------- |
+| Chainlink Keepers Network      | Chainlink Automation Network                                              |
+| Keeper/Keeper Node             | Automation/Automation Node                                                |
+| Keepers Job                    | Automation Job                                                            |
+| Keepers Registry/Registrar     | Automation Registry/Registrar                                             |
+| `KeeperCompatible.sol`         | `AutomationCompatible.sol`                                                |
+| `KeeperBase.sol`               | `AutomationBase.sol`                                                      |
+| `KeeperCompatibleInterface.sol`| `AutomationCompatibleInterface.sol`                                       |
+
+
 ## 2022-08-04 - v1.2 Release
 
 Keepers Registry v1.2 launched on Ethereum, Binance Smart Chain, Polygon, Avalanche, and Fantom
