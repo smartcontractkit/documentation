@@ -103,7 +103,7 @@ permalink: /ethereum/
     <div class="cl-featuredcard">
       <div class="cl-card-text">
         <img
-          src="/images/contract-devs/keeper/icon-keepers.svg"
+          src="/images/contract-devs/automation/icon-automation.svg"
           class="cl-image-featured"
           height="80" style="max-width:80px"
         />
