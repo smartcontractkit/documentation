@@ -1,6 +1,6 @@
 export const MENU = {
   en: [
-    { text: "Getting Started", link: "/README/" },
+    { text: "Getting Started", link: "/getting-started/conceptual-overview" },
     { text: "EVM Chains", link: "#" },
     { text: "Solana", link: "#" },
     { text: "Node Operators", link: "#" },
