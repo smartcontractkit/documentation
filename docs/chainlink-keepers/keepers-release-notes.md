@@ -69,7 +69,7 @@ Chainlink Keepers is live on the both Binance Smart Chain [Mainnet](https://keep
 
 ## 2021-08-05 - Keepers v1.1 launch on Ethereum
 
-Chainlink Keepers officially launched on [Ethereum Mainnet](https://keepers.chain.link/mainnet) and [Ethereum Kovan](https://keepers.chain.link/kovan).
+Chainlink Keepers officially launched on [Ethereum Mainnet](https://keepers.chain.link/mainnet).
 
 ## Questions
 

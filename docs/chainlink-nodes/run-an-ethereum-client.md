@@ -69,7 +69,7 @@ Return to [Running a Chainlink Node](../running-a-chainlink-node/).
 
 [Nethermind's Documentation](https://docs.nethermind.io/nethermind/)
 
-The Nethermind client can be used for Ethereum Mainnet and test networks such as Kovan, Rinkeby and Ropsten. To see a full list of supported networks, see the [Nethermind supported network configurations](https://docs.nethermind.io/nethermind/ethereum-client/docker#available-configurations) page.
+The Nethermind client can be used for Ethereum Mainnet and test networks. To see a full list of supported networks, see the [Nethermind supported network configurations](https://docs.nethermind.io/nethermind/ethereum-client/docker#available-configurations) page.
 
 Download the latest version:
 
@@ -84,9 +84,6 @@ mkdir ~/.nethermind-goerli
 ```
 ```shell Rinkeby
 mkdir ~/.nethermind-rinkeby
-```
-```shell Kovan
-mkdir ~/.nethermind-kovan
 ```
 ```shell Mainnet
 mkdir ~/.nethermind
@@ -108,16 +105,9 @@ docker run --name eth -p 8545:8545 \
            --Init.WebSocketsEnabled true --JsonRpc.Enabled true --JsonRpc.Host 0.0.0.0 --NoCategory.CorsOrigins * \
            --datadir data
 ```
-```shell Kovan
-docker run --name eth -p 8545:8545 \
-           -v ~/.nethermind-kovan/:/nethermind/data \
-           -it nethermind/nethermind:latest --config kovan \
-           --Init.WebSocketsEnabled true --JsonRpc.Enabled true --JsonRpc.Host 0.0.0.0 --NoCategory.CorsOrigins * \
-           --datadir data
-```
 ```shell Mainnet
 docker run --name eth -p 8545:8545 \
-           -v ~/.nethermind-kovan/:/nethermind/data \
+           -v ~/.nethermind/:/nethermind/data \
            -it nethermind/nethermind:latest --Sync.FastSync true \
            --Init.WebSocketsEnabled true --JsonRpc.Enabled true --JsonRpc.Host 0.0.0.0 --NoCategory.CorsOrigins * \
            --datadir data
@@ -146,9 +136,6 @@ ETH_URL=wss://eth-goerli.alchemyapi.io/v2/YOUR_PROJECT_ID
 ```
 ```text Rinkeby
 ETH_URL=wss://eth-rinkeby.alchemyapi.io/v2/YOUR_PROJECT_ID
-```
-```text Kovan
-ETH_URL=wss://eth-kovan.alchemyapi.io/v2/YOUR_PROJECT_ID
 ```
 ```text Mainnet
 ETH_URL=wss://eth-mainnet.alchemyapi.io/v2/YOUR_PROJECT_ID
@@ -183,9 +170,6 @@ ETH_URL=wss://eth.getblock.io/goerli/?api_key=YOUR_API_KEY
 ```text Rinkeby
 ETH_URL=wss://eth.getblock.io/rinkeby/?api_key=YOUR_API_KEY
 ```
-```text Kovan
-ETH_URL=wss://eth.getblock.io/kovan/?api_key=YOUR_API_KEY
-```
 ```text Ropsten
 ETH_URL=wss://eth.getblock.io/ropsten/?api_key=YOUR_API_KEY
 ```
@@ -205,9 +189,6 @@ ETH_URL=wss://goerli.infura.io/ws/v3/YOUR_PROJECT_ID
 ```
 ```text Rinkeby
 ETH_URL=wss://rinkeby.infura.io/ws/v3/YOUR_PROJECT_ID
-```
-```text Kovan
-ETH_URL=wss://kovan.infura.io/ws/v3/YOUR_PROJECT_ID
 ```
 ```text Mainnet
 ETH_URL=wss://mainnet.infura.io/ws/v3/YOUR_PROJECT_ID
@@ -230,9 +211,6 @@ ETH_URL=wss://your-node-name.goerli.quiknode.pro/security-hash/
 ```
 ```text Rinkeby
 ETH_URL=wss://your-node-name.rinkeby.quiknode.pro/security-hash/
-```
-```text Kovan
-ETH_URL=wss://your-node-name.kovan.quiknode.pro/security-hash/
 ```
 ```text Mainnet
 ETH_URL=wss://your-node-name.quiknode.pro/security-hash/
