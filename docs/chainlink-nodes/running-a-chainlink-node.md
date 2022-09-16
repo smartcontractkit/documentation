@@ -114,9 +114,6 @@ Create a local directory to hold the Chainlink data:
 ```shell Goerli
 mkdir ~/.chainlink-goerli
 ```
-```shell Rinkeby
-mkdir ~/.chainlink-rinkeby
-```
 ```shell Mainnet
 mkdir ~/.chainlink
 ```
@@ -134,14 +131,6 @@ ETH_CHAIN_ID=5
 CHAINLINK_TLS_PORT=0
 SECURE_COOKIES=false
 ALLOW_ORIGINS=*" > ~/.chainlink-goerli/.env
-```
-```shell Rinkeby
-echo "ROOT=/chainlink
-LOG_LEVEL=debug
-ETH_CHAIN_ID=4
-CHAINLINK_TLS_PORT=0
-SECURE_COOKIES=false
-ALLOW_ORIGINS=*" > ~/.chainlink-rinkeby/.env
 ```
 ```shell Mainnet
 echo "ROOT=/chainlink
@@ -171,9 +160,6 @@ Then run the following command to add the Ethereum client's URL to your environm
 ```shell Goerli
 echo "ETH_URL=ws://$ETH_CONTAINER_IP:8546" >> ~/.chainlink-goerli/.env
 ```
-```shell Rinkeby
-echo "ETH_URL=ws://$ETH_CONTAINER_IP:8546" >> ~/.chainlink-rinkeby/.env
-```
 ```shell Mainnet
 echo "ETH_URL=ws://$ETH_CONTAINER_IP:8546" >> ~/.chainlink/.env
 ```
@@ -184,9 +170,6 @@ If you are using an external provider for connectivity to the Ethereum blockchai
 
 ```shell Goerli
 echo "ETH_URL=CHANGEME" >> ~/.chainlink-goerli/.env
-```
-```shell Rinkeby
-echo "ETH_URL=CHANGEME" >> ~/.chainlink-rinkeby/.env
 ```
 ```shell Mainnet
 echo "ETH_URL=CHANGEME" >> ~/.chainlink/.env
@@ -213,9 +196,6 @@ You will need to connect your Chainlink node with a remote PostgreSQL database. 
 ```shell Goerli
 echo "DATABASE_URL=postgresql://$USERNAME:$PASSWORD@$SERVER:$PORT/$DATABASE" >> ~/.chainlink-goerli/.env
 ```
-```shell Rinkeby
-echo "DATABASE_URL=postgresql://$USERNAME:$PASSWORD@$SERVER:$PORT/$DATABASE" >> ~/.chainlink-rinkeby/.env
-```
 ```shell Mainnet
 echo "DATABASE_URL=postgresql://$USERNAME:$PASSWORD@$SERVER:$PORT/$DATABASE" >> ~/.chainlink/.env
 ```
@@ -226,9 +206,6 @@ Now you can run the Docker image. Replace `<version>` with your desired version.
 
 ```shell Goerli
 cd ~/.chainlink-goerli && docker run -p 6688:6688 -v ~/.chainlink-goerli:/chainlink -it --env-file=.env smartcontract/chainlink:<version> local n
-```
-```shell Rinkeby
-cd ~/.chainlink-rinkeby && docker run -p 6688:6688 -v ~/.chainlink-rinkeby:/chainlink -it --env-file=.env smartcontract/chainlink:<version> local n
 ```
 ```shell Mainnet
 cd ~/.chainlink && docker run -p 6688:6688 -v ~/.chainlink:/chainlink -it --env-file=.env smartcontract/chainlink:<version> local n

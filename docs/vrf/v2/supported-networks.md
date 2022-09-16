@@ -34,7 +34,6 @@ Fee parameters are configured in the coordinator contract and specify the premiu
 
 - [Ethereum Mainnet](#ethereum-mainnet)
 - [Goerli testnet](#goerli-testnet)
-- [Rinkeby testnet](#rinkeby-testnet-deprecated)
 - [BNB Chain](#bnb-chain)
 - [BNB Chain testnet](#bnb-chain-testnet)
 - [Polygon mainnet](#polygon-matic-mainnet)
@@ -77,26 +76,6 @@ Fee parameters are configured in the coordinator contract and specify the premiu
 | Minimum Confirmations | 3                                                                                                                                                                                                                   |
 | Maximum Confirmations | 200                                                                                                                                                                                                                 |
 | Maximum Random Values | 500                                                                                                                                                                                                                 |
-
-### Rinkeby testnet (Deprecated)
-
-The Rinkeby network is [officially deprecated](https://ethereum.org/en/developers/docs/networks/#rinkeby) and is no longer be supported. [Goerli](#goerli-testnet) is the recommended testnet for Chainlink on Ethereum.
-
-> 🚰 Rinkeby Faucets
->
-> Testnet LINK and ETH are available from https://faucets.chain.link/rinkeby
-> Backup Testnet ETH Faucets: https://rinkeby-faucet.com/, https://app.mycrypto.com/faucet
-
-| Item                  | Value                                                                                                                                                                                                                |
-| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| LINK Token            | <a class="erc-token-address" id="4_0x01BE23585060835E02B77ef475b0Cc51aA1e0709" href="https://rinkeby.etherscan.io/token/0x01BE23585060835E02B77ef475b0Cc51aA1e0709">`0x01BE23585060835E02B77ef475b0Cc51aA1e0709`</a> |
-| VRF Coordinator       | [`0x6168499c0cFfCaCD319c818142124B7A15E857ab`](https://rinkeby.etherscan.io/address/0x6168499c0cFfCaCD319c818142124B7A15E857ab)                                                                                      |
-| 30 gwei Key Hash      | `0xd89b2bf150e3b9e13446986e571fb9cab24b13cea0a43ea20a6049a85cc807cc`                                                                                                                                                 |
-| Premium               | 0.25 LINK                                                                                                                                                                                                            |
-| Max Gas Limit         | 2,500,000                                                                                                                                                                                                            |
-| Minimum Confirmations | 3                                                                                                                                                                                                                    |
-| Maximum Confirmations | 200                                                                                                                                                                                                                  |
-| Maximum Random Values | 500                                                                                                                                                                                                                  |
 
 ### BNB Chain
 

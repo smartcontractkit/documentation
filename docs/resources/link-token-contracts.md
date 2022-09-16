@@ -59,20 +59,6 @@ Testnet LINK is available at [faucets.chain.link](https://faucets.chain.link/goe
 | Symbol         | LINK                                                                                                                                                                                                                  |
 | Decimals       | 18                                                                                                                                                                                                                    |
 
-### Rinkeby testnet (Deprecated)
-
-> 🚧 The Rinkeby network is [officially deprecated](https://ethereum.org/en/developers/docs/networks/#rinkeby) and is no longer supported. [Goerli](#goerli-testnet) is the recommended testnet for Chainlink on Ethereum.
-
-Testnet LINK and ETH are available at [faucets.chain.link](https://faucets.chain.link/rinkeby). Testnet ETH is also available at [rinkeby-faucet.com](https://rinkeby-faucet.com/) and [app.mycrypto.com/faucet](https://app.mycrypto.com/faucet).
-
-| Parameter      | Value                                                                                                                                                                                                                |
-| :------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ETH_CHAIN_ID` | `4`                                                                                                                                                                                                                  |
-| Address        | <a class="erc-token-address" id="4_0x01BE23585060835E02B77ef475b0Cc51aA1e0709" href="https://rinkeby.etherscan.io/token/0x01BE23585060835E02B77ef475b0Cc51aA1e0709">`0x01BE23585060835E02B77ef475b0Cc51aA1e0709`</a> |
-| Name           | Chainlink Token                                                                                                                                                                                                      |
-| Symbol         | LINK                                                                                                                                                                                                                 |
-| Decimals       | 18                                                                                                                                                                                                                   |
-
 ## BNB Chain
 
 ### BNB Chain mainnet

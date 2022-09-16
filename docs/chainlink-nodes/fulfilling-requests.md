@@ -53,9 +53,6 @@ Your node works with several different types of addresses. Each address type has
      ```text Goerli
      0x326C977E6efc84E512bB9C30f76E30c160eD06FB
      ```
-     ```text Rinkeby
-     0x01BE23585060835E02B77ef475b0Cc51aA1e0709
-     ```
      ```text Mainnet
      0x514910771AF9Ca656af840dff83E8264EcF986CA
      ```
