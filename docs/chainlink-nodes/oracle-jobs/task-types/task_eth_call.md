@@ -13,6 +13,11 @@ Makes a non-mutating contract call to the specified contract with the specified 
 - `contract`: the address of the contract to call.
 - `data`: the data to attach to the call (including the function selector).
 - `gas`: the amount of gas to attach to the transaction.
+- `unlimited_gas`: boolean indicating if unlimited gas should be provided for the call. If set to true, `gas` parameter should not be passed.
+- `from`: The from address with which the call should be made. Defaults to zero address.
+- `gasPrice`: The gasPrice for the call. Defaults to zero.
+- `gasTipCap`: The gasTipCap (EIP-1559) for the call. Defaults to zero.
+- `gasFeeCap`: The gasFeeCap (EIP-1559) for the call. Defaults to zero.
 
 **Outputs**
 
