@@ -11,9 +11,9 @@ whatsnext:
   }
 ---
 
-In order to run a Chainlink node, it must be able to connect to an Ethereum client with an active websocket connection. This is accomplished by running both an execution client and a concensus client.
+In order to run a Chainlink node, it must be able to connect to an Ethereum client with an active websocket connection. This is accomplished by running both an execution client and a concensus client. Running Ethereum execution and concensus clients requires significant storage and network resources.
 
-Running an ethereum client on your own managed machine will consume a lot of resources. If you do choose to run either Geth, or Nethermind with their native clients, please be sure to enable the websockets API, since it is required for the Chainlink node to communicate with the Ethereum blockchain.
+> 📘 If you run these clients yourself, you must enable the websockets API. The websockets API is required for the Chainlink node to communicate with the Ethereum blockchain.
 
 ## Geth
 
