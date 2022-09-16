@@ -447,14 +447,16 @@ module.exports = {
           {
             title: 'Running a Chainlink Node',
             url: '/docs/running-a-chainlink-node/',
+            children: [
+              {
+                title: 'Run an Ethereum Client',
+                url: '/docs/run-an-ethereum-client/',
+              },
+            ],
           },
           {
             title: 'Fulfilling Requests',
             url: '/docs/fulfilling-requests/',
-          },
-          {
-            title: 'Run an Ethereum Client',
-            url: '/docs/run-an-ethereum-client/',
           },
           {
             title: 'Performing System Maintenance',
