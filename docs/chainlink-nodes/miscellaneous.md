@@ -184,9 +184,6 @@ This can be easily accomplished by using the following example run command:
 ```shell Goerli
 cd ~/.chainlink-goerli && docker run --name chainlink -p 6688:6688 -v ~/.chainlink-goerli:/chainlink -it --env-file=.env smartcontract/chainlink local n
 ```
-```shell Rinkeby
-cd ~/.chainlink-rinkeby && docker run --name chainlink -p 6688:6688 -v ~/.chainlink-rinkeby:/chainlink -it --env-file=.env smartcontract/chainlink local n
-```
 ```shell Mainnet
 cd ~/.chainlink && docker run --name chainlink -p 6688:6688 -v ~/.chainlink:/chainlink -it --env-file=.env smartcontract/chainlink local n
 ```
@@ -216,9 +213,6 @@ The Chainlink node can be supplied with files for the wallet password and API em
 ```shell Goerli
 echo "user@example.com" > ~/.chainlink-goerli/.api
 ```
-```shell Rinkeby
-echo "user@example.com" > ~/.chainlink-rinkeby/.api
-```
 ```shell Mainnet
 echo "user@example.com" > ~/.chainlink/.api
 ```
@@ -227,9 +221,6 @@ Then add the password line by running:
 
 ```shell Goerli
 echo "password" >> ~/.chainlink-goerli/.api
-```
-```shell Rinkeby
-echo "password" >> ~/.chainlink-rinkeby/.api
 ```
 ```shell Mainnet
 echo "password" >> ~/.chainlink/.api
@@ -240,9 +231,6 @@ Create the password file by running the following:
 ```shell Goerli
 echo "my_wallet_password" > ~/.chainlink-goerli/.password
 ```
-```shell Rinkeby
-echo "my_wallet_password" > ~/.chainlink-rinkeby/.password
-```
 ```shell Mainnet
 echo "my_wallet_password" > ~/.chainlink/.password
 ```
@@ -251,9 +239,6 @@ Finally, in order to use the password and API files upon running the node, add `
 
 ```shell Goerli
 cd ~/.chainlink-goerli && docker run -p 6688:6688 -v ~/.chainlink-goerli:/chainlink -it --env-file=.env smartcontract/chainlink local n -p /chainlink/.password -a /chainlink/.api
-```
-```shell Rinkeby
-cd ~/.chainlink-rinkeby && docker run -p 6688:6688 -v ~/.chainlink-rinkeby:/chainlink -it --env-file=.env smartcontract/chainlink local n -p /chainlink/.password -a /chainlink/.api
 ```
 ```shell Mainnet
 cd ~/.chainlink && docker run -p 6688:6688 -v ~/.chainlink:/chainlink -it --env-file=.env smartcontract/chainlink local n -p /chainlink/.password -a /chainlink/.api

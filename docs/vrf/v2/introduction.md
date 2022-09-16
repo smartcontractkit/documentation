@@ -49,7 +49,6 @@ Chainlink VRF v2 is currently available on the following networks:
 - Ethereum:
   - [Mainnet](/docs/vrf/v2/supported-networks/#ethereum-mainnet)
   - [Goerli testnet](/docs/vrf/v2/supported-networks/#goerli-testnet)
-  - [Rinkeby testnet](/docs/vrf/v2/supported-networks/#rinkeby-testnet-deprecated)
 - BNB Chain:
   - [Mainnet](/docs/vrf/v2/supported-networks/#bnb-chain)
   - [Testnet](/docs/vrf/v2/supported-networks/#bnb-chain-testnet)

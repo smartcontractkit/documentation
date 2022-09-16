@@ -30,9 +30,6 @@ Create a local directory to persist the data:
 ```shell Goerli
 mkdir ~/.geth-goerli
 ```
-```shell Rinkeby
-mkdir ~/.geth-rinkeby
-```
 ```shell Mainnet
 mkdir ~/.geth
 ```
@@ -42,11 +39,6 @@ Run the container:
 ```shell Goerli
 docker run --name eth -p 8546:8546 -v ~/.geth-goerli:/geth -it \
            ethereum/client-go --goerli --ws --ipcdisable \
-           --ws.addr 0.0.0.0 --ws.origins="*" --datadir /geth
-```
-```shell Rinkeby
-docker run --name eth -p 8546:8546 -v ~/.geth-rinkeby:/geth -it \
-           ethereum/client-go --rinkeby --ws --ipcdisable \
            --ws.addr 0.0.0.0 --ws.origins="*" --datadir /geth
 ```
 ```shell Mainnet
@@ -82,9 +74,6 @@ Create a local directory to persist the data:
 ```shell Goerli
 mkdir ~/.nethermind-goerli
 ```
-```shell Rinkeby
-mkdir ~/.nethermind-rinkeby
-```
 ```shell Mainnet
 mkdir ~/.nethermind
 ```
@@ -95,13 +84,6 @@ Run the container:
 docker run --name eth -p 8545:8545 \
            -v ~/.nethermind-goerli/:/nethermind/data \
            -it nethermind/nethermind:latest --config goerli \
-           --Init.WebSocketsEnabled true --JsonRpc.Enabled true --JsonRpc.Host 0.0.0.0 --NoCategory.CorsOrigins * \
-           --datadir data
-```
-```shell Rinkeby
-docker run --name eth -p 8545:8545 \
-           -v ~/.nethermind-rinkeby/:/nethermind/data \
-           -it nethermind/nethermind:latest --config rinkeby \
            --Init.WebSocketsEnabled true --JsonRpc.Enabled true --JsonRpc.Host 0.0.0.0 --NoCategory.CorsOrigins * \
            --datadir data
 ```
@@ -136,9 +118,6 @@ Example connection setting:
 ```text Goerli
 ETH_URL=wss://eth-goerli.alchemyapi.io/v2/YOUR_PROJECT_ID
 ```
-```text Rinkeby
-ETH_URL=wss://eth-rinkeby.alchemyapi.io/v2/YOUR_PROJECT_ID
-```
 ```text Mainnet
 ETH_URL=wss://eth-mainnet.alchemyapi.io/v2/YOUR_PROJECT_ID
 ```
@@ -155,11 +134,8 @@ ETH_URL=wss://user-name:pass-word-pass-word-pass-word@ws-nd-123-456-789.p2pify.c
 
 Example connection setting:
 
-```text Rinkeby
-ETH_URL=wss://cl-rinkeby.fiews.io/v1/YOUR_API_KEY
-```
 ```text Mainnet
-ETH_URL=wss://cl-main.fiews.io/v1/YOUR_API_KEY
+ETH_URL=wss://cl-main.fiews.io/v2/YOUR_API_KEY
 ```
 
 ## [GetBlock](https://getblock.io/)
@@ -168,12 +144,6 @@ Example connection setting:
 
 ```text Goerli
 ETH_URL=wss://eth.getblock.io/goerli/?api_key=YOUR_API_KEY
-```
-```text Rinkeby
-ETH_URL=wss://eth.getblock.io/rinkeby/?api_key=YOUR_API_KEY
-```
-```text Ropsten
-ETH_URL=wss://eth.getblock.io/ropsten/?api_key=YOUR_API_KEY
 ```
 ```text Sepolia
 ETH_URL=wss://eth.getblock.io/sepolia/?api_key=YOUR_API_KEY
@@ -188,9 +158,6 @@ Example connection setting. Replace YOUR_PROJECT_ID with the ID Infura provides 
 
 ```text Goerli
 ETH_URL=wss://goerli.infura.io/ws/v3/YOUR_PROJECT_ID
-```
-```text Rinkeby
-ETH_URL=wss://rinkeby.infura.io/ws/v3/YOUR_PROJECT_ID
 ```
 ```text Mainnet
 ETH_URL=wss://mainnet.infura.io/ws/v3/YOUR_PROJECT_ID
@@ -210,9 +177,6 @@ Example connection setting:
 
 ```text Goerli
 ETH_URL=wss://your-node-name.goerli.quiknode.pro/security-hash/
-```
-```text Rinkeby
-ETH_URL=wss://your-node-name.rinkeby.quiknode.pro/security-hash/
 ```
 ```text Mainnet
 ETH_URL=wss://your-node-name.quiknode.pro/security-hash/

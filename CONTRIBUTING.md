@@ -86,7 +86,7 @@ The main code samples are stored in `/_includes/samples` directory. If you need 
 
 To embed a code sample in the documentation, use the following format:
 
-```solidity Rinkeby
+```solidity
 {% include 'samples/APIRequests/APIConsumer.sol' %}
 ```
 
