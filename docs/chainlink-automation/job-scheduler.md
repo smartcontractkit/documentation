@@ -22,25 +22,25 @@ This guide explains how to register a time-based Upkeep that executes according 
 
 To use the job scheduler, you must register a new upkeep on the Chainlink Automation network. In the Chainlink Automation App, click the blue **Register new Upkeep** button.
 
-![Keepers App](/images/contract-devs/automation/automation-ui-landing.png)
+![Chainlink Automation App](/images/contract-devs/automation/automation-ui-landing.png)
 
 ## Connecting your Wallet
 
 If you do not already have a wallet connected with the Chainlink Automation network, the interface will prompt you to do so. Click the **Connect Wallet** button and follow the remaining prompts to connect your wallet to the network.
 
-![Keepers Connect Wallet](/images/contract-devs/automation/automation-connect-wallet.png)
+![Automation Connect Wallet](/images/contract-devs/automation/automation-connect-wallet.png)
 
 # Trigger Selection
 
 After you have successfully connected your wallet, please select time-based trigger.
 
-![Keepers Trigger Selection](/images/contract-devs/automation/automation-trigger-selection.png)
+![Automation Trigger Selection](/images/contract-devs/automation/automation-trigger-selection.png)
 
 # Using Time-Based Triggers
 
 When you select the time-based trigger, you are prompted to enter a *contract address*. Provide the address of the contract you want to execute. If you did not verify the contract on chain, you will need to paste the [Application Binary Interface](https://docs.soliditylang.org/en/develop/abi-spec.html) (ABI) of the deployed contract into the corresponding text box. Select the function name that you want to execute and provide any static inputs. If you want to use dynamic inputs please see [Custom logic Upkeeps](/docs/chainlink-automation/register-upkeep/)
 
-![Keepers Time Based Trigger](/images/contract-devs/automation/automation-time-based-trigger.png)
+![Automation Time Based Trigger](/images/contract-devs/automation/automation-time-based-trigger.png)
 
 ## Specifying the Time Schedule
 
@@ -74,7 +74,7 @@ All times are in UTC
 
 After you enter your CRON expression, click **Next**.
 
-![Keepers Cron Expression](/images/contract-devs/automation/automation-cron-expression.png)
+![Automation Cron Expression](/images/contract-devs/automation/automation-cron-expression.png)
 
 ## Entering Upkeep Details
 
@@ -84,7 +84,7 @@ To complete the upkeep registration process, you must enter some information abo
 >
 > When you create an upkeep through the Job Scheduler, Chainlink Automation deploys a new `CronUpkeep` contract from the [CronUpkeepFactory](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/factories/CronUpkeepFactory.sol) to manage your time schedule and ensure that it is Automation-compatible. This contract uses roughly 110K gas per call, so it is recommended to add 150K additional gas to the gas limit of the function you are automating.
 
-![Keepers Upkeep Details](/images/contract-devs/automation/automation-upkeep-details.png)
+![Automation Upkeep Details](/images/contract-devs/automation/automation-upkeep-details.png)
 
 > 🚧 ERC677 Link
 >
