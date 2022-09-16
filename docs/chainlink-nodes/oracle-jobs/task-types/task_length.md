@@ -14,7 +14,9 @@ Returns the length of a byte array or string.
 
 **Outputs**
 
-The length of the byte array / string. Note: For strings containing multi-byte unicode characters, the output is the length in bytes and not number of characters.
+The length of the byte array or string.
+
+**Note**: For strings containing multi-byte unicode characters, the output is the length in bytes and not number of characters.
 
 **Example**
 
