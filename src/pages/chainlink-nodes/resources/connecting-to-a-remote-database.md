@@ -17,7 +17,8 @@ PostgreSQL is a popular and secure database available on a variety of platforms.
 
 ## Obtain Information About Your Database
 
-In order to connect to a remote database, you must obtain information about the database and the server. Take note of the following details for your database:
+In order to connect to a remote database, you must obtain information about the database and the server. Note the following database details so you can use them to configure your Chainlink node later:
+
 - Server hostname or IP
 - Port
 - Username
@@ -36,9 +37,9 @@ DATABASE_URL=postgresql://[USERNAME]:[PASSWORD]@[SERVER]:[PORT]/[DATABASE]?sslmo
 
 Change the following placeholders to their real values:
 
-- `[USERNAME]`: The username for the database owner.
-- `[PASSWORD]`: The password for the database owner username.
+- `[USERNAME]`: The username for the database owner account.
+- `[PASSWORD]`: The password for the database owner account.
 - `[SERVER]`: The hostname or IP address of the database server.
-- `[PORT]`: The port that the database is listening on. The default port is `5432`.
+- `[PORT]`: The port that the database is listening on. The default port for PostgreSQL is `5432`.
 - `[DATABASE]`: The name of the database to use for the Chainlink node.
 - `[SSL_MODE]`: If you are testing on a database that does not have SSL enabled, you can specify `disable` so that you don't need to go through the process of configuring SSL on your database. On a production node, set this value to `require` or `verify-full`. This requires an encrypted connection between your Chainlink node and the database. See the [PostgreSQL documentation](https://www.postgresql.org/docs/current/libpq-ssl.html#LIBPQ-SSL-PROTECTION) to learn about the available SSL modes.
