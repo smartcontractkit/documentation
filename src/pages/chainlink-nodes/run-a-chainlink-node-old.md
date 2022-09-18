@@ -117,7 +117,7 @@ Start a database that your Chainlink node can use to store data about the node a
 
 - [Run PostgreSQL locally in Docker](https://hub.docker.com/_/postgres/)
 - [Run PostgreSQL locally without Docker](https://www.postgresql.org/docs/current/server-start.html)
-- [Connect to a remote database](../connecting-to-a-remote-database/)
+- [Connect to a remote database](/docs/connecting-to-a-remote-database/)
 
 After you start the database, use the default `postgres` user and `postgres` database or create a separate user and database for the Chainlink node. Record the username, the user password, and the database name that you configure. You'll provide this information in your Chainlink node's `.env` configuration file later.
 

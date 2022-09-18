@@ -6,9 +6,7 @@ title: "Connecting to a Remote Database"
 whatsnext: { "Configuring Chainlink": "/chainlink-nodes/v1/configuration/" }
 ---
 
-This is a basic guide for setting up a PostgreSQL database and connecting your Chainlink node to it.
-
-PostgreSQL is a popular and secure database available on a variety of platforms. This guide will not show you how to create and set up a PostgreSQL database, however, some common guides can be found below:
+This guide show you how to set up a PostgreSQL database and connect your Chainlink node to it. Alternatively, you can follow the guides below:
 
 - [Amazon AWS](https://aws.amazon.com/getting-started/tutorials/create-connect-postgresql-db/)
 - [Azure](https://docs.microsoft.com/en-us/azure/postgresql/quickstart-create-server-database-portal)
