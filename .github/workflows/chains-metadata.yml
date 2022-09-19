@@ -12,6 +12,9 @@ jobs:
       contents: write
     name: Check if chains metadata is up to date
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: .astro
     steps:
       - name: Checkout Repo
         uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b # v3.0.2
@@ -23,8 +26,8 @@ jobs:
         id: compare_chains
         run: |
           set -x
-          if test -f "./_src/reference/chainsToBe.json"; then
-            cp "./_src/reference/chainsToBe.json" "./_src/reference/chains.json"
+          if test -f ".scripts/reference/chainsToBe.json"; then
+            cp ".scripts/reference/chainsToBe.json" ".scripts/reference/chains.json"
             echo "::set-output name=createPR::true"
             timestamp=$(date +%Y%m%d%H%M)
             echo "::set-output name=timestamp::${timestamp}"

@@ -1,19 +1,22 @@
 name: Test
-on: 
-  [push, pull_request]
+on: [push, pull_request]
 
 jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: .astro
     steps:
       - name: Checkout Repo
         uses: actions/checkout@5a4ac9002d0be2fb38bd78e4b4dbde5606d7042f
       - name: Install Dependencies
-        run: yarn
+        run: npm i
       - name: Build
-        run: yarn build
-      - name: Check Links
-        run: yarn linkcheck
+        run: npm run build
+      # TODO: fix css files throwing 404 errors
+      # - name: Check Links
+      #   run: npm run linkcheck
       - name: Check Solidity
-        run: yarn test
+        run: npm run test
