@@ -1,3 +1,4 @@
+/** @jsxImportSource preact */
 import h from "preact"
 import { EnsOptions } from "../data"
 import { useState } from "preact/hooks"
@@ -37,7 +38,7 @@ export const EnsLookupForm = () => {
           body: data,
           headers: {
             "Content-Type": "application/json",
-            "Content-Length": data.length,
+            "Content-Length": data.length.toString(),
             "User-Agent": "Node",
           },
         }
@@ -70,7 +71,7 @@ export const EnsLookupForm = () => {
       <form class={styles.form}>
         <label>Pair:</label>
         <select
-          onChange={(e) => {
+          onChange={(e: any) => {
             getDropdownAddress(e.target.value)
           }}
         >

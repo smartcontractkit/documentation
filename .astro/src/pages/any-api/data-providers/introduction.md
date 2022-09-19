@@ -14,7 +14,7 @@ Data provider nodes allow customizable, on-demand API calls and the ability to d
 Be aware of the quality of the data that you use. [Learn more about making responsible data quality decisions.](/docs/selecting-data-feeds/)
 :::
 
-# Data Provider Nodes List
+## Data Provider Nodes List
 
 | Data Category | Name                                                                                             | Supported Blockchains        |
 | ------------- | ------------------------------------------------------------------------------------------------ | ---------------------------- |

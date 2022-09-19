@@ -51,7 +51,8 @@ interface ResultProxy {
 }
 
 function load(filename: string): DataFile {
-  const file = `data-source/${filename}`
+  // TODO: fix path when moving .astro to root
+  const file = `../data-source/${filename}`
   const result = JSON.parse(fs.readFileSync(file, { encoding: "utf8" }))
   if (!result.contracts) {
     console.error(

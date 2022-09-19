@@ -1,3 +1,4 @@
+/** @jsxImportSource preact */
 import h from "preact"
 import { useState } from "preact/hooks"
 import { clsx } from "~/lib"

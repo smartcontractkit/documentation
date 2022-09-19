@@ -1,3 +1,4 @@
+/** @jsxImportSource preact */
 import h from "preact"
 import { useState } from "preact/hooks"
 import styles from "./EnsLookupForm.module.css"
@@ -49,14 +50,14 @@ export const EnsManualLookupForm = () => {
             name="asset-1"
             type="text"
             value={asset1}
-            onChange={(e) => setAsset1(e.target.value)}
+            onChange={(e: any) => setAsset1(e.target.value)}
           />
           <span>/</span>
           <input
             name="asset-2"
             type="text"
             value={asset2}
-            onChange={(e) => setAsset2(e.target.value)}
+            onChange={(e: any) => setAsset2(e.target.value)}
           />
         </div>
         <div>

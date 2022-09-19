@@ -1,1 +1,1 @@
-import "./fix-remix-urls";
+import "./fix-remix-urls"

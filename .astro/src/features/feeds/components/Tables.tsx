@@ -1,3 +1,4 @@
+/** @jsxImportSource preact */
 import h from "preact"
 import { Network } from "../types"
 import feedList from "./FeedList.module.css"

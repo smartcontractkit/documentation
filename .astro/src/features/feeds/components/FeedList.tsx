@@ -1,3 +1,4 @@
+/** @jsxImportSource preact */
 import h from "preact"
 import { useEffect, useState } from "preact/hooks"
 import { Addresses } from "../types"

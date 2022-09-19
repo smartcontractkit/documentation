@@ -1,3 +1,4 @@
+/** @jsxImportSource preact */
 import h from "preact"
 import { clsx } from "~/lib"
 

@@ -11,6 +11,9 @@ import { FeedList } from "../features/feeds/components/FeedList.tsx"
 import Footer from "~/components/Footer/Footer.astro"
 
 const { content = {} } = Astro.props
+// Astro.props?.headings is for .mdx pages, Astro.props?.content?.astro.headings is for .md pages
+const headings = Astro.props?.headings || Astro.props?.content?.astro.headings
+
 const currentPage = new URL(Astro.request.url).pathname
 const currentFile = `src/pages${currentPage.replace(/\/$/, "")}.md`
 const githubEditUrl =
@@ -44,11 +47,6 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site)
         overflow-x: hidden;
       }
 
-      .layout :global(> *) {
-        width: 100%;
-        height: 100%;
-      }
-
       .grid-sidebar {
         height: 100vh;
         position: sticky;
@@ -73,15 +71,6 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site)
 
       #grid-right {
         display: none;
-      }
-
-      :global(.mobile-sidebar-toggle) {
-        overflow: hidden;
-      }
-
-      :global(.mobile-sidebar-toggle) #grid-left {
-        display: block;
-        top: 2rem;
       }
 
       @media (min-width: 50em) {
@@ -115,25 +104,40 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site)
         }
       }
     </style>
+    <style is:global>
+      .layout > * {
+        width: 100%;
+        height: 100%;
+      }
+
+      .mobile-sidebar-toggle {
+        overflow: hidden;
+      }
+
+      .mobile-sidebar-toggle #grid-left {
+        display: block;
+        top: 2rem;
+      }
+    </style>
     <script>
       import "../scripts/index.ts"
     </script>
   </head>
 
   <body>
-    <Header {currentPage} />
+    <Header />
     <main class="layout">
       <aside id="grid-left" class="grid-sidebar" title="Site Navigation">
-        <LeftSidebar {currentPage} {content} />
+        <LeftSidebar currentPage={currentPage} {content} />
       </aside>
       <div id="grid-main">
-        <PageContent {content} {githubEditUrl}>
+        <PageContent {content} githubEditUrl={githubEditUrl} {headings}>
           <slot />
           <FeedList client:idle slot="after-content" stub={content.stub} />
         </PageContent>
       </div>
       <aside id="grid-right" class="grid-sidebar" title="Table of Contents">
-        <RightSidebar {content} {githubEditUrl} />
+        <RightSidebar {content} githubEditUrl={githubEditUrl} {headings} />
       </aside>
     </main>
     <NewsletterCTA client:visible />

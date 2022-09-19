@@ -29,7 +29,6 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site)
         --gutter: 1rem;
         --doc-padding: 2rem;
       }
-
       .layout {
         display: grid;
         grid-auto-flow: column;
@@ -38,14 +37,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site)
         justify-content: center;
       }
 
-      .layout :global(> *) {
-        width: 100%;
-        height: 100%;
-      }
-
-      .grid-sidebar {
-        height: 100vh;
-        position: sticky;
+      .grid-sidy {
         top: 0;
         padding: 0;
       }
@@ -61,17 +53,8 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site)
         display: flex;
         flex-direction: column;
         height: 100%;
-      }
-
-      :global(.mobile-sidebar-toggle) {
-        overflow: hidden;
-      }
-
-      :global(.mobile-sidebar-toggle) #grid-left {
-        display: block;
         top: 2rem;
       }
-
       @media (min-width: 50em) {
         .layout {
           overflow: initial;
@@ -79,7 +62,6 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site)
           gap: 1em;
         }
       }
-
       @media (min-width: 72em) {
         .layout {
           grid-template-columns: minmax(0, var(--fullwidth-max-width));
@@ -90,19 +72,33 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site)
         }
       }
     </style>
-  </head>
 
-  <body>
-    <Header {currentPage} />
-    <main class="layout">
-      <aside id="grid-left" class="grid-sidebar" title="Site Navigation">
-        <LeftSidebar {currentPage} />
-      </aside>
-      <div id="grid-main">
-        <slot />
-      </div>
-    </main>
-    <NewsletterCTA client:visible />
-    <Footer />
-  </body>
+    <style is:global>
+      .layout > * {
+        width: 100%;
+        height: 100%;
+      }
+      .mobile-sidebar-toggle {
+        overflow: hidden;
+      }
+      .mobile-sidebar-toggle #grid-left {
+        display: block;
+        top: 2rem;
+      }
+    </style>
+  </head>
 </html>
+
+<body>
+  <Header />
+  <main class="layout">
+    <aside id="grid-left" class="grid-sidebar" title="Site Navigation">
+      <LeftSidebar currentPage={currentPage} content={content} />
+    </aside>
+    <div id="grid-main">
+      <slot />
+    </div>
+  </main>
+  <NewsletterCTA client:visible />
+  <Footer />
+</body>

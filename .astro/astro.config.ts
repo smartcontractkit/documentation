@@ -5,6 +5,8 @@ import { astroCallouts } from "./integrations/astro-callouts"
 import { solidityRemixCode } from "./integrations/solidity-remix"
 import { youtubeEmbed } from "./integrations/youtube-embed"
 import mdx from "@astrojs/mdx"
+import rehypeSlug from "rehype-slug"
+import rehypeAutolinkHeadings from "rehype-autolink-headings"
 
 import sitemap from "@astrojs/sitemap"
 
@@ -18,22 +20,22 @@ export default defineConfig({
     preact(),
     react(),
     sitemap(),
-    mdx(),
     astroCallouts(),
     solidityRemixCode(),
     youtubeEmbed(),
+    mdx(),
   ],
   markdown: {
-    remarkPlugins: ["remark-gfm", "remark-smartypants", "remark-directive"],
     rehypePlugins: [
-      "rehype-slug",
+      rehypeSlug,
       [
-        "rehype-autolink-headings",
+        rehypeAutolinkHeadings,
         {
           behavior: "prepend",
         },
       ],
     ],
     syntaxHighlight: "prism",
+    extendDefaultPlugins: true,
   },
 })
