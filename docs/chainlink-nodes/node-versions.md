@@ -12,6 +12,36 @@ metadata:
 
 You can find a list of release notes for Chainlink nodes in the [smartcontractkit GitHub repository](https://github.com/smartcontractkit/chainlink/releases). Docker images are available in the [Chainlink Docker hub](https://hub.docker.com/r/smartcontract/chainlink/tags).
 
+## Changes in v1.8.0 nodes
+
+**[v1.8.0 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v1.8.0)**
+
+### Added
+
+- Added the `hexencode` and `base64encode` tasks (pipeline). See the [Hex Encode Task](/docs/jobs/task-types/hexencode/) and [Base64 Encode Task](/docs/jobs/task-types/base64encode/) pages for examples.
+- `forwardingAllowed` per job attribute to allow forwarding txs submitted by the job.
+- Added `Arbitrum Goerli` configuration support.
+- Added the [`NODE_SELECTION_MODE` (`EVM.NodePool.SelectionMode`) environment variable](/docs/configuration-variables/#node_selection_mode), which controls node picking strategy. Supported values are:
+  - `HighestHead` is the default mode, which picks a node that has the highest reported head number among other alive nodes. When several nodes have the same latest head number, the strategy sticks to the last used node. This mode requires `NODE_NO_NEW_HEADS_THRESHOLD` to be configured, otherwise it will always use the first alive node.
+  - `RoundRobin` mode iterates among available alive nodes. This was the default behavior prior to this release. 
+- New `evm keys chain` command. This can also be accessed at `/v2/keys/evm/chain`. This command has the following uses:
+    - Manually set or reset a nonce: `chainlink evm keys chain --address "0xEXAMPLE" --evmChainID 99 --setNextNonce 42`
+    - Enable a key for a particular chain: `chainlink evm keys chain --address "0xEXAMPLE" --evmChainID 99 --setEnabled true`
+    - Disable a key for a particular chain: `chainlink evm keys chain --address "0xEXAMPLE" --evmChainID 99 --setEnabled false`
+- It is now possible to use the same key across multiple chains.
+
+### Changed
+
+- The `chainlink admin users update` command is replaced with `chainlink admin users chrole`. Only the role can be changed for a user.
+- Keypath now supports paths with any depth, instead of limiting it to 2.
+- `Arbitrum` chains are no longer restricted to only `FixedPrice` `GAS_ESTIMATOR_MODE`.
+- Updated `Arbitrum Rinkeby & Mainnet` configurations for Nitro.
+
+### Removed
+
+- The `setnextnonce` local client command is removed and is replaced by the more general `evm keys chain` command client command.
+
+
 ## Changes in v1.7.1 nodes
 
 **[v1.7.1 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v1.7.1)**

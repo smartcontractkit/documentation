@@ -139,6 +139,7 @@ Your node applies configuration settings using following hierarchy:
   - [NODE_NO_NEW_HEADS_THRESHOLD](#node_no_new_heads_threshold)
   - [NODE_POLL_FAILURE_THRESHOLD](#node_poll_failure_threshold)
   - [NODE_POLL_INTERVAL](#node_poll_interval)
+  - [NODE_SELECTION_MODE](#node_selection_mode)
 - [EVM Gas Controls](#evm-gas-controls)
   - [Configuring your ETH node](#configuring-your-eth-node)
     - [go-ethereum](#go-ethereum)
@@ -842,6 +843,12 @@ EVM_NODES='
 '
 ```
 
+Usage of Docker requires the variable to be formatted as one line with no whitespaces and quotes wrapping it, as follows in the example:
+
+```bash
+EVM_NODES=[{"name":"primary_0_1","evmChainId":"0","wsUrl":"ws://test1.invalid","sendOnly":false},{"name":"primary_0_2","evmChainId":"0","wsUrl":"ws://test2.invalid","httpUrl":"https://test3.invalid","sendOnly":false},{"name":"primary_1337_1","evmChainId":"1337","wsUrl":"ws://test4.invalid","httpUrl":"http://test5.invalid","sendOnly":false}]
+```
+
 ### ETH_SECONDARY_URLS
 
 Only has effect if `ETH_URL` set. Otherwise, it can be set in the API, [CLI](/docs/configuration-variables/#cli-client), or GUI.
@@ -1021,7 +1028,7 @@ This can be overridden on a per-task basis by setting the `MinRequiredOutgoingCo
 > 🚧 NOTE
 > This has replaced the formerly used MINIMUM_CONTRACT_PAYMENT
 
-- Default: _automatically set based on Chain ID, typically 10000000000000 (0.00001 LINK) on all chains except ETH Mainnet, Kovan, Goerli, and Rinkeby, where it is 100000000000000000 (0.1 LINK)._
+- Default: _automatically set based on Chain ID, typically 10000000000000 (0.00001 LINK) on all chains except Ethereum Mainnet and Goerli where it is 100000000000000000 (0.1 LINK)._
 
 For jobs that use the `EthTx` adapter, this is the minimum payment amount in order for the node to accept and process the job. Since there are no decimals on the EVM, the value is represented like wei.
 
@@ -1052,6 +1059,15 @@ Set to zero to disable poll checking.
 Controls how often to poll the node to check for liveness.
 
 Set to zero to disable poll checking.
+
+### NODE_SELECTION_MODE
+
+- Default: `"HighestHead"`
+
+Controls node picking strategy. Supported values:
+
+- `HighestHead` (default) mode picks a node having the highest reported head number among other alive nodes. When several nodes have the same latest head number, the strategy sticks to the last used node. This mode requires `NODE_NO_NEW_HEADS_THRESHOLD` to be configured, otherwise it will always use the first alive node.
+- `RoundRobin` mode simply iterates among available alive nodes. This was the default behavior prior to this release. 
 
 ## EVM Gas Controls
 

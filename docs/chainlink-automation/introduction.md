@@ -2,7 +2,7 @@
 layout: nodes.liquid
 section: ethereum
 date: Last Modified
-title: 'Introduction to Chainlink Automation'
+title: 'Chainlink Automation Documentation'
 whatsnext:
   {
     'Register a time-based Upkeep': '/docs/chainlink-automation/job-scheduler/',
@@ -23,15 +23,19 @@ whatsnext:
 
 To learn more about how the Chainlink Automation Network automates your smart contracts, read the [Chainlink Automation Architecture](../overview) page.
 
+<p>
+https://youtu.be/xL96sTwQ5Ho
+</p>
+
 **Topics**
 
-- [Select a Trigger](#select-a-trigger)
-  - [Time-based Trigger](#time-based-trigger)
-  - [Custom logic Trigger](#custom-logic-trigger)
-- [Supported Networks and Costs](#supported-networks-and-costs)
-- [Questions and Examples](#questions-and-examples)
+- [Select a trigger](#select-a-trigger)
+  - [Time-based trigger](#time-based-trigger)
+  - [Custom logic trigger](#custom-logic-trigger)
+- [Supported networks and costs](#supported-networks-and-costs)
+- [Questions and examples](#questions-and-examples)
 
-## Select a Trigger
+## Select a trigger
 
 Chainlink Automation will reliably execute smart contract functions using a variety of triggers.
 
@@ -60,12 +64,13 @@ Before you begin, deploy the contract that you want to automate. You will also n
 
 For more details on time-based automation, click [here](../job-scheduler/).
 
-### Custom logic Trigger
+### Custom logic trigger
 
 To use a custom logic trigger, you will need to make your contract [Automation-compatible](../compatible-contracts/).
 
 1. Open the Chainlink Automation app.
 
+    <!-- prettier-ignore -->
     <div class="remix-callout">
         <a href="https://automation.chain.link" >Open the Chainlink Automation App</a>
     </div>
@@ -90,11 +95,11 @@ To use a custom logic trigger, you will need to make your contract [Automation-c
 >
 > For registration you must use ERC-677 LINK. Read our [LINK](../../link-token-contracts/) page to determine where to acquire mainnet LINK, or visit our [faucets.chain.link](https://faucets.chain.link/) for testnet LINK.
 
-## Supported Networks and Costs
+## Supported networks and costs
 
 For a list of blockchains that is supported by Chainlink Automation, see the [Supported Networks](../supported-networks) page. To learn more about the cost of using Chainlink Automation, see the [Automation Economics](../automation-economics) page.
 
-## Questions and Examples
+## Questions and examples
 
 If you have questions, read the [Chainlink Automation Frequently Asked Questions](../faqs/) page, ask them in the [#keepers channel](https://discord.com/channels/592041321326182401/821350860302581771) in our [Discord server](https://discord.gg/qj9qarT), or [reach out to us](https://forms.gle/WadxnzzjHPtta5Zd9).
 

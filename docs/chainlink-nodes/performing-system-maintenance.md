@@ -41,12 +41,6 @@ Now start the second instance of the node. The local port option has been modifi
 ```shell Goerli
 cd ~/.chainlink-goerli && docker run -p 6687:6688 -v ~/.chainlink-goerli:/chainlink -it --env-file=.env smartcontract/chainlink local n
 ```
-```shell Rinkeby
-cd ~/.chainlink-rinkeby && docker run -p 6687:6688 -v ~/.chainlink-rinkeby:/chainlink -it --env-file=.env smartcontract/chainlink local n
-```
-```shell Kovan
-cd ~/.chainlink-kovan && docker run -p 6687:6688 -v ~/.chainlink-kovan:/chainlink -it --env-file=.env smartcontract/chainlink local n
-```
 ```shell Mainnet
 cd ~/.chainlink && docker run -p 6687:6688 -v ~/.chainlink:/chainlink -it --env-file=.env smartcontract/chainlink local n
 ```
@@ -67,12 +61,6 @@ Next, you will simply need to run the container again with the local port 6688 i
 
 ```shell Goerli
 cd ~/.chainlink-goerli && docker run -p 6688:6688 -v ~/.chainlink-goerli:/chainlink -it --env-file=.env smartcontract/chainlink local n
-```
-```shell Rinkeby
-cd ~/.chainlink-rinkeby && docker run -p 6688:6688 -v ~/.chainlink-rinkeby:/chainlink -it --env-file=.env smartcontract/chainlink local n
-```
-```shell Kovan
-cd ~/.chainlink-kovan && docker run -p 6688:6688 -v ~/.chainlink-kovan:/chainlink -it --env-file=.env smartcontract/chainlink local n
 ```
 ```shell Mainnet
 cd ~/.chainlink && docker run -p 6688:6688 -v ~/.chainlink:/chainlink -it --env-file=.env smartcontract/chainlink local n
@@ -95,12 +83,6 @@ Run the Chainlink node with a name option specified:
 ```shell Goerli
 cd ~/.chainlink-goerli && docker run --name chainlink -p 6688:6688 -v ~/.chainlink-goerli:/chainlink -it --env-file=.env smartcontract/chainlink local n
 ```
-```shell Rinkeby
-cd ~/.chainlink-rinkeby && docker run --name chainlink -p 6688:6688 -v ~/.chainlink-rinkeby:/chainlink -it --env-file=.env smartcontract/chainlink local n
-```
-```shell Kovan
-cd ~/.chainlink-kovan && docker run --name chainlink -p 6688:6688 -v ~/.chainlink-kovan:/chainlink -it --env-file=.env smartcontract/chainlink local n
-```
 ```shell Mainnet
 cd ~/.chainlink && docker run --name chainlink -p 6688:6688 -v ~/.chainlink:/chainlink -it --env-file=.env smartcontract/chainlink local n
 ```
@@ -122,12 +104,6 @@ This will remain your primary Chainlink container, and should always use port 66
 
 ```shell Goerli
 cd ~/.chainlink-goerli && docker run --name secondary -p 6687:6688 -v ~/.chainlink-goerli:/chainlink -it --env-file=.env smartcontract/chainlink local n
-```
-```shell Rinkeby
-cd ~/.chainlink-rinkeby && docker run --name secondary -p 6687:6688 -v ~/.chainlink-rinkeby:/chainlink -it --env-file=.env smartcontract/chainlink local n
-```
-```shell Kovan
-cd ~/.chainlink-kovan && docker run --name secondary -p 6687:6688 -v ~/.chainlink-kovan:/chainlink -it --env-file=.env smartcontract/chainlink local n
 ```
 ```shell Mainnet
 cd ~/.chainlink && docker run --name secondary -p 6687:6688 -v ~/.chainlink:/chainlink -it --env-file=.env smartcontract/chainlink local n

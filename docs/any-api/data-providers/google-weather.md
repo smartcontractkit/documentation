@@ -17,20 +17,6 @@ These jobs are using a custom external adapter. Please see the [Google weather e
 
 You will need to use the following LINK token address, oracle address, and JobSpec IDs in order to create the Chainlink request to this oracle.
 
-### Kovan
-
-| Parameter                 | Value                                                                                                                       |
-| :------------------------ | :-------------------------------------------------------------------------------------------------------------------------- |
-| `ETH_CHAIN_ID`            | `42`                                                                                                                        |
-| ChainLink Token Address   | [0xa36085F69e2889c224210F603D836748e7dC0088]("https://kovan.etherscan.io/token/0xa36085F69e2889c224210F603D836748e7dC0088") |
-| Oracle                    | `0xbe79b86e93d09d6dda636352a06491ec8e7bdf12`                                                                                |
-| Rain JobID                | `3c7838a5810c4aeea140134d10a6d0c3`                                                                                          |
-| Hail JobID                | `7633f5d84840486a961ee281f96378f7`                                                                                          |
-| Average Temperature JobID | `93b72982721945268cf3ba75894f773e`                                                                                          |
-| Generic JobID             | `c414aab46673419697cad866b33c7921`                                                                                          |
-| Fee                       | `100000000000000000` (0.1 LINK)                                                                                             |
-| Node Operator             | `0x4ABabAA8Cb1f340443d90CbAd98faBe394D1Cf24`                                                                                |
-
 ### Mainnet
 
 | Parameter                 | Value                                                                                                                 |

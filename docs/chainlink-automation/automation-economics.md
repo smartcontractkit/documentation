@@ -20,7 +20,7 @@ When an Automation Node executes your `performUpkeep` function, the Chainlink Au
 
 ## Minimum Spend Requirement
 
-There is a minimum spend requirement per upkeep to prevent misuse of the Chainlink Automation network. The minimum amount required is 0.1 LINK on any upkeep that is registered. If your upkeep does not pay at least this amount to execute functions, 0.1 LINK will not be withdrawable when you cancel. If you spend more than 0.1 LINK, you will be able to withdraw all remaining LINK after you cancel even after additional funds are added.
+To prevent misuse of the Chainlink Automation network, each upkeep that you register requires a small minimum spend of 0.1 LINK across all upkeep transactions. If the total LINK spent across all transactions for your upkeep does not exceed this amount, the difference between 0.1 LINK and the amount spent in LINK is not refunded after you cancel the upkeep. If you spend more than 0.1 LINK across all of your upkeep's transactions, all remaining LINK is refundable after you cancel. This amount is intentionally small so that even a few upkeep transactions on the cheapest networks can easily exceed this amount.
 
 ## No node competition
 

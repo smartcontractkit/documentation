@@ -18,22 +18,7 @@ metadata:
 
 {% include 'sections/vrf-v2-common.md' %}
 
-Chainlink VRF (Verifiable Random Function) is a provably fair and verifiable random number generator (RNG) that enables smart contracts to access random values without compromising security or usability.
-
-**Topics**
-
-- [Overview](#overview)
-- [Supported networks](#supported-networks)
-- [Subscriptions](#subscriptions)
-- [Subscription billing](#subscription-billing)
-- [Request and receive data](#request-and-receive-data)
-  - [End-to-end diagram](#end-to-end-diagram)
-  - [Explanation](#explanation)
-- [Limits](#limits)
-
-## Overview
-
-For each request, Chainlink VRF generates one or more random values and cryptographic proof of how those values were determined. The proof is published and verified on-chain before any consuming applications can use it. This process ensures that results cannot be tampered with or manipulated by any single entity including oracle operators, miners, users, or smart contract developers.
+**Chainlink VRF (Verifiable Random Function)** is a provably fair and verifiable random number generator (RNG) that enables smart contracts to access random values without compromising security or usability. For each request, Chainlink VRF generates one or more random values and cryptographic proof of how those values were determined. The proof is published and verified on-chain before any consuming applications can use it. This process ensures that results cannot be tampered with or manipulated by any single entity including oracle operators, miners, users, or smart contract developers.
 
 Use Chainlink VRF to build reliable smart contracts for any applications that rely on unpredictable outcomes:
 
@@ -47,6 +32,16 @@ Use Chainlink VRF to build reliable smart contracts for any applications that re
 
 To learn more about the benefits of Chainlink VRF v2, see our blog post [Chainlink VRF v2 Is Now Live on Mainnet](https://blog.chain.link/vrf-v2-mainnet-launch/). For help with your specific use case, [contact us](https://chainlinkcommunity.typeform.com/to/OYQO67EF?page=docs-footer) to connect with one of our Solutions Architects. You can also ask questions about Chainlink VRF on [Stack Overflow](https://stackoverflow.com/questions/ask?tags=chainlink).
 
+**Topics**
+
+- [Supported networks](#supported-networks)
+- [Subscriptions](#subscriptions)
+- [Subscription billing](#subscription-billing)
+- [Request and receive data](#request-and-receive-data)
+  - [End-to-end diagram](#end-to-end-diagram)
+  - [Explanation](#explanation)
+- [Limits](#limits)
+
 ## Supported networks
 
 Chainlink VRF v2 is currently available on the following networks:
@@ -54,7 +49,6 @@ Chainlink VRF v2 is currently available on the following networks:
 - Ethereum:
   - [Mainnet](/docs/vrf/v2/supported-networks/#ethereum-mainnet)
   - [Goerli testnet](/docs/vrf/v2/supported-networks/#goerli-testnet)
-  - [Rinkeby testnet](/docs/vrf/v2/supported-networks/#rinkeby-testnet-deprecated)
 - BNB Chain:
   - [Mainnet](/docs/vrf/v2/supported-networks/#bnb-chain)
   - [Testnet](/docs/vrf/v2/supported-networks/#bnb-chain-testnet)
@@ -74,7 +68,9 @@ To learn when VRF v2 becomes available on more networks, follow us on [Twitter](
 
 ## Subscriptions
 
-VRF v2 requests receive funding from subscription accounts. The [Subscription Manager](https://vrf.chain.link) lets you create an account and pre-pay for VRF v2, so you don't provide funding each time your application requests randomness. This reduces the total gas cost to use VRF v2. It also provides a simple way to fund your use of Chainlink products from a single location, so you don't have to manage multiple wallets across several different systems and applications.
+VRF v2 requests receive funding from subscription accounts. The [Subscription Manager](/docs/vrf/v2/ui/) lets you create a subscription and pre-pay for VRF v2, so you don't need to provide funding each time your application requests randomness. This reduces the total gas cost to use VRF v2. It also provides a simple way to fund your use of Chainlink products from a single location, so you don't have to manage multiple wallets across several different systems and applications.
+
+{% include 'sections/vrf-v2-ui-callout.md' %}
 
 Subscriptions have the following core concepts:
 

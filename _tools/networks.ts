@@ -16,18 +16,6 @@ export const NETWORKS = [
         source: "directory-goerli.json",
         networkType: "testnet",
       },
-      {
-        name: "Rinkeby Testnet (Deprecated)",
-        url: "https://rinkeby.etherscan.io/address/%s",
-        source: "directory-rinkeby.json",
-        networkType: "testnet",
-      },
-      {
-        name: "Kovan Testnet (Deprecated)",
-        url: "https://kovan.etherscan.io/address/%s",
-        source: "directory-kovan.json",
-        networkType: "testnet",
-      },
     ],
   },
   {
@@ -195,9 +183,9 @@ export const NETWORKS = [
         networkType: "mainnet",
       },
       {
-        name: "Optimism Kovan",
-        url: "https://kovan-optimistic.etherscan.io/address/%s",
-        source: "directory-ethereum-testnet-kovan-optimism-1.json",
+        name: "Optimism Goerli",
+        url: "https://goerli-optimism.etherscan.io/address/%s",
+        source: "directory-ethereum-testnet-goerli-optimism-1.json",
         networkType: "testnet",
       },
     ],

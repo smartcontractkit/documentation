@@ -12,6 +12,7 @@ Makes a non-mutating contract call to the specified contract with the specified 
 
 - `contract`: the address of the contract to call.
 - `data`: the data to attach to the call (including the function selector).
+- `gas`: the amount of gas to attach to the transaction.
 
 **Outputs**
 
@@ -26,7 +27,8 @@ encode_call  [type="ethabiencode"
 
 call          [type="ethcall"
                contract="0xa36085F69e2889c224210F603D836748e7dC0088"
-               data="$(encode_call)"]
+               data="$(encode_call)"
+               gas="1000"]
 
 decode_result [type="ethabidecode"
                abi="bool upkeepNeeded, bytes performData"
