@@ -9,7 +9,7 @@ metadata:
   description: "Chainlink Feed Registry Functions"
 ---
 
-This guide outlines the functions which can be used with Chainlink's Feed Registry. You can learn more about the feed registry [here](../feed-registry).
+This guide outlines the functions which can be used with Chainlink's Feed Registry. You can learn more about the feed registry [here](/docs/data-feeds/feed-registry/).
 
 ## Functions
 
