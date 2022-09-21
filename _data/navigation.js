@@ -114,62 +114,62 @@ module.exports = {
               },
               {
                 title: 'Contract Addresses',
-                url: '/docs/data-feeds/',
+                url: '/docs/data-feeds/price-feeds/addresses/',
                 children: [
                   {
-                    title: 'Ethereum Data Feeds',
+                    title: 'Ethereum Price Feeds',
                     url: '/docs/data-feeds/price-feeds/addresses/ethereum',
                   },
                   {
-                    title: 'BNB Chain Data Feeds',
+                    title: 'BNB Chain Price Feeds',
                     url: '/docs/data-feeds/price-feeds/addresses/bnb-chain/',
                   },
                   {
-                    title: 'Polygon (Matic) Data Feeds',
+                    title: 'Polygon (Matic) Price Feeds',
                     url: '/docs/data-feeds/price-feeds/addresses/polygon/',
                   },
                   {
-                    title: 'Gnosis Chain (xDai) Data Feeds',
+                    title: 'Gnosis Chain (xDai) Price Feeds',
                     url: '/docs/data-feeds/price-feeds/addresses/gnosis-chain/',
                   },
                   {
-                    title: 'HECO Chain Data Feeds',
+                    title: 'HECO Chain Price Feeds',
                     url: '/docs/data-feeds/price-feeds/addresses/heco-chain/',
                   },
                   {
-                    title: 'Avalanche Data Feeds',
+                    title: 'Avalanche Price Feeds',
                     url: '/docs/data-feeds/price-feeds/addresses/avalanche/',
                   },
                   {
-                    title: 'Fantom Data Feeds',
+                    title: 'Fantom Price Feeds',
                     url: '/docs/data-feeds/price-feeds/addresses/fantom/',
                   },
                   {
-                    title: 'Arbitrum Data Feeds',
+                    title: 'Arbitrum Price Feeds',
                     url: '/docs/data-feeds/price-feeds/addresses/arbitrum/',
                   },
                   {
-                    title: 'Harmony Data Feeds',
+                    title: 'Harmony Price Feeds',
                     url: '/docs/data-feeds/price-feeds/addresses/harmony/',
                   },
                   {
-                    title: 'Optimism Data Feeds',
+                    title: 'Optimism Price Feeds',
                     url: '/docs/data-feeds/price-feeds/addresses/optimism/',
                   },
                   {
-                    title: 'Moonriver Data Feeds',
+                    title: 'Moonriver Price Feeds',
                     url: '/docs/data-feeds/price-feeds/addresses/moonriver/',
                   },
                   {
-                    title: 'Moonbeam Data Feeds',
+                    title: 'Moonbeam Price Feeds',
                     url: '/docs/data-feeds/price-feeds/addresses/moonbeam/',
                   },
                   {
-                    title: 'Metis Data Feeds',
+                    title: 'Metis Price Feeds',
                     url: '/docs/data-feeds/price-feeds/addresses/metis/',
                   },
                   {
-                    title: 'Klaytn Data Feeds',
+                    title: 'Klaytn Price Feeds',
                     url: '/docs/data-feeds/price-feeds/addresses/klaytn/',
                   },
                 ],
