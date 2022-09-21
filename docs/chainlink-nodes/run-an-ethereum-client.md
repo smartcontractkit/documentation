@@ -59,6 +59,8 @@ exit
 
 You can use the [Geth client](https://geth.ethereum.org/docs/) for the Goerli testnet and the Ethereum Mainnet. See the [Geth Documentation](https://geth.ethereum.org/docs/interface/peer-to-peer/) for a list of supported networks.
 
+> The consensus client must be fully synced before Geth can start syncing.
+
 Download the `stable` image of Geth:
 
 ```shell
