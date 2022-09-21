@@ -29,6 +29,10 @@ export const Feedback = () => {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   function handleChange(selectedNumber: number) {
+    if (rating === selectedNumber + 1) {
+      setRating(undefined)
+      return
+    }
     setRating(selectedNumber + 1)
     setIsSent(false)
     const path = "https://docs2-cl-default-rtdb.firebaseio.com/allratings.json"
@@ -87,13 +91,21 @@ export const Feedback = () => {
         ))}
       </div>
       {!!rating && !isSent && (
-        <section className="card" style={{ width: "330px" }}>
+        <section
+          className="card"
+          style={{
+            width: "330px",
+            position: "absolute",
+            left: "-50%",
+            padding: "var(--space-4x)",
+          }}
+        >
           <form
             onSubmit={handleSubmit}
-            style={{ display: "flex", flexDirection: "column" }}
+            style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}
           >
-            <label for='name'>Tell us more about your experience.</label>
-            <input type="text" name="msg" />
+            <label for="name">Tell us more about your experience.</label>
+            <textarea type="text" name="msg" />
             <button className={button.primary} disabled={isSubmitting}>
               submit
             </button>

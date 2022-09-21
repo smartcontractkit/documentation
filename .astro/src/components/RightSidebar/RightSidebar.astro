@@ -1,6 +1,7 @@
 ---
 import TableOfContents from "./TableOfContents.tsx"
 import MoreMenu from "./MoreMenu.astro"
+import { Feedback } from "../PageContent/Feedback"
 const { content, githubEditUrl, headings } = Astro.props
 ---
 
@@ -8,10 +9,19 @@ const { content, githubEditUrl, headings } = Astro.props
   <div class="sidebar-nav-inner">
     <TableOfContents client:media="(min-width: 50em)" headers={headings} />
     <MoreMenu editHref={githubEditUrl} />
+
+    <h2 class="heading feedback-title">Feedback</h2>
+    <div class="feedback-wrapper">
+      <Feedback client:idle />
+    </div>
   </div>
 </nav>
 
 <style>
+  .feedback-wrapper {
+    padding-left: var(--space-4x);
+    margin-top: var(--space-2x);
+  }
   .sidebar-nav {
     width: 100%;
     position: sticky;

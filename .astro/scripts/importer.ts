@@ -222,7 +222,7 @@ function convertToListOfStrings(path: string) {
 function writeToDestination(listOfLines: string[], fileName?: string) {
   const parsedFileName = fileName.toLowerCase().replace(/ /g, "-")
 
-  const newPath = `${process.cwd()}/temp${parsedFileName}`
+  const newPath = `${process.cwd()}/temp/${parsedFileName}`
 
   let tempPath = newPath.split("/")
   tempPath.pop()
