@@ -13,7 +13,7 @@ Chainlink Data Feed contracts are updated on a regular basis by multiple Chainli
 
 > 📘 LINK token on multiple chains
 >
-> See the [LINK Token Contracts](../link-token-contracts/) page for the details of LINK on each blockchain.
+> See the [LINK Token Contracts](/docs/link-token-contracts/) page for the details of LINK on each blockchain.
 
 ## Available networks
 
