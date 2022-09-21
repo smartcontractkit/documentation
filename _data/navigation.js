@@ -114,7 +114,7 @@ module.exports = {
               },
               {
                 title: 'Contract Addresses',
-                url: '/docs/reference-contracts/',
+                url: '/docs/data-feeds/',
                 children: [
                   {
                     title: 'Ethereum Data Feeds',
@@ -178,7 +178,7 @@ module.exports = {
           },
           {
             title: 'L2 Sequencer Uptime Feeds',
-            url: '/docs/data-feeds/l2-sequencer-flag/',
+            url: '/docs/data-feeds/l2-sequencer-feeds/',
           },
           {
             title: 'Using ENS with Data Feeds',

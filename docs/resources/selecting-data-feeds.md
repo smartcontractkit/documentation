@@ -83,7 +83,7 @@ If you plan on using one of these feeds and would like to get a more detailed un
 
 ### ⭕ Deprecating
 
-These feeds are being [deprecated](/docs/reference-contracts/#deprecation-of-chainlink-data-feeds). To find the deprecation dates for specific feeds, see the complete [deprecation list](/docs/deprecating-feeds/) or the [data feeds lists](/docs/reference-contracts/) for each network.
+These feeds are being [deprecated](/docs/data-feeds/#deprecation-of-chainlink-data-feeds). To find the deprecation dates for specific feeds, see the complete [deprecation list](/docs/deprecating-feeds/) or the [data feeds lists](/docs/data-feeds/) for each network.
 
 ## Risk Mitigation
 

@@ -8,7 +8,7 @@ whatsnext:
   {
     'Get the latest price of a Data Feed': '/docs/get-the-latest-price/',
     'Learn more about API references for using Data Feeds': '/docs/data-feeds/price-feeds/api-reference/',
-    'Retrieve contract addresses to use Data Feeds': '/docs/reference-contracts/',
+    'Retrieve contract addresses to use Data Feeds': '/docs/data-feeds/',
   }
 metadata:
   title: 'Chainlink Data Feeds Documentation'
@@ -43,7 +43,7 @@ Data feeds provide many different types of data for your applications.
 
 ### Price feeds
 
-See the [Data Feeds Contract Addresses](/docs/reference-contracts/) page for a list of networks and proxy addresses.  
+See the [Data Feeds Contract Addresses](/docs/data-feeds/) page for a list of networks and proxy addresses.  
 
 Smart contracts often act in real-time on data such as prices of assets. This is especially true in [DeFi](https://defi.chain.link/).
 
@@ -61,10 +61,10 @@ To learn how to use price feeds, see the [Price Feeds](/docs/get-the-latest-pric
 
 L2 sequencer feeds track the last known status of the sequencer on an L2 network at a given point in time. This helps you prevent mass liquidations by providing a grace period to allow customers to react to these events.
 
-To learn how to use L2 sequencer uptime feeds feeds, see the [L2 Sequencer Uptime Feeds](/docs/data-feeds/l2-sequencer-flag/) documentation.
+To learn how to use L2 sequencer uptime feeds feeds, see the [L2 Sequencer Uptime Feeds](/docs/data-feeds/l2-sequencer-feeds/) documentation.
 
 <div class="remix-callout">
-    <a href="/docs/data-feeds/l2-sequencer-flag/">L2 Sequencer Uptime Feeds</a>
+    <a href="/docs/data-feeds/l2-sequencer-feeds/">L2 Sequencer Uptime Feeds</a>
 </div>
 
 ## Components of a data feed
@@ -123,7 +123,7 @@ Configure your application to detect when the reported answer is close to reachi
 
 ### Check the timestamp of the latest answer
 
-Chainlink Price Feeds do not provide streaming data. Rather, the aggregator updates its `latestAnswer` when the value deviates beyond a specified threshold or when the heartbeat idle time has passed. You can find the heartbeat and deviation values for each data feed at [data.chain.link](https://data.chain.link/) or in the [Contract Addresses](/docs/reference-contracts/) lists.
+Chainlink Price Feeds do not provide streaming data. Rather, the aggregator updates its `latestAnswer` when the value deviates beyond a specified threshold or when the heartbeat idle time has passed. You can find the heartbeat and deviation values for each data feed at [data.chain.link](https://data.chain.link/) or in the [Contract Addresses](/docs/data-feeds/) lists.
 
 Your application should track the `latestTimestamp` variable or use the `updatedAt` value from the `latestRoundData()` function to make sure that the latest answer is recent enough for your application to use it. If your application detects that the reported answer is not updated within the heartbeat or within time limits that you determine are acceptable for your application, pause operation or switch to an alternate operation mode while identifying the cause of the delay.
 
