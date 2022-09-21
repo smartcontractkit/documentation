@@ -3,7 +3,7 @@ layout: feed.liquid
 title: "Moonbeam Data Feeds"
 section: ethereum
 stub: data-feeds-moonbeam
-permalink: "docs/data-feeds-moonbeam/"
+permalink: "docs/data-feeds/price-feeds/addresses/moonbeam/"
 metadata:
   networkstatusurl: "https://moonscan.freshstatus.io/"
   description: "Chainlink Data Feeds on Moonbeam"

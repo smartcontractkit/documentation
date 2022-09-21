@@ -2,7 +2,7 @@
 layout: feed.liquid
 title: "Polygon (Matic) Data Feeds"
 section: ethereum
-permalink: "/docs/matic-addresses/"
+permalink: "docs/data-feeds/price-feeds/addresses/polygon/"
 stub: matic-addresses
 metadata:
   networkstatusurl: "https://polygon.io/system"

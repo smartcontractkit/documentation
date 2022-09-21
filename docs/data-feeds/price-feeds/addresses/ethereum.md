@@ -2,7 +2,7 @@
 layout: feed.liquid
 title: "Ethereum Data Feeds"
 section: ethereum
-permalink: "/docs/ethereum-addresses/"
+permalink: "docs/data-feeds/price-feeds/addresses/ethereum/"
 stub: ethereum-addresses
 metadata:
   networkstatusurl: "https://ethstats.net/"

@@ -99,7 +99,7 @@ Below are some examples of tooling that Chainlink users have put in place:
 - **Monitoring:** Some users create their own monitoring alerts based on deviations in the data feeds that they are using.
 - **Soak testing:** Users are strongly advised to thoroughly test price feed integrations and incorporate a [soak period](https://en.wikipedia.org/wiki/Soak_testing) prior to providing access to end users or securing value.
 
-For more detailed information about some of these examples, see the [Monitoring data feeds](/docs/using-chainlink-reference-contracts/#monitoring-data-feeds) documentation.
+For more detailed information about some of these examples, see the [Monitoring data feeds](/docs/data-feeds/#monitoring-data-feeds) documentation.
 
 For important updates regarding the use of Chainlink Price Feeds, users should join the official Chainlink Discord and subscribe to the data-feeds-user-notifications channel: https://discord.gg/Dqy5N9UbsR
 

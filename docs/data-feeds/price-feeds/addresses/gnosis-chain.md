@@ -2,7 +2,7 @@
 layout: feed.liquid
 title: "Gnosis Chain (xDai) Data Feeds"
 section: ethereum
-permalink: "/docs/data-feeds-gnosis-chain/"
+permalink: "/docs/data-feeds/price-feeds/addresses/gnosis-chain/"
 stub: data-feeds-gnosis-chain
 metadata:
   networkstatusurl: "https://blockscout.com/xdai/mainnet/"

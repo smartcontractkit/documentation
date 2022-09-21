@@ -3,13 +3,13 @@ layout: nodes.liquid
 section: ethereum
 date: Last Modified
 title: "Data Feeds Contract Addresses"
-permalink: "docs/reference-contracts/"
+permalink: "docs/data-feeds/price-feeds/addresses/"
 metadata:
   title: "Data Feeds Contract Addresses"
   description: "A list of links to data feed addresses for Data Feed aggregator contracts on supported networks."
 ---
 
-Chainlink Data Feed contracts are updated on a regular basis by multiple Chainlink nodes. For implementation details, read [Introduction to Data Feeds](../using-chainlink-reference-contracts/). Chainlink is a blockchain-agnostic technology. This page lists the blockchain networks that Chainlink Data Feeds are currently live on, and the details of where to access them.
+Chainlink Data Feed contracts are updated on a regular basis by multiple Chainlink nodes. For implementation details, read [Introduction to](/docs/data-feeds/). Chainlink is a blockchain-agnostic technology. This page lists the blockchain networks that Chainlink Data Feeds are currently live on, and the details of where to access them.
 
 > 📘 LINK token on multiple chains
 >
@@ -20,21 +20,22 @@ Chainlink Data Feed contracts are updated on a regular basis by multiple Chainli
 Data feeds are available on the following networks:
 
 - EVM (Ethereum) Chains
-  - [Ethereum Data Feeds](../ethereum-addresses/)
-  - [BNB Chain Data Feeds](../bnb-chain-addresses/)
-  - [Polygon (Matic) Data Feeds](../matic-addresses/)
-  - [Gnosis Chain (xDai) Data Feeds](../data-feeds-gnosis-chain/)
-  - [HECO Chain Data Feeds](../huobi-eco-chain-price-feeds/)
-  - [Avalanche Data Feeds](../avalanche-price-feeds/)
-  - [Fantom Data Feeds](../fantom-price-feeds/)
-  - [Arbitrum Data Feeds](../arbitrum-price-feeds/)
-  - [Harmony Data Feeds](../harmony-price-feeds/)
-  - [Optimism Data Feeds](../optimism-price-feeds/)
-  - [Moonriver Data Feeds](../data-feeds-moonriver/)
-  - [Moonbeam Data Feeds](../data-feeds-moonbeam/)
-  - [Metis Data Feeds](../data-feeds-metis/)
+  - [Ethereum](/docs/data-feeds/price-feeds/addresses/ethereum/)
+  - [BNB Chain](/docs/data-feeds/price-feeds/addresses/bnb-chain/)
+  - [Polygon (Matic)](/docs/data-feeds/price-feeds/addresses/polygon/)
+  - [Gnosis Chain (xDai)](/docs/data-feeds/price-feeds/addresses/gnosis-chain/)
+  - [HECO Chain](/docs/data-feeds/price-feeds/addresses/heco-chain/)
+  - [Avalanche](/docs/data-feeds/price-feeds/addresses/avalanche/)
+  - [Fantom](/docs/data-feeds/price-feeds/addresses/fantom/)
+  - [Arbitrum](/docs/data-feeds/price-feeds/addresses/arbitrum/)
+  - [Harmony](/docs/data-feeds/price-feeds/addresses/harmony/)
+  - [Optimism](/docs/data-feeds/price-feeds/addresses/optimism/)
+  - [Moonriver](/docs/data-feeds/price-feeds/addresses/moonriver/)
+  - [Moonbeam](/docs/data-feeds/price-feeds/addresses/moonbeam/)
+  - [Metis](/docs/data-feeds/price-feeds/addresses/metis/)
+  - [Klaytn](/docs/data-feeds/price-feeds/addresses/klaytn/)
 - Other chains
-  - [Solana Data Feeds](/docs/solana/data-feeds-solana/)
+  - [Solana](/docs/solana/data-feeds-solana/)
 
 {% include 'data-quality.md' %}
 
@@ -54,7 +55,7 @@ Data feeds are grouped into the following categories:
 ⚫ Specialized
 ⭕ Deprecating
 
-For more information on these categories, see the [Selecting Quality Data Feeds](/docs/selecting-data-feeds/#data-feed-categories) page.
+For more information on these categories, see the [Selecting Quality](/docs/selecting-data-feeds/#data-feed-categories) page.
 
 ## Deprecation of Chainlink Data Feeds
 

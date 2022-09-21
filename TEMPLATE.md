@@ -55,7 +55,7 @@ A valuable feature of smart contracts is that they can store and manage on-chain
 
 *Notice how users are given external links to read more about concepts such as ETH or ERC20 tokens. They do not have to undertake a separate search.*
 
-Smart contracts can connect to real-world market prices of assets to produce powerful applications. Chainlink's **[Data Feeds](../using-chainlink-reference-contracts/)** feature allows users to quickly and securely connect smart contracts to such assets in a single call.
+Smart contracts can connect to real-world market prices of assets to produce powerful applications. Chainlink's **[Data Feeds](/docs/data-feeds/)** feature allows users to quickly and securely connect smart contracts to such assets in a single call.
 
 # 2. What language is a smart contract written in?
 

@@ -3,7 +3,7 @@ layout: nodes.liquid
 section: ethereum
 date: Last Modified
 title: "Data Feeds API Reference"
-permalink: "docs/price-feeds-api-reference/"
+permalink: "docs/data-feeds/price-feeds/api-reference/"
 metadata:
   description: "API reference for using Chainlink Data Feeds in smart contracts."
 ---

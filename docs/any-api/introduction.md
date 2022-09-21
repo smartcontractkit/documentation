@@ -29,7 +29,7 @@ Whether your contract requires sports results, the latest weather, or any other 
 
 > 📘 Note on Price Feed Data
 >
-> If your smart contracts need access to price feed data, try using [Chainlink Data Feeds](/docs/using-chainlink-reference-contracts/).
+> If your smart contracts need access to price feed data, try using [Chainlink Data Feeds](/docs/data-feeds/).
 
 **Topics**
 

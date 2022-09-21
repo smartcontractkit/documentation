@@ -3,7 +3,7 @@ layout: feed.liquid
 title: "Moonriver Data Feeds"
 section: ethereum
 stub: data-feeds-moonriver
-permalink: "docs/data-feeds-moonriver/"
+permalink: "docs/data-feeds/price-feeds/addresses/moonriver/"
 metadata:
   networkstatusurl: "https://moonscan.freshstatus.io/"
   description: "Chainlink Data Feeds on Moonriver"

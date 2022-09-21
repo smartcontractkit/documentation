@@ -2,7 +2,7 @@
 layout: feed.liquid
 title: "HECO Chain Data Feeds"
 section: ethereum
-permalink: "docs/huobi-eco-chain-price-feeds/"
+permalink: "docs/data-feeds/price-feeds/addresses/heco-chain/"
 stub: huobi-eco-chain-price-feeds
 metadata:
   networkstatusurl: "https://hecoinfo.com/"

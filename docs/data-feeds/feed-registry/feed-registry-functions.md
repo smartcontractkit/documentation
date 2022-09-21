@@ -3,7 +3,7 @@ layout: nodes.liquid
 section: ethereum
 date: Last Modified
 title: "Feed Registry API Reference"
-permalink: "docs/feed-registry-functions/"
+permalink: "docs/data-feeds/feed-registry/feed-registry-functions/"
 metadata:
   title: "Feed Registry API Reference"
   description: "Chainlink Feed Registry Functions"

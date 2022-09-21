@@ -39,7 +39,7 @@ permalink: /ethereum/
             Retrieve the latest prices and data points of assets in your smart
             contracts.
           </p>
-          <a href="/docs/using-chainlink-reference-contracts/">
+          <a href="/docs/data-feeds/">
             <div class="arrowed-text">
                 Learn More
                 <img class="cta-learnmore-arrow" src="/images/card-icons/navigation-arrow-right.svg" loading="lazy" alt="Right arrow">

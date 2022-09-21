@@ -3,7 +3,7 @@ layout: feed.liquid
 title: "Metis Data Feeds"
 section: ethereum
 stub: data-feeds-andromeda
-permalink: "docs/data-feeds-metis/"
+permalink: "docs/data-feeds/price-feeds/addresses/metis/"
 metadata:
   l2healthflag: "metis"
   networkstatusurl: "https://andromeda-explorer.metis.io/"
