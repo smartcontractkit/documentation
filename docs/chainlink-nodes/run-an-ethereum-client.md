@@ -195,7 +195,7 @@ Download the `latest` image of Lighthouse:
 docker pull sigp/lighthouse:latest
 ```
 
-Run the consensus client and point it at the execution client. The `--execution-endpoint` flag identifies the address of the execution client container. The `jwtsecret` file is required to authenticate with the execution client. The `-v ~/.geth-goerli/geth/jwtsecret:/jwtsecret` volume mount makes the `jwtsecret` file from the Geth container available inside the consensus container. Point this to the JWT for your specific execution client. 
+Run the consensus client and point it at the execution client. The `--execution-endpoint` flag identifies the address of the execution client container. The `jwtsecret` file is required to authenticate with the execution client. The `-v ~/.geth-goerli/geth/jwtsecret:/jwtsecret` volume mount makes the `jwtsecret` file from the Geth container available inside the consensus container. Point this to the JWT for your specific execution client. For a faster sync on the consensus client, use [Checkpoint Sync](https://lighthouse-book.sigmaprime.io/checkpoint-sync.html).
 
 ```shell Goerli
 docker run --name lighthouse-goerli -p 9000:9000/tcp -p 9000:9000/udp \
