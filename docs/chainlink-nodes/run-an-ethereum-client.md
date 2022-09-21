@@ -15,17 +15,63 @@ Chainlink nodes must be able to connect to an Ethereum client with an active web
 
 > 📘 If you run these clients yourself, you must enable the websockets API. The websockets API is required for the Chainlink node to communicate with the Ethereum blockchain.
 
-## Geth
+## Install Docker
+
+On the system where you plan to run your Ethereum nodes, [install Docker](https://docs.docker.com/install/). For example, you can use the following commands:
+
+```shell Amazon Linux 2
+sudo amazon-linux-extras install -y docker
+sudo systemctl start docker
+sudo gpasswd -a $USER docker
+exit
+# log in again
+```
+```shell CentOS
+curl -sSL https://get.docker.com/ | sh
+sudo systemctl start docker
+sudo usermod -aG docker $USER
+exit
+# log in again
+```
+```shell Debian
+curl -sSL https://get.docker.com/ | sh
+sudo usermod -aG docker $USER
+exit
+# log in again
+```
+```shell Fedora
+curl -sSL https://get.docker.com/ | sh
+sudo systemctl start docker
+sudo usermod -aG docker $USER
+exit
+# log in again
+```
+```shell Ubuntu
+curl -sSL https://get.docker.com/ | sh
+sudo usermod -aG docker $USER
+exit
+# log in again
+```
+
+## Execution clients
+
+### Geth
 
 You can use the [Geth client](https://geth.ethereum.org/docs/) for the Goerli testnet and the Ethereum Mainnet. See the [Geth Documentation](https://geth.ethereum.org/docs/interface/peer-to-peer/) for a list of supported networks.
 
-Download the latest version:
+Download the `stable` image of Geth:
 
 ```shell
-docker pull ethereum/client-go:latest
+docker pull ethereum/client-go:stable
 ```
 
-Create a local directory to persist the data:
+Ensure that your system has sufficient capacity to store the data as the blockchain grows. The default syncmode for Geth is `--syncmode=snap`, which requires nearly 1 TiB of data. The consensus client requires an additional 200 GiB of data. About 2 TiB of capacity is sufficient at this time.
+
+```
+df -h
+```
+
+Create a local directory to persist the data. For this example, the data is in the home directory:
 
 ```shell Goerli
 mkdir ~/.geth-goerli
@@ -34,38 +80,50 @@ mkdir ~/.geth-goerli
 mkdir ~/.geth
 ```
 
-Run the container:
+Run the execution client with a websocket that the Chainlink node can connect to and the `authrpc` flags to allow the consensus client to connect. In this example, consensus clients on the `172.17.0.0/24` default Docker network are allowed to connect to this container.
 
 ```shell Goerli
-docker run --name eth -p 8546:8546 -v ~/.geth-goerli:/geth -it \
-           ethereum/client-go --goerli --ws --ipcdisable \
+docker run --name geth-goerli -p 8546:8546 -p 8551:8551 -v ~/.geth-goerli:/geth:/geth -it \
+    ethereum/client-go --goerli --ws --ipcdisable \
+    --ws.addr 0.0.0.0 --ws.origins="*" --datadir /geth \
+    --authrpc.addr 0.0.0.0 --authrpc.port 8551 --authrpc.vhosts 172.17.0.0/24
 ```
 ```shell Mainnet
-docker run --name eth -p 8546:8546 -v ~/.geth:/geth -it \
-           ethereum/client-go --ws --ipcdisable \
-           --ws.addr 0.0.0.0 --ws.origins="*" --datadir /geth
+docker run --name geth-goerli -p 8546:8546 -p 8551:8551 -v ~/.geth-goerli:/geth:/geth -it \
+    ethereum/client-go --ws --ipcdisable \
+    --ws.addr 0.0.0.0 --ws.origins="*" --datadir /geth \
+    --authrpc.addr 0.0.0.0 --authrpc.port 8551 --authrpc.vhosts 172.17.0.0/24
 ```
 
 Once the Ethereum client is running, you can use `Ctrl + P, Ctrl + Q` to detach from the container without stopping it. You will need to leave the container running for the Chainlink node to connect to it.
 
-If the container was stopped and you need to run it again, you can simply use the following command:
+If the container stops and you need to run it again, start it using the following command:
 
-```shell
-docker start -i eth
+```shell Goerli
+docker start -i geth-goerli
+```
+```shell Mainnet
+docker start -i geth
 ```
 
-Follow Geth's instructions for [Connecting to Consensus Clients](https://geth.ethereum.org/docs/interface/consensus-clients). This will require some additional configuration settings for the Docker command that runs Geth.
+Start a consensus client For more information, read Geth's instructions for [Connecting to Consensus Clients](https://geth.ethereum.org/docs/interface/consensus-clients).
 
 Return to [Running a Chainlink Node](../running-a-chainlink-node/).
 
-## Nethermind
+### Nethermind
 
 You can use the [Nethermind client](https://docs.nethermind.io/nethermind/) for the Goerli testnet and the Ethereum Mainnet. See the [Nethermind supported network configurations](https://docs.nethermind.io/nethermind/ethereum-client/docker#available-configurations) page for a list of supported networks.
 
-Download the latest version:
+Download the `latest` image of Nethermind:
 
 ```shell
 docker pull nethermind/nethermind:latest
+```
+
+Ensure that your system has sufficient capacity to store the data as the blockchain grows. By default, Nethermind requires nearly 1 TiB of data. The consensus client requires an additional 200 GiB of data. About 2 TiB of capacity is sufficient at this time.
+
+```
+df -h
 ```
 
 Create a local directory to persist the data:
@@ -80,35 +138,81 @@ mkdir ~/.nethermind
 Run the container:
 
 ```shell Goerli
-docker run --name eth -p 8545:8545 \
-           -v ~/.nethermind-goerli/:/nethermind/data \
-           -it nethermind/nethermind:latest --config goerli \
-           --Init.WebSocketsEnabled true --JsonRpc.Enabled true --JsonRpc.Host 0.0.0.0 --NoCategory.CorsOrigins * \
-           --datadir data
+docker run --name nethermind-goerli -p 8545:8545 \
+    -v ~/.nethermind-goerli/:/nethermind/data \
+    -it nethermind/nethermind:latest --config goerli \
+    --Init.WebSocketsEnabled true --JsonRpc.Enabled true --JsonRpc.Host 0.0.0.0 --NoCategory.CorsOrigins * \
+    --datadir data
 ```
 ```shell Mainnet
-docker run --name eth -p 8545:8545 \
-           -v ~/.nethermind/:/nethermind/data \
-           -it nethermind/nethermind:latest --Sync.FastSync true \
-           --Init.WebSocketsEnabled true --JsonRpc.Enabled true --JsonRpc.Host 0.0.0.0 --NoCategory.CorsOrigins * \
-           --datadir data
+docker run --name nethermind -p 8545:8545 \
+    -v ~/.nethermind/:/nethermind/data \
+    -it nethermind/nethermind:latest --Sync.FastSync true \
+    --Init.WebSocketsEnabled true --JsonRpc.Enabled true --JsonRpc.Host 0.0.0.0 --NoCategory.CorsOrigins * \
+    --datadir data
 ```
 
 After the Ethereum client is running, you can use `Ctrl + P, Ctrl + Q` to detach from the container without stopping it. You will need to leave the container running for the Chainlink node to connect to it.
 
 If the container was stopped and you need to run it again, use the following command to start it:
 
-```shell
-docker start -i eth
+```shell Goerli
+docker start -i nethermind-goerli
+```
+```shell Mainnet
+docker start -i nethermind
 ```
 
 Follow Nethermind's instructions for [Installing and configuring the Consensus Client](https://docs.nethermind.io/nethermind/guides-and-helpers/validator-setup/eth2-validator#setup). This will require some additional configuration settings for the Docker command that runs Nethermind.
 
 Return to [Running a Chainlink Node](../running-a-chainlink-node/).
 
+## Consensus clients
+
+### Lighthouse
+
+Create a local directory to persist the data. For this example, the data is in the home directory:
+
+```shell Goerli
+mkdir ~/.lighthouse-goerli
+```
+```shell Mainnet
+mkdir ~/.lighthouse
+```
+
+Use the `docker inspect` command to find the IP address of the execution client container:
+
+```shell Goerli
+docker inspect --format '{{ "{{ .NetworkSettings.IPAddress " }}}}' geth-goerli
+```
+```shell Mainnet
+docker inspect --format '{{ "{{ .NetworkSettings.IPAddress " }}}}' geth
+```
+
+Download the `latest` image of Lighthouse:
+
+```shell
+docker pull sigp/lighthouse:latest
+```
+
+Run the consensus client and point it at the execution client. The `--execution-endpoint` flag identifies the address of the execution client container. The `jwtsecret` file is required to authenticate with the execution client. The `-v ~/.geth-goerli/geth/jwtsecret:/jwtsecret` volume mount makes the `jwtsecret` file from the Geth container available inside the consensus container. Point this to the JWT for your specific execution client. 
+
+```shell Goerli
+docker run --name lighthouse-goerli -p 9000:9000/tcp -p 9000:9000/udp \
+    -v ~/.lighthouse-goerli:/root/.lighthouse -v ~/.geth-goerli/geth/jwtsecret:/jwtsecret
+    sigp/lighthouse lighthouse --network goerli beacon --http --http-address 0.0.0.0 \
+    --execution-endpoint http://172.17.0.2:8551 --execution-jwt /jwtsecret
+```
+```shell Mainnet
+docker run --name lighthouse-goerli -p 9000:9000/tcp -p 9000:9000/udp \
+    -v ~/.lighthouse-goerli:/root/.lighthouse -v ~/.geth-goerli/geth/jwtsecret:/jwtsecret
+    sigp/lighthouse lighthouse --network mainnet beacon --http --http-address 0.0.0.0 \
+    --execution-endpoint http://172.17.0.2:8551 --execution-jwt /jwtsecret
+```
+
 ## External Services
 
-The following services offer Ethereum clients with websockets connectivity known to work with the Chainlink node.
+The following services offer Ethereum clients with websockets connectivity known to work with Chainlink nodes. These services also manage the consensus client for you.
 
 ## [Alchemy](https://www.alchemyapi.io)
 

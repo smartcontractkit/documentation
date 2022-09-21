@@ -28,7 +28,7 @@ Nodes can fulfill requests for open APIs out-of-the-box using [Tasks](/docs/task
 ## Requirements
 
 - [Docker](https://docs.docker.com/install/): This guide uses Docker containers to simplify dependencies and application deployment.
-- Ethereum client: A fully synced Ethereum client with websockets enabled.
+- Ethereum execution client: A fully synced Ethereum execution client with websockets enabled and a connected concensus client. Alternatively, you can also use an [external service](/docs/run-an-ethereum-client/#external-services) as your Ethereum client.
 - Database: You must connect your Chainlink node to a database such as PostgreSQL.
 - Network: Use Mainnet or a [supported testnet](/docs/link-token-contracts/).
 - ETH and LINK: Mainnet or testnet funds that your node can use to fulfill requests
@@ -63,63 +63,53 @@ For a list of supported networks and available ETH and LINK faucets, see the [LI
 >
 > Ganache is a mock testnet. Although you can run nodes on Ganache, it is not officially supported. Most node operators should use one of the supported [testnets](/docs/link-token-contracts/) for development and testing.
 
-## Configure Docker
+## Setup your environment
 
-Configure [Docker](https://docs.docker.com/install/) on the system where you plan to run your Chainlink node. Use the quick instructions for setting up Docker below:
+Install the required software. You can do this on a single system, but as a best practice, configure a separate system for your Ethereum clients if you choose to configure them yourself.
 
-  ```shell Amazon Linux 2
-  sudo amazon-linux-extras install -y docker
-  sudo systemctl start docker
-  sudo gpasswd -a $USER docker
-  exit
-  # log in again
-  ```
-  ```shell CentOS
-  curl -sSL https://get.docker.com/ | sh
-  sudo systemctl start docker
-  sudo usermod -aG docker $USER
-  exit
-  # log in again
-  ```
-  ```shell Debian
-  curl -sSL https://get.docker.com/ | sh
-  sudo usermod -aG docker $USER
-  exit
-  # log in again
-  ```
-  ```shell Fedora
-  curl -sSL https://get.docker.com/ | sh
-  sudo systemctl start docker
-  sudo usermod -aG docker $USER
-  exit
-  # log in again
-  ```
-  ```shell Ubuntu
-  curl -sSL https://get.docker.com/ | sh
-  sudo usermod -aG docker $USER
-  exit
-  # log in again
-  ```
+1. [Start an Ethereum client](/docs/run-an-ethereum-client/) or use an [external service](/docs/run-an-ethereum-client/#external-services) instead. If you do run your own Ethereum clients, run this on a separate machine from where you plan to run your Chainlink Node. Hardware requirements of Ethereum clients can change over time. Ensure that your Ethereum clients are fully synced before you start your Chainlink node.
 
-## Start an Ethereum Client
+1. On the system where you plan to run your Chainlink node, [install Docker](https://docs.docker.com/install/). For example, you can use the following commands:
 
-Connectivity to an Ethereum client is also required for communication with the blockchain. If you decide to run your own Ethereum client, you will want to run that on a separate machine. Hardware requirements of Ethereum clients can change over time. Alternatively, you can also use an [external service](/docs/run-an-ethereum-client/#external-services) as your Ethereum client.
+    ```shell Amazon Linux 2
+    sudo amazon-linux-extras install -y docker
+    sudo systemctl start docker
+    sudo gpasswd -a $USER docker
+    exit
+    # log in again
+    ```
+    ```shell CentOS
+    curl -sSL https://get.docker.com/ | sh
+    sudo systemctl start docker
+    sudo usermod -aG docker $USER
+    exit
+    # log in again
+    ```
+    ```shell Debian
+    curl -sSL https://get.docker.com/ | sh
+    sudo usermod -aG docker $USER
+    exit
+    # log in again
+    ```
+    ```shell Fedora
+    curl -sSL https://get.docker.com/ | sh
+    sudo systemctl start docker
+    sudo usermod -aG docker $USER
+    exit
+    # log in again
+    ```
+    ```shell Ubuntu
+    curl -sSL https://get.docker.com/ | sh
+    sudo usermod -aG docker $USER
+    exit
+    # log in again
+    ```
 
-  - [Run Geth](/docs/run-an-ethereum-client/#geth) with Goerli or Mainnet.
-  - [Run Nethermind](/docs/run-an-ethereum-client/#nethermind)
-  - [Use an external service](../run-an-ethereum-client/#external-services). You must have a valid URL and port number to connect your Chainlink node to an external service.
-
-Be sure that your client is fully synced before you start your Chainlink node.
-
-## Start a Database
-
-Start a database that your Chainlink node can use to store data about the node and its processes. Either run the database on the same system as your Chainlink node, or connect your node to a remote database. To learn how to deploy and run PostgreSQL, use one of the following guides:
-
-- [Run PostgreSQL locally in Docker](https://hub.docker.com/_/postgres/)
-- [Run PostgreSQL locally without Docker](https://www.postgresql.org/docs/current/server-start.html)
-- [Connect to a remote database](/docs/connecting-to-a-remote-database/)
-
-After you start the database, use the default `postgres` user and `postgres` database or create a separate user and database for the Chainlink node. Record the username, the user password, and the database name that you configure. You'll provide this information in your Chainlink node's `.env` configuration file later.
+1. Start a database that your Chainlink node can use to store data about the node and its processes. Either run the database on the same system as your Chainlink node, or connect your node to a remote database. To learn how to deploy and run PostgreSQL, use one of the following guides:
+    - [Run PostgreSQL locally in Docker](https://hub.docker.com/_/postgres/)
+    - [Connect to a remote database](/docs/connecting-to-a-remote-database/)
+1. On your database, create a separate user and database for the Chainlink node. Record the username, the user password, and the database name that you configure. You'll provide this information in your Chainlink node's `.env` configuration file later.
+1. Ensure that your Ethereum clients are fully synced before you start your Chainlink node.
 
 ## Configure the Chainlink Node
 
@@ -155,7 +145,7 @@ CHAINLINK_TLS_PORT=0
 SECURE_COOKIES=false
 ETH_URL=[PROTOCOL]://[CLIENT_ADDRESS]:[CLIENT_PORT]
 DATABASE_URL=postgresql://[USERNAME]:[PASSWORD]@[SERVER]:[PORT]/[DB_NAME]?sslmode=[SSL_MODE]
-#DATABASE_TIMEOUT=0" > ~/.chainlink-goerli/.env
+ALLOW_ORIGINS=*" > ~/.chainlink-goerli/.env
 ```
 ```shell Mainnet
 echo "ROOT=/chainlink
@@ -177,9 +167,14 @@ Construct the URL for your Ethereum client and configure it in the `.env` file.
 1. Find the hostname or IP address for your Ethereum client using one of the following methods:
 
     - If you are running the Ethereum client in a local Docker container, use the `docker inspect` command to find the IP address for that container:
-      ```shell
-      docker inspect --format '{{ "{{ .NetworkSettings.IPAddress " }}}}' $(docker ps -f name=eth -q)
+
+      ```shell Goerli
+      docker inspect --format '{{ "{{ .NetworkSettings.IPAddress " }}}}' geth-goerli
       ```
+      ```shell Mainnet
+      docker inspect --format '{{ "{{ .NetworkSettings.IPAddress " }}}}' geth
+      ```
+
     - If you are running the Ethereum client outside of a Docker container on your local system, use `localhost` as your address.
     - If you are running the Ethereum client on another server or from an external provider, find the DNS hostname or IP address for that system.
 
