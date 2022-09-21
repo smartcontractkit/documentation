@@ -95,7 +95,7 @@ After the sequencer comes back up, it moves moves all transactions in the pendin
 
 ## Example code
 
-Create the consumer contract for sequencer uptime feeds similarly to contracts you use for [Chainlink Data Feeds](/docs/get-the-latest-price/#solidity). Configure the constructor using the following variables:
+Create the consumer contract for sequencer uptime feeds similarly to contracts you use for [Chainlink Data Feeds](/docs/data-feeds/price-feeds/#solidity). Configure the constructor using the following variables:
 
 - Configure the `sequencerUptimeFeed` object with the [sequencer uptime feed proxy address](#available-networks) for your L2 network.
 - Configure the `priceFeed` object with one of the [Data Feed proxy addresses](/docs/data-feeds/) that are available for your network.

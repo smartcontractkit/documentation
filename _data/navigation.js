@@ -102,7 +102,7 @@ module.exports = {
           },
           {
             title: 'Price Feeds',
-            url: '/docs/get-the-latest-price/',
+            url: '/docs/data-feeds/price-feeds/',
             children: [
               {
                 title: 'Historical Price Data',

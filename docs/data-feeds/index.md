@@ -6,7 +6,7 @@ title: 'Chainlink Data Feeds Documentation'
 permalink: 'docs/data-feeds/'
 whatsnext:
   {
-    'Get the latest price of a Data Feed': '/docs/get-the-latest-price/',
+    'Get the latest price of a Data Feed': '/docs/data-feeds/price-feeds/',
     'Learn more about API references for using Data Feeds': '/docs/data-feeds/price-feeds/api-reference/',
     'Retrieve contract addresses to use Data Feeds': '/docs/data-feeds/',
   }
@@ -51,10 +51,10 @@ For example, [Synthetix](https://www.synthetix.io/) uses Data Feeds to determine
 
 Data Feeds aggregate many data sources and publish them on-chain using a combination of the [Decentralized Data Model](/docs/architecture-decentralized-model/) and [Off-Chain Reporting](/docs/off-chain-reporting/).
 
-To learn how to use price feeds, see the [Price Feeds](/docs/get-the-latest-price/) documentation.
+To learn how to use price feeds, see the [Price Feeds](/docs/data-feeds/price-feeds/) documentation.
 
 <div class="remix-callout">
-    <a href="/docs/get-the-latest-price/">Price Feeds</a>
+    <a href="/docs/data-feeds/price-feeds/">Price Feeds</a>
 </div>
 
 ### L2 sequencer uptime feeds
@@ -75,7 +75,7 @@ Data Feeds are an example of a decentralized oracle network and include the foll
 - **Proxy contract**: Proxy contracts are on-chain proxies that point to the aggregator for a particular data feed. Using proxies enables the underlying aggregator to be upgraded without any service interruption to consuming contracts. Proxy contracts can vary from one data feed to another, but the [`AggregatorProxy.sol` contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/dev/AggregatorProxy.sol) on Github is a common example.
 - **Aggregator contract**: An aggregator is a contract that receives periodic data updates from the oracle network. Aggregators store aggregated data on-chain so that consumers can retrieve it and act upon it within the same transaction. For a complete list of functions and variables available on most aggregator contracts, see the [Data Feeds API Reference](/docs/data-feeds/price-feeds/api-reference/#accesscontrolledoffchainaggregator).
 
-To learn how to create a consumer contract that uses an existing data feed, read the [Using Data Feeds](../get-the-latest-price/) documentation.
+To learn how to create a consumer contract that uses an existing data feed, read the [Using Data Feeds](/docs/data-feeds/price-feeds/) documentation.
 
 ## Reading proxy and aggregator configurations
 
