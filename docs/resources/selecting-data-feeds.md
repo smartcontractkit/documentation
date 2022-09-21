@@ -51,6 +51,7 @@ Data feeds might be under review for the following reasons:
 - The token project or asset is in early development
 - The project is going through a market event such as a token or liquidity migration
 - The token or project is being deprecated in the market
+- The asset has a high spread between data providers or low liquidity in the market
 
 ### 🔵 Custom Feeds
 
