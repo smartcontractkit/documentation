@@ -23,7 +23,7 @@ observationSource = """
                   topics="$(jobRun.logTopics)"]
 
     decode_cbor  [type="cborparse" data="$(decode_log.data)"]
-    fetch        [type="http" method=GET url="$(decode_cbor.get)"]
+    fetch        [type="http" method=GET url="$(decode_cbor.get)" allowUnrestrictedNetworkAccess="true"]
     parse        [type="jsonparse" path="$(decode_cbor.path)" data="$(fetch)"]
     encode_large [type="ethabiencode"
                 abi="(bytes32 requestId, bytes _data)"
