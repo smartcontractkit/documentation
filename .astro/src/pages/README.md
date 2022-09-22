@@ -16,6 +16,8 @@ metadata:
     0: "/files/1a63254-link.png"
 setup: |
   import { variables } from "@variables"
+  import { Tabs } from "../components/Tabs/Tabs"
+  import { NetworkTabs, PackageManagerTabs } from "@components"
 ---
 
 ## Using Directives
@@ -84,53 +86,25 @@ warning
 ::solidity-remix[/samples/PriceFeeds/PriceConsumerV3.sol]
 ```
 
-### Codetabs
-
-````
-  ```shell Rinkeby
-  cd ~/.chainlink-rinkeby && docker run -p 6687:6688 -v ~/.chainlink-rinkeby:/chainlink -it --env-file=.env smartcontract/chainlink local n
-  ```
-  ```shell Kovan
-  cd ~/.chainlink-kovan && docker run -p 6687:6688 -v ~/.chainlink-kovan:/chainlink -it --env-file=.env smartcontract/chainlink local n
-  ```
-  ```shell Mainnet
-  cd ~/.chainlink && docker run -p 6687:6688 -v ~/.chainlink:/chainlink -it --env-file=.env smartcontract/chainlink local n
-  ```
-````
-
-```shell Rinkeby
-cd ~/.chainlink-rinkeby && docker run -p 6687:6688 -v ~/.chainlink-rinkeby:/chainlink -it --env-file=.env smartcontract/chainlink local n
-```
-
-```shell Kovan
-cd ~/.chainlink-kovan && docker run -p 6687:6688 -v ~/.chainlink-kovan:/chainlink -it --env-file=.env smartcontract/chainlink local n
-```
-
-```shell Mainnet
-cd ~/.chainlink && docker run -p 6687:6688 -v ~/.chainlink:/chainlink -it --env-file=.env smartcontract/chainlink local n
-```
-
 ## Using variables
 
-You can use variables by importing the variables object into the curent page
+You can use variables by importing the variables object into the current page
 
-for .md pages
-
-```js
+<Tabs client:visible>
+<Fragment slot="tab.1">Usage in .md</Fragment>
+<Fragment slot="tab.2">Usage in .mdx</Fragment>
+<Fragment slot="panel.1">
+```
 setup: |
   import { variables } from "@variables"
-
 ```
-
-for .mdx pages
-
+</Fragment>
+<Fragment slot="panel.2">
 ```
 import { variables } from "@variables"
 ```
-
-<pre>
-{JSON.stringify(variables, null, 2)}
-</pre>
+</Fragment>
+</Tabs>
 
 ### Usage
 
@@ -138,4 +112,161 @@ import { variables } from "@variables"
 
 ```
 {variables.GOERLI_LINK_TOKEN}
+```
+
+## Code Tabs
+
+Codetabs use nanostores to sync up throughout the page.
+
+Ideally we will create components such as the `<CodeTabs />` component or the `<NetworkTabs />` component, which use a `sharedStore` to change all tabs to the same value throughout the page.
+
+<Tabs client:visible>
+  <Fragment slot="tab.1">Usage in .md</Fragment>
+  <Fragment slot="tab.2">Usage in .mdx</Fragment>
+  <Fragment slot="panel.1">
+  ```markdown
+  setup: |
+    import { Tabs } from "../../components/Tabs/Tabs.tsx"
+    import { NetworkTabs, PackageManagerTabs } from "@components"
+    ```
+  </Fragment>
+  <Fragment slot="panel.2">
+  ```markdown
+  import { Tabs } from "../../components/Tabs/Tabs.tsx"
+  import { NetworkTabs, PackageManagerTabs } from "@components"
+  ```
+  </Fragment>
+</Tabs>
+
+### Network Tab
+
+Create a local directory to persist the data:
+
+<NetworkTabs>
+  <Fragment slot="Goerli">
+  ```shell Goerli
+  mkdir ~/.geth-goerli
+  ```
+  </Fragment>
+  <Fragment slot="Mainnet">
+  ```shell Mainnet
+  mkdir ~/.geth
+  ```
+  </Fragment>
+</NetworkTabs>
+
+Run the container:
+
+<NetworkTabs>
+  <Fragment slot="Goerli">
+  ```shell Goerli
+  docker run --name eth -p 8546:8546 -v ~/.geth-goerli:/geth -it \
+          ethereum/client-go --goerli --ws --ipcdisable \
+          --ws.addr 0.0.0.0 --ws.origins="*" --datadir /geth
+  ```
+  </Fragment>
+  <Fragment slot="Mainnet">
+  ```shell Mainnet
+  docker run --name eth -p 8546:8546 -v ~/.geth:/geth -it \
+          ethereum/client-go --ws --ipcdisable \
+          --ws.addr 0.0.0.0 --ws.origins="*" --datadir /geth
+  ```
+  </Fragment>
+</NetworkTabs>
+
+#### Usage
+
+````
+Create a local directory to persist the data:
+
+<NetworkTabs>
+  <Fragment slot="Goerli">
+  ```shell Goerli
+  mkdir ~/.geth-goerli
+  ```
+  </Fragment>
+  <Fragment slot="Mainnet">
+  ```shell Mainnet
+  mkdir ~/.geth
+  ```
+  </Fragment>
+</NetworkTabs>
+
+Run the container:
+
+<NetworkTabs>
+  <Fragment slot="Goerli">
+  ```shell Goerli
+  docker run --name eth -p 8546:8546 -v ~/.geth-goerli:/geth -it \
+          ethereum/client-go --goerli --ws --ipcdisable \
+          --ws.addr 0.0.0.0 --ws.origins="*" --datadir /geth
+  ```
+  </Fragment>
+  <Fragment slot="Mainnet">
+  ```shell Mainnet
+  docker run --name eth -p 8546:8546 -v ~/.geth:/geth -it \
+          ethereum/client-go --ws --ipcdisable \
+          --ws.addr 0.0.0.0 --ws.origins="*" --datadir /geth
+  ```
+  </Fragment>
+</NetworkTabs>
+````
+
+### Package Manager Tabs
+
+<PackageManagerTabs>
+  <Fragment slot="npm">
+  ```
+  npm i -g @chainlink/solana-sdk
+  ```
+  </Fragment>
+  <Fragment slot="yarn">
+  ```
+  yarn add @chainlink/solana-sdk
+  ```
+  </Fragment>
+</PackageManagerTabs>
+
+#### Usage
+
+````
+<PackageManagerTabs>
+  <Fragment slot="npm">
+  ```
+  npm i -g @chainlink/solana-sdk
+  ```
+  </Fragment>
+  <Fragment slot="yarn">
+  ```
+  yarn add @chainlink/solana-sdk
+  ```
+  </Fragment>
+</PackageManagerTabs>
+````
+
+### Custom tabs
+
+We can still use the tabs without creating an Astro component or without the sharedStore property.
+
+:::note
+To create a custom tab we _MUST_ import it relatively from the current file `import { Tabs } from "../../components/Tabs/Tabs.tsx"` and not from `@components`
+:::
+
+```
+// whithout shared store
+<Tabs client:visible>
+  <Fragment slot="tab.1">Tab 1</Fragment>
+  <Fragment slot="tab.2">Tab 2</Fragment>
+  <Fragment slot="panel.1">Content 1</Fragment>
+  <Fragment slot="panel.2">Content 2</Fragment>
+</Tabs>
+
+// with sharedStore (syncs up all tabs in the page)
+<Tabs sharedStore="networks" client:visible>
+  <Fragment slot="tab.1">Tab 1</Fragment>
+  <Fragment slot="tab.2">Tab 2</Fragment>
+  <Fragment slot="panel.1">Content 1</Fragment>
+  <Fragment slot="panel.2">Content 2</Fragment>
+</Tabs>
+
 ```

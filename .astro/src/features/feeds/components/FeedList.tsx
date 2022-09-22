@@ -9,10 +9,12 @@ export const FeedList = ({
   stub = "ethereum-addresses",
   ecosystem = "",
   l2healthflag = "",
+  networkstatusurl,
 }: {
   stub: string
   ecosystem?: string
-  l2healthflag?: "arbitrum" | "optimism" | ""
+  l2healthflag?: "arbitrum" | "optimism" | "metis" | ""
+  networkstatusurl?: string
 }) => {
   const [path, setPath] = useState<string | undefined>()
 
@@ -32,15 +34,13 @@ export const FeedList = ({
   const [showExtraDetails, setShowExtraDetails] = useState(false)
 
   return (
-    <div>
+    <>
       {ecosystem === "solana" ? (
         <>
           <p>
             To learn how to implement these feeds, see the{" "}
-            <a href="/docs/solana/using-data-feeds-solana/">
-              Solana Examples for Consuming Data Feeds
-            </a>
-            .
+            <a href="/docs/solana/using-data-feeds-solana/">Solana Examples</a>{" "}
+            for Consuming Data Feeds.
           </p>
           <p>
             To learn how to obtain SOL tokens on the Solana Devnet, see the{" "}
@@ -65,41 +65,24 @@ export const FeedList = ({
           </p>
         </>
       )}
-      <p>Notes:</p>
-      <p>
-        <ul>
-          <li>
-            Off-chain equity and ETF assets are traded only during standard
-            market hours from 9:30AM to 4:00PM EDT Monday through Friday. Using
-            these feeds outside of those windows is not recommended.
-          </li>
-          <li>
-            Assets on the Forex (Foreign Exchange) markets are traded only from
-            5PM EDT on Sunday through 4PM EDT on Friday. Additionally, some
-            currencies might trade only during local banking hours. It is not
-            advised to use Forex feeds outside of market hours for the specific
-            currency.
-          </li>
-        </ul>
-      </p>
-
-      {l2healthflag === "arbitrum" && (
-        <p>
-          As a best practice, use the L2 sequencer feed to verify the status of
-          the sequencer when running applications on the Arbitrum network. See
-          the <a href="/docs/l2-sequencer-flag/">L2 Sequencer Uptime Feeds</a>{" "}
-          page for examples.
-        </p>
-      )}
-      {l2healthflag === "optimism" && (
-        <p>
-          Optimism uses an optimistic rollup protocol, but there is no L2
-          Sequencer Health Flag available at this time.
-        </p>
-      )}
+      <h4>Best practices for ETF and Forex feeds</h4>
+      <ul>
+        <li>
+          Off-chain equity and ETF assets are traded only during standard market
+          hours from 9:30AM to 4:00PM EDT Monday through Friday.{" "}
+          <strong>Do not</strong> use these feeds outside of those windows.
+        </li>
+        <li>
+          Assets on the Forex (Foreign Exchange) markets are traded only from
+          5PM EDT on Sunday through 4PM EDT on Friday. Additionally, some
+          currencies might trade only during local banking hours.{" "}
+          <strong>Do not</strong> use Forex feeds outside of market hours for
+          the specific currency.
+        </li>
+      </ul>
 
       <div id="categories">
-        <p>Data feeds reside in the following categories:</p>
+        <h4>Data feed categories</h4>
         <ul>
           <li>
             🟢{" "}
@@ -141,13 +124,33 @@ export const FeedList = ({
             : These feeds are scheduled for deprecation.
           </li>
         </ul>
-
         <p>
           See the{" "}
           <a href="/docs/selecting-data-feeds/">Selecting Quality Data Feeds</a>{" "}
           page for complete details about each category.
         </p>
       </div>
+
+      {l2healthflag === "arbitrum" ||
+        l2healthflag === "optimism" ||
+        (l2healthflag === "metis" && (
+          <p>
+            This is an L2 network. As a best practice, use the L2 sequencer feed
+            to verify the status of the sequencer when running applications on
+            L2 networks. See the{" "}
+            <a href="/docs/l2-sequencer-flag/">L2 Sequencer Uptime Feeds</a>{" "}
+            page for examples.
+          </p>
+        ))}
+
+      {networkstatusurl && (
+        <div>
+          <p>
+            Track the status of this network at{" "}
+            <a href={networkstatusurl}>{networkstatusurl}.</a>
+          </p>
+        </div>
+      )}
 
       {feeds.error && "There was an error loading the feeds..."}
       {!feeds.data && "Loading..."}
@@ -184,6 +187,6 @@ export const FeedList = ({
           )}
         </div>
       ))}
-    </div>
+    </>
   )
 }

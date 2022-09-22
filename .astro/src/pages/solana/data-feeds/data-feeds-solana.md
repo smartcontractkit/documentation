@@ -1,0 +1,15 @@
+---
+layout: ../../../layouts/MainLayout.astro
+section: solana
+title: "Solana Data Feeds Addresses"
+stub: data-feeds-solana
+permalink: "docs/solana/data-feeds-solana/"
+metadata:
+  ecosystem: solana
+  networkstatusurl: "https://status.solana.com/"
+date: Last Modified
+setup: |
+  import { FeedList } from "@features/feeds/components/FeedList.tsx"
+---
+
+<FeedList client:idle stub="data-feeds-solana"  ecosystem="solana" networkstatusurl="https://status.solana.com/"/>
