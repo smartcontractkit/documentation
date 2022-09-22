@@ -23,19 +23,19 @@ This guide explains how to register a time-based Upkeep that executes according 
 
 To use the job scheduler, you must register a new upkeep on the Chainlink Automation network. In the Chainlink Automation App, click the blue **Register new Upkeep** button.
 
-![Chainlink Automation App](/images/contract-devs/automation/automation-ui-landing.png)
+![Chainlink Automation App](/images/contract-devs/automation/auto-ui-home.png)
 
 ## Connecting your Wallet
 
 If you do not already have a wallet connected with the Chainlink Automation network, the interface will prompt you to do so. Click the **Connect Wallet** button and follow the remaining prompts to connect your wallet to the network.
 
-![Automation Connect Wallet](/images/contract-devs/automation/automation-connect-wallet.png)
+![Automation Connect Wallet](/images/contract-devs/automation/auto-ui-wallet.png)
 
 # Trigger Selection
 
 After you have successfully connected your wallet, please select time-based trigger.
 
-![Automation Trigger Selection](/images/contract-devs/automation/automation-trigger-selection.png)
+![Automation Trigger Selection](/images/contract-devs/automation/auto-ui-pick.png)
 
 # Using Time-Based Triggers
 

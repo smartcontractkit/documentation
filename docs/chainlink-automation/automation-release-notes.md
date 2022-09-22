@@ -88,4 +88,4 @@ Chainlink Keepers officially launched on [Ethereum Mainnet](https://keepers.chai
 
 ## Questions
 
-If you have questions, read the [Chainlink Automation Frequently Asked Questions](../faqs/) page. You can also ask questions in the [#keepers channel](https://discord.com/channels/592041321326182401/821350860302581771) in our [Discord server](https://discord.gg/qj9qarT), or [contact us](https://forms.gle/WadxnzzjHPtta5Zd9) for assistance with registration.
+If you have questions, read the [Chainlink Automation Frequently Asked Questions](../faqs/) page. You can also ask questions in the [#automation channel](https://discord.com/channels/592041321326182401/821350860302581771) in our [Discord server](https://discord.gg/qj9qarT), or [contact us](https://forms.gle/WadxnzzjHPtta5Zd9) for assistance with registration.

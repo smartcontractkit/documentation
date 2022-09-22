@@ -101,6 +101,6 @@ For a list of blockchains that is supported by Chainlink Automation, see the [Su
 
 ## Questions and examples
 
-If you have questions, read the [Chainlink Automation Frequently Asked Questions](../faqs/) page, ask them in the [#keepers channel](https://discord.com/channels/592041321326182401/821350860302581771) in our [Discord server](https://discord.gg/qj9qarT), or [reach out to us](https://forms.gle/WadxnzzjHPtta5Zd9).
+If you have questions, read the [Chainlink Automation Frequently Asked Questions](../faqs/) page, ask them in the [#automation channel](https://discord.com/channels/592041321326182401/821350860302581771) in our [Discord server](https://discord.gg/qj9qarT), or [reach out to us](https://forms.gle/WadxnzzjHPtta5Zd9).
 
 To understand different use cases for Chainlink Automation, refer to [Other Tutorials](/docs/other-tutorials/).

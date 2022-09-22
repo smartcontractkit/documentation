@@ -7,7 +7,7 @@ title: 'Frequently Asked Questions'
 
 ## Will Chainlink Automation work for my use case?
 
-For help with your specific use case, [contact us](https://chainlinkcommunity.typeform.com/to/OYQO67EF?page=docs-keepers) to connect with one of our Solutions Architects. You can also ask questions about Chainlink Automation on [Stack Overflow](https://stackoverflow.com/questions/ask?tags=chainlink) or the [#keepers channel](https://discord.com/channels/592041321326182401/821350860302581771) in our [Discord server](https://discord.gg/qj9qarT). [Utility contracts](../utility-contracts) can also help you get started quickly.
+For help with your specific use case, [contact us](https://chainlinkcommunity.typeform.com/to/OYQO67EF?page=docs-keepers) to connect with one of our Solutions Architects. You can also ask questions about Chainlink Automation on [Stack Overflow](https://stackoverflow.com/questions/ask?tags=chainlink) or the [#automation channel](https://discord.com/channels/592041321326182401/821350860302581771) in our [Discord server](https://discord.gg/qj9qarT). [Utility contracts](../utility-contracts) can also help you get started quickly.
 
 ## I registered my upkeep successfully, but I can’t see it. How can I find my upkeeps?
 
