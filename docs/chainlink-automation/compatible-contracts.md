@@ -2,7 +2,7 @@
 layout: nodes.liquid
 section: ethereum
 date: Last Modified
-title: 'Creating Automation-compatible contracts'
+title: 'Creating Compatible Contracts'
 whatsnext:
   {
     'Build flexible contracts': '/docs/chainlink-automation/flexible-upkeeps/',
@@ -14,7 +14,7 @@ Use custom logic to allow Chainlink Automation to determine when to execute your
 
 ## Overview
 
-Learn how to make smart contracts **Automation-compatible** with the `AutomationCompatibleInterface` and its functions.
+Learn how to make smart contracts that are compatible with the `AutomationCompatibleInterface` contract and its functions.
 
 **Topics**
 
@@ -32,14 +32,14 @@ Learn how to make smart contracts **Automation-compatible** with the `Automation
 
 ## Example contract
 
-Automation-compatible contracts must meet the following requirements:
+To use Chainlink Automation, contracts must meet the following requirements:
 
 - Import `AutomationCompatible.sol`. You can refer to the [Chainlink Contracts](https://github.com/smartcontractkit/chainlink/tree/develop/contracts/src) on GitHub to find the latest version.
 - Use the `AutomationCompatibleInterface` from the library to ensure your `checkUpkeep` and `performUpkeep`function definitions match the definitions expected by the Chainlink Automation Network.
 - Include a `checkUpkeep` function that contains the logic that will be executed off-chain to see if `performUpkeep` should be executed. `checkUpkeep` can use on-chain data and a specified `checkData` parameter to perform complex calculations off-chain and then send the result to `performUpkeep` as `performData`.
 - Include a `performUpkeep` function that will be executed on-chain when `checkUpkeep` returns `true`. Because `performUpkeep` is external, users are advised to revalidate conditions and performData.
 
-Use these elements to create an Automation-compatible contract that will automatically increment a counter after every `updateInterval` seconds. After you register the contract as an upkeep, the Chainlink Automation Network simulates our `checkUpkeep` off-chain during every block to determine if the `updateInterval` time has passed since the last increment (timestamp). When `checkUpkeep` returns true, the Chainlink Automation Network calls `performUpkeep` on-chain and increments the counter. This cycle repeats until the upkeep is cancelled or runs out of funding.
+Use these elements to create a compatible contract that will automatically increment a counter after every `updateInterval` seconds. After you register the contract as an upkeep, the Chainlink Automation Network simulates our `checkUpkeep` off-chain during every block to determine if the `updateInterval` time has passed since the last increment (timestamp). When `checkUpkeep` returns true, the Chainlink Automation Network calls `performUpkeep` on-chain and increments the counter. This cycle repeats until the upkeep is cancelled or runs out of funding.
 
 ```solidity
 {% include 'samples/Automation/AutomationCounter.sol' %}
@@ -58,7 +58,7 @@ Compile and deploy your own Automation Counter onto a [supported Testnet](../sup
 
 To see more complex examples, go to the [utility contracts](../utility-contracts) page.
 
-We will now look at each function in an Automation-compatible contract in detail.
+We will now look at each function in a compatible contract in detail.
 
 ## Functions
 
@@ -190,6 +190,6 @@ It might be desirable to call `performUpkeep` when the `checkUpkeep` conditions 
 
 ### Test your contract
 
-As with all smart contract testing, it is important to test the boundaries of your smart contract in order to ensure it operates as intended. Similarly, it is important to make sure your Automation-compatible contract operates within the parameters of the `KeeperRegistry`.
+As with all smart contract testing, it is important to test the boundaries of your smart contract in order to ensure it operates as intended. Similarly, it is important to make sure the compatible contract operates within the parameters of the `KeeperRegistry`.
 
 Test all of your mission-critical contracts, and stress-test the contract to confirm the performance and correct operation of your use case under load and adversarial conditions. The Chainlink Automation Network will continue to operate under stress, but so should your contract. For a list of supported Testnet blockchains, please review the [supported networks page](../supported-networks).

@@ -26,11 +26,11 @@ To find other example contracts, see the [Example Automation Contracts](/docs/ch
 
 ## `EthBalanceMonitor` Properties
 
-`EthBalanceMonitor` is ownable, pausable, and Automation-compatible:
+`EthBalanceMonitor` is ownable, pauseable, and compatible with the `AutomationCompatibleInterface` contract:
 
-- **Ownable**: The contract has an owner address, and provides basic authorization control functions. This simplifies the implementation of *user permissions* and allows for transer of ownership.
-- **Pausable**: This feature allows the contract to implement a pause and unpause mechanism that the contract owner can trigger.
-- **Automation-compatible**: The `AutomationCompatibleInterface` is necessary to create Automation-compatible contracts. To learn more about the `AutomationCompatibleInterface` and its uses and functions, refer to [Making Automation-compatible Contracts](../compatible-contracts/).
+- **Ownable**: The contract has an owner address, and provides basic authorization control functions. This simplifies the implementation of *user permissions* and allows for transfer of ownership.
+- **Pauseable**: This feature allows the contract to implement a pause and unpause mechanism that the contract owner can trigger.
+- **Compatible**: The `AutomationCompatibleInterface` is necessary to create contracts that are compatible with the Chainlink Automation Network. To learn more about the `AutomationCompatibleInterface` and its uses and functions, read the [Making Compatible Contracts](../compatible-contracts/) guide.
 
 You can open the contract in Remix:
 <div class="remix-callout">
@@ -103,4 +103,4 @@ Only the `keeperRegistryAddress` can `performUpkeep`, which is a *global setting
 | ------------------------------- | -------------------------------------------------------------------- |
 | `needsFunding`                  | List of addresses to fund (addresses must be pre-approved)           |
 
-Any address can trigger the `topUp` function. This is an intentional design pattern that shows how easy it is to make an existing contract Automation-compatible while maintaining an open interface. All validations are performed before the funding is triggered. If the conditions are not met, any attempt to top up will revert.
+Any address can trigger the `topUp` function. This is an intentional design pattern that shows how easy it is to make an existing contract compatible with Chainlink Automation while maintaining an open interface. All validations are performed before the funding is triggered. If the conditions are not met, any attempt to top up will revert.
