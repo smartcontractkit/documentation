@@ -42,11 +42,11 @@ Automation-compatible contracts must meet the following requirements:
 Use these elements to create an Automation-compatible contract that will automatically increment a counter after every `updateInterval` seconds. After you register the contract as an upkeep, the Chainlink Automation Network simulates our `checkUpkeep` off-chain during every block to determine if the `updateInterval` time has passed since the last increment (timestamp). When `checkUpkeep` returns true, the Chainlink Automation Network calls `performUpkeep` on-chain and increments the counter. This cycle repeats until the upkeep is cancelled or runs out of funding.
 
 ```solidity
-{% include 'samples/Automation/KeepersCounter.sol' %}
+{% include 'samples/Automation/AutomationCounter.sol' %}
 ```
 
 <div class="remix-callout">
-    <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/Automation/KeepersCounter.sol" >Open in Remix</a>
+    <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/Automation/AutomationCounter.sol" >Open in Remix</a>
     <a href="/docs/conceptual-overview/#what-is-remix" > What is Remix?</a>
 </div>
 

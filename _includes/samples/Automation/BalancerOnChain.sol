@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
-import '@chainlink/contracts/src/v0.8/interfaces/KeeperCompatibleInterface.sol';
+import '@chainlink/contracts/src/v0.8/interfaces/AutomationCompatibleInterface.sol';
 
 /**
  * @dev Example contract which perform all the computation in `performUpkeep`
- * @notice important to implement {KeeperCompatibleInterface}
+ * @notice important to implement {AutomationCompatibleInterface}
  */
 
 /**
@@ -13,7 +13,7 @@ import '@chainlink/contracts/src/v0.8/interfaces/KeeperCompatibleInterface.sol';
  * DO NOT USE THIS CODE IN PRODUCTION.
  */
 
-contract BalancerOnChain is KeeperCompatibleInterface {
+contract BalancerOnChain is AutomationCompatibleInterface {
     uint256 public constant SIZE = 1000;
     uint256 public constant LIMIT = 1000;
     uint256[SIZE] public balances;
@@ -53,7 +53,7 @@ contract BalancerOnChain is KeeperCompatibleInterface {
         return (upkeepNeeded, '');
     }
 
-    /// @dev this method is called by the keepers. it increases all elements which balances are lower than the LIMIT
+    /// @dev this method is called by the Automation Nodes. it increases all elements which balances are lower than the LIMIT
     function performUpkeep(
         bytes calldata /* performData */
     ) external override {

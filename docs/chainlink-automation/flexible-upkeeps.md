@@ -6,7 +6,7 @@ title: 'Making flexible, secure, and low-cost contracts'
 whatsnext: { 'Example Contracts': '/docs/chainlink-automation/util-overview/', 'FAQs': '/docs/chainlink-automation/faqs/' }
 ---
 
-In this guide, you will learn how the flexibility of [Chainlink Automation](https://chain.link/keepers) enables important design patterns that reduce gas fees, enhance the resilience of dApps, and improve end-user experience. Smart contracts themselves cannot self-trigger their functions at arbitrary times or under arbitrary conditions. Transactions can only be initiated by another account.
+In this guide, you will learn how the flexibility of [Chainlink Automation](https://chain.link/automation) enables important design patterns that reduce gas fees, enhance the resilience of dApps, and improve end-user experience. Smart contracts themselves cannot self-trigger their functions at arbitrary times or under arbitrary conditions. Transactions can only be initiated by another account.
 
 Start by integrating an example contract to Chainlink Automation that has not yet been optimized. Then, deploy a comparison contract that shows you how to properly use the flexibility of Chainlink Automation to perform complex computations without paying high gas fees.
 
@@ -97,7 +97,7 @@ Modify the contract and move the computation to the `checkUpkeep()` function. Th
 ```
 
 <div class="remix-callout">
-    <a href="https://remix.ethereum.org/#url=https://docs.chain.link/Automation/Keepers/BalancerOffChain.sol" >Open in Remix</a>
+    <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/Automation/BalancerOffChain.sol" >Open in Remix</a>
     <a href="/docs/conceptual-overview/#what-is-remix" >What is Remix?</a>
 </div>
 
