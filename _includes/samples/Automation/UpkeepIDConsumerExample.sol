@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.6;
 
-// UpkeepIDConsumerExample.sol imports functions from both ./KeeperRegistryInterface.sol and
+// UpkeepIDConsumerExample.sol imports functions from both ./KeeperRegistryInterface1_2.sol and
 // ./interfaces/LinkTokenInterface.sol
 
-import {KeeperRegistryInterface, State, Config} from "@chainlink/contracts/src/v0.8/interfaces/KeeperRegistryInterface.sol";
+import {KeeperRegistryInterface1_2, State, Config} from "@chainlink/contracts/src/v0.8/interfaces/KeeperRegistryInterface1_2.sol";
 import {LinkTokenInterface} from "@chainlink/contracts/src/v0.8/interfaces/LinkTokenInterface.sol";
 
 /**
@@ -30,13 +30,13 @@ interface KeeperRegistrarInterface {
 contract UpkeepIDConsumerExample {
   LinkTokenInterface public immutable i_link;
   address public immutable registrar;
-  KeeperRegistryInterface public immutable i_registry;
+  KeeperRegistryInterface1_2 public immutable i_registry;
   bytes4 registerSig = KeeperRegistrarInterface.register.selector;
 
   constructor(
     LinkTokenInterface _link,
     address _registrar,
-    KeeperRegistryInterface _registry
+    KeeperRegistryInterface1_2 _registry
   ) {
     i_link = _link;
     registrar = _registrar;
