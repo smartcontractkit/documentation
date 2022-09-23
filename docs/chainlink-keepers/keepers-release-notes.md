@@ -15,7 +15,7 @@ whatsnext:
 **Chainlink Keepers release notes:**
 
 
-- [v1.2 release](#2022-09-23---v13-release)
+- [v1.3 release](#2022-09-23---v13-release)
 - [v1.2 release](#2022-08-04---v12-release)
   - [Manually migrating upkeeps from v1.1 to v1.2](#manually-migrating-upkeeps-from-v11-to-v12)
 - [Underfunded upkeep email notifications](#2022-07-21---underfunded-upkeep-notifications)
