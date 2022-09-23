@@ -23,7 +23,6 @@ interface DataFile {
       docs?: {
         assetName?: string;
         feedCategory?: string;
-        feedType?: string;
         hidden?: boolean;
         nftFloorUnits?: string;
         porAuditor?: string;
@@ -50,7 +49,10 @@ interface ResultProxy {
   decimals: number;
   proxy: string;
   feedCategory: string;
-  feedType: string;
+  nftFloorUnits?: string;
+  porAuditor?: string;
+  porSource?: string;
+  porType?: string;
   shutdownDate?: string;
 }
 
@@ -102,7 +104,6 @@ for (let page of targetData) {
         heartbeat: string;
         assetName?: string;
         feedCategory: string;
-        feedType?: string;
         nftFloorUnits?: string;
         porAuditor?: string;
         porSource?: string;
@@ -139,7 +140,6 @@ for (let page of targetData) {
           decimals: contract.decimals,
           assetName: contract.docs?.assetName,
           feedCategory: contract.docs?.feedCategory || "",
-          feedType: contract.docs?.feedType || "-",
           nftFloorUnits: contract.docs?.nftFloorUnits,
           porAuditor: contract.docs?.porAuditor,
           porSource: contract.docs?.porSource,
@@ -154,7 +154,6 @@ for (let page of targetData) {
             decimals: contract.decimals,
             assetName: contract.docs?.assetName,
             feedCategory: contract.docs?.feedCategory || "",
-            feedType: contract.docs?.feedType || "-",
             nftFloorUnits: contract.docs?.nftFloorUnits,
             porAuditor: contract.docs?.porAuditor,
             porSource: contract.docs?.porSource,
@@ -180,7 +179,6 @@ for (let page of targetData) {
             decimals: liveContracts[proxy.aggregator].decimals,
             proxy: proxyKey,
             feedCategory: liveContracts[proxy.aggregator].feedCategory || "",
-            feedType: liveContracts[proxy.aggregator].feedType || "-",
             nftFloorUnits: liveContracts[proxy.aggregator].nftFloorUnits,
             porAuditor: liveContracts[proxy.aggregator].porAuditor,
             porSource: liveContracts[proxy.aggregator].porSource,
@@ -210,7 +208,6 @@ for (let page of targetData) {
             // Use transmissionsAccount for Solana; contractKey otherwise
             proxy: contract.transmissionsAccount || contractKey,
             feedCategory: contract.docs?.feedCategory || "",
-            feedType: contract.docs?.feedType || "-",
             nftFloorUnits: contract.docs?.nftFloorUnits,
             porAuditor: contract.docs?.porAuditor,
             porSource: contract.docs?.porSource,
