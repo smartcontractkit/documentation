@@ -62,7 +62,7 @@ where:
 
 ** Example:**
 
-When you query historical data, it is important to know when you reach the end of the history of the underlying aggregator. As an example, if the `latestRoundData` [function](/docs/data-feeds/price-feeds/api-reference/#latestrounddata) of the [LINK / USD feed on Ethereum Mainnet](/docs/data-feeds/price-feeds/addresses/ethereum/) returns `roundId = 92233720368547771158`, you can use this value to compute the `phaseId` and `aggregatorRoundId`:
+When you query historical data, it is important to know when you reach the end of the history of the underlying aggregator. As an example, if the `latestRoundData` [function](/docs/data-feeds/price-feeds/api-reference/#latestrounddata) of the [LINK / USD feed on Ethereum Mainnet](/docs/data-feeds/price-feeds/addresses/?network=ethereum) returns `roundId = 92233720368547771158`, you can use this value to compute the `phaseId` and `aggregatorRoundId`:
 
 - `phaseId = 92233720368547771158 >> 64`: Right shifting an integer by 64 bits is equivalent to dividing it by 2^64: `phaseId = 92233720368547771158/ 2^64 = 5`. The current phase id is 5 , which means that this proxy has had 5 underlying aggregators since its initial deployment.
 - `aggregatorRoundId = uint64(92233720368547771158)`: This retrieves the first 64 bits from the right. To calculate this off-chain, you can use the following JavaScript example:
