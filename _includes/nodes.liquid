@@ -20,16 +20,18 @@ layout: ./main.liquid
                     {% if destination.children %}
                         <a href="{{destination.url}}" class="expandable {% if page.url == destination.url%} active{% endif %}">{{destination.title}}</a>
                         {% for child in destination.children %}
-                            <a href="{{child.url}}" style="padding-left: 32px;" {% if page.url == child.url%} class="active" {% endif %}>{{child.title}}</a>
+                            {% if child.children %}
+                                <a href="{{child.url}}" style="padding-left: 32px;" {% if page.url == child.url%} class="active" {% endif %}>{{child.title}}</a>
+                                {% for grandchild in child.children %}
+                                    <a href="{{grandchild.url}}" style="padding-left: 48px;" {% if page.url == grandchild.url%} class="active" {% endif %}">{{grandchild.title}}</a>
+                                {% endfor %}
+                            {% else %}
+                                <a href="{{child.url}}" style="padding-left: 32px;" {% if page.url == child.url%} class="active" {% endif %}>{{child.title}}</a>
+                            {% endif %}
                         {% endfor %}
                     {% else %}
                         <a href="{{destination.url}}" title="{{ page.url}} contains {{destination.url}}" {% if page.url == destination.url%} class="active"{% endif %}>{{destination.title}}</a>
-
-
                     {% endif %}
-
-
-
                 {% endfor %}
 
             </div>

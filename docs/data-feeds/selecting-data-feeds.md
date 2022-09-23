@@ -3,7 +3,7 @@ layout: nodes.liquid
 section: ethereum
 date: Last Modified
 title: "Selecting Quality Data Feeds"
-permalink: "docs/selecting-data-feeds/"
+permalink: "docs/data-feeds/selecting-data-feeds/"
 excerpt: "Learn how to assess data feeds that you use in your smart contracts."
 ---
 
@@ -18,12 +18,19 @@ When you design your applications, consider the quality of the data that you use
 
 ## Data Feed Categories
 
+This categorization is put in place to inform users about the intended use cases of feeds and help to highlight some of the inherent market risks surrounding the data quality of these feeds.
+
+All feeds published on [docs.chain.link](http://docs.chain.link) are monitored and maintained to the same levels and standards. Each feed goes through a rigorous assessment process when implemented. The assessment criteria can change depending on the product type of feed being deployed.
+
+Feeds do though evolve over time and we regularly monitor their market fundamentals and will proactively communicate any upcoming changes or issues we identify with a feed, these categories are designed to act as a mechanism in order to assist in accomplishing that task.
+
 Data feeds are grouped into the following categories based on the level of risk from lowest to highest:
 
-+ [Verified Feeds](#🟢-verified-feeds)
-+ [Monitored Feeds](#🟡-monitored-feeds)
-+ [Custom Feeds](#-custom-feeds)
-+ [Specialized Feeds](#-specialized-feeds)
++ [🟢 Verified Feeds](#🟢-verified-feeds)
++ [🟡 Monitored Feeds](#🟡-monitored-feeds)
++ [🔵 Custom Feeds](#-custom-feeds)
++ [⚫ Specialized Feeds](#-specialized-feeds)
++ [⭕ Deprecating](#-deprecating)
 
 > 📘 For important updates regarding the use of Chainlink Price Feeds, users should join the official Chainlink Discord and subscribe to the [data-feeds-user-notifications channel](https://discord.gg/Dqy5N9UbsR).
 
@@ -84,7 +91,7 @@ If you plan on using one of these feeds and would like to get a more detailed un
 
 ### ⭕ Deprecating
 
-These feeds are being [deprecated](/docs/data-feeds/price-feeds/addresses/#deprecation-of-chainlink-data-feeds). To find the deprecation dates for specific feeds, see the complete [deprecation list](/docs/deprecating-feeds/) or the [data feeds lists](/docs/data-feeds/) for each network.
+These feeds are being deprecated. To find the deprecation dates for specific feeds, see the [Feeds Scheduled For Deprecation](/docs/data-feeds/deprecating-feeds/) page.
 
 ## Risk Mitigation
 

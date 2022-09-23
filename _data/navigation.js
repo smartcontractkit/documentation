@@ -106,7 +106,7 @@ module.exports = {
             children: [
               {
                 title: 'Historical Price Data',
-                url: '/docs/data-feeds/historical-data/',
+                url: '/docs/data-feeds/price-feeds/historical-data/',
               },
               {
                 title: 'Price Feeds API Reference',
@@ -115,64 +115,6 @@ module.exports = {
               {
                 title: 'Contract Addresses',
                 url: '/docs/data-feeds/price-feeds/addresses/',
-                children: [
-                  {
-                    title: 'Ethereum Price Feeds',
-                    url: '/docs/data-feeds/price-feeds/addresses/ethereum',
-                  },
-                  {
-                    title: 'BNB Chain Price Feeds',
-                    url: '/docs/data-feeds/price-feeds/addresses/bnb-chain/',
-                  },
-                  {
-                    title: 'Polygon (Matic) Price Feeds',
-                    url: '/docs/data-feeds/price-feeds/addresses/polygon/',
-                  },
-                  {
-                    title: 'Gnosis Chain (xDai) Price Feeds',
-                    url: '/docs/data-feeds/price-feeds/addresses/gnosis-chain/',
-                  },
-                  {
-                    title: 'HECO Chain Price Feeds',
-                    url: '/docs/data-feeds/price-feeds/addresses/heco-chain/',
-                  },
-                  {
-                    title: 'Avalanche Price Feeds',
-                    url: '/docs/data-feeds/price-feeds/addresses/avalanche/',
-                  },
-                  {
-                    title: 'Fantom Price Feeds',
-                    url: '/docs/data-feeds/price-feeds/addresses/fantom/',
-                  },
-                  {
-                    title: 'Arbitrum Price Feeds',
-                    url: '/docs/data-feeds/price-feeds/addresses/arbitrum/',
-                  },
-                  {
-                    title: 'Harmony Price Feeds',
-                    url: '/docs/data-feeds/price-feeds/addresses/harmony/',
-                  },
-                  {
-                    title: 'Optimism Price Feeds',
-                    url: '/docs/data-feeds/price-feeds/addresses/optimism/',
-                  },
-                  {
-                    title: 'Moonriver Price Feeds',
-                    url: '/docs/data-feeds/price-feeds/addresses/moonriver/',
-                  },
-                  {
-                    title: 'Moonbeam Price Feeds',
-                    url: '/docs/data-feeds/price-feeds/addresses/moonbeam/',
-                  },
-                  {
-                    title: 'Metis Price Feeds',
-                    url: '/docs/data-feeds/price-feeds/addresses/metis/',
-                  },
-                  {
-                    title: 'Klaytn Price Feeds',
-                    url: '/docs/data-feeds/price-feeds/addresses/klaytn/',
-                  },
-                ],
               },
             ],
           },
@@ -193,6 +135,10 @@ module.exports = {
                 url: '/docs/data-feeds/feed-registry/feed-registry-functions/',
               },
             ],
+          },
+          {
+            title: 'Selecting Data Feeds',
+            url: '/docs/data-feeds/selecting-data-feeds/',
           },
         ],
       },
@@ -377,10 +323,6 @@ module.exports = {
             url: '/docs/getting-help/',
           },
           {
-            title: 'Selecting Data Feeds',
-            url: '/docs/selecting-data-feeds/',
-          },
-          {
             title: 'Hackathon Resources',
             url: '/docs/hackathon-resources/',
           },
@@ -427,7 +369,7 @@ module.exports = {
           },
           {
             title: 'Selecting Data Feeds',
-            url: '/docs/selecting-data-feeds/',
+            url: '/docs/data-feeds/selecting-data-feeds/',
           },
           {
             title: 'Contributing to Chainlink',
