@@ -49,7 +49,7 @@ The details for calculating the total transaction cost can be found [here](/docs
 
 | Item                  | Value                                                                                                                                                                                                        |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| LINK Token            | <a class="erc-token-address" id="1_0x514910771af9ca656af840dff83e8264ecf986ca" href="https://etherscan.io/token/0x514910771af9ca656af840dff83e8264ecf986ca">`0x514910771af9ca656af840dff83e8264ecf986ca`</a> |
+| LINK Token            | <a class="erc-token-address" id="1_0x514910771AF9Ca656af840dff83E8264EcF986CA" href="https://etherscan.io/token/0x514910771AF9Ca656af840dff83E8264EcF986CA">`0x514910771AF9Ca656af840dff83E8264EcF986CA`</a> |
 | VRF Coordinator       | [`0x271682DEB8C4E0901D1a1550aD2e64D568E69909`](https://etherscan.io/address/0x271682DEB8C4E0901D1a1550aD2e64D568E69909)                                                                                      |
 | 200 gwei Key Hash     | `0x8af398995b04c28e9951adb9721ef74c74f93e6a478f39e7e0777be13527e7ef`                                                                                                                                         |
 | 500 gwei Key Hash     | `0xff8dedfbfa60af186cf3c830acbc32c05aae823045ae5ea7da1e45fbfaba4f92`                                                                                                                                         |
@@ -82,7 +82,7 @@ The details for calculating the total transaction cost can be found [here](/docs
 
 | Item                  | Value                                                                                                                                                                                                        |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| LINK Token            | <a class="erc-token-address" id="56_0x404460c6a5ede2d891e8297795264fde62adbb75" href="https://bscscan.com/token/0x404460c6a5ede2d891e8297795264fde62adbb75">`0x404460c6a5ede2d891e8297795264fde62adbb75`</a> |
+| LINK Token            | <a class="erc-token-address" id="56_0x404460C6A5EdE2D891e8297795264fDe62ADBB75" href="https://bscscan.com/token/0x404460C6A5EdE2D891e8297795264fDe62ADBB75">`0x404460C6A5EdE2D891e8297795264fDe62ADBB75`</a> |
 | VRF Coordinator       | [`0xc587d9053cd1118f25F645F9E08BB98c9712A4EE`](https://bscscan.com/address/0xc587d9053cd1118f25F645F9E08BB98c9712A4EE)                                                                                       |
 | 200 gwei Key Hash     | `0x114f3da0a805b6a67d6e9cd2ec746f7028f1b7376365af575cfea3550dd1aa04`                                                                                                                                         |
 | 500 gwei Key Hash     | `0xba6e730de88d94a5510ae6613898bfb0c3de5d16e609c5b7da808747125506f7`                                                                                                                                         |
@@ -101,7 +101,7 @@ The details for calculating the total transaction cost can be found [here](/docs
 
 | Item                  | Value                                                                                                                                                                                                                  |
 | --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| LINK Token            | <a class="erc-token-address" id="97_0x84b9b910527ad5c03a9ca831909e21e236ea7b06" href="https://testnet.bscscan.com/address/0x84b9b910527ad5c03a9ca831909e21e236ea7b06">`0x84b9b910527ad5c03a9ca831909e21e236ea7b06`</a> |
+| LINK Token            | <a class="erc-token-address" id="97_0x84b9B910527Ad5C03A9Ca831909E21e236EA7b06" href="https://testnet.bscscan.com/address/0x84b9B910527Ad5C03A9Ca831909E21e236EA7b06">`0x84b9B910527Ad5C03A9Ca831909E21e236EA7b06`</a> |
 | VRF Coordinator       | [`0x6A2AAd07396B36Fe02a22b33cf443582f682c82f`](https://testnet.bscscan.com/address/0x6A2AAd07396B36Fe02a22b33cf443582f682c82f)                                                                                         |
 | 50 gwei Key Hash      | `0xd4bb89654db74673a187bd804519e65e3f71a52bc55f11da7601a13dcf505314`                                                                                                                                                   |
 | Premium               | 0.005 LINK                                                                                                                                                                                                             |
@@ -118,7 +118,7 @@ The details for calculating the total transaction cost can be found [here](/docs
 
 | Item                  | Value                                                                                                                                                                                                               |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| LINK Token            | <a class="erc-token-address" id="137_0xb0897686c545045afc77cf20ec7a532e3120e0f1" href="https://polygonscan.com/address/0xb0897686c545045afc77cf20ec7a532e3120e0f1">`0xb0897686c545045afc77cf20ec7a532e3120e0f1`</a> |
+| LINK Token            | <a class="erc-token-address" id="137_0xb0897686c545045aFc77CF20eC7A532E3120E0F1" href="https://polygonscan.com/address/0xb0897686c545045aFc77CF20eC7A532E3120E0F1">`0xb0897686c545045aFc77CF20eC7A532E3120E0F1`</a> |
 | VRF Coordinator       | [`0xAE975071Be8F8eE67addBC1A82488F1C24858067`](https://polygonscan.com/address/0xAE975071Be8F8eE67addBC1A82488F1C24858067)                                                                                          |
 | 200 gwei Key Hash     | `0x6e099d640cde6de9d40ac749b4b594126b0169747122711109c9985d47751f93`                                                                                                                                                |
 | 500 gwei Key Hash     | `0xcc294a196eeeb44da2888d17c0625cc88d70d9760a69d58d853ba6581a9ab0cd`                                                                                                                                                |
@@ -187,7 +187,7 @@ The details for calculating the total transaction cost can be found [here](/docs
 
 | Item                  | Value                                                                                                                                                                                                         |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| LINK Token            | <a class="erc-token-address" id="250_0x6f43ff82cca38001b6699a8ac47a2d0e66939407" href="https://ftmscan.com/token/0x6f43ff82cca38001b6699a8ac47a2d0e66939407">`0x6f43ff82cca38001b6699a8ac47a2d0e66939407`</a> |
+| LINK Token            | <a class="erc-token-address" id="250_0x6F43FF82CCA38001B6699a8AC47A2d0E66939407" href="https://ftmscan.com/token/0x6F43FF82CCA38001B6699a8AC47A2d0E66939407">`0x6F43FF82CCA38001B6699a8AC47A2d0E66939407`</a> |
 | VRF Coordinator       | [`0xd5D517aBE5cF79B7e95eC98dB0f0277788aFF634`](https://ftmscan.com/address/0xd5d517abe5cf79b7e95ec98db0f0277788aff634)                                                                                        |
 | 4000 gwei Key Hash    | `0xb4797e686f9a1548b9a2e8c68988d74788e0c4af5899020fb0c47784af76ddfa`                                                                                                                                          |
 | 10000 gwei Key Hash   | `0x5881eea62f9876043df723cf89f0c2bb6f950da25e9dfe66995c24f919c8f8ab`                                                                                                                                          |

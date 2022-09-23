@@ -22,7 +22,7 @@ You will need to use the following LINK token address, oracle address, and JobSp
 | Parameter                 | Value                                                                                                                 |
 | :------------------------ | :-------------------------------------------------------------------------------------------------------------------- |
 | `ETH_CHAIN_ID`            | `1`                                                                                                                   |
-| ChainLink Token Address   | [0x514910771af9ca656af840dff83e8264ecf986ca]("https://etherscan.io/token/0x514910771af9ca656af840dff83e8264ecf986ca") |
+| ChainLink Token Address   | [0x514910771AF9Ca656af840dff83E8264EcF986CA]("https://etherscan.io/token/0x514910771AF9Ca656af840dff83E8264EcF986CA") |
 | Oracle                    | `0x92c08A635C7525505123F0F8e327C6Fa66E09a18`                                                                          |
 | Rain JobID                | `e9c41111b74f454695abd471806d9c6f`                                                                                    |
 | Hail JobID                | `941cb4bdd6e746cd933a37c8e92f2f98`                                                                                    |
