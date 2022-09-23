@@ -14,6 +14,8 @@ whatsnext:
 
 **Chainlink Keepers release notes:**
 
+
+- [v1.3 release](#2022-09-23---v13-release)
 - [v1.2 release](#2022-08-04---v12-release)
   - [Manually migrating upkeeps from v1.1 to v1.2](#manually-migrating-upkeeps-from-v11-to-v12)
 - [Underfunded upkeep email notifications](#2022-07-21---underfunded-upkeep-notifications)
@@ -23,6 +25,11 @@ whatsnext:
 - [Keepers on Binance Smart Chain and Polygon](#2021-11-18---keepers-on-binance-smart-chain-and-polygon)
 - [Keepers v1.1 launch on Ethereum](#2021-08-05---keepers-v11-launch-on-ethereum)
 - [Questions](#questions)
+
+
+## 2022-09-23 - v1.3 Release
+
+Keepers Registry v1.3 [launched on Arbitrum Mainnet](/docs/chainlink-keepers/supported-networks/#arbitrum).
 
 
 ## 2022-08-04 - v1.2 Release
