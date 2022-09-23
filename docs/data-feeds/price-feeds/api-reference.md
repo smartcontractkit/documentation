@@ -3,7 +3,7 @@ layout: nodes.liquid
 section: ethereum
 date: Last Modified
 title: "Data Feeds API Reference"
-permalink: "docs/price-feeds-api-reference/"
+permalink: "docs/data-feeds/price-feeds/api-reference/"
 metadata:
   description: "API reference for using Chainlink Data Feeds in smart contracts."
 ---
@@ -30,7 +30,7 @@ constructor() {
 }
 ```
 
-To see examples for how to use this interface, read the [Using Data Feeds](/docs/get-the-latest-price/) guide.
+To see examples for how to use this interface, read the [Using Data Feeds](/docs/data-feeds/price-feeds/) guide.
 
 You can see the code for the [`AggregatorV3Interface` contract](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol) on GitHub.
 

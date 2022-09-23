@@ -4,7 +4,7 @@ section: ethereum
 date: Last Modified
 title: "Install Frameworks"
 permalink: "docs/create-a-chainlinked-project/"
-whatsnext: {"Introduction to Data Feeds":"/docs/using-chainlink-reference-contracts/", "Introduction to Chainlink VRF":"/docs/vrf/v2/introduction/", "Introduction to Using Any API":"/docs/any-api/introduction/"}
+whatsnext: {"Introduction to Data Feeds":"/docs/data-feeds/", "Introduction to Chainlink VRF":"/docs/vrf/v2/introduction/", "Introduction to Using Any API":"/docs/any-api/introduction/"}
 ---
 ![Starter Kits Logos](/files/c6e99c5-Untitled_design_23.png)
 
@@ -135,7 +135,7 @@ ___
 
 Once you have the Chainlink library installed, you can leverage the Chainlink ecosystem.
 
-If you're interested in retrieving up to date crypto prices in your contracts, learn more about our [Data Feeds](../using-chainlink-reference-contracts/).
+If you're interested in retrieving up to date crypto prices in your contracts, learn more about our [Data Feeds](/docs/data-feeds/).
 
 If you need to consume randomness in your contracts, learn about [Chainlink VRF](/docs/vrf/v2/introduction/).
 

@@ -3,12 +3,12 @@ layout: nodes.liquid
 section: ethereum
 date: Last Modified
 title: 'Chainlink Data Feeds Documentation'
-permalink: 'docs/using-chainlink-reference-contracts/'
+permalink: 'docs/data-feeds/'
 whatsnext:
   {
-    'Get the latest price of a Data Feed': '/docs/get-the-latest-price/',
-    'Learn more about API references for using Data Feeds': '/docs/price-feeds-api-reference/',
-    'Retrieve contract addresses to use Data Feeds': '/docs/reference-contracts/',
+    'Get the latest price of a Data Feed': '/docs/data-feeds/price-feeds/',
+    'Learn more about API references for using Data Feeds': '/docs/data-feeds/price-feeds/api-reference/',
+    'Retrieve contract addresses to use Data Feeds': '/docs/data-feeds/',
   }
 metadata:
   title: 'Chainlink Data Feeds Documentation'
@@ -17,15 +17,15 @@ metadata:
 
 ![Chainlink Abstract Banner](/files/2306b8b-Decentralized_Oracles_V3.png)
 
-**Chainlink Data Feeds** are the quickest way to connect your smart contracts to the real-world data such as asset prices. One use for data feeds is to retrieve the latest pricing data of an asset in a single call and use that data either on-chain in a smart contract or off-chain in another application of your choice.
+**Chainlink Data Feeds** are the quickest way to connect your smart contracts to the real-world data such as asset prices, reserve balances, and L2 sequencer health.
 
 If you already have a project started and would like to integrate Chainlink, you can [add Chainlink to your existing project](../create-a-chainlinked-project/#install-into-existing-projects) by using the [`@chainlink/contracts` NPM package](https://www.npmjs.com/package/@chainlink/contracts).
 
-See the [Data Feeds Contract Addresses](/docs/reference-contracts/) page for a list of networks and proxy addresses.
-
 **Topics**
 
-- [Retrieve the latest asset prices](#retrieve-the-latest-asset-prices)
+- [Types of data feeds](#types-of-data-feeds)
+  - [Price feeds](#price-feeds)
+  - [L2 sequencer uptime feeds](#l2-sequencer-uptime-feeds)
 - [Components of a data feed](#components-of-a-data-feed)
 - [Reading proxy and aggregator Configurations](#reading-proxy-and-aggregator-configurations)
 - [Components of an aggregator](#components-of-an-aggregator)
@@ -34,7 +34,16 @@ See the [Data Feeds Contract Addresses](/docs/reference-contracts/) page for a l
   - [Check the latest answer against reasonable limits](#check-the-latest-answer-against-reasonable-limits)
   - [Check the timestamp of the latest answer](#check-the-timestamp-of-the-latest-answer)
 
-## Retrieve the latest asset prices
+## Types of data feeds
+
+Data feeds provide many different types of data for your applications.
+
+- [Price feeds](#price-feeds)
+- [L2 sequencer uptime feeds](#l2-sequencer-uptime-feeds)
+
+### Price feeds
+
+See the [Data Feeds Contract Addresses](/docs/data-feeds/) page for a list of networks and proxy addresses.  
 
 Smart contracts often act in real-time on data such as prices of assets. This is especially true in [DeFi](https://defi.chain.link/).
 
@@ -42,15 +51,31 @@ For example, [Synthetix](https://www.synthetix.io/) uses Data Feeds to determine
 
 Data Feeds aggregate many data sources and publish them on-chain using a combination of the [Decentralized Data Model](/docs/architecture-decentralized-model/) and [Off-Chain Reporting](/docs/off-chain-reporting/).
 
+To learn how to use price feeds, see the [Price Feeds](/docs/data-feeds/price-feeds/) documentation.
+
+<div class="remix-callout">
+    <a href="/docs/data-feeds/price-feeds/">Price Feeds</a>
+</div>
+
+### L2 sequencer uptime feeds
+
+L2 sequencer feeds track the last known status of the sequencer on an L2 network at a given point in time. This helps you prevent mass liquidations by providing a grace period to allow customers to react to these events.
+
+To learn how to use L2 sequencer uptime feeds feeds, see the [L2 Sequencer Uptime Feeds](/docs/data-feeds/l2-sequencer-feeds/) documentation.
+
+<div class="remix-callout">
+    <a href="/docs/data-feeds/l2-sequencer-feeds/">L2 Sequencer Uptime Feeds</a>
+</div>
+
 ## Components of a data feed
 
 Data Feeds are an example of a decentralized oracle network and include the following components:
 
-- **Consumer**: A consumer is an on-chain or off-chain application that uses Data Feeds. Consumer contracts use the [`AggregatorV3Interface`](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol) to call functions on the proxy contract and retrieve information from the aggregator contract. For a complete list of functions available in the `AggregatorV3Interface`, see the [Data Feeds API Reference](/docs/price-feeds-api-reference/#aggregatorv3interface).
+- **Consumer**: A consumer is an on-chain or off-chain application that uses Data Feeds. Consumer contracts use the [`AggregatorV3Interface`](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol) to call functions on the proxy contract and retrieve information from the aggregator contract. For a complete list of functions available in the `AggregatorV3Interface`, see the [Data Feeds API Reference](/docs/data-feeds/price-feeds/api-reference/#aggregatorv3interface).
 - **Proxy contract**: Proxy contracts are on-chain proxies that point to the aggregator for a particular data feed. Using proxies enables the underlying aggregator to be upgraded without any service interruption to consuming contracts. Proxy contracts can vary from one data feed to another, but the [`AggregatorProxy.sol` contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/dev/AggregatorProxy.sol) on Github is a common example.
-- **Aggregator contract**: An aggregator is a contract that receives periodic data updates from the oracle network. Aggregators store aggregated data on-chain so that consumers can retrieve it and act upon it within the same transaction. For a complete list of functions and variables available on most aggregator contracts, see the [Data Feeds API Reference](/docs/price-feeds-api-reference/#accesscontrolledoffchainaggregator).
+- **Aggregator contract**: An aggregator is a contract that receives periodic data updates from the oracle network. Aggregators store aggregated data on-chain so that consumers can retrieve it and act upon it within the same transaction. For a complete list of functions and variables available on most aggregator contracts, see the [Data Feeds API Reference](/docs/data-feeds/price-feeds/api-reference/#accesscontrolledoffchainaggregator).
 
-To learn how to create a consumer contract that uses an existing data feed, read the [Using Data Feeds](../get-the-latest-price/) documentation.
+To learn how to create a consumer contract that uses an existing data feed, read the [Using Data Feeds](/docs/data-feeds/price-feeds/) documentation.
 
 ## Reading proxy and aggregator configurations
 
@@ -70,7 +95,7 @@ Always check the contract source code and configuration to understand how specif
 
 For examples of the contracts that are typically used in aggregator deployments, see the [libocr repository](https://github.com/smartcontractkit/libocr/blob/master/contract/) on GitHub.
 
-For a complete list of functions and variables available on most aggregator contracts, see the [Data Feeds API Reference](/docs/price-feeds-api-reference/#accesscontrolledoffchainaggregator).
+For a complete list of functions and variables available on most aggregator contracts, see the [Data Feeds API Reference](/docs/data-feeds/price-feeds/api-reference/#accesscontrolledoffchainaggregator).
 
 ## Updates to proxy and aggregator contracts
 
@@ -98,7 +123,7 @@ Configure your application to detect when the reported answer is close to reachi
 
 ### Check the timestamp of the latest answer
 
-Chainlink Price Feeds do not provide streaming data. Rather, the aggregator updates its `latestAnswer` when the value deviates beyond a specified threshold or when the heartbeat idle time has passed. You can find the heartbeat and deviation values for each data feed at [data.chain.link](https://data.chain.link/) or in the [Contract Addresses](/docs/reference-contracts/) lists.
+Chainlink Price Feeds do not provide streaming data. Rather, the aggregator updates its `latestAnswer` when the value deviates beyond a specified threshold or when the heartbeat idle time has passed. You can find the heartbeat and deviation values for each data feed at [data.chain.link](https://data.chain.link/) or in the [Contract Addresses](/docs/data-feeds/) lists.
 
 Your application should track the `latestTimestamp` variable or use the `updatedAt` value from the `latestRoundData()` function to make sure that the latest answer is recent enough for your application to use it. If your application detects that the reported answer is not updated within the heartbeat or within time limits that you determine are acceptable for your application, pause operation or switch to an alternate operation mode while identifying the cause of the delay.
 

@@ -44,7 +44,7 @@ module.exports = {
           },
           {
             title: 'Data Feeds',
-            url: '/docs/using-chainlink-reference-contracts/',
+            url: '/docs/data-feeds/',
           },
           {
             title: 'Chainlink VRF',
@@ -98,101 +98,47 @@ module.exports = {
         contents: [
           {
             title: 'Introduction to Data Feeds',
-            url: '/docs/using-chainlink-reference-contracts/',
+            url: '/docs/data-feeds/',
           },
           {
-            title: 'Using Data Feeds',
-            url: '/docs/get-the-latest-price/',
+            title: 'Price Feeds',
+            url: '/docs/data-feeds/price-feeds/',
             children: [
               {
-                title: 'Data Feeds API Reference',
-                url: '/docs/price-feeds-api-reference/',
-              },
-            ],
-          },
-          {
-            title: 'Historical Price Data',
-            url: '/docs/historical-price-data/',
-          },
-          {
-            title: 'Feed Registry',
-            url: '/docs/feed-registry/',
-            children: [
-              {
-                title: 'Feed Registry API Reference',
-                url: '/docs/feed-registry-functions/',
-              },
-            ],
-          },
-          {
-            title: 'Using ENS with Data Feeds',
-            url: '/docs/ens/',
-          },
-          {
-            title: 'Contract Addresses',
-            url: '/docs/reference-contracts/',
-            children: [
-              {
-                title: 'Ethereum Data Feeds',
-                url: '/docs/ethereum-addresses/',
+                title: 'Historical Price Data',
+                url: '/docs/data-feeds/price-feeds/historical-data/',
               },
               {
-                title: 'BNB Chain Data Feeds',
-                url: '/docs/bnb-chain-addresses/',
+                title: 'Price Feeds API Reference',
+                url: '/docs/data-feeds/price-feeds/api-reference/',
               },
               {
-                title: 'Polygon (Matic) Data Feeds',
-                url: '/docs/matic-addresses/',
-              },
-              {
-                title: 'Gnosis Chain (xDai) Data Feeds',
-                url: '/docs/data-feeds-gnosis-chain/',
-              },
-              {
-                title: 'HECO Chain Data Feeds',
-                url: '/docs/huobi-eco-chain-price-feeds/',
-              },
-              {
-                title: 'Avalanche Data Feeds',
-                url: '/docs/avalanche-price-feeds/',
-              },
-              {
-                title: 'Fantom Data Feeds',
-                url: '/docs/fantom-price-feeds/',
-              },
-              {
-                title: 'Arbitrum Data Feeds',
-                url: '/docs/arbitrum-price-feeds/',
-              },
-              {
-                title: 'Harmony Data Feeds',
-                url: '/docs/harmony-price-feeds/',
-              },
-              {
-                title: 'Optimism Data Feeds',
-                url: '/docs/optimism-price-feeds/',
-              },
-              {
-                title: 'Moonriver Data Feeds',
-                url: '/docs/data-feeds-moonriver/',
-              },
-              {
-                title: 'Moonbeam Data Feeds',
-                url: '/docs/data-feeds-moonbeam/',
-              },
-              {
-                title: 'Metis Data Feeds',
-                url: '/docs/data-feeds-metis/',
-              },
-              {
-                title: 'Klaytn Data Feeds',
-                url: '/docs/data-feeds-klaytn/',
+                title: 'Contract Addresses',
+                url: '/docs/data-feeds/price-feeds/addresses/',
               },
             ],
           },
           {
             title: 'L2 Sequencer Uptime Feeds',
-            url: '/docs/l2-sequencer-flag/',
+            url: '/docs/data-feeds/l2-sequencer-feeds/',
+          },
+          {
+            title: 'Using ENS with Data Feeds',
+            url: '/docs/data-feeds/ens/',
+          },
+          {
+            title: 'Feed Registry',
+            url: '/docs/data-feeds/feed-registry/',
+            children: [
+              {
+                title: 'Feed Registry API Reference',
+                url: '/docs/data-feeds/feed-registry/feed-registry-functions/',
+              },
+            ],
+          },
+          {
+            title: 'Selecting Data Feeds',
+            url: '/docs/data-feeds/selecting-data-feeds/',
           },
         ],
       },
@@ -377,10 +323,6 @@ module.exports = {
             url: '/docs/getting-help/',
           },
           {
-            title: 'Selecting Data Feeds',
-            url: '/docs/selecting-data-feeds/',
-          },
-          {
             title: 'Hackathon Resources',
             url: '/docs/hackathon-resources/',
           },
@@ -427,7 +369,7 @@ module.exports = {
           },
           {
             title: 'Selecting Data Feeds',
-            url: '/docs/selecting-data-feeds/',
+            url: '/docs/data-feeds/selecting-data-feeds/',
           },
           {
             title: 'Contributing to Chainlink',

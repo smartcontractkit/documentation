@@ -1,6 +1,6 @@
 export const NETWORKS = [
   {
-    page: "ethereum-addresses",
+    page: "ethereum",
     title: "Ethereum Data Feeds",
     feedType: "Proxy",
     networks: [
@@ -19,7 +19,7 @@ export const NETWORKS = [
     ],
   },
   {
-    page: "bnb-chain-addresses-price",
+    page: "bnb-chain",
     title: "BNB Chain Data Feeds",
     feedType: "Proxy",
     networks: [
@@ -38,7 +38,7 @@ export const NETWORKS = [
     ],
   },
   {
-    page: "matic-addresses",
+    page: "polygon",
     title: "Polygon (Matic) Data Feeds",
     feedType: "Proxy",
     networks: [
@@ -57,7 +57,7 @@ export const NETWORKS = [
     ],
   },
   {
-    page: "data-feeds-gnosis-chain",
+    page: "gnosis-chain",
     title: "Gnosis Chain (xDai) Data Feeds",
     feedType: "Proxy",
     networks: [
@@ -70,7 +70,7 @@ export const NETWORKS = [
     ],
   },
   {
-    page: "huobi-eco-chain-price-feeds",
+    page: "heco-chain",
     title: "HECO Chain Data Feeds",
     feedType: "Proxy",
     networks: [
@@ -83,7 +83,7 @@ export const NETWORKS = [
     ],
   },
   {
-    page: "avalanche-price-feeds",
+    page: "avalanche",
     title: "Avalanche Data Feeds",
     feedType: "Proxy",
     networks: [
@@ -102,7 +102,7 @@ export const NETWORKS = [
     ],
   },
   {
-    page: "fantom-price-feeds",
+    page: "fantom",
     title: "Fantom Testnet",
     feedType: "Proxy",
     networks: [
@@ -121,7 +121,7 @@ export const NETWORKS = [
     ],
   },
   {
-    page: "arbitrum-price-feeds",
+    page: "arbitrum",
     title: "Arbitrum Data Feeds",
     feedType: "Proxy",
     networks: [
@@ -140,7 +140,7 @@ export const NETWORKS = [
     ],
   },
   {
-    page: "harmony-price-feeds",
+    page: "harmony",
     title: "Harmony Data Feeds",
     feedType: "Proxy",
     networks: [
@@ -153,7 +153,7 @@ export const NETWORKS = [
     ],
   },
   {
-    page: "data-feeds-solana",
+    page: "solana",
     title: "Solana Data Feeds",
     feedType: "Account",
     networks: [
@@ -172,7 +172,7 @@ export const NETWORKS = [
     ],
   },
   {
-    page: "optimism-price-feeds",
+    page: "optimism",
     title: "Optimism Data Feeds",
     feedType: "Proxy",
     networks: [
@@ -191,7 +191,7 @@ export const NETWORKS = [
     ],
   },
   {
-    page: "data-feeds-moonriver",
+    page: "moonriver",
     title: "Moonriver Data Feeds",
     feedType: "Proxy",
     networks: [
@@ -204,7 +204,7 @@ export const NETWORKS = [
     ],
   },
   {
-    page: "data-feeds-moonbeam",
+    page: "moonbeam",
     title: "Moonbeam Data Feeds",
     feedType: "Proxy",
     networks: [
@@ -217,8 +217,8 @@ export const NETWORKS = [
     ],
   },
   {
-    page: "data-feeds-andromeda",
-    title: "Moonriver Data Feeds",
+    page: "metis",
+    title: "Metis Data Feeds",
     feedType: "Proxy",
     networks: [
       {
@@ -230,7 +230,7 @@ export const NETWORKS = [
     ],
   },
   {
-    page: "data-feeds-klaytn",
+    page: "klaytn",
     title: "Klaytn Data Feeds",
     feedType: "Proxy",
     networks: [
