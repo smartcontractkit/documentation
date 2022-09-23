@@ -3,14 +3,14 @@ layout: nodes.liquid
 section: ethereum
 date: Last Modified
 title: "L2 Sequencer Uptime Feeds"
-permalink: "docs/l2-sequencer-flag/"
+permalink: "docs/data-feeds/l2-sequencer-feeds/"
 ---
 
 Optimistic rollup protocols move all execution off the layer 1 (L1) Ethereum chain, complete execution on a layer 2 (L2) chain, and return the results of the L2 execution back to the L1. These protocols have a [sequencer](https://community.optimism.io/docs/how-optimism-works/#block-production) that executes and rolls up the L2 transactions by batching multiple transactions into a single transaction.
 
 If a sequencer becomes unavailable, it is impossible to access read/write APIs that consumers are using and applications on the L2 network will be down for most users without interacting directly through the L1 optimistic rollup contracts. The L2 has not stopped, but it would be unfair to continue providing service on your applications when only a few users can use them.
 
-To help your applications identify when the sequencer is unavailable, you can use a data feed that tracks the last known status of the sequencer at a given point in time. This is to allow customers to prevent mass liquidations by providing a grace period to allow customers to react to such an event.
+To help your applications identify when the sequencer is unavailable, you can use a data feed that tracks the last known status of the sequencer at a given point in time. This helps you prevent mass liquidations by providing a grace period to allow customers to react to such an event.
 
 **Topics**
 
@@ -95,10 +95,10 @@ After the sequencer comes back up, it moves moves all transactions in the pendin
 
 ## Example code
 
-Create the consumer contract for sequencer uptime feeds similarly to contracts you use for [Chainlink Data Feeds](/docs/get-the-latest-price/#solidity). Configure the constructor using the following variables:
+Create the consumer contract for sequencer uptime feeds similarly to contracts you use for [Chainlink Data Feeds](/docs/data-feeds/price-feeds/#solidity). Configure the constructor using the following variables:
 
 - Configure the `sequencerUptimeFeed` object with the [sequencer uptime feed proxy address](#available-networks) for your L2 network.
-- Configure the `priceFeed` object with one of the [Data Feed proxy addresses](/docs/reference-contracts/) that are available for your network.
+- Configure the `priceFeed` object with one of the [Data Feed proxy addresses](/docs/data-feeds/) that are available for your network.
 
 ```solidity L2
 {% include 'samples/PriceFeeds/PriceConsumerWithSequencerCheck.sol' %}
