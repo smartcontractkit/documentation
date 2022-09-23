@@ -25,7 +25,7 @@ contract PriceConsumerWithSequencerCheck {
   * Data Feed Proxy Address: 0xD702DD976Fb76Fffc2D3963D037dfDae5b04E593
   * Sequencer Uptime Proxy Address: 0x371EAD81c9102C9BF4874A9075FFFf170F2Ee389
   * For a list of available sequencer proxy addresses, see:
-  * https://docs.chain.link/docs/l2-sequencer-flag/#available-networks
+  * https://docs.chain.link/docs/data-feeds/l2-sequencer-feeds/#available-networks
   */
   constructor() {
     priceFeed = AggregatorV2V3Interface(0xD702DD976Fb76Fffc2D3963D037dfDae5b04E593);
