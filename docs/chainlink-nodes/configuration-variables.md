@@ -1654,7 +1654,7 @@ The amount of extra gas to provide checkUpkeep() calls to account for the gas co
 >
 > Do not change this setting unless you know what you are doing.
 
-- Default: `"150000"`
+- Default: `"300000"`
 
 The amount of extra gas to provide performUpkeep() calls to account for the gas consumed by the keeper registry
 
