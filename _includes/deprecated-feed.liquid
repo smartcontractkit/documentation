@@ -3,27 +3,7 @@ layout: ./nodes.liquid
 section: ethereum
 ---
 
-<h2>Deprecation of Chainlink Data Feeds</h2>
-
-<p>
-The smart contract ecosystem is constantly evolving. As a result, Data Feeds within the Chainlink ecosystem are continuously evaluated for their usage and economic viability across all the blockchains and layer-2 networks they are deployed on.
-</p>
-
-<p>
-Data Feeds without publicly known active users may be scheduled for deprecation. Doing so not only helps preserve blockchains as public goods by optimizing blockspace usage, but it helps reduce unnecessary costs incurred by Chainlink node operators. This process is part of a broader ecosystem shift towards Chainlink Economics 2.0, designed to maximize the adoption of the Chainlink protocol while optimizing for cost-efficiency and long-term economic sustainability. Over time, new Data Feeds may be launched or relocated to alternative blockchains/layer-2s that better reflect current user demand.
-</p>
-
-<p>
-For status updates regarding Data Feeds, users should join the official Chainlink Discord and subscribe to the data-feeds-user-notifications channel: <a href="https://discord.gg/Dqy5N9UbsR">https://discord.gg/Dqy5N9UbsR</a>
-</p>
-
-<p>
-Users with additional questions are encouraged to reach out <a href="https://chainlinkcommunity.typeform.com/s/dataFeedQs">here</a>.
-</p>
-
-<p>
-A list of data feeds designated for deprecation along with their corresponding shutdown date can be found below.
-</p>
+{{content}}
 
 <style>
     table {
@@ -109,10 +89,10 @@ A list of data feeds designated for deprecation along with their corresponding s
 <script>
     dest = document.getElementById('feed-data');
     let feedCategories = {
-        "verified": '<span class="hovertext feed-category" data-hover="Verified"><a href="/docs/selecting-data-feeds/#🟢-verified-feeds" alt="Verified" target="_blank">🟢</a></span>',
-        "monitored": '<span class="hovertext feed-category" data-hover="Monitored"><a href="/docs/selecting-data-feeds/#🟡-monitored-feeds" alt="Monitored" target="_blank">🟡</a></span>',
-        "custom": '<span class="hovertext feed-category" data-hover="Custom"><a href="/docs/selecting-data-feeds/#-custom-feeds" alt="Custom" target="_blank">🔵</a></span>',
-        "specialized": '<span class="hovertext feed-category" data-hover="Specialized"><a href="/docs/selecting-data-feeds/#-specialized-feeds" alt="Specialized" target="_blank">⚫</a></span>',
+        "verified": '<span class="hovertext feed-category" data-hover="Verified"><a href="/docs/data-feeds/selecting-data-feeds/#🟢-verified-feeds" alt="Verified" target="_blank">🟢</a></span>',
+        "monitored": '<span class="hovertext feed-category" data-hover="Monitored"><a href="/docs/data-feeds/selecting-data-feeds/#🟡-monitored-feeds" alt="Monitored" target="_blank">🟡</a></span>',
+        "custom": '<span class="hovertext feed-category" data-hover="Custom"><a href="/docs/data-feeds/selecting-data-feeds/#-custom-feeds" alt="Custom" target="_blank">🔵</a></span>',
+        "specialized": '<span class="hovertext feed-category" data-hover="Specialized"><a href="/docs/data-feeds/selecting-data-feeds/#-specialized-feeds" alt="Specialized" target="_blank">⚫</a></span>',
         "deprecating": '<span class="hovertext feed-category" data-hover="Deprecating"><a href="#categories" alt="Deprecating" target="_blank">⭕</a></span>'
     }
     render = (data) => {
@@ -128,7 +108,7 @@ A list of data feeds designated for deprecation along with their corresponding s
                             proxyList += `
                             <tr id="${network.name} ${proxy.pair}">
                                 <td><div class="proxy-pair-column">${feedCategories[proxy.feedCategory] || ''}<code class="proxy-pair">${proxy.pair}</code></div>
-                                ${ proxy.shutdownDate ? '<hr class="shutDate"><div class="shutDate">Deprecating:<br/>' + proxy.shutdownDate + '</div>' : '' }
+                                ${ proxy.shutdownDate ? '<hr class="shutDate"></hr><div class="shutDate">Deprecating:<br/>' + proxy.shutdownDate + '</div>' : '' }
                                 </td>
                                 <td><code>${proxy.assetName}</code></td>
                                 <td><code>${proxy.feedType}</code></td>
@@ -146,7 +126,7 @@ A list of data feeds designated for deprecation along with their corresponding s
                                     <th>Pair</th>
                                     <th>Asset</th>
                                     <th>Type</th>
-                                    <th>${data[key].feedType}</th>
+                                    <th>Address</th>
                                 </tr>
                             </thead>
                             <tbody>${proxyList}</tbody>

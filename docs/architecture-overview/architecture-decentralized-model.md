@@ -4,7 +4,7 @@ section: ethereum
 date: Last Modified
 title: 'Decentralized Data Model'
 permalink: 'docs/architecture-decentralized-model/'
-whatsnext: { 'Using Data Feeds': '/docs/get-the-latest-price/', 'Off-Chain Reporting': '/docs/off-chain-reporting/' }
+whatsnext: { 'Using Data Feeds': '/docs/data-feeds/price-feeds/', 'Off-Chain Reporting': '/docs/off-chain-reporting/' }
 metadata:
   title: 'Chainlink Decentralised Data Model'
   description: 'This page describes the decentralized architecture which enables Chainlink to aggregate data from multiple independent node operators.'
@@ -52,7 +52,7 @@ Data Feeds are an example of a decentralized oracle network, and include the fol
 - [A proxy contract](#proxy)
 - [An aggregator contract](#aggregator)
 
-To learn how to create a consumer contract that uses an existing data feed, read the [Using Data Feeds](../get-the-latest-price/) documentation.
+To learn how to create a consumer contract that uses an existing data feed, read the [Using Data Feeds](/docs/data-feeds/price-feeds/) documentation.
 
 ### Consumer
 
@@ -64,7 +64,7 @@ AggregatorV3Interface feed = AggregatorV3Interface(address);
 return feed.latestRoundData();
 ```
 
-Off-chain applications can also consume data feeds. See the Javascript and Python example code on the [Using Data Feeds](../get-the-latest-price/) page to learn more.
+Off-chain applications can also consume data feeds. See the Javascript and Python example code on the [Using Data Feeds](/docs/data-feeds/price-feeds/) page to learn more.
 
 ### Proxy
 

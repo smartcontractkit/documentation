@@ -3,41 +3,41 @@ layout: nodes.liquid
 section: ethereum
 date: Last Modified
 title: "Historical Price Data"
-permalink: "docs/historical-price-data/"
-whatsnext: {"API Reference":"/docs/price-feeds-api-reference/", "Contract Addresses":"/docs/reference-contracts/"}
+permalink: "docs/data-feeds/price-feeds/historical-data/"
+whatsnext: {"API Reference":"/docs/data-feeds/price-feeds/api-reference/", "Contract Addresses":"/docs/data-feeds/"}
 metadata:
-  title: "Get Historical Price Data"
-  description: "How to use Chainlink Data Feeds to retrieve historical price data of ETH in your smart contracts."
+  title: "Get Historical Data"
+  description: "How to use Chainlink Data Feeds to retrieve historical data in your smart contracts."
 ---
 
 
 {% markdown %}
 
-The most common use case for Data Feeds is to [Get the Latest Price](../get-the-latest-price/). However, <a href="https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol" target="_blank">`AggregatorV3Interface`</a> also exposes functions which can be used to retrieve price data of a previous round ID.
+The most common use case for Data Feeds is to [Get the Latest Data](/docs/data-feeds/price-feeds/) from a feed. However, the [AggregatorV3Interface.sol](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol) also has functions to retrieve data of a previous round IDs.
 
 There are two parameters that can cause Chainlink nodes to update:
 
 | Name                   | Description                                                          |
 | ------------------------------- | -------------------------------------------------------------------- |
-|  Deviation Threshold     | Chainlink nodes are monitoring prices of assets off-chain. The deviation of the real-world price of an asset beyond a certain interval triggers all the nodes to update.                  |
-|  Heartbeat Threshold | If the price stays within the deviation parameters, it will only trigger an update every *X* minutes / hours. |
+|  Deviation Threshold     | Chainlink nodes are monitoring data off-chain. The deviation of the real-world data beyond a certain interval triggers all the nodes to update.                  |
+|  Heartbeat Threshold | If the data values stay within the deviation parameters, it will only trigger an update every *X* minutes / hours. |
 
 
 You can find these parameters at [data.chain.link](https://data.chain.link/) on an example like [ETH / USD](https://data.chain.link/ethereum/mainnet/crypto-usd/eth-usd).
 
-To learn how data feeds update, see the [Decentralized Data Model](../architecture-decentralized-model/#aggregator) page.
+To learn how data feeds update, see the [Decentralized Data Model](/docs/architecture-decentralized-model/#aggregator) page.
 
 ## Historical Rounds
 
 As shown in the [decentralized model](/docs/architecture-decentralized-model/), the consumer contracts call the proxy contract, which abstracts the underlying aggregator contract. The main advantage is to enable upgrades of the aggregator without impacting the consumer contracts. That also means that historical data can can be stored in different aggregators.
-As show in the following sequence diagram, to get historical data, call the `getRoundData` [function](/docs/price-feeds-api-reference/#getrounddata) function and provide `roundId` as a parameter.
+As show in the following sequence diagram, to get historical data, call the `getRoundData` [function](/docs/data-feeds/price-feeds/api-reference/#getrounddata) function and provide `roundId` as a parameter.
 ![getRoundData Sequence Diagram](/images/data-feed/getRoundData-sequence.png)
 
 Note that roundIds have different meanings in proxy contracts and in aggregator contracts.
 
 ### `roundId` in Aggregator (aggregatorRoundId)
 
-Oracles provide periodic data updates to the aggregators. Data feeds are updated in **rounds**. Rounds are identified by their `roundId`, which increases with each new round. This increase may not be monotonic. Knowing the `roundId` of a previous round allows contracts to consume historical price data.
+Oracles provide periodic data updates to the aggregators. Data feeds are updated in **rounds**. Rounds are identified by their `roundId`, which increases with each new round. This increase may not be monotonic. Knowing the `roundId` of a previous round allows contracts to consume historical data.
 
 The examples in this document name the aggregator `roundId` as `aggregatorRoundId` to differentiate it from the proxy `roundId`.
 
@@ -62,7 +62,7 @@ where:
 
 ** Example:**
 
-When you query historical data, it is important to know when you reach the end of the history of the underlying aggregator. As an example, if the `latestRoundData` [function](/docs/price-feeds-api-reference/#latestrounddata) of the [LINK / USD feed on Ethereum Mainnet](/docs/ethereum-addresses/) returns `roundId = 92233720368547771158`, you can use this value to compute the `phaseId` and `aggregatorRoundId`:
+When you query historical data, it is important to know when you reach the end of the history of the underlying aggregator. As an example, if the `latestRoundData` [function](/docs/data-feeds/price-feeds/api-reference/#latestrounddata) of the [LINK / USD feed on Ethereum Mainnet](/docs/data-feeds/price-feeds/addresses/?network=ethereum) returns `roundId = 92233720368547771158`, you can use this value to compute the `phaseId` and `aggregatorRoundId`:
 
 - `phaseId = 92233720368547771158 >> 64`: Right shifting an integer by 64 bits is equivalent to dividing it by 2^64: `phaseId = 92233720368547771158/ 2^64 = 5`. The current phase id is 5 , which means that this proxy has had 5 underlying aggregators since its initial deployment.
 - `aggregatorRoundId = uint64(92233720368547771158)`: This retrieves the first 64 bits from the right. To calculate this off-chain, you can use the following JavaScript example:
@@ -76,7 +76,7 @@ console.log(Number(num >> 64n)); // returns 5 (phaseId)
 console.log(Number(num & num2)) // returns 13078 (aggregatorRoundId) . Use & (AND bitwise operator) which sets each bit to _1_ if both bits are _1_
 ```
 
-Using _13078_ as the current aggregator's round, get its historical data by looping over the [`getRoundData` function](/docs/price-feeds-api-reference/#getrounddata):
+Using _13078_ as the current aggregator's round, get its historical data by looping over the [`getRoundData` function](/docs/data-feeds/price-feeds/api-reference/#getrounddata):
 - Start from the first round: _92233720368547758081_ (result of _92233720368547771158 - 13078 + 1_)
 - Continue until the current round: _92233720368547771158_
 
@@ -89,7 +89,7 @@ const aggregatorRoundId = BigInt("1");
 roundId = (phaseId << 64n) | aggregatorRoundId // returns 73786976294838206465n
 ```
 
-Loop over the [`getRoundData` function](/docs/price-feeds-api-reference/#getrounddata). Start at _73786976294838206465_ and increment it until you get a revert. This means that you reached the last round for the underlying aggregator. The same process could be repeated for previous `phaseIds` (3,2,1).
+Loop over the [`getRoundData` function](/docs/data-feeds/price-feeds/api-reference/#getrounddata). Start at _73786976294838206465_ and increment it until you get a revert. This means that you reached the last round for the underlying aggregator. The same process could be repeated for previous `phaseIds` (3,2,1).
 
 > 🚧 Looping on-chain
 >
@@ -98,7 +98,7 @@ Loop over the [`getRoundData` function](/docs/price-feeds-api-reference/#getroun
 
 ### `getRoundData` return values
 
-The [`getRoundData` function](/docs/price-feeds-api-reference/#getrounddata) returns the following values:
+The [`getRoundData` function](/docs/data-feeds/price-feeds/api-reference/#getrounddata) returns the following values:
 
 - `roundId`: The combination of `aggregatorRoundId` and `phaseId` (see explanation above). The `roundId` can jump significantly when the `phaseId` is updated.
 - `answer` is the price.

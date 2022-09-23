@@ -15,6 +15,7 @@ whatsnext:
 **Chainlink Automation release notes:**
 
 - [Chainlink Keepers is now Chainlink Automation](#chainlink-keepers-is-now-chainlink-automation)
+- [v1.3 release](#2022-09-23---v13-release)
 - [v1.2 release](#2022-08-04---v12-release)
   - [Manually migrating upkeeps from v1.1 to v1.2](#manually-migrating-upkeeps-from-v11-to-v12)
 - [Underfunded upkeep email notifications](#2022-07-21---underfunded-upkeep-notifications)
@@ -38,6 +39,11 @@ Chainlink Keepers has been renamed to **Chainlink Automation**. The table below 
 | `KeeperCompatible.sol`         | `AutomationCompatible.sol`                                                |
 | `KeeperBase.sol`               | `AutomationBase.sol`                                                      |
 | `KeeperCompatibleInterface.sol`| `AutomationCompatibleInterface.sol`                                       |
+
+
+## 2022-09-23 - v1.3 Release
+
+Keepers Registry v1.3 [launched on Arbitrum Mainnet](/docs/chainlink-keepers/supported-networks/#arbitrum).
 
 
 ## 2022-08-04 - v1.2 Release
