@@ -5,13 +5,13 @@ date: Last Modified
 title: 'Register a Custom Logic Upkeep'
 whatsnext:
   {
-    'Create an Automation-compatible contract for custom logic Upkeep': '/docs/chainlink-automation/compatible-contracts/',
+    'Create a compatible contract for custom logic Upkeep': '/docs/chainlink-automation/compatible-contracts/',
   }
 ---
 
 ## Overview
 
-This guide explains how to register a Custom logic Upkeep that uses an [Automation-compatible contract](../compatible-contracts). You can either register it from the Chainlink Automation App, or from within a contract that you have deployed.
+This guide explains how to register a custom logic Upkeep that uses a [compatible contract](../compatible-contracts). You can register it using the Chainlink Automation App or from within a contract that you deploy.
 
 **Topics**
 + [Register an Upkeep using the Chainlink Automation App](#register-an-upkeep-using-the-chainlink-automation-app)
@@ -31,7 +31,7 @@ This guide explains how to register a Custom logic Upkeep that uses an [Automati
 
 1. **Select the custom logic trigger**
 
-1. **Provide the address of your [Automation-compatible contract](../compatible-contracts)** You do not need to verify the contract on-chain, but it must be [Automation-compatible](../compatible-contracts/).
+1. **Provide the address of your [compatible contract](../compatible-contracts)** You do not need to verify the contract on-chain, but it must be [compatible](../compatible-contracts/) with the `AutomationCompatibleInterface` contract.
 
 1. **Complete the required details:**
 
@@ -51,16 +51,16 @@ This guide explains how to register a Custom logic Upkeep that uses an [Automati
 
     > 🚧 Testing and best practices
     >
-    > Follow the [best practices](../compatible-contracts/#best-practices) when creating an Automation-compatible contract and test your Upkeep on a testnet before deploying it to a mainnet.
+    > Follow the [best practices](../compatible-contracts/#best-practices) when creating a compatible contract and test your upkeep on a testnet before deploying it to a mainnet.
 
 1. **Click `Register upkeep`** and confirm the transaction in MetaMask.
     ![Upkeep Registration Success Message](/images/contract-devs/automation/automation-registration-submitted.png)
 
-Your Upkeeps will be displayed in your list of Active Upkeeps. You must monitor the balance of your Upkeep. If the balance drops below the **minimum balance**, the Chainlink Automation Network will not perform the Upkeep. See [Manage Your Upkeeps](../manage-upkeeps) to learn how to manage your Upkeeps.
+Your upkeeps will be displayed in your list of **Active Upkeeps**. You must monitor the balance of your upkeep. If the balance drops below the **minimum balance**, the Chainlink Automation Network will not perform the Upkeep. See [Managing Upkeeps](../manage-upkeeps) to learn how to manage your upkeeps.
 
 ## Register an Upkeep using your own deployed contract
 
-You can dynamically create and manage Upkeeps from within your own dApp. To do this you will need to keep track of the Upkeep ID as your contract will use this to subsequently interact with the Chainlink Automation registry. The following example displays a smart contract that can create an Upkeep and determine the Upkeep ID. Note your contract should be Automation-compatible anf you will need [ERC-677 LINK](../../link-token-contracts/) to fund the Upkeep. You can also program your Upkeep to check its own balance and fund itself by interacting with the registry.
+You can dynamically create and manage Upkeeps from within your own dApp. To do this you will need to keep track of the Upkeep ID as your contract will use this to subsequently interact with the Chainlink Automation registry. The following example displays a smart contract that can create an Upkeep and determine the Upkeep ID. Note your contract must be compatible and you will need [ERC-677 LINK](../../link-token-contracts/) to fund the upkeep. You can also program your Upkeep to check its own balance and fund itself by interacting with the registry.
 
 
 ### Prerequisites 

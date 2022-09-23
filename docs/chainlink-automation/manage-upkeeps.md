@@ -2,7 +2,7 @@
 layout: nodes.liquid
 section: ethereum
 date: Last Modified
-title: 'Manage your Upkeeps'
+title: 'Managing Upkeeps'
 whatsnext:
   { 'Automation economics': '/docs/chainlink-automation/automation-economics/' }
 ---

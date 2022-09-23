@@ -301,7 +301,7 @@ module.exports = {
             url: '/docs/chainlink-automation/register-upkeep/',
           },
           {
-            title: 'Create Automation-compatible Contracts',
+            title: 'Create Compatible Contracts',
             url: '/docs/chainlink-automation/compatible-contracts/',
           },
 

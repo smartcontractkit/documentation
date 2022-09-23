@@ -7,7 +7,7 @@ whatsnext:
   {
     'Register a time-based Upkeep': '/docs/chainlink-automation/job-scheduler/',
     'Register a Custom Logic Upkeep': '/docs/chainlink-automation/register-upkeep/',
-    'Create an Automation-compatible contract for custom logic Upkeep': '/docs/chainlink-automation/compatible-contracts/',
+    'Create an compatible contract for custom logic upkeep': '/docs/chainlink-automation/compatible-contracts/',
     'Automation architecture': '/docs/chainlink-automation/overview/',
     'Automation economics': '/docs/chainlink-automation/automation-economics/',
   }
@@ -39,12 +39,12 @@ https://youtu.be/xL96sTwQ5Ho
 
 Chainlink Automation will reliably execute smart contract functions using a variety of triggers.
 
-- [Time-based trigger](#time-based-trigger): Use a [time based trigger](#time-based-trigger) if you want Chainlink Automation to execute your function according to a time schedule. We simply call it the Job Scheduler and it is a throwback to the Ethereum Alarm Clock. Your contract does not need to be [Automation-compatible](../compatible-contracts/).
-- [Custom logic trigger](#custom-logic-trigger): Use [custom logic trigger](#custom-logic-trigger) if you want to provide custom solidity logic that Automation Nodes will evaluate (off-chain) to determine when to execute your function on-chain. Your contract should be [Automation-compatible](../compatible-contracts/). Custom logic examples include checking the balance on a contract, only executing limit orders when their levels are met, any one of our [coded examples](/docs/chainlink-automation/util-overview), and many many more.
+- [Time-based trigger](#time-based-trigger): Use a [time based trigger](#time-based-trigger) to execute your function according to a time schedule. This feature is also called the Job Scheduler and it is a throwback to the Ethereum Alarm Clock. Time-based trigger contracts do not need to be [compatible](../compatible-contracts/#example-contract) with the `AutomationCompatibleInterface` contract.
+- [Custom logic trigger](#custom-logic-trigger): Use a [custom logic trigger](#custom-logic-trigger) to provide custom solidity logic that Automation Nodes evaluate (off-chain) to determine when to execute your function on-chain. Your contract must meet the requirements to be [compatible](../compatible-contracts/) with the `AutomationCompatibleInterface` contract. Custom logic examples include checking the balance on a contract, only executing limit orders when their levels are met, any one of our [coded examples](/docs/chainlink-automation/util-overview), and many more.
 
 ### Time-based Trigger
 
-Before you begin, deploy the contract that you want to automate. You will also need the ABI for your contract if it has not been verified. Your contract does not have to be [Automation-compatible](../compatible-contracts/).
+Before you begin, deploy the contract that you want to automate. You will also need the ABI for your contract if it has not been verified. Your contract does not need to be [compatible](../compatible-contracts/) with the `AutomationCompatibleInterface` contract.
 
 1. Open the Chainlink Automation app.
 
@@ -66,7 +66,7 @@ For more details on time-based automation, click [here](../job-scheduler/).
 
 ### Custom logic trigger
 
-To use a custom logic trigger, you will need to make your contract [Automation-compatible](../compatible-contracts/).
+To use a custom logic trigger, you must make your contract [compatible](../compatible-contracts/) with the `AutomationCompatibleInterface` contract.
 
 1. Open the Chainlink Automation app.
 
@@ -75,17 +75,17 @@ To use a custom logic trigger, you will need to make your contract [Automation-c
         <a href="https://automation.chain.link" >Open the Chainlink Automation App</a>
     </div>
 
-1. [Register](../register-upkeep/) a new Upkeep in the [Chainlink Automation App](https://automation.chain.link) and select **Custom logic** trigger. Provide the address of your [Automation-compatible](../compatible-contracts/) contract and complete the remaining details. Your upkeep name will be publicly visible, but your email and project name will **not** be publicly visible. Ensure you specify the appropriate gas limit for your function to execute on chain.
+1. [Register](../register-upkeep/) a new Upkeep in the [Chainlink Automation App](https://automation.chain.link) and select **Custom logic** trigger. Provide the address of your [compatible](../compatible-contracts/) contract and complete the remaining details. Your upkeep name will be publicly visible, but your email and project name will **not** be publicly visible. Ensure you specify the appropriate gas limit for your function to execute on chain.
 
 1. Fund your Upkeep with ERC-677 LINK. See the [LINK token contracts](../../link-token-contracts/) page to determine where to acquire ERC-677 LINK.
 
 1. After your Upkeep is registered, [manage](../manage-upkeeps/) it in the Chainlink Automation App.
 
-1. For more details on custom logic automation, click [here](../compatible-contracts/).
+1. For more details on custom logic automation, read the [Creating Compatible Contracts](../compatible-contracts/) guide.
 
 > ❗️ **WARNING**
 >
-> Do **NOT** attempt to send LINK to your contract. For Chainlink Automation, contracts are funded via the registry rather than within your contract.
+> Do **NOT** attempt to send LINK to your contract. For Chainlink Automation, contracts are funded through the registry rather than within your contract.
 
 > 🚧 Funding Upkeep
 >

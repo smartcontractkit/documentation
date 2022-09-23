@@ -83,7 +83,7 @@ To complete the upkeep registration process, you must enter some information abo
 
 > 📘 Job Scheduler Gas requirements
 >
-> When you create an upkeep through the Job Scheduler, Chainlink Automation deploys a new `CronUpkeep` contract from the [CronUpkeepFactory](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/factories/CronUpkeepFactory.sol) to manage your time schedule and ensure that it is Automation-compatible. This contract uses roughly 110K gas per call, so it is recommended to add 150K additional gas to the gas limit of the function you are automating.
+> When you create an upkeep through the Job Scheduler, Chainlink Automation deploys a new `CronUpkeep` contract from the [CronUpkeepFactory](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/factories/CronUpkeepFactory.sol) to manage your time schedule and ensure that it is compatible. This contract uses roughly 110K gas per call, so it is recommended to add 150K additional gas to the gas limit of the function you are automating.
 
 ![Automation Upkeep Details](/images/contract-devs/automation/automation-upkeep-details.png)
 

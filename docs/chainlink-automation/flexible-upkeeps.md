@@ -22,7 +22,7 @@ Start by integrating an example contract to Chainlink Automation that has not ye
 This guide assumes you have a basic understanding of [Chainlink Automation](https://chain.link/keepers). If you are new to Keepers, complete the following guides first:
 
 - Know how to [deploy solidity contracts using Remix and Metamask](/docs/deploy-your-first-contract/)
-- Learn how to make [Automation-Compatible Contracts](/docs/chainlink-automation/compatible-contracts/)
+- Learn how to make [compatible contracts](/docs/chainlink-automation/compatible-contracts/)
 - [Register UpKeep for a Contract](/docs/chainlink-automation/register-upkeep/)
 
 Chainlink Automation is supported on several [networks](../supported-networks).
@@ -34,7 +34,7 @@ Chainlink Automation is supported on several [networks](../supported-networks).
 
 ## Problem: On-chain computation leads to high gas fees
 
-In the guide for [Making Automation-compatible Contracts](/docs/chainlink-automation/compatible-contracts/), you deployed a basic [counter contract](/docs/chainlink-automation/compatible-contracts/#example-contract) and verified that the counter increments every 30 seconds. However, more complex use cases can require looping over arrays or performing expensive computation. This leads to expensive gas fees and can increase the premium that end-users have to pay to use your dApp. To illustrate this, deploy an example contract that maintains internal balances.
+In the guide for [Creating Compatible Contracts](/docs/chainlink-automation/compatible-contracts/), you deployed a basic [counter contract](/docs/chainlink-automation/compatible-contracts/#example-contract) and verified that the counter increments every 30 seconds. However, more complex use cases can require looping over arrays or performing expensive computation. This leads to expensive gas fees and can increase the premium that end-users have to pay to use your dApp. To illustrate this, deploy an example contract that maintains internal balances.
 
 The contract has the following components:
 
