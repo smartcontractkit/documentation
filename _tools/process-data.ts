@@ -25,6 +25,9 @@ interface DataFile {
         feedCategory?: string;
         feedType?: string;
         hidden?: boolean;
+        nftFloor?: {
+          units: string;
+        };
         shutdownDate?: string;
       };
       transmissionsAccount?: string;
@@ -68,7 +71,7 @@ function load(filename: string): DataFile {
 const finalResult: {
   [key: string]: {
     title: string;
-    feedType: string;
+    networkStatusUrl: string;
     networks: {
       name: string;
       url: string;
@@ -82,7 +85,7 @@ const finalResult: {
 for (let page of targetData) {
   finalResult[page.page] = {
     title: page.title,
-    feedType: page.feedType,
+    networkStatusUrl: page.networkStatusUrl,
     networks: []
   };
 
@@ -106,7 +109,9 @@ for (let page of targetData) {
       if (
         (contract.status === 'testnet-priority' || contract.status === 'live') &&
         // Only include if the key does not exist or it's not true
-        !contract.docs?.hidden
+        !contract.docs?.hidden &&
+        // Temp exclude
+        !contract.docs?.nftFloor
       ) {
         let threshold: number = 0;
         // Handle Threshold defined in the config object
