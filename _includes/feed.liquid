@@ -39,7 +39,7 @@ section: ethereum
 
 {% if metadata.networkstatusurl %}
 <div>
-<p>Track the status of this network at <a href="{{metadata.networkstatusurl}}">{{metadata.networkstatusurl}}.<a></p>
+<p>Track the status of this network at <a href="{{metadata.networkstatusurl}}">{{metadata.networkstatusurl}}.</a></p>
 </div>
 {% endif %}
 
@@ -135,6 +135,9 @@ section: ethereum
         if(data[selectedNetwork]) {
             for(let network of data[selectedNetwork].networks) {
                 html += `<h2 id="${network.name}">${network.name} <a class="anchor" href="#${network.name}"><img src="/images/link.svg" alt="Link to this section"></a></h2>`;
+                if(network.networkType == "mainnet" && data[selectedNetwork].networkStatusUrl){
+                    html += `<p>Track the status of this network at <a href="${data[selectedNetwork].networkStatusUrl}">${data[selectedNetwork].networkStatusUrl}</a></p>`;
+                }
                 html += `<label><input type="checkbox" class="extra" ${showExtraDetails ? 'checked="checked"' : ''}>Show more details</input></label>`;
                 let proxyList = '';
                 if(network.networkType == "mainnet") {
@@ -162,7 +165,7 @@ section: ethereum
                                 <th ${ showExtraDetails ? '' : 'class="detail-hidden"'}>Deviation</th>
                                 <th ${ showExtraDetails ? '' : 'class="detail-hidden"'}>Heartbeat</th>
                                 <th ${ showExtraDetails ? '' : 'class="detail-hidden"'}>Dec</th>
-                                <th>${data[selectedNetwork].feedType}</th>
+                                <th>Address</th>
                             </tr>
                         </thead>
                         <tbody>${proxyList}</tbody>
@@ -186,7 +189,7 @@ section: ethereum
                                 <th ${ showExtraDetails ? '' : 'class="detail-hidden"'}>Deviation</th>
                                 <th ${ showExtraDetails ? '' : 'class="detail-hidden"'}>Heartbeat</th>
                                 <th ${ showExtraDetails ? '' : 'class="detail-hidden"'}>Dec</th>
-                                <th>${data[selectedNetwork].feedType}</th>
+                                <th>Address</th>
                             </tr>
                         </thead>
                         <tbody>${proxyList}</tbody>

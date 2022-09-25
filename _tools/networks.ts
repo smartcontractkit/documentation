@@ -2,7 +2,7 @@ export const NETWORKS = [
   {
     page: "ethereum",
     title: "Ethereum Data Feeds",
-    feedType: "Proxy",
+    networkStatusUrl: "https://ethstats.net/",
     networks: [
       {
         name: "Ethereum Mainnet",
@@ -21,7 +21,7 @@ export const NETWORKS = [
   {
     page: "bnb-chain",
     title: "BNB Chain Data Feeds",
-    feedType: "Proxy",
+    networkStatusUrl: "https://bscscan.freshstatus.io/",
     networks: [
       {
         name: "BNB Chain Mainnet",
@@ -40,7 +40,7 @@ export const NETWORKS = [
   {
     page: "polygon",
     title: "Polygon (Matic) Data Feeds",
-    feedType: "Proxy",
+    networkStatusUrl: "https://polygon.io/system",
     networks: [
       {
         name: "Polygon Mainnet",
@@ -59,7 +59,7 @@ export const NETWORKS = [
   {
     page: "gnosis-chain",
     title: "Gnosis Chain (xDai) Data Feeds",
-    feedType: "Proxy",
+    networkStatusUrl: "https://blockscout.com/xdai/mainnet/",
     networks: [
       {
         name: "Gnosis Chain Mainnet",
@@ -72,7 +72,7 @@ export const NETWORKS = [
   {
     page: "heco-chain",
     title: "HECO Chain Data Feeds",
-    feedType: "Proxy",
+    networkStatusUrl: "https://hecoinfo.com/",
     networks: [
       {
         name: "HECO Mainnet",
@@ -85,7 +85,7 @@ export const NETWORKS = [
   {
     page: "avalanche",
     title: "Avalanche Data Feeds",
-    feedType: "Proxy",
+    networkStatusUrl: "https://status.avax.network/",
     networks: [
       {
         name: "Avalanche Mainnet",
@@ -104,7 +104,7 @@ export const NETWORKS = [
   {
     page: "fantom",
     title: "Fantom Testnet",
-    feedType: "Proxy",
+    networkStatusUrl: "https://ftmscan.com/",
     networks: [
       {
         name: "Fantom Mainnet",
@@ -123,7 +123,7 @@ export const NETWORKS = [
   {
     page: "arbitrum",
     title: "Arbitrum Data Feeds",
-    feedType: "Proxy",
+    networkStatusUrl: "https://arbiscan.freshstatus.io/",
     networks: [
       {
         name: "Arbitrum Mainnet",
@@ -142,7 +142,7 @@ export const NETWORKS = [
   {
     page: "harmony",
     title: "Harmony Data Feeds",
-    feedType: "Proxy",
+    networkStatusUrl: "https://status.harmony.one/",
     networks: [
       {
         name: "Harmony Mainnet",
@@ -155,7 +155,7 @@ export const NETWORKS = [
   {
     page: "solana",
     title: "Solana Data Feeds",
-    feedType: "Account",
+    networkStatusUrl: "https://status.solana.com/",
     networks: [
       {
         name: "Solana Mainnet",
@@ -174,7 +174,7 @@ export const NETWORKS = [
   {
     page: "optimism",
     title: "Optimism Data Feeds",
-    feedType: "Proxy",
+    networkStatusUrl: "https://status.optimism.io/",
     networks: [
       {
         name: "Optimism Mainnet",
@@ -193,7 +193,7 @@ export const NETWORKS = [
   {
     page: "moonriver",
     title: "Moonriver Data Feeds",
-    feedType: "Proxy",
+    networkStatusUrl: "https://moonscan.freshstatus.io/",
     networks: [
       {
         name: "Moonriver Mainnet",
@@ -206,7 +206,7 @@ export const NETWORKS = [
   {
     page: "moonbeam",
     title: "Moonbeam Data Feeds",
-    feedType: "Proxy",
+    networkStatusUrl: "https://moonscan.freshstatus.io/",
     networks: [
       {
         name: "Moonbeam Mainnet",
@@ -219,7 +219,7 @@ export const NETWORKS = [
   {
     page: "metis",
     title: "Metis Data Feeds",
-    feedType: "Proxy",
+    networkStatusUrl: "https://andromeda-explorer.metis.io/",
     networks: [
       {
         name: "Metis Mainnet",
@@ -232,7 +232,7 @@ export const NETWORKS = [
   {
     page: "klaytn",
     title: "Klaytn Data Feeds",
-    feedType: "Proxy",
+    networkStatusUrl: "https://status.klaytnapi.com/",
     networks: [
       {
         name: "Klaytn Baobab testnet",
