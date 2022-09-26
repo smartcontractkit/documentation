@@ -9,7 +9,7 @@ whatsnext:
 
   }
 ---
-![Chainlink Keeper Network Banner](/images/contract-devs/generic-banner.png)
+![Chainlink Automation Network Banner](/images/contract-devs/generic-banner.png)
 
 
 **Chainlink Automation release notes:**
