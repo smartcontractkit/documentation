@@ -13,20 +13,20 @@ contract PriceConsumerV3 {
      * Address: 0xa81FE04086865e63E12dD3776978E49DEEa2ea4e
      */
     constructor() {
-        priceFeed = AggregatorV3Interface(0xA39434A63A52E749F02807ae27335515BA4b07F7);
+        reserveFeed = AggregatorV3Interface(0xa81FE04086865e63E12dD3776978E49DEEa2ea4e);
     }
 
     /**
      * Returns the latest price
      */
-    function getLatestPrice() public view returns (int) {
+    function getLatestReserve() public view returns (int) {
         (
             /*uint80 roundID*/,
-            int price,
+            int reserve,
             /*uint startedAt*/,
             /*uint timeStamp*/,
             /*uint80 answeredInRound*/
-        ) = priceFeed.latestRoundData();
-        return price;
+        ) = reserveFeed.latestRoundData();
+        return reserve;
     }
 }
