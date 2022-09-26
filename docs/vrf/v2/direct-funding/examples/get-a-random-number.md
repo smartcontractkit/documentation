@@ -75,11 +75,11 @@ The deployed contract requests random values from Chainlink VRF, receives those 
 
 1. Return to Remix and view your deployed contract functions in the **Deployed Contracts** list.
 
-1. Click the `requestRandomWords()` function to send the request for random values to Chainlink VRF. MetaMask opens and asks you to confirm the transaction. After you approve the transaction, Chainlink VRF processes your request. Chainlink VRF fulfills the request and returns the random values to your contract in a callback to the `fulfillRandomWords()` function. At this point, a new key `requestId` is added to the mapping `s_requests`.
+1. Click the `requestRandomWords()` function to send the request for random values to Chainlink VRF. MetaMask opens and asks you to confirm the transaction. **Note** Remix IDE doesn't set the right gas limit. For this example to work, set a gas limit of _400,000_ as explained [here](https://metamask.zendesk.com/hc/en-us/articles/360022895972). After you approve the transaction, Chainlink VRF processes your request. Chainlink VRF fulfills the request and returns the random values to your contract in a callback to the `fulfillRandomWords()` function. At this point, a new key `requestId` is added to the mapping `s_requests`.
 
    Depending on current testnet conditions, it might take a few minutes for the callback to return the requested random values to your contract.
 
-1. To fetch the request ID of your request, call `lastRequestId()`. 
+1. To fetch the request ID of your request, call `lastRequestId()`.
 
 1. After the oracle returns the random values to your contract, the mapping `s_requests` is updated. The received random values are stored in `s_requests[_requestId].randomWords`.
 
