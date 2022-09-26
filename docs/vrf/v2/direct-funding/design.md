@@ -113,7 +113,7 @@ Requests to Chainlink VRF v2 follow the [Request & Receive Data](#request-and-re
 
 You can see the configuration for each network on the [Supported networks](/docs/vrf/v2/direct-funding/supported-networks/) page. You can also view the full configuration for each VRF v2 Wrapper contract directly in Etherscan. As an example, view the [Ethereum Mainnet VRF v2 Wrapper contract](https://etherscan.io/address/0x5A861794B927983406fCE1D062e00b9368d97Df6#readContract) configuration by calling `getConfig` function.
 
-- Each wrapper has a `MAX_NUM_WORDS` parameter that limits the maximum number of random values you can receive in each request.
+- Each wrapper has a `maxNumWords` parameter that limits the maximum number of random values you can receive in each request.
 
 > ℹ️ Note on maximum gas limit.
 >
