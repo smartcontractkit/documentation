@@ -8,7 +8,7 @@ section: ethereum
      <p>To learn how to implement these feeds, see the <a href="/docs/solana/using-data-feeds-solana/">Solana Examples for Consuming Data Feeds</a>.</p>
      <p>To learn how to obtain SOL tokens on the Solana Devnet, see the <a href="https://docs.solana.com/cli/transfer-tokens#airdrop-some-tokens-to-get-started">Solana Documentation</a>.</p>
   {% else %}
-     <p>To learn how to implement these feeds, see the <a href="/docs/data-feeds/proof-of-reserve/">Ethereum Examples for Consuming Data Feeds</a>.</p>
+     <p>To learn how to implement these feeds, see the <a href="/docs/data-feeds/proof-of-reserve/">Proof Of Reserve Feeds</a> documentation.</p>
      <p>For LINK token and Faucet details, see the <a href="/docs/link-token-contracts/">LINK Token Contracts</a> page.</p>
 {% endcase %}
 
@@ -129,10 +129,13 @@ section: ethereum
     render = (data) => {
         let html = '';
         if(data) {
-            for(let chain in data){
-                for(let network of data[chain].networks) {
+            for(let stub in data){
+                for(let network of data[stub].networks) {
                     if (network.dataType == "por") {
                         html += `<h2 id="${network.name}">${network.name} <a class="anchor" href="#${network.name}"><img src="/images/link.svg" alt="Link to this section"></a></h2>`;
+                        if(network.networkType == "mainnet" && data[stub].networkStatusUrl){
+                            html += `<p>Track the status of this network at <a href="${data[stub].networkStatusUrl}">${data[stub].networkStatusUrl}</a></p>`;
+                        }
                         html += `<label><input type="checkbox" class="extra" ${showExtraDetails ? 'checked="checked"' : ''}>Show more details</input></label>`;
                         let proxyList = '';
                         for(let proxy of network.proxies) {
