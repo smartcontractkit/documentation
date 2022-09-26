@@ -25,9 +25,7 @@ interface DataFile {
         feedCategory?: string;
         feedType?: string;
         hidden?: boolean;
-        nftFloor?: {
-          units: string;
-        };
+        nftFloorUnits?: string;
         shutdownDate?: string;
       };
       transmissionsAccount?: string;
@@ -111,7 +109,7 @@ for (let page of targetData) {
         // Only include if the key does not exist or it's not true
         !contract.docs?.hidden &&
         // Temp exclude
-        !contract.docs?.nftFloor
+        !contract.docs?.nftFloorUnits
       ) {
         let threshold: number = 0;
         // Handle Threshold defined in the config object
