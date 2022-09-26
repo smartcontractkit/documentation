@@ -42,7 +42,7 @@ contract VRFv2DirectFundingConsumer is VRFV2WrapperConsumerBase, ConfirmedOwner 
     uint16 requestConfirmations = 3;
 
     // For this example, retrieve 2 random values in one request.
-    // Cannot exceed VRFV2Wrapper.MAX_NUM_WORDS.
+    // Cannot exceed VRFV2Wrapper.getConfig().maxNumWords.
     uint32 numWords = 2;
 
     // Address LINK - hardcoded for Goerli
