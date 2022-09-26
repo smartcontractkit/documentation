@@ -16,8 +16,9 @@ To find a list of available Proof of Reserve Feeds, see the [Contract Addresses]
 **Topics**
 
 - [Types of Proof of Reserve Feeds](#types-of-proof-of-reserve-feeds)
-  - [Cross-chain reserves]()
-  - [Off-chain reserves]()
+  - [Cross-chain reserves](#cross-chain-reserves)
+  - [Off-chain reserves](#off-chain-reserves)
+- [Using Proof of Reserve Feeds](#using-proof-of-reserve-feeds)
 
 ## Types of Proof of Reserve Feeds
 
@@ -30,7 +31,7 @@ Reserves are available for both cross-chain assets and off-chain assets. Token i
   - Third-party API
   - Custodian API
   - Self-attested API
-- []()
+
 
 ### Cross-chain reserves
 
