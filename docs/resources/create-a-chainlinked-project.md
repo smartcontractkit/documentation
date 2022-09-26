@@ -6,7 +6,7 @@ title: 'Install Frameworks'
 permalink: 'docs/create-a-chainlinked-project/'
 whatsnext:
   {
-    'Introduction to Data Feeds': '/docs/using-chainlink-reference-contracts/',
+    'Introduction to Data Feeds': '/docs/data-feeds/',
     'Introduction to Chainlink VRF': '/docs/vrf/v2/introduction/',
     'Introduction to Using Any API': '/docs/any-api/introduction/',
   }
