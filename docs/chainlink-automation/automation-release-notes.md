@@ -43,7 +43,7 @@ Chainlink Keepers has been renamed to **Chainlink Automation**. The table below 
 
 ## 2022-09-23 - v1.3 Release
 
-Keepers Registry v1.3 [launched on Arbitrum Mainnet](/docs/chainlink-keepers/supported-networks/#arbitrum).
+Keepers Registry v1.3 [launched on Arbitrum Mainnet](/docs/chainlink-automation/supported-networks/#arbitrum).
 
 
 ## 2022-08-04 - v1.2 Release
