@@ -10,7 +10,7 @@ whatsnext: {
 }
 ---
 
-Chainlink NFT Floor Pricing Feeds provide the lowest price of an NFT in a collection. These feeds operate the same way as other Chainlink Data Feeds. NFT Floor Pricing Feeds are supported by [Coinbase Cloud’s](https://www.coinbase.com/cloud/) open-source aggregation algorithm and Chainlink’s oracle infrastructure to help eliminate extreme price outliers and make these feeds resistant to market manipulation. You can use NFT Floor Pricing Feeds for use cases that rely on high-quality NFT data, including lending and borrowing, on-chain derivatives, dynamic NFTs, gaming guilds, CeFi products, prediction markets, and more.
+Chainlink NFT Floor Pricing Feeds provide the lowest price of an NFT in a collection. These feeds operate the same way as other Chainlink Data Feeds. NFT Floor Pricing Feeds are supported by [Coinbase Cloud’s](https://www.coinbase.com/cloud/) aggregation algorithm and Chainlink’s oracle infrastructure to help eliminate extreme price outliers and make these feeds resistant to market manipulation. You can use NFT Floor Pricing Feeds for use cases that rely on high-quality NFT data, including lending and borrowing, on-chain derivatives, dynamic NFTs, gaming guilds, CeFi products, prediction markets, and more.
 
 Find the list of testnet feeds on the [NFT Floor Pricing Feed Addresses](/docs/data-feeds/nft-floor-price/addresses/). To sign up for access to NFT Floor Pricing feeds on Ethereum Mainnet, [use this TypeForm](https://chainlinkcommunity.typeform.com/nft-price-feeds).
 

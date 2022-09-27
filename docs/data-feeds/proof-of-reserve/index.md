@@ -37,6 +37,8 @@ Reserves are available for both cross-chain assets and off-chain assets. Token i
 
 Cross-Chain reserves are sourced from the network where the reserves are held. This includes but is not limited to networks including Bitcoin, Filecoin, Cardano, and chains where Chainlink has a native integration. Chainlink Node operators can report cross-chain reserves by running an [external adapter](/docs/external-adapters/) and querying the source-chain client directly. In some instances, the reserves are composed of a dynamic list of IDs or addresses using a composite adapter.
 
+![Cross-chain reserves diagram](/images/data-feed/cross-chain-reserves.webp)
+
 Cross-chain reserves provide their data using the following methods:
 
 - Wallet address manager: The project uses the [IPoRAddressList](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/interfaces/PoRAddressList.sol) wallet address manager contract and self-attests to which addresses they own.
@@ -45,6 +47,8 @@ Cross-chain reserves provide their data using the following methods:
 ### Off-chain reserves
 
 Off-Chain reserves are sourced from APIs through an [external adapter](/docs/external-adapters/).
+
+![Off-chain reserves diagram](/images/data-feed/off-chain-reserves.webp)
 
 Off-chain reserves provide their data using the following methods:
 
