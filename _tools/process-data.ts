@@ -27,7 +27,6 @@ interface DataFile {
         hidden?: boolean;
         nftFloorUnits?: string;
         porAuditor?: string;
-        porSource?: string;
         porType?: string;
         shutdownDate?: string;
       };
@@ -53,7 +52,6 @@ interface ResultProxy {
   feedType: string;
   nftFloorUnits?: string;
   porAuditor?: string;
-  porSource?: string;
   porType?: string;
   shutdownDate?: string;
 }
@@ -109,7 +107,6 @@ for (let page of targetData) {
         feedType?: string;
         nftFloorUnits?: string;
         porAuditor?: string;
-        porSource?: string;
         porType?: string;
         shutdownDate?: string;
       };
@@ -144,7 +141,6 @@ for (let page of targetData) {
           feedType: contract.docs?.feedType || "-",
           nftFloorUnits: contract.docs?.nftFloorUnits,
           porAuditor: contract.docs?.porAuditor,
-          porSource: contract.docs?.porSource,
           porType: contract.docs?.porType,
           shutdownDate: contract.docs?.shutdownDate,
 
@@ -159,7 +155,6 @@ for (let page of targetData) {
             feedType: contract.docs?.feedType || "-",
             nftFloorUnits: contract.docs?.nftFloorUnits,
             porAuditor: contract.docs?.porAuditor,
-            porSource: contract.docs?.porSource,
             porType: contract.docs?.porType,
             shutdownDate: contract.docs?.shutdownDate,
           };
@@ -186,7 +181,6 @@ for (let page of targetData) {
             feedType: liveContracts[proxy.aggregator].feedType || "-",
             nftFloorUnits: liveContracts[proxy.aggregator].nftFloorUnits,
             porAuditor: liveContracts[proxy.aggregator].porAuditor,
-            porSource: liveContracts[proxy.aggregator].porSource,
             porType: liveContracts[proxy.aggregator].porType,
             shutdownDate: liveContracts[proxy.aggregator].shutdownDate,
           }
@@ -218,7 +212,6 @@ for (let page of targetData) {
             feedType: contract.docs?.feedType || "-",
             nftFloorUnits: contract.docs?.nftFloorUnits,
             porAuditor: contract.docs?.porAuditor,
-            porSource: contract.docs?.porSource,
             porType: contract.docs?.porType,
             shutdownDate: contract.docs?.shutdownDate,
           }
