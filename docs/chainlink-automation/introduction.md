@@ -23,9 +23,7 @@ whatsnext:
 
 To learn more about how the Chainlink Automation Network automates your smart contracts, read the [Chainlink Automation Architecture](../overview) page.
 
-<p>
-https://youtu.be/xL96sTwQ5Ho
-</p>
+![Chainlink Automation](/images/contract-devs/automation/automation_intro.gif)
 
 **Topics**
 
