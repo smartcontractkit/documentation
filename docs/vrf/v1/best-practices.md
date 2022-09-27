@@ -2,16 +2,16 @@
 layout: nodes.liquid
 section: legacy
 date: Last Modified
-title: "VRF Best Practices [v1]"
-permalink: "docs/vrf/v1/best-practices/"
+title: 'VRF Best Practices [v1]'
+permalink: 'docs/vrf/v1/best-practices/'
 metadata:
-  title: "Chainlink VRF API Reference"
-  description: "Best pracices for using Chainlink VRF."
+  title: 'Chainlink VRF API Reference'
+  description: 'Best pracices for using Chainlink VRF.'
 ---
 
 > 🚧 VRF v2 replaces and enhances VRF v1.
 >
-> See the [VRF v2 documentation](/docs/vrf/v2/best-practices/) to learn more.
+> See the [VRF v2 documentation](/docs/vrf/v2/introduction/) to learn more.
 
 Best are the practices for using Chainlink VRF.
 
@@ -33,12 +33,13 @@ If you want to get multiple random numbers from a single VRF response, you shoul
 
 ```solidity
 function expand(uint256 randomValue, uint256 n) public pure returns (uint256[] memory expandedValues) {
-    expandedValues = new uint256[](n);
-    for (uint256 i = 0; i < n; i++) {
-        expandedValues[i] = uint256(keccak256(abi.encode(randomValue, i)));
-    }
-    return expandedValues;
+  expandedValues = new uint256[](n);
+  for (uint256 i = 0; i < n; i++) {
+    expandedValues[i] = uint256(keccak256(abi.encode(randomValue, i)));
+  }
+  return expandedValues;
 }
+
 ```
 
 ## Having multiple VRF requests in flight

@@ -10,7 +10,7 @@ metadata:
 
 > 🚧 VRF v2 replaces and enhances VRF v1.
 >
-> See the [VRF v2 documentation](/docs/vrf/v2/supported-networks/) to learn more.
+> See the [VRF v2 documentation](/docs/vrf/v2/introduction/) to learn more.
 
 Chainlink VRF allows you to integrate provably-fair and verifiably random data in your smart contract.
 
@@ -61,7 +61,7 @@ For implementation details, read [Introduction to Chainlink VRF](/docs/vrf/v1/in
 
 > 📘 Early Access
 >
-> For the most efficient consumption of Chainlink VRF on BNB Chain, please contact us using [this form](https://chainlinkcommunity.typeform.com/to/OYQO67EF?page=docs-VRF) to create a payment channel, through which we can provide VRF to you at the cost of BNB Chain network gas fees. You will only be paying in LINK for the gas costs incurred by the Chainlink node from calling your smart contract.
+> For the most efficient consumption of Chainlink VRF on BNB Chain, please contact us using [this form](https://chainlinkcommunity.typeform.com/to/OYQO67EF?page=docs-VRF) to create a payment channel, through which we can provide VRF to you at the cost of BNB Chain network gas fees. You will only be paying in LINK for the gas costs incurred by the Chainlink VRF service from calling your smart contract.
 
 ## BNB Chain Testnet
 
@@ -87,7 +87,7 @@ For implementation details, read [Introduction to Chainlink VRF](/docs/vrf/v1/in
 
 > 📘 Early Access
 >
-> For the most efficient consumption of Chainlink VRF on Ethereum, please contact us using [this form](https://chainlinkcommunity.typeform.com/to/OYQO67EF?page=docs-VRF) to create a payment channel, through which we can provide VRF to you at the cost of Ethereum network gas fees. You will only be paying in LINK for the gas costs incurred by the Chainlink node from calling your smart contract.
+> For the most efficient consumption of Chainlink VRF on Ethereum, please contact us using [this form](https://chainlinkcommunity.typeform.com/to/OYQO67EF?page=docs-VRF) to create a payment channel, through which we can provide VRF to you at the cost of Ethereum network gas fees. You will only be paying in LINK for the gas costs incurred by the Chainlink VRF service from calling your smart contract.
 
 ## Goerli
 
