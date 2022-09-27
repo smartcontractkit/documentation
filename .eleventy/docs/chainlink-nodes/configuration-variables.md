@@ -1407,7 +1407,7 @@ Controls what type of gas estimator is used.
 - `FixedPrice` uses static configured values for gas price (can be set via API call).
 - `BlockHistory` dynamically adjusts default gas price based on heuristics from mined blocks.
 - `Optimism2`/`L2Suggested` is a special mode only for use with Optimism and Metis blockchains. This mode will use the gas price suggested by the rpc endpoint via `eth_gasPrice`.
-- `Arbitrum` is a special mode only for use with Arbitrum blockchains. This mode extends `L2Suggested` (with price estimation) to estimate gas use as well.
+- `Arbitrum` is a special mode only for use with Arbitrum blockchains. It uses the suggested gas price (up to `ETH_MAX_GAS_PRICE_WEI`, with `1000 gwei` default) as well as an estimated gas limit (up to `ETH_GAS_LIMIT_MAX`, with `1,000,000,000` default).
 
 ### BLOCK_HISTORY_ESTIMATOR_BATCH_SIZE
 
