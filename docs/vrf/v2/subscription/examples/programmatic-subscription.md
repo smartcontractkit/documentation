@@ -3,23 +3,23 @@ layout: nodes.liquid
 section: ethereum
 date: Last Modified
 title: 'Programmatic Subscription'
-permalink: 'docs/vrf/v2/examples/programmatic-subscription/'
+permalink: 'docs/vrf/v2/subscription/examples/programmatic-subscription/'
 whatsnext:
   {
     'Security Considerations': '/docs/vrf/v2/security/',
     'Best Practices': '/docs/vrf/v2/best-practices/',
-    'Migrating from VRF v1 to v2': '/docs/vrf/v2/migration-from-v1/',
-    'Supported Networks': '/docs/vrf/v2/supported-networks/',
+    'Migrating from VRF v1 to v2': '/docs/vrf/v2/subscription/migration-from-v1/',
+    'Supported Networks': '/docs/vrf/v2/subscription/supported-networks/',
   }
 metadata:
   description: 'Example contracts for generating a random number inside a smart contract using Chainlink VRF v2.'
 ---
 
-{% include 'sections/vrf-v2-common.md' %}
+{% include 'sections/vrf-v2-subscription-common.md' %}
 
-How you manage the subscription depends on your randomness needs. You can configure your subscriptions using the [Subscription Manager](/docs/vrf/v2/ui/), but these examples demonstrate how to create your subscription and add your consumer contracts programmatically. For these examples, the contract owns and manages the subscription. Any wallet can provide funding to those subscriptions.
+How you manage the subscription depends on your randomness needs. You can configure your subscriptions using the [Subscription Manager](/docs/vrf/v2/subscription/ui/), but these examples demonstrate how to create your subscription and add your consumer contracts programmatically. For these examples, the contract owns and manages the subscription. Any wallet can provide funding to those subscriptions.
 
-You can view and monitor your subscriptions in the [Subscription Manager](/docs/vrf/v2/ui/) even if you create them programmatically. Go to [vrf.chain.link](https://vrf.chain.link) to open the Subscription Manager.
+You can view and monitor your subscriptions in the [Subscription Manager](/docs/vrf/v2/subscription/ui/) even if you create them programmatically. Go to [vrf.chain.link](https://vrf.chain.link) to open the Subscription Manager.
 
 **Topics**
 
@@ -46,7 +46,7 @@ See the example in the [Subscription manager contract](#subscription-manager-con
 
 ## Subscription manager contract
 
-In this example, the contract operates as a subscription owner and can run functions to add consumer contracts to the subscription. The consumer contracts must include the `requestRandomWords()` function with the correct coordinator parameters and the correct subscription ID to request random values and use the subscription balance. The consumer contracts must also include the `fulfillRandomWords()` function to receive the random values.
+In this example, the contract operates as a subscription owner and can run functions to add consuming contracts to the subscription. The consuming contracts must include the `requestRandomWords()` function with the correct coordinator parameters and the correct subscription ID to request random values and use the subscription balance. The consuming contracts must also include the `fulfillRandomWords()` function to receive the random values.
 
 Subscription owners and consumers do not have to be separate. This contract not only allows adding consumers with `addConsumer(address consumerAddress)` but can also act as a consumer by running its own `requestRandomWords()` function. This example contract includes a `createNewSubscription()` function in the `constructor()` that creates the subscription and adds itself as a consumer automatically when you deploy it.
 
@@ -63,7 +63,7 @@ To use this contract, compile and deploy it in Remix.
 
 1. Open the contract in [Remix](https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFv2SubscriptionManager.sol).
 
-1. Compile and deploy the contract using the Injected Provider environment. The contract includes all of the configuration variables that you need, but you can edit them if necessary. For a full list of available configuration variables, see the [Supported Networks](/docs/vrf/v2/supported-networks/) page.
+1. Compile and deploy the contract using the Injected Provider environment. The contract includes all of the configuration variables that you need, but you can edit them if necessary. For a full list of available configuration variables, see the [Supported Networks](/docs/vrf/v2/subscription/supported-networks/) page.
 
    This contract automatically creates a new subscription when you deploy it. Read the `s_subscriptionId` variable to find your subscription ID. You can use this value to find the subscription at [vrf.chain.link](https://vrf.chain.link).
 
@@ -80,7 +80,7 @@ To use this contract, compile and deploy it in Remix.
       - The `requestRandomWords()` function and the required variables and your subscription ID.
       - The `fulfillRandomWords()` callback function.
 
-      You can use the example from the [Get a Random Number](/docs/vrf/v2/examples/get-a-random-number/#analyzing-the-contract) guide.
+      You can use the example from the [Get a Random Number](/docs/vrf/v2/subscription/examples/get-a-random-number/#analyzing-the-contract) guide.
 
    1. After you deploy the consumer contract, add it to the subscription as an approved consumer using the `addConsumer()` function on your subscription manager contract. Specify the address of your consumer contract.
 
@@ -94,7 +94,7 @@ To use this contract, compile and deploy it in Remix.
 
 ## Funding and requesting simultaneously
 
-You can fund a subscription and request randomness in a single transaction. This is similar to how VRF v1 functions, but you must estimate how much the transaction might cost and determine the amount of funding to send to the subscription yourself. See the [Subscription Billing](/docs/vrf/v2/introduction/#subscription-billing) section to learn how to estimate costs for requests.
+You can fund a subscription and request randomness in a single transaction. You must estimate how much the transaction might cost and determine the amount of funding to send to the subscription yourself. See the [Subscription billing](/docs/vrf/v2/subscription/#subscriptions) page to learn how to estimate request costs.
 
 ```solidity
 {% include 'snippets/VRF/VRFv2FundAndRequestFunction.sol' %}

@@ -3,11 +3,14 @@ layout: nodes.liquid
 section: ethereum
 date: Last Modified
 title: 'Subscription Manager User Interface'
-permalink: 'docs/vrf/v2/ui/'
+permalink: 'docs/vrf/v2/subscription/ui/'
 metadata:
   title: 'Subscription Manager User Interface'
   description: 'Walkthrough Subscription Manager User Interface'
 ---
+
+{% include 'sections/vrf-v2-subscription-common.md' %}
+
 
 The VRF v2 Subscription Manager is available at [vrf.chain.link](https://vrf.chain.link/). The Subscription Manager lets you create a subcription and pre-pay for VRF v2 so you don't need to provide funding each time your application requests randomness. This guide walks you through the main sections of the UI.
 
@@ -38,7 +41,7 @@ Subscription components:
 - **Fulfillment**: The number of successful randomness requests that are already completed.
 - **Balance**: The amount of LINK remaining to be used for requests that use this subscription.
 
-You can cancel your subscription in the user interface. When you cancel your subscription, specify the account address to receive the remaining balance. See the clean up instructions in the [Get a Random Number](/docs/vrf/v2/examples/get-a-random-number/#clean-up) guide to learn more.
+You can cancel your subscription in the user interface. When you cancel your subscription, specify the account address to receive the remaining balance. See the clean up instructions in the [Get a Random Number](/docs/vrf/v2/subscription/examples/get-a-random-number/#clean-up) guide to learn more.
 
 ## Consumers
 
@@ -63,7 +66,7 @@ The **Pending** list appears if there are requests currently being processed.
 - **Consumer**: The address of the consuming contract.
 - **Transaction hash**: The transaction hash of the pending VRF request.
 - **Status**: A timer that informs you when the pending VRF request will move to a failed status. **Note**: Pending requests fail after 24h.
-- **Max Cost**: The calculated total gas cost in LINK based on the configuration. See [VRF v2 Limits](/docs/vrf/v2/introduction/#limits) for details.
+- **Max Cost**: The calculated total gas cost in LINK based on the configuration. See [VRF v2 Subscription Limits](/docs/vrf/v2/subscription/#limits) for details.
 - **Projected Balance**: This indicates when the subscription is underfunded and how many LINK tokens are required to fund the subscription.
 
 ## History

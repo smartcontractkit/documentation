@@ -15,7 +15,7 @@ const chainlinkLogo =
 const separator = '_';
 const addressPattern = '0x[0-9a-fA-F]{40}';
 const hexStringPattern = '(0x|0X)[a-fA-F0-9]+';
-// Test to follow this pattern: chainId_address (e.g.: 1_0x514910771af9ca656af840dff83e8264ecf986ca)
+// Test to follow this pattern: chainId_address (e.g.: 1_0x514910771AF9Ca656af840dff83E8264EcF986CA)
 const pattern = new RegExp(`^[0-9]+${separator}${addressPattern}$`);
 const linkToken = {
   name: 'ChainLink Token',

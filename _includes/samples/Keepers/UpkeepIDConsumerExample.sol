@@ -4,7 +4,7 @@ pragma solidity 0.8.6;
 // UpkeepIDConsumerExample.sol imports functions from both ./KeeperRegistryInterface.sol and
 // ./interfaces/LinkTokenInterface.sol
 
-import {KeeperRegistryInterface, State, Config} from "@chainlink/contracts/src/v0.8/interfaces/KeeperRegistryInterface.sol";
+import {KeeperRegistryInterface, State, Config} from "@chainlink/contracts/src/v0.8/interfaces/KeeperRegistryInterface1_2.sol";
 import {LinkTokenInterface} from "@chainlink/contracts/src/v0.8/interfaces/LinkTokenInterface.sol";
 
 /**
