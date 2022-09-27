@@ -59,10 +59,10 @@ Read answers from Proof of Reserve Feeds the same way that you use [other Data F
 Using Solidity, your smart contract should reference [`AggregatorV3Interface`](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol), which defines the external functions implemented by Data Feeds.
 
 ```solidity Goerli
-{% include 'samples/PriceFeeds/PoRPriceConsumerV3.sol' %}
+{% include 'samples/PriceFeeds/ReserveConsumerV3.sol' %}
 ```
 
 <div class="remix-callout">
-      <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/PriceFeeds/PoRPriceConsumerV3.sol" target="_blank" >Open in Remix</a>
+      <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/PriceFeeds/ReserveConsumerV3.sol" target="_blank" >Open in Remix</a>
       <a href="/docs/conceptual-overview/#what-is-remix">What is Remix?</a>
 </div>
