@@ -21,7 +21,7 @@ This guide explains how to register a time-based Upkeep that executes according 
 
 ## Register a new Upkeep
 
-To use the job scheduler, you must register a new upkeep on the Keepers network. In the [Chainlink Automation App](https://automation.chain.link/), click the blue **Register new Upkeep** button.
+To use the job scheduler, you must register a new upkeep on the Automation network. In the [Chainlink Automation App](https://automation.chain.link/), click the blue **Register new Upkeep** button.
 
 ![Chainlink Automation App](/images/contract-devs/automation/auto-ui-home.png)
 
