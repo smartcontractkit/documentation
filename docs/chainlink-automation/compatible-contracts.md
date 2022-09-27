@@ -14,7 +14,7 @@ Use custom logic to allow Chainlink Automation to determine when to execute your
 
 ## Overview
 
-Learn how to make smart contracts that are compatible with the `AutomationCompatibleInterface` contract and its functions.
+Learn how to make smart contracts that are compatible with the `KeeperCompatibleInterface` contract and its functions.
 
 **Topics**
 
@@ -34,8 +34,8 @@ Learn how to make smart contracts that are compatible with the `AutomationCompat
 
 To use Chainlink Automation, contracts must meet the following requirements:
 
-- Import `AutomationCompatible.sol`. You can refer to the [Chainlink Contracts](https://github.com/smartcontractkit/chainlink/tree/develop/contracts/src) on GitHub to find the latest version.
-- Use the `AutomationCompatibleInterface` from the library to ensure your `checkUpkeep` and `performUpkeep`function definitions match the definitions expected by the Chainlink Automation Network.
+- Import `KeeperCompatible.sol`. You can refer to the [Chainlink Contracts](https://github.com/smartcontractkit/chainlink/tree/develop/contracts/src) on GitHub to find the latest version.
+- Use the `KeeperCompatibleInterface` from the library to ensure your `checkUpkeep` and `performUpkeep`function definitions match the definitions expected by the Chainlink Automation Network.
 - Include a `checkUpkeep` function that contains the logic that will be executed off-chain to see if `performUpkeep` should be executed. `checkUpkeep` can use on-chain data and a specified `checkData` parameter to perform complex calculations off-chain and then send the result to `performUpkeep` as `performData`.
 - Include a `performUpkeep` function that will be executed on-chain when `checkUpkeep` returns `true`. Because `performUpkeep` is external, users are advised to revalidate conditions and performData.
 
@@ -75,7 +75,7 @@ This function contains the logic that runs off-chain during every block as an `e
 >
 > The `checkUpkeep` function is subject to the `checkGasLimit` in the [registry configuration](/docs/chainlink-automation/supported-networks/#configurations).
 
-Because `checkUpkeep` is only off-chain in simulation it is best to treat this as a `view` function and not modify any state. This might not always be possible if you want to use more advanced Solidity features like `DelegateCall`[(link)](https://docs.soliditylang.org/en/latest/introduction-to-smart-contracts.html#delegatecall-callcode-and-libraries). It is a best practice to import the `AutomationCompatible.sol`[(link)](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/AutomationCompatible.sol) contract and use the `cannotExecute` modifier to ensure that the method can be used only for simulation purposes.
+Because `checkUpkeep` is only off-chain in simulation it is best to treat this as a `view` function and not modify any state. This might not always be possible if you want to use more advanced Solidity features like `DelegateCall`[(link)](https://docs.soliditylang.org/en/latest/introduction-to-smart-contracts.html#delegatecall-callcode-and-libraries). It is a best practice to import the `KeeperCompatible.sol`[(link)](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/KeeperCompatible.sol) contract and use the `cannotExecute` modifier to ensure that the method can be used only for simulation purposes.
 
 ```solidity
 function checkUpkeep(

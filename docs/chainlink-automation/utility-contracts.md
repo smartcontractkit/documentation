@@ -26,11 +26,11 @@ To find other example contracts, see the [Example Automation Contracts](/docs/ch
 
 ## `EthBalanceMonitor` Properties
 
-`EthBalanceMonitor` is ownable, pauseable, and compatible with the `AutomationCompatibleInterface` contract:
+`EthBalanceMonitor` is ownable, pauseable, and compatible with the `KeeperCompatibleInterface` contract:
 
 - **Ownable**: The contract has an owner address, and provides basic authorization control functions. This simplifies the implementation of *user permissions* and allows for transfer of ownership.
 - **Pauseable**: This feature allows the contract to implement a pause and unpause mechanism that the contract owner can trigger.
-- **Compatible**: The `AutomationCompatibleInterface` is necessary to create contracts that are compatible with the Chainlink Automation Network. To learn more about the `AutomationCompatibleInterface` and its uses and functions, read the [Making Compatible Contracts](../compatible-contracts/) guide.
+- **Compatible**: The `KeeperCompatibleInterface` is necessary to create contracts that are compatible with the Chainlink Automation Network. To learn more about the `KeeperCompatibleInterface` and its uses and functions, read the [Making Compatible Contracts](../compatible-contracts/) guide.
 
 You can open the contract in Remix:
 <div class="remix-callout">

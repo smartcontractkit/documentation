@@ -36,9 +36,9 @@ Chainlink Keepers has been renamed to **Chainlink Automation**. The table below 
 | Keeper/Keeper Node             | Automation/Automation Node                                                |
 | Keepers Job                    | Automation Job                                                            |
 | Keepers Registry/Registrar     | Automation Registry/Registrar                                             |
-| `KeeperCompatible.sol`         | `AutomationCompatible.sol`                                                |
+| `KeeperCompatible.sol`         | `KeeperCompatible.sol`                                                |
 | `KeeperBase.sol`               | `AutomationBase.sol`                                                      |
-| `KeeperCompatibleInterface.sol`| `AutomationCompatibleInterface.sol`                                       |
+| `KeeperCompatibleInterface.sol`| `KeeperCompatibleInterface.sol`                                       |
 
 
 ## 2022-09-23 - v1.3 Release

@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.7.0;
 
-// AutomationCompatible.sol imports the functions from both ./AutomationBase.sol and
-// ./interfaces/AutomationCompatibleInterface.sol
-import "@chainlink/contracts/src/v0.7/AutomationCompatible.sol";
+// KeeperCompatible.sol imports the functions from both ./AutomationBase.sol and
+// ./interfaces/KeeperCompatibleInterface.sol
+import "@chainlink/contracts/src/v0.7/KeeperCompatible.sol";
 
 /**
  * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
@@ -11,7 +11,7 @@ import "@chainlink/contracts/src/v0.7/AutomationCompatible.sol";
  * DO NOT USE THIS CODE IN PRODUCTION.
  */
 
-contract Counter is AutomationCompatibleInterface {
+contract Counter is KeeperCompatibleInterface {
 
   uint public counter; // counter counts the number of upkeeps performed
   uint public interval; // interval specifies the time between upkeeps

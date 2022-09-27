@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
-import '@chainlink/contracts/src/v0.8/interfaces/AutomationCompatibleInterface.sol';
+import '@chainlink/contracts/src/v0.8/interfaces/KeeperCompatibleInterface.sol';
 
 /**
  * @dev Example contract which perform all the computation in `performUpkeep`
- * @notice important to implement {AutomationCompatibleInterface}
+ * @notice important to implement {KeeperCompatibleInterface}
  */
 
 /**
@@ -13,7 +13,7 @@ import '@chainlink/contracts/src/v0.8/interfaces/AutomationCompatibleInterface.s
  * DO NOT USE THIS CODE IN PRODUCTION.
  */
 
-contract BalancerOnChain is AutomationCompatibleInterface {
+contract BalancerOnChain is KeeperCompatibleInterface {
     uint256 public constant SIZE = 1000;
     uint256 public constant LIMIT = 1000;
     uint256[SIZE] public balances;

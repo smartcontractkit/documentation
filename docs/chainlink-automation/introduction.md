@@ -39,12 +39,12 @@ https://youtu.be/xL96sTwQ5Ho
 
 Chainlink Automation will reliably execute smart contract functions using a variety of triggers.
 
-- [Time-based trigger](#time-based-trigger): Use a [time based trigger](#time-based-trigger) to execute your function according to a time schedule. This feature is also called the Job Scheduler and it is a throwback to the Ethereum Alarm Clock. Time-based trigger contracts do not need to be [compatible](../compatible-contracts/#example-contract) with the `AutomationCompatibleInterface` contract.
-- [Custom logic trigger](#custom-logic-trigger): Use a [custom logic trigger](#custom-logic-trigger) to provide custom solidity logic that Automation Nodes evaluate (off-chain) to determine when to execute your function on-chain. Your contract must meet the requirements to be [compatible](../compatible-contracts/) with the `AutomationCompatibleInterface` contract. Custom logic examples include checking the balance on a contract, only executing limit orders when their levels are met, any one of our [coded examples](/docs/chainlink-automation/util-overview), and many more.
+- [Time-based trigger](#time-based-trigger): Use a [time based trigger](#time-based-trigger) to execute your function according to a time schedule. This feature is also called the Job Scheduler and it is a throwback to the Ethereum Alarm Clock. Time-based trigger contracts do not need to be [compatible](../compatible-contracts/#example-contract) with the `KeeperCompatibleInterface` contract.
+- [Custom logic trigger](#custom-logic-trigger): Use a [custom logic trigger](#custom-logic-trigger) to provide custom solidity logic that Automation Nodes evaluate (off-chain) to determine when to execute your function on-chain. Your contract must meet the requirements to be [compatible](../compatible-contracts/) with the `KeeperCompatibleInterface` contract. Custom logic examples include checking the balance on a contract, only executing limit orders when their levels are met, any one of our [coded examples](/docs/chainlink-automation/util-overview), and many more.
 
 ### Time-based Trigger
 
-Before you begin, deploy the contract that you want to automate. You will also need the ABI for your contract if it has not been verified. Your contract does not need to be [compatible](../compatible-contracts/) with the `AutomationCompatibleInterface` contract.
+Before you begin, deploy the contract that you want to automate. You will also need the ABI for your contract if it has not been verified. Your contract does not need to be [compatible](../compatible-contracts/) with the `KeeperCompatibleInterface` contract.
 
 1. Open the Chainlink Automation app.
 
@@ -66,7 +66,7 @@ For more details on time-based automation, click [here](../job-scheduler/).
 
 ### Custom logic trigger
 
-To use a custom logic trigger, you must make your contract [compatible](../compatible-contracts/) with the `AutomationCompatibleInterface` contract.
+To use a custom logic trigger, you must make your contract [compatible](../compatible-contracts/) with the `KeeperCompatibleInterface` contract.
 
 1. Open the Chainlink Automation app.
 

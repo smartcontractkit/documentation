@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
-// AutomationCompatible.sol imports the functions from both ./AutomationBase.sol and
-// ./interfaces/AutomationCompatibleInterface.sol
-import "@chainlink/contracts/src/v0.8/AutomationCompatible.sol";
+// KeeperCompatible.sol imports the functions from both ./AutomationBase.sol and
+// ./interfaces/KeeperCompatibleInterface.sol
+import "@chainlink/contracts/src/v0.8/KeeperCompatible.sol";
 
 /**
  * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
@@ -11,7 +11,7 @@ import "@chainlink/contracts/src/v0.8/AutomationCompatible.sol";
  * DO NOT USE THIS CODE IN PRODUCTION.
  */
 
-contract Counter is AutomationCompatibleInterface {
+contract Counter is KeeperCompatibleInterface {
     /**
     * Public counter variable
     */

@@ -1,6 +1,6 @@
 function checkUpkeep(bytes calldata checkData)
   external
-  cannotExecute() /** from AutomationCompatible.sol */
+  cannotExecute() /** from KeeperCompatible.sol */
   returns (bool, bytes memory)
 {
   (address someLibrary, bytes memory payload) = abi.decode(
