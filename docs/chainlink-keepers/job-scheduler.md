@@ -21,7 +21,7 @@ This guide explains how to register a time-based Upkeep that executes according 
 
 # Register a new Upkeep
 
-To use the job scheduler, you must register a new upkeep on the Keepers network. In the Keepers App, click the blue **Register new Upkeep** button.
+To use the job scheduler, you must register a new upkeep on the Keepers network. In the [Keepers App](https://keepers.chain.link/mainnet), click the blue **Register new Upkeep** button.
 
 ![Keepers App](/images/contract-devs/keeper/keeper-ui-landing.png)
 
