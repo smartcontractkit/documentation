@@ -151,16 +151,48 @@ module.exports = {
             url: '/docs/vrf/v2/introduction/',
           },
           {
-            title: 'Get a Random Number',
-            url: '/docs/vrf/v2/examples/get-a-random-number/',
+            title: 'Subscription Method',
+            url: '/docs/vrf/v2/subscription/',
+            children: [
+              {
+                title: 'Get a Random Number',
+                url: '/docs/vrf/v2/subscription/examples/get-a-random-number/',
+              },
+              {
+                title: 'Programmatic Subscription',
+                url: '/docs/vrf/v2/subscription/examples/programmatic-subscription/',
+              },
+              {
+                title: 'Subscription Manager UI',
+                url: '/docs/vrf/v2/subscription/ui/',
+              },
+              {
+                title: 'Supported Networks',
+                url: '/docs/vrf/v2/subscription/supported-networks/',
+              },
+              {
+                title: 'Migrating from VRF v1',
+                url: '/docs/vrf/v2/subscription/migration-from-v1/',
+              },
+            ],
           },
           {
-            title: 'Programmatic Subscription',
-            url: '/docs/vrf/v2/examples/programmatic-subscription/',
-          },
-          {
-            title: 'Subscription Manager UI',
-            url: '/docs/vrf/v2/ui/',
+            title: 'Direct Funding Method',
+            url: '/docs/vrf/v2/direct-funding/',
+            children: [
+              {
+                title: 'Get a Random Number',
+                url: '/docs/vrf/v2/direct-funding/examples/get-a-random-number/',
+              },
+              {
+                title: 'Supported Networks',
+                url: '/docs/vrf/v2/direct-funding/supported-networks/',
+              },
+              {
+                title: 'Migrating from VRF v1',
+                url: '/docs/vrf/v2/direct-funding/migration-from-v1/',
+              },
+            ],
           },
           {
             title: 'Security Considerations',
@@ -169,14 +201,6 @@ module.exports = {
           {
             title: 'Best Practices',
             url: '/docs/vrf/v2/best-practices/',
-          },
-          {
-            title: 'Supported Networks',
-            url: '/docs/vrf/v2/supported-networks/',
-          },
-          {
-            title: 'Migrating to VRF v2',
-            url: '/docs/vrf/v2/migration-from-v1/',
           },
         ],
       },

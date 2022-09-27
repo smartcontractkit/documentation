@@ -33,21 +33,6 @@ In principle, miners/validators of your underlying blockchain could rewrite the 
 
 You must choose an appropriate confirmation time for the randomness requests you make. Confirmation time is how many blocks the VRF service waits before writing a fulfillment to the chain to make potential rewrite attacks unprofitable in the context of your application and its value-at-risk.
 
-On Ethereum, rewrites are very expensive due to the very high rate of work performed by Ethereum's proof-of-work. The hashrate of the Ethereum network is currently 630 trillion hashes per second, and any attacker would have to control at least 51% of that for the duration of the attack. Therefore, major centralized exchanges consider a **20-block confirmation time** as highly secure for deposit confirmation times. The block confirmation time required from one use case to the next may differ.
-
-<!-- TODO: Remove comment for Polygon and BSC
-
-On proof-of-stake blockchains such as BSC and Polygon, what block confirmation time is considered secure depends on the specifics of their consensus mechanism and whether you're willing to trust any underlying assumptions of partial honesty of validators.
-
-For further details, take a look at the consensus documentation for the chain you want to use:
-- [Ethereum Consensus Mechanisms](https://ethereum.org/en/developers/docs/consensus-mechanisms/)
-- [Binance Consensus Docs](https://docs.binance.org/smart-chain/guides/concepts/consensus.html)
-- [Polygon Consensus Docs](https://docs.polygon.technology/docs/contribute/bor/consensus/)
-
-Understanding the blockchains you build your application on is very important. You should take time to understand [chain reorganization](https://blog.ethereum.org/2015/08/08/chain-reorganisation-depth-expectations/) which will also result in a different VRF output, which could be exploited.
-
--->
-
 ## Do not re-request randomness, even if you don't get an answer right away
 
 Doing so would give the VRF service provider the option to withhold a VRF fulfillment, if it doesn't like the outcome, and wait for the re-request in the hopes that it gets a better outcome, similar to the considerations with block confirmation time.
@@ -72,4 +57,8 @@ If your `fulfillRandomWords()` implementation reverts, the VRF service will not 
 
 ## Use `VRFConsumerBaseV2` in your contract, to interact with the VRF service
 
-`VRFConsumerBaseV2` includes a check to ensure the randomness is fulfilled by `VRFCoordinatorV2`. For this reason, it is a best practice to inherit from `VRFConsumerBaseV2`. Similarly, don't override `rawFulfillRandomness`.
+If you implement the [subscription method](/docs/vrf/v2/subscription/), use `VRFConsumerBaseV2`. It includes a check to ensure the randomness is fulfilled by `VRFCoordinatorV2`. For this reason, it is a best practice to inherit from `VRFConsumerBaseV2`. Similarly, don't override `rawFulfillRandomness`.
+
+## Use `VRFv2WrapperConsumer.sol` in your contract, to interact with the VRF service
+
+If you implement the [direct funding method](/docs/vrf/v2/direct-funding/), use `VRFv2WrapperConsumer`. It includes a check to ensure the randomness is fulfilled by the `VRFV2Wrapper`. For this reason, it is a best practice to inherit from `VRFv2WrapperConsumer`. Similarly, don't override `rawFulfillRandomWords`.

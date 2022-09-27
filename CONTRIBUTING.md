@@ -106,8 +106,8 @@ To allow the users to directly add the link contract to their metamask wallet, p
 ```html
 <a class="erc-token-address" id="<chainId>_<link_token_address>" href="<block_explorer_url>">`<link_token_address>`</a>
 <!--
-Example for EThereum mainnet : chainid=1 ; link_token_address=0x514910771af9ca656af840dff83e8264ecf986ca ; block_explorer_url=https://etherscan.io/token/0x514910771af9ca656af840dff83e8264ecf986ca
-<a class="erc-token-address" id="1_0x514910771af9ca656af840dff83e8264ecf986ca" href="https://etherscan.io/token/0x514910771af9ca656af840dff83e8264ecf986ca">`0x514910771af9ca656af840dff83e8264ecf986ca`</a>
+Example for EThereum mainnet : chainid=1 ; link_token_address=0x514910771AF9Ca656af840dff83E8264EcF986CA ; block_explorer_url=https://etherscan.io/token/0x514910771AF9Ca656af840dff83E8264EcF986CA
+<a class="erc-token-address" id="1_0x514910771AF9Ca656af840dff83E8264EcF986CA" href="https://etherscan.io/token/0x514910771AF9Ca656af840dff83E8264EcF986CA">`0x514910771AF9Ca656af840dff83E8264EcF986CA`</a>
 -->
 
 ```
@@ -119,7 +119,7 @@ In addition:
   - Copy only the nested object you are looking for. E.g. on mainnet , you will copy `{"name":"Ethereum Mainnet","chain":"ETH","icon":"ethereum","rpc":["https://mainnet.infura.io/v3/${INFURA_API_KEY}","wss://mainnet.infura.io/ws/v3/${INFURA_API_KEY}","https://api.mycryptoapi.com/eth","https://cloudflare-eth.com"],"faucets":[],"nativeCurrency":{"name":"Ether","symbol":"ETH","decimals":18},"infoURL":"https://ethereum.org","shortName":"eth","chainId":1,"networkId":1,"slip44":60,"ens":{"registry":"0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e"},"explorers":[{"name":"etherscan","url":"https://etherscan.io","standard":"EIP3091"}]}`
   - Append the copied value to the array in [chains.json](./_src/reference/chains.json).
 - Complete [linkNameSymbol.json](./_src/reference/linkNameSymbol.json). It contains a simple mapping chainId --> {name,symbol} and that is used to interact with the link contract on the right chain, fetch the name and the symbol and compare it with the expected values; mitigating the risk of typo when adding the link contract address. To do so:
-  - Go to the block explorer on the right chain. E.g. on mainnet, [Etherscan Chainlink Token](https://etherscan.io/token/0x514910771af9ca656af840dff83e8264ecf986ca).
+  - Go to the block explorer on the right chain. E.g. on mainnet, [Etherscan Chainlink Token](https://etherscan.io/token/0x514910771AF9Ca656af840dff83E8264EcF986CA).
   - Click on _Contract_ then _Read Contract_.
   - Click on _name_ and _symbol_. Copy the values returned. E.g. on mainnet, you will get respectively _ChainLink Token_ and _LINK_.
   - Append the info (chainId,name,symbol) to the array in [linkNameSymbol.json](./_src/reference/linkNameSymbol.json). E.g. for mainnet, you would append `"1": { "name": "ChainLink Token", "symbol": "LINK" }`
