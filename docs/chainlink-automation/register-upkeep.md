@@ -31,7 +31,7 @@ This guide explains how to register a custom logic Upkeep that uses a [compatibl
 
 1. **Select the custom logic trigger**
 
-1. **Provide the address of your [compatible contract](../compatible-contracts)** You do not need to verify the contract on-chain, but it must be [compatible](../compatible-contracts/) with the `KeeperCompatibleInterface` contract.
+1. **Provide the address of your [compatible contract](../compatible-contracts)** You do not need to verify the contract on-chain, but it must be [compatible](../compatible-contracts/) with the `AutomationCompatibleInterface` contract.
 
 1. **Complete the required details:**
 

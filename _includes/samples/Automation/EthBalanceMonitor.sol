@@ -3,7 +3,7 @@
 pragma solidity ^0.8.7;
 
 import "@chainlink/contracts/src/v0.8/ConfirmedOwner.sol";
-import "@chainlink/contracts/src/v0.8/interfaces/KeeperCompatibleInterface.sol";
+import "@chainlink/contracts/src/v0.8/interfaces/AutomationCompatibleInterface.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 
 /**
@@ -17,7 +17,7 @@ import "@openzeppelin/contracts/security/Pausable.sol";
  * DO NOT USE THIS CODE IN PRODUCTION.
  */
 
-contract EthBalanceMonitor is ConfirmedOwner, Pausable, KeeperCompatibleInterface {
+contract EthBalanceMonitor is ConfirmedOwner, Pausable, AutomationCompatibleInterface {
   // observed limit of 45K + 10k buffer
   uint256 private constant MIN_GAS_FOR_TRANSFER = 55_000;
 
