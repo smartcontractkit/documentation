@@ -141,20 +141,14 @@ section: ethereum
                         for(let proxy of network.proxies) {
                             proxyList += `
                             <tr id="${network.name} ${proxy.pair}">
-                                <td rowspan="2" ><div class="proxy-pair-column">${feedCategories[proxy.feedCategory] || ''}<code class="proxy-pair">${proxy.assetName}</code></div>
+                                <td ><div class="proxy-pair-column">${feedCategories[proxy.feedCategory] || ''}<code class="proxy-pair">${proxy.assetName}</code></div>
                                 ${ proxy.shutdownDate ? '<hr class="shutDate"></hr><div class="shutDate">Deprecating:<br/>' + proxy.shutdownDate + '</div>' : '' }
                                 </td>
-                                <td rowspan="2" ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.deviationThreshold ? (proxy.deviationThreshold + '%') : 'N/A'}</td>
-                                <td rowspan="2" ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.heartbeat ? proxy.heartbeat : 'N/A'}</td>
-                                <td rowspan="2" ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.decimals ? proxy.decimals : 'N/A'}</td>
-                                <td><a href="${network.url.replace('%s',proxy.proxy)}"><code>${proxy.proxy}</code></a></td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <ul>
-                                        <li>Price in: ${proxy.nftFloorUnits}</li>
-                                    </ul>
-                                </td>
+                                <td>${proxy.nftFloorUnits}</td>
+                                <td ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.deviationThreshold ? (proxy.deviationThreshold + '%') : 'N/A'}</td>
+                                <td ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.heartbeat ? proxy.heartbeat : 'N/A'}</td>
+                                <td ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.decimals ? proxy.decimals : 'N/A'}</td>
+                                <td><a href="${network.url.replace('%s',proxy.proxy)}" target="_blank"><code>${proxy.proxy}</code></a></td>
                             </tr>
                             `;
                         }
@@ -163,10 +157,11 @@ section: ethereum
                             <thead>
                             <tr>
                             <th>NFT Floor Pricing Feed</th>
+                            <th>Price units</th>
                             <th ${ showExtraDetails ? '' : 'class="detail-hidden"'}>Deviation</th>
                             <th ${ showExtraDetails ? '' : 'class="detail-hidden"'}>Heartbeat</th>
                             <th ${ showExtraDetails ? '' : 'class="detail-hidden"'}>Dec</th>
-                            <th>Address and info</th>
+                            <th>Address</th>
                             </tr>
                             </thead>
                             <tbody>${proxyList}</tbody>
