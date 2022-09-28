@@ -216,14 +216,10 @@ for (let page of targetData) {
             shutdownDate: contract.docs?.shutdownDate,
           }
           
-          // Create a serpate proxy list for PoR feeds
+          // Create a serpate proxy list for PoR feeds and NFT floor feeds
           if (contract.docs?.porType) {
             porProxyList.push(proxyDetails);
-
-          }
-          
-          // Create a serpate proxy list for NFT Floor Price Feeds
-          if (contract.docs?.nftFloorUnits) {
+          }else if (contract.docs?.nftFloorUnits) {
             nftFloorProxyList.push(proxyDetails);
           }else {
             proxyList.push(proxyDetails);
