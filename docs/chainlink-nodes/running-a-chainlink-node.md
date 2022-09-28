@@ -2,25 +2,26 @@
 layout: nodes.liquid
 section: nodeOperator
 date: Last Modified
-title: "Running a Chainlink Node"
-permalink: "docs/running-a-chainlink-node/"
-whatsnext: {
-  "Fulfilling Requests":"/docs/fulfilling-requests/",
-  "Optimizing EVN Performance":"/docs/evm-performance-configuration/",
-  "Performing System Maintenance":"/docs/performing-system-maintenance/",
-  "Miscellaneous":"/docs/miscellaneous/",
-  "Security and Operation Best Practices":"/docs/best-security-practices/"
-}
+title: 'Running a Chainlink Node'
+permalink: 'docs/running-a-chainlink-node/'
+whatsnext:
+  {
+    'Fulfilling Requests': '/docs/fulfilling-requests/',
+    'Optimizing EVN Performance': '/docs/evm-performance-configuration/',
+    'Performing System Maintenance': '/docs/performing-system-maintenance/',
+    'Miscellaneous': '/docs/miscellaneous/',
+    'Security and Operation Best Practices': '/docs/best-security-practices/',
+  }
 metadata:
-  title: "Running a Chainlink Node"
-  description: "Run your own Chainlink node using this guide which explains the requirements and basics for getting started."
+  title: 'Running a Chainlink Node'
+  description: 'Run your own Chainlink node using this guide which explains the requirements and basics for getting started.'
 ---
 
-In this section, we'll explain the requirements and basics for running your own Chainlink node.
+This page explains the requirements and basic instructions for running your own Chainlink node.
 
-It's important to note that nodes can fulfill requests for open APIs out-of-the-box using our [Tasks](/docs/tasks/) without needing any additional configuration.
+Note that nodes can fulfill requests for open APIs out-of-the-box using [Tasks](/docs/tasks/) without needing any additional configuration.
 
-If you would like to provide data from an authenticated API, you can add an [external adapter](../external-adapters/) to enable connectivity through the Chainlink node.
+To provide data from an authenticated API, add an [external adapter](../external-adapters/) to enable connectivity through the Chainlink node.
 
 ![Chainlink Node Diagram](/files/ab5762f-end-to-end-diagram.png)
 
@@ -37,7 +38,7 @@ Requesters can specify an amount of LINK that all nodes must deposit as a penalt
 Your Chainlink node should be run on a server that has a public IP address, and meets the following CPU and memory requirements:
 
 - Minimum: To get started running a Chainlink node, you will need a machine with at least **2 cores** and **4 GB of RAM**.
-- Recommended: The requirements for running a Chainlink node scale as the number of jobs your node services also scales. For nodes with over 100 jobs, you will need at least **4 cores** and **8GB of RAM**.  
+- Recommended: The requirements for running a Chainlink node scale as the number of jobs your node services also scales. For nodes with over 100 jobs, you will need at least **4 cores** and **8GB of RAM**.
 
 ### PostgreSQL Database Requirements
 
@@ -100,10 +101,7 @@ It's recommended to run the Chainlink node with [Docker](https://www.docker.com/
   # log in again
   ```
 
-- A fully synced Ethereum client with websockets enabled. Client specific instructions can be found below:
-  - [Run Geth](../run-an-ethereum-client/#geth)
-  - [Run Nethermind](../run-an-ethereum-client/#nethermind)
-  - [Use an external service](../run-an-ethereum-client/#external-services)
+- A fully synced Ethereum execution client with websockets enabled and a connected consensus client. See [Running an Ethereum Client](/docs/run-an-ethereum-client/) for details. Optionally, you can [use an external service](/docs/run-an-ethereum-client/#external-services) as your client.
 
 #### Create a directory
 
@@ -114,17 +112,11 @@ Create a local directory to hold the Chainlink data:
 ```shell Goerli
 mkdir ~/.chainlink-goerli
 ```
-```shell Rinkeby
-mkdir ~/.chainlink-rinkeby
-```
-```shell Kovan
-mkdir ~/.chainlink-kovan
-```
 ```shell Mainnet
 mkdir ~/.chainlink
 ```
 
-> **_Other Supported Networks:_**  Chainlink is blockchain agnostic technology. The [LINK Token Contracts](../link-token-contracts/) page details networks which support the LINK token. You can setup your node to provide data to any of these blockchains.
+> **_Other Supported Networks:_** Chainlink is blockchain agnostic technology. The [LINK Token Contracts](../link-token-contracts/) page details networks which support the LINK token. You can setup your node to provide data to any of these blockchains.
 
 #### Create an Environment File
 
@@ -137,22 +129,6 @@ ETH_CHAIN_ID=5
 CHAINLINK_TLS_PORT=0
 SECURE_COOKIES=false
 ALLOW_ORIGINS=*" > ~/.chainlink-goerli/.env
-```
-```shell Rinkeby
-echo "ROOT=/chainlink
-LOG_LEVEL=debug
-ETH_CHAIN_ID=4
-CHAINLINK_TLS_PORT=0
-SECURE_COOKIES=false
-ALLOW_ORIGINS=*" > ~/.chainlink-rinkeby/.env
-```
-```shell Kovan
-echo "ROOT=/chainlink
-LOG_LEVEL=debug
-ETH_CHAIN_ID=42
-CHAINLINK_TLS_PORT=0
-SECURE_COOKIES=false
-ALLOW_ORIGINS=*" > ~/.chainlink-kovan/.env
 ```
 ```shell Mainnet
 echo "ROOT=/chainlink
@@ -182,12 +158,6 @@ Then run the following command to add the Ethereum client's URL to your environm
 ```shell Goerli
 echo "ETH_URL=ws://$ETH_CONTAINER_IP:8546" >> ~/.chainlink-goerli/.env
 ```
-```shell Rinkeby
-echo "ETH_URL=ws://$ETH_CONTAINER_IP:8546" >> ~/.chainlink-rinkeby/.env
-```
-```shell Kovan
-echo "ETH_URL=ws://$ETH_CONTAINER_IP:8546" >> ~/.chainlink-kovan/.env
-```
 ```shell Mainnet
 echo "ETH_URL=ws://$ETH_CONTAINER_IP:8546" >> ~/.chainlink/.env
 ```
@@ -198,12 +168,6 @@ If you are using an external provider for connectivity to the Ethereum blockchai
 
 ```shell Goerli
 echo "ETH_URL=CHANGEME" >> ~/.chainlink-goerli/.env
-```
-```shell Rinkeby
-echo "ETH_URL=CHANGEME" >> ~/.chainlink-rinkeby/.env
-```
-```shell Kovan
-echo "ETH_URL=CHANGEME" >> ~/.chainlink-kovan/.env
 ```
 ```shell Mainnet
 echo "ETH_URL=CHANGEME" >> ~/.chainlink/.env
@@ -225,16 +189,10 @@ You will need to connect your Chainlink node with a remote PostgreSQL database. 
 
 > 🚧 Important
 >
-> If you're testing you can add `?sslmode=disable` to the end of your `DATABASE_URL`. However you should *never* do this on a production node.
+> If you're testing you can add `?sslmode=disable` to the end of your `DATABASE_URL`. However you should _never_ do this on a production node.
 
 ```shell Goerli
 echo "DATABASE_URL=postgresql://$USERNAME:$PASSWORD@$SERVER:$PORT/$DATABASE" >> ~/.chainlink-goerli/.env
-```
-```shell Rinkeby
-echo "DATABASE_URL=postgresql://$USERNAME:$PASSWORD@$SERVER:$PORT/$DATABASE" >> ~/.chainlink-rinkeby/.env
-```
-```shell Kovan
-echo "DATABASE_URL=postgresql://$USERNAME:$PASSWORD@$SERVER:$PORT/$DATABASE" >> ~/.chainlink-kovan/.env
 ```
 ```shell Mainnet
 echo "DATABASE_URL=postgresql://$USERNAME:$PASSWORD@$SERVER:$PORT/$DATABASE" >> ~/.chainlink/.env
@@ -242,16 +200,10 @@ echo "DATABASE_URL=postgresql://$USERNAME:$PASSWORD@$SERVER:$PORT/$DATABASE" >> 
 
 #### Start the Chainlink Node
 
-Now you can run the Docker image. Replace `<version>` with your desired version. Tag versions are available in the [Chainlink docker hub](https://hub.docker.com/r/smartcontract/chainlink/tags). *The `latest` version does not work.*
+Now you can run the Docker image. Replace `<version>` with your desired version. Tag versions are available in the [Chainlink docker hub](https://hub.docker.com/r/smartcontract/chainlink/tags). _The `latest` version does not work._
 
 ```shell Goerli
 cd ~/.chainlink-goerli && docker run -p 6688:6688 -v ~/.chainlink-goerli:/chainlink -it --env-file=.env smartcontract/chainlink:<version> local n
-```
-```shell Rinkeby
-cd ~/.chainlink-rinkeby && docker run -p 6688:6688 -v ~/.chainlink-rinkeby:/chainlink -it --env-file=.env smartcontract/chainlink:<version> local n
-```
-```shell Kovan
-cd ~/.chainlink-kovan && docker run -p 6688:6688 -v ~/.chainlink-kovan:/chainlink -it --env-file=.env smartcontract/chainlink:<version> local n
 ```
 ```shell Mainnet
 cd ~/.chainlink && docker run -p 6688:6688 -v ~/.chainlink:/chainlink -it --env-file=.env smartcontract/chainlink:<version> local n

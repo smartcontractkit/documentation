@@ -31,8 +31,6 @@ Testnet [Operator contracts](https://github.com/smartcontractkit/chainlink/blob/
 | Testnet          | Oracle Address                                                                                                                     |
 | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
 | Ethereum Goerli  | [`0xCC79157eb46F5624204f47AB42b3906cAA40eaB7`](https://goerli.etherscan.io/address/0xcc79157eb46f5624204f47ab42b3906caa40eab7)     |
-| Ethereum Rinkeby | [`0xf3FBB7f3391F62C8fe53f89B41dFC8159EE9653f`](https://rinkeby.etherscan.io/address/0xf3FBB7f3391F62C8fe53f89B41dFC8159EE9653f)    |
-| Ethereum Kovan   | [`0xf702d6de1945993D5e7d15df870eE9f2523fbcC5`](https://kovan.etherscan.io/address/0xf702d6de1945993D5e7d15df870eE9f2523fbcC5)      |
 | Avalanche Fuji   | [`0x022EEA14A6010167ca026B32576D6686dD7e85d2`](https://testnet.snowtrace.io/address/0x022eea14a6010167ca026b32576d6686dd7e85d2)    |
 | Polygon Mumbai   | [`0x40193c8518BB267228Fc409a613bDbD8eC5a97b3`](https://mumbai.polygonscan.com/address/0x40193c8518BB267228Fc409a613bDbD8eC5a97b3)  |
 | Binance Testnet  | [`0xCC79157eb46F5624204f47AB42b3906cAA40eaB7`](https://testnet.bscscan.com/address/0xCC79157eb46F5624204f47AB42b3906cAA40eaB7)     |

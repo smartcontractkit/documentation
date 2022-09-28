@@ -6,7 +6,7 @@ title: "Solidity Cron Jobs"
 permalink: "docs/jobs/types/cron/"
 ---
 
-> 📘 If you need to schedule a contract function call, use the [Chainlink Job Scheduler](https://keepers.chain.link/new-time-based). The Job Scheduler uses the [Chainlink Keepers](/docs/chainlink-keepers/introduction) network to execute deployed contract calls on a cron schedule that you define, such as an Ethereum cron job for your dApp.
+> 📘 If you need to schedule a contract function call, use the [Chainlink Job Scheduler](https://automation.chain.link/new-time-based). The Job Scheduler uses the [Chainlink Automation](/docs/chainlink-automation/introduction) network to execute deployed contract calls on a cron schedule that you define, such as an Ethereum cron job for your dApp.
 
 Executes a job on a schedule. Does not rely on any kind of external trigger.
 
