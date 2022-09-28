@@ -19,7 +19,7 @@ metadata:
 
 ## Overview
 
-When you connect a smart contract to real-world services or off-chain data, you create a *hybrid smart contract*. For example, you can use Chainlink Data Feeds to connect your smart contracts to asset pricing data like the [ETH / USD feed](https://feeds.chain.link/eth-usd). These data feeds use the data aggregated from many independent Chainlink node operators. Each price feed has an on-chain address and functions that enable contracts to read pricing data from that address.
+When you connect a smart contract to real-world services or off-chain data, you create a *hybrid smart contract*. For example, you can use Chainlink Data Feeds to connect your smart contracts to asset pricing data like the [ETH / USD feed](https://data.chain.link/eth-usd). These data feeds use the data aggregated from many independent Chainlink node operators. Each price feed has an on-chain address and functions that enable contracts to read pricing data from that address.
 
 This guide shows you how to write, deploy, and run a smart contract that consumes data from a price data feed.
 
