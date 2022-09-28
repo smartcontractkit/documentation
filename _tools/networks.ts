@@ -133,7 +133,7 @@ export const NETWORKS = [
       },
       {
         name: "Arbitrum Goerli",
-        url: "http://testnet.arbiscan.io/address/%s",
+        url: "https://goerli-rollup-explorer.arbitrum.io/address/%s",
         source: "directory-ethereum-testnet-goerli-arbitrum-1.json",
         networkType: "testnet",
       },
