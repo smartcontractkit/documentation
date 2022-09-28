@@ -132,9 +132,9 @@ export const NETWORKS = [
         networkType: "mainnet",
       },
       {
-        name: "Arbitrum Rinkeby",
+        name: "Arbitrum Goerli",
         url: "http://testnet.arbiscan.io/address/%s",
-        source: "directory-ethereum-testnet-rinkeby-arbitrum-1.json",
+        source: "directory-ethereum-testnet-goerli-arbitrum-1.json",
         networkType: "testnet",
       },
     ],
