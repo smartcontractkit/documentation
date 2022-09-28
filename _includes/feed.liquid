@@ -134,66 +134,68 @@ section: ethereum
         let html = '';
         if(data[selectedNetwork]) {
             for(let network of data[selectedNetwork].networks) {
-                html += `<h2 id="${network.name}">${network.name} <a class="anchor" href="#${network.name}"><img src="/images/link.svg" alt="Link to this section"></a></h2>`;
-                if(network.networkType == "mainnet" && data[selectedNetwork].networkStatusUrl){
-                    html += `<p>Track the status of this network at <a href="${data[selectedNetwork].networkStatusUrl}">${data[selectedNetwork].networkStatusUrl}</a></p>`;
-                }
-                html += `<label><input type="checkbox" class="extra" ${showExtraDetails ? 'checked="checked"' : ''}>Show more details</input></label>`;
-                let proxyList = '';
-                if(network.networkType == "mainnet") {
-                    for(let proxy of network.proxies) {
-                        proxyList += `
-                        <tr id="${network.name} ${proxy.pair}">
-                            <td><div class="proxy-pair-column">${feedCategories[proxy.feedCategory] || ''}<code class="proxy-pair">${proxy.pair}</code></div>
-                            ${ proxy.shutdownDate ? '<hr class="shutDate"><div class="shutDate">Deprecating:<br/>' + proxy.shutdownDate + '</div>' : '' }
-                            </td>
-                            <td><code>${proxy.assetName}</code></td>
-                            <td><code>${proxy.feedType}</code></td>
-                            <td ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.deviationThreshold ? (proxy.deviationThreshold + '%') : 'N/A'}</td>
-                            <td ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.heartbeat ? proxy.heartbeat : 'N/A'}</td>
-                            <td ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.decimals ? proxy.decimals : 'N/A'}</td>
-                            <td><a href="${network.url.replace('%s',proxy.proxy)}"><code>${proxy.proxy}</code></a></td>
-                        </tr>`;
+                if (network.dataType != "por" && network.dataType != "nftFloor") {
+                    html += `<h2 id="${network.name}">${network.name} <a class="anchor" href="#${network.name}"><img src="/images/link.svg" alt="Link to this section"></a></h2>`;
+                    if(network.networkType == "mainnet" && data[selectedNetwork].networkStatusUrl){
+                        html += `<p>Track the status of this network at <a href="${data[selectedNetwork].networkStatusUrl}">${data[selectedNetwork].networkStatusUrl}</a></p>`;
                     }
-                    html += `
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Pair</th>
-                                <th>Asset</th>
-                                <th>Type</th>
-                                <th ${ showExtraDetails ? '' : 'class="detail-hidden"'}>Deviation</th>
-                                <th ${ showExtraDetails ? '' : 'class="detail-hidden"'}>Heartbeat</th>
-                                <th ${ showExtraDetails ? '' : 'class="detail-hidden"'}>Dec</th>
-                                <th>Address</th>
-                            </tr>
-                        </thead>
-                        <tbody>${proxyList}</tbody>
-                    </table>`;
-                } else {
-                    for(let proxy of network.proxies) {
-                        proxyList += `
-                        <tr id="${network.name} ${proxy.pair}">
-                            <td class="proxy-column"><code>${proxy.pair}</code></td>
-                            <td ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.deviationThreshold ? (proxy.deviationThreshold + '%') : 'N/A'}</td>
-                            <td ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.heartbeat ? proxy.heartbeat : 'N/A'}</td>
-                            <td ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.decimals ? proxy.decimals : 'N/A'}</td>
-                            <td><a href="${network.url.replace('%s',proxy.proxy)}"><code>${proxy.proxy}</code></a></td>
-                        </tr>`;
+                    html += `<label><input type="checkbox" class="extra" ${showExtraDetails ? 'checked="checked"' : ''}>Show more details</input></label>`;
+                    let proxyList = '';
+                    if(network.networkType == "mainnet") {
+                        for(let proxy of network.proxies) {
+                            proxyList += `
+                            <tr id="${network.name} ${proxy.pair}">
+                                <td><div class="proxy-pair-column">${feedCategories[proxy.feedCategory] || ''}<code class="proxy-pair">${proxy.pair}</code></div>
+                                ${ proxy.shutdownDate ? '<hr class="shutDate"><div class="shutDate">Deprecating:<br/>' + proxy.shutdownDate + '</div>' : '' }
+                                </td>
+                                <td><code>${proxy.assetName}</code></td>
+                                <td><code>${proxy.feedType}</code></td>
+                                <td ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.deviationThreshold ? (proxy.deviationThreshold + '%') : 'N/A'}</td>
+                                <td ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.heartbeat ? proxy.heartbeat : 'N/A'}</td>
+                                <td ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.decimals ? proxy.decimals : 'N/A'}</td>
+                                <td><a href="${network.url.replace('%s',proxy.proxy)}" target="_blank"><code>${proxy.proxy}</code></a></td>
+                            </tr>`;
+                        }
+                        html += `
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Pair</th>
+                                    <th>Asset</th>
+                                    <th>Type</th>
+                                    <th ${ showExtraDetails ? '' : 'class="detail-hidden"'}>Deviation</th>
+                                    <th ${ showExtraDetails ? '' : 'class="detail-hidden"'}>Heartbeat</th>
+                                    <th ${ showExtraDetails ? '' : 'class="detail-hidden"'}>Dec</th>
+                                    <th>Address</th>
+                                </tr>
+                            </thead>
+                            <tbody>${proxyList}</tbody>
+                        </table>`;
+                    } else {
+                        for(let proxy of network.proxies) {
+                            proxyList += `
+                            <tr id="${network.name} ${proxy.pair}">
+                                <td class="proxy-column"><code>${proxy.pair}</code></td>
+                                <td ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.deviationThreshold ? (proxy.deviationThreshold + '%') : 'N/A'}</td>
+                                <td ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.heartbeat ? proxy.heartbeat : 'N/A'}</td>
+                                <td ${ showExtraDetails ? '' : 'class="detail-hidden"'}>${proxy.decimals ? proxy.decimals : 'N/A'}</td>
+                                <td><a href="${network.url.replace('%s',proxy.proxy)}" target="_blank"><code>${proxy.proxy}</code></a></td>
+                            </tr>`;
+                        }
+                        html += `
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Pair</th>
+                                    <th ${ showExtraDetails ? '' : 'class="detail-hidden"'}>Deviation</th>
+                                    <th ${ showExtraDetails ? '' : 'class="detail-hidden"'}>Heartbeat</th>
+                                    <th ${ showExtraDetails ? '' : 'class="detail-hidden"'}>Dec</th>
+                                    <th>Address</th>
+                                </tr>
+                            </thead>
+                            <tbody>${proxyList}</tbody>
+                        </table>`;
                     }
-                    html += `
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Pair</th>
-                                <th ${ showExtraDetails ? '' : 'class="detail-hidden"'}>Deviation</th>
-                                <th ${ showExtraDetails ? '' : 'class="detail-hidden"'}>Heartbeat</th>
-                                <th ${ showExtraDetails ? '' : 'class="detail-hidden"'}>Dec</th>
-                                <th>Address</th>
-                            </tr>
-                        </thead>
-                        <tbody>${proxyList}</tbody>
-                    </table>`;
                 }
             }
         } else {

@@ -157,7 +157,7 @@ Some data providers use a single data source, which might be necessary if only o
 
 Price data quality is subject to crypto actions by the crypto and blockchain project teams. Crypto actions are similar to [corporate actions](https://en.wikipedia.org/wiki/Corporate_action) but are specific to cryptocurrency and blockchain projects, such as token renaming, token swaps, redenominations, splits, network upgrades, and other migrations that teams who govern the blockchain or token might undertake
 
-Sustaining data quality is dependent on data sources implementing the necessary adjustments related to such actions. For example, when a project upgrades to a new version of their token, this results in a *token migration*. When token migrations occur, they require building a new price feed to ensure that the token price is accurately reported. Similarly, actions by blockchain project teams, such as forks or upgrades to the network, may require new price feeds to ensure continuity and data quality. When considering a token migration, fork, network upgrade, or other crypto action, projects should proactively reach out to relevant stakeholders to ensure the asset price is accurately reported throughout the process.
+Sustaining data quality is dependent on data sources implementing the necessary adjustments related to such actions. For example, when a project upgrades to a new version of their token, this results in a *token migration*. When token migrations occur, they require building a new price feed to ensure that the token price is accurately reported. Similarly, actions by blockchain project teams, such as forks or upgrades to the network, may require new Price Feeds to ensure continuity and data quality. When considering a token migration, fork, network upgrade, or other crypto action, projects should proactively reach out to relevant stakeholders to ensure the asset price is accurately reported throughout the process.
 
 ### Market Failures Resulting from Extreme Events
 
@@ -175,7 +175,7 @@ Routine maintenance is carried out on Chainlink Data Feeds, including decommissi
 
 Notifications are sent to inform known users regarding such occurrences, and it is strongly encouraged for all users, including those users utilizing data feeds for off-chain purposes, [to provide their contact information](https://chainlinkcommunity.typeform.com/unknownDfUsers?typeform-source=docs.chain.link) before utilizing data feeds. Without providing contact information, users will be unable to receive notifications regarding important price feed updates.
 
-If you are using price feeds but have not provided your contact information, you can do so [here](https://chainlinkcommunity.typeform.com/unknownDfUsers?typeform-source=docs.chain.link). Users that fail to provide notification information do so at their own risk.
+If you are using Price Feeds but have not provided your contact information, you can do so [here](https://chainlinkcommunity.typeform.com/unknownDfUsers?typeform-source=docs.chain.link). Users that fail to provide notification information do so at their own risk.
 
 ### Extreme Events Causing Price Deviations in Wrapped or Bridged Assets
 

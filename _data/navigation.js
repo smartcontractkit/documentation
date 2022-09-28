@@ -51,8 +51,8 @@ module.exports = {
             url: '/docs/vrf/v2/introduction/',
           },
           {
-            title: 'Chainlink Keepers',
-            url: '/docs/chainlink-keepers/introduction/',
+            title: 'Chainlink Automation',
+            url: '/docs/chainlink-automation/introduction/',
           },
           {
             title: 'Connect to Public API Data',
@@ -115,6 +115,26 @@ module.exports = {
               {
                 title: 'Contract Addresses',
                 url: '/docs/data-feeds/price-feeds/addresses/',
+              },
+            ],
+          },
+          {
+            title: 'Proof of Reserve Feeds',
+            url: '/docs/data-feeds/proof-of-reserve/',
+            children: [
+              {
+                title: 'Contract Addresses',
+                url: '/docs/data-feeds/proof-of-reserve/addresses/',
+              },
+            ],
+          },
+          {
+            title: 'NFT Floor Pricing Feeds',
+            url: '/docs/data-feeds/nft-floor-price/',
+            children: [
+              {
+                title: 'Contract Addresses',
+                url: '/docs/data-feeds/nft-floor-price/addresses/',
               },
             ],
           },
@@ -259,59 +279,59 @@ module.exports = {
         section: 'AUTOMATE CONTRACTS',
         contents: [
           {
-            title: 'Introduction to Chainlink Keepers',
-            url: '/docs/chainlink-keepers/introduction/',
+            title: 'Introduction to Chainlink Automation',
+            url: '/docs/chainlink-automation/introduction/',
           },
           {
             title: 'Time-based Automation',
-            url: '/docs/chainlink-keepers/job-scheduler/',
+            url: '/docs/chainlink-automation/job-scheduler/',
           },
           {
             title: 'Custom Logic Automation',
-            url: '/docs/chainlink-keepers/register-upkeep/',
+            url: '/docs/chainlink-automation/register-upkeep/',
           },
           {
-            title: 'Create Keepers-compatible Contracts',
-            url: '/docs/chainlink-keepers/compatible-contracts/',
+            title: 'Create Compatible Contracts',
+            url: '/docs/chainlink-automation/compatible-contracts/',
           },
 
           {
             title: 'Manage your Upkeeps',
-            url: '/docs/chainlink-keepers/manage-upkeeps/',
+            url: '/docs/chainlink-automation/manage-upkeeps/',
           },
           {
             title: 'Creating Flexible Upkeeps',
-            url: '/docs/chainlink-keepers/flexible-upkeeps/',
+            url: '/docs/chainlink-automation/flexible-upkeeps/',
           },
           {
             title: 'Example Contracts',
-            url: '/docs/chainlink-keepers/util-overview/',
+            url: '/docs/chainlink-automation/util-overview/',
             children: [
               {
                 title: 'EthBalanceMonitor',
-                url: '/docs/chainlink-keepers/utility-contracts/',
+                url: '/docs/chainlink-automation/utility-contracts/',
               },
             ],
           },
           {
-            title: 'Keepers Architecture',
-            url: '/docs/chainlink-keepers/overview/',
+            title: 'Automation Architecture',
+            url: '/docs/chainlink-automation/overview/',
           },
           {
             title: 'Supported Networks',
-            url: '/docs/chainlink-keepers/supported-networks/',
+            url: '/docs/chainlink-automation/supported-networks/',
           },
           {
-            title: 'Keepers Economics',
-            url: '/docs/chainlink-keepers/keeper-economics/',
+            title: 'Automation Pricing',
+            url: '/docs/chainlink-automation/automation-economics/',
           },
           {
-            title: 'Keepers Release Notes',
-            url: '/docs/chainlink-keepers/keepers-release-notes/',
+            title: 'Automation Release Notes',
+            url: '/docs/chainlink-automation/automation-release-notes/',
           },
           {
             title: 'FAQs',
-            url: '/docs/chainlink-keepers/faqs/',
+            url: '/docs/chainlink-automation/faqs/',
           },
         ],
       },
