@@ -226,15 +226,15 @@ ETH is used to pay for transactions on the Arbitrum mainnet. You can use the [Ar
 | Decimals       | 18                                                                                                                                                                                                                         |
 | Network status | [arbiscan.freshstatus.io](https://arbiscan.freshstatus.io/)                                                                                                                                                                |
 
-### Arbitrum Rinkeby testnet
+### Arbitrum Goerli testnet
 
-Testnet LINK is available at [faucets.chain.link](https://faucets.chain.link/arbitrum-rinkeby). Testnet ETH is available at [faucet.rinkeby.io](https://faucet.rinkeby.io/).
+Testnet ETH is used to pay for transactions on Arbitrum Goerli. Use the [Arbitrum Bridge](https://bridge.arbitrum.io/) to transfer testnet ETH and LINK from Ethereum Goerli to Arbitrum Goerli.
 
 | Parameter      | Value                                                                                                                                                                                                                               |
 | :------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ETH_CHAIN_ID` | `421611`                                                                                                                                                                                                                            |
-| Address        | <a class="erc-token-address" id="421611_0x615fBe6372676474d9e6933d310469c9b68e9726" href="https://rinkeby-explorer.arbitrum.io/address/0x615fBe6372676474d9e6933d310469c9b68e9726">`0x615fBe6372676474d9e6933d310469c9b68e9726`</a> |
-| Name           | Chainlink Token on Arbitrum Rinkeby                                                                                                                                                                                                 |
+| `ETH_CHAIN_ID` | `421613`                                                                                                                                                                                                                            |
+| Address        | <a class="erc-token-address" id="421613_0xd14838a68e8afbade5efb411d5871ea0011afd28" href="https://goerli-rollup-explorer.arbitrum.io/address/0xd14838A68E8AFBAdE5efb411d5871ea0011AFd28/transactions#address-tabs">`0xd14838a68e8afbade5efb411d5871ea0011afd28`</a> |
+| Name           | Chainlink Token on Arbitrum Goerli                                                                                                                                                                                                 |
 | Symbol         | LINK                                                                                                                                                                                                                                |
 | Decimals       | 18                                                                                                                                                                                                                                  |
 
