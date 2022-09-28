@@ -9,7 +9,7 @@ whatsnext: {
 }
 ---
 
-Chainlink Proof of Reserve Feeds provide the status of the reserves that back several asset tokens on-chain. These feeds operate the same way as other Chainlink Data Feeds. To learn how to use these feeds, see the [Using Data Feeds](/docs/data-feeds/price-feeds/) guide.
+Chainlink Proof of Reserve Feeds provide the status of the reserves for several assets. You can consume these feeds the same way as [Price Feeds](/docs/data-feeds/price-feeds/).
 
 To find a list of available Proof of Reserve Feeds, see the [Contract Addresses](/docs/data-feeds/proof-of-reserve/addresses/) page.
 
@@ -22,7 +22,7 @@ To find a list of available Proof of Reserve Feeds, see the [Contract Addresses]
 
 ## Types of Proof of Reserve Feeds
 
-Reserves are available for both cross-chain assets and off-chain assets. Token issuers prove the reserves for their assets through several different methods. 
+Reserves are available for both cross-chain assets and off-chain assets. Token issuers prove the reserves for their assets through several different methods: 
 
 - [Cross-chain reserves](#cross-chain-reserves):
   - Wallet address manager
@@ -31,7 +31,6 @@ Reserves are available for both cross-chain assets and off-chain assets. Token i
   - Third-party API
   - Custodian API
   - Self-attested API
-
 
 ### Cross-chain reserves
 
