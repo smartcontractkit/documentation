@@ -24,7 +24,9 @@ If you already have a project started and would like to integrate Chainlink, you
 **Topics**
 
 - [Types of data feeds](#types-of-data-feeds)
-  - [Price feeds](#price-feeds)
+  - [Price Feeds](#price-feeds) 
+  - [Proof of Reserve Feeds](#proof-of-reserve-feeds)
+  - [NFT Floor Pricing Feeds](#nft-floor-pricing-feeds)
   - [L2 sequencer uptime feeds](#l2-sequencer-uptime-feeds)
 - [Components of a data feed](#components-of-a-data-feed)
 - [Reading proxy and aggregator Configurations](#reading-proxy-and-aggregator-configurations)
@@ -38,12 +40,13 @@ If you already have a project started and would like to integrate Chainlink, you
 
 Data feeds provide many different types of data for your applications.
 
-- [Price feeds](#price-feeds)
+- [Price Feeds](#price-feeds) 
+- [Proof of Reserve Feeds](#proof-of-reserve-feeds)
 - [L2 sequencer uptime feeds](#l2-sequencer-uptime-feeds)
 
-### Price feeds
+### Price Feeds
 
-See the [Data Feeds Contract Addresses](/docs/data-feeds/) page for a list of networks and proxy addresses.  
+See the [Data Feeds Contract Addresses](/docs/data-feeds/price-feeds/) page for a list of networks and proxy addresses.  
 
 Smart contracts often act in real-time on data such as prices of assets. This is especially true in [DeFi](https://defi.chain.link/).
 
@@ -51,10 +54,30 @@ For example, [Synthetix](https://www.synthetix.io/) uses Data Feeds to determine
 
 Data Feeds aggregate many data sources and publish them on-chain using a combination of the [Decentralized Data Model](/docs/architecture-decentralized-model/) and [Off-Chain Reporting](/docs/off-chain-reporting/).
 
-To learn how to use price feeds, see the [Price Feeds](/docs/data-feeds/price-feeds/) documentation.
+To learn how to use Price Feeds, see the [Price Feeds](/docs/data-feeds/price-feeds/) documentation.
 
 <div class="remix-callout">
     <a href="/docs/data-feeds/price-feeds/">Price Feeds</a>
+</div>
+
+### Proof of Reserve Feeds
+
+Proof of Reserves feeds provide the status of reserves for stablecoins, wrapped assets, and real world assets. Proof of Reserve Feeds operate similarly to Price Feeds, but provide answers in units of measurement such as ounces (oz) or number of tokens.
+
+To learn more about Proof of Reserve Feeds, see the [Proof of Reserve](/docs/data-feeds/proof-of-reserve/) documentation.
+
+<div class="remix-callout">
+    <a href="/docs/data-feeds/proof-of-reserve/">Proof of Reserve Feeds</a>
+</div>
+
+### NFT Floor Pricing Feeds
+
+NFT Floor Pricing Feeds provide the price of the lowest priced NFT available in a collection. These feeds operate similarly to [Price Feeds](/docs/data-feeds/price-feeds/) so you can use the [AggregatorV3Interface.sol](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol) contract to retrieve price answers.
+
+To learn more, see the [NFT Floor Pricing Feeds](/docs/data-feeds/nft-floor-price/) documentation.
+
+<div class="remix-callout">
+    <a href="/docs/data-feeds/nft-floor-price/">NFT Floor Pricing Feeds</a>
 </div>
 
 ### L2 sequencer uptime feeds

@@ -9,7 +9,7 @@ metadata:
 date: Last Modified
 ---
 <p>
-To learn how to implement these feeds, see the <a href="/docs/solana/using-data-feeds-solana/">Solana Examples for Consuming Data Feeds</a>.
+To learn how to use these feeds, see the <a href="/docs/solana/using-data-feeds-solana/">Solana Examples for Consuming Data Feeds</a>.
 </p>
 
 <p>To learn how to obtain SOL tokens on the Solana Devnet, see the <a href="https://docs.solana.com/cli/transfer-tokens#airdrop-some-tokens-to-get-started">Solana Documentation</a>.
