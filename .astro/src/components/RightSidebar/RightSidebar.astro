@@ -7,12 +7,18 @@ const { content, githubEditUrl, headings } = Astro.props
 
 <nav class="sidebar-nav" aria-labelledby="grid-right">
   <div class="sidebar-nav-inner">
-    <TableOfContents client:media="(min-width: 50em)" headers={headings} />
-    <MoreMenu editHref={githubEditUrl} />
+    <div>
+      <TableOfContents client:media="(min-width: 50em)" headers={headings} />
+    </div>
+    <div>
+      <MoreMenu editHref={githubEditUrl} />
+    </div>
 
-    <h2 class="heading feedback-title">Feedback</h2>
-    <div class="feedback-wrapper">
-      <Feedback client:idle />
+    <div>
+      <h2 class="heading feedback-title">Feedback</h2>
+      <div class="feedback-wrapper">
+        <Feedback client:idle />
+      </div>
     </div>
   </div>
 </nav>
@@ -33,6 +39,12 @@ const { content, githubEditUrl, headings } = Astro.props
     padding: 0;
     padding-top: var(--doc-padding);
     overflow: auto;
+  }
+  .sidebar-nav-inner > * {
+    margin-top: 1rem;
+  }
+  .sidebar-nav-inner > *:first-child {
+    margin-top: 0;
   }
 
   .sidebar-nav-inner h2 {

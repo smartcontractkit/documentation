@@ -4,6 +4,8 @@ import styles from "./Search.module.css"
 import { useKeyPress } from "~/hooks/useKeyPress"
 import { SearchModal } from "./SearchModal"
 
+import searchIcon from "../../../features/landing/assets/search-icon.svg"
+
 export default function Search() {
   const [isOpen, setIsOpen] = useState(false)
 
@@ -59,15 +61,18 @@ export default function Search() {
           </defs>
         </svg>
 
-        <span>Search</span>
+        <span>Search...</span>
 
-        <span className={styles.searchHint}>
+        {/* <span className={styles.searchHint}>
           <span className="sr-only">Press </span>
 
           <kbd>/</kbd>
 
           <span className="sr-only"> to search</span>
-        </span>
+        </span> */}
+      </button>
+      <button onClick={onOpen} className={styles.searchInputMobile}>
+        <img src={searchIcon} />
       </button>
 
       <SearchModal isOpen={isOpen} onClose={onClose} />

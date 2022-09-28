@@ -44,7 +44,7 @@ export const ProductCard = (props: ProductCardProps) => {
       </div>
       <div>
         <div class={productCard.networks}>
-          <h6>Available on EVM Chains</h6>
+          <h6 class="paragraph-100-bold">Available on EVM Chains</h6>
           <div class={productCard.chainsWrapper}>
             {props.chains.map((chain) => (
               <img

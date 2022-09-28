@@ -18,11 +18,6 @@ const searchClient = algoliasearch(
 import { Modal } from "../../Modal/Modal"
 import { SearchInput } from "./SearchInput"
 
-import kbReturnImg from "./assets/keyboard-return.svg"
-import kbEscapeImg from "./assets/keyboard-escape-custom.svg"
-import kbDataTransfer from "./assets/data-transfer-vertical.svg"
-import { clsx } from "~/lib"
-
 function EmptyQueryBoundary({ children, fallback }) {
   const { indexUiState } = useInstantSearch()
 
@@ -72,13 +67,13 @@ function CustomHits({ title, ...props }: UseHitsProps & { title: string }) {
         <ul className={styles.hitList}>
           {hits.map((hit: any) => (
             <li>
-              <a href={hit.url} className={styles.hit}>
-                <span
-                  dangerouslySetInnerHTML={{
-                    __html: hit._highlightResult.title.value,
-                  }}
-                />
-              </a>
+              <a
+                href={hit.url}
+                className={styles.hit}
+                dangerouslySetInnerHTML={{
+                  __html: hit._highlightResult.title.value,
+                }}
+              ></a>
             </li>
           ))}
         </ul>
@@ -95,13 +90,13 @@ export function SearchModal({
   onClose: () => void
 }) {
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen={isOpen} onClose={onClose} modalId={styles.searchModal}>
       <InstantSearch
         indexName={CONFIG.ALGOLIA.indexName}
         searchClient={searchClient}
       >
         <SearchInput onClose={onClose} />
-        <hr className={styles.footerSeparator} />
+        {/* <hr className={styles.footerSeparator} /> */}
         <div className={styles.resultsWrapper}>
           <EmptyQueryBoundary fallback={null}>
             <NoResultsBoundary>
@@ -123,17 +118,6 @@ export function SearchModal({
           </EmptyQueryBoundary>
         </div>
       </InstantSearch>
-      <hr className={clsx(styles.footerSeparator, styles.hideSm)} />
-      <div className={clsx(styles.hideSm)}>
-        <div className={clsx(styles.keyboardHints)}>
-          <div>
-            <img src={kbReturnImg} alt="Use enter to submit" /> To enter
-          </div>
-          <div>
-            <img src={kbEscapeImg} alt="Use escape to exit" /> To exit
-          </div>
-        </div>
-      </div>
     </Modal>
   )
 }

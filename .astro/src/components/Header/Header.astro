@@ -1,9 +1,16 @@
 ---
 import * as CONFIG from "../../config"
-import { MENU } from "../../config/index"
+import { Frontmatter, MENU } from "../../config/index"
 import SkipToContent from "./SkipToContent.astro"
 import SidebarToggle from "./SidebarToggle.tsx"
 import Search from "./Search/Search.tsx"
+
+export type Props = {
+  frontmatter?: Frontmatter
+}
+const { frontmatter } = Astro.props
+
+const section = frontmatter?.section ?? ""
 ---
 
 <!-- Google Tag Manager (noscript) -->
@@ -16,9 +23,6 @@ import Search from "./Search/Search.tsx"
 <header>
   <SkipToContent />
   <nav class="nav-wrapper" title="Top Navigation">
-    <div class="menu-toggle">
-      <SidebarToggle client:idle />
-    </div>
     <div class="logo flex">
       <a href="/">
         <img
@@ -28,11 +32,13 @@ import Search from "./Search/Search.tsx"
         />
       </a>
     </div>
-    <div class="spacer"></div>
     <div class="navbar">
-      {MENU.en.map((link) => <a href={link.link}>{link.text}</a>)}
+      {MENU.en.map((link) => (
+        <a href={link.link} aria-current={link.section === section}>
+          {link.text}
+        </a>
+      ))}
     </div>
-    <div style="flex-grow: 0.5;"></div>
 
     {CONFIG.ALGOLIA && (
       <div class="search-item">
@@ -47,6 +53,9 @@ import Search from "./Search/Search.tsx"
     >
       <img src="/assets/github.svg" />
     </a>
+    <div class="menu-toggle">
+      <SidebarToggle client:idle />
+    </div>
   </nav>
 </header>
 
@@ -65,10 +74,10 @@ import Search from "./Search/Search.tsx"
   }
 
   .logo {
-    flex: 1;
     display: flex;
     overflow: hidden;
-    width: 30px;
+    width: 183px;
+    height: 40px;
     font-size: 2rem;
     flex-shrink: 0;
     font-weight: 600;
@@ -76,6 +85,7 @@ import Search from "./Search/Search.tsx"
     color: hsla(var(--color-base-white), 100%, 1);
     gap: 0.25em;
     z-index: -1;
+    flex-grow: 1;
   }
 
   .logo a {
@@ -116,8 +126,15 @@ import Search from "./Search/Search.tsx"
     display: none;
     flex-grow: 0.5;
   }
+  .github-url {
+    display: none;
+  }
 
   @media (min-width: 50em) {
+    .logo {
+      flex-grow: 0;
+    }
+
     .spacer {
       display: block;
     }
@@ -127,7 +144,6 @@ import Search from "./Search/Search.tsx"
     }
 
     .logo {
-      width: auto;
       margin: 0;
       z-index: 0;
     }
@@ -148,29 +164,26 @@ import Search from "./Search/Search.tsx"
     .navbar {
       display: flex;
       gap: 1rem;
+      flex-grow: 1;
+      justify-content: center;
     }
-  }
-  .github-url {
-    width: 24px;
+    .navbar a[aria-current="true"] {
+      border-bottom: 2px solid var(--color-text-link);
+    }
+    .github-url {
+      width: 24px;
+      display: flex;
+    }
   }
 
   .search-item {
     display: none;
     position: relative;
     z-index: 10;
-    flex-grow: 1;
-    /* padding-right: 0.7rem; */
     display: flex;
-    max-width: 120px;
   }
 
   :global(.search-item > *) {
     flex-grow: 1;
-  }
-
-  @media (min-width: 50em) {
-    .search-item {
-      max-width: 200px;
-    }
   }
 </style>
