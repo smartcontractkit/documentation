@@ -18,7 +18,6 @@ Be aware of the quality of the data that you use. [Learn more about making respo
 
 | Data Category | Name                                                                                             | Supported Blockchains        |
 | ------------- | ------------------------------------------------------------------------------------------------ | ---------------------------- |
-| Crypto        | [Kraken Rates Oracle Node](/docs/any-api/data-providers/kraken-rates/)                           | Ethereum                     |
 | DNS Lookup    | [DNS Ownership Oracle](/docs/any-api/data-providers/dns-ownership/)                              | Ethereum, BNB Chain, Polygon |
 | Equities      | [dxFeed Price Oracle](https://market.link/nodes/dxFeed/integrations)                             | Ethereum, BNB Chain          |
 | Equities      | [Finage Global Market Data Oracle](https://market.link/nodes/Finage/integrations)                | Ethereum, BNB Chain          |
