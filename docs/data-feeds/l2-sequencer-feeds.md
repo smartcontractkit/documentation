@@ -27,7 +27,7 @@ You can find proxy addresses for the L2 sequencer feeds at the following address
 
 - Arbitrum:
   - Arbitrum mainnet: [0xFdB631F5EE196F0ed6FAa767959853A9F217697D](https://arbiscan.io/address/0xfdb631f5ee196f0ed6faa767959853a9f217697d)
-  - Arbitrum Rinkeby testnet: [0x9912bb73e2aD6aEa14d8D72d5826b8CBE3b6c4E2](https://testnet.arbiscan.io/address/0x9912bb73e2aD6aEa14d8D72d5826b8CBE3b6c4E2)
+  - Arbitrum Goerli testnet: [0x4da69F028a5790fCCAfe81a75C0D24f46ceCDd69](https://goerli-rollup-explorer.arbitrum.io/address/0x4da69F028a5790fCCAfe81a75C0D24f46ceCDd69)
 - Optimism:
   - Optimism mainnet: [0x371EAD81c9102C9BF4874A9075FFFf170F2Ee389](https://optimistic.etherscan.io/address/0x371EAD81c9102C9BF4874A9075FFFf170F2Ee389)
   - Optimism Goerli testnet: [0x4C4814aa04433e0FB31310379a4D6946D5e1D353](https://blockscout.com/optimism/goerli/address/0x4C4814aa04433e0FB31310379a4D6946D5e1D353)
