@@ -1,8 +1,9 @@
 // This configuration file sets up the paths and compilers so we can test our solidity samples
 
-require("@nomiclabs/hardhat-waffle")
+import { HardhatUserConfig } from "hardhat/config"
+import "@nomicfoundation/hardhat-toolbox"
 
-module.exports = {
+const config: HardhatUserConfig = {
   paths: {
     root: "./",
     sources: "./public/samples",
@@ -19,3 +20,5 @@ module.exports = {
     ],
   },
 }
+
+export default config

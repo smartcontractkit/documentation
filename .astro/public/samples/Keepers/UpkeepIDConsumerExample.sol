@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.6;
+pragma solidity ^0.8.7;
 
 // UpkeepIDConsumerExample.sol imports functions from both ./KeeperRegistryInterface.sol and
 // ./interfaces/LinkTokenInterface.sol
@@ -8,10 +8,10 @@ import {KeeperRegistryInterface, State, Config} from "@chainlink/contracts/src/v
 import {LinkTokenInterface} from "@chainlink/contracts/src/v0.8/interfaces/LinkTokenInterface.sol";
 
 /**
-* THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
-* THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
-* DO NOT USE THIS CODE IN PRODUCTION.
-*/
+ * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
+ * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
+ * DO NOT USE THIS CODE IN PRODUCTION.
+ */
 
 interface KeeperRegistrarInterface {
   function register(
@@ -53,7 +53,8 @@ contract UpkeepIDConsumerExample {
     uint96 amount,
     uint8 source
   ) public {
-    (State memory state, Config memory _c, address[] memory _k) = i_registry.getState();
+    (State memory state, Config memory _c, address[] memory _k) = i_registry
+      .getState();
     uint256 oldNonce = state.nonce;
     bytes memory payload = abi.encode(
       name,
@@ -66,13 +67,23 @@ contract UpkeepIDConsumerExample {
       source,
       address(this)
     );
-    
-    i_link.transferAndCall(registrar, amount, bytes.concat(registerSig, payload));
+
+    i_link.transferAndCall(
+      registrar,
+      amount,
+      bytes.concat(registerSig, payload)
+    );
     (state, _c, _k) = i_registry.getState();
     uint256 newNonce = state.nonce;
     if (newNonce == oldNonce + 1) {
       uint256 upkeepID = uint256(
-        keccak256(abi.encodePacked(blockhash(block.number - 1), address(i_registry), uint32(oldNonce)))
+        keccak256(
+          abi.encodePacked(
+            blockhash(block.number - 1),
+            address(i_registry),
+            uint32(oldNonce)
+          )
+        )
       );
       // DEV - Use the upkeepID however you see fit
     } else {
