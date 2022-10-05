@@ -9,7 +9,7 @@ metadata:
   networkstatusurl: "https://status.solana.com/"
 date: Last Modified
 setup: |
-  import { FeedList } from "@features/feeds/components/FeedList.tsx"
+  import { FeedList } from "@features/feeds"
 ---
 
 <FeedList client:idle stub="data-feeds-solana"  ecosystem="solana" networkstatusurl="https://status.solana.com/"/>

@@ -1,0 +1,38 @@
+---
+layout: ../../layouts/MainLayout.astro
+section: ethereum
+date: Last Modified
+title: "Data feeds dummy"
+---
+
+import {
+  LatestPrice,
+  HistoricalPrice,
+  RegistryPrice,
+  priceFeedAddresses,
+  registryAdddresses,
+} from "@features/feeds"
+import { web3Providers } from "@config"
+
+<LatestPrice
+  client:idle
+  feedAddress={priceFeedAddresses.btc.usd.goerli.address}
+  provider={web3Providers.ProviderList.ETH_GOERLI}
+/>
+
+<HistoricalPrice
+  client:idle
+  feedAddress={priceFeedAddresses.btc.usd.goerli.address}
+  roundId={priceFeedAddresses.btc.usd.goerli.historicalRound}
+  provider={web3Providers.ProviderList.ETH_GOERLI}
+/>
+
+<RegistryPrice
+  client:idle
+  registryAddress={registryAdddresses["link-usd"].network.mainnet.address}
+  baseSymbol={registryAdddresses["link-usd"].baseSymbol}
+  baseAddress={registryAdddresses["link-usd"].network.mainnet.baseAddress}
+  quoteSymbol={registryAdddresses["link-usd"].quoteSymbol}
+  quoteAddress={registryAdddresses["link-usd"].network.mainnet.quoteAddress}
+  provider={web3Providers.ProviderList.ETH_MAINNET}
+/>
