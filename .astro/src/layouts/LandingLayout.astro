@@ -64,11 +64,17 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site)
       }
       @media (min-width: 72em) {
         .layout {
-          grid-template-columns: minmax(0, var(--fullwidth-max-width));
+          grid-template-columns: min(
+            calc(1440px - 2 * var(--space-16x)),
+            calc(100% - 2 * var(--space-16x))
+          );
           padding-left: 0;
           padding-right: 0;
           margin-left: auto;
           margin-right: auto;
+        }
+        #grid-main {
+          padding: 0;
         }
       }
     </style>
@@ -84,6 +90,10 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site)
       .mobile-sidebar-toggle #grid-left {
         display: block;
         top: 2rem;
+      }
+      /** This is done to hide the search box in the homepage. CSSModules styles are taking precedence over other styles so !important was needed **/
+      .search-item {
+        display: none !important;
       }
     </style>
   </head>

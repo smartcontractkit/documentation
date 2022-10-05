@@ -2,6 +2,7 @@ import { useState } from "preact/hooks"
 import h from "preact"
 import "./NewsletterCTA.css"
 import button from "@chainlink/design-system/button.module.css"
+import { clsx } from "~/lib"
 
 const TAG_1 = "Developers"
 const TAG_2 = "Developer Docs"
@@ -52,12 +53,12 @@ export const NewsletterSignupForm = () => {
           onSubmit={onSubmit}
         >
           <div className="form-subscribe-field-wrapper">
-            <label htmlFor="Email" className="hiddenLabel">
+            <label htmlFor="Email" className="hiddenLabel ">
               Email Address
             </label>
             <input
               type="email"
-              className="cta-subscribe-input w-input"
+              className="cta-subscribe-input w-input text-300"
               maxLength={256}
               name="Email"
               data-name="Email"
@@ -71,13 +72,9 @@ export const NewsletterSignupForm = () => {
               type="submit"
               value={isLoading ? "Please Wait..." : "Sign up"}
               disabled={isLoading}
-              className={button.secondary}
+              className={clsx(button.secondary, "text-300")}
             />
           </div>
-          <label className="form-subscribe-checkbox">
-            <input type="checkbox" className="text-200" value="true" required />{" "}
-            Yes, I agree to receive email communications from Chainlink.
-          </label>
         </form>
       ) : (
         <div className="form-success-message w-form-done">

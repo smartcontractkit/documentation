@@ -17,6 +17,7 @@ const searchClient = algoliasearch(
 
 import { Modal } from "../../Modal/Modal"
 import { SearchInput } from "./SearchInput"
+import { clsx } from "~/lib"
 
 function EmptyQueryBoundary({ children, fallback }) {
   const { indexUiState } = useInstantSearch()
@@ -56,7 +57,11 @@ function NoResultsBoundary({ children }) {
 
   return children
 }
-function CustomHits({ title, ...props }: UseHitsProps & { title: string }) {
+function CustomHits({
+  title,
+  hitClassName,
+  ...props
+}: UseHitsProps & { title: string; hitClassName?: string }) {
   const { hits, results } = useHits(props)
 
   if (hits.length === 0) return null
@@ -69,7 +74,7 @@ function CustomHits({ title, ...props }: UseHitsProps & { title: string }) {
             <li>
               <a
                 href={hit.url}
-                className={styles.hit}
+                className={clsx(styles.hit, hitClassName)}
                 dangerouslySetInnerHTML={{
                   __html: hit._highlightResult.title.value,
                 }}
@@ -111,8 +116,12 @@ export function SearchModal({
                         item._highlightResult.title.matchLevel !== "none"
                     )
                   }}
+                  hitClassName="title-match-hit"
                 />
-                <CustomHits title="Content Matches" />
+                <CustomHits
+                  title="Content Matches"
+                  hitClassName="content-match-hit"
+                />
               </div>
             </NoResultsBoundary>
           </EmptyQueryBoundary>

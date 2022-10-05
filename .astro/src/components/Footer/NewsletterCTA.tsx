@@ -11,10 +11,8 @@ export const NewsletterCTA = ({
 }: NewsletterCTAProps) => {
   return (
     <section className={"newsletter-cta"}>
-      <h2 className="cta-subscribe-h1">{title}</h2>
-      <div className="form-subscribe-wrapper w-form">
-        <NewsletterSignupForm />
-      </div>
+      <h2 className="cta-subscribe-h1 heading-600">{title}</h2>
+      <NewsletterSignupForm />
     </section>
   )
 }

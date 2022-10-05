@@ -22,7 +22,9 @@ export const ProductCard = (props: ProductCardProps) => {
         <img src={props.image} />
         <div class={productCard.ctaCol}>
           <h4>
-            <a href={props.learnMorelink}>{props.title}</a>
+            <a href={props.learnMorelink} class="product-card-title">
+              {props.title}
+            </a>
           </h4>
           <p>{props.description}</p>
         </div>
@@ -50,6 +52,7 @@ export const ProductCard = (props: ProductCardProps) => {
               <img
                 src={`/assets/chains/${chain}.svg`}
                 class={productCard.chainIcon}
+                alt={chain}
               />
             ))}
           </div>
