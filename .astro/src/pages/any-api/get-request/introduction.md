@@ -21,12 +21,12 @@ metadata:
   image:
     0: "/files/930cbb7-link.png"
 setup: |
-  import AnyApiCommonCallout from "@features/any-api/components/AnyApiCommonCallout.astro"
+  import AnyApiCallout from "@features/any-api/common/AnyApiCallout.astro"
 ---
 
 This series of guides explains how to make HTTP GET requests to external APIs from smart contracts, using Chainlink's [Request & Receive Data](/docs/any-api/introduction/) cycle.
 
-<AnyApiCommonCallout />
+<AnyApiCallout callout="common" />
 
 ## Examples
 

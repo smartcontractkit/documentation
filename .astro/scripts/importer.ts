@@ -270,7 +270,7 @@ function importFiles() {
       fileExtension: path.extname(filePath),
       permalink: filePath.split(path.join(process.cwd(), "../"))[1],
     } as FileMeta
-    console.log({ fileMeta })
+    // console.log({ fileMeta })
 
     // update the frontmatter with the propper template reference
     fileMeta.content = updateFrontmatter(

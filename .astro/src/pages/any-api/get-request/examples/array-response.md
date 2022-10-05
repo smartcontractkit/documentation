@@ -13,13 +13,12 @@ whatsnext:
     "Data Provider Nodes": "/docs/any-api/data-providers/introduction/",
   }
 setup: |
-  import AnyApiCommonCallout from "@features/any-api/components/AnyApiCommonCallout.astro"
-  import AnyApiCommonPrereqCallout from "@features/any-api/components/AnyApiCommonPrereqCallout.astro"
+  import AnyApiCallout from "@features/any-api/common/AnyApiCallout.astro"
 ---
 
 This guide explains how to make an HTTP GET request to an external API, that returns a _json_ array, from a smart contract, using Chainlink's [Request & Receive Data](/docs/any-api/introduction/) cycle and then receive the needed data from the array.
 
-<AnyApiCommonPrereqCallout />
+<AnyApiCallout callout="prerequisites" />
 
 ## Example
 
@@ -90,4 +89,4 @@ To use this contract:
 
 1. After few seconds, call the `id` function. You should get a non-empty response: _bitcoin_
 
-<AnyApiCommonCallout />
+<AnyApiCallout callout="common" />

@@ -12,13 +12,12 @@ whatsnext:
     "Data Provider Nodes": "/docs/any-api/data-providers/introduction/",
   }
 setup: |
-  import AnyApiCommonCallout from "@features/any-api/components/AnyApiCommonCallout.astro"
-  import AnyApiCommonPrereqCallout from "@features/any-api/components/AnyApiCommonPrereqCallout.astro"
+  import AnyApiCallout from "@features/any-api/common/AnyApiCallout.astro"
 ---
 
 This guide explains how to make an HTTP GET request to an external API from a smart contract, using Chainlink's [Request & Receive Data](/docs/any-api/introduction/) cycle and then receive large responses.
 
-<AnyApiCommonPrereqCallout />
+<AnyApiCallout callout="prerequisites" />
 
 ## Example
 
@@ -80,4 +79,4 @@ To use this contract:
 
 1. After few seconds, call the `data` and `image_url` functions. You should get non-empty responses.
 
-<AnyApiCommonCallout />
+<AnyApiCallout callout="common" />

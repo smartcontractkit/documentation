@@ -20,13 +20,12 @@ metadata:
   image:
     0: "/files/930cbb7-link.png"
 setup: |
-  import AnyApiCommonCallout from "@features/any-api/components/AnyApiCommonCallout.astro"
-  import AnyApiCommonPrereqCallout from "@features/any-api/components/AnyApiCommonPrereqCallout.astro"
+  import AnyApiCallout from "@features/any-api/common/AnyApiCallout.astro"
 ---
 
 This guide explains how to make an HTTP GET request to an external API from a smart contract using Chainlink's [Request & Receive Data](/docs/any-api/introduction/) cycle and receive a single response.
 
-<AnyApiCommonPrereqCallout />
+<AnyApiCallout callout="prerequisites" />
 
 ## Example
 
@@ -109,4 +108,4 @@ To use this contract:
 
 1. After few seconds, call the `volume` function. You should get a non-zero response.
 
-<AnyApiCommonCallout />
+<AnyApiCallout callout="common" />

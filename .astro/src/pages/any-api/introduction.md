@@ -18,8 +18,7 @@ metadata:
   image:
     0: "/files/bc12c34-link.png"
 setup: |
-  import AnyApiCommonCallout from "@features/any-api/components/AnyApiCommonCallout.astro"
-  import AnyApiCommonPrereqCallout from "@features/any-api/components/AnyApiCommonPrereqCallout.astro"
+  import AnyApiCallout from "@features/any-api/common/AnyApiCallout.astro"
 ---
 
 ![Chainlink Any API](/files/8c35025-Request__Receive_Data.png)
@@ -28,7 +27,7 @@ setup: |
 
 Whether your contract requires sports results, the latest weather, or any other publicly available data, the [Chainlink contract library](https://github.com/smartcontractkit/chainlink/tree/master/contracts) provides the tools required for your contract to consume it.
 
-<AnyApiCommonPrereqCallout />
+<AnyApiCallout callout="prerequisites" />
 
 :::note[ Note on Price Feed Data]
 

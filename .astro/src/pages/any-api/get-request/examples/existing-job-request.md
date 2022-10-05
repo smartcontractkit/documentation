@@ -17,13 +17,12 @@ metadata:
   image:
     0: "/files/OpenGraph_V3.png"
 setup: |
-  import AnyApiCommonCallout from "@features/any-api/components/AnyApiCommonCallout.astro"
-  import AnyApiCommonPrereqCallout from "@features/any-api/components/AnyApiCommonPrereqCallout.astro"
+  import AnyApiCallout from "@features/any-api/common/AnyApiCallout.astro"
 ---
 
 Using an _existing_ Oracle Job makes your smart contract code more succinct. This page explains how to retrieve the gas price from an existing Chainlink job that calls [etherscan gas tracker API](https://docs.etherscan.io/api-endpoints/gas-tracker#get-gas-oracle).
 
-<AnyApiCommonPrereqCallout />
+<AnyApiCallout callout="prerequisites" />
 
 ## Example
 
@@ -91,4 +90,4 @@ To use this contract:
 
 1. After few seconds, call the `gasPriceFast`, `gasPriceAverage` and `gasPriceSafe` functions. You should get a non-zero responses.
 
-<AnyApiCommonCallout />
+<AnyApiCallout callout="common" />

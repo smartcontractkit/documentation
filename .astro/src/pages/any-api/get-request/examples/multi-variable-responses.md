@@ -13,14 +13,13 @@ whatsnext:
     "Testnet Oracles": "/docs/any-api/testnet-oracles/",
   }
 setup: |
-  import AnyApiCommonCallout from "@features/any-api/components/AnyApiCommonCallout.astro"
-  import AnyApiCommonPrereqCallout from "@features/any-api/components/AnyApiCommonPrereqCallout.astro"
+  import AnyApiCallout from "@features/any-api/common/AnyApiCallout.astro"
 ---
 
 This guide explains how to make an HTTP GET request to an external API from a smart contract, using Chainlink's [Request & Receive Data](/docs/any-api/introduction/) cycle and then receive multiple responses.
 This is known as **multi-variable** or **multi-word** responses.
 
-<AnyApiCommonPrereqCallout />
+<AnyApiCallout callout="prerequisites" />
 
 ## Example
 
@@ -87,4 +86,4 @@ To use this contract:
 1. After few seconds, call the `btc`, `usd` , and `eur` functions. You should get a non-zero responses.
    The job spec for the Chainlink node in this example can be found [here](/docs/direct-request-multi-word/).
 
-<AnyApiCommonCallout />
+<AnyApiCallout callout="common" />
