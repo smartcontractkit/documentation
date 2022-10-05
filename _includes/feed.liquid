@@ -241,7 +241,10 @@ section: ethereum
     async function goToNetwork() {
         if (window.location.hash.length) {
             anchorHash = window.location.hash.substring(1);
-            document.getElementById(decodeURI(anchorHash)).scrollIntoView();
+            try {
+                document.getElementById(decodeURI(anchorHash)).scrollIntoView();
+            }catch(e){
+            }
         }
     }
 
@@ -255,6 +258,9 @@ section: ethereum
                 render(json);
         });
         document.getElementById(networkName).classList.toggle("selectedNetwork");
+        let stateObj = { foo: "bar" }
+        queryParam = "?network=" + selectedNetwork;
+        history.pushState(stateObj, "page 2", queryParam);
     }
 
 </script>
