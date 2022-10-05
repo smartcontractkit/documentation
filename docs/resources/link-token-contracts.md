@@ -342,7 +342,7 @@ METIS is the currency that you use to pay for transactions on Metis mainnet. You
 
 ### Baobab testnet
 
-KLAY is the currency that you use to pay for transactions on Klaytn testnet. Testnet LINK is available from [facuets.chain.link](https://faucets.chain.link/klaytn-testnet). Use the [KLAY Faucet](https://baobab.wallet.klaytn.foundation/faucet) to obtain testnet KLAY.
+KLAY is the currency that you use to pay for transactions on Klaytn testnet. Testnet LINK is available from [faucets.chain.link](https://faucets.chain.link/klaytn-testnet). Use the [KLAY Faucet](https://baobab.wallet.klaytn.foundation/faucet) to obtain testnet KLAY.
 
 | Parameter      | Value                                                                                                                                                                                                                       |
 | :------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
