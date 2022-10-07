@@ -48,16 +48,11 @@ Your node works with several different types of addresses. Each address type has
 
    - Select "Injected Provider" as your **Environment**. The Javascript VM environment cannot access your oracle node.
    - Select the "Oracle" contract from the **Contract** menu.
-   - Copy the LINK token contract address for the network you are using and paste it into the `address_link` field next to the **Deploy** button. Use one of the following network addresses:
+   - Copy the [LINK token contract address](/docs/link-token-contracts/) for the network you are using and paste it into the `address_link` field next to the **Deploy** button. Use one of the following network addresses:
 
-     ```text Rinkeby
-     0x01BE23585060835E02B77ef475b0Cc51aA1e0709
+     ```text Goerli
+     0x326C977E6efc84E512bB9C30f76E30c160eD06FB
      ```
-
-     ```text Kovan
-     0xa36085F69e2889c224210F603D836748e7dC0088
-     ```
-
      ```text Mainnet
      0x514910771AF9Ca656af840dff83E8264EcF986CA
      ```

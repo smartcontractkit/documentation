@@ -5,7 +5,7 @@ date: Last Modified
 title: "Consuming Data Feeds"
 permalink: "docs/consuming-data-feeds/"
 excerpt: "Smart Contracts and Chainlink"
-whatsnext: {"Random Numbers: Using Chainlink VRF":"/docs/intermediates-tutorial/", "Connect contracts to Any API":"/docs/advanced-tutorial/", "Chaink Keepers":"/docs/chainlink-keepers/introduction/"}
+whatsnext: {"Random Numbers: Using Chainlink VRF":"/docs/intermediates-tutorial/", "Connect contracts to Any API":"/docs/advanced-tutorial/", "Chainlink Automation":"/docs/chainlink-automation/introduction/"}
 metadata:
   title: "Consuming Data Feeds"
   description: "Learn how to consume Chainlink Data Feeds in your smart contracts."
@@ -19,7 +19,7 @@ metadata:
 
 ## Overview
 
-When you connect a smart contract to real-world services or off-chain data, you create a *hybrid smart contract*. For example, you can use Chainlink Data Feeds to connect your smart contracts to asset pricing data like the [ETH / USD feed](https://feeds.chain.link/eth-usd). These data feeds use the data aggregated from many independent Chainlink node operators. Each price feed has an on-chain address and functions that enable contracts to read pricing data from that address.
+When you connect a smart contract to real-world services or off-chain data, you create a *hybrid smart contract*. For example, you can use Chainlink Data Feeds to connect your smart contracts to asset pricing data like the [ETH / USD feed](https://data.chain.link/eth-usd). These data feeds use the data aggregated from many independent Chainlink node operators. Each price feed has an on-chain address and functions that enable contracts to read pricing data from that address.
 
 This guide shows you how to write, deploy, and run a smart contract that consumes data from a price data feed.
 

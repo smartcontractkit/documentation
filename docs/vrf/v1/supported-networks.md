@@ -10,7 +10,7 @@ metadata:
 
 > 🚧 VRF v2 replaces and enhances VRF v1.
 >
-> See the [VRF v2 documentation](/docs/vrf/v2/supported-networks/) to learn more.
+> See the [VRF v2 documentation](/docs/vrf/v2/introduction/) to learn more.
 
 Chainlink VRF allows you to integrate provably-fair and verifiably random data in your smart contract.
 
@@ -61,7 +61,7 @@ For implementation details, read [Introduction to Chainlink VRF](/docs/vrf/v1/in
 
 > 📘 Early Access
 >
-> For the most efficient consumption of Chainlink VRF on BNB Chain, please contact us using [this form](https://chainlinkcommunity.typeform.com/to/OYQO67EF?page=docs-VRF) to create a payment channel, through which we can provide VRF to you at the cost of BNB Chain network gas fees. You will only be paying in LINK for the gas costs incurred by the Chainlink node from calling your smart contract.
+> For the most efficient consumption of Chainlink VRF on BNB Chain, please contact us using [this form](https://chainlinkcommunity.typeform.com/to/OYQO67EF?page=docs-VRF) to create a payment channel, through which we can provide VRF to you at the cost of BNB Chain network gas fees. You will only be paying in LINK for the gas costs incurred by the Chainlink VRF service from calling your smart contract.
 
 ## BNB Chain Testnet
 
@@ -87,7 +87,7 @@ For implementation details, read [Introduction to Chainlink VRF](/docs/vrf/v1/in
 
 > 📘 Early Access
 >
-> For the most efficient consumption of Chainlink VRF on Ethereum, please contact us using [this form](https://chainlinkcommunity.typeform.com/to/OYQO67EF?page=docs-VRF) to create a payment channel, through which we can provide VRF to you at the cost of Ethereum network gas fees. You will only be paying in LINK for the gas costs incurred by the Chainlink node from calling your smart contract.
+> For the most efficient consumption of Chainlink VRF on Ethereum, please contact us using [this form](https://chainlinkcommunity.typeform.com/to/OYQO67EF?page=docs-VRF) to create a payment channel, through which we can provide VRF to you at the cost of Ethereum network gas fees. You will only be paying in LINK for the gas costs incurred by the Chainlink VRF service from calling your smart contract.
 
 ## Goerli
 
@@ -101,36 +101,4 @@ For implementation details, read [Introduction to Chainlink VRF](/docs/vrf/v1/in
 | LINK            | `0x326C977E6efc84E512bB9C30f76E30c160eD06FB`                         |
 | VRF Coordinator | `0x2bce784e69d2Ff36c71edcB9F88358dB0DfB55b4`                         |
 | Key Hash        | `0x0476f9a745b61ea5c0ab224d3a6e4c99f0b02fce4da01143a4f70aa80ae76e8a` |
-| Fee             | 0.1 LINK                                                             |
-
-## Rinkeby (Deprecated)
-
-The Rinkeby network is [officially deprecated](https://ethereum.org/en/developers/docs/networks/#rinkeby) and is no longer supported. [Goerli](#goerli) is the recommended testnet for Chainlink on Ethereum.
-
-> 🚰 Rinkeby Faucets
->
-> Testnet LINK and ETH are available from https://faucets.chain.link/rinkeby
-> Backup Testnet ETH Faucets: https://rinkeby-faucet.com/, https://app.mycrypto.com/faucet
-
-| Item            | Value                                                                |
-| --------------- | -------------------------------------------------------------------- |
-| LINK            | `0x01BE23585060835E02B77ef475b0Cc51aA1e0709`                         |
-| VRF Coordinator | `0xb3dCcb4Cf7a26f6cf6B120Cf5A73875B7BBc655B`                         |
-| Key Hash        | `0x2ed0feb3e7fd2022120aa84fab1945545a9f2ffc9076fd6156fa96eaff4c1311` |
-| Fee             | 0.1 LINK                                                             |
-
-## Kovan (Deprecated)
-
-The Kovan network is [officially deprecated](https://ethereum.org/en/developers/docs/networks/#kovan) and is no longer supported. [Goerli](#goerli) is the recommended testnet for Chainlink on Ethereum.
-
-> 🚰 Kovan Faucets
->
-> Testnet LINK are available from https://faucets.chain.link/kovan
-> Testnet ETH are available from https://faucets.chain.link/kovan
-
-| Item            | Value                                                                |
-| --------------- | -------------------------------------------------------------------- |
-| LINK            | `0xa36085F69e2889c224210F603D836748e7dC0088`                         |
-| VRF Coordinator | `0xdD3782915140c8f3b190B5D67eAc6dc5760C46E9`                         |
-| Key Hash        | `0x6c3699283bda56ad74f6b855546325b68d482e983852a7a82979cc4807b641f4` |
 | Fee             | 0.1 LINK                                                             |

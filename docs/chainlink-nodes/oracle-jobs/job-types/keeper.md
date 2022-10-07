@@ -33,7 +33,7 @@ See [shared fields](/docs/jobs/#shared-fields).
 
 **Unique fields**
 
-- `evmChainID`: The numeric chain ID of the chain on which Keepers Registry is deployed
-- `contractAddress`: The address of the Keepers Registry contract to poll and update
+- `evmChainID`: The numeric chain ID of the chain on which Chainlink Automation Registry is deployed
+- `contractAddress`: The address of the Chainlink Automation Registry contract to poll and update
 - `fromAddress`: The Oracle node address from which to send updates
 - `externalJobID`: This is an optional field. When omitted it will be generated

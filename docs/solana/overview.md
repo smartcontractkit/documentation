@@ -17,7 +17,7 @@ Solana programs are stateless, so you don't always need to deploy your program t
 
 > 📘 Please note that Price Feeds performance relies on the chains they are deployed on. Periods of high network congestion may impact the frequency of Chainlink Price Feeds. Subscribe to [Solana status](https://status.solana.com/) notifications to stay updated on system performance.
 
-To learn how to mitigate risk to your applications, read the [Selecting Quality Data Feeds](/docs/selecting-data-feeds/) page.
+To learn how to mitigate risk to your applications, read the [Selecting Quality Data Feeds](/docs/data-feeds/selecting-data-feeds/) page.
 
 **Topics**
 

@@ -4,7 +4,7 @@ section: ethereum
 date: Last Modified
 title: "Off-Chain Reporting"
 permalink: "docs/off-chain-reporting/"
-whatsnext: {"Using Data Feeds":"/docs/get-the-latest-price/"}
+whatsnext: {"Using Data Feeds":"/docs/data-feeds/price-feeds/"}
 metadata:
   image:
     0: "/files/fb73165-cl.png"

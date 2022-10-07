@@ -7,11 +7,11 @@ permalink: 'docs/intermediates-tutorial/'
 excerpt: 'Using Chainlink VRF'
 whatsnext:
   {
-    'Get a Random Number': '/docs/vrf/v2/examples/get-a-random-number/',
-    'Programmatic Subscription': '/docs/vrf/v2/examples/programmatic-subscription/',
+    'Get a Random Number': '/docs/vrf/v2/subscription/examples/get-a-random-number/',
+    'Programmatic Subscription': '/docs/vrf/v2/subscription/examples/programmatic-subscription/',
     'Security Considerations': '/docs/vrf/v2/security/',
     'Best Practices': '/docs/vrf/v2/best-practices/',
-    'Supported Networks': '/docs/vrf/v2/supported-networks/',
+    'Supported Networks': '/docs/vrf/v2/subscription/supported-networks/',
   }
 metadata:
   title: 'Random Numbers: Using Chainlink VRF'
@@ -59,11 +59,11 @@ Randomness, on the other hand, cannot be reference data. If the result of random
 ## 3. What is the payment process for generating a random number?
 
 VRF requests receive funding from subscription accounts. The [Subscription Manager](https://vrf.chain.link) lets you create an account and pre-pay for VRF requests, so that funding of all your application requests are managed in a single location.
-To learn more about VRF requests funding, see [Subscriptions](/docs/vrf/v2/introduction/#subscriptions), [Subscription billing](/docs/vrf/v2/introduction/#subscription-billing).
+To learn more about VRF request funding, see [Subscriptions](/docs/vrf/v2/subscription/#subscriptions).
 
 ## 4. How can I use Chainlink VRF?
 
-To see a basic implementation of Chainlink VRF, see [Get a Random Number](/docs/vrf/v2/examples/get-a-random-number/). In this section, you will create an application that uses Chainlink VRF to generate randomness. The contract used in this application will have a [_Game of Thrones_](https://en.wikipedia.org/wiki/Game_of_Thrones) theme.
+To see a basic implementation of Chainlink VRF, see [Get a Random Number](/docs/vrf/v2/subscription/examples/get-a-random-number/). In this section, you will create an application that uses Chainlink VRF to generate randomness. The contract used in this application will have a [_Game of Thrones_](https://en.wikipedia.org/wiki/Game_of_Thrones) theme.
 
 The contract will request randomness from Chainlink VRF. The result of the randomness will transform into a number between 1 and 20, mimicking the rolling of a 20 sided die. Each number represents a _Game of Thrones_ house. If the dice land on the value 1, the user is assigned house Targaryan, 2 for Lannister, and so on. A full list of houses can be found [here](https://gameofthrones.fandom.com/wiki/Great_House).
 
@@ -80,7 +80,7 @@ The contract will have the following functions:
 ### Create and fund a subscription
 
 Chainlink VRF requests receive funding from subscription accounts. The [Subscription Manager](https://vrf.chain.link) lets you create an account and pre-pay your use of Chainlink VRF requests.
-For this example, create a new subscription on the Goerli testnet as explained [here](/docs/vrf/v2/examples/get-a-random-number/#create-and-fund-a-subscription).
+For this example, create a new subscription on the Goerli testnet as explained [here](/docs/vrf/v2/subscription/examples/get-a-random-number/#create-and-fund-a-subscription).
 
 ### Importing `VRFConsumerBaseV2` and `VRFCoordinatorV2Interface`
 
@@ -93,17 +93,16 @@ Chainlink maintains a [library of contracts](https://github.com/smartcontractkit
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
-import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
-import "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol";
+import '@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol';
+import '@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol';
 
-contract VRFD20 is VRFConsumerBaseV2 {
+contract VRFD20 is VRFConsumerBaseV2 {}
 
-}
 ```
 
 ### Contract variables
 
-This example is adapted for [Goerli testnet](/docs/vrf/v2/supported-networks/#goerli-testnet) but you can change the configuration and make it run for any [supported network](/docs/vrf/v2/supported-networks/#configurations).
+This example is adapted for [Goerli testnet](/docs/vrf/v2/subscription/supported-networks/#goerli-testnet) but you can change the configuration and make it run for any [supported network](/docs/vrf/v2/subscription/supported-networks/#configurations).
 
 ```solidity
 uint64 s_subscriptionId;
@@ -140,26 +139,27 @@ The address that creates the smart contract is the owner of the contract. the mo
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
-import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
-import "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol";
+import '@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol';
+import '@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol';
 
 contract VRFD20 is VRFConsumerBaseV2 {
-    // variables
-    // ...
+  // variables
+  // ...
 
-    // constructor
-    constructor(uint64 subscriptionId) VRFConsumerBaseV2(vrfCoordinator) {
-        COORDINATOR = VRFCoordinatorV2Interface(vrfCoordinator);
-        s_owner = msg.sender;
-        s_subscriptionId = subscriptionId;
-    }
+  // constructor
+  constructor(uint64 subscriptionId) VRFConsumerBaseV2(vrfCoordinator) {
+    COORDINATOR = VRFCoordinatorV2Interface(vrfCoordinator);
+    s_owner = msg.sender;
+    s_subscriptionId = subscriptionId;
+  }
 
-    //...
-    modifier onlyOwner() {
-        require(msg.sender == s_owner);
-        _;
-    }
+  //...
+  modifier onlyOwner() {
+    require(msg.sender == s_owner);
+    _;
+  }
 }
+
 ```
 
 ### `rollDice` function
@@ -179,39 +179,41 @@ Only the owner of the contract can execute the `rollDice` function.
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
-import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
-import "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol";
+import '@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol';
+import '@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol';
 
 contract VRFD20 is VRFConsumerBaseV2 {
-    // variables
-    uint256 private constant ROLL_IN_PROGRESS = 42;
-    // ...
+  // variables
+  uint256 private constant ROLL_IN_PROGRESS = 42;
+  // ...
 
-    // events
-    event DiceRolled(uint256 indexed requestId, address indexed roller);
-    // ...
+  // events
+  event DiceRolled(uint256 indexed requestId, address indexed roller);
 
-    // ...
-    // { constructor }
-    // ...
+  // ...
 
-    // rollDice function
-    function rollDice(address roller) public onlyOwner returns (uint256 requestId) {
-        require(s_results[roller] == 0, "Already rolled");
-        // Will revert if subscription is not set and funded.
-        requestId = COORDINATOR.requestRandomWords(
-        s_keyHash,
-        s_subscriptionId,
-        requestConfirmations,
-        callbackGasLimit,
-        numWords
-       );
+  // ...
+  // { constructor }
+  // ...
 
-        s_rollers[requestId] = roller;
-        s_results[roller] = ROLL_IN_PROGRESS;
-        emit DiceRolled(requestId, roller);
-    }
+  // rollDice function
+  function rollDice(address roller) public onlyOwner returns (uint256 requestId) {
+    require(s_results[roller] == 0, 'Already rolled');
+    // Will revert if subscription is not set and funded.
+    requestId = COORDINATOR.requestRandomWords(
+      s_keyHash,
+      s_subscriptionId,
+      requestConfirmations,
+      callbackGasLimit,
+      numWords
+    );
+
+    s_rollers[requestId] = roller;
+    s_results[roller] = ROLL_IN_PROGRESS;
+    emit DiceRolled(requestId, roller);
+  }
 }
+
 ```
 
 ### `fulfillRandomWords` function
@@ -226,39 +228,39 @@ contract VRFD20 is VRFConsumerBaseV2 {
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
-import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
-import "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol";
+import '@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol';
+import '@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol';
 
 contract VRFD20 is VRFConsumerBaseV2 {
-    // ...
-    // { variables }
-    // ...
+  // ...
+  // { variables }
+  // ...
 
-    // events
-    // ...
-    event DiceLanded(uint256 indexed requestId, uint256 indexed result);
+  // events
+  // ...
+  event DiceLanded(uint256 indexed requestId, uint256 indexed result);
 
-    // ...
-    // { constructor }
-    // ...
+  // ...
+  // { constructor }
+  // ...
 
-    // ...
-    // { rollDice function }
-    // ...
+  // ...
+  // { rollDice function }
+  // ...
 
-    // fulfillRandomWords function
-    function fulfillRandomWords(uint256 requestId , uint256[] memory randomWords) internal override {
+  // fulfillRandomWords function
+  function fulfillRandomWords(uint256 requestId, uint256[] memory randomWords) internal override {
+    // transform the result to a number between 1 and 20 inclusively
+    uint256 d20Value = (randomWords[0] % 20) + 1;
 
-        // transform the result to a number between 1 and 20 inclusively
-        uint256 d20Value = (randomWords[0] % 20) + 1;
+    // assign the transformed value to the address in the s_results mapping variable
+    s_results[s_rollers[requestId]] = d20Value;
 
-        // assign the transformed value to the address in the s_results mapping variable
-        s_results[s_rollers[requestId]] = d20Value;
-
-        // emitting event to signal that dice landed
-        emit DiceLanded(requestId, d20Value);
-    }
+    // emitting event to signal that dice landed
+    emit DiceLanded(requestId, d20Value);
+  }
 }
+
 ```
 
 ### `house` function
@@ -271,72 +273,73 @@ To have a list of the house's names, create the `getHouseName` function that is 
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
-import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
-import "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol";
+import '@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol';
+import '@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol';
 
 contract VRFD20 is VRFConsumerBaseV2 {
-    // ...
-    // { variables }
-    // ...
+  // ...
+  // { variables }
+  // ...
 
-    // ...
-    // { events }
-    // ...
+  // ...
+  // { events }
+  // ...
 
-    // ...
-    // { constructor }
-    // ...
+  // ...
+  // { constructor }
+  // ...
 
-    // ...
-    // { rollDice function }
-    // ...
+  // ...
+  // { rollDice function }
+  // ...
 
-    // ...
-    // { fulfillRandomWords function }
-    // ...
+  // ...
+  // { fulfillRandomWords function }
+  // ...
 
-    // house function
-    function house(address player) public view returns (string memory) {
-        // dice has not yet been rolled to this address
-        require(s_results[player] != 0, "Dice not rolled");
+  // house function
+  function house(address player) public view returns (string memory) {
+    // dice has not yet been rolled to this address
+    require(s_results[player] != 0, 'Dice not rolled');
 
-        // not waiting for the result of a thrown dice
-        require(s_results[player] != ROLL_IN_PROGRESS, "Roll in progress");
+    // not waiting for the result of a thrown dice
+    require(s_results[player] != ROLL_IN_PROGRESS, 'Roll in progress');
 
-        // returns the house name from the name list function
-        return getHouseName(s_results[player]);
-    }
+    // returns the house name from the name list function
+    return getHouseName(s_results[player]);
+  }
 
-    // getHouseName function
-    function getHouseName(uint256 id) private pure returns (string memory) {
-        // array storing the list of house's names
-        string[20] memory houseNames = [
-            "Targaryen",
-            "Lannister",
-            "Stark",
-            "Tyrell",
-            "Baratheon",
-            "Martell",
-            "Tully",
-            "Bolton",
-            "Greyjoy",
-            "Arryn",
-            "Frey",
-            "Mormont",
-            "Tarley",
-            "Dayne",
-            "Umber",
-            "Valeryon",
-            "Manderly",
-            "Clegane",
-            "Glover",
-            "Karstark"
-        ];
+  // getHouseName function
+  function getHouseName(uint256 id) private pure returns (string memory) {
+    // array storing the list of house's names
+    string[20] memory houseNames = [
+      'Targaryen',
+      'Lannister',
+      'Stark',
+      'Tyrell',
+      'Baratheon',
+      'Martell',
+      'Tully',
+      'Bolton',
+      'Greyjoy',
+      'Arryn',
+      'Frey',
+      'Mormont',
+      'Tarley',
+      'Dayne',
+      'Umber',
+      'Valeryon',
+      'Manderly',
+      'Clegane',
+      'Glover',
+      'Karstark'
+    ];
 
-        // returns the house name given an index
-        return houseNames[id.sub(1)];
-    }
+    // returns the house name given an index
+    return houseNames[id.sub(1)];
+  }
 }
+
 ```
 
 <div class="remix-callout">
@@ -366,7 +369,7 @@ Then click the `Deploy` button and use your Metamask account to confirm the tran
 
 > 📘 Address, Key Hashes and more
 >
-> For a full reference of the addresses, key hashes and fees for each network, see [VRF Supported Networks](/docs/vrf/v2/supported-networks/#configurations).
+> For a full reference of the addresses, key hashes and fees for each network, see [VRF v2 Subscription method - Supported Networks](/docs/vrf/v2/subscription/supported-networks/#configurations).
 
 At this point, your contract should be successfully deployed. However, it can't request anything because it is not yet approved to use the LINK balance in your subscription. If you click `rollDice`, the transaction will revert.
 

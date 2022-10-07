@@ -1,6 +1,4 @@
-const NEWSLETTER_URL = 'https://hooks.zapier.com/hooks/catch/10015000/bb8efqc';
-const tag1 = 'Developers';
-const tag2 = 'Developer Docs';
+const HUBSPOT_URL = 'https://api.hsforms.com/submissions/v3/integration/submit/20755222/1e05f501-add0-4736-a1d3-9cb24b9cad3f';
 
 function handleSubscribeSubmit(event: any) {
   const subscribeButton: HTMLButtonElement = <any>document.getElementById('subscribe-button');
@@ -14,13 +12,19 @@ function handleSubscribeSubmit(event: any) {
 
   var email = new FormData(event.target).get('Email');
 
-  fetch(NEWSLETTER_URL, {
-    mode: 'no-cors',
+  fetch(HUBSPOT_URL, {
     method: 'POST',
     body: JSON.stringify({
-      email,
-      tag1,
-      tag2,
+      "fields": [
+        {
+          "name": "email",
+          "value": email
+        },
+        {
+          "name":"mailchimp_tags",
+          "value":"Developers, Developer Docs"
+        }
+      ]
     }),
     headers: {
       'Content-Type': 'application/json',

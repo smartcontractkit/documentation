@@ -39,7 +39,7 @@ permalink: /ethereum/
             Retrieve the latest prices and data points of assets in your smart
             contracts.
           </p>
-          <a href="/docs/using-chainlink-reference-contracts/">
+          <a href="/docs/data-feeds/">
             <div class="arrowed-text">
                 Learn More
                 <img class="cta-learnmore-arrow" src="/images/card-icons/navigation-arrow-right.svg" loading="lazy" alt="Right arrow">
@@ -103,15 +103,15 @@ permalink: /ethereum/
     <div class="cl-featuredcard">
       <div class="cl-card-text">
         <img
-          src="/images/contract-devs/keeper/icon-keepers.svg"
+          src="/images/contract-devs/automation/icon-automation.svg"
           class="cl-image-featured"
           height="80" style="max-width:80px"
         />
-        <h3>Automate and Maintain with Chainlink Keepers</h3>
+        <h3>Automate and Maintain with Chainlink Automation</h3>
         <p>
-          Chainlink Keepers provide smart contract developers, decentralized applications (dApps), and decentralized autonomous organizations (DAOs) with a highly reliable, decentralized, and cost-efficient method of automating smart contract functions and regular contract maintenance.
+          Chainlink Automation provides smart contract developers, decentralized applications (dApps), and decentralized autonomous organizations (DAOs) with a highly reliable, decentralized, and cost-efficient method of automating smart contract functions and regular contract maintenance.
         </p>
-        <a href="/docs/chainlink-keepers/introduction/" class="cl-button--ghost">
+        <a href="/docs/chainlink-automation/introduction/" class="cl-button--ghost">
           Learn More
         </a>
       </div>

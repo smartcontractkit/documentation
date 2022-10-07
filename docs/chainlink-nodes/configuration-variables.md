@@ -1028,7 +1028,7 @@ This can be overridden on a per-task basis by setting the `MinRequiredOutgoingCo
 > 🚧 NOTE
 > This has replaced the formerly used MINIMUM_CONTRACT_PAYMENT
 
-- Default: _automatically set based on Chain ID, typically 10000000000000 (0.00001 LINK) on all chains except ETH Mainnet, Kovan, Goerli, and Rinkeby, where it is 100000000000000000 (0.1 LINK)._
+- Default: _automatically set based on Chain ID, typically 10000000000000 (0.00001 LINK) on all chains except Ethereum Mainnet and Goerli where it is 100000000000000000 (0.1 LINK)._
 
 For jobs that use the `EthTx` adapter, this is the minimum payment amount in order for the node to accept and process the job. Since there are no decimals on the EVM, the value is represented like wei.
 
@@ -1584,7 +1584,13 @@ Example: `P2PV2_LISTEN_ADDRESSES=1.2.3.4:9999 [a52d:0:a88:1274::abcd]:1337`
 
 ## Keeper
 
+These environment variables are used specificly for Chainlink Keepers. For most Chainlink Nodes, leave these values at their defaults and do not configure these environment variables.
+
 ### KEEPER_CHECK_UPKEEP_GAS_PRICE_FEATURE_ENABLED
+
+> 🚧 **ADVANCED**
+>
+> Do not change this setting unless you know what you are doing.
 
 - Default: `"false"`
 
@@ -1594,11 +1600,19 @@ Includes gas price in calls to `checkUpkeep()` when set to `true`.
 
 ### KEEPER_GAS_PRICE_BUFFER_PERCENT
 
+> 🚧 **ADVANCED**
+>
+> Do not change this setting unless you know what you are doing.
+
 - Default: `"20"`
 
 `KEEPER_GAS_PRICE_BUFFER_PERCENT` adds the specified percentage to the gas price used for checking whether to perform an upkeep. Only applies in legacy mode (EIP-1559 off).
 
 ### KEEPER_GAS_TIP_CAP_BUFFER_PERCENT
+
+> 🚧 **ADVANCED**
+>
+> Do not change this setting unless you know what you are doing.
 
 - Default: `"20"`
 
@@ -1606,15 +1620,19 @@ Includes gas price in calls to `checkUpkeep()` when set to `true`.
 
 ### KEEPER_BASE_FEE_BUFFER_PERCENT
 
+> 🚧 **ADVANCED**
+>
+> Do not change this setting unless you know what you are doing.
+
 - Default: `"20"`
 
 Adds the specified percentage to the base fee used for checking whether to perform an upkeep. Applies only in EIP-1559 mode.
 
 ### KEEPER_MAXIMUM_GRACE_PERIOD
 
-**ADVANCED**
-
-Do not change this setting unless you know what you are doing.
+> 🚧 **ADVANCED**
+>
+> Do not change this setting unless you know what you are doing.
 
 - Default: `"100"`
 
@@ -1622,9 +1640,9 @@ The maximum number of blocks that a keeper will wait after performing an upkeep 
 
 ### KEEPER_REGISTRY_CHECK_GAS_OVERHEAD
 
-**ADVANCED**
-
-Do not change this setting unless you know what you are doing.
+> 🚧 **ADVANCED**
+>
+> Do not change this setting unless you know what you are doing.
 
 - Default: `"200000"`
 
@@ -1632,19 +1650,19 @@ The amount of extra gas to provide checkUpkeep() calls to account for the gas co
 
 ### KEEPER_REGISTRY_PERFORM_GAS_OVERHEAD
 
-**ADVANCED**
+> 🚧 **ADVANCED**
+>
+> Do not change this setting unless you know what you are doing.
 
-Do not change this setting unless you know what you are doing.
-
-- Default: `"150000"`
+- Default: `"300000"`
 
 The amount of extra gas to provide performUpkeep() calls to account for the gas consumed by the keeper registry
 
 ### KEEPER_REGISTRY_SYNC_INTERVAL
 
-**ADVANCED**
-
-Do not change this setting unless you know what you are doing.
+> 🚧 **ADVANCED**
+>
+> Do not change this setting unless you know what you are doing.
 
 - Default: `"30m"`
 
@@ -1652,9 +1670,9 @@ The interval in which the RegistrySynchronizer performs a full sync of the keepe
 
 ### KEEPER_REGISTRY_SYNC_UPKEEP_QUEUE_SIZE
 
-**ADVANCED**
-
-Do not change this setting unless you know what you are doing.
+> 🚧 **ADVANCED**
+>
+> Do not change this setting unless you know what you are doing.
 
 - Default: `"10"`
 
@@ -1662,11 +1680,19 @@ Do not change this setting unless you know what you are doing.
 
 ### KEEPER_TURN_LOOK_BACK
 
+> 🚧 **ADVANCED**
+>
+> Do not change this setting unless you know what you are doing.
+
 - Default: `"1000"`
 
 The number of blocks in the past to look back when getting a block for a turn.
 
 ### KEEPER_TURN_FLAG_ENABLED
+
+> 🚧 **ADVANCED**
+>
+> Do not change this setting unless you know what you are doing.
 
 - Default: `"false"`
 

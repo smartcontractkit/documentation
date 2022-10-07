@@ -166,9 +166,9 @@ Oracles play a critical role in facilitating the full potential of smart contrac
 
 ## How do smart contracts use oracles?
 
-Oracles are most popularly used with [*Data Feeds*](../using-chainlink-reference-contracts/). DeFi platforms like [AAVE](https://aave.com/) and [Synthetix](https://www.synthetix.io/) use Chainlink data feed oracles to obtain accurate real-time asset prices in their smart contracts.
+Oracles are most popularly used with [*Data Feeds*](/docs/data-feeds/). DeFi platforms like [AAVE](https://aave.com/) and [Synthetix](https://www.synthetix.io/) use Chainlink data feed oracles to obtain accurate real-time asset prices in their smart contracts.
 
-Chainlink data feeds are sources of data [aggregated from many independent Chainlink node operators](../architecture-decentralized-model/). Each data feed has an on-chain address and functions that enable contracts to read from that address. For example, the [ETH / USD feed](https://feeds.chain.link/eth-usd/).
+Chainlink data feeds are sources of data [aggregated from many independent Chainlink node operators](../architecture-decentralized-model/). Each data feed has an on-chain address and functions that enable contracts to read from that address. For example, the [ETH / USD feed](https://data.chain.link/eth-usd/).
 
 ![Chainlink Feeds List](/images/contract-devs/price-aggr.png)
 
@@ -176,7 +176,7 @@ Smart contracts also use oracles to get other capabilities on-chain:
 
 - [Generate Verifiable Random Numbers (VRF)](/docs/vrf/v2/introduction/): Use Chainlink VRF to consume randomness in your smart contracts.
 - [Call External APIs (Any API)](/docs/any-api/introduction/): Request & Receive data from any API using the Chainlink contract library.
-- [Automate Smart Contract Functions (Keepers)](/docs/chainlink-keepers/introduction/): Automating smart contract functions and regular contract maintenance.
+- [Automate Smart Contract Functions (Automation)](/docs/chainlink-automation/introduction/): Automating smart contract functions and regular contract maintenance.
 
 ## What is Remix?
 
