@@ -127,12 +127,14 @@ section: ethereum
         "deprecating": '<span class="hovertext feed-category" data-hover="Deprecating"><a href="#categories" alt="Deprecating" target="_blank">⭕</a></span>'
     }
     render = (data) => {
+        let headers = [];
         let html = '';
         if(data) {
             for(let stub in data){
                 for(let network of data[stub].networks) {
                     if (network.dataType == "por") {
                         html += `<h2 id="${network.name}">${network.name} <a class="anchor" href="#${network.name}"><img src="/images/link.svg" alt="Link to this section"></a></h2>`;
+                        headers.push(network.name);
                         if(network.networkType == "mainnet" && data[stub].networkStatusUrl){
                             html += `<p>Track the status of this network at <a href="${data[stub].networkStatusUrl}">${data[stub].networkStatusUrl}</a></p>`;
                         }
@@ -180,6 +182,19 @@ section: ethereum
         } else {
             html = `<em style="color:red;">Couldn't render the feed list, it may still be processing. Feeds are updated about every half hour..</em>`;
         }
+
+        // Table of Contents
+        let toc = '';
+        toc += `<h3>Networks</h3>
+        <ul>`;
+        for (let i = 0; i < headers.length; i++) {
+            toc += `<li><a href="#${headers[i]}">${headers[i]}</a></li>`;
+            
+        }
+        toc += `</ul>`;
+        html = toc + html;
+
+        // Render HTML
         dest.innerHTML = html;
         dest.querySelectorAll('.extra').forEach((item) => item.addEventListener('change', () => {
             showExtraDetails = event.target.checked;
@@ -199,7 +214,19 @@ section: ethereum
     .then(response => response.json())
     .then(json => {
         render(json);
+        goToNetwork();
     });
+
+    async function goToNetwork() {
+        if (window.location.hash.length) {
+            anchorHash = window.location.hash.substring(1);
+            try {
+                document.getElementById(decodeURI(anchorHash)).scrollIntoView();
+            }catch(e){
+            }
+        }
+    }
+
 </script>
 
 <rdme-callout theme="warn">

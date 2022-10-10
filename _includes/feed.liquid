@@ -131,11 +131,13 @@ section: ethereum
     {% endif %}
 
     render = (data) => {
+        let headers = [];
         let html = '';
         if(data[selectedNetwork]) {
             for(let network of data[selectedNetwork].networks) {
                 if (network.dataType != "por" && network.dataType != "nftFloor") {
                     html += `<h2 id="${network.name}">${network.name} <a class="anchor" href="#${network.name}"><img src="/images/link.svg" alt="Link to this section"></a></h2>`;
+                    headers.push(network.name);
                     if(network.networkType == "mainnet" && data[selectedNetwork].networkStatusUrl){
                         html += `<p>Track the status of this network at <a href="${data[selectedNetwork].networkStatusUrl}">${data[selectedNetwork].networkStatusUrl}</a></p>`;
                     }
@@ -201,6 +203,19 @@ section: ethereum
         } else {
             html = `<em style="color:red;">Couldn't render the feed list, it may still be processing. Feeds are updated about every half hour..</em>`;
         }
+
+        // Table of Contents
+        let toc = '';
+        toc += `<h3>Networks</h3>
+        <ul>`;
+        for (let i = 0; i < headers.length; i++) {
+            toc += `<li><a href="#${headers[i]}">${headers[i]}</a></li>`;
+            
+        }
+        toc += `</ul>`;
+        html = toc + html;
+
+        // Render HTML
         dest.innerHTML = html;
         dest.querySelectorAll('.extra').forEach((item) => item.addEventListener('change', () => {
             showExtraDetails = event.target.checked;
@@ -220,7 +235,19 @@ section: ethereum
     .then(response => response.json())
     .then(json => {
         render(json);
+        goToNetwork();
     });
+
+    async function goToNetwork() {
+        if (window.location.hash.length) {
+            anchorHash = window.location.hash.substring(1);
+            try {
+                document.getElementById(decodeURI(anchorHash)).scrollIntoView();
+            }catch(e){
+            }
+        }
+    }
+
 
     function setNet(networkName){
         document.getElementById(selectedNetwork).classList.toggle("selectedNetwork");
@@ -231,7 +258,11 @@ section: ethereum
                 render(json);
         });
         document.getElementById(networkName).classList.toggle("selectedNetwork");
+        let stateObj = { foo: "bar" }
+        queryParam = "?network=" + selectedNetwork;
+        history.pushState(stateObj, "page 2", queryParam);
     }
+
 </script>
 
 {% if whatsnext %}
