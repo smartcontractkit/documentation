@@ -588,6 +588,14 @@ module.exports = {
                 url: '/docs/jobs/task-types/sum/',
               },
               {
+                title: 'Less Than',
+                url: '/docs/jobs/task-types/lessthan/',
+              },
+              {
+                title: 'Length',
+                url: '/docs/jobs/task-types/length/',
+              },
+              {
                 title: 'Hex Decode',
                 url: '/docs/jobs/task-types/hexdecode/',
               },
