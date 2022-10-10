@@ -17,8 +17,8 @@ You can find a list of release notes for Chainlink nodes in the [smartcontractki
 
 **[v1.9.0 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v1.9.0)**
 
-- Added `length` and `lessthan` tasks (pipeline) for jobs.
-- Added the `gasUnlimited` parameter to the `ethcall` task.
+- Added the [`length` task](/docs/jobs/task-types/length/) and the [`lessthan` task](/docs/jobs/task-types/lessthan/) for jobs.
+- Added the `gasUnlimited` parameter to the [`ethcall` task](/docs/jobs/task-types/eth-call/).
 - The **Keys** page in Operator UI includes several admin commands:
   - Ability to abandon all current transactions: This is the same as the `abandon` CLI command. Previously it was necessary to edit the database directly to abandon transactions. This command makes it easier to resolve issues that require transactions to be abandoned.
   - Ability to enable/disable a key for a specific chain: This allows you to control keys on a per-chain basis.
