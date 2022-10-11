@@ -4,7 +4,8 @@ import { feedRegistryInterfaceABI } from "@abi"
 import { ethers } from "ethers"
 import { ROUND_DATA_RESPONSE } from "@features/feeds"
 import { PriceButton } from "./PriceButton"
-import { web3Providers } from "@config"
+import { SupportedChain } from "@config"
+import { getWeb3Provider } from "@features/utils"
 
 export const RegistryPrice = ({
   registryAddress,
@@ -12,18 +13,22 @@ export const RegistryPrice = ({
   baseAddress,
   quoteSymbol,
   quoteAddress,
-  provider,
+  supportedChain,
 }: {
   registryAddress: string
   baseSymbol: string
   baseAddress: string
   quoteSymbol: string
   quoteAddress: string
-  provider: web3Providers.ProviderList
+  supportedChain: SupportedChain
 }) => {
   const fetchLatestPrice = (e: Event) => {
     e.preventDefault()
-    const rpcProvider = web3Providers[provider]
+    const rpcProvider = getWeb3Provider(supportedChain)
+    if (!rpcProvider) {
+      console.error(`web3 provider not found for chain ${supportedChain}`)
+      return
+    }
     const feedRegistry = new ethers.Contract(
       registryAddress,
       feedRegistryInterfaceABI,

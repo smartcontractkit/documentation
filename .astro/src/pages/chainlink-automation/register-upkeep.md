@@ -84,10 +84,10 @@ Optionally, you can fetch the LINK address and registrar address from the intend
 
 ### Code example
 
-::solidity-remix[samples/Keepers/UpkeepIDConsumerExample.sol]
+::solidity-remix[samples/Automation/UpkeepIDConsumerExample.sol]
 
 <div class="remix-callout">
-    <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/Keepers/UpkeepIDConsumerExample.sol" >Open in Remix</a>
+    <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/Automation/UpkeepIDConsumerExample.sol" >Open in Remix</a>
     <a href="/docs/conceptual-overview/#what-is-remix" > What is Remix?</a>
 </div>
 

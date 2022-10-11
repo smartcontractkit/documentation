@@ -1,9 +1,8 @@
 /** @jsxImportSource preact */
-import h from "preact"
 import { EnsOptions } from "../data"
 import { useState } from "preact/hooks"
 import styles from "./EnsLookupForm.module.css"
-import { mainnetProvider } from "~/config/web3Providers"
+import { getWeb3Provider } from "@features/utils"
 
 export const EnsLookupForm = () => {
   const [ensResult, setEnsResult] = useState<
@@ -48,7 +47,9 @@ export const EnsLookupForm = () => {
         ? json.data.domains[0].id
         : "Not Found"
 
-      const result = await mainnetProvider.resolveName(selectedEnsString)
+      const result = await getWeb3Provider("ETHEREUM_MAINNET").resolveName(
+        selectedEnsString
+      )
 
       setEnsResult({
         ensName: selectedEnsString,

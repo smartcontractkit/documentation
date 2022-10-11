@@ -1,15 +1,19 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
-import '@chainlink/contracts/src/v0.8/interfaces/KeeperCompatibleInterface.sol';
+import '@chainlink/contracts/src/v0.8/interfaces/AutomationCompatibleInterface.sol';
 
 /**
  * @dev Example contract which perform all the computation in `performUpkeep`
- *
- * @notice Only for illustration purpose. Code is not audited and must not be used for production projects
- *
- * @notice important to implement {KeeperCompatibleInterface}
+ * @notice important to implement {AutomationCompatibleInterface}
  */
-contract BalancerOnChain is KeeperCompatibleInterface {
+
+/**
+ * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
+ * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
+ * DO NOT USE THIS CODE IN PRODUCTION.
+ */
+
+contract BalancerOnChain is AutomationCompatibleInterface {
     uint256 public constant SIZE = 1000;
     uint256 public constant LIMIT = 1000;
     uint256[SIZE] public balances;
@@ -35,7 +39,7 @@ contract BalancerOnChain is KeeperCompatibleInterface {
         }
     }
 
-    /// @dev this method is called by the keepers to check if `performUpkeep` should be performed
+    /// @dev this method is called by the Automation Nodes to check if `performUpkeep` should be performed
     function checkUpkeep(
         bytes calldata /* checkData */
     ) external view override returns (bool upkeepNeeded, bytes memory performData) {
@@ -49,7 +53,7 @@ contract BalancerOnChain is KeeperCompatibleInterface {
         return (upkeepNeeded, '');
     }
 
-    /// @dev this method is called by the keepers. it increases all elements which balances are lower than the LIMIT
+    /// @dev this method is called by the Automation Nodes. it increases all elements which balances are lower than the LIMIT
     function performUpkeep(
         bytes calldata /* performData */
     ) external override {
