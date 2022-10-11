@@ -46,7 +46,7 @@ Data feeds provide many different types of data for your applications.
 
 ### Price Feeds
 
-See the [Data Feeds Contract Addresses](/docs/data-feeds/price-feeds/) page for a list of networks and proxy addresses.  
+See the [Data Feeds Contract Addresses](/docs/data-feeds/price-feeds/addresses/) page for a list of networks and proxy addresses.  
 
 Smart contracts often act in real-time on data such as prices of assets. This is especially true in [DeFi](https://defi.chain.link/).
 
