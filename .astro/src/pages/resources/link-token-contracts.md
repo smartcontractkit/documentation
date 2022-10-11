@@ -2,14 +2,14 @@
 layout: ../../layouts/MainLayout.astro
 section: ethereum
 date: Last Modified
-title: 'LINK Token Contracts'
-permalink: 'docs/link-token-contracts/'
+title: "LINK Token Contracts"
+permalink: "docs/link-token-contracts/"
 metadata:
-  title: 'LINK Token Contracts'
-  description: 'Addresses for the LINK token on supported networks.'
+  title: "LINK Token Contracts"
+  description: "Addresses for the LINK token on supported networks."
   linkToWallet: true
   image:
-    0: '/files/72d4bd9-link.png'
+    0: "/files/72d4bd9-link.png"
 ---
 
 LINK tokens are used to pay node operators for retrieving data for smart contracts and also for deposits placed by node operators as required by contract creators. The smallest denomination of LINK is called a Juel, and 1,000,000,000,000,000,000 (1e18) Juels are equal to 1 LINK. This is similar to Wei, which is the [smallest denomination of ETH](https://ethereum.org/en/developers/docs/intro-to-ether/#denominations).
@@ -59,38 +59,6 @@ Testnet LINK is available at [faucets.chain.link](https://faucets.chain.link/goe
 | Symbol         | LINK                                                                                                                                                                                                                |
 | Decimals       | 18                                                                                                                                                                                                                  |
 
-### Rinkeby testnet (Deprecated)
-
-:::caution[ The Rinkeby network is [officially deprecated](https://ethereum.org/en/developers/docs/networks/#rinkeby) and is no longer supported. [Goerli](#goerli-testnet) is the recommended testnet for Chainlink on Ethereum.]
-
-:::
-
-Testnet LINK and ETH are available at [faucets.chain.link](https://faucets.chain.link/rinkeby). Testnet ETH is also available at [rinkeby-faucet.com](https://rinkeby-faucet.com/) and [app.mycrypto.com/faucet](https://app.mycrypto.com/faucet).
-
-| Parameter      | Value                                                                                                                                                                                                                |
-| :------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ETH_CHAIN_ID` | `4`                                                                                                                                                                                                                  |
-| Address        | <a class="erc-token-address" id="4_0x01BE23585060835E02B77ef475b0Cc51aA1e0709" href="https://rinkeby.etherscan.io/token/0x01BE23585060835E02B77ef475b0Cc51aA1e0709">`0x01BE23585060835E02B77ef475b0Cc51aA1e0709`</a> |
-| Name           | Chainlink Token                                                                                                                                                                                                      |
-| Symbol         | LINK                                                                                                                                                                                                                 |
-| Decimals       | 18                                                                                                                                                                                                                   |
-
-### Kovan testnet (Deprecated)
-
-:::caution[ The Kovan network is [officially deprecated](https://ethereum.org/en/developers/docs/networks/#kovan) and is no longer supported. [Goerli](#goerli-testnet) is the recommended testnet for Chainlink on Ethereum.]
-
-:::
-
-Testnet LINK and ETH are available at [faucets.chain.link](https://faucets.chain.link/kovan).
-
-| Parameter      | Value                                                                                                                                                                                                               |
-| :------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `ETH_CHAIN_ID` | `42`                                                                                                                                                                                                                |
-| Address        | <a class="erc-token-address" id="42_0xa36085F69e2889c224210F603D836748e7dC0088" href="https://kovan.etherscan.io/token/0xa36085F69e2889c224210F603D836748e7dC0088">`0xa36085F69e2889c224210F603D836748e7dC0088`</a> |
-| Name           | Chainlink Token                                                                                                                                                                                                     |
-| Symbol         | LINK                                                                                                                                                                                                                |
-| Decimals       | 18                                                                                                                                                                                                                  |
-
 ## BNB Chain
 
 ### BNB Chain mainnet
@@ -99,14 +67,14 @@ BNB is used to pay for transactions on the BNB Chain mainnet.
 
 :::caution[ ERC-677 LINK on BNB Chain]
 
- The LINK provided by the [BNB Chain Bridge](https://www.bnbchain.world/en/bridge) is not ERC-677 compatible, so you cannot use it with Chainlink services or oracle nodes. Use the [**Chainlink PegSwap service**](https://pegswap.chain.link/) to convert bridged LINK to the official ERC-677 LINK token on BNB Chain.
+The LINK provided by the [BNB Chain Bridge](https://www.bnbchain.world/en/bridge) is not ERC-677 compatible, so you cannot use it with Chainlink services or oracle nodes. Use the [**Chainlink PegSwap service**](https://pegswap.chain.link/) to convert bridged LINK to the official ERC-677 LINK token on BNB Chain.
 
 :::
 
 | Parameter      | Value                                                                                                                                                                                                        |
 | :------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `ETH_CHAIN_ID` | `56`                                                                                                                                                                                                         |
-| Address        | <a class="erc-token-address" id="56_0x404460c6a5ede2d891e8297795264fde62adbb75" href="https://bscscan.com/token/0x404460c6a5ede2d891e8297795264fde62adbb75">`0x404460c6a5ede2d891e8297795264fde62adbb75`</a> |
+| Address        | <a class="erc-token-address" id="56_0x404460C6A5EdE2D891e8297795264fDe62ADBB75" href="https://bscscan.com/token/0x404460C6A5EdE2D891e8297795264fDe62ADBB75">`0x404460C6A5EdE2D891e8297795264fDe62ADBB75`</a> |
 | Name           | Chainlink Token                                                                                                                                                                                              |
 | Symbol         | LINK                                                                                                                                                                                                         |
 | Decimals       | 18                                                                                                                                                                                                           |
@@ -119,7 +87,7 @@ Testnet LINK is available at [faucets.chain.link](https://faucets.chain.link/cha
 | Parameter      | Value                                                                                                                                                                                                                  |
 | :------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `ETH_CHAIN_ID` | `97`                                                                                                                                                                                                                   |
-| Address        | <a class="erc-token-address" id="97_0x84b9b910527ad5c03a9ca831909e21e236ea7b06" href="https://testnet.bscscan.com/address/0x84b9b910527ad5c03a9ca831909e21e236ea7b06">`0x84b9b910527ad5c03a9ca831909e21e236ea7b06`</a> |
+| Address        | <a class="erc-token-address" id="97_0x84b9B910527Ad5C03A9Ca831909E21e236EA7b06" href="https://testnet.bscscan.com/address/0x84b9B910527Ad5C03A9Ca831909E21e236EA7b06">`0x84b9B910527Ad5C03A9Ca831909E21e236EA7b06`</a> |
 | Name           | Chainlink Token                                                                                                                                                                                                        |
 | Symbol         | LINK                                                                                                                                                                                                                   |
 | Decimals       | 18                                                                                                                                                                                                                     |
@@ -132,16 +100,16 @@ MATIC is used to pay for transactions on Polygon. You can use the [Polygon Bridg
 
 :::caution[ ERC-677 LINK on Polygon]
 
- The LINK provided by the [Polygon (Matic) Bridge](https://wallet.polygon.technology/bridge) is not ERC-677 compatible, so you cannot use it with Chainlink services or oracle nodes. Use the [**Chainlink PegSwap service**](https://pegswap.chain.link/) to convert bridged LINK to the official ERC-677 LINK token on Polygon.
+The LINK provided by the [Polygon (Matic) Bridge](https://wallet.polygon.technology/bridge) is not ERC-677 compatible, so you cannot use it with Chainlink services or oracle nodes. Use the [**Chainlink PegSwap service**](https://pegswap.chain.link/) to convert bridged LINK to the official ERC-677 LINK token on Polygon.
 
- Watch the [Moving Chainlink Cross-Chains](https://www.youtube.com/watch?v=WKvIGkBWRUA) video to learn more.
+Watch the [Moving Chainlink Cross-Chains](https://www.youtube.com/watch?v=WKvIGkBWRUA) video to learn more.
 
 :::
 
 | Parameter      | Value                                                                                                                                                                                                               |
 | :------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `ETH_CHAIN_ID` | `137`                                                                                                                                                                                                               |
-| Address        | <a class="erc-token-address" id="137_0xb0897686c545045afc77cf20ec7a532e3120e0f1" href="https://polygonscan.com/address/0xb0897686c545045afc77cf20ec7a532e3120e0f1">`0xb0897686c545045afc77cf20ec7a532e3120e0f1`</a> |
+| Address        | <a class="erc-token-address" id="137_0xb0897686c545045aFc77CF20eC7A532E3120E0F1" href="https://polygonscan.com/address/0xb0897686c545045aFc77CF20eC7A532E3120E0F1">`0xb0897686c545045aFc77CF20eC7A532E3120E0F1`</a> |
 | Name           | Chainlink Token                                                                                                                                                                                                     |
 | Symbol         | LINK                                                                                                                                                                                                                |
 | Decimals       | 18                                                                                                                                                                                                                  |
@@ -168,7 +136,7 @@ RBTC is used to pay for transactions on RSK mainnet. Use [RSK’s built in PowPe
 | Parameter      | Value                                                                                                                                                                                                              |
 | :------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `ETH_CHAIN_ID` | `30`                                                                                                                                                                                                               |
-| Address        | <a class="erc-token-address" id="30_0x14adae34bef7ca957ce2dde5add97ea050123827" href="https://explorer.rsk.co/address/0x14adae34bef7ca957ce2dde5add97ea050123827">`0x14adae34bef7ca957ce2dde5add97ea050123827`</a> |
+| Address        | <a class="erc-token-address" id="30_0x14ADAE34beF7Ca957ce2DDe5AdD97EA050123827" href="https://explorer.rsk.co/address/0x14ADAE34beF7Ca957ce2DDe5AdD97EA050123827">`0x14ADAE34beF7Ca957ce2DDe5AdD97EA050123827`</a> |
 | Name           | rLINK                                                                                                                                                                                                              |
 | Symbol         | rLINK                                                                                                                                                                                                              |
 | Decimals       | 18                                                                                                                                                                                                                 |
@@ -223,8 +191,8 @@ FTM is used to pay for transactions on Fantom Mainnet. Use [bridge.multichain.or
 
 :::caution[ ERC-677 LINK on Fantom]
 
- You must use ERC-677 LINK on Fantom. ERC-20 LINK will not work with Chainlink services.
- When you use [bridge.multichain.org](https://bridge.multichain.org/#/router) to send LINK to the Fantom network, be sure to select LINK-ERC677 as the token you will receive on Fantom mainnet.
+You must use ERC-677 LINK on Fantom. ERC-20 LINK will not work with Chainlink services.
+When you use [bridge.multichain.org](https://bridge.multichain.org/#/router) to send LINK to the Fantom network, be sure to select LINK-ERC677 as the token you will receive on Fantom mainnet.
 
 :::
 
@@ -264,17 +232,17 @@ ETH is used to pay for transactions on the Arbitrum mainnet. You can use the [Ar
 | Decimals       | 18                                                                                                                                                                                                                         |
 | Network status | [arbiscan.freshstatus.io](https://arbiscan.freshstatus.io/)                                                                                                                                                                |
 
-### Arbitrum Rinkeby testnet
+### Arbitrum Goerli testnet
 
-Testnet LINK is available at [faucets.chain.link](https://faucets.chain.link/arbitrum-rinkeby). Testnet ETH is available at [faucet.rinkeby.io](https://faucet.rinkeby.io/).
+Testnet ETH is used to pay for transactions on Arbitrum Goerli. Use the [Arbitrum Bridge](https://bridge.arbitrum.io/) to transfer testnet ETH and LINK from Ethereum Goerli to Arbitrum Goerli.
 
-| Parameter      | Value                                                                                                                                                                                                                               |
-| :------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ETH_CHAIN_ID` | `421611`                                                                                                                                                                                                                            |
-| Address        | <a class="erc-token-address" id="421611_0x615fBe6372676474d9e6933d310469c9b68e9726" href="https://rinkeby-explorer.arbitrum.io/address/0x615fBe6372676474d9e6933d310469c9b68e9726">`0x615fBe6372676474d9e6933d310469c9b68e9726`</a> |
-| Name           | Chainlink Token on Arbitrum Rinkeby                                                                                                                                                                                                 |
-| Symbol         | LINK                                                                                                                                                                                                                                |
-| Decimals       | 18                                                                                                                                                                                                                                  |
+| Parameter      | Value                                                                                                                                                                                                                              |
+| :------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ETH_CHAIN_ID` | `421613`                                                                                                                                                                                                                           |
+| Address        | <a class="erc-token-address" id="0xd14838A68E8AFBAdE5efb411d5871ea0011AFd28" href="https://goerli-rollup-explorer.arbitrum.io/address/0xd14838A68E8AFBAdE5efb411d5871ea0011AFd28">`0xd14838A68E8AFBAdE5efb411d5871ea0011AFd28`</a> |
+| Name           | Chainlink Token on Arbitrum Rinkeby                                                                                                                                                                                                |
+| Symbol         | LINK                                                                                                                                                                                                                               |
+| Decimals       | 18                                                                                                                                                                                                                                 |
 
 ## HECO Chain
 
@@ -311,7 +279,7 @@ Testnet ETH is used to pay for transactions on Optimism. Use the [Optimism Bridg
 | Parameter      | Value                                                                                                                                                                                                                          |
 | :------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `ETH_CHAIN_ID` | `420`                                                                                                                                                                                                                          |
-| Address        | <a class="erc-token-address" id="420_0xdc2cc710e42857672e7907cf474a69b63b93089f" href="https://goerli-optimism.etherscan.io/token/0xdc2cc710e42857672e7907cf474a69b63b93089f">`0xdc2cc710e42857672e7907cf474a69b63b93089f`</a> |
+| Address        | <a class="erc-token-address" id="420_0xdc2CC710e42857672E7907CF474a69B63B93089f" href="https://goerli-optimism.etherscan.io/token/0xdc2CC710e42857672E7907CF474a69B63B93089f">`0xdc2CC710e42857672E7907CF474a69B63B93089f`</a> |
 | Name           | Chainlink Token on Optimism Goerli                                                                                                                                                                                             |
 | Symbol         | LINK                                                                                                                                                                                                                           |
 | Decimals       | 18                                                                                                                                                                                                                             |
@@ -380,7 +348,7 @@ METIS is the currency that you use to pay for transactions on Metis mainnet. You
 
 ### Baobab testnet
 
-KLAY is the currency that you use to pay for transactions on Klaytn testnet. Testnet LINK is available from [facuets.chain.link](https://faucets.chain.link/klaytn-testnet). Use the [KLAY Faucet](https://baobab.wallet.klaytn.foundation/faucet) to obtain testnet KLAY.
+KLAY is the currency that you use to pay for transactions on Klaytn testnet. Testnet LINK is available from [faucets.chain.link](https://faucets.chain.link/klaytn-testnet). Use the [KLAY Faucet](https://baobab.wallet.klaytn.foundation/faucet) to obtain testnet KLAY.
 
 | Parameter      | Value                                                                                                                                                                                                                       |
 | :------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
