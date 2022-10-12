@@ -14,7 +14,6 @@ import {
 import GithubSlugger from "github-slugger"
 
 export const AutomationConfigList = () => {
-  console.log("in")
   const slugger = new GithubSlugger()
   const normalizedConfig = normalizeConfig(chainlinkAutomationConfig)
   return Object.keys(normalizedConfig).map(
