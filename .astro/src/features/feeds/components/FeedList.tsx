@@ -38,7 +38,7 @@ export const FeedList = ({
       {ecosystem === "solana" ? (
         <>
           <p>
-            To learn how to implement these feeds, see the{" "}
+            To learn how to use these feeds, see the{" "}
             <a href="/docs/solana/using-data-feeds-solana/">Solana Examples</a>{" "}
             for Consuming Data Feeds.
           </p>
@@ -53,7 +53,7 @@ export const FeedList = ({
       ) : (
         <>
           <p>
-            To learn how to implement these feeds, see the{" "}
+            To learn how to use these feeds, see the{" "}
             <a href="/docs/get-the-latest-price/">
               Ethereum Examples for Consuming Data Feeds
             </a>
