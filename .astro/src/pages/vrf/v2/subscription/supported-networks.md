@@ -1,25 +1,25 @@
 ---
-layout: ../layouts/MainLayout.astro
+layout: ../../../../layouts/MainLayout.astro
 section: ethereum
 date: Last Modified
-title: "Supported Networks"
-permalink: "docs/vrf/v2/supported-networks/"
+title: "Configuration"
+permalink: "docs/vrf/v2/subscription/supported-networks/"
 metadata:
   title: "Chainlink VRF v2 Supported Networks"
   linkToWallet: true
   image:
     0: "/files/OpenGraph_V3.png"
 setup: |
-  import VrfCommon from "@features/vrf/common/VrfCommon.astro"
+  import VrfCommon from "@features/vrf/v2/common/VrfCommon.astro"
 ---
 
-<VrfCommon />
+<VrfCommon callout="subscription"/>
 
 Chainlink VRF allows you to integrate provably fair and verifiably random data in your smart contract.
 
-For implementation details, read [Introduction to Chainlink VRF](/docs/vrf/v2/introduction/).
+For implementation details, read [Introduction to Chainlink VRF](/vrf/v2/introduction/).
 
-## Coordinator parameters
+## Coordinator Parameters
 
 These parameters are configured in the coordinator contract. You can view these values by running `getConfig` on the coordinator or by viewing the coordinator contracts in a blockchain explorer.
 
@@ -28,15 +28,15 @@ These parameters are configured in the coordinator contract. You can view these 
 - `uint32 stalenessSeconds`: How long the coordinator waits until we consider the ETH/LINK price used for converting gas costs to LINK is stale and use `fallbackWeiPerUnitLink`
 - `uint32 gasAfterPaymentCalculation`: How much gas is used outside of the payment calculation. This covers the additional operations required to decrement the subscription balance and increment the balance for the oracle that handled the request.
 
-## Fee parameters
+## Fee Parameters
 
 Fee parameters are configured in the coordinator contract and specify the premium you pay per request in addition to the gas cost for the transaction. You can view them by running `getFeeConfig` on the coordinator. The `uint32 fulfillmentFlatFeeLinkPPMTier1` parameter defines the fees per request specified in millionths of LINK.
+The details for calculating the total transaction cost can be found [here](/vrf/v2/subscription/#request-and-receive-data).
 
 ## Configurations
 
 - [Ethereum Mainnet](#ethereum-mainnet)
 - [Goerli testnet](#goerli-testnet)
-- [Rinkeby testnet](#rinkeby-testnet-deprecated)
 - [BNB Chain](#bnb-chain)
 - [BNB Chain testnet](#bnb-chain-testnet)
 - [Polygon mainnet](#polygon-matic-mainnet)
@@ -51,7 +51,7 @@ Fee parameters are configured in the coordinator contract and specify the premiu
 
 | Item                  | Value                                                                                                                                                                                                        |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| LINK Token            | <a class="erc-token-address" id="1_0x514910771af9ca656af840dff83e8264ecf986ca" href="https://etherscan.io/token/0x514910771af9ca656af840dff83e8264ecf986ca">`0x514910771af9ca656af840dff83e8264ecf986ca`</a> |
+| LINK Token            | <a class="erc-token-address" id="1_0x514910771AF9Ca656af840dff83E8264EcF986CA" href="https://etherscan.io/token/0x514910771AF9Ca656af840dff83E8264EcF986CA">`0x514910771AF9Ca656af840dff83E8264EcF986CA`</a> |
 | VRF Coordinator       | [`0x271682DEB8C4E0901D1a1550aD2e64D568E69909`](https://etherscan.io/address/0x271682DEB8C4E0901D1a1550aD2e64D568E69909)                                                                                      |
 | 200 gwei Key Hash     | `0x8af398995b04c28e9951adb9721ef74c74f93e6a478f39e7e0777be13527e7ef`                                                                                                                                         |
 | 500 gwei Key Hash     | `0xff8dedfbfa60af186cf3c830acbc32c05aae823045ae5ea7da1e45fbfaba4f92`                                                                                                                                         |
@@ -64,10 +64,10 @@ Fee parameters are configured in the coordinator contract and specify the premiu
 
 ### Goerli testnet
 
-> 🚰 Goerli Faucets
->
-> Testnet LINK is available from https://faucets.chain.link/goerli
-> Testnet ETH is available from https://goerlifaucet.com/ or faucets listed at https://faucetlink.to/goerli.
+:::note[Goerli Faucets]
+Testnet LINK is available from https://faucets.chain.link/goerli<br/>
+Testnet ETH is available from https://goerlifaucet.com/ or faucets listed at https://faucetlink.to/goerli
+:::
 
 | Item                  | Value                                                                                                                                                                                                               |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -80,31 +80,15 @@ Fee parameters are configured in the coordinator contract and specify the premiu
 | Maximum Confirmations | 200                                                                                                                                                                                                                 |
 | Maximum Random Values | 500                                                                                                                                                                                                                 |
 
-### Rinkeby testnet (Deprecated)
-
-The Rinkeby network is [officially deprecated](https://ethereum.org/en/developers/docs/networks/#rinkeby) and is no longer be supported. [Goerli](#goerli-testnet) is the recommended testnet for Chainlink on Ethereum.
-
-> 🚰 Rinkeby Faucets
->
-> Testnet LINK and ETH are available from https://faucets.chain.link/rinkeby
-> Backup Testnet ETH Faucets: https://rinkeby-faucet.com/, https://app.mycrypto.com/faucet
-
-| Item                  | Value                                                                                                                                                                                                                |
-| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| LINK Token            | <a class="erc-token-address" id="4_0x01BE23585060835E02B77ef475b0Cc51aA1e0709" href="https://rinkeby.etherscan.io/token/0x01BE23585060835E02B77ef475b0Cc51aA1e0709">`0x01BE23585060835E02B77ef475b0Cc51aA1e0709`</a> |
-| VRF Coordinator       | [`0x6168499c0cFfCaCD319c818142124B7A15E857ab`](https://rinkeby.etherscan.io/address/0x6168499c0cFfCaCD319c818142124B7A15E857ab)                                                                                      |
-| 30 gwei Key Hash      | `0xd89b2bf150e3b9e13446986e571fb9cab24b13cea0a43ea20a6049a85cc807cc`                                                                                                                                                 |
-| Premium               | 0.25 LINK                                                                                                                                                                                                            |
-| Max Gas Limit         | 2,500,000                                                                                                                                                                                                            |
-| Minimum Confirmations | 3                                                                                                                                                                                                                    |
-| Maximum Confirmations | 200                                                                                                                                                                                                                  |
-| Maximum Random Values | 500                                                                                                                                                                                                                  |
-
 ### BNB Chain
+
+:::tip[Important]
+The LINK provided by the [BNB Chain Bridge](https://www.bnbchain.world/en/bridge) is not ERC-677 compatible, so cannot be used with Chainlink oracles. However, it can be [**converted to the official LINK token on BNB Chain using Chainlink's PegSwap service**](https://pegswap.chain.link/).
+:::
 
 | Item                  | Value                                                                                                                                                                                                        |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| LINK Token            | <a class="erc-token-address" id="56_0x404460c6a5ede2d891e8297795264fde62adbb75" href="https://bscscan.com/token/0x404460c6a5ede2d891e8297795264fde62adbb75">`0x404460c6a5ede2d891e8297795264fde62adbb75`</a> |
+| LINK Token            | <a class="erc-token-address" id="56_0x404460C6A5EdE2D891e8297795264fDe62ADBB75" href="https://bscscan.com/token/0x404460C6A5EdE2D891e8297795264fDe62ADBB75">`0x404460C6A5EdE2D891e8297795264fDe62ADBB75`</a> |
 | VRF Coordinator       | [`0xc587d9053cd1118f25F645F9E08BB98c9712A4EE`](https://bscscan.com/address/0xc587d9053cd1118f25F645F9E08BB98c9712A4EE)                                                                                       |
 | 200 gwei Key Hash     | `0x114f3da0a805b6a67d6e9cd2ec746f7028f1b7376365af575cfea3550dd1aa04`                                                                                                                                         |
 | 500 gwei Key Hash     | `0xba6e730de88d94a5510ae6613898bfb0c3de5d16e609c5b7da808747125506f7`                                                                                                                                         |
@@ -117,13 +101,13 @@ The Rinkeby network is [officially deprecated](https://ethereum.org/en/developer
 
 ### BNB Chain testnet
 
-> 🚰 BNB Chain Faucet
->
-> Testnet LINK is available from https://faucets.chain.link/chapel
+:::note[BNB Chain Faucet]
+Testnet LINK is available from https://faucets.chain.link/chapel
+:::
 
 | Item                  | Value                                                                                                                                                                                                                  |
 | --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| LINK Token            | <a class="erc-token-address" id="97_0x84b9b910527ad5c03a9ca831909e21e236ea7b06" href="https://testnet.bscscan.com/address/0x84b9b910527ad5c03a9ca831909e21e236ea7b06">`0x84b9b910527ad5c03a9ca831909e21e236ea7b06`</a> |
+| LINK Token            | <a class="erc-token-address" id="97_0x84b9B910527Ad5C03A9Ca831909E21e236EA7b06" href="https://testnet.bscscan.com/address/0x84b9B910527Ad5C03A9Ca831909E21e236EA7b06">`0x84b9B910527Ad5C03A9Ca831909E21e236EA7b06`</a> |
 | VRF Coordinator       | [`0x6A2AAd07396B36Fe02a22b33cf443582f682c82f`](https://testnet.bscscan.com/address/0x6A2AAd07396B36Fe02a22b33cf443582f682c82f)                                                                                         |
 | 50 gwei Key Hash      | `0xd4bb89654db74673a187bd804519e65e3f71a52bc55f11da7601a13dcf505314`                                                                                                                                                   |
 | Premium               | 0.005 LINK                                                                                                                                                                                                             |
@@ -134,13 +118,13 @@ The Rinkeby network is [officially deprecated](https://ethereum.org/en/developer
 
 ### Polygon (Matic) mainnet
 
-> 📘 Important
->
-> The LINK provided by the [Polygon (Matic) Bridge](https://wallet.polygon.technology/bridge) is not ERC-677 compatible, so cannot be used with Chainlink oracles. However, it can be [**converted to the official LINK token on Polygon (Matic) using Chainlink's PegSwap service**](https://pegswap.chain.link/)
+:::tip[Important]
+The LINK provided by the [Polygon (Matic) Bridge](https://wallet.polygon.technology/bridge) is not ERC-677 compatible, so cannot be used with Chainlink oracles. However, it can be [**converted to the official LINK token on Polygon (Matic) using Chainlink's PegSwap service**](https://pegswap.chain.link/)
+:::
 
 | Item                  | Value                                                                                                                                                                                                               |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| LINK Token            | <a class="erc-token-address" id="137_0xb0897686c545045afc77cf20ec7a532e3120e0f1" href="https://polygonscan.com/address/0xb0897686c545045afc77cf20ec7a532e3120e0f1">`0xb0897686c545045afc77cf20ec7a532e3120e0f1`</a> |
+| LINK Token            | <a class="erc-token-address" id="137_0xb0897686c545045aFc77CF20eC7A532E3120E0F1" href="https://polygonscan.com/address/0xb0897686c545045aFc77CF20eC7A532E3120E0F1">`0xb0897686c545045aFc77CF20eC7A532E3120E0F1`</a> |
 | VRF Coordinator       | [`0xAE975071Be8F8eE67addBC1A82488F1C24858067`](https://polygonscan.com/address/0xAE975071Be8F8eE67addBC1A82488F1C24858067)                                                                                          |
 | 200 gwei Key Hash     | `0x6e099d640cde6de9d40ac749b4b594126b0169747122711109c9985d47751f93`                                                                                                                                                |
 | 500 gwei Key Hash     | `0xcc294a196eeeb44da2888d17c0625cc88d70d9760a69d58d853ba6581a9ab0cd`                                                                                                                                                |
@@ -153,9 +137,9 @@ The Rinkeby network is [officially deprecated](https://ethereum.org/en/developer
 
 ### Polygon (Matic) Mumbai testnet
 
-> 🚰 Mumbai Faucet
->
-> Testnet LINK and MATIC are available from the [Polygon faucet](https://faucet.polygon.technology/) and https://faucets.chain.link/mumbai.
+:::note[Mumbai Faucet]
+Testnet LINK and MATIC are available from [the Polygon faucet](https://faucet.polygon.technology/) and https://faucets.chain.link/mumbai.
+:::
 
 | Item                  | Value                                                                                                                                                                                                                         |
 | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -185,9 +169,9 @@ The Rinkeby network is [officially deprecated](https://ethereum.org/en/developer
 
 ### Avalanche Fuji testnet
 
-> 🚰 Avax Fuji Faucet
->
-> Testnet LINK is available from https://faucets.chain.link/fuji
+:::note[Avax Fuji Faucet]
+Testnet LINK is available from https://faucets.chain.link/fuji
+:::
 
 | Item                  | Value                                                                                                                                                                                                                      |
 | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -202,14 +186,14 @@ The Rinkeby network is [officially deprecated](https://ethereum.org/en/developer
 
 ### Fantom mainnet
 
-> 🚧 ERC-677 LINK on Fantom
->
-> You must use ERC-677 LINK on Fantom. ERC-20 LINK will not work with Chainlink services.
-> Use [bridge.multichain.org](https://bridge.multichain.org/#/router) to send LINK to the Fantom network and be sure to select LINK-ERC677 as the token you will receive on the Fantom mainnet.
+:::tip[Important]
+You must use ERC-677 LINK on Fantom. ERC-20 LINK will not work with Chainlink services.<br/>
+Use [bridge.multichain.org](https://bridge.multichain.org/#/router) to send LINK to the Fantom network and be sure to select LINK-ERC677 as the token you will receive on the Fantom mainnet.
+:::
 
 | Item                  | Value                                                                                                                                                                                                         |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| LINK Token            | <a class="erc-token-address" id="250_0x6f43ff82cca38001b6699a8ac47a2d0e66939407" href="https://ftmscan.com/token/0x6f43ff82cca38001b6699a8ac47a2d0e66939407">`0x6f43ff82cca38001b6699a8ac47a2d0e66939407`</a> |
+| LINK Token            | <a class="erc-token-address" id="250_0x6F43FF82CCA38001B6699a8AC47A2d0E66939407" href="https://ftmscan.com/token/0x6F43FF82CCA38001B6699a8AC47A2d0E66939407">`0x6F43FF82CCA38001B6699a8AC47A2d0E66939407`</a> |
 | VRF Coordinator       | [`0xd5D517aBE5cF79B7e95eC98dB0f0277788aFF634`](https://ftmscan.com/address/0xd5d517abe5cf79b7e95ec98db0f0277788aff634)                                                                                        |
 | 4000 gwei Key Hash    | `0xb4797e686f9a1548b9a2e8c68988d74788e0c4af5899020fb0c47784af76ddfa`                                                                                                                                          |
 | 10000 gwei Key Hash   | `0x5881eea62f9876043df723cf89f0c2bb6f950da25e9dfe66995c24f919c8f8ab`                                                                                                                                          |
@@ -222,9 +206,9 @@ The Rinkeby network is [officially deprecated](https://ethereum.org/en/developer
 
 ### Fantom testnet
 
-> 🚰 Fantom Testnet Faucet
->
-> Testnet LINK is available from https://faucets.chain.link/fantom-testnet
+:::note[Fantom Testnet Faucet]
+Testnet LINK is available from https://faucets.chain.link/fantom-testnet
+:::
 
 | Item                  | Value                                                                                                                                                                                                                    |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -239,9 +223,9 @@ The Rinkeby network is [officially deprecated](https://ethereum.org/en/developer
 
 ### Klaytn Baobab testnet
 
-> 🚰 Klaytn Testnet Faucet
->
-> Testnet LINK is available from [facuets.chain.link](https://faucets.chain.link/klaytn-testnet). Use the [KLAY Faucet](https://baobab.wallet.klaytn.foundation/faucet) to obtain testnet KLAY.
+:::note[Klaytn Testnet Faucet]
+Testnet LINK is available from [faucets.chain.link](https://faucets.chain.link/klaytn-testnet). Use the [KLAY Faucet](https://baobab.wallet.klaytn.foundation/faucet) to obtain testnet KLAY.
+:::
 
 | Item                  | Value                                                                                                                                                                                                                      |
 | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
