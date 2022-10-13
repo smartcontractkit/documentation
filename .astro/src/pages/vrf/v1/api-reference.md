@@ -41,7 +41,7 @@ constructor(address _vrfCoordinator, address _link)
 ```
 
 - `_vrfCoordinator`: Address of the Chainlink VRF Coordinator. See [Chainlink VRF Addresses](/docs/vrf/v1/supported-networks/) for details.
-- `_link`: Address of the LINK token. See [LINK Token Addresses](/docs/link-token-contracts/) for details.
+- `_link`: Address of the LINK token. See [LINK Token Addresses](/resources/link-token-contracts/) for details.
 
 ---
 

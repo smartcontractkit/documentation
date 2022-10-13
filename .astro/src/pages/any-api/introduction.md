@@ -6,11 +6,11 @@ title: "Chainlink Any API Documentation"
 permalink: "docs/any-api/introduction/"
 whatsnext:
   {
-    "Make a GET Request": "/docs/any-api/get-request/introduction/",
-    "API Reference": "/docs/any-api/api-reference/",
-    "Find Existing Jobs": "/docs/any-api/find-oracle/",
-    "Testnet Oracles": "/docs/any-api/testnet-oracles/",
-    "Data Provider Nodes": "/docs/any-api/data-providers/introduction/",
+    "Make a GET Request": "/any-api/get-request/introduction/",
+    "API Reference": "/any-api/api-reference/",
+    "Find Existing Jobs": "/any-api/find-oracle/",
+    "Testnet Oracles": "/any-api/testnet-oracles/",
+    "Data Provider Nodes": "/any-api/data-providers/introduction/",
   }
 metadata:
   title: "Request and Receive API Data with Chainlink"
@@ -31,7 +31,7 @@ Whether your contract requires sports results, the latest weather, or any other 
 
 :::note[ Note on Price Feed Data]
 
-If your smart contracts need access to price feed data, try using [Chainlink Data Feeds](/docs/data-feeds/).
+If your smart contracts need access to price feed data, try using [Chainlink Data Feeds](/data-feeds/).
 
 :::
 
@@ -44,16 +44,16 @@ If your smart contracts need access to price feed data, try using [Chainlink Dat
 
 Outlined below are multiple ways developers can connect smart contracts to off-chain data feeds. Click a request type to learn more about it:
 
-| Request Type                                                                                      | Description                                                                                                                                                                                                                                                                            |
-| ------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [HTTP GET Single Word Response](/docs/any-api/get-request/examples/single-word-response/)         | This guide explains how to make an HTTP GET request and parse the _json_ response to retrieve the value of one single attribute.                                                                                                                                                       |
-| [HTTP GET Multi-Variable Responses](/docs/any-api/get-request/examples/multi-variable-responses/) | This guide explains how to make an HTTP GET request and parse the _json_ response to retrieve the values of multiple attributes.                                                                                                                                                       |
-| [HTTP GET Element in Array Response](/docs/any-api/get-request/examples/api-array-response/)      | This guide explains how to make an HTTP GET request that returns a _json_ array and parse it to retrieve the target element's value.                                                                                                                                                   |
-| [HTTP GET Large Reponses](/docs/any-api/get-request/examples/large-responses/)                    | This guide explains how to make an HTTP Get request that returns a _json_ containing an arbitrary-length raw byte data and parse it to return the data as _bytes_ data type.                                                                                                           |
-| [Existing Job Request](/docs/any-api/get-request/examples/existing-job-request/)                  | This guide explains how to call a job that leverages [External adapters](/docs/external-adapters/) and returns the relevant data to the smart contract. This allows building succinct smart contracts that do not need to comprehend the URL or the response format of the target API. |
+| Request Type                                                                                 | Description                                                                                                                                                                                                                                                                       |
+| -------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [HTTP GET Single Word Response](/any-api/get-request/examples/single-word-response/)         | This guide explains how to make an HTTP GET request and parse the _json_ response to retrieve the value of one single attribute.                                                                                                                                                  |
+| [HTTP GET Multi-Variable Responses](/any-api/get-request/examples/multi-variable-responses/) | This guide explains how to make an HTTP GET request and parse the _json_ response to retrieve the values of multiple attributes.                                                                                                                                                  |
+| [HTTP GET Element in Array Response](/any-api/get-request/examples/api-array-response/)      | This guide explains how to make an HTTP GET request that returns a _json_ array and parse it to retrieve the target element's value.                                                                                                                                              |
+| [HTTP GET Large Reponses](/any-api/get-request/examples/large-responses/)                    | This guide explains how to make an HTTP Get request that returns a _json_ containing an arbitrary-length raw byte data and parse it to return the data as _bytes_ data type.                                                                                                      |
+| [Existing Job Request](/any-api/get-request/examples/existing-job-request/)                  | This guide explains how to call a job that leverages [External adapters](/external-adapters/) and returns the relevant data to the smart contract. This allows building succinct smart contracts that do not need to comprehend the URL or the response format of the target API. |
 
 ### Building external adapters
 
-To learn more about building external adapters and adding them to nodes, refer to the [External Adapters](/docs/external-adapters/) documentation.
+To learn more about building external adapters and adding them to nodes, refer to the [External Adapters](/external-adapters/) documentation.
 
-To understand different use cases for using any API, refer to [Other Tutorials](/docs/other-tutorials/).
+To understand different use cases for using any API, refer to [Other Tutorials](/other-tutorials/).

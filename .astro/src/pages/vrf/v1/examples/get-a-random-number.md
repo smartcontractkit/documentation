@@ -26,7 +26,7 @@ Chainlink VRF follows the [Request & Receive Data](/docs/any-api/introduction/) 
 - `requestRandomness`, which makes the initial request for randomness.
 - `fulfillRandomness`, which is the function that receives and does something with verified randomness.
 
-The contract should own enough LINK to pay the specified fee. The beginner walkthrough explains how to [fund your contract](/docs/fund-your-contract/).
+The contract should own enough LINK to pay the specified fee. The beginner walkthrough explains how to [fund your contract](/resources/fund-your-contract/).
 
 Note, the below values have to be configured correctly for VRF requests to work. You can find the respective values for your network in the [VRF Contracts page](/docs/vrf/v1/supported-networks).
 
@@ -40,7 +40,7 @@ Be sure to look your contract over with [these security considerations](/docs/vr
 :::
 
 :::note[Remember to fund your contract with LINK!]
-Requesting randomness will fail unless your deployed contract has enough LINK to pay for it. **Learn how to [Acquire testnet LINK](/docs/acquire-link/) and [Fund your contract](/docs/fund-your-contract/)**.
+Requesting randomness will fail unless your deployed contract has enough LINK to pay for it. **Learn how to [Acquire testnet LINK](/resources/acquire-link/) and [Fund your contract](/resources/fund-your-contract/)**.
 :::
 
 ::solidity-remix[/samples/VRF/RandomNumberConsumer.sol]

@@ -16,7 +16,7 @@ permalink: "docs/hackathon-resources/"
 If you're looking to just start jumping into stuff, here is a directory that can help you out.
 
 # Want to check out winners code of past hackathons to get some inspiration?
-Check out the <a href="/docs/example-projects"> example winners projects here. </a>
+Check out the <a href="/resources/example-projects"> example winners projects here. </a>
 
 ## Boilerplate code, and starter kits
 
@@ -27,9 +27,9 @@ Be sure to check the docs above for remix examples!
 
 ## Support Communications
 
-Always refer back to the [getting help](/docs/getting-help) page for the latest information about how to get support.
+Always refer back to the [getting help](/resources/getting-help) page for the latest information about how to get support.
 
-- [Getting Help](/docs/getting-help)
+- [Getting Help](/resources/getting-help)
 - [Stack Overflow](https://stackoverflow.com/questions/tagged/chainlink)
 - [Stack Exchange Ethereum](https://ethereum.stackexchange.com/questions/tagged/chainlink)
 - [Hackathon Discord](https://discord.gg/h3AvTHj)
@@ -39,17 +39,17 @@ Always refer back to the [getting help](/docs/getting-help) page for the latest 
 
 Be sure to check the documentation in the links above for in depth-descriptions of everything.
 
-New? See the [Getting Started Guide](/docs/conceptual-overview/).
+New? See the [Getting Started Guide](/getting-started/conceptual-overview/).
 - [Video Tutorials](https://www.youtube.com/playlist?list=PLVP9aGDn-X0QwJVbQvuKr-zrh2_DV5M6J)
 - [What is Ethereum?](https://www.youtube.com/playlist?list=PLVP9aGDn-X0QwJVbQvuKr-zrh2_DV5M6J)
 - [Developer Blog (many tutorials)](https://blog.chain.link/tag/developers/)
 - [Testing Chainlink Smart Contracts](https://blog.chain.link/testing-chainlink-smart-contracts/)
 - [NFTs and Chainlink](https://blog.chain.link/build-deploy-and-sell-your-own-dynamic-nft/)
-- [Build an external adapter](/docs/developers/)
+- [Build an external adapter](/developers/)
 
 ## Inspiration
 - [77 Use Cases by Chainlink](https://blog.chain.link/44-ways-to-enhance-your-smart-contract-with-chainlink/)
-- [Past winners & code](/docs/example-projects)
+- [Past winners & code](/resources/example-projects/)
 - [Chainlink docs](/)
 
 ### The chainlink community is some of the most inviting groups of engineers always looking to help you grow to the next stage.
@@ -62,6 +62,6 @@ New? See the [Getting Started Guide](/docs/conceptual-overview/).
 
 ## Blockchain Specific
 
-- [Matic Data Feeds](/docs/data-feeds/price-feeds/addresses/?network=polygon)
-- [BNB Chain Data Feeds](/docs/data-feeds/price-feeds/addresses/?network=bnb-chain)
+- [Matic Data Feeds](/data-feeds/price-feeds/addresses/?network=polygon)
+- [BNB Chain Data Feeds](/data-feeds/price-feeds/addresses/?network=bnb-chain)
 - [Conflux](https://github.com/Conflux-Network-Global/demo-cfx-chainlink)

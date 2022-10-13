@@ -78,4 +78,4 @@ Chainlink VRF v2 is currently available on the following networks:
   - Fantom Mainnet
   - Fantom Testnet
 
-To learn when VRF v2 becomes available on more networks, follow us on [Twitter](https://twitter.com/chainlink) or sign up for our [mailing list](/developer-communications/).
+To learn when VRF v2 becomes available on more networks, follow us on [Twitter](https://twitter.com/chainlink) or sign up for our [mailing list](/resources/developer-communications/).

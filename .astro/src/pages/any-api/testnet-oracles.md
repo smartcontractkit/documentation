@@ -15,7 +15,7 @@ The Chainlink Developer Relations team maintains several testnet oracles that yo
 
 :::tip[Link token address and Faucet details]
 
-To retrieve the LINK token address or get faucet details for your testnet of choice, see the [LINK Token Contracts](/docs/link-token-contracts/) page.
+To retrieve the LINK token address or get faucet details for your testnet of choice, see the [LINK Token Contracts](/resources/link-token-contracts/) page.
 
 :::
 
@@ -45,19 +45,19 @@ To make testing simple, jobs are configured with the following properties:
 
 <br>
 
-| Purpose                                                                                                                                                                                                                                                      | Tasks                                                                                                                                                                                        | Job ID                             | Required&nbspParameters                                                                                                                                  |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **_GET>bytes_**: <br>HTTP&nbspGET&nbspto&nbspany&nbsppublic&nbspAPI <br>parse the response <br>return arbitrary-length raw byte data **_bytes_**. <br>The job specs can be found [here](/docs/direct-request-get-bytes/)                                     | [Http](/docs/jobs/task-types/http/)<br>[JsonParse](/docs/jobs/task-types/jsonparse/)<br>[Ethabiencode](/docs/jobs/task-types/eth-abi-encode/)                                                | `7da2702f37fd48e5b1b9a5715e3509b6` | <ul><li>`get`: string</li><li>`path`:&nbsp[JSONPath&nbspexpression](https://jsonpath.com/) with comma(,) delimited string</li></ul>                      |
-| **_GET>uint256_**: <br>HTTP&nbspGET&nbspto&nbspany&nbsppublic&nbspAPI <br>parse the reponse <br>multiply the result by a multiplier <br>return an unsigned integer **_uint256_** . <br> The job specs can be found [here](/docs/direct-request-get-uint256/) | [Http](/docs/jobs/task-types/http/)<br>[JsonParse](/docs/jobs/task-types/jsonparse/)<br>[Multiply](/docs/jobs/task-types/multiply/)<br>[Ethabiencode](/docs/jobs/task-types/eth-abi-encode/) | `ca98366cc7314957b8c012c72f05aeeb` | <ul><li>`get`: string</li><li>`path`:&nbsp[JSONPath&nbspexpression](https://jsonpath.com/) with comma(,) delimited string</li><li>`times`: int</li></ul> |
-| **_GET>int256_**: <br>HTTP&nbspGET&nbspto&nbspany&nbsppublic&nbspAPI <br>parse the response <br>multiply the result by a multiplier <br>return a signed integer **_int256_**. <br> The job specs can be found [here](/docs/direct-request-get-int256/)       | [Http](/docs/jobs/task-types/http/)<br>[JsonParse](/docs/jobs/task-types/jsonparse/)<br>[Multiply](/docs/jobs/task-types/multiply/)<br>[Ethabiencode](/docs/jobs/task-types/eth-abi-encode/) | `fcf4140d696d44b687012232948bdd5d` | <ul><li>`get`: string</li><li>`path`:&nbsp[JSONPath&nbspexpression](https://jsonpath.com/) with comma(,) delimited string</li><li>`times`: int</li></ul> |
-| **_GET>bool_**: <br>HTTP&nbspGET&nbspto&nbspany&nbsppublic&nbspAPI <br>parse the response <br>return a boolean **_bool_**. <br> The job specs can be found [here](/docs/direct-request-get-bool/)                                                            | [Http](/docs/jobs/task-types/http/)<br>[JsonParse](/docs/jobs/task-types/jsonparse/)<br>[Ethabiencode](/docs/jobs/task-types/eth-abi-encode/)                                                | `c1c5e92880894eb6b27d3cae19670aa3` | <ul><li>`get`: string</li><li>`path`:&nbsp[JSONPath&nbspexpression](https://jsonpath.com/) with comma(,) delimited string</li></ul>                      |
-| **_GET>string_**: <br>HTTP&nbspGET&nbspto&nbspany&nbsppublic&nbspAPI <br>parse the response <br>return a sequence of characters **_string_**. <br> The job specs can be found [here](/docs/direct-request-get-string/)                                       | [Http](/docs/jobs/task-types/http/)<br>[JsonParse](/docs/jobs/task-types/jsonparse/)<br>[Ethabiencode](/docs/jobs/task-types/eth-abi-encode/)                                                | `7d80a6386ef543a3abb52817f6707e3b` | <ul><li>`get`: string</li><li>`path`:&nbsp[JSONPath&nbspexpression](https://jsonpath.com/) with comma(,) delimited string</li></ul>                      |
+| Purpose                                                                                                                                                                                                                                                 | Tasks                                                                                                                                                                    | Job ID                             | Required&nbspParameters                                                                                                                                  |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **_GET>bytes_**: <br>HTTP&nbspGET&nbspto&nbspany&nbsppublic&nbspAPI <br>parse the response <br>return arbitrary-length raw byte data **_bytes_**. <br>The job specs can be found [here](/direct-request-get-bytes/)                                     | [Http](/jobs/task-types/http/)<br>[JsonParse](/jobs/task-types/jsonparse/)<br>[Ethabiencode](/jobs/task-types/eth-abi-encode/)                                           | `7da2702f37fd48e5b1b9a5715e3509b6` | <ul><li>`get`: string</li><li>`path`:&nbsp[JSONPath&nbspexpression](https://jsonpath.com/) with comma(,) delimited string</li></ul>                      |
+| **_GET>uint256_**: <br>HTTP&nbspGET&nbspto&nbspany&nbsppublic&nbspAPI <br>parse the reponse <br>multiply the result by a multiplier <br>return an unsigned integer **_uint256_** . <br> The job specs can be found [here](/direct-request-get-uint256/) | [Http](/jobs/task-types/http/)<br>[JsonParse](/jobs/task-types/jsonparse/)<br>[Multiply](/jobs/task-types/multiply/)<br>[Ethabiencode](/jobs/task-types/eth-abi-encode/) | `ca98366cc7314957b8c012c72f05aeeb` | <ul><li>`get`: string</li><li>`path`:&nbsp[JSONPath&nbspexpression](https://jsonpath.com/) with comma(,) delimited string</li><li>`times`: int</li></ul> |
+| **_GET>int256_**: <br>HTTP&nbspGET&nbspto&nbspany&nbsppublic&nbspAPI <br>parse the response <br>multiply the result by a multiplier <br>return a signed integer **_int256_**. <br> The job specs can be found [here](/direct-request-get-int256/)       | [Http](/jobs/task-types/http/)<br>[JsonParse](/jobs/task-types/jsonparse/)<br>[Multiply](/jobs/task-types/multiply/)<br>[Ethabiencode](/jobs/task-types/eth-abi-encode/) | `fcf4140d696d44b687012232948bdd5d` | <ul><li>`get`: string</li><li>`path`:&nbsp[JSONPath&nbspexpression](https://jsonpath.com/) with comma(,) delimited string</li><li>`times`: int</li></ul> |
+| **_GET>bool_**: <br>HTTP&nbspGET&nbspto&nbspany&nbsppublic&nbspAPI <br>parse the response <br>return a boolean **_bool_**. <br> The job specs can be found [here](/direct-request-get-bool/)                                                            | [Http](/jobs/task-types/http/)<br>[JsonParse](/jobs/task-types/jsonparse/)<br>[Ethabiencode](/jobs/task-types/eth-abi-encode/)                                           | `c1c5e92880894eb6b27d3cae19670aa3` | <ul><li>`get`: string</li><li>`path`:&nbsp[JSONPath&nbspexpression](https://jsonpath.com/) with comma(,) delimited string</li></ul>                      |
+| **_GET>string_**: <br>HTTP&nbspGET&nbspto&nbspany&nbsppublic&nbspAPI <br>parse the response <br>return a sequence of characters **_string_**. <br> The job specs can be found [here](/direct-request-get-string/)                                       | [Http](/jobs/task-types/http/)<br>[JsonParse](/jobs/task-types/jsonparse/)<br>[Ethabiencode](/jobs/task-types/eth-abi-encode/)                                           | `7d80a6386ef543a3abb52817f6707e3b` | <ul><li>`get`: string</li><li>`path`:&nbsp[JSONPath&nbspexpression](https://jsonpath.com/) with comma(,) delimited string</li></ul>                      |
 
 ### Examples
 
 #### Get > bytes
 
-A full example can be found [here](/docs/any-api/get-request/examples/large-responses/).
+A full example can be found [here](/any-api/get-request/examples/large-responses/).
 
 ##### Request method
 
@@ -86,7 +86,7 @@ function fulfill(bytes32 requestId, bytes memory bytesData) public recordChainli
 
 #### Get > uint256
 
-A full example can be found [here](/docs/any-api/get-request/examples/single-word-response/).
+A full example can be found [here](/any-api/get-request/examples/single-word-response/).
 
 ##### Request method
 
@@ -165,7 +165,7 @@ function fulfill(bytes32 _requestId, bool _approved) public recordChainlinkFulfi
 
 #### Get > string
 
-A full example can be found [here](/docs/any-api/get-request/examples/api-array-response/).
+A full example can be found [here](/any-api/get-request/examples/api-array-response/).
 
 ##### Request method
 

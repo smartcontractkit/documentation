@@ -93,7 +93,7 @@ setChainlinkToken(
 )
 ```
 
-Sets the stored address for the LINK token which is used to send requests to Oracles. There are different token addresses on different network. See [LINK Token Contracts](/docs/link-token-contracts/) for the address of the LINK token on the network you're deploying to.
+Sets the stored address for the LINK token which is used to send requests to Oracles. There are different token addresses on different network. See [LINK Token Contracts](/resources/link-token-contracts/) for the address of the LINK token on the network you're deploying to.
 
 ```solidity example
 constructor(address _link)
@@ -117,7 +117,7 @@ function buildChainlinkRequest(
 ) returns (Chainlink.Request memory request)
 ```
 
-Instantiates a Request from the Chainlink contract. A [Request](#chainlinkrequest) is a struct which contains the necessary parameters to be sent to the oracle contract. The `buildChainlinkRequest` function takes an ID, which can be a [Job ID](/docs/jobs/), a callback address to receive the resulting data, and a callback function signature to call on the callback address.
+Instantiates a Request from the Chainlink contract. A [Request](#chainlinkrequest) is a struct which contains the necessary parameters to be sent to the oracle contract. The `buildChainlinkRequest` function takes an ID, which can be a [Job ID](/jobs/), a callback address to receive the resulting data, and a callback function signature to call on the callback address.
 
 ```solidity example
 function requestPrice()
@@ -149,7 +149,7 @@ function buildOperatorRequest(
 ) returns (Chainlink.Request memory request)
 ```
 
-Instantiates a _Request_ from the Chainlink contract. A [Request](#chainlinkrequest) is a struct that contains the necessary parameters to be sent to the oracle contract. The `buildOperatorRequest` function takes an ID, which can be a [Job ID](/docs/jobs/), and a callback function signature to call on the calling contract address.
+Instantiates a _Request_ from the Chainlink contract. A [Request](#chainlinkrequest) is a struct that contains the necessary parameters to be sent to the oracle contract. The `buildOperatorRequest` function takes an ID, which can be a [Job ID](/jobs/), and a callback function signature to call on the calling contract address.
 
 ```solidity example
 function requestPrice()

@@ -347,10 +347,6 @@ export const SIDEBAR = {
           url: "resources/developer-communications",
         },
         { title: "Getting Help", url: "resources/getting-help" },
-        {
-          title: "Selecting Data Feeds",
-          url: "resources/selecting-data-feeds",
-        },
         { title: "Hackathon Resources", url: "resources/hackathon-resources" },
         {
           title: "Contributing to Chainlink",

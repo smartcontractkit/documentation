@@ -37,7 +37,7 @@ This guide assumes that you know how to create and deploy smart contracts on Eth
 
 - [The Remix IDE](https://remix.ethereum.org/)
 - [MetaMask](https://metamask.io/)
-- [Goerli testnet ETH](/link-token-contracts/#goerli-testnet)
+- [Goerli testnet ETH](/resources/link-token-contracts/#goerli-testnet)
 
 If you are new to developing smart contracts on Ethereum, see the [Getting Started](/conceptual-overview/) guide to learn the basics.
 
@@ -67,7 +67,7 @@ Build and deploy the contract on Goerli.
 
 ## Fund Your Contract
 
-Requests for randomness will fail unless your consuming contract has enough LINK. Learn how to [Acquire testnet LINK](/acquire-link/) and [Fund your contract](/fund-your-contract/). For this example, funding with 2 LINK should be sufficient.
+Requests for randomness will fail unless your consuming contract has enough LINK. Learn how to [Acquire testnet LINK](/resources/acquire-link/) and [Fund your contract](/resources/fund-your-contract/). For this example, funding with 2 LINK should be sufficient.
 
 ## Request random values
 

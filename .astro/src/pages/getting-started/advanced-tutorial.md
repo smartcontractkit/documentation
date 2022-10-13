@@ -97,7 +97,7 @@ Here is a breakdown of each component of this contract:
 2. `requestVolumeData` functions: This builds and sends a request - which includes the fulfillment functions selector - to the oracle. Notice how it adds the `get`, `path` and `times` parameters. These are read by the Tasks in the job to perform correctly. `get` is used by [HTTP](/docs/jobs/task-types/http/), `path` is used by [JSON Parse](/docs/jobs/task-types/jsonparse/) and `times` is used by [Multiply](/docs/jobs/task-types/multiply/).
 3. `fulfill` function: This is where the result is sent upon the Oracle Job's completion.
 
-**Note:** The calling contract should own enough LINK to pay the fee, which by default is 0.1 LINK. You can use [this tutorial](/docs/fund-your-contract/) to learn how to fund your contract.
+**Note:** The calling contract should own enough LINK to pay the fee, which by default is 0.1 LINK. You can use [this tutorial](/resources/fund-your-contract/) to learn how to fund your contract.
 
 This is an example of a basic HTTP GET request. However, it requires defining the API URL directly in the smart contract. This can, in fact, be extracted and configured on the Job level inside the Oracle node. You can follow the _APIConsumer_ tutorial [here](/docs/any-api/get-request/examples/single-word-response/).
 

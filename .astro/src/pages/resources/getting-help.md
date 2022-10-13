@@ -57,7 +57,7 @@ Here is that same question with better formatting:
 :::note
 Title: Remix Solidity Compile Error - Source File Requires Different Compiler Version
 
-I'm [following this guide](/docs/deploy-your-first-contract/), and I'm unable to compile my solidity code in [Remix](https://remix.ethereum.org/).
+I'm [following this guide](/getting-started/deploy-your-first-contract/), and I'm unable to compile my solidity code in [Remix](https://remix.ethereum.org/).
 
 Here is the code:
 

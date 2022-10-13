@@ -38,7 +38,7 @@ This guide explains how to register a Custom logic Upkeep that uses a [Keepers-c
 
    - **Upkeep name**: This will be publicly visible in the Keepers app.
    - **Gas limit**: This is the maximum amount of gas that your transaction requires to execute on chain. This limit cannot exceed the `performGasLimit` value configured on the [registry](/docs/chainlink-keepers/supported-networks/#configurations). Before the network executes your transaction on chain, it simulates the transaction. If the gas required to execute your transaction exceeds the gas limit that you specified, your transaction will not be confirmed. Developers also have the ability to update `performGasLimit` for an upkeep. Consider running your function on a testnet to see how much gas it uses before you select a gas limit. This can be changed afterwards.
-   - **Starting balance (LINK)**: Specify a LINK starting balance to fund your upkeep. See the [LINK Token Contracts](/docs/link-token-contracts/) page to find the correct contract address and access faucets for testnet LINK. This field is required. You must have LINK before you can use the Keepers service.
+   - **Starting balance (LINK)**: Specify a LINK starting balance to fund your upkeep. See the [LINK Token Contracts](/resources/link-token-contracts/) page to find the correct contract address and access faucets for testnet LINK. This field is required. You must have LINK before you can use the Keepers service.
    - **Check data**: This field is provided as an input for when your `checkUpkeep` function is simulated. Either leave this field blank or specify a hexadecimal value starting with `0x`. To learn how to make flexible upkeeps using `checkData`, see the [Flexible Upkeeps](../flexible-upkeeps) guide.
    - **Your email address**: This email address will be encrypted and is used to send you an email when your upkeep is underfunded.
 
@@ -67,18 +67,18 @@ Your Upkeeps will be displayed in your list of Active Upkeeps. You must monitor 
 
 ## Register an Upkeep using your own deployed contract
 
-You can dynamically create and manage Upkeeps from within your own dApp. To do this you will need to keep track of the Upkeep ID as your contract will use this to subsequently interact with the Keepers registry. The following example displays a smart contract that can create an Upkeep and determine the Upkeep ID. Note your contract should be Keepers-compatible you will need [ERC-677 LINK](../../link-token-contracts/) to fund the Upkeep. You can also program your Upkeep to check its own balance and fund itself by interacting with the registry.
+You can dynamically create and manage Upkeeps from within your own dApp. To do this you will need to keep track of the Upkeep ID as your contract will use this to subsequently interact with the Keepers registry. The following example displays a smart contract that can create an Upkeep and determine the Upkeep ID. Note your contract should be Keepers-compatible you will need [ERC-677 LINK](/resources/link-token-contracts/) to fund the Upkeep. You can also program your Upkeep to check its own balance and fund itself by interacting with the registry.
 
 ### Prerequisites
 
 Find the following addresses for your network:
 
-- Correct [LINK token contract](../../link-token-contracts/)
+- Correct [LINK token contract](/resources/link-token-contracts/)
 - [Registry and registrar addresses for your network](#registry-and-registrar-addresses)
 
 Optionally, you can fetch the LINK address and registrar address from the intended registry at run-time.
 
-:::note[ Make sure your contract has enough [ERC-677 LINK](../../link-token-contracts/) to fund the Upkeep at creation. _The minimum amount is 5 LINK._]
+:::note[ Make sure your contract has enough [ERC-677 LINK](/resources/link-token-contracts/) to fund the Upkeep at creation. _The minimum amount is 5 LINK._]
 
 :::
 

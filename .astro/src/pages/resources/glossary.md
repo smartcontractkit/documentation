@@ -8,11 +8,11 @@ section: ethereum
 
 ### Adapter
 
-:::danger[ The adapters or JSON adapters for v1 Jobs are removed for Chainlink nodes running version 1.0.0 and later. Use [v2 job tasks](/docs/tasks) instead.]
+:::danger[ The adapters or JSON adapters for v1 Jobs are removed for Chainlink nodes running version 1.0.0 and later. Use [v2 job tasks](/tasks) instead.]
 
 :::
 
-An adapter or [task](#task) is a piece of software responsible for executing a specific piece of functionality. A Chainlink node comes with a number of Adapters built-in, commonly known as Core Adapters, but can also be extended via [Bridges](/docs/node-operators/) to connect with user-defined [External Adapters](#external-adapter).
+An adapter or [task](#task) is a piece of software responsible for executing a specific piece of functionality. A Chainlink node comes with a number of Adapters built-in, commonly known as Core Adapters, but can also be extended via [Bridges](/node-operators/) to connect with user-defined [External Adapters](#external-adapter).
 
 ### Answer
 
@@ -44,7 +44,7 @@ A [function selector](https://docs.soliditylang.org/en/develop/abi-spec.html#fun
 
 ### Initiator
 
-:::danger[ The initiators for v1 Jobs are removed for Chainlink nodes running version 1.0.0 and later. Use the [v2 job types](/docs/jobs) instead.]
+:::danger[ The initiators for v1 Jobs are removed for Chainlink nodes running version 1.0.0 and later. Use the [v2 job types](/jobs) instead.]
 
 :::
 
@@ -66,8 +66,8 @@ The ID associated to a given [Job Spec](#job-spec). This will be unique per-node
 
 The [Job Specification](./jobs/) is the specification of a piece of work to be completed by an Oracle Node. The Job Spec is made up of two main parts:
 
-- The [Task Type](/docs/jobs/#shared-fields) or the [External Initiator](/docs/external-initiators-introduction/): Defines the ways a Job can be triggered to execute.
-- The [Task list](#task-spec): The `tasks` that specify all of the computation steps to perform when executing a Job Spec. The Task list is sometimes referred to as the [Job Pipeline](/docs/jobs/task-types/pipelines/) because all of the Tasks' operations are performed in order, with the result being fed into the next task.
+- The [Task Type](/jobs/#shared-fields) or the [External Initiator](/external-initiators-introduction/): Defines the ways a Job can be triggered to execute.
+- The [Task list](#task-spec): The `tasks` that specify all of the computation steps to perform when executing a Job Spec. The Task list is sometimes referred to as the [Job Pipeline](/jobs/task-types/pipelines/) because all of the Tasks' operations are performed in order, with the result being fed into the next task.
 
 ### Oracle
 
@@ -119,7 +119,7 @@ Another short-hand for a [Job Spec](#job-spec).
 
 ### Task
 
-A v2 job [task](/docs/tasks/).
+A v2 job [task](/tasks/).
 
 ### Task Spec
 

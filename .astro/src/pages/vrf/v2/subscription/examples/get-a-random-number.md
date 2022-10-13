@@ -42,7 +42,7 @@ This guide assumes that you know how to create and deploy smart contracts on Eth
 
 - [The Remix IDE](https://remix.ethereum.org/)
 - [MetaMask](https://metamask.io/)
-- [Goerli testnet ETH](/link-token-contracts/#goerli-testnet)
+- [Goerli testnet ETH](/resources/link-token-contracts/#goerli-testnet)
 
 If you are new to developing smart contracts on Ethereum, see the [Getting Started](/conceptual-overview/) guide to learn the basics.
 
@@ -52,7 +52,7 @@ For this example, create a new subscription on the Goerli testnet.
 
 1. Open MetaMask and set it to use the Goerli testnet. The [Subscription Manager](/vrf/v2/subscription/ui/) detects your network based on the active network in MetaMask.
 
-1. Check MetaMask to make sure you have testnet ETH and LINK on Goerli. You can get testnet ETH and LINK at one of the available [Goerli faucets](/link-token-contracts/#goerli-testnet).
+1. Check MetaMask to make sure you have testnet ETH and LINK on Goerli. You can get testnet ETH and LINK at one of the available [Goerli faucets](/resources/link-token-contracts/#goerli-testnet).
 
 1. Open the Subscription Manager at [vrf.chain.link](https://vrf.chain.link).
    <!-- prettier-ignore -->

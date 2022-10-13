@@ -6,13 +6,13 @@ title: Single Word Response
 permalink: "docs/any-api/get-request/examples/single-word-response/"
 whatsnext:
   {
-    "Multi-Variable Responses": "/docs/any-api/get-request/examples/multi-variable-responses/",
-    "Fetch data from an Array": "/docs/any-api/get-request/examples/api-array-response/",
-    "Large Responses": "/docs/any-api/get-request/examples/large-responses/",
-    "Make an Existing Job Request": "/docs/any-api/get-request/examples/existing-job-request/",
-    "API Reference": "/docs/any-api/api-reference/",
-    "Testnet Oracles": "/docs/any-api/testnet-oracles/",
-    "Data Provider Nodes": "/docs/any-api/data-providers/introduction/",
+    "Multi-Variable Responses": "/any-api/get-request/examples/multi-variable-responses/",
+    "Fetch data from an Array": "/any-api/get-request/examples/api-array-response/",
+    "Large Responses": "/any-api/get-request/examples/large-responses/",
+    "Make an Existing Job Request": "/any-api/get-request/examples/existing-job-request/",
+    "API Reference": "/any-api/api-reference/",
+    "Testnet Oracles": "/any-api/testnet-oracles/",
+    "Data Provider Nodes": "/any-api/data-providers/introduction/",
   }
 metadata:
   title: "Single Word Response"
@@ -23,7 +23,7 @@ setup: |
   import AnyApiCallout from "@features/any-api/common/AnyApiCallout.astro"
 ---
 
-This guide explains how to make an HTTP GET request to an external API from a smart contract using Chainlink's [Request & Receive Data](/docs/any-api/introduction/) cycle and receive a single response.
+This guide explains how to make an HTTP GET request to an external API from a smart contract using Chainlink's [Request & Receive Data](/any-api/introduction/) cycle and receive a single response.
 
 <AnyApiCallout callout="prerequisites" />
 
@@ -77,7 +77,7 @@ To consume an API with multiple responses, your contract must import [ChainlinkC
 
 :::caution[ Note on Funding Contracts]
 
-Making a GET request will fail unless your deployed contract has enough LINK to pay for it. **Learn how to [Acquire testnet LINK](/docs/acquire-link/) and [Fund your contract](/docs/fund-your-contract/)**.
+Making a GET request will fail unless your deployed contract has enough LINK to pay for it. **Learn how to [Acquire testnet LINK](/resources/acquire-link/) and [Fund your contract](/resources/fund-your-contract/)**.
 
 :::
 
@@ -91,11 +91,11 @@ To use this contract:
 
 1. Compile and deploy the contract using the Injected Provider environment. The contract includes all the configuration variables for the _Goerli_ testnet. Make sure your wallet is set to use _Goerli_. The _constructor_ sets the following parameters:
 
-   - The Chainlink Token address for _Goerli_ by calling the [`setChainlinkToken`](/docs/any-api/api-reference/#setchainlinktoken) function.
-   - The Oracle contract address for _Goerli_ by calling the [`setChainlinkOracle`](/docs/any-api/api-reference/#setchainlinkoracle) function.
-   - The `jobId`: A specific job for the oracle node to run. In this case, you must call a job that is configured to call a public API, parse a number from the response and remove any decimals from it. We are going to use a generic **_GET>uint256_** job that can be found [here](/docs/any-api/testnet-oracles/#jobs).
+   - The Chainlink Token address for _Goerli_ by calling the [`setChainlinkToken`](/any-api/api-reference/#setchainlinktoken) function.
+   - The Oracle contract address for _Goerli_ by calling the [`setChainlinkOracle`](/any-api/api-reference/#setchainlinkoracle) function.
+   - The `jobId`: A specific job for the oracle node to run. In this case, you must call a job that is configured to call a public API, parse a number from the response and remove any decimals from it. We are going to use a generic **_GET>uint256_** job that can be found [here](/any-api/testnet-oracles/#jobs).
 
-1. Fund your contract with 0.1 LINK. To learn how to send LINK to contracts, read the [Fund Your Contracts](/docs/fund-your-contract/) page.
+1. Fund your contract with 0.1 LINK. To learn how to send LINK to contracts, read the [Fund Your Contracts](/resources/fund-your-contract/) page.
 
 1. Call the `volume` function to confirm that the `volume` state variable is equal to _zero_.
 

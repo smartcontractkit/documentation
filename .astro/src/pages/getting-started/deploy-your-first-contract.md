@@ -46,7 +46,7 @@ Deploying smart contracts on-chain requires a wallet and ETH. The ETH pays for t
 1. Set MetaMask to use the Goerli test network.
    ![Screenshot showing the network selection menu in MetaMask. The Goerli Test Network is selected.](/images/getting-started/selectGoerli.webp)
 
-1. Select one of the available [Goerli faucets](/docs/link-token-contracts/#goerli-testnet) and follow the steps to send testnet ETH to your MetaMask wallet address. You can copy your wallet address by clicking your account name in MetaMask. After the faucet completes the transaction, you should have testnet ETH in your MetaMask wallet on the Goerli testnet.
+1. Select one of the available [Goerli faucets](/resources/link-token-contracts/#goerli-testnet) and follow the steps to send testnet ETH to your MetaMask wallet address. You can copy your wallet address by clicking your account name in MetaMask. After the faucet completes the transaction, you should have testnet ETH in your MetaMask wallet on the Goerli testnet.
 
 Now that you configured your wallet and funded it with testnet ETH, you can write, compile, and deploy your contract.
 

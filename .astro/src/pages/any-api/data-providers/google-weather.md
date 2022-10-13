@@ -33,7 +33,7 @@ You will need to use the following LINK token address, oracle address, and JobSp
 ## Steps For Using This Oracle
 
 - Write and deploy your contract using the network details above.
-- Fund it with [LINK](/docs/link-token-contracts/)
+- Fund it with [LINK](/resources/link-token-contracts/)
 - Call your request method
 
 ## Create your Chainlinked contract
