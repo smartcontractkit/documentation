@@ -1,5 +1,5 @@
 import vrfLogo from "../assets/vrf-logo.svg"
-import keeprsLogo from "../assets/keepers-logo.svg"
+import automationLogo from "../assets/automation-logo.svg"
 import dataFeedsLogo from "../assets/data-feeds-logo.svg"
 import externalApiLogo from "../assets/external-api-logo.svg"
 import { ProductCardProps } from "../components/ProductCard"
@@ -29,16 +29,30 @@ export const evmProducts = [
     chains: [...baseChains, ...extraChains],
   },
   {
-    title: "Keepers",
+    title: "Automate Contracts",
     description:
       "Decentralized, highly reliable, cost-efficient and highly secure automation for smart contracts",
-    learnMorelink: "",
-    image: keeprsLogo,
+    learnMorelink: "chainlink-automation/introduction/",
+    image: automationLogo,
     links: [
-      ["Introduction to Chainlink Keepers", "#"],
-      ["Register an Upkeep", "#"],
-      ["Job Scheduler", "#"],
-      ["Manage your Upkeeps", "#"],
+      [
+        "Introduction to Chainlink Automation",
+        "chainlink-automation/introduction/",
+      ],
+      ["Time-based Automation", "chainlink-automation/job-scheduler/"],
+      ["Custom Logic Automation", "chainlink-automation/register-upkeep/"],
+      [
+        "Create Compatible Contracts",
+        "chainlink-automation/compatible-contracts/",
+      ],
+      ["Manage your Upkeeps", "chainlink-automation/manage-upkeeps/"],
+      ["Creating Flexible Upkeeps", "chainlink-automation/flexible-upkeeps/"],
+      ["Example Contracts", "chainlink-automation/util-overview/"],
+      ["Architecture", "chainlink-automation/overview/"],
+      ["Supported Networks", "chainlink-automation/supported-networks/"],
+      ["Pricing", "chainlink-automation/automation-economics/"],
+      ["Release Notes", "chainlink-automation/automation-release-notes/"],
+      ["FAQs", "chainlink-automation/faqs/"],
     ],
     chains: [...baseChains],
   },

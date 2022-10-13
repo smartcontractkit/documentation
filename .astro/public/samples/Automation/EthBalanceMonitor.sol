@@ -17,7 +17,11 @@ import "@openzeppelin/contracts/security/Pausable.sol";
  * DO NOT USE THIS CODE IN PRODUCTION.
  */
 
-contract EthBalanceMonitor is ConfirmedOwner, Pausable, AutomationCompatibleInterface {
+contract EthBalanceMonitor is
+  ConfirmedOwner,
+  Pausable,
+  AutomationCompatibleInterface
+{
   // observed limit of 45K + 10k buffer
   uint256 private constant MIN_GAS_FOR_TRANSFER = 55_000;
 
@@ -26,7 +30,10 @@ contract EthBalanceMonitor is ConfirmedOwner, Pausable, AutomationCompatibleInte
   event TopUpSucceeded(address indexed recipient);
   event TopUpFailed(address indexed recipient);
   event KeeperRegistryAddressUpdated(address oldAddress, address newAddress);
-  event MinWaitPeriodUpdated(uint256 oldMinWaitPeriod, uint256 newMinWaitPeriod);
+  event MinWaitPeriodUpdated(
+    uint256 oldMinWaitPeriod,
+    uint256 newMinWaitPeriod
+  );
 
   error InvalidWatchList();
   error OnlyKeeperRegistry();
@@ -48,7 +55,9 @@ contract EthBalanceMonitor is ConfirmedOwner, Pausable, AutomationCompatibleInte
    * @param keeperRegistryAddress The address of the Chainlink Automation registry contract
    * @param minWaitPeriodSeconds The minimum wait period for addresses between funding
    */
-  constructor(address keeperRegistryAddress, uint256 minWaitPeriodSeconds) ConfirmedOwner(msg.sender) {
+  constructor(address keeperRegistryAddress, uint256 minWaitPeriodSeconds)
+    ConfirmedOwner(msg.sender)
+  {
     setKeeperRegistryAddress(keeperRegistryAddress);
     setMinWaitPeriodSeconds(minWaitPeriodSeconds);
   }
@@ -64,7 +73,10 @@ contract EthBalanceMonitor is ConfirmedOwner, Pausable, AutomationCompatibleInte
     uint96[] calldata minBalancesWei,
     uint96[] calldata topUpAmountsWei
   ) external onlyOwner {
-    if (addresses.length != minBalancesWei.length || addresses.length != topUpAmountsWei.length) {
+    if (
+      addresses.length != minBalancesWei.length ||
+      addresses.length != topUpAmountsWei.length
+    ) {
       revert InvalidWatchList();
     }
     address[] memory oldWatchList = s_watchList;
@@ -138,7 +150,9 @@ contract EthBalanceMonitor is ConfirmedOwner, Pausable, AutomationCompatibleInte
       ) {
         bool success = payable(needsFunding[idx]).send(target.topUpAmountWei);
         if (success) {
-          s_targets[needsFunding[idx]].lastTopUpTimestamp = uint56(block.timestamp);
+          s_targets[needsFunding[idx]].lastTopUpTimestamp = uint56(
+            block.timestamp
+          );
           emit TopUpSucceeded(needsFunding[idx]);
         } else {
           emit TopUpFailed(needsFunding[idx]);
@@ -171,7 +185,12 @@ contract EthBalanceMonitor is ConfirmedOwner, Pausable, AutomationCompatibleInte
    * @notice Called by Chainlink Automation Node to send funds to underfunded addresses
    * @param performData The abi encoded list of addresses to fund
    */
-  function performUpkeep(bytes calldata performData) external override onlyKeeperRegistry whenNotPaused {
+  function performUpkeep(bytes calldata performData)
+    external
+    override
+    onlyKeeperRegistry
+    whenNotPaused
+  {
     address[] memory needsFunding = abi.decode(performData, (address[]));
     topUp(needsFunding);
   }
@@ -197,9 +216,15 @@ contract EthBalanceMonitor is ConfirmedOwner, Pausable, AutomationCompatibleInte
   /**
    * @notice Sets the Chainlink Automation registry address
    */
-  function setKeeperRegistryAddress(address keeperRegistryAddress) public onlyOwner {
+  function setKeeperRegistryAddress(address keeperRegistryAddress)
+    public
+    onlyOwner
+  {
     require(keeperRegistryAddress != address(0));
-    emit KeeperRegistryAddressUpdated(s_keeperRegistryAddress, keeperRegistryAddress);
+    emit KeeperRegistryAddressUpdated(
+      s_keeperRegistryAddress,
+      keeperRegistryAddress
+    );
     s_keeperRegistryAddress = keeperRegistryAddress;
   }
 
@@ -214,7 +239,11 @@ contract EthBalanceMonitor is ConfirmedOwner, Pausable, AutomationCompatibleInte
   /**
    * @notice Gets the Chainlink Automation registry address
    */
-  function getKeeperRegistryAddress() external view returns (address keeperRegistryAddress) {
+  function getKeeperRegistryAddress()
+    external
+    view
+    returns (address keeperRegistryAddress)
+  {
     return s_keeperRegistryAddress;
   }
 
@@ -246,7 +275,12 @@ contract EthBalanceMonitor is ConfirmedOwner, Pausable, AutomationCompatibleInte
     )
   {
     Target memory target = s_targets[targetAddress];
-    return (target.isActive, target.minBalanceWei, target.topUpAmountWei, target.lastTopUpTimestamp);
+    return (
+      target.isActive,
+      target.minBalanceWei,
+      target.topUpAmountWei,
+      target.lastTopUpTimestamp
+    );
   }
 
   /**

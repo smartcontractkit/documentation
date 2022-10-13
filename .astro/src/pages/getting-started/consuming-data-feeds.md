@@ -9,7 +9,7 @@ whatsnext:
   {
     "Random Numbers: Using Chainlink VRF": "/docs/intermediates-tutorial/",
     "Connect contracts to Any API": "/docs/advanced-tutorial/",
-    "Chaink Keepers": "/docs/chainlink-keepers/introduction/",
+    "Chaink Keepers": "/chainlink-automation/introduction/",
   }
 metadata:
   title: "Consuming Data Feeds"

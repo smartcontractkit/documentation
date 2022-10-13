@@ -40,7 +40,10 @@ export const SIDEBAR = {
           url: "data-feeds/using-chainlink-reference-contracts",
         },
         { title: "Chainlink VRF", url: "vrf/v2/introduction" },
-        { title: "Chainlink Keepers", url: "chainlink-keepers/introduction" },
+        {
+          title: "Chainlink Automation",
+          url: "chainlink-automation/introduction/",
+        },
         { title: "Connect to Public API Data", url: "any-api/introduction" },
         {
           title: "Run a Chainlink Node",
@@ -276,53 +279,60 @@ export const SIDEBAR = {
       section: "AUTOMATE CONTRACTS",
       contents: [
         {
-          title: "Introduction to Chainlink Keepers",
-          url: "chainlink-keepers/introduction",
+          title: "Introduction to Chainlink Automation",
+          url: "chainlink-automation/introduction/",
         },
         {
           title: "Time-based Automation",
-          url: "chainlink-keepers/job-scheduler",
+          url: "chainlink-automation/job-scheduler/",
         },
         {
           title: "Custom Logic Automation",
-          url: "chainlink-keepers/register-upkeep",
+          url: "chainlink-automation/register-upkeep/",
         },
         {
-          title: "Create Keepers-compatible Contracts",
-          url: "chainlink-keepers/compatible-contracts",
+          title: "Create Compatible Contracts",
+          url: "chainlink-automation/compatible-contracts/",
         },
+
         {
           title: "Manage your Upkeeps",
-          url: "chainlink-keepers/manage-upkeeps",
+          url: "chainlink-automation/manage-upkeeps/",
         },
         {
           title: "Creating Flexible Upkeeps",
-          url: "chainlink-keepers/flexible-upkeeps",
+          url: "chainlink-automation/flexible-upkeeps/",
         },
         {
           title: "Example Contracts",
-          url: "chainlink-keepers/util-overview",
+          url: "chainlink-automation/util-overview/",
           children: [
             {
               title: "EthBalanceMonitor",
-              url: "chainlink-keepers/utility-contracts",
+              url: "chainlink-automation/utility-contracts/",
             },
           ],
         },
-        { title: "Keepers Architecture", url: "chainlink-keepers/overview" },
+        {
+          title: "Automation Architecture",
+          url: "chainlink-automation/overview/",
+        },
         {
           title: "Supported Networks",
-          url: "chainlink-keepers/supported-networks",
+          url: "chainlink-automation/supported-networks/",
         },
         {
-          title: "Keepers Economics",
-          url: "chainlink-keepers/keeper-economics",
+          title: "Automation Pricing",
+          url: "chainlink-automation/automation-economics/",
         },
         {
-          title: "Keepers Release Notes",
-          url: "chainlink-keepers/keepers-release-notes",
+          title: "Automation Release Notes",
+          url: "chainlink-automation/automation-release-notes/",
         },
-        { title: "FAQs", url: "chainlink-keepers/faqs" },
+        {
+          title: "FAQs",
+          url: "chainlink-automation/faqs/",
+        },
       ],
     },
     {
