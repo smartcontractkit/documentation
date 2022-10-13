@@ -43,16 +43,17 @@ export const evmProducts = [
     chains: [...baseChains],
   },
   {
-    title: "VRF",
+    title: "VRF v2",
     description:
       "Verifiable, tamper-proof random number generator for blockchain gaming and NFT projects",
-    learnMorelink: "",
+    learnMorelink: "/vrf/v2/introduction/",
     image: vrfLogo,
     links: [
-      ["Introduction to Chainlink VRF", "#"],
-      ["Get a Random Number", "#"],
-      ["Contract Addresses", "#"],
-      ["Security Considerations", "#"],
+      ["Introduction to Chainlink VRF v2", "/vrf/v2/introduction/"],
+      ["VRF v2 - Subscription Method", "/vrf/v2/subscription/"],
+      ["VRF v2 - Direct Funding Method", "/vrf/v2/direct-funding/"],
+      ["Security Considerations", "/vrf/v2/security/"],
+      ["Best Practices", "/vrf/v2/best-practices/"],
     ],
     chains: [...baseChains],
   },
@@ -77,12 +78,18 @@ export const solanaProducts = [
     title: "Market and Data Feeds",
     description:
       "Decentralized and high-quality data feeds for DeFi, sports, weather, and more",
-    learnMorelink: "",
+    learnMorelink: "/solana/overview/",
     image: dataFeedsLogo,
     links: [
-      ["Using Data Feeds Off-Chain", "#"],
-      ["Using Data Feeds On-Chain", "#"],
-      ["Solana Data Feeds Addresses", "#"],
+      [
+        "Using Data Feeds Off-Chain",
+        "/solana/data-feeds/using-data-feeds-off-chain/",
+      ],
+      [
+        "Using Data Feeds On-Chain",
+        "/solana/data-feeds/using-data-feeds-solana/",
+      ],
+      ["Solana Data Feeds Addresses", "/solana/data-feeds/data-feeds-solana/"],
     ],
     chains: [...baseChains, ...extraChains],
   },
