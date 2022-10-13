@@ -19,5 +19,3 @@ For status updates regarding Data Feeds, users should join the official Chainlin
 Users with additional questions are encouraged to reach out [here](https://chainlinkcommunity.typeform.com/s/dataFeedQs).
 
 A list of data feeds designated for deprecation along with their corresponding shutdown date can be found below.
-
-> 👍 No feeds are scheduled for deprecation at this time.
