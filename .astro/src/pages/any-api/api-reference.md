@@ -117,7 +117,7 @@ function buildChainlinkRequest(
 ) returns (Chainlink.Request memory request)
 ```
 
-Instantiates a Request from the Chainlink contract. A [Request](#chainlinkrequest) is a struct which contains the necessary parameters to be sent to the oracle contract. The `buildChainlinkRequest` function takes an ID, which can be a [Job ID](/jobs/), a callback address to receive the resulting data, and a callback function signature to call on the callback address.
+Instantiates a Request from the Chainlink contract. A [Request](#chainlinkrequest) is a struct which contains the necessary parameters to be sent to the oracle contract. The `buildChainlinkRequest` function takes an ID, which can be a [Job ID](/chainlink-nodes/oracle-jobs/jobs/), a callback address to receive the resulting data, and a callback function signature to call on the callback address.
 
 ```solidity example
 function requestPrice()
@@ -149,7 +149,7 @@ function buildOperatorRequest(
 ) returns (Chainlink.Request memory request)
 ```
 
-Instantiates a _Request_ from the Chainlink contract. A [Request](#chainlinkrequest) is a struct that contains the necessary parameters to be sent to the oracle contract. The `buildOperatorRequest` function takes an ID, which can be a [Job ID](/jobs/), and a callback function signature to call on the calling contract address.
+Instantiates a _Request_ from the Chainlink contract. A [Request](#chainlinkrequest) is a struct that contains the necessary parameters to be sent to the oracle contract. The `buildOperatorRequest` function takes an ID, which can be a [Job ID](/chainlink-nodes/oracle-jobs/jobs/), and a callback function signature to call on the calling contract address.
 
 ```solidity example
 function requestPrice()

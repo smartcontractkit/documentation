@@ -15,7 +15,10 @@ const data = (
   await fs.readFile(path.join(process.cwd(), "public", src), "utf-8")
 ).toString()
 
-const isSample = src.indexOf("samples/") === 0 || src.indexOf("/samples/") === 0
+const isSolidityFile = src.match(/\.sol/)
+const isSample =
+  isSolidityFile &&
+  (src.indexOf("samples/") === 0 || src.indexOf("/samples/") === 0)
 ---
 
 {!showButtonOnly && <Prism code={data} lang={"solidity"} />}

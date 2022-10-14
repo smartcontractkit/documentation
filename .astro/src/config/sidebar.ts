@@ -410,14 +410,16 @@ export const SIDEBAR = {
         {
           title: "Running a Chainlink Node",
           url: "chainlink-nodes/running-a-chainlink-node",
+          children: [
+            {
+              title: "Run an Ethereum Client",
+              url: "chainlink-nodes/run-an-ethereum-client",
+            },
+          ],
         },
         {
           title: "Fulfilling Requests",
           url: "chainlink-nodes/fulfilling-requests",
-        },
-        {
-          title: "Run an Ethereum Client",
-          url: "chainlink-nodes/run-an-ethereum-client",
         },
         {
           title: "Performing System Maintenance",
@@ -558,6 +560,14 @@ export const SIDEBAR = {
             {
               title: "Sum",
               url: "chainlink-nodes/oracle-jobs/task-types/task_sum",
+            },
+            {
+              title: "Less Than",
+              url: "chainlink-nodes/oracle-jobs/task-types/task_lessthan",
+            },
+            {
+              title: "Length",
+              url: "chainlink-nodes/oracle-jobs/task-types/task_length",
             },
             {
               title: "Hex Decode",

@@ -22,7 +22,7 @@ The result produced from an oracle service, after all safety checks and aggregat
 
 Bridge is the connection between a Chainlink node and an [External Adapter](#external-adapter). The External Adapter runs as a separate [service](https://en.wikipedia.org/wiki/Service-oriented_architecture), and a Bridge facilitates communication between the node and one of these adapters.
 
-If you would like to add a new External Adapter to your node, you create a new Bridge either in the GUI or the CLI. Within the Chainlink node, a bridge must have a unique name, but can share the same URL with other bridges. You can also set a different number of default confirmations for each bridge, and an additional payment amount. Once the bridge is added to the node, its name can then be used as a task type in [Jobs](./jobs/).
+If you would like to add a new External Adapter to your node, you create a new Bridge either in the GUI or the CLI. Within the Chainlink node, a bridge must have a unique name, but can share the same URL with other bridges. You can also set a different number of default confirmations for each bridge, and an additional payment amount. Once the bridge is added to the node, its name can then be used as a task type in [Jobs](/chainlink-nodes/oracle-jobs/jobs/).
 
 ### Consumer (Contract)
 
@@ -64,7 +64,7 @@ The ID associated to a given [Job Spec](#job-spec). This will be unique per-node
 
 ### Job Spec
 
-The [Job Specification](./jobs/) is the specification of a piece of work to be completed by an Oracle Node. The Job Spec is made up of two main parts:
+The [Job Specification](/chainlink-nodes/oracle-jobs/jobs/) is the specification of a piece of work to be completed by an Oracle Node. The Job Spec is made up of two main parts:
 
 - The [Task Type](/jobs/#shared-fields) or the [External Initiator](/external-initiators-introduction/): Defines the ways a Job can be triggered to execute.
 - The [Task list](#task-spec): The `tasks` that specify all of the computation steps to perform when executing a Job Spec. The Task list is sometimes referred to as the [Job Pipeline](/jobs/task-types/pipelines/) because all of the Tasks' operations are performed in order, with the result being fed into the next task.
@@ -123,7 +123,7 @@ A v2 job [task](/tasks/).
 
 ### Task Spec
 
-The Task Spec is the definition for an individual task to be performed within the [job specification](./jobs/) by a specific adapter. The Task Spec always includes a `type` field which specifies which [adapter](#adapter) will execute it. Optionally, a Task Spec can specify additional `params` which will be passed on to its adapter, and `confirmations` which specify how many confirmations a [Task Run](#task-run) needs before executing.
+The Task Spec is the definition for an individual task to be performed within the [job specification](/chainlink-nodes/oracle-jobs/jobs/) by a specific adapter. The Task Spec always includes a `type` field which specifies which [adapter](#adapter) will execute it. Optionally, a Task Spec can specify additional `params` which will be passed on to its adapter, and `confirmations` which specify how many confirmations a [Task Run](#task-run) needs before executing.
 
 ### Task Run
 

@@ -6,7 +6,7 @@ title: "Multi-Variable Responses"
 permalink: "docs/any-api/get-request/examples/multi-variable-responses/"
 whatsnext:
   {
-    "Fetch data from an Array": "/any-api/get-request/examples/api-array-response/",
+    "Fetch data from an Array": "/any-api/get-request/examples/array-response/",
     "Large Responses": "/any-api/get-request/examples/large-responses/",
     "Make an Existing Job Request": "/any-api/get-request/examples/existing-job-request/",
     "API Reference": "/any-api/api-reference/",
