@@ -17,7 +17,7 @@ metadata:
 
 :::note[ Requirements]
 
-This guide requires basic knowledge about smart contracts. If you are new to smart contract development, read the [Consuming Data Feeds](/docs/consuming-data-feeds/) and [Random Numbers](/docs/intermediates-tutorial/) guides before you begin.
+This guide requires basic knowledge about smart contracts. If you are new to smart contract development, read the [Consuming Data Feeds](/getting-started/consuming-data-feeds/) and [Random Numbers](/getting-started/intermediates-tutorial/) guides before you begin.
 
 :::
 
@@ -29,7 +29,7 @@ In this guide, you will learn how to request data from a public API in a smart c
 
 The request and receive cycle describes how a smart contract requests data from an oracle and receives the response in a separate transaction. If you need a refresher, check out the [Basic Request Model](./architecture-request-model/).
 
-For contracts that use [Chainlink VRF](/docs/vrf/v2/introduction/), you request randomness from a VRF oracle and then await the response. The fulfillment function is already given to us from the `VRFConsumerBase` contract, so oracles already know where to send the response to. However, with API calls, the contract itself _defines_ which function it wants to receive the response to.
+For contracts that use [Chainlink VRF](/vrf/v2/introduction/), you request randomness from a VRF oracle and then await the response. The fulfillment function is already given to us from the `VRFConsumerBase` contract, so oracles already know where to send the response to. However, with API calls, the contract itself _defines_ which function it wants to receive the response to.
 
 Before creating any code, you should understand how Oracle jobs can get data on-chain.
 
@@ -144,4 +144,4 @@ To learn more about connecting smart contracts to external APIs, read our blog p
 - [Connect a Tesla Vehicle API to a Smart Contract](https://blog.chain.link/create-tesla-smart-contract-rental/)
 - [OAuth and API Authentication in Smart Contracts](https://blog.chain.link/oauth-and-api-authentication-in-smart-contracts-2/)
 
-To explore more applications of external API requests, check out our [other tutorials](/docs/other-tutorials/#api-requests).
+To explore more applications of external API requests, check out our [other tutorials](/getting-started/other-tutorials/#api-requests).

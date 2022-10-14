@@ -6,8 +6,8 @@ title: "Get a Random Number [v1]"
 permalink: "docs/vrf/v1/examples/get-a-random-number/"
 whatsnext:
   {
-    "API Reference": "/docs/vrf/v1/api-reference/",
-    "Supported Networks": "/docs/vrf/v1/supported-networks/",
+    "API Reference": "/vrf/v1/api-reference/",
+    "Supported Networks": "/vrf/v1/supported-networks/",
   }
 metadata:
   description: "How to generate a random number inside a smart contract using Chainlink VRF."
@@ -28,7 +28,7 @@ Chainlink VRF follows the [Request & Receive Data](/any-api/introduction/) cycle
 
 The contract should own enough LINK to pay the specified fee. The beginner walkthrough explains how to [fund your contract](/resources/fund-your-contract/).
 
-Note, the below values have to be configured correctly for VRF requests to work. You can find the respective values for your network in the [VRF Contracts page](/docs/vrf/v1/supported-networks).
+Note, the below values have to be configured correctly for VRF requests to work. You can find the respective values for your network in the [VRF Contracts page](/vrf/v1/supported-networks).
 
 - `LINK Token` - LINK token address on the corresponding network (Ethereum, Polygon, BSC, etc)
 - `VRF Coordinator` - address of the Chainlink VRF Coordinator
@@ -36,7 +36,7 @@ Note, the below values have to be configured correctly for VRF requests to work.
 - `Fee` - fee required to fulfill a VRF request
 
 :::tip[Security Considerations]
-Be sure to look your contract over with [these security considerations](/docs/vrf/v1/security) in mind!
+Be sure to look your contract over with [these security considerations](/vrf/v1/security) in mind!
 :::
 
 :::note[Remember to fund your contract with LINK!]
@@ -51,7 +51,7 @@ If your `fulfillRandomness` function uses more than 200k gas, the transaction wi
 
 ## Getting More Randomness
 
-If you are looking for how to turn a single result into multiple random numbers, check out our guide on [Randomness Expansion](/docs/vrf/v1/best-practices/#getting-multiple-random-numbers).
+If you are looking for how to turn a single result into multiple random numbers, check out our guide on [Randomness Expansion](/vrf/v1/best-practices/#getting-multiple-random-numbers).
 
 ## Network Congestion and Responsiveness
 

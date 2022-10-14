@@ -7,9 +7,9 @@ permalink: "docs/consuming-data-feeds/"
 excerpt: "Smart Contracts and Chainlink"
 whatsnext:
   {
-    "Random Numbers: Using Chainlink VRF": "/docs/intermediates-tutorial/",
-    "Connect contracts to Any API": "/docs/advanced-tutorial/",
-    "Chaink Keepers": "/chainlink-automation/introduction/",
+    "Random Numbers: Using Chainlink VRF": "/getting-started/intermediates-tutorial/",
+    "Connect contracts to Any API": "/getting-started/advanced-tutorial",
+    Chainlink Automation":"/chainlink-automation/introduction/,
   }
 metadata:
   title: "Consuming Data Feeds"
@@ -20,11 +20,11 @@ metadata:
 
 :::note[ New to smart contracts?]
 
-This tutorial assumes that you know how to create and deploy basic smart contracts. If you are new to smart contract development, learn how to [Deploy Your First Smart Contract](/docs/deploy-your-first-contract/) before you start this guide.
+This tutorial assumes that you know how to create and deploy basic smart contracts. If you are new to smart contract development, learn how to [Deploy Your First Smart Contract](/getting-started/deploy-your-first-contract/) before you start this guide.
 
 :::
 
-When you connect a smart contract to real-world services or off-chain data, you create a _hybrid smart contract_. For example, you can use Chainlink Data Feeds to connect your smart contracts to asset pricing data like the [ETH / USD feed](https://feeds.chain.link/eth-usd). These data feeds use the data aggregated from many independent Chainlink node operators. Each price feed has an on-chain address and functions that enable contracts to read pricing data from that address.
+When you connect a smart contract to real-world services or off-chain data, you create a _hybrid smart contract_. For example, you can use Chainlink Data Feeds to connect your smart contracts to asset pricing data like the [ETH / USD feed](https://data.chain.link/eth-usd). These data feeds use the data aggregated from many independent Chainlink node operators. Each price feed has an on-chain address and functions that enable contracts to read pricing data from that address.
 
 This guide shows you how to write, deploy, and run a smart contract that consumes data from a price data feed.
 
@@ -53,7 +53,7 @@ Deploy the `PriceConsumerV3` smart contract on the Goerli testnet.
 1. [Open the example contract](https://remix.ethereum.org/#url=https://docs.chain.link/samples/PriceFeeds/PriceConsumerV3.sol) in Remix. Remix opens and shows the contents of the smart contract.
 
 <div class="remix-callout">
-  <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/PriceFeeds/PriceConsumerV3.sol" target="_blank">Open the contract in Remix</a>
+  <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/PriceFeeds/PriceConsumerV3.sol">Open the contract in Remix</a>
 </div>
 
 1. Because the code is already written, you can start the compile step. On the left side of Remix, click the **Solidity Compiler** tab to view the compiler settings.
@@ -80,4 +80,4 @@ Deploy the `PriceConsumerV3` smart contract on the Goerli testnet.
 1. Click **getLatestPrice** to show the latest price from the aggregator contract. The latest price appears just below the button. The returned price is an integer, so it is missing its decimal point.
    ![A screenshot showing the deployed contract.](/images/getting-started/getLatestPrice.png)
 
-You can run your own oracle networks that provide data to smart contracts similar to the `AggregatorV3Interface`, but first, you should learn how to configure your contracts to pay oracles using LINK tokens. Follow the [Generate Random Numbers](./intermediates-tutorial/) to learn how.
+You can run your own oracle networks that provide data to smart contracts similar to the `AggregatorV3Interface`, but first, you should learn how to configure your contracts to pay oracles using LINK tokens. Follow the [Generate Random Numbers](/getting-started/intermediates-tutorial/) to learn how.

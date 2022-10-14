@@ -4,7 +4,7 @@ section: gettingStarted
 date: Last Modified
 title: "Deploy Your First Smart Contract"
 permalink: "docs/deploy-your-first-contract/"
-whatsnext: { "Consuming Data Feeds": "/docs/consuming-data-feeds/" }
+whatsnext: { "Consuming Data Feeds": "/getting-started/consuming-data-feeds/" }
 metadata:
   title: "Deploy Your First Smart Contract"
   description: "Deploy and run your first smart contract in an interactive web development environment."
@@ -16,7 +16,7 @@ You can write your first smart contract and run it in your browser without any k
 
 :::note[ Already know Solidity and have MetaMask configured?]
 
-If you are already familiar with how to deploy Smart Contracts and use MetaMask, you can skip to the [Consuming Data Feeds](/docs/consuming-data-feeds/) guide to learn how to connect your smart contracts to Chainlink data feeds.
+If you are already familiar with how to deploy Smart Contracts and use MetaMask, you can skip to the [Consuming Data Feeds](/getting-started/consuming-data-feeds/) guide to learn how to connect your smart contracts to Chainlink data feeds.
 
 :::
 
@@ -60,7 +60,7 @@ Your first contract is a simple `HelloWorld.sol` example. This example shows you
 
 <div class="remix-callout">
   <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/Tutorials/HelloWorld.sol" target="_blank">Open in Remix</a>
-  <a href="/docs/conceptual-overview/#what-is-remix" >What is Remix?</a>
+  <a href="/getting-started/conceptual-overview/#what-is-remix" >What is Remix?</a>
 </div>
 
 1. Because the code is already written, you can start the compile step. On the left side of Remix, click the **Solidity Compiler** tab to view the compiler settings.
@@ -108,4 +108,4 @@ Because you deployed the contract to an actual blockchain, several nodes on the 
 
 Now you know how to deploy example contracts to a test network and run the functions in those contracts. You can write your own contracts and test them using this same process.
 
-Next, read the [Consuming Data Feeds](/docs/consuming-data-feeds/) guide to learn how to connect your smart contracts to Chainlink Data Feeds and retrieve on-chain data that your smart contracts can act on.
+Next, read the [Consuming Data Feeds](/getting-started/consuming-data-feeds/) guide to learn how to connect your smart contracts to Chainlink Data Feeds and retrieve on-chain data that your smart contracts can act on.

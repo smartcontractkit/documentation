@@ -7,8 +7,8 @@ permalink: "docs/conceptual-overview/"
 excerpt: "Smart Contracts and Chainlink"
 whatsnext:
   {
-    "Deploy Your First Smart Contract": "/docs/deploy-your-first-contract/",
-    "Consuming Data Feeds": "/docs/consuming-data-feeds/",
+    "Deploy Your First Smart Contract": "/getting-started/deploy-your-first-contract/",
+    "Consuming Data Feeds": "/getting-started/consuming-data-feeds/",
   }
 metadata:
   title: "Conceptual Overview"
@@ -22,8 +22,8 @@ Welcome to the Smart Contract Getting Started guide. This overview explains the 
 **Skip ahead**
 To get your hands on the code right away, you can skip this overview:
 
-- [Deploy Your First Smart Contract](/docs/deploy-your-first-contract/): If you are new to smart contracts, deploy your first smart contract in an interactive web development environment.
-- [Learn how to use Data Feeds](/docs/consuming-data-feeds/): If you are already familiar with smart contracts and want to learn how to create _hybrid_ smart contracts, use Chainlink Data Feeds to get asset price data on-chain.
+- [Deploy Your First Smart Contract](/getting-started/deploy-your-first-contract/): If you are new to smart contracts, deploy your first smart contract in an interactive web development environment.
+- [Learn how to use Data Feeds](/getting-started/consuming-data-feeds/): If you are already familiar with smart contracts and want to learn how to create _hybrid_ smart contracts, use Chainlink Data Feeds to get asset price data on-chain.
 
 <YouTube id="https://www.youtube.com/watch?v=rFXSEEQG9YE" />
 
@@ -148,15 +148,15 @@ Oracles play a critical role in facilitating the full potential of smart contrac
 
 Oracles are most popularly used with [_Data Feeds_](./using-chainlink-reference-contracts/). DeFi platforms like [AAVE](https://aave.com/) and [Synthetix](https://www.synthetix.io/) use Chainlink data feed oracles to obtain accurate real-time asset prices in their smart contracts.
 
-Chainlink data feeds are sources of data [aggregated from many independent Chainlink node operators](./architecture-decentralized-model/). Each data feed has an on-chain address and functions that enable contracts to read from that address. For example, the [ETH / USD feed](https://feeds.chain.link/eth-usd/).
+Chainlink data feeds are sources of data [aggregated from many independent Chainlink node operators](./architecture-decentralized-model/). Each data feed has an on-chain address and functions that enable contracts to read from that address. For example, the [ETH / USD feed](https://data.chain.link/eth-usd/).
 
 ![Chainlink Feeds List](/images/contract-devs/price-aggr.png)
 
 Smart contracts also use oracles to get other capabilities on-chain:
 
-- [Generate Verifiable Random Numbers (VRF)](/docs/vrf/v2/introduction/): Use Chainlink VRF to consume randomness in your smart contracts.
+- [Generate Verifiable Random Numbers (VRF)](/vrf/v2/introduction/): Use Chainlink VRF to consume randomness in your smart contracts.
 - [Call External APIs (Any API)](/any-api/introduction/): Request & Receive data from any API using the Chainlink contract library.
-- [Automate Smart Contract Functions (Keepers)](/chainlink-automation/introduction/): Automating smart contract functions and regular contract maintenance.
+- [Automate Smart Contract Functions (Automation)](/chainlink-automation/introduction/): Automating smart contract functions and regular contract maintenance.
 
 ## What is Remix?
 
@@ -165,10 +165,10 @@ Smart contracts also use oracles to get other capabilities on-chain:
 [Remix](https://remix.ethereum.org/) is a web IDE (integrated development environment) for creating, running, and debugging smart contracts in the browser. It is developed and maintained by the Ethereum foundation. Remix allows Solidity developers to write smart contracts without a development machine since everything required is included in the web interface. It allows for a simplified method of interacting with deployed contracts, without the need for a command line interface. Remix also has support for samples. This means that Remix can load code from Github.
 
 To learn how to use Remix, see the [Deploying Your First Smart Contract
-](/docs/deploy-your-first-contract/) guide.
+](/getting-started/deploy-your-first-contract/) guide.
 
 <div class="remix-callout">
-  <a href="/docs/deploy-your-first-contract/">Deploy Your First Smart Contract</a>
+  <a href="/getting-started/deploy-your-first-contract/">Deploy Your First Smart Contract</a>
 </div>
 
 ## What is Metamask?

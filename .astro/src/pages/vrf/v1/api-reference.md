@@ -40,7 +40,7 @@ Initialize your consuming contract.
 constructor(address _vrfCoordinator, address _link)
 ```
 
-- `_vrfCoordinator`: Address of the Chainlink VRF Coordinator. See [Chainlink VRF Addresses](/docs/vrf/v1/supported-networks/) for details.
+- `_vrfCoordinator`: Address of the Chainlink VRF Coordinator. See [Chainlink VRF Addresses](/vrf/v1/supported-networks/) for details.
 - `_link`: Address of the LINK token. See [LINK Token Addresses](/resources/link-token-contracts/) for details.
 
 ---
@@ -58,7 +58,7 @@ function requestRandomness(bytes32 _keyHash, uint256 _fee)
     public returns (bytes32 requestId)
 ```
 
-- `_keyHash`: The public key against which randomness is generated. See [Chainlink VRF supported networks](/docs/vrf/v1/supported-networks) for details.
+- `_keyHash`: The public key against which randomness is generated. See [Chainlink VRF supported networks](/vrf/v1/supported-networks) for details.
 - `_fee`: The fee, in LINK, for the request. Specified by the oracle.
 - `RETURN`: The ID unique to a single request.
 
@@ -78,4 +78,4 @@ function fulfillRandomness(bytes32 requestId, uint256 randomness)
 
 ### Maximizing security
 
-Chainlink VRF provides powerful security guarantees and is easy to integrate. However, smart contract security is a nuanced topic. You can read about the [top security considerations for VRF](/docs/vrf/v1/security).
+Chainlink VRF provides powerful security guarantees and is easy to integrate. However, smart contract security is a nuanced topic. You can read about the [top security considerations for VRF](/vrf/v1/security).

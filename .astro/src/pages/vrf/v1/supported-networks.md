@@ -14,7 +14,7 @@ setup: |
 
 Chainlink VRF allows you to integrate provably-fair and verifiably random data in your smart contract.
 
-For implementation details, read [Introduction to Chainlink VRF](/docs/vrf/v1/introduction).
+For implementation details, read [Introduction to Chainlink VRF](/vrf/v1/introduction).
 
 ## Polygon (Matic) Mainnet
 
