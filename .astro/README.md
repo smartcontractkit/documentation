@@ -3,7 +3,7 @@
 1. Run `npm run import`
 2. Copy over the files from tempdocs
 3. Remove `/` and `/404` from the generated `redirects.json`
-4. Copy the values of redirects into the redirect script (dirty hack)
+4. Copy the values of redirects into the update-sidebar-links.ts script without `{"redirects":[` and the trailing `]}` (dirty hack)
 5. Run `npm run update-sidebar` to update the sidebar links with the ones in the redirects variable.
 
 ## When manually updating the imported pages
