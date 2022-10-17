@@ -38,12 +38,6 @@ To consume price data, your smart contract should reference [`AggregatorV3Interf
 
 ::solidity-remix[samples/PriceFeeds/PriceConsumerV3.sol]
 
-
-<div class="remix-callout">
-      <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/PriceFeeds/PriceConsumerV3.sol" target="_blank" >Open in Remix</a>
-      <a href="/docs/conceptual-overview/#what-is-remix">What is Remix?</a>
-</div>
-
 The `latestRoundData` function returns five values representing information about the latest price data. See the [Data Feeds API Reference](/data-feeds/price-feeds/api-reference/) for more details.
 
 ## Vyper 
@@ -71,11 +65,8 @@ This example uses [Web3.py](https://web3py.readthedocs.io/en/stable/) to retriev
 
 ::solidity-remix[samples/PriceFeeds/PriceConsumerV3.py]
 
-
-<div class="row cl-button-container">
-    <div class="col-xs-12 col-md-12">
-    <a href="https://repl.it/@DwightLyle/GetLatestPriceWeb3PY" class="cl-button--ghost python-tracked">Run this Python example</a>
-    </div>
+<div class="remix-callout">
+    <a href="https://repl.it/@DwightLyle/GetLatestPriceWeb3PY">Run this Python example</a>
 </div>
 
 ## Golang
@@ -106,12 +97,6 @@ If you require a denomination other than what is provided, you can use two data 
 
 
 ::solidity-remix[samples/PriceFeeds/PriceConverter.sol]
-
-
-<div class="remix-callout">
-      <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/PriceFeeds/PriceConverter.sol" target="_blank" >Open in Remix</a>
-      <a href="/docs/conceptual-overview/#what-is-remix">What is Remix?</a>
-</div>
 
 ## How Do Data Feeds Get Their Data?
 

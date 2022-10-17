@@ -66,13 +66,6 @@ To consume price data from the Feed Registry, your smart contract should referen
 
 ::solidity-remix[samples/FeedRegistry/PriceConsumer.sol]
 
-
-<div class="remix-callout">
-    <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/FeedRegistry/PriceConsumer.sol" target="_blank" >Open in Remix</a>
-    <a href="/docs/conceptual-overview/#what-is-remix" >What is Remix?</a>
-</div>
-
-
 ### Solidity Hardhat Example
 
 :::note[ Note]

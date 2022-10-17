@@ -22,9 +22,3 @@ Using Solidity, your smart contract should reference [`AggregatorV3Interface`](h
 
 
 ::solidity-remix[samples/PriceFeeds/NFTFloorPriceConsumerV3.sol]
-
-
-<div class="remix-callout">
-      <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/PriceFeeds/NFTFloorPriceConsumerV3.sol" target="_blank" >Open in Remix</a>
-      <a href="/docs/conceptual-overview/#what-is-remix">What is Remix?</a>
-</div>

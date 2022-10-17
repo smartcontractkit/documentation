@@ -60,7 +60,7 @@ where:
 
 :::
 
-** Example:**
+**Example:**
 
 When you query historical data, it is important to know when you reach the end of the history of the underlying aggregator. As an example, if the `latestRoundData` [function](/data-feeds/price-feeds/api-reference/#latestrounddata) of the [LINK / USD feed on Ethereum Mainnet](/data-feeds/price-feeds/addresses/?network=ethereum) returns `roundId = 92233720368547771158`, you can use this value to compute the `phaseId` and `aggregatorRoundId`:
 
@@ -120,12 +120,6 @@ The [`getRoundData` function](/data-feeds/price-feeds/api-reference/#getrounddat
 
 ::solidity-remix[samples/PriceFeeds/HistoricalPriceConsumer.sol]
 
-
-<div class="remix-callout">
-      <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/PriceFeeds/HistoricalPriceConsumer.sol" target="_blank" >Open in Remix</a>
-      <a href="/docs/conceptual-overview/#what-is-remix" >What is Remix?</a>
-</div>
-
 ### Javascript
 
 
@@ -138,5 +132,5 @@ The [`getRoundData` function](/data-feeds/price-feeds/api-reference/#getrounddat
 ::solidity-remix[samples/PriceFeeds/HistoricalPriceConsumer.py]
 
 <div class="remix-callout">
-    <a href="https://repl.it/@DwightLyle/GetHistoricalPriceWeb3PY" target="_blank" class="cl-button--ghost python-tracked">Run this Python example</a>
+    <a href="https://repl.it/@DwightLyle/GetHistoricalPriceWeb3PY">Run this Python example</a>
 </div>
