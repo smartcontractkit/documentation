@@ -85,21 +85,53 @@ export const SIDEBAR = {
       contents: [
         {
           title: "Introduction to Data Feeds",
-          url: "data-feeds/using-chainlink-reference-contracts",
+          url: "data-feeds",
         },
         {
-          title: "Using Data Feeds",
-          url: "data-feeds/get-the-latest-price",
+          title: "Price Feeds",
+          url: "data-feeds/price-feeds",
           children: [
             {
-              title: "Data Feeds API Reference",
-              url: "data-feeds/price-feeds-api-reference",
+              title: "Historical Price Data",
+              url: "data-feeds/price-feeds/historical-data",
+            },
+            {
+              title: "Price Feeds API Reference",
+              url: "data-feeds/price-feeds/api-reference",
+            },
+            {
+              title: "Contract Addresses",
+              url: "data-feeds/price-feeds/addresses",
             },
           ],
         },
         {
-          title: "Historical Price Data",
-          url: "data-feeds/historical-price-data",
+          title: "Proof of Reserve Feeds",
+          url: "data-feeds/proof-of-reserve",
+          children: [
+            {
+              title: "Contract Addresses",
+              url: "data-feeds/proof-of-reserve/addresses",
+            },
+          ],
+        },
+        {
+          title: "NFT Floor Pricing Feeds",
+          url: "data-feeds/nft-floor-price",
+          children: [
+            {
+              title: "Contract Addresses",
+              url: "data-feeds/nft-floor-price/addresses",
+            },
+          ],
+        },
+        {
+          title: "L2 Sequencer Uptime Feeds",
+          url: "data-feeds/l2-sequencer-feeds",
+        },
+        {
+          title: "Using ENS with Data Feeds",
+          url: "data-feeds/ens",
         },
         {
           title: "Feed Registry",
@@ -107,70 +139,13 @@ export const SIDEBAR = {
           children: [
             {
               title: "Feed Registry API Reference",
-              url: "data-feeds/feed-registry-functions",
-            },
-          ],
-        },
-        { title: "Using ENS with Data Feeds", url: "data-feeds/ens" },
-        {
-          title: "Contract Addresses",
-          url: "data-feeds/reference-contracts",
-          children: [
-            {
-              title: "Ethereum Data Feeds",
-              url: "data-feeds/addresses/ethereum",
-            },
-            {
-              title: "BNB Chain Data Feeds",
-              url: "data-feeds/addresses/bnb-chain",
-            },
-            {
-              title: "Polygon (Matic) Data Feeds",
-              url: "data-feeds/addresses/polygon",
-            },
-            {
-              title: "Gnosis Chain (xDai) Data Feeds",
-              url: "data-feeds/addresses/gnosis-chain",
-            },
-            {
-              title: "HECO Chain Data Feeds",
-              url: "data-feeds/addresses/heco-chain",
-            },
-            {
-              title: "Avalanche Data Feeds",
-              url: "data-feeds/addresses/avalanche",
-            },
-            { title: "Fantom Data Feeds", url: "data-feeds/addresses/fantom" },
-            {
-              title: "Arbitrum Data Feeds",
-              url: "data-feeds/addresses/arbitrum",
-            },
-            {
-              title: "Harmony Data Feeds",
-              url: "data-feeds/addresses/harmony",
-            },
-            {
-              title: "Optimism Data Feeds",
-              url: "data-feeds/addresses/optimism",
-            },
-            {
-              title: "Moonriver Data Feeds",
-              url: "data-feeds/addresses/moonriver",
-            },
-            {
-              title: "Moonbeam Data Feeds",
-              url: "data-feeds/addresses/moonbeam",
-            },
-            { title: "Metis Data Feeds", url: "data-feeds/addresses/metis" },
-            {
-              title: "Klaytn Data Feeds",
-              url: "data-feeds/addresses/data-feeds-klaytn",
+              url: "data-feeds/feed-registry/feed-registry-functions",
             },
           ],
         },
         {
-          title: "L2 Sequencer Uptime Feeds",
-          url: "data-feeds/l2-sequencer-feeds",
+          title: "Selecting Data Feeds",
+          url: "data-feeds/selecting-data-feeds",
         },
       ],
     },

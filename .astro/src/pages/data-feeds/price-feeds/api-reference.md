@@ -10,11 +10,6 @@ metadata:
 
 When you use data feeds, retrieve the feeds through the `AggregatorV3Interface` and the proxy address. Optionally, you can call variables and functions in the `AccessControlledOffchainAggregator` contract to get information about the aggregator behind the proxy.
 
-**Topics**
-
-+ [AggregatorV3Interface contract](#aggregatorv3interface)
-+ [AccessControlledOffchainAggregator contract](#accesscontrolledoffchainaggregator)
-
 ## AggregatorV3Interface
 
 Import this interface to your contract and use it to run functions in the proxy contract. Create the interface object by pointing to the proxy address. For example, on Goerli you could create the interface object in the constructor of your contract using the following example:

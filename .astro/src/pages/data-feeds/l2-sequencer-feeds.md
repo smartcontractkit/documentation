@@ -12,15 +12,6 @@ If a sequencer becomes unavailable, it is impossible to access read/write APIs t
 
 To help your applications identify when the sequencer is unavailable, you can use a data feed that tracks the last known status of the sequencer at a given point in time. This helps you prevent mass liquidations by providing a grace period to allow customers to react to such an event.
 
-**Topics**
-
-- [Available networks](#available-networks)
-- [Arbitrum](#arbitrum)
-  - [Handling Arbitrum outages](#handling-arbitrum-outages)
-- [Optimism and Metis](#optimism-and-metis)
-  - [Handling outages on Optimism and Metis](#handling-outages-on-optimism-and-metis)
-- [Example code](#example-code)
-
 ## Available networks
 
 You can find proxy addresses for the L2 sequencer feeds at the following addresses:

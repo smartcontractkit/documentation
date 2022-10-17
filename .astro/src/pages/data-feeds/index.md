@@ -21,21 +21,6 @@ metadata:
 
 If you already have a project started and would like to integrate Chainlink, you can [add Chainlink to your existing project](./create-a-chainlinked-project/#install-into-existing-projects) by using the [`@chainlink/contracts` NPM package](https://www.npmjs.com/package/@chainlink/contracts).
 
-**Topics**
-
-- [Types of data feeds](#types-of-data-feeds)
-  - [Price Feeds](#price-feeds) 
-  - [Proof of Reserve Feeds](#proof-of-reserve-feeds)
-  - [NFT Floor Pricing Feeds](#nft-floor-pricing-feeds)
-  - [L2 sequencer uptime feeds](#l2-sequencer-uptime-feeds)
-- [Components of a data feed](#components-of-a-data-feed)
-- [Reading proxy and aggregator Configurations](#reading-proxy-and-aggregator-configurations)
-- [Components of an aggregator](#components-of-an-aggregator)
-- [Updates to proxy and aggregator contracts](#updates-to-proxy-and-aggregator-contracts)
-- [Monitoring data feeds](#monitoring-data-feeds)
-  - [Check the latest answer against reasonable limits](#check-the-latest-answer-against-reasonable-limits)
-  - [Check the timestamp of the latest answer](#check-the-timestamp-of-the-latest-answer)
-
 ## Types of data feeds
 
 Data feeds provide many different types of data for your applications.
