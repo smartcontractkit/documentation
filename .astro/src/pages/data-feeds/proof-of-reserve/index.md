@@ -9,9 +9,9 @@ whatsnext: {
 }
 ---
 
-Chainlink Proof of Reserve Feeds provide the status of the reserves for several assets. You can consume these feeds the same way as [Price Feeds](/docs/data-feeds/price-feeds/).
+Chainlink Proof of Reserve Feeds provide the status of the reserves for several assets. You can consume these feeds the same way as [Price Feeds](/data-feeds/price-feeds/).
 
-To find a list of available Proof of Reserve Feeds, see the [Contract Addresses](/docs/data-feeds/proof-of-reserve/addresses/) page.
+To find a list of available Proof of Reserve Feeds, see the [Contract Addresses](/data-feeds/proof-of-reserve/addresses/) page.
 
 ## Types of Proof of Reserve Feeds
 
@@ -27,7 +27,7 @@ Reserves are available for both cross-chain assets and off-chain assets. Token i
 
 ### Cross-chain reserves
 
-Cross-Chain reserves are sourced from the network where the reserves are held. This includes but is not limited to networks including Bitcoin, Filecoin, Cardano, and chains where Chainlink has a native integration. Chainlink Node operators can report cross-chain reserves by running an [external adapter](/docs/external-adapters/) and querying the source-chain client directly. In some instances, the reserves are composed of a dynamic list of IDs or addresses using a composite adapter.
+Cross-Chain reserves are sourced from the network where the reserves are held. This includes but is not limited to networks including Bitcoin, Filecoin, Cardano, and chains where Chainlink has a native integration. Chainlink Node operators can report cross-chain reserves by running an [external adapter](/chainlink-nodes/external-adapters/external-adapters) and querying the source-chain client directly. In some instances, the reserves are composed of a dynamic list of IDs or addresses using a composite adapter.
 
 ![Cross-chain reserves diagram](/images/data-feed/cross-chain-reserves.webp)
 
@@ -38,7 +38,7 @@ Cross-chain reserves provide their data using the following methods:
 
 ### Off-chain reserves
 
-Off-Chain reserves are sourced from APIs through an [external adapter](/docs/external-adapters/).
+Off-Chain reserves are sourced from APIs through an [external adapter](/chainlink-nodes/external-adapters/external-adapters).
 
 ![Off-chain reserves diagram](/images/data-feed/off-chain-reserves.webp)
 
@@ -50,7 +50,7 @@ Off-chain reserves provide their data using the following methods:
 
 ## Using Proof of Reserve Feeds
 
-Read answers from Proof of Reserve Feeds the same way that you use [other Data Feeds](/docs/data-feeds/price-feeds/).
+Read answers from Proof of Reserve Feeds the same way that you use [Price Feeds](/data-feeds/price-feeds/).
 
 Using Solidity, your smart contract should reference [`AggregatorV3Interface`](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol), which defines the external functions implemented by Data Feeds.
 

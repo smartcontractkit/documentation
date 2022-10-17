@@ -86,7 +86,7 @@ If you plan on using one of these feeds and would like to get a more detailed un
 
 ### ⭕ Deprecating
 
-These feeds are being deprecated. To find the deprecation dates for specific feeds, see the [Feeds Scheduled For Deprecation](/docs/data-feeds/deprecating-feeds/) page.
+These feeds are being deprecated. To find the deprecation dates for specific feeds, see the [Feeds Scheduled For Deprecation](/data-feeds/deprecating-feeds/) page.
 
 ## Risk Mitigation
 
@@ -102,7 +102,7 @@ Below are some examples of tooling that Chainlink users have put in place:
 - **Monitoring:** Some users create their own monitoring alerts based on deviations in the data feeds that they are using.
 - **Soak testing:** Users are strongly advised to thoroughly test price feed integrations and incorporate a [soak period](https://en.wikipedia.org/wiki/Soak_testing) prior to providing access to end users or securing value.
 
-For more detailed information about some of these examples, see the [Monitoring data feeds](/docs/data-feeds/#monitoring-data-feeds) documentation.
+For more detailed information about some of these examples, see the [Monitoring data feeds](/data-feeds/#monitoring-data-feeds) documentation.
 
 For important updates regarding the use of Chainlink Price Feeds, users should join the official Chainlink Discord and subscribe to the data-feeds-user-notifications channel: https://discord.gg/Dqy5N9UbsR
 

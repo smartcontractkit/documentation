@@ -115,11 +115,11 @@ Our Starter Kits help jumpstart your full-stack development process. You can get
 Looking for more ways to use Chainlink? Here are some resources that discuss Chainlink's use cases as well as the winning projects we've had in our previous hackathons. There is also a link to the Marketplace where you can find the latest data provider nodes and explore the network.
 
 - [77 Use Cases by Chainlink](https://blog.chain.link/44-ways-to-enhance-your-smart-contract-with-chainlink/)
-- [Past Hackathon Winning Projects](/docs/example-projects)
+- [Past Hackathon Winning Projects](/resources/example-projects/)
 
 ## Outreach
 
-The Chainlink community is an inviting group of engineers that is always looking to help users expand their knowledge on Chainlink and solve related issues. Refer back to the [Getting Help](/docs/getting-help) page for the latest information about how to get support.
+The Chainlink community is an inviting group of engineers that is always looking to help users expand their knowledge on Chainlink and solve related issues. Refer back to the [Getting Help](/resources/getting-help/) page for the latest information about how to get support.
 
 ### Get support
 
