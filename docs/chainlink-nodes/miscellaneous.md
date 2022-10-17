@@ -97,7 +97,7 @@ Each user has a specific role assigned to their account. There are four roles: `
 
 If there are multiple users who need specific access to manage the Chainlink Node instance, permissions and level of access can be set here.
 
-User management is configured through the use of the admin `chainlink admin users` command. Run `chainlink adamin login` before you set user roles for other accounts. For example, a read-only user can be created with the following command:
+User management is configured through the use of the admin `chainlink admin users` command. Run `chainlink admin login` before you set user roles for other accounts. For example, a read-only user can be created with the following command:
 
 ```shell
 chainlink admin users create --email=operator-ui-read-only@test.com --role=view
@@ -105,7 +105,7 @@ chainlink admin users create --email=operator-ui-read-only@test.com --role=view
 
 Specific actions are enabled to check role-based access before they execute. The following table lists the actions that have role-based access and the role that is required to run that action:
 
-| Action | Read | Run | Run | Admin |
+| Action | Read | Run | Edit | Admin |
 |:--- | :---: | :---: | :---: | :---: |
 | Update password  | X | X | X | X |
 | Create self API token  | X | X | X | X |
