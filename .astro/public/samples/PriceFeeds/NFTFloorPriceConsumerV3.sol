@@ -3,17 +3,17 @@ pragma solidity ^0.8.7;
 
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
-contract PriceConsumerV3 {
+contract NFTFloorPriceConsumerV3 {
 
-    AggregatorV3Interface internal priceFeed;
+    AggregatorV3Interface internal nftFloorPriceFeed;
 
     /**
      * Network: Goerli
-     * Aggregator: ETH/USD
-     * Address: 0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e
+     * Aggregator: CryptoPunks
+     * Address: 0x5c13b249846540F81c093Bc342b5d963a7518145
      */
     constructor() {
-        priceFeed = AggregatorV3Interface(0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e);
+        nftFloorPriceFeed = AggregatorV3Interface(0x5c13b249846540F81c093Bc342b5d963a7518145);
     }
 
     /**
@@ -22,11 +22,11 @@ contract PriceConsumerV3 {
     function getLatestPrice() public view returns (int) {
         (
             /*uint80 roundID*/,
-            int price,
+            int nftFloorPrice,
             /*uint startedAt*/,
             /*uint timeStamp*/,
             /*uint80 answeredInRound*/
-        ) = priceFeed.latestRoundData();
-        return price;
+        ) = nftFloorPriceFeed.latestRoundData();
+        return nftFloorPrice;
     }
 }

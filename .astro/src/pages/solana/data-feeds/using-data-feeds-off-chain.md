@@ -51,32 +51,32 @@ Install the necessary components and include the example code in your project. O
 
 1. Install the latest Mainnet version of [the Solana CLI](https://github.com/solana-labs/solana/releases) and export the path to the CLI:
 
-   ```sh
+   ```shell
    sh -c "$(curl -sSfL https://release.solana.com/v1.9.28/install)" &&
    export PATH="~/.local/share/solana/install/active_release/bin:$PATH"
    ```
 
    Run `solana --version` to make sure the Solana CLI is installed correctly.
 
-   ```sh
+   ```shell
    solana --version
    ```
 
 1. Install [Node.js 14 or higher](https://nodejs.org/en/download/). Run `node --version` to verify which version you have installed:
 
-   ```sh
+   ```shell
    node --version
    ```
 
 1. Change to your project directory or create a new directory.
 
-   ```sh
+   ```shell
    mkdir off-chain-project && cd off-chain-project
    ```
 
 1. Optionally [install Yarn](https://classic.yarnpkg.com/lang/en/docs/install/) to use as a package manager and initialize yarn if your project does not already have a `package.json` file:
 
-   ```sh
+   ```shell
    npm install -g yarn && yarn init
    ```
 
@@ -84,13 +84,13 @@ Install the necessary components and include the example code in your project. O
    <PackageManagerTabs>
    <Fragment slot="yarn">
 
-   ```sh yarn
+   ```shell yarn
    yarn add @project-serum/anchor
    ```
 
     </Fragment>
     <Fragment slot="npm">
-    ```sh npm
+    ```shell npm
     npm i @project-serum/anchor
     ```
     </Fragment>
@@ -100,13 +100,13 @@ Install the necessary components and include the example code in your project. O
    <PackageManagerTabs>
    <Fragment slot="yarn">
 
-   ```sh yarn
+   ```shell yarn
    yarn add @chainlink/solana-sdk
    ```
 
     </Fragment>
     <Fragment slot="npm">
-    ```sh npm
+    ```shell npm
    npm i -g @chainlink/solana-sdk
     ```
     </Fragment>
@@ -114,13 +114,13 @@ Install the necessary components and include the example code in your project. O
 
 1. Create a temporary Solana wallet to use for this example. Alternatively, if you have an existing wallet that you want to use, locate the path to your [keypair](https://docs.solana.com/terminology#keypair) file and use it as the keypair for the rest of this guide.
 
-   ```sh
+   ```shell
    solana-keygen new --outfile ./id.json
    ```
 
 1. Set the [Anchor environment variables](https://www.twilio.com/blog/2017/01/how-to-set-environment-variables.html). Anchor uses these to determine which wallet to use and how to get a connection to a Solana cluster. Because this example does not generate or sign any transactions, no lamports are required. The wallet is required only by the Anchor library. For a list of available networks and endpoints, see the [Solana Cluster RPC Endpoints](https://docs.solana.com/cluster/rpc-endpoints) documentation.
 
-   ```sh
+   ```shell
    export ANCHOR_PROVIDER_URL=https://api.devnet.solana.com &&
    export ANCHOR_WALLET=./id.json
    ```
@@ -137,12 +137,12 @@ You can run these examples using the following commands:
     <Fragment slot="tab.js">Javascript</Fragment>
     <Fragment slot="tab.ts">Typescript</Fragment>
     <Fragment slot="panel.js">
-    ```sh JavaScript
+    ```shell JavaScript
     node javascript-example.js
     ```
     </Fragment>
     <Fragment slot="panel.ts">
-    ```sh TypeScript
+    ```shell TypeScript
     yarn add ts-node typescript && yarn ts-node typescript-example.ts
     ```
     </Fragment>
@@ -162,20 +162,20 @@ Before you begin, set up your environment for development on Solana:
 
 1. Install the latest Mainnet version of [the Solana CLI](https://github.com/solana-labs/solana/releases) and export the path to the CLI:
 
-   ```sh
+   ```shell
    sh -c "$(curl -sSfL https://release.solana.com/v1.9.28/install)" &&
    export PATH="~/.local/share/solana/install/active_release/bin:$PATH"
    ```
 
    Run `solana --version` to make sure the Solana CLI is installed correctly.
 
-   ```sh
+   ```shell
    solana --version
    ```
 
 1. Install [Node.js 14 or higher](https://nodejs.org/en/download/). Run `node --version` to verify which version you have installed:
 
-   ```sh
+   ```shell
    node --version
    ```
 
@@ -183,7 +183,7 @@ Before you begin, set up your environment for development on Solana:
 
 1. Install [Yarn](https://classic.yarnpkg.com/lang/en/docs/install/) to simplify package management and run code samples in the Starter Kit.
 
-   ```sh
+   ```shell
    npm install -g yarn
    ```
 
@@ -193,7 +193,7 @@ After you install the required tools, clone the example code from the [solana-st
 
 1. In a terminal, clone the [solana-starter-kit](https://github.com/smartcontractkit/solana-starter-kit) repository and change to the `solana-starter-kit` directory:
 
-   ```sh
+   ```shell
    git clone https://github.com/smartcontractkit/solana-starter-kit &&
    cd ./solana-starter-kit
    ```
@@ -202,30 +202,30 @@ After you install the required tools, clone the example code from the [solana-st
 
 1. In the `./solana-starter-kit` directory, install Node.js dependencies defined in the `package.json` file:
 
-   ```sh
+   ```shell
    yarn install
    ```
 
 1. Create a temporary Solana wallet file to use for this example. Because your application runs off-chain and does not run any functions or alter data on-chain, the wallet does not require any SOL tokens to function.
 
-   ```sh
+   ```shell
    solana-keygen new --outfile ./id.json
    ```
 
 1. Set the [Anchor environment variables](https://www.twilio.com/blog/2017/01/how-to-set-environment-variables.html). Anchor uses these to determine which wallet to use and Solana cluster to use. Take note that because we are not generating or signing any transactions, the wallet isn't used, it's just required by the Anchor library. For a list of available networks and endpoints, see the [Solana Cluster RPC Endpoints](https://docs.solana.com/cluster/rpc-endpoints) documentation.
 
-   ```sh Solana Devnet
+   ```shell Solana Devnet
    export ANCHOR_PROVIDER_URL=https://api.devnet.solana.com &&
    export ANCHOR_WALLET=./id.json
    ```
 
 1. Run the example:
 
-   ```sh JavaScript
+   ```shell JavaScript
    node read-data.js
    ```
 
-   ```sh TypeScript
+   ```shell TypeScript
    yarn run read-data
    ```
 

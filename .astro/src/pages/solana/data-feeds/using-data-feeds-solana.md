@@ -71,7 +71,7 @@ Program Transaction logs:
     <Fragment slot="tab.rust">Rust</Fragment>
     <Fragment slot="tab.rustAnchor">Rust with Anchor</Fragment>
     <Fragment slot="panel.rust">
-   ```sh Rust
+   ```shell Rust
    > Program logged: "Chainlink Price Feed Consumer entrypoint"
    > Program logged: "SOL / USD price is 83.99000000"
    > Program consumed: 95953 of 1400000 compute units
@@ -79,7 +79,7 @@ Program Transaction logs:
    ```
     </Fragment>
     <Fragment slot="panel.rustAnchor">
-   ```sh Rust with Anchor
+   ```shell Rust with Anchor
    Fetching transaction logs...
    [
    'Program HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny consumed 1826 of 1306895 compute units',
@@ -110,7 +110,7 @@ Before you begin, set up your environment for development on Solana:
 
 1. Install [Node.js 14 or higher](https://nodejs.org/en/download/). Run `node --version` to verify which version you have installed:
 
-   ```sh
+   ```shell
    node --version
    ```
 
@@ -120,21 +120,21 @@ Before you begin, set up your environment for development on Solana:
 
 1. Install [Rust](https://www.rust-lang.org/tools/install):
 
-   ```sh
+   ```shell
    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh &&
    source $HOME/.cargo/env
    ```
 
 1. Install the latest Mainnet version of [the Solana CLI](https://github.com/solana-labs/solana/releases) and export the path to the CLI:
 
-   ```sh
+   ```shell
    sh -c "$(curl -sSfL https://release.solana.com/v1.9.28/install)" &&
    export PATH="~/.local/share/solana/install/active_release/bin:$PATH"
    ```
 
    Run `solana --version` to make sure the Solana CLI is installed correctly.
 
-   ```sh
+   ```shell
    solana --version
    ```
 
@@ -148,7 +148,7 @@ This example includes a contract written in Rust. Deploy the contract to the Sol
 
 1. In a terminal, clone the [solana-starter-kit](https://github.com/smartcontractkit/solana-starter-kit) repository and change to the `solana-starter-kit` directory:
 
-   ```sh
+   ```shell
    git clone https://github.com/smartcontractkit/solana-starter-kit &&
    cd ./solana-starter-kit
    ```
@@ -157,13 +157,13 @@ This example includes a contract written in Rust. Deploy the contract to the Sol
 
 1. In the `./solana-starter-kit` directory, install Node.js dependencies defined in the `package.json` file:
 
-   ```sh
+   ```shell
    yarn install
    ```
 
 1. Create a temporary Solana wallet to use for this example. Use a temporary wallet to isolate development from your other wallets and prevent you from unintentionally using lamports on the Solana Mainnet. Alternatively, if you have an existing wallet that you want to use, locate the path to your [keypair](https://docs.solana.com/terminology#keypair) file and use it as the keypair for the rest of this guide.
 
-   ```sh
+   ```shell
    solana-keygen new --outfile ./id.json
    ```
 
@@ -171,20 +171,20 @@ This example includes a contract written in Rust. Deploy the contract to the Sol
 
 1. Fund your Solana wallet. On Devnet, use `solana airdrop` to add tokens to your account. The contract requires at least 4 SOL to deploy and the faucet limits each request to 2 SOL, so you must make two requests to get a total of 4 SOL on your wallet:
 
-   ```sh
+   ```shell
    solana airdrop 2 --keypair ./id.json --url devnet &&
    solana airdrop 2 --keypair ./id.json --url devnet
    ```
 
    - If the command line faucet does not work, run `solana address` on the temporary wallet to print the public key value for the wallet and request tokens from [SolFaucet](https://solfaucet.com/):
 
-     ```sh
+     ```shell
      solana address -k ./id.json
      ```
 
 1. Run `anchor build` to build the example program. If you receive the `no such subcommand: 'build-bpf'` error, restart your terminal session and run `anchor build` again:
 
-   ```sh
+   ```shell
    anchor build
    ```
 
@@ -192,41 +192,41 @@ This example includes a contract written in Rust. Deploy the contract to the Sol
 
    1. Get the keypair from the `./target/deploy/chainlink_solana_demo-keypair.json` file that Anchor generated:
 
-      ```sh
+      ```shell
       solana address -k ./target/deploy/chainlink_solana_demo-keypair.json
       ```
 
    1. Edit the `./programs/chainlink_solana_demo/src/lib.rs` file and replace the keypair in the `declare_id!()` definition:
 
-      ```sh
+      ```shell
       vi ./programs/chainlink_solana_demo/src/lib.rs
       ```
 
-      ```sh
+      ```shell
       declare_id!("JC16qi56dgcLoaTVe4BvnCoDL6FhH5NtahA7jmWZFdqm");
       ```
 
 1. With the new program ID added, run `anchor build` again. This recreates the necessary program files with the correct program ID:
 
-   ```sh
+   ```shell
    anchor build
    ```
 
 1. Run `anchor deploy` to deploy the program to the Solana Devnet. Remember to specify the keypair file for your wallet and override the default. This wallet is the [account owner](https://docs.solana.com/terminology#account-owner) (authority) for the program:
 
-   ```sh
+   ```shell
    anchor deploy --provider.wallet ./id.json --provider.cluster devnet
    ```
 
 1. To confirm that the program deployed correctly, run `solana program show --programs` to get a list of deployed programs that your wallet owns. For this example, check the list of deployed programs for the `id.json` wallet on the Solana Devnet:
 
-   ```sh
+   ```shell
    solana program show --programs --keypair ./id.json --url devnet
    ```
 
    The command prints the program ID, slot number, the wallet address that owns the program, and the program balance:
 
-   ```sh
+   ```shell
    Program Id                                   | Slot      | Authority                                    | Balance
    GRt21UnJFHZvcaWLbcUrXaTCFMREewDrm1DweDYBak3Z | 110801571 | FsQPnANKDhqpoayxCL3oDHFCBmrhP34NrfbDR34qbQUt | 3.07874904 SOL
    ```
@@ -241,20 +241,20 @@ Use your deployed program to retrieve price data from a Chainlink data feed on S
 
 1. Set the [Anchor environment variables](https://www.twilio.com/blog/2017/01/how-to-set-environment-variables.html). Anchor uses these to determine which wallet to use and Solana cluster to use.
 
-   ```sh
+   ```shell
    export ANCHOR_PROVIDER_URL=https://api.devnet.solana.com &&
    export ANCHOR_WALLET=./id.json
    ```
 
 1. Run the `client.js` example and pass the program address in using the `--program` flag:
 
-   ```sh
+   ```shell
    node client.js --program $(solana address -k ./target/deploy/chainlink_solana_demo-keypair.json)
    ```
 
    If the script executes correctly, you will see output with the current price of SOL / USD.
 
-   ```sh
+   ```shell
    ⋮
    Price Is: 96.79778375
    Success
@@ -263,19 +263,19 @@ Use your deployed program to retrieve price data from a Chainlink data feed on S
 
 1. Each request costs an amount of SOL that is subtracted from the `id.json` wallet. Run `solana balance` to check the remaining balance for your temporary wallet on Devnet.
 
-   ```sh
+   ```shell
    solana balance --keypair ./id.json --url devnet
    ```
 
 1. To get prices for a different asset pair, run `client.js` again and add the `--feed` flag with one of the available [Chainlink data feeds](/solana/data-feeds-solana/). For example, to get the price of BTC / USD on Devnet, use the following command:
 
-   ```sh
+   ```shell
    node client.js \
    --program $(solana address -k ./target/deploy/chainlink_solana_demo-keypair.json) \
    --feed CzZQBrJCLqjXRfMjRN3fhbxur2QYHUzkpaRwkWsiPqbz
    ```
 
-   ```sh
+   ```shell
    Price Is: 12.4215826
    Success
    ```
@@ -288,18 +288,18 @@ After you are done with your deployed contract and no longer need it, it is nice
 
 1. Run `solana program show` to see the list of deployed programs that your wallet owns and the balances for each of those programs:
 
-   ```sh
+   ```shell
    solana program show --programs --keypair ./id.json --url devnet
    ```
 
-   ```sh
+   ```shell
    Program Id                                   | Slot      | Authority                                    | Balance
    GRt21UnJFHZvcaWLbcUrXaTCFMREewDrm1DweDYBak3Z | 110801571 | FsQPnANKDhqpoayxCL3oDHFCBmrhP34NrfbDR34qbQUt | 3.07874904 SOL
    ```
 
 1. Run `solana program close` and specify the program that you want to close:
 
-   ```sh
+   ```shell
    solana program close [YOUR_PROGRAM_ID] --keypair ./id.json --url devnet
    ```
 
@@ -307,32 +307,32 @@ After you are done with your deployed contract and no longer need it, it is nice
 
 1. If you have deployments that failed, they might still be in the buffer holding SOL tokens. Run `solana program show` again with the `--buffers` flag:
 
-   ```sh
+   ```shell
    solana program show --buffers --keypair ./id.json --url devnet
    ```
 
    If you have open buffers, they will appear in the list.
 
-   ```sh
+   ```shell
    Buffer Address                               | Authority                                    | Balance
    CSc9hnBqYJoYtBgsryJAmrjAE6vZ918qaFhL6N6BdEmB | FsQPnANKDhqpoayxCL3oDHFCBmrhP34NrfbDR34qbQUt | 1.28936088 SOL
    ```
 
 1. If you have any buffers that you do not plan to finish deploying, run the same `solana program close` command to close them and retrieve the unused SOL tokens:
 
-   ```sh
+   ```shell
    solana program close [YOUR_PROGRAM_ID] --keypair ./id.json --url devnet
    ```
 
 1. Check the balance on your temporary wallet.
 
-   ```sh
+   ```shell
    solana balance --keypair ./id.json --url devnet
    ```
 
 1. If you are done using this wallet for examples and testing, you can use [`solana transfer`](https://docs.solana.com/cli/transfer-tokens) to send the remaining SOL tokens to your default wallet or another Solana wallet that you use. For example, if your default wallet keypair is at `~/.config/solana/id.json`, you can send `ALL` of the temporary wallet's balance with the following command:
 
-   ```sh
+   ```shell
    solana transfer ~/.config/solana/id.json ALL --keypair ./id.json --url devnet
    ```
 

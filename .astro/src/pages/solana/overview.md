@@ -48,7 +48,7 @@ The examples in the Chainlink documentation use the following languages, tools, 
 
 When developing applications to use Chainlink products on Solana, always use a [Mainnet release](https://github.com/solana-labs/solana/releases) version of the Solana CLI that is equal to or greater than the version currently running on your target cluster. Use `solana --version` and `solana cluster-version` to check CLI and cluster versions:
 
-```sh
+```shell
 solana --version
 solana-cli 1.9.28 (src:b576e9cc; feat:320703611)
 
@@ -67,7 +67,7 @@ When you use Chainlink on Solana, you need a [Solana wallet](https://docs.solana
 
 If you have existing wallets that you want to use for the guides in the Chainlink documentation, find your wallet keypair and make it available in your development environment as a file. You can point [Anchor](https://project-serum.github.io/anchor/getting-started/introduction.html) and the [Solana CLI](https://docs.solana.com/cli) to a specific keypair when you deploy or manage your Solana programs.
 
-```sh
+```shell
 anchor build
 ⋮
 
