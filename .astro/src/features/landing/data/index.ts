@@ -15,16 +15,16 @@ const extraChains = [
 ]
 export const evmProducts = [
   {
-    title: "Market and Data Feeds",
+    title: "Data Feeds",
     description:
-      "Decentralized and high-quality data feeds for DeFi, sports, weather, and more",
-    learnMorelink: "",
+      "Decentralized and high-quality data feeds for DeFi, Reserves, NFTs, sports, weather, and more",
+    learnMorelink: "data-feeds/",
     image: dataFeedsLogo,
     links: [
-      ["Introduction to Data Feeds", "#"],
-      ["Using Data Feeds", "#"],
-      ["Historical Price Data", "#"],
-      ["API Reference", "#"],
+      ["Introduction to Data Feeds", "data-feeds/"],
+      ["Price Feeds", "data-feeds/price-feeds/"],
+      ["Proof of Reserve Feeds", "data-feeds/proof-of-reserve/"],
+      ["NFT Floor Pricing Feeds", "data-feeds/nft-floor-price/"],
     ],
     chains: [...baseChains, ...extraChains],
   },
@@ -89,7 +89,7 @@ export const evmProducts = [
 
 export const solanaProducts = [
   {
-    title: "Market and Data Feeds",
+    title: "Data Feeds",
     description:
       "Decentralized and high-quality data feeds for DeFi, sports, weather, and more",
     learnMorelink: "/solana/overview/",
