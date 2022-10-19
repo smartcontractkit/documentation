@@ -15,6 +15,8 @@ Your upkeep has a LINK (ERC-677) balance. Every time an Automation Node executes
 
 ## Cost of using Chainlink Automation
 
+There is no fee for registering a Chainlink Automation job. There is a 0.1 LINK cancellation fee that only applies to jobs which have not spent more than 0.1 LINK over their entire lifespan. This cancellation fee is to protect node operators from spammers who register jobs that never perform.
+
 When an Automation Node executes your `performUpkeep` function, the Chainlink Automation Registry will deduct the upkeep's total gas cost in LINK as well as a percentage premium from your upkeep’s LINK balance and allocate it to the Automation Node's address. The total gas cost in LINK is the gas price of the transaction multiplied by the sum of the gas used for the transaction and an 80K gas overhead for the Automation Node call gas used. This is converted to LINK using Chainlink Data Feeds. The percentage premium is to compensate the Automation Node for monitoring and performing your upkeep. The percentage premium varies by network and is listed in our [Supported Networks](../supported-networks/#configurations) page.
 
 
