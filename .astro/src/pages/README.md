@@ -16,8 +16,8 @@ metadata:
     0: "/files/1a63254-link.png"
 setup: |
   import { variables } from "@variables"
-  import { Tabs } from "../components/Tabs/Tabs"
-  import { NetworkTabs, PackageManagerTabs } from "@components"
+  import { Tabs } from "@components/Tabs"
+  import { NetworkTabs, PackageManagerTabs, ClickToZoom } from "@components"
 ---
 
 ## Using Directives
@@ -114,6 +114,16 @@ import { variables } from "@variables"
 {variables.GOERLI_LINK_TOKEN}
 ```
 
+## Click-to-zoom
+
+We can enable click-to-zoom functionality on some large images. To do this we can make use of the `<ClickToZoom />` component. This will open the image on a popup in tablets and larger screens.
+
+<ClickToZoom src="/files/8c35025-Request__Receive_Data.png" />
+
+```jsx
+<ClickToZoom src="/files/8c35025-Request__Receive_Data.png" />
+```
+
 ## Code Tabs
 
 Codetabs use nanostores to sync up throughout the page.
@@ -126,13 +136,13 @@ Ideally we will create components such as the `<CodeTabs />` component or the `<
   <Fragment slot="panel.1">
   ```markdown
   setup: |
-    import { Tabs } from "../../components/Tabs/Tabs.tsx"
+    import { Tabs } from "@components/Tabs/Tabs"
     import { NetworkTabs, PackageManagerTabs } from "@components"
     ```
   </Fragment>
   <Fragment slot="panel.2">
   ```markdown
-  import { Tabs } from "../../components/Tabs/Tabs.tsx"
+  import { Tabs } from "../../components/tabs/Tabs"
   import { NetworkTabs, PackageManagerTabs } from "@components"
   ```
   </Fragment>
@@ -249,7 +259,7 @@ Run the container:
 We can still use the tabs without creating an Astro component or without the sharedStore property.
 
 :::note
-To create a custom tab we _MUST_ import it relatively from the current file `import { Tabs } from "../../components/Tabs/Tabs.tsx"` and not from `@components`
+To create a custom tab we _MUST_ import it relatively from the current file `import { Tabs } from "../../components/tabs/Tabs"` and not from `@components`
 :::
 
 ```

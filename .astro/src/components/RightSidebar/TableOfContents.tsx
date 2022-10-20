@@ -7,10 +7,14 @@ interface Heading {
   slug: string
 }
 
-const TableOfContents: FunctionalComponent<{ headers: Heading[] }> = ({
-  headers = [],
-}) => {
-  headers = [...headers].filter(({ depth }) => depth > 1 && depth < 4)
+const TableOfContents: FunctionalComponent<{
+  headers: Heading[]
+  clientSideToc: boolean
+}> = ({ headers = [], clientSideToc = false }) => {
+  // headers = [...headers].filter(({ depth }) => depth > 1 && depth < 4)
+  const [headings, setHeadings] = useState(
+    [...headers].filter(({ depth }) => depth > 1 && depth < 4)
+  )
   const tableOfContents = useRef<HTMLUListElement>()
   const [currentID, setCurrentID] = useState("overview")
   const onThisPageID = "on-this-page-heading"
@@ -50,6 +54,27 @@ const TableOfContents: FunctionalComponent<{ headers: Heading[] }> = ({
     return () => headingsObserver.disconnect()
   }, [tableOfContents.current])
 
+  useEffect(() => {
+    if (!tableOfContents.current) return
+    if (!clientSideToc) return
+    refreshHeadings()
+  }, [tableOfContents.current])
+
+  const refreshHeadings = () => {
+    const headingList = []
+    document
+      .querySelectorAll("article :is(h2,h3)")
+      .forEach((heading: HTMLHeadingElement) => {
+        if (!heading.id) return
+        headingList.push({
+          depth: heading.nodeName.charAt(1),
+          text: heading.textContent,
+          slug: heading.id,
+        })
+      })
+    setHeadings(headingList)
+  }
+
   return (
     <>
       <h2 className="heading">On this page</h2>
@@ -61,7 +86,7 @@ const TableOfContents: FunctionalComponent<{ headers: Heading[] }> = ({
         >
           <a href="#overview">Overview</a>
         </li>
-        {headers
+        {headings
           .filter(({ depth }) => depth > 1 && depth < 4)
           .map((header) => (
             <li

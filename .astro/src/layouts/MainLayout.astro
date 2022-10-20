@@ -9,7 +9,7 @@ import * as CONFIG from "../config"
 import { NewsletterCTA } from "../components/Footer/NewsletterCTA.tsx"
 import Footer from "~/components/Footer/Footer.astro"
 
-const { content = {} } = Astro.props
+const { content = {}, frontmatter } = Astro.props
 // Astro.props?.headings is for .mdx pages, Astro.props?.content?.astro.headings is for .md pages
 const headings = Astro.props?.headings || Astro.props?.content?.astro.headings
 
@@ -137,12 +137,22 @@ const includeLinkToWalletScript = !!Astro.props?.content?.metadata?.linkToWallet
         <LeftSidebar currentPage={currentPage} {content} />
       </aside>
       <div id="grid-main">
-        <PageContent {content} githubEditUrl={githubEditUrl} {headings}>
+        <PageContent
+          {content}
+          githubEditUrl={githubEditUrl}
+          {headings}
+          clientSideToc={!!frontmatter?.clientSideToc}
+        >
           <slot />
         </PageContent>
       </div>
       <aside id="grid-right" class="grid-sidebar" title="Table of Contents">
-        <RightSidebar {content} githubEditUrl={githubEditUrl} {headings} />
+        <RightSidebar
+          {content}
+          githubEditUrl={githubEditUrl}
+          {headings}
+          clientSideToc={!!frontmatter?.clientSideToc}
+        />
       </aside>
     </main>
     <NewsletterCTA client:visible />

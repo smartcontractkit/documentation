@@ -13,8 +13,8 @@ metadata:
   title: "Using Data Feeds Off-Chain (Solana)"
   description: "How to use Chainlink Data Feeds in your off-chain applications."
 setup: |
-  import { Tabs } from "../../../components/Tabs/Tabs"
   import { PackageManagerTabs } from "@components"
+  import { Tabs } from "@components/Tabs"
 ---
 
 Chainlink Data Feeds are the quickest way to access market prices for real-world assets. This guide demonstrates how to read Chainlink Data Feeds on the Solana Devnet using off-chain examples in the [Chainlink Solana Starter Kit](https://github.com/smartcontractkit/solana-starter-kit). To learn how to use Data Feeds in your on-chain Solana programs, see the [Using Data Feeds On-Chain](/solana/using-data-feeds-solana/) guide.
