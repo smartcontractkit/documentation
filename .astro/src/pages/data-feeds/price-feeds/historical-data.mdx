@@ -4,21 +4,28 @@ section: ethereum
 date: Last Modified
 title: "Historical Price Data"
 permalink: "docs/data-feeds/price-feeds/historical-data/"
-whatsnext: {"API Reference":"/docs/data-feeds/price-feeds/api-reference/", "Contract Addresses":"/docs/data-feeds/"}
+whatsnext:
+  {
+    "API Reference": "/data-feeds/price-feeds/api-reference/",
+    "Contract Addresses": "/data-feeds/",
+  }
 metadata:
   title: "Get Historical Data"
   description: "How to use Chainlink Data Feeds to retrieve historical data in your smart contracts."
 ---
 
+import { HistoricalPrice, priceFeedAddresses } from "@features/feeds"
+import { Aside } from "@components"
+import CodeSample from "@components/CodeSample/CodeSample.astro"
+
 The most common use case for Data Feeds is to [Get the Latest Data](/data-feeds/price-feeds/) from a feed. However, the [AggregatorV3Interface.sol](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol) also has functions to retrieve data of a previous round IDs.
 
 There are two parameters that can cause Chainlink nodes to update:
 
-| Name                   | Description                                                          |
-| ------------------------------- | -------------------------------------------------------------------- |
-|  Deviation Threshold     | Chainlink nodes are monitoring data off-chain. The deviation of the real-world data beyond a certain interval triggers all the nodes to update.                  |
-|  Heartbeat Threshold | If the data values stay within the deviation parameters, it will only trigger an update every *X* minutes / hours. |
-
+| Name                | Description                                                                                                                                     |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| Deviation Threshold | Chainlink nodes are monitoring data off-chain. The deviation of the real-world data beyond a certain interval triggers all the nodes to update. |
+| Heartbeat Threshold | If the data values stay within the deviation parameters, it will only trigger an update every _X_ minutes / hours.                              |
 
 You can find these parameters at [data.chain.link](https://data.chain.link/) on an example like [ETH / USD](https://data.chain.link/ethereum/mainnet/crypto-usd/eth-usd).
 
@@ -39,7 +46,6 @@ Oracles provide periodic data updates to the aggregators. Data feeds are updated
 
 The examples in this document name the aggregator `roundId` as `aggregatorRoundId` to differentiate it from the proxy `roundId`.
 
-
 ### `roundId` in Proxy
 
 Because a proxy has references to current and all previous underlying aggregators, it needs a way to fetch data from the correct aggregator. The `roundId` is computed in the [proxy contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/dev/AggregatorProxy.sol) as shown in the following example:
@@ -54,11 +60,10 @@ where:
 - `aggregatorRoundId` is the aggregator `roundId`. The id starts at 1.
 - `roundId` is the computed round id. From the above formula, you can think of it as a large number containing the `phaseId` and the `aggregatorRoundId`.
 
-:::note[ Note]
-
- The example formula above ensures that no matter how many times the underlying aggregator changes, the proxy `roundId` will always increase.
-
-:::
+<Aside type="note" title="Note">
+  The example formula above ensures that no matter how many times the underlying
+  aggregator changes, the proxy `roundId` will always increase.
+</Aside>
 
 **Example:**
 
@@ -69,34 +74,35 @@ When you query historical data, it is important to know when you reach the end o
 
 ```javascript
 // First parse to BigInt to perform computation with big integers
-const num = BigInt("92233720368547771158");
-const num2 = BigInt("0xFFFFFFFFFFFFFFFF"); // Largest 64bits integer
+const num = BigInt("92233720368547771158")
+const num2 = BigInt("0xFFFFFFFFFFFFFFFF") // Largest 64bits integer
 
-console.log(Number(num >> 64n)); // returns 5 (phaseId)
+console.log(Number(num >> 64n)) // returns 5 (phaseId)
 console.log(Number(num & num2)) // returns 13078 (aggregatorRoundId) . Use & (AND bitwise operator) which sets each bit to _1_ if both bits are _1_
 ```
 
 Using _13078_ as the current aggregator's round, get its historical data by looping over the [`getRoundData` function](/data-feeds/price-feeds/api-reference/#getrounddata):
+
 - Start from the first round: _92233720368547758081_ (result of _92233720368547771158 - 13078 + 1_)
 - Continue until the current round: _92233720368547771158_
 
 To get the historical data for previous aggregators, decrement the `phaseId` and start from round _1_. For phase _4_, get the starting `roundId` off-chain using the following JavaScript example:
 
 ```javascript
-const phaseId = BigInt("4");
-const aggregatorRoundId = BigInt("1");
+const phaseId = BigInt("4")
+const aggregatorRoundId = BigInt("1")
 
 roundId = (phaseId << 64n) | aggregatorRoundId // returns 73786976294838206465n
 ```
 
 Loop over the [`getRoundData` function](/data-feeds/price-feeds/api-reference/#getrounddata). Start at _73786976294838206465_ and increment it until you get a revert. This means that you reached the last round for the underlying aggregator. The same process could be repeated for previous `phaseIds` (3,2,1).
 
-:::caution[ Looping on-chain]
-
- The examples showed how to loop off-chain to fetch all historical data from a given proxy. You could also write a similar code on-chain, but be aware that this could cause **very high gas prices** if a state is changed within the same function.
-
-:::
-
+<Aside type="caution" title="Looping on-chain">
+  The examples showed how to loop off-chain to fetch all historical data from a
+  given proxy. You could also write a similar code on-chain, but be aware that
+  this could cause **very high gas prices** if a state is changed within the
+  same function.
+</Aside>
 
 ### `getRoundData` return values
 
@@ -108,29 +114,37 @@ The [`getRoundData` function](/data-feeds/price-feeds/api-reference/#getrounddat
 - `startedAt`: The timestamp when the round started.
 - `updatedAt`: The timestamp when the answer was computed.
 
-:::caution[ Important]
-
- A read can revert if the caller is requesting the details of a round that was invalid or has not yet been answered. If you are deriving a round ID without having observed it before, the round might not be complete. To check the round, validate that the timestamp on that round is not 0.
- In a best-case scenario, rounds update chronologically. However, a round can time out if it doesn't reach consensus. Technically, that is a timed out round that carries over the answer from the previous round.
-
-:::
+<Aside type="caution" title="Important">
+  A read can revert if the caller is requesting the details of a round that was
+  invalid or has not yet been answered. If you are deriving a round ID without
+  having observed it before, the round might not be complete. To check the
+  round, validate that the timestamp on that round is not 0. In a best-case
+  scenario, rounds update chronologically. However, a round can time out if it
+  doesn't reach consensus. Technically, that is a timed out round that carries
+  over the answer from the previous round.
+</Aside>
 
 ### Solidity
 
-
-::solidity-remix[samples/PriceFeeds/HistoricalPriceConsumer.sol]
+<CodeSample src="samples/PriceFeeds/HistoricalPriceConsumer.sol" />
 
 ### Javascript
 
+<CodeSample src="samples/PriceFeeds/HistoricalPriceConsumer.js" />
 
-::solidity-remix[samples/PriceFeeds/HistoricalPriceConsumer.js]
-
-{/* TODO: Add interactive example function getHistoricalPrice() */}
+<HistoricalPrice
+  client:idle
+  feedAddress={priceFeedAddresses.btc.usd.goerli.address}
+  roundId={priceFeedAddresses.btc.usd.goerli.historicalRound}
+  supportedChain="ETHEREUM_GOERLI"
+/>
 
 ### Python
 
-::solidity-remix[samples/PriceFeeds/HistoricalPriceConsumer.py]
+<CodeSample src="samples/PriceFeeds/HistoricalPriceConsumer.py" />
 
 <div class="remix-callout">
-    <a href="https://repl.it/@DwightLyle/GetHistoricalPriceWeb3PY">Run this Python example</a>
+  <a href="https://repl.it/@DwightLyle/GetHistoricalPriceWeb3PY">
+    Run this Python example
+  </a>
 </div>
