@@ -94,12 +94,15 @@ export function SearchModal({
   isOpen: boolean
   onClose: () => void
 }) {
+  const getIndexName = () => {
+    if (typeof window === "undefined") return
+    const host = window.location.hostname
+    if (host === "docs.chain.link") return CONFIG.ALGOLIA.productionIndexName
+    return CONFIG.ALGOLIA.testIndexName
+  }
   return (
     <Modal isOpen={isOpen} onClose={onClose} modalId={styles.searchModal}>
-      <InstantSearch
-        indexName={CONFIG.ALGOLIA.indexName}
-        searchClient={searchClient}
-      >
+      <InstantSearch indexName={getIndexName()} searchClient={searchClient}>
         <SearchInput onClose={onClose} />
         {/* <hr className={styles.footerSeparator} /> */}
         <div className={styles.resultsWrapper}>

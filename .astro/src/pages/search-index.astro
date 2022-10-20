@@ -6,8 +6,8 @@ import fs from "node:fs"
 const pages = await Astro.glob("./**/*.astro")
 
 // import .md files
-const posts = await Astro.glob("./**/*.md")
-const postsMdx = await Astro.glob("./**/*.mdx")
+const posts = [...(await Astro.glob("./**/*.md"))]
+const postsMdx = [...(await Astro.glob("./**/*.mdx"))]
 const postsMdxWithContent = postsMdx.map((post) => {
   const url = new URL(post.file, import.meta.url)
   const content = fs.readFileSync(url, "utf-8")
