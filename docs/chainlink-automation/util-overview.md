@@ -31,6 +31,12 @@ This example teaches you how to automate the process of compounding arbitrary yi
 
 This example teaches how to use [Chainlink VRF](/docs/vrf/v2/introduction/) and Chainlink Automation together. Using Chainlink Automation with batch NFT reveals, you can automate and further decentralize your NFTs.
 
+### Counting dNFT
+
+[Counting SVG NFT Repository](https://github.com/smartcontractkit/smart-contract-examples/tree/main/counting-svg)
+
+This example uses Chainlink Automation to automate counting with a dynamic SVG.
+
 ### Dynamic NFTs
 
 [Dynamic NFTs repository](https://github.com/smartcontractkit/smart-contract-examples/tree/main/dynamic-nft#dynamic-nfts)
