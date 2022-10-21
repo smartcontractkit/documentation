@@ -10,13 +10,8 @@ export interface ROUND_DATA_RESPONSE {
 
 export interface Addresses {
   title: string
-  feedType: AddressesFeedType
+  networkStatusURL: string
   networks: Network[]
-}
-
-enum AddressesFeedType {
-  Account = "Account",
-  Proxy = "Proxy",
 }
 
 export interface Network {

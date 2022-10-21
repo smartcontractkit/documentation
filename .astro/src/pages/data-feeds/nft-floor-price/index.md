@@ -20,5 +20,4 @@ Read answers from NFT Floor Pricing Feeds the same way that you use [Price Feeds
 
 Using Solidity, your smart contract should reference [`AggregatorV3Interface`](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol), which defines the external functions implemented by Data Feeds.
 
-
 ::solidity-remix[samples/PriceFeeds/NFTFloorPriceConsumerV3.sol]

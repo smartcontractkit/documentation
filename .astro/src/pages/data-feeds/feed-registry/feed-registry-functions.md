@@ -3,7 +3,6 @@ layout: ../../../layouts/MainLayout.astro
 section: ethereum
 date: Last Modified
 title: "Feed Registry API Reference"
-permalink: "docs/data-feeds/feed-registry/feed-registry-functions/"
 metadata:
   title: "Feed Registry API Reference"
   description: "Chainlink Feed Registry Functions"

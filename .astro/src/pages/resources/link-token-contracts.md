@@ -150,11 +150,11 @@ xDAI is used to pay for transactions on Gnosis Chain mainnet. Use the [xDai Brid
 | Parameter      | Value                                                                                                                                                                                                                       |
 | :------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `ETH_CHAIN_ID` | `100`                                                                                                                                                                                                                       |
-| Address        | <a class="erc-token-address" id="100_0xE2e73A1c69ecF83F464EFCE6A5be353a37cA09b2" href="https://blockscout.com/poa/xdai/address/0xE2e73A1c69ecF83F464EFCE6A5be353a37cA09b2">`0xE2e73A1c69ecF83F464EFCE6A5be353a37cA09b2`</a> |
+| Address        | <a class="erc-token-address" id="100_0xE2e73A1c69ecF83F464EFCE6A5be353a37cA09b2" href="https://gnosisscan.io/address/0xE2e73A1c69ecF83F464EFCE6A5be353a37cA09b2">`0xE2e73A1c69ecF83F464EFCE6A5be353a37cA09b2`</a> |
 | Name           | Chainlink Token on Gnosis Chain (xDai)                                                                                                                                                                                      |
 | Symbol         | LINK                                                                                                                                                                                                                        |
 | Decimals       | 18                                                                                                                                                                                                                          |
-| Network status | [blockscout.com/xdai/mainnet](https://blockscout.com/xdai/mainnet/)                                                                                                                                                         |
+| Network status | [gnosisscan.io/](https://gnosisscan.io/)                                                                                                                                                         |
 
 ## Avalanche
 

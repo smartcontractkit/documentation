@@ -3,6 +3,7 @@ import { useEffect, useReducer, useRef } from "preact/hooks"
 interface State<T> {
   data?: T
   error?: Error
+  loading: boolean
 }
 
 type Cache<T> = { [url: string]: T }
@@ -22,17 +23,18 @@ function useFetch<T = unknown>(url?: string, options?: RequestInit): State<T> {
   const initialState: State<T> = {
     error: undefined,
     data: undefined,
+    loading: false,
   }
 
   // Keep state logic separated
   const fetchReducer = (state: State<T>, action: Action<T>): State<T> => {
     switch (action.type) {
       case "loading":
-        return { ...initialState }
+        return { ...initialState, loading: true }
       case "fetched":
-        return { ...initialState, data: action.payload }
+        return { ...initialState, data: action.payload, loading: false }
       case "error":
-        return { ...initialState, error: action.payload }
+        return { ...initialState, error: action.payload, loading: false }
       default:
         return state
     }

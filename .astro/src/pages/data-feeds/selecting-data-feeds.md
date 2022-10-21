@@ -3,7 +3,6 @@ layout: ../../layouts/MainLayout.astro
 section: ethereum
 date: Last Modified
 title: "Selecting Quality Data Feeds"
-permalink: "docs/data-feeds/selecting-data-feeds/"
 excerpt: "Learn how to assess data feeds that you use in your smart contracts."
 ---
 

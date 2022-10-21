@@ -1,10 +1,14 @@
 ---
-layout: ../../../layouts/FeedLayout.astro
+layout: ../../../layouts/MainLayout.astro
 title: "Proof of Reserve Feed Addresses"
 section: ethereum
-permalink: "/docs/data-feeds/proof-of-reserve/addresses/"
+datafeedtype: por
 metadata:
+  title: "Proof of Reserve Feed Addresses"
   description: "Chainlink Proof of Reserve Feed Addresses"
 date: Last Modified
+setup: |
+  import { FeedPage } from "@features/feeds"
 ---
-(content rendered programatically by layout)
+
+<FeedPage dataFeedType="por" />

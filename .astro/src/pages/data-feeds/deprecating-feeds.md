@@ -1,8 +1,7 @@
 ---
-layout: ../../layouts/FeedLayout.astro
+layout: ../../layouts/MainLayout.astro
 title: "Feeds Scheduled For Deprecation"
 section: ethereum
-permalink: "docs/data-feeds/deprecating-feeds/"
 metadata:
   description: "Feeds that are scheduled to be deprecated."
 date: Last Modified

@@ -1,15 +1,13 @@
 ---
-layout: ../../../layouts/FeedLayout.astro
-section: ethereum
-stub: ethereum
-date: Last Modified
+layout: ../../../layouts/MainLayout.astro
 title: "Price Feed Contract Addresses"
-permalink: "docs/data-feeds/price-feeds/addresses/"
+section: ethereum
 metadata:
   title: "Price Feed Contract Addresses"
   description: "A list of Price Feed addresses on supported networks."
+date: Last Modified
+setup: |
+  import { FeedPage } from "@features/feeds"
 ---
 
-This page lists the Chainlink Price Feeds and the networks where they are currently live. Read [Using Price Feeds](/data-feeds/price-feeds/) to learn how to use these feeds in your applications.
-
-See the [LINK Token Contracts](/resources/link-token-contracts/) page for the details of LINK on each network.
+<FeedPage  />

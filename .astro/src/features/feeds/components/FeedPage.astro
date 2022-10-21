@@ -1,0 +1,58 @@
+---
+import FeedsCommonCallout from "../callouts/FeedsCommonCallout.astro"
+import { FeedList } from "./FeedList.tsx"
+import type { DataFeedType } from "./FeedList.tsx"
+export type Props = {
+  initialNetwork?: string
+  ecosystem: string
+  dataFeedType?: DataFeedType
+}
+const { initialNetwork, ecosystem, dataFeedType } = Astro.props
+---
+
+{
+  ecosystem === "solana" ? (
+    <>
+      <p>
+        To learn how to use these feeds, see the{" "}
+        <a href="/docs/solana/using-data-feeds-solana/">Solana Examples</a> for
+        Consuming Data Feeds.
+      </p>
+      <p>
+        To learn how to obtain SOL tokens on the Solana Devnet, see the{" "}
+        <a href="https://docs.solana.com/cli/transfer-tokens#airdrop-some-tokens-to-get-started">
+          Solana Documentation.
+        </a>
+      </p>
+    </>
+  ) : (
+    <>
+      <p>
+        To learn how to use these feeds, see the{" "}
+        <a href="/docs/get-the-latest-price/">
+          Ethereum Examples for Consuming Data Feeds.
+        </a>
+      </p>
+      <p>
+        For LINK token and Faucet details, see the{" "}
+        <a href="/docs/link-token-contracts/">LINK Token Contracts</a> page.
+      </p>
+    </>
+  )
+}
+
+<FeedsCommonCallout callout="etfBestPractices" />
+
+<FeedsCommonCallout callout="quality" />
+
+<FeedList
+  client:idle
+  initialNetwork={initialNetwork ?? "ethereum"}
+  dataFeedType={dataFeedType ?? "default"}
+  ecosystem={ecosystem ?? ""}
+/>
+<!-- <FeedList
+  client:idle
+  initialNetwork="solana"
+  ecosystem="solana"
+/> -->

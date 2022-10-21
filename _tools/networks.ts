@@ -59,11 +59,11 @@ export const NETWORKS = [
   {
     page: "gnosis-chain",
     title: "Gnosis Chain (xDai) Data Feeds",
-    networkStatusUrl: "https://blockscout.com/xdai/mainnet/",
+    networkStatusUrl: "https://gnosisscan.io/",
     networks: [
       {
         name: "Gnosis Chain Mainnet",
-        url: "https://blockscout.com/poa/xdai/address/%s",
+        url: "https://gnosisscan.io/address/%s",
         source: "directory-xdai-mainnet.json",
         networkType: "mainnet",
       },
