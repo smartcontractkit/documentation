@@ -44,8 +44,8 @@ And `leafDirectives` like the ones used for solidityRemix examples
 
 ### Callouts
 
-:::tip[did you know?]
-tip
+:::tip
+Custom markdown is written using directives. Theres two type of directives, nodeDirectives like the ones used in the callouts:
 :::
 
 :::danger[did you know?]
