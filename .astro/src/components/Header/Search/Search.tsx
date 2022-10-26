@@ -4,7 +4,7 @@ import styles from "./Search.module.css"
 import { useKeyPress } from "~/hooks/useKeyPress"
 import { SearchModal } from "./SearchModal"
 
-import searchIcon from "../../../features/landing/assets/search-icon.svg"
+import searchIcon from "../../../../public/assets/search.svg"
 
 export default function Search() {
   const [isOpen, setIsOpen] = useState(false)

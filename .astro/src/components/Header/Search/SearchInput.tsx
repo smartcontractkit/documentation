@@ -26,7 +26,11 @@ export const SearchInput = ({ onClose }: { onClose: () => void }) => {
       <input
         className={clsx(styles.input, ".focus-visible")}
         onChange={handleChange}
-        placeholder="Search Chainlink documentation..."
+        placeholder={
+          window.matchMedia("(min-width: 50em)").matches
+            ? "Search Chainlink documentation..."
+            : "Search Chainlink docs..."
+        }
         autoFocus
       />
       <button onClick={onClose} className={styles.closeButton}>

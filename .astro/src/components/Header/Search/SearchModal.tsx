@@ -10,22 +10,90 @@ import {
   UseHitsProps,
 } from "react-instantsearch-hooks-web"
 
+import { Modal } from "../../Modal/Modal"
+import { SearchInput } from "./SearchInput"
+import { clsx } from "~/lib"
+
 const searchClient = algoliasearch(
   CONFIG.ALGOLIA.appId,
   CONFIG.ALGOLIA.publicApiKey
 )
 
-import { Modal } from "../../Modal/Modal"
-import { SearchInput } from "./SearchInput"
-import { clsx } from "~/lib"
+const recommendedArticles = [
+  {
+    title: "Fund your contracts",
+    url: "/resources/fund-your-contract",
+  },
+  {
+    title: "Acquire testnet LINK",
+    url: "/resources/acquire-link",
+  },
+  {
+    title: "LINK Token Contracts",
+    url: "/resources/link-token-contracts",
+  },
+  {
+    title: "Hackathon Resources",
+    url: "/resources/hackathon-resources",
+  },
+]
 
 function EmptyQueryBoundary({ children, fallback }) {
   const { indexUiState } = useInstantSearch()
 
+  const recentArticles = JSON.parse(
+    localStorage.getItem("recentArticles") || "[]"
+  )
+
   if (!indexUiState.query) {
     return (
-      <div className={styles.noQueryFallback}>
-        Type something to begin searching...
+      <div className={styles.queryResults}>
+        <div>
+          <h6 style={{ paddingLeft: "var(--space-2x)" }}>
+            Recommended articles
+          </h6>
+          <div className={styles.hitWrapper}>
+            <ul className={styles.hitList}>
+              {recommendedArticles.map((article) => (
+                <li style={{ borderRadius: "var(--border-radius-primary)" }}>
+                  <a
+                    style={{ padding: "var(--space-1x) var(--space-2x)" }}
+                    href={article.url}
+                    className={clsx(styles.hit, "paragraph-200")}
+                  >
+                    {article.title}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+        <div>
+          {!!recentArticles.length && (
+            <>
+              <h6 style={{ paddingLeft: "var(--space-2x)" }}>
+                Recently viewed
+              </h6>
+              <div className={styles.hitWrapper}>
+                <ul className={styles.hitList}>
+                  {recentArticles.map((article) => (
+                    <li
+                      style={{ borderRadius: "var(--border-radius-primary)" }}
+                    >
+                      <a
+                        style={{ padding: "var(--space-1x) var(--space-2x)" }}
+                        href={article.url}
+                        className={clsx(styles.hit, "paragraph-200")}
+                      >
+                        {article.title}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </>
+          )}
+        </div>
       </div>
     )
   }
@@ -43,7 +111,7 @@ function NoResultsBoundary({ children }) {
       <>
         <div className={styles.noQueryFallback}>
           <div>
-            <h4>No result found</h4>
+            <h4>No results found</h4>
             <div>
               We couldn't find anything matching your search. Try again with a
               different term.
@@ -67,14 +135,15 @@ function CustomHits({
   if (hits.length === 0) return null
   return (
     <div>
-      <h6>{title}</h6>
+      <h6 style={{ paddingLeft: "var(--space-2x)" }}>{title}</h6>
       <div className={styles.hitWrapper}>
         <ul className={styles.hitList}>
           {hits.map((hit: any) => (
-            <li>
+            <li style={{ borderRadius: "var(--border-radius-primary)" }}>
               <a
+                style={{ padding: "var(--space-1x) var(--space-2x)" }}
                 href={hit.url}
-                className={clsx(styles.hit, hitClassName)}
+                className={clsx(styles.hit, hitClassName, "paragraph-200")}
                 dangerouslySetInnerHTML={{
                   __html: hit._highlightResult.title.value,
                 }}
@@ -104,7 +173,7 @@ export function SearchModal({
     <Modal isOpen={isOpen} onClose={onClose} modalId={styles.searchModal}>
       <InstantSearch indexName={getIndexName()} searchClient={searchClient}>
         <SearchInput onClose={onClose} />
-        {/* <hr className={styles.footerSeparator} /> */}
+        <hr className={styles.modalDivider} />
         <div className={styles.resultsWrapper}>
           <EmptyQueryBoundary fallback={null}>
             <NoResultsBoundary>

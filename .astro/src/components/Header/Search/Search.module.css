@@ -1,4 +1,8 @@
 /** Style Algolia */
+#searchModal {
+  padding: var(--space-6x);
+}
+
 .searchInput {
   display: none;
   flex-grow: 1;
@@ -30,6 +34,9 @@
   border: 0;
   padding: 0;
   display: flex;
+}
+.searchInputMobile img {
+  width: 16px;
 }
 .searchInput:hover,
 .searchInput:focus {
@@ -86,11 +93,11 @@
   gap: 0.25rem;
 }
 
-.footerSeparator {
-  margin: var(--modal-padding) calc(var(--modal-padding) * -1);
+.modalDivider {
   background: var(--blue-200);
   height: 1px;
   border: 0;
+  margin: var(--space-0x) calc(var(--space-6x) * -1);
 }
 
 .noQueryFallback {
@@ -98,6 +105,9 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  margin: var(--space-8x) 0;
+  margin-left: var(--space-2x);
+  padding: var(--space-6x);
 }
 .noQueryFallback > div {
   text-align: center;
@@ -105,9 +115,13 @@
 
 .resultsWrapper {
   margin: var(--space-4x) 0;
+  overflow: overlay;
+  max-height: calc(100vh - 109px);
+  margin: 0 calc(var(--modal-padding) * -1) calc(var(--modal-padding) * -1);
+  padding: var(--modal-padding) var(--modal-padding) var(--modal-padding)
+    var(--space-6x);
 }
-.hitWrapper {
-}
+
 .hitWrapper ol {
   list-style: none;
 }
@@ -134,6 +148,10 @@
   padding-left: var(--space-2x);
 }
 
+.hitList li a {
+  line-height: 1.5rem;
+}
+
 .hitList mark {
   background-color: transparent;
   font-weight: bold;
@@ -150,8 +168,8 @@
   #searchModal {
     top: 50px;
     height: fit-content;
-    max-height: calc(100% - 100px);
     transform: translateX(-50%);
+    padding: var(--space-8x);
   }
   .queryResults {
     grid-template-columns: 1fr 1fr;
@@ -165,5 +183,12 @@
   }
   .hideSm {
     display: block;
+  }
+  .resultsWrapper {
+    max-height: calc(640px - 112px);
+  }
+
+  .modalDivider {
+    margin: var(--space-0x) calc(var(--modal-padding) * -1);
   }
 }
