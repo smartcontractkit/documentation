@@ -11,7 +11,7 @@ whatsnext:
 
 ## Cost of using Chainlink Automation
 
-Chainlink Automation only requires an execution fee for transactions on-chain. This fee includes the transaction cost and a percentage premium (refer to the formula below). The premium compensates the Automation Network for monitoring and performing your upkeep. The premium varies by chain and is listed on our [Supported Networks](../supported-networks/) page.
+Chainlink Automation only requires an execution fee for transactions on-chain. This fee includes the transaction cost, a percentage premium (refer to the formula below), and a small fixed gas overhead accounting for gas between the network and the registry. The premium compensates the Automation Network for monitoring and performing your upkeep. The premium varies by chain and is listed on our [Supported Networks](../supported-networks/) page.
 
 ![Automation Pricing Formula](/images/contract-devs/automation/automation-pricing.png)
 
