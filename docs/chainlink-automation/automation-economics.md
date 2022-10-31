@@ -25,14 +25,14 @@ There is no registration fee or other fees for any off-chain computation.
 
 Upkeeps have a LINK (ERC-677) balance. Every time an on-chain transaction is performed for your upkeep, its LINK balance will be reduced by the LINK fee. 
 
-Your upkeep's balance must exceed the minimum balance. If this requirement is nto met, the Automation Network will not perform on-chain transactions. You can add funds using the [Chainlink Automation App](https://automation.chain.link/) or by directly calling the `addFunds()` function on the `AutomationRegistry` contract. Anyone can call the `addFunds()` function.
+Your upkeep's balance must exceed the minimum balance. If this requirement is not met, the Automation Network will not perform on-chain transactions. You can add funds using the [Chainlink Automation App](https://automation.chain.link/) or by directly calling the `addFunds()` function on the `AutomationRegistry` contract. Anyone can call the `addFunds()` function.
 
 ## Withdrawing funds
 
 To withdraw a LINK balance, you must cancel your upkeep first. Any upkeep that has not spent more than an aggregated amount of 0.1 LINK fees over the span of its lifetime is subject to a *0.1 LINK* fee. This cancellation fee protects node operators from spammers who register jobs that never perform.
 
-**Example 1**: My upkeep has spent *4.8 LINK* over its lifetime and has a balance of *5 LINK*. When it is cancelled, I will receive *5 LINK*.
-**Example 2**: My upkeep has spent *0 LINK* over its lifetime and has a balance of *5 LINK*. When it is cancelled, I will receive *4.9 LINK*.
+**Example 1**: Your upkeep has spent *4.8 LINK* over its lifetime and has a balance of *5 LINK*. When it is cancelled, you receive *5 LINK*.
+**Example 2**: Your upkeep has spent *0 LINK* over its lifetime and has a balance of *5 LINK*. When it is cancelled, you receive *4.9 LINK*.
 
 
 ## No node competition
