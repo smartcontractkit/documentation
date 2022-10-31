@@ -3,7 +3,7 @@ import type { FunctionalComponent } from "preact"
 import { h } from "preact"
 import { useState, useEffect, useRef } from "preact/hooks"
 import { shouldUpdateToc } from "./tocStore"
-interface Heading {
+export interface Heading {
   depth: number
   text: string
   slug: string
@@ -20,6 +20,7 @@ const TableOfContents: FunctionalComponent<{
   const tableOfContents = useRef<HTMLUListElement>()
   const [currentID, setCurrentID] = useState("overview")
   const onThisPageID = "on-this-page-heading"
+  const $shouldUpdateToc = useStore(shouldUpdateToc)
 
   useEffect(() => {
     if (!tableOfContents.current) return
@@ -54,7 +55,7 @@ const TableOfContents: FunctionalComponent<{
 
     // Stop observing when the component is unmounted.
     return () => headingsObserver.disconnect()
-  }, [tableOfContents.current])
+  }, [tableOfContents.current, $shouldUpdateToc])
 
   useEffect(() => {
     if (!tableOfContents.current) return
@@ -62,7 +63,6 @@ const TableOfContents: FunctionalComponent<{
     refreshHeadings()
   }, [tableOfContents.current])
 
-  const $shouldUpdateToc = useStore(shouldUpdateToc)
   useEffect(() => {
     if (!$shouldUpdateToc) return
     if (!window) return

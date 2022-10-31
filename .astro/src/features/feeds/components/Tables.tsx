@@ -1,13 +1,17 @@
 /** @jsxImportSource preact */
 import h from "preact"
-import { Network } from "../types"
 import feedList from "./FeedList.module.css"
 import { clsx } from "../../../lib"
-
+import { ChainNetwork } from "../data/chains"
+import tableStyles from "./Tables.module.css"
 const feedCategories = {
   verified: (
     <span
-      className={clsx(feedList.hoverText, "feed-category")}
+      className={clsx(
+        feedList.hoverText,
+        tableStyles.statusIcon,
+        "feed-category"
+      )}
       title="Verified"
     >
       <a
@@ -21,7 +25,11 @@ const feedCategories = {
   ),
   monitored: (
     <span
-      className={clsx(feedList.hoverText, "feed-category")}
+      className={clsx(
+        feedList.hoverText,
+        tableStyles.statusIcon,
+        "feed-category"
+      )}
       title="Monitored"
     >
       <a
@@ -34,7 +42,14 @@ const feedCategories = {
     </span>
   ),
   custom: (
-    <span className={clsx(feedList.hoverText, "feed-category")} title="Custom">
+    <span
+      className={clsx(
+        feedList.hoverText,
+        tableStyles.statusIcon,
+        "feed-category"
+      )}
+      title="Custom"
+    >
       <a
         href="/docs/selecting-data-feeds/#-custom-feeds"
         alt="Custom"
@@ -46,7 +61,11 @@ const feedCategories = {
   ),
   specialized: (
     <span
-      className={clsx(feedList.hoverText, "feed-category")}
+      className={clsx(
+        feedList.hoverText,
+        tableStyles.statusIcon,
+        "feed-category"
+      )}
       title="Specialized"
     >
       <a
@@ -60,7 +79,11 @@ const feedCategories = {
   ),
   deprecating: (
     <span
-      className={clsx(feedList.hoverText, "feed-category")}
+      className={clsx(
+        feedList.hoverText,
+        tableStyles.statusIcon,
+        "feed-category"
+      )}
       title="Deprecating"
     >
       <a href="#categories" alt="Deprecating" target="_blank">
@@ -70,74 +93,289 @@ const feedCategories = {
   ),
 }
 
+const DefaultTHead = ({
+  showExtraDetails,
+  isTestnet = false,
+}: {
+  showExtraDetails: boolean
+  isTestnet?: boolean
+}) => (
+  <thead>
+    <tr>
+      <th class={tableStyles.heading}>Pair</th>
+      <th aria-hidden={isTestnet}>Asset</th>
+      <th aria-hidden={isTestnet}>Type</th>
+      <th aria-hidden={!showExtraDetails}>Deviation</th>
+      <th aria-hidden={!showExtraDetails}>Heartbeat</th>
+      <th aria-hidden={!showExtraDetails}>Dec</th>
+      <th>Address</th>
+    </tr>
+  </thead>
+)
+
+const DefaultTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => (
+  <tr>
+    <td class={tableStyles.pairCol}>
+      <div className={tableStyles.assetPair}>
+        {feedCategories[proxy.feedCategory] || ""}
+        {proxy.name}
+      </div>
+      {proxy.docs.shutdownDate && (
+        <div className="shutDate">
+          Deprecating:
+          <br />
+          {proxy.docs.shutdownDate}
+        </div>
+      )}
+    </td>
+
+    <td aria-hidden={isTestnet}>
+      <div className={tableStyles.assetName}>{proxy.assetName}</div>
+    </td>
+    <td aria-hidden={isTestnet}>{proxy.feedType}</td>
+    <td aria-hidden={!showExtraDetails}>
+      {proxy.threshold ? proxy.threshold + "%" : "N/A"}
+    </td>
+    <td aria-hidden={!showExtraDetails}>
+      {proxy.heartbeat ? proxy.heartbeat + "s" : "N/A"}
+    </td>
+    <td aria-hidden={!showExtraDetails}>
+      {proxy.decimals ? proxy.decimals : "N/A"}
+    </td>
+    <td>
+      <div className={tableStyles.assetAddress}>
+        <button
+          class={clsx(tableStyles.copyBtn, "copy-iconbutton")}
+          style={{ height: "16px", width: "16px" }}
+          data-clipboard-text={proxy.proxyAddress ?? proxy.contractAddress}
+        >
+          <img src="/assets/icons/copyIcon.svg" />
+        </button>
+        <a
+          class={tableStyles.addressLink}
+          href={network.explorerUrl.replace(
+            "%s",
+            proxy.proxyAddress ?? proxy.contractAddress
+          )}
+        >
+          {proxy.proxyAddress ?? proxy.contractAddress}
+        </a>
+      </div>
+    </td>
+  </tr>
+)
+
+const ProofOfReserveTHead = ({
+  showExtraDetails,
+  isTestnet = false,
+}: {
+  showExtraDetails: boolean
+  isTestnet?: boolean
+}) => (
+  <thead>
+    <tr>
+      <th class={tableStyles.heading}>Proof of Reserve Feed</th>
+      <th aria-hidden={!showExtraDetails}>Deviation</th>
+      <th aria-hidden={!showExtraDetails}>Heartbeat</th>
+      <th aria-hidden={!showExtraDetails}>Dec</th>
+      <th>Address and Info</th>
+    </tr>
+  </thead>
+)
+
+const ProofOfReserveTr = ({
+  network,
+  proxy,
+  showExtraDetails,
+  isTestnet = false,
+}) => (
+  <tr>
+    <td class={tableStyles.pairCol}>
+      <div className={tableStyles.assetPair}>
+        {feedCategories[proxy.feedCategory] || ""}
+        {proxy.name}
+      </div>
+      {proxy.docs.shutdownDate && (
+        <div className="shutDate">
+          Deprecating:
+          <br />
+          {proxy.docs.shutdownDate}
+        </div>
+      )}
+    </td>
+
+    <td aria-hidden={!showExtraDetails}>
+      {proxy.threshold ? proxy.threshold + "%" : "N/A"}
+    </td>
+    <td aria-hidden={!showExtraDetails}>
+      {proxy.heartbeat ? proxy.heartbeat : "N/A"}
+    </td>
+    <td aria-hidden={!showExtraDetails}>
+      {proxy.decimals ? proxy.decimals : "N/A"}
+    </td>
+    <td>
+      <div className={tableStyles.assetAddress}>
+        <a
+          class={tableStyles.addressLink}
+          href={network.explorerUrl.replace("%s", proxy.proxyAddress)}
+        >
+          {proxy.proxyAddress}
+        </a>
+        <button
+          class={clsx(tableStyles.copyBtn, "copy-iconbutton")}
+          style={{ height: "16px", width: "16px" }}
+          data-clipboard-text={proxy.proxyAddress}
+        >
+          <img src="/assets/icons/copyIcon.svg" />
+        </button>
+      </div>
+      <div>
+        <dl class={tableStyles.porDl}>
+          <div>
+            <dt>
+              <span class="label">Asset name:</span>
+            </dt>
+            <dd>{proxy.assetName}</dd>
+          </div>
+          <div>
+            <dt>
+              <span class="label">Auditor:</span>
+            </dt>
+            <dd>{proxy.docs.porAuditor}</dd>
+          </div>
+          <div>
+            <dt>
+              <span class="label">Reserve type:</span>
+            </dt>
+            <dd>{proxy.docs.porType}</dd>
+          </div>
+        </dl>
+      </div>
+    </td>
+  </tr>
+)
+
+const NftFloorTHead = ({
+  showExtraDetails,
+  isTestnet = false,
+}: {
+  showExtraDetails: boolean
+  isTestnet?: boolean
+}) => (
+  <thead>
+    <tr>
+      <th class={tableStyles.heading}>NFT Floor Pricing Feed</th>
+      <th>Price units</th>
+      <th aria-hidden={!showExtraDetails}>Deviation</th>
+      <th aria-hidden={!showExtraDetails}>Heartbeat</th>
+      <th aria-hidden={!showExtraDetails}>Dec</th>
+      <th>Address</th>
+    </tr>
+  </thead>
+)
+const NftFloorTr = ({
+  network,
+  proxy,
+  showExtraDetails,
+  isTestnet = false,
+}) => (
+  <tr>
+    <td class={tableStyles.pairCol}>
+      <div className={tableStyles.assetPair}>
+        {feedCategories[proxy.feedCategory] || ""}
+        {proxy.name}
+      </div>
+      {proxy.docs.shutdownDate && (
+        <div className="shutDate">
+          Deprecating:
+          <br />
+          {proxy.docs.shutdownDate}
+        </div>
+      )}
+    </td>
+    <td>{proxy.docs.nftFloorUnits}</td>
+    <td aria-hidden={!showExtraDetails}>
+      {proxy.threshold ? proxy.threshold + "%" : "N/A"}
+    </td>
+    <td aria-hidden={!showExtraDetails}>
+      {proxy.heartbeat ? proxy.heartbeat : "N/A"}
+    </td>
+    <td aria-hidden={!showExtraDetails}>
+      {proxy.decimals ? proxy.decimals : "N/A"}
+    </td>
+    <td>
+      <div className={tableStyles.assetAddress}>
+        <button
+          class={clsx(tableStyles.copyBtn, "copy-iconbutton")}
+          style={{ height: "16px", width: "16px" }}
+          data-clipboard-text={proxy.proxyAddress}
+        >
+          <img src="/assets/icons/copyIcon.svg" />
+        </button>
+        <a
+          class={tableStyles.addressLink}
+          href={network.explorerUrl.replace("%s", proxy.proxyAddress)}
+        >
+          {proxy.proxyAddress}
+        </a>
+      </div>
+    </td>
+  </tr>
+)
+
 export const MainnetTable = ({
   network,
   showExtraDetails,
-  feedType,
+  dataFeedType,
 }: {
-  network: Network
+  network: ChainNetwork
   showExtraDetails: boolean
-  feedType: string
+  dataFeedType: string
 }) => {
+  if (!network.metadata) return null
+
+  const isPor = dataFeedType === "por"
+  const isNftFloor = dataFeedType === "nftFloor"
+  const isDefault = !isNftFloor && !isPor
+  const filteredMetadata = network.metadata
+    .sort((a, b) => (a.name < b.name ? -1 : 1))
+    .filter((chain) => {
+      if (isPor) return !!chain.docs.porType
+      if (isNftFloor) return !!chain.docs.nftFloorUnits
+      return !chain.docs.nftFloorUnits && !chain.docs.porType
+    })
+
   return (
     <div style={{ overflowX: "auto" }}>
-      <table style={{ display: "block", overflowX: "auto" }}>
-        <thead>
-          <tr>
-            <th>Pair</th>
-            <th>Asset</th>
-            <th>Type</th>
-            <th className={showExtraDetails ? "" : feedList.detailHidden}>
-              Deviation
-            </th>
-            <th className={showExtraDetails ? "" : feedList.detailHidden}>
-              Heartbeat
-            </th>
-            <th className={showExtraDetails ? "" : feedList.detailHidden}>
-              Dec
-            </th>
-            <th>Address</th>
-          </tr>
-        </thead>
+      <table class={tableStyles.table}>
+        {isPor && <ProofOfReserveTHead showExtraDetails={showExtraDetails} />}
+        {isDefault && <DefaultTHead showExtraDetails={showExtraDetails} />}
+        {isNftFloor && <NftFloorTHead showExtraDetails={showExtraDetails} />}
         <tbody>
-          {network.proxies.map((proxy) => (
-            <tr id={`${network.name} ${proxy.pair}`}>
-              <td>
-                <div className="proxy-pair-column">
-                  {feedCategories[proxy.feedCategory] || ""}
-                  {proxy.pair}
-                </div>
-
-                {proxy.shutdownDate && (
-                  <>
-                    <hr className="shutDate" />
-                    <div className="shutDate">
-                      Deprecating:
-                      <br />
-                      {proxy.shutdownDate}
-                    </div>
-                  </>
-                )}
-              </td>
-              <td>{proxy.assetName}</td>
-              <td>{proxy.feedType}</td>
-              <td className={showExtraDetails ? "" : feedList.detailHidden}>
-                {proxy.deviationThreshold
-                  ? proxy.deviationThreshold + "%"
-                  : "N/A"}
-              </td>
-              <td className={showExtraDetails ? "" : feedList.detailHidden}>
-                {proxy.heartbeat ? proxy.heartbeat : "N/A"}
-              </td>
-              <td className={showExtraDetails ? "" : feedList.detailHidden}>
-                {proxy.decimals ? proxy.decimals : "N/A"}
-              </td>
-              <td>
-                <a href={network.url.replace("%s", proxy.proxy)}>
-                  {proxy.proxy}
-                </a>
-              </td>
-            </tr>
+          {filteredMetadata.map((proxy) => (
+            <>
+              {isPor && (
+                <ProofOfReserveTr
+                  network={network}
+                  proxy={proxy}
+                  showExtraDetails={showExtraDetails}
+                />
+              )}
+              {isDefault && (
+                <DefaultTr
+                  network={network}
+                  proxy={proxy}
+                  showExtraDetails={showExtraDetails}
+                />
+              )}
+              {isNftFloor && (
+                <NftFloorTr
+                  network={network}
+                  proxy={proxy}
+                  showExtraDetails={showExtraDetails}
+                />
+              )}
+            </>
           ))}
         </tbody>
       </table>
@@ -148,313 +386,65 @@ export const MainnetTable = ({
 export const TestnetTable = ({
   network,
   showExtraDetails,
-  feedType,
+  dataFeedType,
 }: {
-  network: Network
+  network: ChainNetwork
   showExtraDetails: boolean
-  feedType: string
+  dataFeedType: string
 }) => {
+  if (!network.metadata) return null
+
+  const isPor = dataFeedType === "por"
+  const isNftFloor = dataFeedType === "nftFloor"
+  const isDefault = !isNftFloor && !isPor
+  const filteredMetadata = network.metadata
+    .sort((a, b) => (a.name < b.name ? -1 : 1))
+    .filter((chain) => {
+      if (isPor) return !!chain.docs.porType
+      if (isNftFloor) return !!chain.docs.nftFloorUnits
+      return !chain.docs.nftFloorUnits && !chain.docs.porType
+    })
+
   return (
     <div>
-      <table style={{ overflowX: "auto" }}>
-        <thead>
-          <tr>
-            <th>Pair</th>
-            <th className={showExtraDetails ? "" : feedList.detailHidden}>
-              Deviation
-            </th>
-            <th className={showExtraDetails ? "" : feedList.detailHidden}>
-              Heartbeat
-            </th>
-            <th className={showExtraDetails ? "" : feedList.detailHidden}>
-              Dec
-            </th>
-            <th>Address</th>
-          </tr>
-        </thead>
+      <table class={tableStyles.table}>
+        {isPor && (
+          <ProofOfReserveTHead showExtraDetails={showExtraDetails} isTestnet />
+        )}
+        {isDefault && (
+          <DefaultTHead showExtraDetails={showExtraDetails} isTestnet />
+        )}
+        {isNftFloor && (
+          <NftFloorTHead showExtraDetails={showExtraDetails} isTestnet />
+        )}
         <tbody>
-          {network.proxies.map((proxy) => (
-            <tr id={`${network.name} ${proxy.pair}`}>
-              <td className="proxy-column">{proxy.pair}</td>
-              <td className={showExtraDetails ? "" : feedList.detailHidden}>
-                {proxy.deviationThreshold
-                  ? proxy.deviationThreshold + "%"
-                  : "N/A"}
-              </td>
-              <td className={showExtraDetails ? "" : feedList.detailHidden}>
-                {proxy.heartbeat ? proxy.heartbeat : "N/A"}
-              </td>
-              <td className={showExtraDetails ? "" : feedList.detailHidden}>
-                {proxy.decimals ? proxy.decimals : "N/A"}
-              </td>
-              <td>
-                <a href={network.url.replace("%s", proxy.proxy)}>
-                  {proxy.proxy}
-                </a>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  )
-}
-
-export const MainnetPoRTable = ({
-  network,
-  showExtraDetails,
-  feedType,
-}: {
-  network: Network
-  showExtraDetails: boolean
-  feedType: string
-}) => {
-  return (
-    <div style={{ overflowX: "auto" }}>
-      <table style={{ display: "block", overflowX: "auto" }}>
-        <thead>
-          <tr>
-            <th>Pair</th>
-            <th>Asset</th>
-            <th>Type</th>
-            <th className={showExtraDetails ? "" : feedList.detailHidden}>
-              Deviation
-            </th>
-            <th className={showExtraDetails ? "" : feedList.detailHidden}>
-              Heartbeat
-            </th>
-            <th className={showExtraDetails ? "" : feedList.detailHidden}>
-              Dec
-            </th>
-            <th>Address</th>
-          </tr>
-        </thead>
-        <tbody>
-          {network.proxies.map((proxy) => (
-            <tr id={`${network.name} ${proxy.pair}`}>
-              <td>
-                <div className="proxy-pair-column">
-                  {feedCategories[proxy.feedCategory] || ""}
-                  {proxy.pair}
-                </div>
-
-                {proxy.shutdownDate && (
-                  <>
-                    <hr className="shutDate" />
-                    <div className="shutDate">
-                      Deprecating:
-                      <br />
-                      {proxy.shutdownDate}
-                    </div>
-                  </>
-                )}
-              </td>
-              <td>{proxy.assetName}</td>
-              <td>{proxy.feedType}</td>
-              <td className={showExtraDetails ? "" : feedList.detailHidden}>
-                {proxy.deviationThreshold
-                  ? proxy.deviationThreshold + "%"
-                  : "N/A"}
-              </td>
-              <td className={showExtraDetails ? "" : feedList.detailHidden}>
-                {proxy.heartbeat ? proxy.heartbeat : "N/A"}
-              </td>
-              <td className={showExtraDetails ? "" : feedList.detailHidden}>
-                {proxy.decimals ? proxy.decimals : "N/A"}
-              </td>
-              <td>
-                <a href={network.url.replace("%s", proxy.proxy)}>
-                  {proxy.proxy}
-                </a>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  )
-}
-
-export const TestnetPoRTable = ({
-  network,
-  showExtraDetails,
-  feedType,
-}: {
-  network: Network
-  showExtraDetails: boolean
-  feedType: string
-}) => {
-  return (
-    <div>
-      <table style={{ overflowX: "auto" }}>
-        <thead>
-          <tr>
-            <th>Pair</th>
-            <th className={showExtraDetails ? "" : feedList.detailHidden}>
-              Deviation
-            </th>
-            <th className={showExtraDetails ? "" : feedList.detailHidden}>
-              Heartbeat
-            </th>
-            <th className={showExtraDetails ? "" : feedList.detailHidden}>
-              Dec
-            </th>
-            <th>Address</th>
-          </tr>
-        </thead>
-        <tbody>
-          {network.proxies.map((proxy) => (
-            <tr id={`${network.name} ${proxy.pair}`}>
-              <td className="proxy-column">{proxy.pair}</td>
-              <td className={showExtraDetails ? "" : feedList.detailHidden}>
-                {proxy.deviationThreshold
-                  ? proxy.deviationThreshold + "%"
-                  : "N/A"}
-              </td>
-              <td className={showExtraDetails ? "" : feedList.detailHidden}>
-                {proxy.heartbeat ? proxy.heartbeat : "N/A"}
-              </td>
-              <td className={showExtraDetails ? "" : feedList.detailHidden}>
-                {proxy.decimals ? proxy.decimals : "N/A"}
-              </td>
-              <td>
-                <a href={network.url.replace("%s", proxy.proxy)}>
-                  {proxy.proxy}
-                </a>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  )
-}
-
-export const MainnetNFTFloorTable = ({
-  network,
-  showExtraDetails,
-  feedType,
-}: {
-  network: Network
-  showExtraDetails: boolean
-  feedType: string
-}) => {
-  return (
-    <div style={{ overflowX: "auto" }}>
-      <table style={{ display: "block", overflowX: "auto" }}>
-        <thead>
-          <tr>
-            <th>Pair</th>
-            <th>Asset</th>
-            <th>Type</th>
-            <th className={showExtraDetails ? "" : feedList.detailHidden}>
-              Deviation
-            </th>
-            <th className={showExtraDetails ? "" : feedList.detailHidden}>
-              Heartbeat
-            </th>
-            <th className={showExtraDetails ? "" : feedList.detailHidden}>
-              Dec
-            </th>
-            <th>Address</th>
-          </tr>
-        </thead>
-        <tbody>
-          {network.proxies.map((proxy) => (
-            <tr id={`${network.name} ${proxy.pair}`}>
-              <td>
-                <div className="proxy-pair-column">
-                  {feedCategories[proxy.feedCategory] || ""}
-                  {proxy.pair}
-                </div>
-
-                {proxy.shutdownDate && (
-                  <>
-                    <hr className="shutDate" />
-                    <div className="shutDate">
-                      Deprecating:
-                      <br />
-                      {proxy.shutdownDate}
-                    </div>
-                  </>
-                )}
-              </td>
-              <td>{proxy.assetName}</td>
-              <td>{proxy.feedType}</td>
-              <td className={showExtraDetails ? "" : feedList.detailHidden}>
-                {proxy.deviationThreshold
-                  ? proxy.deviationThreshold + "%"
-                  : "N/A"}
-              </td>
-              <td className={showExtraDetails ? "" : feedList.detailHidden}>
-                {proxy.heartbeat ? proxy.heartbeat : "N/A"}
-              </td>
-              <td className={showExtraDetails ? "" : feedList.detailHidden}>
-                {proxy.decimals ? proxy.decimals : "N/A"}
-              </td>
-              <td>
-                <a href={network.url.replace("%s", proxy.proxy)}>
-                  {proxy.proxy}
-                </a>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  )
-}
-
-export const TestnetNFTFloorTable = ({
-  network,
-  showExtraDetails,
-  feedType,
-}: {
-  network: Network
-  showExtraDetails: boolean
-  feedType: string
-}) => {
-  return (
-    <div>
-      <table style={{ overflowX: "auto" }}>
-        <thead>
-          <tr>
-            <th>NFT Collection</th>
-            <th>Price units</th>
-            <th className={showExtraDetails ? "" : feedList.detailHidden}>
-              Deviation
-            </th>
-            <th className={showExtraDetails ? "" : feedList.detailHidden}>
-              Heartbeat
-            </th>
-            <th className={showExtraDetails ? "" : feedList.detailHidden}>
-              Dec
-            </th>
-            <th>Address</th>
-          </tr>
-        </thead>
-        <tbody>
-          {network.proxies.map((proxy) => (
-            <tr id={`${network.name} ${proxy.pair}`}>
-              <td className="proxy-column">{proxy.pair}</td>
-              <td className="proxy-column">{proxy.nftFloorUnits}</td>
-              <td className={showExtraDetails ? "" : feedList.detailHidden}>
-                {proxy.deviationThreshold
-                  ? proxy.deviationThreshold + "%"
-                  : "N/A"}
-              </td>
-              <td className={showExtraDetails ? "" : feedList.detailHidden}>
-                {proxy.heartbeat ? proxy.heartbeat : "N/A"}
-              </td>
-              <td className={showExtraDetails ? "" : feedList.detailHidden}>
-                {proxy.decimals ? proxy.decimals : "N/A"}
-              </td>
-              <td>
-                <a href={network.url.replace("%s", proxy.proxy)}>
-                  {proxy.proxy}
-                </a>
-              </td>
-            </tr>
+          {filteredMetadata.map((proxy) => (
+            <>
+              {isPor && (
+                <ProofOfReserveTr
+                  network={network}
+                  proxy={proxy}
+                  showExtraDetails={showExtraDetails}
+                  isTestnet
+                />
+              )}
+              {isDefault && (
+                <DefaultTr
+                  network={network}
+                  proxy={proxy}
+                  showExtraDetails={showExtraDetails}
+                  isTestnet
+                />
+              )}
+              {isNftFloor && (
+                <NftFloorTr
+                  network={network}
+                  proxy={proxy}
+                  showExtraDetails={showExtraDetails}
+                  isTestnet
+                />
+              )}
+            </>
           ))}
         </tbody>
       </table>

@@ -2,12 +2,21 @@
 import FeedsCommonCallout from "../callouts/FeedsCommonCallout.astro"
 import { FeedList } from "./FeedList.tsx"
 import type { DataFeedType } from "./FeedList.tsx"
+import { Aside } from "~/components"
 export type Props = {
   initialNetwork?: string
   ecosystem: string
   dataFeedType?: DataFeedType
 }
+import { getServerSideChainMetadata } from "../api/backend"
+import { CHAINS, SOLANA_CHAINS } from "../data/chains"
+
 const { initialNetwork, ecosystem, dataFeedType } = Astro.props
+
+const initialCache = await getServerSideChainMetadata([
+  ...CHAINS,
+  ...SOLANA_CHAINS,
+])
 ---
 
 {
@@ -50,9 +59,18 @@ const { initialNetwork, ecosystem, dataFeedType } = Astro.props
   initialNetwork={initialNetwork ?? "ethereum"}
   dataFeedType={dataFeedType ?? "default"}
   ecosystem={ecosystem ?? ""}
+  initialCache={initialCache}
 />
-<!-- <FeedList
-  client:idle
-  initialNetwork="solana"
-  ecosystem="solana"
-/> -->
+
+<Aside type="caution">
+  <p>
+    Please be careful with the feeds used by your smart contracts. The feeds
+    listed in our official documentation have been reviewed; feeds built for
+    custom deployments by other community members might have additional risks.
+    Please do close diligence on your feeds before implementing them in your
+    contracts.{" "}
+    <a href="/docs/data-feeds/selecting-data-feeds/">
+      Learn more about making responsible data quality decisions.</a
+    >
+  </p>
+</Aside>
