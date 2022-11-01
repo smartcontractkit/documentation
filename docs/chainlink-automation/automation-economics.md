@@ -11,20 +11,29 @@ whatsnext:
 
 ## Cost of using Chainlink Automation
 
-There is no fee for registering a Chainlink Automation job. There is a 0.1 LINK cancellation fee that only applies to jobs which have not spent more than 0.1 LINK over their entire lifespan. This cancellation fee is to protect node operators from spammers who register jobs that never perform.
+Chainlink Automation only requires an execution fee for transactions on-chain. This fee includes the transaction cost, a percentage premium (refer to the formula below), and a small fixed gas overhead accounting for gas between the network and the registry. The premium compensates the Automation Network for monitoring and performing your upkeep. The premium varies by chain and is listed on our [Supported Networks](../supported-networks/) page.
+
+![Automation Pricing Formula](/images/contract-devs/automation/automation-pricing.png)
+
+There is no registration fee or other fees for any off-chain computation.
+
+**Example**: An upkeep transaction was executed on *Polygon mainnet*. It used *1.16M* gas at a gas price of *183.3 gwei*. The premium percentage on Polygon is *70%* (as of October 2022) and the Matic/LINK exchange rate is *0.0131*. The upkeep's LINK balance will be reduced by a fee of *0.0495 LINK*.
+
+![Automation Pricing Example](/images/contract-devs/automation/automation-pricing-example.png)
 
 ## How Funding Works
 
-Upkeeps have a LINK (ERC-677) balance. Every time an Automation Node executes the `performUpkeep` function, the LINK balance will be reduced. You can add funds using the Chainlink Automation App or by directly calling the `addFunds()` function on the `AutomationRegistry` contract. Anyone can call the `addFunds()` function.
+Upkeeps have a LINK (ERC-677) balance. Every time an on-chain transaction is performed for your upkeep, its LINK balance will be reduced by the LINK fee. 
 
-When an Automation Node executes the `performUpkeep` function, the Chainlink Automation Registry will deduct the upkeep's total gas cost in LINK and a percentage premium from the upkeep’s LINK balance and allocate it to the Automation Node's address. The total gas cost (in LINK) comprises of the gas price of the transaction multiplied by the sum of the gas used for the transaction and an 80K gas overhead for the Automation Node call gas used. Chainlink Data Feeds convert this total amount to LINK. 
+Your upkeep's balance must exceed the minimum balance. If this requirement is not met, the Automation Network will not perform on-chain transactions. You can add funds using the [Chainlink Automation App](https://automation.chain.link/) or by directly calling the `addFunds()` function on the `AutomationRegistry` contract. Anyone can call the `addFunds()` function.
 
-The percentage premium compensates the Automation Node for monitoring and performing your upkeep. The percentage premium varies by network and is listed in our [Supported Networks](../supported-networks/#configurations) page.
+## Withdrawing funds
 
+To withdraw a LINK balance, you must cancel your upkeep first. Any upkeep that has not spent more than an aggregated amount of 0.1 LINK fees over the span of its lifetime is subject to a *0.1 LINK* fee. This cancellation fee protects node operators from spammers who register jobs that never perform.
 
-## Minimum Spend Requirement
+**Example 1**: Your upkeep has spent *4.8 LINK* over its lifetime and has a balance of *5 LINK*. When it is cancelled, you receive *5 LINK*.
+**Example 2**: Your upkeep has spent *0 LINK* over its lifetime and has a balance of *5 LINK*. When it is cancelled, you receive *4.9 LINK*.
 
-To prevent misuse of the Chainlink Automation network, each registered upkeep requires a small minimum spend of 0.1 LINK across all upkeep transactions. If the total LINK spent across all transactions for the upkeep does not exceed this amount, the difference between 0.1 LINK and the amount spent in LINK is not refunded after you cancel the upkeep. If you spend more than 0.1 LINK across all of your upkeep's transactions, all remaining LINK is refundable after you cancel. This amount is intentionally small so that even a few upkeep transactions on the cheapest networks can easily exceed this amount.
 
 ## No node competition
 
