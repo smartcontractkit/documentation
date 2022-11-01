@@ -24,7 +24,7 @@ The framework simplifies the following tasks:
 
 ## Requirements
 
-You must run a Kubernets cluster with one or more Chainlink nodes. This requires the following system resources:
+Most basic tests can be completed on a system with minimal hardware resources. To complete soak testing and use the CLI to create clusters with multiple Chainlink nodes, you must run a Kubernets cluster on a system with the following system resources:
 
 - A Linux system
 - 6 CPU cores
@@ -33,12 +33,26 @@ You must run a Kubernets cluster with one or more Chainlink nodes. This requires
 
 ## Set up your environment
 
-Set up Kubernets and other required tools:
+Install the framework and create an alias:
+
+1. Obtain the binary file from Chainlink Labs and put it in your local directory.
+1. Optionally, make the binary available in `/usr/bin` so you can run it without the full path to the file: `sudo cp ./bif /usr/bin/`
+
+You can now run the framework CLI. Use `-h` to see the available commands: `bif integration -h`
+
+If you plan to run soak tests or other tests that require running Chainlink nodes, set up Kubernets and other required tools:
+
+1. Install [Helm](https://helm.sh/docs/intro/install/#through-package-managers) and add the following repositories.
+
+    ```shell
+    helm repo add chainlink-qa https://raw.githubusercontent.com/smartcontractkit/qa-charts/gh-pages/
+    helm repo add bitnami https://charts.bitnami.com/bitnami
+    helm repo update
+    ```
 
 1. Clone the [chainlink-env repository](https://github.com/smartcontractkit/chainlink-env): `git clone https://github.com/smartcontractkit/chainlink-env.git && cd chainlink-env`
 1. Install dependencies: `make install_deps`
-1. Optionally, install `Lens` from [k8slens.dev](https://k8slens.dev/) or use `k9s` as a low resource consumption alternative from [k9scli.io](https://k9scli.io/topics/install/).
-   or from source [here](https://github.com/smartcontractkit/helmenv)
+1. Optionally, install `Lens` from [k8slens.dev](https://k8slens.dev/) or use `k9s` as a low resource consumption alternative from [k9scli.io](https://k9scli.io/topics/install/) or from the source at [smartcontractkit/helmenv](https://github.com/smartcontractkit/helmenv).
 1. Setup your docker resources.
 1. Install k3d from [k3d.io](https://k3d.io/v5.4.6/#installation)
 1. Create a cluster: `make create_cluster`
@@ -54,13 +68,6 @@ When you are done, you can clean up the environment:
 1. `make stop_cluster`
 1. `make delete_cluster`
 
-Install the framework and create an alias:
-
-1. Obtain the binary from Chainlink Labs and put it in your local directory. For example, you can put the binary in `~/bif`.
-1. Create an alias to the binary: `alias bif="~/bif`
-
-You can now run the framework CLI. Use `-h` to see the available commands: `bif integration -h`
-
 <!--TODO: Sort these steps out
 1. Populate `private_keys` under `networks.evm.base` and `ws_urls` under `networks.evm.overrides.goerli` in `example.toml`.
 1. Start running a soak test `bif integration soak ./docs/integration/example.toml`.
@@ -71,9 +78,13 @@ You can now run the framework CLI. Use `-h` to see the available commands: `bif 
 
 ## Running basic tests
 
-Out of the box, you can use the framework to run several basic tests on the network.
+Out of the box, you can use the framework to run several basic tests on the network. These commands deploy contracts as part of the tests, so you must provide the following parameters:
 
-Run this command to test how compatible is the API of a network client
+- The private key to a wallet that is funded with ETH
+- The chain ID for your network, which usually can be found on the [LINK Token Contracts](https://docs.chain.link/docs/link-token-contracts/) or [chainlist.org](https://chainlist.org/)
+- The RPC URL for either a network node that you run or a third-party service like [Alchemy](https://www.alchemy.com/), [Infura](https://infura.io/), and [Ankr](https://www.ankr.com/rpc/)
+
+**Test compatiblity of the network client API:**
 
 ```shell
 bif compatibility test-rpc \ 
@@ -83,7 +94,7 @@ bif compatibility test-rpc \
 --storageContractAddress <OPTIONAL_CONTRACT_ADDRESS>
 ```
 
-Run this command to test the smart contract op codes of an arbitrary network
+**Test the smart contract op codes of a network:**
 
 ```
 go run ./cmd/main.go compatibility test-opcodes \
@@ -100,16 +111,6 @@ The needed flags will be prompted. An example against the Goerli network:
 ```
 
 ## Integration Testing
-
-Integration testing commands require you to [install Helm](https://helm.sh/docs/intro/install/#through-package-managers) and add the following repositories.
-
-```shell
-helm repo add chainlink-qa https://raw.githubusercontent.com/smartcontractkit/qa-charts/gh-pages/
-helm repo add bitnami https://charts.bitnami.com/bitnami
-helm repo update
-```
-
-You will also need to configure a Kubernetes cluster on your local machine. To set up a local cluster via k3d, see our [Kubernetes documentation](/docs/integration/kubernetes.md).
 
 The following command runs an OCR soak test on an EVM network.
 ```shell
@@ -159,10 +160,6 @@ Run this command for the initial deployment and configuration of a data feed
 ```shell
 ./bif contracts evm ocr setup --config=./config.json --rpc=https://goerli.infura.io --privatekey=15243.... --token=ghp...
 ```
-
-
-
-
 
 
 
@@ -239,7 +236,8 @@ To configure a network, you provide a base and an optional set of overrides. Thi
 
 ### Test Settings
 
-Test settings, such as node count and test duration, control the behaviour of the test. `example.toml` contains a standard test config with an override called `shorter-test`:
+Test settings, such as node count and test duration, control the behavior of the test. `example.toml` contains a standard test config with an override called `shorter-test`:
+
 ```toml
 # test settings
 [tests]
