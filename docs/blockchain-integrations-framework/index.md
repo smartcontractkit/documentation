@@ -152,9 +152,12 @@ The TOML file for the Blockchain Integrations Framework has two settings section
 
         [tests.v1-7-0.base]
         keep_environments="Never" # Always | OnFail | Never
-        chainlink_image="public.ecr.aws/chainlink/chainlink" # Image repo to pull the Chainlink image from
-        chainlink_version="1.7.0-nonroot" # Version of the Chainlink image to pull
-        chainlink_env_user="Satoshi-Nakamoto" # Name of the person running the tests (change to your own)
+        # Image repo to pull the Chainlink image from
+        chainlink_image="public.ecr.aws/chainlink/chainlink"
+        # Version of the Chainlink image to pull
+        chainlink_version="1.7.0-nonroot"
+        # Name of the person running the tests (no spaces)
+        chainlink_env_user="My-Name" 
         test_log_level="info" # info | debug | trace
         node_count=6
         test_duration=15 # minutes
@@ -171,9 +174,12 @@ The TOML file for the Blockchain Integrations Framework has two settings section
 
         [tests.v1-9-0.base]
         keep_environments="Never" # Always | OnFail | Never
-        chainlink_image="public.ecr.aws/chainlink/chainlink" # Image repo to pull the Chainlink image from
-        chainlink_version="1.9.0" # Version of the Chainlink image to pull
-        chainlink_env_user="Satoshi-Nakamoto" # Name of the person running the tests (change to your own)
+        # Image repo to pull the Chainlink image from
+        chainlink_image="public.ecr.aws/chainlink/chainlink"
+        # Version of the Chainlink image to pull
+        chainlink_version="1.9.0"
+        # Name of the person running the tests (no spaces)
+        chainlink_env_user="My-Name"
         test_log_level="info" # info | debug | trace
         node_count=6  
         test_duration=15 # minutes
