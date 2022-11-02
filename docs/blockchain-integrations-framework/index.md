@@ -20,7 +20,8 @@ The framework simplifies the following tasks:
 
 - [Requirements](#requirements)
 - [Set up your environment](#set_up_your_environment)
-
+- [Running basic tests](#running_basic_tests)
+- [Running integration testing](#running_integration_testing)
 
 ## Requirements
 
@@ -36,47 +37,45 @@ Most basic tests can be completed on a system with minimal hardware resources. T
 Install the framework and create an alias:
 
 1. Obtain the binary file from Chainlink Labs and put it in your local directory.
-1. Optionally, make the binary available in `/usr/bin` so you can run it without the full path to the file: `sudo cp ./bif /usr/bin/`
+1. Make the binary available in `/usr/bin` so you can run it without the full path: `sudo cp ./bif /usr/bin/`
 
-You can now run the framework CLI. Use `-h` to see the available commands: `bif integration -h`
+You can now run the framework CLI. Run `bif integration -h` to see the available commands. See the [Running basic tests](#running_basic_tests) section for examples.
 
-If you plan to run soak tests or other tests that require running Chainlink nodes, set up Kubernets and other required tools:
+If you plan to run soak tests or other tests that require running Chainlink nodes, set up [Helm](https://helm.sh/docs/intro/install/#through-package-managers), [Kubernets](https://kubernetes.io/docs/setup/) and other required tools:
 
-1. Install [Helm](https://helm.sh/docs/intro/install/#through-package-managers) and add the following repositories.
-
-    ```shell
-    helm repo add chainlink-qa https://raw.githubusercontent.com/smartcontractkit/qa-charts/gh-pages/
-    helm repo add bitnami https://charts.bitnami.com/bitnami
-    helm repo update
-    ```
-
-1. Clone the [chainlink-env repository](https://github.com/smartcontractkit/chainlink-env): `git clone https://github.com/smartcontractkit/chainlink-env.git && cd chainlink-env`
+1. Install [Helm](https://helm.sh/docs/intro/install/#through-package-managers).
+1. Add the following repositories:
+    - chainlink-qa: `helm repo add chainlink-qa https://raw.githubusercontent.com/smartcontractkit/qa-charts/gh-pages/`
+    - bitnami: `helm repo add bitnami https://charts.bitnami.com/bitnami`
+1. Update the helm repository: `helm repo update`
+1. Clone the [chainlink-env repository](https://github.com/smartcontractkit/chainlink-env) and change directories: `git clone https://github.com/smartcontractkit/chainlink-env.git && cd chainlink-env`
 1. Install dependencies: `make install_deps`
 1. Optionally, install `Lens` from [k8slens.dev](https://k8slens.dev/) or use `k9s` as a low resource consumption alternative from [k9scli.io](https://k9scli.io/topics/install/) or from the source at [smartcontractkit/helmenv](https://github.com/smartcontractkit/helmenv).
 1. Setup your docker resources.
 1. Install k3d from [k3d.io](https://k3d.io/v5.4.6/#installation)
 1. Create a cluster: `make create_cluster`
 1. Install monitoring: `make install_monitoring`
+
+The `make install_monitoring` command starts Grafana, which takes control of your terminal. Open Grafana in a browser at `localhost:3000` to confirm that it is running properly. Log in with `admin` as the username and `sdkfh26!@bHasdZ2` as the default password. If you are running testing a remote system, you can use `ssh -i $KEY $USER@$REMOTE-IP -L 3000:localhost:3000 -N` to create an SSH tunnel to the system where Grafana is running and map port `3000` to your local workstation. Change the default password.
+
+Create deployments:
+
 1. Install the [kubectl tool](https://kubernetes.io/docs/tasks/tools/)
 1. Check your contexts with `kubectl config get-contexts`
 1. Switch context with `kubectl config use-context k3d-local`
 1. Follow the chainlink-env [README](https://github.com/smartcontractkit/chainlink-env/blob/master/README.md) and make some deployments.
-1. Open Grafana on `localhost:3000` with `admin/<password>` login/password and check the default dashboard
+1. Open Grafana and check the default dashboard.
 
-When you are done, you can clean up the environment:
+You can now [run integration testing](#run_integration_testing).
 
-1. `make stop_cluster`
-1. `make delete_cluster`
+When you are done with testing, you can clean up the environment using the following commands:
 
-<!--TODO: Sort these steps out
-1. Populate `private_keys` under `networks.evm.base` and `ws_urls` under `networks.evm.overrides.goerli` in `example.toml`.
-1. Start running a soak test `bif integration soak ./docs/integration/example.toml`.
-1. Select TestOCRSoak, evm, goerli, and your desired test settings
-1. View your local Grafana instance at `localhost:3000` to see test metrics
-1. Check node logs `bif integration logs NAMESPACE [--level LOG_LEVEL]`
--->
+1. Stop the cluster: `make stop_cluster`
+1. Delete the cluster: `make delete_cluster`
 
 ## Running basic tests
+
+<!--TODO: Add full working examples-->
 
 Out of the box, you can use the framework to run several basic tests on the network. These commands deploy contracts as part of the tests, so you must provide the following parameters:
 
@@ -84,7 +83,7 @@ Out of the box, you can use the framework to run several basic tests on the netw
 - The chain ID for your network, which usually can be found on the [LINK Token Contracts](https://docs.chain.link/docs/link-token-contracts/) or [chainlist.org](https://chainlist.org/)
 - The RPC URL for either a network node that you run or a third-party service like [Alchemy](https://www.alchemy.com/), [Infura](https://infura.io/), and [Ankr](https://www.ankr.com/rpc/)
 
-**Test compatiblity of the network client API:**
+**Test compatibility of the network client API:**
 
 ```shell
 bif compatibility test-rpc \ 
@@ -97,156 +96,69 @@ bif compatibility test-rpc \
 **Test the smart contract op codes of a network:**
 
 ```
-go run ./cmd/main.go compatibility test-opcodes \
+bif compatibility test-opcodes \
 --privateKey <PRIVATE_KEY> \
 --chainID <CHAIN_ID> \
 --rpc <RPC_URL> \
 --opcodesContractAddress <OPTIONAL_CONTRACT_ADDRESS>
 ```
 
-The needed flags will be prompted. An example against the Goerli network:
+## Running integration testing
 
-```shell
-./bif compatibility test-rpc --chainID 5 --rpc wss://goerli.infura.io/ws/v3/7c43471f9d604276a856f0cff1edb645 --privateKey 15243...
-```
+Integration testing uses the `bif integration soak` command and a TOML file. The TOML file simplifies managing the many variables involved.
 
-## Integration Testing
+The TOML file for the Blockchain Integrations Framework has two settings sections:
 
-The following command runs an OCR soak test on an EVM network.
-```shell
-./bif integration soak PATH_TO_TOML_CONFIG
-```
-The TOML config must have a `networks` and `tests` section. Each entry has a base config and a set of overrides. See [example.toml](/docs/integration/example.toml) for an example config. The only variables that must be updated are `private_keys` and `ws_urls`.
+- Network settings: Variables that configure which chain you use for testing and the private key for the wallet you want to use for deploying contracts
+- Test settings: Node count and test duration settings to control the behavior of the test
 
-
-## Commands for setting up Chainlink
-
-### Infra
-
-Run this command to create new chainlink node cluster with the given settings in the TOML config file:
-
-```
-./bif infra cluster create --count <NUMBER_OF_NODES> --config <PATH_TO_TOML_CONFIG_FILE>
-```
-
-Run this command to add an additional node to an already existing cluster
-```
-./bif infra cluster add-node
-```
-
-Run this command to shutdown a cluster:
-```
-./bif infra cluster shutdown
-```
-
-Run this command to deploy an external adapter to a k8 cluster:
-```
-./bif infra external-adapter deploy
-```
-
-Run this command to attach an external adapter to an existing cluster:
-```
-./bif infra external-adapter attach
-```
-
-Run this command to distribute jobs to a cluster for a feed to run:
-```
-./bif infra cluster distribute-jobs
-```
-
-### Contracts
-
-Run this command for the initial deployment and configuration of a data feed
-```shell
-./bif contracts evm ocr setup --config=./config.json --rpc=https://goerli.infura.io --privatekey=15243.... --token=ghp...
-```
-
-
-
-## Packages reference
-
-The integration module contains the following packages:
-
-<!--TODO: Sort out the links and the content.-->
-
-- [integration](/integration/cmd/): cobra commands used to interact with other packages
-- [infra](/integration/infra/): adding nodes to k8s deployment, deploying nodes via k8s
-- [soak](/integration/soak/): a sample soak test suite
-- [logs](/integration/logs/): running log analysis on nodes, fetching logs above a certain log level
-- [tests](/integration/tests/): fetching details about test suites, building and running tests
-- [internal/cluster](/integration/internal/cluster/): interacting with a k8s cluster, getting namespaces and k8s clients
-- [internal/config](/integration/internal/config/): combined configuration type for network and test information
-- [internal/prompt](/integration/internal/prompt/): interactive CLI prompt for selecting a string from a list
-
-
-
-
-
-
-
-
-
-
-
-<!--TODO: Sort out what is necessary in these remaining sections.-->
-
-## Running Any Test Suite
-
-This module provides a default [soak test suite](/integration/soak/), but you can pass in any test suite using the `--pkg` flag
-```bash
-./bif integration soak config.toml --pkg=github.com/smartcontractkit/chainlink/integration-tests/soak
-```
-The framework will fetch the tests in this package using `go test [PACKAGE] -list .` and run the test that you select.
-
-## Configuration
-Integration tests, like soak tests, depend on a large number of variables. To manage these variables, the Blockchain Integrations Framework uses TOML files. These files have two sections: one for network settings and one for test settings.
-
-### Network Settings
-Network settings are variables that configure which chain you will be testing on. `example.toml` contains network settings for a general EVM network:
+**Example TOML file**
 
 ```toml
-# network settings
+# Network settings
 [networks]
+
     [networks.evm]
+
         [networks.evm.base]
         name = "EVM"
-        private_keys = ["YOUR_EVM_KEY_HERE"]
-        ws_urls = []
-        http_urls = []
-        chain_id = 1337
+        private_keys = ["<PRIVATE_KEY>"]
+        ws_urls = ["wss://rpc.ankr.com/optimism_testnet"]
+        http_urls = ["https://rpc.ankr.com/optimism_testnet"]
+        chain_id = 420
         simulated = false
         chainlink_transaction_limit = 5000
         transaction_timeout = "2m"
         minimum_confirmations = 1
         gas_estimation_buffer = 1000
+
         [networks.evm.overrides.goerli]
         name = "Goerli"
-        ws_urls = ["wss://goerli"]
+        ws_urls = ["wss://rpc.ankr.com/eth_goerli"]
+        http_urls = ["https://rpc.ankr.com/eth_goerli"]
         chain_id = 5
+
+        [networks.evm.overrides.goerli_local]
+        name = "Goerli"
+        ws_urls = ["wss://localhost:8545"]
+        http_urls = ["https://localhost:8545"]
+        chain_id = 5
+
         [networks.evm.overrides.palm]
         name = "Palm"
         ws_urls = ["wss://palm"]
         chain_id = 11297108099
-        [networks.evm.overrides.rinkeby]
-        name = "Rinkeby"
-        ws_urls = ["wss://rinkeby"]
-        chain_id = 4
-```
-To configure a network, you provide a base and an optional set of overrides. This allows you to share variables across networks without rewriting them.
 
-### Test Settings
-
-Test settings, such as node count and test duration, control the behavior of the test. `example.toml` contains a standard test config with an override called `shorter-test`:
-
-```toml
-# test settings
+# Test settings
 [tests]
-    [tests.v1-7-0]
-        [tests.v1-7-0.base]
+
+    [tests.v1-9-0]
+
+        [tests.v1-9-0.base]
         keep_environments="Never" # Always | OnFail | Never
-        chainlink_image="public.ecr.aws/chainlink/chainlink" # Image repo to pull the Chainlink image from
-        chainlink_version="1.7.0-nonroot" # Version of the Chainlink image to pull
-        chainlink_env_user="Satoshi-Nakamoto" # Name of the person running the tests (change to your own)
+        chainlink_image="public.ecr.aws/chainlink/chainlink" # Image repo to pull the>
+        chainlink_version="1.9.0-nonroot" # Version of the Chainlink image to pull
+        chainlink_env_user="Satoshi-Nakamoto" # Name of the person running the tests >
         test_log_level="info" # info | debug | trace
         node_count=6
         test_duration=15 # minutes
@@ -255,25 +167,18 @@ Test settings, such as node count and test duration, control the behavior of the
         round_timeout=15 # minutes
         expected_round_time=2 # minutes
         time_between_rounds=1 # minutes
-        [tests.v1-7-0.overrides.shorter-test]
+
+        [tests.v1-9-0.overrides.shorter-test]
         test_duration=2 # minutes
+
 ```
 
-### Interactive Setup
+If you completed the full [steps to set up your environment](#set_up_your_environment), you can run a soak test with the following steps:
 
-When running a test, you will be prompted to select a test, a network setting, and a test setting
-
-```bash
-% ./bif integration soak config.toml
-8:15AM INF Getting tests Package=github.com/smartcontractkit/blockchain-integrations-framework/integration/soak
-✔ TestOCRSoak
-✔ evm
-✔ goerli
-✔ v1-7-0
-Use the arrow keys to navigate: ↓ ↑ → ← 
-? Select Test Override: 
-  ▸ shorter-test
-    none
-```
-
-In the example above, the tests are pulled from `github.com/smartcontractkit/integrations-toolkit-soak/soak`. The network and test settings are pulled from the given TOML config.
+1. Create a file called `example.toml` and paste the example TOML file above.
+1. Edit the file to add your `private_keys` under the `networks.evm.base` config.
+1. Modify the `ws_urls` under `networks.evm.overrides.goerli` or create additional overrides for different networks`.
+1. Start running a soak test `bif integration soak ./example.toml`.
+1. The interactive menu opens. Select evm, your desired network overrides, the Chainlink node version, and your test length settings.
+1. While your test is running, view your local Grafana instance at `localhost:3000` to see test metrics.
+1. Check node logs: `bif integration logs NAMESPACE [--level LOG_LEVEL]`
