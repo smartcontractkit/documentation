@@ -19,10 +19,10 @@ The framework simplifies the following tasks:
 **Contents**
 
 - [Requirements](#requirements)
-- [Set up your environment](#set_up_your_environment)
-- [Running basic tests](#running_basic_tests)
-- [Running integration testing](#running_integration_tests)
-- [Troubleshooting integration tests](#troubleshooting_integration_tests)
+- [Set up your environment](#set-up-your-environment)
+- [Running basic tests](#running-basic-tests)
+- [Running integration testing](#running-integration-tests)
+- [Troubleshooting integration tests](#troubleshooting-integration-tests)
 
 ## Requirements
 
@@ -40,7 +40,7 @@ Install the framework and create an alias:
 1. Obtain the binary file from Chainlink Labs and put it in your local directory.
 1. Make the binary available in `/usr/bin` so you can run it without the full path: `sudo mv ./bif /usr/bin/`
 
-You can now run the framework CLI. Run `bif integration -h` to see the available commands. See the [Running basic tests](#running_basic_tests) section for examples.
+You can now run the framework CLI. Run `bif integration -h` to see the available commands. See the [Running basic tests](#running-basic-tests) section for examples.
 
 If you plan to run soak tests or other tests that require running Chainlink nodes, set up [Helm](https://helm.sh/docs/intro/install/#through-package-managers), [Kubernets](https://kubernetes.io/docs/setup/) and other required tools:
 
@@ -62,7 +62,7 @@ The [chainlink-env repository](https://github.com/smartcontractkit/chainlink-env
 
 The `make install_monitoring` command starts Grafana, which takes control of your terminal. Open Grafana in a browser at `localhost:3000` to confirm that it is running properly. Log in with `admin` as the username and `sdkfh26!@bHasdZ2` as the default password. If you are running testing a remote system, you can use `ssh -i $KEY $USER@$REMOTE-IP -L 3000:localhost:3000 -N` to create an SSH tunnel to the system where Grafana is running and map port `3000` to your local workstation. Change the default Grafana password.
 
-You can now [run integration testing](#run_integration_tests).
+You can now [run integration testing](#running-integration-tests).
 
 When you are done with testing, you can clean up the environment using the following commands:
 
@@ -71,9 +71,7 @@ When you are done with testing, you can clean up the environment using the follo
 
 ## Running basic tests
 
-<!--TODO: Add full working examples-->
-
-Out of the box, you can use the framework to run several basic tests on the network. These commands deploy contracts as part of the tests, so you must provide the following parameters:
+You can use the framework to run several basic tests on a network. These commands deploy contracts as part of the tests, so you must provide the following parameters:
 
 - The private key to a wallet that is funded and capable of deploying contracts on the network that you want to test
 - The chain ID for your network, which usually can be found on the [LINK Token Contracts](https://docs.chain.link/docs/link-token-contracts/) or [chainlist.org](https://chainlist.org/)
@@ -89,6 +87,8 @@ bif compatibility test-rpc \
 --storageContractAddress <OPTIONAL_CONTRACT_ADDRESS>
 ```
 
+The `--storageContractAddress` flag is available so you can re-use deployed contracts from previous tests and save wallet funds.
+
 **Test the smart contract op codes of a network:**
 
 ```
@@ -98,6 +98,8 @@ bif compatibility test-opcodes \
 --rpc <RPC_URL> \
 --opcodesContractAddress <OPTIONAL_CONTRACT_ADDRESS>
 ```
+
+The `--opcodesContractAddress` flag is available so you can re-use deployed contracts from previous tests and save wallet funds.
 
 ## Running integration tests
 
@@ -165,11 +167,27 @@ The TOML file for the Blockchain Integrations Framework has two settings section
         [tests.v1-7-0.overrides.shorter-test]
         test_duration=2 # minutes
 
+    [tests.v1-9-0]
 
+        [tests.v1-9-0.base]
+        keep_environments="Never" # Always | OnFail | Never
+        chainlink_image="public.ecr.aws/chainlink/chainlink" # Image repo to pull the Chainlink image from
+        chainlink_version="1.9.0" # Version of the Chainlink image to pull
+        chainlink_env_user="Satoshi-Nakamoto" # Name of the person running the tests (change to your own)
+        test_log_level="info" # info | debug | trace
+        node_count=6  
+        test_duration=15 # minutes
+        contract_count=2
+        node_funding=0.1 # ETH
+        round_timeout=15 # minutes
+        expected_round_time=2 # minutes
+        time_between_rounds=1 # minutes
 
+        [tests.v1-9-0.overrides.shorter-test]
+        test_duration=2 # minutes
 ```
 
-If you completed the full [steps to set up your environment](#set_up_your_environment), you can run a soak test with the following steps:
+If you completed the full [steps to set up your environment](#set-up-your-environment), you can run a soak test using the following steps:
 
 1. Create a file called `example.toml` and paste the example TOML file above.
 1. Edit the file to add your `private_keys` under the `networks.evm.base` config.
@@ -180,7 +198,6 @@ If you completed the full [steps to set up your environment](#set_up_your_enviro
 1. Check node logs: `bif integration logs NAMESPACE [--level LOG_LEVEL]`
 
 As you test additional networks, modify the TOML file and configure it with the details for your network.
-
 
 ### Troubleshooting integration tests
 
