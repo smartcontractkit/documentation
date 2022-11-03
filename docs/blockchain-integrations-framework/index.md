@@ -6,7 +6,7 @@ title: "Blockchain Integrations Framework"
 permalink: "docs/blockchain-integrations-framework/"
 ---
 
-Chainlink Labs provides self-serve tools that node operators and blockchain projects can use to deploy Data Feed integrations on EVM networks. These tools are called the Blockchain Integrations Framework (BIF). This framework includes a command line interface (CLI) and is available as a binary file. The binary is not publicly available. During the Alpha release, you must receive this binary directly from Chainlink Labs.
+Chainlink Labs provides self-service tools that node operators and blockchain projects can use to deploy Data Feed integrations on EVM networks. These tools are called the Blockchain Integrations Framework (BIF). This framework includes a command line interface (CLI) and is available as a binary file. The binary is not publicly available. During the Alpha release, you must receive this binary directly from Chainlink Labs.
 
 The framework simplifies the following tasks:
 
@@ -108,8 +108,8 @@ Integration testing uses the `bif integration test` command and a TOML file. The
 
 The TOML file for the Blockchain Integrations Framework has two settings sections for OCR soak tests on EVM networks:
 
-- Network settings: Variables that configure which chain you use for testing and the private key for the wallet you want to use for deploying contracts
-- Test settings: Test duration, node funding, and round configuration settings to control the behavior of the test
+- *Network settings*: Variables that configure which chain you use for testing and the private key for the wallet you want to use for deploying contracts
+- *Test settings*: Test duration, node funding, and round configuration settings to control the behavior of the test
 
 **Example TOML file**
 
