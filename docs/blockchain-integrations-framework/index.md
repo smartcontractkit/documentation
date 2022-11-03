@@ -139,6 +139,7 @@ The TOML file for the Blockchain Integrations Framework has two settings section
         name = "Optimism Goerli"
         ws_urls = ["wss://opt-goerli.g.alchemy.com/v2/<ALCHEMY_KEY>"]
         chain_id = 420
+        client_implementation = "Optimism"
 
         [networks.evm.overrides.palm]
         name = "Palm"
@@ -147,28 +148,6 @@ The TOML file for the Blockchain Integrations Framework has two settings section
 
 # test settings
 [tests]
-
-    [tests.v1-7-0]
-
-        [tests.v1-7-0.base]
-        keep_environments="Never" # Always | OnFail | Never
-        # Image repo to pull the Chainlink image from
-        chainlink_image="public.ecr.aws/chainlink/chainlink"
-        # Version of the Chainlink image to pull
-        chainlink_version="1.7.0-nonroot"
-        # Name of the person running the tests (no spaces)
-        chainlink_env_user="My-Name" 
-        test_log_level="info" # info | debug | trace
-        node_count=6
-        test_duration=15 # minutes
-        contract_count=2
-        node_funding=0.1 # ETH
-        round_timeout=15 # minutes
-        expected_round_time=2 # minutes
-        time_between_rounds=1 # minutes
-
-        [tests.v1-7-0.overrides.shorter-test]
-        test_duration=2 # minutes
 
     [tests.v1-9-0]
 
@@ -184,7 +163,7 @@ The TOML file for the Blockchain Integrations Framework has two settings section
         node_count=6  
         test_duration=15 # minutes
         contract_count=2
-        node_funding=0.1 # ETH
+        node_funding=0.02 # ETH
         round_timeout=15 # minutes
         expected_round_time=2 # minutes
         time_between_rounds=1 # minutes
