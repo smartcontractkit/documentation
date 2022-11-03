@@ -26,7 +26,7 @@ The framework simplifies the following tasks:
 
 ## Requirements
 
-Most basic tests can be completed on a system with minimal hardware resources. To complete soak testing and use the CLI to create clusters with multiple Chainlink nodes, you must run a Kubernets cluster on a system with the following system resources:
+Most basic tests can be completed on a system with minimal hardware resources. To complete soak testing and use the CLI to create clusters with multiple Chainlink nodes, you must run a Kubernetes cluster on a system with the following system resources:
 
 - A Linux system
 - 6 CPU cores
@@ -42,7 +42,7 @@ Install the framework and create an alias:
 
 You can now run the framework CLI. Run `bif integration -h` to see the available commands. See the [Running basic tests](#running-basic-tests) section for examples.
 
-If you plan to run soak tests or other tests that require running Chainlink nodes, set up [Helm](https://helm.sh/docs/intro/install/#through-package-managers), [Kubernets](https://kubernetes.io/docs/setup/) and other required tools:
+If you plan to run soak tests or other tests that require running Chainlink nodes, set up [Helm](https://helm.sh/docs/intro/install/#through-package-managers), [Kubernetes](https://kubernetes.io/docs/setup/) and other required tools:
 
 1. Install [Helm](https://helm.sh/docs/intro/install/#through-package-managers).
 1. Add the following repositories:
@@ -103,12 +103,12 @@ The `--opcodesContractAddress` flag is available so you can re-use deployed cont
 
 ## Running integration tests
 
-Integration testing uses the `bif integration soak` command and a TOML file. The TOML file simplifies managing the many variables involved.
+Integration testing uses the `bif integration test` command and a TOML file. The TOML file simplifies managing the many variables involved.
 
-The TOML file for the Blockchain Integrations Framework has two settings sections:
+The TOML file for the Blockchain Integrations Framework has two settings sections for OCR soak tests on EVM networks:
 
 - Network settings: Variables that configure which chain you use for testing and the private key for the wallet you want to use for deploying contracts
-- Test settings: Node count and test duration settings to control the behavior of the test
+- Test settings: Test duration, node funding, and round configuration settings to control the behavior of the test
 
 **Example TOML file**
 
@@ -175,12 +175,12 @@ The TOML file for the Blockchain Integrations Framework has two settings section
 If you completed the full [steps to set up your environment](#set-up-your-environment), you can run a soak test using the following steps:
 
 1. Create a file called `example.toml` and paste the example TOML file above.
-1. Edit the file to add your `private_keys` under the `networks.evm.base` config.
+1. Edit the file to add your `evm_keys` under the `networks.evm.base` config.
 1. Modify the `ws_urls` under `networks.evm.overrides.goerli` with your specified RPC endpoint URL. Optionally, you can create additional overrides for different networks`.
-1. Start running a soak test `bif integration soak ./example.toml`.
-1. The interactive menu opens. Select evm, your desired network overrides, the Chainlink node version, and your test length settings.
+1. Start running a soak test `bif integration test ./example.toml`.
+1. The interactive menu opens. Select your desired test suite, test, network setting and override, test setting and override, and cluster to run on. For example, `OCR`, `EVMSoak`, `evm`, `goerli`, `v1-7-0` `shorter-test`, and `new cluster`
 1. While your test is running, view your local Grafana instance at `localhost:3000` to see test metrics.
-1. Check node logs: `bif integration logs NAMESPACE [--level LOG_LEVEL]`
+1. Check node logs: `bif integration logs [--level LOG_LEVEL]`
 
 If the test is successful, you will see output similar to the following example:
 
@@ -214,8 +214,8 @@ If a soak test fails, the pods used for testing often remain running. Use `kubec
 Your system must meet the defined [Requirements](#requirements). Running on systems without sufficient resources will cause soak tests to fail because some containers for Chainlink nodes will not be able to start.
 
 - If you are running on a virtual machine, add additional vCPUs, system memory, or storage.
-- Run your soak tests with fewer nodes. The default value in the TOML config is `node_count=6`, which is recommended for a thorough soak test. You can adjust this value if you are unable to obtain the necessary system resources.
+- Run your soak tests with fewer nodes. The default node count is 6 per cluster, which is recommended for a thorough soak test. You can adjust this value if you are unable to obtain the necessary system resources.
 
 **Insufficient wallet funding**
 
-The soak tests send 0.1 ETH to each test node by default, so you must make sure that there are significant funds in the wallet that you use to fund testing. This is the wallet specified by your `private_keys` parameter in the TOML file. Alternatively, you can adjust the `node_funding` parameter in the TOML test configuration, but make sure that each node has enough funds to complete the soak test.
+The soak tests send 0.1 ETH to each test node by default, so you must make sure that there are significant funds in the wallet that you use to fund testing. This is the wallet specified by your `evm_keys` parameter in the TOML file. Alternatively, you can adjust the `node_funding` parameter in the TOML test configuration, but make sure that each node has enough funds to complete the soak test.
