@@ -1562,11 +1562,14 @@ Example: `P2P_PEER_ID=12D3KooWMHMRLQkgPbFSYHwD3NBuwtS1AmxhvKVUrcfyaGDASR4U`
 
 ### Networking Stack V2
 
-> 🚧 If using the Networking Stack V2, you must unset the following Networking Stack V1 configuration variables:
+> 🚧 If using the Networking Stack V2, you must unset the [Networking Stack V1](#networking-stack-v1) configuration variables:
 >
-> - [P2P_LISTEN_PORT](#p2p_listen_port)
-> - [P2P_ANNOUNCE_PORT](#p2p_announce_port)
 > - [P2P_ANNOUNCE_IP](#p2p_announce_ip)
+> - [P2P_ANNOUNCE_PORT](#p2p_announce_port)
+> - [P2P_BOOTSTRAP_PEERS](#p2p_bootstrap_peers)
+> - [P2P_LISTEN_IP](#p2p_listen_ip)
+> - [P2P_LISTEN_PORT](#p2p_listen_port)
+> - [P2P_PEER_ID](#p2p_peer_id)
 
 #### P2PV2_ANNOUNCE_ADDRESSES
 
