@@ -182,6 +182,19 @@ If you completed the full [steps to set up your environment](#set-up-your-enviro
 1. While your test is running, view your local Grafana instance at `localhost:3000` to see test metrics.
 1. Check node logs: `bif integration logs NAMESPACE [--level LOG_LEVEL]`
 
+If the test is successful, you will see output similar to the following example:
+
+```
+3:56AM INF Soak test concluded
+------------------------------
+• [SLOW TEST] [434.148 seconds]
+OCR Soak Test @ocr-soak With soak test contracts deployed runs the soak test until error or timeout
+------------------------------
+
+Ran 1 of 1 Specs in 434.148 seconds
+SUCCESS! -- 1 Passed | 0 Failed | 0 Pending | 0 Skipped
+```
+
 As you test additional networks, modify the TOML file and configure it with the details for your network.
 
 ### Troubleshooting integration tests
