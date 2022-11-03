@@ -1518,6 +1518,8 @@ All nodes in the OCR network should share the same networking stack.
 
 ### Networking Stack V1
 
+> 🚧 Do not set environment variables for Networking Stack v1 if you are using [Networking Stack V2](#networking-stack-v2).
+
 #### P2P_ANNOUNCE_IP
 
 - Default: _none_
@@ -1559,6 +1561,12 @@ The default peer ID to use for OCR jobs. If unspecified, uses the first availabl
 Example: `P2P_PEER_ID=12D3KooWMHMRLQkgPbFSYHwD3NBuwtS1AmxhvKVUrcfyaGDASR4U`
 
 ### Networking Stack V2
+
+> 🚧 If using the Networking Stack V2, you must unset the following Networking Stack V1 configuration variables:
+>
+> - [P2P_LISTEN_PORT](#p2p_listen_port)
+> - [P2P_ANNOUNCE_PORT](#p2p_announce_port)
+> - [P2P_ANNOUNCE_IP](#p2p_announce_ip)
 
 #### P2PV2_ANNOUNCE_ADDRESSES
 
