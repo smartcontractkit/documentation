@@ -26,7 +26,7 @@ The framework simplifies the following tasks:
 
 ## Requirements
 
-Most basic tests can be completed on a system with minimal hardware resources. To complete soak testing and use the CLI to create clusters with multiple Chainlink nodes, you must run a Kubernetes cluster on a system with the following system resources:
+Most basic tests can be completed on a system with minimal hardware resources. To complete soak testing and use the CLI to create clusters with multiple Chainlink nodes, you must run a Kubernetes cluster on a system with Docker and the following system resources:
 
 - A Linux system
 - 6 CPU cores
@@ -44,19 +44,20 @@ You can now run the framework CLI. Run `bif integration -h` to see the available
 
 If you plan to run soak tests or other tests that require running Chainlink nodes, set up [Helm](https://helm.sh/docs/intro/install/#through-package-managers), [Kubernetes](https://kubernetes.io/docs/setup/) and other required tools:
 
+1. Install the [Docker Engine](https://docs.docker.com/engine/install/).
 1. Install [Helm](https://helm.sh/docs/intro/install/#through-package-managers).
 1. Add the following repositories:
     - chainlink-qa: `helm repo add chainlink-qa https://raw.githubusercontent.com/smartcontractkit/qa-charts/gh-pages/`
     - bitnami: `helm repo add bitnami https://charts.bitnami.com/bitnami`
 1. Update the helm repository: `helm repo update`
-1. Install the [kubectl tool](https://kubernetes.io/docs/tasks/tools/)
+1. Install the [kubectl tool](https://kubernetes.io/docs/tasks/tools/).
 
 The [chainlink-env repository](https://github.com/smartcontractkit/chainlink-env) includes several tools for creating clusters of Chainlink nodes for testing. Use this to start a cluster:
 
 1. Clone the [chainlink-env repository](https://github.com/smartcontractkit/chainlink-env) and change directories: `git clone https://github.com/smartcontractkit/chainlink-env.git && cd chainlink-env`
 1. Install dependencies: `make install_deps`
 1. Optionally, install `Lens` from [k8slens.dev](https://k8slens.dev/) or use `k9s` as a low resource consumption alternative from [k9scli.io](https://k9scli.io/topics/install/) or from the source at [smartcontractkit/helmenv](https://github.com/smartcontractkit/helmenv).
-1. Install k3d from [k3d.io](https://k3d.io/v5.4.6/#installation)
+1. Install k3d from [k3d.io](https://k3d.io/v5.4.6/#installation).
 1. Create a cluster: `make create_cluster`
 1. Install monitoring: `make install_monitoring`
 
@@ -120,7 +121,7 @@ The TOML file for the Blockchain Integrations Framework has two settings section
 
         [networks.evm.base]
         name = "EVM"
-        private_keys = ["WALLET_PRIVATE_KEY"]
+        evm_keys = ["WALLET_PRIVATE_KEY"]
         ws_urls = []
         http_urls = []
         chain_id = 1337
