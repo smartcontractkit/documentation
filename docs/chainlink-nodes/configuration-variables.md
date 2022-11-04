@@ -191,17 +191,18 @@ Your node applies configuration settings using following hierarchy:
   - [OCR_MONITORING_ENDPOINT](#ocr_monitoring_endpoint)
   - [OCR_TRANSMITTER_ADDRESS](#ocr_transmitter_address)
   - [P2P_NETWORKING_STACK](#p2p_networking_stack)
+  - [P2P_PEER_ID](#p2p_peer_id)
   - [Networking Stack V1](#networking-stack-v1)
     - [P2P_ANNOUNCE_IP](#p2p_announce_ip)
     - [P2P_ANNOUNCE_PORT](#p2p_announce_port)
     - [P2P_BOOTSTRAP_PEERS](#p2p_bootstrap_peers)
     - [P2P_LISTEN_IP](#p2p_listen_ip)
     - [P2P_LISTEN_PORT](#p2p_listen_port)
-    - [P2P_PEER_ID](#p2p_peer_id)
   - [Networking Stack V2](#networking-stack-v2)
     - [P2PV2_ANNOUNCE_ADDRESSES](#p2pv2_announce_addresses)
     - [P2PV2_BOOTSTRAPPERS](#p2pv2_bootstrappers)
     - [P2PV2_LISTEN_ADDRESSES](#p2pv2_listen_addresses)
+
 - [Keeper](#keeper)
   - [KEEPER_CHECK_UPKEEP_GAS_PRICE_FEATURE_ENABLED](#keeper_check_upkeep_gas_price_feature_enabled)
   - [KEEPER_GAS_PRICE_BUFFER_PERCENT](#keeper_gas_price_buffer_percent)
@@ -1516,6 +1517,15 @@ OCR supports multiple networking stacks. `P2P_NETWORKING_STACK` chooses which st
 
 All nodes in the OCR network should share the same networking stack.
 
+#### P2P_PEER_ID
+
+- Default: _none_
+
+This environment variable is used for both Networking Stack V1 and V2.
+
+The default peer ID to use for OCR jobs. If unspecified, uses the first available peer ID.
+Example: `P2P_PEER_ID=12D3KooWMHMRLQkgPbFSYHwD3NBuwtS1AmxhvKVUrcfyaGDASR4U`
+
 ### Networking Stack V1
 
 > 🚧 Do not set environment variables for Networking Stack v1 if you are using [Networking Stack V2](#networking-stack-v2).
@@ -1553,23 +1563,17 @@ The default IP address to bind to.
 
 The port to listen on. If left blank, the node randomly selects a different port each time it boots. It is highly recommended to set this to a static value to avoid network instability.
 
-#### P2P_PEER_ID
-
-- Default: _none_
-
-The default peer ID to use for OCR jobs. If unspecified, uses the first available peer ID.
-Example: `P2P_PEER_ID=12D3KooWMHMRLQkgPbFSYHwD3NBuwtS1AmxhvKVUrcfyaGDASR4U`
-
 ### Networking Stack V2
 
-> 🚧 If using the Networking Stack V2, you must unset the [Networking Stack V1](#networking-stack-v1) configuration variables:
+> 🚧 If using the Networking Stack V2, you must unset the following [Networking Stack V1](#networking-stack-v1) configuration variables:
 >
 > - [P2P_ANNOUNCE_IP](#p2p_announce_ip)
 > - [P2P_ANNOUNCE_PORT](#p2p_announce_port)
 > - [P2P_BOOTSTRAP_PEERS](#p2p_bootstrap_peers)
 > - [P2P_LISTEN_IP](#p2p_listen_ip)
 > - [P2P_LISTEN_PORT](#p2p_listen_port)
-> - [P2P_PEER_ID](#p2p_peer_id)
+>
+> `P2P_PEER_ID` is used for both Networking Stack V1 and V2.
 
 #### P2PV2_ANNOUNCE_ADDRESSES
 
