@@ -60,7 +60,7 @@ Your upkeeps will be displayed in your list of **Active Upkeeps**. You must moni
 
 ## Register an Upkeep using your own deployed contract
 
-You can dynamically create and manage Upkeeps from within your own dApp. To do this you will need to keep track of the Upkeep ID as your contract will use this to subsequently interact with the Chainlink Automation registry. The following example displays a smart contract that can create an Upkeep and determine the Upkeep ID. Note your contract must be compatible and you will need [ERC-677 LINK](../../link-token-contracts/) to fund the upkeep. You can also program your Upkeep to check its own balance and fund itself by interacting with the registry.
+You can dynamically create and manage Upkeeps from within your own dApp. To do this you will need to call the `approve` function on the LINK token contract with the registrar as the sender address. Once completed, you mucst call `registerUpkeep` on the registrar to receive your Upkeep ID. You should keep track of the Upkeep ID as your contract will use this to subsequently interact with the Chainlink Automation registry. The following example displays a smart contract that can create an Upkeep and determine the Upkeep ID. Note your contract must be compatible and you will need [ERC-677 LINK](../../link-token-contracts/) to fund the upkeep. You can also program your Upkeep to check its own balance and fund itself by interacting with the registry.
 
 
 ### Prerequisites 
