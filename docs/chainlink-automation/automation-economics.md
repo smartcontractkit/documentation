@@ -9,18 +9,22 @@ whatsnext:
   }
 ---
 
-## How Funding Works
-
-Your upkeep has a LINK (ERC-677) balance. Every time an Automation Node executes your `performUpkeep` function, your LINK balance will be reduced. You can add funds using the Chainlink Automation App or by directly calling the `addFunds()` function on the `AutomationRegistry` contract. Anyone can call the `addFunds()` function.
-
 ## Cost of using Chainlink Automation
 
-When an Automation Node executes your `performUpkeep` function, the Chainlink Automation Registry will deduct the upkeep's total gas cost in LINK as well as a percentage premium from your upkeep’s LINK balance and allocate it to the Automation Node's address. The total gas cost in LINK is the gas price of the transaction multiplied by the sum of the gas used for the transaction and an 80K gas overhead for the Automation Node call gas used. This is converted to LINK using Chainlink Data Feeds. The percentage premium is to compensate the Automation Node for monitoring and performing your upkeep. The percentage premium varies by network and is listed in our [Supported Networks](../supported-networks/#configurations) page.
+There is no fee for registering a Chainlink Automation job. There is a 0.1 LINK cancellation fee that only applies to jobs which have not spent more than 0.1 LINK over their entire lifespan. This cancellation fee is to protect node operators from spammers who register jobs that never perform.
+
+## How Funding Works
+
+Upkeeps have a LINK (ERC-677) balance. Every time an Automation Node executes the `performUpkeep` function, the LINK balance will be reduced. You can add funds using the Chainlink Automation App or by directly calling the `addFunds()` function on the `AutomationRegistry` contract. Anyone can call the `addFunds()` function.
+
+When an Automation Node executes the `performUpkeep` function, the Chainlink Automation Registry will deduct the upkeep's total gas cost in LINK and a percentage premium from the upkeep’s LINK balance and allocate it to the Automation Node's address. The total gas cost (in LINK) comprises of the gas price of the transaction multiplied by the sum of the gas used for the transaction and an 80K gas overhead for the Automation Node call gas used. Chainlink Data Feeds convert this total amount to LINK. 
+
+The percentage premium compensates the Automation Node for monitoring and performing your upkeep. The percentage premium varies by network and is listed in our [Supported Networks](../supported-networks/#configurations) page.
 
 
 ## Minimum Spend Requirement
 
-To prevent misuse of the Chainlink Automation network, each upkeep that you register requires a small minimum spend of 0.1 LINK across all upkeep transactions. If the total LINK spent across all transactions for your upkeep does not exceed this amount, the difference between 0.1 LINK and the amount spent in LINK is not refunded after you cancel the upkeep. If you spend more than 0.1 LINK across all of your upkeep's transactions, all remaining LINK is refundable after you cancel. This amount is intentionally small so that even a few upkeep transactions on the cheapest networks can easily exceed this amount.
+To prevent misuse of the Chainlink Automation network, each registered upkeep requires a small minimum spend of 0.1 LINK across all upkeep transactions. If the total LINK spent across all transactions for the upkeep does not exceed this amount, the difference between 0.1 LINK and the amount spent in LINK is not refunded after you cancel the upkeep. If you spend more than 0.1 LINK across all of your upkeep's transactions, all remaining LINK is refundable after you cancel. This amount is intentionally small so that even a few upkeep transactions on the cheapest networks can easily exceed this amount.
 
 ## No node competition
 

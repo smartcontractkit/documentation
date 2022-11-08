@@ -6,17 +6,30 @@ title: "Chainlink Automation Economics"
 whatsnext: { "FAQs": "/chainlink-automation/faqs/" }
 ---
 
-## How Funding Works
-
-Your upkeep has a LINK (ERC-677) balance. Every time an Automation Node executes your `performUpkeep` function, your LINK balance will be reduced. You can add funds using the Chainlink Automation App or by directly calling the `addFunds()` function on the `AutomationRegistry` contract. Anyone can call the `addFunds()` function.
-
 ## Cost of using Chainlink Automation
 
-When an Automation Node executes your `performUpkeep` function, the Chainlink Automation Registry will deduct the upkeep's total gas cost in LINK as well as a percentage premium from your upkeep’s LINK balance and allocate it to the Automation Node's address. The total gas cost in LINK is the gas price of the transaction multiplied by the sum of the gas used for the transaction and an 80K gas overhead for the Automation Node call gas used. This is converted to LINK using Chainlink Data Feeds. The percentage premium is to compensate the Automation Node for monitoring and performing your upkeep. The percentage premium varies by network and is listed in our [Supported Networks](/chainlink-automation/supported-networks/#configurations) page.
+Chainlink Automation only requires an execution fee for transactions on-chain. This fee includes the transaction cost, a percentage premium (refer to the formula below), and a small fixed gas overhead accounting for gas between the network and the registry. The premium compensates the Automation Network for monitoring and performing your upkeep. The premium varies by chain and is listed on our [Supported Networks](/chainlink-automation/supported-networks/) page.
 
-## Minimum Spend Requirement
+![Automation Pricing Formula](/images/automation/automation-pricing.png)
 
-To prevent misuse of the Chainlink Automation network, each upkeep that you register requires a small minimum spend of 0.1 LINK across all upkeep transactions. If the total LINK spent across all transactions for your upkeep does not exceed this amount, the difference between 0.1 LINK and the amount spent in LINK is not refunded after you cancel the upkeep. If you spend more than 0.1 LINK across all of your upkeep's transactions, all remaining LINK is refundable after you cancel. This amount is intentionally small so that even a few upkeep transactions on the cheapest networks can easily exceed this amount.
+There is no registration fee or other fees for any off-chain computation.
+
+**Example**: An upkeep transaction was executed on _Polygon mainnet_. It used _1.16M_ gas at a gas price of _183.3 gwei_. The premium percentage on Polygon is _70%_ (as of October 2022) and the Matic/LINK exchange rate is _0.0131_. The upkeep's LINK balance will be reduced by a fee of _0.0495 LINK_.
+
+![Automation Pricing Example](/images/automation/automation-pricing-example.png)
+
+## How Funding Works
+
+Upkeeps have a LINK (ERC-677) balance. Every time an on-chain transaction is performed for your upkeep, its LINK balance will be reduced by the LINK fee.
+
+Your upkeep's balance must exceed the minimum balance. If this requirement is not met, the Automation Network will not perform on-chain transactions. You can add funds using the [Chainlink Automation App](https://automation.chain.link/) or by directly calling the `addFunds()` function on the `AutomationRegistry` contract. Anyone can call the `addFunds()` function.
+
+## Withdrawing funds
+
+To withdraw a LINK balance, you must cancel your upkeep first. Any upkeep that has not spent more than an aggregated amount of 0.1 LINK fees over the span of its lifetime is subject to a _0.1 LINK_ fee. This cancellation fee protects node operators from spammers who register jobs that never perform.
+
+**Example 1**: Your upkeep has spent _4.8 LINK_ over its lifetime and has a balance of _5 LINK_. When it is cancelled, I will receive _5 LINK_.
+**Example 2**: Your upkeep has spent _0 LINK_ over its lifetime and has a balance of _5 LINK_. When it is cancelled, I will receive _4.9 LINK_.
 
 ## No node competition
 

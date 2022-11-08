@@ -74,10 +74,6 @@ export const SIDEBAR = {
             },
           ],
         },
-        {
-          title: "Ethereum Proof-of-Stake Merge",
-          url: "resources/ethereum-proof-of-stake-merge",
-        },
       ],
     },
     {

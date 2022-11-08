@@ -89,8 +89,7 @@ You can find a list of release notes for Chainlink nodes in the [smartcontractki
   - [hyperledger/besu/issues/4114](https://github.com/hyperledger/besu/issues/4114)
 
 - Added [Multi-user and Role Based Access Control](/chainlink-nodes/miscellaneous/#multi-user-and-role-based-access-control-rbac) functionality. This allows the root admin CLI user and additional admin users to create and assign tiers of role-based access to new users. These new API users are able to log in to the Operator UI independently and can each have specific roles tied to their account. There are four roles: `admin`, `edit`, `run`, and `view`.
-
-  - User management can be configured through the use of the new admin CLI command `chainlink admin users`. Be sure to run `chainlink adamin login`. For example, a readonly user can be created with: `chainlink admin users create --email=operator-ui-read-only@test.com --role=view`.
+  - User management can be configured through the use of the new admin CLI command `chainlink admin users`. Be sure to run `chainlink admin login`. For example, a readonly user can be created with: `chainlink admin users create --email=operator-ui-read-only@test.com --role=view`.
   - Updated documentation repo with a break down of actions to required role level
 
 - Added gas limit control for individual job specs and individual job types. The following rule of precedence is applied:

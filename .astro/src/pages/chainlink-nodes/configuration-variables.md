@@ -1560,10 +1560,24 @@ The port to listen on. If left blank, the node randomly selects a different port
 
 - Default: _none_
 
+This environment variable is used for both Networking Stack V1 and V2.
+
 The default peer ID to use for OCR jobs. If unspecified, uses the first available peer ID.
 Example: `P2P_PEER_ID=12D3KooWMHMRLQkgPbFSYHwD3NBuwtS1AmxhvKVUrcfyaGDASR4U`
 
 ### Networking Stack V2
+
+:::caution
+If using the Networking Stack V2, you must unset the following [Networking Stack V1](#networking-stack-v1) configuration variables:
+
+- [P2P_ANNOUNCE_IP](#p2p_announce_ip)
+- [P2P_ANNOUNCE_PORT](#p2p_announce_port)
+- [P2P_BOOTSTRAP_PEERS](#p2p_bootstrap_peers)
+- [P2P_LISTEN_IP](#p2p_listen_ip)
+- [P2P_LISTEN_PORT](#p2p_listen_port)
+
+[`P2P_PEER_ID`](#p2p_peer_id) is used for both Networking Stack V1 and V2.
+:::
 
 #### P2PV2_ANNOUNCE_ADDRESSES
 
