@@ -54,7 +54,7 @@ The response should be similar to the following:
 }
 ```
 
-For this example, we created a job that leverages the [EtherScan External Adapter](https://github.com/smartcontractkit/external-adapters-js/tree/develop/packages/sources/etherscan) to fetch the _SafeGasPrice_ , _ProposeGasPrice_ and _FastGasPrice_. You can learn more about External Adapters [here](/external-adapters/).
+For this example, we created a job that leverages the [EtherScan External Adapter](https://github.com/smartcontractkit/external-adapters-js/tree/develop/packages/sources/etherscan) to fetch the _SafeGasPrice_ , _ProposeGasPrice_ and _FastGasPrice_. You can learn more about External Adapters [here](/chainlink-nodes/external-adapters/external-adapters/).
 To consume an API, your contract must import [ChainlinkClient.sol](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/ChainlinkClient.sol). This contract exposes a struct named `Chainlink.Request`, which your contract can use to build the API request. The request must include the following parameters:
 
 - Link token address
@@ -80,7 +80,7 @@ To use this contract:
 
    - The Chainlink Token address for _Goerli_ by calling the [`setChainlinkToken`](/any-api/api-reference/#setchainlinktoken) function.
    - The Oracle contract address for _Goerli_ by calling the [`setChainlinkOracle`](/any-api/api-reference/#setchainlinkoracle) function.
-   - The `jobId`: A specific job for the oracle node to run. In this case, the job is very specific to the use case as it returns the gas prices. You can find the job spec for the Chainlink node [here](/direct-request-existing-job/).
+   - The `jobId`: A specific job for the oracle node to run. In this case, the job is very specific to the use case as it returns the gas prices. You can find the job spec for the Chainlink node [here](/chainlink-nodes/job-specs/direct-request-existing-job/).
 
 1. Fund your contract with 0.1 LINK. To learn how to send LINK to contracts, read the [Fund Your Contracts](/resources/fund-your-contract/) page.
 

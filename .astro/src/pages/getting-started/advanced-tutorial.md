@@ -27,7 +27,7 @@ In this guide, you will learn how to request data from a public API in a smart c
 
 ## 1. How does the request and receive cycle work for API calls?
 
-The request and receive cycle describes how a smart contract requests data from an oracle and receives the response in a separate transaction. If you need a refresher, check out the [Basic Request Model](./architecture-request-model/).
+The request and receive cycle describes how a smart contract requests data from an oracle and receives the response in a separate transaction. If you need a refresher, check out the [Basic Request Model](/architecture-overview/architecture-request-model/).
 
 For contracts that use [Chainlink VRF](/vrf/v2/introduction/), you request randomness from a VRF oracle and then await the response. The fulfillment function is already given to us from the `VRFConsumerBase` contract, so oracles already know where to send the response to. However, with API calls, the contract itself _defines_ which function it wants to receive the response to.
 
@@ -35,7 +35,7 @@ Before creating any code, you should understand how Oracle jobs can get data on-
 
 ## 2. What are jobs?
 
-Chainlink nodes require [**Jobs**](/chainlink-nodes/oracle-jobs/jobs/) to do anything useful. In the case of a Request and Receive job, the [Direct Request](/chainlink-nodes/oracle-jobs/jobs/job-types/direct_request/) job monitors the blockchain for a request from a smart contract. Once it catches a request, it runs the tasks (both core and external adapters) that the job is configured to run and eventually returns the response to the requesting contract.
+Chainlink nodes require [**Jobs**](/chainlink-nodes/oracle-jobs/jobs/) to do anything useful. In the case of a Request and Receive job, the [Direct Request](/chainlink-nodes/oracle-jobs/job-types/direct_request) job monitors the blockchain for a request from a smart contract. Once it catches a request, it runs the tasks (both core and external adapters) that the job is configured to run and eventually returns the response to the requesting contract.
 
 ## 3. What are Tasks?
 
@@ -48,16 +48,16 @@ Each oracle job has a configured set of tasks it must complete when it is run. T
 
 If a job needs to make a GET request to an API, find a specific unsigned integer field in a JSON response, then submit that back to the requesting contract, it would need a job containing the following Tasks:
 
-- [HTTP](/chainlink-nodes/oracle-jobs/jobs/task-types/http/) calls the API. the `method` must be set to _GET_.
-- [JSON Parse](/chainlink-nodes/oracle-jobs/jobs/task-types/jsonparse/) parses the JSON and extracts a value at a given keypath.
-- [Multiply](/chainlink-nodes/oracle-jobs/jobs/task-types/multiply/) multiplies the input by a multiplier. Used to remove the decimals.
-- [ETH ABI Encode](/chainlink-nodes/oracle-jobs/jobs/task-types/eth-abi-encode/) converts the data to a bytes payload according to ETH ABI encoding.
-- [ETH Tx](/chainlink-nodes/oracle-jobs/jobs/task-types/eth-tx/) submits the transaction to the chain, completing the cycle.
+- [HTTP](/chainlink-nodes/oracle-jobs/task-types/task_http) calls the API. the `method` must be set to _GET_.
+- [JSON Parse](/chainlink-nodes/oracle-jobs/task-types/task_jsonparse) parses the JSON and extracts a value at a given keypath.
+- [Multiply](/chainlink-nodes/oracle-jobs/task-types/task_multiply) multiplies the input by a multiplier. Used to remove the decimals.
+- [ETH ABI Encode](/chainlink-nodes/oracle-jobs/task-types/task_eth_abi_encode) converts the data to a bytes payload according to ETH ABI encoding.
+- [ETH Tx](/chainlink-nodes/oracle-jobs/task-types/task_eth_tx) submits the transaction to the chain, completing the cycle.
 
 The job specs example can be found [here](/chainlink-nodes/job-specs/direct-request-get-uint256/).
 Let's walk through a real example, where you will retrieve 24 volumes of the [ETH/USD pair](https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETH&tsyms=USD) from the cryptocompare API.
 
-1. [HTTP](/chainlink-nodes/oracle-jobs/jobs/task-types/http/) calls the API and returns the body of an HTTP GET result for [ETH/USD pair](https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETH&tsyms=USD). Example:
+1. [HTTP](/chainlink-nodes/oracle-jobs/task-types/task_http) calls the API and returns the body of an HTTP GET result for [ETH/USD pair](https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETH&tsyms=USD). Example:
 
 ```json
 {"RAW":
@@ -75,15 +75,15 @@ Let's walk through a real example, where you will retrieve 24 volumes of the [ET
 }
 ```
 
-2. [JSON Parse](/chainlink-nodes/oracle-jobs/jobs/task-types/jsonparse/) walks a specified `path` (`"RAW,ETH,USD,VOLUME24HOUR"`) and returns the value found at that result. Example: `703946.0675653099`
+2. [JSON Parse](/chainlink-nodes/oracle-jobs/task-types/task_jsonparse) walks a specified `path` (`"RAW,ETH,USD,VOLUME24HOUR"`) and returns the value found at that result. Example: `703946.0675653099`
 
-3. [Multiply](/chainlink-nodes/oracle-jobs/jobs/task-types/multiply/) parses the input into a float and multiplies it by the 10^18. Example: `703946067565309900000000`
+3. [Multiply](/chainlink-nodes/oracle-jobs/task-types/task_multiply) parses the input into a float and multiplies it by the 10^18. Example: `703946067565309900000000`
 
-4. [ETH ABI Encode](/chainlink-nodes/oracle-jobs/jobs/task-types/eth-abi-encode/) formats the input into an integer and then converts it into Solidity's `uint256` format. Example: `0xc618a1e4`
+4. [ETH ABI Encode](/chainlink-nodes/oracle-jobs/task-types/task_eth_abi_encode) formats the input into an integer and then converts it into Solidity's `uint256` format. Example: `0xc618a1e4`
 
-5. [ETH Tx](/chainlink-nodes/oracle-jobs/jobs/task-types/eth-tx/) takes the given input, places it into the data field of the transaction, signs a transaction, and broadcasts it to the network. Example: [transaction result](https://goerli.etherscan.io/tx/0x5f2023b665e0ae336665ded73fafa90ef752ac33487b9240f34b82f93a77c8ca)
+5. [ETH Tx](/chainlink-nodes/oracle-jobs/task-types/task_eth_tx) takes the given input, places it into the data field of the transaction, signs a transaction, and broadcasts it to the network. Example: [transaction result](https://goerli.etherscan.io/tx/0x5f2023b665e0ae336665ded73fafa90ef752ac33487b9240f34b82f93a77c8ca)
 
-**Note: Some tasks accept parameters to be passed to them to inform them how to run.** Example: [JSON Parse](/chainlink-nodes/oracle-jobs/jobs/task-types/jsonparse/) accepts a `path` parameter which informs the task where to find the data in the JSON object.
+**Note: Some tasks accept parameters to be passed to them to inform them how to run.** Example: [JSON Parse](/chainlink-nodes/oracle-jobs/task-types/task_jsonparse) accepts a `path` parameter which informs the task where to find the data in the JSON object.
 
 Let's see what this looks like in a contract:
 
@@ -94,7 +94,7 @@ Let's see what this looks like in a contract:
 Here is a breakdown of each component of this contract:
 
 1. Constructor: This sets up the contract with the Oracle address, Job ID, and LINK fee that the oracle charges for the job.
-2. `requestVolumeData` functions: This builds and sends a request - which includes the fulfillment functions selector - to the oracle. Notice how it adds the `get`, `path` and `times` parameters. These are read by the Tasks in the job to perform correctly. `get` is used by [HTTP](/chainlink-nodes/oracle-jobs/jobs/task-types/http/), `path` is used by [JSON Parse](/chainlink-nodes/oracle-jobs/jobs/task-types/jsonparse/) and `times` is used by [Multiply](/chainlink-nodes/oracle-jobs/jobs/task-types/multiply/).
+2. `requestVolumeData` functions: This builds and sends a request - which includes the fulfillment functions selector - to the oracle. Notice how it adds the `get`, `path` and `times` parameters. These are read by the Tasks in the job to perform correctly. `get` is used by [HTTP](/chainlink-nodes/oracle-jobs/task-types/task_http), `path` is used by [JSON Parse](/chainlink-nodes/oracle-jobs/task-types/task_jsonparse) and `times` is used by [Multiply](/chainlink-nodes/oracle-jobs/task-types/task_multiply).
 3. `fulfill` function: This is where the result is sent upon the Oracle Job's completion.
 
 **Note:** The calling contract should own enough LINK to pay the fee, which by default is 0.1 LINK. You can use [this tutorial](/resources/fund-your-contract/) to learn how to fund your contract.

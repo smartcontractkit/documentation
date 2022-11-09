@@ -6,8 +6,8 @@ title: "Using Data Feeds On-Chain (Solana)"
 permalink: "docs/solana/using-data-feeds-solana/"
 whatsnext:
   {
-    "Use data feeds off-chain": "/solana/using-data-feeds-off-chain/",
-    "See the available data feeds on Solana": "/solana/data-feeds-solana/",
+    "Use data feeds off-chain": "/solana/data-feeds/using-data-feeds-off-chain/",
+    "See the available data feeds on Solana": "/solana/data-feeds/data-feeds-solana/",
   }
 metadata:
   title: "Using Data Feeds On-Chain (Solana)"
@@ -18,7 +18,7 @@ setup: |
 
 Chainlink Data Feeds are the quickest way to connect your smart contracts to the real-world market prices of assets. This guide demonstrates how to deploy a program to the Solana Devnet cluster and access Data Feeds on-chain using the [Chainlink Solana Starter Kit](https://github.com/smartcontractkit/solana-starter-kit). To learn how to read price feed data using off-chain applications, see the [Using Data Feeds Off-Chain](/solana/using-data-feeds-off-chain/) guide.
 
-To get the full list of available Chainlink Data Feeds on Solana, see the [Solana Feeds](/solana/data-feeds-solana/) page. View the program that owns the Chainlink Data Feeds in the [Solana Devnet Explorer](https://solscan.io/account/HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny?cluster=devnet), or the [Solana Mainnet Explorer](https://solscan.io/account/HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny).
+To get the full list of available Chainlink Data Feeds on Solana, see the [Solana Feeds](/solana/data-feeds/data-feeds-solana/) page. View the program that owns the Chainlink Data Feeds in the [Solana Devnet Explorer](https://solscan.io/account/HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny?cluster=devnet), or the [Solana Mainnet Explorer](https://solscan.io/account/HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny).
 
 > 🚧 Select quality data feeds
 >
@@ -51,7 +51,7 @@ Import the Chainlink Solana Crate into your project and use the code sample to m
 
 1. Use the following code sample to query price data. Each function call to the Chainlink Solana library takes two parameters:
 
-   - The [feed account](/solana/data-feeds-solana/) that you want to query.
+   - The [feed account](/solana/data-feeds/data-feeds-solana/) that you want to query.
    - The [Chainlink Data Feeds OCR2 Program](#the-chainlink-data-feeds-ocr2-program) for the network. This is a static value that never changes.
 
 The code sample has the following components:
@@ -267,7 +267,7 @@ Use your deployed program to retrieve price data from a Chainlink data feed on S
    solana balance --keypair ./id.json --url devnet
    ```
 
-1. To get prices for a different asset pair, run `client.js` again and add the `--feed` flag with one of the available [Chainlink data feeds](/solana/data-feeds-solana/). For example, to get the price of BTC / USD on Devnet, use the following command:
+1. To get prices for a different asset pair, run `client.js` again and add the `--feed` flag with one of the available [Chainlink data feeds](/solana/data-feeds/data-feeds-solana/). For example, to get the price of BTC / USD on Devnet, use the following command:
 
    ```shell
    node client.js \

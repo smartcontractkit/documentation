@@ -8,11 +8,11 @@ section: ethereum
 
 ### Adapter
 
-:::danger[ The adapters or JSON adapters for v1 Jobs are removed for Chainlink nodes running version 1.0.0 and later. Use [v2 job tasks](/tasks) instead.]
+:::danger[ The adapters or JSON adapters for v1 Jobs are removed for Chainlink nodes running version 1.0.0 and later. Use [v2 job tasks](/chainlink-nodes/oracle-jobs/task-types/tasks/) instead.]
 
 :::
 
-An adapter or [task](#task) is a piece of software responsible for executing a specific piece of functionality. A Chainlink node comes with a number of Adapters built-in, commonly known as Core Adapters, but can also be extended via [Bridges](/node-operators/) to connect with user-defined [External Adapters](#external-adapter).
+An adapter or [task](#task) is a piece of software responsible for executing a specific piece of functionality. A Chainlink node comes with a number of Adapters built-in, commonly known as Core Adapters, but can also be extended via [Bridges](/chainlink-nodes/external-adapters/node-operators/) to connect with user-defined [External Adapters](#external-adapter).
 
 ### Answer
 
@@ -36,7 +36,7 @@ Encumbrance parameters are the part of a [service agreement](#service-agreement)
 
 [External adapters](https://github.com/smartcontractkit/chainlink/wiki/External-Adapters) are what make Chainlink easily extensible, providing simple integration of custom computations and specialized APIs.
 
-A Chainlink node communicates with external adapters by sending a POST request with a JSON data payload. More information can be found on the external adapter [developers](./developers/) page.
+A Chainlink node communicates with external adapters by sending a POST request with a JSON data payload. More information can be found on the external adapter [page](/chainlink-nodes/external-adapters/external-adapters).
 
 ### Function Selector
 
@@ -44,7 +44,7 @@ A [function selector](https://docs.soliditylang.org/en/develop/abi-spec.html#fun
 
 ### Initiator
 
-:::danger[ The initiators for v1 Jobs are removed for Chainlink nodes running version 1.0.0 and later. Use the [v2 job types](/jobs) instead.]
+:::danger[ The initiators for v1 Jobs are removed for Chainlink nodes running version 1.0.0 and later. Use the [v2 job types](/chainlink-nodes/oracle-jobs/jobs/) instead.]
 
 :::
 
@@ -66,8 +66,8 @@ The ID associated to a given [Job Spec](#job-spec). This will be unique per-node
 
 The [Job Specification](/chainlink-nodes/oracle-jobs/jobs/) is the specification of a piece of work to be completed by an Oracle Node. The Job Spec is made up of two main parts:
 
-- The [Task Type](/jobs/#shared-fields) or the [External Initiator](/external-initiators-introduction/): Defines the ways a Job can be triggered to execute.
-- The [Task list](#task-spec): The `tasks` that specify all of the computation steps to perform when executing a Job Spec. The Task list is sometimes referred to as the [Job Pipeline](/jobs/task-types/pipelines/) because all of the Tasks' operations are performed in order, with the result being fed into the next task.
+- The [Task Type](/chainlink-nodes/oracle-jobs/jobs#shared-fields) or the [External Initiator](/chainlink-nodes/external-initiators/external-initiators-introduction/): Defines the ways a Job can be triggered to execute.
+- The [Task list](#task-spec): The `tasks` that specify all of the computation steps to perform when executing a Job Spec. The Task list is sometimes referred to as the [Job Pipeline](/chainlink-nodes/oracle-jobs/task-types/pipelines) because all of the Tasks' operations are performed in order, with the result being fed into the next task.
 
 ### Oracle
 
@@ -119,7 +119,7 @@ Another short-hand for a [Job Spec](#job-spec).
 
 ### Task
 
-A v2 job [task](/tasks/).
+A v2 job [task](/chainlink-nodes/oracle-jobs/task-types/tasks/).
 
 ### Task Spec
 

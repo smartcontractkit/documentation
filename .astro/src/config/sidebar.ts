@@ -37,7 +37,7 @@ export const SIDEBAR = {
         },
         {
           title: "Data Feeds",
-          url: "data-feeds/using-chainlink-reference-contracts",
+          url: "data-feeds/",
         },
         { title: "Chainlink VRF", url: "vrf/v2/introduction" },
         {
@@ -47,7 +47,7 @@ export const SIDEBAR = {
         { title: "Connect to Public API Data", url: "any-api/introduction" },
         {
           title: "Run a Chainlink Node",
-          url: "chainlink-nodes/chainlink-nodes",
+          url: "chainlink-nodes/running-a-chainlink-node",
         },
       ],
     },
@@ -364,7 +364,7 @@ export const SIDEBAR = {
         { title: "Getting Help", url: "resources/getting-help" },
         {
           title: "Selecting Data Feeds",
-          url: "resources/selecting-data-feeds",
+          url: "data-feeds/selecting-data-feeds",
         },
         {
           title: "Contributing to Chainlink",

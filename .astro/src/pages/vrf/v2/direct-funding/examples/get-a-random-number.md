@@ -39,7 +39,7 @@ This guide assumes that you know how to create and deploy smart contracts on Eth
 - [MetaMask](https://metamask.io/)
 - [Goerli testnet ETH](/resources/link-token-contracts/#goerli-testnet)
 
-If you are new to developing smart contracts on Ethereum, see the [Getting Started](/conceptual-overview/) guide to learn the basics.
+If you are new to developing smart contracts on Ethereum, see the [Getting Started](/getting-started/conceptual-overview/) guide to learn the basics.
 
 ## Create and deploy a VRF v2 compatible contract
 

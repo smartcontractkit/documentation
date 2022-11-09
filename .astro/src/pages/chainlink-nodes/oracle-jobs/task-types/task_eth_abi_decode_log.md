@@ -11,16 +11,16 @@ Decodes a log emitted by an ETH contract.
 **Parameters**
 
 - `abi`: a canonical ETH log event definition. Should be formatted exactly as in Solidity. Each argument must be named. Examples:
-    - `NewRound(uint256 indexed roundId, address indexed startedBy, uint256 startedAt)`
-    - `AuthorizedSendersChanged(address[] senders)`
+  - `NewRound(uint256 indexed roundId, address indexed startedBy, uint256 startedAt)`
+  - `AuthorizedSendersChanged(address[] senders)`
 - `data`: the ABI-encoded log data. Can be:
-    - a byte array
-    - a hex-encoded string beginning with `0x`
-    - ... but generally should just be set to `$(jobRun.logData)` (see the [Direct Request page](/chainlink-nodes/oracle-jobs/jobs/job-types/direct_request/))
+  - a byte array
+  - a hex-encoded string beginning with `0x`
+  - ... but generally should just be set to `$(jobRun.logData)` (see the [Direct Request page](/chainlink-nodes/oracle-jobs/job-types/direct_request))
 - `topics`: the ABI-encoded log topics (i.e., the `indexed` parameters)
-    - an array of bytes32 values
-    - an array of hex-encoded bytes32 values beginning with `0x`
-    - ... but generally should just be set to `$(jobRun.logTopics)` (see the [Direct Request page](/chainlink-nodes/oracle-jobs/jobs/job-types/direct_request/))
+  - an array of bytes32 values
+  - an array of hex-encoded bytes32 values beginning with `0x`
+  - ... but generally should just be set to `$(jobRun.logTopics)` (see the [Direct Request page](/chainlink-nodes/oracle-jobs/job-types/direct_request))
 
 **Outputs**
 

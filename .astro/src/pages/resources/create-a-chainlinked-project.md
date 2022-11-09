@@ -18,7 +18,7 @@ This page explains how to install and use the [Chainlink Library](/any-api/api-r
 
 :::note[ Important]
 
-If you're new to smart contract development and want a step-by-step guide, try out our [Getting Started](/conceptual-overview/) guide.
+If you're new to smart contract development and want a step-by-step guide, try out our [Getting Started](/getting-started/conceptual-overview/) guide.
 
 :::
 

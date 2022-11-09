@@ -71,7 +71,7 @@ To use this contract:
 
    - The Chainlink Token address for _Goerli_ by calling the [`setChainlinkToken`](/any-api/api-reference/#setchainlinktoken) function.
    - The Oracle contract address for _Goerli_ by calling the [`setChainlinkOracle`](/any-api/api-reference/#setchainlinkoracle) function.
-   - The `jobId`: A specific job for the oracle node to run. In this case, you must call a job that is specifically configured to return _ETH_ price against _BTC_, _USD_ and _EUR_. You can find the job spec for the Chainlink node [here](/direct-request-multi-word/).
+   - The `jobId`: A specific job for the oracle node to run. In this case, you must call a job that is specifically configured to return _ETH_ price against _BTC_, _USD_ and _EUR_. You can find the job spec for the Chainlink node [here](/chainlink-nodes/job-specs/multi-word-job/).
 
 1. Fund your contract with 0.1 LINK. To learn how to send LINK to contracts, read the [Fund Your Contracts](/resources/fund-your-contract/) page.
 
@@ -84,6 +84,6 @@ To use this contract:
      Because you provide the URLs and paths, the `MultiWordConsumer` in the example can call any public API as long as the URLs and paths are correct.
 
 1. After few seconds, call the `btc`, `usd` , and `eur` functions. You should get a non-zero responses.
-   The job spec for the Chainlink node in this example can be found [here](/direct-request-multi-word/).
+   The job spec for the Chainlink node in this example can be found [here](/chainlink-nodes/job-specs/multi-word-job/).
 
 <AnyApiCallout callout="common" />

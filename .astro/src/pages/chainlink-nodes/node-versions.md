@@ -17,8 +17,8 @@ You can find a list of release notes for Chainlink nodes in the [smartcontractki
 
 **[v1.9.0 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v1.9.0)**
 
-- Added the [`length` task](/chainlink-nodes/oracle-jobs/jobs/task-types/length/) and the [`lessthan` task](/chainlink-nodes/oracle-jobs/jobs/task-types/lessthan/) for jobs.
-- Added the `gasUnlimited` parameter to the [`ethcall` task](/chainlink-nodes/oracle-jobs/jobs/task-types/eth-call/).
+- Added the [`length` task](/chainlink-nodes/oracle-jobs/task-types/task_length/) and the [`lessthan` task](/chainlink-nodes/oracle-jobs/task-types/task_lessthan/) for jobs.
+- Added the `gasUnlimited` parameter to the [`ethcall` task](/chainlink-nodes/oracle-jobs/task-types/task_eth_call/).
 - The **Keys** page in Operator UI includes several admin commands that were previously available only by using the `keys eth chain` commands:
   - Ability to abandon all current transactions: This is the same as the `abandon` CLI command. Previously it was necessary to edit the database directly to abandon transactions. This command makes it easier to resolve issues that require transactions to be abandoned.
   - Ability to enable/disable a key for a specific chain: This allows you to control keys on a per-chain basis.
@@ -39,7 +39,7 @@ You can find a list of release notes for Chainlink nodes in the [smartcontractki
 
 ### Added
 
-- Added the `hexencode` and `base64encode` tasks (pipeline). See the [Hex Encode Task](/chainlink-nodes/oracle-jobs/jobs/task-types/hexencode/) and [Base64 Encode Task](/chainlink-nodes/oracle-jobs/jobs/task-types/base64encode/) pages for examples.
+- Added the `hexencode` and `base64encode` tasks (pipeline). See the [Hex Encode Task](/chainlink-nodes/oracle-jobs/task-types/task_hexencode/) and [Base64 Encode Task](/chainlink-nodes/oracle-jobs/task-types/task_base64encode/) pages for examples.
 - `forwardingAllowed` per job attribute to allow forwarding txs submitted by the job.
 - Added `Arbitrum Goerli` configuration support.
 - Added the [`NODE_SELECTION_MODE` (`EVM.NodePool.SelectionMode`) environment variable](/chainlink-nodes/configuration-variables/#node_selection_mode), which controls node picking strategy. Supported values are:
@@ -80,7 +80,7 @@ You can find a list of release notes for Chainlink nodes in the [smartcontractki
 
 - Added official support for the [Sepolia testnet](https://sepolia.dev/) on Chainlink nodes.
 
-- Added [`hexdecode` task](/chainlink-nodes/oracle-jobs/jobs/task-types/hexdecode/) and the [`base64decode` task](/chainlink-nodes/oracle-jobs/jobs/task-types/base64decode/) (pipeline).
+- Added [`hexdecode` task](/chainlink-nodes/oracle-jobs/task-types/task_hexdecode/) and the [`base64decode` task](/chainlink-nodes/oracle-jobs/task-types/task_base64decode) (pipeline).
 
 - Added support for the Besu execution client. Although Chainlink supports Besu, Besu itself has several issues that can make it unreliable. For additional context, see the following issues:
 

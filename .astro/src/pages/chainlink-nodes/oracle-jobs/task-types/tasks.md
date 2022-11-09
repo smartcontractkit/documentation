@@ -12,7 +12,7 @@ permalink: "docs/tasks/"
 Tasks replace the [core adapters](/chainlink-nodes/oracle-jobs/v1/adapters/) from v1 jobs.
 :::
 
-Tasks are a replacement for core adapters that is more flexible. Tasks can be composed in arbitrary order into [pipelines](/chainlink-nodes/oracle-jobs/jobs/task-types/pipelines/). Pipelines consist of one or more threads of execution where tasks are executed in a well-defined order.
+Tasks are a replacement for core adapters that is more flexible. Tasks can be composed in arbitrary order into [pipelines](/chainlink-nodes/oracle-jobs/task-types/pipelines/). Pipelines consist of one or more threads of execution where tasks are executed in a well-defined order.
 
 Chainlink has a number of built-in tasks which are listed below. You can also create your own [external adapters](/chainlink-nodes/external-adapters/external-adapters/) for tasks which are accessed through a `bridge`.
 

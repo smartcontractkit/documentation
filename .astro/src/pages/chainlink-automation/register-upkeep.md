@@ -38,7 +38,7 @@ This guide explains how to register a custom logic Upkeep that uses a [compatibl
 
    - **Upkeep name**: This will be publicly visible in the Chainlink Automation app.
    - **Gas limit**: This is the maximum amount of gas that your transaction requires to execute on chain. This limit cannot exceed the `performGasLimit` value configured on the [registry](/chainlink-automation/supported-networks/#configurations). Before the network executes your transaction on chain, it simulates the transaction. If the gas required to execute your transaction exceeds the gas limit that you specified, your transaction will not be confirmed. Developers also have the ability to update `performGasLimit` for an upkeep. Consider running your function on a testnet to see how much gas it uses before you select a gas limit. This can be changed afterwards.
-   - **Starting balance (LINK)**: Specify a LINK starting balance to fund your upkeep. See the [LINK Token Contracts](/link-token-contracts/) page to find the correct contract address and access faucets for testnet LINK. This field is required. You must have LINK before you can use the Chainlink Automation service.
+   - **Starting balance (LINK)**: Specify a LINK starting balance to fund your upkeep. See the [LINK Token Contracts](/resources/link-token-contracts/) page to find the correct contract address and access faucets for testnet LINK. This field is required. You must have LINK before you can use the Chainlink Automation service.
    - **Check data**: This field is provided as an input for when your `checkUpkeep` function is simulated. Either leave this field blank or specify a hexadecimal value starting with `0x`. To learn how to make flexible upkeeps using `checkData`, see the [Flexible Upkeeps](/chainlink-automation/flexible-upkeeps) guide.
    - **Your email address**: This email address will be encrypted and is used to send you an email when your upkeep is underfunded.
       <!-- prettier-ignore -->
@@ -73,7 +73,7 @@ You can dynamically create and manage Upkeeps from within your own dApp. To do t
 Find the following addresses for your network:
 
 - Correct [LINK token contract](/resources/link-token-contracts/)
-- [Registry and registrar addresses for your network](/chainlink-automation/supported-networks/#registry-and-registrar-addresses)
+- [Registry and registrar addresses for your network](/chainlink-automation/supported-networks/#configurations)
 
 Optionally, you can fetch the LINK address and registrar address from the intended registry at run-time.
 
@@ -98,4 +98,4 @@ Make sure your contract has enough [ERC-677 LINK](/resources/link-token-contract
 | `amount`         | The amount of LINK (in Wei) to fund your Upkeep. The minimum amount is 5 LINK. To fund 5 LINK please set this to 5000000000000000000 |
 | `source`         | Not in use in programmatic registration. Please specify with `0`.                                                                    |
 
-Refer to the [Supported Networks](/chainlink-automation/supported-networks/#registry-and-registrar-addresses) page to find the correct registry and registrar addresses for your contract.
+Refer to the [Supported Networks](/chainlink-automation/supported-networks/#configurations) page to find the correct registry and registrar addresses for your contract.

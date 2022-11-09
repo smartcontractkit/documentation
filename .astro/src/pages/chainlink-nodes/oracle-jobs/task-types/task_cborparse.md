@@ -36,4 +36,4 @@ parse [type="jsonparse" path="$(decode_cbor.jsonPath)" data="$(fetch)"]
 // ... etc ...
 ```
 
-See the [Direct Request page](/chainlink-nodes/oracle-jobs/jobs/job-types/direct_request/) for a more comprehensive example.
+See the [Direct Request page](/chainlink-nodes/oracle-jobs/job-types/direct_request) for a more comprehensive example.

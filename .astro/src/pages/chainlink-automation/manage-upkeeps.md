@@ -53,4 +53,4 @@ To withdraw funds, the Upkeep administrator have to cancel the Upkeep first. The
 
 ## Interacting directly with the Chainlink Automation Registry
 
-After registration, you can interact directly with the [registry contract](/chainlink-automation/supported-networks/#registry-and-registrar-addresses) functions such as `cancelUpkeep` and `addFunds` using your **Upkeep ID**. The Registry Address might change when new contracts are deployed with new functionality.
+After registration, you can interact directly with the [registry contract](/chainlink-automation/supported-networks/#configurations) functions such as `cancelUpkeep` and `addFunds` using your **Upkeep ID**. The Registry Address might change when new contracts are deployed with new functionality.

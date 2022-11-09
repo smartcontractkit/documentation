@@ -6,7 +6,7 @@ title: "ETH ABI Encode Task"
 permalink: "docs/jobs/task-types/eth-abi-encode/"
 ---
 
-Encodes a bytes payload according to ETH ABI encoding, typically in order to perform an [ETH Call](/chainlink-nodes/oracle-jobs/jobs/task-types/eth-call/) or an [ETH Tx](/chainlink-nodes/oracle-jobs/jobs/task-types/eth-tx/).
+Encodes a bytes payload according to ETH ABI encoding, typically in order to perform an [ETH Call](/chainlink-nodes/oracle-jobs/task-types/task_eth_call/) or an [ETH Tx](/chainlink-nodes/oracle-jobs/task-types/task_eth_tx/).
 
 **Parameters**
 

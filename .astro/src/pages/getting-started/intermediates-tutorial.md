@@ -7,11 +7,11 @@ permalink: "docs/intermediates-tutorial/"
 excerpt: "Using Chainlink VRF"
 whatsnext:
   {
-    "Get a Random Number": "/vrf/v2/examples/get-a-random-number/",
-    "Programmatic Subscription": "/vrf/v2/examples/programmatic-subscription/",
+    "Get a Random Number": "/vrf/v2/subscription/examples/get-a-random-number/",
+    "Programmatic Subscription": "/vrf/v2/subscription/examples/programmatic-subscription/",
     "Security Considerations": "/vrf/v2/security/",
     "Best Practices": "/vrf/v2/best-practices/",
-    "Supported Networks": "/vrf/v2/supported-networks/",
+    "Supported Networks": "/vrf/v2/subscription/supported-networks/",
   }
 metadata:
   title: "Random Numbers: Using Chainlink VRF"
@@ -40,16 +40,16 @@ Randomness is very difficult to generate on blockchains. This is because every n
 
 The [previous guide](/getting-started/consuming-data-feeds/) explained how to consume Chainlink Data Feeds, which consist of reference data posted on-chain by oracles. This data is stored in a contract and can be referenced by consumers until the oracle updates the data again.
 
-Randomness, on the other hand, cannot be reference data. If the result of randomness is stored on-chain, any actor could retrieve the value and predict the outcome. Instead, randomness must be requested from an oracle, which generates a number and a cryptographic proof. Then, the oracle returns that result to the contract that requested it. This sequence is known as the **[Request and Receive cycle](./architecture-request-model/)**.
+Randomness, on the other hand, cannot be reference data. If the result of randomness is stored on-chain, any actor could retrieve the value and predict the outcome. Instead, randomness must be requested from an oracle, which generates a number and a cryptographic proof. Then, the oracle returns that result to the contract that requested it. This sequence is known as the **[Request and Receive cycle](/architecture-overview/architecture-request-model/)**.
 
 ## What is the payment process for generating a random number?
 
 VRF requests receive funding from subscription accounts. The [Subscription Manager](https://vrf.chain.link) lets you create an account and pre-pay for VRF requests, so that funding of all your application requests are managed in a single location.
-To learn more about VRF requests funding, see [Subscriptions](/vrf/v2/introduction/#subscriptions), [Subscription billing](/vrf/v2/introduction/#subscription-billing).
+To learn more about VRF requests funding, see [Subscriptions limits](/vrf/v2/subscription#subscription-limits).
 
 ## How can I use Chainlink VRF?
 
-To see a basic implementation of Chainlink VRF, see [Get a Random Number](/vrf/v2/examples/get-a-random-number/). In this section, you will create an application that uses Chainlink VRF to generate randomness. The contract used in this application will have a [_Game of Thrones_](https://en.wikipedia.org/wiki/Game_of_Thrones) theme.
+To see a basic implementation of Chainlink VRF, see [Get a Random Number](/vrf/v2/subscription/examples/get-a-random-number/). In this section, you will create an application that uses Chainlink VRF to generate randomness. The contract used in this application will have a [_Game of Thrones_](https://en.wikipedia.org/wiki/Game_of_Thrones) theme.
 
 The contract will request randomness from Chainlink VRF. The result of the randomness will transform into a number between 1 and 20, mimicking the rolling of a 20 sided die. Each number represents a _Game of Thrones_ house. If the dice land on the value 1, the user is assigned house Targaryan, 2 for Lannister, and so on. A full list of houses can be found [here](https://gameofthrones.fandom.com/wiki/Great_House).
 
@@ -66,7 +66,7 @@ The contract will have the following functions:
 ### Create and fund a subscription
 
 Chainlink VRF requests receive funding from subscription accounts. The [Subscription Manager](https://vrf.chain.link) lets you create an account and pre-pay your use of Chainlink VRF requests.
-For this example, create a new subscription on the Goerli testnet as explained [here](/vrf/v2/examples/get-a-random-number/#create-and-fund-a-subscription).
+For this example, create a new subscription on the Goerli testnet as explained [here](/vrf/v2/subscription/examples/get-a-random-number/#create-and-fund-a-subscription).
 
 ### Importing `VRFConsumerBaseV2` and `VRFCoordinatorV2Interface`
 
@@ -89,7 +89,7 @@ contract VRFD20 is VRFConsumerBaseV2 {
 
 ### Contract variables
 
-This example is adapted for [Goerli testnet](/vrf/v2/supported-networks/#goerli-testnet) but you can change the configuration and make it run for any [supported network](/vrf/v2/supported-networks/#configurations).
+This example is adapted for [Goerli testnet](/vrf/v2/subscription/supported-networks/#goerli-testnet) but you can change the configuration and make it run for any [supported network](/vrf/v2/subscription/supported-networks/#configurations).
 
 ```solidity
 uint64 s_subscriptionId;
@@ -351,7 +351,7 @@ Then click the `Deploy` button and use your Metamask account to confirm the tran
 **Note**: You should [have some Goerli ETH](/getting-started/deploy-your-first-contract/#install-and-fund-your-metamask-wallet) in your Metamask account to pay for the GAS.
 
 :::note[ Address, Key Hashes and more]
-For a full reference of the addresses, key hashes and fees for each network, see [VRF Supported Networks](/vrf/v2/supported-networks/#configurations).
+For a full reference of the addresses, key hashes and fees for each network, see [VRF Supported Networks](/vrf/v2/subscription/supported-networks/#configurations).
 :::
 
 At this point, your contract should be successfully deployed. However, it can't request anything because it is not yet approved to use the LINK balance in your subscription. If you click `rollDice`, the transaction will revert.

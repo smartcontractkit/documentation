@@ -6,7 +6,7 @@ title: "ETH ABI Decode Task"
 permalink: "docs/jobs/task-types/eth-abi-decode/"
 ---
 
-Decodes a ETH ABI-encoded payload, typically the result of an [ETH Call task](/chainlink-nodes/oracle-jobs/jobs/task-types/eth-call/).
+Decodes a ETH ABI-encoded payload, typically the result of an [ETH Call task](/chainlink-nodes/oracle-jobs/task-types/task_eth_call/).
 
 **Parameters**
 

@@ -18,8 +18,8 @@ Feeds do though evolve over time and we regularly monitor their market fundament
 
 Data feeds are grouped into the following categories based on the level of risk from lowest to highest:
 
-+ [🟢 Verified Feeds](#🟢-verified-feeds)
-+ [🟡 Monitored Feeds](#🟡-monitored-feeds)
++ [🟢 Verified Feeds](#-verified-feeds)
++ [🟡 Monitored Feeds](#-monitored-feeds)
 + [🔵 Custom Feeds](#-custom-feeds)
 + [⚫ Specialized Feeds](#-specialized-feeds)
 + [⭕ Deprecating](#-deprecating)

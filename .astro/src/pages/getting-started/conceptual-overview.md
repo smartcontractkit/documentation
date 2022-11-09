@@ -146,9 +146,9 @@ Oracles play a critical role in facilitating the full potential of smart contrac
 
 ## How do smart contracts use oracles?
 
-Oracles are most popularly used with [_Data Feeds_](./using-chainlink-reference-contracts/). DeFi platforms like [AAVE](https://aave.com/) and [Synthetix](https://www.synthetix.io/) use Chainlink data feed oracles to obtain accurate real-time asset prices in their smart contracts.
+Oracles are most popularly used with [_Data Feeds_](/data-feeds/). DeFi platforms like [AAVE](https://aave.com/) and [Synthetix](https://www.synthetix.io/) use Chainlink data feed oracles to obtain accurate real-time asset prices in their smart contracts.
 
-Chainlink data feeds are sources of data [aggregated from many independent Chainlink node operators](./architecture-decentralized-model/). Each data feed has an on-chain address and functions that enable contracts to read from that address. For example, the [ETH / USD feed](https://data.chain.link/eth-usd/).
+Chainlink data feeds are sources of data [aggregated from many independent Chainlink node operators](/architecture-overview/architecture-decentralized-model/). Each data feed has an on-chain address and functions that enable contracts to read from that address. For example, the [ETH / USD feed](https://data.chain.link/eth-usd/).
 
 ![Chainlink Feeds List](/images/contract-devs/price-aggr.png)
 

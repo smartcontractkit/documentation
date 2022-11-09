@@ -23,7 +23,7 @@ External initiators are disabled on nodes by default. Set the `FEATURE_EXTERNAL_
 
 Initiator Bridges handle the authentication to and from the External Initiator and where to send the messages. When creating a Bridge two parameters are required:
 
-Only the [webhook](/chainlink-nodes/oracle-jobs/jobs/job-types/webhook/) job type can be initiated using an External Initiator.
+Only the [webhook](/chainlink-nodes/oracle-jobs/job-types/webhook/) job type can be initiated using an External Initiator.
 
 The external initiator must be created before the webhook job, and must be referenced by name (whitelisted) in order for that external initiator to be allowed to trigger the given webhook job.
 
