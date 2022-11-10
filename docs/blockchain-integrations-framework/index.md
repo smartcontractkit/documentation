@@ -33,6 +33,8 @@ Most basic tests can be completed on a system with minimal hardware resources. T
 - 10 GiB of system memory
 - At least 50 GiB of disk storage
 
+Additionally, Docker's resource limits must also allow these resources. If you are using Docker Desktop, set your [Docker resource limits](https://docs.docker.com/desktop/settings/linux/#resources) to make sure they meet the system requirements for using the Blockchain Integrations Framework.
+
 ## Set up your environment
 
 Install the framework and create an alias:
@@ -44,7 +46,8 @@ You can now run the framework CLI. Run `bif integration -h` to see the available
 
 If you plan to run soak tests or other tests that require running Chainlink nodes, set up [Helm](https://helm.sh/docs/intro/install/#through-package-managers), [Kubernetes](https://kubernetes.io/docs/setup/) and other required tools:
 
-1. Install the [Docker Engine](https://docs.docker.com/engine/install/).
+1. Install the [Docker Engine](https://docs.docker.com/engine/install/) or [Docker Desktop](https://www.docker.com/products/docker-desktop/).
+1. Set your [Docker resource limits](https://docs.docker.com/desktop/settings/linux/#resources) to make sure they meet the [system requirements](#requirements) for using the Blockchain Integrations Framework. Docker Engine has [resource limits](https://docs.docker.com/config/containers/resource_constraints/) that might be different from Docker Desktop.
 1. Install [Helm](https://helm.sh/docs/intro/install/#through-package-managers).
 1. Add the following repositories:
     - chainlink-qa: `helm repo add chainlink-qa https://raw.githubusercontent.com/smartcontractkit/qa-charts/gh-pages/`
