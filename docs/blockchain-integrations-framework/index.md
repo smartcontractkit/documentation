@@ -33,7 +33,7 @@ Most basic tests can be completed on a system with minimal hardware resources. T
 - 10 GiB of system memory
 - At least 50 GiB of disk storage
 
-Additionally, Docker's resource limits must also allow these resources. If you are using Docker Desktop, set your [Docker resource limits](https://docs.docker.com/desktop/settings/linux/#resources) to make sure they meet the system requirements for using the Blockchain Integrations Framework.
+Additionally, Docker's resource limits must also allow these resources. If you are using Docker Desktop, set your [Docker resource limits](https://docs.docker.com/desktop/settings/linux/#resources) to make sure they meet the system requirements for using the Blockchain Integrations Framework. Docker Engine has [resource limits](https://docs.docker.com/config/containers/resource_constraints/) that might be different from Docker Desktop.
 
 ## Set up your environment
 
