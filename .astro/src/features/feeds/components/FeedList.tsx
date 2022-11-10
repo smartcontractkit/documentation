@@ -8,7 +8,7 @@ import feedList from "./FeedList.module.css"
 import { clsx } from "~/lib"
 import button from "@chainlink/design-system/button.module.css"
 import { updateTableOfContents } from "~/components/RightSidebar/TableOfContents/tocStore"
-import { Chain, CHAINS, SOLANA_CHAINS } from "../data/chains"
+import { ALL_CHAINS, Chain, CHAINS, SOLANA_CHAINS } from "../data/chains"
 import { useGetChainMetadata } from "./useGetChainMetadata"
 import { Aside } from "~/components"
 import { ChainMetadata } from "../api"
@@ -26,7 +26,8 @@ export const FeedList = ({
   ecosystem?: string
   initialCache?: Record<string, ChainMetadata>
 }) => {
-  const chains = ecosystem === "solana" ? SOLANA_CHAINS : CHAINS
+
+  const chains = ecosystem === "deprecating" ? ALL_CHAINS : ecosystem === "solana" ? SOLANA_CHAINS : CHAINS
 
   const [selectedChain, setSelectedChain] = useQueryString(
     "network",
@@ -50,17 +51,19 @@ export const FeedList = ({
   const isPor = dataFeedType === "por"
   const isNftFloor = dataFeedType === "nftFloor"
   const isDefault = !isPor && !isNftFloor
+  const isDeprecating = ecosystem === "deprecating"
   const isSolana = ecosystem === "solana"
   return (
     <>
       <div className="content" style={{ marginTop: "var(--space-4x)" }}>
         <section>
-          {!isSolana && (
+          {!isSolana && !isDeprecating && (
             <div class={feedList.clChainnavProduct} id="networks-list">
               <div>
                 <div>
                   {chains
                     .filter((chain) => {
+
                       if (isPor) return chain.tags?.includes("proofOfReserve")
 
                       if (isNftFloor)
@@ -107,7 +110,7 @@ export const FeedList = ({
             </p>
           )}
 
-          {chainMetadata.processedData?.networkStatusUrl && (
+          {chainMetadata.processedData?.networkStatusUrl && !isDeprecating && (
             <p>
               Track the status of this network at{" "}
               <a href={chainMetadata.processedData?.networkStatusUrl}>
@@ -125,6 +128,15 @@ export const FeedList = ({
           )}
           {chainMetadata.processedData?.networks
             .filter((network) => {
+
+              if (isDeprecating) {
+                let foundDeprecated = false;
+                network.metadata.forEach(feed => {
+                  if (feed.docs.shutdownDate) foundDeprecated = true
+                });
+                return foundDeprecated;
+              }
+
               if (isPor) return network.tags?.includes("proofOfReserve")
 
               if (isNftFloor) return network.tags?.includes("nftFloorPrice")
@@ -133,6 +145,7 @@ export const FeedList = ({
             })
             .map((network) => (
               <>
+                {network.networkType === "mainnet" ? (
                 <div key={network.name}>
                   <h2 id={network.name}>
                     {network.name}{" "}
@@ -149,23 +162,44 @@ export const FeedList = ({
                     />{" "}
                     Show more details
                   </label>
-                  {network.networkType === "mainnet" && (
-                    <MainnetTable
-                      network={network}
-                      showExtraDetails={showExtraDetails}
-                      dataFeedType={dataFeedType}
-                    />
-                  )}
-                  {network.networkType !== "mainnet" && (
-                    <TestnetTable
-                      network={network}
-                      showExtraDetails={showExtraDetails}
-                      dataFeedType={dataFeedType}
-                    />
-                  )}
+                  <MainnetTable
+                    network={network}
+                    showExtraDetails={showExtraDetails}
+                    dataFeedType={dataFeedType}
+                    ecosystem={ecosystem}
+                  />
                 </div>
+              ) : ecosystem !== "deprecating" && (
+                <div key={network.name}>
+                  <h2 id={network.name}>
+                    {network.name}{" "}
+                    <a className="anchor" href={`#${network.name}`}>
+                      <img src="/images/link.svg" alt="Link to this section" />
+                    </a>
+                  </h2>
+                  <label>
+                    <input
+                      type="checkbox"
+                      className="extra"
+                      checked={showExtraDetails}
+                      onChange={() => setShowExtraDetails((old) => !old)}
+                    />{" "}
+                    Show more details
+                  </label>
+                  <TestnetTable
+                    network={network}
+                    showExtraDetails={showExtraDetails}
+                    dataFeedType={dataFeedType}
+                  />
+                </div>
+              )}
               </>
             ))}
+            { isDeprecating && (
+              useEffect(() => {
+                updateTableOfContents()
+              }, [chainMetadata.processedData])
+            )}
         </section>
       </div>
     </>

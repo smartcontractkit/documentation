@@ -121,7 +121,12 @@ const DefaultTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => (
         {proxy.name}
       </div>
       {proxy.docs.shutdownDate && (
-        <div className="shutDate">
+
+        <div className={clsx(
+          feedList.shutDate
+        )}
+        >
+          <hr />
           Deprecating:
           <br />
           {proxy.docs.shutdownDate}
@@ -196,7 +201,11 @@ const ProofOfReserveTr = ({
         {proxy.name}
       </div>
       {proxy.docs.shutdownDate && (
-        <div className="shutDate">
+        <div className={clsx(
+          feedList.shutDate
+        )}
+        >
+          <hr />
           Deprecating:
           <br />
           {proxy.docs.shutdownDate}
@@ -286,7 +295,11 @@ const NftFloorTr = ({
         {proxy.name}
       </div>
       {proxy.docs.shutdownDate && (
-        <div className="shutDate">
+        <div className={clsx(
+          feedList.shutDate
+        )}
+        >
+          <hr />
           Deprecating:
           <br />
           {proxy.docs.shutdownDate}
@@ -327,24 +340,27 @@ export const MainnetTable = ({
   network,
   showExtraDetails,
   dataFeedType,
+  ecosystem,
 }: {
   network: ChainNetwork
   showExtraDetails: boolean
   dataFeedType: string
+  ecosystem: string
 }) => {
   if (!network.metadata) return null
 
+  const isDeprecating = ecosystem === "deprecating"
   const isPor = dataFeedType === "por"
   const isNftFloor = dataFeedType === "nftFloor"
   const isDefault = !isNftFloor && !isPor
   const filteredMetadata = network.metadata
     .sort((a, b) => (a.name < b.name ? -1 : 1))
     .filter((chain) => {
+      if (isDeprecating) return !!chain.docs.shutdownDate
       if (isPor) return !!chain.docs.porType
       if (isNftFloor) return !!chain.docs.nftFloorUnits
       return !chain.docs.nftFloorUnits && !chain.docs.porType
     })
-
   return (
     <div style={{ overflowX: "auto" }}>
       <table class={tableStyles.table}>
