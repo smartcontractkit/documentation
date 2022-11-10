@@ -14,20 +14,6 @@ permalink: /ethereum/
       </p>
     </div>
     <div class="cl-featuredcard">
-      <div class="cl-card-text">
-        <div class="card-icon-wrapper">
-          <img src="/images/card-icons/5f75cc9f74f7124d70ad4f0a_file-code-check.svg" class="cl-image-featured"></img>
-        </div>
-        <h2>Ethereum Merge</h2>
-        <p>
-          The Ethereum Merge is coming soon. See the <a href="/docs/ethereum-proof-of-stake-merge/">Ethereum Proof-of-Stake Merge</a> page to learn how Chainlink is supporting the Ethereum Merge.
-        </p>
-        <a href="/docs/ethereum-proof-of-stake-merge/" class="cl-button--ghost">
-          Ethereum Proof-of-Stake Merge Overview
-        </a>
-      </div>
-    </div>
-    <div class="cl-featuredcard">
       <div>
         <div>
           <img
