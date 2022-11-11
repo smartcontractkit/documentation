@@ -55,7 +55,7 @@ A valuable feature of smart contracts is that they can store and manage on-chain
 
 *Notice how users are given external links to read more about concepts such as ETH or ERC20 tokens. They do not have to undertake a separate search.*
 
-Smart contracts can connect to real-world market prices of assets to produce powerful applications. Chainlink's **[Data Feeds](/docs/data-feeds/)** feature allows users to quickly and securely connect smart contracts to such assets in a single call.
+Smart contracts can connect to real-world market prices of assets to produce powerful applications. Chainlink's **[Data Feeds](/data-feeds/)** feature allows users to quickly and securely connect smart contracts to such assets in a single call.
 
 # 2. What language is a smart contract written in?
 
@@ -108,4 +108,4 @@ To learn more about data feeds, read the Data Feed blog posts:
 - [Build a dApp on Binance Smart Chain With Secure Data Feeds](https://blog.chain.link/build-a-dapp-on-binance-smart-chain-with-secure-data-feeds/)
 - [The 3 Levels of Data Aggregation in Chainlink Price Feeds](https://blog.chain.link/levels-of-data-aggregation-in-chainlink-price-feeds/)
 
-To explore more applications for data feeds, check out our [other tutorials](/docs/other-tutorials/#data-feeds-applications).
+To explore more applications for data feeds, check out our [other tutorials](/getting-started/other-tutorials#data-feeds).
