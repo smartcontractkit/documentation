@@ -18,7 +18,7 @@ Uppercase string.
 
 **Example**
 
-```jpv2
+```toml
 my_uppercase_task [type="uppercase" input="Hello World!"]
 ```
 

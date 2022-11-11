@@ -20,7 +20,7 @@ A string containing the response body.
 
 **Example**
 
-```jpv2
+```toml
 my_bridge_task [type="bridge"
                 name="some_bridge"
                 requestData="{\\"data\\":{\\"foo\\": $(foo), \\"bar\\": $(bar)}}"

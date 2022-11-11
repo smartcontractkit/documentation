@@ -4,15 +4,14 @@ import dataFeedsLogo from "../assets/data-feeds-logo.svg"
 import externalApiLogo from "../assets/external-api-logo.svg"
 import { ProductCardProps } from "../components/ProductCard"
 
-const baseChains = ["avalanche", "bnb-chain", "ethereum", "fantom", "polygon"]
-const extraChains = [
-  "heco",
-  "arbitrum",
-  "optimism",
-  "gnosis-chain",
-  "moonbeam",
-  "moonriver",
+const baseChains = [
+  {id: "ethereum", title: "Ethereum"},
+  {id: "avalanche", title: "Avalanche"},
+  {id: "bnb-chain", title: "BNB Chain"},
+  {id: "fantom", title: "Fantom"},
+  {id: "polygon", title: "Polygon"},
 ]
+
 export const evmProducts = [
   {
     title: "Data Feeds",
@@ -26,7 +25,16 @@ export const evmProducts = [
       ["Proof of Reserve Feeds", "data-feeds/proof-of-reserve/"],
       ["NFT Floor Pricing Feeds", "data-feeds/nft-floor-price/"],
     ],
-    chains: [...baseChains, ...extraChains],
+    chains: [...baseChains,
+      {id: "arbitrum", title: "Arbitrum"},
+      {id: "optimism", title: "Optimism"},
+      {id: "gnosis-chain", title: "Gnosis Chain"},
+      {id: "harmony", title: "Harmony"},
+      {id: "klaytn", title: "Klaytn"},
+      {id: "metis", title: "Metis"},
+      {id: "moonbeam", title: "Moonbeam"},
+      {id: "moonriver", title: "Moonriver"}
+    ],
   },
   {
     title: "Automate Contracts",
@@ -48,7 +56,9 @@ export const evmProducts = [
       ["Manage your Upkeeps", "chainlink-automation/manage-upkeeps/"],
       ["Creating Flexible Upkeeps", "chainlink-automation/flexible-upkeeps/"],
     ],
-    chains: [...baseChains],
+    chains: [...baseChains,
+      {id: "arbitrum", title: "Arbitrum"}
+    ],
   },
   {
     title: "VRF v2",
@@ -63,7 +73,9 @@ export const evmProducts = [
       ["Security Considerations", "/vrf/v2/security/"],
       ["Best Practices", "/vrf/v2/best-practices/"],
     ],
-    chains: [...baseChains],
+    chains: [...baseChains,
+      {id: "klaytn", title: "Klaytn"},
+    ],
   },
   {
     title: "External API Calls",
@@ -77,7 +89,16 @@ export const evmProducts = [
       ["Find Existing Jobs", "/any-api/find-oracle/"],
       ["API Reference", "/any-api/api-reference/"],
     ],
-    chains: [...baseChains, ...extraChains],
+    chains: [...baseChains, 
+      {id: "arbitrum", title: "Arbitrum"},
+      {id: "optimism", title: "Optimism"},
+      {id: "gnosis-chain", title: "Gnosis Chain"},
+      {id: "harmony", title: "Harmony"},
+      {id: "klaytn", title: "Klaytn"},
+      {id: "metis", title: "Metis"},
+      {id: "moonbeam", title: "Moonbeam"},
+      {id: "moonriver", title: "Moonriver"}
+    ],
   },
 ] as ProductCardProps[]
 
@@ -99,6 +120,5 @@ export const solanaProducts = [
       ],
       ["Solana Data Feeds Addresses", "/solana/data-feeds/data-feeds-solana/"],
     ],
-    chains: [...baseChains, ...extraChains],
   },
 ] as ProductCardProps[]

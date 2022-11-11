@@ -23,7 +23,7 @@ The value at the provided keypath.
 
 **Example**
 
-```jpv2
+```toml
 my_json_task [type="jsonparse"
               data="$(http_fetch_result)"
               path="data,0,price"]

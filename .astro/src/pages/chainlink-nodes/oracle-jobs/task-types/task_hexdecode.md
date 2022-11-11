@@ -18,7 +18,7 @@ Decoded bytes.
 
 **Example**
 
-```jpv2
+```toml
 my_hexdecode_task [type="hexdecode" input="0x12345678"]
 ```
 

@@ -16,7 +16,7 @@ Every OCR cluster requires at least one bootstrap node as a kind of "rallying po
 
 **Spec format**
 
-```jpv2
+```toml
 type               = "offchainreporting"
 schemaVersion      = 1
 evmChainID         = 1
@@ -51,7 +51,7 @@ Oracle nodes, on the other hand, are responsible for submitting answers.
 
 **Spec format**
 
-```jpv2
+```toml
 type               = "offchainreporting"
 schemaVersion      = 1
 evmChainID         = 1

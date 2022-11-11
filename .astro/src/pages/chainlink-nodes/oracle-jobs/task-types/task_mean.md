@@ -20,7 +20,7 @@ The average of the values in the `values` array.
 
 **Example**
 
-```jpv2
+```toml
 my_mean_task [type="mean"
               values=<[ $(fetch1), $(fetch2), $(fetch3) ]>
               precision=2

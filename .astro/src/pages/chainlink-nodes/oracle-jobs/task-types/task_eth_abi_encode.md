@@ -21,7 +21,7 @@ A byte array.
 
 **Example**
 
-```jpv2
+```toml
 encode [type="ethabiencode"
         abi="fulfillRequest(bytes32 requestID, uint256 answer)"
         data="{\\"requestID\\": $(foo), \\"answer\\": $(bar)}"

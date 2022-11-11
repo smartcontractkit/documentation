@@ -14,7 +14,7 @@ You'll need `FEATURE_WEBHOOK_V2=true` in your `.env` file.
 
 This is an example webhook job:
 
-```jpv2
+```toml
 type            = "webhook"
 schemaVersion   = 1
 externalInitiators = [

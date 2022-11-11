@@ -26,7 +26,7 @@ A map containing two keys:
 
 **Example**
 
-```jpv2
+```toml
 my_mode_task [type="mode"
                 values=<[ $(fetch1), $(fetch2), $(fetch3), $(fetch4), $(fetch5), $(fetch6), $(fetch7), $(fetch8) ]>
                 allowedFaults=3]

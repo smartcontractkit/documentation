@@ -23,7 +23,7 @@ A map containing the decoded values.
 
 **Example**
 
-```jpv2
+```toml
 decode [type="ethabidecode"
         abi="bytes32 requestID, uint256 price, address[] oracles"
         data="$(eth_call_result)"]

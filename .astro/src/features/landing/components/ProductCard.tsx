@@ -44,20 +44,22 @@ export const ProductCard = (props: ProductCardProps) => {
           </div>
         </div>
       </div>
-      <div>
+      { props.chains && (
+        <div>
         <div class={productCard.networks}>
-          <h6 class="paragraph-100-bold">Available on EVM Chains</h6>
+          <h6 class="paragraph-100-bold">Available on:</h6>
           <div class={productCard.chainsWrapper}>
             {props.chains.map((chain) => (
               <img
-                src={`/assets/chains/${chain}.svg`}
+                src={`/assets/chains/${chain.id}.svg`}
                 class={productCard.chainIcon}
-                alt={chain}
+                title={chain.title}
               />
             ))}
           </div>
         </div>
       </div>
+      )}
     </section>
   )
 }

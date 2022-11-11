@@ -19,7 +19,7 @@ metadata:
 
 Welcome to the Smart Contract Getting Started guide. This overview explains the basic concepts of smart contract development and oracle networks.
 
-**Skip ahead**
+**Skip ahead:**
 To get your hands on the code right away, you can skip this overview:
 
 - [Deploy Your First Smart Contract](/getting-started/deploy-your-first-contract/): If you are new to smart contracts, deploy your first smart contract in an interactive web development environment.

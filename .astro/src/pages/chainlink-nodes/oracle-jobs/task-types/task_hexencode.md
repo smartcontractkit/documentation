@@ -18,7 +18,7 @@ Hexadecimal string prefixed with "0x" (or empty string if input was empty).
 
 **Example**
 
-```jpv2
+```toml
 my_hexencode_task [type="hexencode" input="xyz"]
 ```
 

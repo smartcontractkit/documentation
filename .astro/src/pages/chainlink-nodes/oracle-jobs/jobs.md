@@ -27,7 +27,7 @@ Jobs are represented by TOML specifications.
 
 The following is an example `cron` job spec. This is a simple spec that you can add to a node:
 
-```jpv2
+```toml
 type            = "cron"
 schemaVersion   = 1
 schedule        = "CRON_TZ=UTC 0 0 1 1 *"

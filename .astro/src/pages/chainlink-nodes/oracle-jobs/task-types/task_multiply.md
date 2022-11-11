@@ -27,7 +27,7 @@ The result of the multiplication.
 
 **Example**
 
-```jpv2
+```toml
 my_multiply_task [type="multiply" input="$(json_parse_result)" times=3]
 ```
 

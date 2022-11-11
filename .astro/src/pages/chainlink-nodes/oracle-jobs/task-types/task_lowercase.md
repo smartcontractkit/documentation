@@ -18,7 +18,7 @@ Lowercase string.
 
 **Example**
 
-```jpv2
+```toml
 my_lowercase_task [type="lowercase" input="Hello World!"]
 ```
 

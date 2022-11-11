@@ -18,7 +18,7 @@ Examples:
 
 **Spec format**
 
-```jpv2
+```toml
 type            = "keeper"
 schemaVersion   = 1
 evmChainID      = 1

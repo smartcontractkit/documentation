@@ -16,7 +16,7 @@ The bridge name must be unique to the local node. The bridge URL is the URL of y
 
 To add jobs that use the bridge, add a [Bridge Task](/chainlink-nodes/oracle-jobs/task-types/task_bridge/) to your job. The `bridge` task defined in the example below is defined as `fetch` and the name of the bridge is `soccer-data`.
 
-```jpv2
+```toml
 type = "directrequest"
 schemaVersion = 1
 name = "Soccer-Data-EA"
@@ -62,7 +62,7 @@ The easiest way is to setup a [Webhook Job](/chainlink-nodes/oracle-jobs/job-typ
 You might need to set the [configuration variable](/chainlink-nodes/configuration-variables/) `FEATURE_WEBHOOK_V2=true` in your `.env` file.
 :::
 
-```jpv2
+```toml
 type = "webhook"
 schemaVersion = 1
 name = "Soccer-Data-EA-Web"

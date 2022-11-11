@@ -18,7 +18,7 @@ Decoded bytes.
 
 **Example**
 
-```jpv2
+```toml
 my_base64decode_task [type="base64decode" input="SGVsbG8sIHBsYXlncm91bmQ="]
 ```
 

@@ -25,7 +25,7 @@ export const CHAINS: Chain[] = [
   {
     page: "ethereum",
     title: "Ethereum Data Feeds",
-    img: "/images/logos/ethereum.svg",
+    img: "/assets/chains/ethereum.svg",
     networkStatusUrl: "https://ethstats.net/",
     tags: ["default", "proofOfReserve", "nftFloorPrice"],
     networks: [
@@ -50,7 +50,7 @@ export const CHAINS: Chain[] = [
   {
     page: "bnb-chain",
     title: "BNB Chain Data Feeds",
-    img: "/images/logos/bnb-chain.svg",
+    img: "/assets/chains/bnb-chain.svg",
     networkStatusUrl: "https://bscscan.freshstatus.io/",
     tags: ["default", "proofOfReserve"],
     networks: [
@@ -76,7 +76,7 @@ export const CHAINS: Chain[] = [
     page: "polygon",
     title: "Polygon (Matic) Data Feeds",
     label: "Polygon (Matic)",
-    img: "/images/logos/polygon.svg",
+    img: "/assets/chains/polygon.svg",
     networkStatusUrl: "https://polygon.io/system",
     tags: ["default", "proofOfReserve"],
     networks: [
@@ -100,7 +100,7 @@ export const CHAINS: Chain[] = [
   {
     page: "gnosis-chain",
     title: "Gnosis Chain (xDai) Data Feeds",
-    img: "/images/logos/gnosis-chain.svg",
+    img: "/assets/chains/gnosis-chain.svg",
     networkStatusUrl: "https://gnosisscan.io/",
     tags: ["default"],
     networks: [
@@ -117,7 +117,7 @@ export const CHAINS: Chain[] = [
   {
     page: "heco-chain",
     title: "HECO Chain Data Feeds",
-    img: "/images/logos/heco.svg",
+    img: "/assets/chains/heco.svg",
     networkStatusUrl: "https://hecoinfo.com/",
     tags: ["default"],
     networks: [
@@ -134,7 +134,7 @@ export const CHAINS: Chain[] = [
   {
     page: "avalanche",
     title: "Avalanche Data Feeds",
-    img: "/images/logos/avalanche.svg",
+    img: "/assets/chains/avalanche.svg",
     networkStatusUrl: "https://status.avax.network/",
     tags: ["default", "proofOfReserve"],
     networks: [
@@ -161,7 +161,7 @@ export const CHAINS: Chain[] = [
     page: "fantom",
     title: "Fantom Testnet",
     label: "Fantom",
-    img: "/images/logos/fantom.svg",
+    img: "/assets/chains/fantom.svg",
     networkStatusUrl: "https://ftmscan.com/",
     tags: ["default"],
     networks: [
@@ -185,7 +185,7 @@ export const CHAINS: Chain[] = [
     page: "arbitrum",
     label: "Arbitrum",
     title: "Arbitrum Data Feeds",
-    img: "/images/logos/arbitrum.svg",
+    img: "/assets/chains/arbitrum.svg",
     networkStatusUrl: "https://arbiscan.freshstatus.io/",
     tags: ["default"],
     networks: [
@@ -209,7 +209,7 @@ export const CHAINS: Chain[] = [
     page: "harmony",
     label: "Harmony",
     title: "Harmony Data Feeds",
-    img: "/images/logos/harmony.svg",
+    img: "/assets/chains/harmony.svg",
     networkStatusUrl: "https://status.harmony.one/",
     tags: ["default"],
     networks: [
@@ -226,7 +226,7 @@ export const CHAINS: Chain[] = [
     page: "optimism",
     label: "Optimism",
     title: "Optimism Data Feeds",
-    img: "/images/logos/optimism.svg",
+    img: "/assets/chains/optimism.svg",
     networkStatusUrl: "https://status.optimism.io/",
     tags: ["default"],
     networks: [
@@ -250,7 +250,7 @@ export const CHAINS: Chain[] = [
     page: "moonriver",
     title: "Moonriver Data Feeds",
     label: "Moonriver",
-    img: "/images/logos/moonriver.svg",
+    img: "/assets/chains/moonriver.svg",
     networkStatusUrl: "https://moonscan.freshstatus.io/",
     tags: ["default"],
     networks: [
@@ -267,7 +267,7 @@ export const CHAINS: Chain[] = [
     page: "moonbeam",
     label: "Moonbeam",
     title: "Moonbeam Data Feeds",
-    img: "/images/logos/moonbeam.svg",
+    img: "/assets/chains/moonbeam.svg",
     networkStatusUrl: "https://moonscan.freshstatus.io/",
     tags: ["default"],
     networks: [
@@ -284,7 +284,7 @@ export const CHAINS: Chain[] = [
     page: "metis",
     label: "Metis",
     title: "Metis Data Feeds",
-    img: "/images/logos/metis.png",
+    img: "/assets/chains/metis.svg",
     networkStatusUrl: "https://andromeda-explorer.metis.io/",
     tags: ["default"],
     networks: [
@@ -301,7 +301,7 @@ export const CHAINS: Chain[] = [
     page: "klaytn",
     label: "Klaytn",
     title: "Klaytn Data Feeds",
-    img: "/images/logos/klaytn.svg",
+    img: "/assets/chains/klaytn.svg",
     networkStatusUrl: "https://status.klaytnapi.com/",
     tags: ["default"],
     networks: [
@@ -345,7 +345,7 @@ export const ALL_CHAINS: Chain[] = [
   {
     page: "ethereum",
     title: "All chains",
-    img: "/images/logos/ethereum.svg",
+    img: "/assets/chains/ethereum.svg",
     networkStatusUrl: "https://ethstats.net/",
     tags: ["default", "proofOfReserve", "nftFloorPrice"],
     networks: [

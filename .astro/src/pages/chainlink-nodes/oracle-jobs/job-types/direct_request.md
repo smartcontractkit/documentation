@@ -23,7 +23,7 @@ Executes a job upon receipt of an explicit request made by a user. The request i
 
 ## Spec format
 
-```jpv2
+```toml
 type                = "directrequest"
 schemaVersion       = 1
 evmChainID          = 1

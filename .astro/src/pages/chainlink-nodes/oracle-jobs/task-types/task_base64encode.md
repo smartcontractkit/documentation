@@ -18,7 +18,7 @@ String with Base64 encoding of input.
 
 **Example**
 
-```jpv2
+```toml
 my_base64encode_task [type="base64encode" input="Hello, playground"]
 ```
 

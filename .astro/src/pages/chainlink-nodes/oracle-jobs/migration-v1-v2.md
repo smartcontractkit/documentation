@@ -28,7 +28,7 @@ v2 jobs require the author to specify dependencies using [DOT syntax](https://en
 
 To facilitate explicitness, v2 jobs require the author to specify inputs to tasks using `$(variable)` syntax. For example, if an `http` task feeds data into a `jsonparse` task, it must be specified like the following example:
 
-```jpv2
+```toml
 fetch [type="http" method=GET url="http://chain.link/price_feeds/ethusd"]
 
 // This task consumes the output of the 'fetch' task in its 'data' parameter
@@ -40,7 +40,7 @@ fetch -> parse
 
 Task names must be defined before their opening `[` bracket. In this example, the name of the task is `fetch`. The output of each task is stored in the variable corresponding to the name of the task. In some cases, tasks return complex values like maps or arrays. By using dot access syntax, you can access the elements of these values. For example:
 
-```jpv2
+```toml
 // Assume that this task returns the following object:
 //  { "ethusd": 123.45, "btcusd": 678.90 }
 parse [type="jsonparse" path="data" data="$(fetch)"]
@@ -57,7 +57,7 @@ parse -> submit_btcusd
 
 Some tasks, like the `bridge` tasks above, require you to specify a JSON object. Because the keys of JSON objects must be enclosed in double quotes, you must use the alternative `<` angle bracket `>` quotes. Angle brackets also enable multi-line strings, which can be useful when a JSON object parameter is large:
 
-```jpv2
+```toml
 submit_btcusd [type="bridge"
                name="btcusd"
                requestData="{\\"data\\":{\\"value\\": $(foo), \\"price\\": $(bar), \\"timestamp\\": $(baz)}}"
@@ -114,7 +114,7 @@ Notes:
 
 **Equivalent v2 spec:**
 
-```jpv2
+```toml
 type                = "directrequest"
 schemaVersion       = 1
 name                = "Get > Bytes32"
@@ -191,7 +191,7 @@ observationSource   = """
 
 **Equivalent v2 spec:**
 
-```jpv2
+```toml
 type                = "directrequest"
 schemaVersion       = 1
 name                = "Get > Bytes32"
@@ -266,7 +266,7 @@ observationSource   = """
 
 **Equivalent v2 spec:**
 
-```jpv2
+```toml
 type            = "cron"
 schemaVersion   = 1
 schedule        = "CRON_TZ=UTC * */20 * * * *"
@@ -312,7 +312,7 @@ observationSource   = """
 
 **Equivalent v2 spec:**
 
-```jpv2
+```toml
 type            = "webhook"
 schemaVersion   = 1
 # Optional externalJobID: Automatically generated if unspecified

@@ -27,7 +27,7 @@ The result of less than comparison.
 
 **Example**
 
-```jpv2
+```toml
 my_lessthan_task [type="lessthan" left="3" right="10"]
 ```
 

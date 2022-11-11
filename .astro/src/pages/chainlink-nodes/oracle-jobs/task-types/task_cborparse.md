@@ -19,7 +19,7 @@ A map containing the request parameters. Parameters can be individually accessed
 
 **Example**
 
-```jpv2
+```toml
 // First, we parse the request log and the CBOR payload inside of it
 decode_log  [type="ethabidecodelog"
              data="$(jobRun.logData)"

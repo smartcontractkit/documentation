@@ -22,7 +22,7 @@ A randomly-selected value from the set of inputs.
 
 **Example**
 
-```jpv2
+```toml
 fetch1   [type="http" ...]
 fetch2   [type="http" ...]
 fetch3   [type="http" ...]

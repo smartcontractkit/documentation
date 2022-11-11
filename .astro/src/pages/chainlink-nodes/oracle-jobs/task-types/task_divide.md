@@ -32,7 +32,7 @@ The result of the division.
 
 **Example**
 
-```jpv2
+```toml
 my_divide_task [type="divide"
                 input="$(json_parse_result)"
                 divisor="3"

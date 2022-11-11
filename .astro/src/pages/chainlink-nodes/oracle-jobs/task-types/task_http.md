@@ -22,7 +22,7 @@ A string containing the response body.
 
 **Example**
 
-```jpv2
+```toml
 my_http_task [type="http"
               method=PUT
               url="http://chain.link"

@@ -13,7 +13,7 @@ This is an example v2 (TOML) job spec for returning gas price using [etherscan](
 
 To test this job spec from a smart contract, see this [Example](/any-api/get-request/examples/existing-job-request/).
 
-```jpv2
+```toml
 type = "directrequest"
 schemaVersion = 1
 name = "Etherscan gas price"

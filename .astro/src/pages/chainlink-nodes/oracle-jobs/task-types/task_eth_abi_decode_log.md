@@ -28,7 +28,7 @@ A map containing the decoded values.
 
 **Example**
 
-```jpv2
+```toml
 decode [type="ethabidecodelog"
         abi="NewRound(uint256 indexed roundId, address indexed startedBy, uint256 startedAt)"
         data="$(jobRun.logData)"

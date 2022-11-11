@@ -20,7 +20,7 @@ The length of the byte array or string.
 
 **Example**
 
-```jpv2
+```toml
 my_length_task [type="length" input="xyz"]
 ```
 
