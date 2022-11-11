@@ -1,4 +1,5 @@
 import ClipboardJS from "clipboard"
+import button from "@chainlink/design-system/button.module.css"
 
 const clipboard = new ClipboardJS(".copy-iconbutton")
 
@@ -9,4 +10,23 @@ clipboard.on("success", function (e) {
     e.trigger.innerHTML = oldLabel
   }, 2000)
   e.clearSelection()
+})
+
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll("pre").forEach(function (codeBlock) {
+    const container = document.createElement("div")
+    container.className = "copy-code-button-wrapper"
+
+    const copyButton = document.createElement("button")
+    copyButton.className = button.secondary
+    copyButton.classList.add(...["copy-iconbutton"])
+    copyButton.type = "button"
+    const s = codeBlock.innerText
+    copyButton.setAttribute("data-clipboard-text", s)
+    copyButton.innerHTML = `<img src="/assets/icons/copyIcon.svg">`
+
+    container.appendChild(copyButton)
+
+    codeBlock.appendChild(container)
+  })
 })
