@@ -343,7 +343,7 @@ export const SOLANA_CHAINS: Chain[] = [
 
 export const ALL_CHAINS: Chain[] = [
   {
-    page: "ethereum",
+    page: "deprecated",
     title: "All chains",
     img: "/assets/chains/ethereum.svg",
     networkStatusUrl: "https://ethstats.net/",

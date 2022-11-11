@@ -12,7 +12,7 @@ export type ProductCardProps = {
   image: string
   learnMorelink: string
   links: LinkTuple[]
-  chains: string[]
+  chains: { id: string; title: string }[]
 }
 
 export const ProductCard = (props: ProductCardProps) => {
@@ -44,21 +44,21 @@ export const ProductCard = (props: ProductCardProps) => {
           </div>
         </div>
       </div>
-      { props.chains && (
+      {props.chains && (
         <div>
-        <div class={productCard.networks}>
-          <h6 class="paragraph-100-bold">Available on:</h6>
-          <div class={productCard.chainsWrapper}>
-            {props.chains.map((chain) => (
-              <img
-                src={`/assets/chains/${chain.id}.svg`}
-                class={productCard.chainIcon}
-                title={chain.title}
-              />
-            ))}
+          <div class={productCard.networks}>
+            <h6 class="paragraph-100-bold">Available on:</h6>
+            <div class={productCard.chainsWrapper}>
+              {props.chains.map((chain) => (
+                <img
+                  src={`/assets/chains/${chain.id}.svg`}
+                  class={productCard.chainIcon}
+                  title={chain.title}
+                />
+              ))}
+            </div>
           </div>
         </div>
-      </div>
       )}
     </section>
   )

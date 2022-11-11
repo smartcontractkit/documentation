@@ -5,11 +5,11 @@ import externalApiLogo from "../assets/external-api-logo.svg"
 import { ProductCardProps } from "../components/ProductCard"
 
 const baseChains = [
-  {id: "ethereum", title: "Ethereum"},
-  {id: "avalanche", title: "Avalanche"},
-  {id: "bnb-chain", title: "BNB Chain"},
-  {id: "fantom", title: "Fantom"},
-  {id: "polygon", title: "Polygon"},
+  { id: "ethereum", title: "Ethereum" },
+  { id: "avalanche", title: "Avalanche" },
+  { id: "bnb-chain", title: "BNB Chain" },
+  { id: "fantom", title: "Fantom" },
+  { id: "polygon", title: "Polygon" },
 ]
 
 export const evmProducts = [
@@ -25,15 +25,16 @@ export const evmProducts = [
       ["Proof of Reserve Feeds", "data-feeds/proof-of-reserve/"],
       ["NFT Floor Pricing Feeds", "data-feeds/nft-floor-price/"],
     ],
-    chains: [...baseChains,
-      {id: "arbitrum", title: "Arbitrum"},
-      {id: "optimism", title: "Optimism"},
-      {id: "gnosis-chain", title: "Gnosis Chain"},
-      {id: "harmony", title: "Harmony"},
-      {id: "klaytn", title: "Klaytn"},
-      {id: "metis", title: "Metis"},
-      {id: "moonbeam", title: "Moonbeam"},
-      {id: "moonriver", title: "Moonriver"}
+    chains: [
+      ...baseChains,
+      { id: "arbitrum", title: "Arbitrum" },
+      { id: "optimism", title: "Optimism" },
+      { id: "gnosis-chain", title: "Gnosis Chain" },
+      { id: "harmony", title: "Harmony" },
+      { id: "klaytn", title: "Klaytn" },
+      { id: "metis", title: "Metis" },
+      { id: "moonbeam", title: "Moonbeam" },
+      { id: "moonriver", title: "Moonriver" },
     ],
   },
   {
@@ -56,9 +57,7 @@ export const evmProducts = [
       ["Manage your Upkeeps", "chainlink-automation/manage-upkeeps/"],
       ["Creating Flexible Upkeeps", "chainlink-automation/flexible-upkeeps/"],
     ],
-    chains: [...baseChains,
-      {id: "arbitrum", title: "Arbitrum"}
-    ],
+    chains: [...baseChains, { id: "arbitrum", title: "Arbitrum" }],
   },
   {
     title: "VRF v2",
@@ -73,9 +72,7 @@ export const evmProducts = [
       ["Security Considerations", "/vrf/v2/security/"],
       ["Best Practices", "/vrf/v2/best-practices/"],
     ],
-    chains: [...baseChains,
-      {id: "klaytn", title: "Klaytn"},
-    ],
+    chains: [...baseChains, { id: "klaytn", title: "Klaytn" }],
   },
   {
     title: "External API Calls",
@@ -89,15 +86,16 @@ export const evmProducts = [
       ["Find Existing Jobs", "/any-api/find-oracle/"],
       ["API Reference", "/any-api/api-reference/"],
     ],
-    chains: [...baseChains, 
-      {id: "arbitrum", title: "Arbitrum"},
-      {id: "optimism", title: "Optimism"},
-      {id: "gnosis-chain", title: "Gnosis Chain"},
-      {id: "harmony", title: "Harmony"},
-      {id: "klaytn", title: "Klaytn"},
-      {id: "metis", title: "Metis"},
-      {id: "moonbeam", title: "Moonbeam"},
-      {id: "moonriver", title: "Moonriver"}
+    chains: [
+      ...baseChains,
+      { id: "arbitrum", title: "Arbitrum" },
+      { id: "optimism", title: "Optimism" },
+      { id: "gnosis-chain", title: "Gnosis Chain" },
+      { id: "harmony", title: "Harmony" },
+      { id: "klaytn", title: "Klaytn" },
+      { id: "metis", title: "Metis" },
+      { id: "moonbeam", title: "Moonbeam" },
+      { id: "moonriver", title: "Moonriver" },
     ],
   },
 ] as ProductCardProps[]

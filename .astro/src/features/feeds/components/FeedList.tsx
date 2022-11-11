@@ -1,9 +1,7 @@
 /** @jsxImportSource preact */
 import h from "preact"
 import { useEffect, useState } from "preact/hooks"
-import { Addresses } from "../types"
 import { MainnetTable, TestnetTable } from "./Tables"
-import useFetch from "../../../hooks/useFetch"
 import feedList from "./FeedList.module.css"
 import { clsx } from "~/lib"
 import button from "@chainlink/design-system/button.module.css"
@@ -26,8 +24,12 @@ export const FeedList = ({
   ecosystem?: string
   initialCache?: Record<string, ChainMetadata>
 }) => {
-
-  const chains = ecosystem === "deprecating" ? ALL_CHAINS : ecosystem === "solana" ? SOLANA_CHAINS : CHAINS
+  const chains =
+    ecosystem === "deprecating"
+      ? ALL_CHAINS
+      : ecosystem === "solana"
+      ? SOLANA_CHAINS
+      : CHAINS
 
   const [selectedChain, setSelectedChain] = useQueryString(
     "network",
@@ -63,7 +65,6 @@ export const FeedList = ({
                 <div>
                   {chains
                     .filter((chain) => {
-
                       if (isPor) return chain.tags?.includes("proofOfReserve")
 
                       if (isNftFloor)
@@ -128,13 +129,12 @@ export const FeedList = ({
           )}
           {chainMetadata.processedData?.networks
             .filter((network) => {
-
               if (isDeprecating) {
-                let foundDeprecated = false;
-                network.metadata.forEach(feed => {
+                let foundDeprecated = false
+                network.metadata.forEach((feed) => {
                   if (feed.docs.shutdownDate) foundDeprecated = true
-                });
-                return foundDeprecated;
+                })
+                return foundDeprecated
               }
 
               if (isPor) return network.tags?.includes("proofOfReserve")
@@ -146,60 +146,63 @@ export const FeedList = ({
             .map((network) => (
               <>
                 {network.networkType === "mainnet" ? (
-                <div key={network.name}>
-                  <h2 id={network.name}>
-                    {network.name}{" "}
-                    <a className="anchor" href={`#${network.name}`}>
-                      <img src="/images/link.svg" alt="Link to this section" />
-                    </a>
-                  </h2>
-                  <label>
-                    <input
-                      type="checkbox"
-                      className="extra"
-                      checked={showExtraDetails}
-                      onChange={() => setShowExtraDetails((old) => !old)}
-                    />{" "}
-                    Show more details
-                  </label>
-                  <MainnetTable
-                    network={network}
-                    showExtraDetails={showExtraDetails}
-                    dataFeedType={dataFeedType}
-                    ecosystem={ecosystem}
-                  />
-                </div>
-              ) : ecosystem !== "deprecating" && (
-                <div key={network.name}>
-                  <h2 id={network.name}>
-                    {network.name}{" "}
-                    <a className="anchor" href={`#${network.name}`}>
-                      <img src="/images/link.svg" alt="Link to this section" />
-                    </a>
-                  </h2>
-                  <label>
-                    <input
-                      type="checkbox"
-                      className="extra"
-                      checked={showExtraDetails}
-                      onChange={() => setShowExtraDetails((old) => !old)}
-                    />{" "}
-                    Show more details
-                  </label>
-                  <TestnetTable
-                    network={network}
-                    showExtraDetails={showExtraDetails}
-                    dataFeedType={dataFeedType}
-                  />
-                </div>
-              )}
+                  <div key={network.name}>
+                    <h2 id={network.name}>
+                      {network.name}{" "}
+                      <a className="anchor" href={`#${network.name}`}>
+                        <img
+                          src="/images/link.svg"
+                          alt="Link to this section"
+                        />
+                      </a>
+                    </h2>
+                    <label>
+                      <input
+                        type="checkbox"
+                        className="extra"
+                        checked={showExtraDetails}
+                        onChange={() => setShowExtraDetails((old) => !old)}
+                      />{" "}
+                      Show more details
+                    </label>
+                    <MainnetTable
+                      network={network}
+                      showExtraDetails={showExtraDetails}
+                      dataFeedType={dataFeedType}
+                      ecosystem={ecosystem}
+                    />
+                  </div>
+                ) : (
+                  ecosystem !== "deprecating" && (
+                    <div key={network.name}>
+                      <h2 id={network.name}>
+                        {network.name}{" "}
+                        <a className="anchor" href={`#${network.name}`}>
+                          <img
+                            src="/images/link.svg"
+                            alt="Link to this section"
+                          />
+                        </a>
+                      </h2>
+                      <label>
+                        <input
+                          type="checkbox"
+                          className="extra"
+                          checked={showExtraDetails}
+                          onChange={() => setShowExtraDetails((old) => !old)}
+                        />{" "}
+                        Show more details
+                      </label>
+                      <TestnetTable
+                        network={network}
+                        showExtraDetails={showExtraDetails}
+                        dataFeedType={dataFeedType}
+                      />
+                    </div>
+                  )
+                )}
               </>
             ))}
-            { isDeprecating && (
-              useEffect(() => {
-                updateTableOfContents()
-              }, [chainMetadata.processedData])
-            )}
         </section>
       </div>
     </>

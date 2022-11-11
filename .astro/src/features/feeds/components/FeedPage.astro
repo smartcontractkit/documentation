@@ -9,13 +9,14 @@ export type Props = {
   dataFeedType?: DataFeedType
 }
 import { getServerSideChainMetadata } from "../api/backend"
-import { CHAINS, SOLANA_CHAINS } from "../data/chains"
+import { ALL_CHAINS, CHAINS, SOLANA_CHAINS } from "../data/chains"
 
 const { initialNetwork, ecosystem, dataFeedType } = Astro.props
 
 const initialCache = await getServerSideChainMetadata([
   ...CHAINS,
   ...SOLANA_CHAINS,
+  ...ALL_CHAINS
 ])
 ---
 
