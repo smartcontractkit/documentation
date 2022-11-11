@@ -17,7 +17,7 @@ Chainlink Automation only requires an execution fee for transactions on-chain. T
 
 There is no registration fee or other fees for any off-chain computation.
 
-**Example**: An upkeep transaction was executed on *Polygon mainnet*. It used *1.16M* gas at a gas price of *183.3 gwei*. The premium percentage on Polygon is *70%* (as of October 2022) and the Matic/LINK exchange rate is *0.0131*. The upkeep's LINK balance will be reduced by a fee of *0.0495 LINK*.
+**Example**: An upkeep transaction was executed on *Polygon mainnet*. It used *1.16M* gas at a gas price of *183.3 gwei*. The premium percentage on Polygon is *70%* (as of October 2022) and the Matic/LINK exchange rate is *0.131*. The upkeep's LINK balance will be reduced by a fee of *0.00495 LINK*.
 
 ![Automation Pricing Example](/images/contract-devs/automation/automation-pricing-example.png)
 
