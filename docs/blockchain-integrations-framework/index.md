@@ -158,12 +158,21 @@ Integration testing uses the `bif integration test` command and a TOML file. The
 
 The TOML file for the Blockchain Integrations Framework has two settings sections for OCR soak tests on EVM networks:
 
+- _Nodes settings_: Variables that configure chainlink nodes for given networks.
 - _Network settings_: Variables that configure which chain you use for testing and the private key for the wallet you want to use for deploying contracts
 - _Test settings_: Test duration, node funding, and round configuration settings to control the behavior of the test
 
 **Example TOML file**
 
 ```toml
+# node settings
+[nodes]
+    [nodes.goerli]
+
+        [nodes.goerli.base]
+        eth_chain_id = "5"
+        eth_http_url = "https://eth-goerli.g.alchemy.com/v2/<ALCHEMY_KEY>"
+        eth_url = "wss://eth-goerli.g.alchemy.com/v2/<ALCHEMY_KEY>"
 # network settings
 [networks]
 
