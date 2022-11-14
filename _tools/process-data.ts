@@ -25,6 +25,10 @@ interface DataFile {
         feedCategory?: string;
         feedType?: string;
         hidden?: boolean;
+        nftFloorUnits?: string;
+        porAuditor?: string;
+        porType?: string;
+        shutdownDate?: string;
       };
       transmissionsAccount?: string;
     };
@@ -46,14 +50,11 @@ interface ResultProxy {
   proxy: string;
   feedCategory: string;
   feedType: string;
+  nftFloorUnits?: string;
+  porAuditor?: string;
+  porType?: string;
+  shutdownDate?: string;
 }
-
-const categories = [
-  "verified",
-  "monitored",
-  "custom",
-  "specialized"
-];
 
 function load(filename: string): DataFile {
   const file = `data-source/${filename}`;
@@ -73,11 +74,12 @@ function load(filename: string): DataFile {
 const finalResult: {
   [key: string]: {
     title: string;
-    feedType: string;
+    networkStatusUrl: string;
     networks: {
       name: string;
       url: string;
       networkType: string;
+      dataType: string;
       proxies: ResultProxy[];
     }[];
   };
@@ -87,7 +89,7 @@ const finalResult: {
 for (let page of targetData) {
   finalResult[page.page] = {
     title: page.title,
-    feedType: page.feedType,
+    networkStatusUrl: page.networkStatusUrl,
     networks: []
   };
 
@@ -103,6 +105,10 @@ for (let page of targetData) {
         assetName?: string;
         feedCategory: string;
         feedType?: string;
+        nftFloorUnits?: string;
+        porAuditor?: string;
+        porType?: string;
+        shutdownDate?: string;
       };
     } = {};
     for (let contractKey of Object.keys(contents.contracts)) {
@@ -124,10 +130,6 @@ for (let page of targetData) {
           threshold = threshold / 10000000;
         }
 
-        if(contract.docs?.feedCategory && !categories.includes(contract.docs?.feedCategory)) {
-          contract.docs.feedCategory = '';
-        }
-
         // Set the threshold to deviationThreshold if it's specified (deviationThreshold or
         // relativeDeviationThresholdPPB should be set)
         liveContracts[contractKey] = {
@@ -137,6 +139,10 @@ for (let page of targetData) {
           assetName: contract.docs?.assetName,
           feedCategory: contract.docs?.feedCategory || "",
           feedType: contract.docs?.feedType || "-",
+          nftFloorUnits: contract.docs?.nftFloorUnits,
+          porAuditor: contract.docs?.porAuditor,
+          porType: contract.docs?.porType,
+          shutdownDate: contract.docs?.shutdownDate,
 
         };
         if (contract.v3Facade) {
@@ -147,6 +153,10 @@ for (let page of targetData) {
             assetName: contract.docs?.assetName,
             feedCategory: contract.docs?.feedCategory || "",
             feedType: contract.docs?.feedType || "-",
+            nftFloorUnits: contract.docs?.nftFloorUnits,
+            porAuditor: contract.docs?.porAuditor,
+            porType: contract.docs?.porType,
+            shutdownDate: contract.docs?.shutdownDate,
           };
         }
       }
@@ -154,30 +164,45 @@ for (let page of targetData) {
 
     // Then make a list of only the proxies that are live
     const proxyList: ResultProxy[] = [];
+    const porProxyList: ResultProxy[] = [];
+    const nftFloorProxyList: ResultProxy[] = [];
     if (contents.proxies) {
       for (let proxyKey of Object.keys(contents.proxies)) {
         const proxy = contents.proxies[proxyKey];
         if (liveContracts[proxy.aggregator] && !proxy.name.includes("Healthcheck")) {
-
-          proxyList.push({
+          let proxyDetails = {
             pair: proxy.name,
-            assetName: liveContracts[proxy.aggregator].assetName || "",
+            assetName: liveContracts[proxy.aggregator].assetName || "-",
             deviationThreshold: liveContracts[proxy.aggregator].deviationThreshold,
             heartbeat: liveContracts[proxy.aggregator].heartbeat,
             decimals: liveContracts[proxy.aggregator].decimals,
             proxy: proxyKey,
             feedCategory: liveContracts[proxy.aggregator].feedCategory || "",
             feedType: liveContracts[proxy.aggregator].feedType || "-",
-          });
+            nftFloorUnits: liveContracts[proxy.aggregator].nftFloorUnits,
+            porAuditor: liveContracts[proxy.aggregator].porAuditor,
+            porType: liveContracts[proxy.aggregator].porType,
+            shutdownDate: liveContracts[proxy.aggregator].shutdownDate,
+          }
+
+          // Create a serpate proxy list for Price Feeds, PoR Feeds, and NFT Floor Feeds
+          if (liveContracts[proxy.aggregator].porType) {
+            porProxyList.push(proxyDetails);
+          }else if (liveContracts[proxy.aggregator].nftFloorUnits) {
+            nftFloorProxyList.push(proxyDetails);
+          }else {
+            proxyList.push(proxyDetails);
+          }
+          
         }
       }
     } else {
       for (let contractKey of Object.keys(contents.contracts)) {
         const contract = contents.contracts[contractKey];
         if (!contract.docs?.hidden && contract.status === 'live') {
-          proxyList.push({
+          let proxyDetails = {
             pair: contract.name,
-            assetName: contract.docs?.assetName || "",
+            assetName: contract.docs?.assetName || "-",
             deviationThreshold: liveContracts[contractKey]?.deviationThreshold,
             heartbeat: liveContracts[contractKey]?.heartbeat,
             decimals: liveContracts[contractKey]?.decimals,
@@ -185,19 +210,55 @@ for (let page of targetData) {
             proxy: contract.transmissionsAccount || contractKey,
             feedCategory: contract.docs?.feedCategory || "",
             feedType: contract.docs?.feedType || "-",
-          });
+            nftFloorUnits: contract.docs?.nftFloorUnits,
+            porAuditor: contract.docs?.porAuditor,
+            porType: contract.docs?.porType,
+            shutdownDate: contract.docs?.shutdownDate,
+          }
+          
+          // Create a serpate proxy list for PoR feeds and NFT floor feeds
+          if (contract.docs?.porType) {
+            porProxyList.push(proxyDetails);
+          }else if (contract.docs?.nftFloorUnits) {
+            nftFloorProxyList.push(proxyDetails);
+          }else {
+            proxyList.push(proxyDetails);
+          }
         }
       }
     }
-    // Save the data into our final output
-    proxyList.sort((a, b) => (a.pair < b.pair ? -1 : 1));
 
-    finalResult[page.page].networks.push({
-      name: network.name,
-      url: network.url,
-      networkType: network.networkType,
-      proxies: proxyList,
-    });
+    // Save the data into our final output
+    if (proxyList.length){
+      proxyList.sort((a, b) => (a.pair < b.pair ? -1 : 1));
+      finalResult[page.page].networks.push({
+        name: network.name,
+        url: network.url,
+        dataType: "default",
+        networkType: network.networkType,
+        proxies: proxyList,
+      });
+    }
+    if (porProxyList.length){
+      porProxyList.sort((a, b) => (a.pair < b.pair ? -1 : 1));
+      finalResult[page.page].networks.push({
+        name: network.name,
+        url: network.url,
+        dataType: "por",
+        networkType: network.networkType,
+        proxies: porProxyList,
+      });
+    }
+    if (nftFloorProxyList.length){
+      nftFloorProxyList.sort((a, b) => (a.pair < b.pair ? -1 : 1));
+      finalResult[page.page].networks.push({
+        name: network.name,
+        url: network.url,
+        dataType: "nftFloor",
+        networkType: network.networkType,
+        proxies: nftFloorProxyList,
+      });
+    }
   }
 }
 

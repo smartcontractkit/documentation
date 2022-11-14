@@ -1,4 +1,4 @@
-**Table of Contents**
+**Topics**
 
 - [Example](#example)
 - [Response Types](#response-types)

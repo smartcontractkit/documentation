@@ -1,7 +1,7 @@
 function getLatestPrice() {
   document.getElementById('get-price-field').value = 'loading...'
   const web3 = new Web3(
-    'https://kovan.infura.io/v3/34ed41c4cf28406885f032930d670036'
+    'https://rpc.ankr.com/eth_goerli'
   )
   const aggregatorV3InterfaceABI = [
     {
@@ -52,7 +52,7 @@ function getLatestPrice() {
       type: 'function',
     },
   ]
-  const addr = '0x9326BFA02ADD2366b30bacB125260Af641031331'
+  const addr = '0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e'
   const priceFeed = new web3.eth.Contract(aggregatorV3InterfaceABI, addr)
 
   priceFeed.methods
