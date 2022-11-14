@@ -28,7 +28,7 @@ You can find a list of release notes for Chainlink nodes in the [smartcontractki
 ### Changed
 
 - The default maximum gas price on most networks is now effectively unlimited.
-  - Chainlink will bump as high as necessary to get a transaction included. [Automatic connectivity detection](#automatic_connectivity_detection) prevents excessive bumping when there is a connectivity failure.
+  - Chainlink will bump as high as necessary to get a transaction included. [Automatic connectivity detection](#automatic-connectivity-detection) prevents excessive bumping when there is a connectivity failure.
   - If you want to change this, manually set the [`ETH_MAX_GAS_PRICE_WEI` environment variable](/docs/configuration-variables/#eth_max_gas_price_wei).
 - If the `EVMChainID` is not set explicitly in the job spec for a new OCR job, the field is now automatically added with a default chain ID.
   - Old OCR jobs missing `EVMChainID` continue to run on any chain that the [`ETH_CHAIN_ID` variable](/docs/configuration-variables/#eth_chain_id) is set to (or the first chain if it not set). This can be changed after a restart.
