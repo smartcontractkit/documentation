@@ -1,5 +1,4 @@
 /** @jsxImportSource preact */
-import h from "preact"
 
 export const VideoPlayerIcon = () => {
   return (

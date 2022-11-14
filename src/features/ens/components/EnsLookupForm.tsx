@@ -3,7 +3,7 @@ import { EnsOptions } from "../data"
 import { useState } from "preact/hooks"
 import styles from "./EnsLookupForm.module.css"
 import { getWeb3Provider } from "@features/utils"
-import button from "@chainlink/design-system/button.module.css"
+import React from "react"
 
 export const EnsLookupForm = () => {
   const [ensResult, setEnsResult] = useState<
@@ -67,8 +67,8 @@ export const EnsLookupForm = () => {
         <label>Pair:</label>
         <select
           class={styles.input}
-          onChange={(e: any) => {
-            getDropdownAddress(e.target.value)
+          onChange={(event: any) => {
+            getDropdownAddress(event.target.value)
           }}
         >
           <option value="">Choose Pair</option>

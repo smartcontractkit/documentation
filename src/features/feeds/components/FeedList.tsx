@@ -1,5 +1,4 @@
 /** @jsxImportSource preact */
-import h from "preact"
 import { useEffect, useState } from "preact/hooks"
 import { MainnetTable, TestnetTable } from "./Tables"
 import feedList from "./FeedList.module.css"
@@ -8,13 +7,11 @@ import button from "@chainlink/design-system/button.module.css"
 import { updateTableOfContents } from "~/components/RightSidebar/TableOfContents/tocStore"
 import { ALL_CHAINS, Chain, CHAINS, SOLANA_CHAINS } from "../data/chains"
 import { useGetChainMetadata } from "./useGetChainMetadata"
-import { Aside } from "~/components"
 import { ChainMetadata } from "../api"
 import useQueryString from "~/hooks/useQueryString"
 
 export type DataFeedType = "default" | "por" | "nftFloor"
 export const FeedList = ({
-  initialNetwork = "ethereum",
   dataFeedType = "default",
   ecosystem = "",
   initialCache,

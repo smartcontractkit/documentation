@@ -2,8 +2,8 @@ import EleventyFetch from "@11ty/eleventy-fetch"
 import { ChainMetadata } from "."
 import { Chain } from "../data/chains"
 
-export const getServerSideChainMetadata = async (chains: Chain[]): Promise<ChainMetadata | any> => {
-  const cache = {}
+export const getServerSideChainMetadata = async (chains: Chain[]): Promise<ChainMetadata> => {
+  const cache = {} as ChainMetadata
 
   chains.forEach(async (chain) => {
     const requests = chain.networks.map((nw) =>

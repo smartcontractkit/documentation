@@ -1,5 +1,6 @@
+/** @jsxImportSource preact */
+
 import { useState } from "preact/hooks"
-import h from "preact"
 import "./NewsletterCTA.css"
 import button from "@chainlink/design-system/button.module.css"
 import { clsx } from "~/lib"

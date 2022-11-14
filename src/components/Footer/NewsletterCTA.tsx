@@ -1,4 +1,4 @@
-import h from "preact"
+/** @jsxImportSource preact */
 
 import "./NewsletterCTA.css"
 import { NewsletterSignupForm } from "./NewsletterSignupForm"

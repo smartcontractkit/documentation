@@ -1,5 +1,4 @@
 /** @jsxImportSource preact */
-import h from "preact"
 import { clsx } from "~/lib"
 
 import { VideoPlayerIcon } from "../assets/VideoPlayerIcon"
