@@ -239,13 +239,13 @@ If you completed the full [steps to set up your environment](#set-up-your-enviro
 1. Modify the `ws_urls` under `networks.evm.overrides.goerli` with your specified RPC endpoint URL. Optionally, you can create additional overrides for different networks.
 1. Start running a soak test `bif integration test ./example.toml`.
 1. The interactive menu opens. Select your desired:
-   1. test suite: Only `OCR` is available for the moment.
-   1. test: Only `EVMSoak` is available for the moment.
-   1. network settings (see your `TOML` config): `evm` .
-   1. network override (see your `TOML` config): `goerli`.
-   1. test settings (see your `TOML` config): v1-9-0.
-   1. test override (see your `TOML` config): shorter-test.
-   1. cluster to run on.
+   1. Test suite: Only `OCR` is available for the moment.
+   1. Test: Only `EVMSoak` is available for the moment.
+   1. Network settings (see your `TOML` config): `evm` .
+   1. Network override (see your `TOML` config): `goerli`.
+   1. Test settings (see your `TOML` config): v1-9-0.
+   1. Test override (see your `TOML` config): shorter-test.
+   1. The cluster to run on.
 1. While your test is running, view your local Grafana instance at `localhost:3000` to see test metrics.
 1. Check node logs: `bif integration logs [--level LOG_LEVEL]`
 
