@@ -23,7 +23,7 @@ You can find a list of release notes for Chainlink nodes in the [smartcontractki
   - [AUDIT_LOGS_FORWARDER_URL](/docs/configuration-variables/#audit_logs_forwarder_url)
   - [AUDIT_LOGS_FORWARDER_HEADERS](/docs/configuration-variables/#audit_logs_forwarder_headers)
   - [AUDIT_LOGGER_JSON_WRAPPER_KEY](/docs/configuration-variables/#audit_logger_json_wrapper_key)
-- Added [automatic connectivity detection](#automatic_connectivity_detection) to automatically detect if there is a transaction propagation/connectivity issue and prevent bumping in these cases on EVM chains.
+- Added [automatic connectivity detection](#automatic-connectivity-detection) to automatically detect if there is a transaction propagation/connectivity issue and prevent bumping in these cases on EVM chains.
 
 ### Changed
 
