@@ -8,34 +8,9 @@ export interface ROUND_DATA_RESPONSE {
   answeredInRound: BigNumber
 }
 
-export interface Addresses {
-  title: string
-  networkStatusURL: string
-  networks: Network[]
-}
-
-export interface Network {
-  name: string
-  url: string
-  networkType: NetworkType
-  proxies: Proxy[]
-}
-
 enum NetworkType {
   Mainnet = "mainnet",
   Testnet = "testnet",
-}
-
-interface Proxy {
-  pair: string
-  assetName: string
-  deviationThreshold: number | null
-  heartbeat: string
-  decimals: number
-  proxy: string
-  feedCategory: FeedCategory
-  feedType: ProxyFeedType
-  shutdownDate?: string
 }
 
 enum FeedCategory {
@@ -53,4 +28,29 @@ enum ProxyFeedType {
   Empty = "-",
   Equities = "Equities",
   Forex = "Forex",
+}
+
+interface Proxy {
+  pair: string
+  assetName: string
+  deviationThreshold: number | null
+  heartbeat: string
+  decimals: number
+  proxy: string
+  feedCategory: FeedCategory
+  feedType: ProxyFeedType
+  shutdownDate?: string
+}
+
+export interface Network {
+  name: string
+  url: string
+  networkType: NetworkType
+  proxies: Proxy[]
+}
+
+export interface Addresses {
+  title: string
+  networkStatusURL: string
+  networks: Network[]
 }

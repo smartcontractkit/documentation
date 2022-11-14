@@ -86,14 +86,14 @@ const finalResult: {
 } = {}
 
 // Generate the data we need to serve
-for (let page of targetData) {
+for (const page of targetData) {
   finalResult[page.page] = {
     title: page.title,
     networkStatusUrl: page.networkStatusUrl,
     networks: [],
   }
 
-  for (let network of page.networks) {
+  for (const network of page.networks) {
     const contents = load(network.source)
 
     // First find all the live contracts
@@ -111,14 +111,14 @@ for (let page of targetData) {
         shutdownDate?: string
       }
     } = {}
-    for (let contractKey of Object.keys(contents.contracts)) {
+    for (const contractKey of Object.keys(contents.contracts)) {
       const contract = contents.contracts[contractKey]
       if (
         (contract.status === "testnet-priority" || contract.status === "live") &&
         // Only include if the key does not exist or it's not true
         !contract.docs?.hidden
       ) {
-        let threshold: number = 0
+        let threshold = 0
         // Handle Threshold defined in the config object
         if (
           contract.config &&
@@ -166,10 +166,10 @@ for (let page of targetData) {
     const porProxyList: ResultProxy[] = []
     const nftFloorProxyList: ResultProxy[] = []
     if (contents.proxies) {
-      for (let proxyKey of Object.keys(contents.proxies)) {
+      for (const proxyKey of Object.keys(contents.proxies)) {
         const proxy = contents.proxies[proxyKey]
         if (liveContracts[proxy.aggregator] && !proxy.name.includes("Healthcheck")) {
-          let proxyDetails = {
+          const proxyDetails = {
             pair: proxy.name,
             assetName: liveContracts[proxy.aggregator].assetName || "-",
             deviationThreshold: liveContracts[proxy.aggregator].deviationThreshold,
@@ -195,10 +195,10 @@ for (let page of targetData) {
         }
       }
     } else {
-      for (let contractKey of Object.keys(contents.contracts)) {
+      for (const contractKey of Object.keys(contents.contracts)) {
         const contract = contents.contracts[contractKey]
         if (!contract.docs?.hidden && contract.status === "live") {
-          let proxyDetails = {
+          const proxyDetails = {
             pair: contract.name,
             assetName: contract.docs?.assetName || "-",
             deviationThreshold: liveContracts[contractKey]?.deviationThreshold,

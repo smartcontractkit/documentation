@@ -58,7 +58,7 @@ export const getHistoricalPriceForm = () => {
     const priceFeed = new web3.eth.Contract(aggregatorV3InterfaceABI, addr)
 
     // Valid roundId must be known. They are NOT incremental.
-    let validId = BigInt("18446744073709554177")
+    const validId = BigInt("18446744073709554177")
     priceFeed.methods
       .getRoundData(validId)
       .call()

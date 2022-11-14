@@ -1,14 +1,13 @@
 import React from "react"
 import headerbanner from "@chainlink/design-system/headerbanner.module.css"
 
+type BannerType = "info" | "success" | "warning" | "danger"
 export type BannerContent = {
   description: string
   type: BannerType
   linkText?: string
   linkUrl?: string
 }
-
-type BannerType = "info" | "success" | "warning" | "danger"
 
 const bannerTypes: Record<BannerType, { primaryColour: string; alertColour: string; alertText: string }> = {
   info: {

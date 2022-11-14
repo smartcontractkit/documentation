@@ -25,11 +25,11 @@ export const Cube = ({
       id={cubeStyles.cubeWrapper}
       style={
         {
-          ["--bg-color"]: backgroundColor,
-          ["--fill-color"]: color,
-          ["--size"]: `${size}px`,
-          ["--size-multiplier"]: CONTAINER_SIZE_MULTIPLIER,
-          ["--radius-amount"]: BORDER_RADIUS_DIVISOR,
+          "--bg-color": backgroundColor,
+          "--fill-color": color,
+          "--size": `${size}px`,
+          "--size-multiplier": CONTAINER_SIZE_MULTIPLIER,
+          "--radius-amount": BORDER_RADIUS_DIVISOR,
         } as CubeCSSProperties
       }
     >

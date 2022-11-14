@@ -14,7 +14,7 @@ export const NewsletterSignupForm = () => {
   const [isSuccess, setIsSuccess] = useState(false)
   function onSubmit(e) {
     e.preventDefault()
-    var email = new FormData(e.target).get("Email")
+    const email = new FormData(e.target).get("Email")
     setIsLoading(true)
     fetch(NEWSLETTER_URL, {
       mode: "no-cors",
@@ -35,6 +35,7 @@ export const NewsletterSignupForm = () => {
         setIsSuccess(true)
       })
       .catch((err) => {
+        console.error(err)
         setIsError(true)
       })
       .finally(() => {

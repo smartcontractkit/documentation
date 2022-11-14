@@ -139,7 +139,7 @@ const switchToChain = async (chainId: string, ethereum: MetaMaskInpageProvider) 
   validateEthereumApi(ethereum)
   await ethereum.request({
     method: "wallet_switchEthereumChain",
-    params: [{ chainId: chainId }],
+    params: [{ chainId }],
   })
   console.log(`Succesfully switched to chain ${chainId} in metamask`)
 }
@@ -161,7 +161,7 @@ const addChainToWallet = async (chainId: string, ethereum: MetaMaskInpageProvide
   }
 
   const params: AddEthereumChainParameter = {
-    chainId: chainId,
+    chainId,
     chainName: chain.name,
     nativeCurrency: chain?.nativeCurrency,
     blockExplorerUrls:
@@ -230,7 +230,7 @@ try {
   // Support only Metamask extension for now.
   if (!ethereum || !ethereum.isMetaMask) throw Error()
 
-  let provider = new ethers.providers.Web3Provider(ethereum as any, "any")
+  const provider = new ethers.providers.Web3Provider(ethereum as any, "any")
 
   let detectedChainId: string | number | null = (await ethereum.request({
     method: "eth_chainId",
@@ -253,7 +253,6 @@ try {
     chainFromSwitch = toHex(parseInt(evt.detail?.chainId))
     if (!isChainIdFormatValid(chainFromSwitch)) {
       console.error(`Something went wrong. format of chainFromSwitch '${chainFromSwitch}' not hexString`)
-      return
     }
   })
 

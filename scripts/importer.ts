@@ -12,7 +12,7 @@ function prepareFileSystem() {
 const getAllFiles = function (dirPath: string) {
   const files = fs.readdirSync(dirPath)
 
-  let arrayOfFiles = []
+  const arrayOfFiles = []
 
   files.forEach(function (file) {
     if (fs.statSync(dirPath + "/" + file).isDirectory()) {
@@ -146,7 +146,7 @@ const replaceRemixCode = (fileAsLines: string[]) => {
 
     if (currLine.indexOf("{% include 'samples/") > -1) {
       // remove triple-tilde from previous line and extract language code
-      let languageCode = undefined
+      let languageCode
       const prevLine = fileLines[i - 1]
       if (prevLine.indexOf("```") === 0) {
         languageCode = prevLine.replace("```", "").split(" ")[0]
@@ -211,7 +211,7 @@ function writeToDestination(listOfLines: string[], fileName?: string) {
 
   const newPath = `${process.cwd()}/temp/${parsedFileName}`
 
-  let tempPath = newPath.split("/")
+  const tempPath = newPath.split("/")
   tempPath.pop()
 
   const targetDir = tempPath.join("/")
@@ -223,7 +223,7 @@ function writeToDestination(listOfLines: string[], fileName?: string) {
 function writeRedirects(redirects: Redirect[]) {
   const newPath = `${process.cwd()}/temp/redirects.json`
 
-  let tempPath = newPath.split("/")
+  const tempPath = newPath.split("/")
   tempPath.pop()
 
   const targetDir = tempPath.join("/")
@@ -250,7 +250,7 @@ function importFiles() {
 
   filePaths.forEach(function (filePath) {
     const fileMeta = {
-      filePath: filePath,
+      filePath,
       pathInProject: filePath.split(path.join(process.cwd(), "../"))[1],
       fileName: path.basename(filePath),
       content: convertToListOfStrings(filePath),

@@ -1,5 +1,14 @@
 import { ChainMetadata } from "../api"
 
+type ChainTags = ("default" | "solana" | "proofOfReserve" | "nftFloorPrice")[]
+export interface ChainNetwork {
+  name: string
+  explorerUrl: string
+  networkType: "mainnet" | "testnet"
+  rddUrl?: string
+  metadata?: ChainMetadata[]
+  tags?: ChainTags
+}
 export interface Chain {
   page: string
   title: string
@@ -9,17 +18,6 @@ export interface Chain {
   label?: string
   tags?: ChainTags
 }
-
-export interface ChainNetwork {
-  name: string
-  explorerUrl: string
-  networkType: "mainnet" | "testnet"
-  rddUrl?: string
-  metadata?: ChainMetadata[]
-  tags?: ChainTags
-}
-
-type ChainTags = ("default" | "solana" | "proofOfReserve" | "nftFloorPrice")[]
 
 export const CHAINS: Chain[] = [
   {

@@ -6,10 +6,10 @@ const variable = {
   lookbehind: !0,
   inside: {
     comment: {
-      pattern: /[\$\(\)\.]/,
+      pattern: /[$().]/,
     },
     keyword: {
-      pattern: /[^\$\(\)\.]/,
+      pattern: /[^$().]/,
     },
   },
 }
