@@ -61,20 +61,21 @@ I'm [following this guide](/getting-started/deploy-your-first-contract/), and I'
 
 Here is the code:
 
-```javascript
+```solidity
 pragma solidity 0.6.7;
 
 contract HelloWorld {
-   string public message;
+  string public message;
 
-   constructor(string memory initialMessage) {
-       message = initialMessage;
-   }
+  constructor(string memory initialMessage) {
+    message = initialMessage;
+  }
 
-   function updateMessage(string memory newMessage) public {
-       message = newMessage;
-   }
+  function updateMessage(string memory newMessage) public {
+    message = newMessage;
+  }
 }
+
 ```
 
 And the error I'm getting is as follows:

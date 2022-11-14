@@ -18,7 +18,7 @@ Be aware of the quality of the data that you use. [Learn more about making respo
 
 | Data Category | Name                                                                                             | Supported Blockchains        |
 | ------------- | ------------------------------------------------------------------------------------------------ | ---------------------------- |
-| DNS Lookup    | [DNS Ownership Oracle](/any-api/data-providers/dns-ownership/)                              | Ethereum, BNB Chain, Polygon |
+| DNS Lookup    | [DNS Ownership Oracle](/any-api/data-providers/dns-ownership/)                                   | Ethereum, BNB Chain, Polygon |
 | Equities      | [dxFeed Price Oracle](https://market.link/nodes/dxFeed/integrations)                             | Ethereum, BNB Chain          |
 | Equities      | [Finage Global Market Data Oracle](https://market.link/nodes/Finage/integrations)                | Ethereum, BNB Chain          |
 | Equities      | [Tiingo EOD Stock Price Oracle](https://market.link/nodes/Tiingo/integrations)                   | Ethereum, BNB Chain          |
@@ -31,4 +31,4 @@ Be aware of the quality of the data that you use. [Learn more about making respo
 | Sports        | [SportMonks Sports Data Oracle](https://market.link/nodes/SportMonks/integrations)               | Ethereum, BNB Chain          |
 | Sports        | [SportsDataIO Oracle](https://market.link/nodes/SportsDataIO/integrations)                       | Ethereum, Polygon            |
 | Sports        | [TheRunDown Oracle Node](https://market.link/nodes/TheRundown/integrations)                      | Ethereum, Polygon            |
-| Weather       | [Google Weather Oracle](/any-api/data-providers/google-weather/)                            | Ethereum                     |
+| Weather       | [Google Weather Oracle](/any-api/data-providers/google-weather/)                                 | Ethereum                     |

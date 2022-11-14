@@ -4,20 +4,11 @@ import qs from "query-string"
 const setQueryStringWithoutPageReload = (qsValue) => {
   if (!window) return
 
-  const newurl =
-    window.location.protocol +
-    "//" +
-    window.location.host +
-    window.location.pathname +
-    qsValue
+  const newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + qsValue
 
   window.history.pushState({ path: newurl }, "", newurl)
 }
-const setQueryStringValue = (
-  key,
-  value,
-  queryString = window.location.search
-) => {
+const setQueryStringValue = (key, value, queryString = window.location.search) => {
   if (!window) return
 
   const values = qs.parse(queryString)

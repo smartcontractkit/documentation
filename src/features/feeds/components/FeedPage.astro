@@ -13,11 +13,7 @@ import { ALL_CHAINS, CHAINS, SOLANA_CHAINS } from "../data/chains"
 
 const { initialNetwork, ecosystem, dataFeedType } = Astro.props
 
-const initialCache = await getServerSideChainMetadata([
-  ...CHAINS,
-  ...SOLANA_CHAINS,
-  ...ALL_CHAINS
-])
+const initialCache = await getServerSideChainMetadata([...CHAINS, ...SOLANA_CHAINS, ...ALL_CHAINS])
 ---
 
 {
@@ -25,8 +21,7 @@ const initialCache = await getServerSideChainMetadata([
     <>
       <p>
         To learn how to use these feeds, see the{" "}
-        <a href="/solana/data-feeds/using-data-feeds-off-chain">Solana Examples</a> for
-        Consuming Data Feeds.
+        <a href="/solana/data-feeds/using-data-feeds-off-chain">Solana Examples</a> for Consuming Data Feeds.
       </p>
       <p>
         To learn how to obtain SOL tokens on the Solana Devnet, see the{" "}
@@ -40,77 +35,65 @@ const initialCache = await getServerSideChainMetadata([
   ) : ecosystem === "deprecating" ? (
     <>
       <p>
-        The smart contract ecosystem is constantly evolving. As a result,{" "}
-        Data Feeds within the Chainlink ecosystem are continuously evaluated{" "}
-        for their usage and economic viability across all the blockchains{" "}
-        and layer-2 networks they are deployed on.
+        The smart contract ecosystem is constantly evolving. As a result, Data Feeds within the Chainlink ecosystem are
+        continuously evaluated for their usage and economic viability across all the blockchains and layer-2 networks
+        they are deployed on.
       </p>
       <p>
-        Data Feeds without publicly known active users may be scheduled for{" "}
-        deprecation. Doing so not only helps preserve blockchains as public{" "}
-        goods by optimizing blockspace usage, but it helps reduce unnecessary{" "}
-        costs incurred by Chainlink node operators. This process is part of{" "}
-        a broader ecosystem shift towards Chainlink Economics 2.0, designed to{" "}
-        maximize the adoption of the Chainlink protocol while optimizing for{" "}
-        cost-efficiency and long-term economic sustainability. Over time, new{" "}
-        Data Feeds may be launched or relocated to alternative{" "}
+        Data Feeds without publicly known active users may be scheduled for deprecation. Doing so not only helps
+        preserve blockchains as public goods by optimizing blockspace usage, but it helps reduce unnecessary costs
+        incurred by Chainlink node operators. This process is part of a broader ecosystem shift towards Chainlink
+        Economics 2.0, designed to maximize the adoption of the Chainlink protocol while optimizing for cost-efficiency
+        and long-term economic sustainability. Over time, new Data Feeds may be launched or relocated to alternative{" "}
         blockchains/layer-2s that better reflect current user demand.
       </p>
       <p>
-        For status updates regarding Data Feeds, users should join the{" "}
-        official Chainlink Discord and subscribe to the{" "}
-        <a href=https://discord.gg/Dqy5N9UbsR>data-feeds-user-notifications channel</a>.
+        For status updates regarding Data Feeds, users should join the official Chainlink Discord and subscribe to the{" "}
+        <a href="https://discord.gg/Dqy5N9UbsR">data-feeds-user-notifications channel</a>.
       </p>
-      <p>
-        Users with additional questions are encouraged to reach out here.
-      </p>
+      <p>Users with additional questions are encouraged to reach out here.</p>
       <p>
         A list of data feeds designated for deprecation along with their corresponding shutdown date can be found below.
       </p>
     </>
   ) : (
     <>
-      {
-        dataFeedType === "nftFloor" ? (
+      {dataFeedType === "nftFloor" ? (
+        <>
           <p>
             To learn how to use these feeds, see the{" "}
-            <a href="/data-feeds/nft-floor-price">
-              NFT Floor Pricing Feeds documentation.
-            </a>
+            <a href="/data-feeds/nft-floor-price">NFT Floor Pricing Feeds documentation.</a>
           </p>
           <p>
-            For LINK token and Faucet details, see the{" "}
-            <a href="/docs/link-token-contracts/">LINK Token Contracts</a> page.
+            For LINK token and Faucet details, see the <a href="/docs/link-token-contracts/">LINK Token Contracts</a>{" "}
+            page.
           </p>
-        ) : dataFeedType === "por" ? (
+        </>
+      ) : dataFeedType === "por" ? (
+        <>
           <p>
             To learn how to use these feeds, see the{" "}
-            <a href="/data-feeds/proof-of-reserve/">
-              Proof Of Reserve Feeds documentation.
-            </a>
+            <a href="/data-feeds/proof-of-reserve/">Proof Of Reserve Feeds documentation.</a>
           </p>
           <p>
-            For LINK token and Faucet details, see the{" "}
-            <a href="/docs/link-token-contracts/">LINK Token Contracts</a> page.
+            For LINK token and Faucet details, see the <a href="/docs/link-token-contracts/">LINK Token Contracts</a>{" "}
+            page.
           </p>
           <FeedsCommonCallout callout="quality" />
-        ) : (
-          <>
-            <p>
-              To learn how to use these feeds, see the{" "}
-              <a href="/data-feeds/price-feeds/">
-                Using Price Feeds guide.
-              </a>
-            </p>
-            <p>
-              For LINK token and Faucet details, see the{" "}
-              <a href="/docs/link-token-contracts/">LINK Token Contracts</a> page.
-            </p>
-            <FeedsCommonCallout callout="etfBestPractices" />
-            <FeedsCommonCallout callout="quality" />
-          </>
-        )
-      }
+        </>
+      ) : (
+        <>
+          <p>
+            To learn how to use these feeds, see the <a href="/data-feeds/price-feeds/">Using Price Feeds guide.</a>
+          </p>
+          <p>
+            For LINK token and Faucet details, see the <a href="/docs/link-token-contracts/">LINK Token Contracts</a>{" "}
+            page.
+          </p>
+          <FeedsCommonCallout callout="etfBestPractices" />
+          <FeedsCommonCallout callout="quality" />
+        </>
+      )}
     </>
   )
 }
@@ -125,13 +108,9 @@ const initialCache = await getServerSideChainMetadata([
 
 <Aside type="caution">
   <p>
-    Please be careful with the feeds used by your smart contracts. The feeds
-    listed in our official documentation have been reviewed; feeds built for
-    custom deployments by other community members might have additional risks.
-    Please do close diligence on your feeds before implementing them in your
-    contracts.{" "}
-    <a href="/data-feeds/selecting-data-feeds">
-      Learn more about making responsible data quality decisions.</a
-    >
+    Please be careful with the feeds used by your smart contracts. The feeds listed in our official documentation have
+    been reviewed; feeds built for custom deployments by other community members might have additional risks. Please do
+    close diligence on your feeds before implementing them in your contracts.{" "}
+    <a href="/data-feeds/selecting-data-feeds"> Learn more about making responsible data quality decisions.</a>
   </p>
 </Aside>

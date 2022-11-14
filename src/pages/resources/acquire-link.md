@@ -4,10 +4,7 @@ section: ethereum
 date: Last Modified
 title: "Acquire testnet LINK"
 permalink: "docs/acquire-link/"
-whatsnext:
-  {
-    "Deploy your first contract": "/getting-started/deploy-your-first-contract/",
-  }
+whatsnext: { "Deploy your first contract": "/getting-started/deploy-your-first-contract/" }
 ---
 
 The Getting Started guides show you how to send ETH on the Goerli testnet, but some contracts might require you to use LINK token instead. This page shows you how to obtain testnet LINK and send it to your MetaMask wallet.

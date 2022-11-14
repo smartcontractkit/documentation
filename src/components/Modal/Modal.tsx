@@ -28,12 +28,7 @@ export function Modal({
           <FocusTrap>
             <div>
               <div className={styles.overlay} onClick={onClose}></div>
-              <div
-                id={modalId}
-                className={clsx(styles.modal)}
-                tabIndex={0}
-                style={style}
-              >
+              <div id={modalId} className={clsx(styles.modal)} tabIndex={0} style={style}>
                 {children}
               </div>
             </div>

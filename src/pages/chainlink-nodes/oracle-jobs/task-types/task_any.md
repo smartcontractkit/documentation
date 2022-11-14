@@ -34,4 +34,3 @@ fetch3 -> pick_any
 ```
 
 `pick_any` will return either the result of `fetch1`, `fetch2`, or `fetch3`.
-

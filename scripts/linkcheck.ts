@@ -25,11 +25,7 @@ server.stdout.on("data", (data) => {
       program = "linkcheck-win"
     }
     console.log(__dirname, process.cwd())
-    const args = [
-      ":3000",
-      "--skip-file",
-      `${process.cwd()}/scripts/ignoredfiles.txt`,
-    ]
+    const args = [":3000", "--skip-file", `${process.cwd()}/scripts/ignoredfiles.txt`]
     if (external) {
       args.push("-e")
       console.log("Also checking external links.")

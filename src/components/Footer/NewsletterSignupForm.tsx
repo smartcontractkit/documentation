@@ -79,8 +79,7 @@ export const NewsletterSignupForm = () => {
       ) : (
         <div className="form-success-message w-form-done">
           <div className="subscribe-success-message-text">
-            Thank you for signing up! Please check your inbox to confirm your
-            subscription.
+            Thank you for signing up! Please check your inbox to confirm your subscription.
           </div>
           <div className="subscribe-success-social">
             <a
@@ -89,13 +88,7 @@ export const NewsletterSignupForm = () => {
               target="_blank"
               rel="noopener"
             >
-              <img
-                src="/images/twitter.svg"
-                loading="lazy"
-                width="24"
-                height="24"
-                alt="Twitter"
-              />
+              <img src="/images/twitter.svg" loading="lazy" width="24" height="24" alt="Twitter" />
             </a>
             <a
               href="https://www.youtube.com/channel/UCnjkrlqaWEBSnKZQ71gdyFA"
@@ -103,13 +96,7 @@ export const NewsletterSignupForm = () => {
               target="_blank"
               rel="noopener"
             >
-              <img
-                src="/images/youtube.svg"
-                loading="lazy"
-                width="24"
-                height="24"
-                alt="YouTube"
-              />
+              <img src="/images/youtube.svg" loading="lazy" width="24" height="24" alt="YouTube" />
             </a>
             <a
               href="https://stackoverflow.com/questions/tagged/chainlink"
@@ -117,13 +104,7 @@ export const NewsletterSignupForm = () => {
               target="_blank"
               rel="noopener"
             >
-              <img
-                src="/images/stackoverflow.svg"
-                loading="lazy"
-                width="24"
-                height="24"
-                alt="Stack Overflow"
-              />
+              <img src="/images/stackoverflow.svg" loading="lazy" width="24" height="24" alt="Stack Overflow" />
             </a>
             <a
               href="https://ethereum.stackexchange.com/questions/tagged/chainlink"
@@ -145,13 +126,7 @@ export const NewsletterSignupForm = () => {
               target="_blank"
               rel="noopener"
             >
-              <img
-                src="/images/discord.svg"
-                loading="lazy"
-                width="24"
-                height="24"
-                alt="Discord"
-              />
+              <img src="/images/discord.svg" loading="lazy" width="24" height="24" alt="Discord" />
             </a>
             <a
               href="https://t.me/chainlinkofficial"
@@ -159,13 +134,7 @@ export const NewsletterSignupForm = () => {
               target="_blank"
               rel="noopener"
             >
-              <img
-                src="/images/telegram.svg"
-                loading="lazy"
-                width="24"
-                height="24"
-                alt="Telegram"
-              />
+              <img src="/images/telegram.svg" loading="lazy" width="24" height="24" alt="Telegram" />
             </a>
             <a
               href="https://blog.chain.link/chainlink-chinese-communities/"
@@ -173,13 +142,7 @@ export const NewsletterSignupForm = () => {
               target="_blank"
               rel="noopener"
             >
-              <img
-                src="/images/wechat.svg"
-                loading="lazy"
-                width="24"
-                height="24"
-                alt="WeChat"
-              />
+              <img src="/images/wechat.svg" loading="lazy" width="24" height="24" alt="WeChat" />
             </a>
             <a
               href="https://www.reddit.com/r/Chainlink/"
@@ -187,13 +150,7 @@ export const NewsletterSignupForm = () => {
               target="_blank"
               rel="noopener"
             >
-              <img
-                src="/images/reddit.svg"
-                loading="lazy"
-                width="24"
-                height="24"
-                alt="Reddit"
-              />
+              <img src="/images/reddit.svg" loading="lazy" width="24" height="24" alt="Reddit" />
             </a>
           </div>
         </div>
@@ -201,8 +158,7 @@ export const NewsletterSignupForm = () => {
       {isError && (
         <div className="form-error-message w-form-fail">
           <div className="subscribe-text-block">
-            Oops! Something went wrong while submitting the form. Please try
-            again
+            Oops! Something went wrong while submitting the form. Please try again
           </div>
         </div>
       )}

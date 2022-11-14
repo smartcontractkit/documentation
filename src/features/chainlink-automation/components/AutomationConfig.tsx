@@ -37,9 +37,7 @@ export const AutomationConfig = ({
               <td />
             ) : (
               <td>
-                <a href={getUrl(registryAddress)}>
-                  {registryAddress.toLocaleString()}
-                </a>
+                <a href={getUrl(registryAddress)}>{registryAddress.toLocaleString()}</a>
               </td>
             )}
           </tr>
@@ -55,57 +53,27 @@ export const AutomationConfig = ({
           </tr>
           <tr>
             <td>Payment Premium %</td>
-            {!paymentPremiumPPB ? (
-              <td />
-            ) : (
-              <td>
-                {Math.round(
-                  parseInt(paymentPremiumPPB.toString(), 10) / 10000000
-                )}
-              </td>
-            )}
+            {!paymentPremiumPPB ? <td /> : <td>{Math.round(parseInt(paymentPremiumPPB.toString(), 10) / 10000000)}</td>}
           </tr>
           <tr>
             <td>Block Count Per Turn</td>
-            {!blockCountPerTurn ? (
-              <td />
-            ) : (
-              <td>{blockCountPerTurn.toLocaleString()}</td>
-            )}
+            {!blockCountPerTurn ? <td /> : <td>{blockCountPerTurn.toLocaleString()}</td>}
           </tr>
           <tr>
             <td>Check Gas Limit</td>
-            {!checkGasLimit ? (
-              <td />
-            ) : (
-              <td>{checkGasLimit.toLocaleString()}</td>
-            )}
+            {!checkGasLimit ? <td /> : <td>{checkGasLimit.toLocaleString()}</td>}
           </tr>
           <tr>
             <td>Call Gas Limit</td>
-            {!maxPerformGas ? (
-              <td />
-            ) : (
-              <td>{maxPerformGas.toLocaleString()}</td>
-            )}
+            {!maxPerformGas ? <td /> : <td>{maxPerformGas.toLocaleString()}</td>}
           </tr>
           <tr>
             <td>Gas Ceiling Multiplier</td>
-            {!gasCeilingMultiplier ? (
-              <td />
-            ) : (
-              <td>{gasCeilingMultiplier.toLocaleString()}</td>
-            )}
+            {!gasCeilingMultiplier ? <td /> : <td>{gasCeilingMultiplier.toLocaleString()}</td>}
           </tr>
           <tr>
             <td>Minimum Upkeep Spend (LINK)</td>
-            {!minUpkeepSpend ? (
-              <td />
-            ) : (
-              <td>
-                {ethers.utils.formatEther(BigNumber.from(minUpkeepSpend))}
-              </td>
-            )}
+            {!minUpkeepSpend ? <td /> : <td>{ethers.utils.formatEther(BigNumber.from(minUpkeepSpend))}</td>}
           </tr>
         </tbody>
       </table>

@@ -43,6 +43,7 @@ curl -X 'GET' \
 
 The response should be similar to the following example:
 
+<!-- prettier-ignore -->
 ```json
 {
   "RAW": {

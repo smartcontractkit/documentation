@@ -186,6 +186,7 @@ Your node applies configuration settings using following hierarchy:
   - [JOB_PIPELINE_REAPER_THRESHOLD](#job_pipeline_reaper_threshold)
   - [JOB_PIPELINE_RESULT_WRITE_QUEUE_DEPTH](#job_pipeline_result_write_queue_depth)
 - [OCR](#ocr)
+
   - [FEATURE_OFFCHAIN_REPORTING](#feature_offchain_reporting)
   - [OCR_KEY_BUNDLE_ID](#ocr_key_bundle_id)
   - [OCR_MONITORING_ENDPOINT](#ocr_monitoring_endpoint)
@@ -795,6 +796,7 @@ Setting this environment variable will **COMPLETELY ERASE** your `evm_nodes` tab
 
 A JSON array of node specifications that allows you to configure multiple nodes or chains using an environment variable. This is not compatible with other environment variables that specify the node such as `ETH_URL` or `ETH_SECONDARY_URLS`. Set this variable using a configuration like the following example:
 
+<!-- prettier-ignore -->
 ```json
 EVM_NODES='
 [
@@ -848,6 +850,7 @@ EVM_NODES='
 
 Usage of Docker requires the variable to be formatted as one line with no whitespaces and quotes wrapping it, as follows in the example:
 
+<!-- prettier-ignore -->
 ```bash
 EVM_NODES=[{"name":"primary_0_1","evmChainId":"0","wsUrl":"ws://test1.invalid","sendOnly":false},{"name":"primary_0_2","evmChainId":"0","wsUrl":"ws://test2.invalid","httpUrl":"https://test3.invalid","sendOnly":false},{"name":"primary_1337_1","evmChainId":"1337","wsUrl":"ws://test4.invalid","httpUrl":"http://test5.invalid","sendOnly":false}]
 ```
@@ -1093,6 +1096,7 @@ It is also recommended to configure go-ethereum properly before increasing `ETH_
 
 Relevant settings for geth and forks (such as BSC).
 
+<!-- prettier-ignore -->
 ```toml
 [Eth]
 RPCGasCap = 0 # it is recommended to disable both gas and txfee cap

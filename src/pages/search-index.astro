@@ -18,16 +18,12 @@ const markDownFiles = [...posts, ...postsMdxWithContent]
 
 const allContent = [...pages, ...posts, ...postsMdx]
 
-const transformMarkdownInstancesToIndexes = async (
-  instances: MarkdownInstance<Record<string, any>>[]
-) => {
+const transformMarkdownInstancesToIndexes = async (instances: MarkdownInstance<Record<string, any>>[]) => {
   return Promise.all(
     instances.map(async (instance) => {
       const { title, section, metadata } = instance.frontmatter
       const headings = await instance.getHeadings()
-      const content = !!instance.rawContent
-        ? await instance.rawContent()
-        : undefined
+      const content = !!instance.rawContent ? await instance.rawContent() : undefined
       return {
         title,
         headings,

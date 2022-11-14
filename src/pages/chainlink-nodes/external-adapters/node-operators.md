@@ -16,6 +16,7 @@ The bridge name must be unique to the local node. The bridge URL is the URL of y
 
 To add jobs that use the bridge, add a [Bridge Task](/chainlink-nodes/oracle-jobs/task-types/task_bridge/) to your job. The `bridge` task defined in the example below is defined as `fetch` and the name of the bridge is `soccer-data`.
 
+<!-- prettier-ignore -->
 ```toml
 type = "directrequest"
 schemaVersion = 1
@@ -50,6 +51,7 @@ The easiest way to test if your external adapter is working is to use a [Webhook
 
 As an example, assume you have an external adapter named `soccer-data` that is registered in the `bridges` section and it takes one parameter named `playerId`. In solidity, you would pass the parameter with the following request:
 
+<!-- prettier-ignore -->
 ```solidity
 request.add("playerId","12345678")
 ```
@@ -62,6 +64,7 @@ The easiest way is to setup a [Webhook Job](/chainlink-nodes/oracle-jobs/job-typ
 You might need to set the [configuration variable](/chainlink-nodes/configuration-variables/) `FEATURE_WEBHOOK_V2=true` in your `.env` file.
 :::
 
+<!-- prettier-ignore -->
 ```toml
 type = "webhook"
 schemaVersion = 1
@@ -75,6 +78,7 @@ fetch        [type=bridge name="soccer-data" requestData="{\\"id\\": \\"0\\", \\
 
 Adding the following into the TOML spec manually sets the parameters passed into the bridge task. It is equivalent to using `request.add` as shown above or adding the data with the `--d` flag if you're using [curl](https://curl.se/).
 
+<!-- prettier-ignore -->
 ```json
 requestData="{\\"id\\": \\"0\\", \\"data\\": { \\"playerId\\": \\"12345678\\"}}"
 ```

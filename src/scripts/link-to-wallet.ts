@@ -94,9 +94,7 @@ const defaultWalletParameters: AddToWalletParameters = {
  */
 const validateEthereumApi = (ethereum: MetaMaskInpageProvider) => {
   if (!ethereum || !ethereum.isMetaMask) {
-    throw new Error(
-      `Something went wrong. Add to wallet is called while an ethereum object not detected.`
-    )
+    throw new Error(`Something went wrong. Add to wallet is called while an ethereum object not detected.`)
   }
 }
 
@@ -105,10 +103,7 @@ const validateEthereumApi = (ethereum: MetaMaskInpageProvider) => {
  * @param ethereum inpage provider (e.g.: provider loaded by Metamask)
  * @param parameters
  */
-const addAssetToWallet = async (
-  ethereum: MetaMaskInpageProvider,
-  parameters: AddToWalletParameters
-) => {
+const addAssetToWallet = async (ethereum: MetaMaskInpageProvider, parameters: AddToWalletParameters) => {
   validateEthereumApi(ethereum)
   const success = await ethereum.request({
     method: "wallet_watchAsset",
@@ -124,9 +119,7 @@ const addAssetToWallet = async (
   })
 
   if (success) {
-    console.log(
-      `${parameters.symbol} of address ${parameters.address} successfully added to the wallet`
-    )
+    console.log(`${parameters.symbol} of address ${parameters.address} successfully added to the wallet`)
   } else {
     throw new Error(
       `Something went wrong. ${parameters.symbol} of address ${parameters.address} not added to the wallet`
@@ -139,10 +132,7 @@ const addAssetToWallet = async (
  * @param chainId designed chain in HexString
  * @param ethereum ethereum inpage provider (e.g.: provider loaded by Metamask)
  */
-const switchToChain = async (
-  chainId: string,
-  ethereum: MetaMaskInpageProvider
-) => {
+const switchToChain = async (chainId: string, ethereum: MetaMaskInpageProvider) => {
   if (!isChainIdFormatValid(chainId)) {
     throw new Error(`chainId '${chainId}' must be hexString`)
   }
@@ -159,10 +149,7 @@ const switchToChain = async (
  * @param chainId designed chain in HexString
  * @param ethereum ethereum in page provider (e.g.: provider loaded by Metamask)
  */
-const addChainToWallet = async (
-  chainId: string,
-  ethereum: MetaMaskInpageProvider
-) => {
+const addChainToWallet = async (chainId: string, ethereum: MetaMaskInpageProvider) => {
   if (!isChainIdFormatValid(chainId)) {
     throw new Error(`chainId '${chainId}' must be hexString`)
   }
@@ -170,9 +157,7 @@ const addChainToWallet = async (
 
   const chain = chains.find((c: any) => toHex(c.chainId) === chainId)
   if (!chain || !chain.chainId) {
-    throw new Error(
-      `Chain with chainId '${chainId}' not found in reference data`
-    )
+    throw new Error(`Chain with chainId '${chainId}' not found in reference data`)
   }
 
   const params: AddEthereumChainParameter = {
@@ -193,11 +178,7 @@ const addChainToWallet = async (
     method: "wallet_addEthereumChain",
     params: [params, signerAddress],
   })
-  console.log(
-    `Chains ${chainId} of params ${JSON.stringify(
-      params
-    )} succesfully added to wallet`
-  )
+  console.log(`Chains ${chainId} of params ${JSON.stringify(params)} succesfully added to wallet`)
 }
 
 /**
@@ -208,9 +189,7 @@ const addChainToWallet = async (
  */
 const validateLinkAddress = async (address: string, provider: Web3Provider) => {
   if (!isAddressFormatValid(address)) {
-    throw new Error(
-      `Something went wrong. format of address '${address}' not correct`
-    )
+    throw new Error(`Something went wrong. format of address '${address}' not correct`)
   }
 
   // The Contract object
@@ -221,42 +200,28 @@ const validateLinkAddress = async (address: string, provider: Web3Provider) => {
     symbol = await linkContract.symbol()
     decimals = await linkContract.decimals()
   } catch (error) {
-    throw new Error(
-      `Error occured while trying to fetch linkContract metadata  ${error}`
-    )
+    throw new Error(`Error occured while trying to fetch linkContract metadata  ${error}`)
   }
 
   let chainId: keyof typeof linkNameSymbol
-  if (
-    Object.keys(linkNameSymbol).includes(provider.network.chainId.toString())
-  ) {
+  if (Object.keys(linkNameSymbol).includes(provider.network.chainId.toString())) {
     chainId = provider.network.chainId.toString() as keyof typeof linkNameSymbol
   } else {
-    throw new Error(
-      `Error chain ${provider.network.chainId} not found in reference data`
-    )
+    throw new Error(`Error chain ${provider.network.chainId} not found in reference data`)
   }
 
   const linkAttributes = linkNameSymbol[chainId]
   if (!linkAttributes || !linkAttributes.name || !linkAttributes.symbol) {
-    throw new Error(
-      `Error linkContract attributes. data ${linkAttributes} for chain ${chainId} corrupted`
-    )
+    throw new Error(`Error linkContract attributes. data ${linkAttributes} for chain ${chainId} corrupted`)
   }
   if (name !== linkAttributes.name) {
-    throw new Error(
-      `Error linkContract name. '${name}' !== '${linkAttributes.name}'`
-    )
+    throw new Error(`Error linkContract name. '${name}' !== '${linkAttributes.name}'`)
   }
   if (symbol !== linkAttributes.symbol) {
-    throw new Error(
-      `Error linkContract symbol. '${symbol}' !== '${linkAttributes.symbol}'`
-    )
+    throw new Error(`Error linkContract symbol. '${symbol}' !== '${linkAttributes.symbol}'`)
   }
   if (linkToken.decimals !== decimals) {
-    throw new Error(
-      `Error linkContract decimals. '${linkToken.decimals}' !== '${decimals}'`
-    )
+    throw new Error(`Error linkContract decimals. '${linkToken.decimals}' !== '${decimals}'`)
   }
 }
 
@@ -271,16 +236,12 @@ try {
     method: "eth_chainId",
   })) as string | null
   if (!detectedChainId) {
-    console.error(
-      `Something went wrong. Wallet detected but chain not detected`
-    )
+    console.error(`Something went wrong. Wallet detected but chain not detected`)
     throw Error()
   }
   detectedChainId = toHex(parseInt(detectedChainId))
   if (!isChainIdFormatValid(detectedChainId)) {
-    console.error(
-      `Something went wrong. format of detectedChainId '${detectedChainId}' not hexString`
-    )
+    console.error(`Something went wrong. format of detectedChainId '${detectedChainId}' not hexString`)
     throw Error()
   }
 
@@ -291,9 +252,7 @@ try {
   window.addEventListener(initChainChangeEventName, (evt: any) => {
     chainFromSwitch = toHex(parseInt(evt.detail?.chainId))
     if (!isChainIdFormatValid(chainFromSwitch)) {
-      console.error(
-        `Something went wrong. format of chainFromSwitch '${chainFromSwitch}' not hexString`
-      )
+      console.error(`Something went wrong. format of chainFromSwitch '${chainFromSwitch}' not hexString`)
       return
     }
   })
@@ -306,31 +265,23 @@ try {
     }
   })
 
-  const tokenAddressElements = Array.from(
-    document.getElementsByClassName("erc-token-address")
-  )
+  const tokenAddressElements = Array.from(document.getElementsByClassName("erc-token-address"))
 
   tokenAddressElements.forEach((element) => {
     const id = element.id
     // Make sure it has the right format.
     if (!pattern.test(id)) {
       if (!id) {
-        console.error(
-          `Element's id cannot be null/empty if its class is erc-token-address `
-        )
+        console.error(`Element's id cannot be null/empty if its class is erc-token-address `)
       } else {
-        console.error(
-          `Format of id ${id} not correct. Format should follow the pattern chainId_address`
-        )
+        console.error(`Format of id ${id} not correct. Format should follow the pattern chainId_address`)
       }
       return
     }
     let [chainId, address] = id.split(separator)
     chainId = toHex(parseInt(chainId))
     if (!isChainIdFormatValid(chainId)) {
-      console.error(
-        `Something went wrong. format of chainId '${chainId}' not hexString`
-      )
+      console.error(`Something went wrong. format of chainId '${chainId}' not hexString`)
       return
     }
 
@@ -374,17 +325,11 @@ try {
             try {
               await addChainToWallet(chainId, ethereum)
             } catch (error) {
-              console.error(
-                `Error happened when adding chain ${chainId} to metamask`,
-                error
-              )
+              console.error(`Error happened when adding chain ${chainId} to metamask`, error)
               return
             }
           } else {
-            console.error(
-              `Error happened when switching to chain ${chainId} to metamask`,
-              switchError
-            )
+            console.error(`Error happened when switching to chain ${chainId} to metamask`, switchError)
             return
           }
         }

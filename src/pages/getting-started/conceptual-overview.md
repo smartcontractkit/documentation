@@ -60,6 +60,7 @@ The first thing that every Solidity file must have is the Solidity version defin
 
 You can see the latest versions of the Solidity compiler [here](https://github.com/ethereum/solc-bin/blob/gh-pages/bin/list.txt/?target=_blank). You might also notice smart contracts that are compatible with a range of versions.
 
+<!-- prettier-ignore -->
 ```solidity
 pragma solidity >=0.7.0 <0.9.0;
 ```
@@ -70,6 +71,7 @@ This means that the code is written for Solidity version 0.7.0, or a newer versi
 
 The `contract` keyword defines the name of the contract, which in this example is `HelloWorld`. This is similar to declaring a `class` in Javascript. The implementation of `HelloWorld` is inside this definition and denoted with curly braces.
 
+<!-- prettier-ignore -->
 ```solidity
 contract HelloWorld {
 
@@ -82,6 +84,7 @@ Like Javascript, contracts can have state variables and local variables. **State
 
 _Visibility modifiers_ are used to define the level of access to these variables. Here are some examples of state variables with different visibility modifiers:
 
+<!-- prettier-ignore -->
 ```solidity
 string public message;
 uint256 internal internalVar;
@@ -96,6 +99,7 @@ Another familiar concept to programmers is the **constructor**. When you deploy 
 
 In `HelloWorld`, the constructor takes in a `string` as a parameter and sets the `message` state variable to that string.
 
+<!-- prettier-ignore -->
 ```solidity
 constructor(string memory initialMessage) {
   message = initialMessage;
@@ -106,6 +110,7 @@ constructor(string memory initialMessage) {
 
 **Functions** can access and modify the state of the contract or call other functions on external contracts. `HelloWorld` has a function named `updateMessage`, which updates the current message stored in the state.
 
+<!-- prettier-ignore -->
 ```solidity
 constructor(string memory initialMessage) {
   message = initialMessage;

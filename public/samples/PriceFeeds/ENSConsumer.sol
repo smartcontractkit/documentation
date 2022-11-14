@@ -28,7 +28,7 @@ contract ENSConsumer {
 
     // Use ID Hash instead of readable name
     // ETH / USD hash: 0xf599f4cd075a34b92169cf57271da65a7a936c35e3f31e854447fbb3e7eb736d
-    function resolve(bytes32 node) public view returns(address) {
+    function resolve(bytes32 node) public view returns (address) {
         Resolver resolver = ens.resolver(node);
         return resolver.addr(node);
     }

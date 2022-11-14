@@ -20,15 +20,12 @@ export const EnsManualLookupForm = () => {
     e.preventDefault()
     const formData = new FormData(e.target)
 
-    const selectedEnsString =
-      formData.get("asset-1") + "-" + formData.get("asset-2") + ".data.eth"
+    const selectedEnsString = formData.get("asset-1") + "-" + formData.get("asset-2") + ".data.eth"
 
     try {
       setIsLoading(true)
 
-      const result = await getWeb3Provider("ETHEREUM_MAINNET").resolveName(
-        selectedEnsString
-      )
+      const result = await getWeb3Provider("ETHEREUM_MAINNET").resolveName(selectedEnsString)
       if (!result) throw Error("No address")
       setEnsResult({
         ensName: selectedEnsString,
@@ -73,15 +70,9 @@ export const EnsManualLookupForm = () => {
 
       <div class={styles.form} style={{ marginTop: "var(--space-4x)" }}>
         <label>ENS Name:</label>
-        <input
-          class={styles.input}
-          value={isLoading ? "Loading..." : ensResult ? ensResult.ensName : ""}
-        />
+        <input class={styles.input} value={isLoading ? "Loading..." : ensResult ? ensResult.ensName : ""} />
         <label>Address:</label>
-        <input
-          class={styles.input}
-          value={isLoading ? "Loading..." : ensResult ? ensResult.address : ""}
-        />
+        <input class={styles.input} value={isLoading ? "Loading..." : ensResult ? ensResult.address : ""} />
       </div>
     </div>
   )

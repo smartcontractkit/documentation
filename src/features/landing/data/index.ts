@@ -15,8 +15,7 @@ const baseChains = [
 export const evmProducts = [
   {
     title: "Data Feeds",
-    description:
-      "Decentralized and high-quality data feeds for DeFi, Reserves, NFTs, sports, weather, and more",
+    description: "Decentralized and high-quality data feeds for DeFi, Reserves, NFTs, sports, weather, and more",
     learnMorelink: "data-feeds/",
     image: dataFeedsLogo,
     links: [
@@ -39,21 +38,14 @@ export const evmProducts = [
   },
   {
     title: "Automate Contracts",
-    description:
-      "Decentralized, highly reliable, cost-efficient and highly secure automation for smart contracts",
+    description: "Decentralized, highly reliable, cost-efficient and highly secure automation for smart contracts",
     learnMorelink: "chainlink-automation/introduction/",
     image: automationLogo,
     links: [
-      [
-        "Introduction to Chainlink Automation",
-        "chainlink-automation/introduction/",
-      ],
+      ["Introduction to Chainlink Automation", "chainlink-automation/introduction/"],
       ["Time-based Automation", "chainlink-automation/job-scheduler/"],
       ["Custom Logic Automation", "chainlink-automation/register-upkeep/"],
-      [
-        "Create Compatible Contracts",
-        "chainlink-automation/compatible-contracts/",
-      ],
+      ["Create Compatible Contracts", "chainlink-automation/compatible-contracts/"],
       ["Manage your Upkeeps", "chainlink-automation/manage-upkeeps/"],
       ["Creating Flexible Upkeeps", "chainlink-automation/flexible-upkeeps/"],
     ],
@@ -61,8 +53,7 @@ export const evmProducts = [
   },
   {
     title: "VRF v2",
-    description:
-      "Verifiable, tamper-proof random number generator for blockchain gaming and NFT projects",
+    description: "Verifiable, tamper-proof random number generator for blockchain gaming and NFT projects",
     learnMorelink: "/vrf/v2/introduction/",
     image: vrfLogo,
     links: [
@@ -76,8 +67,7 @@ export const evmProducts = [
   },
   {
     title: "External API Calls",
-    description:
-      "Request and receive data from any API using the Chainlink contract library",
+    description: "Request and receive data from any API using the Chainlink contract library",
     learnMorelink: "/any-api/introduction/",
     image: externalApiLogo,
     links: [
@@ -103,19 +93,12 @@ export const evmProducts = [
 export const solanaProducts = [
   {
     title: "Data Feeds",
-    description:
-      "Decentralized and high-quality data feeds for DeFi, sports, weather, and more",
+    description: "Decentralized and high-quality data feeds for DeFi, sports, weather, and more",
     learnMorelink: "/solana/overview/",
     image: dataFeedsLogo,
     links: [
-      [
-        "Using Data Feeds Off-Chain",
-        "/solana/data-feeds/using-data-feeds-off-chain/",
-      ],
-      [
-        "Using Data Feeds On-Chain",
-        "/solana/data-feeds/using-data-feeds-solana/",
-      ],
+      ["Using Data Feeds Off-Chain", "/solana/data-feeds/using-data-feeds-off-chain/"],
+      ["Using Data Feeds On-Chain", "/solana/data-feeds/using-data-feeds-solana/"],
       ["Solana Data Feeds Addresses", "/solana/data-feeds/data-feeds-solana/"],
     ],
   },

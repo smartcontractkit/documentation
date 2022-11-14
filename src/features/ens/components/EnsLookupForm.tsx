@@ -31,26 +31,19 @@ export const EnsLookupForm = () => {
           }`,
       })
 
-      const response = await fetch(
-        "https://api.thegraph.com/subgraphs/name/ensdomains/ens",
-        {
-          method: "post",
-          body: data,
-          headers: {
-            "Content-Type": "application/json",
-            "Content-Length": data.length.toString(),
-            "User-Agent": "Node",
-          },
-        }
-      )
+      const response = await fetch("https://api.thegraph.com/subgraphs/name/ensdomains/ens", {
+        method: "post",
+        body: data,
+        headers: {
+          "Content-Type": "application/json",
+          "Content-Length": data.length.toString(),
+          "User-Agent": "Node",
+        },
+      })
       const json = await response.json()
-      const hashName = json.data.domains[0]
-        ? json.data.domains[0].id
-        : "Not Found"
+      const hashName = json.data.domains[0] ? json.data.domains[0].id : "Not Found"
 
-      const result = await getWeb3Provider("ETHEREUM_MAINNET").resolveName(
-        selectedEnsString
-      )
+      const result = await getWeb3Provider("ETHEREUM_MAINNET").resolveName(selectedEnsString)
 
       setEnsResult({
         ensName: selectedEnsString,
@@ -84,20 +77,11 @@ export const EnsLookupForm = () => {
           ))}
         </select>
         <label>ENS Name:</label>
-        <input
-          class={styles.input}
-          value={isLoading ? "Loading..." : ensResult ? ensResult.ensName : ""}
-        />
+        <input class={styles.input} value={isLoading ? "Loading..." : ensResult ? ensResult.ensName : ""} />
         <label>Address:</label>
-        <input
-          class={styles.input}
-          value={isLoading ? "Loading..." : ensResult ? ensResult.address : ""}
-        />
+        <input class={styles.input} value={isLoading ? "Loading..." : ensResult ? ensResult.address : ""} />
         <label>Hash ID:</label>
-        <input
-          class={styles.input}
-          value={isLoading ? "Loading..." : ensResult ? ensResult.hash : ""}
-        />
+        <input class={styles.input} value={isLoading ? "Loading..." : ensResult ? ensResult.hash : ""} />
       </form>
     </div>
   )

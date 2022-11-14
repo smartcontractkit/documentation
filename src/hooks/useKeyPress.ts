@@ -1,9 +1,6 @@
 import { useEffect, useState } from "react"
 
-export function useKeyPress(
-  targetKey: string,
-  params?: Partial<{ onDown: () => void }>
-): boolean {
+export function useKeyPress(targetKey: string, params?: Partial<{ onDown: () => void }>): boolean {
   // State for keeping track of whether key is pressed
   const [keyPressed, setKeyPressed] = useState(false)
   // If pressed key is our target key then set to true

@@ -10,7 +10,6 @@ import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
  */
 
 contract HistoricalPriceConsumerV3 {
-
     AggregatorV3Interface internal priceFeed;
 
     /**
@@ -19,7 +18,9 @@ contract HistoricalPriceConsumerV3 {
      * Address:	0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e
      */
     constructor() {
-        priceFeed = AggregatorV3Interface(0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e);
+        priceFeed = AggregatorV3Interface(
+            0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e
+        );
     }
 
     /**

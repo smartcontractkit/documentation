@@ -36,8 +36,7 @@ function remarkSolidityRemix(): unified.Plugin<[], mdast.Root> {
       if (node.type !== "leafDirective") return
       const type = node.name
       if (type !== "solidity-remix") return
-      if (node.children.length !== 1)
-        throw Error("solidityRemix leafDirective can only have 1 child")
+      if (node.children.length !== 1) throw Error("solidityRemix leafDirective can only have 1 child")
 
       // remark-directive converts a container’s “label” to a paragraph in
       // its children, but we want to pass it as the src prop to <CodeSample>, so

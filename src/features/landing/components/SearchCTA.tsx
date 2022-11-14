@@ -20,9 +20,7 @@ export function SearchCTA() {
       <button type="button" onClick={onOpen} className="search-cta-input">
         <img src={searchIcon} />
 
-        <span style={{ fontSize: "1rem" }}>
-          Search Chainlink Documentation...
-        </span>
+        <span style={{ fontSize: "1rem" }}>Search Chainlink Documentation...</span>
       </button>
 
       <SearchModal isOpen={isOpen} onClose={onClose} />

@@ -11,11 +11,11 @@ Decodes a ETH ABI-encoded payload, typically the result of an [ETH Call task](/c
 **Parameters**
 
 - `abi`: a canonical ETH ABI argument string. Should be formatted exactly as in Solidity. Each argument must be named. Examples:
-    - `uint256 foo, bytes32 bar, address[] baz`
-    - `address a, uint80[3][] u, bytes b, bytes32 b32`
+  - `uint256 foo, bytes32 bar, address[] baz`
+  - `address a, uint80[3][] u, bytes b, bytes32 b32`
 - `data`: the ABI-encoded payload to decode. Can be:
-    - a byte array
-    - a hex-encoded string beginning with `0x`
+  - a byte array
+  - a hex-encoded string beginning with `0x`
 
 **Outputs**
 
@@ -23,6 +23,7 @@ A map containing the decoded values.
 
 **Example**
 
+<!-- prettier-ignore -->
 ```toml
 decode [type="ethabidecode"
         abi="bytes32 requestID, uint256 price, address[] oracles"
@@ -31,6 +32,7 @@ decode [type="ethabidecode"
 
 This task will return a map with the following schema:
 
+<!-- prettier-ignore -->
 ```json
 {
     "requestID": ..., // [32]byte value

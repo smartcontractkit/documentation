@@ -21,11 +21,7 @@ export const LatestPrice = ({
       console.error(`web3 provider not found for chain ${supportedChain}`)
       return
     }
-    const priceFeed = new ethers.Contract(
-      feedAddress,
-      aggregatorV3InterfaceABI,
-      rpcProvider
-    )
+    const priceFeed = new ethers.Contract(feedAddress, aggregatorV3InterfaceABI, rpcProvider)
 
     priceFeed.latestRoundData().then((roundData: ROUND_DATA_RESPONSE) => {
       setLatestPrice(roundData.answer.toString())
@@ -34,11 +30,5 @@ export const LatestPrice = ({
 
   const [latestPrice, setLatestPrice] = useState<string>("Latest Price")
 
-  return (
-    <PriceButton
-      buttonName=" Latest Price:"
-      buttonFunction={fetchLatestPrice}
-      value={latestPrice}
-    />
-  )
+  return <PriceButton buttonName=" Latest Price:" buttonFunction={fetchLatestPrice} value={latestPrice} />
 }

@@ -39,9 +39,7 @@ export const getFeedsMetadata = (url: string): Promise<ChainMetadata[]> => {
   return fetch(url).then((res) => res.json())
 }
 
-export const getChainMetadata = async (
-  chain: Chain
-): Promise<ChainMetadata | any> => {
+export const getChainMetadata = async (chain: Chain): Promise<ChainMetadata | any> => {
   const requests = chain.networks.map((nw) =>
     nw?.rddUrl
       ? getFeedsMetadata(nw?.rddUrl).then((metadata) => ({

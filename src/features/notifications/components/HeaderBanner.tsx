@@ -10,10 +10,7 @@ export type BannerContent = {
 
 type BannerType = "info" | "success" | "warning" | "danger"
 
-const bannerTypes: Record<
-  BannerType,
-  { primaryColour: string; alertColour: string; alertText: string }
-> = {
+const bannerTypes: Record<BannerType, { primaryColour: string; alertColour: string; alertText: string }> = {
   info: {
     primaryColour: "var(--blue-800)",
     alertColour: "var(--blue-600)",
@@ -36,28 +33,16 @@ const bannerTypes: Record<
   },
 }
 
-export const HeaderBanner: React.FC<{ bannerContent?: BannerContent }> = ({
-  bannerContent,
-}) => {
+export const HeaderBanner: React.FC<{ bannerContent?: BannerContent }> = ({ bannerContent }) => {
   if (!bannerContent) return null
   return (
-    <div
-      className={headerbanner.container}
-      style={{ backgroundColor: bannerTypes[bannerContent.type].primaryColour }}
-    >
-      <div
-        className={headerbanner.badge}
-        style={{ backgroundColor: bannerTypes[bannerContent.type].alertColour }}
-      >
-        <span className="text-100">
-          {bannerTypes[bannerContent.type].alertText}
-        </span>
+    <div className={headerbanner.container} style={{ backgroundColor: bannerTypes[bannerContent.type].primaryColour }}>
+      <div className={headerbanner.badge} style={{ backgroundColor: bannerTypes[bannerContent.type].alertColour }}>
+        <span className="text-100">{bannerTypes[bannerContent.type].alertText}</span>
       </div>
       <p>
         {bannerContent.description}{" "}
-        {bannerContent.linkUrl && (
-          <a href={bannerContent.linkUrl}>{bannerContent.linkText}</a>
-        )}
+        {bannerContent.linkUrl && <a href={bannerContent.linkUrl}>{bannerContent.linkText}</a>}
       </p>
     </div>
   )

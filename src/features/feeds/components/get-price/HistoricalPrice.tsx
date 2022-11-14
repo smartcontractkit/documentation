@@ -24,26 +24,13 @@ export const HistoricalPrice = ({
       return
     }
 
-    const priceFeed = new ethers.Contract(
-      feedAddress,
-      aggregatorV3InterfaceABI,
-      rpcProvider
-    )
+    const priceFeed = new ethers.Contract(feedAddress, aggregatorV3InterfaceABI, rpcProvider)
 
-    priceFeed
-      .getRoundData(BigNumber.from(roundId))
-      .then((historicalRoundData: ROUND_DATA_RESPONSE) => {
-        setHistoricalPrice(historicalRoundData.answer.toString())
-      })
+    priceFeed.getRoundData(BigNumber.from(roundId)).then((historicalRoundData: ROUND_DATA_RESPONSE) => {
+      setHistoricalPrice(historicalRoundData.answer.toString())
+    })
   }
 
-  const [historicalPrice, setHistoricalPrice] =
-    useState<string>("Historical Price")
-  return (
-    <PriceButton
-      buttonName={`Round ${roundId}:`}
-      buttonFunction={fetchLatestPrice}
-      value={historicalPrice}
-    />
-  )
+  const [historicalPrice, setHistoricalPrice] = useState<string>("Historical Price")
+  return <PriceButton buttonName={`Round ${roundId}:`} buttonFunction={fetchLatestPrice} value={historicalPrice} />
 }

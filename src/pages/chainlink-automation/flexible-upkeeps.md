@@ -3,11 +3,7 @@ layout: ../../layouts/MainLayout.astro
 section: ethereum
 date: Last Modified
 title: "Making flexible, secure, and low-cost contracts"
-whatsnext:
-  {
-    "Example Contracts": "/chainlink-automation/util-overview/",
-    "FAQs": "/chainlink-automation/faqs/",
-  }
+whatsnext: { "Example Contracts": "/chainlink-automation/util-overview/", "FAQs": "/chainlink-automation/faqs/" }
 ---
 
 In this guide, you will learn how the flexibility of [Chainlink Automation](https://chain.link/automation) enables important design patterns that reduce gas fees, enhance the resilience of dApps, and improve end-user experience. Smart contracts themselves cannot self-trigger their functions at arbitrary times or under arbitrary conditions. Transactions can only be initiated by another account.

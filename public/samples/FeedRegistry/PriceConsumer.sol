@@ -34,7 +34,7 @@ contract PriceConsumer {
      */
     function getPrice(address base, address quote) public view returns (int) {
         (
-            uint80 roundID, 
+            uint80 roundID,
             int price,
             uint startedAt,
             uint timeStamp,

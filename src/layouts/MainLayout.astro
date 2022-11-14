@@ -15,8 +15,7 @@ const headings = Astro.props?.headings || Astro.props?.content?.astro.headings
 
 const currentPage = new URL(Astro.request.url).pathname
 const currentFile = `src/pages${currentPage.replace(/\/$/, "")}.md`
-const githubEditUrl =
-  CONFIG.GITHUB_EDIT_URL && CONFIG.GITHUB_EDIT_URL + currentFile
+const githubEditUrl = CONFIG.GITHUB_EDIT_URL && CONFIG.GITHUB_EDIT_URL + currentFile
 const formattedContentTitle = content.title
   ? `${content.title} | ${CONFIG.SITE.title}`
   : `${CONFIG.PAGE.titleFallback} | ${CONFIG.SITE.title}`
@@ -131,17 +130,16 @@ const includeLinkToWalletScript = !!Astro.props?.content?.metadata?.linkToWallet
     <script define:vars={{ content }}>
       const persistedArticle = {
         title: content.title,
-        url: content.url
+        url: content.url,
       }
-    
-      const recentArticles = JSON.parse(localStorage.getItem('recentArticles') || '[]')
-    
-      if (
-        !recentArticles.some((article) => article.url === persistedArticle.url)
-      ) {
+
+      const recentArticles = JSON.parse(localStorage.getItem("recentArticles") || "[]")
+
+      if (!recentArticles.some((article) => article.url === persistedArticle.url)) {
         recentArticles.unshift(persistedArticle)
-        localStorage.setItem('recentArticles', JSON.stringify(recentArticles.slice(0, 5)))
-      }</script>
+        localStorage.setItem("recentArticles", JSON.stringify(recentArticles.slice(0, 5)))
+      }
+    </script>
   </head>
 
   <body>
@@ -151,22 +149,12 @@ const includeLinkToWalletScript = !!Astro.props?.content?.metadata?.linkToWallet
         <LeftSidebar currentPage={currentPage} {content} />
       </aside>
       <div id="grid-main">
-        <PageContent
-          {content}
-          githubEditUrl={githubEditUrl}
-          {headings}
-          clientSideToc={!!frontmatter?.clientSideToc}
-        >
+        <PageContent {content} githubEditUrl={githubEditUrl} {headings} clientSideToc={!!frontmatter?.clientSideToc}>
           <slot />
         </PageContent>
       </div>
       <aside id="grid-right" class="grid-sidebar" title="Table of Contents">
-        <RightSidebar
-          {content}
-          githubEditUrl={githubEditUrl}
-          {headings}
-          clientSideToc={!!frontmatter?.clientSideToc}
-        />
+        <RightSidebar {content} githubEditUrl={githubEditUrl} {headings} clientSideToc={!!frontmatter?.clientSideToc} />
       </aside>
     </main>
     <NewsletterCTA client:visible />

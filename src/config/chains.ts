@@ -4,7 +4,4 @@ import { rawChainToTechnology, rawChains } from "./data"
 
 export const chains = rawChains as Chains
 
-export const chainToTechnology = rawChainToTechnology as Record<
-  SupportedChain,
-  SupportedTechnology
->
+export const chainToTechnology = rawChainToTechnology as Record<SupportedChain, SupportedTechnology>

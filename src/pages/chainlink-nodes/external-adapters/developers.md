@@ -4,10 +4,7 @@ section: nodeOperator
 date: Last Modified
 title: "Building External Adapters"
 permalink: "docs/developers/"
-whatsnext:
-  {
-    "Bridges: Adding External Adapters to Nodes": "/chainlink-nodes/external-adapters/node-operators/",
-  }
+whatsnext: { "Bridges: Adding External Adapters to Nodes": "/chainlink-nodes/external-adapters/node-operators/" }
 ---
 
 Developers of external adapters will need to know how the Chainlink node requests data from it, and how the data should be formatted for a response. External adapters can be written in any language, and even run on separate machines, to include serverless functions.

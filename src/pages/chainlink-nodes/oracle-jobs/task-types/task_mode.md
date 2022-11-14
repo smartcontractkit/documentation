@@ -2,8 +2,8 @@
 layout: ../../../../layouts/MainLayout.astro
 section: nodeOperator
 date: Last Modified
-title: 'Mode Task'
-permalink: 'docs/jobs/task-types/mode/'
+title: "Mode Task"
+permalink: "docs/jobs/task-types/mode/"
 ---
 
 Accepts multiple numerical inputs and returns the mode (most common) of them. If more than one value occur the maximum number of times, it returns all of them.
@@ -17,6 +17,7 @@ Accepts multiple numerical inputs and returns the mode (most common) of them. If
 
 A map containing two keys:
 
+<!-- prettier-ignore -->
 ```json
 {
     "results": [ ... ], // An array containing all of the values that occurred the maximum number of times
@@ -26,6 +27,7 @@ A map containing two keys:
 
 **Example**
 
+<!-- prettier-ignore -->
 ```toml
 my_mode_task [type="mode"
                 values=<[ $(fetch1), $(fetch2), $(fetch3), $(fetch4), $(fetch5), $(fetch6), $(fetch7), $(fetch8) ]>
@@ -34,6 +36,7 @@ my_mode_task [type="mode"
 
 Given a `values` array containing `[ 2, 5, 2, "foo", "foo" "bar", "foo", 2 ]`, the task will return:
 
+<!-- prettier-ignore -->
 ```json
 {
   "results": [2, "foo"],

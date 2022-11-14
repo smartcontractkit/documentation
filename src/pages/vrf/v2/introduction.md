@@ -4,11 +4,7 @@ section: ethereum
 date: Last Modified
 title: "Introduction to Chainlink VRF"
 permalink: "docs/vrf/v2/introduction/"
-whatsnext:
-  {
-    "Subscription Method": "/vrf/v2/subscription/",
-    "Direct Funding Method": "/vrf/v2/direct-funding/",
-  }
+whatsnext: { "Subscription Method": "/vrf/v2/subscription/", "Direct Funding Method": "/vrf/v2/direct-funding/" }
 metadata:
   title: "Generate Random Numbers for Smart Contracts using Chainlink VRF"
   description: "Learn how to securely generate random numbers for your smart contract with Chainlink VRF (an RNG). This guide uses Solidity code examples."

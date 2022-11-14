@@ -75,6 +75,7 @@ Chainlink maintains a [library of contracts](https://github.com/smartcontractkit
 - [`VRFConsumerBaseV2`](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/VRFConsumerBaseV2.sol) that must be imported and extended from the contract that you create.
 - [`VRFCoordinatorV2Interface`](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol) that must be imported to communicate with the VRF coordinator.
 
+<!-- prettier-ignore -->
 ```solidity
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
@@ -91,6 +92,7 @@ contract VRFD20 is VRFConsumerBaseV2 {
 
 This example is adapted for [Goerli testnet](/vrf/v2/subscription/supported-networks/#goerli-testnet) but you can change the configuration and make it run for any [supported network](/vrf/v2/subscription/supported-networks/#configurations).
 
+<!-- prettier-ignore -->
 ```solidity
 uint64 s_subscriptionId;
 address vrfCoordinator = 0x2Ca8E0C643bDe4C2E08ab1fA0da3401AdAD7734D;
@@ -109,6 +111,7 @@ uint32 numWords =  1;
 
 To keep track of addresses that roll the dice, the contract uses mappings. [Mappings](https://medium.com/upstate-interactive/mappings-in-solidity-explained-in-under-two-minutes-ecba88aff96e) are unique key-value pair data structures similar to hash tables in Java.
 
+<!-- prettier-ignore -->
 ```solidity
 mapping(uint256 => address) private s_rollers;
 mapping(address => uint256) private s_results;
@@ -122,6 +125,7 @@ mapping(address => uint256) private s_results;
 The coordinator and subscription id must be initialized in the `constructor` of the contract. To use `VRFConsumerBaseV2` properly, you must also pass the VRF coordinator address into its constructor.
 The address that creates the smart contract is the owner of the contract. the modifier `onlyOwner()` checks that only the owner is allowed to do some tasks.
 
+<!-- prettier-ignore -->
 ```solidity
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
@@ -161,6 +165,7 @@ You must add a `ROLL_IN_PROGRESS` constant to signify that the dice has been rol
 
 Only the owner of the contract can execute the `rollDice` function.
 
+<!-- prettier-ignore -->
 ```solidity
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
@@ -208,6 +213,7 @@ contract VRFD20 is VRFConsumerBaseV2 {
 1. Assign the transformed value to the address in the `s_results` mapping variable.
 1. Emit a `DiceLanded` event.
 
+<!-- prettier-ignore -->
 ```solidity
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
@@ -253,6 +259,7 @@ Finally, the `house` function returns the house of an address.
 
 To have a list of the house's names, create the `getHouseName` function that is called in the `house` function.
 
+<!-- prettier-ignore -->
 ```solidity
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;

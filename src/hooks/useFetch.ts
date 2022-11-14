@@ -9,10 +9,7 @@ interface State<T> {
 type Cache<T> = { [url: string]: T }
 
 // discriminated union type
-type Action<T> =
-  | { type: "loading" }
-  | { type: "fetched"; payload: T }
-  | { type: "error"; payload: Error }
+type Action<T> = { type: "loading" } | { type: "fetched"; payload: T } | { type: "error"; payload: Error }
 
 function useFetch<T = unknown>(url?: string, options?: RequestInit): State<T> {
   const cache = useRef<Cache<T>>({})

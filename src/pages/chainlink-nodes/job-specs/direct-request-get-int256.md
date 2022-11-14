@@ -2,8 +2,8 @@
 layout: ../../../layouts/MainLayout.astro
 section: nodeOperator
 date: Last Modified
-title: 'GET > Int256 Example Job Spec'
-permalink: 'docs/direct-request-get-int256/'
+title: "GET > Int256 Example Job Spec"
+permalink: "docs/direct-request-get-int256/"
 ---
 
 This is an example v2 (TOML) job spec for calling any public API, retrieving a number , removing its decimals then returning _int256_ in one Chainlink API Call. Note that the job calls the `fulfillOracleRequest2` function. If you are a node operator, use an [Operator contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/Operator.sol) with this job.

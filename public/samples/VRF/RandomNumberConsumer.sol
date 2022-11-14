@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
-import '@chainlink/contracts/src/v0.8/VRFConsumerBase.sol';
+import "@chainlink/contracts/src/v0.8/VRFConsumerBase.sol";
 
 /**
  * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
@@ -36,21 +36,27 @@ contract RandomNumberConsumer is VRFConsumerBase {
         )
     {
         keyHash = 0x0476f9a745b61ea5c0ab224d3a6e4c99f0b02fce4da01143a4f70aa80ae76e8a;
-        fee = 0.1 * 10**18; // 0.1 LINK (Varies by network)
+        fee = 0.1 * 10 ** 18; // 0.1 LINK (Varies by network)
     }
 
     /**
      * Requests randomness
      */
     function getRandomNumber() public returns (bytes32 requestId) {
-        require(LINK.balanceOf(address(this)) >= fee, 'Not enough LINK - fill contract with faucet');
+        require(
+            LINK.balanceOf(address(this)) >= fee,
+            "Not enough LINK - fill contract with faucet"
+        );
         return requestRandomness(keyHash, fee);
     }
 
     /**
      * Callback function used by VRF Coordinator
      */
-    function fulfillRandomness(bytes32 requestId, uint256 randomness) internal override {
+    function fulfillRandomness(
+        bytes32 requestId,
+        uint256 randomness
+    ) internal override {
         randomResult = randomness;
         emit RequestFulfilled(requestId, randomness);
     }

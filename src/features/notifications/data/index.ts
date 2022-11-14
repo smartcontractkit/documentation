@@ -2,7 +2,7 @@ import { BannerContent } from "../components/HeaderBanner"
 
 /*
  * Set this variable to null to hide the notification
-*/
+ */
 
 export const NotificationData: BannerContent | null = null
 
