@@ -565,6 +565,18 @@ There are audit log implemented for the following events:
 
 A full list of audit log enum types can be found in the source within the `audit` package ([`audit_types.go`](https://github.com/smartcontractkit/chainlink/blob/develop/core/logger/audit/audit_types.go)).
 
+Log events follow this schema:
+
+```
+{
+    "eventID":  EVENT_ID_ENUM,
+    "hostname": HOSTNAME,
+    "localIP" : CL_NODE_IP,
+    "env" : ENVIRONMENT_NAME,
+    "data": ...
+}
+```
+
 The `AUDIT_LOGS_*` environment variables below configure this optional audit log HTTP forwarder.
 
 ### AUDIT_LOGS_FORWARDER_HEADERS
@@ -587,6 +599,9 @@ When the audit log HTTP forwarder is enabled, if there is a value set for this o
 {
   "event": {
     "eventID":  EVENT_ID_ENUM,
+    "hostname": HOSTNAME,
+    "localIP" : CL_NODE_IP,
+    "env" : ENVIRONMENT_NAME,
     "data": ...
   }
 }
