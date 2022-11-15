@@ -10,11 +10,6 @@ setup: |
 
 <VrfCommon callout="directFunding"/>
 
-**Topics**
-
-- [Comparison between VRF v1 and VRF v2 (Direct funding method)](#comparison-between-vrf-v1-and-vrf-v2-direct-funding-method)
-- [Updating your applications to use VRF v2](#updating-your-applications-to-use-vrf-v2)
-
 ## Comparison between VRF v1 and VRF v2 (Direct funding method)
 
 The main similarity between VRF v1 and VRF v2 Direct funding method is that consuming contracts must be funded with LINK to pay for requests. However, Chainlink VRF v2 includes several improvements.

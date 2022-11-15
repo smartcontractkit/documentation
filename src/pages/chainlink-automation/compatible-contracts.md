@@ -14,23 +14,7 @@ setup: |
 
 Use custom logic to allow Chainlink Automation to determine when to execute your smart contract functions.
 
-## Overview
-
 Learn how to make smart contracts that are compatible with the `AutomationCompatibleInterface` contract and its functions.
-
-**Topics**
-
-- [Example Contract](#example-contract)
-- [Functions](#functions)
-  - [`checkUpkeep` function](#checkupkeep-function)
-    - [`checkData`](#checkdata)
-    - [`performData`](#performdata)
-  - [`performUpkeep` function](#performupkeep-function)
-    - [`performData`](#performdata-1)
-- [Vyper Example](#vyper-example)
-- [Best practices](#best-practices)
-  - [Revalidate `performUpkeep`](#revalidate-performupkeep)
-  - [Test your contract](#test-your-contract)
 
 ## Example contract
 

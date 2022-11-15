@@ -20,14 +20,6 @@ setup: |
 
 This guide explains how to generate random numbers using the Direct funding method. This method doesn't require a subscription and is optimal for one-off requests for randomness. This method also works best for applications where your end-users must pay the fees for VRF because the cost of the request is determined at request time.
 
-**Topics**
-
-- [VRF Direct funding](#vrf-direct-funding)
-- [Request and Receive Data](#request-and-receive-data)
-  - [End To End Diagram](#end-to-end-diagram)
-  - [Explanation](#explanation)
-- [Limits](#limits)
-
 ## VRF Direct funding
 
 Unlike the [subscription method](/vrf/v2/subscription/), the Direct funding method does not require you to create subscriptions and pre-fund them. Instead, you must directly fund consuming contracts with LINK tokens before they request randomness.

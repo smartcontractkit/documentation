@@ -6,14 +6,7 @@ title: "Register a Custom Logic Upkeep"
 whatsnext: { "Create a compatible contract for custom logic Upkeep": "/chainlink-automation/compatible-contracts/" }
 ---
 
-## Overview
-
 This guide explains how to register a custom logic Upkeep that uses a [compatible contract](/chainlink-automation/compatible-contracts). You can register it using the Chainlink Automation App or from within a contract that you deploy.
-
-**Topics**
-
-- [Register an Upkeep using the Chainlink Automation App](#register-an-upkeep-using-the-chainlink-automation-app)
-- [Register an Upkeep using your own deployed contract](#register-an-upkeep-using-your-own-deployed-contract)
 
 ## Register an Upkeep using the Chainlink Automation App
 

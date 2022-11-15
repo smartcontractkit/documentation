@@ -6,8 +6,6 @@ title: "Chainlink Automation Architecture"
 whatsnext: { "FAQs": "/chainlink-automation/faqs/" }
 ---
 
-## Overview
-
 Chainlink Automation enable you to execute smart contract functions based on conditions that you specify without having to create and maintain your own centralized stack. Chainlink Automation is highly reliable and decentralized, supported by an industry leading team, and enables developers to deploy applications faster.
 
 There are three main actors in the ecosystem:

@@ -25,14 +25,6 @@ To learn more about how the Chainlink Automation Network automates your smart co
 
 ![Chainlink Automation](/images/contract-devs/automation/automation_intro.gif)
 
-**Topics**
-
-- [Select a trigger](#select-a-trigger)
-  - [Time-based trigger](#time-based-trigger)
-  - [Custom logic trigger](#custom-logic-trigger)
-- [Supported networks and costs](#supported-networks-and-costs)
-- [Questions and examples](#questions-and-examples)
-
 ## Select a trigger
 
 Chainlink Automation will reliably execute smart contract functions using a variety of triggers.

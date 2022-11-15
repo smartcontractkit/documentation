@@ -8,19 +8,6 @@ permalink: "docs/jobs/types/direct-request/"
 
 Executes a job upon receipt of an explicit request made by a user. The request is detected via a log emitted by an Oracle or Operator contract. This is similar to the legacy ethlog/runlog style of jobs.
 
-**Topics**
-
-- [Spec format](#spec-format)
-  - [Shared fields](#shared-fields)
-  - [Unique fields](#unique-fields)
-  - [Job type specific pipeline variables](#job-type-specific-pipeline-variables)
-- [Examples](#examples)
-  - [Get > Uint256 Job](#get--uint256-job)
-  - [Get > String Job](#get--string-job)
-  - [Get > Bytes Job](#get--bytes-job)
-  - [Multi-Word Job](#multi-word-job)
-  - [Existing Job](#existing-job)
-
 ## Spec format
 
 ```toml

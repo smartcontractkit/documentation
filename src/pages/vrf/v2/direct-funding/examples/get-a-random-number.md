@@ -22,15 +22,6 @@ setup: |
 
 This guide explains how to get random values using a simple contract to request and receive random values from Chainlink VRF v2 without managing a subscription. To explore more applications of VRF, refer to our [blog](https://blog.chain.link/).
 
-**Topics**
-
-- [Requirements](#requirements)
-- [Create and deploy a VRF v2 compatible contract](#create-and-deploy-a-vrf-v2-compatible-contract)
-- [Fund your contract](#fund-your-contract)
-- [Request random values](#request-random-values)
-- [Analyzing the contract](#analyzing-the-contract)
-- [Clean up](#clean-up)
-
 ## Requirements
 
 This guide assumes that you know how to create and deploy smart contracts on Ethereum testnets using the following tools:

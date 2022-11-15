@@ -25,12 +25,6 @@ How you manage the subscription depends on your randomness needs. You can config
 
 You can view and monitor your subscriptions in the [Subscription Manager](/vrf/v2/subscription/ui/) even if you create them programmatically. Go to [vrf.chain.link](https://vrf.chain.link) to open the Subscription Manager.
 
-**Topics**
-
-- [Modifying subscriptions and configurations](#modifying-subscriptions-and-configurations)
-- [Subscription manager contract](#subscription-manager-contract)
-- [Funding and requesting simultaneously](#funding-and-requesting-simultaneously)
-
 ## Modifying subscriptions and configurations
 
 Subscription configurations do not have to be static. You can change your subscription configuration dynamically by calling the following functions using the [VRFCoordinatorV2Interface](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol):

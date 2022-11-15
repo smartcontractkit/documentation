@@ -16,19 +16,7 @@ metadata:
     0: "/files/OpenGraph_V3.png"
 ---
 
-## Overview
-
 This page describes how data aggregation is applied to produce Chainlink Data Feeds and provides more insight as to how Data Feeds are updated.
-
-**Topics**
-
-- [Data Aggregation](#data-aggregation)
-- [Shared Data Resource](#shared-data-resource)
-- [Decentralized Oracle Network](#decentralized-oracle-network)
-- [Components of a Decentralized Oracle Network](#components-of-a-decentralized-oracle-network)
-  - [Consumer](#consumer)
-  - [Proxy](#proxy)
-  - [Aggregator](#aggregator)
 
 ## Data Aggregation
 

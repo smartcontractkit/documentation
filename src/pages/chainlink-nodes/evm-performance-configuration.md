@@ -20,19 +20,6 @@ The most basic Chainlink node deployment uses the default configuration on only 
 Ethereum clients have bugs. Much work is done on the Chainlink node software to mitigate bugs in various different RPC implementations. This guide helps you understand how to mitigate and work around these bugs.
 :::
 
-**Topics**
-
-- [Using multiple nodes](#using-multiple-nodes)
-- [Automatic load balancing and failover](#automatic-load-balancing-and-failover)
-- [Configuring websocket and HTTP URLs](#configuring-websocket-and-http-urls)
-- [Increasing transaction throughput](#increasing-transaction-throughput)
-  - [Increase ETH_MAX_QUEUED_TRANSACTIONS](#increase-eth_max_queued_transactions)
-  - [Increase ETH_MAX_IN_FLIGHT_TRANSACTIONS](#increasing-transaction-throughput)
-- [Optimizing RPC nodes](#optimizing-rpc-nodes)
-- [Remove rejections on expensive transactions](#remove-rejections-on-expensive-transactions)
-- [Adjusting minimum outgoing confirmations for high throughput jobs](#adjusting-minimum-outgoing-confirmations-for-high-throughput-jobs)
-- [Increase ORM_MAX_OPEN_CONNS and ORM_MAX_IDLE_CONNS](#increase-orm_max_open_conns-and-orm_max_idle_conns)
-
 ## Using multiple nodes
 
 :::note[Use multiple nodes]

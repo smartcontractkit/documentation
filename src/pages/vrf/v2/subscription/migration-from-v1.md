@@ -11,11 +11,6 @@ setup: |
 
 <VrfCommon callout="subscription"/>
 
-**Table of contents**
-
-- [Comparing VRF v1 to the VRF v2 subscription method](#comparing-vrf-v1-to-the-vrf-v2-subscription-method)
-- [Updating your applications to use VRF v2](#updating-your-applications-to-use-vrf-v2)
-
 ## Comparing VRF v1 to the VRF v2 subscription method
 
 Chainlink VRF v2 includes several improvements and changes to the way you fund and request randomness for your smart contracts.
