@@ -6,7 +6,7 @@ title: "Less Than Task"
 permalink: "docs/jobs/task-types/lessthan/"
 ---
 
-Returns a boolean, result of computing `left` < `right`.
+Returns a boolean, result of computing `left < right`.
 
 **Parameters**
 
