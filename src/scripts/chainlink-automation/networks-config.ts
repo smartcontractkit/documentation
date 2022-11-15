@@ -1,11 +1,5 @@
-import {
-  automationAddresses,
-  chainlinkAutomationConfig as currentConfig,
-} from "@features/chainlink-automation/data"
-import {
-  ChainlinkAutomationConfigs,
-  GetStateResponse,
-} from "@features/chainlink-automation/types"
+import { automationAddresses, chainlinkAutomationConfig as currentConfig } from "@features/chainlink-automation/data"
+import { ChainlinkAutomationConfigs, GetStateResponse } from "@features/chainlink-automation/types"
 import { SupportedChain } from "@config"
 import { getWeb3Provider } from "@features/utils"
 import { automationRegistryBaseInterfaceABI } from "@abi"
@@ -15,19 +9,10 @@ import { isEqual } from "lodash"
 import { writeFile } from "fs/promises"
 import { format } from "prettier"
 
-const configToBePath = normalize(
-  "./src/features/chainlink-automation/data/chainlink-automation-configTOBE.json"
-)
+const configToBePath = normalize("./src/features/chainlink-automation/data/chainlink-automation-configTOBE.json")
 
-const getChainlinkAutomationConfig = async (
-  provider: ethers.providers.Provider,
-  registryAddress: string
-) => {
-  const registry = new ethers.Contract(
-    registryAddress,
-    automationRegistryBaseInterfaceABI,
-    provider
-  )
+const getChainlinkAutomationConfig = async (provider: ethers.providers.Provider, registryAddress: string) => {
+  const registry = new ethers.Contract(registryAddress, automationRegistryBaseInterfaceABI, provider)
   const state = (await registry.getState()) as GetStateResponse
   const {
     paymentPremiumPPB,
@@ -71,16 +56,11 @@ const getChainlinkAutomationConfigs = async () => {
       console.error(`Web3 provider not found for ${key}`)
     } else {
       try {
-        const config = await getChainlinkAutomationConfig(
-          provider,
-          registryAddress
-        )
+        const config = await getChainlinkAutomationConfig(provider, registryAddress)
         configs[key] = config
       } catch (error) {
         console.error(error)
-        console.error(
-          `Error while retriving chainlink automation config for ${key}`
-        )
+        console.error(`Error while retriving chainlink automation config for ${key}`)
       }
     }
   }
@@ -88,8 +68,7 @@ const getChainlinkAutomationConfigs = async () => {
 }
 
 const compareConfigs = async () => {
-  const toBeConfig: ChainlinkAutomationConfigs =
-    await getChainlinkAutomationConfigs()
+  const toBeConfig: ChainlinkAutomationConfigs = await getChainlinkAutomationConfigs()
   let result: { isEqual: boolean; toBeConfig?: ChainlinkAutomationConfigs }
   if (isEqual(JSON.stringify(currentConfig), JSON.stringify(toBeConfig))) {
     result = { isEqual: true }

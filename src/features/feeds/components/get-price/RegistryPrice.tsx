@@ -29,17 +29,11 @@ export const RegistryPrice = ({
       console.error(`web3 provider not found for chain ${supportedChain}`)
       return
     }
-    const feedRegistry = new ethers.Contract(
-      registryAddress,
-      feedRegistryInterfaceABI,
-      rpcProvider
-    )
+    const feedRegistry = new ethers.Contract(registryAddress, feedRegistryInterfaceABI, rpcProvider)
 
-    feedRegistry
-      .latestRoundData(baseAddress, quoteAddress)
-      .then((roundData: ROUND_DATA_RESPONSE) => {
-        setLatestPrice(roundData.answer.toString())
-      })
+    feedRegistry.latestRoundData(baseAddress, quoteAddress).then((roundData: ROUND_DATA_RESPONSE) => {
+      setLatestPrice(roundData.answer.toString())
+    })
   }
 
   const [latestPrice, setLatestPrice] = useState<string>("Latest Price")

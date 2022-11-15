@@ -11,16 +11,12 @@ const panelSlotKey = "panel." as const
 type TabSlot = `${typeof tabSlotKey}${string}`
 type PanelSlot = `${typeof panelSlotKey}${string}`
 
-function isTabSlotEntry(
-  entry: [string, ComponentChild]
-): entry is [TabSlot, ComponentChild] {
+function isTabSlotEntry(entry: [string, ComponentChild]): entry is [TabSlot, ComponentChild] {
   const [key] = entry
   return key.startsWith(tabSlotKey)
 }
 
-function isPanelSlotEntry(
-  entry: [string, ComponentChild]
-): entry is [PanelSlot, ComponentChild] {
+function isPanelSlotEntry(entry: [string, ComponentChild]): entry is [PanelSlot, ComponentChild] {
   const [key] = entry
   return key.startsWith(panelSlotKey)
 }
@@ -83,12 +79,7 @@ export function Tabs({ sharedStore, ...slots }: Props) {
             data-astro-tab
             id={key}
             key={key}
-            class={clsx(
-              curr === getBaseKeyFromTab(key)
-                ? button.primary
-                : button.secondary,
-              styles.tab
-            )}
+            class={clsx(curr === getBaseKeyFromTab(key) ? button.primary : button.secondary, styles.tab)}
           >
             {content}
           </button>

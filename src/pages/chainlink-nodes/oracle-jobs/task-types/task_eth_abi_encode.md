@@ -11,8 +11,8 @@ Encodes a bytes payload according to ETH ABI encoding, typically in order to per
 **Parameters**
 
 - `abi`: a canonical ETH ABI argument string. Should be formatted exactly as in Solidity. Each argument must be named. If a method name is provided, the 4-byte method signature is prepended to the result. Examples:
-    - `uint256 foo, bytes32 bar, address[] baz`
-    - `fulfillRequest(bytes32 requestID, uint256 answer)`
+  - `uint256 foo, bytes32 bar, address[] baz`
+  - `fulfillRequest(bytes32 requestID, uint256 answer)`
 - `data`: a map of the values to be encoded. The task will make a best effort at converting values to the appropriate types.
 
 **Outputs**

@@ -50,6 +50,7 @@ This core adapter compares a user-specified value with the value from the previo
 
 #### Solidity Example
 
+<!-- prettier-ignore -->
 ```solidity
 req.addInt("value", 10000);
 req.add("operator", "gte");
@@ -67,12 +68,14 @@ The core adapter walks the `copyPath` specified and returns the value found at t
 
 For the JSON object:
 
+<!-- prettier-ignore -->
 ```json
 { "RAW": { "ETH": { "USD": { "LASTMARKET": "_someValue" } } } }
 ```
 
 You would use the following for an array of strings:
 
+<!-- prettier-ignore -->
 ```solidity
 string[] memory path = new string(4);
 path[0] = "RAW";
@@ -84,6 +87,7 @@ req.addStringArray("copyPath", path);
 
 Or the following for a single comma-delimited string:
 
+<!-- prettier-ignore -->
 ```solidity
 req.add("copyPath", "RAW,ETH,USD,LASTMARKET");
 ```
@@ -94,6 +98,7 @@ Chainlink nodes prior to `1.0.0` supported dot delimited strings instead of comm
 
 #### Job Specification Example
 
+<!-- prettier-ignore -->
 ```json
 {
   "type": "Copy",
@@ -105,12 +110,14 @@ Chainlink nodes prior to `1.0.0` supported dot delimited strings instead of comm
 
 For arrays, you can access the path of an array by using the index. If this is your JSON:
 
+<!-- prettier-ignore -->
 ```json
 { "endpoint": [{ "path": "value" }] }
 ```
 
 You could get the `"value"` by:
 
+<!-- prettier-ignore -->
 ```solidity
 req.add("copyPath", "endpoint.0.path");
 ```
@@ -177,6 +184,7 @@ Currently not available on-chain. Available for job specs only.
 
 #### Solidity Example
 
+<!-- prettier-ignore -->
 ```solidity
 req.add("get", "http://example.com");
 req.add("queryParams", "firstKey=firstVal&secondKey=secondVal");
@@ -185,6 +193,7 @@ req.add("extPath", "price/BTC/USD");
 
 #### Job Specification Example
 
+<!-- prettier-ignore -->
 ```json
 {
   "type": "HttpGet",
@@ -221,6 +230,7 @@ Currently not available on-chain. Available for job specs only.
 
 #### Solidity Example
 
+<!-- prettier-ignore -->
 ```solidity
 req.add("post", "http://post.example.com");
 req.add("queryParams", "firstKey=firstVal&secondKey=secondVal");
@@ -261,12 +271,14 @@ The core adapter walks the `path` specified and returns the value found at that 
 
 For the stringified JSON:
 
+<!-- prettier-ignore -->
 ```json
 { "RAW": { "ETH": { "USD": { "LASTMARKET": "_someValue" } } } }
 ```
 
 You would use the following for an array of strings:
 
+<!-- prettier-ignore -->
 ```solidity
 string[] memory path = new string[](4);
 path[0] = "RAW";
@@ -278,6 +290,7 @@ req.addStringArray("path", path);
 
 Or the following for a single comma-delimited string:
 
+<!-- prettier-ignore -->
 ```solidity
 req.add("path", "RAW,ETH,USD,LASTMARKET");
 ```
@@ -288,6 +301,7 @@ Chainlink nodes prior to 1.0.0 support dot-delimited strings instead of comma-de
 
 #### Job Specification Example
 
+<!-- prettier-ignore -->
 ```json
 {
   "type": "JsonParse",
@@ -299,12 +313,14 @@ Chainlink nodes prior to 1.0.0 support dot-delimited strings instead of comma-de
 
 #### Parsing Arrays
 
+<!-- prettier-ignore -->
 ```solidity
 req.add("path", "3,standardId");
 ```
 
 The above example parses the 4th object of the following JSON response and returns 677 as a result:
 
+<!-- prettier-ignore -->
 ```javascript
 ;[
   {
@@ -336,6 +352,7 @@ The core adapter parses the input into a float and then multiplies it by the `ti
 
 #### Solidity Example
 
+<!-- prettier-ignore -->
 ```solidity
 run.addInt("times", 100);
 ```
@@ -382,12 +399,14 @@ You must set `ENABLE_EXPERIMENTAL_ADAPTERS=true` in order to use the sleep adapt
 
 #### Solidity Example
 
+<!-- prettier-ignore -->
 ```solidity
 req.addUint("until", now + 1 hours);
 ```
 
 #### Job Specification example
 
+<!-- prettier-ignore -->
 ```
 {
   "initiators": [

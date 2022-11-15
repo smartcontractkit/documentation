@@ -45,13 +45,13 @@ To make testing simple, jobs are configured with the following properties:
 
 <br>
 
-| Purpose                                                                                                                                                                                                                                                 | Tasks                                                                                                                                                                    | Job ID                             | Required&nbspParameters                                                                                                                                  |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **_GET>bytes_**: <br>HTTP&nbspGET&nbspto&nbspany&nbsppublic&nbspAPI <br>parse the response <br>return arbitrary-length raw byte data **_bytes_**. <br>The job specs can be found [here](/chainlink-nodes/job-specs/direct-request-get-bytes/)                                     | [Http](/chainlink-nodes/oracle-jobs/task-types/task_http)<br>[JsonParse](/chainlink-nodes/oracle-jobs/task-types/task_jsonparse)<br>[Ethabiencode](/chainlink-nodes/oracle-jobs/task-types/task_eth_abi_encode/)                                           | `7da2702f37fd48e5b1b9a5715e3509b6` | <ul><li>`get`: string</li><li>`path`:&nbsp[JSONPath&nbspexpression](https://jsonpath.com/) with comma(,) delimited string</li></ul>                      |
+| Purpose                                                                                                                                                                                                                                                                           | Tasks                                                                                                                                                                                                                                                                                 | Job ID                             | Required&nbspParameters                                                                                                                                  |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **_GET>bytes_**: <br>HTTP&nbspGET&nbspto&nbspany&nbsppublic&nbspAPI <br>parse the response <br>return arbitrary-length raw byte data **_bytes_**. <br>The job specs can be found [here](/chainlink-nodes/job-specs/direct-request-get-bytes/)                                     | [Http](/chainlink-nodes/oracle-jobs/task-types/task_http)<br>[JsonParse](/chainlink-nodes/oracle-jobs/task-types/task_jsonparse)<br>[Ethabiencode](/chainlink-nodes/oracle-jobs/task-types/task_eth_abi_encode/)                                                                      | `7da2702f37fd48e5b1b9a5715e3509b6` | <ul><li>`get`: string</li><li>`path`:&nbsp[JSONPath&nbspexpression](https://jsonpath.com/) with comma(,) delimited string</li></ul>                      |
 | **_GET>uint256_**: <br>HTTP&nbspGET&nbspto&nbspany&nbsppublic&nbspAPI <br>parse the reponse <br>multiply the result by a multiplier <br>return an unsigned integer **_uint256_** . <br> The job specs can be found [here](/chainlink-nodes/job-specs/direct-request-get-uint256/) | [Http](/chainlink-nodes/oracle-jobs/task-types/task_http)<br>[JsonParse](/chainlink-nodes/oracle-jobs/task-types/task_jsonparse)<br>[Multiply](/chainlink-nodes/oracle-jobs/task-types/task_multiply)<br>[Ethabiencode](/chainlink-nodes/oracle-jobs/task-types/task_eth_abi_encode/) | `ca98366cc7314957b8c012c72f05aeeb` | <ul><li>`get`: string</li><li>`path`:&nbsp[JSONPath&nbspexpression](https://jsonpath.com/) with comma(,) delimited string</li><li>`times`: int</li></ul> |
 | **_GET>int256_**: <br>HTTP&nbspGET&nbspto&nbspany&nbsppublic&nbspAPI <br>parse the response <br>multiply the result by a multiplier <br>return a signed integer **_int256_**. <br> The job specs can be found [here](/chainlink-nodes/job-specs/direct-request-get-int256/)       | [Http](/chainlink-nodes/oracle-jobs/task-types/task_http)<br>[JsonParse](/chainlink-nodes/oracle-jobs/task-types/task_jsonparse)<br>[Multiply](/chainlink-nodes/oracle-jobs/task-types/task_multiply)<br>[Ethabiencode](/chainlink-nodes/oracle-jobs/task-types/task_eth_abi_encode/) | `fcf4140d696d44b687012232948bdd5d` | <ul><li>`get`: string</li><li>`path`:&nbsp[JSONPath&nbspexpression](https://jsonpath.com/) with comma(,) delimited string</li><li>`times`: int</li></ul> |
-| **_GET>bool_**: <br>HTTP&nbspGET&nbspto&nbspany&nbsppublic&nbspAPI <br>parse the response <br>return a boolean **_bool_**. <br> The job specs can be found [here](/chainlink-nodes/job-specs/direct-request-get-bool/)                                                            | [Http](/chainlink-nodes/oracle-jobs/task-types/task_http)<br>[JsonParse](/chainlink-nodes/oracle-jobs/task-types/task_jsonparse)<br>[Ethabiencode](/chainlink-nodes/oracle-jobs/task-types/task_eth_abi_encode/)                                           | `c1c5e92880894eb6b27d3cae19670aa3` | <ul><li>`get`: string</li><li>`path`:&nbsp[JSONPath&nbspexpression](https://jsonpath.com/) with comma(,) delimited string</li></ul>                      |
-| **_GET>string_**: <br>HTTP&nbspGET&nbspto&nbspany&nbsppublic&nbspAPI <br>parse the response <br>return a sequence of characters **_string_**. <br> The job specs can be found [here](/chainlink-nodes/job-specs/direct-request-get-string/)                                       | [Http](/chainlink-nodes/oracle-jobs/task-types/task_http)<br>[JsonParse](/chainlink-nodes/oracle-jobs/task-types/task_jsonparse)<br>[Ethabiencode](/chainlink-nodes/oracle-jobs/task-types/task_eth_abi_encode/)                                           | `7d80a6386ef543a3abb52817f6707e3b` | <ul><li>`get`: string</li><li>`path`:&nbsp[JSONPath&nbspexpression](https://jsonpath.com/) with comma(,) delimited string</li></ul>                      |
+| **_GET>bool_**: <br>HTTP&nbspGET&nbspto&nbspany&nbsppublic&nbspAPI <br>parse the response <br>return a boolean **_bool_**. <br> The job specs can be found [here](/chainlink-nodes/job-specs/direct-request-get-bool/)                                                            | [Http](/chainlink-nodes/oracle-jobs/task-types/task_http)<br>[JsonParse](/chainlink-nodes/oracle-jobs/task-types/task_jsonparse)<br>[Ethabiencode](/chainlink-nodes/oracle-jobs/task-types/task_eth_abi_encode/)                                                                      | `c1c5e92880894eb6b27d3cae19670aa3` | <ul><li>`get`: string</li><li>`path`:&nbsp[JSONPath&nbspexpression](https://jsonpath.com/) with comma(,) delimited string</li></ul>                      |
+| **_GET>string_**: <br>HTTP&nbspGET&nbspto&nbspany&nbsppublic&nbspAPI <br>parse the response <br>return a sequence of characters **_string_**. <br> The job specs can be found [here](/chainlink-nodes/job-specs/direct-request-get-string/)                                       | [Http](/chainlink-nodes/oracle-jobs/task-types/task_http)<br>[JsonParse](/chainlink-nodes/oracle-jobs/task-types/task_jsonparse)<br>[Ethabiencode](/chainlink-nodes/oracle-jobs/task-types/task_eth_abi_encode/)                                                                      | `7d80a6386ef543a3abb52817f6707e3b` | <ul><li>`get`: string</li><li>`path`:&nbsp[JSONPath&nbspexpression](https://jsonpath.com/) with comma(,) delimited string</li></ul>                      |
 
 ### Examples
 
@@ -61,6 +61,7 @@ A full example can be found [here](/any-api/get-request/examples/large-responses
 
 ##### Request method
 
+<!-- prettier-ignore -->
 ```solidity
 function request() public {
   Chainlink.Request memory req = buildChainlinkRequest('7da2702f37fd48e5b1b9a5715e3509b6', address(this), this.fulfill.selector);
@@ -75,6 +76,7 @@ function request() public {
 
 ##### Callback method
 
+<!-- prettier-ignore -->
 ```solidity
 bytes public data;
 string public imageUrl;
@@ -90,6 +92,7 @@ A full example can be found [here](/any-api/get-request/examples/single-word-res
 
 ##### Request method
 
+<!-- prettier-ignore -->
 ```solidity
 function request() public {
   Chainlink.Request memory req = buildChainlinkRequest('ca98366cc7314957b8c012c72f05aeeb', address(this), this.fulfill.selector);
@@ -105,6 +108,7 @@ function request() public {
 
 ##### Callback method
 
+<!-- prettier-ignore -->
 ```solidity
 uint256 public volume;
 function fulfill(bytes32 _requestId, uint256 _volume) public recordChainlinkFulfillment(_requestId) {
@@ -116,6 +120,7 @@ function fulfill(bytes32 _requestId, uint256 _volume) public recordChainlinkFulf
 
 ##### Request method
 
+<!-- prettier-ignore -->
 ```solidity
 function request() public {
   Chainlink.Request memory req = buildChainlinkRequest('fcf4140d696d44b687012232948bdd5d', address(this), this.fulfill.selector);
@@ -131,6 +136,7 @@ function request() public {
 
 ##### Callback method
 
+<!-- prettier-ignore -->
 ```solidity
 int256 public volume;
 function fulfill(bytes32 _requestId, int256 _volume) public recordChainlinkFulfillment(_requestId) {
@@ -142,6 +148,7 @@ function fulfill(bytes32 _requestId, int256 _volume) public recordChainlinkFulfi
 
 ##### Request method
 
+<!-- prettier-ignore -->
 ```solidity
 function request() public {
   Chainlink.Request memory req = buildChainlinkRequest('c1c5e92880894eb6b27d3cae19670aa3', address(this), this.fulfill.selector);
@@ -156,6 +163,7 @@ function request() public {
 
 ##### Callback method
 
+<!-- prettier-ignore -->
 ```solidity
 bool public approved;
 function fulfill(bytes32 _requestId, bool _approved) public recordChainlinkFulfillment(_requestId) {
@@ -169,6 +177,7 @@ A full example can be found [here](/any-api/get-request/examples/array-response/
 
 ##### Request method
 
+<!-- prettier-ignore -->
 ```solidity
 function request() public {
   Chainlink.Request memory req = buildChainlinkRequest('7d80a6386ef543a3abb52817f6707e3b', address(this), this.fulfill.selector);
@@ -183,6 +192,7 @@ function request() public {
 
 ##### Callback method
 
+<!-- prettier-ignore -->
 ```solidity
 string public id;
 function fulfill(bytes32 _requestId, string memory _id) public recordChainlinkFulfillment(_requestId) {

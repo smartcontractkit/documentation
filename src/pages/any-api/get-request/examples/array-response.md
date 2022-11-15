@@ -37,6 +37,7 @@ curl -X 'GET' \
 
 The response should be similar to the following:
 
+<!-- prettier-ignore -->
 ```json
 [
   {

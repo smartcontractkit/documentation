@@ -4,9 +4,7 @@ section: ethereum
 date: Last Modified
 title: "Proof of Reserve Feeds"
 permalink: "docs/data-feeds/proof-of-reserve/"
-whatsnext: {
-  "Find contract addresses for Proof of Reserve Feeds":"/docs/data-feeds/proof-of-reserve/addresses/"
-}
+whatsnext: { "Find contract addresses for Proof of Reserve Feeds": "/docs/data-feeds/proof-of-reserve/addresses/" }
 ---
 
 Chainlink Proof of Reserve Feeds provide the status of the reserves for several assets. You can consume these feeds the same way as [Price Feeds](/data-feeds/price-feeds/).
@@ -15,7 +13,7 @@ To find a list of available Proof of Reserve Feeds, see the [Contract Addresses]
 
 ## Types of Proof of Reserve Feeds
 
-Reserves are available for both cross-chain assets and off-chain assets. Token issuers prove the reserves for their assets through several different methods: 
+Reserves are available for both cross-chain assets and off-chain assets. Token issuers prove the reserves for their assets through several different methods:
 
 - [Cross-chain reserves](#cross-chain-reserves):
   - Wallet address manager
@@ -53,6 +51,5 @@ Off-chain reserves provide their data using the following methods:
 Read answers from Proof of Reserve Feeds the same way that you use [Price Feeds](/data-feeds/price-feeds/).
 
 Using Solidity, your smart contract should reference [`AggregatorV3Interface`](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol), which defines the external functions implemented by Data Feeds.
-
 
 ::solidity-remix[samples/PriceFeeds/ReserveConsumerV3.sol]

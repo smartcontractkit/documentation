@@ -30,6 +30,6 @@ Some smart contracts require funding at their addresses so they can operate with
 
 :::caution[ Transaction fee didn't update?]
 
- You may need to click **Fastest**, **Fast**, **Slow**, or **Advanced Options** after entering the **Amount** to update the gas limit for the token transfer to be successful.
+You may need to click **Fastest**, **Fast**, **Slow**, or **Advanced Options** after entering the **Amount** to update the gas limit for the token transfer to be successful.
 
 :::

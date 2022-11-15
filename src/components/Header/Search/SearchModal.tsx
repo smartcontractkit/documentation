@@ -3,21 +3,13 @@ import React from "react"
 import styles from "./Search.module.css"
 import algoliasearch from "algoliasearch/lite"
 
-import {
-  InstantSearch,
-  useInstantSearch,
-  useHits,
-  UseHitsProps,
-} from "react-instantsearch-hooks-web"
+import { InstantSearch, useInstantSearch, useHits, UseHitsProps } from "react-instantsearch-hooks-web"
 
 import { Modal } from "../../Modal/Modal"
 import { SearchInput } from "./SearchInput"
 import { clsx } from "~/lib"
 
-const searchClient = algoliasearch(
-  CONFIG.ALGOLIA.appId,
-  CONFIG.ALGOLIA.publicApiKey
-)
+const searchClient = algoliasearch(CONFIG.ALGOLIA.appId, CONFIG.ALGOLIA.publicApiKey)
 
 const recommendedArticles = [
   {
@@ -41,17 +33,13 @@ const recommendedArticles = [
 function EmptyQueryBoundary({ children, fallback }) {
   const { indexUiState } = useInstantSearch()
 
-  const recentArticles = JSON.parse(
-    localStorage.getItem("recentArticles") || "[]"
-  )
+  const recentArticles = JSON.parse(localStorage.getItem("recentArticles") || "[]")
 
   if (!indexUiState.query) {
     return (
       <div className={styles.queryResults}>
         <div>
-          <h6 style={{ paddingLeft: "var(--space-2x)" }}>
-            Recommended articles
-          </h6>
+          <h6 style={{ paddingLeft: "var(--space-2x)" }}>Recommended articles</h6>
           <div className={styles.hitWrapper}>
             <ul className={styles.hitList}>
               {recommendedArticles.map((article) => (
@@ -71,15 +59,11 @@ function EmptyQueryBoundary({ children, fallback }) {
         <div>
           {!!recentArticles.length && (
             <>
-              <h6 style={{ paddingLeft: "var(--space-2x)" }}>
-                Recently viewed
-              </h6>
+              <h6 style={{ paddingLeft: "var(--space-2x)" }}>Recently viewed</h6>
               <div className={styles.hitWrapper}>
                 <ul className={styles.hitList}>
                   {recentArticles.map((article) => (
-                    <li
-                      style={{ borderRadius: "var(--border-radius-primary)" }}
-                    >
+                    <li style={{ borderRadius: "var(--border-radius-primary)" }}>
                       <a
                         style={{ padding: "var(--space-1x) var(--space-2x)" }}
                         href={article.url}
@@ -112,10 +96,7 @@ function NoResultsBoundary({ children }) {
         <div className={styles.noQueryFallback}>
           <div>
             <h4>No results found</h4>
-            <div>
-              We couldn't find anything matching your search. Try again with a
-              different term.
-            </div>
+            <div>We couldn't find anything matching your search. Try again with a different term.</div>
           </div>
         </div>
         <div hidden>{children}</div>
@@ -125,11 +106,7 @@ function NoResultsBoundary({ children }) {
 
   return children
 }
-function CustomHits({
-  title,
-  hitClassName,
-  ...props
-}: UseHitsProps & { title: string; hitClassName?: string }) {
+function CustomHits({ title, hitClassName, ...props }: UseHitsProps & { title: string; hitClassName?: string }) {
   const { hits, results } = useHits(props)
 
   if (hits.length === 0) return null
@@ -156,13 +133,7 @@ function CustomHits({
   )
 }
 
-export function SearchModal({
-  isOpen,
-  onClose,
-}: {
-  isOpen: boolean
-  onClose: () => void
-}) {
+export function SearchModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const getIndexName = () => {
     if (typeof window === "undefined") return
     const host = window.location.hostname
@@ -190,10 +161,7 @@ export function SearchModal({
                   }}
                   hitClassName="title-match-hit"
                 />
-                <CustomHits
-                  title="Content Matches"
-                  hitClassName="content-match-hit"
-                />
+                <CustomHits title="Content Matches" hitClassName="content-match-hit" />
               </div>
             </NoResultsBoundary>
           </EmptyQueryBoundary>

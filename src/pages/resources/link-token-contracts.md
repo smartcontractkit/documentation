@@ -147,14 +147,14 @@ RBTC is used to pay for transactions on RSK mainnet. Use [RSK’s built in PowPe
 
 xDAI is used to pay for transactions on Gnosis Chain mainnet. Use the [xDai Bridge](https://bridge.gnosischain.com/) to send DAI from Ethereum Mainnet to Gnosis Chain and convert it to xDAI. Use [OmniBridge](https://omni.gnosischain.com/bridge) to send LINK from Ethereum Mainnet to Gnosis Chain.
 
-| Parameter      | Value                                                                                                                                                                                                                       |
-| :------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ETH_CHAIN_ID` | `100`                                                                                                                                                                                                                       |
+| Parameter      | Value                                                                                                                                                                                                             |
+| :------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ETH_CHAIN_ID` | `100`                                                                                                                                                                                                             |
 | Address        | <a class="erc-token-address" id="100_0xE2e73A1c69ecF83F464EFCE6A5be353a37cA09b2" href="https://gnosisscan.io/address/0xE2e73A1c69ecF83F464EFCE6A5be353a37cA09b2">`0xE2e73A1c69ecF83F464EFCE6A5be353a37cA09b2`</a> |
-| Name           | Chainlink Token on Gnosis Chain (xDai)                                                                                                                                                                                      |
-| Symbol         | LINK                                                                                                                                                                                                                        |
-| Decimals       | 18                                                                                                                                                                                                                          |
-| Network status | [gnosisscan.io/](https://gnosisscan.io/)                                                                                                                                                         |
+| Name           | Chainlink Token on Gnosis Chain (xDai)                                                                                                                                                                            |
+| Symbol         | LINK                                                                                                                                                                                                              |
+| Decimals       | 18                                                                                                                                                                                                                |
+| Network status | [gnosisscan.io/](https://gnosisscan.io/)                                                                                                                                                                          |
 
 ## Avalanche
 

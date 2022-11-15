@@ -1,5 +1,15 @@
 import { Chain } from "../data/chains"
 
+interface Docs {
+  nftFloorUnits: any
+  assetName?: string
+  feedCategory?: string
+  feedType?: string
+  hidden?: boolean
+  porAuditor?: string
+  porType?: string
+  shutdownDate?: string
+}
 export interface ChainMetadata {
   compareOffchain: string
   contractAddress: string
@@ -24,24 +34,11 @@ export interface ChainMetadata {
   docs: Docs
 }
 
-interface Docs {
-  nftFloorUnits: any
-  assetName?: string
-  feedCategory?: string
-  feedType?: string
-  hidden?: boolean
-  porAuditor?: string
-  porType?: string
-  shutdownDate?: string
-}
-
 export const getFeedsMetadata = (url: string): Promise<ChainMetadata[]> => {
   return fetch(url).then((res) => res.json())
 }
 
-export const getChainMetadata = async (
-  chain: Chain
-): Promise<ChainMetadata | any> => {
+export const getChainMetadata = async (chain: Chain): Promise<ChainMetadata | any> => {
   const requests = chain.networks.map((nw) =>
     nw?.rddUrl
       ? getFeedsMetadata(nw?.rddUrl).then((metadata) => ({

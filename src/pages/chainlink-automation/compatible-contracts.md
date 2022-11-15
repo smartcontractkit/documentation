@@ -75,14 +75,8 @@ Because `checkUpkeep` is only off-chain in simulation it is best to treat this a
 ```solidity
 function checkUpkeep(
   bytes calldata checkData
-)
-  external
-  view
-  override
-  returns (
-    bool upkeepNeeded,
-    bytes memory performData
-  );
+) external view override returns (bool upkeepNeeded, bytes memory performData);
+
 ```
 
 Below are the parameters and return values of the `checkUpkeep` function. Click each value to learn more about its design patterns and best practices:
@@ -129,9 +123,8 @@ During registration you have to specify the maximum gas limit that we should all
 Ensure that your `performUpkeep` is _idempotent_. Your `performUpkeep` function should change state such that `checkUpkeep` will not return `true` for the same subset of work once said work is complete. Otherwise the Upkeep will remain eligible and result in multiple performances by the Chainlink Automation Network on the exactly same subset of work. As a best practice, always [revalidate](#revalidate-performupkeep) conditions for your upkeep at the start of your `performUpkeep` function.
 
 ```solidity
-function performUpkeep(
-  bytes calldata performData
-) external override;
+function performUpkeep(bytes calldata performData) external override;
+
 ```
 
 **Parameters:**

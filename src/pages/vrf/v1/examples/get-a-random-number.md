@@ -4,11 +4,7 @@ section: legacy
 date: Last Modified
 title: "Get a Random Number [v1]"
 permalink: "docs/vrf/v1/examples/get-a-random-number/"
-whatsnext:
-  {
-    "API Reference": "/vrf/v1/api-reference/",
-    "Supported Networks": "/vrf/v1/supported-networks/",
-  }
+whatsnext: { "API Reference": "/vrf/v1/api-reference/", "Supported Networks": "/vrf/v1/supported-networks/" }
 metadata:
   description: "How to generate a random number inside a smart contract using Chainlink VRF."
 setup: |

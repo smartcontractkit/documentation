@@ -6,86 +6,35 @@ import { ChainNetwork } from "../data/chains"
 import tableStyles from "./Tables.module.css"
 const feedCategories = {
   verified: (
-    <span
-      className={clsx(
-        feedList.hoverText,
-        tableStyles.statusIcon,
-        "feed-category"
-      )}
-      title="Verified"
-    >
-      <a
-        href="/docs/selecting-data-feeds/#🟢-verified-feeds"
-        alt="Verified"
-        target="_blank"
-      >
+    <span className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")} title="Verified">
+      <a href="/docs/selecting-data-feeds/#🟢-verified-feeds" alt="Verified" target="_blank">
         🟢
       </a>
     </span>
   ),
   monitored: (
-    <span
-      className={clsx(
-        feedList.hoverText,
-        tableStyles.statusIcon,
-        "feed-category"
-      )}
-      title="Monitored"
-    >
-      <a
-        href="/docs/selecting-data-feeds/#🟡-monitored-feeds"
-        alt="Monitored"
-        target="_blank"
-      >
+    <span className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")} title="Monitored">
+      <a href="/docs/selecting-data-feeds/#🟡-monitored-feeds" alt="Monitored" target="_blank">
         🟡
       </a>
     </span>
   ),
   custom: (
-    <span
-      className={clsx(
-        feedList.hoverText,
-        tableStyles.statusIcon,
-        "feed-category"
-      )}
-      title="Custom"
-    >
-      <a
-        href="/docs/selecting-data-feeds/#-custom-feeds"
-        alt="Custom"
-        target="_blank"
-      >
+    <span className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")} title="Custom">
+      <a href="/docs/selecting-data-feeds/#-custom-feeds" alt="Custom" target="_blank">
         🔵
       </a>
     </span>
   ),
   specialized: (
-    <span
-      className={clsx(
-        feedList.hoverText,
-        tableStyles.statusIcon,
-        "feed-category"
-      )}
-      title="Specialized"
-    >
-      <a
-        href="/docs/selecting-data-feeds/#-specialized-feeds"
-        alt="Specialized"
-        target="_blank"
-      >
+    <span className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")} title="Specialized">
+      <a href="/docs/selecting-data-feeds/#-specialized-feeds" alt="Specialized" target="_blank">
         ⚫
       </a>
     </span>
   ),
   deprecating: (
-    <span
-      className={clsx(
-        feedList.hoverText,
-        tableStyles.statusIcon,
-        "feed-category"
-      )}
-      title="Deprecating"
-    >
+    <span className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")} title="Deprecating">
       <a href="#categories" alt="Deprecating" target="_blank">
         ⭕
       </a>
@@ -93,13 +42,7 @@ const feedCategories = {
   ),
 }
 
-const DefaultTHead = ({
-  showExtraDetails,
-  isTestnet = false,
-}: {
-  showExtraDetails: boolean
-  isTestnet?: boolean
-}) => (
+const DefaultTHead = ({ showExtraDetails, isTestnet = false }: { showExtraDetails: boolean; isTestnet?: boolean }) => (
   <thead>
     <tr>
       <th class={tableStyles.heading}>Pair</th>
@@ -121,11 +64,7 @@ const DefaultTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => (
         {proxy.name}
       </div>
       {proxy.docs.shutdownDate && (
-
-        <div className={clsx(
-          feedList.shutDate
-        )}
-        >
+        <div className={clsx(feedList.shutDate)}>
           <hr />
           Deprecating:
           <br />
@@ -138,15 +77,9 @@ const DefaultTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => (
       <div className={tableStyles.assetName}>{proxy.assetName}</div>
     </td>
     <td aria-hidden={isTestnet}>{proxy.feedType}</td>
-    <td aria-hidden={!showExtraDetails}>
-      {proxy.threshold ? proxy.threshold + "%" : "N/A"}
-    </td>
-    <td aria-hidden={!showExtraDetails}>
-      {proxy.heartbeat ? proxy.heartbeat + "s" : "N/A"}
-    </td>
-    <td aria-hidden={!showExtraDetails}>
-      {proxy.decimals ? proxy.decimals : "N/A"}
-    </td>
+    <td aria-hidden={!showExtraDetails}>{proxy.threshold ? proxy.threshold + "%" : "N/A"}</td>
+    <td aria-hidden={!showExtraDetails}>{proxy.heartbeat ? proxy.heartbeat + "s" : "N/A"}</td>
+    <td aria-hidden={!showExtraDetails}>{proxy.decimals ? proxy.decimals : "N/A"}</td>
     <td>
       <div className={tableStyles.assetAddress}>
         <button
@@ -158,10 +91,7 @@ const DefaultTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => (
         </button>
         <a
           class={tableStyles.addressLink}
-          href={network.explorerUrl.replace(
-            "%s",
-            proxy.proxyAddress ?? proxy.contractAddress
-          )}
+          href={network.explorerUrl.replace("%s", proxy.proxyAddress ?? proxy.contractAddress)}
         >
           {proxy.proxyAddress ?? proxy.contractAddress}
         </a>
@@ -188,12 +118,7 @@ const ProofOfReserveTHead = ({
   </thead>
 )
 
-const ProofOfReserveTr = ({
-  network,
-  proxy,
-  showExtraDetails,
-  isTestnet = false,
-}) => (
+const ProofOfReserveTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => (
   <tr>
     <td class={tableStyles.pairCol}>
       <div className={tableStyles.assetPair}>
@@ -201,10 +126,7 @@ const ProofOfReserveTr = ({
         {proxy.name}
       </div>
       {proxy.docs.shutdownDate && (
-        <div className={clsx(
-          feedList.shutDate
-        )}
-        >
+        <div className={clsx(feedList.shutDate)}>
           <hr />
           Deprecating:
           <br />
@@ -213,21 +135,12 @@ const ProofOfReserveTr = ({
       )}
     </td>
 
-    <td aria-hidden={!showExtraDetails}>
-      {proxy.threshold ? proxy.threshold + "%" : "N/A"}
-    </td>
-    <td aria-hidden={!showExtraDetails}>
-      {proxy.heartbeat ? proxy.heartbeat : "N/A"}
-    </td>
-    <td aria-hidden={!showExtraDetails}>
-      {proxy.decimals ? proxy.decimals : "N/A"}
-    </td>
+    <td aria-hidden={!showExtraDetails}>{proxy.threshold ? proxy.threshold + "%" : "N/A"}</td>
+    <td aria-hidden={!showExtraDetails}>{proxy.heartbeat ? proxy.heartbeat : "N/A"}</td>
+    <td aria-hidden={!showExtraDetails}>{proxy.decimals ? proxy.decimals : "N/A"}</td>
     <td>
       <div className={tableStyles.assetAddress}>
-        <a
-          class={tableStyles.addressLink}
-          href={network.explorerUrl.replace("%s", proxy.proxyAddress)}
-        >
+        <a class={tableStyles.addressLink} href={network.explorerUrl.replace("%s", proxy.proxyAddress)}>
           {proxy.proxyAddress}
         </a>
         <button
@@ -264,13 +177,7 @@ const ProofOfReserveTr = ({
   </tr>
 )
 
-const NftFloorTHead = ({
-  showExtraDetails,
-  isTestnet = false,
-}: {
-  showExtraDetails: boolean
-  isTestnet?: boolean
-}) => (
+const NftFloorTHead = ({ showExtraDetails, isTestnet = false }: { showExtraDetails: boolean; isTestnet?: boolean }) => (
   <thead>
     <tr>
       <th class={tableStyles.heading}>NFT Floor Pricing Feed</th>
@@ -282,12 +189,7 @@ const NftFloorTHead = ({
     </tr>
   </thead>
 )
-const NftFloorTr = ({
-  network,
-  proxy,
-  showExtraDetails,
-  isTestnet = false,
-}) => (
+const NftFloorTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => (
   <tr>
     <td class={tableStyles.pairCol}>
       <div className={tableStyles.assetPair}>
@@ -295,10 +197,7 @@ const NftFloorTr = ({
         {proxy.name}
       </div>
       {proxy.docs.shutdownDate && (
-        <div className={clsx(
-          feedList.shutDate
-        )}
-        >
+        <div className={clsx(feedList.shutDate)}>
           <hr />
           Deprecating:
           <br />
@@ -307,15 +206,9 @@ const NftFloorTr = ({
       )}
     </td>
     <td>{proxy.docs.nftFloorUnits}</td>
-    <td aria-hidden={!showExtraDetails}>
-      {proxy.threshold ? proxy.threshold + "%" : "N/A"}
-    </td>
-    <td aria-hidden={!showExtraDetails}>
-      {proxy.heartbeat ? proxy.heartbeat : "N/A"}
-    </td>
-    <td aria-hidden={!showExtraDetails}>
-      {proxy.decimals ? proxy.decimals : "N/A"}
-    </td>
+    <td aria-hidden={!showExtraDetails}>{proxy.threshold ? proxy.threshold + "%" : "N/A"}</td>
+    <td aria-hidden={!showExtraDetails}>{proxy.heartbeat ? proxy.heartbeat : "N/A"}</td>
+    <td aria-hidden={!showExtraDetails}>{proxy.decimals ? proxy.decimals : "N/A"}</td>
     <td>
       <div className={tableStyles.assetAddress}>
         <button
@@ -325,10 +218,7 @@ const NftFloorTr = ({
         >
           <img src="/assets/icons/copyIcon.svg" />
         </button>
-        <a
-          class={tableStyles.addressLink}
-          href={network.explorerUrl.replace("%s", proxy.proxyAddress)}
-        >
+        <a class={tableStyles.addressLink} href={network.explorerUrl.replace("%s", proxy.proxyAddress)}>
           {proxy.proxyAddress}
         </a>
       </div>
@@ -370,27 +260,9 @@ export const MainnetTable = ({
         <tbody>
           {filteredMetadata.map((proxy) => (
             <>
-              {isPor && (
-                <ProofOfReserveTr
-                  network={network}
-                  proxy={proxy}
-                  showExtraDetails={showExtraDetails}
-                />
-              )}
-              {isDefault && (
-                <DefaultTr
-                  network={network}
-                  proxy={proxy}
-                  showExtraDetails={showExtraDetails}
-                />
-              )}
-              {isNftFloor && (
-                <NftFloorTr
-                  network={network}
-                  proxy={proxy}
-                  showExtraDetails={showExtraDetails}
-                />
-              )}
+              {isPor && <ProofOfReserveTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
+              {isDefault && <DefaultTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
+              {isNftFloor && <NftFloorTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
             </>
           ))}
         </tbody>
@@ -424,41 +296,18 @@ export const TestnetTable = ({
   return (
     <div>
       <table class={tableStyles.table}>
-        {isPor && (
-          <ProofOfReserveTHead showExtraDetails={showExtraDetails} isTestnet />
-        )}
-        {isDefault && (
-          <DefaultTHead showExtraDetails={showExtraDetails} isTestnet />
-        )}
-        {isNftFloor && (
-          <NftFloorTHead showExtraDetails={showExtraDetails} isTestnet />
-        )}
+        {isPor && <ProofOfReserveTHead showExtraDetails={showExtraDetails} isTestnet />}
+        {isDefault && <DefaultTHead showExtraDetails={showExtraDetails} isTestnet />}
+        {isNftFloor && <NftFloorTHead showExtraDetails={showExtraDetails} isTestnet />}
         <tbody>
           {filteredMetadata.map((proxy) => (
             <>
               {isPor && (
-                <ProofOfReserveTr
-                  network={network}
-                  proxy={proxy}
-                  showExtraDetails={showExtraDetails}
-                  isTestnet
-                />
+                <ProofOfReserveTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} isTestnet />
               )}
-              {isDefault && (
-                <DefaultTr
-                  network={network}
-                  proxy={proxy}
-                  showExtraDetails={showExtraDetails}
-                  isTestnet
-                />
-              )}
+              {isDefault && <DefaultTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} isTestnet />}
               {isNftFloor && (
-                <NftFloorTr
-                  network={network}
-                  proxy={proxy}
-                  showExtraDetails={showExtraDetails}
-                  isTestnet
-                />
+                <NftFloorTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} isTestnet />
               )}
             </>
           ))}

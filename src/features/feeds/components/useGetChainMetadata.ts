@@ -1,5 +1,5 @@
 import { useEffect, useState } from "preact/hooks"
-import { getChainMetadata, getFeedsMetadata } from "../api"
+import { getChainMetadata } from "../api"
 import { Chain } from "../data/chains"
 
 export function useGetChainMetadata(chain: Chain, { initialCache }) {

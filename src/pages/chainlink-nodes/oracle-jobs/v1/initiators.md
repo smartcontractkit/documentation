@@ -5,9 +5,7 @@ date: Last Modified
 title: "Initiators [v1]"
 permalink: "docs/initiators/"
 whatsnext:
-  {
-    "Introduction to External Initiators": "/chainlink-nodes/external-initiators/external-initiators-introduction/",
-  }
+  { "Introduction to External Initiators": "/chainlink-nodes/external-initiators/external-initiators-introduction/" }
 ---
 
 # REMOVED
@@ -29,6 +27,7 @@ The `Cron` initiator is a simple way to schedule recurring job runs, using [stan
 
 ### Example
 
+<!-- prettier-ignore -->
 ```json cron
 "initiators": [
     {
@@ -50,6 +49,7 @@ The `EthLog` initiator creates an Ethereum log filter, and when any log comes in
 
 ### Example
 
+<!-- prettier-ignore -->
 ```json ethlog
 "initiators": [
     {
@@ -71,6 +71,7 @@ You can create an external initiator by running the `chainlink initiators create
 
 ### Example
 
+<!-- prettier-ignore -->
 ```json external
 "initiators": [
     {
@@ -105,6 +106,7 @@ The `fluxmonitor` is the current initiator used by the [Chainlink Data Feeds](ht
 
 ### Example
 
+<!-- prettier-ignore -->
 ```json
 {
   "type": "fluxmonitor",
@@ -150,6 +152,7 @@ The `RunAt` initiator triggers a one off job run at the time specified.
 
 ### Example
 
+<!-- prettier-ignore -->
 ```json runat
 "initiators": [
     {
@@ -175,6 +178,7 @@ A new run created by a `RunLog` is automatically given the parameters needed for
 
 ### Example
 
+<!-- prettier-ignore -->
 ```json runlog
 "initiators": [
     {
@@ -204,6 +208,7 @@ For convenience, there is a "Run" button in the operator web UI for the job whic
 
 ### Example
 
+<!-- prettier-ignore -->
 ```json web
 "initiators": [
     {

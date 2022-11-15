@@ -1,5 +1,4 @@
 /** @jsxImportSource preact */
-import h from "preact"
 import { useEffect, useState } from "preact/hooks"
 import { MainnetTable, TestnetTable } from "./Tables"
 import feedList from "./FeedList.module.css"
@@ -8,13 +7,11 @@ import button from "@chainlink/design-system/button.module.css"
 import { updateTableOfContents } from "~/components/RightSidebar/TableOfContents/tocStore"
 import { ALL_CHAINS, Chain, CHAINS, SOLANA_CHAINS } from "../data/chains"
 import { useGetChainMetadata } from "./useGetChainMetadata"
-import { Aside } from "~/components"
 import { ChainMetadata } from "../api"
 import useQueryString from "~/hooks/useQueryString"
 
 export type DataFeedType = "default" | "por" | "nftFloor"
 export const FeedList = ({
-  initialNetwork = "ethereum",
   dataFeedType = "default",
   ecosystem = "",
   initialCache,
@@ -24,23 +21,12 @@ export const FeedList = ({
   ecosystem?: string
   initialCache?: Record<string, ChainMetadata>
 }) => {
-  const chains =
-    ecosystem === "deprecating"
-      ? ALL_CHAINS
-      : ecosystem === "solana"
-      ? SOLANA_CHAINS
-      : CHAINS
+  const chains = ecosystem === "deprecating" ? ALL_CHAINS : ecosystem === "solana" ? SOLANA_CHAINS : CHAINS
 
-  const [selectedChain, setSelectedChain] = useQueryString(
-    "network",
-    chains[0].page
-  )
+  const [selectedChain, setSelectedChain] = useQueryString("network", chains[0].page)
   const [showExtraDetails, setShowExtraDetails] = useState(false)
 
-  const chainMetadata = useGetChainMetadata(
-    chains.filter((chain) => chain.page === selectedChain)[0],
-    { initialCache }
-  )
+  const chainMetadata = useGetChainMetadata(chains.filter((chain) => chain.page === selectedChain)[0], { initialCache })
 
   function handleNetworkSelect(chain: Chain) {
     setSelectedChain(chain.page)
@@ -67,8 +53,7 @@ export const FeedList = ({
                     .filter((chain) => {
                       if (isPor) return chain.tags?.includes("proofOfReserve")
 
-                      if (isNftFloor)
-                        return chain.tags?.includes("nftFloorPrice")
+                      if (isNftFloor) return chain.tags?.includes("nftFloorPrice")
 
                       return chain.tags?.includes("default")
                     })
@@ -78,17 +63,10 @@ export const FeedList = ({
                         id={chain.page}
                         role="tab"
                         aria-selected={selectedChain === chain.page}
-                        class={clsx(
-                          button.tertiary,
-                          feedList.networkSwitchButton
-                        )}
+                        class={clsx(button.tertiary, feedList.networkSwitchButton)}
                         onClick={() => handleNetworkSelect(chain)}
                       >
-                        <img
-                          src={chain.img}
-                          title={chain.label}
-                          loading="lazy"
-                        />
+                        <img src={chain.img} title={chain.label} loading="lazy" />
                         <span>{chain.label}</span>
                       </button>
                     ))}
@@ -97,17 +75,11 @@ export const FeedList = ({
             </div>
           )}
 
-          {(selectedChain === "arbitrum" ||
-            selectedChain === "optimism" ||
-            selectedChain === "metis") && (
+          {(selectedChain === "arbitrum" || selectedChain === "optimism" || selectedChain === "metis") && (
             <p>
-              This is an L2 network. As a best practice, use the L2 sequencer
-              feed to verify the status of the sequencer when running
-              applications on L2 networks. See the{" "}
-              <a href="/docs/data-feeds/l2-sequencer-feeds/">
-                L2 Sequencer Uptime Feeds
-              </a>{" "}
-              page for examples.
+              This is an L2 network. As a best practice, use the L2 sequencer feed to verify the status of the sequencer
+              when running applications on L2 networks. See the{" "}
+              <a href="/docs/data-feeds/l2-sequencer-feeds/">L2 Sequencer Uptime Feeds</a> page for examples.
             </p>
           )}
 
@@ -120,13 +92,9 @@ export const FeedList = ({
             </p>
           )}
 
-          {chainMetadata.error && (
-            <p>There was an error loading the feeds...</p>
-          )}
+          {chainMetadata.error && <p>There was an error loading the feeds...</p>}
 
-          {chainMetadata.loading && !chainMetadata.processedData && (
-            <p>Loading...</p>
-          )}
+          {chainMetadata.loading && !chainMetadata.processedData && <p>Loading...</p>}
           {chainMetadata.processedData?.networks
             .filter((network) => {
               if (isDeprecating) {
@@ -150,10 +118,7 @@ export const FeedList = ({
                     <h2 id={network.name}>
                       {network.name}{" "}
                       <a className="anchor" href={`#${network.name}`}>
-                        <img
-                          src="/images/link.svg"
-                          alt="Link to this section"
-                        />
+                        <img src="/images/link.svg" alt="Link to this section" />
                       </a>
                     </h2>
                     <label>
@@ -178,10 +143,7 @@ export const FeedList = ({
                       <h2 id={network.name}>
                         {network.name}{" "}
                         <a className="anchor" href={`#${network.name}`}>
-                          <img
-                            src="/images/link.svg"
-                            alt="Link to this section"
-                          />
+                          <img src="/images/link.svg" alt="Link to this section" />
                         </a>
                       </h2>
                       <label>
@@ -193,11 +155,7 @@ export const FeedList = ({
                         />{" "}
                         Show more details
                       </label>
-                      <TestnetTable
-                        network={network}
-                        showExtraDetails={showExtraDetails}
-                        dataFeedType={dataFeedType}
-                      />
+                      <TestnetTable network={network} showExtraDetails={showExtraDetails} dataFeedType={dataFeedType} />
                     </div>
                   )
                 )}

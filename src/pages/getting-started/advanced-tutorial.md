@@ -59,6 +59,7 @@ Let's walk through a real example, where you will retrieve 24 volumes of the [ET
 
 1. [HTTP](/chainlink-nodes/oracle-jobs/task-types/task_http) calls the API and returns the body of an HTTP GET result for [ETH/USD pair](https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETH&tsyms=USD). Example:
 
+<!-- prettier-ignore -->
 ```json
 {"RAW":
   {"ETH":
@@ -117,6 +118,7 @@ If all the parameters are defined within the Oracle job, the only things a smart
 
 This will make your smart contract much more succinct. The `requestVolumeData` function from the code example [above](#contract-example) would look more like this:
 
+<!-- prettier-ignore -->
 ```solidity
 function requestVolumeData() public returns (bytes32 requestId) {
     Chainlink.Request memory req = buildChainlinkRequest(jobId, address(this), this.fulfill.selector);

@@ -14,12 +14,14 @@ External initiators are disabled on nodes by default. Set the `FEATURE_EXTERNAL_
 
 To create an external initiator you must use the remote API. You can do this yourself, like so:
 
+<!-- prettier-ignore -->
 ```text
 POST http://<your chainlink node>/v2/external_initiators -d <PAYLOAD>
 ```
 
 where payload is a JSON blob that contains:
 
+<!-- prettier-ignore -->
 ```json
 {
   "name": <MANDATORY UNIQUE NAME>,
@@ -31,12 +33,14 @@ If a URL is provided, Chainlink will notify this URL of added and deleted jobs t
 
 On creation:
 
+<!-- prettier-ignore -->
 ```text
 POST <URL> -d {"jobId": <job external UUID>, "type": <name of external initiator>, "params": <optional arbitrary JSON specified at job creation time>}
 ```
 
 On deletion:
 
+<!-- prettier-ignore -->
 ```text
 DELETE <URL>/<job external UUID>
 ```
@@ -45,6 +49,7 @@ You can use the chainlink client for convenience to access this API.
 
 Enter the [Chainlink nodes CLI](/chainlink-nodes/miscellaneous/#execute-commands-running-docker) and run the following command
 
+<!-- prettier-ignore -->
 ```shell
 chainlink initiators create <NAME> <URL>
 ```

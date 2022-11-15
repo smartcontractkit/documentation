@@ -242,4 +242,4 @@ export const NETWORKS = [
       },
     ],
   },
-];
+]

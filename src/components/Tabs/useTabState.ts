@@ -3,10 +3,7 @@ import { useState, useEffect } from "preact/hooks"
 import { useStore } from "@nanostores/preact"
 import { tabStore } from "./store"
 
-export function useTabState(
-  initialCurr: string,
-  storeKey?: string
-): [string, (curr: string) => void] {
+export function useTabState(initialCurr: string, storeKey?: string): [string, (curr: string) => void] {
   const $tabStore = useStore(tabStore)
   // Why use a local state variable alongside the shared store?
   // This ensures a nice SSR result, without waiting for the store to get set on the client!

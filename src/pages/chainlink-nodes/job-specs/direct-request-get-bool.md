@@ -2,8 +2,8 @@
 layout: ../../../layouts/MainLayout.astro
 section: nodeOperator
 date: Last Modified
-title: 'GET > Bool Example Job Spec'
-permalink: 'docs/direct-request-get-bool/'
+title: "GET > Bool Example Job Spec"
+permalink: "docs/direct-request-get-bool/"
 ---
 
 This is an example v2 (TOML) job spec for calling any public API, parsing the result then returning a _bool_ in one Chainlink API Call. Note that the job calls the `fulfillOracleRequest2` function. If you are a node operator, use an [Operator contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/Operator.sol) with this job.

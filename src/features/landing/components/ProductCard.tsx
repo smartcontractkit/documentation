@@ -1,5 +1,4 @@
 /** @jsxImportSource preact */
-import h from "preact"
 import { clsx } from "~/lib"
 
 import { VideoPlayerIcon } from "../assets/VideoPlayerIcon"
@@ -50,11 +49,7 @@ export const ProductCard = (props: ProductCardProps) => {
             <h6 class="paragraph-100-bold">Available on:</h6>
             <div class={productCard.chainsWrapper}>
               {props.chains.map((chain) => (
-                <img
-                  src={`/assets/chains/${chain.id}.svg`}
-                  class={productCard.chainIcon}
-                  title={chain.title}
-                />
+                <img src={`/assets/chains/${chain.id}.svg`} class={productCard.chainIcon} title={chain.title} />
               ))}
             </div>
           </div>

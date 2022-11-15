@@ -6,20 +6,20 @@ title: "Less Than Task"
 permalink: "docs/jobs/task-types/lessthan/"
 ---
 
-Returns a boolean, result of computing `left` < `right`.
+Returns a boolean, result of computing `left < right`.
 
 **Parameters**
 
 - `left`: the left hand side of comparison. Possible values:
-    - number
-    - stringified number
-    - bytes-ified number
-    - `$(variable)`
+  - number
+  - stringified number
+  - bytes-ified number
+  - `$(variable)`
 - `right`: the right hand side of comparison. Possible values:
-    - number
-    - stringified number
-    - bytes-ified number
-    - `$(variable)`
+  - number
+  - stringified number
+  - bytes-ified number
+  - `$(variable)`
 
 **Outputs**
 

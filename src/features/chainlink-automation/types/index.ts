@@ -62,6 +62,4 @@ export type ChainlinkAutomationConfig = {
   registrar: string
   transcoder: string
 }
-export type ChainlinkAutomationConfigs = Partial<
-  Record<SupportedChain, ChainlinkAutomationConfig>
->
+export type ChainlinkAutomationConfigs = Partial<Record<SupportedChain, ChainlinkAutomationConfig>>

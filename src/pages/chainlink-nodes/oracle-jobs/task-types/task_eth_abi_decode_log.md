@@ -28,6 +28,7 @@ A map containing the decoded values.
 
 **Example**
 
+<!-- prettier-ignore -->
 ```toml
 decode [type="ethabidecodelog"
         abi="NewRound(uint256 indexed roundId, address indexed startedBy, uint256 startedAt)"
@@ -37,6 +38,7 @@ decode [type="ethabidecodelog"
 
 This task will return a map with the following schema:
 
+<!-- prettier-ignore -->
 ```json
 {
     "roundId": ...,   // a number

@@ -3,8 +3,7 @@ layout: ../../layouts/MainLayout.astro
 section: ethereum
 date: Last Modified
 title: "Managing Upkeeps"
-whatsnext:
-  { "Automation economics": "/chainlink-automation/automation-economics/" }
+whatsnext: { "Automation economics": "/chainlink-automation/automation-economics/" }
 ---
 
 ## Overview

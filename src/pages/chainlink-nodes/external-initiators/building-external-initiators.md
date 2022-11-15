@@ -5,9 +5,7 @@ date: Last Modified
 title: "Building External Initiators"
 permalink: "docs/building-external-initiators/"
 whatsnext:
-  {
-    "Adding External Initiators to Nodes": "/chainlink-nodes/external-initiators/external-initiators-in-nodes/",
-  }
+  { "Adding External Initiators to Nodes": "/chainlink-nodes/external-initiators/external-initiators-in-nodes/" }
 ---
 
 An external initiator can trigger a run for any webhook job that it has been linked to.

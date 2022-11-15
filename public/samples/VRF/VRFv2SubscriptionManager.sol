@@ -2,9 +2,9 @@
 // An example of a consumer contract that also owns and manages the subscription
 pragma solidity ^0.8.7;
 
-import '@chainlink/contracts/src/v0.8/interfaces/LinkTokenInterface.sol';
-import '@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol';
-import '@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol';
+import "@chainlink/contracts/src/v0.8/interfaces/LinkTokenInterface.sol";
+import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
+import "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol";
 
 /**
  * Request testnet LINK and ETH here: https://faucets.chain.link/
@@ -32,7 +32,8 @@ contract VRFv2SubscriptionManager is VRFConsumerBaseV2 {
     // The gas lane to use, which specifies the maximum gas price to bump to.
     // For a list of available gas lanes on each network,
     // see https://docs.chain.link/docs/vrf-contracts/#configurations
-    bytes32 keyHash = 0x79d3d8832d904592c0bf9818b621522c988bb8b0c05cdc3b15aea1b6e8db0c15;
+    bytes32 keyHash =
+        0x79d3d8832d904592c0bf9818b621522c988bb8b0c05cdc3b15aea1b6e8db0c15;
 
     // A reasonable default is 100000, but this value could be different
     // on other networks.
@@ -72,7 +73,7 @@ contract VRFv2SubscriptionManager is VRFConsumerBaseV2 {
     }
 
     function fulfillRandomWords(
-        uint256, /* requestId */
+        uint256 /* requestId */,
         uint256[] memory randomWords
     ) internal override {
         s_randomWords = randomWords;
@@ -88,7 +89,11 @@ contract VRFv2SubscriptionManager is VRFConsumerBaseV2 {
     // Assumes this contract owns link.
     // 1000000000000000000 = 1 LINK
     function topUpSubscription(uint256 amount) external onlyOwner {
-        LINKTOKEN.transferAndCall(address(COORDINATOR), amount, abi.encode(s_subscriptionId));
+        LINKTOKEN.transferAndCall(
+            address(COORDINATOR),
+            amount,
+            abi.encode(s_subscriptionId)
+        );
     }
 
     function addConsumer(address consumerAddress) external onlyOwner {

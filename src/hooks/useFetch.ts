@@ -9,10 +9,7 @@ interface State<T> {
 type Cache<T> = { [url: string]: T }
 
 // discriminated union type
-type Action<T> =
-  | { type: "loading" }
-  | { type: "fetched"; payload: T }
-  | { type: "error"; payload: Error }
+type Action<T> = { type: "loading" } | { type: "fetched"; payload: T } | { type: "error"; payload: Error }
 
 function useFetch<T = unknown>(url?: string, options?: RequestInit): State<T> {
   const cache = useRef<Cache<T>>({})
@@ -75,14 +72,13 @@ function useFetch<T = unknown>(url?: string, options?: RequestInit): State<T> {
       }
     }
 
-    void fetchData()
+    fetchData()
 
     // Use the cleanup function for avoiding a possibly...
     // ...state update after the component was unmounted
     return () => {
       cancelRequest.current = true
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [url])
 
   return state

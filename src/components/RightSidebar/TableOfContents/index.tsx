@@ -1,6 +1,6 @@
+/** @jsxImportSource preact */
 import { useStore } from "@nanostores/preact"
 import type { FunctionalComponent } from "preact"
-import { h } from "preact"
 import { useState, useEffect, useRef } from "preact/hooks"
 import { shouldUpdateToc } from "./tocStore"
 export interface Heading {
@@ -14,9 +14,7 @@ const TableOfContents: FunctionalComponent<{
   clientSideToc: boolean
 }> = ({ headers = [], clientSideToc = false }) => {
   // headers = [...headers].filter(({ depth }) => depth > 1 && depth < 4)
-  const [headings, setHeadings] = useState(
-    [...headers].filter(({ depth }) => depth > 1 && depth < 4)
-  )
+  const [headings, setHeadings] = useState([...headers].filter(({ depth }) => depth > 1 && depth < 4))
   const tableOfContents = useRef<HTMLUListElement>()
   const [currentID, setCurrentID] = useState("overview")
   const onThisPageID = "on-this-page-heading"
@@ -43,15 +41,10 @@ const TableOfContents: FunctionalComponent<{
       threshold: 1,
     }
 
-    const headingsObserver = new IntersectionObserver(
-      setCurrent,
-      observerOptions
-    )
+    const headingsObserver = new IntersectionObserver(setCurrent, observerOptions)
 
     // Observe all the headings in the main page content.
-    document
-      .querySelectorAll("article :is(h1,h2,h3)")
-      .forEach((h) => headingsObserver.observe(h))
+    document.querySelectorAll("article :is(h1,h2,h3)").forEach((h) => headingsObserver.observe(h))
 
     // Stop observing when the component is unmounted.
     return () => headingsObserver.disconnect()
@@ -73,18 +66,16 @@ const TableOfContents: FunctionalComponent<{
 
   const refreshHeadings = () => {
     const headingList = []
-    document
-      .querySelectorAll("article :is(h2,h3)")
-      .forEach((heading: HTMLHeadingElement) => {
-        console.log(heading)
+    document.querySelectorAll("article :is(h2,h3)").forEach((heading: HTMLHeadingElement) => {
+      console.log(heading)
 
-        if (!heading.id) return
-        headingList.push({
-          depth: heading.nodeName.charAt(1),
-          text: heading.textContent,
-          slug: heading.id,
-        })
+      if (!heading.id) return
+      headingList.push({
+        depth: heading.nodeName.charAt(1),
+        text: heading.textContent,
+        slug: heading.id,
       })
+    })
     setHeadings(headingList)
   }
 
@@ -92,21 +83,13 @@ const TableOfContents: FunctionalComponent<{
     <>
       <h2 className="heading">On this page</h2>
       <ul ref={tableOfContents}>
-        <li
-          className={`header-link depth-2 ${
-            currentID === "overview" ? "active" : ""
-          }`.trim()}
-        >
+        <li className={`header-link depth-2 ${currentID === "overview" ? "active" : ""}`.trim()}>
           <a href="#overview">Overview</a>
         </li>
         {headings
           .filter(({ depth }) => depth > 1 && depth < 4)
           .map((header) => (
-            <li
-              className={`header-link depth-${header.depth} ${
-                currentID === header.slug ? "active" : ""
-              }`.trim()}
-            >
+            <li className={`header-link depth-${header.depth} ${currentID === header.slug ? "active" : ""}`.trim()}>
               <a href={`#${header.slug}`}>{header.text}</a>
             </li>
           ))}

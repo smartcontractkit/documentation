@@ -30,9 +30,7 @@ const getSupportedChainsMetadata = async () => {
   const chainsMetadata = await getChainsMetadata()
   const supportedChainsMetadata = chainsMetadata.filter((chainMetadata) => {
     if (!chainMetadata.chainId) {
-      throw new Error(
-        `Problem with chain reference data ${JSON.stringify(chainMetadata)}`
-      )
+      throw new Error(`Problem with chain reference data ${JSON.stringify(chainMetadata)}`)
     }
     return chainMetadata.chainId.toString() in linkNameSymbol
   })

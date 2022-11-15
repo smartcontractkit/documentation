@@ -4,11 +4,7 @@ section: ethereum
 date: Last Modified
 title: "Historical Price Data"
 permalink: "docs/data-feeds/price-feeds/historical-data/"
-whatsnext:
-  {
-    "API Reference": "/data-feeds/price-feeds/api-reference/",
-    "Contract Addresses": "/data-feeds/",
-  }
+whatsnext: { "API Reference": "/data-feeds/price-feeds/api-reference/", "Contract Addresses": "/data-feeds/" }
 metadata:
   title: "Get Historical Data"
   description: "How to use Chainlink Data Feeds to retrieve historical data in your smart contracts."
@@ -51,6 +47,7 @@ The examples in this document name the aggregator `roundId` as `aggregatorRoundI
 
 Because a proxy has references to current and all previous underlying aggregators, it needs a way to fetch data from the correct aggregator. The `roundId` is computed in the [proxy contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/dev/AggregatorProxy.sol) as shown in the following example:
 
+{/* prettier-ignore */}
 ```solidity
 roundId = uint80((uint256(phaseId) << 64) | aggregatorRoundId);
 ```
@@ -62,8 +59,8 @@ where:
 - `roundId` is the computed round id. From the above formula, you can think of it as a large number containing the `phaseId` and the `aggregatorRoundId`.
 
 <Aside type="note" title="Note">
-  The example formula above ensures that no matter how many times the underlying
-  aggregator changes, the proxy `roundId` will always increase.
+  The example formula above ensures that no matter how many times the underlying aggregator changes, the proxy `roundId`
+  will always increase.
 </Aside>
 
 **Example:**
@@ -99,9 +96,8 @@ roundId = (phaseId << 64n) | aggregatorRoundId // returns 73786976294838206465n
 Loop over the [`getRoundData` function](/data-feeds/price-feeds/api-reference/#getrounddata). Start at _73786976294838206465_ and increment it until you get a revert. This means that you reached the last round for the underlying aggregator. The same process could be repeated for previous `phaseIds` (3,2,1).
 
 <Aside type="caution" title="Looping on-chain">
-  The examples showed how to loop off-chain to fetch all historical data from a
-  given proxy. You could also write a similar code on-chain, but be aware that
-  this could cause **very high gas prices** if a state is changed within the
+  The examples showed how to loop off-chain to fetch all historical data from a given proxy. You could also write a
+  similar code on-chain, but be aware that this could cause **very high gas prices** if a state is changed within the
   same function.
 </Aside>
 
@@ -116,13 +112,11 @@ The [`getRoundData` function](/data-feeds/price-feeds/api-reference/#getrounddat
 - `updatedAt`: The timestamp when the answer was computed.
 
 <Aside type="caution" title="Important">
-  A read can revert if the caller is requesting the details of a round that was
-  invalid or has not yet been answered. If you are deriving a round ID without
-  having observed it before, the round might not be complete. To check the
-  round, validate that the timestamp on that round is not 0. In a best-case
-  scenario, rounds update chronologically. However, a round can time out if it
-  doesn't reach consensus. Technically, that is a timed out round that carries
-  over the answer from the previous round.
+  A read can revert if the caller is requesting the details of a round that was invalid or has not yet been answered. If
+  you are deriving a round ID without having observed it before, the round might not be complete. To check the round,
+  validate that the timestamp on that round is not 0. In a best-case scenario, rounds update chronologically. However, a
+  round can time out if it doesn't reach consensus. Technically, that is a timed out round that carries over the answer
+  from the previous round.
 </Aside>
 
 ### Solidity

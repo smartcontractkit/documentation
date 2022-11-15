@@ -12,11 +12,7 @@ export const PriceButton = ({
 }) => {
   return (
     <div style={{ display: "flex" }}>
-      <button
-        type="button"
-        onClick={buttonFunction}
-        className={button.secondary}
-      >
+      <button type="button" onClick={buttonFunction} className={button.secondary}>
         {buttonName}
       </button>
       <p

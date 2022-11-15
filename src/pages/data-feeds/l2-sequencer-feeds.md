@@ -47,7 +47,7 @@ On Optimism and Metis, the sequencer’s status is relayed from L1 to L2 where t
 
 **On the L1 network:**
 
-1. A network of node operators runs the external adapter to post the latest sequencer status to the `AggregatorProxy` contract and relays the status to the `Aggregator` contract.  The `Aggregator` contract calls the `validate` function in the `OptimismValidator` contract.  
+1. A network of node operators runs the external adapter to post the latest sequencer status to the `AggregatorProxy` contract and relays the status to the `Aggregator` contract. The `Aggregator` contract calls the `validate` function in the `OptimismValidator` contract.
 
 1. The `OptimismValidator` contract calls the `sendMessage` function in the `L1CrossDomainMessenger` contract. This message contains instructions to call the `updateStatus(bool status, uint64 timestamp)` function in the sequencer uptime feed deployed on the L2 network.
 
@@ -61,7 +61,7 @@ On Optimism and Metis, the sequencer’s status is relayed from L1 to L2 where t
 
 1. The `L2CrossDomainMessenger` contract relays the message to the `OptimismSequencerUptimeFeed` contract.
 
-1. The message relayed by the `L2CrossDomainMessenger` contains instructions to call `updateStatus` in the `OptimismSequencerUptimeFeed` contract.  
+1. The message relayed by the `L2CrossDomainMessenger` contains instructions to call `updateStatus` in the `OptimismSequencerUptimeFeed` contract.
 
 1. Consumers can then read from the `AggregatorProxy` contract, which fetches the latest round data from the `OptimismSequencerUptimeFeed` contract.
 
@@ -89,7 +89,6 @@ Create the consumer contract for sequencer uptime feeds similarly to contracts y
 
 - Configure the `sequencerUptimeFeed` object with the [sequencer uptime feed proxy address](#available-networks) for your L2 network.
 - Configure the `priceFeed` object with one of the [Data Feed proxy addresses](/data-feeds/price-feeds/addresses/) that are available for your network.
-
 
 ::solidity-remix[samples/PriceFeeds/PriceConsumerWithSequencerCheck.sol]
 

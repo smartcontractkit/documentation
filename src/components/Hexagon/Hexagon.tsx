@@ -1,6 +1,6 @@
-import * as React from "react";
-import { Cube } from "./Cube";
-import hexagonStyles from "./Hexagon.module.css";
+import * as React from "react"
+import { Cube } from "./Cube"
+import hexagonStyles from "./Hexagon.module.css"
 export const Hexagon = () => (
   <div id={hexagonStyles.outerWrapper}>
     <div style={{ position: "relative" }}>
@@ -9,4 +9,4 @@ export const Hexagon = () => (
       </div>
     </div>
   </div>
-);
+)

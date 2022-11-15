@@ -68,6 +68,7 @@ After the function signature and a short description, two code examples are prov
 
 ### setChainlinkOracle
 
+<!-- prettier-ignore -->
 ```solidity
 function setChainlinkOracle(
   address _oracle
@@ -78,7 +79,8 @@ Sets a private storage variable provided for convenience if your contract only n
 
 Retrieve the oracle address using [chainlinkOracleAddress](#chainlinkoracleaddress). These getters and setters are provided to enforce that changes to the oracle are explicitly made in the code.
 
-```solidity example
+<!-- prettier-ignore -->
+```solidity
 constructor(address _oracle)
 {
   setChainlinkOracle(_oracle);
@@ -87,7 +89,8 @@ constructor(address _oracle)
 
 ### setChainlinkToken
 
-```solidity example
+<!-- prettier-ignore -->
+```solidity
 setChainlinkToken(
   address _link
 )
@@ -95,7 +98,8 @@ setChainlinkToken(
 
 Sets the stored address for the LINK token which is used to send requests to Oracles. There are different token addresses on different network. See [LINK Token Contracts](/resources/link-token-contracts/) for the address of the LINK token on the network you're deploying to.
 
-```solidity example
+<!-- prettier-ignore -->
+```solidity
 constructor(address _link)
   public
 {
@@ -109,7 +113,8 @@ constructor(address _link)
 
 :::
 
-```solidity example
+<!-- prettier-ignore -->
+```solidity
 function buildChainlinkRequest(
     bytes32 _jobId,
     address _callbackAddress,
@@ -119,7 +124,8 @@ function buildChainlinkRequest(
 
 Instantiates a Request from the Chainlink contract. A [Request](#chainlinkrequest) is a struct which contains the necessary parameters to be sent to the oracle contract. The `buildChainlinkRequest` function takes an ID, which can be a [Job ID](/chainlink-nodes/oracle-jobs/jobs/), a callback address to receive the resulting data, and a callback function signature to call on the callback address.
 
-```solidity example
+<!-- prettier-ignore -->
+```solidity
 function requestPrice()
   public
 {
@@ -142,7 +148,8 @@ It is recommended to use `buildOperatorRequest` but make sure the oracle you are
 
 :::
 
-```solidity example
+<!-- prettier-ignore -->
+```solidity
 function buildOperatorRequest(
     bytes32 _jobId,
     bytes4 _callbackFunctionSignature
@@ -151,7 +158,8 @@ function buildOperatorRequest(
 
 Instantiates a _Request_ from the Chainlink contract. A [Request](#chainlinkrequest) is a struct that contains the necessary parameters to be sent to the oracle contract. The `buildOperatorRequest` function takes an ID, which can be a [Job ID](/chainlink-nodes/oracle-jobs/jobs/), and a callback function signature to call on the calling contract address.
 
-```solidity example
+<!-- prettier-ignore -->
+```solidity
 function requestPrice()
   public
 {
@@ -171,6 +179,7 @@ function requestPrice()
 
 :::
 
+<!-- prettier-ignore -->
 ```solidity
 function sendChainlinkRequest(
     Chainlink.Request memory _req,
@@ -184,7 +193,8 @@ Sends the request payload to the stored oracle address. It takes a [Chainlink.Re
 
 `sendChainlinkRequest` emits a [ChainlinkRequested](#chainlinkrequested) event containing the request ID, if you would like to use it in your Web3 application.
 
-```solidity example
+<!-- prettier-ignore -->
+```solidity
 function requestPrice()
   public
 {
@@ -202,6 +212,7 @@ function requestPrice()
 
 :::
 
+<!-- prettier-ignore -->
 ```solidity
 function sendChainlinkRequestTo(
   address _oracle,
@@ -214,7 +225,8 @@ Similar to [sendChainlinkRequest](#sendchainlinkrequest), `sendChainlinkRequestT
 
 `sendChainlinkRequestTo` emits a [ChainlinkRequested](#chainlinkrequested) event containing the request ID, if you would like to use it in your Web3 application.
 
-```solidity example
+<!-- prettier-ignore -->
+```solidity
 function requestPriceFrom(address _oracle)
   public
 {
@@ -233,6 +245,7 @@ It is recommended to use `sendOperatorRequest` but make sure the oracle you are 
 
 :::
 
+<!-- prettier-ignore -->
 ```solidity
 function sendOperatorRequest(
     Chainlink.Request memory _req,
@@ -246,7 +259,8 @@ The `sendOperatorRequest` function sends the request payload to the stored oracl
 
 `sendOperatorRequest` emits a [ChainlinkRequested](#chainlinkrequested) event containing the request ID that you can use in your Web3 application.
 
-```solidity example
+<!-- prettier-ignore -->
+```solidity
 function requestPrice()
   public
 {
@@ -265,6 +279,7 @@ It is recommended to use `sendOperatorRequestTo`, but make sure the oracle you a
 
 :::
 
+<!-- prettier-ignore -->
 ```solidity
 function sendChainlinkRequestTo(
   address _oracle,
@@ -277,7 +292,8 @@ Similar to [sendOperatorRequest](#sendoperatorrequest), `sendOperatorRequestTo` 
 
 `sendOperatorRequestTo` emits a [ChainlinkRequested](#chainlinkrequested) event containing a request ID that you can use in your Web3 application.
 
-```solidity example
+<!-- prettier-ignore -->
+```solidity
 function requestPriceFrom(address _oracle)
   public
 {
@@ -291,6 +307,7 @@ function requestPriceFrom(address _oracle)
 
 ### validateChainlinkCallback
 
+<!-- prettier-ignore -->
 ```solidity
 function validateChainlinkCallback(
     bytes32 _requestId
@@ -303,7 +320,8 @@ This is the method equivalent of the modifier `recordChainlinkFulfillment`. Eith
 
 `validateChainlinkCallback` emits a [ChainlinkFulfilled](#chainlinkfulfilled) event.
 
-```solidity example
+<!-- prettier-ignore -->
+```solidity
 function myCallback(bytes32 _requestId, uint256 _price)
   public
 {
@@ -320,6 +338,7 @@ Do not call `validateChainlinkCallback` multiple times. The nature of validating
 
 ### addChainlinkExternalRequest
 
+<!-- prettier-ignore -->
 ```solidity
 function addChainlinkExternalRequest(
   address _oracle,
@@ -329,7 +348,8 @@ function addChainlinkExternalRequest(
 
 `addChainlinkExternalRequest` allows a Chainlink contract to track unfulfilled requests that it hasn't created itself. For example, contract A creates a request and sets the callback for contract B. Contract B needs to know about the request created by contract A so that it can validate the callback when it is executed.
 
-```solidity example
+<!-- prettier-ignore -->
+```solidity
 function expectResponseFor(bytes32 _requestId)
   public
 {
@@ -345,6 +365,7 @@ Being able to change a request means that you can change the data fed into a con
 
 ### cancelChainlinkRequest
 
+<!-- prettier-ignore -->
 ```solidity
 function cancelChainlinkRequest(bytes32 _requestId,
     uint256 _payment,
@@ -361,7 +382,8 @@ For the sake of efficient gas usage, only a hash of the request's parameters are
 
 `cancelChainlinkRequest` emits a [ChainlinkCancelled](#chainlinkcancelled) event.
 
-```solidity example
+<!-- prettier-ignore -->
+```solidity
 function cancelRequest(
     bytes32 _requestId,
     uint256 _payment,
@@ -374,6 +396,7 @@ function cancelRequest(
 
 ### useChainlinkWithENS
 
+<!-- prettier-ignore -->
 ```solidity
 function useChainlinkWithENS(
   address _ens,
@@ -385,7 +408,8 @@ Allows a Chainlink contract to store the addresses of the LINK token and oracle 
 
 If your Oracle provider supports using ENS for rolling upgrades to their oracle contract, once you've pointed your Chainlinked contract to the ENS records then you can update the records using [updateChainlinkOracleWithENS](#updatechainlinkoraclewithens).
 
-```solidity example
+<!-- prettier-ignore -->
+```solidity
 address constant ROPSTEN_ENS = 0x112234455C3a32FD11230C42E7Bccd4A84e02010;
 bytes32 constant ROPSTEN_CHAINLINK_ENS = 0xead9c0180f6d685e43522fcfe277c2f0465fe930fb32b5b415826eacf9803727;
 
@@ -402,6 +426,7 @@ If an oracle provider supports listing their oracle on ENS, that provides the ad
 
 ### updateChainlinkOracleWithENS
 
+<!-- prettier-ignore -->
 ```solidity
 function updateChainlinkOracleWithENS()
 ```
@@ -410,7 +435,8 @@ Updates the stored oracle contract address with the latest address resolved thro
 
 This method only works after [useChainlinkWithENS](#usechainlinkwithens) has been called on the contract.
 
-```solidity example
+<!-- prettier-ignore -->
+```solidity
 function updateOracleAddressToLatest() public {
   updateChainlinkOracleWithENS();
 }
@@ -424,13 +450,15 @@ If an oracle provider supports listing their oracle on ENS, that provides the ad
 
 ### chainlinkTokenAddress
 
+<!-- prettier-ignore -->
 ```solidity
 function chainlinkTokenAddress() returns (address)
 ```
 
 The `chainlinkTokenAddress` function is a helper used to return the stored address of the Chainlink token. This variable is protected and so only made available through getters and setters.
 
-```solidity example
+<!-- prettier-ignore -->
+```solidity
 function withdrawLink() public {
   LinkTokenInterface link = LinkTokenInterface(chainlinkTokenAddress());
 
@@ -442,7 +470,8 @@ function withdrawLink() public {
 
 The `chainlinkOracleAddress` function is a helper used to return the stored address of the oracle contract.
 
-```solidity example
+<!-- prettier-ignore -->
+```solidity
 function getOracle() public view returns (address) {
   return chainlinkOracleAddress();
 }
@@ -453,6 +482,7 @@ function getOracle() public view returns (address) {
 
 ### ChainlinkRequested
 
+<!-- prettier-ignore -->
 ```solidity
 event ChainlinkRequested(
   bytes32 indexed id
@@ -463,6 +493,7 @@ Emitted when [sendChainlinkRequest](#sendchainlinkrequest) and [sendChainlinkReq
 
 ### ChainlinkFulfilled
 
+<!-- prettier-ignore -->
 ```solidity
 event ChainlinkFulfilled(
   bytes32 indexed id
@@ -473,6 +504,7 @@ Emitted when [validateChainlinkCallback](#validatechainlinkcallback) or [recordC
 
 ### ChainlinkCancelled
 
+<!-- prettier-ignore -->
 ```solidity
 event ChainlinkCancelled(
   bytes32 indexed id
@@ -487,7 +519,8 @@ Emitted when [cancelChainlinkRequest](#cancelchainlinkrequest) is called. Includ
 
 `LINK_DIVISIBILITY` is a uint256 constant to represent one whole unit of the LINK token (1000000000000000000). It can be used with another value to specify payment in an easy-to-read format, instead of hardcoding magic numbers.
 
-```solidity example
+<!-- prettier-ignore -->
+```solidity
 uint256 constant private ORACLE_PAYMENT = 100 * LINK_DIVISIBILITY; // = 100 LINK
 ```
 
@@ -499,7 +532,8 @@ uint256 constant private ORACLE_PAYMENT = 100 * LINK_DIVISIBILITY; // = 100 LINK
 
 Either `validateChainlinkCallback` or `recordChainlinkFulfillment` should be used on all Chainlink callback functions to ensure that the sender and `requestId` are valid. They protect ChainlinkClient callbacks from being called by malicious callers. Do not call both of them, or your callback may revert before you can record the reported response.
 
-```solidity example
+<!-- prettier-ignore -->
+```solidity
 function myCallback(bytes32 _requestId, uint256 _price)
   public
   recordChainlinkFulfillment(_requestId) // always validate callbacks
@@ -510,6 +544,7 @@ function myCallback(bytes32 _requestId, uint256 _price)
 
 ## Chainlink.Request
 
+<!-- prettier-ignore -->
 ```solidity
 library Chainlink {
   struct Request {
@@ -557,6 +592,7 @@ The Request object was intended to be stored in memory. If you have a reason to 
 
 #### add
 
+<!-- prettier-ignore -->
 ```solidity
 function add(
   Request memory self,
@@ -567,7 +603,8 @@ function add(
 
 Add a string value to the run request parameters. Commonly used for `get` with jobs using `httpGet` tasks.
 
-```solidity example
+<!-- prettier-ignore -->
+```solidity
 function requestEthereumPrice()
   public
 {
@@ -581,6 +618,7 @@ function requestEthereumPrice()
 
 #### addBytes
 
+<!-- prettier-ignore -->
 ```solidity
 function addBytes(
   Request memory self,
@@ -591,7 +629,8 @@ function addBytes(
 
 Add a CBOR bytes type value to the run request parameters.
 
-```solidity example
+<!-- prettier-ignore -->
+```solidity
 function requestEmojiPopularity(bytes _unicode)
   public
 {
@@ -605,6 +644,7 @@ function requestEmojiPopularity(bytes _unicode)
 
 Note that this can also be used as a workaround to pass other data types like arrays or addresses. For instance, to add an _address_, one would first encode it using `abi.encode` then pass the result to `addBytes`:
 
+<!-- prettier-ignore -->
 ```solidity
 Chainlink.Request memory req = buildChainlinkRequest(jobId, this, this.fulfill.selector);
 
@@ -614,6 +654,7 @@ req.addBytes("address", abi.encode(msg.sender)); // msg.sender used in this exam
 
 #### addInt
 
+<!-- prettier-ignore -->
 ```solidity
 function addInt(
   Request memory self,
@@ -624,7 +665,8 @@ function addInt(
 
 Add a CBOR signed integer type value to the run request parameters. Commonly used with the `times` parameter of any job using a `multiply` task.
 
-```solidity example
+<!-- prettier-ignore -->
+```solidity
 function requestPrice()
   public
 {
@@ -638,6 +680,7 @@ function requestPrice()
 
 #### addUint
 
+<!-- prettier-ignore -->
 ```solidity
 function addUint(
   Request memory self,
@@ -648,7 +691,8 @@ function addUint(
 
 Add a CBOR unsigned integer type value to the run request parameters. Commonly used with the `times` parameter of any job using a `multiply` task.
 
-```solidity example
+<!-- prettier-ignore -->
+```solidity
 function requestPrice()
   public
 {
@@ -662,6 +706,7 @@ function requestPrice()
 
 #### addStringArray
 
+<!-- prettier-ignore -->
 ```solidity
 function addStringArray(
   Request memory self,
@@ -672,7 +717,8 @@ function addStringArray(
 
 Add a CBOR array of strings to the run request parameters. Commonly used with the `path` parameter for any job including a `jsonParse` task.
 
-```solidity example
+<!-- prettier-ignore -->
+```solidity
 function requestPrice(string _currency)
   public
 {
@@ -690,6 +736,7 @@ function requestPrice(string _currency)
 
 #### setBuffer
 
+<!-- prettier-ignore -->
 ```solidity
 function setBuffer(
   Request memory self,
@@ -699,7 +746,8 @@ function setBuffer(
 
 Set the CBOR payload directly on the request object, avoiding the cost of encoding the parameters in CBOR. This can be helpful when reading the bytes from storage or having them passed in from off-chain where they were pre-encoded.
 
-```solidity example
+<!-- prettier-ignore -->
+```solidity
 function requestPrice(bytes _cbor)
   public
 {

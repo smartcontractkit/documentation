@@ -10,7 +10,7 @@ import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
 
 contract Weather is ChainlinkClient {
     using Chainlink for Chainlink.Request;
-    
+
     bytes32 public avgTempJobId;
     uint256 public avgTemp;
     bytes32 public totalRainJobId;
@@ -18,11 +18,11 @@ contract Weather is ChainlinkClient {
     bytes32 public hailJobId;
     uint256 public hail;
     uint256 public fee;
-    
+
     event AvgTemp(uint256 _result);
     event TotalRain(uint256 _result);
     event Hail(uint256 _result);
-    
+
     constructor(
         address _link,
         address _oracle,
@@ -39,10 +39,7 @@ contract Weather is ChainlinkClient {
         fee = _fee;
     }
 
-    function requestAvgTemp(
-        string memory _from,
-        string memory _to
-    ) external {
+    function requestAvgTemp(string memory _from, string memory _to) external {
         Chainlink.Request memory req = buildChainlinkRequest(
             avgTempJobId,
             address(this),
@@ -54,7 +51,7 @@ contract Weather is ChainlinkClient {
         req.add("column", "temp");
         sendChainlinkRequest(req, fee);
     }
-    
+
     function fulfillAvgTemp(
         bytes32 _requestId,
         uint256 _result
@@ -62,11 +59,8 @@ contract Weather is ChainlinkClient {
         avgTemp = _result;
         emit AvgTemp(_result);
     }
-    
-    function requestTotalRain(
-        string memory _from,
-        string memory _to
-    ) external {
+
+    function requestTotalRain(string memory _from, string memory _to) external {
         Chainlink.Request memory req = buildChainlinkRequest(
             totalRainJobId,
             address(this),
@@ -78,7 +72,7 @@ contract Weather is ChainlinkClient {
         req.add("column", "prcp");
         sendChainlinkRequest(req, fee);
     }
-    
+
     function fulfillTotalRain(
         bytes32 _requestId,
         uint256 _result
@@ -86,11 +80,8 @@ contract Weather is ChainlinkClient {
         totalRain = _result;
         emit TotalRain(_result);
     }
-    
-    function requestHail(
-        string memory _from,
-        string memory _to
-    ) external {
+
+    function requestHail(string memory _from, string memory _to) external {
         Chainlink.Request memory req = buildChainlinkRequest(
             hailJobId,
             address(this),
@@ -102,7 +93,7 @@ contract Weather is ChainlinkClient {
         req.add("column", "hail");
         sendChainlinkRequest(req, fee);
     }
-    
+
     function fulfillHail(
         bytes32 _requestId,
         uint256 _result

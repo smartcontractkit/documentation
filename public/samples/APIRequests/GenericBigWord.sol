@@ -1,8 +1,8 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
-import '@chainlink/contracts/src/v0.8/ChainlinkClient.sol';
-import '@chainlink/contracts/src/v0.8/ConfirmedOwner.sol';
+import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
+import "@chainlink/contracts/src/v0.8/ConfirmedOwner.sol";
 
 /**
  * Request testnet LINK and ETH here: https://faucets.chain.link/
@@ -36,7 +36,7 @@ contract GenericLargeResponse is ChainlinkClient, ConfirmedOwner {
     constructor() ConfirmedOwner(msg.sender) {
         setChainlinkToken(0x01BE23585060835E02B77ef475b0Cc51aA1e0709);
         setChainlinkOracle(0xf3FBB7f3391F62C8fe53f89B41dFC8159EE9653f);
-        jobId = '7da2702f37fd48e5b1b9a5715e3509b6';
+        jobId = "7da2702f37fd48e5b1b9a5715e3509b6";
         fee = (1 * LINK_DIVISIBILITY) / 10; // 0,1 * 10**18 (Varies by network and job)
     }
 
@@ -44,12 +44,16 @@ contract GenericLargeResponse is ChainlinkClient, ConfirmedOwner {
      * @notice Request variable bytes from the oracle
      */
     function requestBytes() public {
-        Chainlink.Request memory req = buildChainlinkRequest(jobId, address(this), this.fulfillBytes.selector);
-        req.add(
-            'get',
-            'https://ipfs.io/ipfs/QmZgsvrA1o1C8BGCrx6mHTqR1Ui1XqbCrtbMVrRLHtuPVD?filename=big-api-response.json'
+        Chainlink.Request memory req = buildChainlinkRequest(
+            jobId,
+            address(this),
+            this.fulfillBytes.selector
         );
-        req.add('path', 'image');
+        req.add(
+            "get",
+            "https://ipfs.io/ipfs/QmZgsvrA1o1C8BGCrx6mHTqR1Ui1XqbCrtbMVrRLHtuPVD?filename=big-api-response.json"
+        );
+        req.add("path", "image");
         sendChainlinkRequest(req, fee);
     }
 
@@ -59,7 +63,10 @@ contract GenericLargeResponse is ChainlinkClient, ConfirmedOwner {
      * @notice Fulfillment function for variable bytes
      * @dev This is called by the oracle. recordChainlinkFulfillment must be used.
      */
-    function fulfillBytes(bytes32 requestId, bytes memory bytesData) public recordChainlinkFulfillment(requestId) {
+    function fulfillBytes(
+        bytes32 requestId,
+        bytes memory bytesData
+    ) public recordChainlinkFulfillment(requestId) {
         emit RequestFulfilled(requestId, bytesData);
         data = bytesData;
         image_url = string(data);
@@ -70,6 +77,9 @@ contract GenericLargeResponse is ChainlinkClient, ConfirmedOwner {
      */
     function withdrawLink() public onlyOwner {
         LinkTokenInterface link = LinkTokenInterface(chainlinkTokenAddress());
-        require(link.transfer(msg.sender, link.balanceOf(address(this))), 'Unable to transfer');
+        require(
+            link.transfer(msg.sender, link.balanceOf(address(this))),
+            "Unable to transfer"
+        );
     }
 }

@@ -5,8 +5,7 @@ import redirects from "../features/redirects/redirects.json"
 export async function getStaticPaths(): Promise<GetStaticPathsResult> {
   const sanitizeSource = (source: string) => {
     let newSource = source
-    if (newSource[newSource.length - 1] === "/")
-      newSource = newSource.slice(0, newSource.length - 1)
+    if (newSource[newSource.length - 1] === "/") newSource = newSource.slice(0, newSource.length - 1)
     if (newSource[0] === "/") return newSource.slice(1, newSource.length)
     return newSource
   }
@@ -15,10 +14,7 @@ export async function getStaticPaths(): Promise<GetStaticPathsResult> {
     return {
       params: { redirect: sanitizeSource(entry.source) },
       props: {
-        to:
-          entry.destination.charAt(0) === "/"
-            ? entry.destination
-            : "/" + entry.destination,
+        to: entry.destination.charAt(0) === "/" ? entry.destination : "/" + entry.destination,
       },
     }
   })

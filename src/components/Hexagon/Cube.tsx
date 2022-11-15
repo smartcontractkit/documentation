@@ -1,35 +1,35 @@
-import React, { CSSProperties } from "react";
-import cubeStyles from "./Cube.module.css";
+import React, { CSSProperties } from "react"
+import cubeStyles from "./Cube.module.css"
 
 export interface CubeCSSProperties extends CSSProperties {
-  "--bg-color": string;
-  "--fill-color": string;
-  "--size": string;
-  "--size-multiplier": number;
-  "--radius-amount": number;
+  "--bg-color": string
+  "--fill-color": string
+  "--size": string
+  "--size-multiplier": number
+  "--radius-amount": number
 }
-const BORDER_RADIUS_DIVISOR = 66;
-const CONTAINER_SIZE_MULTIPLIER = 1.7;
+const BORDER_RADIUS_DIVISOR = 66
+const CONTAINER_SIZE_MULTIPLIER = 1.7
 
 export const Cube = ({
   size = 600,
   color = "zircon",
   backgroundColor = "transparent",
 }: {
-  size?: number;
-  color?: string;
-  backgroundColor?: string;
+  size?: number
+  color?: string
+  backgroundColor?: string
 }) => {
   return (
     <div
       id={cubeStyles.cubeWrapper}
       style={
         {
-          ["--bg-color"]: backgroundColor,
-          ["--fill-color"]: color,
-          ["--size"]: `${size}px`,
-          ["--size-multiplier"]: CONTAINER_SIZE_MULTIPLIER,
-          ["--radius-amount"]: BORDER_RADIUS_DIVISOR,
+          "--bg-color": backgroundColor,
+          "--fill-color": color,
+          "--size": `${size}px`,
+          "--size-multiplier": CONTAINER_SIZE_MULTIPLIER,
+          "--radius-amount": BORDER_RADIUS_DIVISOR,
         } as CubeCSSProperties
       }
     >
@@ -42,5 +42,5 @@ export const Cube = ({
         <div id={cubeStyles.bottomRight} className={cubeStyles.innerBox} />
       </div>
     </div>
-  );
-};
+  )
+}

@@ -3,14 +3,7 @@
  * https://github.com/lukeed/clsx/blob/master/src/index.js
  */
 
-type ClassValue =
-  | ClassValue[]
-  | Record<string, boolean>
-  | string
-  | number
-  | null
-  | boolean
-  | undefined
+type ClassValue = ClassValue[] | Record<string, boolean> | string | number | null | boolean | undefined
 
 function toVal(mix: ClassValue) {
   let k

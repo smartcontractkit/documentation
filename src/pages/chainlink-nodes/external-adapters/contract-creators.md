@@ -15,7 +15,8 @@ whatsnext:
 
 As a contract creator, using an external adapter is no different than creating a request for any other job spec. You will simply need to know which parameters are supported by the adapter. Notice the method below uses `req.add` to create a run parameter for each required value.
 
-```javascript
+<!-- prettier-ignore -->
+```solidity
 function requestMWAPrice(string _coin, string _market)
   public
   onlyOwner
@@ -51,13 +52,15 @@ For example, if an adapter returns JSON data like what is below:
 
 And you wanted the value in the field "open", you would specify the path for the adapter to walk through the JSON object to your desired field.
 
+<!-- prettier-ignore -->
 ```json
 "copyPath": ["details", "open"]
 ```
 
 In Solidity, this would look like:
 
-```javascript
+<!-- prettier-ignore -->
+```solidity
 string[] memory path = new string[](2);
 path[0] = "details";
 path[1] = "open";
@@ -66,6 +69,7 @@ run.addStringArray("copyPath", path);
 
 Or you can use dot-notation <a href="https://jsonpath.com/">JSONPath</a> to simplify it:
 
-```javascript
+<!-- prettier-ignore -->
+```solidity
 run.add("copyPath", "details.open")
 ```

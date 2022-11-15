@@ -102,6 +102,7 @@ Alternatively, you can run a health check on your node using `curl` and make sur
 curl -XGET localhost:6688/health | jq '.'
 ```
 
+<!-- prettier-ignore -->
 ```json
 % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
