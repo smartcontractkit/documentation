@@ -88,15 +88,13 @@ export const Feedback = () => {
         <section
           className="card"
           style={{
-            width: "330px",
-            position: "absolute",
-            left: "-50%",
             padding: "var(--space-4x)",
+            marginRight: "var(--space-4x)",
           }}
         >
           <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
-            <label for="name">Tell us more about your experience.</label>
-            <textarea type="text" name="msg" />
+            <label htmlFor="name">Tell us more about your experience.</label>
+            <textarea name="msg" />
             <button className={button.primary} disabled={isSubmitting}>
               submit
             </button>
