@@ -10,6 +10,8 @@ module.exports = {
     ecmaVersion: "latest",
     sourceType: "module",
   },
-  plugins: ["@typescript-eslint"],
-  rules: {},
+  plugins: ["@typescript-eslint", "prettier"],
+  rules: {
+    "prettier/prettier": [2],
+  },
 }
