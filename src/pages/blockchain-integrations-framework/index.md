@@ -1,9 +1,8 @@
 ---
-layout: nodes.liquid
+layout: ../../layouts/MainLayout.astro
 section: bif
 date: Last Modified
-title: 'Blockchain Integrations Framework'
-permalink: 'docs/blockchain-integrations-framework/'
+title: "Blockchain Integrations Framework"
 ---
 
 Chainlink Labs provides self-service tools that node operators and blockchain projects can use to deploy Data Feed integrations on EVM networks. These tools are called the Blockchain Integrations Framework (BIF). This framework includes a command line interface (CLI) and is available as a binary file. The binary is not publicly available. During the Alpha release, you must receive this binary directly from Chainlink Labs.
@@ -15,14 +14,6 @@ The framework simplifies the following tasks:
 - Deploy cluster infrastructure required to test OCR for Data Feeds
 - Perform longer running soak tests for OCR for Data Feeds
 - Perform smart contract management tasks with the same capabilities as Chainlink Labs' tools
-
-**Contents**
-
-- [Requirements](#requirements)
-- [Set up your environment](#set-up-your-environment)
-- [Running basic tests](#running-basic-tests)
-- [Running integration testing](#running-integration-tests)
-- [Troubleshooting integration tests](#troubleshooting-integration-tests)
 
 ## Requirements
 
