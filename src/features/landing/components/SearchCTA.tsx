@@ -1,6 +1,5 @@
 import React, { useState, useCallback } from "react"
 import "./Search.css"
-import searchIcon from "../../../../public/assets/search.svg"
 
 import { SearchModal } from "~/components/Header/Search/SearchModal"
 
@@ -18,7 +17,7 @@ export function SearchCTA() {
   return (
     <>
       <button type="button" onClick={onOpen} className="search-cta-input">
-        <img src={searchIcon} />
+        <img src="/assets/search.svg" />
 
         <span style={{ fontSize: "1rem" }}>Search Chainlink Documentation...</span>
       </button>
