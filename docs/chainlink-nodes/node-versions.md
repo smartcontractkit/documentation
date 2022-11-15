@@ -2,16 +2,15 @@
 layout: nodes.liquid
 section: nodeOperator
 date: Last Modified
-title: "Node Versions and Upgrades"
-permalink: "docs/node-versions/"
-whatsnext: {"Running a Chainlink Node":"/docs/running-a-chainlink-node/"}
+title: 'Node Versions and Upgrades'
+permalink: 'docs/node-versions/'
+whatsnext: { 'Running a Chainlink Node': '/docs/running-a-chainlink-node/' }
 metadata:
-  title: "Node Versions and Release Notes"
-  description: "Details about various node versions and how to migrate between them."
+  title: 'Node Versions and Release Notes'
+  description: 'Details about various node versions and how to migrate between them.'
 ---
 
 You can find a list of release notes for Chainlink nodes in the [smartcontractkit GitHub repository](https://github.com/smartcontractkit/chainlink/releases). Docker images are available in the [Chainlink Docker hub](https://hub.docker.com/r/smartcontract/chainlink/tags).
-
 
 ## Changes in v1.10.0 nodes
 
@@ -19,7 +18,7 @@ You can find a list of release notes for Chainlink nodes in the [smartcontractki
 
 ### Added
 
-- Added an optional external logger: When set, this environment variable configures and enables an optional HTTP logger which is used specifically to send audit log events. Configure this logger with the following environment variables:
+- Added an optional external logger `AUDIT_LOGS_FORWARDER_URL`: When set, this environment variable configures and enables an optional HTTP logger which is used specifically to send audit log events. Configure this logger with the following environment variables:
   - [AUDIT_LOGS_FORWARDER_URL](/docs/configuration-variables/#audit_logs_forwarder_url)
   - [AUDIT_LOGS_FORWARDER_HEADERS](/docs/configuration-variables/#audit_logs_forwarder_headers)
   - [AUDIT_LOGGER_JSON_WRAPPER_KEY](/docs/configuration-variables/#audit_logger_json_wrapper_key)
@@ -31,26 +30,27 @@ You can find a list of release notes for Chainlink nodes in the [smartcontractki
   - Chainlink will bump as high as necessary to get a transaction included. [Automatic connectivity detection](#automatic-connectivity-detection) prevents excessive bumping when there is a connectivity failure.
   - If you want to change this, manually set the [`ETH_MAX_GAS_PRICE_WEI` environment variable](/docs/configuration-variables/#eth_max_gas_price_wei).
 - If the `EVMChainID` is not set explicitly in the job spec for a new OCR job, the field is now automatically added with a default chain ID.
-  - Old OCR jobs missing `EVMChainID` continue to run on any chain that the [`ETH_CHAIN_ID` variable](/docs/configuration-variables/#eth_chain_id) is set to (or the first chain if it not set). This can be changed after a restart.
+  - Old OCR jobs missing `EVMChainID` continue to run on any chain that the [`ETH_CHAIN_ID` variable](/docs/configuration-variables/#eth_chain_id) is set to (or the first chain if it is not set). This can be changed after a restart.
   - Newly created OCR jobs run only on a single fixed chain and are unaffected by changes to `ETH_CHAIN_ID` after the job is added.
-  - It should no longer be possible to end up with multiple OCR jobs for a single contract running on the same chain. Only one job per contract per chain is allowed
+  - It should no longer be possible to end up with multiple OCR jobs for a single contract running on the same chain. Only one job per contract per chain is allowed.
   - If there are any existing duplicate jobs per contract and per chain, all but the jobs with the latest creation date will be pruned during the upgrade.
 
 ### Fixed
 
 - Fixed minor bug where Chainlink would attempt and fail to estimate a tip cap higher than the maximum configured gas price in EIP1559 mode. It now caps the tipcap to the max instead of erroring.
-- Fixed a bug where it was impossible to remove ETH keys that had extant transactions. Now, removing an ETH key will drop all associated data automatically including past transactions.
+- Fixed a bug where it was impossible to remove ETH keys that had extant transactions. Now, removing an ETH key will drop all associated data automatically, including past transactions.
 
 ### Automatic connectivity detection
 
 Chainlink will no longer bump excessively if the network is broken.
 
 This feature only applies on EVM chains when using BlockHistoryEstimator (the most common case).
-Chainlink will now try to automatically detect if there is a transaction propagation/connectivity issue and prevent bumping in these cases. This can help avoid the situation where RPC nodes are not propagating transactions for some reason (e.g. go-ethereum bug, networking issue etc) and Chainlink responds in a suboptimal way by bumping transactions to a very high price in an effort to get them mined. This can lead to unnecessary expense when the connectivity issue is resolved and the transactions are finally propagated into the mempool.
+Chainlink will now try to automatically detect if there is a transaction propagation/connectivity issue and prevent bumping in these cases. This can help avoid the situation where RPC nodes are not propagating transactions for some reason (e.g., go-ethereum bug, networking issue ...etc) and Chainlink responds in a suboptimal way by bumping transactions to a very high price in an effort to get them mined. This can lead to unnecessary expense when the connectivity issue is resolved and the transactions are finally propagated into the mempool.
 
 This feature is enabled by default with fairly conservative settings: if a transaction has been priced above the 90th percentile of the past 12 blocks, but still wants to bump due to not being mined, a connectivity/propagation issue is assumed and all further bumping will be prevented for this transaction. In this situation, Chainlink will start firing the `block_history_estimator_connectivity_failure_count` prometheus counter and logging at critical level until the transaction is mined.
 
 The default settings should work fine for most users. For advanced users, the values can be tweaked by changing `BLOCK_HISTORY_ESTIMATOR_CHECK_INCLUSION_BLOCKS` and `BLOCK_HISTORY_ESTIMATOR_CHECK_INCLUSION_PERCENTILE`.
+
 To disable connectivity checking completely, set `BLOCK_HISTORY_ESTIMATOR_CHECK_INCLUSION_BLOCKS=0`.
 
 ## Changes in v1.9.0 nodes
@@ -84,11 +84,11 @@ To disable connectivity checking completely, set `BLOCK_HISTORY_ESTIMATOR_CHECK_
 - Added `Arbitrum Goerli` configuration support.
 - Added the [`NODE_SELECTION_MODE` (`EVM.NodePool.SelectionMode`) environment variable](/docs/configuration-variables/#node_selection_mode), which controls node picking strategy. Supported values are:
   - `HighestHead` is the default mode, which picks a node that has the highest reported head number among other alive nodes. When several nodes have the same latest head number, the strategy sticks to the last used node. This mode requires `NODE_NO_NEW_HEADS_THRESHOLD` to be configured, otherwise it will always use the first alive node.
-  - `RoundRobin` mode iterates among available alive nodes. This was the default behavior prior to this release. 
+  - `RoundRobin` mode iterates among available alive nodes. This was the default behavior prior to this release.
 - New `evm keys chain` command. This can also be accessed at `/v2/keys/evm/chain`. This command has the following uses:
-    - Manually set or reset a nonce: `chainlink evm keys chain --address "0xEXAMPLE" --evmChainID 99 --setNextNonce 42`
-    - Enable a key for a particular chain: `chainlink evm keys chain --address "0xEXAMPLE" --evmChainID 99 --setEnabled true`
-    - Disable a key for a particular chain: `chainlink evm keys chain --address "0xEXAMPLE" --evmChainID 99 --setEnabled false`
+  - Manually set or reset a nonce: `chainlink evm keys chain --address "0xEXAMPLE" --evmChainID 99 --setNextNonce 42`
+  - Enable a key for a particular chain: `chainlink evm keys chain --address "0xEXAMPLE" --evmChainID 99 --setEnabled true`
+  - Disable a key for a particular chain: `chainlink evm keys chain --address "0xEXAMPLE" --evmChainID 99 --setEnabled false`
 - It is now possible to use the same key across multiple chains.
 
 ### Changed
@@ -101,7 +101,6 @@ To disable connectivity checking completely, set `BLOCK_HISTORY_ESTIMATOR_CHECK_
 ### Removed
 
 - The `setnextnonce` local client command is removed and is replaced by the more general `evm keys chain` command client command.
-
 
 ## Changes in v1.7.1 nodes
 
@@ -124,27 +123,29 @@ To disable connectivity checking completely, set `BLOCK_HISTORY_ESTIMATOR_CHECK_
 - Added [`hexdecode` task](/docs/jobs/task-types/hexdecode/) and the [`base64decode` task](/docs/jobs/task-types/base64decode/) (pipeline).
 
 - Added support for the Besu execution client. Although Chainlink supports Besu, Besu itself has several issues that can make it unreliable. For additional context, see the following issues:
-    - [hyperledger/besu/issues/4212](https://github.com/hyperledger/besu/issues/4212)
-    - [hyperledger/besu/issues/4192](https://github.com/hyperledger/besu/issues/4192)
-    - [hyperledger/besu/issues/4114](https://github.com/hyperledger/besu/issues/4114)
+
+  - [hyperledger/besu/issues/4212](https://github.com/hyperledger/besu/issues/4212)
+  - [hyperledger/besu/issues/4192](https://github.com/hyperledger/besu/issues/4192)
+  - [hyperledger/besu/issues/4114](https://github.com/hyperledger/besu/issues/4114)
 
 - Added [Multi-user and Role Based Access Control](/docs/miscellaneous/#multi-user-and-role-based-access-control-rbac) functionality. This allows the root admin CLI user and additional admin users to create and assign tiers of role-based access to new users. These new API users are able to log in to the Operator UI independently and can each have specific roles tied to their account. There are four roles: `admin`, `edit`, `run`, and `view`.
+
   - User management can be configured through the use of the new admin CLI command `chainlink admin users`. Be sure to run `chainlink admin login`. For example, a readonly user can be created with: `chainlink admin users create --email=operator-ui-read-only@test.com --role=view`.
   - Updated documentation repo with a break down of actions to required role level
 
 - Added gas limit control for individual job specs and individual job types. The following rule of precedence is applied:
 
-    1. The task-specific parameter `gasLimit` overrides anything else when specified. For example, the `ethtx` task has a `gasLimit` parameter that overrides the other defaults for this specific task.
-    1. The job-spec attribute `gasLimit` applies only to a specific job spec.
-    1. The job-type limits affect any jobs of the corresponding type. The following environment variables are available:
+  1. The task-specific parameter `gasLimit` overrides anything else when specified. For example, the `ethtx` task has a `gasLimit` parameter that overrides the other defaults for this specific task.
+  1. The job-spec attribute `gasLimit` applies only to a specific job spec.
+  1. The job-type limits affect any jobs of the corresponding type. The following environment variables are available:
 
-        - [ETH_GAS_LIMIT_OCR_JOB_TYPE](/docs/configuration-variables/#eth_gas_limit_ocr_job_type)
-        - [ETH_GAS_LIMIT_DR_JOB_TYPE](/docs/configuration-variables/#eth_gas_limit_dr_job_type)
-        - [ETH_GAS_LIMIT_VRF_JOB_TYPE](/docs/configuration-variables/#eth_gas_limit_vrf_job_type)
-        - [ETH_GAS_LIMIT_FM_JOB_TYPE](/docs/configuration-variables/#eth_gas_limit_fm_job_type)
-        - [ETH_GAS_LIMIT_KEEPER_JOB_TYPE](/docs/configuration-variables/#eth_gas_limit_keeper_job_type)
+     - [ETH_GAS_LIMIT_OCR_JOB_TYPE](/docs/configuration-variables/#eth_gas_limit_ocr_job_type)
+     - [ETH_GAS_LIMIT_DR_JOB_TYPE](/docs/configuration-variables/#eth_gas_limit_dr_job_type)
+     - [ETH_GAS_LIMIT_VRF_JOB_TYPE](/docs/configuration-variables/#eth_gas_limit_vrf_job_type)
+     - [ETH_GAS_LIMIT_FM_JOB_TYPE](/docs/configuration-variables/#eth_gas_limit_fm_job_type)
+     - [ETH_GAS_LIMIT_KEEPER_JOB_TYPE](/docs/configuration-variables/#eth_gas_limit_keeper_job_type)
 
-    1. The global `ETH_GAS_LIMIT_DEFAULT` (`EVM.GasEstimator.LimitDefault`) value is used only when the preceding rules are not set.
+  1. The global `ETH_GAS_LIMIT_DEFAULT` (`EVM.GasEstimator.LimitDefault`) value is used only when the preceding rules are not set.
 
 ### Fixed
 
@@ -156,9 +157,9 @@ To disable connectivity checking completely, set `BLOCK_HISTORY_ESTIMATOR_CHECK_
 **[v1.6.0 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v1.6.0)**
 
 - Simplified password complexity requirements. All passwords used with Chainlink must meet the following requirements:
-    - Must be 16 characters or more
-    - Must not contain leading or trailing whitespace
-    - User passwords must not contain the user's API email
+  - Must be 16 characters or more
+  - Must not contain leading or trailing whitespace
+  - User passwords must not contain the user's API email
 - Simplified the Keepers job spec by removing the observation source from the required parameters.
 
 ## Changes in v1.5.0 nodes
@@ -166,15 +167,16 @@ To disable connectivity checking completely, set `BLOCK_HISTORY_ESTIMATOR_CHECK_
 **[v1.5.0 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v1.5.0)**
 
 - Chainlink will not boot if the Postgres database password is missing or insecure. Passwords must conform to the following rules:
-    - Must be longer than 12 characters
-    - Must comprise at least 3 of the following items:
-        - Lowercase characters
-        - Uppercase characters
-        - Numbers
-        - Symbols
-    - Must not comprise:
-    	  - More than three identical consecutive characters
-    	  - Leading or trailing whitespace (note that a trailing newline in the password file, if present, will be ignored)
+
+  - Must be longer than 12 characters
+  - Must comprise at least 3 of the following items:
+    - Lowercase characters
+    - Uppercase characters
+    - Numbers
+    - Symbols
+  - Must not comprise:
+    - More than three identical consecutive characters
+    - Leading or trailing whitespace (note that a trailing newline in the password file, if present, will be ignored)
 
   For backward compatibility, you can bypass this check at your own risk by setting `SKIP_DATABASE_PASSWORD_COMPLEXITY_CHECK=true`.
 
@@ -195,24 +197,25 @@ To disable connectivity checking completely, set `BLOCK_HISTORY_ESTIMATOR_CHECK_
 - Added the [`ETH_USE_FORWARDERS` config](/docs/configuration-variables/#eth_use_forwarders) option to enable transactions forwarding contracts.
 
 - In the `directrequest` job pipeline, three new block variables are available:
+
   - `$(jobRun.blockReceiptsRoot)` : the root of the receipts trie of the block (hash)
   - `$(jobRun.blockTransactionsRoot)` : the root of the transaction trie of the block (hash)
   - `$(jobRun.blockStateRoot)` : the root of the final state trie of the block (hash)
 
 - `ethtx` tasks can now be configured to error if the transaction reverts on-chain. You must set `failOnRevert=true` on the task to enable this behavior:
 
-    `foo [type=ethtx failOnRevert=true ...]`
+  `foo [type=ethtx failOnRevert=true ...]`
 
-    The `ethtx` task now works as follows:
+  The `ethtx` task now works as follows:
 
-    - If `minConfirmations == 0`, task always succeeds and nil is passed as output.
-    - If `minConfirmations > 0`, the receipt is passed through as output.
-    - If `minConfirmations > 0` and `failOnRevert=true` then the `ethtx` task will error on revert.
-    - If `minConfirmations` is not set on the task, the chain default will be used which is usually 12 and always greater than 0.
+  - If `minConfirmations == 0`, task always succeeds and nil is passed as output.
+  - If `minConfirmations > 0`, the receipt is passed through as output.
+  - If `minConfirmations > 0` and `failOnRevert=true` then the `ethtx` task will error on revert.
+  - If `minConfirmations` is not set on the task, the chain default will be used which is usually 12 and always greater than 0.
 
 - `http` task now allows specification of request headers. Use it like the following example:
 
-    `foo [type=http headers="[\\"X-Header-1\\", \\"value1\\", \\"X-Header-2\\", \\"value2\\"]"]`.
+  `foo [type=http headers="[\\"X-Header-1\\", \\"value1\\", \\"X-Header-2\\", \\"value2\\"]"]`.
 
 ### Fixed
 
@@ -228,7 +231,7 @@ To disable connectivity checking completely, set `BLOCK_HISTORY_ESTIMATOR_CHECK_
 
 - `MIN_OUTGOING_CONFIRMATIONS` has been removed and no longer has any effect. The [`ETH_FINALITY_DEPTH` environment variable](/docs/configuration-variables/#eth_finality_depth) is now used as the default for `ethtx` confirmations instead. You can override this on a per-task basis by setting `minConfirmations` in the task definition. For example, `foo [type=ethtx minConfirmations=42 ...]`.
 
-    This setting might have a minor impact on performance for very high throughput chains. If you don't care about reporting task status in the UI, set `minConfirmations=0` in your job specs. For more details, see the [Optimizing EVM Performance](/docs/evm-performance-configuration/#adjusting-minimum-outgoing-confirmations-for-high-throughput-jobs) page.
+  This setting might have a minor impact on performance for very high throughput chains. If you don't care about reporting task status in the UI, set `minConfirmations=0` in your job specs. For more details, see the [Optimizing EVM Performance](/docs/evm-performance-configuration/#adjusting-minimum-outgoing-confirmations-for-high-throughput-jobs) page.
 
 ## Changes in v1.4.1 nodes
 
@@ -257,7 +260,7 @@ To disable connectivity checking completely, set `BLOCK_HISTORY_ESTIMATOR_CHECK_
 - Changed default locking mode to "dual". See the [DATABASE_LOCKING_MODE](/docs/configuration-variables/#database_locking_mode) documentation for details.
 - Specifying multiple EVM RPC nodes with the same URL is no longer supported. If you see `ERROR 0106_evm_node_uniqueness.sql: failed to run SQL migration`, you have multiple nodes specified with the same URL and you must fix this before proceeding with the upgrade.
 - EIP-1559 is now enabled by default on the Ethereum Mainnet. See the [EVM_EIP1559_DYNAMIC_FEES](/docs/configuration-variables/#evm_eip1559_dynamic_fees) documentation for details.
-- Added new Chainlink Automation feature that includes gas price in calls to `checkUpkeep()`. To enable the feature, set [KEEPER_CHECK_UPKEEP_GAS_PRICE_FEATURE_ENABLED](/docs/configuration-variables#keeper_check_upkeep_gas_price_feature_enabled) to `true`. Use this setting *only* on Polygon networks.
+- Added new Chainlink Automation feature that includes gas price in calls to `checkUpkeep()`. To enable the feature, set [KEEPER_CHECK_UPKEEP_GAS_PRICE_FEATURE_ENABLED](/docs/configuration-variables#keeper_check_upkeep_gas_price_feature_enabled) to `true`. Use this setting _only_ on Polygon networks.
 
 ## Changes in v1.2.0 nodes
 

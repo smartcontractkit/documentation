@@ -556,14 +556,14 @@ Previous versions of Chainlink nodes wrote JSON logs with a unix timestamp. As o
 
 - Default: _none_
 
-When set, this environment variable configures and enables an optional HTTP logger which is used specifically to send audit log events. Audit logs events are emitted when specific actions are performed by any of the users through the node's API. The value of this variable should be a full URL. Log items will be sent via POST
+When set, this environment variable configures and enables an optional HTTP logger which is used specifically to send audit log events. Audit logs events are emitted when specific actions are performed by any of the users through the node's API. The value of this variable should be a full URL. Log items will be sent via POST HTTP requests.
 
 There are audit log implemented for the following events:
   - Auth & Sessions (new session, login success, login failed, 2FA enrolled, 2FA failed, password reset, password reset failed, etc.)
   - CRUD actions for all resources (add/create/delete resources such as bridges, nodes, keys)
   - Sensitive actions (keys exported/imported, config changed, log level changed, environment dumped)
 
-A full list of audit log enum types can be found in the source within the `audit` package (`audit_types.go`).
+A full list of audit log enum types can be found in the source within the `audit` package ([`audit_types.go`](https://github.com/smartcontractkit/chainlink/blob/develop/core/logger/audit/audit_types.go)).
 
 The `AUDIT_LOGS_*` environment variables below configure this optional audit log HTTP forwarder.
 
@@ -571,10 +571,11 @@ The `AUDIT_LOGS_*` environment variables below configure this optional audit log
 
 - Default: _none_
 
-An optional list of HTTP headers to be added for every optional audit log event. If the above `AUDIT_LOGGER_FORWARD_TO_URL` is set, audit log events will be POSTed to that URL, and will include headers specified in this environment variable. One example use case is auth for example: ```AUDIT_LOGGER_HEADERS="Authorization||{{token}}"```.
+An optional list of HTTP headers to be added for every optional audit log event. If the above `AUDIT_LOGGER_FORWARD_TO_URL` is set, audit log events will be POSTed to that URL, and will include headers specified in this environment variable. One example use case is auth for example: 
+```AUDIT_LOGGER_HEADERS="Authorization||{token}"```
 
-Header keys and values are delimited on ||, and multiple headers can be added with a forward slash delimiter ('\\'). An example of multiple key value pairs:
-```AUDIT_LOGGER_HEADERS="Authorization||{{token}}\Some-Other-Header||{{token2}}"```
+Header keys and values are delimited on `||`, and multiple headers can be added with a forward slash delimiter (`\`). An example of multiple key value pairs:
+```AUDIT_LOGGER_HEADERS="Authorization||{token}\Some-Other-Header||{token2}"```
 
 ##### AUDIT_LOGGER_JSON_WRAPPER_KEY
 
@@ -1170,7 +1171,7 @@ In EIP-1559 mode, the total price for the transaction is the minimum of base fee
 Chainlink's implementation of EIP-1559 works as follows:
 
 If you are using FixedPriceEstimator:
-- With gas bumping disabled, it will submit all transactions with `feecap=ETH_MAX_GAS_PRICE_WEI` and `tipcap=EVM_GAS_TIP_CAP_DEFAULT`
+- With gas bumping disabled, it will submit all transactions with `feecap=ETH_MAX_GAS_PRICE_WEI` and `tipcap=EVM_GAS_TIP_CAP_DEFAULT`.
 - With gas bumping enabled, it will submit all transactions initially with `feecap=EVM_GAS_FEE_CAP_DEFAULT` and `tipcap=EVM_GAS_TIP_CAP_DEFAULT`.
 
 If you are using BlockHistoryEstimator (default for most chains):
