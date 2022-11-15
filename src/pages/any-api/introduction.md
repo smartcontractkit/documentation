@@ -35,11 +35,6 @@ If your smart contracts need access to price feed data, try using [Chainlink Dat
 
 :::
 
-**Topics**
-
-- [Requesting off-chain data](#requesting-off-chain-data)
-- [Building external adapters](#building-external-adapters)
-
 ### Requesting off-chain data
 
 Outlined below are multiple ways developers can connect smart contracts to off-chain data feeds. Click a request type to learn more about it:

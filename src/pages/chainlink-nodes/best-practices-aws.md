@@ -6,20 +6,6 @@ title: "Best Practices for Deploying Nodes on AWS"
 permalink: "docs/best-practices-aws/"
 ---
 
-**Topics**
-
-- [Overview](#overview)
-- [Created Resources](#created-resources)
-- [IAM Roles](#iam-roles)
-- [Billable Services](#billable-services)
-- [Best Practices](#best-practices)
-- [Recovering or Upgrading your Chainlink Node Container](#recovering-or-upgrading-your-chainlink-node-container)
-- [Backup and Restore](#backup-and-restore)
-- [Failover Capabilities and Disaster Recovery](#failover-capabilities-and-disaster-recovery)
-- [Troubleshooting and Design Practices](#troubleshooting-and-design-practices)
-
-## Overview
-
 You can deploy a Chainlink node on the AWS Cloud using [AWS Quick Start](https://aws.amazon.com/quickstart) to deploy a highly available and secure Chainlink node on the AWS Cloud.
 
 <div class="remix-callout">

@@ -26,18 +26,6 @@ The VRF v2 Subscription Manager is available at [vrf.chain.link](https://vrf.cha
 Read the [pending](#pending) and [failed requests](#failed-requests) sections to learn how to troubleshoot your VRF requests.
 :::
 
-**Topics**
-
-- [Overview](#overview)
-- [Consumers](#consumers)
-- [Pending](#pending)
-- [History](#history)
-  - [Recent fulfillments](#recent-fulfillments)
-  - [Events](#events)
-  - [Failed requests](#failed-requests)
-
-## Overview
-
 ![VRF v2 UI overview](/images/vrf/v2-ui-overview.png)
 
 Subscription components:

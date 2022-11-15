@@ -6,16 +6,7 @@ title: "Managing Upkeeps"
 whatsnext: { "Automation economics": "/chainlink-automation/automation-economics/" }
 ---
 
-## Overview
-
 Manage your Upkeeps to get the best performance.
-
-**Topics**
-
-- [Fund your Upkeep](#fund-your-upkeep)
-- [Maintain a Minimum Balance](#maintain-a-minimum-balance)
-- [Withdraw funds](#withdraw-funds)
-- [Interacting directly with the Chainlink Automation Registry](#interacting-directly-with-the-chainlink-automation-registry)
 
 ## Fund your Upkeep
 

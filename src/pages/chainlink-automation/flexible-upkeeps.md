@@ -10,13 +10,6 @@ In this guide, you will learn how the flexibility of [Chainlink Automation](http
 
 Start by integrating an example contract to Chainlink Automation that has not yet been optimized. Then, deploy a comparison contract that shows you how to properly use the flexibility of Chainlink Automation to perform complex computations without paying high gas fees.
 
-**Topics**
-
-- [Prerequisites](#prerequisites)
-- [Problem: On-chain computation leads to high gas fees](#problem-on-chain-computation-leads-to-high-gas-fees)
-- [Solution: Perform complex computations with no gas fees](#solution-perform-complex-computations-with-no-gas-fees)
-- [Conclusion](#conclusion)
-
 ## Prerequisites
 
 This guide assumes you have a basic understanding of [Chainlink Automation](https://chain.link/keepers). If you are new to Keepers, complete the following guides first:

@@ -14,15 +14,6 @@ After deploying the contract, developers can go to [automation.chain.link](http
 
 To find other example contracts, see the [Example Automation Contracts](/chainlink-automation/util-overview/) page.
 
-**Topics**
-
-- [`EthBalanceMonitor` Properties](#ethbalancemonitor-properties)
-- [Functions](#functions)
-  - [`setWatchList` Function](#setwatchlist-function)
-  - [`setKeeperRegistryAddress` Function](#setkeeperregistryaddress-function)
-  - [`setMinWaitPeriodSeconds` Function](#setminwaitperiodseconds-function)
-  - [`topUp` Function](#topup-function)
-
 ## `EthBalanceMonitor` Properties
 
 `EthBalanceMonitor` is ownable, pauseable, and compatible with the `AutomationCompatibleInterface` contract:

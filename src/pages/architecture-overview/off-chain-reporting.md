@@ -12,8 +12,6 @@ metadata:
 
 Off-Chain Reporting (OCR) is a significant step towards increasing the decentralization and scalability of Chainlink networks. See the [OCR Protocol Paper](https://research.chain.link/ocr.pdf) for a technical deep dive.
 
-## Overview
-
 For Off-Chain Reporting aggregators, all nodes communicate using a peer to peer network. During the communication process, a lightweight consensus algorithm runs where each node reports its data observation and signs it. A single aggregate transaction is then transmitted, which saves a significant amount of gas.
 
 The report contained in the aggregate transaction is signed by a quorum of oracles and contains all oracles' observations. By validating the report on-chain and checking the quorum's signatures on-chain, we preserve the trustlessness properties of Chainlink oracle networks.

@@ -26,16 +26,6 @@ This guide explains how to get random values using a simple contract to request 
 
 <VrfCommon callout="ui"/>
 
-**Topics**
-
-- [Requirements](#requirements)
-- [Create and fund a subscription](#create-and-fund-a-subscription)
-- [Create and deploy a VRF v2 compatible contract](#create-and-deploy-a-vrf-v2-compatible-contract)
-- [Request random values](#request-random-values)
-- [Analyzing the contract](#analyzing-the-contract)
-- [Clean up](#clean-up)
-- [Vyper Example](#vyper-example)
-
 ## Requirements
 
 This guide assumes that you know how to create and deploy smart contracts on Ethereum testnets using the following tools:

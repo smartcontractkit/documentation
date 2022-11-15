@@ -22,16 +22,6 @@ This section explains how to generate random numbers using the subscription meth
 
 <YouTube id="https://www.youtube.com/watch?v=rdJ5d8j1RCg" />
 
-**Topics**
-
-- [Subscriptions](#subscriptions)
-- [Request and Receive Data](#request-and-receive-data)
-  - [End To End Diagram](#end-to-end-diagram)
-  - [Explanation](#explanation)
-- [Limits](#limits)
-  - [Subscription limits](#subscription-limits)
-  - [Coordinator contract limits](#coordinator-contract-limits)
-
 ## Subscriptions
 
 VRF v2 requests receive funding from subscription accounts. The [Subscription Manager](/vrf/v2/subscription/ui/) lets you create an account and pre-pay for VRF v2, so you don't provide funding each time your application requests randomness. This reduces the total gas cost to use VRF v2. It also provides a simple way to fund your use of Chainlink products from a single location, so you don't have to manage multiple wallets across several different systems and applications.
