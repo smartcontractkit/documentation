@@ -35,6 +35,7 @@ export const evmProducts = [
       { id: "moonbeam", title: "Moonbeam" },
       { id: "moonriver", title: "Moonriver" },
     ],
+    video: "https://www.youtube.com/watch?v=hw9f84DnTK4&list=PLVP9aGDn-X0Qr4TuqPFNQdqbI735tdPat",
   },
   {
     title: "Automate Contracts",
@@ -50,6 +51,7 @@ export const evmProducts = [
       ["Creating Flexible Upkeeps", "chainlink-automation/flexible-upkeeps/"],
     ],
     chains: [...baseChains, { id: "arbitrum", title: "Arbitrum" }],
+    video: "https://www.youtube.com/watch?v=xL96sTwQ5Ho&list=PLVP9aGDn-X0RloqS1uYcuaPSW3GIgoCkg",
   },
   {
     title: "VRF v2",
@@ -64,6 +66,7 @@ export const evmProducts = [
       ["Best Practices", "/vrf/v2/best-practices/"],
     ],
     chains: [...baseChains, { id: "klaytn", title: "Klaytn" }],
+    video: "https://www.youtube.com/watch?v=rpQCKoRvyR4&list=PLVP9aGDn-X0QHDyBRvbITizWrRoecR0D8",
   },
   {
     title: "External API Calls",

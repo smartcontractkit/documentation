@@ -12,6 +12,7 @@ export type ProductCardProps = {
   learnMorelink: string
   links: LinkTuple[]
   chains: { id: string; title: string }[]
+  video: string
 }
 
 export const ProductCard = (props: ProductCardProps) => {
@@ -36,11 +37,13 @@ export const ProductCard = (props: ProductCardProps) => {
             </div>
           ))}
           <div class={productCard.separator} />
-          <div>
-            <a href="#">
-              <VideoPlayerIcon /> Video tutorials
-            </a>
-          </div>
+          {props.video && (
+            <div>
+              <a href={props.video} target="_blank">
+                <VideoPlayerIcon /> Video tutorials
+              </a>
+            </div>
+          )}
         </div>
       </div>
       {props.chains && (
