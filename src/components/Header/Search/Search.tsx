@@ -62,7 +62,7 @@ export default function Search() {
         <span>Search...</span>
       </button>
       <button onClick={onOpen} className={styles.searchInputMobile}>
-        <img src="/assets/search.svg" />
+        <img src="/assets/search.svg" alt="search" aria-label="Search" />
       </button>
 
       <SearchModal isOpen={isOpen} onClose={onClose} />

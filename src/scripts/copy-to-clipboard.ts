@@ -23,7 +23,8 @@ document.addEventListener("DOMContentLoaded", () => {
     copyButton.type = "button"
     const s = codeBlock.innerText
     copyButton.setAttribute("data-clipboard-text", s)
-    copyButton.innerHTML = `<img src="/assets/icons/copyIcon.svg">`
+    copyButton.innerHTML = `<img src="/assets/icons/copyIcon.svg" alt="copy to clipboard">`
+    copyButton.ariaLabel = "copy to clipard"
 
     container.appendChild(copyButton)
 
