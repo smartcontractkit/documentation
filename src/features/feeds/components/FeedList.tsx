@@ -99,8 +99,8 @@ export const FeedList = ({
             .filter((network) => {
               if (isDeprecating) {
                 let foundDeprecated = false
-                network.metadata.forEach((feed) => {
-                  if (feed.docs.shutdownDate) foundDeprecated = true
+                network.metadata?.forEach((feed) => {
+                  if (feed.docs?.shutdownDate) foundDeprecated = true
                 })
                 return foundDeprecated
               }
