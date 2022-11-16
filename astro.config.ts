@@ -25,9 +25,10 @@ export default defineConfig({
     solidityRemixCode(),
     youtubeEmbed(),
     mdx(),
-    partytown(),
+    partytown({}),
   ],
   markdown: {
+    drafts: true,
     rehypePlugins: [
       rehypeSlug,
       [

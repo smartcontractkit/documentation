@@ -18,6 +18,7 @@ setup: |
   import { variables } from "@variables"
   import { Tabs } from "@components/Tabs"
   import { NetworkTabs, PackageManagerTabs, ClickToZoom } from "@components"
+draft: true
 ---
 
 ## Using Directives
