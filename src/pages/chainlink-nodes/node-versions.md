@@ -3,14 +3,54 @@ layout: ../../layouts/MainLayout.astro
 section: nodeOperator
 date: Last Modified
 title: "Node Versions and Upgrades"
-permalink: "docs/node-versions/"
-whatsnext: { "Running a Chainlink Node": "/chainlink-nodes/running-a-chainlink-node/" }
+whatsnext: { "Running a Chainlink Node": "/chainlink-nodes/running-a-chainlink-node" }
 metadata:
   title: "Node Versions and Release Notes"
   description: "Details about various node versions and how to migrate between them."
 ---
 
 You can find a list of release notes for Chainlink nodes in the [smartcontractkit GitHub repository](https://github.com/smartcontractkit/chainlink/releases). Docker images are available in the [Chainlink Docker hub](https://hub.docker.com/r/smartcontract/chainlink/tags).
+
+## Changes in v1.10.0 nodes
+
+**[v1.10.0 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v1.10.0)**
+
+### Added
+
+- Added an optional external logger `AUDIT_LOGS_FORWARDER_URL`: When set, this environment variable configures and enables an optional HTTP logger which is used specifically to send audit log events. Configure this logger with the following environment variables:
+  - [AUDIT_LOGS_FORWARDER_URL](/chainlink-nodes/configuration-variables/#audit_logs_forwarder_url)
+  - [AUDIT_LOGS_FORWARDER_HEADERS](/chainlink-nodes/configuration-variables/#audit_logs_forwarder_headers)
+  - [AUDIT_LOGGER_JSON_WRAPPER_KEY](/chainlink-nodes/configuration-variables/#audit_logger_json_wrapper_key)
+- Added [automatic connectivity detection](#automatic-connectivity-detection) to automatically detect if there is a transaction propagation/connectivity issue and prevent bumping in these cases on EVM chains.
+
+### Changed
+
+- The default maximum gas price on most networks is now effectively unlimited.
+  - Chainlink will bump as high as necessary to get a transaction included. [Automatic connectivity detection](#automatic-connectivity-detection) prevents excessive bumping when there is a connectivity failure.
+  - If you want to change this, manually set the [`ETH_MAX_GAS_PRICE_WEI` environment variable](/chainlink-nodes/configuration-variables/#eth_max_gas_price_wei).
+- If the `EVMChainID` is not set explicitly in the job spec for a new OCR job, the field is now automatically added with a default chain ID.
+  - Old OCR jobs missing `EVMChainID` continue to run on any chain that the [`ETH_CHAIN_ID` variable](/chainlink-nodes/configuration-variables/#eth_chain_id) is set to (or the first chain if it is not set). This can be changed after a restart.
+  - Newly created OCR jobs run only on a single fixed chain and are unaffected by changes to `ETH_CHAIN_ID` after the job is added.
+  - It should no longer be possible to end up with multiple OCR jobs for a single contract running on the same chain. Only one job per contract per chain is allowed.
+  - If there are any existing duplicate jobs per contract and per chain, all but the jobs with the latest creation date will be pruned during the upgrade.
+
+### Fixed
+
+- Fixed minor bug where Chainlink would attempt and fail to estimate a tip cap higher than the maximum configured gas price in EIP1559 mode. It now caps the tipcap to the max instead of erroring.
+- Fixed a bug where it was impossible to remove ETH keys that had extant transactions. Now, removing an ETH key will drop all associated data automatically, including past transactions.
+
+### Automatic connectivity detection
+
+Chainlink will no longer bump excessively if the network is broken.
+
+This feature only applies on EVM chains when using BlockHistoryEstimator (the most common case).
+Chainlink will now try to automatically detect if there is a transaction propagation/connectivity issue and prevent bumping in these cases. This can help avoid the situation where RPC nodes are not propagating transactions for some reason (e.g., go-ethereum bug, networking issue ...etc) and Chainlink responds in a suboptimal way by bumping transactions to a very high price in an effort to get them mined. This can lead to unnecessary expense when the connectivity issue is resolved and the transactions are finally propagated into the mempool.
+
+This feature is enabled by default with fairly conservative settings: if a transaction has been priced above the 90th percentile of the past 12 blocks, but still wants to bump due to not being mined, a connectivity/propagation issue is assumed and all further bumping will be prevented for this transaction. In this situation, Chainlink will start firing the `block_history_estimator_connectivity_failure_count` prometheus counter and logging at critical level until the transaction is mined.
+
+The default settings should work fine for most users. For advanced users, the values can be tweaked by changing `BLOCK_HISTORY_ESTIMATOR_CHECK_INCLUSION_BLOCKS` and `BLOCK_HISTORY_ESTIMATOR_CHECK_INCLUSION_PERCENTILE`.
+
+To disable connectivity checking completely, set `BLOCK_HISTORY_ESTIMATOR_CHECK_INCLUSION_BLOCKS=0`.
 
 ## Changes in v1.9.0 nodes
 
