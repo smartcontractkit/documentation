@@ -1,0 +1,53 @@
+name: Check if chainlink automation config is up to date
+
+on:
+  schedule:
+    - cron: '59 23 * * */7'
+  branches:
+    - main
+    - astro-holding-branch
+    - documentation-redesign
+
+  workflow_dispatch:
+
+jobs:
+  check-chainlink-automation-config:
+    permissions:
+      pull-requests: write
+      contents: write
+    name: Check if chainlinnk automation config is up to date
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b # v3.0.2
+      - name: Install Dependencies
+        run: npm i
+      - name: Compare current config with the deployed one
+        run: npm run sync-chainlink-automation-config
+      - name: Check if new config file
+        id: compare_configs
+        run: |
+          set -x
+          if test -f "./src/features/chainlink-automation/data/chainlink-automation-configTOBE.json"; then
+            cp "./src/features/chainlink-automation/data/chainlink-automation-configTOBE.json" "./src/features/chainlink-automation/data/chainlink-automation-config.json"
+            echo "::set-output name=createPR::true"
+            timestamp=$(date +%Y%m%d%H%M)
+            echo "::set-output name=timestamp::${timestamp}"
+          fi
+      - if: ${{ steps.compare_configs.outputs.createPR }}
+        id: chainlink_automation_config_pr
+        name: Create pull request
+        uses: peter-evans/create-pull-request@9825ae65b1cb54b543b938503728b432a0176d29 # v3.1.0
+        with:
+          branch: 'chainlink_automation_config/pr-${{ steps.compare_configs.outputs.timestamp }}'
+          commit-message: 'chainlink automation config updated'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          title: 'Update chainlink automation config ${{ steps.compare_configs.outputs.timestamp }}'
+          delete-branch: true
+          body: 'New chainlink automation config available. Please review and merge'
+          labels: |
+            enhancement
+            ready to merge

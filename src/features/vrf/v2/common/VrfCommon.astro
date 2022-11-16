@@ -1,0 +1,23 @@
+---
+const common = await Astro.glob("./common.md")
+const CommonComponent = common[0].Content
+
+const direct_funding = await Astro.glob("./direct-funding.md")
+const DirectFundingComponent = direct_funding[0].Content
+
+const subscription = await Astro.glob("./subscription.md")
+const SubscriptionComponent = subscription[0].Content
+
+const ui = await Astro.glob("./ui-callout.md")
+const UIComponent = ui[0].Content
+
+export type Props = {
+  callout?: "common" | "directFunding" | "subscription" | "ui"
+}
+const { callout } = Astro.props as Props
+---
+
+{callout === "common" && <CommonComponent />}
+{callout === "directFunding" && <DirectFundingComponent />}
+{callout === "subscription" && <SubscriptionComponent />}
+{callout === "ui" && <UIComponent />}
