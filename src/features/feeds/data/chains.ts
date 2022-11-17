@@ -38,7 +38,7 @@ export const CHAINS: Chain[] = [
         name: "Goerli Testnet",
         explorerUrl: "https://goerli.etherscan.io/address/%s",
         networkType: "testnet",
-        tags: ["nftFloorPrice"],
+        tags: ["proofOfReserve", "nftFloorPrice"],
         rddUrl: "https://reference-data-directory.vercel.app/feeds-goerli.json",
       },
     ],
