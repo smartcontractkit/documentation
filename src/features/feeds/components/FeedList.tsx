@@ -50,7 +50,7 @@ export const FeedList = ({
           {!isSolana && !isDeprecating && (
             <div class={feedList.clChainnavProduct} id="networks-list">
               <div>
-                <div>
+                <div role="tablist">
                   {chains
                     .filter((chain) => {
                       if (isPor) return chain.tags?.includes("proofOfReserve")
