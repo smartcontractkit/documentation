@@ -47,7 +47,7 @@ function EmptyQueryBoundary({ children, fallback }) {
                   <a
                     style={{ padding: "var(--space-1x) var(--space-2x)" }}
                     href={article.url}
-                    className={clsx(styles.hit, "paragraph-200")}
+                    className={clsx(styles.hit, "paragraph-200", "recommended-match-hit")}
                   >
                     {article.title}
                   </a>
@@ -67,7 +67,7 @@ function EmptyQueryBoundary({ children, fallback }) {
                       <a
                         style={{ padding: "var(--space-1x) var(--space-2x)" }}
                         href={article.url}
-                        className={clsx(styles.hit, "paragraph-200")}
+                        className={clsx(styles.hit, "paragraph-200", "recently-viewed-match-hit")}
                       >
                         {article.title}
                       </a>
