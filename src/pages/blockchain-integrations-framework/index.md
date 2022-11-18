@@ -32,8 +32,9 @@ Install the framework and create an alias:
 
 1. Obtain the binary file from Chainlink Labs and put it in your local directory.
 1. Make the binary available in `/usr/bin` so you can run it without the full path: `sudo mv ./bif /usr/local/bin/`
+1. For certain operating systems and architectures, you may need to install [wasmvm](https://github.com/CosmWasm/wasmvm#builds-of-libwasmvm), a shared library that BIF imports. For example, on MacOS, you must install `​libwasmvm.dylib` using `wget https://raw.githubusercontent.com/CosmWasm/wasmvm/main/internal/api/libwasmvm.dylib` and move it to `/usr/local/lib` using `cp ​libwasmvm.dylib /usr/local/lib`.
 
-You can now run the framework CLI. Run `bif integration -h` to see the available commands. See the [Running basic tests](#running-basic-tests) section for examples.
+You can now run the framework CLI. Run `bif -h` to see the available commands. See the [Running basic tests](#running-basic-tests) section for examples.
 
 If you plan to run soak tests or other tests that require running Chainlink nodes, set up [Helm](https://helm.sh/docs/intro/install/#through-package-managers), [Kubernetes](https://kubernetes.io/docs/setup/) and other required tools:
 
