@@ -87,7 +87,7 @@ const DefaultTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => (
           style={{ height: "16px", width: "16px" }}
           data-clipboard-text={proxy.proxyAddress ?? proxy.contractAddress}
         >
-          <img src="/assets/icons/copyIcon.svg" />
+          <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
         </button>
         <a
           class={tableStyles.addressLink}
@@ -148,7 +148,7 @@ const ProofOfReserveTr = ({ network, proxy, showExtraDetails, isTestnet = false 
           style={{ height: "16px", width: "16px" }}
           data-clipboard-text={proxy.proxyAddress}
         >
-          <img src="/assets/icons/copyIcon.svg" />
+          <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
         </button>
       </div>
       <div>
@@ -216,7 +216,7 @@ const NftFloorTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => 
           style={{ height: "16px", width: "16px" }}
           data-clipboard-text={proxy.proxyAddress}
         >
-          <img src="/assets/icons/copyIcon.svg" />
+          <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
         </button>
         <a class={tableStyles.addressLink} href={network.explorerUrl.replace("%s", proxy.proxyAddress)}>
           {proxy.proxyAddress}

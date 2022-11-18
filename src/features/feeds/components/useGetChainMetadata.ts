@@ -2,50 +2,38 @@ import { useEffect, useState } from "preact/hooks"
 import { getChainMetadata } from "../api"
 import { Chain } from "../data/chains"
 
-export function useGetChainMetadata(chain: Chain, { initialCache }) {
-  const [cache, setCache] = useState(initialCache ?? { [chain.page]: chain })
-  const [error, setError] = useState({ [chain.page]: false })
-  const [loading, setLoading] = useState({ [chain.page]: false })
-  const processedData = cache[chain.page]
+export function useGetChainMetadata(chainId: Chain["page"], { initialCache }) {
+  const [cache, setCache] = useState(initialCache)
+  const [error, setError] = useState({ [chainId]: false })
+  const [loading, setLoading] = useState({ [chainId]: false })
+  const chainData = cache[chainId]
 
   useEffect(() => {
     async function refetch() {
-      if (!chain) return
+      if (!chainId) return
       // store the current value into a cache
-      setLoading((curr) => ({ ...curr, [chain.page]: true }))
-      setError((curr) => ({ ...curr, [chain.page]: false }))
-
-      if (processedData) {
-        setCache((currentCache) => ({
-          ...currentCache,
-          [processedData.page]: processedData,
-        }))
-      } else {
-        setCache((currentCache) => ({
-          ...currentCache,
-          [chain.page]: chain,
-        }))
-      }
+      setLoading((curr) => ({ ...curr, [chainId]: true }))
+      setError((curr) => ({ ...curr, [chainId]: false }))
 
       try {
-        const metadata = await getChainMetadata(chain)
+        const metadata = await getChainMetadata(cache[chainId])
 
         setCache((currentCache) => ({
           ...currentCache,
           [metadata.page]: metadata,
         }))
       } catch (e) {
-        setError((curr) => ({ ...curr, [chain.page]: true }))
+        setError((curr) => ({ ...curr, [chainId]: true }))
       } finally {
-        setLoading((curr) => ({ ...curr, [chain.page]: false }))
+        setLoading((curr) => ({ ...curr, [chainId]: false }))
       }
     }
     refetch()
-  }, [chain])
+  }, [chainId])
 
   return {
-    processedData,
-    error: error[chain.page],
-    loading: loading[chain.page],
+    data: chainData,
+    error: error[chainId],
+    loading: loading[chainId] && !cache[chainId],
   }
 }

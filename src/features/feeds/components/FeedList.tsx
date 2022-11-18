@@ -26,7 +26,9 @@ export const FeedList = ({
   const [selectedChain, setSelectedChain] = useQueryString("network", chains[0].page)
   const [showExtraDetails, setShowExtraDetails] = useState(false)
 
-  const chainMetadata = useGetChainMetadata(chains.filter((chain) => chain.page === selectedChain)[0], { initialCache })
+  const chainMetadata = useGetChainMetadata(chains.filter((chain) => chain.page === selectedChain)[0].page, {
+    initialCache,
+  })
 
   function handleNetworkSelect(chain: Chain) {
     setSelectedChain(chain.page)
@@ -34,7 +36,7 @@ export const FeedList = ({
 
   useEffect(() => {
     updateTableOfContents()
-  }, [chainMetadata.processedData])
+  }, [chainMetadata.data])
 
   const isPor = dataFeedType === "por"
   const isNftFloor = dataFeedType === "nftFloor"
@@ -66,7 +68,7 @@ export const FeedList = ({
                         class={clsx(button.tertiary, feedList.networkSwitchButton)}
                         onClick={() => handleNetworkSelect(chain)}
                       >
-                        <img src={chain.img} title={chain.label} loading="lazy" />
+                        <img src={chain.img} title={chain.label} loading="lazy" width={32} height={32} />
                         <span>{chain.label}</span>
                       </button>
                     ))}
@@ -83,19 +85,17 @@ export const FeedList = ({
             </p>
           )}
 
-          {chainMetadata.processedData?.networkStatusUrl && !isDeprecating && (
+          {chainMetadata.data?.networkStatusUrl && !isDeprecating && (
             <p>
               Track the status of this network at{" "}
-              <a href={chainMetadata.processedData?.networkStatusUrl}>
-                {chainMetadata.processedData?.networkStatusUrl}
-              </a>
+              <a href={chainMetadata.data?.networkStatusUrl}>{chainMetadata.data?.networkStatusUrl}</a>
             </p>
           )}
 
           {chainMetadata.error && <p>There was an error loading the feeds...</p>}
 
-          {chainMetadata.loading && !chainMetadata.processedData && <p>Loading...</p>}
-          {chainMetadata.processedData?.networks
+          {chainMetadata.loading && !chainMetadata.data && <p>Loading...</p>}
+          {chainMetadata.data?.networks
             .filter((network) => {
               if (isDeprecating) {
                 let foundDeprecated = false
