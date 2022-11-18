@@ -15,14 +15,14 @@ const { content = {}, frontmatter } = Astro.props
 const headings = Astro.props?.headings || Astro.props?.content?.astro.headings
 
 const currentPage = new URL(Astro.request.url).pathname
-const currentFile = `src/pages${currentPage.replace(/\/$/, "")}.md`
+const currentFile = `src/pages${currentPage.replace(/\/$/, "")}.${frontmatter?.isMdx ? "mdx" : "md"}`
+
 const githubEditUrl = CONFIG.GITHUB_EDIT_URL + currentFile
+
 const formattedContentTitle = content.title
   ? `${content.title} | ${CONFIG.SITE.title}`
   : `${CONFIG.PAGE.titleFallback} | ${CONFIG.SITE.title}`
 const canonicalURL = new URL(Astro.url.pathname, Astro.site)
-
-const includeLinkToWalletScript = !!Astro.props?.content?.metadata?.linkToWallet
 ---
 
 <html dir={content.dir ?? "ltr"} lang={content.lang ?? "en-us"} class="initial">
@@ -142,9 +142,6 @@ const includeLinkToWalletScript = !!Astro.props?.content?.metadata?.linkToWallet
     <NewsletterCTA client:visible />
     <Footer />
 
-    <script>
-      import "../scripts/index.ts"
-    </script>
     <script define:vars={{ content }}>
       const persistedArticle = {
         title: content.title,
@@ -158,6 +155,5 @@ const includeLinkToWalletScript = !!Astro.props?.content?.metadata?.linkToWallet
         localStorage.setItem("recentArticles", JSON.stringify(recentArticles.slice(0, 5)))
       }
     </script>
-    {includeLinkToWalletScript && <LinkToWallet />}
   </body>
 </html>
