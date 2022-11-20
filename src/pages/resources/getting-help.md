@@ -34,9 +34,9 @@ When writing issues, remember to:
 
 This is where most people will end up and is one of the most helpful resources out there. Stack Overflow is living documentation, so do your best to make a [thoughtful and easy to triage question](https://stackoverflow.com/help/how-to-ask). This will make it much easier for people to help debug your issue and ensure it doesn't get removed from the site. Remember, we want to make this question **searchable** so others who run into the same issue can also get their question solved. You could use any forum-based site you like if you prefer another site over Stack Overflow.
 
-Here is an example of a poorly formatted question:
+It's best to create a [minimum reproducible example](https://stackoverflow.com/help/minimal-reproducible-example) to help others understand your issue. This way, they can help you get an answer quickly. Remember, its a community-run platform! Don't get discouraged if your question gets downvoted or removed. This just means you need to format your question a little differently next time!
 
-:::note
+**An example of a poorly formatted question:**
 
 Title: Please help
 
@@ -50,11 +50,8 @@ Here is my code
 pragma solidity 0.6.7; contract HelloWorld { string public message; constructor(string memory initialMessage) {message = initialMessage; }`
 ```
 
-:::
+**The same question with better formatting:**
 
-Here is that same question with better formatting:
-
-:::note
 Title: Remix Solidity Compile Error - Source File Requires Different Compiler Version
 
 I'm [following this guide](/getting-started/deploy-your-first-contract/), and I'm unable to compile my solidity code in [Remix](https://remix.ethereum.org/).
@@ -88,12 +85,6 @@ ParserError: Source file requires different compiler version (current compiler i
 | ^^^^^^^^^^^^^^^^^^^^^^
 
 ```
-
-:::
-
-It's best to create a [minimum reproducible example](https://stackoverflow.com/help/minimal-reproducible-example) to help others understand your issue. This way, they can help you get an answer quickly. Remember, its a community-run platform!
-
-Don't get discouraged if your question gets downvoted or removed. This just means you need to format your question a little differently next time!
 
 ## 5. Ask the community
 
