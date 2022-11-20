@@ -16,8 +16,7 @@ export default defineConfig({
     astroFlavoredMarkdown: true,
   },
   integrations: [
-    preact(),
-    react(),
+    preact({ compat: true }),
     sitemap({ changefreq: "daily" }),
     astroCallouts(),
     solidityRemixCode(),
