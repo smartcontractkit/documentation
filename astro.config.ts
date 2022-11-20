@@ -9,8 +9,6 @@ import rehypeSlug from "rehype-slug"
 import rehypeAutolinkHeadings from "rehype-autolink-headings"
 import sitemap from "@astrojs/sitemap"
 
-import partytown from "@astrojs/partytown"
-
 // https://astro.build/config
 export default defineConfig({
   site: "https://docs.chain.link",
@@ -25,7 +23,6 @@ export default defineConfig({
     solidityRemixCode(),
     youtubeEmbed(),
     mdx(),
-    partytown({}),
   ],
   markdown: {
     drafts: true,
