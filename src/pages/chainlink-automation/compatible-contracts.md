@@ -104,7 +104,7 @@ When `checkUpkeep` returns `upkeepNeeded == true`, the Automation node broadcast
 During registration you have to specify the maximum gas limit that we should allow your contract to use. We simulate `performUpkeep` during `checkUpkeep` and if the gas exceeds this limit the function will not execute on-chain. One method to determine your upkeep's gas limit is to simulate the `performUpkeep` function and add enough overhead to take into account increases that might happen due to changes in `performData` or on-chain data. The gas limit you specify cannot exceed the `callGasLimit` in the [configuration of the registry](/chainlink-automation/supported-networks/#configurations).
 :::
 
-Ensure that your `performUpkeep` is _idempotent_. Your `performUpkeep` function should change state such that `checkUpkeep` will not return `true` for the same subset of work once said work is complete. Otherwise the Upkeep will remain eligible and result in multiple performances by the Chainlink Automation Network on the exactly same subset of work. As a best practice, always [revalidate](#revalidate-performupkeep) conditions for your upkeep at the start of your `performUpkeep` function.
+Ensure that your `performUpkeep` is _idempotent_. Your `performUpkeep` function should change state such that `checkUpkeep` will not return `true` for the same subset of work once said work is complete. Otherwise the Upkeep will remain eligible and result in multiple performances by the Chainlink Automation Network on the exactly same subset of work.
 
 ```solidity
 function performUpkeep(bytes calldata performData) external override;
@@ -135,25 +135,13 @@ You can find a `KeepersConsumer` example [here](https://github.com/smartcontract
 
 ## Best practices
 
-### Revalidate `performUpkeep`
-
-We recommend that you revalidate the conditions and data in `performUpkeep` before work is performed. By default the `performUpkeep` is `external` and thus any party can call it, so revalidation is recommended. If you send data from your `checkUpkeep` to your `performUpkeep` and this data drives a critical function, please ensure you put adequate checks in place.
-
-### Perform ONLY when conditions are met
-
-Some actions must be performed only when specific conditions are met. Check all of the preconditions within `performUpkeep` to ensure that state change occurs only when necessary.
-
-In this pattern, it is undesirable for the state change to occur until the next time the Upkeep is checked by the network and the conditions are met. It is a best practice to stop any state change or effects by performing the same checks or similar checks that you use in `checkUpkeep`. These checks validate the conditions before doing the work.
-
-For example, if you have a contract where you create a timer in `checkUpkeep` that is designed to start a game at a specific time, validate the condition to ensure third-party calls to your `performUpkeep` function do not start the game at a different time.
-
 ### Perform ONLY when data is verified
 
 Some actions must be performed using data you intend to use. Revalidate that the `performData` is allowed before execution.
 
 For example, if you have a `performUpkeep` that funds a wallet and the address of the wallet is received via the `performData` parameter, ensure you have a list of permissable addresses to compare against to prevent third-party calling your function to send money to their address.
 
-### When performing is not harmful
+## When performing is not harmful
 
 Sometimes actions must be performed when conditions are met, but performing actions when conditions are not met is still acceptable. Condition checks within `performUpkeep` might not be required, but it can still be a good practice to short circuit expensive and unnecessary on-chain processing when it is not required.
 
