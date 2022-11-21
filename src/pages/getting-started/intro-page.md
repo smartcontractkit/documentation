@@ -21,26 +21,54 @@ To build with Chainlink, you'll need to familairize yourself with smart contract
 
 Learn more about Chainlink products, launching your first application, and joining developer communities.
 
-1. [Chainlink Architecture Overview]()
-2. [Launch an application using Chainlink Data Feeds](../consuming-data-feeds)
-3. [Explore documentation](https://docs.chain.link/ethereum/)
-4. [Join the Community](../developer-communications)
+- [Chainlink Architecture Overview]()
+- [Launch an application using Chainlink Data Feeds](../consuming-data-feeds)
+- [Explore documentation](https://docs.chain.link/ethereum/)
+- [Join the Community](../developer-communications)
 
-## Explore Chainlink products and services 
+## Explore Chainlink products and services
 
 Pick a Chainlink product to explore for a step-by-step tutorial to create a running application.
 
-1. [Data Feeds](../data-feed-learning.md)
-2. [VRF]()
-3. [Using Any API]()
-4. [Automation]()
+<div class="cl-section">
+    <div>
+        <div class="cl-section-cards">
+          <a class="cl-productcard" href="/docs/data-feed-learning/" target="_blank">
+            <div>
+                <img
+                />
+                <h4>Data Feeds</h4>
+            </div>
+          </a>
+          <a class="cl-productcard" href="/docs/vrf-learning/" target="_blank">
+            <div>
+                <img
+                />
+                <h4>VRF</h4>
+            </div>
+          </a>
+          <a class="cl-productcard" href="https://blog.chain.link/" target="_blank">
+                <div>
+                    <img/>
+                    <h4>Using Any API</h4>
+                </div>
+            </a>
+            <a class="cl-productcard" href="https://chain.link/community" target="_blank">
+                <div>
+                    <img/>
+                    <h4>Automation</h4>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
 
-# Discover more resources 
+## Discover more resources
 
 More resources so you can create better solutions using Chainlink.
 
-1. [Starter kits](https://github.com/smartcontractkit/starter-kits)
-2. [Video tutorials and workshops](https://www.youtube.com/c/Chainlink)
-3. [Chainlink courses](https://www.chainlink.education/)
-4. [Chainlink blog](https://www.blog.chain.link/)
-5. [Blockchain ecosystem resources](https://www.blockchain.education/)
+- [Starter kits](https://github.com/smartcontractkit/starter-kits)
+- [Video tutorials and workshops](https://www.youtube.com/c/Chainlink)
+- [Chainlink courses](https://www.chainlink.education/)
+- [Chainlink blog](https://www.blog.chain.link/)
+- [Blockchain ecosystem resources](https://www.blockchain.education/)
