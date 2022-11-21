@@ -107,22 +107,6 @@ export const CHAINS: Chain[] = [
     label: "Gnosis Chain (xDai)",
   },
   {
-    page: "heco-chain",
-    title: "HECO Chain Data Feeds",
-    img: "/assets/chains/heco.svg",
-    networkStatusUrl: "https://hecoinfo.com/",
-    tags: ["default"],
-    networks: [
-      {
-        name: "HECO Mainnet",
-        explorerUrl: "https://hecoinfo.com/address/%s",
-        networkType: "mainnet",
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-heco-mainnet.json",
-      },
-    ],
-    label: "HECO Chain",
-  },
-  {
     page: "avalanche",
     title: "Avalanche Data Feeds",
     img: "/assets/chains/avalanche.svg",
@@ -370,12 +354,6 @@ export const ALL_CHAINS: Chain[] = [
         explorerUrl: "https://gnosisscan.io/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-xdai-mainnet.json",
-      },
-      {
-        name: "HECO Mainnet",
-        explorerUrl: "https://hecoinfo.com/address/%s",
-        networkType: "mainnet",
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-heco-mainnet.json",
       },
       {
         name: "Avalanche Mainnet",
