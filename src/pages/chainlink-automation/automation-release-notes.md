@@ -14,6 +14,7 @@ whatsnext:
 
 **Chainlink Automation release notes:**
 
+- [v2.0 release on all supported mainnets](#2022-11-21---v20-release-on-all-supported-mainnets)
 - [Chainlink Keepers is now Chainlink Automation](#chainlink-keepers-is-now-chainlink-automation)
 - [v1.3 release](#2022-09-23---v13-release)
 - [v1.2 release](#2022-08-04---v12-release)
@@ -25,6 +26,16 @@ whatsnext:
 - [Keepers on Binance Smart Chain and Polygon](#2021-11-18---keepers-on-binance-smart-chain-and-polygon)
 - [Keepers v1.1 launch on Ethereum](#2021-08-05---keepers-v11-launch-on-ethereum)
 - [Questions](#questions)
+
+## 2022-11-21 - v2.0 Release on all supported Mainnets
+
+Launch Automation v2.0 on all supported Mainnets. Key features include:
+
+- **Consensus mechanism:** By leveraging OCR (link to OCR) we add trust minimization to our product so you don’t have to rely on a single node for your transactions. Instead nodes will reach a consensus before executing transactions giving you higher security guarantees.
+- **Improved reliability**: OCR adds a peer-to-peer communications layer to the Automation network, and thus if a node goes down, your upkeep will not be impacted.
+- **Configurable upkeeps**: You can edit the following in your upkeeps without needing to create new upkeeps. checkData, admin, gasLimit
+- **Pause/Unpause**: You can now pause or unpause your upkeeps without needing to cancel and recreate.
+- **Simplified programmatic creation**: Users who want to create upkeeps dynamically from their solidity contracts can use our simple two step process and example code to easily scale their upkeeps
 
 ## Chainlink Keepers is now Chainlink Automation
 
