@@ -6,23 +6,27 @@ module.exports = {
         contents: [
           {
             title: 'Overview',
-            url: '/docs/conceptual-overview/',
+            url: '/docs/intro-page/',
           },
           {
             title: 'Deploy Your First Contract',
             url: '/docs/deploy-your-first-contract/',
           },
           {
-            title: 'Consuming Data Feeds',
-            url: '/docs/consuming-data-feeds/',
+            title: 'Data Feeds',
+            url: '/docs/data-feed-learning/',
           },
           {
-            title: 'Get Random Numbers',
-            url: '/docs/intermediates-tutorial/',
+            title: 'VRF',
+            url: '/docs/vrf-learning/',
           },
           {
             title: 'API Calls',
-            url: '/docs/advanced-tutorial/',
+            url: '/docs/any-api-learning/',
+          },
+          {
+            title: 'Automation',
+            url: '/docs/automation-learning/',
           },
         ],
       },
