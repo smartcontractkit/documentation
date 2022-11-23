@@ -67,8 +67,6 @@ const TableOfContents: FunctionalComponent<{
   const refreshHeadings = () => {
     const headingList = []
     document.querySelectorAll("article :is(h2,h3)").forEach((heading: HTMLHeadingElement) => {
-      console.log(heading)
-
       if (!heading.id) return
       headingList.push({
         depth: heading.nodeName.charAt(1),
