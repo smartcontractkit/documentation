@@ -19,7 +19,7 @@ export const ProductCard = (props: ProductCardProps) => {
   return (
     <section class={clsx("card", productCard.productCard)}>
       <div class={clsx(productCard.firstCol)}>
-        <img src={props.image} style={{ width: "var(--space-16x)" }} alt={`Chainlink ${props.title}`} />
+        <img src={props.image} width={64} height={64} alt={`Chainlink ${props.title}`} />
         <div class={productCard.ctaCol}>
           <h4>
             <a href={props.learnMorelink} class="product-card-title">

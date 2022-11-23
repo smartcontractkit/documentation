@@ -48,7 +48,7 @@ export const FeedList = ({
           {!isSolana && !isDeprecating && (
             <div class={feedList.clChainnavProduct} id="networks-list">
               <div>
-                <div>
+                <div role="tablist">
                   {chains
                     .filter((chain) => {
                       if (isPor) return chain.tags?.includes("proofOfReserve")
@@ -66,7 +66,7 @@ export const FeedList = ({
                         class={clsx(button.tertiary, feedList.networkSwitchButton)}
                         onClick={() => handleNetworkSelect(chain)}
                       >
-                        <img src={chain.img} title={chain.label} loading="lazy" />
+                        <img src={chain.img} title={chain.label} loading="lazy" width={32} height={32} />
                         <span>{chain.label}</span>
                       </button>
                     ))}
