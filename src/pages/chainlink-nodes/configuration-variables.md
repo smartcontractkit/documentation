@@ -97,6 +97,7 @@ Your node applies configuration settings using following hierarchy:
   - [ALLOW_ORIGINS](#allow_origins)
   - [AUTHENTICATED_RATE_LIMIT](#authenticated_rate_limit)
   - [AUTHENTICATED_RATE_LIMIT_PERIOD](#authenticated_rate_limit_period)
+  - [BRIDGE_CACHE_TTL](#bridge_cache_ttl)
   - [BRIDGE_RESPONSE_URL](#bridge_response_url)
   - [HTTP_SERVER_WRITE_TIMEOUT](#http_server_write_timeout)
   - [CHAINLINK_PORT](#chainlink_port)
@@ -714,6 +715,14 @@ You can set `ALLOW_ORIGINS=*` to allow the UI to work from any URL, but it is re
 - Default: `"1m"`
 
 `AUTHENTICATED_RATE_LIMIT_PERIOD` defines the period to which authenticated requests get limited.
+
+### BRIDGE_CACHE_TTL
+
+- Default: 0s
+
+When set to `d` units of time, this variable enables using cached bridge responses that are at most `d` units old. Caching is disabled by default.
+
+Example `BRIDGE_CACHE_TTL=10s`, `BRIDGE_CACHE_TTL=1m`
 
 ### BRIDGE_RESPONSE_URL
 
