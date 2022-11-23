@@ -226,19 +226,6 @@ Testnet ETH is used to pay for transactions on Arbitrum Goerli. Use the [Arbitru
 | Symbol         | LINK                                                                                                                                                                                                                               |
 | Decimals       | 18                                                                                                                                                                                                                                 |
 
-## HECO Chain
-
-### HECO Chain mainnet
-
-| Parameter      | Value                                                                                                                                                                                                            |
-| :------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ETH_CHAIN_ID` | `128`                                                                                                                                                                                                            |
-| Address        | <a class="erc-token-address" id="128_0x9e004545c59D359F6B7BFB06a26390b087717b42" href="https://hecoinfo.com/address/0x9e004545c59D359F6B7BFB06a26390b087717b42">`0x9e004545c59D359F6B7BFB06a26390b087717b42`</a> |
-| Name           | Heco-Peg LINK Token                                                                                                                                                                                              |
-| Symbol         | LINK                                                                                                                                                                                                             |
-| Decimals       | 18                                                                                                                                                                                                               |
-| Network status | [hecoinfo.com](https://hecoinfo.com/)                                                                                                                                                                            |
-
 ## Optimism
 
 ### Optimism mainnet
