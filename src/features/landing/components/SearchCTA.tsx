@@ -17,7 +17,7 @@ export function SearchCTA() {
   return (
     <>
       <button type="button" onClick={onOpen} className="search-cta-input">
-        <img src="/assets/search.svg" />
+        <img src="/assets/search.svg" alt="search" aria-label="Search" width={16} height={16} />
 
         <span style={{ fontSize: "1rem" }}>Search Chainlink Documentation...</span>
       </button>

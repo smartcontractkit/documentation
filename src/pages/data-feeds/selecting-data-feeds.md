@@ -24,8 +24,8 @@ Data feeds are grouped into the following categories based on the level of risk 
 - [⚫ Specialized Feeds](#-specialized-feeds)
 - [⭕ Deprecating](#-deprecating)
 
-:::note[ For important updates regarding the use of Chainlink Price Feeds, users should join the official Chainlink Discord and subscribe to the [data-feeds-user-notifications channel](https://discord.gg/Dqy5N9UbsR).]
-
+:::note
+For important updates regarding the use of Chainlink Price Feeds, users should join the official Chainlink Discord and subscribe to the [data-feeds-user-notifications channel](https://discord.gg/Dqy5N9UbsR).
 :::
 
 ### 🟢 Verified Feeds
