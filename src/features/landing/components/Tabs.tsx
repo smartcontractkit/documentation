@@ -16,13 +16,13 @@ export const Tabs = () => {
       <ul class={tabs.navTabs}>
         <li class={clsx({ [tabs.activeTab]: tabId === "evm-products" })} onClick={() => setTabId("evm-products")}>
           <a href="#evm-products">
-            <img src={ethereumIcon} style={{ width: "var(--space-6x)", height: "var(--space-6x)" }} />
+            <img src={ethereumIcon} width={24} height={24} alt="EVM Chains" />
             EVM Chains
           </a>
         </li>
         <li class={clsx({ [tabs.activeTab]: tabId === "solana-products" })} onClick={() => setTabId("solana-products")}>
           <a href="#solana-products">
-            <img src={solanaIcon} style={{ width: "var(--space-6x)", height: "var(--space-6x)" }} />
+            <img src={solanaIcon} width={24} height={24} alt="Solana" />
             Solana
           </a>
         </li>
