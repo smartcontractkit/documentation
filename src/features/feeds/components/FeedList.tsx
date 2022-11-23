@@ -41,7 +41,7 @@ export const FeedList = ({
   const isDefault = !isPor && !isNftFloor
   const isDeprecating = ecosystem === "deprecating"
   const isSolana = ecosystem === "solana"
-  var netCount = 0
+  let netCount = 0
 
   return (
     <>
@@ -97,7 +97,7 @@ export const FeedList = ({
           {chainMetadata.error && <p>There was an error loading the feeds...</p>}
 
           {chainMetadata.loading && !chainMetadata.processedData && <p>Loading...</p>}
-          
+
           {chainMetadata.processedData?.networks
             .filter((network) => {
               if (isDeprecating) {
@@ -165,11 +165,11 @@ export const FeedList = ({
                 )}
               </>
             ))}
-            {isDeprecating && netCount === 0 && (
-              <div>
-                <strong>No data feeds are scheduled for deprecation at this time.</strong>
-              </div>
-            )}
+          {isDeprecating && netCount === 0 && (
+            <div>
+              <strong>No data feeds are scheduled for deprecation at this time.</strong>
+            </div>
+          )}
         </section>
       </div>
     </>
