@@ -7,7 +7,7 @@ permalink: "docs/running-a-chainlink-node/"
 whatsnext:
   {
     "Fulfilling Requests": "/chainlink-nodes/fulfilling-requests/",
-    "Optimizing EVN Performance": "/chainlink-nodes/evm-performance-configuration/",
+    "Optimizing EVM Performance": "/chainlink-nodes/evm-performance-configuration/",
     "Performing System Maintenance": "/chainlink-nodes/performing-system-maintenance/",
     "Miscellaneous": "/chainlink-nodes/miscellaneous/",
     "Security and Operation Best Practices": "/chainlink-nodes/best-security-practices/",

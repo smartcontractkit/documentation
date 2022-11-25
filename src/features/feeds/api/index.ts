@@ -39,10 +39,10 @@ export const getFeedsMetadata = (url: string): Promise<ChainMetadata[]> => {
 }
 
 export const getChainMetadata = async (chain: Chain): Promise<ChainMetadata | any> => {
-  const requests = chain.networks.map((nw) =>
-    nw?.rddUrl
-      ? getFeedsMetadata(nw?.rddUrl).then((metadata) => ({
-          ...nw,
+  const requests = chain.networks.map((network) =>
+    network?.rddUrl
+      ? getFeedsMetadata(network?.rddUrl).then((metadata) => ({
+          ...network,
           metadata: metadata.filter((meta) => meta.docs?.hidden !== true),
         }))
       : undefined

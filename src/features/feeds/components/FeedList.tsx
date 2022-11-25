@@ -41,6 +41,8 @@ export const FeedList = ({
   const isDefault = !isPor && !isNftFloor
   const isDeprecating = ecosystem === "deprecating"
   const isSolana = ecosystem === "solana"
+  let netCount = 0
+
   return (
     <>
       <div className="content" style={{ marginTop: "var(--space-4x)" }}>
@@ -48,7 +50,7 @@ export const FeedList = ({
           {!isSolana && !isDeprecating && (
             <div class={feedList.clChainnavProduct} id="networks-list">
               <div>
-                <div>
+                <div role="tablist">
                   {chains
                     .filter((chain) => {
                       if (isPor) return chain.tags?.includes("proofOfReserve")
@@ -66,7 +68,7 @@ export const FeedList = ({
                         class={clsx(button.tertiary, feedList.networkSwitchButton)}
                         onClick={() => handleNetworkSelect(chain)}
                       >
-                        <img src={chain.img} title={chain.label} loading="lazy" />
+                        <img src={chain.img} title={chain.label} loading="lazy" width={32} height={32} />
                         <span>{chain.label}</span>
                       </button>
                     ))}
@@ -95,12 +97,16 @@ export const FeedList = ({
           {chainMetadata.error && <p>There was an error loading the feeds...</p>}
 
           {chainMetadata.loading && !chainMetadata.processedData && <p>Loading...</p>}
+
           {chainMetadata.processedData?.networks
             .filter((network) => {
               if (isDeprecating) {
                 let foundDeprecated = false
                 network.metadata?.forEach((feed) => {
-                  if (feed.docs?.shutdownDate) foundDeprecated = true
+                  if (feed.docs?.shutdownDate) {
+                    foundDeprecated = true
+                    netCount++
+                  }
                 })
                 return foundDeprecated
               }
@@ -121,25 +127,6 @@ export const FeedList = ({
                         <img src="/images/link.svg" alt="Link to this section" />
                       </a>
                     </h2>
-                    {network.name === "HECO Mainnet" && (
-                      <div>
-                        <p>
-                          Due to the shutdown of{" "}
-                          <a href="https://twitter.com/HECO_Chain/status/1546797356481478656">Stars Bridge</a>, which{" "}
-                          served as the canonical bridge between HECO and Ethereum, the lack of ongoing support and{" "}
-                          development of the HECO blockchain, and the continued degradation in on-chain activity and{" "}
-                          DeFi TVL impacting oracle network sustainability, all Chainlink Data Feeds on HECO are planned{" "}
-                          to be deprecated on November 23, 2022.
-                        </p>
-                        <br />
-                        <p>
-                          Chainlink Labs is actively working with users on HECO to scope out next steps and to support{" "}
-                          their dApps across additional blockchains that they are deployed on. Users with additional{" "}
-                          questions are encouraged to reach out{" "}
-                          <a href="https://chainlinkcommunity.typeform.com/s/dataFeedQs">here</a>.
-                        </p>
-                      </div>
-                    )}
                     <label>
                       <input
                         type="checkbox"
@@ -157,29 +144,32 @@ export const FeedList = ({
                     />
                   </div>
                 ) : (
-                  ecosystem !== "deprecating" && (
-                    <div key={network.name}>
-                      <h2 id={network.name}>
-                        {network.name}{" "}
-                        <a className="anchor" href={`#${network.name}`}>
-                          <img src="/images/link.svg" alt="Link to this section" />
-                        </a>
-                      </h2>
-                      <label>
-                        <input
-                          type="checkbox"
-                          className="extra"
-                          checked={showExtraDetails}
-                          onChange={() => setShowExtraDetails((old) => !old)}
-                        />{" "}
-                        Show more details
-                      </label>
-                      <TestnetTable network={network} showExtraDetails={showExtraDetails} dataFeedType={dataFeedType} />
-                    </div>
-                  )
+                  <div key={network.name}>
+                    <h2 id={network.name}>
+                      {network.name}{" "}
+                      <a className="anchor" href={`#${network.name}`}>
+                        <img src="/images/link.svg" alt="Link to this section" />
+                      </a>
+                    </h2>
+                    <label>
+                      <input
+                        type="checkbox"
+                        className="extra"
+                        checked={showExtraDetails}
+                        onChange={() => setShowExtraDetails((old) => !old)}
+                      />{" "}
+                      Show more details
+                    </label>
+                    <TestnetTable network={network} showExtraDetails={showExtraDetails} dataFeedType={dataFeedType} />
+                  </div>
                 )}
               </>
             ))}
+          {isDeprecating && netCount === 0 && (
+            <div>
+              <strong>No data feeds are scheduled for deprecation at this time.</strong>
+            </div>
+          )}
         </section>
       </div>
     </>

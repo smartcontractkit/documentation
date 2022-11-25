@@ -1,7 +1,7 @@
 import { chains, chainToTechnology, SupportedChain, SupportedTechnology, web3Providers } from "@config"
 
 export const getWeb3Provider = (supportedChain: SupportedChain) => {
-  const provider = web3Providers.chainToProvider[supportedChain]
+  const provider = web3Providers.chainToProvider[supportedChain]()
   if (!provider) return
   return provider
 }
