@@ -9,11 +9,11 @@ This guide introduces fundamental concepts, architecture models, best practices,
 
 ## How do I connect to any API with Chainlink?
 
-Connecting to any API with Chainlink enables your contracts to access to any external data source through our decentralized oracle network. We understand making smart contracts compatible with off-chain data adds to the complexity of building smart contracts. We created a framework with minimal requirements, yet unbounded flexibility, so developers can focus more on the functionality of smart contracts rather than what feeds them. Chainlink’s decentralized oracle network provides smart contracts with the ability to push and pull data, facilitating the interoperability between on-chain and off-chain applications. To read more about VRF, visit the [Chainlink Any API Documentation](/pages/any-api/introduction/).
+Connecting to any API with Chainlink enables your contracts to access to any external data source through our decentralized oracle network. We understand making smart contracts compatible with off-chain data adds to the complexity of building smart contracts. We created a framework with minimal requirements, yet unbounded flexibility, so developers can focus more on the functionality of smart contracts rather than what feeds them. Chainlink’s decentralized oracle network provides smart contracts with the ability to push and pull data, facilitating the interoperability between on-chain and off-chain applications. To read more about VRF, visit the [Chainlink Any API Documentation](/any-api/introduction/).
 
 ## The Basics
 
-- [API Calls: Using Any API](../advanced-tutorial/)
+- [API Calls: Using Any API](/getting-started/advanced-tutorial/)
 - [Connecting external data to your smart contracts](https://www.youtube.com/watch?v=WGkpEBKytcI)
 - [Chainlink API Call](https://www.youtube.com/watch?v=ay4rXZhAefs)
 - [Building and Using External Adapters: Code Along](https://www.youtube.com/watch?v=fICFYsN4E74)
