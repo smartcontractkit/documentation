@@ -3,20 +3,23 @@ export const SIDEBAR = {
     {
       section: "Getting Started",
       contents: [
-        { title: "Overview", url: "getting-started/conceptual-overview" },
+        { title: "Overview", url: "getting-started/intro-page" },
         {
-          title: "Deploy Your First Contract",
-          url: "getting-started/deploy-your-first-contract",
+          title: "Data Feeds",
+          url: "getting-started/data-feed-learning",
         },
         {
-          title: "Consuming Data Feeds",
-          url: "getting-started/consuming-data-feeds",
+          title: "VRF",
+          url: "getting-started/vrf-learning",
         },
         {
-          title: "Get Random Numbers",
-          url: "getting-started/intermediates-tutorial",
+          title: "API Calls",
+          url: "getting-started/any-api-learning",
         },
-        { title: "API Calls", url: "getting-started/advanced-tutorial" },
+        {
+          title: "Automation",
+          url: "getting-started/automation-learning",
+        },
       ],
     },
     {
