@@ -17,7 +17,7 @@ When you connect a smart contract to real-world services or off-chain data, you 
 
 ### Create hybrid smart contracts
 
-- [Use Data Feeds in Your Smart Contract](../consuming-data-feeds/)
+- [Use Data Feeds in Your Smart Contract](/getting-started/consuming-data-feeds/)
 - [Build and Deploy an Avalanche Smart Contract](https://blog.chain.link/how-to-build-and-deploy-an-avalanche-smart-contract/?_ga=2.106053380.665783269.1666976693-311667859.1657771746)
 
 ### Build dAPPs

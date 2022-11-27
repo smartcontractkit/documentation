@@ -9,7 +9,7 @@ This guide introduces fundamental concepts, architecture models, best practices,
 
 ## What is Chainlink Automation?
 
-**Chainlink Automation** enables conditional execution of your smart contracts functions through a hyper-reliable and decentralized automation platform that uses the same external network of node operators that secures billions in value. Building on Chainlink Automation will help you get to market faster so you don't have to deal with the setup cost, ongoing maintenance, and risks associated with a centralized automation stack. To read more about Automation, visit the [Chainlink Automation Documentation](/pages/chainlink-automation/introduction/).
+**Chainlink Automation** enables conditional execution of your smart contracts functions through a hyper-reliable and decentralized automation platform that uses the same external network of node operators that secures billions in value. Building on Chainlink Automation will help you get to market faster so you don't have to deal with the setup cost, ongoing maintenance, and risks associated with a centralized automation stack. To read more about Automation, visit the [Chainlink Automation Documentation](/chainlink-automation/introduction/).
 
 ## The Basics
 

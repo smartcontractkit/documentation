@@ -14,17 +14,17 @@ Learn about smart contracts and start building with Chainlink products and servi
 To build with Chainlink, you'll need to familairize yourself with smart contracts. Learn more by:
 
 1. [Understanding the functions of smart contracts](https://www.chainlink.education/description/chainlinkIntroduction)
-2. [Setting up a Metamask wallet](../fund-your-contract)
-3. [Creating and deploying your first smart contract](../deploy-your-first-contract)
+2. [Setting up a Metamask wallet](/resources/fund-your-contract/)
+3. [Creating and deploying your first smart contract](/getting-started/deploy-your-first-contract)
 
 ## Start building with Chainlink
 
 Learn more about Chainlink products, launching your first application, and joining developer communities.
 
 - [Chainlink Architecture Overview]()
-- [Launch an application using Chainlink Data Feeds](../consuming-data-feeds)
+- [Launch an application using Chainlink Data Feeds](/getting-started/consuming-data-feeds)
 - [Explore documentation](https://docs.chain.link/ethereum/)
-- [Join the Community](../developer-communications)
+- [Join the Community](/resources/developer-communications)
 
 ## Explore Chainlink products and services
 
@@ -33,27 +33,27 @@ Pick a Chainlink product to explore for a step-by-step tutorial to create a runn
 <div class="cl-section">
     <div>
         <div class="cl-section-cards">
-          <a class="cl-productcard" href="/docs/data-feed-learning/" target="_blank">
+          <a class="cl-productcard" href="/getting-started/data-feed-learning/" target="_blank">
             <div>
                 <img
                 />
                 <h4>Data Feeds</h4>
             </div>
           </a>
-          <a class="cl-productcard" href="/docs/vrf-learning/" target="_blank">
+          <a class="cl-productcard" href="/getting-started/vrf-learning/" target="_blank">
             <div>
                 <img
                 />
                 <h4>VRF</h4>
             </div>
           </a>
-          <a class="cl-productcard" href="https://blog.chain.link/" target="_blank">
+          <a class="cl-productcard" href="/getting-started/any-api-learning/" target="_blank">
                 <div>
                     <img/>
                     <h4>Using Any API</h4>
                 </div>
             </a>
-            <a class="cl-productcard" href="https://chain.link/community" target="_blank">
+            <a class="cl-productcard" href="/getting-started/automation-learning/" target="_blank">
                 <div>
                     <img/>
                     <h4>Automation</h4>
