@@ -11,7 +11,7 @@ This guide introduces fundamental concepts, architecture models, best practices,
 
 **Chainlink Data Feeds** are the quickest way to connect your smart contracts to the real-world data such as asset prices, reserve balances, and L2 sequencer health.
 
-When you connect a smart contract to real-world services or off-chain data, you create a hybrid smart contract. For example, you can use Chainlink Data Feeds to connect your smart contracts to asset pricing data like the ETH / USD feed. These data feeds use the data aggregated from many independent Chainlink node operators. Each price feed has an on-chain address and functions that enable contracts to read pricing data from that address. To learn more, refer to the [Chainlink Data Documentation](../data-feeds/).
+When you connect a smart contract to real-world services or off-chain data, you create a hybrid smart contract. For example, you can use Chainlink Data Feeds to connect your smart contracts to asset pricing data like the ETH / USD feed. These data feeds use the data aggregated from many independent Chainlink node operators. Each price feed has an on-chain address and functions that enable contracts to read pricing data from that address. To learn more, refer to the [Chainlink Data Documentation](/data-feeds/selecting-data-feeds/).
 
 ## The Basics
 
