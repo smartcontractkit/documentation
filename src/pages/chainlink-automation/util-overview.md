@@ -36,18 +36,18 @@ This example teaches how to use [Chainlink VRF](/vrf/v2/introduction/) and Chain
 
 This example teaches you how to create dynamic NFTs using Chainlink Automation.
 
-### `VRFSubscriptionBalanceMonitor`
+### VRF Subscription Balance Monitor
 
 [`VRFSubscriptionBalanceMonitor` Repository](https://github.com/smartcontractkit/chainlink/blob/vrf-subscription-balance-monitor/contracts/src/v0.8/upkeeps/VRFSubscriptionBalanceMonitor.sol)
 
-This contract automates the monitoring of your VRF subscription balance.
+This contract automates the monitoring of your VRF subscription balance to ensure there is sufficient funding for requests.
 
 ### Counting dNFT
 
-This repo houses an example that automates counting with a dynamic SVG. Refer to the repository for more instructions.
+This repository contains an example that automates counting with a dynamic SVG. Refer to the repository for more instructions.
 
 [Counting dNFT Repository](https://github.com/smartcontractkit/smart-contract-examples/tree/main/counting-svg)
 
 ### Batch reveal Demo app
 
-Create batch-revealed NFT collections powered by Chainlink Automation & VRF [here](https://automation.chainlink-demo.app/).
+Create batch-revealed NFT collections powered by Chainlink Automation and VRF [here](https://automation.chainlink-demo.app/).
