@@ -15,18 +15,18 @@ When you connect a smart contract to real-world services or off-chain data, you 
 
 ## The Basics
 
-### Create hybrid smart contracts
+#### Create hybrid smart contracts
 
 - [Use Data Feeds in Your Smart Contract](/getting-started/consuming-data-feeds/)
 - [Build and Deploy an Avalanche Smart Contract](https://blog.chain.link/how-to-build-and-deploy-an-avalanche-smart-contract/?_ga=2.106053380.665783269.1666976693-311667859.1657771746)
 
-### Build dAPPs
+#### Build dAPPs
 
 - [What Is DeFi?](https://www.youtube.com/watch?v=ax8Za8qJUAg&list=PLVP9aGDn-X0Q3qBME3T9sBMw66xPsglMA&index=6&t=1s)
 - [Build a dApp on Gnosis Chain (xDai) with Secure Data Feeds](https://blog.chain.link/build-a-dapp-on-xdai-chain-with-secure-data-feeds/?_ga=2.25902906.665783269.1666976693-311667859.1657771746)
 - [Build a dApp on BNB Chain With Secure Data Feeds](https://blog.chain.link/build-a-dapp-on-binance-smart-chain-with-secure-data-feeds/)
 
-### Using Data Feeds with Solana
+#### Using Data Feeds with Solana
 
 - [How To Use Chainlink Data Feeds on Solana](https://www.youtube.com/watch?v=PrcAjN0Vw5w&list=PLVP9aGDn-X0QwJVbQvuKr-zrh2_DV5M6J&index=7)
 

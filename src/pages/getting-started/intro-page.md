@@ -30,39 +30,6 @@ Learn more about Chainlink products, launching your first application, and joini
 
 Pick a Chainlink product to explore for a step-by-step tutorial to create a running application.
 
-<div class="cl-section">
-    <div>
-        <div class="cl-section-cards">
-          <a class="cl-productcard" href="/getting-started/data-feed-learning/" target="_blank">
-            <div>
-                <img
-                />
-                <h4>Data Feeds</h4>
-            </div>
-          </a>
-          <a class="cl-productcard" href="/getting-started/vrf-learning/" target="_blank">
-            <div>
-                <img
-                />
-                <h4>VRF</h4>
-            </div>
-          </a>
-          <a class="cl-productcard" href="/getting-started/any-api-learning/" target="_blank">
-                <div>
-                    <img/>
-                    <h4>Using Any API</h4>
-                </div>
-            </a>
-            <a class="cl-productcard" href="/getting-started/automation-learning/" target="_blank">
-                <div>
-                    <img/>
-                    <h4>Automation</h4>
-                </div>
-            </a>
-        </div>
-    </div>
-</div>
-
 ## Discover more resources
 
 More resources so you can create better solutions using Chainlink.
