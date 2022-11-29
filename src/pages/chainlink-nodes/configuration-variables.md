@@ -251,7 +251,7 @@ This variable enables some chain-specific hacks and optimizations. It is recomme
 
 - Default: `"false"`
 
-Setting `CHAINLINK_DEV` to `true` enables development mode. This setting is not recommended for production deployments. It can be useful for enabling experimental features and collecting debug information.
+Setting `CHAINLINK_DEV` to `true` enables development mode. Do not use this for production deployments. It can be useful for enabling experimental features and collecting debug information in test environments.
 
 ### EXPLORER_ACCESS_KEY
 
