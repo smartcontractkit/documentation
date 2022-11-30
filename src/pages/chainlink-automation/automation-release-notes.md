@@ -10,8 +10,6 @@ whatsnext:
   }
 ---
 
-![Chainlink Automation Network Banner](/images/contract-devs/generic-banner.png)
-
 **Chainlink Automation release notes:**
 
 - [Chainlink Keepers is now Chainlink Automation](#chainlink-keepers-is-now-chainlink-automation)

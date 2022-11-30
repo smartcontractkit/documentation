@@ -10,7 +10,13 @@ metadata:
   linkToWallet: true
   image:
     0: "/files/72d4bd9-link.png"
+setup: |
+  import { Aside } from "@components"
 ---
+
+<Aside type="note" title="Talk to an expert">
+  <a href="https://chainlinkcommunity.typeform.com/to/OYQO67EF?page=docs-link-contracts">Contact us</a> to talk to an expert about the networks that support the LINK token.
+</Aside>
 
 LINK tokens are used to pay node operators for retrieving data for smart contracts and also for deposits placed by node operators as required by contract creators. The smallest denomination of LINK is called a Juel, and 1,000,000,000,000,000,000 (1e18) Juels are equal to 1 LINK. This is similar to Wei, which is the [smallest denomination of ETH](https://ethereum.org/en/developers/docs/intro-to-ether/#denominations).
 
