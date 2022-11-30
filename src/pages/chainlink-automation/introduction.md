@@ -11,13 +11,13 @@ whatsnext:
     "Automation architecture": "/chainlink-automation/overview/",
     "Automation economics": "/chainlink-automation/automation-economics/",
   }
+setup: |
+  import { Aside } from "@components"
 ---
 
-:::tip[ATTENTION]
-**Chainlink Keepers** is now called **Chainlink Automation**. For more information, visit the [Chainlink Automation Release Notes](/chainlink-automation/automation-release-notes).
-:::
-
-![Chainlink Automation Network Banner](/images/contract-devs/generic-banner.png)
+<Aside type="note" title="Talk to an expert">
+  <a href="https://chainlinkcommunity.typeform.com/to/OYQO67EF?page=docs-automation">Contact us</a> to talk to an expert about using Chainlink Automation with your applications.
+</Aside>
 
 **Chainlink Automation** enables conditional execution of your smart contracts functions through a hyper-reliable and decentralized automation platform that uses the same external network of node operators that secures billions in value. Building on Chainlink Automation will help you get to market faster so you don't have to deal with the setup cost, ongoing maintenance, and risks associated with a centralized automation stack. To take full advantage of the Chainlink Automation infrastructure, read all of the documentation to understand the features of Chainlink Automation.
 

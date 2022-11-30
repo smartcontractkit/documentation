@@ -14,8 +14,6 @@ metadata:
   title: "Data Feeds Architecture"
 ---
 
-![Request Model Banner](/files/8c35025-Request__Receive_Data.png)
-
 ## Basic Request Model
 
 Chainlink connects smart contracts with external data using its decentralized oracle network. Chainlink API requests are handled 1:1 by an oracle.

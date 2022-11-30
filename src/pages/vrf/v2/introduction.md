@@ -10,13 +10,16 @@ metadata:
   description: "Learn how to securely generate random numbers for your smart contract with Chainlink VRF (an RNG). This guide uses Solidity code examples."
 setup: |
   import VrfCommon from "@features/vrf/v2/common/VrfCommon.astro"
+  import { Aside } from "@components"
 ---
 
-![Chainlink](/files/a4c6c80-85d09b6-19facd8-banner.png)
-
-<VrfCommon callout="common"/>
+<Aside type="note" title="Talk to an expert">
+  <a href="https://chainlinkcommunity.typeform.com/to/OYQO67EF?page=docs-vrf">Contact us</a> to talk to an expert about using Chainlink VRF with your applications.
+</Aside>
 
 **Chainlink VRF (Verifiable Random Function)** is a provably fair and verifiable random number generator (RNG) that enables smart contracts to access random values without compromising security or usability. For each request, Chainlink VRF generates one or more random values and cryptographic proof of how those values were determined. The proof is published and verified on-chain before any consuming applications can use it. This process ensures that results cannot be tampered with or manipulated by any single entity including oracle operators, miners, users, or smart contract developers.
+
+<VrfCommon callout="common"/>
 
 Use Chainlink VRF to build reliable smart contracts for any applications that rely on unpredictable outcomes:
 
