@@ -4,6 +4,11 @@ pragma solidity ^0.8.7;
 import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
 import "@chainlink/contracts/src/v0.8/ConfirmedOwner.sol";
 
+/**
+ * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
+ * DO NOT USE THIS CODE IN PRODUCTION.
+ */
+
 contract ATestnetConsumer is ChainlinkClient, ConfirmedOwner {
     using Chainlink for Chainlink.Request;
 
@@ -28,12 +33,12 @@ contract ATestnetConsumer is ChainlinkClient, ConfirmedOwner {
     );
 
     /**
-     *  Rinkeby
-     *@dev LINK address in Rinkeby network: 0x01BE23585060835E02B77ef475b0Cc51aA1e0709
+     *  Goerli
+     *@dev LINK address in Goerli network: 0x326C977E6efc84E512bB9C30f76E30c160eD06FB
      * @dev Check https://docs.chain.link/docs/link-token-contracts/ for LINK address for the right network
      */
     constructor() ConfirmedOwner(msg.sender) {
-        setChainlinkToken(0x01BE23585060835E02B77ef475b0Cc51aA1e0709);
+        setChainlinkToken(0x326C977E6efc84E512bB9C30f76E30c160eD06FB);
     }
 
     function requestEthereumPrice(
