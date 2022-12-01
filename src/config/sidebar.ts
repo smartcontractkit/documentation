@@ -324,7 +324,7 @@ export const SIDEBAR = {
           url: "resources/link-token-contracts",
         },
         {
-          title: "Bridges and associated Risks",
+          title: "Bridges and Associated Risks",
           url: "resources/bridge-risks",
         },
         {
