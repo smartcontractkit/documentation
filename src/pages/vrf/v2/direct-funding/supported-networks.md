@@ -11,6 +11,7 @@ metadata:
     0: "/files/OpenGraph_V3.png"
 setup: |
   import VrfCommon from "@features/vrf/v2/common/VrfCommon.astro"
+  import ResourcesCallout from "@features/resources/callouts/ResourcesCallout.astro"
 ---
 
 <VrfCommon callout="directFunding"/>
@@ -45,6 +46,8 @@ Fee parameters are configured in the VRF v2 Wrapper and the VRF v2 Coordinator c
 The details for calculating the total transaction cost can be found [here](/vrf/v2/direct-funding/#request-and-receive-data).
 
 ## Configurations
+
+<ResourcesCallout callout="bridgeRisks" />
 
 - [Ethereum Mainnet](#ethereum-mainnet)
 - [Goerli testnet](#goerli-testnet)

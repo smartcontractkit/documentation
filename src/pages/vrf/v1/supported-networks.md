@@ -8,6 +8,7 @@ metadata:
   title: "Chainlink VRF v1 Supported Networks"
 setup: |
   import VrfCommon from "@features/vrf/v1/common/VrfCommon.astro"
+  import ResourcesCallout from "@features/resources/callouts/ResourcesCallout.astro"
 ---
 
 <VrfCommon />
@@ -15,6 +16,8 @@ setup: |
 Chainlink VRF allows you to integrate provably-fair and verifiably random data in your smart contract.
 
 For implementation details, read [Introduction to Chainlink VRF](/vrf/v1/introduction).
+
+<ResourcesCallout callout="bridgeRisks" />
 
 ## Polygon (Matic) Mainnet
 
