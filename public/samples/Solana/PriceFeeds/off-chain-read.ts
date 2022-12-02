@@ -1,3 +1,9 @@
+/**
+ * THIS IS EXAMPLE CODE THAT USES HARDCODED VALUES FOR CLARITY.
+ * THIS IS EXAMPLE CODE THAT USES UN-AUDITED CODE.
+ * DO NOT USE THIS CODE IN PRODUCTION.
+ */
+
 import * as anchor from "@project-serum/anchor"
 import { OCR2Feed } from "@chainlink/solana-sdk"
 

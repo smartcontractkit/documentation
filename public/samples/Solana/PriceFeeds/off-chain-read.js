@@ -1,3 +1,9 @@
+/**
+ * THIS IS EXAMPLE CODE THAT USES HARDCODED VALUES FOR CLARITY.
+ * THIS IS EXAMPLE CODE THAT USES UN-AUDITED CODE.
+ * DO NOT USE THIS CODE IN PRODUCTION.
+ */
+
 const anchor = require("@project-serum/anchor")
 const chainlink = require("@chainlink/solana-sdk")
 const provider = anchor.AnchorProvider.env()

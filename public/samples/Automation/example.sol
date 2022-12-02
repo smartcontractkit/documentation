@@ -12,11 +12,11 @@ import "@chainlink/contracts/src/v0.7/KeeperCompatible.sol";
  */
 
 contract Counter is KeeperCompatibleInterface {
-    uint256 public counter; // counter counts the number of upkeeps performed
-    uint256 public interval; // interval specifies the time between upkeeps
-    uint256 public lastTimeStamp; // lastTimeStamp tracks the last upkeep performed
+    uint public counter; // counter counts the number of upkeeps performed
+    uint public interval; // interval specifies the time between upkeeps
+    uint public lastTimeStamp; // lastTimeStamp tracks the last upkeep performed
 
-    constructor(uint256 updateInterval) {
+    constructor(uint updateInterval) {
         interval = updateInterval;
     }
 
