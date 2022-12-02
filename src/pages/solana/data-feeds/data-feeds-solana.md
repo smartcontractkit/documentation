@@ -9,7 +9,7 @@ metadata:
   networkstatusurl: "https://status.solana.com/"
 date: Last Modified
 setup: |
-  import { FeedPage } from "@features/feeds"
+  import FeedPage from "@features/feeds/components/FeedPage.astro"
 ---
 
 <FeedPage initialNetwork="solana"  ecosystem="solana" />
