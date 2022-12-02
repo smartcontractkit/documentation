@@ -32,7 +32,7 @@ export const CHAINS: Chain[] = [
         explorerUrl: "https://etherscan.io/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-mainnet.json",
-        tags: ["proofOfReserve"],
+        tags: ["proofOfReserve", "nftFloorPrice"],
       },
       {
         name: "Goerli Testnet",
@@ -314,7 +314,7 @@ export const ALL_CHAINS: Chain[] = [
         explorerUrl: "https://etherscan.io/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-mainnet.json",
-        tags: ["proofOfReserve"],
+        tags: ["proofOfReserve", "nftFloorPrice"],
       },
       {
         name: "Goerli Testnet",
