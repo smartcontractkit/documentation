@@ -15,7 +15,7 @@ The environment variables listed here are explicitly supported and current as of
 
 ## Optional TOML configuration
 
-Static configuration using TOML files was added in v1.11.0 as an alternative to the existing combination of environment variables and persisted database configurations. This configuration method is _optional_. In the future, TOML configuration `v2.0.0` will become the only supported configuration method. See [Configuring Chainlink Nodes Using TOML](/docs/configuration-variables-toml) to learn more.
+Static configuration using TOML files was added in v1.11.0 as an alternative to the existing combination of environment variables and persisted database configurations. This configuration method is _optional_. In the future, TOML configuration `v2.0.0` will become the only supported configuration method. See [Configuring Chainlink Nodes Using TOML](/chainlink-nodes/configuration-variables-toml) to learn more.
 
 ## Changes to node configuration starting in v1.1.0 nodes
 
@@ -585,7 +585,7 @@ Log events follow this schema:
 }
 ```
 
-The following `AUDIT_LOGGER_*` environment variables below configure this optional audit log HTTP forwarder.
+The `AUDIT_LOGGER_*` environment variables configure this optional audit log HTTP forwarder.
 
 ### AUDIT_LOGGER_HEADERS
 
@@ -1152,7 +1152,7 @@ Controls node picking strategy. Supported values:
 
 - Default: `5`
 
-SyncThreshold controls how far a node may lag behind the best node before being marked out-of-sync. Depending on the [`NODE_SELECTION_MODE` variable](/docs/configuration-variables/#node_selection_mode), this represents a difference in either the number of blocks (`HighestHead`, `RoundRobin`), or the total difficulty (`TotalDifficulty`).
+SyncThreshold controls how far a node may lag behind the best node before being marked out-of-sync. Depending on the [`NODE_SELECTION_MODE` variable](/chainlink-nodes/configuration-variables/#node_selection_mode), this represents a difference in either the number of blocks (`HighestHead`, `RoundRobin`), or the total difficulty (`TotalDifficulty`).
 
 Set to `0` to disable this check.
 
