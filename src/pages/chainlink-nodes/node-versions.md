@@ -11,15 +11,39 @@ metadata:
 
 You can find a list of release notes for Chainlink nodes in the [smartcontractkit GitHub repository](https://github.com/smartcontractkit/chainlink/releases). Docker images are available in the [Chainlink Docker hub](https://hub.docker.com/r/smartcontract/chainlink/tags).
 
+## Changes in v1.11.0 nodes
+
+**[v1.11.0 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v1.11.0)**
+
+### Added
+
+- Added a new mode for the [`NODE_SELECTION_MODE` environment variable](/docs/configuration-variables/#node_selection_mode). Use `TotalDifficulty` to select the node with the greatest total difficulty.
+- Added the [`NODE_SYNC_THRESHOLD` environment variable](/docs/configuration-variables/#node_sync_threshold) to ensure that live nodes do not lag too far behind.
+- Added the [`BRIDGE_CACHE_TTL` environment variable](/docs/configuration-variables/#bridge_cache_ttl) which caches bridge responses for a specified amount of time.
+- Add the prometheus metrics labelled by bridge name for monitoring external adapter queries. The following metrics are included:
+  - `bridge_latency_seconds`
+  - `bridge_errors_total`
+  - `bridge_cache_hits_total`
+  - `bridge_cache_errors_total`
+- Added static configuration using TOML files as an alternative to the existing combination of environment variables and persisted database configurations. This is currently _optional_. In the future with `v2.0.0`, TOML configuration will become the only supported configuration method. See [Configuring Chainlink Nodes Using TOML](/docs/configuration-variables-toml) to learn more.
+
+### Fixed
+
+- Fixed a minor bug where Chainlink would not always resend all pending transactions when using multiple keys.
+
+### Updated
+
+- `NODE_NO_NEW_HEADS_THRESHOLD=0` no longer requires `NODE_SELECTION_MODE=RoundRobin`.
+
 ## Changes in v1.10.0 nodes
 
 **[v1.10.0 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v1.10.0)**
 
 ### Added
 
-- Added an optional external logger `AUDIT_LOGS_FORWARDER_URL`: When set, this environment variable configures and enables an optional HTTP logger which is used specifically to send audit log events. Configure this logger with the following environment variables:
-  - [AUDIT_LOGS_FORWARDER_URL](/chainlink-nodes/configuration-variables/#audit_logs_forwarder_url)
-  - [AUDIT_LOGS_FORWARDER_HEADERS](/chainlink-nodes/configuration-variables/#audit_logs_forwarder_headers)
+- Added an optional external logger `AUDIT_LOGGER_FORWARD_TO_URL`: When set, this environment variable configures and enables an optional HTTP logger which is used specifically to send audit log events. Configure this logger with the following environment variables:
+  - [AUDIT_LOGGER_FORWARD_TO_URL](/chainlink-nodes/configuration-variables/#audit_logger_forward_to_url)
+  - [AUDIT_LOGGER_HEADERS](/chainlink-nodes/configuration-variables/#audit_logger_headers)
   - [AUDIT_LOGGER_JSON_WRAPPER_KEY](/chainlink-nodes/configuration-variables/#audit_logger_json_wrapper_key)
 - Added [automatic connectivity detection](#automatic-connectivity-detection) to automatically detect if there is a transaction propagation/connectivity issue and prevent bumping in these cases on EVM chains.
 
