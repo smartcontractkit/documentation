@@ -1,5 +1,5 @@
 ---
-layout: ../../layouts/MainLayout.astro
+layout: ../../../layouts/MainLayout.astro
 section: nodeOperator
 date: Last Modified
 title: "Running a Chainlink Node"
@@ -7,55 +7,24 @@ permalink: "docs/running-a-chainlink-node/"
 whatsnext:
   {
     "Fulfilling Requests": "/chainlink-nodes/fulfilling-requests/",
+    "Requirements": "/chainlink-nodes/resources/requirements/",
     "Optimizing EVM Performance": "/chainlink-nodes/evm-performance-configuration/",
     "Performing System Maintenance": "/chainlink-nodes/performing-system-maintenance/",
     "Miscellaneous": "/chainlink-nodes/miscellaneous/",
     "Security and Operation Best Practices": "/chainlink-nodes/best-security-practices/",
   }
 metadata:
-  title: "Running a Chainlink Node"
+  title: "Running a Chainlink Node locally"
   description: "Run your own Chainlink node using this guide which explains the requirements and basics for getting started."
 setup: |
   import { Tabs } from "@components/Tabs"
 ---
 
-This page explains the requirements and basic instructions for running your own Chainlink node.
-
-Note that nodes can fulfill requests for open APIs out-of-the-box using [Tasks](/chainlink-nodes/oracle-jobs/task-types/tasks/) without needing any additional configuration.
-
-To provide data from an authenticated API, add an [external adapter](/chainlink-nodes/external-adapters/external-adapters/) to enable connectivity through the Chainlink node.
-
-![Chainlink Node Diagram](/files/ab5762f-end-to-end-diagram.png)
+This tutorial will teach you how to run a Chainlink node locally.
 
 ## Requirements
 
-### LINK requirements
-
-You can run a Chainlink node with 0 LINK, but the node will not be able to participate in requests that require a deposit until it has earned some LINK first.
-
-Requesters can specify an amount of LINK that all nodes must deposit as a penalty fee in the event that the node doesn’t fulfill the request. However, since penalty fees are optional, not all requests will require it.
-
-### Chainlink Node Requirements
-
-Your Chainlink node should be run on a server that has a public IP address, and meets the following CPU and memory requirements:
-
-- Minimum: To get started running a Chainlink node, you will need a machine with at least **2 cores** and **4 GB of RAM**.
-- Recommended: The requirements for running a Chainlink node scale as the number of jobs your node services also scales. For nodes with over 100 jobs, you will need at least **4 cores** and **8GB of RAM**.
-
-### PostgreSQL Database Requirements
-
-In addition to running a Chainlink node, must also run a PostgreSQL database version 11 or newer on a system that meets the following CPU, memory, and storage requirements:
-
-- Minimum: At least **2 cores**, **4GB of RAM**, and **100 GB of storage**.
-- Recommended: To support more than 100 jobs, your database server will need at least **4 cores**, **16 GB of RAM**, and **100 GB of storage**.
-
-Make sure that your DB host provides access to logs.
-
-If you run your node on AWS, use an instance type with dedicated core time. [Burstable Performance Instances](https://aws.amazon.com/ec2/instance-types/#Burstable_Performance_Instances) have a limited number of [CPU credits](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/burstable-credits-baseline-concepts.html), so you should not use them to run Chainlink nodes that require consistent performance.
-
-### Ethereum Client
-
-Connectivity to an Ethereum client is also required for communication with the blockchain. If you decide to run your own Ethereum client, you will want to run that on a separate machine. Hardware requirements of Ethereum clients can change over time. You can also use a [third-party service](/chainlink-nodes/run-an-ethereum-client/#external-services) as your Ethereum client.
+As explained in the [requirements page](/chainlink-nodes/resources/requirements/), make sure
 
 ## Running From Source
 
@@ -181,31 +150,6 @@ Run the following as a command to create an environment file and populate with v
 :::note[Using an external Ethereum client?]
 If you're using a 3rd party service to connect to the blockchain, skip to the [External Provider](#ethereum-client-as-an-external-provider) section to set the `ETH_URL` environment variable. We provide general guidance, but you will need to obtain the websocket connection string to add to your environment file.
 :::
-
-#### Ethereum Client on the Same Machine
-
-Next you need to get the URL for the Ethereum client. The command below will help you obtain the IP address of the container that your Ethereum client is running on. **This will only work if you have started an Ethereum client on the same machine as your Chainlink node.**
-
-```shell Local
-ETH_CONTAINER_IP=$(docker inspect --format '{{ "{{ .NetworkSettings.IPAddress " }}}}' $(docker ps -f name=eth -q))
-```
-
-Then run the following command to add the Ethereum client's URL to your environment file. If you are using an external Ethereum client, use the External tab below, and update `$ETH_CONTAINER_IP` to the websocket address used for connectivity.
-
-<Tabs client:visible>
-    <Fragment slot="tab.1">Goerli</Fragment>
-    <Fragment slot="tab.2">Mainnet</Fragment>
-    <Fragment slot="panel.1">
-    ```shell Goerli
-    echo "ETH_URL=ws://$ETH_CONTAINER_IP:8546" >> ~/.chainlink-goerli/.env
-    ```
-    </Fragment>
-    <Fragment slot="panel.2">
-    ```shell Mainnet
-    echo "ETH_URL=ws://$ETH_CONTAINER_IP:8546" >> ~/.chainlink/.env
-    ```
-    </Fragment>
-</Tabs>
 
 #### Ethereum Client as an External Provider
 

@@ -1,5 +1,5 @@
 ---
-layout: ../../layouts/MainLayout.astro
+layout: ../../../layouts/MainLayout.astro
 section: nodeOperator
 date: Last Modified
 title: "Fulfilling Requests"

@@ -1,9 +1,8 @@
 ---
-layout: ../../layouts/MainLayout.astro
+layout: ../../../layouts/MainLayout.astro
 section: nodeOperator
 date: Last Modified
 title: "Run an Ethereum Client"
-permalink: "docs/run-an-ethereum-client/"
 whatsnext:
   {
     "Running a Chainlink Node": "/chainlink-nodes/running-a-chainlink-node/",

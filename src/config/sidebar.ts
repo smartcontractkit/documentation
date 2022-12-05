@@ -381,20 +381,38 @@ export const SIDEBAR = {
     {
       section: "NODE OPERATORS",
       contents: [
-        { title: "Node Versions", url: "chainlink-nodes/node-versions" },
+        { title: "Release Notes", url: "chainlink-nodes/node-versions" },
         {
-          title: "Running a Chainlink Node",
-          url: "chainlink-nodes/running-a-chainlink-node",
+          title: "v1.x.x",
+          url: "chainlink-nodes/v1/",
           children: [
             {
-              title: "Run an Ethereum Client",
-              url: "chainlink-nodes/run-an-ethereum-client",
+              title: "Running a Chainlink Node locally",
+              url: "chainlink-nodes/v1/running-a-chainlink-node",
+            },
+            {
+              title: "Fulfilling Requests",
+              url: "chainlink-nodes/v1/fulfilling-requests",
+            },
+            {
+              title: "Configuring Nodes",
+              url: "chainlink-nodes/v1/configuration",
             },
           ],
         },
         {
-          title: "Fulfilling Requests",
-          url: "chainlink-nodes/fulfilling-requests",
+          title: "Resources",
+          url: "chainlink-nodes/resources",
+          children: [
+            {
+              title: "Requirements",
+              url: "chainlink-nodes/resources/requirements",
+            },
+            {
+              title: "Run an Ethereum Client",
+              url: "chainlink-nodes/resources/run-an-ethereum-client",
+            },
+          ],
         },
         {
           title: "Performing System Maintenance",
@@ -403,10 +421,6 @@ export const SIDEBAR = {
         {
           title: "Connecting to a Remote Database",
           url: "chainlink-nodes/connecting-to-a-remote-database",
-        },
-        {
-          title: "Configuring Nodes",
-          url: "chainlink-nodes/configuration-variables",
         },
         {
           title: "Enabling HTTPS Connections",
