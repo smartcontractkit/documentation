@@ -10,11 +10,20 @@ metadata:
   linkToWallet: true
   image:
     0: "/files/72d4bd9-link.png"
+setup: |
+  import { Aside } from "@components"
+  import ResourcesCallout from "@features/resources/callouts/ResourcesCallout.astro"
 ---
+
+<Aside type="note" title="Talk to an expert">
+  <a href="https://chainlinkcommunity.typeform.com/to/OYQO67EF?page=docs-link-contracts">Contact us</a> to talk to an expert about the networks that support the LINK token.
+</Aside>
 
 LINK tokens are used to pay node operators for retrieving data for smart contracts and also for deposits placed by node operators as required by contract creators. The smallest denomination of LINK is called a Juel, and 1,000,000,000,000,000,000 (1e18) Juels are equal to 1 LINK. This is similar to Wei, which is the [smallest denomination of ETH](https://ethereum.org/en/developers/docs/intro-to-ether/#denominations).
 
 The LINK token is an ERC677 token that inherits functionality from the ERC20 token standard and allows token transfers to contain a data payload. Read more about the [ERC677 transferAndCall token standard](https://github.com/ethereum/EIPs/issues/677).
+
+<ResourcesCallout callout="bridgeRisks" />
 
 ## Ethereum
 
@@ -222,22 +231,9 @@ Testnet ETH is used to pay for transactions on Arbitrum Goerli. Use the [Arbitru
 | :------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `ETH_CHAIN_ID` | `421613`                                                                                                                                                                                                                           |
 | Address        | <a class="erc-token-address" id="0xd14838A68E8AFBAdE5efb411d5871ea0011AFd28" href="https://goerli-rollup-explorer.arbitrum.io/address/0xd14838A68E8AFBAdE5efb411d5871ea0011AFd28">`0xd14838A68E8AFBAdE5efb411d5871ea0011AFd28`</a> |
-| Name           | Chainlink Token on Arbitrum Rinkeby                                                                                                                                                                                                |
+| Name           | Chainlink Token on Arbitrum Goerli                                                                                                                                                                                                 |
 | Symbol         | LINK                                                                                                                                                                                                                               |
 | Decimals       | 18                                                                                                                                                                                                                                 |
-
-## HECO Chain
-
-### HECO Chain mainnet
-
-| Parameter      | Value                                                                                                                                                                                                            |
-| :------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ETH_CHAIN_ID` | `128`                                                                                                                                                                                                            |
-| Address        | <a class="erc-token-address" id="128_0x9e004545c59D359F6B7BFB06a26390b087717b42" href="https://hecoinfo.com/address/0x9e004545c59D359F6B7BFB06a26390b087717b42">`0x9e004545c59D359F6B7BFB06a26390b087717b42`</a> |
-| Name           | Heco-Peg LINK Token                                                                                                                                                                                              |
-| Symbol         | LINK                                                                                                                                                                                                             |
-| Decimals       | 18                                                                                                                                                                                                               |
-| Network status | [hecoinfo.com](https://hecoinfo.com/)                                                                                                                                                                            |
 
 ## Optimism
 

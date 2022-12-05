@@ -15,15 +15,15 @@ contract Counter is AutomationCompatibleInterface {
     /**
      * Public counter variable
      */
-    uint256 public counter;
+    uint public counter;
 
     /**
      * Use an interval in seconds and a timestamp to slow execution of Upkeep
      */
-    uint256 public immutable interval;
-    uint256 public lastTimeStamp;
+    uint public immutable interval;
+    uint public lastTimeStamp;
 
-    constructor(uint256 updateInterval) {
+    constructor(uint updateInterval) {
         interval = updateInterval;
         lastTimeStamp = block.timestamp;
 

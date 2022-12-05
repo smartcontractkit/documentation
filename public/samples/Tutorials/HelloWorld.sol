@@ -2,6 +2,11 @@
 
 pragma solidity 0.8.7;
 
+/**
+ * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
+ * DO NOT USE THIS CODE IN PRODUCTION.
+ */
+
 contract HelloWorld {
     string public message;
 

@@ -17,8 +17,6 @@ setup: |
   import VrfCommon from "@features/vrf/v1/common/VrfCommon.astro"
 ---
 
-![Chainlink Abstract Banner](/files/a4c6c80-85d09b6-19facd8-banner.png)
-
 <VrfCommon />
 
 ## Generate Random Numbers in your Smart Contracts

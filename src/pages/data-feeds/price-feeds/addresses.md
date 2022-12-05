@@ -7,7 +7,7 @@ metadata:
   description: "A list of Price Feed addresses on supported networks."
 date: Last Modified
 setup: |
-  import { FeedPage } from "@features/feeds"
+  import FeedPage from "@features/feeds/components/FeedPage.astro"
 ---
 
 <FeedPage  />

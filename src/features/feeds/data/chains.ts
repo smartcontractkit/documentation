@@ -32,7 +32,7 @@ export const CHAINS: Chain[] = [
         explorerUrl: "https://etherscan.io/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-mainnet.json",
-        tags: ["proofOfReserve"],
+        tags: ["proofOfReserve", "nftFloorPrice"],
       },
       {
         name: "Goerli Testnet",
@@ -105,22 +105,6 @@ export const CHAINS: Chain[] = [
       },
     ],
     label: "Gnosis Chain (xDai)",
-  },
-  {
-    page: "heco-chain",
-    title: "HECO Chain Data Feeds",
-    img: "/assets/chains/heco.svg",
-    networkStatusUrl: "https://hecoinfo.com/",
-    tags: ["default"],
-    networks: [
-      {
-        name: "HECO Mainnet",
-        explorerUrl: "https://hecoinfo.com/address/%s",
-        networkType: "mainnet",
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-heco-mainnet.json",
-      },
-    ],
-    label: "HECO Chain",
   },
   {
     page: "avalanche",
@@ -330,7 +314,7 @@ export const ALL_CHAINS: Chain[] = [
         explorerUrl: "https://etherscan.io/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-mainnet.json",
-        tags: ["proofOfReserve"],
+        tags: ["proofOfReserve", "nftFloorPrice"],
       },
       {
         name: "Goerli Testnet",
@@ -370,12 +354,6 @@ export const ALL_CHAINS: Chain[] = [
         explorerUrl: "https://gnosisscan.io/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-xdai-mainnet.json",
-      },
-      {
-        name: "HECO Mainnet",
-        explorerUrl: "https://hecoinfo.com/address/%s",
-        networkType: "mainnet",
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-heco-mainnet.json",
       },
       {
         name: "Avalanche Mainnet",

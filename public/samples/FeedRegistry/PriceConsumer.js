@@ -1,4 +1,10 @@
-const web3 = new Web3("https://kovan.infura.io/v3/<infura_project_id>")
+/**
+ * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
+ * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
+ * DO NOT USE THIS CODE IN PRODUCTION.
+ */
+
+const web3 = new Web3("https://rpc.ankr.com/eth")
 const feedRegistryInterfaceABI = [
   {
     anonymous: false,
@@ -376,11 +382,11 @@ const feedRegistryInterfaceABI = [
     type: "function",
   },
 ]
-const addr = "0xAa7F6f7f507457a1EE157fE97F6c7DB2BEec5cD0"
+const addr = "0x47Fb2585D2C56Fe188D0E6ec628a38b74fCeeeDf"
 const feedRegistry = new web3.eth.Contract(feedRegistryInterfaceABI, addr)
-
-const LINK = "0xa36085F69e2889c224210F603D836748e7dC0088"
+const LINK = "0x514910771AF9Ca656af840dff83E8264EcF986CA"
 const USD = "0x0000000000000000000000000000000000000348"
+
 feedRegistry.methods
   .latestRoundData(LINK, USD)
   .call()

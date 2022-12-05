@@ -136,7 +136,7 @@ More on External Adapters can be found [here](/chainlink-nodes/external-adapters
 
 Chainlink has facilitated the launch of several new oracle data services that allow dApps to access rich data from external data sources. For instance, you can create a smart contract that checks Google's DNS service to determine if a given domain is owned by a given blockchain address using oracle job without having to specify the URL inside the contract.
 Join the [operator-requests discord channel](https://discord.gg/eGcxsdZzKR) to directly communicate with community node operators.
-A full example on Kovan testnet can be found [here](/any-api/data-providers/dns-ownership/).
+A full example on Goerli testnet can be found [here](/any-api/data-providers/dns-ownership/).
 
 ## 5. Further Reading
 
