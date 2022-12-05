@@ -17,9 +17,9 @@ You can find a list of release notes for Chainlink nodes in the [smartcontractki
 
 ### Added
 
-- Added a new mode for the [`NODE_SELECTION_MODE` environment variable](/docs/configuration-variables/#node_selection_mode). Use `TotalDifficulty` to select the node with the greatest total difficulty.
-- Added the [`NODE_SYNC_THRESHOLD` environment variable](/docs/configuration-variables/#node_sync_threshold) to ensure that live nodes do not lag too far behind.
-- Added the [`BRIDGE_CACHE_TTL` environment variable](/docs/configuration-variables/#bridge_cache_ttl) which caches bridge responses for a specified amount of time.
+- Added a new mode for the [`NODE_SELECTION_MODE` environment variable](/docs/configuration-variables#node_selection_mode). Use `TotalDifficulty` to select the node with the greatest total difficulty.
+- Added the [`NODE_SYNC_THRESHOLD` environment variable](/docs/configuration-variables#node_sync_threshold) to ensure that live nodes do not lag too far behind.
+- Added the [`BRIDGE_CACHE_TTL` environment variable](/docs/configuration-variables#bridge_cache_ttl) which caches bridge responses for a specified amount of time.
 - Add the prometheus metrics labelled by bridge name for monitoring external adapter queries. The following metrics are included:
   - `bridge_latency_seconds`
   - `bridge_errors_total`
@@ -80,8 +80,8 @@ To disable connectivity checking completely, set `BLOCK_HISTORY_ESTIMATOR_CHECK_
 
 **[v1.9.0 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v1.9.0)**
 
-- Added the [`length` task](/chainlink-nodes/oracle-jobs/task-types/task_length/) and the [`lessthan` task](/chainlink-nodes/oracle-jobs/task-types/task_lessthan/) for jobs.
-- Added the `gasUnlimited` parameter to the [`ethcall` task](/chainlink-nodes/oracle-jobs/task-types/task_eth_call/).
+- Added the [`length` task](/chainlink-nodes/oracle-jobs/task-types/task_length) and the [`lessthan` task](/chainlink-nodes/oracle-jobs/task-types/task_lessthan) for jobs.
+- Added the `gasUnlimited` parameter to the [`ethcall` task](/chainlink-nodes/oracle-jobs/task-types/task_eth_call).
 - The **Keys** page in Operator UI includes several admin commands that were previously available only by using the `keys eth chain` commands:
   - Ability to abandon all current transactions: This is the same as the `abandon` CLI command. Previously it was necessary to edit the database directly to abandon transactions. This command makes it easier to resolve issues that require transactions to be abandoned.
   - Ability to enable/disable a key for a specific chain: This allows you to control keys on a per-chain basis.
@@ -102,10 +102,10 @@ To disable connectivity checking completely, set `BLOCK_HISTORY_ESTIMATOR_CHECK_
 
 ### Added
 
-- Added the `hexencode` and `base64encode` tasks (pipeline). See the [Hex Encode Task](/chainlink-nodes/oracle-jobs/task-types/task_hexencode/) and [Base64 Encode Task](/chainlink-nodes/oracle-jobs/task-types/task_base64encode/) pages for examples.
+- Added the `hexencode` and `base64encode` tasks (pipeline). See the [Hex Encode Task](/chainlink-nodes/oracle-jobs/task-types/task_hexencode) and [Base64 Encode Task](/chainlink-nodes/oracle-jobs/task-types/task_base64encode) pages for examples.
 - `forwardingAllowed` per job attribute to allow forwarding txs submitted by the job.
 - Added `Arbitrum Goerli` configuration support.
-- Added the [`NODE_SELECTION_MODE` (`EVM.NodePool.SelectionMode`) environment variable](/chainlink-nodes/configuration-variables/#node_selection_mode), which controls node picking strategy. Supported values are:
+- Added the [`NODE_SELECTION_MODE` (`EVM.NodePool.SelectionMode`) environment variable](/chainlink-nodes/configuration-variables#node_selection_mode), which controls node picking strategy. Supported values are:
   - `HighestHead` is the default mode, which picks a node that has the highest reported head number among other alive nodes. When several nodes have the same latest head number, the strategy sticks to the last used node. This mode requires `NODE_NO_NEW_HEADS_THRESHOLD` to be configured, otherwise it will always use the first alive node.
   - `RoundRobin` mode iterates among available alive nodes. This was the default behavior prior to this release.
 - New `evm keys chain` command. This can also be accessed at `/v2/keys/evm/chain`. This command has the following uses:
@@ -141,9 +141,9 @@ To disable connectivity checking completely, set `BLOCK_HISTORY_ESTIMATOR_CHECK_
 
 - `p2pv2Bootstrappers` is added as a new optional property of OCR1 job specs. The default can still be specified with the [`P2PV2_BOOTSTRAPPERS` environment variable](/chainlink-nodes/configuration-variables/#p2pv2_bootstrappers).
 
-- Added official support for the [Sepolia testnet](https://sepolia.dev/) on Chainlink nodes.
+- Added official support for the [Sepolia testnet](https://sepolia.dev) on Chainlink nodes.
 
-- Added [`hexdecode` task](/chainlink-nodes/oracle-jobs/task-types/task_hexdecode/) and the [`base64decode` task](/chainlink-nodes/oracle-jobs/task-types/task_base64decode) (pipeline).
+- Added [`hexdecode` task](/chainlink-nodes/oracle-jobs/task-types/task_hexdecode) and the [`base64decode` task](/chainlink-nodes/oracle-jobs/task-types/task_base64decode) (pipeline).
 
 - Added support for the Besu execution client. Although Chainlink supports Besu, Besu itself has several issues that can make it unreliable. For additional context, see the following issues:
 
@@ -172,7 +172,7 @@ To disable connectivity checking completely, set `BLOCK_HISTORY_ESTIMATOR_CHECK_
 
 ### Fixed
 
-- Addressed a very rare bug where using multiple nodes with differently configured RPC tx fee caps could cause missed transactions. Ensure that your RPC nodes have no caps. For more information, see the [performance and tuning guide](https://docs.chain.link/chainlink-nodes/evm-performance-configuration/).
+- Addressed a very rare bug where using multiple nodes with differently configured RPC tx fee caps could cause missed transactions. Ensure that your RPC nodes have no caps. For more information, see the [performance and tuning guide](https://docs.chain.link/chainlink-nodes/evm-performance-configuration).
 - Improved handling of unknown transaction error types to make Chainlink more robust in certain cases on unsupported chains or RPC clients.
 
 ## Changes in v1.6.0 nodes
@@ -295,7 +295,7 @@ Although this release provides `SOLANA_ENABLED` and `TERRA_ENABLED` environment 
 
 Significant changes:
 
-- Added support for the [Nethermind Ethereum client](https://nethermind.io/).
+- Added support for the [Nethermind Ethereum client](https://nethermind.io).
 - Added support for batch sending telemetry to the ingress server to improve performance.
 - New environment variables: See the [release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v1.2.0) for details.
 - Removed the `deleteuser` CLI command.
@@ -342,7 +342,7 @@ This will cause Chainlink to use the database for its node configuration.
 
 NOTE: ETH_CHAIN_ID does not need to be removed, since it now performs the additional duty of specifying the default chain in a multichain environment (if you leave ETH_CHAIN_ID unset, the default chain is simply the "first").
 
-For more information on configuring your node, check the [configuration variables in the docs](https://docs.chain.link/chainlink-nodes/configuration-variables/).
+For more information on configuring your node, check the [configuration variables in the docs](https://docs.chain.link/chainlink-nodes/configuration-variables).
 
 Before you upgrade your nodes to v1.1.0, be aware of the following requirements:
 
