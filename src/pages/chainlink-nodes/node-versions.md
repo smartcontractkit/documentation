@@ -17,15 +17,15 @@ You can find a list of release notes for Chainlink nodes in the [smartcontractki
 
 ### Added
 
-- Added a new mode for the [`NODE_SELECTION_MODE` environment variable](/docs/configuration-variables#node_selection_mode). Use `TotalDifficulty` to select the node with the greatest total difficulty.
-- Added the [`NODE_SYNC_THRESHOLD` environment variable](/docs/configuration-variables#node_sync_threshold) to ensure that live nodes do not lag too far behind.
-- Added the [`BRIDGE_CACHE_TTL` environment variable](/docs/configuration-variables#bridge_cache_ttl) which caches bridge responses for a specified amount of time.
+- Added a new mode for the [`NODE_SELECTION_MODE` environment variable](/chainlink-nodes/configuration-variables#node_selection_mode). Use `TotalDifficulty` to select the node with the greatest total difficulty.
+- Added the [`NODE_SYNC_THRESHOLD` environment variable](/chainlink-nodes/configuration-variables#node_sync_threshold) to ensure that live nodes do not lag too far behind.
+- Added the [`BRIDGE_CACHE_TTL` environment variable](/chainlink-nodes/configuration-variables#bridge_cache_ttl) which caches bridge responses for a specified amount of time.
 - Add the prometheus metrics labelled by bridge name for monitoring external adapter queries. The following metrics are included:
   - `bridge_latency_seconds`
   - `bridge_errors_total`
   - `bridge_cache_hits_total`
   - `bridge_cache_errors_total`
-- Added static configuration using TOML files as an alternative to the existing combination of environment variables and persisted database configurations. This is currently _optional_. In the future with `v2.0.0`, TOML configuration will become the only supported configuration method. See [Configuring Chainlink Nodes Using TOML](/docs/configuration-variables-toml) to learn more.
+- Added static configuration using TOML files as an alternative to the existing combination of environment variables and persisted database configurations. This is currently _optional_. In the future with `v2.0.0`, TOML configuration will become the only supported configuration method. See [Configuring Chainlink Nodes Using TOML](/chainlink-nodes/configuration-variables-toml) to learn more.
 
 ### Fixed
 
