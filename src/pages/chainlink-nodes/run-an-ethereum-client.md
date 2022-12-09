@@ -9,6 +9,8 @@ whatsnext:
     "Running a Chainlink Node": "/chainlink-nodes/running-a-chainlink-node/",
     "Optimizing Performance": "/chainlink-nodes/evm-performance-configuration/",
   }
+setup: |
+  import { Tabs } from "@components/Tabs"
 ---
 
 Chainlink nodes must be able to connect to an Ethereum client with an active websocket connection. This is accomplished by running both an execution client and a consensus client. You can run these clients yourself, but running Ethereum clients requires significant storage and network resources. Optionally, you can use [External Services](#external-services) that manage these clients for you.
@@ -29,27 +31,41 @@ docker pull ethereum/client-go:latest
 
 Create a local directory to persist the data:
 
-```shell Goerli
-mkdir ~/.geth-goerli
-```
-
-```shell Mainnet
-mkdir ~/.geth
-```
+<Tabs client:visible>
+    <Fragment slot="tab.1">Goerli</Fragment>
+    <Fragment slot="tab.2">Mainnet</Fragment>
+    <Fragment slot="panel.1">
+    ```shell Goerli
+    mkdir ~/.geth-goerli
+    ```
+    </Fragment>
+    <Fragment slot="panel.2">
+    ```shell Mainnet
+    mkdir ~/.geth
+    ```
+    </Fragment>
+</Tabs>
 
 Run the container:
 
-```shell Goerli
-docker run --name eth -p 8546:8546 -v ~/.geth-goerli:/geth -it \
-           ethereum/client-go --goerli --ws --ipcdisable \
-           --ws.addr 0.0.0.0 --ws.origins="*" --datadir /geth
-```
-
-```shell Mainnet
-docker run --name eth -p 8546:8546 -v ~/.geth:/geth -it \
-           ethereum/client-go --ws --ipcdisable \
-           --ws.addr 0.0.0.0 --ws.origins="*" --datadir /geth
-```
+<Tabs client:visible>
+    <Fragment slot="tab.1">Goerli</Fragment>
+    <Fragment slot="tab.2">Mainnet</Fragment>
+    <Fragment slot="panel.1">
+    ```shell Goerli
+    docker run --name eth -p 8546:8546 -v ~/.geth-goerli:/geth -it \
+    ethereum/client-go --goerli --ws --ipcdisable \
+    --ws.addr 0.0.0.0 --ws.origins="*" --datadir /geth
+    ```
+    </Fragment>
+    <Fragment slot="panel.2">
+    ```shell Mainnet
+    docker run --name eth -p 8546:8546 -v ~/.geth:/geth -it \
+    ethereum/client-go --ws --ipcdisable \
+    --ws.addr 0.0.0.0 --ws.origins="*" --datadir /geth
+    ```
+    </Fragment>
+</Tabs>
 
 Once the Ethereum client is running, you can use `Ctrl + P, Ctrl + Q` to detach from the container without stopping it. You will need to leave the container running for the Chainlink node to connect to it.
 
@@ -75,31 +91,45 @@ docker pull nethermind/nethermind:latest
 
 Create a local directory to persist the data:
 
-```shell Goerli
-mkdir ~/.nethermind-goerli
-```
-
-```shell Mainnet
-mkdir ~/.nethermind
-```
+<Tabs client:visible>
+    <Fragment slot="tab.1">Goerli</Fragment>
+    <Fragment slot="tab.2">Mainnet</Fragment>
+    <Fragment slot="panel.1">
+    ```shell Goerli
+    mkdir ~/.nethermind-goerli
+    ```
+    </Fragment>
+    <Fragment slot="panel.2">
+    ```shell Mainnet
+    mkdir ~/.nethermind
+    ```
+    </Fragment>
+</Tabs>
 
 Run the container:
 
-```shell Goerli
-docker run --name eth -p 8545:8545 \
-           -v ~/.nethermind-goerli/:/nethermind/data \
-           -it nethermind/nethermind:latest --config goerli \
-           --Init.WebSocketsEnabled true --JsonRpc.Enabled true --JsonRpc.Host 0.0.0.0 --NoCategory.CorsOrigins * \
-           --datadir data
-```
-
-```shell Mainnet
-docker run --name eth -p 8545:8545 \
-           -v ~/.nethermind/:/nethermind/data \
-           -it nethermind/nethermind:latest --Sync.FastSync true \
-           --Init.WebSocketsEnabled true --JsonRpc.Enabled true --JsonRpc.Host 0.0.0.0 --NoCategory.CorsOrigins * \
-           --datadir data
-```
+<Tabs client:visible>
+    <Fragment slot="tab.1">Goerli</Fragment>
+    <Fragment slot="tab.2">Mainnet</Fragment>
+    <Fragment slot="panel.1">
+    ```shell Goerli
+    docker run --name eth -p 8545:8545 \
+              -v ~/.nethermind-goerli/:/nethermind/data \
+              -it nethermind/nethermind:latest --config goerli \
+              --Init.WebSocketsEnabled true --JsonRpc.Enabled true --JsonRpc.Host 0.0.0.0 --NoCategory.CorsOrigins * \
+              --datadir data
+    ```
+    </Fragment>
+    <Fragment slot="panel.2">
+    ```shell Mainnet
+    docker run --name eth -p 8545:8545 \
+              -v ~/.nethermind/:/nethermind/data \
+              -it nethermind/nethermind:latest --Sync.FastSync true \
+              --Init.WebSocketsEnabled true --JsonRpc.Enabled true --JsonRpc.Host 0.0.0.0 --NoCategory.CorsOrigins * \
+              --datadir data
+    ```
+    </Fragment>
+</Tabs>
 
 After the Ethereum client is running, you can use `Ctrl + P, Ctrl + Q` to detach from the container without stopping it. You will need to leave the container running for the Chainlink node to connect to it.
 
@@ -121,13 +151,20 @@ The following services offer Ethereum clients with websockets connectivity known
 
 Example connection setting:
 
-```text Goerli
-ETH_URL=wss://eth-goerli.alchemyapi.io/v2/YOUR_PROJECT_ID
-```
-
-```text Mainnet
-ETH_URL=wss://eth-mainnet.alchemyapi.io/v2/YOUR_PROJECT_ID
-```
+<Tabs client:visible>
+    <Fragment slot="tab.1">Goerli</Fragment>
+    <Fragment slot="tab.2">Mainnet</Fragment>
+    <Fragment slot="panel.1">
+    ```text Goerli
+    ETH_URL=wss://eth-goerli.alchemyapi.io/v2/YOUR_PROJECT_ID
+    ```
+    </Fragment>
+    <Fragment slot="panel.2">
+    ```text Mainnet
+    ETH_URL=wss://eth-mainnet.alchemyapi.io/v2/YOUR_PROJECT_ID
+    ```
+    </Fragment>
+</Tabs>
 
 ## [Chainstack](https://support.chainstack.com/hc/en-us/articles/900001664463-Setting-up-a-Chainlink-node-with-an-Ethereum-node-provided-by-Chainstack)
 
@@ -149,29 +186,45 @@ ETH_URL=wss://cl-main.fiews.io/v2/YOUR_API_KEY
 
 Example connection setting:
 
-```text Goerli
-ETH_URL=wss://eth.getblock.io/goerli/?api_key=YOUR_API_KEY
-```
-
-```text Sepolia
-ETH_URL=wss://eth.getblock.io/sepolia/?api_key=YOUR_API_KEY
-```
-
-```text Mainnet
-ETH_URL=wss://eth.getblock.io/mainnet/?api_key=YOUR_API_KEY
-```
+<Tabs client:visible>
+    <Fragment slot="tab.1">Goerli</Fragment>
+    <Fragment slot="tab.2">Sepolia</Fragment>
+    <Fragment slot="tab.3">Mainnet</Fragment>
+    <Fragment slot="panel.1">
+    ```text Goerli
+    ETH_URL=wss://eth.getblock.io/goerli/?api_key=YOUR_API_KEY
+    ```
+    </Fragment>
+    <Fragment slot="panel.2">
+    ```text Sepolia
+    ETH_URL=wss://eth.getblock.io/sepolia/?api_key=YOUR_API_KEY
+    ```
+    </Fragment>
+    <Fragment slot="panel.3">
+    ```text Mainnet
+    ETH_URL=wss://eth.getblock.io/mainnet/?api_key=YOUR_API_KEY
+    ```
+    </Fragment>
+</Tabs>
 
 ## [Infura](https://infura.io/docs/ethereum/wss/introduction.md)
 
 Example connection setting. Replace YOUR_PROJECT_ID with the ID Infura provides you on your project settings page.
 
-```text Goerli
-ETH_URL=wss://goerli.infura.io/ws/v3/YOUR_PROJECT_ID
-```
-
-```text Mainnet
-ETH_URL=wss://mainnet.infura.io/ws/v3/YOUR_PROJECT_ID
-```
+<Tabs client:visible>
+    <Fragment slot="tab.1">Goerli</Fragment>
+    <Fragment slot="tab.2">Mainnet</Fragment>
+    <Fragment slot="panel.1">
+    ```text Goerli
+    ETH_URL=wss://goerli.infura.io/ws/v3/YOUR_PROJECT_ID
+    ```
+    </Fragment>
+    <Fragment slot="panel.2">
+    ```text Mainnet
+    ETH_URL=wss://mainnet.infura.io/ws/v3/YOUR_PROJECT_ID
+    ```
+    </Fragment>
+</Tabs>
 
 ## [LinkPool](https://docs.linkpool.io/docs/websocket_main)
 
@@ -185,13 +238,20 @@ ETH_URL=wss://main-rpc.linkpool.io/ws
 
 Example connection setting:
 
-```text Goerli
-ETH_URL=wss://your-node-name.goerli.quiknode.pro/security-hash/
-```
-
-```text Mainnet
-ETH_URL=wss://your-node-name.quiknode.pro/security-hash/
-```
+<Tabs client:visible>
+    <Fragment slot="tab.1">Goerli</Fragment>
+    <Fragment slot="tab.2">Mainnet</Fragment>
+    <Fragment slot="panel.1">
+    ```text Goerli
+    ETH_URL=wss://your-node-name.goerli.quiknode.pro/security-hash/
+    ```
+    </Fragment>
+    <Fragment slot="panel.2">
+    ```text Mainnet
+    ETH_URL=wss://your-node-name.quiknode.pro/security-hash/
+    ```
+    </Fragment>
+</Tabs>
 
 ## Configuring your ETH node
 
