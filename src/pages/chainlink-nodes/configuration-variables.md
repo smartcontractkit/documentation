@@ -13,7 +13,7 @@ To reiterate: _If you have an environment variable set that is not listed here, 
 
 The environment variables listed here are explicitly supported and current as of Chainlink node v1.3.0.
 
-## Optional TOML configuration
+## Experimental TOML configuration
 
 Static configuration using TOML files was added in v1.11.0 as an alternative to the existing combination of environment variables and persisted database configurations. This configuration method is _experimental_. In the future, TOML configuration `v2.0.0` will become the only supported configuration method. See the [CONFIG.md](https://github.com/smartcontractkit/chainlink/blob/v1.11.0-rc1/docs/CONFIG.md) and [SECRETS.md](https://github.com/smartcontractkit/chainlink/blob/v1.11.0-rc1/docs/SECRETS.md) on GitHub to learn more.
 
