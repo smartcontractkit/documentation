@@ -17,9 +17,9 @@ You can find a list of release notes for Chainlink nodes in the [smartcontractki
 
 ### Added
 
-- Added a new mode for the [`NODE_SELECTION_MODE` environment variable](/chainlink-nodes/configuration-variables#node_selection_mode). Use `TotalDifficulty` to select the node with the greatest total difficulty.
-- Added the [`NODE_SYNC_THRESHOLD` environment variable](/chainlink-nodes/configuration-variables#node_sync_threshold) to ensure that live nodes do not lag too far behind.
-- Added the [`BRIDGE_CACHE_TTL` environment variable](/chainlink-nodes/configuration-variables#bridge_cache_ttl) which caches bridge responses for a specified amount of time.
+- Added a new mode for the [`NODE_SELECTION_MODE` environment variable](/chainlink-nodes/v1/configuration#node_selection_mode). Use `TotalDifficulty` to select the node with the greatest total difficulty.
+- Added the [`NODE_SYNC_THRESHOLD` environment variable](/chainlink-nodes/v1/configuration#node_sync_threshold) to ensure that live nodes do not lag too far behind.
+- Added the [`BRIDGE_CACHE_TTL` environment variable](/chainlink-nodes/v1/configuration#bridge_cache_ttl) which caches bridge responses for a specified amount of time.
 - Add the prometheus metrics labelled by bridge name for monitoring external adapter queries. The following metrics are included:
   - `bridge_latency_seconds`
   - `bridge_errors_total`
@@ -42,9 +42,9 @@ You can find a list of release notes for Chainlink nodes in the [smartcontractki
 ### Added
 
 - Added an optional external logger `AUDIT_LOGS_FORWARDER_URL`: When set, this environment variable configures and enables an optional HTTP logger which is used specifically to send audit log events. Configure this logger with the following environment variables:
-  - [AUDIT_LOGS_FORWARDER_URL](/chainlink-nodes/v1/configuration/#audit_logs_forwarder_url)
-  - [AUDIT_LOGS_FORWARDER_HEADERS](/chainlink-nodes/v1/configuration/#audit_logs_forwarder_headers)
-  - [AUDIT_LOGGER_JSON_WRAPPER_KEY](/chainlink-nodes/v1/configuration/#audit_logger_json_wrapper_key)
+  - [AUDIT_LOGGER_FORWARD_TO_URL](/chainlink-nodes/v1/configuration#audit_logger_forward_to_url)
+  - [AUDIT_LOGGER_HEADERS](/chainlink-nodes/v1/configuration#audit_logger_headers)
+  - [AUDIT_LOGGER_JSON_WRAPPER_KEY](/chainlink-nodes/v1/configuration#audit_logger_json_wrapper_key)
 - Added [automatic connectivity detection](#automatic-connectivity-detection) to automatically detect if there is a transaction propagation/connectivity issue and prevent bumping in these cases on EVM chains.
 
 ### Changed
@@ -342,12 +342,7 @@ This will cause Chainlink to use the database for its node configuration.
 
 NOTE: ETH_CHAIN_ID does not need to be removed, since it now performs the additional duty of specifying the default chain in a multichain environment (if you leave ETH_CHAIN_ID unset, the default chain is simply the "first").
 
-<<<<<<< HEAD
-For more information on configuring your node, check the [configuration variables in the docs](https://docs.chain.link/chainlink-nodes/configuration-variables).
-=======
-For more information on configuring your node, check the [configuration variables in the docs](https://docs.chain.link/chainlink-nodes/v1/configuration/).
-
-> > > > > > > 786142d (Fix Fulling Requests guide and reorganize noops section)
+For more information on configuring your node, check the [configuration variables in the docs](/chainlink-nodes/v1/configuration/).
 
 Before you upgrade your nodes to v1.1.0, be aware of the following requirements:
 

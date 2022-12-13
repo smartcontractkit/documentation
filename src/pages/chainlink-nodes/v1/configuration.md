@@ -1152,7 +1152,7 @@ Controls node picking strategy. Supported values:
 
 - Default: `5`
 
-SyncThreshold controls how far a node may lag behind the best node before being marked out-of-sync. Depending on the [`NODE_SELECTION_MODE` variable](/chainlink-nodes/configuration-variables/#node_selection_mode), this represents a difference in either the number of blocks (`HighestHead`, `RoundRobin`), or the total difficulty (`TotalDifficulty`).
+SyncThreshold controls how far a node may lag behind the best node before being marked out-of-sync. Depending on the [`NODE_SELECTION_MODE` variable](/chainlink-nodes/v1/configuration/#node_selection_mode), this represents a difference in either the number of blocks (`HighestHead`, `RoundRobin`), or the total difficulty (`TotalDifficulty`).
 
 Set to `0` to disable this check.
 
