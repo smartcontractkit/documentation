@@ -17,7 +17,11 @@ setup: |
   import CodeSample from "@components/CodeSample/CodeSample.astro"
 ---
 
-With your own Oracle contract, you can use your own node to fulfill requests. This guide will show you how to deploy your own Oracle contract and add jobs to your node so that it can provide data to smart contracts.
+:::note[Run a Chainlink node]
+This tutorial assumes you have a running Chainlink node. If not, Follow the [Running a Chainlink Node locally](/chainlink-nodes/v1/running-a-chainlink-node) tutorial
+:::
+
+Now that your Chainlink node is running , you can use your own node to fulfill requests. This guide will show you how to deploy your own Oracle contract and add jobs to your node so that it can provide data to smart contracts.
 
 Chainlink nodes can fulfill requests from open or unauthenticated APIs without the need for [External Adapters](/chainlink-nodes/external-adapters/external-adapters/) as long as you've [added the jobs](#add-a-job-to-the-node) to the node. For these requests, requesters supply the URL to the open API that they want each node to retrieve. The Chainlink node will use [tasks](/chainlink-nodes/oracle-jobs/task-types/tasks/) to fulfill the request.
 
@@ -28,21 +32,22 @@ Some APIs require authentication by providing request headers for the operator's
 Before you begin this guide, complete the following tasks to make sure you have all of the tools that you need:
 
 - [Set up MetaMask](/getting-started/deploy-your-first-contract/#install-and-fund-your-metamask-wallet) and [obtain testnet LINK](/resources/acquire-link/).
-- Configure an Ethereum client with an active websocket connection. Either [Run an Ethereum Client](/chainlink-nodes/run-an-ethereum-client/) yourself or use an [External Service](/chainlink-nodes/run-an-ethereum-client/#external-services) that your Chainlink Node can access.
-- [Run a Chainlink Node](/chainlink-nodes/running-a-chainlink-node/) and connect it to a [supported database](/chainlink-nodes/connecting-to-a-remote-database/).
-- Fund the Ethereum address that your Chainlink node uses. You can find the address in the node Operator GUI under the **Keys** tab. The address of the node is the `Regular` type. You can obtain test ETH from several [faucets](/resources/link-token-contracts/).
+- [Run a Chainlink Node](/chainlink-nodes/v1/running-a-chainlink-node).
+- Fund the Ethereum address that your Chainlink node uses. You can find the address in the node Operator GUI under the **Key Management** configuration. The address of the node is the `Regular` type. You can obtain test ETH from several [faucets](/resources/link-token-contracts/). For this tutorial to work, you will have to fund the node's Ethereum address with Goerli ETH. Here is an example:
+
+  ![chainlink node goerli fund address](/images/chainlink-nodes/node-operators/key-management.jpg)
 
 ## Address Types
 
 Your node works with several different types of addresses. Each address type has a specific function:
 
-- **Node address:** This is the address for your Chainlink node wallet. The node requires native blockchain tokens at all times to respond to requests. For this example, the node uses ETH. When you start a Chainlink node, it automatically generates this address. You can find this address on the Node Operator GUI under Keys > Account addresses.
+- **Node address:** This is the address for your Chainlink node wallet. The node requires native blockchain tokens at all times to respond to requests. For this example, the node uses Goerli ETH. When you start a Chainlink node, it automatically generates this address. You can find this address on the Node Operator GUI under Key Management > EVM Chain Accounts.
 - **Oracle contract address:** This is the address for contracts like `Operator.sol` or `Oracle.sol` that are deployed to a blockchain. Do not fund these addresses with native blockchain tokens such as ETH. When you make API call requests, the funds pass through this contract to interact with your Chainlink node. This will be the address that smart contract developers point to when they choose a node for an API call.
 - **Admin wallet address:** This is the address that owns your `Operator.sol` or `Oracle.sol` contract addresses. If you're on OCR, this is the wallet address that receives LINK tokens.
 
 ## Deploy your own Oracle contract
 
-1. Go to Remix and [open the `Oracle.sol` smart contract](https://remix.ethereum.org/#url=https://docs.chain.link/samples/ChainlinkNodes/Oracle.sol). The contents of this file will be very minimal.
+1. Go to Remix and open the [`Operator.sol` smart contract](https://remix.ethereum.org/#url=https://docs.chain.link/samples/ChainlinkNodes/Operator.sol).
 
 1. On the **Compile** tab, click the **Compile** button for `Oracle.sol`. Remix automatically selects the compiler version and language from the `pragma` line unless you select a specific version manually.
 
