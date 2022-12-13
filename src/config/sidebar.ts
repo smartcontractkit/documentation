@@ -140,6 +140,24 @@ export const SIDEBAR = {
           ],
         },
         {
+          title: "Solana Data Feeds",
+          url: "data-feeds/solana/",
+          children: [
+            {
+              title: "Using Data Feeds Off-Chain",
+              url: "data-feeds/solana/using-data-feeds-off-chain",
+            },
+            {
+              title: "Using Data Feeds On-Chain",
+              url: "data-feeds/solana/using-data-feeds-solana",
+            },
+            {
+              title: "Solana Addresses",
+              url: "data-feeds/solana/data-feeds-solana",
+            },
+          ],
+        },
+        {
           title: "Selecting Data Feeds",
           url: "data-feeds/selecting-data-feeds",
         },
@@ -333,43 +351,6 @@ export const SIDEBAR = {
         },
         { title: "Getting Help", url: "resources/getting-help" },
         { title: "Hackathon Resources", url: "resources/hackathon-resources" },
-        {
-          title: "Contributing to Chainlink",
-          url: "resources/contributing-to-chainlink",
-        },
-      ],
-    },
-  ],
-  solana: [
-    {
-      section: "Solana",
-      contents: [{ title: "Overview", url: "solana/overview" }],
-    },
-    {
-      section: "Data Feeds",
-      contents: [
-        {
-          title: "Using Data Feeds Off-Chain",
-          url: "solana/data-feeds/using-data-feeds-off-chain",
-        },
-        {
-          title: "Using Data Feeds On-Chain",
-          url: "solana/data-feeds/using-data-feeds-solana",
-        },
-        {
-          title: "Data Feed Addresses",
-          url: "solana/data-feeds/data-feeds-solana",
-        },
-      ],
-    },
-    {
-      section: "Resources",
-      contents: [
-        { title: "Getting Help", url: "resources/getting-help" },
-        {
-          title: "Selecting Data Feeds",
-          url: "data-feeds/selecting-data-feeds",
-        },
         {
           title: "Contributing to Chainlink",
           url: "resources/contributing-to-chainlink",

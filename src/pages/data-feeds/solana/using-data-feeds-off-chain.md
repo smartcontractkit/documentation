@@ -1,9 +1,8 @@
 ---
 layout: ../../../layouts/MainLayout.astro
-section: solana
+section: ethereum
 date: Last Modified
 title: "Using Data Feeds Off-Chain (Solana)"
-permalink: "docs/solana/using-data-feeds-off-chain/"
 whatsnext:
   {
     "Use data feeds on-chain": "/solana/data-feeds/using-data-feeds-solana/",

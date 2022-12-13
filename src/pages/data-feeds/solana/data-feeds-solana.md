@@ -1,9 +1,8 @@
 ---
 layout: ../../../layouts/MainLayout.astro
-section: solana
+section: ethereum
 title: "Solana Data Feeds Addresses"
 stub: data-feeds-solana
-permalink: "docs/solana/data-feeds-solana/"
 metadata:
   ecosystem: solana
   networkstatusurl: "https://status.solana.com/"

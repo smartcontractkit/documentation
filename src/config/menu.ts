@@ -13,8 +13,7 @@ export const MENU: MenuItems = {
       link: "/getting-started/conceptual-overview",
       section: "gettingStarted",
     },
-    { text: "EVM Chains", link: "/ethereum", section: "ethereum" },
-    { text: "Solana", link: "/solana", section: "solana" },
+    { text: "Services", link: "/ethereum", section: "ethereum" },
     {
       text: "Node Operators",
       link: "/chainlink-nodes",
