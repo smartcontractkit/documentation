@@ -6,12 +6,12 @@ title: "Running a Chainlink Node"
 permalink: "docs/running-a-chainlink-node/"
 whatsnext:
   {
-    "Fulfilling Requests": "/chainlink-nodes/fulfilling-requests/",
+    "Fulfilling Requests": "/chainlink-nodes/v1/fulfilling-requests/",
     "Requirements": "/chainlink-nodes/resources/requirements/",
-    "Optimizing EVM Performance": "/chainlink-nodes/evm-performance-configuration/",
-    "Performing System Maintenance": "/chainlink-nodes/performing-system-maintenance/",
-    "Miscellaneous": "/chainlink-nodes/miscellaneous/",
-    "Security and Operation Best Practices": "/chainlink-nodes/best-security-practices/",
+    "Optimizing EVM Performance": "/chainlink-nodes/resources/evm-performance-configuration/",
+    "Performing System Maintenance": "/chainlink-nodes/resources/performing-system-maintenance/",
+    "Miscellaneous": "/chainlink-nodes/resources/miscellaneous/",
+    "Security and Operation Best Practices": "/chainlink-nodes/resources/best-security-practices/",
   }
 metadata:
   title: "Running a Chainlink Node locally"
@@ -20,7 +20,7 @@ setup: |
   import { Tabs } from "@components/Tabs"
 ---
 
-This tutorial will teach you how to run a Chainlink node locally using [Docker](#using-docker) and connect it to Ethereum Goerli testnet.
+This guide will teach you how to run a Chainlink node locally using [Docker](#using-docker). The Chainlink node will be configured to connect to Ethereum Goerli testnet.
 
 :::note[Running from source]
 To run a Chainlink node from source, use the [following instructions](https://github.com/smartcontractkit/chainlink#install). However, It’s recommended to run the Chainlink node with Docker. This is because we continuously build and deploy the code from our repository on Github, which means you don’t need a complete development environment to run a node.
@@ -38,7 +38,7 @@ Ganache is a mock testnet. Although you can run nodes on Ganache, it is not offi
 
 - As explained in the [requirements page](/chainlink-nodes/resources/requirements/), make sure there are enough resources to run a Chainlink node and a PostgreSQL database.
 - Install [Docker Desktop](https://docs.docker.com/get-docker/). You will run the Chainlink node and PostgreSQL in Docker containers.
-- Chainlink nodes must be able to connect to an Ethereum client with an active websocket connection. See [Running an Ethereum Client](/chainlink-nodes/run-an-ethereum-client/) for details. In this tutorial, you can [use an external service](/chainlink-nodes/run-an-ethereum-client/#external-services) as your client.
+- Chainlink nodes must be able to connect to an Ethereum client with an active websocket connection. See [Running an Ethereum Client](/chainlink-nodes/resources/run-an-ethereum-client/) for details. In this tutorial, you can [use an external service](/chainlink-nodes/resources/run-an-ethereum-client/#external-services) as your client.
 
 ## Using Docker
 
@@ -70,8 +70,8 @@ Ganache is a mock testnet. Although you can run nodes on Ganache, it is not offi
    mkdir ~/.chainlink-goerli
    ```
 
-1. Run the following as a command to create an environment file and populate with variables specific to the network you're running on. For a full list of available configuration variables, click [here](/chainlink-nodes/configuration-variables/).
-   Be sure to update the value for `CHANGEME` to the value given by your [external Ethereum provider](/chainlink-nodes/run-an-ethereum-client/#external-services). Update the value for `mysecretpassword` to the chosen password in [Run PostgreSQL](#run-postgresql).
+1. Run the following as a command to create an environment file and populate with variables specific to the network you're running on. For a full list of available configuration variables, click [here](/chainlink-nodes/v1/configuration/).
+   Be sure to update the value for `CHANGEME` to the value given by your [external Ethereum provider](/chainlink-nodes/resources/run-an-ethereum-client/#external-services). Update the value for `mysecretpassword` to the chosen password in [Run PostgreSQL](#run-postgresql).
 
    ```shell Goerli
    echo "ROOT=/chainlink
@@ -95,7 +95,7 @@ Ganache is a mock testnet. Although you can run nodes on Ganache, it is not offi
    cd ~/.chainlink-goerli && docker run --name chainlink  -v ~/.chainlink-goerli:/chainlink -it --env-file=.env -p 6688:6688 smartcontract/chainlink:<version> local n
    ```
 
-   The first time running the image, it will ask you for a password and confirmation. This will be your wallet password that you can use to unlock the keystore file generated for you. Then, you'll be prompted to enter an API Email and Password. This will be used to expose the API for the GUI interface, and will be used every time you log into your node. When running the node again, you can supply the `-p` option with a path to a text file containing the wallet key password, and a `-a` option, pointing to a text file containing the API email and password. Instructions on how to do that are [here](/chainlink-nodes/miscellaneous/#use-password-and-api-files-on-startup).
+   The first time running the image, it will ask you for a password and confirmation. This will be your wallet password that you can use to unlock the keystore file generated for you. Then, you'll be prompted to enter an API Email and Password. This will be used to expose the API for the GUI interface, and will be used every time you log into your node. When running the node again, you can supply the `-p` option with a path to a text file containing the wallet key password, and a `-a` option, pointing to a text file containing the API email and password. Instructions on how to do that are [here](/chainlink-nodes/resources/miscellaneous/#use-password-and-api-files-on-startup).
 
 1. Check the container is running (Status `Up`). Note the `6688` port is [published](https://docs.docker.com/config/containers/container-networking/#published-ports) `0.0.0.0:6688->6688/tcp` and therefore accessible outside of Docker.
 
@@ -106,4 +106,4 @@ Ganache is a mock testnet. Although you can run nodes on Ganache, it is not offi
    feff39f340d6   smartcontract/chainlink:1.10.0   "chainlink local n"   4 minutes ago   Up 4 minutes (healthy)   0.0.0.0:6688->6688/tcp   chainlink
    ```
 
-1. You can now connect to your Chainlink node's UI interface by navigating to [http://localhost:6688](http://localhost:6688). If using a VPS, you can create a [SSH tunnel](https://www.howtogeek.com/168145/how-to-use-ssh-tunneling/) to your node for `6688:localhost:6688` to enable connectivity to the GUI. Typically this is done with `ssh -i $KEY $USER@$REMOTE-IP -L 6688:localhost:6688 -N`. A SSH tunnel is recommended over opening up ports specific to the Chainlink node to be public facing. See the [Security and Operation Best Practices](/chainlink-nodes/best-security-practices/) page for more details on how to secure your node.
+1. You can now connect to your Chainlink node's UI interface by navigating to [http://localhost:6688](http://localhost:6688). If using a VPS, you can create a [SSH tunnel](https://www.howtogeek.com/168145/how-to-use-ssh-tunneling/) to your node for `6688:localhost:6688` to enable connectivity to the GUI. Typically this is done with `ssh -i $KEY $USER@$REMOTE-IP -L 6688:localhost:6688 -N`. A SSH tunnel is recommended over opening up ports specific to the Chainlink node to be public facing. See the [Security and Operation Best Practices](/chainlink-nodes/resources/best-security-practices/) page for more details on how to secure your node.

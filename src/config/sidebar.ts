@@ -47,7 +47,7 @@ export const SIDEBAR = {
         { title: "Connect to Public API Data", url: "any-api/introduction" },
         {
           title: "Run a Chainlink Node",
-          url: "chainlink-nodes/running-a-chainlink-node",
+          url: "chainlink-nodes/v1/running-a-chainlink-node",
         },
       ],
     },
@@ -409,36 +409,36 @@ export const SIDEBAR = {
               url: "chainlink-nodes/resources/requirements",
             },
             {
-              title: "Run an Ethereum Client",
+              title: "Running an Ethereum Client",
               url: "chainlink-nodes/resources/run-an-ethereum-client",
             },
+            {
+              title: "Connecting to a Remote Database",
+              url: "chainlink-nodes/resources/connecting-to-a-remote-database",
+            },
+            {
+              title: "Enabling HTTPS Connections",
+              url: "chainlink-nodes/resources/enabling-https-connections",
+            },
+            {
+              title: "Performing System Maintenance",
+              url: "chainlink-nodes/resources/performing-system-maintenance",
+            },
+            {
+              title: "Security and Operation Best Practices",
+              url: "chainlink-nodes/resources/best-security-practices",
+            },
+            {
+              title: "Optimizing EVM Performance",
+              url: "chainlink-nodes/resources/evm-performance-configuration",
+            },
+            {
+              title: "Best Practices for Nodes on AWS",
+              url: "chainlink-nodes/resources/best-practices-aws",
+            },
+            { title: "Miscellaneous", url: "chainlink-nodes/resources/miscellaneous" },
           ],
         },
-        {
-          title: "Performing System Maintenance",
-          url: "chainlink-nodes/performing-system-maintenance",
-        },
-        {
-          title: "Connecting to a Remote Database",
-          url: "chainlink-nodes/connecting-to-a-remote-database",
-        },
-        {
-          title: "Enabling HTTPS Connections",
-          url: "chainlink-nodes/enabling-https-connections",
-        },
-        {
-          title: "Security and Operation Best Practices",
-          url: "chainlink-nodes/best-security-practices",
-        },
-        {
-          title: "Optimizing EVM Performance",
-          url: "chainlink-nodes/evm-performance-configuration",
-        },
-        {
-          title: "Best Practices for Nodes on AWS",
-          url: "chainlink-nodes/best-practices-aws",
-        },
-        { title: "Miscellaneous", url: "chainlink-nodes/miscellaneous" },
       ],
     },
     {

@@ -5,8 +5,8 @@ date: Last Modified
 title: "Run an Ethereum Client"
 whatsnext:
   {
-    "Running a Chainlink Node": "/chainlink-nodes/running-a-chainlink-node/",
-    "Optimizing Performance": "/chainlink-nodes/evm-performance-configuration/",
+    "Running a Chainlink Node": "/chainlink-nodes/v1/running-a-chainlink-node/",
+    "Optimizing Performance": "/chainlink-nodes/resources/evm-performance-configuration/",
   }
 setup: |
   import { Tabs } from "@components/Tabs"
@@ -76,7 +76,7 @@ docker start -i eth
 
 Follow Geth's instructions for [Connecting to Consensus Clients](https://geth.ethereum.org/docs/interface/consensus-clients). This will require some additional configuration settings for the Docker command that runs Geth.
 
-Return to [Running a Chainlink Node](/chainlink-nodes/running-a-chainlink-node/).
+Return to [Running a Chainlink Node](/chainlink-nodes/v1/running-a-chainlink-node/).
 
 ## Nethermind
 
@@ -140,7 +140,7 @@ docker start -i eth
 
 Follow Nethermind's instructions for [Installing and configuring the Consensus Client](https://docs.nethermind.io/nethermind/guides-and-helpers/validator-setup/eth2-validator#setup). This will require some additional configuration settings for the Docker command that runs Nethermind.
 
-Return to [Running a Chainlink Node](/chainlink-nodes/running-a-chainlink-node/).
+Return to [Running a Chainlink Node](/chainlink-nodes/v1/running-a-chainlink-node/).
 
 ## External Services
 
@@ -260,7 +260,7 @@ By default, go-ethereum rejects transactions that exceed the built-in RPC gas/tx
 
 At a minimum, disable the default RPC gas and txfee caps on your ETH node. This can be done in the TOML file as seen below, or by running go-ethereum with the command line arguments: `--rpc.gascap=0 --rpc.txfeecap=0`.
 
-To learn more about configuring ETH nodes, see the [configuration page](/chainlink-nodes/configuration-variables/#configuring-your-eth-node).
+To learn more about configuring ETH nodes, see the [configuration page](/chainlink-nodes/v1/configuration/#configuring-your-eth-node).
 
 ## Additional Tools
 

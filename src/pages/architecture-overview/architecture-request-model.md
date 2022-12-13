@@ -60,7 +60,7 @@ The off-chain oracle node is responsible for listening for events emitted by its
 
 The most common job type for a Node is to make a GET request to an API, retrieve some data from it, parse the response, convert the result into blockchain compatible data, then submit it in a transaction back to the oracle contract, using the `fulfillOracleRequest` function.
 
-For more information on how to become a node operator, learn how to [run a Chainlink node](/chainlink-nodes/running-a-chainlink-node/).
+For more information on how to become a node operator, learn how to [run a Chainlink node](/chainlink-nodes/v1/running-a-chainlink-node/).
 
 ## Consumer UML
 

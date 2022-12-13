@@ -1,10 +1,9 @@
 ---
-layout: ../../layouts/MainLayout.astro
+layout: ../../../layouts/MainLayout.astro
 section: nodeOperator
 date: Last Modified
 title: "Connecting to a Remote Database"
-permalink: "docs/connecting-to-a-remote-database/"
-whatsnext: { "Configuring Chainlink": "/chainlink-nodes/configuration-variables/" }
+whatsnext: { "Configuring Chainlink": "/chainlink-nodes/v1/configuration/" }
 ---
 
 This page will serve as a basic, vendor-neutral guide for setting up a PostgreSQL database and connecting your Chainlink node to it.

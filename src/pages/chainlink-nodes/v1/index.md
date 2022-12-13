@@ -17,8 +17,3 @@ whatsnext:
 This section provides specific information for running and configuring v1.x.x Chainlink nodes. First you will [run a chainlink node](/chainlink-nodes/v1/running-a-chainlink-node) that implements the [basic request architecture model](/architecture-overview/architecture-request-model). Then you will [fulfill requests](/chainlink-nodes/v1/fulfilling-requests) initiated by a smart contract.
 
 The [Configuring Nodes page](/chainlink-nodes/v1/configuration) lists all the environment variables for configuring a v1.x.x Chainlink node.
-
-:::tip[Note]
-Nodes can fulfill requests for open APIs out-of-the-box using [Tasks](/chainlink-nodes/oracle-jobs/task-types/tasks/) without needing any additional configuration.<br/>
-To provide data from an authenticated API, add an [external adapter](/chainlink-nodes/external-adapters/external-adapters/) to enable connectivity through the Chainlink node.
-:::
