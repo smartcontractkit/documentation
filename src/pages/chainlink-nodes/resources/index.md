@@ -18,4 +18,4 @@ whatsnext: { "Requirements": "/chainlink-nodes/resources/requirements",
 }
 ---
 
-The _Resources_ section provides multiple guides that helps you configure your Chainlink node for production.
+The _Resources_ section provides multiple guides that help you configure your Chainlink node for production.

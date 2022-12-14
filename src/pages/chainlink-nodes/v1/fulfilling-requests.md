@@ -12,16 +12,16 @@ whatsnext:
   }
 metadata:
   title: "Chainlink Node Operators: Fulfilling Requests"
-  description: "Deploy your own Operator contract and add jobs to your node so that it can provide data to smart contracts."
+  description: "Deploy your own operator contract and add jobs to your node so that it can provide data to smart contracts."
 setup: |
   import CodeSample from "@components/CodeSample/CodeSample.astro"
 ---
 
 :::note[Run a Chainlink node]
-This guide assumes you have a running Chainlink node. If not, Follow the [Running a Chainlink Node locally](/chainlink-nodes/v1/running-a-chainlink-node) guide.
+This guide assumes you have a running Chainlink node. To learn how to run a node, see the [Running a Chainlink Node locally](/chainlink-nodes/v1/running-a-chainlink-node) guide.
 :::
 
-Now that your Chainlink node is running , you can use your own node to fulfill requests. This guide will show you how to deploy your own Operator contract and add jobs to your node so that it can provide data to smart contracts.
+You can use your Chainlink nodes to fulfill requests. This guide shows you how to deploy your own operator contract and add jobs to your node so that it can provide data to smart contracts.
 
 Chainlink nodes can fulfill requests from open or unauthenticated APIs without the need for [External Adapters](/chainlink-nodes/external-adapters/external-adapters/) as long as you've [added the jobs](#add-a-job-to-the-node) to the node. For these requests, requesters supply the URL to the open API that they want each node to retrieve. The Chainlink node will use [tasks](/chainlink-nodes/oracle-jobs/task-types/tasks/) to fulfill the request.
 
@@ -90,7 +90,7 @@ Your node works with several different types of addresses. Each address type has
 
 1. Click the `transact` function to run it. Approve the transaction in MetaMask and wait for it to confirm on the blockchain.
 
-1. Call `isAuthorizedSender` function with the address of your node to verify that your chainlink node address can call the Operator contract. The function must return `true`.
+1. Call `isAuthorizedSender` function with the address of your node to verify that your chainlink node address can call the operator contract. The function must return `true`.
 
    ![A screenshot showing Chainlink node whitelisted in Remix.](/images/chainlink-nodes/node-operators/operator-isauthorizedsender.jpg)
 
@@ -98,7 +98,7 @@ Your node works with several different types of addresses. Each address type has
 
 You will create a job that calls an OpenAPI , parses the response and then return a `uint256`.
 
-1. In the Chainlink Operator GUI on the **Jobs** tab, click **New Job**.
+1. In the Chainlink Operator UI on the **Jobs** tab, click **New Job**.
 
    ![The new job button.](/images/chainlink-nodes/node-operators/new-job-button.png)
 
@@ -107,7 +107,7 @@ You will create a job that calls an OpenAPI , parses the response and then retur
    <!-- prettier-ignore -->
    <CodeSample src="samples/ChainlinkNodes/jobs/get-uint256.toml"/>
 
-1. Replace `YOUR_OPERATOR_CONTRACT_ADDRESS` with the address of your deployed Operator contract address from the previous steps.
+1. Replace `YOUR_OPERATOR_CONTRACT_ADDRESS` with the address of your deployed operator contract address from the previous steps.
 
 1. Click **Create Job**. If the node creates the job successfully, a notice with the job number appears.
 
@@ -152,7 +152,7 @@ After you add jobs to your node, you can use the node to fulfill requests. This 
 
 ## Withdrawing LINK
 
-You can withdraw LINK from the Operator contract. In Remix under the list of deployed contracts, click on your Operator contract and find the `withdraw` function in the function list. Note that only the admin (see [Admin wallet address](#address-types)) can withdraw LINK.
+You can withdraw LINK from the operator contract. In Remix under the list of deployed contracts, click on your Operator contract and find the `withdraw` function in the function list. Note that only the admin (see [Admin wallet address](#address-types)) can withdraw LINK.
 
 ![Remix Click Withdraw Button](/images/chainlink-nodes/node-operators/operator-withdraw-link.jpg)
 
