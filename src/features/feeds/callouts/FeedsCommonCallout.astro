@@ -5,11 +5,15 @@ const FeedQualityComponent = feedQuality[0].Content
 const etfBestPractices = await Astro.glob("./etf-best-practices.md")
 const EtfBestPracticesComponent = etfBestPractices[0].Content
 
+const porVerification = await Astro.glob("./por-verification.md")
+const PorVerificationComponent = porVerification[0].Content
+
 export type Props = {
-  callout?: "quality" | "etfBestPractices"
+  callout?: "quality" | "etfBestPractices" | "porVerification"
 }
 const { callout } = Astro.props as Props
 ---
 
 {callout === "quality" && <FeedQualityComponent />}
 {callout === "etfBestPractices" && <EtfBestPracticesComponent />}
+{callout === "porVerification" && <PorVerificationComponent />}
