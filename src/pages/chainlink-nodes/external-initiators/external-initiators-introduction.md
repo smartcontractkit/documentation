@@ -18,7 +18,7 @@ At this time of writing, external initiators do not show up in the bridges tab. 
 :::
 
 :::note
-External initiators are disabled on nodes by default. Set the `FEATURE_EXTERNAL_INITIATORS=true` [configuration variable](/chainlink-nodes/configuration-variables/#feature_external_initiators) to enable this feature.
+External initiators are disabled on nodes by default. Set the `FEATURE_EXTERNAL_INITIATORS=true` [configuration variable](/chainlink-nodes/v1/configuration/#feature_external_initiators) to enable this feature.
 :::
 
 Initiator Bridges handle the authentication to and from the External Initiator and where to send the messages. When creating a Bridge two parameters are required:

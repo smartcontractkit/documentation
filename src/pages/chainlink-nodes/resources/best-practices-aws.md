@@ -1,9 +1,8 @@
 ---
-layout: ../../layouts/MainLayout.astro
+layout: ../../../layouts/MainLayout.astro
 section: nodeOperator
 date: Last Modified
 title: "Best Practices for Deploying Nodes on AWS"
-permalink: "docs/best-practices-aws/"
 ---
 
 You can deploy a Chainlink node on the AWS Cloud using [AWS Quick Start](https://aws.amazon.com/quickstart) to deploy a highly available and secure Chainlink node on the AWS Cloud.
@@ -189,7 +188,7 @@ cd /home/ec2-user/.chainlink && docker run -d \
 -a /chainlink/.api
 ```
 
-You can find more details with maintenance and examples in the [Performing System Maintenance](/chainlink-nodes/performing-system-maintenance/) guide.
+You can find more details with maintenance and examples in the [Performing System Maintenance](/chainlink-nodes/resources/performing-system-maintenance/) guide.
 
 Additionally, follow the directions in the [User Guide for Linux Instances](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/install-updates.html) to keep your Amazon Linux instance software up to date.
 

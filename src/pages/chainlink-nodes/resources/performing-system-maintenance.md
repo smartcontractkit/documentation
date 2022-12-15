@@ -1,10 +1,9 @@
 ---
-layout: ../../layouts/MainLayout.astro
+layout: ../../../layouts/MainLayout.astro
 section: nodeOperator
 date: Last Modified
 title: "Performing System Maintenance"
-permalink: "docs/performing-system-maintenance/"
-whatsnext: { "Connecting to a Remote Database": "/chainlink-nodes/connecting-to-a-remote-database/" }
+whatsnext: { "Connecting to a Remote Database": "/chainlink-nodes/resources/connecting-to-a-remote-database/" }
 ---
 
 You might occasionally need to restart the system that the Chainlink node runs on. To restart without any downtime for completing requests, perform the upgrade as a series of steps that passes database access to a new instance while the first instance is down.
@@ -12,7 +11,7 @@ You might occasionally need to restart the system that the Chainlink node runs o
 ## Maintenance and Image Update Example
 
 :::note[Docker]
-This example uses Docker to run the Chainlink node, see the [Running a Chainlink Node](/chainlink-nodes/running-a-chainlink-node/) page for instructions on how to set it up.
+This example uses Docker to run the Chainlink node, see the [Running a Chainlink Node](/chainlink-nodes/v1/running-a-chainlink-node/) page for instructions on how to set it up.
 :::
 
 First, find the most recent Chainlink image on [Docker Hub](https://hub.docker.com/r/smartcontract/chainlink/) and pull that Docker image. For version 1.1.0:
@@ -73,12 +72,12 @@ When the log messages on the first node indicate that it is waiting for the data
 ## Failover Node Example
 
 :::note[Docker]
-This example uses Docker to run the Chainlink node, see the [Running a Chainlink Node](/chainlink-nodes/running-a-chainlink-node/) page for instructions on how to set it up.
+This example uses Docker to run the Chainlink node, see the [Running a Chainlink Node](/chainlink-nodes/v1/running-a-chainlink-node/) page for instructions on how to set it up.
 :::
 
 You might want to run multiple instances of the Chainlink node on the same machine. If one instance goes down, the second instance can automatically pick up requests. Building off the concepts in the previous example, use Docker to have primary and a secondary containers referencing the same database URL.
 
-Use the default `DATABASE_LOCKING_MODE=advisorylock` setting unless you want to test the `lease` or `dual` settings. See [the docs](/chainlink-nodes/configuration-variables/#database_locking_mode) for more information about this configuration variable.
+Use the default `DATABASE_LOCKING_MODE=advisorylock` setting unless you want to test the `lease` or `dual` settings. See [the docs](/chainlink-nodes/v1/configuration/#database_locking_mode) for more information about this configuration variable.
 
 Run the Chainlink node with a name option specified:
 
