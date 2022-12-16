@@ -7,7 +7,7 @@ permalink: "docs/external-initiators-in-nodes/"
 ---
 
 :::note
-External initiators are disabled on nodes by default. Set the `FEATURE_EXTERNAL_INITIATORS=true` [configuration variable](/chainlink-nodes/configuration-variables/#feature_external_initiators) to enable this feature.
+External initiators are disabled on nodes by default. Set the `FEATURE_EXTERNAL_INITIATORS=true` [configuration variable](/chainlink-nodes/v1/configuration/#feature_external_initiators) to enable this feature.
 :::
 
 ## Creating an external initiator
@@ -47,7 +47,7 @@ DELETE <URL>/<job external UUID>
 
 You can use the chainlink client for convenience to access this API.
 
-Enter the [Chainlink nodes CLI](/chainlink-nodes/miscellaneous/#execute-commands-running-docker) and run the following command
+Enter the [Chainlink nodes CLI](/chainlink-nodes/resources/miscellaneous/#execute-commands-running-docker) and run the following command
 
 <!-- prettier-ignore -->
 ```shell
