@@ -2,24 +2,361 @@
 layout: ../../../layouts/MainLayout.astro
 section: nodeOperator
 date: Last Modified
-title: "Operator contract"
+title: "Operator"
 ---
 
-To handle API requests, Oracles must deploy an on-chain contract to handle requests made through the LINK token (Read [Basic Request Model](/architecture-overview/architecture-request-model) to learn more).
+Oracles must deploy an on-chain contract to handle requests made through the LINK token (Read [Basic Request Model](/architecture-overview/architecture-request-model) to learn more).
 
-When the _Basic Request_ model was introduced, node operators had to deploy [Oracle.sol contracts](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.4/Oracle.sol). However, these come with some limitations and soon, we introduced [Operator.sol](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/Operator.sol). Node operators are recommended to use _Operator.sol_ over _Oracle.sol_.
+When the _Basic Request_ model was introduced, node operators had to deploy [Oracle contracts](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.4/Oracle.sol). However, these come with some limitations, and soon, we introduced [Operator contracts](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/Operator.sol).
+
+:::note
+Node operators are recommended to use _Operator.sol_ over _Oracle.sol_.
+:::
 
 ## Operator.sol vs Oracle.sol
 
-[Operator.sol](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/Operator.sol) is a remplacement of [Oracle.sol](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.4/Oracle.sol). It comes with the following improvements:
+[Operator.sol](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/Operator.sol) is a replacement of [Oracle.sol](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.4/Oracle.sol). It comes with these improvements:
 
 ### Multi-word Response
 
-In the EVM architecture a word is made up of 32 bytes. For various reasons the _Oracle_ contract limited responses to requests to 32 bytes. On the other hand, _Operator_ supports a response made of multiple EVM words.
+In the EVM architecture, a word is made up of 32 bytes. One limitation of the _Oracle_ contract is that it limits responses to requests to 32 bytes. _Operator_ doesn't have the same limitation as it supports a response made of multiple EVM words.
 
 ### Factory deployment
 
-To deploy an _Oracle_ contract, each node operator has to manually compile and deploy [Oracle.sol](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.4/Oracle.sol). Given the wide number of Solidity versions, and steps involved in verifying the contract, this made it difficult for a client to verify that the deployed contract had not been tampered with.
-To fix this, node operators can use a [factory](/chainlink-nodes/contracts/operatorFactory) to deploy an instance of the _Operator_ contract. Moreover, the factory exposes a getter for clients to check if it deployed a specific _Operator_ contract address.
+To deploy an _Oracle_ contract, each node operator has to manually compile and deploy [Oracle.sol](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.4/Oracle.sol).
+The vast number of Solidity versions and steps involved in verifying the contract made it difficult for a client to verify that the deployed contract had not been tampered with.
+To fix this, node operators can use a [factory](/chainlink-nodes/contracts/operatorfactory) to deploy an instance of the _Operator_ contract. Moreover, the factory exposes a getter for clients to check if it deployed a specific _Operator_ contract address.
 
-### Funding addresses
+### Distributing funds to multiple addresses
+
+A common pain point of node operators is keeping their addresses funded. _Operator_'s `distributeFunds` method allows node operators to fund multiple addresses in a single transaction.
+
+## API Reference
+
+### Methods
+
+#### oracleRequest
+
+:::note[Legacy]
+Use `operatorRequest` [function](#operatorrequest) instead.
+:::
+
+```solidity
+function oracleRequest(address sender, uint256 payment, bytes32 specId, address callbackAddress, bytes4 callbackFunctionId, uint256 nonce, uint256 dataVersion, bytes data) external
+```
+
+Creates the Chainlink request. This is backwards compatible API with [Oracle.sol contracts](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.4/Oracle.sol), but the behavior changes because `callbackAddress` is assumed to be the same as the request sender.
+
+##### Parameters
+
+| Name               | Type    | Description                                    |
+| ------------------ | ------- | ---------------------------------------------- |
+| sender             | address | The sender of the request                      |
+| payment            | uint256 | The amount of payment given (specified in wei) |
+| specId             | bytes32 | The Job Specification ID                       |
+| callbackAddress    | address | The consumer of the request                    |
+| callbackFunctionId | bytes4  | The callback function ID for the response      |
+| nonce              | uint256 | The nonce sent by the requester                |
+| dataVersion        | uint256 | The specified data version                     |
+| data               | bytes   | The extra request parameters                   |
+
+#### operatorRequest
+
+```solidity
+function operatorRequest(address sender, uint256 payment, bytes32 specId, bytes4 callbackFunctionId, uint256 nonce, uint256 dataVersion, bytes data) external
+```
+
+Creates the Chainlink request. Stores the hash of the params as the on-chain commitment for the request. Emits [OracleRequest](#oraclerequest-1) event for the Chainlink node to detect.
+
+##### Parameters
+
+| Name               | Type    | Description                                    |
+| ------------------ | ------- | ---------------------------------------------- |
+| sender             | address | The sender of the request                      |
+| payment            | uint256 | The amount of payment given (specified in wei) |
+| specId             | bytes32 | The Job Specification ID                       |
+| callbackFunctionId | bytes4  | The callback function ID for the response      |
+| nonce              | uint256 | The nonce sent by the requester                |
+| dataVersion        | uint256 | The specified data version                     |
+| data               | bytes   | The extra request parameters                   |
+
+#### fulfillOracleRequest
+
+:::note[Legacy]
+Use `fulfillOracleRequest2` [function](#fulfillOracleRequest2) instead.
+:::
+
+```solidity
+function fulfillOracleRequest(bytes32 requestId, uint256 payment, address callbackAddress, bytes4 callbackFunctionId, uint256 expiration, bytes32 data) external returns (bool)
+```
+
+Called by the Chainlink node to fulfill requests. Given params must hash back to the commitment stored from `oracleRequest`. Will call the callback address' callback function without bubbling up error checking in a `require` so that the node can get paid. Emits [OracleResponse](#oracleresponse) event.
+
+##### Parameters
+
+| Name               | Type    | Description                                                                    |
+| ------------------ | ------- | ------------------------------------------------------------------------------ |
+| requestId          | bytes32 | The fulfillment request ID that must match the requester's                     |
+| payment            | uint256 | The payment amount that will be released for the oracle (specified in wei)     |
+| callbackAddress    | address | The callback address to call for fulfillment                                   |
+| callbackFunctionId | bytes4  | The callback function ID to use for fulfillment                                |
+| expiration         | uint256 | The expiration that the node should respond by before the requester can cancel |
+| data               | bytes32 | The data to return to the consuming contract                                   |
+
+##### Return Values
+
+| Name | Type | Description                                |
+| ---- | ---- | ------------------------------------------ |
+|      | bool | Status if the external call was successful |
+
+#### fulfillOracleRequest2
+
+```solidity
+function fulfillOracleRequest2(bytes32 requestId, uint256 payment, address callbackAddress, bytes4 callbackFunctionId, uint256 expiration, bytes data) external returns (bool)
+```
+
+Called by the Chainlink node to fulfill requests with multi-word support. Given params must hash back to the commitment stored from `oracleRequest`. Will call the callback address' callback function without bubbling up error checking in a `require` so that the node can get paid. Emits [OracleResponse](#oracleresponse) event.
+
+##### Parameters
+
+| Name               | Type    | Description                                                                    |
+| ------------------ | ------- | ------------------------------------------------------------------------------ |
+| requestId          | bytes32 | The fulfillment request ID that must match the requester's                     |
+| payment            | uint256 | The payment amount that will be released for the oracle (specified in wei)     |
+| callbackAddress    | address | The callback address to call for fulfillment                                   |
+| callbackFunctionId | bytes4  | The callback function ID to use for fulfillment                                |
+| expiration         | uint256 | The expiration that the node should respond by before the requester can cancel |
+| data               | bytes   | The data to return to the consuming contract                                   |
+
+##### Return Values
+
+| Name | Type | Description                                |
+| ---- | ---- | ------------------------------------------ |
+|      | bool | Status if the external call was successful |
+
+#### transferOwnableContracts
+
+```solidity
+function transferOwnableContracts(address[] ownable, address newOwner) external
+```
+
+Transfer the ownership of ownable contracts. This is primarily intended for Authorized Forwarders but could possibly be extended to work with future contracts.
+
+##### Parameters
+
+| Name     | Type      | Description                      |
+| -------- | --------- | -------------------------------- |
+| ownable  | address[] | list of addresses to transfer    |
+| newOwner | address   | address to transfer ownership to |
+
+#### acceptOwnableContracts
+
+```solidity
+function acceptOwnableContracts(address[] ownable) public
+```
+
+Accept the ownership of an ownable contract. This is primarily intended for Authorized Forwarders but could possibly be extended to work with future contracts. Emits [OwnableContractAccepted](#ownablecontractaccepted) event.
+
+_Must be the pending owner on the contract_
+
+##### Parameters
+
+| Name    | Type      | Description                                      |
+| ------- | --------- | ------------------------------------------------ |
+| ownable | address[] | list of addresses of Ownable contracts to accept |
+
+#### setAuthorizedSendersOn
+
+```solidity
+function setAuthorizedSendersOn(address[] targets, address[] senders) public
+```
+
+Sets the fulfillment permission for `senders` on `targets`. Emits [TargetsUpdatedAuthorizedSenders](#targetsupdatedauthorizedsenders) event.
+
+##### Parameters
+
+| Name    | Type      | Description                                    |
+| ------- | --------- | ---------------------------------------------- |
+| targets | address[] | The addresses to set permissions on            |
+| senders | address[] | The addresses that are allowed to send updates |
+
+#### acceptAuthorizedReceivers
+
+```solidity
+function acceptAuthorizedReceivers(address[] targets, address[] senders) external
+```
+
+Accepts ownership of ownable contracts and then immediately sets the authorized sender list on each of the newly owned contracts. This is primarily intended for Authorized Forwarders but could possibly be extended to work with future contracts.
+
+##### Parameters
+
+| Name    | Type      | Description                                    |
+| ------- | --------- | ---------------------------------------------- |
+| targets | address[] | The addresses to set permissions on            |
+| senders | address[] | The addresses that are allowed to send updates |
+
+#### withdraw
+
+```solidity
+function withdraw(address recipient, uint256 amount) external
+```
+
+Allows the node operator to withdraw earned LINK to a given address `recipient`.
+
+_The owner of the contract can be another wallet and does not have to be a Chainlink node_
+
+##### Parameters
+
+| Name      | Type    | Description                           |
+| --------- | ------- | ------------------------------------- |
+| recipient | address | The address to send the LINK token to |
+| amount    | uint256 | The amount to send (specified in wei) |
+
+#### withdrawable
+
+```solidity
+function withdrawable() external view returns (uint256)
+```
+
+Displays the amount of LINK that is available for the node operator to withdraw.
+
+_We use `1` in place of 0 in storage_
+
+##### Return Values
+
+| Name | Type    | Description                                     |
+| ---- | ------- | ----------------------------------------------- |
+|      | uint256 | The amount of withdrawable LINK on the contract |
+
+#### ownerForward
+
+```solidity
+function ownerForward(address to, bytes data) external
+```
+
+Forward a call to another contract.
+
+_Only callable by the owner_
+
+##### Parameters
+
+| Name | Type    | Description |
+| ---- | ------- | ----------- |
+| to   | address | address     |
+| data | bytes   | to forward  |
+
+#### ownerTransferAndCall
+
+```solidity
+function ownerTransferAndCall(address to, uint256 value, bytes data) external returns (bool success)
+```
+
+Interact with other LinkTokenReceiver contracts by calling transferAndCall.
+
+##### Parameters
+
+| Name  | Type    | Description                                            |
+| ----- | ------- | ------------------------------------------------------ |
+| to    | address | The address to transfer to.                            |
+| value | uint256 | The amount to be transferred.                          |
+| data  | bytes   | The extra data to be passed to the receiving contract. |
+
+##### Return Values
+
+| Name    | Type | Description |
+| ------- | ---- | ----------- |
+| success | bool | bool        |
+
+#### distributeFunds
+
+```solidity
+function distributeFunds(address payable[] receivers, uint256[] amounts) external payable
+```
+
+Distribute funds to multiple addresses using ETH sent to this payable function.
+
+Array length must be equal, ETH sent must equal the sum of amounts. A malicious receiver could cause the distribution to revert, in which case it is expected that the address is removed from the list.
+
+##### Parameters
+
+| Name      | Type              | Description       |
+| --------- | ----------------- | ----------------- |
+| receivers | address payable[] | list of addresses |
+| amounts   | uint256[]         | list of amounts   |
+
+#### cancelOracleRequest
+
+```solidity
+function cancelOracleRequest(bytes32 requestId, uint256 payment, bytes4 callbackFunc, uint256 expiration) external
+```
+
+Allows recipient to cancel requests sent to this oracle contract. Will transfer the LINK sent for the request back to the recipient address. Given params must hash to a commitment stored on the contract in order for the request to be valid. Emits [CancelOracleRequest](#canceloraclerequest-1) event.
+
+##### Parameters
+
+| Name         | Type    | Description                                          |
+| ------------ | ------- | ---------------------------------------------------- |
+| requestId    | bytes32 | The request ID                                       |
+| payment      | uint256 | The amount of payment given (specified in wei)       |
+| callbackFunc | bytes4  | The requester's specified callback function selector |
+| expiration   | uint256 | The time of the expiration for the request           |
+
+#### cancelOracleRequestByRequester
+
+```solidity
+function cancelOracleRequestByRequester(uint256 nonce, uint256 payment, bytes4 callbackFunc, uint256 expiration) external
+```
+
+Allows requester to cancel requests sent to this oracle contract. Will transfer the LINK sent for the request back to the recipient address. Given params must hash to a commitment stored on the contract in order for the request to be valid. Emits [CancelOracleRequest](#canceloraclerequest-1) event.
+
+##### Parameters
+
+| Name         | Type    | Description                                          |
+| ------------ | ------- | ---------------------------------------------------- |
+| nonce        | uint256 | The nonce used to generate the request ID            |
+| payment      | uint256 | The amount of payment given (specified in wei)       |
+| callbackFunc | bytes4  | The requester's specified callback function selector |
+| expiration   | uint256 | The time of the expiration for the request           |
+
+#### getChainlinkToken
+
+```solidity
+function getChainlinkToken() public view returns (address)
+```
+
+Returns the address of the LINK token
+
+This is the public implementation for chainlinkTokenAddress, which is
+an internal method of the ChainlinkClient contract.
+
+### Events
+
+#### OracleRequest
+
+```solidity
+event OracleRequest(bytes32 specId, address requester, bytes32 requestId, uint256 payment, address callbackAddr, bytes4 callbackFunctionId, uint256 cancelExpiration, uint256 dataVersion, bytes data)
+```
+
+#### CancelOracleRequest
+
+```solidity
+event CancelOracleRequest(bytes32 requestId)
+```
+
+#### OracleResponse
+
+```solidity
+event OracleResponse(bytes32 requestId)
+```
+
+#### OwnableContractAccepted
+
+```solidity
+event OwnableContractAccepted(address acceptedContract)
+```
+
+#### TargetsUpdatedAuthorizedSenders
+
+```solidity
+event TargetsUpdatedAuthorizedSenders(address[] targets, address[] senders, address changedBy)
+```
