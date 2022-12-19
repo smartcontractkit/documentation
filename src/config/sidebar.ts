@@ -533,15 +533,15 @@ export const SIDEBAR = {
         },
         {
           title: "Contracts",
-          url: "/chainlink-nodes/contracts/",
+          url: "chainlink-nodes/contracts/",
           children: [
             {
               title: "Operator",
-              url: "/chainlink-nodes/contracts/operator",
+              url: "chainlink-nodes/contracts/operator",
             },
             {
               title: "Operator Factory",
-              url: "/chainlink-nodes/contracts/operatorfactory",
+              url: "chainlink-nodes/contracts/operatorfactory",
             },
           ],
         },
