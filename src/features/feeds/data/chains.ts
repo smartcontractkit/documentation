@@ -49,13 +49,12 @@ export const CHAINS: Chain[] = [
     title: "BNB Chain Data Feeds",
     img: "/assets/chains/bnb-chain.svg",
     networkStatusUrl: "https://bscscan.freshstatus.io/",
-    tags: ["default", "proofOfReserve"],
+    tags: ["default"],
     networks: [
       {
         name: "BNB Chain Mainnet",
         explorerUrl: "https://bscscan.com/address/%s",
         networkType: "mainnet",
-        tags: ["proofOfReserve"],
         rddUrl: "https://reference-data-directory.vercel.app/feeds-bsc-mainnet.json",
       },
       {
@@ -273,6 +272,23 @@ export const CHAINS: Chain[] = [
         explorerUrl: "https://baobab.scope.klaytn.com/account/%s",
         networkType: "testnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-klaytn-testnet-baobab.json",
+      },
+    ],
+  },
+  {
+    page: "starknet",
+    label: "StarkNet",
+    title: "StarkNet Data Feeds",
+    img: "/assets/chains/starknet.svg",
+    networkStatusUrl: "https://starknet.io/network/",
+    tags: ["default"],
+    networks: [
+      {
+        name: "StarkNet testnet",
+        explorerUrl: "https://testnet.starkscan.co/contract/%s",
+        networkType: "testnet",
+        rddUrl:
+          "https://reference-data-directory-git-starknet-test-267921-chainlinklabs.vercel.app/feeds-starknet-testnet-goerli-1.json",
       },
     ],
   },
