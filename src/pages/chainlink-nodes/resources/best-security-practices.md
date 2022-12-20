@@ -9,7 +9,7 @@ The following information provides a set of security and operation best practice
 
 ## Restricting Access
 
-To run a Chainlink node, the Operator UI port does not need to be open on the internet for it to correctly function. Due to this, we recommend restricting access to all of the services required over the internet.
+To run a Chainlink node, the Operator UI port does not need to be open on the internet for it to correctly function. Due to this, we strongly recommend restricting access to all of the services required over the internet.
 
 **Minimum Requirements:**
 
