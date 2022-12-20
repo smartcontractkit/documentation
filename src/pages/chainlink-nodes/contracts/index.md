@@ -8,6 +8,7 @@ metadata:
   description: "Chainlink node contracts"
 whatsnext: { "Operator": "/chainlink-nodes/contracts/operator",
 "Operator Factory": "/chainlink-nodes/contracts/operatorfactory",
+"Forwarder": "/chainlink-nodes/contracts/forwarder"
 }
 ---
 

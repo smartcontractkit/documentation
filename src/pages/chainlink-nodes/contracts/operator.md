@@ -33,6 +33,8 @@ A common pain point of node operators is keeping their addresses funded. _Operat
 
 ## API Reference
 
+The Operator contract inherits [AuthorizedReceiver](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/AuthorizedReceiver.sol) and [ConfirmedOwnerWithProposal](https://github.com/smartcontractkit/chainlink/edit/develop/contracts/src/v0.7/ConfirmedOwnerWithProposal.sol). Read [AuthorizedReceiver](/chainlink-nodes/contracts/receiver) and [ConfirmedOwnerWithProposal](/chainlink-nodes/contracts/owbership) API references.
+
 ### Methods
 
 #### oracleRequest

@@ -543,6 +543,18 @@ export const SIDEBAR = {
               title: "Operator Factory",
               url: "chainlink-nodes/contracts/operatorfactory",
             },
+            {
+              title: "Forwarder",
+              url: "chainlink-nodes/contracts/forwarder",
+            },
+            {
+              title: "Receiver",
+              url: "chainlink-nodes/contracts/receiver",
+            },
+            {
+              title: "Ownership",
+              url: "chainlink-nodes/contracts/ownership",
+            },
           ],
         },
         {
