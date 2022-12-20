@@ -25,7 +25,7 @@ Combining multiple EOAs setups and Forwarder contracts opens up a lot of flexibi
 
 ## Api Reference
 
-The Forwarder contract inherits [AuthorizedReceiver](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/AuthorizedReceiver.sol) and [ConfirmedOwnerWithProposal](https://github.com/smartcontractkit/chainlink/edit/develop/contracts/src/v0.7/ConfirmedOwnerWithProposal.sol). Read [AuthorizedReceiver](/chainlink-nodes/contracts/receiver) and [ConfirmedOwnerWithProposal](/chainlink-nodes/contracts/owbership) API references.
+The Forwarder contract inherits [AuthorizedReceiver](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/AuthorizedReceiver.sol) and [ConfirmedOwnerWithProposal](https://github.com/smartcontractkit/chainlink/edit/develop/contracts/src/v0.7/ConfirmedOwnerWithProposal.sol). Read [AuthorizedReceiver](/chainlink-nodes/contracts/receiver) and [ConfirmedOwnerWithProposal](/chainlink-nodes/contracts/ownership) API references.
 
 ### Methods
 
