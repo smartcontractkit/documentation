@@ -15,13 +15,14 @@ In the EVM world, [Externally-owned accounts'](https://ethereum.org/en/developer
 To solve these challenges, we introduced two major features that will allow node operators to set up different transaction-sending strategies more securely while lowering their infrastructure costs:
 
 - Chainlink nodes support multiple EOAs.
-- [Forwarder](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/AuthorizedForwarder.sol) contracts. Forwarder contracts allow a node operator to manage multiple EOAs and make them look like a single address. If you use a web2 analogy, Forwarder contracts act like a reverse proxy server, where the user is served by the same address (reverse proxy) and does not see where(server) the traffic is coming from.
+- [Forwarder](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/AuthorizedForwarder.sol) contracts. Forwarder contracts allow a node operator to manage multiple EOAs and make them look like a single address. If you use a web2 analogy, Forwarder contracts act like a reverse proxy server, where the user is served by the same address (reverse proxy) and does not see where(server) the traffic is coming from. To do so, nodes call the [forward](#forward) function on the Forwarder contract.
 
 Combining multiple EOAs setups and Forwarder contracts opens up a lot of flexibility and security in terms of design:
 
 - Node operators can expand horizontally using multiple EOAs. They can deploy one or multiple Forwarder contracts for these EOAs. These combinations of EOAs + forwarders offer a lot of flexibility for setting up different transaction-sending strategies.
 - Node operators can support different job types (OCR, VRF, API request..Etc) on the same node, reducing maintenance and infrastructure costs.
-- Security-wise, Forwarder contracts distinguish between Owner and Authorized Senders. Authorized senders are hot wallets (Chainlink nodes' EOAs). The owner is expected to be a more secure address, such as a hardware wallet or a multisig wallet. The owner is responsible for changing the Authorized senders' list (e.g., if a node is compromised).
+- Security-wise, Forwarder contracts distinguish between Owner and Authorized Senders. Authorized senders are hot wallets (Chainlink nodes' EOAs). The owner is responsible for changing the Authorized senders' list (e.g., if a node is compromised).
+- Node operators do not need to manually compile and deploy [Operator](/chainlink-nodes/contracts/operator) or/and [Forwarder](/chainlink-nodes/contracts/forwarder) contracts. They can deploy them directly from the [OperatorFactory](/chainlink-nodes/contracts/operatorfactory) by calling the [deploynewoperatorandforwarder](/chainlink-nodes/contracts/operatorfactory#deploynewoperatorandforwarder) function. From a design perspective, the owner of a Forwarder contract is an [Operator](/chainlink-nodes/contracts/operator) contract. The owner of the Operator contract is a more secure address, such as a hardware wallet or a multisig wallet. Therefore, node operators can manage a set of Forwarder contracts through an Operator contract using a secure account such as hardware or a multisig wallet.
 
 ## Api Reference
 

@@ -13,13 +13,13 @@ When the _Basic Request_ model was introduced, node operators had to deploy [Ora
 Node operators are recommended to use _Operator.sol_ over _Oracle.sol_.
 :::
 
-## Operator.sol vs Oracle.sol
+In addition to replacing Oracle contracts, Operator contracts come with additional features that add more security and flexibility for node operators.
 
-[Operator.sol](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/Operator.sol) is a replacement of [Oracle.sol](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.4/Oracle.sol). It comes with these improvements:
+## Features
 
 ### Multi-word Response
 
-In the EVM architecture, a word is made up of 32 bytes. One limitation of the _Oracle_ contract is that it limits responses to requests to 32 bytes. _Operator_ doesn't have the same limitation as it supports a response made of multiple EVM words.
+In the EVM architecture, a word is made up of 32 bytes. One limitation of the [Oracle.sol](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.4/Oracle.sol) contract is that it limits responses to requests to 32 bytes. [Operator.sol](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/Operator.sol) doesn't have the same limitation as it supports a response made of multiple EVM words.
 
 ### Factory deployment
 
@@ -30,6 +30,20 @@ To fix this, node operators can use a [factory](/chainlink-nodes/contracts/opera
 ### Distributing funds to multiple addresses
 
 A common pain point of node operators is keeping their addresses funded. _Operator_'s `distributeFunds` method allows node operators to fund multiple addresses in a single transaction.
+
+### Flexibility and Security
+
+By using multiple External-owned accounts(EOA) on Chainlink nodes and [Forwarder](/chainlink-nodes/contracts/forwarder) contracts, node operators can set up different transaction-sending strategies.
+
+:::note
+Read more about [Forwarders](/chainlink-nodes/contracts/forwarder).
+:::
+
+As discussed in the [Forwarder](/chainlink-nodes/contracts/forwarder) contracts page:
+
+- Chainlink nodes' EOAs are hot wallets that fulfill requests.
+- These EOAs can be associated with one or multiple [Forwarder](/chainlink-nodes/contracts/forwarder) contracts. The forwarder's owner must whitelist them to call the [forward](/chainlink-nodes/contracts/forwarder#forward) function. One Operator contract owns one or multiple Forwarder contracts.
+- Node operators manage their Forwarder contracts through Operator contracts. They use a secure wallet such as hardware or a multisig wallet as the Operator's owner account.
 
 ## API Reference
 
