@@ -7,6 +7,13 @@ title: "Receiver"
 
 [AuthorizedReceiver](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/AuthorizedReceiver.sol) is an abstract contract inherited by [Operator](/chainlink-nodes/contracts/operator) and [Forwarder](/chainlink-nodes/contracts/forwarder) contracts.
 
+:::note
+Calling [setAuthorizedSenders](#setauthorizedsenders) has a different effect depending if it is called from an [Operator](/chainlink-nodes/contracts/operator) or a [Forwarder](/chainlink-nodes/contracts/forwarder) contract:
+
+- Forwarder contracts' owners allow authorized senders to call [forward](/chainlink-nodes/contracts/forwarder#forward).
+- Operator contracts' owners allow authorized senders to call [fulfillOracleRequest](/chainlink-nodes/contracts/operator#fulfilloraclerequest) and [fulfillOracleRequest2](/chainlink-nodes/contracts/operator#fulfilloraclerequest2)
+  :::
+
 ## Api Reference
 
 ### Methods
