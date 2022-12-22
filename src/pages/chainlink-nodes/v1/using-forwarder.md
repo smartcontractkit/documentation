@@ -289,7 +289,7 @@ Note both jobs have the attribute `forwardingAllowed = true`. This attribute wil
 
 ### Create API Requests
 
-1. Open [APIConsumerForwarder.sol in Remix](https://remix.ethereum.org/#url=https://docs.chain.link/samples/chainlinkNodes/forwarder/APIConsumerForwarder.sol).
+1. Open [APIConsumerForwarder.sol](https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/APIConsumerForwarder.sol) in RemixIDE.
 
 1. Note that `setChainlinkToken(0x326C977E6efc84E512bB9C30f76E30c160eD06FB)` is configured for _Goerli_.
 
