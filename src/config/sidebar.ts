@@ -518,12 +518,16 @@ export const SIDEBAR = {
           url: "chainlink-nodes/v1/",
           children: [
             {
-              title: "Running a Chainlink Node locally",
+              title: "Tutorial - Running a Chainlink Node locally",
               url: "chainlink-nodes/v1/running-a-chainlink-node",
             },
             {
-              title: "Fulfilling Requests",
+              title: "Tutorial - Fulfilling Requests",
               url: "chainlink-nodes/v1/fulfilling-requests",
+            },
+            {
+              title: "Tutorial - Using Forwarder",
+              url: "chainlink-nodes/v1/using-forwarder",
             },
             {
               title: "Configuring Nodes",
@@ -554,6 +558,10 @@ export const SIDEBAR = {
             {
               title: "Ownership",
               url: "chainlink-nodes/contracts/ownership",
+            },
+            {
+              title: "Contract Addresses",
+              url: "chainlink-nodes/contracts/addresses",
             },
           ],
         },

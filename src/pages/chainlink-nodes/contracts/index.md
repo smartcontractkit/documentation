@@ -9,7 +9,8 @@ metadata:
 whatsnext: { "Operator": "/chainlink-nodes/contracts/operator",
 "Operator Factory": "/chainlink-nodes/contracts/operatorfactory",
 "Forwarder": "/chainlink-nodes/contracts/forwarder",
-"Receiver": "/chainlink-nodes/contracts/receiver"
+"Receiver": "/chainlink-nodes/contracts/receiver",
+"Contract Addresses": "/chainlink-nodes/contracts/addresses"
 }
 ---
 
