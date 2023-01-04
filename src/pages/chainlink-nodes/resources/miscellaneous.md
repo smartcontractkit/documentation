@@ -1,10 +1,9 @@
 ---
-layout: ../../layouts/MainLayout.astro
+layout: ../../../layouts/MainLayout.astro
 section: nodeOperator
 date: Last Modified
 title: "Miscellaneous"
-permalink: "docs/miscellaneous/"
-whatsnext: { "Security and Operation Best Practices": "/chainlink-nodes/best-security-practices/" }
+whatsnext: { "Security and Operation Best Practices": "/chainlink-nodes/resources/best-security-practices/" }
 ---
 
 ## Execute Commands Running Docker
@@ -209,7 +208,7 @@ Then make your changes and use the longer `docker run` command again.
 
 ## Use Password and API Files On Startup
 
-The Chainlink node can be supplied with files for the wallet password and API email and password (on separate lines) on startup so that you don't need to enter credentials when starting the node. Following the pattern established in [Running a Chainlink Node](/chainlink-nodes/running-a-chainlink-node/), you can create an API file by running the following:
+The Chainlink node can be supplied with files for the wallet password and API email and password (on separate lines) on startup so that you don't need to enter credentials when starting the node. Following the pattern established in [Running a Chainlink Node](/chainlink-nodes/v1/running-a-chainlink-node/), you can create an API file by running the following:
 
 :::tip[Important]
 Change the values within the quotes to something unique for your node.

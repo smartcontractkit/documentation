@@ -4,7 +4,7 @@ section: ethereum
 date: Last Modified
 title: "Proof of Reserve Feeds"
 permalink: "docs/data-feeds/proof-of-reserve/"
-whatsnext: { "Find contract addresses for Proof of Reserve Feeds": "/docs/data-feeds/proof-of-reserve/addresses/" }
+whatsnext: { "Find contract addresses for Proof of Reserve Feeds": "/data-feeds/proof-of-reserve/addresses/" }
 ---
 
 Chainlink Proof of Reserve Feeds provide the status of the reserves for several assets. You can consume these feeds the same way as [Price Feeds](/data-feeds/price-feeds/).

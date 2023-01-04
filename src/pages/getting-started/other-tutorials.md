@@ -24,6 +24,7 @@ We're constantly uploading new videos to our [YouTube](https://www.youtube.com/c
 - [Austin Griffith](https://www.youtube.com/watch?v=ffU96UhlA0A)
 - [Patrick Collins](https://www.youtube.com/watch?v=p36tXHX1JD8)
 - [Nader Dabit](https://www.youtube.com/watch?v=nS9xP1hxg3w)
+- [Alchemy Univeristy](https://university.alchemy.com/)
 
 ### Applications
 
@@ -69,6 +70,7 @@ Below is a list of applications of Chainlink's products and services sorted by d
 | [Build an RFID Blockchain Integration With Chainlink External Adapters](https://blog.chain.link/rfid-blockchain-integration-with-chainlink-external-adapters/) | Identification       | Advanced   |
 | [How to Connect a Tesla Vehicle API to a Smart Contract Via a Chainlink External Adapter](https://blog.chain.link/create-tesla-smart-contract-rental/)         | Transportation       | Advanced   |
 | [OAuth and API Authentication in Smart Contracts](https://blog.chain.link/oauth-and-api-authentication-in-smart-contracts-2/)                                  | Security             | Advanced   |
+| [Connect APIs to your Smart Contracts using Chainlink](https://docs.alchemy.com/docs/connect-apis-to-your-smart-contracts-using-chainlink)                                  | NFT             | Advanced   |
 
 #### Automation (Keepers)
 

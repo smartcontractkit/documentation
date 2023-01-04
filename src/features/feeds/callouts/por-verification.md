@@ -1,0 +1,3 @@
+#### Risks for Proof of Reserve feeds using the wallet address manager
+
+Cross-chain Proof of Reserve feeds using wallet address manager contracts can vary in their configurations. If the wallet address manager is self-attested, these feeds might include reserve balances from on-chain addresses that have not been cryptographically verified to show ownership or control. In circumstances where cryptographically verified ownership is not provided, there is a risk that token issuers could manipulate the value of a Proof of Reserve feed by adding more addresses to the address list even if they do not directly control these addresses. Each feed’s specific configuration is documented in the contract address section.
