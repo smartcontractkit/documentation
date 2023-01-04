@@ -30,7 +30,7 @@ In this tutorial, you will configure your Chainlink node with a simple transacti
 - You use a [forwarder](/chainlink-nodes/contracts/forwarder) contract to fulfill requests with two EOAs that look like a single address.
 
 :::note
-Here you are using a Forwarder contract and two EOAs for two [direct request](/chainlink-nodes/oracle-jobs/job-types/direct_request) jobs. Note that you can use the same strategy for different job types (e.g., VRF and OCR). Supporting different job types on the same Chainlink node reduces your infrastructure and maintenance costs.
+Here you are using a forwarder contract and two EOAs for two [direct request](/chainlink-nodes/oracle-jobs/job-types/direct_request) jobs. You can use the same strategy for different job types, VRF and OCR. Supporting different job types on the same Chainlink node reduces your infrastructure and maintenance costs.
 :::
 
 ## Check your Chainlink node is running
