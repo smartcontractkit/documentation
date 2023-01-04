@@ -1,10 +1,9 @@
 ---
-layout: ../../layouts/MainLayout.astro
+layout: ../../../layouts/MainLayout.astro
 section: nodeOperator
 date: Last Modified
 title: "Enabling HTTPS Connections"
-permalink: "docs/enabling-https-connections/"
-whatsnext: { "Miscellaneous": "/chainlink-nodes/miscellaneous/" }
+whatsnext: { "Miscellaneous": "/chainlink-nodes/resources/miscellaneous/" }
 ---
 
 This guide will walk you through how to generate your own self-signed certificates for use by the Chainlink node. You can also substitute self-signed certificates with certificates of your own, like those created by <a href="https://letsencrypt.org/" target="_blank">Let's Encrypt</a>.

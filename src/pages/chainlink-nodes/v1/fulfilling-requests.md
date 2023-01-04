@@ -1,0 +1,159 @@
+---
+layout: ../../../layouts/MainLayout.astro
+section: nodeOperator
+date: Last Modified
+title: "Fulfilling Requests"
+permalink: "docs/fulfilling-requests/"
+whatsnext:
+  {
+    "Performing System Maintenance": "/chainlink-nodes/resources/performing-system-maintenance/",
+    "v2 Jobs": "/chainlink-nodes/oracle-jobs/jobs/",
+    "Security and Operation Best Practices": "/chainlink-nodes/resources/best-security-practices/",
+  }
+metadata:
+  title: "Chainlink Node Operators: Fulfilling Requests"
+  description: "Deploy your own operator contract and add jobs to your node so that it can provide data to smart contracts."
+setup: |
+  import CodeSample from "@components/CodeSample/CodeSample.astro"
+---
+
+:::note[Run a Chainlink node]
+This guide assumes you have a running Chainlink node. To learn how to run a node, see the [Running a Chainlink Node locally](/chainlink-nodes/v1/running-a-chainlink-node) guide.
+:::
+
+You can use your Chainlink nodes to fulfill requests. This guide shows you how to deploy your own operator contract and add jobs to your node so that it can provide data to smart contracts.
+
+Chainlink nodes can fulfill requests from open or unauthenticated APIs without the need for [External Adapters](/chainlink-nodes/external-adapters/external-adapters/) as long as you've [added the jobs](#add-a-job-to-the-node) to the node. For these requests, requesters supply the URL to the open API that they want each node to retrieve. The Chainlink node will use [tasks](/chainlink-nodes/oracle-jobs/task-types/tasks/) to fulfill the request.
+
+Some APIs require authentication by providing request headers for the operator's API key, which the Chainlink node supports. If you would like to provide access to an API that requires authentication, you must create a job that is specific for that API either using an [external adapter](/chainlink-nodes/external-adapters/external-adapters/) or by using the parameters of the [HTTP task](/chainlink-nodes/oracle-jobs/task-types/task_http).
+
+## Requirements
+
+Before you begin this guide, complete the following tasks to make sure you have all of the tools that you need:
+
+- [Set up MetaMask](/getting-started/deploy-your-first-contract/#install-and-fund-your-metamask-wallet) and [obtain testnet LINK](/resources/acquire-link/).
+- [Run a Chainlink Node](/chainlink-nodes/v1/running-a-chainlink-node).
+- Fund the Ethereum address that your Chainlink node uses. You can find the address in the node Operator GUI under the **Key Management** configuration. The address of the node is the `Regular` type. You can obtain test ETH from several [faucets](/resources/link-token-contracts/). For this tutorial to work, you will have to fund the node's Ethereum address with Goerli ETH. Here is an example:
+
+  ![chainlink node goerli fund address](/images/chainlink-nodes/node-operators/key-management.jpg)
+
+## Address Types
+
+Your node works with several different types of addresses. Each address type has a specific function:
+
+- **Node address:** This is the address for your Chainlink node wallet. The node requires native blockchain tokens at all times to respond to requests. For this example, the node uses Goerli ETH. When you start a Chainlink node, it automatically generates this address. You can find this address on the Node Operator GUI under Key Management > EVM Chain Accounts.
+- **Oracle contract address:** This is the address for contracts like `Operator.sol` or `Oracle.sol` that are deployed to a blockchain. Do not fund these addresses with native blockchain tokens such as ETH. When you make API call requests, the funds pass through this contract to interact with your Chainlink node. This will be the address that smart contract developers point to when they choose a node for an API call.
+- **Admin wallet address:** This is the address that owns your `Operator.sol` or `Oracle.sol` contract addresses. If you're on OCR, this is the wallet address that receives LINK tokens.
+
+## Setup your Operator contract
+
+### Deploy your own Operator contract
+
+1. Go to Remix and open the [`Operator.sol` smart contract](https://remix.ethereum.org/#url=https://docs.chain.link/samples/ChainlinkNodes/Operator.sol).
+
+1. On the **Compile** tab, click the **Compile** button for `Operator.sol`. Remix automatically selects the compiler version and language from the `pragma` line unless you select a specific version manually.
+
+1. On the **Deploy and Run** tab, configure the following settings:
+
+   - Select "Injected Provider" as your **Environment**. The Javascript VM environment cannot access your oracle node. Make sure your Metamask is connected to Goerli testnet.
+   - Select the "Operator" contract from the **Contract** menu.
+   - Copy the [LINK token contract address](/resources/link-token-contracts/) for the network you are using and paste it into the `LINK` field next to the **Deploy** button. For Goerli, you can use this address:
+
+     ```text Goerli
+     0x326C977E6efc84E512bB9C30f76E30c160eD06FB
+     ```
+
+   - Copy the _Admin wallet address_ into the `OWNER` field.
+
+   ![The Deploy & Run transaction window showing Injected Web 3 selected and the address for your MetaMask wallet.](/images/chainlink-nodes/node-operators/deploy-operator.jpg)
+
+1. Click **transact**. MetaMask prompts you to confirm the transaction.
+
+   :::note[MetaMask doesn't pop up?]
+   If MetaMask does not prompt you and instead displays the error below, disable "Privacy Mode" in MetaMask. You can do this by clicking on your unique account icon at the top-right, then go to the Settings. Privacy Mode will be a switch near the bottom.<br/>
+   Error: **Send transaction failed: Invalid address. If you use an injected provider, please check it is properly unlocked.**
+   :::
+
+1. If the transaction is successful, a new address displays in the **Deployed Contracts** section.
+
+   ![Screenshot showing the newly deployed contract.](/images/chainlink-nodes/node-operators/operator-deployed.jpg)
+
+1. Keep note of the Operator contract address. You need it later for your consuming contract.
+
+### Whitelist your node address in the Operator contract
+
+1. In the Chainlink node GUI, find and copy the address of your chainlink node. see [Requirements](#requirements).
+
+1. In Remix, call the `setAuthorizedSenders` function with the address of your node. Note the function expects an array.
+
+   ![A screenshot showing all of the fields for the deployed contract in Remix.](/images/chainlink-nodes/node-operators/operator-authorizedsenders.jpg)
+
+1. Click the `transact` function to run it. Approve the transaction in MetaMask and wait for it to confirm on the blockchain.
+
+1. Call `isAuthorizedSender` function with the address of your node to verify that your chainlink node address can call the operator contract. The function must return `true`.
+
+   ![A screenshot showing Chainlink node whitelisted in Remix.](/images/chainlink-nodes/node-operators/operator-isauthorizedsender.jpg)
+
+## Add a job to the node
+
+You will create a job that calls an OpenAPI , parses the response and then return a `uint256`.
+
+1. In the Chainlink Operator UI on the **Jobs** tab, click **New Job**.
+
+   ![The new job button.](/images/chainlink-nodes/node-operators/new-job-button.png)
+
+1. Paste the job specification from above into the text field.
+
+   <!-- prettier-ignore -->
+   <CodeSample src="samples/ChainlinkNodes/jobs/get-uint256.toml"/>
+
+1. Replace `YOUR_OPERATOR_CONTRACT_ADDRESS` with the address of your deployed operator contract address from the previous steps.
+
+1. Click **Create Job**. If the node creates the job successfully, a notice with the job number appears.
+
+   ![A screenshot showing that the job is created successfully.](/images/chainlink-nodes/node-operators/job-created.jpg)
+
+1. Click the job number to view the job details. You can also find the job listed on the **Jobs** tab in the Node Operators UI. Save the `externalJobID` value because you will need it later to tell your consumer contract what job ID to request from your node.
+
+   ![A screenshot showing the External Job ID.](/images/chainlink-nodes/node-operators/job-id.jpg)
+
+## Create a request to your node
+
+After you add jobs to your node, you can use the node to fulfill requests. This section shows what a requester does when they send requests to your node. It is also a way to test and make sure that your node is functioning correctly.
+
+1. Open [ATestnetConsumer.sol in Remix](https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/ATestnetConsumer.sol).
+
+1. Note that `setChainlinkToken(0x326C977E6efc84E512bB9C30f76E30c160eD06FB)` is configured for _Goerli_.
+
+1. On the **Compiler** tab, click the **Compile** button for `ATestnetConsumer.sol`.
+
+1. On the **Deploy and Run** tab, configure the following settings:
+
+   - Select _Injected Provider_ as your environment. Make sure your metamask is connected to Goerli.
+   - Select _ATestnetConsumer_ from the **Contract** menu.
+
+1. Click **Deploy**. MetaMask prompts you to confirm the transaction.
+
+1. Fund the contract by sending LINK to the contract's address. See the [Fund your contract](/resources/fund-your-contract/) page for instructions. The address for the `ATestnetConsumer` contract is on the list of your deployed contracts in Remix. You can fund your contract with 1 LINK.
+
+1. After you fund the contract, create a request. Input your operator contract address and the job ID for the `Get > Uint256` job into the `requestEthereumPrice` request method **without dashes**. The job ID is the `externalJobID` parameter, which you can find on your job's definition page in the Node Operators UI.
+
+   ![Screenshot of the requestEthereumPrice function with the oracle address and job ID specified.](/images/chainlink-nodes/node-operators/requestEthereumPrice.jpg)
+
+1. Click the **transact** button for the `requestEthereumPrice` function and approve the transaction in Metamask. The `requestEthereumPrice` function asks the node to retrieve `uint256` data specifically from [https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD](https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD).
+
+1. After the transaction processes, you can see the details for the complete the job run the **Runs** page in the Node Operators UI.
+
+   ![A screenshot of the task link](/images/chainlink-nodes/node-operators/taskList.jpg)
+
+1. In Remix, click the `currentPrice` variable to see the current price updated on your consumer contract.
+
+   ![A screenshot of the currentPrice button](/images/chainlink-nodes/node-operators/currentPrice.jpg)
+
+## Withdrawing LINK
+
+You can withdraw LINK from the operator contract. In Remix under the list of deployed contracts, click on your Operator contract and find the `withdraw` function in the function list. Note that only the admin (see [Admin wallet address](#address-types)) can withdraw LINK.
+
+![Remix Click Withdraw Button](/images/chainlink-nodes/node-operators/operator-withdraw-link.jpg)
+
+Paste the address you want to withdraw to, and specify the amount of LINK that you want to withdraw. Then, click `withdraw`. Confirm the transaction in MetaMask when the popup appears.

@@ -1,16 +1,15 @@
 ---
-layout: ../../layouts/MainLayout.astro
+layout: ../../../layouts/MainLayout.astro
 section: nodeOperator
 date: Last Modified
 title: "Security and Operation Best Practices"
-permalink: "docs/best-security-practices/"
 ---
 
 The following information provides a set of security and operation best practices that node operators need to use at a minimum to enhance the security and reliability of their infrastructure.
 
 ## Restricting Access
 
-To run a Chainlink node, the Operator UI port does not need to be open on the internet for it to correctly function. Due to this, we recommend restricting access to all of the services required over the internet.
+To run a Chainlink node, the Operator UI port does not need to be open on the internet for it to correctly function. Due to this, we strongly recommend restricting access to all of the services required over the internet.
 
 **Minimum Requirements:**
 
@@ -60,13 +59,13 @@ To be proactive in detecting any issues before or when they occur, active monito
 - Ethereum client disk, RAM and CPU usage.
 
 Monitoring can be set up from the Docker container's output and fed into most major logging providers. For example, you can use Docker's docs to set up the logging driver for [Amazon CloudWatch](https://docs.docker.com/config/containers/logging/awslogs/) and [Google Cloud Logging](https://docs.docker.com/config/containers/logging/gcplogs/). You will want to set the [
-JSON_CONSOLE](/chainlink-nodes/configuration-variables/#json_console) configuration variable to `true` so that the output of the container is JSON-formatted for logging.
+JSON_CONSOLE](/chainlink-nodes/v1/configuration/#json_console) configuration variable to `true` so that the output of the container is JSON-formatted for logging.
 
 ## Frequent Updates
 
 Due to the early nature of the software, it may be required to perform frequent updates to your Chainlink node.
 
-On performing system maintenance to update the Chainlink node, follow [this](/chainlink-nodes/performing-system-maintenance/#failover-node-example) guide.
+On performing system maintenance to update the Chainlink node, follow [this](/chainlink-nodes/resources/performing-system-maintenance/#failover-node-example) guide.
 
 ## Jobs and Config
 
@@ -74,15 +73,15 @@ The following are suggestions for job specifications and configuration settings 
 
 [Job Specifications](/chainlink-nodes/oracle-jobs/jobs/):
 
-- Include the address of your oracle contract address for all RunLog initiated jobs, as shown in the [Fulfilling Requests](/chainlink-nodes/fulfilling-requests/#add-a-job-to-the-node) guide.
+- Include the address of your oracle contract address for all RunLog initiated jobs, as shown in the [Fulfilling Requests](/chainlink-nodes/v1/fulfilling-requests/#add-a-job-to-the-node) guide.
 - Override the global `MIN_INCOMING_CONFIRMATIONS` config by setting a `confirmations` field in jobs which perform off-chain payments to allow for greater security by making the node ensure the transaction is still valid after X blocks.
 
-[Configuring Chainlink Nodes](/chainlink-nodes/configuration-variables/):
+[Configuring Chainlink Nodes](/chainlink-nodes/v1/configuration/):
 
-- [MINIMUM_CONTRACT_PAYMENT_LINK_JUELS](/chainlink-nodes/configuration-variables/#minimum_contract_payment_link_juels): ensure your required payment amount is high enough to meet the costs of responding on-chain.
-- [MIN_INCOMING_CONFIRMATIONS](/chainlink-nodes/configuration-variables/#min_incoming_confirmations): this can be set to 0 for common data request jobs. See the bullet above on setting individual `confirmations` for specific jobs.
-- [LOG_FILE_MAX_SIZE](/chainlink-nodes/configuration-variables/#log_file_max_size): Set this to `0` if you're using external log drivers which parse the output from Docker containers. This will save you disk space.
-- [JSON_CONSOLE](/chainlink-nodes/configuration-variables/#json_console): Set to `true` if you're using external log drivers to parse the output of Docker containers. This will make it easier to parse individual fields of the log and set up alerts.
+- [MINIMUM_CONTRACT_PAYMENT_LINK_JUELS](/chainlink-nodes/v1/configuration/#minimum_contract_payment_link_juels): ensure your required payment amount is high enough to meet the costs of responding on-chain.
+- [MIN_INCOMING_CONFIRMATIONS](/chainlink-nodes/v1/configuration/#min_incoming_confirmations): this can be set to 0 for common data request jobs. See the bullet above on setting individual `confirmations` for specific jobs.
+- [LOG_FILE_MAX_SIZE](/chainlink-nodes/v1/configuration/#log_file_max_size): Set this to `0` if you're using external log drivers which parse the output from Docker containers. This will save you disk space.
+- [JSON_CONSOLE](/chainlink-nodes/v1/configuration/#json_console): Set to `true` if you're using external log drivers to parse the output of Docker containers. This will make it easier to parse individual fields of the log and set up alerts.
 
 ## Addresses
 
