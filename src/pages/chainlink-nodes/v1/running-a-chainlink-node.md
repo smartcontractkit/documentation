@@ -74,13 +74,12 @@ Ganache is a mock testnet. Although you can run nodes on Ganache, it is not offi
    Be sure to update the value for `CHANGEME` to the value given by your [external Ethereum provider](/chainlink-nodes/resources/run-an-ethereum-client/#external-services). Update the value for `mysecretpassword` to the chosen password in [Run PostgreSQL](#run-postgresql).
 
    ```shell Goerli
-   echo "ROOT=/chainlink
-   LOG_LEVEL=debug
+   echo "LOG_LEVEL=debug
    ETH_CHAIN_ID=5
    CHAINLINK_TLS_PORT=0
    SECURE_COOKIES=false
    ALLOW_ORIGINS=*
-   ETH_URL=wss://goerli.infura.io/ws/v3/c3d66a630c7541e8a1d967db08f6d061
+   ETH_URL=CHANGEME
    DATABASE_URL=postgresql://postgres:mysecretpassword@host.docker.internal:5432/postgres?sslmode=disable" > ~/.chainlink-goerli/.env
    ```
 
@@ -92,7 +91,7 @@ Ganache is a mock testnet. Although you can run nodes on Ganache, it is not offi
 1. Start the Chainlink Node. Now you can run the Docker image. Replace `<version>` with your desired version. Tag versions are available in the [Chainlink docker hub](https://hub.docker.com/r/smartcontract/chainlink/tags). _The `latest` version does not work._
 
    ```shell Goerli
-   cd ~/.chainlink-goerli && docker run --name chainlink  -v ~/.chainlink-goerli:/chainlink -it --env-file=.env -p 6688:6688 smartcontract/chainlink:<version> local n
+   cd ~/.chainlink-goerli && docker run --name chainlink  -v ~/.chainlink-goerli:/chainlink -it --env-file=.env -p 6688:6688 --add-host=host.docker.internal:host-gateway smartcontract/chainlink:<version> local n
    ```
 
    The first time running the image, it will ask you for a password and confirmation. This will be your wallet password that you can use to unlock the keystore file generated for you. Then, you'll be prompted to enter an API Email and Password. This will be used to expose the API for the GUI interface, and will be used every time you log into your node. When running the node again, you can supply the `-p` option with a path to a text file containing the wallet key password, and a `-a` option, pointing to a text file containing the API email and password. Instructions on how to do that are [here](/chainlink-nodes/resources/miscellaneous/#use-password-and-api-files-on-startup).
