@@ -27,7 +27,7 @@ In this tutorial, you will configure your Chainlink node with a simple transacti
 - Your node has two externally owned accounts (EOA).
 - Your node has two [direct request](/chainlink-nodes/oracle-jobs/job-types/direct_request) jobs. One job returns _uint256_, and the other returns _string_.
 - Each job uses a different EOA.
-- You use a [Forwarder](/chainlink-nodes/contracts/forwarder) contract to fulfill requests with two EOAs that look like a single address.
+- You use a [forwarder](/chainlink-nodes/contracts/forwarder) contract to fulfill requests with two EOAs that look like a single address.
 
 :::note
 Here you are using a Forwarder contract and two EOAs for two [direct request](/chainlink-nodes/oracle-jobs/job-types/direct_request) jobs. Note that you can use the same strategy for different job types (e.g., VRF and OCR). Supporting different job types on the same Chainlink node reduces your infrastructure and maintenance costs.
@@ -49,7 +49,7 @@ If you don't have a running Chainlink node, follow the [Running a Chainlink Node
 
 ## Deploy Operator and Forwarder
 
-Use the [Operator Factory](/chainlink-nodes/contracts/operatorfactory) to deploy a [Forwarder](/chainlink-nodes/contracts/forwarder) and [Operator](/chainlink-nodes/contracts/operator) contracts. You can find the factory address for each network on the [addresses](/chainlink-nodes/contracts/addresses) page.
+Use the [operator factory](/chainlink-nodes/contracts/operatorfactory) to deploy both the [forwarder](/chainlink-nodes/contracts/forwarder) and the [operator](/chainlink-nodes/contracts/operator) contracts. You can find the factory address for each network on the [addresses](/chainlink-nodes/contracts/addresses) page.
 
 1. Click on [0x8204c193ade6a1bb59bef25b6a310e417953013f](https://goerli.etherscan.io/address/0x8204c193ade6a1bb59bef25b6a310e417953013f) to display the factory in the block explorer.
 1. Click on _Contract_ then _Write Contract_ to display the _write_ transactions on the factory.
@@ -76,7 +76,7 @@ Use the [Operator Factory](/chainlink-nodes/contracts/operatorfactory) to deploy
    <ClickToZoom src='/images/chainlink-nodes/node-operators/forwarder/operator.jpg' />
       <ClickToZoom src='/images/chainlink-nodes/node-operators/forwarder/forwarder.jpg' />
 
-1. Note Operator and Forwarder addresses. You will need them later.
+1. Record the operator and forwarder addresses. You will need them later.
 
 ## Chainlink node setup
 
@@ -98,7 +98,7 @@ Use the [Operator Factory](/chainlink-nodes/contracts/operatorfactory) to deploy
    chainlink admin login
    ```
 
-   You will be prompted to enter your API Email and Password; if successful, the prompt will appear again.
+   You will be prompted to enter your API email and password. If successful, the prompt will appear again.
 
 1. Check the number of available EOA:
 
@@ -235,26 +235,26 @@ Use the [Operator Factory](/chainlink-nodes/contracts/operatorfactory) to deploy
 
 As explained in the [Forwarder](/chainlink-nodes/contracts/forwarder) page:
 
-- The owner of a Forwarder contract is an [Operator](/chainlink-nodes/contracts/operator) contract. The owner of the Operator contract is a more secure address, such as a hardware wallet or a multisig wallet. Therefore, node operators can manage a set of Forwarder contracts through an Operator contract using a secure account such as hardware or a multisig wallet.
-- Forwarder contracts distinguish between Owner and Authorized Senders. Authorized senders are hot wallets (Chainlink nodes' EOAs).
+- The owner of a forwarder contract is an [operator](/chainlink-nodes/contracts/operator) contract. The owner of the operator contract is a more secure address, such as a hardware wallet or a multisig wallet. Therefore, node operators can manage a set of forwarder contracts through an operator contract using a secure account such as hardware or a multisig wallet.
+- Forwarder contracts distinguish between owner and authorized senders. Authorized senders are hot wallets (Chainlink nodes' EOAs).
 
 For this example to run, you will have to:
 
-- Allow the Forwarder contract to call the Operator's [fulfillOracleRequest2](/chainlink-nodes/contracts/operator#fulfilloraclerequest2) function by calling the [setauthorizedsenders](/chainlink-nodes/contracts/receiver#setauthorizedsenders) function on the Operator contract with the Forwarder address as a parameter.
-- Allow the two Chainlink node EOAs to call the Forwarder's [forward](/chainlink-nodes/contracts/forwarder#forward) function. Because the Operator contract owns the Forwarder contract, you will have to call [acceptAuthorizedReceivers](/chainlink-nodes/contracts/operator#acceptauthorizedreceivers) on the Operator contract with the Forwarder contract address and the two Chainlink node EOAs as parameters. This call will make the Operator contract accept ownership of the Forwarder contract and authorize the Chainlink node EOAs to call the Forwarder contract by calling [setauthorizedsenders](/chainlink-nodes/contracts/receiver#setauthorizedsenders).
+- Allow the forwarder contract to call the operator's [fulfillOracleRequest2](/chainlink-nodes/contracts/operator#fulfilloraclerequest2) function by calling the [setauthorizedsenders](/chainlink-nodes/contracts/receiver#setauthorizedsenders) function on the operator contract. Specify the forwarder address as a parameter.
+- Allow the two Chainlink node EOAs to call the forwarder's [forward](/chainlink-nodes/contracts/forwarder#forward) function. Because the operator contract owns the forwarder contract, call [acceptAuthorizedReceivers](/chainlink-nodes/contracts/operator#acceptauthorizedreceivers) on the operator contract. Specify the forwarder contract address and the two Chainlink node EOAs as parameters. This call makes the operator contract accept ownership of the forwarder contract and authorizes the Chainlink node EOAs to call the forwarder contract by calling [setauthorizedsenders](/chainlink-nodes/contracts/receiver#setauthorizedsenders).
 
-### Whitelist the Forwarder
+### Whitelist the forwarder
 
-In the blockchain explorer (Operator contract page), call `setAuthorizedSenders` with the address of your Forwarder contract. The parameter is an array. E.g., `["0xa3a10AB6A41eA19637Bb21b7decDA2d77138DfBa"]`. Metamask prompts you to confirm the transaction.
+In the blockchain explorer, view the operator contract and call the `setAuthorizedSenders` method with the address of your forwarder contract. The parameter is an array. For example, `["0xa3a10AB6A41eA19637Bb21b7decDA2d77138DfBa"]`. Metamask prompts you to confirm the transaction.
 
 <ClickToZoom src='/images/chainlink-nodes/node-operators/forwarder/operatorsetauthorizedsenders.jpg' />
 
 ### Whitelist the Chainlink node EOAs
 
-In the blockchain explorer (Operator contract page), call `acceptAuthorizedReceivers` with:
+In the blockchain explorer, view the operator contract and call the `acceptAuthorizedReceivers` method with the following parameters:
 
-- The Forwarder address in `targets`. E.g., `["0xa3a10AB6A41eA19637Bb21b7decDA2d77138DfBa"]`
-- The two Chainlink node EOAs in `sender`. E.g., `["0x0B87B9Ab848C729F152D87bBEbD4B9708757a59F","0x3218AB3Bf9B2AA2d440a9Ee2c773d1D4FC703Ef1"]`.
+- `targets`: Specify an array of forwarder addresses. For example, `["0xa3a10AB6A41eA19637Bb21b7decDA2d77138DfBa"]`
+- `sender`: Specify an array with the two Chainlink node EOAs. For example, `["0x0B87B9Ab848C729F152D87bBEbD4B9708757a59F","0x3218AB3Bf9B2AA2d440a9Ee2c773d1D4FC703Ef1"]`.
 
 Metamask prompts you to confirm the transaction.
 
@@ -267,29 +267,29 @@ This section is similar to the [Fulfilling Requests](/chainlink-nodes/v1/fulfill
 1. In the Chainlink Operator UI on the **Jobs** tab, click **New Job**.
 1. Create the `uint256` job. Replace:
 
-   - `YOUR_OPERATOR_CONTRACT_ADDRESS` with the address of your deployed Operator contract address.
+   - `YOUR_OPERATOR_CONTRACT_ADDRESS` with the address of your deployed operator contract address.
    - `EOA_ADDRESS` by the **first** Chainlink node EOA.
 
      <CodeSample src="samples/ChainlinkNodes/forwarder/get-uint256.toml"/>
 
 1. Create the `string` job. Replace:
 
-   - `YOUR_OPERATOR_CONTRACT_ADDRESS` with the address of your deployed Operator contract address.
+   - `YOUR_OPERATOR_CONTRACT_ADDRESS` with the address of your deployed operator contract address.
    - `EOA_ADDRESS` with the **second** Chainlink node EOA.
 
      <CodeSample src="samples/ChainlinkNodes/forwarder/get-string.toml"/>
 
-1. After creation, note the two Job Ids.
+1. After you create the jobs, record the two job IDs.
 
 :::note
-Note both jobs have the attribute `forwardingAllowed = true`. This attribute will make the jobs attempt to run through the forwarder before falling back to default mode (e.g., if the Chainlink node tracks no forwarder).
+Note that both jobs have the attribute `forwardingAllowed = true`. This attribute will make the jobs attempt to run through the forwarder before falling back to default mode. For example, if the Chainlink node tracks no forwarder, the job falls back to the default mode.
 :::
 
 ## Test the transaction-sending strategy
 
 ### Create API Requests
 
-1. Open [APIConsumerForwarder.sol](https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/APIConsumerForwarder.sol) in RemixIDE.
+1. Open [APIConsumerForwarder.sol](https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/APIConsumerForwarder.sol) in the Remix IDE.
 
 1. Note that `setChainlinkToken(0x326C977E6efc84E512bB9C30f76E30c160eD06FB)` is configured for _Goerli_.
 
@@ -302,7 +302,7 @@ Note both jobs have the attribute `forwardingAllowed = true`. This attribute wil
 
 1. Click **Deploy**. MetaMask prompts you to confirm the transaction.
 
-1. Fund the contract by sending LINK to the contract's address. See the [Fund your contract](/resources/fund-your-contract/) page for instructions. The address for the `ATestnetConsumer` contract is on the list of your deployed contracts in Remix. You can fund your contract with 1 LINK.
+1. Fund the contract by sending LINK to the contract's address. See the [Fund Your Contracts](/resources/fund-your-contract/) page for instructions. The address for the `ATestnetConsumer` contract is on the list of your deployed contracts in Remix. You can fund your contract with 1 LINK.
 
 1. After you fund the contract, create a request. Input your operator contract address and the job ID for the `Get > Uint256` job into the `requestEthereumPrice` request method **without dashes**. The job ID is the `externalJobID` parameter, which you can find on your job's definition page in the Node Operators UI.
 
