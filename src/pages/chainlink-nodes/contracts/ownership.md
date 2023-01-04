@@ -18,7 +18,7 @@ function transferOwnership(address to) public
 ```
 
 Allows an owner to begin transferring ownership to a new address.
-Emit [OwnershipTransferRequested](#ownershiptransferrequested) event.
+Emits an [OwnershipTransferRequested](#ownershiptransferrequested) event.
 
 #### acceptOwnership
 
@@ -27,7 +27,7 @@ function acceptOwnership() external
 ```
 
 Allows an ownership transfer to be completed by the recipient.
-Emit [OwnershipTransferred](#ownershiptransferred) event.
+Emits an [OwnershipTransferred](#ownershiptransferred) event.
 
 #### owner
 

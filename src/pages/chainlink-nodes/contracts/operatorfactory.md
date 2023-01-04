@@ -6,10 +6,10 @@ title: "Operator Factory"
 ---
 
 The [factory](https://www.youtube.com/watch?v=Q1zZo4O_Ong) design pattern is a well know programming pattern: Rather than compiling and creating instances of a contract yourself, the _factory_ does it for you.
-As explained in the [Operator guide](/chainlink-nodes/contracts/operator), `OperatorFactory` contract comes with these benefits:
+As explained in the [Operator guide](/chainlink-nodes/contracts/operator), the `OperatorFactory` contract comes with these benefits:
 
-- Node operators do not need to manually compile and deploy [Operator](/chainlink-nodes/contracts/operator) or/and [Forwarder](/chainlink-nodes/contracts/forwarder) contracts. They can deploy them directly from the factory. See [deploynewoperator](#deploynewoperator) , [deploynewforwarder](#deploynewforwarder) , and [deploynewoperatorandforwarder](#deploynewoperatorandforwarder) functions.
-- Clients can verify if the factory deployed a given contract. See [created](#created) function.
+- Node operators do not need to manually compile and deploy [operator](/chainlink-nodes/contracts/operator) or/and [forwarder](/chainlink-nodes/contracts/forwarder) contracts. They can deploy them directly from the factory. See the[deploynewoperator](#deploynewoperator), [deploynewforwarder](#deploynewforwarder), and [deploynewoperatorandforwarder](#deploynewoperatorandforwarder) functions.
+- Clients can verify if the factory deployed a given contract. See the [created](#created) function.
 
 ## Api Reference
 
@@ -35,7 +35,7 @@ The type and version of this contract.
 function deployNewOperator() external returns (address)
 ```
 
-Creates a new Operator contract with the msg.sender as owner. Emits `OperatorCreated` event.
+Creates a new operator contract with the msg.sender as owner. Emits `OperatorCreated` event.
 
 ##### deployNewOperatorAndForwarder
 
@@ -43,7 +43,7 @@ Creates a new Operator contract with the msg.sender as owner. Emits `OperatorCre
 function deployNewOperatorAndForwarder() external returns (address, address)
 ```
 
-Creates a new Operator contract with the msg.sender as owner and a new Operator Forwarder with the Operator as the owner. Emits:
+Creates a new operator contract with the msg.sender as the owner and a new forwarder with the operator as the owner. Emits:
 
 - [OperatorCreated](#operatorcreated) event.
 - [AuthorizedForwarderCreated](#authorizedforwardercreated) event.
@@ -54,7 +54,7 @@ Creates a new Operator contract with the msg.sender as owner and a new Operator 
 function deployNewForwarder() external returns (address)
 ```
 
-Creates a new Forwarder contract with the msg.sender as owner. Emits [AuthorizedForwarderCreated](#authorizedforwardercreated) event.
+Creates a new forwarder contract with the msg.sender as owner. Emits [AuthorizedForwarderCreated](#authorizedforwardercreated) event.
 
 ##### deployNewForwarderAndTransferOwnership
 
@@ -62,7 +62,7 @@ Creates a new Forwarder contract with the msg.sender as owner. Emits [Authorized
 function deployNewForwarderAndTransferOwnership(address to, bytes message) external returns (address)
 ```
 
-Creates a new Forwarder contract with the msg.sender as owner. Emits [AuthorizedForwarderCreated](#authorizedforwardercreated) event.
+Creates a new forwarder contract with the msg.sender as owner. Emits [AuthorizedForwarderCreated](#authorizedforwardercreated) event.
 
 ##### created
 

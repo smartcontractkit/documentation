@@ -5,13 +5,13 @@ date: Last Modified
 title: "Receiver"
 ---
 
-[AuthorizedReceiver](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/AuthorizedReceiver.sol) is an abstract contract inherited by [Operator](/chainlink-nodes/contracts/operator) and [Forwarder](/chainlink-nodes/contracts/forwarder) contracts.
+[AuthorizedReceiver](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/AuthorizedReceiver.sol) is an abstract contract inherited by [operator](/chainlink-nodes/contracts/operator) and [forwarder](/chainlink-nodes/contracts/forwarder) contracts.
 
 :::note
-Calling [setAuthorizedSenders](#setauthorizedsenders) has a different effect depending if it is called from an [Operator](/chainlink-nodes/contracts/operator) or a [Forwarder](/chainlink-nodes/contracts/forwarder) contract:
+Calling [setAuthorizedSenders](#setauthorizedsenders) has a different effect depending if it is called from an [operator](/chainlink-nodes/contracts/operator) or a [forwarder](/chainlink-nodes/contracts/forwarder) contract:
 
-- Forwarder contracts' owners allow authorized senders to call [forward](/chainlink-nodes/contracts/forwarder#forward).
-- Operator contracts' owners allow authorized senders to call [fulfillOracleRequest](/chainlink-nodes/contracts/operator#fulfilloraclerequest) and [fulfillOracleRequest2](/chainlink-nodes/contracts/operator#fulfilloraclerequest2)
+- Owners of forwarder contracts allow authorized senders to call [forward](/chainlink-nodes/contracts/forwarder#forward).
+- Owners of operator contracts allow authorized senders to call the [fulfillOracleRequest](/chainlink-nodes/contracts/operator#fulfilloraclerequest) and [fulfillOracleRequest2](/chainlink-nodes/contracts/operator#fulfilloraclerequest2) methods.
   :::
 
 ## Api Reference
@@ -25,7 +25,7 @@ function setAuthorizedSenders(address[] senders) external
 ```
 
 Sets the fulfillment permission for a given node. Use `true` to allow, `false` to disallow.
-Emit [AuthorizedSendersChanged](#authorizedsenderschanged) event.
+Emits an [AuthorizedSendersChanged](#authorizedsenderschanged) event.
 
 ##### Parameters
 
@@ -53,7 +53,7 @@ Retrieve a list of authorized senders.
 function isAuthorizedSender(address sender) public view returns (bool)
 ```
 
-Use this to check if a node is authorized for fulfilling requests.
+Use this to check if a node is authorized to fulfill requests.
 
 ##### Parameters
 
