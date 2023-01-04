@@ -74,13 +74,12 @@ Ganache is a mock testnet. Although you can run nodes on Ganache, it is not offi
    Be sure to update the value for `CHANGEME` to the value given by your [external Ethereum provider](/chainlink-nodes/resources/run-an-ethereum-client/#external-services). Update the value for `mysecretpassword` to the chosen password in [Run PostgreSQL](#run-postgresql).
 
    ```shell Goerli
-   echo "ROOT=/home/chainlink
-   LOG_LEVEL=debug
+   echo "LOG_LEVEL=debug
    ETH_CHAIN_ID=5
    CHAINLINK_TLS_PORT=0
    SECURE_COOKIES=false
    ALLOW_ORIGINS=*
-   ETH_URL=wss://goerli.infura.io/ws/v3/c3d66a630c7541e8a1d967db08f6d061
+   ETH_URL=CHANGEME
    DATABASE_URL=postgresql://postgres:mysecretpassword@host.docker.internal:5432/postgres?sslmode=disable" > ~/.chainlink-goerli/.env
    ```
 
