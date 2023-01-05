@@ -15,7 +15,7 @@ The environment variables listed here are explicitly supported and current as of
 
 ## Experimental TOML configuration
 
-Static configuration using TOML files was added in v1.11.0 as an alternative to the existing combination of environment variables and persisted database configurations. This configuration method is _experimental_. In the future, TOML configuration `v2.0.0` will become the only supported configuration method. Enable TOML configuration by specifying the `-config <filename>.toml` flag or by adding the [`CL_CONFIG` environment variable](/chainlink-nodes/v1/configuration#cl_config). See the [CONFIG.md](https://github.com/smartcontractkit/chainlink/blob/v1.11.0/docs/CONFIG.md) and [SECRETS.md](https://github.com/smartcontractkit/chainlink/blob/v1.11.0/docs/SECRETS.md) on GitHub to learn more.
+Static configuration using TOML files was added in v1.11.0 as an alternative to the existing combination of environment variables and persisted database configurations. This configuration method is _experimental_. In the future, TOML configuration `v2.0.0` will become the only supported configuration method. Enable TOML configuration by specifying the `-config <filename>.toml` flag with the path to your TOML file. Alternatively, you can specify the raw TOML config in the [`CL_CONFIG` environment variable](/chainlink-nodes/v1/configuration#cl_config). See the [CONFIG.md](https://github.com/smartcontractkit/chainlink/blob/v1.11.0/docs/CONFIG.md) and [SECRETS.md](https://github.com/smartcontractkit/chainlink/blob/v1.11.0/docs/SECRETS.md) on GitHub to learn more.
 
 ## Changes to node configuration starting in v1.1.0 nodes
 
@@ -37,6 +37,7 @@ Your node applies configuration settings using following hierarchy:
 - [Essential environment variables](#essential-environment-variables)
   - [DATABASE_URL](#database_url)
 - [General Node Configuration](#general-node-configuration)
+  - [CL_CONFIG](#cl_config)
   - [CHAIN_TYPE](#chain_type)
   - [CHAINLINK_DEV](#chainlink_dev)
   - [EXPLORER_ACCESS_KEY](#explorer_access_key)
@@ -225,7 +226,6 @@ Your node applies configuration settings using following hierarchy:
   - [KEEPER_TURN_FLAG_ENABLED](#keeper_turn_flag_enabled)
 - [CLI Client](#cli-client)
   - [ADMIN_CREDENTIALS_FILE](#admin_credentials_file)
-  - [CL_CONFIG](#cl_config)
   - [CLIENT_NODE_URL](#client_node_url)
   - [INSECURE_SKIP_VERIFY](#insecure_skip_verify)
 - [Notes on setting environment variables](#notes-on-setting-environment-variables)
@@ -243,6 +243,16 @@ These are the only environment variables that are _required_ for a Chainlink nod
 The PostgreSQL URI to connect to your database. Chainlink nodes require Postgres versions >= 11. See the [Running a Chainlink Node](/chainlink-nodes/v1/running-a-chainlink-node) for an example.
 
 ## General Node Configuration
+
+### CL_CONFIG
+
+:::caution[Experimental]
+Use TOML for configuration only on test networks.
+:::
+
+This environment variable is used to set static configuration using TOML format. Specify the raw TOML config in this environment variable. Unlike the `-config` flag, it does not accept a path to a TOML file.
+
+See the [CONFIG.md](https://github.com/smartcontractkit/chainlink/blob/v1.11.0/docs/CONFIG.md) and [SECRETS.md](https://github.com/smartcontractkit/chainlink/blob/v1.11.0/docs/SECRETS.md) on GitHub to learn more.
 
 ### CHAIN_TYPE
 
@@ -1837,16 +1847,6 @@ e.g.
 myusername@example.com
 mysecurepassw0rd
 ```
-
-### CL_CONFIG
-
-:::caution[Experimental]
-Use TOML for configuration only on test networks.
-:::
-
-This environment variable is used to configure static configuration using TOML files.
-
-See the [CONFIG.md](https://github.com/smartcontractkit/chainlink/blob/v1.11.0/docs/CONFIG.md) and [SECRETS.md](https://github.com/smartcontractkit/chainlink/blob/v1.11.0/docs/SECRETS.md) on GitHub to learn more.
 
 ### CLIENT_NODE_URL
 
