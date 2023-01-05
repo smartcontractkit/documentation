@@ -225,6 +225,7 @@ Your node applies configuration settings using following hierarchy:
   - [KEEPER_TURN_FLAG_ENABLED](#keeper_turn_flag_enabled)
 - [CLI Client](#cli-client)
   - [ADMIN_CREDENTIALS_FILE](#admin_credentials_file)
+  - [CL_CONFIG](#cl_config)
   - [CLIENT_NODE_URL](#client_node_url)
   - [INSECURE_SKIP_VERIFY](#insecure_skip_verify)
 - [Notes on setting environment variables](#notes-on-setting-environment-variables)
@@ -1836,6 +1837,16 @@ e.g.
 myusername@example.com
 mysecurepassw0rd
 ```
+
+### CL_CONFIG
+
+:::caution[Experimental]
+Use TOML for configuration only on test networks.
+:::
+
+This environment variable is used to configure static configuration using TOML files.
+
+See the [CONFIG.md](https://github.com/smartcontractkit/chainlink/blob/v1.11.0/docs/CONFIG.md) and [SECRETS.md](https://github.com/smartcontractkit/chainlink/blob/v1.11.0/docs/SECRETS.md) on GitHub to learn more.
 
 ### CLIENT_NODE_URL
 

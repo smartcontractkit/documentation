@@ -25,7 +25,7 @@ You can find a list of release notes for Chainlink nodes in the [smartcontractki
   - `bridge_errors_total`
   - `bridge_cache_hits_total`
   - `bridge_cache_errors_total`
-- ⚠️ Experimental: ⚠️ Added static configuration using TOML files as an alternative to the existing combination of environment variables and persisted database configurations. For this release, use TOML for configuration only on test networks. In the future with `v2.0.0`, TOML configuration will become the only supported configuration method. See the [CONFIG.md](https://github.com/smartcontractkit/chainlink/blob/v1.11.0-rc1/docs/CONFIG.md) and [SECRETS.md](https://github.com/smartcontractkit/chainlink/blob/v1.11.0-rc1/docs/SECRETS.md) on GitHub to learn more.
+- ⚠️ Experimental: ⚠️ Added static configuration using TOML files as an alternative to the existing combination of environment variables and persisted database configurations. For this release, use TOML for configuration only on test networks. In the future with `v2.0.0`, TOML configuration will become the only supported configuration method. Enable TOML configuration by specifying the `-config <filename>.toml` flag or by adding the [`CL_CONFIG` environment variable](/chainlink-nodes/v1/configuration). See the [CONFIG.md](https://github.com/smartcontractkit/chainlink/blob/v1.11.0/docs/CONFIG.md) and [SECRETS.md](https://github.com/smartcontractkit/chainlink/blob/v1.11.0/docs/SECRETS.md) on GitHub to learn more.
 
 ### Fixed
 
