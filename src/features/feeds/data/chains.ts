@@ -287,8 +287,7 @@ export const CHAINS: Chain[] = [
         name: "StarkNet testnet",
         explorerUrl: "https://testnet.starkscan.co/contract/%s",
         networkType: "testnet",
-        rddUrl:
-          "https://reference-data-directory-git-starknet-test-267921-chainlinklabs.vercel.app/feeds-starknet-testnet-goerli-1.json",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-starknet-testnet-goerli-1.json",
       },
     ],
   },
