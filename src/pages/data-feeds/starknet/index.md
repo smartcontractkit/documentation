@@ -114,7 +114,7 @@ Build, deploy, and invoke the example contract:
 
 If the invoke request is successful, you can see the stored values in the [StarkScan testnet explorer](https://testnet.starkscan.co/). View your contract in the explorer. Under the **Read Contract** tab, run a query on the `get_stored_round()` method.
 
-You can achieve a similar result by running the `starknet-compile`, `starknet declare`, `starknet deploy`, and `starknet invoke` [CLI commands](https://docs.starknet.io/documentation/tools/CLI/commands/) manually, but the scripts are useful for interacting with StarkNet contracts and accounts programmatically.
+You can achieve a similar result by running the `starknet-compile`, `starknet declare`, `starknet deploy`, and `starknet invoke` [CLI commands](https://docs.starknet.io/documentation/tools/CLI/commands/) manually, but the scripts are useful for interacting with StarkNet contracts and accounts programmatically. The functions in [StarkNet.js](https://www.starknetjs.com/) also simplify deployment and invoke transactions, which normally require you to keep track of your class hashes and ABI files. See [https://docs.starknet.io/](https://docs.starknet.io/documentation/getting_started/intro/) for more information about writing and compiling Cairo contracts for StarkNet.
 
 ### Running the off-chain example
 
@@ -134,7 +134,7 @@ transmission_timestamp = 1673367801
 Done in 3.09s.
 ```
 
-You can achieve a similar result by running the [`starknet call` CLI command](https://docs.starknet.io/documentation/tools/CLI/commands/#starknet_call) and specifying the proxy address, function, and the ABI file.
+You can achieve a similar result by running the [`starknet call` CLI command](https://docs.starknet.io/documentation/tools/CLI/commands/#starknet_call) and specifying the proxy address, function, and the ABI file for the data feed proxy contract. For this example, the ABI file is available in the repository, but you can also generate the ABI yourself from the [aggregator_proxy.cairo](https://github.com/smartcontractkit/chainlink-starknet/blob/develop/contracts/src/chainlink/cairo/ocr2/aggregator_proxy.cairo) contract source file.
 
 ```shell
 starknet call --address 0x2579940ca3c41e7119283ceb82cd851c906cbb1510908a913d434861fdcb245 --function latest_round_data --abi ./contracts/aggregator_proxy_abi.json
