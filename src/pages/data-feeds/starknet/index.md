@@ -19,7 +19,7 @@ You can read Chainlink Data Feeds on StarkNet using an [on-chain contract](#runn
 
 Set up your environment to run the examples.
 
-1. [Setup your local StarkNet environment](https://starknet.io/docs/quickstart.html). Note that a Python version in the `>=3.6 <=3.9` range is required for compiling and deploying contracts on-chain. The [`cairo-lang` Python package](https://pypi.org/project/cairo-lang/) is not compatible with newer versions of Python as of the [`cairo-lang` 0.10.3](https://pypi.org/project/cairo-lang/0.10.3/) package. Check [starknet.io](https://starknet.io/docs/quickstart.html) for the latest requirements.
+1. [Set up your local StarkNet environment](https://starknet.io/docs/quickstart.html). Note that a Python version in the `>=3.6 <=3.9` range is required for compiling and deploying contracts on-chain. The [`cairo-lang` Python package](https://pypi.org/project/cairo-lang/) is not compatible with newer versions of Python as of the [`cairo-lang` 0.10.3](https://pypi.org/project/cairo-lang/0.10.3/) package. Check [starknet.io](https://starknet.io/docs/quickstart.html) for the latest requirements.
 1. [Set up a StarkNet account](https://starknet.io/docs/hello_starknet/account_setup.html) on StarkNet's `alpha-goerli` network and fund it with [testnet ETH](https://faucet.goerli.starknet.io/). These examples expect the OpenZeppelin wallet, which stores your addresses and private keys at `~/.starknet_accounts/starknet_open_zeppelin_accounts.json` by default.
 1. [Install NodeJS](https://nodejs.org/en/download/) in the version in the `>=14 <=18` version range.
 1. [Install Yarn](https://classic.yarnpkg.com/lang/en/docs/install/).
@@ -67,7 +67,7 @@ The on-chain [proxy consumer](https://github.com/smartcontractkit/chainlink-star
 
 Build, deploy, and invoke the example contract:
 
-1. Find the your account address and private key for your funded StarkNet testnet account. By default, the OpenZeppelin wallet contains these values at `~/.starknet_accounts/starknet_open_zeppelin_accounts.json`.
+1. Find the account address and private key for your funded StarkNet testnet account. By default, the OpenZeppelin wallet contains these values at `~/.starknet_accounts/starknet_open_zeppelin_accounts.json`.
 1. Export your address to the `DEPLOYER_ACCOUNT_ADDRESS` environment variable and your private key to the `DEPLOYER_PRIVATE_KEY` environment variable.
 
    ```shell
