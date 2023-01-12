@@ -1,0 +1,239 @@
+---
+layout: ../../../layouts/MainLayout.astro
+section: chainlinkFunctions
+date: Last Modified
+title: "POST Data to an API"
+setup: |
+  import ChainlinkFunctions from "@features/chainlink-functions/common/ChainlinkFunctions.astro"
+---
+
+This tutorial shows you how to send a request to a Decentralized Oracle Network to call the [Countries information GraphQL API](https://trevorblades.github.io/countries/queries/continent). After [OCR](/chainlink-functions/resources/concepts/) completes off-chain computation and aggregation, it returns the name, capital, and currency for the specified country to your smart contract. Because the endpoint is a GraphQL API, write a function that sends a GraphQL query in a [POST HTTP method](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/POST).
+
+:::note[Maximum response size]
+You can return any number of responses as long as they are encoded in a `bytes` response. The maximum response size that you can return is 256 bytes.
+:::
+
+:::caution[Side effects]
+Currently, it is not recommend to build requests that alter the state on the target server such as sending an email, storing data on the cloud, or updating a remote database. Make sure that your HTTP requests only fetch data so that the Decentralized Oracle Network can run the [Chainlink OCR](/architecture-overview/off-chain-reporting/) protocol to aggregate the responses.
+:::
+
+## Before you begin
+
+:::note[Request Access]
+Chainlink Functions is currently in a limited BETA.
+Apply [here](http://functions.chain.link/) to add your EVM account address to the Allow List.
+:::
+
+1. **[Complete the setup steps in the Getting Started guide](/chainlink-functions/getting-started):** The Getting Started Guide shows you how to set up your environment with the necessary tools for these tutorials. You can re-use the same consumer contract for each of these tutorials.
+
+1. Make sure your subscription has enough LINK to pay for your requests. Read [Get Subscription details](/chainlink-functions/resources/subscriptions#get-subscription-details) to learn how to check your subscription balance. If your subscription runs out of LINK, follow the [Fund a Subscription](/chainlink-functions/resources/subscriptions#fund-a-subscription) guide.
+
+1. **Check out the correct branch before you try this tutorial:** Each tutorial is stored in a separate branch of the [Chainlink Functions Starter Kit](https://github.com/smartcontractkit/functions-hardhat-starter-kit) repository.
+
+   ```bash
+   git checkout tutorial-4
+   ```
+
+## Tutorial
+
+This tutorial is configured to get the country name, capital, and currency from [countries.trevorblades.com](https://countries.trevorblades.com/) in one request. For a detailed explanation of the code example, read the [Explanation](#explanation) section.
+
+- Open `Functions-request-config.js`. The `args` value is `["JP"]` to fetch information about Japan. You can adapt `args` to retrieve information about other countries as well. Read the [Trevorblades API docs](https://github.com/trevorblades/countries) to get the list of supported countries. For more information about the request config file, read the [request config explanation](#functions-request-configjs).
+- Open `Functions-request-source.js` to analyze the JavaScript source code. Read the [source code explanation](#functions-request-sourcejs) for a more detailed explanation about the source code file.
+
+### Simulation
+
+The [Chainlink Functions Hardhat Starter Kit](https://github.com/smartcontractkit/functions-hardhat-starter-kit) includes a simulator to test your Functions code on your local machine. The `functions-simulate` command executes your code in a local runtime environment and simulates an end-to-end fulfillment. This helps you to fix issues before you submit your functions to a Decentralized Oracle Network.
+
+- Run the `functions-simulate` task to run the source code locally and make sure `Functions-request-config.js` and `Functions-request-source.js` are correctly written:
+
+  ```bash
+  npx hardhat functions-simulate
+  ```
+
+  Example:
+
+  ```bash
+  $ npx hardhat functions-simulate
+  secp256k1 unavailable, reverting to browser version
+
+  __Compiling Contracts__
+  Nothing to compile
+  Duplicate definition of Transfer (Transfer(address,address,uint256,bytes), Transfer(address,address,uint256))
+
+  Executing JavaScript request source code locally...
+
+  __Console log messages from sandboxed code__
+  Get name, capital and currency for country code: JP
+  HTTP POST Request to https://countries.trevorblades.com/
+  country response { country: { name: 'Japan', capital: 'Tokyo', currency: 'JPY' } }
+
+  __Output from sandboxed source code__
+  Output represented as a hex string: 0x7b226e616d65223a224a6170616e222c226361706974616c223a22546f6b796f222c2263757272656e6379223a224a5059227d
+  Decoded as a string: {"name":"Japan","capital":"Tokyo","currency":"JPY"}
+
+  __Simulated On-Chain Response__
+  Response returned to client contract represented as a hex string: 0x7b226e616d65223a224a6170616e222c226361706974616c223a22546f6b796f222c2263757272656e6379223a224a5059227d
+  Decoded as a string: {"name":"Japan","capital":"Tokyo","currency":"JPY"}
+
+  Estimated transmission cost: 0.00004738239043141 LINK (This will vary based on gas price)
+  Base fee: 0.0 LINK
+  Total estimated cost: 0.00004738239043141 LINK
+  ```
+
+- The output of this example tells you that the country name is _Japan_, capital is _Tokyo_, and the currency is _JPY_. Because the final result is a JSON object, convert it to a string and return the `bytes` encoded value `0x7b226e616d65223a224a6170616e222c226361706974616c223a22546f6b796f222c2263757272656e6379223a224a5059227d` in the callback. Read the [source code explanation](#functions-request-sourcejs) for a more detailed explanation.
+
+### Request
+
+- Send a request to the Decentralized Oracle Network to run the GraphQL query. Run the `functions-request` task with the `subid` (subscription ID) and `contract` parameters. This task passes the JavaScript source code, arguments, and secrets when it calls the `executeRequest` function in your deployed `FunctionsConsumer` contract. Read the [functionsConsumer](#functionsconsumersol) section for a more detailed explanation of the contract.
+
+  ```bash
+  npx hardhat functions-request --subid REPLACE_SUBSCRIPTION_ID --contract REPLACE_CONSUMER_CONTRACT_ADDRESS --network REPLACE_NETWORK
+  ```
+
+Example:
+
+```bash
+$ npx hardhat functions-request --subid 6 --contract 0xa9b286E892d579dc727c79D3be9b01949796240A  --network mumbai
+secp256k1 unavailable, reverting to browser version
+Simulating Functions request locally...
+
+__Console log messages from sandboxed code__
+Get name, capital and currency for country code: JP
+HTTP POST Request to https://countries.trevorblades.com/
+country response { country: { name: 'Japan', capital: 'Tokyo', currency: 'JPY' } }
+
+__Output from sandboxed source code__
+Output represented as a hex string: 0x7b226e616d65223a224a6170616e222c226361706974616c223a22546f6b796f222c2263757272656e6379223a224a5059227d
+Decoded as a string: {"name":"Japan","capital":"Tokyo","currency":"JPY"}
+
+
+If all 100000 callback gas is used, this request is estimated to cost 0.000053129152872322 LINK
+Continue? (y) Yes / (n) No
+y
+
+Requesting new data for FunctionsConsumer contract 0xa9b286E892d579dc727c79D3be9b01949796240A on network mumbai
+Waiting 2 blocks for transaction 0xc7f20ea644baeb8ab0c66ef1c2c2f86816f59ec03e4040bff212712a1ff41831 to be confirmed...
+
+Request 0x5fc971e03dd0482264445acfeeeaca4c4a76b30f7d47fdb1fe70b8647ba25272 initiated
+Waiting for fulfillment...
+
+Request 0x5fc971e03dd0482264445acfeeeaca4c4a76b30f7d47fdb1fe70b8647ba25272 fulfilled!
+Response returned to client contract represented as a hex string: 0x7b226e616d65223a224a6170616e222c226361706974616c223a22546f6b796f222c2263757272656e6379223a224a5059227d
+Decoded as a string: {"name":"Japan","capital":"Tokyo","currency":"JPY"}
+
+Transmission cost: 0.000072181713913155 LINK
+Base fee: 0.0 LINK
+Total cost: 0.000072181713913155 LINK
+```
+
+The output of the example above gives you the following information:
+
+- The `executeRequest` function was successfully called in the `FunctionsConsumer` contract. The transaction in this example is [0xc7f20ea644baeb8ab0c66ef1c2c2f86816f59ec03e4040bff212712a1ff41831](https://mumbai.polygonscan.com/tx/0xc7f20ea644baeb8ab0c66ef1c2c2f86816f59ec03e4040bff212712a1ff41831).
+- The request ID is `0x5fc971e03dd0482264445acfeeeaca4c4a76b30f7d47fdb1fe70b8647ba25272`.
+- The DON successfully fulfilled your request. The total cost was: `0.000072181713913155 LINK`.
+- The consumer contract received a response in `bytes` with a value of `0x7b226e616d65223a224a6170616e222c226361706974616c223a22546f6b796f222c2263757272656e6379223a224a5059227d`. Decoding it off-chain to a `string` gives you a result: `{"name":"Japan","capital":"Tokyo","currency":"JPY"}`.
+
+At any time, you can run the `functions-read` task again with the `contract` parameter to read the latest received response.
+
+```bash
+npx hardhat functions-read  --contract REPLACE_CONSUMER_CONTRACT_ADDRESS --network REPLACE_NETWORK
+```
+
+Example:
+
+```bash
+$ npx hardhat functions-read  --contract 0xa9b286E892d579dc727c79D3be9b01949796240A --network mumbai
+secp256k1 unavailable, reverting to browser version
+Reading data from Functions client contract 0xa9b286E892d579dc727c79D3be9b01949796240A on network mumbai
+
+On-chain response represented as a hex string: 0x7b226e616d65223a224a6170616e222c226361706974616c223a22546f6b796f222c2263757272656e6379223a224a5059227d
+Decoded as a string: {"name":"Japan","capital":"Tokyo","currency":"JPY"}
+```
+
+Decoding `0x7b226e616d65223a224a6170616e222c226361706974616c223a22546f6b796f222c2263757272656e6379223a224a5059227d` from `bytes` to `string` gives you a string `{"name":"Japan","capital":"Tokyo","currency":"JPY"}`. Off-chain, you can use [JSON.parse()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse) to convert the JSON string to a JSON object.
+
+## Explanation
+
+### FunctionsConsumer.sol
+
+<ChainlinkFunctions section="functions-consumer" />
+
+### Functions-request-config.js
+
+Read the [Request Configuration](https://github.com/smartcontractkit/functions-hardhat-starter-kit#functions-library) section for a detailed description of each setting. In this example, the settings are the following:
+
+- `codeLocation: Location.Inline`: The JavaScript code is provided within the request.
+- `codeLanguage: CodeLanguage.JavaScript`: The source code is developed in the JavaScript language.
+- `source: fs.readFileSync("./Functions-request-source.js").toString()`: The source code must be a script object. This example uses `fs.readFileSync` to read `Functions-request-source.js` and calls `toString()` to get the content as a `string` object.
+- `args: ["JP"]`: These arguments are passed to the source code. You can change the country code to request information of another country.
+- `expectedReturnType: ReturnType.string`: The response the DON receives is encoded in `bytes`. Because the country name, capital, and currency are put in a JSON string, define `ReturnType.string` to inform users how to decode the response received by the DON. Read the [source code explanation](#functions-request-sourcejs) for more information.`
+
+### Functions-request-source.js
+
+To check the expected API response:
+
+- In your browser, open the countries GraphQL playground: `https://countries.trevorblades.com/`
+
+- Write this query:
+
+  ```
+  {
+  country(code: "JP") {
+      name
+      capital
+      currency
+  }
+  }
+  ```
+
+- Click on _play_ to get the answer :
+
+  ```json
+  {
+    "data": {
+      "country": {
+        "name": "Japan",
+        "capital": "Tokyo",
+        "currency": "JPY"
+      }
+    }
+  }
+  ```
+
+Read the [JavaScript code](https://github.com/smartcontractkit/functions-hardhat-starter-kit#javascript-code) section for a detailed explanation of how to write a compatible JavaScript source code. This JavaScript source code uses [Functions.makeHttpRequest](https://github.com/smartcontractkit/functions-hardhat-starter-kit#functions-library) to make HTTP requests. To request the `JP` country information, the source code calls the `https://countries.trevorblades.com/` URL and provides the query data in the HTTP request body. If you read the [Functions.makeHttpRequest](https://github.com/smartcontractkit/functions-hardhat-starter-kit#functions-library) documentation, you see that you must provide the following parameters:
+
+- url: `https://countries.trevorblades.com/`
+- data (HTTP body):
+
+  ```
+  {
+      query: `{\
+          country(code: "${countryCode}") { \
+          name \
+          capital \
+          currency \
+          } \
+      }`,
+  }
+  ```
+
+The `countryCode` is fetched from the `args`. See the [request config](#functions-request-configjs) section for more information.
+
+The code is self-explanatory and has comments to help you understand all the steps. The main steps are:
+
+- Construct the HTTP object `countryRequest` using `Functions.makeHttpRequest`.
+- Run the HTTP request.
+- Read the country name, capital, and currency from the response.
+- Construct a JSON object:
+
+  ```javascript
+  const result = {
+    name: countryData.country.name,
+    capital: countryData.country.capital,
+    currency: countryData.country.currency,
+  }
+  ```
+
+- Convert the JSON object to a JSON string using `JSON.stringify(result)`. This step is mandatory before encoding `string` to `bytes`.
+- Return the result as a [buffer](https://nodejs.org/api/buffer.html#buffer) using the `Functions.string` helper function. **Note**: Read this [article](https://www.freecodecamp.org/news/do-you-want-a-better-understanding-of-buffer-in-node-js-check-this-out-2e29de2968e8/) if you are new to Javascript Buffers and want to understand why they are important.
