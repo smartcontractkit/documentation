@@ -140,7 +140,7 @@ export const SIDEBAR = {
           ],
         },
         {
-          title: "StarkNet",
+          title: "Using Data Feeds on StarkNet",
           url: "data-feeds/starknet",
         },
         {
