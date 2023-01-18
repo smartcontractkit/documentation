@@ -87,11 +87,11 @@ Testnet LINK is available at [faucets.chain.link](https://faucets.chain.link/cha
 
 ### Polygon mainnet
 
-MATIC is used to pay for transactions on Polygon. You can use the [Polygon Bridge](https://wallet.polygon.technology/bridge) to transfer tokens to Polygon mainnet and then use [Polygon Gas Swap](https://wallet.polygon.technology/gas-swap/) to swap supported tokens to MATIC.
+MATIC is used to pay for transactions on Polygon. You can use the [Polygon Bridge](https://wallet.polygon.technology/polygon/bridge/) to transfer tokens to Polygon mainnet and then use [Polygon Gas Swap](https://wallet.polygon.technology/gas-swap/) to swap supported tokens to MATIC.
 
 :::caution[ ERC-677 LINK on Polygon]
 
-The LINK provided by the [Polygon (Matic) Bridge](https://wallet.polygon.technology/bridge) is not ERC-677 compatible, so you cannot use it with Chainlink services or oracle nodes. Use the [**Chainlink PegSwap service**](https://pegswap.chain.link/) to convert bridged LINK to the official ERC-677 LINK token on Polygon.
+The LINK provided by the [Polygon (Matic) Bridge](https://wallet.polygon.technology/polygon/bridge/) is not ERC-677 compatible, so you cannot use it with Chainlink services or oracle nodes. Use the [**Chainlink PegSwap service**](https://pegswap.chain.link/) to convert bridged LINK to the official ERC-677 LINK token on Polygon.
 
 Watch the [Moving Chainlink Cross-Chains](https://www.youtube.com/watch?v=WKvIGkBWRUA) video to learn more.
 
