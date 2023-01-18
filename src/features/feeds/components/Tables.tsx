@@ -85,15 +85,21 @@ const DefaultTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => (
         <button
           class={clsx(tableStyles.copyBtn, "copy-iconbutton")}
           style={{ height: "16px", width: "16px" }}
+          /** EVM feeds use proxyAddress. The transmissionsAccount is specific to Solana.*/
           data-clipboard-text={proxy.proxyAddress ?? proxy.transmissionsAccount}
         >
           <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
         </button>
         <a
           class={tableStyles.addressLink}
-          href={network.explorerUrl.replace("%s", proxy.proxyAddress ?? proxy.transmissionsAccount)}
+          href={
+            /** EVM feeds use proxyAddress. The transmissionsAccount is specific to Solana.*/
+            network.explorerUrl.replace("%s", proxy.proxyAddress ?? proxy.transmissionsAccount)}
         >
-          {proxy.proxyAddress ?? proxy.transmissionsAccount}
+          {
+            /** EVM feeds use proxyAddress. The transmissionsAccount is specific to Solana.*/
+            proxy.proxyAddress ?? proxy.transmissionsAccount
+          }
         </a>
       </div>
     </td>
