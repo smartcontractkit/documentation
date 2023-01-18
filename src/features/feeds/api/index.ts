@@ -32,6 +32,7 @@ export interface ChainMetadata {
   feedCategory: string
   feedType: string
   docs: Docs
+  transmissionsAccount: null | string
 }
 
 export const getFeedsMetadata = (url: string): Promise<ChainMetadata[]> => {
