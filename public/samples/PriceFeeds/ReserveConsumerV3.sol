@@ -21,13 +21,15 @@ contract ReserveConsumerV3 {
      * Returns the latest price
      */
     function getLatestReserve() public view returns (int) {
+        // prettier-ignore
         (
-            ,
-            /*uint80 roundID*/ int reserve /*uint startedAt*/ /*uint timeStamp*/ /*uint80 answeredInRound*/,
-            ,
-            ,
-
+            /*uint80 roundID*/,
+            int reserve,
+            /*uint startedAt*/,
+            /*uint timeStamp*/,
+            /*uint80 answeredInRound*/
         ) = reserveFeed.latestRoundData();
+
         return reserve;
     }
 }
