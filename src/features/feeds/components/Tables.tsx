@@ -81,19 +81,22 @@ const DefaultTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => (
     <td aria-hidden={!showExtraDetails}>{proxy.heartbeat ? proxy.heartbeat + "s" : "N/A"}</td>
     <td aria-hidden={!showExtraDetails}>{proxy.decimals ? proxy.decimals : "N/A"}</td>
     <td>
+      {/*
+        EVM feeds use proxy.proxyAddress. The proxy.transmissionsAccount is specific to Solana.
+      */}
       <div className={tableStyles.assetAddress}>
         <button
           class={clsx(tableStyles.copyBtn, "copy-iconbutton")}
           style={{ height: "16px", width: "16px" }}
-          data-clipboard-text={proxy.proxyAddress ?? proxy.contractAddress}
+          data-clipboard-text={proxy.proxyAddress ?? proxy.transmissionsAccount}
         >
           <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
         </button>
         <a
           class={tableStyles.addressLink}
-          href={network.explorerUrl.replace("%s", proxy.proxyAddress ?? proxy.contractAddress)}
+          href={network.explorerUrl.replace("%s", proxy.proxyAddress ?? proxy.transmissionsAccount)}
         >
-          {proxy.proxyAddress ?? proxy.contractAddress}
+          {proxy.proxyAddress ?? proxy.transmissionsAccount}
         </a>
       </div>
     </td>

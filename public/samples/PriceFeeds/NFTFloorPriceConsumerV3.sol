@@ -21,12 +21,13 @@ contract NFTFloorPriceConsumerV3 {
      * Returns the latest price
      */
     function getLatestPrice() public view returns (int) {
+        // prettier-ignore
         (
-            ,
-            /*uint80 roundID*/ int nftFloorPrice /*uint startedAt*/ /*uint timeStamp*/ /*uint80 answeredInRound*/,
-            ,
-            ,
-
+            /*uint80 roundID*/,
+            int nftFloorPrice,
+            /*uint startedAt*/,
+            /*uint timeStamp*/,
+            /*uint80 answeredInRound*/
         ) = nftFloorPriceFeed.latestRoundData();
         return nftFloorPrice;
     }
