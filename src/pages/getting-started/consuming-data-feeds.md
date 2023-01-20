@@ -44,7 +44,9 @@ The contract has the following components:
 
 ## Compile, deploy, and run the contract
 
-:::caution[ If you have not already configured your MetaMask wallet and funded it with testnet ETH, follow the instructions in the Deploy Your First Smart Contract to set that up. You can get testnet ETH at one of the available [Goerli faucets](/resources/link-token-contracts/#goerli-testnet).]
+:::caution[ Configure and fund your wallet]
+
+If you have not already configured your MetaMask wallet and funded it with testnet ETH, follow the instructions in the Deploy Your First Smart Contract to set that up. You can get testnet ETH at one of the available [Goerli faucets](/resources/link-token-contracts/#goerli-testnet).
 
 :::
 

@@ -25,12 +25,13 @@ contract PriceConsumer {
      * Returns the ETH / USD price
      */
     function getEthUsdPrice() public view returns (int) {
+        // prettier-ignore
         (
-            uint80 roundID,
+            /*uint80 roundID*/,
             int price,
-            uint startedAt,
-            uint timeStamp,
-            uint80 answeredInRound
+            /*uint startedAt*/,
+            /*uint timeStamp*/,
+            /*uint80 answeredInRound*/
         ) = registry.latestRoundData(Denominations.ETH, Denominations.USD);
         return price;
     }
@@ -39,12 +40,13 @@ contract PriceConsumer {
      * Returns the latest price
      */
     function getPrice(address base, address quote) public view returns (int) {
+        // prettier-ignore
         (
-            uint80 roundID,
+            /*uint80 roundID*/,
             int price,
-            uint startedAt,
-            uint timeStamp,
-            uint80 answeredInRound
+            /*uint startedAt*/,
+            /*uint timeStamp*/,
+            /*uint80 answeredInRound*/
         ) = registry.latestRoundData(base, quote);
         return price;
     }
