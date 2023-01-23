@@ -65,7 +65,7 @@ Have you thought of an improvement or an awesome new feature that you think shou
 
 #### Voting on new features
 
-Sometimes a new feature is put to a vote to decide if it's something that the team and wider community should implement. When an feature is put to a vote, the issue is tagged with the 'needs votes' label. You can contribute to the voting process by reacting to the first post in the feature request with a thumbs up or thumbs down emoji. This will help drive the decision. You can also contribute your thoughts by replying directly to the feature request with a new post in the thread.
+Sometimes a new feature is put to a vote to decide if it's something that the team and wider community should implement. When a feature is put to a vote, the issue is tagged with the 'needs votes' label. You can contribute to the voting process by reacting to the first post in the feature request with a thumbs up or thumbs down emoji. This will help drive the decision. You can also contribute your thoughts by replying directly to the feature request with a new post in the thread.
 
 ![Voting on a new feature request](/files/voting-issue.png)
 
