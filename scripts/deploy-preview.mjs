@@ -1,5 +1,11 @@
 #!/usr/bin/env zx
-const appUrl = 'documentation'
+const localRepo = await $`git rev-parse --show-toplevel`
+
+const appName = localRepo
+  .toString()
+  .replace(/\/\S*\//, '')
+  .replace('\n', '')
+const appUrl = appName
 const lineBreak = '-------------------'
 
 const commitSha = await $`git show --format="%H" --no-patch`
@@ -11,13 +17,13 @@ const authorName = authorNameOutput
   .replace(/\(.*\)/g, '')
 const commitSubject = await $`git show --format='%s' --no-patch`
 const REF = await $`git rev-parse --abbrev-ref HEAD`
-const REPOSITORY = 'documentation'
+const REPOSITORY = appName
 const ORGANISATION = 'smartcontractkit'
 
 const gitBranchName = await $`git branch --show-current`
 
 const alias =
-  'documentation-' +
+  appName +
   gitBranchName.stdout.trim().replace(/\//g, '-').slice(0, 30) +
   '-chainlinklabs.vercel.app'
 
