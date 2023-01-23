@@ -34,7 +34,7 @@ When writing issues, remember to:
 
 This is where most people will end up and is one of the most helpful resources out there. Stack Overflow is living documentation, so do your best to make a [thoughtful and easy to triage question](https://stackoverflow.com/help/how-to-ask). This will make it much easier for people to help debug your issue and ensure it doesn't get removed from the site. Remember, we want to make this question **searchable** so others who run into the same issue can also get their question solved. You could use any forum-based site you like if you prefer another site over Stack Overflow.
 
-It's best to create a [minimum reproducible example](https://stackoverflow.com/help/minimal-reproducible-example) to help others understand your issue. This way, they can help you get an answer quickly. Remember, its a community-run platform! Don't get discouraged if your question gets downvoted or removed. This just means you need to format your question a little differently next time!
+It's best to create a [minimum reproducible example](https://stackoverflow.com/help/minimal-reproducible-example) to help others understand your issue. This way, they can help you get an answer quickly. Remember, it's a community-run platform! Don't get discouraged if your question gets downvoted or removed. This just means you need to format your question a little differently next time!
 
 **An example of a poorly formatted question:**
 
