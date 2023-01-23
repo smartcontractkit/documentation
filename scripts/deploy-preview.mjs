@@ -23,7 +23,7 @@ const ORGANISATION = 'smartcontractkit'
 const gitBranchName = await $`git branch --show-current`
 
 const alias =
-  appName +
+  appName + '-' +
   gitBranchName.stdout.trim().replace(/\//g, '-').slice(0, 30) +
   '-chainlinklabs.vercel.app'
 
