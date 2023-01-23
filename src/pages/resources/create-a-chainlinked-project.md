@@ -128,7 +128,7 @@ For more details on how to use Chainlink with DappTools, see the [How To Use Dap
 
 ## Foundry Starter Kit
 
-To learn more about Foundry, refer to the [Foundry Documentation](https://onbjerg.github.io/foundry-book/).
+To learn more about Foundry, refer to the [Foundry Documentation](https://book.getfoundry.sh/).
 
 1. Install Foundry using the [Installation instructions](https://onbjerg.github.io/foundry-book/getting-started/installation.html) on GitHub.io.
 
