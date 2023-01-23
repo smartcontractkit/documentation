@@ -6,7 +6,7 @@ title: "VRF Best Practices [v1]"
 permalink: "docs/vrf/v1/best-practices/"
 metadata:
   title: "Chainlink VRF API Reference"
-  description: "Best pracices for using Chainlink VRF."
+  description: "Best practices for using Chainlink VRF."
 setup: |
   import VrfCommon from "@features/vrf/v1/common/VrfCommon.astro"
 ---
