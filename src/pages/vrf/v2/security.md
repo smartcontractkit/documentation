@@ -8,8 +8,6 @@ setup: |
   import VrfCommon from "@features/vrf/v2/common/VrfCommon.astro"
 ---
 
-<VrfCommon callout="common"/>
-
 Gaining access to high quality randomness on-chain requires a solution like Chainlink's VRF, but it also requires you to understand some of the ways that miners or validators can potentially manipulate randomness generation. Here are some of the top security considerations you should review in your project.
 
 - [Use `requestId` to match randomness requests with their fulfillment in order](#use-requestid-to-match-randomness-requests-with-their-fulfillment-in-order)

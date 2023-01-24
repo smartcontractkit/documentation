@@ -10,8 +10,6 @@ whatsnext:
   }
 ---
 
-![Chainlink Automation Network Banner](/images/contract-devs/generic-banner.png)
-
 **Chainlink Automation release notes:**
 
 - [v2.0 release on all supported mainnets](#2022-11-21---v20-release-on-all-supported-mainnets)

@@ -6,7 +6,7 @@ metadata:
   description: "Deprecation of Chainlink Data Feeds"
 date: Last Modified
 setup: |
-  import { FeedPage } from "@features/feeds"
+  import FeedPage from "@features/feeds/components/FeedPage.astro"
 ---
 
 <FeedPage ecosystem="deprecating" />

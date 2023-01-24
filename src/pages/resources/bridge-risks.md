@@ -1,0 +1,119 @@
+---
+layout: ../../layouts/MainLayout.astro
+section: ethereum
+date: Last Modified
+title: "Cross-chain bridges and associated risks"
+---
+
+When working with Chainlink on layer-2 chains and sidechains, you must export your LINK tokens from Ethereum to the target chain using a cross-chain bridge. Follow this [video](https://www.youtube.com/watch?v=WKvIGkBWRUA) for an example of moving LINK tokens from Ethereum to Polygon.
+
+Cross-chain bridges come with their own risks. In fact, bridge attacks constitute some of the [largest cryptocurrency hacks](https://rekt.news/leaderboard/) by value. When moving your LINK tokens or any asset across chains, understand the risks that you are taking with your assets. Chainlink Labs does not endorse any bridge. Ultimately, you are responsible for assessing the bridge that you use to move your assets.
+
+Read the [What is a cross-chain bridge](#what-is-a-cross-chain-bridge), [Trade-offs](#trade-offs), and [Risks](#risks) sections to learn more about bridges and trust assumptions in their designs. After you read these sections, you will have a better understanding of bridge risks and which aspects you should evaluate when using a bridge.
+
+## What is a Cross-chain bridge
+
+With the [proliferation](https://defillama.com/chains) of layer-1 blockchains and layer-2 scaling solutions, the web3 ecosystem has become multi-chain. Each blockchain comes with its own approach to scalability, security, and trust.
+
+However, blockchains are not natively capable of communicating with each other, which makes [blockchain interoperability protocols](https://blog.chain.link/blockchain-interoperability/) critical for allowing dApps to interact with any on-chain environment and tap into each blockchain's unique assets and features.
+
+A [bridge](https://blog.chain.link/cross-chain-bridge/) is a core element of cross-chain interoperability. Bridges exist to connect blockchain networks and enable connectivity between them.
+
+Bridges enable the following:
+
+- Cross-chain transfer of assets and information
+- dApps can leverage the strengths and benefits of different chains
+- Collaboration between developers from different blockchain ecosystems to build new platforms and products for users
+
+As an analogy, you can use [the blockchains as cities mental model](https://medium.com/dragonfly-research/blockchains-are-cities-564327013f86):
+
+- Layer-1 blockchains are like cities.
+- Layer-2 solutions are equivalent to skyscrapers. As described in the mental model, “Each rollup is like a vertical blockchain that extends from the ground L1”.
+- Bridges are like roads and streets that connect different cities and skyscrapers.
+
+## Trade-offs
+
+With the growing number of layer-1 and layer-2 chains, the number of bridges has also grown, [surpassing one hundred](https://debridges.com/). So, how do you choose the correct bridge?
+
+When choosing a bridge, there is no perfect solution, only trade-offs. As explained in the [interoperability trilemma](https://blog.connext.network/the-interoperability-trilemma-657c2cf69f17) and [Ethereum foundation docs](https://ethereum.org/en/developers/docs/bridges/#trade-offs), bridge designs must compromise between the following characteristics:
+
+- **Trust-minimization:** The system does not introduce new trust or security assumptions beyond those of the underlying blockchains. Read [trust-minimization for more details](#trust-minimization-counterparty-risk).
+- **Generalizability:** The system enables the transfer of complex arbitrary data. Data could be messages or assets/funds.
+- **Extensibility:** How hard is it to integrate a new blockchain?
+- **Latency:** How long does it take to complete a transaction?
+- **Costs:** How much does it cost to transfer data across chains via a bridge?
+
+## Risks
+
+When choosing a bridge, be aware of the following risks.
+
+### Smart contract risks
+
+Bugs and vulnerabilities can expose users’ assets to different kinds of exploits. Read this [detailed analysis](https://certik.medium.com/qubit-bridge-collapse-exploited-to-the-tune-of-80-million-a7ab9068e1a0) for an example of a bridge exploit where the attacker could leverage a logical error in the bridge’s smart contract.
+
+### Systemic financial risks
+
+To transfer tokens cross-chain, many bridges lock tokens on the source chain and mint derivative or wrapped tokens on the destination chain representing the locked tokens. A hack of the locked tokens or an infinite mint attack on the wrapped tokens can make all wrapped tokens worthless and expose entire blockchains to risk.
+
+### Early stage
+
+Given that bridges are relatively new, there are many unanswered questions related to how bridges will perform in different market conditions.
+
+### Trust-minimization (Counterparty risk)
+
+To overcome cross-chain interoperability challenges, some bridges use off-chain actors or validators. These actors introduce new trust assumptions in addition to the underlying blockchain trust assumptions. These bridges act as a custodian and are, therefore, trust-based.
+In contrast, some bridge designs rely on underlying blockchains’ validators and, therefore, do not add any trust assumptions.
+To summarize:
+
+- Trusted (custodial) bridges require a third party to validate movements over the bridge. Users are required to give up control of their crypto assets, so trust is involved as they rely on the bridge operator's reputation.
+- Trustless (non-custodial) bridges leverage smart contracts to store and release funds on either side of the bridge. These bridges are trust-minimized because they don’t make new trust assumptions beyond the underlying blockchains.
+
+Trustlessness in bridges does not exist in an absolute form (trusted vs. trustless). As explained in the blockchain-interoperability [blog](https://blog.chain.link/blockchain-interoperability/), there are four general interoperability solutions for validating the state of a source blockchain and relaying the subsequent transaction to the destination blockchain:
+
+#### Web2 Verification
+
+Web2 verification is when someone uses a web2 service to execute a cross-chain transaction. The most common example in practice is when users leverage centralized exchanges to swap or bridge their own tokens. The user simply deposits their assets into an address on the source chain that’s under the control of the exchange and then withdraws the same tokens or different tokens (via a swap on the exchange) to an address on a destination chain controlled by the user.
+
+Web2 verification can be fairly convenient for personal transactions and requires less technical expertise. However, it is limited only to swapping and bridging tokens which requires trust in a centralized custodian.
+
+#### External verification
+
+External verification is where a group of validator nodes are responsible for verifying transactions. These validators do not belong to either of the two blockchains’ validator sets and they also have their trust assumptions irrespective of the underlying blockchains.
+
+External verification typically requires an honest majority assumption, where a majority of the external validator nodes must behave honestly for the integrity of the cross-chain interaction to be upheld. However, additional techniques can be used to increase trust-minimization, such as:
+
+- optimistic bridge verification.
+- anti-fraud networks.
+- cryptoeconomic staking.
+
+Despite an additional trust assumption, external verification is currently the only practical way to perform cross-chain contract calls between certain types of blockchains while still providing trust-minimized guarantees. It’s also a highly generalized and extensible form of cross-chain computation that is capable of supporting more complex cross-chain applications.
+
+:::note[Cryptography risk]
+Some externally verified bridges are secured by multisig wallets. [Ronin](https://whitepaper.axieinfinity.com/technology/ronin-ethereum-sidechain) is one example. Multisig wallets are also referred to as m-of-n multisigs, with M being the required number of signatures or keys and N being the total number of signatures or keys (m≤n). This means that an attacker only needs to exploit M keys to be able to hack the whole system. In this case, users must trust that the third party is decentralized enough, signers are independent of each other, and that each signer has proper key management in place. Read this [detailed analysis](https://rekt.news/ronin-rekt/) for an example of a bridge exploit where the attacker could compromise M keys.
+:::
+
+:::note[Optimistic bridges]
+Optimistic bridges rely on honest watchers to monitor the bridges' operations and report any fraud. Because the watchers of an optimistic system are permissionless, there is no way to know if there is not at least one single watcher monitoring the system. Therefore, the cost of a successful attack is limitless as it requires an attacker to know who the watchers are and hack all of them.
+:::
+
+Here are some examples of externally verified bridges that use different techniques to increase trust-minimization :
+
+- [Binance bridge](https://www.binance.com/en/blog/ecosystem/introducing-binance-bridge-20-421499824684903626) is a trusted bridge using the security standards of Binance.
+- [Polygon POS bridge](https://wiki.polygon.technology/docs/develop/ethereum-polygon/pos/getting-started/) uses a proof of stake (PoS) consensus algorithm for network security.
+- [Nomad](https://docs.nomad.xyz/nomad-101/introduction) is an optimistic bridge. It uses [optimistic verification](https://docs.nomad.xyz/the-nomad-protocol/verification-mechanisms/optimistic-verification) where messages are optimistically signed on the origin chain and a timeout period is enforced on the destination. During this period, a set of actors called watchers can inspect the messages and flag any detected fraud.
+
+#### Local verification
+
+Local verification is when the counterparties in a cross-chain interaction verify the state of one another. If both deem the other valid, the cross-chain transaction is executed, resulting in peer-to-peer cross-chain transactions. Cross-chain swaps using local verification are often referred to as atomic swaps.
+
+This model has a high level of trust-minimization given reasonable blockchain assumptions, as the swap either happens or both transactions fail. Furthermore, the model works so long as both parties are economically adversarial: they cannot collude to steal funds during atomic swaps.
+
+Note that local verification is not very generalizable to a variety of cross-chain contract calls, and comes with tradeoffs like the [inadvertent call option problem](https://blog.bitmex.com/atomic-swaps-and-distributed-exchanges-the-inadvertent-call-option/) — a situation where the second party in an atomic swap can either act or not act on the swap, giving them an inadvertent call option for a certain period of time. Thus, local verification is mostly used in cross-chain liquidity protocols involving liquidity pools that exist independently on each chain.
+
+[Hop](https://docs.hop.exchange/faq#what-is-hop-protocol) or [Connext legacy](https://docs.connext.network/0.1.x-legacy/developers/intro) are examples of locally verified bridges.
+
+#### Native verification
+
+In this design, the validators of the destination blockchains are responsible for verifying the state of the source blockchain to confirm a given transaction. This is typically done by running a light client of the source chain in the virtual machine of the destination chain or running them both side-by-side. Native verification is the most trust-minimized form of cross-chain communication, but it is more expensive, offers less development flexibility, and is more suited to blockchains with similar state machines, such as between Ethereum and EVM-based layer-2 networks or only among Cosmos SDK-based blockchains.
+
+The [NEAR Rainbow Bridge](https://near.org/blog/eth-near-rainbow-bridge/) is an example of a natively verified bridge. A smart contract with Ethereum light client functionality is deployed on the NEAR blockchain and a smart contract with NEAR protocol light client functionality is deployed on Ethereum. These light clients hold the latest block headers and verify that cross-chain transactions are done across both chains. The trust model relies only on Ethereum and Near validators.

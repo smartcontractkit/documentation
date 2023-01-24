@@ -32,7 +32,7 @@ export const CHAINS: Chain[] = [
         explorerUrl: "https://etherscan.io/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-mainnet.json",
-        tags: ["proofOfReserve"],
+        tags: ["proofOfReserve", "nftFloorPrice"],
       },
       {
         name: "Goerli Testnet",
@@ -49,13 +49,12 @@ export const CHAINS: Chain[] = [
     title: "BNB Chain Data Feeds",
     img: "/assets/chains/bnb-chain.svg",
     networkStatusUrl: "https://bscscan.freshstatus.io/",
-    tags: ["default", "proofOfReserve"],
+    tags: ["default"],
     networks: [
       {
         name: "BNB Chain Mainnet",
         explorerUrl: "https://bscscan.com/address/%s",
         networkType: "mainnet",
-        tags: ["proofOfReserve"],
         rddUrl: "https://reference-data-directory.vercel.app/feeds-bsc-mainnet.json",
       },
       {
@@ -105,22 +104,6 @@ export const CHAINS: Chain[] = [
       },
     ],
     label: "Gnosis Chain (xDai)",
-  },
-  {
-    page: "heco-chain",
-    title: "HECO Chain Data Feeds",
-    img: "/assets/chains/heco.svg",
-    networkStatusUrl: "https://hecoinfo.com/",
-    tags: ["default"],
-    networks: [
-      {
-        name: "HECO Mainnet",
-        explorerUrl: "https://hecoinfo.com/address/%s",
-        networkType: "mainnet",
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-heco-mainnet.json",
-      },
-    ],
-    label: "HECO Chain",
   },
   {
     page: "avalanche",
@@ -292,6 +275,22 @@ export const CHAINS: Chain[] = [
       },
     ],
   },
+  {
+    page: "starknet",
+    label: "StarkNet",
+    title: "StarkNet Data Feeds",
+    img: "/assets/chains/starknet.svg",
+    networkStatusUrl: "https://starknet.io/network/",
+    tags: ["default"],
+    networks: [
+      {
+        name: "StarkNet testnet",
+        explorerUrl: "https://testnet.starkscan.co/contract/%s",
+        networkType: "testnet",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-starknet-testnet-goerli-1.json",
+      },
+    ],
+  },
 ]
 
 export const SOLANA_CHAINS: Chain[] = [
@@ -330,7 +329,7 @@ export const ALL_CHAINS: Chain[] = [
         explorerUrl: "https://etherscan.io/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-mainnet.json",
-        tags: ["proofOfReserve"],
+        tags: ["proofOfReserve", "nftFloorPrice"],
       },
       {
         name: "Goerli Testnet",
@@ -370,12 +369,6 @@ export const ALL_CHAINS: Chain[] = [
         explorerUrl: "https://gnosisscan.io/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-xdai-mainnet.json",
-      },
-      {
-        name: "HECO Mainnet",
-        explorerUrl: "https://hecoinfo.com/address/%s",
-        networkType: "mainnet",
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-heco-mainnet.json",
       },
       {
         name: "Avalanche Mainnet",
