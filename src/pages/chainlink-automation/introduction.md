@@ -21,7 +21,9 @@ setup: |
 
 **Chainlink Automation** enables conditional execution of your smart contracts functions through a hyper-reliable and decentralized automation platform that uses the same external network of node operators that secures billions in value. Building on Chainlink Automation will help you get to market faster so you don't have to deal with the setup cost, ongoing maintenance, and risks associated with a centralized automation stack. To take full advantage of the Chainlink Automation infrastructure, read all of the documentation to understand the features of Chainlink Automation.
 
-To learn more about how the Chainlink Automation Network automates your smart contracts, read the [Chainlink Automation Architecture](/chainlink-automation/overview) page.
+<YouTube id="https://www.youtube.com/watch?v=dj0impNJdls" />
+
+To learn more about how the Chainlink Automation Network automates your smart contracts, read the [Chainlink Automation Architecture](/chainlink-automation/overview) page. You can also learn more through our [additional Automation resources](https://chain.link/automation#masterclass).
 
 ![Chainlink Automation](/images/contract-devs/automation/automation_intro.gif)
 
