@@ -37,12 +37,13 @@ contract PriceConsumerWithSequencerCheck {
 
     // Check the sequencer status and return the latest price
     function getLatestPrice() public view returns (int) {
+        // prettier-ignore
         (
-            ,
-            /*uint80 roundId*/ int256 answer,
-            uint256 startedAt /*uint256 updatedAt*/ /*uint80 answeredInRound*/,
-            ,
-
+            /*uint80 roundID*/,
+            int256 answer,
+            uint256 startedAt,
+            /*uint256 updatedAt*/,
+            /*uint80 answeredInRound*/
         ) = sequencerUptimeFeed.latestRoundData();
 
         // Answer == 0: Sequencer is up
@@ -58,13 +59,15 @@ contract PriceConsumerWithSequencerCheck {
             revert GracePeriodNotOver();
         }
 
+        // prettier-ignore
         (
-            ,
-            /*uint80 roundID*/ int price /*uint startedAt*/ /*uint timeStamp*/ /*uint80 answeredInRound*/,
-            ,
-            ,
-
+            /*uint80 roundID*/,
+            int price,
+            /*uint startedAt*/,
+            /*uint timeStamp*/,
+            /*uint80 answeredInRound*/
         ) = priceFeed.latestRoundData();
+
         return price;
     }
 }
