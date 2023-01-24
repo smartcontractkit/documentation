@@ -74,7 +74,7 @@ If the container was stopped and you need to run it again, you can simply use th
 docker start -i eth
 ```
 
-Follow Geth's instructions for [Connecting to Consensus Clients](https://geth.ethereum.org/docs/interface/consensus-clients). This will require some additional configuration settings for the Docker command that runs Geth.
+Follow Geth's instructions for [Connecting to Consensus Clients](https://geth.ethereum.org/docs/getting-started/consensus-clients). This will require some additional configuration settings for the Docker command that runs Geth.
 
 Return to [Running a Chainlink Node](/chainlink-nodes/v1/running-a-chainlink-node/).
 
