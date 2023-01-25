@@ -38,7 +38,7 @@ This example teaches you how to create dynamic NFTs using Chainlink Automation.
 
 ### VRF Subscription Balance Monitor
 
-[`VRFSubscriptionBalanceMonitor` Repository](https://github.com/smartcontractkit/chainlink/blob/vrf-subscription-balance-monitor/contracts/src/v0.8/upkeeps/VRFSubscriptionBalanceMonitor.sol)
+[`VRFSubscriptionBalanceMonitor` Repository](https://github.com/smartcontractkit/chainlink/blob/vrf-subscription-balance-monitor/contracts/src/v0.8/dev/VRFSubscriptionBalanceMonitor.sol)
 
 This contract automates the monitoring of your VRF subscription balance to ensure there is sufficient funding for requests.
 
