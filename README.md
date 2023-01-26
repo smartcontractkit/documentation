@@ -19,4 +19,4 @@ on Vercel when a PR is opened. You can access the URL by viewing the PR checks
 
 ![PR Checks](./.github/docs/pr-checks-deploy-url.png)
 
-This PR should automatically trigger a preview deployment
+This PR should require authorization before triggering a preview deployment
