@@ -31,5 +31,6 @@ index
     console.log(objectIDs)
   })
   .catch((e) => {
+    console.log(e)
     throw Error("There was an error replacing the index")
   })
