@@ -38,6 +38,7 @@ Create a local directory to persist the data:
     ```shell Sepolia
     mkdir ~/.geth-sepolia
     ```
+    </Fragment>
     <Fragment slot="panel.2">
     ```shell Goerli
     mkdir ~/.geth-goerli
