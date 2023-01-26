@@ -18,3 +18,5 @@ This repo is configured to automatically create a draft preview environment
 on Vercel when a PR is opened. You can access the URL by viewing the PR checks
 
 ![PR Checks](./.github/docs/pr-checks-deploy-url.png)
+
+This PR should automatically trigger a preview deployment
