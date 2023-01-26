@@ -74,6 +74,24 @@ The details for calculating the total transaction cost can be found [here](/vrf/
 | Wrapper Gas overhead       | 40000                                                                                                                                                                                                        |
 | Coordinator Gas Overhead   | 90000                                                                                                                                                                                                        |
 
+### Sepolia testnet
+
+:::note[Sepolia Faucets]
+Testnet LINK and ETH are available from https://faucets.chain.link/sepolia<br/>
+:::
+
+| Item                       | Value                                                                                                                                                                                                                       |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| LINK Token                 | <a class="erc-token-address" id="11155111_0xb227f007804c16546Bd054dfED2E7A1fD5437678" href="https://sepolia.etherscan.io/token/0xb227f007804c16546Bd054dfED2E7A1fD5437678">`0xb227f007804c16546Bd054dfED2E7A1fD5437678`</a> |
+| VRF Wrapper                | [`0xab18414CD93297B0d12ac29E63Ca20f515b3DB46`](https://sepolia.etherscan.io/address/0xab18414CD93297B0d12ac29E63Ca20f515b3DB46/)                                                                                            |
+| VRF Coordinator            | [`0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625`](https://sepolia.etherscan.io/address/0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625/)                                                                                            |
+| Wrapper Premium Percentage | 0                                                                                                                                                                                                                           |
+| Coordinator Flat Fee       | 0.25 LINK                                                                                                                                                                                                                   |
+| Maximum Confirmations      | 200                                                                                                                                                                                                                         |
+| Maximum Random Values      | 10                                                                                                                                                                                                                          |
+| Wrapper Gas overhead       | 40000                                                                                                                                                                                                                       |
+| Coordinator Gas Overhead   | 90000                                                                                                                                                                                                                       |
+
 ### Goerli testnet
 
 :::note[Goerli Faucets]

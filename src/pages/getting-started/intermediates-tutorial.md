@@ -66,7 +66,7 @@ The contract will have the following functions:
 ### Create and fund a subscription
 
 Chainlink VRF requests receive funding from subscription accounts. The [Subscription Manager](https://vrf.chain.link) lets you create an account and pre-pay your use of Chainlink VRF requests.
-For this example, create a new subscription on the Goerli testnet as explained [here](/vrf/v2/subscription/examples/get-a-random-number/#create-and-fund-a-subscription).
+For this example, create a new subscription on the Sepolia testnet as explained [here](/vrf/v2/subscription/examples/get-a-random-number/#create-and-fund-a-subscription).
 
 ### Importing `VRFConsumerBaseV2` and `VRFCoordinatorV2Interface`
 
@@ -90,7 +90,7 @@ contract VRFD20 is VRFConsumerBaseV2 {
 
 ### Contract variables
 
-This example is adapted for [Goerli testnet](/vrf/v2/subscription/supported-networks/#goerli-testnet) but you can change the configuration and make it run for any [supported network](/vrf/v2/subscription/supported-networks/#configurations).
+This example is adapted for [Sepolia testnet](/vrf/v2/subscription/supported-networks/#sepolia-testnet) but you can change the configuration and make it run for any [supported network](/vrf/v2/subscription/supported-networks/#configurations).
 
 <!-- prettier-ignore -->
 ```solidity
@@ -347,7 +347,7 @@ Once compiled, you'll see a dropdown menu that looks like this in the deploy pan
 
 ![Remix contract selected](/files/intermediates-tutorial-01.png)
 
-Select the `VRFD20` contract or the name that you gave to your contract. You will deploy this contract on the Goerli test network.
+Select the `VRFD20` contract or the name that you gave to your contract. You will deploy this contract on the Sepolia test network.
 
 Click the caret arrow on the right hand side of **Deploy** to expand the parameter fields, and paste your subscription id.
 
@@ -355,7 +355,7 @@ Click the caret arrow on the right hand side of **Deploy** to expand the paramet
 
 Then click the `Deploy` button and use your Metamask account to confirm the transaction.
 
-**Note**: You should [have some Goerli ETH](/getting-started/deploy-your-first-contract/#install-and-fund-your-metamask-wallet) in your Metamask account to pay for the GAS.
+**Note**: You should [have some Sepolia ETH](/getting-started/deploy-your-first-contract/#install-and-fund-your-metamask-wallet) in your Metamask account to pay for the GAS.
 
 :::note[ Address, Key Hashes and more]
 For a full reference of the addresses, key hashes and fees for each network, see [VRF Supported Networks](/vrf/v2/subscription/supported-networks/#configurations).

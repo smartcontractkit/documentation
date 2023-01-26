@@ -35,17 +35,17 @@ export const CHAINS: Chain[] = [
         tags: ["proofOfReserve", "nftFloorPrice"],
       },
       {
+        name: "Sepolia Testnet",
+        explorerUrl: "https://sepolia.etherscan.io/address/%s",
+        networkType: "testnet",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-sepolia.json",
+      },
+      {
         name: "Goerli Testnet",
         explorerUrl: "https://goerli.etherscan.io/address/%s",
         networkType: "testnet",
         tags: ["proofOfReserve", "nftFloorPrice"],
         rddUrl: "https://reference-data-directory.vercel.app/feeds-goerli.json",
-      },
-      {
-        name: "Sepolia Testnet",
-        explorerUrl: "https://sepolia.etherscan.io/address/%s",
-        networkType: "testnet",
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-sepolia.json",
       },
     ],
     label: "Ethereum",

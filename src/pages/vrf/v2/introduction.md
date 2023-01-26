@@ -53,22 +53,4 @@ The contract addresses and gas price limits are different depending on which met
 - [Subscription Supported networks](/vrf/v2/subscription/supported-networks/)
 - [Direct Funding Supported networks](/vrf/v2/direct-funding/supported-networks/)
 
-Chainlink VRF v2 is currently available on the following networks:
-
-- Ethereum:
-  - Mainnet
-  - Goerli testnet
-- BNB Chain:
-  - Mainnet
-  - Testnet
-- Polygon (Matic):
-  - Mainnet
-  - Mumbai Testnet
-- Avalanche:
-  - Avalanche Mainnet
-  - Avalanche Fuji Testnet
-- Fantom:
-  - Fantom Mainnet
-  - Fantom Testnet
-
 To learn when VRF v2 becomes available on more networks, follow us on [Twitter](https://twitter.com/chainlink) or sign up for our [mailing list](/resources/developer-communications/).

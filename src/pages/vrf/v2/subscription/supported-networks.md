@@ -39,6 +39,7 @@ The details for calculating the total transaction cost can be found [here](/vrf/
 <ResourcesCallout callout="bridgeRisks" />
 
 - [Ethereum Mainnet](#ethereum-mainnet)
+- [Sepolia testnet](#sepolia-testnet)
 - [Goerli testnet](#goerli-testnet)
 - [BNB Chain](#bnb-chain)
 - [BNB Chain testnet](#bnb-chain-testnet)
@@ -64,6 +65,24 @@ The details for calculating the total transaction cost can be found [here](/vrf/
 | Minimum Confirmations | 3                                                                                                                                                                                                            |
 | Maximum Confirmations | 200                                                                                                                                                                                                          |
 | Maximum Random Values | 500                                                                                                                                                                                                          |
+
+### Sepolia testnet
+
+:::note[Goerli Faucets]
+Testnet LINK is available from https://faucets.chain.link/goerli<br/>
+Testnet ETH is available from https://goerlifaucet.com/ or faucets listed at https://faucetlink.to/goerli
+:::
+
+| Item                  | Value                                                                                                                                                                                                                       |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| LINK Token            | <a class="erc-token-address" id="11155111_0xb227f007804c16546Bd054dfED2E7A1fD5437678" href="https://sepolia.etherscan.io/token/0xb227f007804c16546Bd054dfED2E7A1fD5437678">`0xb227f007804c16546Bd054dfED2E7A1fD5437678`</a> |
+| VRF Coordinator       | [`0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625`](https://sepolia.etherscan.io/address/0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625)                                                                                             |
+| 30 gwei Key Hash      | `0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc56c`                                                                                                                                                        |
+| Premium               | 0.25 LINK                                                                                                                                                                                                                   |
+| Max Gas Limit         | 2,500,000                                                                                                                                                                                                                   |
+| Minimum Confirmations | 3                                                                                                                                                                                                                           |
+| Maximum Confirmations | 200                                                                                                                                                                                                                         |
+| Maximum Random Values | 500                                                                                                                                                                                                                         |
 
 ### Goerli testnet
 

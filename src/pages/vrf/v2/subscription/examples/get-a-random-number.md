@@ -32,17 +32,17 @@ This guide assumes that you know how to create and deploy smart contracts on Eth
 
 - [The Remix IDE](https://remix.ethereum.org/)
 - [MetaMask](https://metamask.io/)
-- [Goerli testnet ETH](/resources/link-token-contracts/#goerli-testnet)
+- [Sepolia testnet ETH](/resources/link-token-contracts/#sepolia-testnet)
 
 If you are new to developing smart contracts on Ethereum, see the [Getting Started](/getting-started/conceptual-overview/) guide to learn the basics.
 
 ## Create and fund a subscription
 
-For this example, create a new subscription on the Goerli testnet.
+For this example, create a new subscription on the Sepolia testnet.
 
-1. Open MetaMask and set it to use the Goerli testnet. The [Subscription Manager](/vrf/v2/subscription/ui/) detects your network based on the active network in MetaMask.
+1. Open MetaMask and set it to use the Sepolia testnet. The [Subscription Manager](/vrf/v2/subscription/ui/) detects your network based on the active network in MetaMask.
 
-1. Check MetaMask to make sure you have testnet ETH and LINK on Goerli. You can get testnet ETH and LINK at one of the available [Goerli faucets](/resources/link-token-contracts/#goerli-testnet).
+1. Check MetaMask to make sure you have testnet ETH and LINK on Sepolia. You can get testnet ETH and LINK at one of the available [Sepolia faucet](https://faucets.chain.link/sepolia/).
 
 1. Open the Subscription Manager at [vrf.chain.link](https://vrf.chain.link).
    <!-- prettier-ignore -->
@@ -72,7 +72,7 @@ For this example, use the [VRFv2Consumer.sol](https://remix.ethereum.org/#url=ht
 
 The contract also includes pre-configured values for the necessary request parameters such as `vrfCoordinator` address, gas lane `keyHash`, `callbackGasLimit`, `requestConfirmations` and number of random words `numWords`. You can change these parameters if you want to experiment on different testnets, but for this example you only need to specify `subscriptionId` when you deploy the contract.
 
-Build and deploy the contract on Goerli.
+Build and deploy the contract on Sepolia.
 
 1. Open the [`VRFv2Consumer.sol` contract](https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFv2Consumer.sol) in Remix.
 

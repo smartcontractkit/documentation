@@ -14,6 +14,10 @@ You will need [OpenSSL](https://www.openssl.org) in order to generate your own s
 
 Create a directory `tls/` within your local Chainlink directory:
 
+```text Sepolia
+mkdir ~/.chainlink-sepolia/tls
+```
+
 ```text Goerli
 mkdir ~/.chainlink-goerli/tls
 ```
@@ -23,6 +27,13 @@ mkdir ~/.chainlink/tls
 ```
 
 Run this command to create a `server.crt` and `server.key` file in the previously created directory:
+
+```shell Sepolia
+openssl req -x509 -out  ~/.chainlink-sepolia/tls/server.crt  -keyout ~/.chainlink-sepolia/tls/server.key \
+  -newkey rsa:2048 -nodes -sha256 -days 365 \
+  -subj '/CN=localhost' -extensions EXT -config <( \
+   printf "[dn]\nCN=localhost\n[req]\ndistinguished_name = dn\n[EXT]\nsubjectAltName=DNS:localhost\nkeyUsage=digitalSignature\nextendedKeyUsage=serverAuth")
+```
 
 ```shell Goerli
 openssl req -x509 -out  ~/.chainlink-goerli/tls/server.crt  -keyout ~/.chainlink-goerli/tls/server.key \
@@ -58,6 +69,10 @@ code": "sed -i '/SECURE_COOKIES=false/d' .env
 ```
 
 Finally, update your run command to forward port 6689 to the container instead of 6688:
+
+```shell Sepolia
+cd ~/.chainlink-sepolia && docker run -p 6689:6689 -v ~/.chainlink-sepolia:/chainlink -it --env-file=.env smartcontract/chainlink local n
+```
 
 ```shell Goerli
 cd ~/.chainlink-goerli && docker run -p 6689:6689 -v ~/.chainlink-goerli:/chainlink -it --env-file=.env smartcontract/chainlink local n

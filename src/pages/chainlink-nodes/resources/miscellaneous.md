@@ -184,6 +184,10 @@ However, if we add `--name chainlink` to our run command, `docker ps` gives us:
 
 This can be easily accomplished by using the following example run command:
 
+```shell Sepolia
+cd ~/.chainlink-sepolia && docker run --name chainlink -p 6688:6688 -v ~/.chainlink-sepolia:/chainlink -it --env-file=.env smartcontract/chainlink local n
+```
+
 ```shell Goerli
 cd ~/.chainlink-goerli && docker run --name chainlink -p 6688:6688 -v ~/.chainlink-goerli:/chainlink -it --env-file=.env smartcontract/chainlink local n
 ```
