@@ -14,7 +14,9 @@ npm install && npm run dev
 
 ## Deploy Preview
 
-This repo is configured to automatically create a draft preview environment
-on Vercel when a PR is opened. You can access the URL by viewing the PR checks
+This repo is configured to automatically create a preview environment
+on Vercel when a PR is opened. The Vercel bot will leave a comment with a link to the preview on your PR.
 
-![PR Checks](./.github/docs/pr-checks-deploy-url.png)
+## Deploying to Production
+
+This repo is configured to automatically update production (`https://docs.chain.link`) when the `main` branch is updated.
