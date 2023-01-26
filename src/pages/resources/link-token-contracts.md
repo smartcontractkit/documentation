@@ -38,6 +38,18 @@ The LINK token is an ERC677 token that inherits functionality from the ERC20 tok
 | Decimals       | 18                                                                                                                                                                                                           |
 | Network status | [ethstats.net](https://ethstats.net/)                                                                                                                                                                        |
 
+### Sepolia testnet
+
+Testnet LINK and ETH are available at [faucets.chain.link](https://faucets.chain.link/sepolia).
+
+| Parameter      | Value                                                                                                                                                                                                                       |
+| :------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ETH_CHAIN_ID` | `11155111`                                                                                                                                                                                                                  |
+| Address        | <a class="erc-token-address" id="11155111_0xb227f007804c16546bd054dfed2e7a1fd5437678" href="https://sepolia.etherscan.io/token/0xb227f007804c16546bd054dfed2e7a1fd5437678">`0xb227f007804c16546bd054dfed2e7a1fd5437678`</a> |
+| Name           | Chainlink Token                                                                                                                                                                                                             |
+| Symbol         | LINK                                                                                                                                                                                                                        |
+| Decimals       | 18                                                                                                                                                                                                                          |
+
 ### Goerli testnet
 
 Testnet LINK is available at [faucets.chain.link](https://faucets.chain.link/goerli). Testnet ETH is available at [goerlifaucet.com](https://goerlifaucet.com/) or the faucets listed at [faucetlink.to/goerli](https://faucetlink.to/goerli).

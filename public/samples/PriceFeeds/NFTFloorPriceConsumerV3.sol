@@ -7,7 +7,7 @@ contract NFTFloorPriceConsumerV3 {
     AggregatorV3Interface internal nftFloorPriceFeed;
 
     /**
-     * Network: Goerli
+     * Network: Sepolia
      * Aggregator: CryptoPunks
      * Address: 0x5c13b249846540F81c093Bc342b5d963a7518145
      */
