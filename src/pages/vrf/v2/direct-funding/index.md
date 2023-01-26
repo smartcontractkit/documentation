@@ -23,31 +23,14 @@ This guide explains how to generate random numbers using the Direct funding meth
 
 ## VRF Direct funding
 
-Unlike the [subscription method](/vrf/v2/subscription/), the Direct funding method does not require you to create subscriptions and pre-fund them. Instead, you must directly fund consuming contracts with LINK tokens before they request randomness.
+Unlike the [subscription method](/vrf/v2/subscription/), the Direct funding method does not require you to create subscriptions and pre-fund them. Instead, you must directly fund consuming contracts with LINK tokens before they request randomness. Because the consuming contract directly pays the LINK for the request, the cost is calculated during the request and not during the callback when the randomness is fulfilled.
 
-For Chainlink VRF v2 to fulfill your requests, you must have a sufficient amount of LINK in your consuming contract. Gas cost calculation includes the following variables:
-
-- **Gas price:** The current gas price, which fluctuates depending on network conditions.
-
-- **Callback gas:** The amount of gas used for the callback request that returns your requested random values.
-
-- **Verification gas:** The amount of gas used to verify randomness on-chain.
-
-- **Wrapper overhead gas:** The amount of gas used by the VRF Wrapper contract. See the [Request and Receive Data](#request-and-receive-data) section for details about the VRF v2 Wrapper contract design.
-
-The gas price depends on current network conditions. The callback gas depends on your callback function and the number of random values in your request. You define the limits that you are willing to spend for the request with the following variable:
-
-- **Callback gas limit:** Specifies the maximum amount of gas you are willing to spend on the callback request. Define this limit by specifying the `callbackGasLimit` value in your request.
-
-:::note[Note on transaction costs]
-
-Because the consuming contract directly pays the LINK for the request, the cost is calculated during the request and not during the callback when the randomness is fulfilled. Test your callback function to learn how to correctly estimate the callback gas limit.
+Test your callback function to learn how to correctly estimate the callback gas limit.
 
 - If the gas limit is underestimated, the callback fails and the consuming contract is still charged for the work done to generate the requested random values.
 - If the gas limit is overestimated, the callback function will be executed but your contract is not refunded for the excess gas amount that you paid.
 
 Make sure that your consuming contracts are funded with enough LINK tokens to cover the transaction costs. If the consuming contract doesn't have enough LINK tokens, your request will revert.
-:::
 
 ## Request and Receive Data
 
@@ -70,39 +53,80 @@ The Chainlink VRF v2 solution uses both off-chain and on-chain components:
 
 ### Explanation
 
-Requests to Chainlink VRF v2 follow the [Request & Receive Data](#request-and-receive-data) cycle. The VRF wrapper calls the coordinator to process the request using the following steps:
+Requests to Chainlink VRF v2 follow the [Request & Receive Data](#request-and-receive-data) cycle.
 
-1. The consuming contract must inherit [VRFV2WrapperConsumerBase](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/vrf/VRFV2WrapperConsumerBase.sol) and implement the `fulfillRandomWords` function, which is the _callback VRF function_. Submit your VRF request by calling the `requestRandomness` function in the [VRFV2WrapperConsumerBase](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/vrf/VRFV2WrapperConsumerBase.sol) contract. Include the following parameters in your request:
+Set up your consuming contract:
+
+1. Make sure the consuming contract inherits [VRFV2WrapperConsumerBase](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/VRFV2WrapperConsumerBase.sol) and implements the `fulfillRandomWords` function, which is the _callback VRF function_.
+
+1. Submit your VRF request by calling the `requestRandomness` function in the [VRFV2WrapperConsumerBase](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/VRFV2WrapperConsumerBase.sol) contract. Include the following parameters in your request:
 
    - `requestConfirmations`: The number of block confirmations the VRF service will wait to respond. The minimum and maximum confirmations for your network can be found [here](/vrf/v2/direct-funding/supported-networks/#configurations).
    - `callbackGasLimit`: The maximum amount of gas to pay for completing the callback VRF function.
    - `numWords`: The number of random numbers to request. You can find the maximum number of random values per request for your network in the [Supported networks](/vrf/v2/direct-funding/supported-networks/#configurations) page.
 
-1. The consuming contract calls the [VRFV2Wrapper](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/vrf/VRFV2Wrapper.sol) `calculateRequestPrice` function to estimate the total transaction cost to fulfill randomness. Then the consuming contract calls the [LinkToken](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.4/LinkToken.sol) `transferAndCall` function to pay the wrapper with the calculated request price. This method sends LINK tokens and executes the [VRFV2Wrapper](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/vrf/VRFV2Wrapper.sol) `onTokenTransfer` logic. This triggers the VRF [VRF Coordinator](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/vrf/VRFCoordinatorV2.sol) `requestRandomWords` function to request randomness.
-   The final gas cost to fulfill randomness is estimated based on how much gas is expected for the verification and callback. The total gas cost in wei uses the following formula:
+After you submit your request, the VRF wrapper calls the coordinator to process the request using the following steps:
 
-   ```
-   (Gas price * (Verification gas + Callback gas limit + Wrapper gas Overhead)) = total gas cost
-   ```
+1. The consuming contract calls the [VRFV2Wrapper](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/VRFV2Wrapper.sol) `calculateRequestPrice` function to estimate the total transaction cost to fulfill randomness. Learn [how to estimate transaction costs](#understanding-transaction-costs).
 
-   The total gas cost is converted to LINK using the ETH/LINK data feed. In the unlikely event that the data feed is unavailable, the VRF Wrapper uses the `fallbackWeiPerUnitLink` value for the conversion instead. The `fallbackWeiPerUnitLink` value is defined in the [VRF v2 Wrapper contract](/vrf/v2/direct-funding/supported-networks/#configurations) for your selected network.
+1. The consuming contract calls the [LinkToken](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.4/LinkToken.sol) `transferAndCall` function to pay the wrapper with the calculated request price. This method sends LINK tokens and executes the [VRFV2Wrapper](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/VRFV2Wrapper.sol) `onTokenTransfer` logic.
 
-   A LINK premium is then added to the total gas cost. The premium is divided in two parts:
-
-   - Wrapper premium: The premium percentage. You can find the percentage for your network in the [Supported networks](/vrf/v2/direct-funding/supported-networks/#configurations) page.
-   - Coordinator premium: A flat fee. This premium is defined in the `fulfillmentFlatFeeLinkPPMTier1` parameter in millionths of LINK. You can find the flat fee of the coordinator for your network in the [Supported networks](/vrf/v2/direct-funding/supported-networks/#configurations) page.
-
-   ```
-   ((total gas cost * Wrapper premium) + Coordinator premium) = total request cost
-   ```
+1. The VRFV2Wrapper's `onTokenTransfer` logic triggers the [VRF Coordinator](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/VRFCoordinatorV2.sol) `requestRandomWords` function to request randomness.
 
 1. The VRF coordinator emits an event.
 
-1. The event is picked up by the VRF service and waits for the specified number of block confirmations to respond back to the VRF coordinator with the random values and a proof (`requestConfirmations`).
+1. The VRF service picks up the event and waits for the specified number of block confirmations to respond back to the VRF coordinator with the random values and a proof (`requestConfirmations`).
 
 1. The VRF coordinator verifies the proof on-chain. Then, it calls back the wrapper contract `fulfillRandomWords` function.
 
 1. Finally, the VRF Wrapper calls back your consuming contract.
+
+## Understanding transaction costs
+
+For Chainlink VRF v2 to fulfill your requests, you must have a sufficient amount of LINK in your consuming contract. Gas cost calculation includes the following variables:
+
+- **Gas price:** The current gas price, which fluctuates depending on network conditions.
+
+- **Callback gas:** The amount of gas used for the callback request that returns your requested random values. The callback gas depends on your callback function and the number of random values in your request. Set the **callback gas limit** to specify the maximum amount of gas you are willing to spend on the callback request.
+
+- **Verification gas:** The amount of gas used to verify randomness on-chain.
+
+- **Wrapper overhead gas:** The amount of gas used by the VRF Wrapper contract. See the [Request and Receive Data](#request-and-receive-data) section for details about the VRF v2 Wrapper contract design.
+
+Because the consuming contract directly pays the LINK for the request, the cost is calculated during the request and not during the callback when the randomness is fulfilled. Test your callback function to learn how to correctly estimate the callback gas limit.
+
+- If the gas limit is underestimated, the callback fails and the consuming contract is still charged for the work done to generate the requested random values.
+- If the gas limit is overestimated, the callback function will be executed but your contract is not refunded for the excess gas amount that you paid.
+
+Make sure that your consuming contracts are funded with enough LINK tokens to cover the transaction costs. If the consuming contract doesn't have enough LINK tokens, your request will revert.
+
+`callbackGasLimit`
+
+### Estimate costs
+
+The final gas cost to fulfill randomness is estimated based on how much gas is expected for the verification and callback. The total gas cost in wei uses the following formula:
+
+```
+(Gas price * (Verification gas
+              + Callback gas limit
+              + Wrapper gas Overhead)) = total gas cost
+```
+
+The total gas cost is converted to LINK using the ETH/LINK data feed. In the unlikely event that the data feed is unavailable, the VRF Wrapper uses the `fallbackWeiPerUnitLink` value for the conversion instead. The `fallbackWeiPerUnitLink` value is defined in the [VRF v2 Wrapper contract](/vrf/v2/direct-funding/supported-networks/#configurations) for your selected network.
+
+A LINK premium is then added to the total gas cost. The premium is divided in two parts:
+
+- Wrapper premium: The premium percentage. You can find the percentage for your network in the [Supported networks](/vrf/v2/direct-funding/supported-networks/#configurations) page.
+- Coordinator premium: A flat fee. This premium is defined in the `fulfillmentFlatFeeLinkPPMTier1` parameter in millionths of LINK. You can find the flat fee of the coordinator for your network in the [Supported networks](/vrf/v2/direct-funding/supported-networks/#configurations) page.
+
+```
+(Coordinator premium
+  + (total gas cost * Wrapper premium)) = total request cost
+```
+
+:::note[Note on maximum gas limit]
+The maximum allowed `callbackGasLimit` value for your requests is defined in the [Coordinator contract supported networks](/vrf/v2/subscription/supported-networks/) page. Because the VRF v2 Wrapper adds an overhead, your `callbackGasLimit` must not exceed `maxGasLimit - wrapperGasOverhead`.
+:::
 
 ## Limits
 
