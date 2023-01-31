@@ -3,7 +3,7 @@ layout: ../../layouts/MainLayout.astro
 section: ethereum
 date: Last Modified
 title: "Chainlink Automation Job Scheduler"
-whatsnext: { "Register a Custom Logic Upkeep": "/chainlink-automation/register-upkeep/" }
+whatsnext: { "Manage your Upkeeps": "/chainlink-automation/manage-upkeeps/" }
 ---
 
 This guide explains how to register a time-based Upkeep that executes according to a time schedule that you provide.

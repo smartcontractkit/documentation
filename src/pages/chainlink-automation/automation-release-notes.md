@@ -25,15 +25,16 @@ whatsnext:
 - [Keepers v1.1 launch on Ethereum](#2021-08-05---keepers-v11-launch-on-ethereum)
 - [Questions](#questions)
 
-## 2022-11-21 - v2.0 Release on all supported Mainnets
+## 2023-02-22 - v2.0 Release on all supported Mainnets
 
 Launch Automation v2.0 on all supported Mainnets. Key features include:
 
-- **Consensus mechanism:** By leveraging OCR (link to OCR) we add trust minimization to our product so you don’t have to rely on a single node for your transactions. Instead nodes will reach a consensus before executing transactions giving you higher security guarantees.
+- **Improved security guarantees:** By leveraging OCR2.0 we add trust minimization to our Automation so you don’t have to rely on a single node for your transactions. Instead nodes will reach a consensus before executing transactions giving you higher security guarantees.
 - **Improved reliability**: OCR adds a peer-to-peer communications layer to the Automation network, and thus if a node goes down, your upkeep will not be impacted.
 - **Configurable upkeeps**: You can edit the following in your upkeeps without needing to create new upkeeps. checkData, admin, gasLimit
 - **Pause/Unpause**: You can now pause or unpause your upkeeps without needing to cancel and recreate.
 - **Simplified programmatic creation**: Users who want to create upkeeps dynamically from their solidity contracts can use our simple two step process and example code to easily scale their upkeeps
+- **Increased off-chain checkgas**: V2.0 registry supports off-chain check gas of 10M.
 
 ## Chainlink Keepers is now Chainlink Automation
 

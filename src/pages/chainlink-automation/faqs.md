@@ -31,7 +31,7 @@ The **Gas Limit** specified during Upkeep Registration is the maximum amount of 
 
 ## What is the maximum Gas that my `performUpkeep` can use?
 
-`performUpkeep` is subject to the `callGasLimit` in the [configuration of the registry](/chainlink-automation/supported-networks/#configurations).
+`performUpkeep` is subject to the `performGasLimit` in the [configuration of the registry](/chainlink-automation/supported-networks/#configurations).
 
 ## How often will my Upkeep be checked off-chain to see if it should be executed on-chain?
 
@@ -41,9 +41,9 @@ See [How it works](/chainlink-automation/overview/#how-it-works).
 
 This depends on the network congestion, the amount of gas used by the `performUpkeep`, and the gas price specified when the transaction is broadcasted. See the [Price Selection and Gas Bumping](/chainlink-automation/automation-economics/#price-selection-and-gas-bumping) documentation to learn about optimizing the chances of executing your `performUpkeep` function.
 
-## Which contract will call my `performUpkeep` function on-chain?
+## Which contract will perform my `performUpkeep` function on-chain?
 
-The **Automation Registry** will call the `performUpkeep` function on-chain.
+The **Automation Registry** will perform the `performUpkeep` function on-chain.
 
 ## Will the address of the Automation Registry always stay the same?
 

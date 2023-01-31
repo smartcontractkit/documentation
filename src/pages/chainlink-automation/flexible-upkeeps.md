@@ -20,11 +20,6 @@ This guide assumes you have a basic understanding of [Chainlink Automation](http
 
 Chainlink Automation is supported on several [networks](/chainlink-automation/supported-networks).
 
-:::note[ERC677 Link]
-
-- Get [LINK](/resources/link-token-contracts/) on the supported testnet that you want to use.
-- For funding on Mainnet, you need ERC-677 LINK. Many token bridges give you ERC-20 LINK tokens. Use PegSwap to [convert Chainlink tokens (LINK) to be ERC-677 compatible](https://pegswap.chain.link/).
-  :::
 
 ## Problem: On-chain computation leads to high gas fees
 
