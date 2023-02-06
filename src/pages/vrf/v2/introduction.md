@@ -38,13 +38,20 @@ Chainlink VRF v2 offers two methods for requesting randomness:
 
 ## Choosing the correct method
 
-Depending on your use case, one method might be more suitable than another. Consider the following recommendations when you choose a method:
+Depending on your use case, one method might be more suitable than another. Consider the following characteristics when you choose a method:
 
-- If your use case requires regular requests for randomness, choose the subscription method to simplify funding and reduce the overall cost. Otherwise, choose the direct funding method. The direct funding method is more suitable for infrequent one-off requests.
-- If you have several VRF consuming contracts, choose the subscription method.
-- To reduce gas overhead and have more control over the maximum gas price for requests, choose the Subscription method. Read the [Subscription Method](/vrf/v2/subscription/) and [Direct Funding Method](/vrf/v2/direct-funding/) pages to understand how the transaction costs are calculated.
-- Because the direct funding method has higher overhead, it cannot return as many random words in a single request as the subscription method. You can compare the maximum number of words per request and per method on the [Subscription supported networks](/vrf/v2/subscription/supported-networks/#configurations) and [Direct Funding supported networks](/vrf/v2/direct-funding/supported-networks/#configurations) pages.
-- If you want to transfer the cost of VRF to the end user, the direct funding method may be more suitable as the cost is known and charged at request time.
+<!-- prettier-ignore -->
+| [Subscription method](/vrf/v2/subscription/)      | [Direct funding method](/vrf/v2/direct-funding/)  |
+| ------------------------------------------------- | --------------------------------------------------|
+| Suitable for regular requests                     | Suitable for infrequent one-off requests          |
+| Supports multiple VRF consuming contracts connected to one subscription account  | Each VRF consuming contract directly pays for its requests |
+| VRF costs are calculated after requests are fulfilled and then deducted from the subscription balance. Learn [how VRF costs are calculated for the subscription method](/vrf/v2/subscription/). | VRF costs are estimated and charged at request time, which may make it easier to transfer the cost of VRF to the end user. Learn [how VRF costs are calculated for the direct funding method](/vrf/v2/direct-funding/).  |
+| Reduced gas overhead and more control over the maximum gas price for requests | Higher gas overhead than the subscription method |
+| More random values returned per single request. See the maximum random values per request for the [Subscription supported networks](/vrf/v2/subscription/supported-networks/#configurations).   | Fewer random values returned per single request than the subscription method, due to higher overhead. See the maximum random values per request and gas overhead for the [Direct funding supported networks](/vrf/v2/direct-funding/supported-networks/#configurations). |
+| You don't have to estimate costs precisely for each request. Ensure that the subscription account has enough funds.  | You must estimate transaction costs carefully for each request to ensure the consuming contract has enough funds to pay for the request. |
+| Requires a subscription account                     | No subscription account required |
+| VRF costs are billed to your subscription account. [Manage and monitor your balance](/vrf/v2/subscription/ui) | No refunds for overpayment after requests are completed |
+| Flexible funding method first introduced in VRF v2. [Compare the VRF v2 subscription method to VRF v1](/vrf/v2/subscription/migration-from-v1/). | Similar funding method to VRF v1, with the benefit of receiving more random values per request than VRF v1. [Compare direct funding in VRF v2 and v1](/vrf/v2/direct-funding/migration-from-v1/). |
 
 ## Supported networks
 
