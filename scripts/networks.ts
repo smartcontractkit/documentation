@@ -11,6 +11,12 @@ export const NETWORKS = [
         networkType: "mainnet",
       },
       {
+        name: "Sepolia Testnet",
+        url: "https://sepolia.etherscan.io/address/%s",
+        source: "directory-sepolia.json",
+        networkType: "testnet",
+      },
+      {
         name: "Goerli Testnet",
         url: "https://goerli.etherscan.io/address/%s",
         source: "directory-goerli.json",

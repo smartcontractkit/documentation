@@ -47,18 +47,9 @@ The details for calculating the total transaction cost can be found [here](/vrf/
 
 ## Configurations
 
-<ResourcesCallout callout="bridgeRisks" />
+VRF v2 coordinators for direct funding are available on several networks. To see a list of coordinators for subscription funding, see the [Subscription Configurations](/vrf/v2/subscription/supported-networks) page.
 
-- [Ethereum Mainnet](#ethereum-mainnet)
-- [Goerli testnet](#goerli-testnet)
-- [BNB Chain](#bnb-chain)
-- [BNB Chain testnet](#bnb-chain-testnet)
-- [Polygon Mainnet](#polygon-matic-mainnet)
-- [Polygon Mumbai Testnet](#polygon-matic-mumbai-testnet)
-- [Avalanche Mainnet](#avalanche-mainnet)
-- [Avalanche Fuji Testnet](#avalanche-fuji-testnet)
-- [Fantom Mainnet](#fantom-mainnet)
-- [Fantom Testnet](#fantom-testnet)
+<ResourcesCallout callout="bridgeRisks" />
 
 ### Ethereum Mainnet
 

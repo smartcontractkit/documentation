@@ -218,6 +218,10 @@ The Chainlink node can be supplied with files for the wallet password and API em
 Change the values within the quotes to something unique for your node.
 :::
 
+```shell Sepolia
+echo "user@example.com" > ~/.chainlink-sepolia/.api
+```
+
 ```shell Goerli
 echo "user@example.com" > ~/.chainlink-goerli/.api
 ```
@@ -227,6 +231,10 @@ echo "user@example.com" > ~/.chainlink/.api
 ```
 
 Then add the password line by running:
+
+```shell Sepolia
+echo "password" >> ~/.chainlink-sepolia/.api
+```
 
 ```shell Goerli
 echo "password" >> ~/.chainlink-goerli/.api
@@ -238,6 +246,10 @@ echo "password" >> ~/.chainlink/.api
 
 Create the password file by running the following:
 
+```shell Sepolia
+echo "my_wallet_password" > ~/.chainlink-sepolia/.password
+```
+
 ```shell Goerli
 echo "my_wallet_password" > ~/.chainlink-goerli/.password
 ```
@@ -247,6 +259,10 @@ echo "my_wallet_password" > ~/.chainlink/.password
 ```
 
 Finally, in order to use the password and API files upon running the node, add `-p /chainlink/.password -a /chainlink/.api` to your run command, like so:
+
+```shell Sepolia
+cd ~/.chainlink-sepolia && docker run -p 6688:6688 -v ~/.chainlink-sepolia:/chainlink -it --env-file=.env smartcontract/chainlink local n -p /chainlink/.password -a /chainlink/.api
+```
 
 ```shell Goerli
 cd ~/.chainlink-goerli && docker run -p 6688:6688 -v ~/.chainlink-goerli:/chainlink -it --env-file=.env smartcontract/chainlink local n -p /chainlink/.password -a /chainlink/.api
@@ -269,5 +285,5 @@ If there is already a key in your database and you want to import another key, y
 ## Full example in detached mode
 
 ```shell
-cd ~/.chainlink-goerli && docker run --restart=always  -p 6688:6688 -d --name goerli-primary -v ~/.chainlink-goerli:/chainlink -it --env-file=.env smartcontract/chainlink:1.0.0 local n -p /chainlink/.password
+cd ~/.chainlink-sepolia && docker run --restart=always  -p 6688:6688 -d --name sepolia-primary -v ~/.chainlink-sepolia:/chainlink -it --env-file=.env smartcontract/chainlink:1.0.0 local n -p /chainlink/.password
 ```

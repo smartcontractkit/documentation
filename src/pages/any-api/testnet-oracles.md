@@ -23,14 +23,15 @@ To retrieve the LINK token address or get faucet details for your testnet of cho
 
 Testnet [Operator contracts](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/Operator.sol) are deployed and maintained on the following networks:
 
-| Testnet         | Oracle Address                                                                                                                     |
-| --------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| Ethereum Goerli | [`0xCC79157eb46F5624204f47AB42b3906cAA40eaB7`](https://goerli.etherscan.io/address/0xcc79157eb46f5624204f47ab42b3906caa40eab7)     |
-| Avalanche Fuji  | [`0x022EEA14A6010167ca026B32576D6686dD7e85d2`](https://testnet.snowtrace.io/address/0x022eea14a6010167ca026b32576d6686dd7e85d2)    |
-| Polygon Mumbai  | [`0x40193c8518BB267228Fc409a613bDbD8eC5a97b3`](https://mumbai.polygonscan.com/address/0x40193c8518BB267228Fc409a613bDbD8eC5a97b3)  |
-| Binance Testnet | [`0xCC79157eb46F5624204f47AB42b3906cAA40eaB7`](https://testnet.bscscan.com/address/0xCC79157eb46F5624204f47AB42b3906cAA40eaB7)     |
-| Fantom Testnet  | [`0xCC79157eb46F5624204f47AB42b3906cAA40eaB7`](https://testnet.ftmscan.com/address/0xcc79157eb46f5624204f47ab42b3906caa40eab7)     |
-| Klaytn Testnet  | [`0xfC3BdAbD8a6A73B40010350E2a61716a21c87610`](https://baobab.scope.klaytn.com/account/0xfC3BdAbD8a6A73B40010350E2a61716a21c87610) |
+| Testnet          | Oracle Address                                                                                                                     |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| Ethereum Sepolia | [`0x0`](https://sepolia.etherscan.io/address/0x0)                                                                                  |
+| Ethereum Goerli  | [`0xCC79157eb46F5624204f47AB42b3906cAA40eaB7`](https://goerli.etherscan.io/address/0xcc79157eb46f5624204f47ab42b3906caa40eab7)     |
+| Avalanche Fuji   | [`0x022EEA14A6010167ca026B32576D6686dD7e85d2`](https://testnet.snowtrace.io/address/0x022eea14a6010167ca026b32576d6686dd7e85d2)    |
+| Polygon Mumbai   | [`0x40193c8518BB267228Fc409a613bDbD8eC5a97b3`](https://mumbai.polygonscan.com/address/0x40193c8518BB267228Fc409a613bDbD8eC5a97b3)  |
+| Binance Testnet  | [`0xCC79157eb46F5624204f47AB42b3906cAA40eaB7`](https://testnet.bscscan.com/address/0xCC79157eb46F5624204f47AB42b3906cAA40eaB7)     |
+| Fantom Testnet   | [`0xCC79157eb46F5624204f47AB42b3906cAA40eaB7`](https://testnet.ftmscan.com/address/0xcc79157eb46f5624204f47ab42b3906caa40eab7)     |
+| Klaytn Testnet   | [`0xfC3BdAbD8a6A73B40010350E2a61716a21c87610`](https://baobab.scope.klaytn.com/account/0xfC3BdAbD8a6A73B40010350E2a61716a21c87610) |
 
 ## Jobs
 
