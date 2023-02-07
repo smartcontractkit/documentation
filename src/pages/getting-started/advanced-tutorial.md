@@ -82,7 +82,7 @@ Let's walk through a real example, where you will retrieve 24 volumes of the [ET
 
 4. [ETH ABI Encode](/chainlink-nodes/oracle-jobs/task-types/task_eth_abi_encode) formats the input into an integer and then converts it into Solidity's `uint256` format. Example: `0xc618a1e4`
 
-5. [ETH Tx](/chainlink-nodes/oracle-jobs/task-types/task_eth_tx) takes the given input, places it into the data field of the transaction, signs a transaction, and broadcasts it to the network. Example: [transaction result](https://goerli.etherscan.io/tx/0x5f2023b665e0ae336665ded73fafa90ef752ac33487b9240f34b82f93a77c8ca)
+5. [ETH Tx](/chainlink-nodes/oracle-jobs/task-types/task_eth_tx) takes the given input, places it into the data field of the transaction, signs a transaction, and broadcasts it to the network. Example: [transaction result](https://sepolia.etherscan.io/tx/0x10dd83b08ac2e2df1b1cc3c1615abb3287a4a9d29dad75f4c75f45a3a9dd819e)
 
 **Note: Some tasks accept parameters to be passed to them to inform them how to run.** Example: [JSON Parse](/chainlink-nodes/oracle-jobs/task-types/task_jsonparse) accepts a `path` parameter which informs the task where to find the data in the JSON object.
 
