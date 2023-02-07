@@ -1,17 +1,19 @@
 ---
 layout: ../../layouts/MainLayout.astro
-section: ethereum
+section: dataFeeds
 date: Last Modified
-title: "Chainlink Data Feeds Documentation"
+title: "Chainlink Data Feeds"
 whatsnext:
   {
-    "Get the latest price of a Data Feed": "/data-feeds/price-feeds/",
-    "Learn more about API references for using Data Feeds": "/data-feeds/price-feeds/api-reference/",
-    "Retrieve contract addresses to use Data Feeds": "/data-feeds/price-feeds/addresses/",
+    "Using Data Feeds": "/data-feeds/using-data-feeds/",
+    "Read the API reference for using Data Feeds": "/data-feeds/api-reference/",
+    "Price Feed Addresses": "/data-feeds/price-feeds/addresses/",
+    "Proof of Reserve Feed Addresses": "/data-feeds/proof-of-reserve/addresses/",
+    "NFT Floor Price Feed Addresses": "/data-feeds/nft-floor-price/addresses/",
   }
 metadata:
   title: "Chainlink Data Feeds Documentation"
-  description: "Add data to your smart contracts and applications. Chainlink data feeds include BTC/USD, BTC/ETH, ETH/USD and more!"
+  description: "Add data to your smart contracts and applications."
 ---
 
 import { Aside } from "@components"
@@ -22,7 +24,7 @@ import button from "@chainlink/design-system/button.module.css"
   about integrating Chainlink Data Feeds with your applications.
 </Aside>
 
-**Chainlink Data Feeds** are the quickest way to connect your smart contracts to the real-world data such as asset prices, reserve balances, and L2 sequencer health.
+Chainlink Data Feeds are the quickest way to connect your smart contracts to the real-world data such as asset prices, reserve balances, NFT floor prices, and L2 sequencer health.
 
 If you already started a project and need to integrate Chainlink, you can [add Chainlink to your existing project](/resources/create-a-chainlinked-project/#installing-into-existing-projects) with the [`@chainlink/contracts` NPM package](https://www.npmjs.com/package/@chainlink/contracts).
 
@@ -32,11 +34,10 @@ Data feeds provide many different types of data for your applications.
 
 - [Price Feeds](#price-feeds)
 - [Proof of Reserve Feeds](#proof-of-reserve-feeds)
+- [NFT Floor Price Feeds](/data-feeds/nft-floor-price)
 - [L2 sequencer uptime feeds](#l2-sequencer-uptime-feeds)
 
 ### Price Feeds
-
-See the [Data Feeds Contract Addresses](/data-feeds/price-feeds/addresses/) page for a list of networks and proxy addresses.
 
 Smart contracts often act in real-time on data such as prices of assets. This is especially true in [DeFi](https://defi.chain.link/).
 
@@ -46,9 +47,7 @@ Data Feeds aggregate many data sources and publish them on-chain using a combina
 
 To learn how to use Price Feeds, see the [Price Feeds](/data-feeds/price-feeds/) documentation.
 
-<a href="/data-feeds/price-feeds/" class={button.primary}>
-  {"Price Feeds"}
-</a>
+See the [Data Feeds Contract Addresses](/data-feeds/price-feeds/addresses/) page for a list of available networks and addresses.
 
 ### Proof of Reserve Feeds
 
@@ -56,19 +55,15 @@ Proof of Reserves feeds provide the status of reserves for stablecoins, wrapped 
 
 To learn more about Proof of Reserve Feeds, see the [Proof of Reserve](/data-feeds/proof-of-reserve/) documentation.
 
-<a href="/data-feeds/proof-of-reserve/" class={button.primary}>
-  {"Proof of Reserve Feeds"}
-</a>
+See the [Proof of Reserve Contract Addresses](/data-feeds/proof-of-reserve/addresses/) page for a list of available networks and addresses.
 
-### NFT Floor Pricing Feeds
+### NFT Floor Price Feeds
 
-NFT Floor Pricing Feeds provide the price of the lowest priced NFT available in a collection. These feeds operate similarly to [Price Feeds](/data-feeds/price-feeds/) so you can use the [AggregatorV3Interface.sol](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol) contract to retrieve price answers.
+NFT Floor Price Feeds provide the price of the lowest priced NFT available in a collection. These feeds operate similarly to [Price Feeds](/data-feeds/price-feeds/) so you can use the [AggregatorV3Interface.sol](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol) contract to retrieve price answers.
 
-To learn more, see the [NFT Floor Pricing Feeds](/data-feeds/nft-floor-price/) documentation.
+To learn more, see the [NFT Floor Price Feeds](/data-feeds/nft-floor-price/) documentation.
 
-<a href="/data-feeds/nft-floor-price/" class={button.primary}>
-  {"NFT Floor Pricing Feeds"}
-</a>
+See the [NFT Floor Price Contract Addresses](/data-feeds/nft-floor-price/addresses/) page for a list of available networks and addresses.
 
 ### L2 sequencer uptime feeds
 
@@ -84,9 +79,9 @@ To learn how to use L2 sequencer uptime feeds feeds, see the [L2 Sequencer Uptim
 
 Data Feeds are an example of a decentralized oracle network and include the following components:
 
-- **Consumer**: A consumer is an on-chain or off-chain application that uses Data Feeds. Consumer contracts use the [`AggregatorV3Interface`](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol) to call functions on the proxy contract and retrieve information from the aggregator contract. For a complete list of functions available in the `AggregatorV3Interface`, see the [Data Feeds API Reference](/data-feeds/price-feeds/api-reference/#aggregatorv3interface).
+- **Consumer**: A consumer is an on-chain or off-chain application that uses Data Feeds. Consumer contracts use the [`AggregatorV3Interface`](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol) to call functions on the proxy contract and retrieve information from the aggregator contract. For a complete list of functions available in the `AggregatorV3Interface`, see the [Data Feeds API Reference](/data-feeds/api-reference/#aggregatorv3interface).
 - **Proxy contract**: Proxy contracts are on-chain proxies that point to the aggregator for a particular data feed. Using proxies enables the underlying aggregator to be upgraded without any service interruption to consuming contracts. Proxy contracts can vary from one data feed to another, but the [`AggregatorProxy.sol` contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/dev/AggregatorProxy.sol) on Github is a common example.
-- **Aggregator contract**: An aggregator is a contract that receives periodic data updates from the oracle network. Aggregators store aggregated data on-chain so that consumers can retrieve it and act upon it within the same transaction. For a complete list of functions and variables available on most aggregator contracts, see the [Data Feeds API Reference](/data-feeds/price-feeds/api-reference/#accesscontrolledoffchainaggregator).
+- **Aggregator contract**: An aggregator is a contract that receives periodic data updates from the oracle network. Aggregators store aggregated data on-chain so that consumers can retrieve it and act upon it within the same transaction. For a complete list of functions and variables available on most aggregator contracts, see the [Data Feeds API Reference](/data-feeds/api-reference/#accesscontrolledoffchainaggregator).
 
 To learn how to create a consumer contract that uses an existing data feed, read the [Using Data Feeds](/data-feeds/price-feeds/) documentation.
 
@@ -108,7 +103,7 @@ Always check the contract source code and configuration to understand how specif
 
 For examples of the contracts that are typically used in aggregator deployments, see the [libocr repository](https://github.com/smartcontractkit/libocr/blob/master/contract/) on GitHub.
 
-For a complete list of functions and variables available on most aggregator contracts, see the [Data Feeds API Reference](/data-feeds/price-feeds/api-reference/#accesscontrolledoffchainaggregator).
+For a complete list of functions and variables available on most aggregator contracts, see the [Data Feeds API Reference](/data-feeds/api-reference/#accesscontrolledoffchainaggregator).
 
 ## Updates to proxy and aggregator contracts
 
@@ -136,7 +131,7 @@ Configure your application to detect when the reported answer is close to reachi
 
 ### Check the timestamp of the latest answer
 
-Chainlink Price Feeds do not provide streaming data. Rather, the aggregator updates its `latestAnswer` when the value deviates beyond a specified threshold or when the heartbeat idle time has passed. You can find the heartbeat and deviation values for each data feed at [data.chain.link](https://data.chain.link/) or in the [Contract Addresses](/data-feeds/price-feeds/addresses/) lists.
+Chainlink Data Feeds do not provide streaming data. Rather, the aggregator updates its `latestAnswer` when the value deviates beyond a specified threshold or when the heartbeat idle time has passed. You can find the heartbeat and deviation values for each data feed at [data.chain.link](https://data.chain.link/) or in the [Contract Addresses](/data-feeds/price-feeds/addresses/) lists.
 
 Your application should track the `latestTimestamp` variable or use the `updatedAt` value from the `latestRoundData()` function to make sure that the latest answer is recent enough for your application to use it. If your application detects that the reported answer is not updated within the heartbeat or within time limits that you determine are acceptable for your application, pause operation or switch to an alternate operation mode while identifying the cause of the delay.
 

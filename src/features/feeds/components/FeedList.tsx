@@ -5,7 +5,7 @@ import feedList from "./FeedList.module.css"
 import { clsx } from "~/lib"
 import button from "@chainlink/design-system/button.module.css"
 import { updateTableOfContents } from "~/components/RightSidebar/TableOfContents/tocStore"
-import { ALL_CHAINS, Chain, CHAINS, SOLANA_CHAINS } from "../data/chains"
+import { Chain, CHAINS } from "../data/chains"
 import { useGetChainMetadata } from "./useGetChainMetadata"
 import { ChainMetadata } from "../api"
 import useQueryString from "~/hooks/useQueryString"
@@ -21,7 +21,7 @@ export const FeedList = ({
   ecosystem?: string
   initialCache?: Record<string, ChainMetadata>
 }) => {
-  const chains = ecosystem === "deprecating" ? ALL_CHAINS : ecosystem === "solana" ? SOLANA_CHAINS : CHAINS
+  const chains = CHAINS
 
   const [selectedChain, setSelectedChain] = useQueryString("network", chains[0].page)
   const [showExtraDetails, setShowExtraDetails] = useState(false)
@@ -40,14 +40,13 @@ export const FeedList = ({
   const isNftFloor = dataFeedType === "nftFloor"
   const isDefault = !isPor && !isNftFloor
   const isDeprecating = ecosystem === "deprecating"
-  const isSolana = ecosystem === "solana"
   let netCount = 0
 
   return (
     <>
       <div className="content" style={{ marginTop: "var(--space-4x)" }}>
         <section>
-          {!isSolana && !isDeprecating && (
+          {!isDeprecating && (
             <div class={feedList.clChainnavProduct} id="networks-list">
               <div>
                 <div role="tablist">

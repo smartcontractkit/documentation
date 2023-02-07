@@ -35,8 +35,9 @@ export const evmProducts = [
       { id: "metis", title: "Metis" },
       { id: "moonbeam", title: "Moonbeam" },
       { id: "moonriver", title: "Moonriver" },
-      { id: "starknet", title: "StarkNet" },
       { id: "base", title: "BASE" },
+      { id: "starknet", title: "StarkNet" },
+      { id: "solana", title: "Solana" },
     ],
     video: "https://www.youtube.com/watch?v=hw9f84DnTK4&list=PLVP9aGDn-X0Qr4TuqPFNQdqbI735tdPat",
   },
@@ -113,20 +114,6 @@ export const evmProducts = [
       { id: "metis", title: "Metis" },
       { id: "moonbeam", title: "Moonbeam" },
       { id: "moonriver", title: "Moonriver" },
-    ],
-  },
-] as ProductCardProps[]
-
-export const solanaProducts = [
-  {
-    title: "Data Feeds",
-    description: "Decentralized and high-quality data feeds for DeFi, sports, weather, and more",
-    learnMorelink: "/solana/overview/",
-    image: dataFeedsLogo,
-    links: [
-      ["Using Data Feeds Off-Chain", "/solana/data-feeds/using-data-feeds-off-chain/"],
-      ["Using Data Feeds On-Chain", "/solana/data-feeds/using-data-feeds-solana/"],
-      ["Solana Data Feeds Addresses", "/solana/data-feeds/data-feeds-solana/"],
     ],
   },
 ] as ProductCardProps[]

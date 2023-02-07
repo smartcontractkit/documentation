@@ -1,12 +1,11 @@
 ---
-layout: ../../../layouts/MainLayout.astro
-section: ethereum
+layout: ../../layouts/MainLayout.astro
+section: dataFeeds
 date: Last Modified
-title: "Historical Price Data"
-permalink: "docs/data-feeds/price-feeds/historical-data/"
-whatsnext: { "API Reference": "/data-feeds/price-feeds/api-reference/", "Contract Addresses": "/data-feeds/" }
+title: "Getting Historical Data"
+whatsnext: { "API Reference": "/data-feeds/api-reference/" }
 metadata:
-  title: "Get Historical Data"
+  title: "Getting Historical Data"
   description: "How to use Chainlink Data Feeds to retrieve historical data in your smart contracts."
 ---
 
@@ -15,7 +14,7 @@ import { Aside } from "@components"
 import CodeSample from "@components/CodeSample/CodeSample.astro"
 import button from "@chainlink/design-system/button.module.css"
 
-The most common use case for Data Feeds is to [Get the Latest Data](/data-feeds/price-feeds/) from a feed. However, the [AggregatorV3Interface.sol](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol) also has functions to retrieve data of a previous round IDs.
+The most common use case for Data Feeds is to [Get the Latest Data](/data-feeds/using-data-feeds/) from a feed. However, the [AggregatorV3Interface.sol](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol) also has functions to retrieve data of a previous round IDs.
 
 There are two parameters that can cause Chainlink nodes to update:
 
@@ -31,7 +30,7 @@ To learn how data feeds update, see the [Decentralized Data Model](/architecture
 ## Historical Rounds
 
 As shown in the [decentralized model](/architecture-overview/architecture-decentralized-model/), the consumer contracts call the proxy contract, which abstracts the underlying aggregator contract. The main advantage is to enable upgrades of the aggregator without impacting the consumer contracts. That also means that historical data can can be stored in different aggregators.
-As show in the following sequence diagram, to get historical data, call the `getRoundData` [function](/data-feeds/price-feeds/api-reference/#getrounddata) function and provide `roundId` as a parameter.
+As show in the following sequence diagram, to get historical data, call the `getRoundData` [function](/data-feeds/api-reference/#getrounddata) function and provide `roundId` as a parameter.
 
 ![getRoundData Sequence Diagram](/images/data-feed/getRoundData-sequence.png)
 
@@ -65,7 +64,7 @@ where:
 
 **Example:**
 
-When you query historical data, it is important to know when you reach the end of the history of the underlying aggregator. As an example, if the `latestRoundData` [function](/data-feeds/price-feeds/api-reference/#latestrounddata) of the [LINK / USD feed on Ethereum Mainnet](/data-feeds/price-feeds/addresses/?network=ethereum) returns `roundId = 92233720368547771158`, you can use this value to compute the `phaseId` and `aggregatorRoundId`:
+When you query historical data, it is important to know when you reach the end of the history of the underlying aggregator. As an example, if the `latestRoundData` [function](/data-feeds/api-reference/#latestrounddata) of the [LINK / USD feed on Ethereum Mainnet](/data-feeds/price-feeds/addresses/?network=ethereum) returns `roundId = 92233720368547771158`, you can use this value to compute the `phaseId` and `aggregatorRoundId`:
 
 - `phaseId = 92233720368547771158 >> 64`: Right shifting an integer by 64 bits is equivalent to dividing it by 2^64: `phaseId = 92233720368547771158/ 2^64 = 5`. The current phase id is 5 , which means that this proxy has had 5 underlying aggregators since its initial deployment.
 - `aggregatorRoundId = uint64(92233720368547771158)`: This retrieves the first 64 bits from the right. To calculate this off-chain, you can use the following JavaScript example:
@@ -79,7 +78,7 @@ console.log(Number(num >> 64n)) // returns 5 (phaseId)
 console.log(Number(num & num2)) // returns 13078 (aggregatorRoundId) . Use & (AND bitwise operator) which sets each bit to _1_ if both bits are _1_
 ```
 
-Using _13078_ as the current aggregator's round, get its historical data by looping over the [`getRoundData` function](/data-feeds/price-feeds/api-reference/#getrounddata):
+Using _13078_ as the current aggregator's round, get its historical data by looping over the [`getRoundData` function](/data-feeds/api-reference/#getrounddata):
 
 - Start from the first round: _92233720368547758081_ (result of _92233720368547771158 - 13078 + 1_)
 - Continue until the current round: _92233720368547771158_
@@ -93,7 +92,7 @@ const aggregatorRoundId = BigInt("1")
 roundId = (phaseId << 64n) | aggregatorRoundId // returns 73786976294838206465n
 ```
 
-Loop over the [`getRoundData` function](/data-feeds/price-feeds/api-reference/#getrounddata). Start at _73786976294838206465_ and increment it until you get a revert. This means that you reached the last round for the underlying aggregator. The same process could be repeated for previous `phaseIds` (3,2,1).
+Loop over the [`getRoundData` function](/data-feeds/api-reference/#getrounddata). Start at _73786976294838206465_ and increment it until you get a revert. This means that you reached the last round for the underlying aggregator. The same process could be repeated for previous `phaseIds` (3,2,1).
 
 <Aside type="caution" title="Looping on-chain">
   The examples showed how to loop off-chain to fetch all historical data from a given proxy. You could also write a
@@ -103,10 +102,10 @@ Loop over the [`getRoundData` function](/data-feeds/price-feeds/api-reference/#g
 
 ### `getRoundData` return values
 
-The [`getRoundData` function](/data-feeds/price-feeds/api-reference/#getrounddata) returns the following values:
+The [`getRoundData` function](/data-feeds/api-reference/#getrounddata) returns the following values:
 
 - `roundId`: The combination of `aggregatorRoundId` and `phaseId` (see explanation above). The `roundId` can jump significantly when the `phaseId` is updated.
-- `answer` is the price.
+- `answer`: Depending on the feed you selected, the answer reflects the price of an asset, reserve balance, or NFT floor price recorded for the specified round.
 - `answeredInRound`: The combination of `aggregatorAnsweredInRound` and `phaseId`. `aggregatorAnsweredInRound`: The round the answer was updated in. You can check `answeredInRound` against the current `roundId`. If `answeredInRound` is less than `roundId`, the answer is being carried over. If `answeredInRound` is equal to `roundId`, then the answer is fresh.
 - `startedAt`: The timestamp when the round started.
 - `updatedAt`: The timestamp when the answer was computed.

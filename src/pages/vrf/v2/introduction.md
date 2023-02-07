@@ -1,6 +1,6 @@
 ---
 layout: ../../../layouts/MainLayout.astro
-section: ethereum
+section: vrf
 date: Last Modified
 title: "Introduction to Chainlink VRF"
 permalink: "docs/vrf/v2/introduction/"

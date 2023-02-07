@@ -1,6 +1,6 @@
 ---
 layout: ../../layouts/MainLayout.astro
-section: ethereum
+section: automation
 date: Last Modified
 title: "Managing Upkeeps"
 whatsnext: { "Automation economics": "/chainlink-automation/automation-economics/" }

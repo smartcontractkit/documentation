@@ -1,6 +1,6 @@
 ---
 layout: ../../layouts/MainLayout.astro
-section: ethereum
+section: automation
 date: Last Modified
 title: "Making flexible, secure, and low-cost contracts"
 whatsnext: { "Example Contracts": "/chainlink-automation/util-overview/", "FAQs": "/chainlink-automation/faqs/" }
