@@ -43,8 +43,7 @@ If you've ever written Javascript, Java, or other object-oriented scripting lang
 
 Some networks are not EVM-compatible and use languages other than Solidity for smart contracts:
 
-- [Solana](/solana/)
-
+- [Solana](/data-feeds/solana/)
   - [Writing Solana contracts in Rust](https://docs.solana.com/developing/on-chain-programs/developing-rust)
   - [Writing Solana contracts in C](https://docs.solana.com/developing/on-chain-programs/developing-c)
 

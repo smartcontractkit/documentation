@@ -1,6 +1,6 @@
 ---
 layout: ../../layouts/MainLayout.astro
-section: ethereum
+section: dataFeeds
 date: Last Modified
 title: "Selecting Quality Data Feeds"
 excerpt: "Learn how to assess data feeds that you use in your smart contracts."

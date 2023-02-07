@@ -1,6 +1,6 @@
 ---
 layout: ../../layouts/MainLayout.astro
-section: ethereum
+section: automation
 date: Last Modified
 title: "Chainlink Automation Job Scheduler"
 whatsnext: { "Register a Custom Logic Upkeep": "/chainlink-automation/register-upkeep/" }

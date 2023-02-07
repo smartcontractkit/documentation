@@ -1,7 +1,7 @@
 ---
 layout: ../../../layouts/MainLayout.astro
 title: "Price Feed Contract Addresses"
-section: ethereum
+section: dataFeeds
 metadata:
   title: "Price Feed Contract Addresses"
   description: "A list of Price Feed addresses on supported networks."

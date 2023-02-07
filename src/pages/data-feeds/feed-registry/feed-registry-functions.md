@@ -1,6 +1,6 @@
 ---
 layout: ../../../layouts/MainLayout.astro
-section: ethereum
+section: dataFeeds
 date: Last Modified
 title: "Feed Registry API Reference"
 metadata:

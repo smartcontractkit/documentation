@@ -1,8 +1,8 @@
 ---
 layout: ../../layouts/MainLayout.astro
-section: ethereum
+section: automation
 date: Last Modified
-title: "Chainlink Automation Documentation"
+title: "Introduction to Chainlink Automation"
 whatsnext:
   {
     "Register a time-based Upkeep": "/chainlink-automation/job-scheduler/",

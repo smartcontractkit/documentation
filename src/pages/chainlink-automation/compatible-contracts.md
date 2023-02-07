@@ -1,6 +1,6 @@
 ---
 layout: ../../layouts/MainLayout.astro
-section: ethereum
+section: automation
 date: Last Modified
 title: "Creating Compatible Contracts"
 whatsnext:

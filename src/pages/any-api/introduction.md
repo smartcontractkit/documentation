@@ -1,6 +1,6 @@
 ---
 layout: ../../layouts/MainLayout.astro
-section: ethereum
+section: nodeOperator
 date: Last Modified
 title: "Chainlink Any API Documentation"
 permalink: "docs/any-api/introduction/"

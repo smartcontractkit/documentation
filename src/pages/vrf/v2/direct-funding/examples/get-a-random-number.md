@@ -1,6 +1,6 @@
 ---
 layout: ../../../../../layouts/MainLayout.astro
-section: ethereum
+section: vrf
 date: Last Modified
 title: "Get a Random Number"
 permalink: "docs/vrf/v2/direct-funding/examples/get-a-random-number/"
