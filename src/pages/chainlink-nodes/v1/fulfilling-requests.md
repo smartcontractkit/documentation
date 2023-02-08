@@ -60,7 +60,7 @@ Your node works with several different types of addresses. Each address type has
    - Copy the [LINK token contract address](/resources/link-token-contracts/) for the network you are using and paste it into the `LINK` field next to the **Deploy** button. For Sepolia, you can use this address:
 
      ```text Sepolia
-     0xb227f007804c16546Bd054dfED2E7A1fD5437678
+     0x779877A7B0D9E8603169DdbD7836e478b4624789
      ```
 
    - Copy the _Admin wallet address_ into the `OWNER` field.
@@ -123,7 +123,7 @@ After you add jobs to your node, you can use the node to fulfill requests. This 
 
 1. Open [ATestnetConsumer.sol in Remix](https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/ATestnetConsumer.sol).
 
-1. Note that `setChainlinkToken(0xb227f007804c16546Bd054dfED2E7A1fD5437678)` is configured for _Sepolia_.
+1. Note that `setChainlinkToken(0x779877A7B0D9E8603169DdbD7836e478b4624789)` is configured for _Sepolia_.
 
 1. On the **Compiler** tab, click the **Compile** button for `ATestnetConsumer.sol`.
 
