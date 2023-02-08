@@ -57,9 +57,8 @@ VRF v2 coordinators for subscription funding are available on several networks. 
 
 ### Sepolia testnet
 
-:::note[Goerli Faucets]
-Testnet LINK is available from https://faucets.chain.link/goerli<br/>
-Testnet ETH is available from https://goerlifaucet.com/ or faucets listed at https://faucetlink.to/goerli
+:::note[Sepolia Faucets]
+Testnet LINK and ETH are available from https://faucets.chain.link/sepolia
 :::
 
 | Item                  | Value                                                                                                                                                                                                                       |

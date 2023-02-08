@@ -20,7 +20,7 @@ If you run these clients yourself, you must enable the websockets API. The webso
 
 ## Geth
 
-You can use the [Geth client](https://geth.ethereum.org/docs/) for the Goerli testnet and the Ethereum Mainnet. See the [Geth Documentation](https://geth.ethereum.org/docs/interface/peer-to-peer/) for a list of supported networks.
+You can use the [Geth client](https://geth.ethereum.org/docs/) for the Sepolia testnet and the Ethereum Mainnet. See the [Geth Documentation](https://geth.ethereum.org/docs/interface/peer-to-peer/) for a list of supported networks.
 
 Download the latest version:
 
