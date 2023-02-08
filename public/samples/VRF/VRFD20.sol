@@ -135,7 +135,7 @@ contract VRFD20 is VRFConsumerBaseV2 {
     }
 
     /**
-     * @notice Get the house namne from the id
+     * @notice Get the house name from the id
      * @param id uint256
      * @return house name string
      */
