@@ -4,6 +4,8 @@ section: nodeOperator
 date: Last Modified
 title: "Miscellaneous"
 whatsnext: { "Security and Operation Best Practices": "/chainlink-nodes/resources/best-security-practices/" }
+setup: |
+  import { Tabs } from "@components/Tabs"
 ---
 
 ## Execute Commands Running Docker
@@ -184,17 +186,26 @@ However, if we add `--name chainlink` to our run command, `docker ps` gives us:
 
 This can be easily accomplished by using the following example run command:
 
+<Tabs client:visible>
+<Fragment slot="tab.1">Sepolia</Fragment>
+<Fragment slot="tab.2">Goerli</Fragment>
+<Fragment slot="tab.3">Mainnet</Fragment>
+<Fragment slot="panel.1">
 ```shell Sepolia
 cd ~/.chainlink-sepolia && docker run --name chainlink -p 6688:6688 -v ~/.chainlink-sepolia:/chainlink -it --env-file=.env smartcontract/chainlink local n
 ```
-
+</Fragment>
+<Fragment slot="panel.2">
 ```shell Goerli
 cd ~/.chainlink-goerli && docker run --name chainlink -p 6688:6688 -v ~/.chainlink-goerli:/chainlink -it --env-file=.env smartcontract/chainlink local n
 ```
-
+</Fragment>
+<Fragment slot="panel.3">
 ```shell Mainnet
 cd ~/.chainlink && docker run --name chainlink -p 6688:6688 -v ~/.chainlink:/chainlink -it --env-file=.env smartcontract/chainlink local n
 ```
+</Fragment>
+</Tabs>
 
 Running this the once will save the options provided so that you may easily start the named container in the future by running:
 
@@ -218,59 +229,95 @@ The Chainlink node can be supplied with files for the wallet password and API em
 Change the values within the quotes to something unique for your node.
 :::
 
+<Tabs client:visible>
+<Fragment slot="tab.1">Sepolia</Fragment>
+<Fragment slot="tab.2">Goerli</Fragment>
+<Fragment slot="tab.3">Mainnet</Fragment>
+<Fragment slot="panel.1">
 ```shell Sepolia
 echo "user@example.com" > ~/.chainlink-sepolia/.api
 ```
-
+</Fragment>
+<Fragment slot="panel.2">
 ```shell Goerli
 echo "user@example.com" > ~/.chainlink-goerli/.api
 ```
-
+</Fragment>
+<Fragment slot="panel.3">
 ```shell Mainnet
 echo "user@example.com" > ~/.chainlink/.api
 ```
+</Fragment>
+</Tabs>
 
 Then add the password line by running:
 
+<Tabs client:visible>
+<Fragment slot="tab.1">Sepolia</Fragment>
+<Fragment slot="tab.2">Goerli</Fragment>
+<Fragment slot="tab.3">Mainnet</Fragment>
+<Fragment slot="panel.1">
 ```shell Sepolia
 echo "password" >> ~/.chainlink-sepolia/.api
 ```
-
+</Fragment>
+<Fragment slot="panel.2">
 ```shell Goerli
 echo "password" >> ~/.chainlink-goerli/.api
 ```
-
+</Fragment>
+<Fragment slot="panel.3">
 ```shell Mainnet
 echo "password" >> ~/.chainlink/.api
 ```
+</Fragment>
+</Tabs>
 
 Create the password file by running the following:
 
+<Tabs client:visible>
+<Fragment slot="tab.1">Sepolia</Fragment>
+<Fragment slot="tab.2">Goerli</Fragment>
+<Fragment slot="tab.3">Mainnet</Fragment>
+<Fragment slot="panel.1">
 ```shell Sepolia
 echo "my_wallet_password" > ~/.chainlink-sepolia/.password
 ```
-
+</Fragment>
+<Fragment slot="panel.2">
 ```shell Goerli
 echo "my_wallet_password" > ~/.chainlink-goerli/.password
 ```
-
+</Fragment>
+<Fragment slot="panel.3">
 ```shell Mainnet
 echo "my_wallet_password" > ~/.chainlink/.password
 ```
+</Fragment>
+</Tabs>
 
 Finally, in order to use the password and API files upon running the node, add `-p /chainlink/.password -a /chainlink/.api` to your run command, like so:
 
+<Tabs client:visible>
+<Fragment slot="tab.1">Sepolia</Fragment>
+<Fragment slot="tab.2">Goerli</Fragment>
+<Fragment slot="tab.3">Mainnet</Fragment>
+<Fragment slot="panel.1">
 ```shell Sepolia
 cd ~/.chainlink-sepolia && docker run -p 6688:6688 -v ~/.chainlink-sepolia:/chainlink -it --env-file=.env smartcontract/chainlink local n -p /chainlink/.password -a /chainlink/.api
 ```
-
+</Fragment>
+<Fragment slot="panel.2">
 ```shell Goerli
 cd ~/.chainlink-goerli && docker run -p 6688:6688 -v ~/.chainlink-goerli:/chainlink -it --env-file=.env smartcontract/chainlink local n -p /chainlink/.password -a /chainlink/.api
 ```
-
+</Fragment>
+<Fragment slot="panel.3">
 ```shell Mainnet
 cd ~/.chainlink && docker run -p 6688:6688 -v ~/.chainlink:/chainlink -it --env-file=.env smartcontract/chainlink local n -p /chainlink/.password -a /chainlink/.api
 ```
+</Fragment>
+</Tabs>
 
 ## Importing a Keystore
 

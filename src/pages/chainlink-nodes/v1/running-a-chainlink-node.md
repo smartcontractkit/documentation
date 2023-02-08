@@ -20,7 +20,7 @@ setup: |
   import { Tabs } from "@components/Tabs"
 ---
 
-This guide will teach you how to run a Chainlink node locally using [Docker](#using-docker). The Chainlink node will be configured to connect to Ethereum Sepolia or Goerli testnet.
+This guide will teach you how to run a Chainlink node locally using [Docker](#using-docker). The Chainlink node will be configured to connect to the Ethereum Sepolia or Goerli testnet.
 
 :::note[Running from source]
 To run a Chainlink node from source, use the [following instructions](https://github.com/smartcontractkit/chainlink#install). However, It’s recommended to run the Chainlink node with Docker. This is because we continuously build and deploy the code from our repository on Github, which means you don’t need a complete development environment to run a node.
@@ -57,7 +57,6 @@ Ganache is a mock testnet. Although you can run nodes on Ganache, it is not offi
 
    CONTAINER ID   IMAGE      COMMAND                  CREATED         STATUS         PORTS                    NAMES
    dc08cfad2a16   postgres   "docker-entrypoint.s…"   3 minutes ago   Up 3 minutes   0.0.0.0:5432->5432/tcp   cl-postgres
-
    ```
 
 ### Run Chainlink node
@@ -66,36 +65,50 @@ Ganache is a mock testnet. Although you can run nodes on Ganache, it is not offi
 
 1. Create a local directory to hold the Chainlink data:
 
-   ```shell Sepolia
-   mkdir ~/.chainlink-sepolia
-   ```
-
-   ```shell Goerli
-   mkdir ~/.chainlink-goerli
-   ```
+   <Tabs client:visible>
+      <Fragment slot="tab.1">Sepolia</Fragment>
+      <Fragment slot="tab.2">Goerli</Fragment>
+      <Fragment slot="panel.1">
+      ```shell Sepolia
+      mkdir ~/.chainlink-sepolia
+      ```
+      </Fragment>
+      <Fragment slot="panel.2">
+      ```shell Goerli
+      mkdir ~/.chainlink-goerli
+      ```
+      </Fragment>
+   </Tabs>
 
 1. Run the following as a command to create an environment file and populate with variables specific to the network you're running on. For a full list of available configuration variables, click [here](/chainlink-nodes/v1/configuration/).
    Be sure to update the value for `CHANGEME` to the value given by your [external Ethereum provider](/chainlink-nodes/resources/run-an-ethereum-client/#external-services). Update the value for `mysecretpassword` to the chosen password in [Run PostgreSQL](#run-postgresql).
 
-   ```shell Sepolia
-   echo "LOG_LEVEL=debug
-   ETH_CHAIN_ID=11155111
-   CHAINLINK_TLS_PORT=0
-   SECURE_COOKIES=false
-   ALLOW_ORIGINS=*
-   ETH_URL=CHANGEME
-   DATABASE_URL=postgresql://postgres:mysecretpassword@host.docker.internal:5432/postgres?sslmode=disable" > ~/.chainlink-sepolia/.env
-   ```
-
-   ```shell Goerli
-   echo "LOG_LEVEL=debug
-   ETH_CHAIN_ID=5
-   CHAINLINK_TLS_PORT=0
-   SECURE_COOKIES=false
-   ALLOW_ORIGINS=*
-   ETH_URL=CHANGEME
-   DATABASE_URL=postgresql://postgres:mysecretpassword@host.docker.internal:5432/postgres?sslmode=disable" > ~/.chainlink-goerli/.env
-   ```
+   <Tabs client:visible>
+      <Fragment slot="tab.1">Sepolia</Fragment>
+      <Fragment slot="tab.2">Goerli</Fragment>
+      <Fragment slot="panel.1">
+      ```shell Sepolia
+      echo "LOG_LEVEL=debug
+      ETH_CHAIN_ID=11155111
+      CHAINLINK_TLS_PORT=0
+      SECURE_COOKIES=false
+      ALLOW_ORIGINS=*
+      ETH_URL=CHANGEME
+      DATABASE_URL=postgresql://postgres:mysecretpassword@host.docker.internal:5432/postgres?sslmode=disable" > ~/.chainlink-sepolia/.env
+      ```
+      </Fragment>
+      <Fragment slot="panel.2">
+      ```shell Goerli
+      echo "LOG_LEVEL=debug
+      ETH_CHAIN_ID=5
+      CHAINLINK_TLS_PORT=0
+      SECURE_COOKIES=false
+      ALLOW_ORIGINS=*
+      ETH_URL=CHANGEME
+      DATABASE_URL=postgresql://postgres:mysecretpassword@host.docker.internal:5432/postgres?sslmode=disable" > ~/.chainlink-goerli/.env
+      ```
+      </Fragment>
+   </Tabs>
 
    :::tip[Important]
    Because you are testing locally, add `?sslmode=disable` to the end of your
@@ -104,13 +117,20 @@ Ganache is a mock testnet. Although you can run nodes on Ganache, it is not offi
 
 1. Start the Chainlink Node. Now you can run the Docker image. Replace `<version>` with your desired version. Tag versions are available in the [Chainlink docker hub](https://hub.docker.com/r/smartcontract/chainlink/tags). _The `latest` version does not work._
 
-   ```shell Sepolia
-   cd ~/.chainlink-sepolia && docker run --name chainlink  -v ~/.chainlink-sepolia:/chainlink -it --env-file=.env -p 6688:6688 --add-host=host.docker.internal:host-gateway smartcontract/chainlink:<version> local n
-   ```
-
-   ```shell Goerli
-   cd ~/.chainlink-goerli && docker run --name chainlink  -v ~/.chainlink-goerli:/chainlink -it --env-file=.env -p 6688:6688 --add-host=host.docker.internal:host-gateway smartcontract/chainlink:<version> local n
-   ```
+   <Tabs client:visible>
+      <Fragment slot="tab.1">Sepolia</Fragment>
+      <Fragment slot="tab.2">Goerli</Fragment>
+      <Fragment slot="panel.1">
+      ```shell Sepolia
+      cd ~/.chainlink-sepolia && docker run --name chainlink  -v ~/.chainlink-sepolia:/chainlink -it --env-file=.env -p 6688:6688 --add-host=host.docker.internal:host-gateway smartcontract/chainlink:<version> local n
+      ```
+      </Fragment>
+      <Fragment slot="panel.2">
+      ```shell Goerli
+      cd ~/.chainlink-goerli && docker run --name chainlink  -v ~/.chainlink-goerli:/chainlink -it --env-file=.env -p 6688:6688 --add-host=host.docker.internal:host-gateway smartcontract/chainlink:<version> local n
+      ```
+      </Fragment>
+   </Tabs>
 
    The first time running the image, it will ask you for a password and confirmation. This will be your wallet password that you can use to unlock the keystore file generated for you. Then, you'll be prompted to enter an API Email and Password. This will be used to expose the API for the GUI interface, and will be used every time you log into your node. When running the node again, you can supply the `-p` option with a path to a text file containing the wallet key password, and a `-a` option, pointing to a text file containing the API email and password. Instructions on how to do that are [here](/chainlink-nodes/resources/miscellaneous/#use-password-and-api-files-on-startup).
 
