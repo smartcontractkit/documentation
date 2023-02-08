@@ -54,32 +54,40 @@ Deploy the `PriceConsumerV3` smart contract on the Sepolia testnet.
 
 1. [Open the example contract](https://remix.ethereum.org/#url=https://docs.chain.link/samples/PriceFeeds/PriceConsumerV3.sol) in Remix. Remix opens and shows the contents of the smart contract.
 
-<div class="remix-callout">
-  <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/PriceFeeds/PriceConsumerV3.sol">Open the contract in Remix</a>
-</div>
+   <div class="remix-callout">
+   <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/PriceFeeds/PriceConsumerV3.sol">Open the contract in Remix</a>
+   </div>
 
 1. Because the code is already written, you can start the compile step. On the left side of Remix, click the **Solidity Compiler** tab to view the compiler settings.
+
    ![Screenshot showing the Compiler tab and its settings.](/images/getting-started/selectSolidityCompiler.png)
 
 1. Use the default compiler settings. Click the **Compile PriceConsumerV3.sol** button to compile the contract. Remix automatically detects the correct compiler version depending on the `pragma` that you specify in the contract. You can ignore warnings about unused local variables in this example.
+
    ![Screenshot of the Compile button.](/images/getting-started/compilePriceConsumerV3.png)
 
 1. On the **Deploy** tab, select the **Injected Provider** environment. This contract specifically requires Web3 because it connects with another contract on the blockchain. Running in a JavaScript VM will not work.
+
    ![Screenshot showing the Injected Provider environment selected.](/images/getting-started/selectWeb3.png)
 
 1. Because the example contract has several imports, Remix might select another contract to deploy by default. In the **Contract** section, select the `PriceConsumerV3` contract to make sure that Remix deploys the correct contract.
+
    ![Screenshot showing PriceConsumerV3 as the contract to deploy.](/images/getting-started/selectPriceConsumerV3.png)
 
 1. Click **Deploy** to deploy the contract to the Sepolia testnet. MetaMask opens and asks you to confirm payment for deploying the contract. Make sure MetaMask is set to the Sepolia network before you accept the transaction. Because these transactions are on the blockchain, they are not reversible.
+
    ![Screenshot of the Deploy button for PriceConsumerV3.](/images/getting-started/deployPriceConsumerV3.png)
 
 1. In the MetaMask prompt, click **Confirm** to approve the transaction and spend your testnet ETH required to deploy the contract.
+
    ![Screenshot showing Metamask asking you to confirm the transaction.](/images/getting-started/confirmTransaction.png)
 
 1. After a few seconds, the transaction completes and your contract appears under the **Deployed Contracts** list in Remix. Click the contract dropdown to view its variables and functions.
+
    ![Remix Deployed Contracts Section](/images/getting-started/deployedContractPriceConsumerV3.png)
 
 1. Click **getLatestPrice** to show the latest price from the aggregator contract. The latest price appears just below the button. The returned price is an integer, so it is missing its decimal point.
+
    ![A screenshot showing the deployed contract.](/images/getting-started/getLatestPrice.png)
 
 You can run your own oracle networks that provide data to smart contracts similar to the `AggregatorV3Interface`, but first, you should learn how to configure your contracts to pay oracles using LINK tokens. Follow the [Generate Random Numbers](/getting-started/intermediates-tutorial/) to learn how.
