@@ -41,7 +41,7 @@ Before you begin this guide, complete the following tasks to make sure you have 
 
 Your node works with several different types of addresses. Each address type has a specific function:
 
-- **Node address:** This is the address for your Chainlink node wallet. The node requires native blockchain tokens at all times to respond to requests. For this example, the node uses Sepolia ETH. When you start a Chainlink node, it automatically generates this address. You can find this address on the Node Operator GUI under Key Management > EVM Chain Accounts.
+- **Node address:** This is the address for your Chainlink node wallet. The node requires native blockchain tokens at all times to respond to requests. For this example, the node uses Sepolia ETH. When you start a Chainlink node, it automatically generates this address. You can find this address on the Node Operator GUI under **Key Management > EVM Chain Accounts**.
 - **Oracle contract address:** This is the address for contracts like `Operator.sol` or `Oracle.sol` that are deployed to a blockchain. Do not fund these addresses with native blockchain tokens such as ETH. When you make API call requests, the funds pass through this contract to interact with your Chainlink node. This will be the address that smart contract developers point to when they choose a node for an API call.
 - **Admin wallet address:** This is the address that owns your `Operator.sol` or `Oracle.sol` contract addresses. If you're on OCR, this is the wallet address that receives LINK tokens.
 
@@ -55,7 +55,7 @@ Your node works with several different types of addresses. Each address type has
 
 1. On the **Deploy and Run** tab, configure the following settings:
 
-   - Select "Injected Provider" as your **Environment**. The Javascript VM environment cannot access your oracle node. Make sure your Metamask is connected to sepolia testnet.
+   - Select "Injected Provider" as your **Environment**. The Javascript VM environment cannot access your oracle node. Make sure your Metamask is connected to Sepolia testnet.
    - Select the "Operator" contract from the **Contract** menu.
    - Copy the [LINK token contract address](/resources/link-token-contracts/) for the network you are using and paste it into the `LINK` field next to the **Deploy** button. For Sepolia, you can use this address:
 

@@ -355,7 +355,7 @@ Click the caret arrow on the right hand side of **Deploy** to expand the paramet
 
 Then click the `Deploy` button and use your Metamask account to confirm the transaction.
 
-**Note**: You should [have some Sepolia ETH](/getting-started/deploy-your-first-contract/#install-and-fund-your-metamask-wallet) in your Metamask account to pay for the GAS.
+**Note**: You should [have some Sepolia ETH](/getting-started/deploy-your-first-contract/#install-and-fund-your-metamask-wallet) in your Metamask account to pay for the gas.
 
 :::note[ Address, Key Hashes and more]
 For a full reference of the addresses, key hashes and fees for each network, see [VRF Supported Networks](/vrf/v2/subscription/supported-networks/#configurations).
