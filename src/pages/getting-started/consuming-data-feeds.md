@@ -46,7 +46,7 @@ The contract has the following components:
 
 :::caution[ Configure and fund your wallet]
 
-If you have not already configured your MetaMask wallet and funded it with testnet ETH, follow the instructions in the Deploy Your First Smart Contract to set that up. You can get testnet ETH at one of the available [Sepolia faucets](/resources/link-token-contracts/#sepolia-testnet).
+If you have not already configured your MetaMask wallet and funded it with testnet ETH, follow the instructions in [Deploy Your First Smart Contract](/getting-started/deploy-your-first-contract#install-and-fund-your-metamask-wallet) to set that up. You can get testnet ETH at one of the available [Sepolia faucets](/resources/link-token-contracts/#sepolia-testnet).
 
 :::
 

@@ -23,7 +23,7 @@ setup: |
 This guide will teach you how to run a Chainlink node locally using [Docker](#using-docker). The Chainlink node will be configured to connect to the Ethereum Sepolia or Goerli testnet.
 
 :::note[Running from source]
-To run a Chainlink node from source, use the [following instructions](https://github.com/smartcontractkit/chainlink#install). However, It’s recommended to run the Chainlink node with Docker. This is because we continuously build and deploy the code from our repository on Github, which means you don’t need a complete development environment to run a node.
+To run a Chainlink node from source, use the [following instructions](https://github.com/smartcontractkit/chainlink#install). However, it’s recommended to run the Chainlink node with Docker. This is because we continuously build and deploy the code from our repository on Github, which means you don’t need a complete development environment to run a node.
 :::
 
 :::note[Other Supported Networks]
