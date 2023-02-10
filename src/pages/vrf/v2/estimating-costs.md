@@ -50,7 +50,7 @@ For Chainlink VRF v2 to fulfill your requests, you must have a sufficient amount
 
 - **Verification gas:** The amount of gas used to verify randomness on-chain.
 
-- **Wrapper overhead gas:** The amount of gas used by the VRF Wrapper contract. See the [Request and Receive Data](#request-and-receive-data) section for details about the VRF v2 Wrapper contract design.
+- **Wrapper overhead gas:** The amount of gas used by the VRF Wrapper contract. See the [Request and Receive Data](/vrf/v2/direct-funding#request-and-receive-data) section for details about the VRF v2 Wrapper contract design.
 
 Because the consuming contract directly pays the LINK for the request, the cost is calculated during the request and not during the callback when the randomness is fulfilled. Test your callback function to learn how to correctly estimate the callback gas limit.
 
