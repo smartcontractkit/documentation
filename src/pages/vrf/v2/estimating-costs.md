@@ -39,8 +39,9 @@ The gas price depends on current network conditions. The callback gas depends on
 - **Gas lane:** The maximum gas price you are willing to pay for a request in wei. Define this limit by specifying the appropriate `keyHash` in your request. The limits of each gas lane are important for handling gas price spikes when Chainlink VRF bumps the gas price to fulfill your request quickly.
 
 - **Callback gas limit:** Specifies the maximum amount of gas you are willing to spend on the callback request. Define this limit by specifying the `callbackGasLimit` value in your request.
-  </Fragment>
-  <Fragment slot="panel.2">
+
+</Fragment>
+<Fragment slot="panel.2">
 
 For Chainlink VRF v2 to fulfill your requests, you must have a sufficient amount of LINK in your consuming contract. Gas cost calculation includes the following variables:
 
