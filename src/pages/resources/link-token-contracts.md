@@ -40,7 +40,8 @@ The LINK token is an ERC677 token that inherits functionality from the ERC20 tok
 
 ### Sepolia testnet
 
-Testnet LINK and ETH are available at [faucets.chain.link](https://faucets.chain.link/sepolia).
+Testnet LINK is available at [faucets.chain.link](https://faucets.chain.link/sepolia).
+Testnet ETH is available from one of several public [faucets](https://faucetlink.to/sepolia).
 
 | Parameter      | Value                                                                                                                                                                                                                       |
 | :------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

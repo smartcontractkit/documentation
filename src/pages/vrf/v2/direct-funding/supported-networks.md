@@ -68,7 +68,8 @@ VRF v2 coordinators for direct funding are available on several networks. To see
 ### Sepolia testnet
 
 :::note[Sepolia Faucets]
-Testnet LINK and ETH are available from https://faucets.chain.link/sepolia<br/>
+Testnet LINK is available from https://faucets.chain.link/sepolia<br/>
+Testnet ETH is availale at one of the public <a href="https://faucetlink.to/sepolia">ETH faucets</a>.
 :::
 
 | Item                       | Value                                                                                                                                                                                                                       |

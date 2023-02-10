@@ -47,7 +47,7 @@ Deploying smart contracts on-chain requires a wallet and ETH. The ETH pays for t
 
    ![Screenshot showing the network selection menu in MetaMask. The Sepolia Test Network is selected.](/images/getting-started/selectSepolia.webp)
 
-1. Open the [Sepolia faucet](https://faucets.chain.link/sepolia/) and follow the steps to send testnet ETH to your MetaMask wallet address. You can copy your wallet address by clicking your account name in MetaMask. After the faucet completes the transaction, you should have testnet ETH in your MetaMask wallet on the Sepolia testnet.
+1. Choose a Sepolia ETH [faucet](https://faucetlink.to/sepolia) and follow the steps to send testnet ETH to your MetaMask wallet address. You can copy your wallet address by clicking your account name in MetaMask. After the faucet completes the transaction, you should have testnet ETH in your MetaMask wallet on the Sepolia testnet.
 
 Now that you configured your wallet and funded it with testnet ETH, you can write, compile, and deploy your contract.
 
