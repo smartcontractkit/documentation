@@ -266,6 +266,8 @@ export const SIDEBAR = {
           title: "LINK Token Contracts",
           url: "resources/link-token-contracts?parent=dataFeeds",
         },
+        { title: "Getting Help", url: "resources/getting-help" },
+        { title: "Hackathon Resources", url: "resources/hackathon-resources?parent=dataFeeds" },
         {
           title: "Bridges and Associated Risks",
           url: "resources/bridge-risks?parent=dataFeeds",
