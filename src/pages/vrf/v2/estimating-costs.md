@@ -3,7 +3,6 @@ layout: ../../../layouts/MainLayout.astro
 section: ethereum
 date: Last Modified
 title: "Estimating VRF Costs"
-permalink: "docs/vrf/v2/estimate-costs"
 whatsnext:
   {
     "Get a Random Number": "/vrf/v2/direct-funding/examples/get-a-random-number/",
@@ -21,7 +20,7 @@ This guide explains how to estimate VRF costs when using the _direct funding_ me
 
 ## Understanding transaction costs
 
-<Tabs client:visible>
+<Tabs sharedStore="vrfMethod" client:visible>
 <Fragment slot="tab.1">Subscription</Fragment>
 <Fragment slot="tab.2">Direct funding</Fragment>
 <Fragment slot="panel.1">
@@ -64,7 +63,7 @@ Make sure that your consuming contracts are funded with enough LINK tokens to co
 
 ### Estimate gas costs
 
-<Tabs client:visible>
+<Tabs sharedStore="vrfMethod"  client:visible>
 <Fragment slot="tab.1">Subscription</Fragment>
 <Fragment slot="tab.2">Direct funding</Fragment>
 <Fragment slot="panel.1">
@@ -95,7 +94,7 @@ The maximum allowed `callbackGasLimit` value for your requests is defined in the
 
 ### LINK premium
 
-<Tabs client:visible>
+<Tabs sharedStore="vrfMethod" client:visible>
 <Fragment slot="tab.1">Subscription</Fragment>
 <Fragment slot="tab.2">Direct funding</Fragment>
 <Fragment slot="panel.1">
