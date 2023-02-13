@@ -190,6 +190,7 @@ Your node applies configuration settings using following hierarchy:
   - [DEFAULT_HTTP_TIMEOUT](#default_http_timeout)
   - [FEATURE_EXTERNAL_INITIATORS](#feature_external_initiators)
   - [JOB_PIPELINE_MAX_RUN_DURATION](#job_pipeline_max_run_duration)
+  - [JOB_PIPELINE_MAX_SUCCESSFUL_RUNS](#job_pipeline_max_successful_runs)
   - [JOB_PIPELINE_REAPER_INTERVAL](#job_pipeline_reaper_interval)
   - [JOB_PIPELINE_REAPER_THRESHOLD](#job_pipeline_reaper_threshold)
   - [JOB_PIPELINE_RESULT_WRITE_QUEUE_DEPTH](#job_pipeline_result_write_queue_depth)
@@ -272,19 +273,19 @@ Setting `CHAINLINK_DEV` to `true` enables development mode. Do not use this for 
 
 - Default: _none_
 
-The access key for authenticating with the Explorer.
+The access key for authenticating with the explorer. This variable is required to deliver telemetry.
 
 ### EXPLORER_SECRET
 
 - Default: _none_
 
-The secret for authenticating with the Explorer.
+The secret for authenticating with the explorer. This variable is required to deliver telemetry.
 
 ### EXPLORER_URL
 
 - Default: _none_
 
-The Explorer websocket URL for the node to push stats to.
+The explorer websocket URL for the node to push stats to. This variable is required to deliver telemetry.
 
 ### ROOT
 
@@ -1554,6 +1555,10 @@ Enables the External Initiator feature. If disabled, `webhook` jobs can ONLY be 
 - Default: `"10m"`
 
 `JOB_PIPELINE_MAX_RUN_DURATION` is the maximum time that a single job run might take. If it takes longer, it will exit early and be marked errored. If set to zero, disables the time limit completely.
+
+### JOB_PIPELINE_MAX_SUCCESSFUL_RUNS
+
+This option is not supported as an environment variable. Use `JobPipeline.MaxSuccessfulRuns` in the config file instead. See the [CONFIG.md](https://github.com/smartcontractkit/chainlink/blob/v1.11.0/docs/CONFIG.md) reference for details.
 
 ### JOB_PIPELINE_REAPER_INTERVAL
 

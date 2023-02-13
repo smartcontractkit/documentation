@@ -18,12 +18,7 @@ You can find a list of release notes for Chainlink nodes in the [smartcontractki
 ### Added
 
 - Prometheus gauge `mailbox_load_percent` for percent of "`Mailbox`" capacity used.
-- New config option, `JobPipeline.MaxSuccessfulRuns` caps the total number of
-  saved completed runs per job. This is done in response to the `pipeline_runs`
-  table potentially becoming large, which can cause performance degradation.
-  The default is set to 10,000. You can set it to 0 to disable run saving
-  entirely. **NOTE**: This can only be configured via TOML and not with an
-  environment variable.
+- New config option `JobPipeline.MaxSuccessfulRuns` caps the total number of saved completed runs per job. This is done in response to the `pipeline_runs` table potentially becoming large, which can cause performance degradation. The default is set to 10,000. You can set it to 0 to disable run saving entirely. **NOTE**: This can only be configured via TOML and not with an environment variable.
 - Prometheus gauge vector `feeds_job_proposal_count` to track counts of job proposals partitioned by proposal status.
 - Support for variable expression for the `minConfirmations` parameter on the `ethtx` task.
 
@@ -34,7 +29,7 @@ You can find a list of release notes for Chainlink nodes in the [smartcontractki
 
 ### Fixed
 
-- Fixed (SQLSTATE 42P18) error on Job Runs page, when attempting to view specific older or infrequenty run jobs
+- Fixed (SQLSTATE 42P18) error on Job Runs page, when attempting to view specific older or infrequenty run jobs.
 - The `config dump` subcommand was fixed to dump the correct config data. The P2P.V1.Enabled config logic incorrectly matched V2, by only setting explicit true values so that otherwise the default is used. The V1.Enabled default value is actually true already, and is now updated to only set explicit false values.
 
 ## Changes in v1.11.0 nodes
