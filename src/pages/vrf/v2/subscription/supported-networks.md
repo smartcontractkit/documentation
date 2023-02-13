@@ -36,19 +36,9 @@ The details for calculating the total transaction cost can be found [here](/vrf/
 
 ## Configurations
 
-<ResourcesCallout callout="bridgeRisks" />
+VRF v2 coordinators for subscription funding are available on several networks. To see a list of coordinators for direct funding, see the [Direct Funding Configurations](/vrf/v2/direct-funding/supported-networks) page.
 
-- [Ethereum Mainnet](#ethereum-mainnet)
-- [Goerli testnet](#goerli-testnet)
-- [BNB Chain](#bnb-chain)
-- [BNB Chain testnet](#bnb-chain-testnet)
-- [Polygon mainnet](#polygon-matic-mainnet)
-- [Polygon Mumbai testnet](#polygon-matic-mumbai-testnet)
-- [Avalanche mainnet](#avalanche-mainnet)
-- [Avalanche Fuji testnet](#avalanche-fuji-testnet)
-- [Fantom mainnet](#fantom-mainnet)
-- [Fantom testnet](#fantom-testnet)
-- [Klaytn Baobab testnet](#klaytn-baobab-testnet)
+<ResourcesCallout callout="bridgeRisks" />
 
 ### Ethereum Mainnet
 
@@ -64,6 +54,24 @@ The details for calculating the total transaction cost can be found [here](/vrf/
 | Minimum Confirmations | 3                                                                                                                                                                                                            |
 | Maximum Confirmations | 200                                                                                                                                                                                                          |
 | Maximum Random Values | 500                                                                                                                                                                                                          |
+
+### Sepolia testnet
+
+:::note[Sepolia Faucets]
+Testnet LINK is available from https://faucets.chain.link/sepolia<br/>
+Testnet ETH is availale at one of the public <a href="https://faucetlink.to/sepolia">ETH faucets</a>.
+:::
+
+| Item                  | Value                                                                                                                                                                                                                       |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| LINK Token            | <a class="erc-token-address" id="11155111_0x779877A7B0D9E8603169DdbD7836e478b4624789" href="https://sepolia.etherscan.io/token/0x779877A7B0D9E8603169DdbD7836e478b4624789">`0x779877A7B0D9E8603169DdbD7836e478b4624789`</a> |
+| VRF Coordinator       | [`0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625`](https://sepolia.etherscan.io/address/0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625)                                                                                             |
+| 30 gwei Key Hash      | `0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc56c`                                                                                                                                                        |
+| Premium               | 0.25 LINK                                                                                                                                                                                                                   |
+| Max Gas Limit         | 2,500,000                                                                                                                                                                                                                   |
+| Minimum Confirmations | 3                                                                                                                                                                                                                           |
+| Maximum Confirmations | 200                                                                                                                                                                                                                         |
+| Maximum Random Values | 500                                                                                                                                                                                                                         |
 
 ### Goerli testnet
 

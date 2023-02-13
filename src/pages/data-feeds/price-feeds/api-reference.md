@@ -12,17 +12,17 @@ When you use data feeds, retrieve the feeds through the `AggregatorV3Interface` 
 
 ## AggregatorV3Interface
 
-Import this interface to your contract and use it to run functions in the proxy contract. Create the interface object by pointing to the proxy address. For example, on Goerli you could create the interface object in the constructor of your contract using the following example:
+Import this interface to your contract and use it to run functions in the proxy contract. Create the interface object by pointing to the proxy address. For example, on Sepolia you could create the interface object in the constructor of your contract using the following example:
 
 <!-- prettier-ignore -->
 ```solidity
 /**
- * Network: Goerli
+ * Network: Sepolia
  * Data Feed: BTC/USD
- * Address: 0xA39434A63A52E749F02807ae27335515BA4b07F7
+ * Address: 0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43
  */
 constructor() {
-  priceFeed = AggregatorV3Interface(0xA39434A63A52E749F02807ae27335515BA4b07F7);
+  priceFeed = AggregatorV3Interface(0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43);
 }
 
 ```
@@ -48,7 +48,6 @@ Get the number of decimals present in the response value.
 <!-- prettier-ignore -->
 ```solidity
 function decimals() external view returns (uint8);
-
 ```
 
 - `RETURN`: The number of decimals.
@@ -60,7 +59,6 @@ Get the description of the underlying aggregator that the proxy points to.
 <!-- prettier-ignore -->
 ```solidity
 function description() external view returns (string memory);
-
 ```
 
 - `RETURN`: The description of the underlying aggregator.
@@ -74,7 +72,6 @@ Get data about a specific round, using the `roundId`.
 function getRoundData(
   uint80 _roundId
 ) external view returns (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound);
-
 ```
 
 **Parameters:**
