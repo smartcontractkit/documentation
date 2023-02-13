@@ -5,7 +5,7 @@
  */
 
 const Web3 = require("web3") // for nodejs only
-const web3 = new Web3("https://rpc.ankr.com/eth_goerli")
+const web3 = new Web3("https://rpc.ankr.com/eth_sepolia")
 const aggregatorV3InterfaceABI = [
   {
     inputs: [],
@@ -55,7 +55,7 @@ const aggregatorV3InterfaceABI = [
     type: "function",
   },
 ]
-const addr = "0xA39434A63A52E749F02807ae27335515BA4b07F7"
+const addr = "0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43"
 const priceFeed = new web3.eth.Contract(aggregatorV3InterfaceABI, addr)
 priceFeed.methods
   .latestRoundData()
