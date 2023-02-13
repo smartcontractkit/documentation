@@ -47,7 +47,7 @@ export const SIDEBAR = {
         { title: "Connect to Public API Data", url: "any-api/introduction" },
         {
           title: "Run a Chainlink Node",
-          url: "chainlink-nodes/running-a-chainlink-node",
+          url: "chainlink-nodes/v1/running-a-chainlink-node",
         },
       ],
     },
@@ -138,6 +138,10 @@ export const SIDEBAR = {
               url: "data-feeds/feed-registry/feed-registry-functions",
             },
           ],
+        },
+        {
+          title: "Using Data Feeds on StarkNet",
+          url: "data-feeds/starknet",
         },
         {
           title: "Selecting Data Feeds",
@@ -381,50 +385,64 @@ export const SIDEBAR = {
     {
       section: "NODE OPERATORS",
       contents: [
-        { title: "Node Versions", url: "chainlink-nodes/node-versions" },
+        { title: "Release Notes", url: "chainlink-nodes/node-versions" },
         {
-          title: "Running a Chainlink Node",
-          url: "chainlink-nodes/running-a-chainlink-node",
+          title: "v1.x.x",
+          url: "chainlink-nodes/v1/",
           children: [
             {
-              title: "Run an Ethereum Client",
-              url: "chainlink-nodes/run-an-ethereum-client",
+              title: "Running a Chainlink Node locally",
+              url: "chainlink-nodes/v1/running-a-chainlink-node",
+            },
+            {
+              title: "Fulfilling Requests",
+              url: "chainlink-nodes/v1/fulfilling-requests",
+            },
+            {
+              title: "Configuring Nodes",
+              url: "chainlink-nodes/v1/configuration",
             },
           ],
         },
         {
-          title: "Fulfilling Requests",
-          url: "chainlink-nodes/fulfilling-requests",
+          title: "Resources",
+          url: "chainlink-nodes/resources",
+          children: [
+            {
+              title: "Requirements",
+              url: "chainlink-nodes/resources/requirements",
+            },
+            {
+              title: "Running an Ethereum Client",
+              url: "chainlink-nodes/resources/run-an-ethereum-client",
+            },
+            {
+              title: "Connecting to a Remote Database",
+              url: "chainlink-nodes/resources/connecting-to-a-remote-database",
+            },
+            {
+              title: "Enabling HTTPS Connections",
+              url: "chainlink-nodes/resources/enabling-https-connections",
+            },
+            {
+              title: "Performing System Maintenance",
+              url: "chainlink-nodes/resources/performing-system-maintenance",
+            },
+            {
+              title: "Security and Operation Best Practices",
+              url: "chainlink-nodes/resources/best-security-practices",
+            },
+            {
+              title: "Optimizing EVM Performance",
+              url: "chainlink-nodes/resources/evm-performance-configuration",
+            },
+            {
+              title: "Best Practices for Nodes on AWS",
+              url: "chainlink-nodes/resources/best-practices-aws",
+            },
+            { title: "Miscellaneous", url: "chainlink-nodes/resources/miscellaneous" },
+          ],
         },
-        {
-          title: "Performing System Maintenance",
-          url: "chainlink-nodes/performing-system-maintenance",
-        },
-        {
-          title: "Connecting to a Remote Database",
-          url: "chainlink-nodes/connecting-to-a-remote-database",
-        },
-        {
-          title: "Configuring Nodes",
-          url: "chainlink-nodes/configuration-variables",
-        },
-        {
-          title: "Enabling HTTPS Connections",
-          url: "chainlink-nodes/enabling-https-connections",
-        },
-        {
-          title: "Security and Operation Best Practices",
-          url: "chainlink-nodes/best-security-practices",
-        },
-        {
-          title: "Optimizing EVM Performance",
-          url: "chainlink-nodes/evm-performance-configuration",
-        },
-        {
-          title: "Best Practices for Nodes on AWS",
-          url: "chainlink-nodes/best-practices-aws",
-        },
-        { title: "Miscellaneous", url: "chainlink-nodes/miscellaneous" },
       ],
     },
     {

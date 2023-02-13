@@ -14,6 +14,7 @@ Bridge tasks make HTTP POST requests to pre-configured URLs. Bridges can be conf
 - `requestData` (optional): a statically-defined payload to be sent to the external adapter.
 - `async` (optional): a boolean indicating whether the task should hibernate and wait for the Bridge to make an HTTP request back to the node at a later time with the result.
 - `cacheTTL` (optional): a duration-formatted string indicating the maximum acceptable staleness for cached bridge responses in case of intermittent failures. This is disabled by default.
+- `headers` (optional): an array of strings. The number of strings must be even. Example: `foo [type="bridge" name="foo" headers="[\\"X-Header-1\\", \\"value1\\", \\"X-Header-2\\", \\"value2\\"]"]`
 
 **Outputs**
 

@@ -35,12 +35,13 @@ contract HistoricalPriceConsumerV3 {
      * @dev A timestamp with zero value means the round is not complete and should not be used.
      */
     function getHistoricalPrice(uint80 roundId) public view returns (int256) {
+        // prettier-ignore
         (
-            uint80 id,
+            /*uint80 roundID*/,
             int price,
-            uint startedAt,
+            /*uint startedAt*/,
             uint timeStamp,
-            uint80 answeredInRound
+            /*uint80 answeredInRound*/
         ) = priceFeed.getRoundData(roundId);
         require(timeStamp > 0, "Round not complete");
         return price;

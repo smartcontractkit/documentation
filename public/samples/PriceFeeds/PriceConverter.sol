@@ -4,11 +4,11 @@ pragma solidity ^0.8.7;
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
 /**
- * Network: Rinkeby (No Goerli Feed for EUR/USD at this time)
+ * Network: Goerli
  * Base: BTC/USD
- * Base Address: 0xECe365B379E1dD183B20fc5f022230C044d51404
+ * Base Address: 0xA39434A63A52E749F02807ae27335515BA4b07F7
  * Quote: EUR/USD
- * Quote Address: 0x78F9e60608bF48a1155b4B2A5e31F32318a1d85F
+ * Quote Address: 0x44390589104C9164407A0E0562a9DBe6C24A0E05
  * Decimals: 8
  */
 

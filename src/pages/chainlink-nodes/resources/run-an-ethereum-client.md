@@ -1,0 +1,267 @@
+---
+layout: ../../../layouts/MainLayout.astro
+section: nodeOperator
+date: Last Modified
+title: "Run an Ethereum Client"
+whatsnext:
+  {
+    "Running a Chainlink Node": "/chainlink-nodes/v1/running-a-chainlink-node/",
+    "Optimizing Performance": "/chainlink-nodes/resources/evm-performance-configuration/",
+  }
+setup: |
+  import { Tabs } from "@components/Tabs"
+---
+
+Chainlink nodes must be able to connect to an Ethereum client with an active websocket connection. This is accomplished by running both an execution client and a consensus client. You can run these clients yourself, but running Ethereum clients requires significant storage and network resources. Optionally, you can use [External Services](#external-services) that manage these clients for you.
+
+:::note[Enable the Websockets API]
+If you run these clients yourself, you must enable the websockets API. The websockets API is required for the Chainlink node to communicate with the Ethereum blockchain.
+:::
+
+## Geth
+
+You can use the [Geth client](https://geth.ethereum.org/docs/) for the Goerli testnet and the Ethereum Mainnet. See the [Geth Documentation](https://geth.ethereum.org/docs/interface/peer-to-peer/) for a list of supported networks.
+
+Download the latest version:
+
+```shell
+docker pull ethereum/client-go:latest
+```
+
+Create a local directory to persist the data:
+
+<Tabs client:visible>
+    <Fragment slot="tab.1">Goerli</Fragment>
+    <Fragment slot="tab.2">Mainnet</Fragment>
+    <Fragment slot="panel.1">
+    ```shell Goerli
+    mkdir ~/.geth-goerli
+    ```
+    </Fragment>
+    <Fragment slot="panel.2">
+    ```shell Mainnet
+    mkdir ~/.geth
+    ```
+    </Fragment>
+</Tabs>
+
+Run the container:
+
+<Tabs client:visible>
+    <Fragment slot="tab.1">Goerli</Fragment>
+    <Fragment slot="tab.2">Mainnet</Fragment>
+    <Fragment slot="panel.1">
+    ```shell Goerli
+    docker run --name eth -p 8546:8546 -v ~/.geth-goerli:/geth -it \
+    ethereum/client-go --goerli --ws --ipcdisable \
+    --ws.addr 0.0.0.0 --ws.origins="*" --datadir /geth
+    ```
+    </Fragment>
+    <Fragment slot="panel.2">
+    ```shell Mainnet
+    docker run --name eth -p 8546:8546 -v ~/.geth:/geth -it \
+    ethereum/client-go --ws --ipcdisable \
+    --ws.addr 0.0.0.0 --ws.origins="*" --datadir /geth
+    ```
+    </Fragment>
+</Tabs>
+
+Once the Ethereum client is running, you can use `Ctrl + P, Ctrl + Q` to detach from the container without stopping it. You will need to leave the container running for the Chainlink node to connect to it.
+
+If the container was stopped and you need to run it again, you can simply use the following command:
+
+```shell
+docker start -i eth
+```
+
+Follow Geth's instructions for [Connecting to Consensus Clients](https://geth.ethereum.org/docs/getting-started/consensus-clients). This will require some additional configuration settings for the Docker command that runs Geth.
+
+Return to [Running a Chainlink Node](/chainlink-nodes/v1/running-a-chainlink-node/).
+
+## Nethermind
+
+You can use the [Nethermind client](https://docs.nethermind.io/nethermind/) for the Goerli testnet and the Ethereum Mainnet. See the [Nethermind supported network configurations](https://docs.nethermind.io/nethermind/ethereum-client/docker#available-configurations) page for a list of supported networks.
+
+Download the latest version:
+
+```shell
+docker pull nethermind/nethermind:latest
+```
+
+Create a local directory to persist the data:
+
+<Tabs client:visible>
+    <Fragment slot="tab.1">Goerli</Fragment>
+    <Fragment slot="tab.2">Mainnet</Fragment>
+    <Fragment slot="panel.1">
+    ```shell Goerli
+    mkdir ~/.nethermind-goerli
+    ```
+    </Fragment>
+    <Fragment slot="panel.2">
+    ```shell Mainnet
+    mkdir ~/.nethermind
+    ```
+    </Fragment>
+</Tabs>
+
+Run the container:
+
+<Tabs client:visible>
+    <Fragment slot="tab.1">Goerli</Fragment>
+    <Fragment slot="tab.2">Mainnet</Fragment>
+    <Fragment slot="panel.1">
+    ```shell Goerli
+    docker run --name eth -p 8545:8545 \
+              -v ~/.nethermind-goerli/:/nethermind/data \
+              -it nethermind/nethermind:latest --config goerli \
+              --Init.WebSocketsEnabled true --JsonRpc.Enabled true --JsonRpc.Host 0.0.0.0 --NoCategory.CorsOrigins * \
+              --datadir data
+    ```
+    </Fragment>
+    <Fragment slot="panel.2">
+    ```shell Mainnet
+    docker run --name eth -p 8545:8545 \
+              -v ~/.nethermind/:/nethermind/data \
+              -it nethermind/nethermind:latest --Sync.FastSync true \
+              --Init.WebSocketsEnabled true --JsonRpc.Enabled true --JsonRpc.Host 0.0.0.0 --NoCategory.CorsOrigins * \
+              --datadir data
+    ```
+    </Fragment>
+</Tabs>
+
+After the Ethereum client is running, you can use `Ctrl + P, Ctrl + Q` to detach from the container without stopping it. You will need to leave the container running for the Chainlink node to connect to it.
+
+If the container was stopped and you need to run it again, use the following command to start it:
+
+```shell
+docker start -i eth
+```
+
+Follow Nethermind's instructions for [Installing and configuring the Consensus Client](https://docs.nethermind.io/nethermind/guides-and-helpers/validator-setup/eth2-validator#setup). This will require some additional configuration settings for the Docker command that runs Nethermind.
+
+Return to [Running a Chainlink Node](/chainlink-nodes/v1/running-a-chainlink-node/).
+
+## External Services
+
+The following services offer Ethereum clients with websockets connectivity known to work with the Chainlink node.
+
+## [Alchemy](https://www.alchemyapi.io)
+
+Example connection setting:
+
+<Tabs client:visible>
+    <Fragment slot="tab.1">Goerli</Fragment>
+    <Fragment slot="tab.2">Mainnet</Fragment>
+    <Fragment slot="panel.1">
+    ```text Goerli
+    ETH_URL=wss://eth-goerli.alchemyapi.io/v2/YOUR_PROJECT_ID
+    ```
+    </Fragment>
+    <Fragment slot="panel.2">
+    ```text Mainnet
+    ETH_URL=wss://eth-mainnet.alchemyapi.io/v2/YOUR_PROJECT_ID
+    ```
+    </Fragment>
+</Tabs>
+
+## [Chainstack](https://support.chainstack.com/hc/en-us/articles/900001664463-Setting-up-a-Chainlink-node-with-an-Ethereum-node-provided-by-Chainstack)
+
+Example connection setting:
+
+```text Mainnet
+ETH_URL=wss://user-name:pass-word-pass-word-pass-word@ws-nd-123-456-789.p2pify.com
+```
+
+## [Fiews](https://docs.fiews.io/docs/getting-started)
+
+Example connection setting:
+
+```text Mainnet
+ETH_URL=wss://cl-main.fiews.io/v2/YOUR_API_KEY
+```
+
+## [GetBlock](https://getblock.io/)
+
+Example connection setting:
+
+<Tabs client:visible>
+    <Fragment slot="tab.1">Goerli</Fragment>
+    <Fragment slot="tab.2">Sepolia</Fragment>
+    <Fragment slot="tab.3">Mainnet</Fragment>
+    <Fragment slot="panel.1">
+    ```text Goerli
+    ETH_URL=wss://eth.getblock.io/goerli/?api_key=YOUR_API_KEY
+    ```
+    </Fragment>
+    <Fragment slot="panel.2">
+    ```text Sepolia
+    ETH_URL=wss://eth.getblock.io/sepolia/?api_key=YOUR_API_KEY
+    ```
+    </Fragment>
+    <Fragment slot="panel.3">
+    ```text Mainnet
+    ETH_URL=wss://eth.getblock.io/mainnet/?api_key=YOUR_API_KEY
+    ```
+    </Fragment>
+</Tabs>
+
+## [Infura](https://infura.io/docs/ethereum/wss/introduction.md)
+
+Example connection setting. Replace YOUR_PROJECT_ID with the ID Infura provides you on your project settings page.
+
+<Tabs client:visible>
+    <Fragment slot="tab.1">Goerli</Fragment>
+    <Fragment slot="tab.2">Mainnet</Fragment>
+    <Fragment slot="panel.1">
+    ```text Goerli
+    ETH_URL=wss://goerli.infura.io/ws/v3/YOUR_PROJECT_ID
+    ```
+    </Fragment>
+    <Fragment slot="panel.2">
+    ```text Mainnet
+    ETH_URL=wss://mainnet.infura.io/ws/v3/YOUR_PROJECT_ID
+    ```
+    </Fragment>
+</Tabs>
+
+## [LinkPool](https://docs.linkpool.io/docs/websocket_main)
+
+Example connection setting:
+
+```text Mainnet
+ETH_URL=wss://main-rpc.linkpool.io/ws
+```
+
+## [QuikNode](https://www.quiknode.io)
+
+Example connection setting:
+
+<Tabs client:visible>
+    <Fragment slot="tab.1">Goerli</Fragment>
+    <Fragment slot="tab.2">Mainnet</Fragment>
+    <Fragment slot="panel.1">
+    ```text Goerli
+    ETH_URL=wss://your-node-name.goerli.quiknode.pro/security-hash/
+    ```
+    </Fragment>
+    <Fragment slot="panel.2">
+    ```text Mainnet
+    ETH_URL=wss://your-node-name.quiknode.pro/security-hash/
+    ```
+    </Fragment>
+</Tabs>
+
+## Configuring your ETH node
+
+:::caution[RPC gas/txfee caps]
+By default, go-ethereum rejects transactions that exceed the built-in RPC gas/txfee caps. The node will fatally error transactions if this happens. If you ever exceed the caps, the node will miss transactions.
+:::
+
+At a minimum, disable the default RPC gas and txfee caps on your ETH node. This can be done in the TOML file as seen below, or by running go-ethereum with the command line arguments: `--rpc.gascap=0 --rpc.txfeecap=0`.
+
+To learn more about configuring ETH nodes, see the [configuration page](/chainlink-nodes/v1/configuration/#configuring-your-eth-node).
+
+## Additional Tools
+
+- [Chainlink ETH Failover Proxy](https://github.com/Fiews/ChainlinkEthFailover)

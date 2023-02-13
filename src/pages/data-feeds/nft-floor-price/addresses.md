@@ -8,7 +8,7 @@ metadata:
   description: "NFT Floor Pricing Feed Addresses"
 date: Last Modified
 setup: |
-  import { FeedPage } from "@features/feeds"
+  import FeedPage from "@features/feeds/components/FeedPage.astro"
 ---
 
 <FeedPage dataFeedType="nftFloor" />

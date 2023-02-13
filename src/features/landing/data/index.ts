@@ -34,6 +34,7 @@ export const evmProducts = [
       { id: "metis", title: "Metis" },
       { id: "moonbeam", title: "Moonbeam" },
       { id: "moonriver", title: "Moonriver" },
+      { id: "starknet", title: "StarkNet" },
     ],
     video: "https://www.youtube.com/watch?v=hw9f84DnTK4&list=PLVP9aGDn-X0Qr4TuqPFNQdqbI735tdPat",
   },

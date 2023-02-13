@@ -24,6 +24,7 @@ We're constantly uploading new videos to our [YouTube](https://www.youtube.com/c
 - [Austin Griffith](https://www.youtube.com/watch?v=ffU96UhlA0A)
 - [Patrick Collins](https://www.youtube.com/watch?v=p36tXHX1JD8)
 - [Nader Dabit](https://www.youtube.com/watch?v=nS9xP1hxg3w)
+- [Alchemy Univeristy](https://university.alchemy.com/)
 
 ### Applications
 
@@ -69,13 +70,17 @@ Below is a list of applications of Chainlink's products and services sorted by d
 | [Build an RFID Blockchain Integration With Chainlink External Adapters](https://blog.chain.link/rfid-blockchain-integration-with-chainlink-external-adapters/) | Identification       | Advanced   |
 | [How to Connect a Tesla Vehicle API to a Smart Contract Via a Chainlink External Adapter](https://blog.chain.link/create-tesla-smart-contract-rental/)         | Transportation       | Advanced   |
 | [OAuth and API Authentication in Smart Contracts](https://blog.chain.link/oauth-and-api-authentication-in-smart-contracts-2/)                                  | Security             | Advanced   |
+| [Connect APIs to your Smart Contracts using Chainlink](https://docs.alchemy.com/docs/connect-apis-to-your-smart-contracts-using-chainlink)                     | NFT                  | Advanced   |
 
 #### Automation (Keepers)
 
 | Name                                                                                                                                                                                                | Type       | Difficulty |
 | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------- | :--------- |
+| [Automation Introduction Video](https://www.youtube.com/watch?v=dj0impNJdls)                                                                                                                        | Automation | Beginner   |
 | [Smart Contract Automation Master Class Module #1](https://youtu.be/D3rMFshrj7c)                                                                                                                    | Automation | Beginner   |
 | [Smart Contract Automation Master Class Module #2](https://youtu.be/UT2qpUh0tmA/)                                                                                                                   | Automation | Beginner   |
+| [Smart Contract Automation Master Class Module #3](https://youtu.be/FirUe1YCcqs)                                                                                                                    | Automation | Beginner   |
+| [Smart Contract Automation Master Class Module #4](https://youtu.be/1a0wguM5Ig0)                                                                                                                    | Automation | Beginner   |
 | [Entropyfi Saves Engineering Hours with Chainlink Keepers](https://medium.com/entropyfi/entropyfi-saves-engineering-hours-with-chainlink-keepers-6ec172a76249)                                      | Gaming     | Medium     |
 | [Enabling Limit Orders on CivTrade With Chainlink Keepers](https://news.civfund.org/civtrade-with-chainlink-keepers-8b6c3965a92e)                                                                   | Trading    | Medium     |
 | [Pickle Finance UniV3 Jars Powered by Chainlink Keepers](https://picklefinance.medium.com/pickle-finance-univ3-jars-powered-by-chainlink-keepers-8ce1756a2497)                                      | Finance    | Medium     |

@@ -91,11 +91,11 @@ These feeds are being deprecated. To find the deprecation dates for specific fee
 
 As a development best practice, design your systems and smart contracts to be resilient and mitigate risk to your protocol and your users. Ensure that your systems can tolerate known and unknown exceptions that might occur. Some examples include but are not limited to volatile market conditions, the degraded performance of infrastructure, chains, or networks, and any other upstream outage related to data providers or node operators. You bear responsibility for any manner in which you use the Chainlink Network, its software, and documentation.
 
-To help you prepare for unforeseen market events, we recommend taking additional steps for custom or specialized feeds to protect your application or protocol. This might also be worth considering in all categories based on the value that your application secures. This tooling is put in place to mitigate extreme market events, possible malicious activity on third-party venues or contracts, potential delays, performance degradation, and outages.
+To help you prepare for unforeseen market events, you should take additional steps for custom or specialized feeds to protect your application or protocol. This might also be worth considering in all categories based on the value that your application secures. This tooling is put in place to mitigate extreme market events, possible malicious activity on third-party venues or contracts, potential delays, performance degradation, and outages.
 
 Below are some examples of tooling that Chainlink users have put in place:
 
-- **Circuit breakers:** In the case of an extreme price event, the contract would pause operations for a limited period of time.
+- **Circuit breakers:** In the case of an extreme price event, the contract would pause operations for a limited period of time. [Chainlink Automation](/chainlink-automation/introduction/) is able to monitor data feeds to identify unexpected events. If an event were to occur, the Automation network can send an on-chain transaction to pause or halt contract functionality.
 - **Contract update delays:** Contracts would not update until the protocol had received a recent fresh input from the data feed.
 - **Manual kill switch:** If a vulnerability or bug is discovered in one of the upstream contracts, the user can manually cease operation and temporarily sever the connection to the data feed.
 - **Monitoring:** Some users create their own monitoring alerts based on deviations in the data feeds that they are using.
@@ -111,7 +111,7 @@ Chainlink technology is used by many within the blockchain community to support 
 
 It is always recommended that you conduct a thorough analysis of your requirements and carry out appropriate due diligence on any partners you wish to use with your project.
 
-> **The Chainlink Labs team does not monitor community deployments** and encourages users to use best practices in observability, monitoring, and risk mitigation as appropriate for your application's stage of development and use case.
+> **The Chainlink Labs team does not monitor community deployments** and users should use best practices in observability, monitoring, and risk mitigation as appropriate for your application's stage of development and use case.
 
 As your usage of data feeds evolves and requirements for higher availability and greater security increases, such as securing substantive value, the reliability properties of your data feed will become crucial. [Contact Chainlink Labs team](https://chainlinkcommunity.typeform.com/to/OYQO67EF?page=market-data-feeds) for services to ensure deployments meet the highest levels of availability and security.
 
@@ -139,7 +139,7 @@ Some data feeds obtain their pricing data from individual exchanges rather than 
 
 _Liquidity migrations_ occur when a project moves its tokens from one liquidity provider (such as a DEX, a CEX, or a new DeFi application) to another. When liquidity migrations occur, it can result in low liquidity in the original pool, making the asset susceptible to market manipulation. If your project is considering a liquidity migration, you should coordinate with relevant stakeholders, including liquidity providers, exchanges, oracle node operators, and users, to ensure prices are accurately reported throughout the migration.
 
-Feeds for assets with low market liquidity where data providers exhibit an abnormal price spread may, on occasion, see a price oscillate between two or more price points within regular intervals. To mitigate risk associated with such price oscillation, users must regularly monitor & assess the quality of an asset’s liquidity.
+Feeds for assets with low market liquidity where data providers exhibit an abnormal price spread may, on occasion, see a price oscillate between two or more price points within regular intervals. To mitigate risk associated with such price oscillation, users must regularly monitor & assess the quality of an asset’s liquidity. Similarly, assets with low market liquidity may experience abnormal or volatile price movements due to erroneous trades.
 
 Design and test your contracts to handle price spikes and implement risk management measures to protect your assets. For example, create mock tests that return various oracle responses.
 
@@ -157,7 +157,7 @@ Sustaining data quality is dependent on data sources implementing the necessary 
 
 Users are strongly advised to set up monitoring and alerts in the event of unexpected market failures. Black swan events, hacks, coordinated attacks, or extreme market conditions may trigger unanticipated outcomes such as liquidity pools becoming unbalanced, unexpected re-weighting of indices, abnormal behavior by centralized or decentralized exchanges, or the de-pegging of synthetic assets and currencies from their intended exchange rates.
 
-Users should be aware of inherently increased risk during such periods of high volatility and market failure.
+Circuit breakers can be created using [Chainlink Automation](/chainlink-automation/introduction/). Circuit breakers are safety measures that monitor data feeds for unexpected scenarios such as stale prices, drastic price changes, or prices approaching a predetermined min/max threshold. If an unexpected scenario occurs, the circuit breaker can send an on-chain transaction to pause or halt contract functionality.
 
 ### Periods of High Network Congestion
 
@@ -171,13 +171,21 @@ Notifications are sent to inform known users regarding such occurrences, and it 
 
 If you are using Price Feeds but have not provided your contact information, you can do so [here](https://chainlinkcommunity.typeform.com/unknownDfUsers?typeform-source=docs.chain.link). Users that fail to provide notification information do so at their own risk.
 
+## Evaluating Wrapped or Bridged Assets
+
+### Assessing how to Price Wrapped or Bridged Assets
+
+When assessing a Chainlink Price Feed for a wrapped or bridged asset such as WBTC, users should evaluate the tradeoffs between using a price feed specifically built for the wrapped or bridged asset or a price feed built for the underlying asset.
+
+Decisions should be made on a case-by-case basis considering the liquidity, depth, and trading volatility of the underlying asset compared to its derivative. In addition, users must consider the security mechanism that is designed to keep the wrapped or bridged asset coupled to its underlying asset. Review these parameters regularly as asset dynamics continuously evolve.
+
 ### Extreme Events Causing Price Deviations in Wrapped or Bridged Assets
 
-Chainlink Price Feeds are designed to provide the market-wide price of various assets, as determined by a volume-weighted average across a wide range of exchanges. On blockchain networks where assets are wrapped and/or bridged from another environment using a cross-chain token bridge, Chainlink Price Feeds on that blockchain will continue to report the market-wide price of the underlying asset as opposed to the price of the wrapped/bridged asset. This methodology reduces risks around market manipulation because wrapped/bridged tokens are often less liquid than the underlying asset.
+Chainlink Price Feeds are designed to provide the market-wide price of various assets, as determined by a volume-weighted average across a wide range of exchanges. On blockchain networks where assets are wrapped and/or bridged from another environment using a cross-chain token bridge, Chainlink Price Feeds built for the underlying asset will continue to report the market-wide price of the underlying asset as opposed to the price of the wrapped/bridged asset. This methodology reduces risks around market manipulation because wrapped/bridged tokens are often less liquid than the underlying asset.
 
-However, users should be aware that certain extreme events may result in price deviations between the wrapped/bridged asset and its underlying counterpart. For example, the exploitation or hack of a cross-chain token bridge may cause a collapse in demand for a particular wrapped asset. As such, users should construct their applications with safeguards, such as proactively pausing functionality, to mitigate risk during such scenarios.
+However, users should be aware that certain extreme events may result in price deviations between the wrapped/bridged asset and its underlying counterpart. For example, the exploitation or hack of a cross-chain token bridge may cause a collapse in demand for a particular wrapped asset. As such, users should construct their applications with safeguards, such as circuit breakers to proactively pause functionality to mitigate risk during such scenarios. Circuit breakers can be created using Chainlink Automation to monitor data feeds for unexpected scenarios.
 
-One mechanism for securing a protocol utilizing wrapped assets is by incorporating [Chainlink Proof of Reserve](https://chain.link/proof-of-reserve). Chainlink Proof of Reserve enables the real-time reserve monitoring of off-chain and cross-chain assets, including those that have been wrapped/bridged. By comparing the wrapped token’s supply against a Chainlink Proof of Reserve feed, protocols can ensure that these assets are properly collateralized at all times.
+An additional mechanism for securing a protocol utilizing wrapped assets is by incorporating [Chainlink Proof of Reserve](https://chain.link/proof-of-reserve). Chainlink Proof of Reserve enables the real-time reserve monitoring of off-chain and cross-chain assets, including those that have been wrapped/bridged. By comparing the wrapped token’s supply against a Chainlink Proof of Reserve feed, protocols can ensure that these assets are properly collateralized at all times.
 
 ### Front Running Risk
 

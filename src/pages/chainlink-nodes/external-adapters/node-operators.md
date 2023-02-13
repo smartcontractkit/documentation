@@ -61,7 +61,7 @@ How can you test the adapter on your node?
 The easiest way is to setup a [Webhook Job](/chainlink-nodes/oracle-jobs/job-types/webhook/) that uses the external adapter, and manually set the parameter.
 
 :::note
-You might need to set the [configuration variable](/chainlink-nodes/configuration-variables/) `FEATURE_WEBHOOK_V2=true` in your `.env` file.
+You might need to set the [configuration variable](/chainlink-nodes/v1/configuration/) `FEATURE_WEBHOOK_V2=true` in your `.env` file.
 :::
 
 <!-- prettier-ignore -->

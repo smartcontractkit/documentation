@@ -17,6 +17,7 @@ Makes a mutating transaction to the specified contract with the specified data p
 - `txMeta`: a map of metadata that is saved into the database for debugging.
 - `minConfirmations`: minimum number of confirmations required before this task will continue. Set to zero to continue immediately. Note that this does not affect transaction inclusion. All transactions will always be included in the chain up to the configured finality depth.
 - `evmChainID`: set this optional parameter to transmit on the given chain. You must have the chain configured with RPC nodes for this to work. If left blank, it will use the default chain.
+- `failOnRevert`: an optional parameter, a boolean, that allows a ChainLink node operator's UI to display and color the status of the task within a job's pipeline depending on a transaction status. _default_: false.
 
 **Outputs**
 
@@ -31,7 +32,8 @@ encode_tx    [type="ethabiencode"
 
 submit_tx    [type="ethtx"
                to="0xa36085F69e2889c224210F603D836748e7dC0088"
-               data="$(encode_tx)"]
+               data="$(encode_tx)"
+               failOnRevert="true"]
 
 encode_tx -> submit_tx
 ```
