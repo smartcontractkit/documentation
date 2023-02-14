@@ -24,8 +24,8 @@ You can find a list of release notes for Chainlink nodes in the [smartcontractki
 
 ### Updated
 
-- Removed `KEEPER_TURN_FLAG_ENABLED` as all networks/nodes have switched this to `true` now. The variable should be completely removed my NOPs.
-- Removed `Keeper.UpkeepCheckGasPriceEnabled` config (`KEEPER_CHECK_UPKEEP_GAS_PRICE_FEATURE_ENABLED` in old env var configuration) as this feature is deprecated now. The variable should be completely removed by NOPs.
+- Removed the `KEEPER_TURN_FLAG_ENABLED` as all networks and nodes have switched this to `true`. The variable should be completely removed my NOPs.
+- Removed the `Keeper.UpkeepCheckGasPriceEnabled` config and the `KEEPER_CHECK_UPKEEP_GAS_PRICE_FEATURE_ENABLED` environment variable. This feature is deprecated and the variable should be completely removed by NOPs.
 
 ### Fixed
 

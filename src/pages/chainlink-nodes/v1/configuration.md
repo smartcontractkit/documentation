@@ -214,7 +214,6 @@ Your node applies configuration settings using following hierarchy:
     - [P2PV2_LISTEN_ADDRESSES](#p2pv2_listen_addresses)
 
 - [Keeper](#keeper)
-  - [KEEPER_CHECK_UPKEEP_GAS_PRICE_FEATURE_ENABLED](#keeper_check_upkeep_gas_price_feature_enabled)
   - [KEEPER_GAS_PRICE_BUFFER_PERCENT](#keeper_gas_price_buffer_percent)
   - [KEEPER_GAS_TIP_CAP_BUFFER_PERCENT](#keeper_gas_tip_cap_buffer_percent)
   - [KEEPER_BASE_FEE_BUFFER_PERCENT](#keeper_base_fee_buffer_percent)
@@ -224,7 +223,6 @@ Your node applies configuration settings using following hierarchy:
   - [KEEPER_REGISTRY_SYNC_INTERVAL](#keeper_registry_sync_interval)
   - [KEEPER_REGISTRY_SYNC_UPKEEP_QUEUE_SIZE](#keeper_registry_sync_upkeep_queue_size)
   - [KEEPER_TURN_LOOK_BACK](#keeper_turn_look_back)
-  - [KEEPER_TURN_FLAG_ENABLED](#keeper_turn_flag_enabled)
 - [CLI Client](#cli-client)
   - [ADMIN_CREDENTIALS_FILE](#admin_credentials_file)
   - [CLIENT_NODE_URL](#client_node_url)
@@ -1719,18 +1717,6 @@ Example: `P2PV2_LISTEN_ADDRESSES=1.2.3.4:9999 [a52d:0:a88:1274::abcd]:1337`
 
 These environment variables are used specificly for Chainlink Keepers. For most Chainlink Nodes, leave these values at their defaults and do not configure these environment variables.
 
-### KEEPER_CHECK_UPKEEP_GAS_PRICE_FEATURE_ENABLED
-
-:::caution
-Do not change this setting unless you know what you are doing.
-:::
-
-- Default: `"false"`
-
-Use this setting _only_ on Polygon networks.
-
-Includes gas price in calls to `checkUpkeep()` when set to `true`.
-
 ### KEEPER_GAS_PRICE_BUFFER_PERCENT
 
 :::caution
@@ -1820,16 +1806,6 @@ Do not change this setting unless you know what you are doing.
 - Default: `"1000"`
 
 The number of blocks in the past to look back when getting a block for a turn.
-
-### KEEPER_TURN_FLAG_ENABLED
-
-:::caution
-Do not change this setting unless you know what you are doing.
-:::
-
-- Default: `"false"`
-
-Enables a new algorithm for how keepers take turns.
 
 ## CLI Client
 
