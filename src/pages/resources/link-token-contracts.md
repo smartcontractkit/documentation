@@ -36,7 +36,7 @@ The LINK token is an ERC677 token that inherits functionality from the ERC20 tok
 | Name           | Chainlink Token                                                                                                                                                                                              |
 | Symbol         | LINK                                                                                                                                                                                                         |
 | Decimals       | 18                                                                                                                                                                                                           |
-| Network status | [ethstats.net](https://ethstats.net/)                                                                                                                                                                        |
+| Network status | [ethstats.dev](https://ethstats.dev/)                                                                                                                                                                        |
 
 ### Sepolia testnet
 

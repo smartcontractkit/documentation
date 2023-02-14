@@ -24,7 +24,7 @@ export const CHAINS: Chain[] = [
     page: "ethereum",
     title: "Ethereum Data Feeds",
     img: "/assets/chains/ethereum.svg",
-    networkStatusUrl: "https://ethstats.net/",
+    networkStatusUrl: "https://ethstats.dev/",
     tags: ["default", "proofOfReserve", "nftFloorPrice"],
     networks: [
       {
@@ -327,7 +327,7 @@ export const ALL_CHAINS: Chain[] = [
     page: "deprecated",
     title: "All chains",
     img: "/assets/chains/ethereum.svg",
-    networkStatusUrl: "https://ethstats.net/",
+    networkStatusUrl: "https://ethstats.dev/",
     tags: ["default", "proofOfReserve", "nftFloorPrice"],
     networks: [
       {
