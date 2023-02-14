@@ -15,7 +15,7 @@ The environment variables listed here are explicitly supported and current as of
 
 ## Experimental TOML configuration
 
-Static configuration using TOML files was added in v1.11.0 as an alternative to the existing combination of environment variables and persisted database configurations. This configuration method is _experimental_. In the future, TOML configuration `v2.0.0` will become the only supported configuration method. Enable TOML configuration by specifying the `-config <filename>.toml` flag with the path to your TOML file. Alternatively, you can specify the raw TOML config in the [`CL_CONFIG` environment variable](/chainlink-nodes/v1/configuration#cl_config). See the [CONFIG.md](https://github.com/smartcontractkit/chainlink/blob/v1.11.0/docs/CONFIG.md) and [SECRETS.md](https://github.com/smartcontractkit/chainlink/blob/v1.11.0/docs/SECRETS.md) on GitHub to learn more.
+Static configuration using TOML files was added in v1.11.0 as an alternative to the existing combination of environment variables and persisted database configurations. This configuration method is _experimental_. In the future, TOML configuration `v2.0.0` will become the only supported configuration method. Enable TOML configuration by specifying the `-config <filename>.toml` flag with the path to your TOML file. Alternatively, you can specify the raw TOML config in the [`CL_CONFIG` environment variable](/chainlink-nodes/v1/configuration#cl_config). See the [CONFIG.md](https://github.com/smartcontractkit/chainlink/blob/v1.12.0/docs/CONFIG.md) and [SECRETS.md](https://github.com/smartcontractkit/chainlink/blob/v1.12.0/docs/SECRETS.md) on GitHub to learn more.
 
 ## Changes to node configuration starting in v1.1.0 nodes
 
@@ -190,6 +190,7 @@ Your node applies configuration settings using following hierarchy:
   - [DEFAULT_HTTP_TIMEOUT](#default_http_timeout)
   - [FEATURE_EXTERNAL_INITIATORS](#feature_external_initiators)
   - [JOB_PIPELINE_MAX_RUN_DURATION](#job_pipeline_max_run_duration)
+  - [JOB_PIPELINE_MAX_SUCCESSFUL_RUNS](#job_pipeline_max_successful_runs)
   - [JOB_PIPELINE_REAPER_INTERVAL](#job_pipeline_reaper_interval)
   - [JOB_PIPELINE_REAPER_THRESHOLD](#job_pipeline_reaper_threshold)
   - [JOB_PIPELINE_RESULT_WRITE_QUEUE_DEPTH](#job_pipeline_result_write_queue_depth)
@@ -213,7 +214,6 @@ Your node applies configuration settings using following hierarchy:
     - [P2PV2_LISTEN_ADDRESSES](#p2pv2_listen_addresses)
 
 - [Keeper](#keeper)
-  - [KEEPER_CHECK_UPKEEP_GAS_PRICE_FEATURE_ENABLED](#keeper_check_upkeep_gas_price_feature_enabled)
   - [KEEPER_GAS_PRICE_BUFFER_PERCENT](#keeper_gas_price_buffer_percent)
   - [KEEPER_GAS_TIP_CAP_BUFFER_PERCENT](#keeper_gas_tip_cap_buffer_percent)
   - [KEEPER_BASE_FEE_BUFFER_PERCENT](#keeper_base_fee_buffer_percent)
@@ -223,7 +223,6 @@ Your node applies configuration settings using following hierarchy:
   - [KEEPER_REGISTRY_SYNC_INTERVAL](#keeper_registry_sync_interval)
   - [KEEPER_REGISTRY_SYNC_UPKEEP_QUEUE_SIZE](#keeper_registry_sync_upkeep_queue_size)
   - [KEEPER_TURN_LOOK_BACK](#keeper_turn_look_back)
-  - [KEEPER_TURN_FLAG_ENABLED](#keeper_turn_flag_enabled)
 - [CLI Client](#cli-client)
   - [ADMIN_CREDENTIALS_FILE](#admin_credentials_file)
   - [CLIENT_NODE_URL](#client_node_url)
@@ -252,7 +251,7 @@ Use TOML for configuration only on test networks.
 
 This environment variable is used to set static configuration using TOML format. Specify the raw TOML config in this environment variable. Unlike the `-config` flag, it does not accept a path to a TOML file.
 
-See the [CONFIG.md](https://github.com/smartcontractkit/chainlink/blob/v1.11.0/docs/CONFIG.md) and [SECRETS.md](https://github.com/smartcontractkit/chainlink/blob/v1.11.0/docs/SECRETS.md) on GitHub to learn more.
+See the [CONFIG.md](https://github.com/smartcontractkit/chainlink/blob/v1.12.0/docs/CONFIG.md) and [SECRETS.md](https://github.com/smartcontractkit/chainlink/blob/v1.12.0/docs/SECRETS.md) on GitHub to learn more.
 
 ### CHAIN_TYPE
 
@@ -272,19 +271,19 @@ Setting `CHAINLINK_DEV` to `true` enables development mode. Do not use this for 
 
 - Default: _none_
 
-The access key for authenticating with the Explorer.
+The access key for authenticating with the explorer. This variable is required to deliver telemetry.
 
 ### EXPLORER_SECRET
 
 - Default: _none_
 
-The secret for authenticating with the Explorer.
+The secret for authenticating with the explorer. This variable is required to deliver telemetry.
 
 ### EXPLORER_URL
 
 - Default: _none_
 
-The Explorer websocket URL for the node to push stats to.
+The explorer websocket URL for the node to push stats to. This variable is required to deliver telemetry.
 
 ### ROOT
 
@@ -1117,7 +1116,7 @@ This can be overridden on a per-task basis by setting the `MinRequiredOutgoingCo
 This has replaced the formerly used MINIMUM_CONTRACT_PAYMENT.
 :::
 
-- Default: _automatically set based on Chain ID, typically 10000000000000 (0.00001 LINK) on all chains except Ethereum Mainnet and Goerli where it is 100000000000000000 (0.1 LINK)._
+- Default: _automatically set based on Chain ID, typically 10000000000000 (0.00001 LINK) on all chains except Ethereum Mainnet and Sepolia where it is 100000000000000000 (0.1 LINK)._
 
 For jobs that use the `EthTx` adapter, this is the minimum payment amount in order for the node to accept and process the job. Since there are no decimals on the EVM, the value is represented like wei.
 
@@ -1555,6 +1554,10 @@ Enables the External Initiator feature. If disabled, `webhook` jobs can ONLY be 
 
 `JOB_PIPELINE_MAX_RUN_DURATION` is the maximum time that a single job run might take. If it takes longer, it will exit early and be marked errored. If set to zero, disables the time limit completely.
 
+### JOB_PIPELINE_MAX_SUCCESSFUL_RUNS
+
+This option is not supported as an environment variable. Use `JobPipeline.MaxSuccessfulRuns` in the config file instead. See the [CONFIG.md](https://github.com/smartcontractkit/chainlink/blob/v1.12.0/docs/CONFIG.md) reference for details.
+
 ### JOB_PIPELINE_REAPER_INTERVAL
 
 - Default: `"1h"`
@@ -1714,18 +1717,6 @@ Example: `P2PV2_LISTEN_ADDRESSES=1.2.3.4:9999 [a52d:0:a88:1274::abcd]:1337`
 
 These environment variables are used specificly for Chainlink Keepers. For most Chainlink Nodes, leave these values at their defaults and do not configure these environment variables.
 
-### KEEPER_CHECK_UPKEEP_GAS_PRICE_FEATURE_ENABLED
-
-:::caution
-Do not change this setting unless you know what you are doing.
-:::
-
-- Default: `"false"`
-
-Use this setting _only_ on Polygon networks.
-
-Includes gas price in calls to `checkUpkeep()` when set to `true`.
-
 ### KEEPER_GAS_PRICE_BUFFER_PERCENT
 
 :::caution
@@ -1815,16 +1806,6 @@ Do not change this setting unless you know what you are doing.
 - Default: `"1000"`
 
 The number of blocks in the past to look back when getting a block for a turn.
-
-### KEEPER_TURN_FLAG_ENABLED
-
-:::caution
-Do not change this setting unless you know what you are doing.
-:::
-
-- Default: `"false"`
-
-Enables a new algorithm for how keepers take turns.
 
 ## CLI Client
 

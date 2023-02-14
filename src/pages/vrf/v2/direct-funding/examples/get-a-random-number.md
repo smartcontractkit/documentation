@@ -28,7 +28,7 @@ This guide assumes that you know how to create and deploy smart contracts on Eth
 
 - [The Remix IDE](https://remix.ethereum.org/)
 - [MetaMask](https://metamask.io/)
-- [Goerli testnet ETH](/resources/link-token-contracts/#goerli-testnet)
+- [Sepolia testnet ETH](/resources/link-token-contracts/#sepolia-testnet)
 
 If you are new to developing smart contracts on Ethereum, see the [Getting Started](/getting-started/conceptual-overview/) guide to learn the basics.
 
@@ -41,7 +41,7 @@ For this example, use the [VRFv2DirectFundingConsumer.sol](https://remix.ethereu
 
 The contract also includes pre-configured values for the necessary request parameters such as `callbackGasLimit`, `requestConfirmations`, the number of random words `numWords`, the VRF v2 Wrapper address `wrapperAddress`, and the LINK token address `linkAddress`. You can change these parameters if you want to experiment on different testnets.
 
-Build and deploy the contract on Goerli.
+Build and deploy the contract on Sepolia.
 
 1. Open the [`VRFv2DirectFundingConsumer.sol` contract](https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFv2DirectFundingConsumer.sol) in Remix.
 

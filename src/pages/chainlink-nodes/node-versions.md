@@ -11,6 +11,27 @@ metadata:
 
 You can find a list of release notes for Chainlink nodes in the [smartcontractkit GitHub repository](https://github.com/smartcontractkit/chainlink/releases). Docker images are available in the [Chainlink Docker hub](https://hub.docker.com/r/smartcontract/chainlink/tags).
 
+## Changes in v1.12.0 nodes
+
+**[v1.12.0 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v1.12.0)**
+
+### Added
+
+- Prometheus gauge `mailbox_load_percent` for percent of "`Mailbox`" capacity used.
+- New config option `JobPipeline.MaxSuccessfulRuns` caps the total number of saved completed runs per job. This is done in response to the `pipeline_runs` table potentially becoming large, which can cause performance degradation. The default is set to 10,000. You can set it to 0 to disable run saving entirely. **NOTE**: This can only be configured via TOML and not with an environment variable.
+- Prometheus gauge vector `feeds_job_proposal_count` to track counts of job proposals partitioned by proposal status.
+- Support for variable expression for the `minConfirmations` parameter on the `ethtx` task.
+
+### Updated
+
+- Removed the `KEEPER_TURN_FLAG_ENABLED` as all networks and nodes have switched this to `true`. The variable should be completely removed my NOPs.
+- Removed the `Keeper.UpkeepCheckGasPriceEnabled` config and the `KEEPER_CHECK_UPKEEP_GAS_PRICE_FEATURE_ENABLED` environment variable. This feature is deprecated and the variable should be completely removed by NOPs.
+
+### Fixed
+
+- Fixed (SQLSTATE 42P18) error on Job Runs page, when attempting to view specific older or infrequenty run jobs.
+- The `config dump` subcommand was fixed to dump the correct config data. The P2P.V1.Enabled config logic incorrectly matched V2, by only setting explicit true values so that otherwise the default is used. The V1.Enabled default value is actually true already, and is now updated to only set explicit false values.
+
 ## Changes in v1.11.0 nodes
 
 **[v1.11.0 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v1.11.0)**
@@ -25,7 +46,7 @@ You can find a list of release notes for Chainlink nodes in the [smartcontractki
   - `bridge_errors_total`
   - `bridge_cache_hits_total`
   - `bridge_cache_errors_total`
-- ⚠️ Experimental: ⚠️ Added static configuration using TOML files as an alternative to the existing combination of environment variables and persisted database configurations. For this release, use TOML for configuration only on test networks. In the future with `v2.0.0`, TOML configuration will become the only supported configuration method. Enable TOML configuration by specifying the `-config <filename>.toml` flag with the path to your TOML file. Alternatively, you can specify the raw TOML config in the [`CL_CONFIG` environment variable](/chainlink-nodes/v1/configuration#cl_config). See the [CONFIG.md](https://github.com/smartcontractkit/chainlink/blob/v1.11.0/docs/CONFIG.md) and [SECRETS.md](https://github.com/smartcontractkit/chainlink/blob/v1.11.0/docs/SECRETS.md) on GitHub to learn more.
+- ⚠️ Experimental: ⚠️ Added static configuration using TOML files as an alternative to the existing combination of environment variables and persisted database configurations. For this release, use TOML for configuration only on test networks. In the future with `v2.0.0`, TOML configuration will become the only supported configuration method. Enable TOML configuration by specifying the `-config <filename>.toml` flag with the path to your TOML file. Alternatively, you can specify the raw TOML config in the [`CL_CONFIG` environment variable](/chainlink-nodes/v1/configuration#cl_config). See the [CONFIG.md](https://github.com/smartcontractkit/chainlink/blob/v1.12.0/docs/CONFIG.md) and [SECRETS.md](https://github.com/smartcontractkit/chainlink/blob/v1.12.0/docs/SECRETS.md) on GitHub to learn more.
 
 ### Fixed
 
@@ -270,7 +291,7 @@ To disable connectivity checking completely, set `BLOCK_HISTORY_ESTIMATOR_CHECK_
 - JSON parse tasks in TOML now support a custom `separator` parameter to substitute for the default `,`.
 - Slow SQL queries are now logged.
 - Updated the block explorer URLs to include FTMScan and SnowTrace.
-- Keeper upkeep order can now be shuffled. See [KEEPER_TURN_FLAG_ENABLED](/chainlink-nodes/v1/configuration/#keeper_turn_flag_enabled) for details.
+- Keeper upkeep order can now be shuffled.
 - Several fixes. See the [release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v1.4.0) for a full list of changes.
 
 ## Changes in v1.3.0 nodes
@@ -283,7 +304,7 @@ To disable connectivity checking completely, set `BLOCK_HISTORY_ESTIMATOR_CHECK_
 - Changed default locking mode to "dual". See the [DATABASE_LOCKING_MODE](/chainlink-nodes/v1/configuration/#database_locking_mode) documentation for details.
 - Specifying multiple EVM RPC nodes with the same URL is no longer supported. If you see `ERROR 0106_evm_node_uniqueness.sql: failed to run SQL migration`, you have multiple nodes specified with the same URL and you must fix this before proceeding with the upgrade.
 - EIP-1559 is now enabled by default on the Ethereum Mainnet. See the [EVM_EIP1559_DYNAMIC_FEES](/chainlink-nodes/v1/configuration/#evm_eip1559_dynamic_fees) documentation for details.
-- Added new Chainlink Automation feature that includes gas price in calls to `checkUpkeep()`. To enable the feature, set [KEEPER_CHECK_UPKEEP_GAS_PRICE_FEATURE_ENABLED](/chainlink-nodes/v1/configuration#keeper_check_upkeep_gas_price_feature_enabled) to `true`. Use this setting _only_ on Polygon networks.
+- Added new Chainlink Automation feature that includes gas price in calls to `checkUpkeep()`. To enable the feature, set `KEEPER_CHECK_UPKEEP_GAS_PRICE_FEATURE_ENABLED` to `true`. Use this setting _only_ on Polygon networks.
 
 ## Changes in v1.2.0 nodes
 

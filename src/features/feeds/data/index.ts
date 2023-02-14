@@ -1,9 +1,9 @@
 export const priceFeedAddresses = {
   btc: {
     usd: {
-      goerli: {
-        address: "0xA39434A63A52E749F02807ae27335515BA4b07F7",
-        historicalRound: "18446744073709554177",
+      sepolia: {
+        address: "0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43",
+        historicalRound: "18446744073709551978",
       },
     },
   },

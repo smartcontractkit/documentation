@@ -5,6 +5,7 @@ import { SupportedChain } from "."
 
 export const chainToProvider: Record<SupportedChain, () => providers.Provider> = {
   ETHEREUM_MAINNET: () => new providers.InfuraProvider("homestead", "fe6db57057904042b7fed23ff54c643d"),
+  ETHEREUM_SEPOLIA: () => new providers.JsonRpcProvider("https://rpc.ankr.com/eth_sepolia"),
   ETHEREUM_GOERLI: () => new providers.InfuraProvider("goerli", "fe6db57057904042b7fed23ff54c643d"),
   BNB_MAINNET: () => new providers.JsonRpcProvider("https://bsc.nodereal.io/"),
   BNB_TESTNET: () => new providers.JsonRpcProvider("https://data-seed-prebsc-1-s1.binance.org:8545/"),

@@ -2,13 +2,19 @@ export const NETWORKS = [
   {
     page: "ethereum",
     title: "Ethereum Data Feeds",
-    networkStatusUrl: "https://ethstats.net/",
+    networkStatusUrl: "https://ethstats.dev/",
     networks: [
       {
         name: "Ethereum Mainnet",
         url: "https://etherscan.io/address/%s",
         source: "directory.json",
         networkType: "mainnet",
+      },
+      {
+        name: "Sepolia Testnet",
+        url: "https://sepolia.etherscan.io/address/%s",
+        source: "directory-sepolia.json",
+        networkType: "testnet",
       },
       {
         name: "Goerli Testnet",
