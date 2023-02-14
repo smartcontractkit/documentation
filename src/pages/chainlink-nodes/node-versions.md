@@ -291,7 +291,7 @@ To disable connectivity checking completely, set `BLOCK_HISTORY_ESTIMATOR_CHECK_
 - JSON parse tasks in TOML now support a custom `separator` parameter to substitute for the default `,`.
 - Slow SQL queries are now logged.
 - Updated the block explorer URLs to include FTMScan and SnowTrace.
-- Keeper upkeep order can now be shuffled. See [KEEPER_TURN_FLAG_ENABLED](/chainlink-nodes/v1/configuration/#keeper_turn_flag_enabled) for details.
+- Keeper upkeep order can now be shuffled.
 - Several fixes. See the [release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v1.4.0) for a full list of changes.
 
 ## Changes in v1.3.0 nodes
@@ -304,7 +304,7 @@ To disable connectivity checking completely, set `BLOCK_HISTORY_ESTIMATOR_CHECK_
 - Changed default locking mode to "dual". See the [DATABASE_LOCKING_MODE](/chainlink-nodes/v1/configuration/#database_locking_mode) documentation for details.
 - Specifying multiple EVM RPC nodes with the same URL is no longer supported. If you see `ERROR 0106_evm_node_uniqueness.sql: failed to run SQL migration`, you have multiple nodes specified with the same URL and you must fix this before proceeding with the upgrade.
 - EIP-1559 is now enabled by default on the Ethereum Mainnet. See the [EVM_EIP1559_DYNAMIC_FEES](/chainlink-nodes/v1/configuration/#evm_eip1559_dynamic_fees) documentation for details.
-- Added new Chainlink Automation feature that includes gas price in calls to `checkUpkeep()`. To enable the feature, set [KEEPER_CHECK_UPKEEP_GAS_PRICE_FEATURE_ENABLED](/chainlink-nodes/v1/configuration#keeper_check_upkeep_gas_price_feature_enabled) to `true`. Use this setting _only_ on Polygon networks.
+- Added new Chainlink Automation feature that includes gas price in calls to `checkUpkeep()`. To enable the feature, set `KEEPER_CHECK_UPKEEP_GAS_PRICE_FEATURE_ENABLED` to `true`. Use this setting _only_ on Polygon networks.
 
 ## Changes in v1.2.0 nodes
 
