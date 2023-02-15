@@ -18,11 +18,11 @@ Import this interface to your contract and use it to run functions in the proxy 
 ```solidity
 /**
  * Network: Sepolia
- * Data Feed: BTC/USD
- * Address: 0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43
+ * Data Feed: ETH/USD
+ * Address: 0x694AA1769357215DE4FAC081bf1f309aDC325306
  */
 constructor() {
-  priceFeed = AggregatorV3Interface(0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43);
+  priceFeed = AggregatorV3Interface(0x694AA1769357215DE4FAC081bf1f309aDC325306);
 }
 
 ```
