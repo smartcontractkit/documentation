@@ -8,7 +8,7 @@ contract PriceConsumerV3 {
 
     /**
      * Network: Sepolia
-     * Aggregator: ETH/USD
+     * Aggregator: BTC/USD
      * Address: 0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43
      */
     constructor() {
