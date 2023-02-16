@@ -80,7 +80,7 @@ The deployed contract requests random values from Chainlink VRF, receives those 
 1. Call `getRequestStatus()` and specify the `requestId` to display the random words.
 
 :::note[Note on Requesting Randomness]
-Do not re-request randomness even if you do **not** receive an answer right away. Doing so would give the VRF service provider the option to withhold a VRF fulfillment, if it doesn't like the outcome, and wait for the re-request in the hopes that it gets a better outcome. This is similar to the considerations with block confirmation time. For more information, see the [VRF Security Considerations](/vrf/v2/security/) page.
+Do not re-request randomness. For more information, see the [VRF Security Considerations](/vrf/v2/security/) page.
 :::
 
 ## Analyzing the contract
