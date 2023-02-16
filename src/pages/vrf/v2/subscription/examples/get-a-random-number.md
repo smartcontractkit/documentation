@@ -118,7 +118,7 @@ The deployed contract requests random values from Chainlink VRF, receives those 
 You deployed a simple contract that can request and receive random values from Chainlink VRF. To see more advanced examples where the contract can complete the entire process including subscription setup and management, see the [Programmatic Subscription](/vrf/v2/subscription/examples/programmatic-subscription/) page.
 
 :::note[Note on Requesting Randomness]
-Do not re-request randomness even if you do **not** receive an answer right away. Doing so would give the VRF service provider the option to withhold a VRF fulfillment, if it doesn't like the outcome, and wait for the re-request in the hopes that it gets a better outcome. This is similar to the considerations with block confirmation time. For more information, see the [VRF Security Considerations](/vrf/v2/security/) page.
+Do not re-request randomness. For more information, see the [VRF Security Considerations](/vrf/v2/security/) page.
 :::
 
 ## Analyzing the contract
