@@ -460,56 +460,62 @@ export const SIDEBAR = {
           url: "vrf/v2/introduction",
         },
         {
-          title: "Subscription Method",
-          url: "vrf/v2/subscription",
-          children: [
-            {
-              title: "Get a Random Number",
-              url: "vrf/v2/subscription/examples/get-a-random-number",
-            },
-            {
-              title: "Programmatic Subscription",
-              url: "vrf/v2/subscription/examples/programmatic-subscription",
-            },
-            {
-              title: "Subscription Manager UI",
-              url: "vrf/v2/subscription/ui",
-            },
-            {
-              title: "Supported Networks",
-              url: "vrf/v2/subscription/supported-networks",
-            },
-            {
-              title: "Migrating from VRF v1",
-              url: "vrf/v2/subscription/migration-from-v1",
-            },
-          ],
-        },
-        {
-          title: "Direct Funding Method",
-          url: "vrf/v2/direct-funding",
-          children: [
-            {
-              title: "Get a Random Number",
-              url: "vrf/v2/direct-funding/examples/get-a-random-number",
-            },
-            {
-              title: "Supported Networks",
-              url: "vrf/v2/direct-funding/supported-networks",
-            },
-            {
-              title: "Migrating from VRF v1",
-              url: "vrf/v2/direct-funding/migration-from-v1",
-            },
-          ],
-        },
-        {
           title: "Security Considerations",
           url: "vrf/v2/security",
         },
         {
           title: "Best Practices",
           url: "vrf/v2/best-practices",
+        },
+      ],
+    },
+    {
+      section: "SUBSCRIPTION METHOD",
+      contents: [
+        {
+          title: "Introduction",
+          url: "vrf/v2/subscription",
+        },
+        {
+          title: "Get a Random Number",
+          url: "vrf/v2/subscription/examples/get-a-random-number",
+        },
+        {
+          title: "Programmatic Subscription",
+          url: "vrf/v2/subscription/examples/programmatic-subscription",
+        },
+        {
+          title: "Subscription Manager UI",
+          url: "vrf/v2/subscription/ui",
+        },
+        {
+          title: "Supported Networks",
+          url: "vrf/v2/subscription/supported-networks",
+        },
+        {
+          title: "Migrating from VRF v1",
+          url: "vrf/v2/subscription/migration-from-v1",
+        },
+      ],
+    },
+    {
+      section: "DIRECT FUNDING METHOD",
+      contents: [
+        {
+          title: "Introduction",
+          url: "vrf/v2/direct-funding",
+        },
+        {
+          title: "Get a Random Number",
+          url: "vrf/v2/direct-funding/examples/get-a-random-number",
+        },
+        {
+          title: "Supported Networks",
+          url: "vrf/v2/direct-funding/supported-networks",
+        },
+        {
+          title: "Migrating from VRF v1",
+          url: "vrf/v2/direct-funding/migration-from-v1",
         },
       ],
     },
