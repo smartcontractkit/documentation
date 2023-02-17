@@ -42,7 +42,7 @@ For this example, create a new subscription on the Sepolia testnet.
 
 1. Open MetaMask and set it to use the Sepolia testnet. The [Subscription Manager](/vrf/v2/subscription/ui/) detects your network based on the active network in MetaMask.
 
-1. Check MetaMask to make sure you have testnet ETH and LINK on Sepolia. You can get testnet ETH and LINK at one of the available [Sepolia faucets](https://faucets.chain.link/sepolia/).
+1. Check MetaMask to make sure you have testnet ETH and LINK on Sepolia. You can get testnet ETH and LINK at [faucets.chain.link](https://faucets.chain.link/sepolia/).
 
 1. Open the Subscription Manager at [vrf.chain.link](https://vrf.chain.link).
    <!-- prettier-ignore -->
