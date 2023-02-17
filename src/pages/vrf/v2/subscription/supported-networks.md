@@ -58,8 +58,8 @@ VRF v2 coordinators for subscription funding are available on several networks. 
 ### Sepolia testnet
 
 :::note[Sepolia Faucets]
-Testnet LINK is available from https://faucets.chain.link/sepolia<br/>
-Testnet ETH is availale at one of the public <a href="https://faucetlink.to/sepolia">ETH faucets</a>.
+Testnet LINK and ETH are available from <a href="https://faucets.chain.link/sepolia">faucets.chain.link</a>.<br/>
+Testnet ETH is also available from several public <a href="https://faucetlink.to/sepolia">ETH faucets</a>.
 :::
 
 | Item                  | Value                                                                                                                                                                                                                       |
