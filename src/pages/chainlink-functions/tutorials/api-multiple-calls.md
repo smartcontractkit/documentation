@@ -91,6 +91,10 @@ Reading the output of the example above, you can note that the `BTC/USD` median 
 
 ### Request
 
+:::note[Reminder]
+Before you can make a successful request, you must complete the setup steps in the [Before you begin](#before_you_begin) section. Each tutorial is in a separate Git branch and some require unique entries in your `.env` file.
+:::
+
 Send a request to the Decentralized Oracle Network to fetch the asset price. Run the `functions-request` task with the `subid` (subscription ID) and `contract` parameters. This task passes the functions JavaScript source code and any arguments and secrets when calling the `executeRequest` function in your deployed `FunctionsConsumer` contract. Read the [functionsConsumer](#functionsconsumersol) section for a more detailed explanation about the consumer contract.
 
 ```bash
