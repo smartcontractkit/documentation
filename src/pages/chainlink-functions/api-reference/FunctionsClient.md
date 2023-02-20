@@ -5,7 +5,7 @@ date: Last Modified
 title: "FunctionsClient API Reference"
 ---
 
-Consumer contract developers inherit [FunctionsClient](https://github.com/smartcontractkit/functions-hardhat-starter-kit/blob/main/contracts/dev/functions/FunctionsClient.sol) in order to create Chainlink Functions requests.
+Consumer contract developers inherit [FunctionsClient](https://github.com/smartcontractkit/functions-hardhat-starter-kit/blob/main/contracts/dev/functions/FunctionsClient.sol) to create Chainlink Functions requests.
 
 ## Events
 
