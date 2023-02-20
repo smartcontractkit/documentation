@@ -14,7 +14,7 @@ You can return any number of responses as long as they are encoded in a `bytes` 
 :::
 
 :::caution[Side effects]
-Building non-idempotent requests, such as sending an email or storing data on the cloud, is currently not recommended. An HTTP method is idempotent if the intended effect on the server of making a single request is the same as the effect of making several identical requests. Each oracle node runs the same computation in the [Off-chain Reporting protocol](/architecture-overview/off-chain-reporting/). If your Chainlink Function makes non-idempotent requests, this will lead to redundant requests, such as several emails being sent or data being stored multiple times.
+Building non-idempotent requests, such as sending an email or storing data on the cloud, is currently not recommended. An HTTP method is idempotent if the intended effect on the server when you make a single request is the same as the effect when you make several identical requests. Each oracle node runs the same computation in the [Off-chain Reporting protocol](/architecture-overview/off-chain-reporting/). If your Chainlink Function makes non-idempotent requests, it will cause redundant requests such as sending multiple emails or storing the same data multiple times.
 :::
 
 ## Before you begin
