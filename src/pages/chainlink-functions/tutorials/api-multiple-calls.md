@@ -1,0 +1,239 @@
+---
+layout: ../../../layouts/MainLayout.astro
+section: chainlinkFunctions
+date: Last Modified
+title: "Call Multiple Data Sources"
+setup: |
+  import ChainlinkFunctions from "@features/chainlink-functions/common/ChainlinkFunctions.astro"
+---
+
+This tutorial shows you how make multiple API calls from your smart contract to a Decentralized Oracle Network. After [OCR](/chainlink-functions/resources/concepts/) completes off-chain computation and aggregation, the DON returns the asset price to your smart contract. This example returns the `BTC/USD` price.
+
+This guide assumes that you know how to build HTTP requests and how to use secrets. Read the [API query parameters](/chainlink-functions/tutorials/api-query-parameters/) and [API use secrets](/chainlink-functions/tutorials/api-use-secrets/) guides before you follow the example in this document.
+To build a decentralized asset price, send a request to the DON to fetch the price from many different API providers. Then, calculate the median price. The API providers in this example are:
+
+- [CoinMarket](https://coinmarketcap.com/api/documentation/v1/)
+- [CoinGecko](https://www.coingecko.com/en/api/documentation)
+- [CoinPaprika](https://api.coinpaprika.com/)
+
+## Before you begin
+
+:::note[Request Access]
+Chainlink Functions is currently in a limited BETA.
+Apply [here](http://functions.chain.link/) to add your EVM account address to the Allow List.
+:::
+
+1. **[Complete the setup steps in the Getting Started guide](/chainlink-functions/getting-started):** The Getting Started Guide shows you how to set up your environment with the necessary tools for these tutorials. You can re-use the same consumer contract for each of these tutorials.
+
+1. Make sure your subscription has enough LINK to pay for your requests. Read [Get Subscription details](/chainlink-functions/resources/subscriptions#get-subscription-details) to learn how to check your subscription balance. If your subscription runs out of LINK, follow the [Fund a Subscription](/chainlink-functions/resources/subscriptions#fund-a-subscription) guide.
+
+1. **Check out the correct branch before you try this tutorial:** Each tutorial is stored in a separate branch of the [Chainlink Functions Starter Kit](https://github.com/smartcontractkit/functions-hardhat-starter-kit) repository.
+
+   ```bash
+   git checkout tutorial-6
+   ```
+
+1. Get a free API key from [CoinMarketCap](https://coinmarketcap.com/api/).
+1. Open your `.env` file.
+1. Add a line to the `.env` file with the `COINMARKETCAP_API_KEY=` variable and set it to your API key. For example: `COINMARKETCAP_API_KEY=78143127-fe7e-d5fe-878f-143notarealkey`
+1. Save your `.env` file.
+
+## Tutorial
+
+:::note[Complete the Before you begin section]
+This tutorial has some unique `.env` setup steps. Make sure that you configured your `.env` file with the necessary variables in the [Before you begin](#before-you-begin) section.
+:::
+
+This tutorial is configured to get the median `BTC/USD` price from multiple data sources. For a detailed explanation of the code example, read the [Explanation](#explanation) section.
+
+- Open `Functions-request-config.js`. Note the `args` value is `["1", "bitcoin", "btc-bitcoin"]`. These arguments are BTC IDs at CoinMarketCap, CoinGecko, and Coinpaprika. You can adapt `args` to fetch other asset prices. See the API docs for [CoinMarketCap](https://coinmarketcap.com/api/documentation/v1/), [CoinGecko](https://www.coingecko.com/en/api/documentation), and [CoinPaprika](https://api.coinpaprika.com/) for details. For more information about the request, read the [request config](#functions-request-configjs) section.
+- Open `Functions-request-source.js` to analyze the JavaScript source code. Read the [source code explanation](#functions-request-sourcejs) for a more detailed explanation about the request source file.
+
+### Simulation
+
+The [Chainlink Functions Hardhat Starter Kit](https://github.com/smartcontractkit/functions-hardhat-starter-kit) includes a simulator to test your Functions code on your local machine. The `functions-simulate` command executes your code in a local runtime environment and simulates an end-to-end fulfillment. This helps you to fix issues before you submit functions to the Decentralized Oracle Network.
+
+Run the `functions-simulate` task to run the source code locally and make sure `Functions-request-config.js` and `Functions-request-source.js` are correctly written:
+
+```bash
+npx hardhat functions-simulate
+```
+
+Example:
+
+```bash
+$ npx hardhat functions-simulate
+secp256k1 unavailable, reverting to browser version
+
+__Compiling Contracts__
+Nothing to compile
+Duplicate definition of Transfer (Transfer(address,address,uint256,bytes), Transfer(address,address,uint256))
+
+Executing JavaScript request source code locally...
+
+__Console log messages from sandboxed code__
+Median Bitcoin price: $22975.59
+
+__Output from sandboxed source code__
+Output represented as a hex string: 0x0000000000000000000000000000000000000000000000000000000000230ed7
+Decoded as a uint256: 2297559
+
+__Simulated On-Chain Response__
+Response returned to client contract represented as a hex string: 0x0000000000000000000000000000000000000000000000000000000000230ed7
+Decoded as a uint256: 2297559
+
+Estimated transmission cost: 0.000045536612837717 LINK (This will vary based on gas price)
+Base fee: 0.0 LINK
+Total estimated cost: 0.000045536612837717 LINK
+```
+
+Reading the output of the example above, you can note that the `BTC/USD` median price is: _22975.59 USD_. Because Solidity does not support decimals, we move the decimal point so that the value looks like the integer `2297559` before returning the `bytes` encoded value `0x0000000000000000000000000000000000000000000000000000000000230ed7` in the callback. Read the [source code explanation](#functions-request-sourcejs) for a more detailed explanation.
+
+### Request
+
+:::note[Reminder]
+Before you can make a successful request, you must complete the setup steps in the [Before you begin](#before_you_begin) section. Each tutorial is in a separate Git branch and some require unique entries in your `.env` file.
+:::
+
+Send a request to the Decentralized Oracle Network to fetch the asset price. Run the `functions-request` task with the `subid` (subscription ID) and `contract` parameters. This task passes the functions JavaScript source code and any arguments and secrets when calling the `executeRequest` function in your deployed `FunctionsConsumer` contract. Read the [functionsConsumer](#functionsconsumersol) section for a more detailed explanation about the consumer contract.
+
+```bash
+npx hardhat functions-request --subid REPLACE_SUBSCRIPTION_ID --contract REPLACE_CONSUMER_CONTRACT_ADDRESS --network REPLACE_NETWORK
+```
+
+Example:
+
+```bash
+$ npx hardhat functions-request --subid 6 --contract 0xa9b286E892d579dc727c79D3be9b01949796240A  --network mumbai
+secp256k1 unavailable, reverting to browser version
+Simulating Functions request locally...
+
+__Console log messages from sandboxed code__
+Median Bitcoin price: $22981.11
+
+__Output from sandboxed source code__
+Output represented as a hex string: 0x00000000000000000000000000000000000000000000000000000000002310ff
+Decoded as a uint256: 2298111
+
+
+If all 100000 callback gas is used, this request is estimated to cost 0.000054961325570353 LINK
+Continue? (y) Yes / (n) No
+y
+
+Requesting new data for FunctionsConsumer contract 0xa9b286E892d579dc727c79D3be9b01949796240A on network mumbai
+Waiting 2 blocks for transaction 0x9fa43ee9e8d4ba61ef87bc164b88eb6a9a055140453c27d2b15b42bd4b91a56a to be confirmed...
+
+Request 0x68014e0a20daafe82cc65797222943e0bb5ff3123ff80d7612523945f722c9fb initiated
+Waiting for fulfillment...
+
+Request 0x68014e0a20daafe82cc65797222943e0bb5ff3123ff80d7612523945f722c9fb fulfilled!
+Response returned to client contract represented as a hex string: 0x00000000000000000000000000000000000000000000000000000000002310ff
+Decoded as a uint256: 2298111
+
+Transmission cost: 0.000119462925581673 LINK
+Base fee: 0.0 LINK
+Total cost: 0.000119462925581673 LINK
+```
+
+The output of the example above gives you the following information:
+
+- The `executeRequest` function was successfully called in the `FunctionsConsumer` contract. The transaction in this example is [0x9fa43ee9e8d4ba61ef87bc164b88eb6a9a055140453c27d2b15b42bd4b91a56a](https://mumbai.polygonscan.com/tx/0x9fa43ee9e8d4ba61ef87bc164b88eb6a9a055140453c27d2b15b42bd4b91a56a).
+- The request ID is `0x68014e0a20daafe82cc65797222943e0bb5ff3123ff80d7612523945f722c9fb`.
+- The DON successfully fulfilled your request. The total cost was: `0.000119462925581673 LINK`.
+- The consumer contract received a response in `bytes` with a value of `0x00000000000000000000000000000000000000000000000000000000002310ff`. Decoding the response off-chain to `uint256` gives you a result of `2298111`.
+
+At any time, you can run the `functions-read` task with the `contract` parameter to read the latest received response.
+
+```bash
+npx hardhat functions-read  --contract REPLACE_CONSUMER_CONTRACT_ADDRESS --network REPLACE_NETWORK
+```
+
+Example:
+
+```bash
+$ npx hardhat functions-simulate
+secp256k1 unavailable, reverting to browser version
+
+__Compiling Contracts__
+Nothing to compile
+Duplicate definition of Transfer (Transfer(address,address,uint256,bytes), Transfer(address,address,uint256))
+
+Executing JavaScript request source code locally...
+
+__Console log messages from sandboxed code__
+Median Bitcoin price: $22980.04
+
+__Output from sandboxed source code__
+Output represented as a hex string: 0x0000000000000000000000000000000000000000000000000000000000231094
+Decoded as a uint256: 2298004
+
+__Simulated On-Chain Response__
+Response returned to client contract represented as a hex string: 0x0000000000000000000000000000000000000000000000000000000000231094
+Decoded as a uint256: 2298004
+
+Estimated transmission cost: 0.000045536612837717 LINK (This will vary based on gas price)
+Base fee: 0.0 LINK
+Total estimated cost: 0.000045536612837717 LINK
+```
+
+## Explanation
+
+### FunctionsConsumer.sol
+
+<ChainlinkFunctions section="functions-consumer" />
+
+### Functions-request-config.js
+
+Read the [Request Configuration](https://github.com/smartcontractkit/functions-hardhat-starter-kit#functions-library) section for a detailed description of each setting. In this example, the settings are the following:
+
+- `codeLocation: Location.Inline`: The JavaScript code is provided within the request.
+- `secretsLocation: Location.Inline`: The secrets are provided within the request.
+- `codeLanguage: CodeLanguage.JavaScript`: The source code is developed in the JavaScript language.
+- `source: fs.readFileSync("./Functions-request-source.js").toString()`: The source code must be a script object. This example uses `fs.readFileSync` to read `Functions-request-source.js` and calls `toString()` to get the content as a `string` object.
+- `secrets: { apiKey: process.env.COINMARKETCAP_API_KEY }`: JavaScript object which contains secret values. Before making the request, these secrets are encrypted using the DON public key. The `process.env.COINMARKETCAP_API_KEY` setting means `COINMARKETCAP_API_KEY` is fetched from the environment variables. Make sure to set `COINMARKETCAP_API_KEY` in your `.env` file. **Note**: `secrets` is limited to a key-value map that can only contain strings. It cannot include any other types or nested parameters.
+- `walletPrivateKey: process.env["PRIVATE_KEY"]`: This is your EVM account private key. It is used to generate a signature for the encrypted secrets such that an unauthorized third party cannot reuse them.
+- `args: ["1", "bitcoin", "btc-bitcoin"]`: These arguments are passed to the source code. This example requests the `BTC/USD` price. These arguments are BTC IDs at CoinMarketCap, CoinGecko, and Coinpaprika. You can adapt `args` to fetch other asset prices. See the API docs for [CoinMarketCap](https://coinmarketcap.com/api/documentation/v1/), [CoinGecko](https://www.coingecko.com/en/api/documentation), and [CoinPaprika](https://api.coinpaprika.com/) for details.
+- `expectedReturnType: ReturnType.uint256`: The response received by the DON is encoded in `bytes`. Because the asset price is `uint256`, you must define `ReturnType.uint256` to inform users how to decode the response received by the DON.
+
+### Functions-request-source.js
+
+To check the expected API responses, run these commands in your terminal:
+
+- CoinMarketCap:
+  ```bash
+  curl -X 'GET' \
+  'https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?id=1&convert=USD' \
+  -H 'accept: application/json' \
+  -H 'X-CMC_PRO_API_KEY: REPLACE_WITH_YOUR_API_KEY'
+  ```
+- CoinGecko:
+
+  ```bash
+  curl -X 'GET' \
+  'https://api.coingecko.com/api/v3/simple/price?vs_currencies=USD&ids=bitcoin' \
+  -H 'accept: application/json'
+  ```
+
+- Coinpaprika:
+
+  ```bash
+  curl -X 'GET' \
+  'https://api.coinpaprika.com/v1/tickers/btc-bitcoin' \
+  -H 'accept: application/json'
+  ```
+
+The price is located at:
+
+- CoinMarketCap: `data,1,quote,USD,price`
+- CoinGecko: `bitcoin,usd`
+- Coinpaprika: `quotes,USD,price`
+
+Read the [JavaScript code](https://github.com/smartcontractkit/functions-hardhat-starter-kit#javascript-code) section for a detailed explanation of how to write a compatible JavaScript source code. This JavaScript source code uses [Functions.makeHttpRequest](https://github.com/smartcontractkit/functions-hardhat-starter-kit#functions-library) to make HTTP requests.
+
+The code is self-explanatory and has comments to help you understand all the steps. The main steps are:
+
+- Construct the HTTP objects `coinMarketCapRequest`, `coinGeckoRequest`, and `coinPaprikaRequest` using `Functions.makeHttpRequest`. The values for `coinMarketCapCoinId`, `coinGeckoCoinId`, and `coinPaprikaCoinId` are fetched from the `args`. See the [request config](#functions-request-configjs) section for details.
+- Make the HTTP calls.
+- Read the asset price from each response.
+- Calculate the median of all the prices.
+- Return the result as a [buffer](https://nodejs.org/api/buffer.html#buffer) using the `Functions.encodeUint256` helper function. Because solidity doesn't support decimals, multiply the result by `100` and round the result to the nearest integer. **Note**: Read this [article](https://www.freecodecamp.org/news/do-you-want-a-better-understanding-of-buffer-in-node-js-check-this-out-2e29de2968e8/) if you are new to Javascript Buffers and want to understand why they are important.
