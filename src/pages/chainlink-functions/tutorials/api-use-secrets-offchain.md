@@ -9,7 +9,14 @@ setup: |
 
 This tutorial shows you how to leverage the [Off-chain Secrets capability](https://github.com/smartcontractkit/functions-hardhat-starter-kit/tree/main#off-chain-secrets) to share encrypted secrets off-chain via HTTP with a Decentralized Oracle Network.
 
-Read the [API multiple calls](/chainlink-functions/tutorials/api-multiple-calls/) guide before you follow the example in this document. We will use the same example, but with a slight difference. Encrypted secrets will not be sent in the request to the DON. Instead, you will encrypt the secrets with your private key, host the encrypted secrets file off-chain, and include the HTTP URL to the secrets file in your Chainlink Functions request.
+Read the [API multiple calls](/chainlink-functions/tutorials/api-multiple-calls/) tutorial before you follow the steps in this example. We will use the same example, but with a slightly different process:
+
+1. Instead of sending encrypted secrets to the DON directly, encrypt your secrets using the public key of the DON. This means only the DON can decrypt the secrets and use them.
+1. Include the encrypted secrets in an `offchain-secrets.json` file.
+1. Host the secrets file off-chain.
+1. Include the HTTP URL to the file in your Chainlink Functions request.
+
+The `functions-build-offchain-secrets` task encrypts the secrets and creates the secrets file for you. For reference, you can find the public key for the DON by running the `getDONPublicKey` function on the [Functions Oracle Proxy contract](https://mumbai.polygonscan.com/address/0xeA6721aC65BCeD841B8ec3fc5fEdeA6141a0aDE4#readProxyContract#F5). See the [Supported Networks](https://docs.chain.link/chainlink-functions/supported-networks#contract-addresses) page to find the Functions Oracle Proxy contract for each supported network.
 
 ## Before you begin
 
@@ -30,7 +37,7 @@ Apply [here](http://functions.chain.link/) to add your EVM account address to th
    git checkout tutorial-7
    ```
 
-1. Install and configure the [GitHub CLI](https://cli.github.com/manual/). You will use the GitHub CLI to store the encrypted secrets as [gists](https://docs.github.com/en/get-started/writing-on-github/editing-and-sharing-content-with-gists/creating-gists). You will share the HTTP URL of the gist when making requests to the DON. **Note**: You can also store the encrypted secrets on any other hosting service such as S3 or IPFS as long as the URL is publicly accessible through HTTP(s).
+1. Install and configure the [GitHub CLI](https://cli.github.com/manual/). You will use the GitHub CLI to store the encrypted secrets as [gists](https://docs.github.com/en/get-started/writing-on-github/editing-and-sharing-content-with-gists/creating-gists). Include the HTTP URL of the gist when you make requests to the DON. Optionally, you can store the encrypted secrets on any other hosting service such as S3 or IPFS as long as the URL is publicly accessible through HTTP(s).
 1. Get a free API key from [CoinMarketCap](https://coinmarketcap.com/api/).
 1. Open your `.env` file.
 1. Add a line to the `.env` file with the `COINMARKETCAP_API_KEY=` variable and set it to your API key. For example: `COINMARKETCAP_API_KEY="78143127-fe7e-d5fe-878f-143notarealkey"`
@@ -49,9 +56,9 @@ This tutorial is configured to get the median `BTC/USD` price from multiple data
 
 ### Build Off-chain Secrets
 
-Before making a request:
+Before you make a request prepare the secrets file and host it off-chain:
 
-1. Encrypt the secrets with your private key and store the encrypted version in the `offchain-secrets.json` file.
+1. Encrypt the secrets with the public key of the DON and store them in the `offchain-secrets.json` file. The `--network` flag is required because each network has a unique DON with a different public key.
 
    ```bash
    npx hardhat functions-build-offchain-secrets --network REPLACE_NETWORK
@@ -67,7 +74,7 @@ Before making a request:
    Wrote offchain secrets file to offchain-secrets.json
    ```
 
-1. Upload the file to a public hosting service. You will store the file as a gist.
+1. Upload the file to a public hosting service. For this example, store the file as a gist.
 
    ```bash
    gh gist create offchain-secrets.json
@@ -82,11 +89,11 @@ Before making a request:
    https://gist.github.com/23f5d2cae58b2e35f1887221287da37b
    ```
 
-   Note the gist id. In this example, the id is `23f5d2cae58b2e35f1887221287da37b`.
+   Note the gist ID. In this example, the ID is `23f5d2cae58b2e35f1887221287da37b`.
 
    The secrets object is accessible on the following HTTPs URL: `https://gist.githubusercontent.com/GITHUB_USER_ID/GIST_ID/raw/`. In this example, the URL is `https://gist.githubusercontent.com/aelmanaa/23f5d2cae58b2e35f1887221287da37b/raw/`
 
-1. Open `Functions-request-config.js`. Fill in the `secretsURLs` variable. For example: `secretsURLs: ["https://gist.githubusercontent.com/aelmanaa/23f5d2cae58b2e35f1887221287da37b/raw/"]`. **Note**: When making requests, any URLs in `secretsURL` are encrypted so no third party can view them.
+1. Open `Functions-request-config.js`. Fill in the `secretsURLs` variable. For example: `secretsURLs: ["https://gist.githubusercontent.com/aelmanaa/23f5d2cae58b2e35f1887221287da37b/raw/"]`. **Note**: When you make requests, any URLs in `secretsURL` are encrypted so no third party can view them.
 
 ### Simulation
 
