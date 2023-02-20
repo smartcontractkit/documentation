@@ -28,7 +28,7 @@ Apply [here](http://functions.chain.link/) to add your EVM account address to th
 
 1. Get a free API key from [CoinMarketCap](https://coinmarketcap.com/api/).
 1. Open your `.env` file.
-1. Add a line to the `.env` file with the `COINMARKETCAP_API_KEY=` variable and set it to your API key. For example: `COINMARKETCAP_API_KEY=78143127-fe7e-d5fe-878f-143notarealkey`
+1. Add a line to the `.env` file with the `COINMARKETCAP_API_KEY=` variable and set it to your API key. For example: `COINMARKETCAP_API_KEY="78143127-fe7e-d5fe-878f-143notarealkey"`
 1. Save your `.env` file.
 
 ## Tutorial

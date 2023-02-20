@@ -9,7 +9,7 @@ setup: |
 
 This tutorial shows you how to leverage the [Off-chain Secrets capability](https://github.com/smartcontractkit/functions-hardhat-starter-kit/tree/main#off-chain-secrets) to share encrypted secrets off-chain via HTTP with a Decentralized Oracle Network.
 
-Read the [API multiple calls](/chainlink-functions/tutorials/api-multiple-calls/) guide before you follow the example in this document. We will use the same example with a slight difference: Encrypted secrets will not be sent in the request made to the DON. Instead, you will host the encrypted secrets off-chain and share the encrypted HTTP link in the request.
+Read the [API multiple calls](/chainlink-functions/tutorials/api-multiple-calls/) guide before you follow the example in this document. We will use the same example, but with a slight difference. Encrypted secrets will not be sent in the request to the DON. Instead, you will encrypt the secrets with your private key, host the encrypted secrets file off-chain, and include the HTTP URL to the secrets file in your Chainlink Functions request.
 
 ## Before you begin
 
@@ -30,10 +30,10 @@ Apply [here](http://functions.chain.link/) to add your EVM account address to th
    git checkout tutorial-7
    ```
 
-1. Install and configure the [GitHub cli](https://cli.github.com/manual/). You will use the GitHub cli to store the encrypted secrets as [gists](https://docs.github.com/en/get-started/writing-on-github/editing-and-sharing-content-with-gists/creating-gists). You will share the encrypted HTTP URL of the gist when making requests to the DON. **Note**: You can also store the encrypted secrets on any other hosting service, such as S3 or IPFS, as long as the URL is publicly accessible through HTTP(s).
+1. Install and configure the [GitHub CLI](https://cli.github.com/manual/). You will use the GitHub CLI to store the encrypted secrets as [gists](https://docs.github.com/en/get-started/writing-on-github/editing-and-sharing-content-with-gists/creating-gists). You will share the HTTP URL of the gist when making requests to the DON. **Note**: You can also store the encrypted secrets on any other hosting service such as S3 or IPFS as long as the URL is publicly accessible through HTTP(s).
 1. Get a free API key from [CoinMarketCap](https://coinmarketcap.com/api/).
 1. Open your `.env` file.
-1. Add a line to the `.env` file with the `COINMARKETCAP_API_KEY=` variable and set it to your API key. For example: `COINMARKETCAP_API_KEY=78143127-fe7e-d5fe-878f-143notarealkey`
+1. Add a line to the `.env` file with the `COINMARKETCAP_API_KEY=` variable and set it to your API key. For example: `COINMARKETCAP_API_KEY="78143127-fe7e-d5fe-878f-143notarealkey"`
 1. Save your `.env` file.
 
 ## Tutorial
@@ -51,7 +51,7 @@ This tutorial is configured to get the median `BTC/USD` price from multiple data
 
 Before making a request:
 
-1. Encrypt the secrets and store the encrypted version in a file `offchain-secrets.json`.
+1. Encrypt the secrets with your private key and store the encrypted version in the `offchain-secrets.json` file.
 
    ```bash
    npx hardhat functions-build-offchain-secrets --network REPLACE_NETWORK
@@ -86,7 +86,7 @@ Before making a request:
 
    The secrets object is accessible on the following HTTPs URL: `https://gist.githubusercontent.com/GITHUB_USER_ID/GIST_ID/raw/`. In this example, the URL is `https://gist.githubusercontent.com/aelmanaa/23f5d2cae58b2e35f1887221287da37b/raw/`
 
-1. Open `Functions-request-config.js`. Fill in the `secretsURLs`. For example: `secretsURLs: ["https://gist.githubusercontent.com/aelmanaa/23f5d2cae58b2e35f1887221287da37b/raw/"]`. **Note**: When making requests, any URLs in `secretsURL` are encrypted so no third party can view them.
+1. Open `Functions-request-config.js`. Fill in the `secretsURLs` variable. For example: `secretsURLs: ["https://gist.githubusercontent.com/aelmanaa/23f5d2cae58b2e35f1887221287da37b/raw/"]`. **Note**: When making requests, any URLs in `secretsURL` are encrypted so no third party can view them.
 
 ### Simulation
 
