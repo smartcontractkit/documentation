@@ -45,51 +45,51 @@ This tutorial is configured to get the country name, capital, and currency from 
 
 The [Chainlink Functions Hardhat Starter Kit](https://github.com/smartcontractkit/functions-hardhat-starter-kit) includes a simulator to test your Functions code on your local machine. The `functions-simulate` command executes your code in a local runtime environment and simulates an end-to-end fulfillment. This helps you to fix issues before you submit your functions to a Decentralized Oracle Network.
 
-- Run the `functions-simulate` task to run the source code locally and make sure `Functions-request-config.js` and `Functions-request-source.js` are correctly written:
+Run the `functions-simulate` task to run the source code locally and make sure `Functions-request-config.js` and `Functions-request-source.js` are correctly written:
 
-  ```bash
-  npx hardhat functions-simulate
-  ```
+```bash
+npx hardhat functions-simulate
+```
 
-  Example:
+Example:
 
-  ```bash
-  $ npx hardhat functions-simulate
-  secp256k1 unavailable, reverting to browser version
+```bash
+$ npx hardhat functions-simulate
+secp256k1 unavailable, reverting to browser version
 
-  __Compiling Contracts__
-  Nothing to compile
-  Duplicate definition of Transfer (Transfer(address,address,uint256,bytes), Transfer(address,address,uint256))
+__Compiling Contracts__
+Nothing to compile
+Duplicate definition of Transfer (Transfer(address,address,uint256,bytes), Transfer(address,address,uint256))
 
-  Executing JavaScript request source code locally...
+Executing JavaScript request source code locally...
 
-  __Console log messages from sandboxed code__
-  Get name, capital and currency for country code: JP
-  HTTP POST Request to https://countries.trevorblades.com/
-  country response { country: { name: 'Japan', capital: 'Tokyo', currency: 'JPY' } }
+__Console log messages from sandboxed code__
+Get name, capital and currency for country code: JP
+HTTP POST Request to https://countries.trevorblades.com/
+country response { country: { name: 'Japan', capital: 'Tokyo', currency: 'JPY' } }
 
-  __Output from sandboxed source code__
-  Output represented as a hex string: 0x7b226e616d65223a224a6170616e222c226361706974616c223a22546f6b796f222c2263757272656e6379223a224a5059227d
-  Decoded as a string: {"name":"Japan","capital":"Tokyo","currency":"JPY"}
+__Output from sandboxed source code__
+Output represented as a hex string: 0x7b226e616d65223a224a6170616e222c226361706974616c223a22546f6b796f222c2263757272656e6379223a224a5059227d
+Decoded as a string: {"name":"Japan","capital":"Tokyo","currency":"JPY"}
 
-  __Simulated On-Chain Response__
-  Response returned to client contract represented as a hex string: 0x7b226e616d65223a224a6170616e222c226361706974616c223a22546f6b796f222c2263757272656e6379223a224a5059227d
-  Decoded as a string: {"name":"Japan","capital":"Tokyo","currency":"JPY"}
+__Simulated On-Chain Response__
+Response returned to client contract represented as a hex string: 0x7b226e616d65223a224a6170616e222c226361706974616c223a22546f6b796f222c2263757272656e6379223a224a5059227d
+Decoded as a string: {"name":"Japan","capital":"Tokyo","currency":"JPY"}
 
-  Estimated transmission cost: 0.00004738239043141 LINK (This will vary based on gas price)
-  Base fee: 0.0 LINK
-  Total estimated cost: 0.00004738239043141 LINK
-  ```
+Estimated transmission cost: 0.00004738239043141 LINK (This will vary based on gas price)
+Base fee: 0.0 LINK
+Total estimated cost: 0.00004738239043141 LINK
+```
 
-- The output of this example tells you that the country name is _Japan_, capital is _Tokyo_, and the currency is _JPY_. Because the final result is a JSON object, convert it to a string and return the `bytes` encoded value `0x7b226e616d65223a224a6170616e222c226361706974616c223a22546f6b796f222c2263757272656e6379223a224a5059227d` in the callback. Read the [source code explanation](#functions-request-sourcejs) for a more detailed explanation.
+The output of this example tells you that the country name is _Japan_, capital is _Tokyo_, and the currency is _JPY_. Because the final result is a JSON object, convert it to a string and return the `bytes` encoded value `0x7b226e616d65223a224a6170616e222c226361706974616c223a22546f6b796f222c2263757272656e6379223a224a5059227d` in the callback. Read the [source code explanation](#functions-request-sourcejs) for a more detailed explanation.
 
 ### Request
 
-- Send a request to the Decentralized Oracle Network to run the GraphQL query. Run the `functions-request` task with the `subid` (subscription ID) and `contract` parameters. This task passes the JavaScript source code, arguments, and secrets when it calls the `executeRequest` function in your deployed `FunctionsConsumer` contract. Read the [functionsConsumer](#functionsconsumersol) section for a more detailed explanation of the contract.
+Send a request to the Decentralized Oracle Network to run the GraphQL query. Run the `functions-request` task with the `subid` (subscription ID) and `contract` parameters. This task passes the JavaScript source code, arguments, and secrets when it calls the `executeRequest` function in your deployed `FunctionsConsumer` contract. Read the [functionsConsumer](#functionsconsumersol) section for a more detailed explanation of the contract.
 
-  ```bash
-  npx hardhat functions-request --subid REPLACE_SUBSCRIPTION_ID --contract REPLACE_CONSUMER_CONTRACT_ADDRESS --network REPLACE_NETWORK
-  ```
+```bash
+npx hardhat functions-request --subid REPLACE_SUBSCRIPTION_ID --contract REPLACE_CONSUMER_CONTRACT_ADDRESS --network REPLACE_NETWORK
+```
 
 Example:
 
