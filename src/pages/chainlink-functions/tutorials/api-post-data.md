@@ -39,7 +39,7 @@ Apply [here](http://functions.chain.link/) to add your EVM account address to th
 This tutorial is configured to get the country name, capital, and currency from [countries.trevorblades.com](https://countries.trevorblades.com/) in one request. For a detailed explanation of the code example, read the [Explanation](#explanation) section.
 
 - Open `Functions-request-config.js`. The `args` value is `["JP"]` to fetch information about Japan. You can adapt `args` to retrieve information about other countries as well. Read the [Trevorblades API docs](https://github.com/trevorblades/countries) to get the list of supported countries. For more information about the request config file, read the [request config explanation](#functions-request-configjs).
-- Open `Functions-request-source.js` to analyze the JavaScript source code. Read the [source code explanation](#functions-request-sourcejs) for a more detailed explanation about the source code file.
+- Open `Functions-request-source.js` to analyze the JavaScript source code. Read the [source code explanation](#functions-request-sourcejs) for a more detailed explanation of the source code file.
 
 ### Simulation
 
