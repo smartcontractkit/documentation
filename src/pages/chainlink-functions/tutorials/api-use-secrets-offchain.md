@@ -9,7 +9,7 @@ setup: |
 
 This tutorial shows you how to leverage the [Off-chain Secrets capability](https://github.com/smartcontractkit/functions-hardhat-starter-kit/tree/main#off-chain-secrets) to share encrypted secrets off-chain via HTTP with a Decentralized Oracle Network.
 
-Read the [API multiple calls](/chainlink-functions/tutorials/api-multiple-calls/) tutorial before you follow the steps in this example. We will use the same example, but with a slightly different process:
+Read the [API multiple calls](/chainlink-functions/tutorials/api-multiple-calls/) tutorial before you follow the steps in this example. This tutorial uses the same example, but with a slightly different process:
 
 1. Instead of sending encrypted secrets to the DON directly, encrypt your secrets using the public key of the DON. This means only the DON can decrypt the secrets and use them.
 1. Include the encrypted secrets in an `offchain-secrets.json` file.
@@ -56,7 +56,7 @@ This tutorial is configured to get the median `BTC/USD` price from multiple data
 
 ### Build Off-chain Secrets
 
-Before you make a request prepare the secrets file and host it off-chain:
+Before you make a request, prepare the secrets file and host it off-chain:
 
 1. Encrypt the secrets with the public key of the DON and store them in the `offchain-secrets.json` file. The `--network` flag is required because each network has a unique DON with a different public key.
 
