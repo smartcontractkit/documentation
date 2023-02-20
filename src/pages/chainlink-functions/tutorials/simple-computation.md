@@ -76,7 +76,11 @@ Reading the output of the example above, you can note that the geometric mean wa
 
 ### Request
 
-Send a request to the Decentralized Oracle Network to compute the average (geometric mean). Run the `functions-request` task with the `subid` (subscription ID) and `contract` parameters. This task will pass the functions JavaScript source code and any arguments and secrets when calling the `FunctionsConsumer`'s `executeRequest` function. Note: Read [functionsConsumer](#functionsconsumersol) for a more detailed explanation.
+:::note[Reminder]
+Before you can make a successful request, you must complete the setup steps in the [Before you begin](#before_you_begin) section. Each tutorial is in a separate Git branch and some require unique entries in your `.env` file.
+:::
+
+Send a request to the Decentralized Oracle Network to compute the average (geometric mean). Run the `functions-request` task with the `subid` (subscription ID) and `contract` parameters. This task will pass the functions JavaScript source code and any arguments and secrets when calling the `FunctionsConsumer`'s `executeRequest` function. Read the [functionsConsumer](#functionsconsumersol) section for more details about the consumer contract.
 
 ```bash
 npx hardhat functions-request --subid REPLACE_SUBSCRIPTION_ID --contract REPLACE_CONSUMER_CONTRACT_ADDRESS --network REPLACE_NETWORK
