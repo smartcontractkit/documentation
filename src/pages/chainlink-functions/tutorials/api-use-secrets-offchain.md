@@ -7,12 +7,11 @@ setup: |
   import ChainlinkFunctions from "@features/chainlink-functions/common/ChainlinkFunctions.astro"
 ---
 
-This tutorial shows you how to leverage the Off-chain Secrets capability to share encrypted secrets off-chain via HTTP with a Decentralized Oracle Network.
-Off-chain secrets are encrypted, users decide where to host them (e.g., aws S3, google drive, or IPFS), and fetched by the Decentralized Oracle Network via HTTP(s).
+This tutorial shows you how to share encrypted secrets off-chain with a Decentralized Oracle Network (DON) via HTTP. Off-chain secrets are encrypted and stored on AWS S3, Google Drive, IPFS, or any other service where the DON can fetch them via HTTP.
 Using off-chain secrets has two main advantages:
 
-- Security: The encrypted secrets are never stored on-chain. Users choose where to store their encrypted secrets and pass the URLs to the encrypted secrets in their requests. The URLs are encrypted with the DON public key so that only an oracle node part of the DON can decrypt the URLs with the DON private key. Once the DON has fulfilled the request, a user may delete the URL to mitigate the risk of exposing their secrets if the DON's private key were ever to be leaked.
-- Reduced gas consumption: When initiating a request, part of the gas consumption is due to the size of the request parameters: source code, arguments, and secrets. The size of an encrypted secrets object is larger than an encrypted HTTP(s) URL. Thus, using off-chain secrets reduce the gas cost of making requests.
+- Security: The encrypted secrets are never stored on-chain. You choose where to store encrypted secrets and include the URLs in your requests. The secrets are encrypted by the DON's public key so that only an oracle node in the DON can decrypt them using the DON's private key. After the DON fulfills a request, you can delete the secrets file from the hosted URL. This mitigates the risk that your secrets are exposed if the DON's private key were ever to be leaked.
+- Reduced gas consumption: When initiating a request, part of the gas consumption is due to the size of the request parameters: source code, arguments, and secrets. The size of an encrypted secrets object is larger than an encrypted HTTP(s) URL, so using off-chain secrets reduces the gas cost of each request.
 
 Read the [API multiple calls](/chainlink-functions/tutorials/api-multiple-calls/) tutorial before you follow the steps in this example. This tutorial uses the same example, but with a slightly different process:
 
