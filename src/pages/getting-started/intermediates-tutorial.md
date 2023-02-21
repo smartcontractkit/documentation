@@ -327,7 +327,7 @@ contract VRFD20 is VRFConsumerBaseV2 {
         ];
 
         // returns the house name given an index
-        return houseNames[id.sub(1)];
+        return houseNames[id - 1];
     }
 }
 ```
