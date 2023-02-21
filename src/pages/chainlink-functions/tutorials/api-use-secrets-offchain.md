@@ -12,7 +12,7 @@ Off-chain secrets are encrypted, users decide where to host them (e.g., aws S3, 
 Using off-chain secrets has two main advantages:
 
 - Security: The encrypted secrets are never stored on-chain. Users choose where to store their encrypted secrets and pass the URLs to the encrypted secrets in their requests. The URLs are encrypted with the DON public key so that only an oracle node part of the DON can decrypt the URLs with the DON private key. Once the DON has fulfilled the request, a user may delete the URL to mitigate the risk of exposing their secrets if the DON's private key were ever to be leaked.
-- Reduced gas: When initiating a request, part of the gas consumption is due to the size of the request parameters: source code, arguments, and secrets. The size of an encrypted secrets object is larger than an encrypted HTTP(s) URL. Thus, using off-chain secrets reduce the gas cost of making requests.
+- Reduced gas consumption: When initiating a request, part of the gas consumption is due to the size of the request parameters: source code, arguments, and secrets. The size of an encrypted secrets object is larger than an encrypted HTTP(s) URL. Thus, using off-chain secrets reduce the gas cost of making requests.
 
 Read the [API multiple calls](/chainlink-functions/tutorials/api-multiple-calls/) tutorial before you follow the steps in this example. This tutorial uses the same example, but with a slightly different process:
 
