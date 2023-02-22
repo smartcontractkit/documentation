@@ -365,6 +365,10 @@ export const SIDEBAR = {
           title: "Call Multiple Data Sources",
           url: "chainlink-functions/tutorials/api-multiple-calls",
         },
+        {
+          title: "Using Off-chain Secrets in Requests",
+          url: "chainlink-functions/tutorials/api-use-secrets-offchain",
+        },
       ],
     },
     {

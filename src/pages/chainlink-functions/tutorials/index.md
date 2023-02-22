@@ -13,3 +13,4 @@ title: "Chainlink Functions Tutorials"
 - [POST Data to an API](/chainlink-functions/tutorials/api-post-data/)
 - [Using Secrets in Requests](/chainlink-functions/tutorials/api-use-secrets/)
 - [Call Multiple Data Sources](/chainlink-functions/tutorials/api-multiple-calls/)
+- [Using Off-chain Secrets in Requests](/chainlink-functions/tutorials/api-use-secrets-offchain/)

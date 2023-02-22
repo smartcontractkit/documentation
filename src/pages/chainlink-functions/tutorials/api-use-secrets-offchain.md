@@ -2,19 +2,25 @@
 layout: ../../../layouts/MainLayout.astro
 section: chainlinkFunctions
 date: Last Modified
-title: "Call Multiple Data Sources"
+title: "Using Off-chain Secrets in Requests"
 setup: |
   import ChainlinkFunctions from "@features/chainlink-functions/common/ChainlinkFunctions.astro"
 ---
 
-This tutorial shows you how make multiple API calls from your smart contract to a Decentralized Oracle Network. After [OCR](/chainlink-functions/resources/concepts/) completes off-chain computation and aggregation, the DON returns the asset price to your smart contract. This example returns the `BTC/USD` price.
+This tutorial shows you how to share encrypted secrets off-chain with a Decentralized Oracle Network (DON) via HTTP. Off-chain secrets are encrypted and stored on AWS S3, Google Drive, IPFS, or any other service where the DON can fetch them via HTTP.
+Using off-chain secrets has two main advantages:
 
-This guide assumes that you know how to build HTTP requests and how to use secrets. Read the [API query parameters](/chainlink-functions/tutorials/api-query-parameters/) and [API use secrets](/chainlink-functions/tutorials/api-use-secrets/) guides before you follow the example in this document.
-To build a decentralized asset price, send a request to the DON to fetch the price from many different API providers. Then, calculate the median price. The API providers in this example are:
+- Security: The encrypted secrets are never stored on-chain. You choose where to store encrypted secrets and include the URLs in your requests. The secrets are encrypted by the DON's public key so that only an oracle node in the DON can decrypt them using the DON's private key. After the DON fulfills a request, you can delete the secrets file from the hosted URL. This mitigates the risk that your secrets are exposed if the DON's private key were ever to be leaked.
+- Reduced gas consumption: When initiating a request, part of the gas consumption is due to the size of the request parameters: source code, arguments, and secrets. The size of an encrypted secrets object is larger than an encrypted HTTP(s) URL, so using off-chain secrets reduces the gas cost of each request.
 
-- [CoinMarket](https://coinmarketcap.com/api/documentation/v1/)
-- [CoinGecko](https://www.coingecko.com/en/api/documentation)
-- [CoinPaprika](https://api.coinpaprika.com/)
+Read the [API multiple calls](/chainlink-functions/tutorials/api-multiple-calls/) tutorial before you follow the steps in this example. This tutorial uses the same example, but with a slightly different process:
+
+1. Instead of sending encrypted secrets to the DON directly, encrypt your secrets using the public key of the DON. This means only the DON can decrypt the secrets and use them.
+1. Include the encrypted secrets in an `offchain-secrets.json` file.
+1. Host the secrets file off-chain.
+1. Include the HTTP URL to the file in your Chainlink Functions request.
+
+The `functions-build-offchain-secrets` task encrypts the secrets and creates the secrets file for you. For reference, you can find the public key for the DON by running the `getDONPublicKey` function on the [Functions Oracle Proxy contract](https://mumbai.polygonscan.com/address/0xeA6721aC65BCeD841B8ec3fc5fEdeA6141a0aDE4#readProxyContract#F5). See the [Supported Networks](https://docs.chain.link/chainlink-functions/supported-networks#contract-addresses) page to find the Functions Oracle Proxy contract for each supported network.
 
 ## Before you begin
 
@@ -25,14 +31,17 @@ Apply [here](http://functions.chain.link/) to add your EVM account address to th
 
 1. **[Complete the setup steps in the Getting Started guide](/chainlink-functions/getting-started):** The Getting Started Guide shows you how to set up your environment with the necessary tools for these tutorials. You can re-use the same consumer contract for each of these tutorials.
 
+1. Make sure to understand the [API multiple calls](/chainlink-functions/tutorials/api-multiple-calls/) guide.
+
 1. Make sure your subscription has enough LINK to pay for your requests. Read [Get Subscription details](/chainlink-functions/resources/subscriptions#get-subscription-details) to learn how to check your subscription balance. If your subscription runs out of LINK, follow the [Fund a Subscription](/chainlink-functions/resources/subscriptions#fund-a-subscription) guide.
 
 1. **Check out the correct branch before you try this tutorial:** Each tutorial is stored in a separate branch of the [Chainlink Functions Starter Kit](https://github.com/smartcontractkit/functions-hardhat-starter-kit) repository.
 
    ```bash
-   git checkout tutorial-6
+   git checkout tutorial-7
    ```
 
+1. Install and configure the [GitHub CLI](https://cli.github.com/manual/). You will use the GitHub CLI to store the encrypted secrets as [gists](https://docs.github.com/en/get-started/writing-on-github/editing-and-sharing-content-with-gists/creating-gists). Include the HTTP URL of the gist when you make requests to the DON. Optionally, you can store the encrypted secrets on any other hosting service such as S3 or IPFS as long as the URL is publicly accessible through HTTP(s).
 1. Get a free API key from [CoinMarketCap](https://coinmarketcap.com/api/).
 1. Open your `.env` file.
 1. Add a line to the `.env` file with the `COINMARKETCAP_API_KEY=` variable and set it to your API key. For example: `COINMARKETCAP_API_KEY="78143127-fe7e-d5fe-878f-143notarealkey"`
@@ -48,6 +57,47 @@ This tutorial is configured to get the median `BTC/USD` price from multiple data
 
 - Open `Functions-request-config.js`. Note the `args` value is `["1", "bitcoin", "btc-bitcoin"]`. These arguments are BTC IDs at CoinMarketCap, CoinGecko, and Coinpaprika. You can adapt `args` to fetch other asset prices. See the API docs for [CoinMarketCap](https://coinmarketcap.com/api/documentation/v1/), [CoinGecko](https://www.coingecko.com/en/api/documentation), and [CoinPaprika](https://api.coinpaprika.com/) for details. For more information about the request, read the [request config](#functions-request-configjs) section.
 - Open `Functions-request-source.js` to analyze the JavaScript source code. Read the [source code explanation](#functions-request-sourcejs) for a more detailed explanation of the request source file.
+
+### Build Off-chain Secrets
+
+Before you make a request, prepare the secrets file and host it off-chain:
+
+1. Encrypt the secrets with the public key of the DON and store them in the `offchain-secrets.json` file. The `--network` flag is required because each network has a unique DON with a different public key.
+
+   ```bash
+   npx hardhat functions-build-offchain-secrets --network REPLACE_NETWORK
+   ```
+
+   Example:
+
+   ```bash
+   $ npx hardhat functions-build-offchain-secrets --network mumbai
+   secp256k1 unavailable, reverting to browser version
+   Using public keys from FunctionsOracle contract 0xeA6721aC65BCeD841B8ec3fc5fEdeA6141a0aDE4 on network mumbai
+
+   Wrote offchain secrets file to offchain-secrets.json
+   ```
+
+1. Upload the file to a public hosting service. For this example, store the file as a gist.
+
+   ```bash
+   gh gist create offchain-secrets.json
+   ```
+
+   Example:
+
+   ```bash
+   $ gh gist create offchain-secrets.json
+   - Creating gist offchain-secrets.json
+   ✓ Created secret gist offchain-secrets.json
+   https://gist.github.com/23f5d2cae58b2e35f1887221287da37b
+   ```
+
+   Note the gist ID. In this example, the ID is `23f5d2cae58b2e35f1887221287da37b`.
+
+   The secrets object is accessible on the following HTTPs URL: `https://gist.githubusercontent.com/GITHUB_USER_ID/GIST_ID/raw/`. In this example, the URL is `https://gist.githubusercontent.com/aelmanaa/23f5d2cae58b2e35f1887221287da37b/raw/`
+
+1. Open `Functions-request-config.js`. Fill in the `secretsURLs` variable. For example: `secretsURLs: ["https://gist.githubusercontent.com/aelmanaa/23f5d2cae58b2e35f1887221287da37b/raw/"]`. **Note**: When you make requests, any URLs in `secretsURL` are encrypted so no third party can view them.
 
 ### Simulation
 
@@ -72,22 +122,21 @@ Duplicate definition of Transfer (Transfer(address,address,uint256,bytes), Trans
 Executing JavaScript request source code locally...
 
 __Console log messages from sandboxed code__
-Median Bitcoin price: $22975.59
+Median Bitcoin price: $24821.05
 
 __Output from sandboxed source code__
-Output represented as a hex string: 0x0000000000000000000000000000000000000000000000000000000000230ed7
-Decoded as a uint256: 2297559
+Output represented as a hex string: 0x000000000000000000000000000000000000000000000000000000000025dfb9
+Decoded as a uint256: 2482105
 
 __Simulated On-Chain Response__
-Response returned to client contract represented as a hex string: 0x0000000000000000000000000000000000000000000000000000000000230ed7
-Decoded as a uint256: 2297559
+Response returned to client contract represented as a hex string: 0x000000000000000000000000000000000000000000000000000000000025dfb9
+Decoded as a uint256: 2482105
 
-Estimated transmission cost: 0.000045536612837717 LINK (This will vary based on gas price)
-Base fee: 0.0 LINK
-Total estimated cost: 0.000045536612837717 LINK
+Gas used by sendRequest: 392690
+Gas used by client callback function: 75029
 ```
 
-Reading the output of the example above, you can note that the `BTC/USD` median price is: _22975.59 USD_. Because Solidity does not support decimals, we move the decimal point so that the value looks like the integer `2297559` before returning the `bytes` encoded value `0x0000000000000000000000000000000000000000000000000000000000230ed7` in the callback. Read the [source code explanation](#functions-request-sourcejs) for a more detailed explanation.
+Reading the output of the example above, you can note that the `BTC/USD` median price is: _24821.05 USD_. Because Solidity does not support decimals, we move the decimal point so that the value looks like the integer `2482105` before returning the `bytes` encoded value `0x000000000000000000000000000000000000000000000000000000000025dfb9` in the callback. Read the [source code explanation](#functions-request-sourcejs) for a more detailed explanation.
 
 ### Request
 
@@ -101,46 +150,50 @@ Send a request to the Decentralized Oracle Network to fetch the asset price. Run
 npx hardhat functions-request --subid REPLACE_SUBSCRIPTION_ID --contract REPLACE_CONSUMER_CONTRACT_ADDRESS --network REPLACE_NETWORK
 ```
 
-Example:
+Example (You will see several compile warnings, but no errors):
 
 ```bash
-$ npx hardhat functions-request --subid 6 --contract 0xa9b286E892d579dc727c79D3be9b01949796240A  --network mumbai
+$ npx hardhat functions-request --subid 10 --contract 0xED9eeB56CEA17aFe7F6299da446aF0963bE82701   --network mumbai
 secp256k1 unavailable, reverting to browser version
 Simulating Functions request locally...
+WARNING: No secrets found for node 0xca46169b34e00cadabb8ecbffa34ae4d1f7050e4.  That node will use default secrets specified by the "0x0" entry.
+WARNING: No secrets found for node 0x7a0fd7a68d0257139c9a90c130fb732e6d997c4b.  That node will use default secrets specified by the "0x0" entry.
+WARNING: No secrets found for node 0x4225387e43e066598300e6ef18af183060b4145b.  That node will use default secrets specified by the "0x0" entry.
+WARNING: No secrets found for node 0x42918d83b9298113274420350fd901d9ac382b89.  That node will use default secrets specified by the "0x0" entry.
 
 __Console log messages from sandboxed code__
-Median Bitcoin price: $22981.11
+Median Bitcoin price: $24792.59
 
 __Output from sandboxed source code__
-Output represented as a hex string: 0x00000000000000000000000000000000000000000000000000000000002310ff
-Decoded as a uint256: 2298111
+Output represented as a hex string: 0x000000000000000000000000000000000000000000000000000000000025d49b
+Decoded as a uint256: 2479259
 
 
-If all 100000 callback gas is used, this request is estimated to cost 0.000054961325570353 LINK
+If all 100000 callback gas is used, this request is estimated to cost 0.000180903971177574 LINK
 Continue? (y) Yes / (n) No
 y
 
-Requesting new data for FunctionsConsumer contract 0xa9b286E892d579dc727c79D3be9b01949796240A on network mumbai
-Waiting 2 blocks for transaction 0x9fa43ee9e8d4ba61ef87bc164b88eb6a9a055140453c27d2b15b42bd4b91a56a to be confirmed...
+Requesting new data for FunctionsConsumer contract 0xED9eeB56CEA17aFe7F6299da446aF0963bE82701 on network mumbai
+Waiting 2 blocks for transaction 0x3502687738c452b0a77ad907c6d5c06b1ff7cd8cbae07774dedcac4ea618cba4 to be confirmed...
 
-Request 0x68014e0a20daafe82cc65797222943e0bb5ff3123ff80d7612523945f722c9fb initiated
+Request 0xed3bf996d52df4b15934e5a406d69aa8953dae050cc41282cf836768cc2705c4 initiated
 Waiting for fulfillment...
 
-Request 0x68014e0a20daafe82cc65797222943e0bb5ff3123ff80d7612523945f722c9fb fulfilled!
-Response returned to client contract represented as a hex string: 0x00000000000000000000000000000000000000000000000000000000002310ff
-Decoded as a uint256: 2298111
-
-Transmission cost: 0.000119462925581673 LINK
+Transmission cost: 0.002092962159977623 LINK
 Base fee: 0.0 LINK
-Total cost: 0.000119462925581673 LINK
+Total cost: 0.202092962159977623 LINK
+
+Request 0xed3bf996d52df4b15934e5a406d69aa8953dae050cc41282cf836768cc2705c4 fulfilled!
+Response returned to client contract represented as a hex string: 0x000000000000000000000000000000000000000000000000000000000025d49b
+Decoded as a uint256: 2479259
 ```
 
 The output of the example above gives you the following information:
 
-- The `executeRequest` function was successfully called in the `FunctionsConsumer` contract. The transaction in this example is [0x9fa43ee9e8d4ba61ef87bc164b88eb6a9a055140453c27d2b15b42bd4b91a56a](https://mumbai.polygonscan.com/tx/0x9fa43ee9e8d4ba61ef87bc164b88eb6a9a055140453c27d2b15b42bd4b91a56a).
-- The request ID is `0x68014e0a20daafe82cc65797222943e0bb5ff3123ff80d7612523945f722c9fb`.
-- The DON successfully fulfilled your request. The total cost was: `0.000119462925581673 LINK`.
-- The consumer contract received a response in `bytes` with a value of `0x00000000000000000000000000000000000000000000000000000000002310ff`. Decoding the response off-chain to `uint256` gives you a result of `2298111`.
+- The `executeRequest` function was successfully called in the `FunctionsConsumer` contract. The transaction in this example is [0x3502687738c452b0a77ad907c6d5c06b1ff7cd8cbae07774dedcac4ea618cba4](https://mumbai.polygonscan.com/tx/0x3502687738c452b0a77ad907c6d5c06b1ff7cd8cbae07774dedcac4ea618cba4).
+- The request ID is `0xed3bf996d52df4b15934e5a406d69aa8953dae050cc41282cf836768cc2705c4`.
+- The DON successfully fulfilled your request. The total cost was: `0.202092962159977623 LINK`.
+- The consumer contract received a response in `bytes` with a value of `0x000000000000000000000000000000000000000000000000000000000025d49b`. Decoding the response off-chain to `uint256` gives you a result of `2479259`.
 
 At any time, you can run the `functions-read` task with the `contract` parameter to read the latest received response.
 
@@ -151,12 +204,12 @@ npx hardhat functions-read  --contract REPLACE_CONSUMER_CONTRACT_ADDRESS --netwo
 Example:
 
 ```bash
-$ npx hardhat functions-read  --contract 0xa9b286E892d579dc727c79D3be9b01949796240A --network mumbai
+$ npx hardhat functions-read  --contract 0xED9eeB56CEA17aFe7F6299da446aF0963bE82701 --network mumbai
 secp256k1 unavailable, reverting to browser version
-Reading data from Functions client contract 0xa9b286E892d579dc727c79D3be9b01949796240A on network mumbai
+Reading data from Functions client contract 0xED9eeB56CEA17aFe7F6299da446aF0963bE82701 on network mumbai
 
-On-chain response represented as a hex string: 0x00000000000000000000000000000000000000000000000000000000002310ff
-Decoded as a uint256: 2298111
+On-chain response represented as a hex string: 0x000000000000000000000000000000000000000000000000000000000025d49b
+Decoded as a uint256: 2479259
 ```
 
 ## Explanation
@@ -170,10 +223,11 @@ Decoded as a uint256: 2298111
 Read the [Request Configuration](https://github.com/smartcontractkit/functions-hardhat-starter-kit#functions-library) section for a detailed description of each setting. In this example, the settings are the following:
 
 - `codeLocation: Location.Inline`: The JavaScript code is provided within the request.
-- `secretsLocation: Location.Inline`: The secrets are provided within the request.
+- `secretsLocation: Location.Remote`: The secrets are referenced via encrypted URLs.
 - `codeLanguage: CodeLanguage.JavaScript`: The source code is developed in the JavaScript language.
 - `source: fs.readFileSync("./Functions-request-source.js").toString()`: The source code must be a script object. This example uses `fs.readFileSync` to read `Functions-request-source.js` and calls `toString()` to get the content as a `string` object.
-- `secrets: { apiKey: process.env.COINMARKETCAP_API_KEY }`: JavaScript object which contains secret values. Before making the request, these secrets are encrypted using the DON public key. The `process.env.COINMARKETCAP_API_KEY` setting means `COINMARKETCAP_API_KEY` is fetched from the environment variables. Make sure to set `COINMARKETCAP_API_KEY` in your `.env` file. **Note**: `secrets` is limited to a key-value map that can only contain strings. It cannot include any other types or nested parameters.
+- `secretsURLs: ["YOUR_HTTP_URL"]`: This is an array that contains the URLs of encrypted secrets.
+- `globalOffchainSecrets: { apiKey: process.env.COINMARKETCAP_API_KEY }`: JavaScript object which contains secret values. The `process.env.COINMARKETCAP_API_KEY` setting means `COINMARKETCAP_API_KEY` is fetched from the environment variables. Make sure to set `COINMARKETCAP_API_KEY` in your `.env` file. **Note**: `secrets` is limited to a key-value map that can only contain strings. It cannot include any other types or nested parameters.
 - `walletPrivateKey: process.env["PRIVATE_KEY"]`: This is your EVM account private key. It is used to generate a signature for the encrypted secrets such that an unauthorized third party cannot reuse them.
 - `args: ["1", "bitcoin", "btc-bitcoin"]`: These arguments are passed to the source code. This example requests the `BTC/USD` price. These arguments are BTC IDs at CoinMarketCap, CoinGecko, and Coinpaprika. You can adapt `args` to fetch other asset prices. See the API docs for [CoinMarketCap](https://coinmarketcap.com/api/documentation/v1/), [CoinGecko](https://www.coingecko.com/en/api/documentation), and [CoinPaprika](https://api.coinpaprika.com/) for details.
 - `expectedReturnType: ReturnType.uint256`: The response received by the DON is encoded in `bytes`. Because the asset price is `uint256`, you must define `ReturnType.uint256` to inform users how to decode the response received by the DON.
