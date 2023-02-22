@@ -16,7 +16,7 @@ setup: |
   import { Tabs } from "@components/Tabs"
 ---
 
-This guide explains how to estimate VRF costs when using the _direct funding_ method.
+This guide explains how to estimate VRF costs for both the subscription and direct funding methods.
 
 ## Understanding transaction costs
 
@@ -118,6 +118,43 @@ A LINK premium is then added to the total gas cost. The premium is divided in tw
 (Coordinator premium
   + (total gas cost * Wrapper premium)) = total request cost
 ```
+
+</Fragment>
+</Tabs>
+
+### Example
+
+<Tabs sharedStore="vrfMethod" client:visible>
+<Fragment slot="tab.1">Subscription</Fragment>
+<Fragment slot="tab.2">Direct funding</Fragment>
+<Fragment slot="panel.1">
+
+| Parameter            | Cost        |
+| -------------------- | ----------- |
+| Gas lane             | 500 gwei    |
+| Callback gas limit   | 100000 gwei |
+| Max verification gas | 200000 gwei |
+| LINK premium         | 0.25 LINK   |
+
+#### Steps
+
+1. Calculate the total gas cost: 500 x (200000 + 100000) = 150000000 gwei = 0.15 ETH
+1. Convert the gas cost to LINK using the LINK/ETH feed. (At the time of this answer, the feed currently shows Ξ0.0035616455 ETH per 1 LINK). 0.15 ETH / 0.0035616455 = 42.115364934550617 total LINK for gas costs.
+1. 0.25 LINK premium + 42.115364934550617 LINK = Up to 42.365364934550617 LINK cost for a request.
+
+</Fragment>
+<Fragment slot="panel.2">
+
+| Parameter            | Cost        |
+| -------------------- | ----------- |
+| Gas lane             | 500 gwei    |
+| Callback gas limit   | 100000 gwei |
+| Max verification gas | 200000 gwei |
+| LINK premium         | 0.25 LINK   |
+
+1. Calculate the total gas cost: 500 x (200000 + 100000) = 150000000 gwei = 0.15 ETH
+1. Convert the gas cost to LINK using the LINK/ETH feed. (At the time of this answer, the feed currently shows Ξ0.0035616455 ETH per 1 LINK). 0.15 ETH / 0.0035616455 = 42.115364934550617 total LINK for gas costs.
+1. 0.25 LINK premium + 42.115364934550617 LINK = Up to 42.365364934550617 LINK cost for a request.
 
 </Fragment>
 </Tabs>
