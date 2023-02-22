@@ -231,7 +231,7 @@ export const SIDEBAR = {
   ],
   automation: [
     {
-      section: "AUTOMATE CONTRACTS",
+      section: "AUTOMATION",
       contents: [
         {
           title: "Introduction to Chainlink Automation",
@@ -439,10 +439,9 @@ export const SIDEBAR = {
       ],
     },
   ],
-  solana: [
+  vrf: [
     {
-      section: "USING RANDOMNESS",
-
+      section: "CHAINLINK VRF",
       contents: [
         {
           title: "Introduction to Chainlink VRF",
@@ -550,7 +549,7 @@ export const SIDEBAR = {
   ],
   nodeOperator: [
     {
-      section: "NODE OPERATORS",
+      section: "Chainlink Nodes",
       contents: [
         {
           title: "Release Notes",
