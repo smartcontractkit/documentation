@@ -291,45 +291,6 @@ export const SIDEBAR = {
       ],
     },
     {
-      section: "Connect to any API",
-      contents: [
-        { title: "Introduction to Using Any API", url: "any-api/introduction" },
-        {
-          title: "Make a GET Request",
-          url: "any-api/get-request/introduction",
-          children: [
-            {
-              title: "Single Word Response",
-              url: "any-api/get-request/examples/single-word-response",
-            },
-            {
-              title: "Multi-Variable Responses",
-              url: "any-api/get-request/examples/multi-variable-responses",
-            },
-            {
-              title: "Array Response",
-              url: "any-api/get-request/examples/array-response",
-            },
-            {
-              title: "Large Responses",
-              url: "any-api/get-request/examples/large-responses",
-            },
-            {
-              title: "Existing Job Request",
-              url: "any-api/get-request/examples/existing-job-request",
-            },
-          ],
-        },
-        { title: "Find Existing Jobs", url: "any-api/find-oracle" },
-        { title: "Testnet Oracles", url: "any-api/testnet-oracles" },
-        {
-          title: "Data Provider Nodes",
-          url: "any-api/data-providers/introduction",
-        },
-        { title: "API Reference", url: "any-api/api-reference" },
-      ],
-    },
-    {
       section: "Resources",
       contents: [
         {
@@ -614,7 +575,7 @@ export const SIDEBAR = {
           ],
         },
         {
-          title: "Resources",
+          title: "Tasks",
           url: "chainlink-nodes/resources",
           children: [
             {
