@@ -58,7 +58,10 @@ Build and deploy the contract on Sepolia.
 
 ## Fund Your Contract
 
-Requests for randomness will fail unless your consuming contract has enough LINK. Learn how to [Acquire testnet LINK](/resources/acquire-link/) and [Fund your contract](/resources/fund-your-contract/). For this example, funding with 2 LINK should be sufficient.
+Requests for randomness will fail unless your consuming contract has enough LINK.
+
+1. [Acquire testnet LINK](/resources/acquire-link/).
+1. [Fund your contract with testnet LINK](/resources/fund-your-contract/). For this example, funding your contract with 2 LINK should be sufficient.
 
 ## Request random values
 
@@ -67,9 +70,15 @@ The deployed contract requests random values from Chainlink VRF, receives those 
 1. Return to Remix and view your deployed contract functions in the **Deployed Contracts** list.
 
 1. Click the `requestRandomWords()` function to send the request for random values to Chainlink VRF. MetaMask opens and asks you to confirm the transaction.
-   :::note[Remix IDE: gas limit setup]
-   Remix IDE doesn't set the right gas limit. For this example to work, set a
-   gas limit of _400,000_ as explained [here](https://metamask.zendesk.com/hc/en-us/articles/360022895972).
+   :::note[Set your gas limit in MetaMask]
+   Remix IDE doesn't set the right gas limit, so you must [edit the
+   gas limit in MetaMask](https://support.metamask.io/hc/en-us/articles/360022895972) within the **Advanced gas controls** settings.
+
+   For this example to work, set the gas limit to _400,000_ in MetaMask.
+
+   First, [enable **Advanced gas controls** in your MetaMask settings](https://support.metamask.io/hc/en-us/articles/360022895972).
+
+   Before confirming your transaction in MetaMask, navigate to the screen where you can edit the gas limit: Select **Site suggested** > **Advanced** > **Advanced gas controls** and select **Edit** next to the **Gas limit** amount. Update the **Gas limit** value to _400000_ and select **Save**. Finally, confirm the transaction.
    :::
    After you approve the transaction, Chainlink VRF processes your request. Chainlink VRF fulfills the request and returns the random values to your contract in a callback to the `fulfillRandomWords()` function. At this point, a new key `requestId` is added to the mapping `s_requests`. Depending on current testnet conditions, it might take a few minutes for the callback to return the requested random values to your contract.
 
