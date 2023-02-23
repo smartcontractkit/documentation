@@ -33,7 +33,6 @@ export const CHAINS: Chain[] = [
         networkType: "mainnet",
         tags: ["proofOfReserve", "nftFloorPrice"],
         rddUrl: "https://reference-data-directory.vercel.app/feeds-mainnet.json",
-        tags: ["proofOfReserve", "nftFloorPrice"],
       },
       {
         name: "Sepolia Testnet",
