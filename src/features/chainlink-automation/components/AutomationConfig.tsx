@@ -64,7 +64,7 @@ export const AutomationConfig = ({
             {!checkGasLimit ? <td /> : <td>{checkGasLimit.toLocaleString()}</td>}
           </tr>
           <tr>
-            <td>Call Gas Limit</td>
+            <td>Perform Gas Limit</td>
             {!maxPerformGas ? <td /> : <td>{maxPerformGas.toLocaleString()}</td>}
           </tr>
           <tr>
