@@ -1,0 +1,170 @@
+---
+layout: ../../../layouts/MainLayout.astro
+section: chainlinkFunctions
+date: Last Modified
+title: "Request Computation"
+setup: |
+  import ChainlinkFunctions from "@features/chainlink-functions/common/ChainlinkFunctions.astro"
+---
+
+This tutorial shows you how to run computations on the Chainlink Functions Decentralized Oracle Network (DON). The example code computes the [geometric mean](https://www.mathsisfun.com/numbers/geometric-mean.html) of numbers in a list. After [OCR](/chainlink-functions/resources/concepts/) completes off-chain computation and aggregation, it returns the result to your smart contract.
+
+## Before you begin
+
+:::note[Request Access]
+Chainlink Functions is currently in a limited BETA.
+Apply [here](http://functions.chain.link/) to add your EVM account address to the Allow List.
+:::
+
+1. **[Complete the setup steps in the Getting Started guide](/chainlink-functions/getting-started):** The Getting Started Guide shows you how to set up your environment with the necessary tools for these tutorials. You can re-use the same consumer contract for each of these tutorials.
+
+1. Make sure your subscription has enough LINK to pay for your requests. Read [Get Subscription details](/chainlink-functions/resources/subscriptions#get-subscription-details) to learn how to check your subscription balance. If your subscription runs out of LINK, follow the [Fund a Subscription](/chainlink-functions/resources/subscriptions#fund-a-subscription) guide.
+
+1. **Check out the correct branch before you try this tutorial:** Each tutorial is stored in a separate branch of the [Chainlink Functions Starter Kit](https://github.com/smartcontractkit/functions-hardhat-starter-kit) repository.
+
+   ```bash
+   git checkout tutorial-1
+   ```
+
+## Tutorial
+
+This tutorial is configured to get the average (geometric mean) from a list of numbers. For a detailed explanation of the code example, read the [Explanation](#explanation) section.
+
+- Open `Functions-request-config.js`. Note that the `args` value is `["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]`, so the source code will calculate the average (geometric mean) of "1,2,3,4,5,6,7,8,9,10". You can change the `args` value to compute another set's average. Read the [request config explanation](#functions-request-configjs) for more information about the request config file.
+- Open `Functions-request-source.js` to analyze the JavaScript source code. Read the [source code explanation](#functions-request-sourcejs) for a more detailed description of the source code.
+
+### Simulation
+
+The [Chainlink Functions hardhat starter kit](https://github.com/smartcontractkit/functions-hardhat-starter-kit) includes a simulator to test your Functions code on your local machine. The `functions-simulate` command will execute your code in a local runtime environment and simulate an end-to-end fulfillment, helping you fix any issues before submitting your functions to a Decentralized Oracle Network.
+
+Run the `functions-simulate` task to run the source code locally and make sure `Functions-request-config.js` and `Functions-request-source.js` are correctly written:
+
+```bash
+npx hardhat functions-simulate
+```
+
+Example:
+
+```bash
+$ npx hardhat functions-simulate
+secp256k1 unavailable, reverting to browser version
+
+__Compiling Contracts__
+Nothing to compile
+Duplicate definition of Transfer (Transfer(address,address,uint256,bytes), Transfer(address,address,uint256))
+
+Executing JavaScript request source code locally...
+
+__Console log messages from sandboxed code__
+calculate geometric mean of 1,2,3,4,5,6,7,8,9,10
+geometric mean is: 4.53
+
+__Output from sandboxed source code__
+Output represented as a hex string: 0x00000000000000000000000000000000000000000000000000000000000001c5
+Decoded as a uint256: 453
+
+__Simulated On-Chain Response__
+Response returned to client contract represented as a hex string: 0x00000000000000000000000000000000000000000000000000000000000001c5
+Decoded as a uint256: 453
+
+Estimated transmission cost: 0.000043548320861207 LINK (This will vary based on gas price)
+Base fee: 0.0 LINK
+Total estimated cost: 0.000043548320861207 LINK
+```
+
+Reading the output of the example above, you can note that the geometric mean was correctly computed: `4.53`. Because Solidity does not support decimals, we move the decimal point so that the value looks like an integer `453` before returning the `bytes` encoded value `0x00000000000000000000000000000000000000000000000000000000000001c5` in the callback. Note: Read the [source code explanation](#functions-request-sourcejs) for a more detailed explanation.
+
+### Request
+
+:::note[Reminder]
+Before you can make a successful request, you must complete the setup steps in the [Before you begin](#before_you_begin) section. Each tutorial is in a separate Git branch and some require unique entries in your `.env` file.
+:::
+
+Send a request to the Decentralized Oracle Network to compute the average (geometric mean). Run the `functions-request` task with the `subid` (subscription ID) and `contract` parameters. This task will pass the functions JavaScript source code and any arguments and secrets when calling the `FunctionsConsumer`'s `executeRequest` function. Read the [functionsConsumer](#functionsconsumersol) section for more details about the consumer contract.
+
+```bash
+npx hardhat functions-request --subid REPLACE_SUBSCRIPTION_ID --contract REPLACE_CONSUMER_CONTRACT_ADDRESS --network REPLACE_NETWORK
+```
+
+Example:
+
+```bash
+$ npx hardhat functions-request --subid 6 --contract 0xa9b286E892d579dc727c79D3be9b01949796240A  --network mumbai
+secp256k1 unavailable, reverting to browser version
+Simulating Functions request locally...
+
+__Console log messages from sandboxed code__
+calculate geometric mean of 1,2,3,4,5,6,7,8,9,10
+geometric mean is: 4.53
+
+__Output from sandboxed source code__
+Output represented as a hex string: 0x00000000000000000000000000000000000000000000000000000000000001c5
+Decoded as a uint256: 453
+
+
+If all 100000 callback gas is used, this request is estimated to cost 0.000052353682260389 LINK
+Continue? (y) Yes / (n) No
+y
+
+Requesting new data for FunctionsConsumer contract 0xa9b286E892d579dc727c79D3be9b01949796240A on network mumbai
+Waiting 2 blocks for transaction 0xa282664fc12c1cecca3607b506f7d4074cce102ae991101b88f4f32c412a56a4 to be confirmed...
+
+Request 0x6ec358f19476daf07dba0f786f49f043b10449855c8a0b6a197776460db8bfc1 initiated
+Waiting for fulfillment...
+
+Request 0x6ec358f19476daf07dba0f786f49f043b10449855c8a0b6a197776460db8bfc1 fulfilled!
+Response returned to client contract represented as a hex string: 0x00000000000000000000000000000000000000000000000000000000000001c5
+Decoded as a uint256: 453
+
+Transmission cost: 0.000080952063590393 LINK
+Base fee: 0.0 LINK
+Total cost: 0.000080952063590393 LINK
+```
+
+The output of the example gives you the following information:
+
+- The `executeRequest` function was successfully called in the `FunctionsConsumer` contract. The transaction in this example is [0xa282664fc12c1cecca3607b506f7d4074cce102ae991101b88f4f32c412a56a4](https://mumbai.polygonscan.com/tx/0xa282664fc12c1cecca3607b506f7d4074cce102ae991101b88f4f32c412a56a4).
+- The request ID is `0x6ec358f19476daf07dba0f786f49f043b10449855c8a0b6a197776460db8bfc1`.
+- The DON successfully fulfilled your request. The total cost was: `0.000080952063590393 LINK`.
+- The consumer contract received a response in `bytes` with a value of `0x00000000000000000000000000000000000000000000000000000000000001c5`. Decoding it off-chain to `uint256` give you a result: `453`.
+
+At any time, you can run the `functions-read` task with the `contract` parameter to read the latest received response.
+
+```bash
+npx hardhat functions-read  --contract REPLACE_CONSUMER_CONTRACT_ADDRESS --network REPLACE_NETWORK
+```
+
+Example:
+
+```bash
+$ npx hardhat functions-read  --contract 0xa9b286E892d579dc727c79D3be9b01949796240A --network mumbai
+secp256k1 unavailable, reverting to browser version
+Reading data from Functions client contract 0xa9b286E892d579dc727c79D3be9b01949796240A on network mumbai
+
+On-chain response represented as a hex string: 0x00000000000000000000000000000000000000000000000000000000000001c5
+Decoded as a uint256: 453
+```
+
+## Explanation
+
+### FunctionsConsumer.sol
+
+<ChainlinkFunctions section="functions-consumer" />
+
+### Functions-request-config.js
+
+Read the [Request Configuration](https://github.com/smartcontractkit/functions-hardhat-starter-kit#functions-library) section for a detailed description of each setting. In this example, the settings are the following:
+
+- `codeLocation: Location.Inline`: The JavaScript code is provided within the request.
+- `secretsLocation: Location.Inline`: The encrypted secrets are provided within the request.
+- `source: fs.readFileSync("./Functions-request-source.js").toString()`: The source code must be a script object. That's why we use `fs.readFileSync` to read `Functions-request-source.js` and then call `toString()` to get the content as a `string` object.
+- `args: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]`: These arguments are passed to the source code. This example compute the average(geometric mean) of `1,2,3,4,5,6,7,8,9,10`.
+- `expectedReturnType: ReturnType.uint256`: The response received by the DON is encoded in `bytes`. Because the average (geometric mean) is a `uint256`, define `ReturnType.uint256` to inform users how to decode the response received by the DON.
+
+### Functions-request-source.js
+
+Read the [JavaScript code](https://github.com/smartcontractkit/functions-hardhat-starter-kit#javascript-code) section for a detailed explanation of how to write compatible JavaScript source code. This JavaScript source code uses only vanilla Node.js and makes no API calls. The code is self-explanatory and has comments to help you understand all the steps. The main steps are:
+
+- Read the numbers provided as arguments in the `args` setting. Because `args` is an array of `string`, call `parseInt` to convert from `string` to `number`.
+- Calculate the average (geometric mean): First, compute the product of the numbers. Then, calculate the nth root of the product where `n` is the length of `args`.
+- Return the result as a [buffer](https://nodejs.org/api/buffer.html#buffer) using the `Functions.encodeUint256` helper function. Because solidity doesn't support decimals, multiply the result by `100` and round the result to the nearest integer. **Note**: Read this [article](https://www.freecodecamp.org/news/do-you-want-a-better-understanding-of-buffer-in-node-js-check-this-out-2e29de2968e8/) if you are new to Javascript Buffers and want to understand why they are important.

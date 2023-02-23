@@ -58,7 +58,7 @@ To use this contract, compile and deploy it in Remix.
 
    This contract automatically creates a new subscription when you deploy it. Read the `s_subscriptionId` variable to find your subscription ID. You can use this value to find the subscription at [vrf.chain.link](https://vrf.chain.link).
 
-1. In this example, the `topUpSubscription()` function sends LINK from your contract to the subscription. Fund your contract with at least three testnet LINK. Alternatively, you can send LINK directly to the subscription at [vrf.chain.link](https://vrf.chain.link). Any address can provide funding to a subscription balance. If you need testnet LINK, you can get it from the [Chainlink faucet](https://faucets.chain.link/goerli).
+1. In this example, the `topUpSubscription()` function sends LINK from your contract to the subscription. Fund your contract with at least three testnet LINK. Alternatively, you can send LINK directly to the subscription at [vrf.chain.link](https://vrf.chain.link). Any address can provide funding to a subscription balance. If you need testnet LINK, you can get it from [faucets.chain.link](https://faucets.chain.link/sepolia/).
 
 1. Run the `topUpSubscription()` function to send LINK from your contract to your subscription balance. For this example, specify a value of `3000000000000000000`, which is equivalent to three LINK.
 
