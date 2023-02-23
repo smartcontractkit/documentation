@@ -17,6 +17,7 @@ export type SupportedTechnology =
 
 export type SupportedChain =
   | "ETHEREUM_MAINNET"
+  | "ETHEREUM_SEPOLIA"
   | "ETHEREUM_GOERLI"
   | "BNB_MAINNET"
   | "BNB_TESTNET"

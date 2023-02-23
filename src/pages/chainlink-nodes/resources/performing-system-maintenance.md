@@ -4,6 +4,8 @@ section: nodeOperator
 date: Last Modified
 title: "Performing System Maintenance"
 whatsnext: { "Connecting to a Remote Database": "/chainlink-nodes/resources/connecting-to-a-remote-database/" }
+setup: |
+  import { Tabs } from "@components/Tabs"
 ---
 
 You might occasionally need to restart the system that the Chainlink node runs on. To restart without any downtime for completing requests, perform the upgrade as a series of steps that passes database access to a new instance while the first instance is down.
@@ -14,10 +16,10 @@ You might occasionally need to restart the system that the Chainlink node runs o
 This example uses Docker to run the Chainlink node, see the [Running a Chainlink Node](/chainlink-nodes/v1/running-a-chainlink-node/) page for instructions on how to set it up.
 :::
 
-First, find the most recent Chainlink image on [Docker Hub](https://hub.docker.com/r/smartcontract/chainlink/) and pull that Docker image. For version 1.1.0:
+First, find the most recent Chainlink image on [Docker Hub](https://hub.docker.com/r/smartcontract/chainlink/) and pull that Docker image. For version 1.11.0:
 
 ```shell
-docker pull smartcontract/chainlink:1.1.0
+docker pull smartcontract/chainlink:1.11.0
 ```
 
 Then, check what port the existing container is running on:
@@ -37,13 +39,26 @@ Look under the PORTS label to see the ports in use by the running container, in 
 
 Now start the second instance of the node. The local port option has been modified so that both containers run simultaneously.
 
+<Tabs client:visible>
+<Fragment slot="tab.1">Sepolia</Fragment>
+<Fragment slot="tab.2">Goerli</Fragment>
+<Fragment slot="tab.3">Mainnet</Fragment>
+<Fragment slot="panel.1">
+```shell Sepolia
+cd ~/.chainlink-sepolia && docker run -p 6687:6688 -v ~/.chainlink-sepolia:/chainlink -it --env-file=.env smartcontract/chainlink local n
+```
+</Fragment>
+<Fragment slot="panel.2">
 ```shell Goerli
 cd ~/.chainlink-goerli && docker run -p 6687:6688 -v ~/.chainlink-goerli:/chainlink -it --env-file=.env smartcontract/chainlink local n
 ```
-
+</Fragment>
+<Fragment slot="panel.3">
 ```shell Mainnet
 cd ~/.chainlink && docker run -p 6687:6688 -v ~/.chainlink:/chainlink -it --env-file=.env smartcontract/chainlink local n
 ```
+</Fragment>
+</Tabs>
 
 The log messages on the second node instance inform you that it is waiting for the database lock.
 
@@ -57,15 +72,28 @@ The output returns the name "jovial_shirley" (or what your container's name was)
 
 At this point, you're now running the latest image on your secondary container. If you have any system maintenance to perform on your primary machine, you can do so now.
 
-Next, you will simply need to run the container again with the local port 6688 in order to go back to normal operations.
+Next, run the container again with the local port 6688 in order to go back to normal operations.
 
+<Tabs client:visible>
+<Fragment slot="tab.1">Sepolia</Fragment>
+<Fragment slot="tab.2">Goerli</Fragment>
+<Fragment slot="tab.3">Mainnet</Fragment>
+<Fragment slot="panel.1">
+```shell Sepolia
+cd ~/.chainlink-sepolia && docker run -p 6688:6688 -v ~/.chainlink-sepolia:/chainlink -it --env-file=.env smartcontract/chainlink local n
+```
+</Fragment>
+<Fragment slot="panel.2">
 ```shell Goerli
 cd ~/.chainlink-goerli && docker run -p 6688:6688 -v ~/.chainlink-goerli:/chainlink -it --env-file=.env smartcontract/chainlink local n
 ```
-
+</Fragment>
+<Fragment slot="panel.3">
 ```shell Mainnet
 cd ~/.chainlink && docker run -p 6688:6688 -v ~/.chainlink:/chainlink -it --env-file=.env smartcontract/chainlink local n
 ```
+</Fragment>
+</Tabs>
 
 When the log messages on the first node indicate that it is waiting for the database lock, shut down the second instance of the node. The original instance automatically obtains a lock and resumes normal operation.
 
@@ -81,13 +109,26 @@ Use the default `DATABASE_LOCKING_MODE=advisorylock` setting unless you want to 
 
 Run the Chainlink node with a name option specified:
 
+<Tabs client:visible>
+<Fragment slot="tab.1">Sepolia</Fragment>
+<Fragment slot="tab.2">Goerli</Fragment>
+<Fragment slot="tab.3">Mainnet</Fragment>
+<Fragment slot="panel.1">
+```shell Sepolia
+cd ~/.chainlink-sepolia && docker run --name chainlink -p 6688:6688 -v ~/.chainlink-sepolia:/chainlink -it --env-file=.env smartcontract/chainlink local n
+```
+</Fragment>
+<Fragment slot="panel.2">
 ```shell Goerli
 cd ~/.chainlink-goerli && docker run --name chainlink -p 6688:6688 -v ~/.chainlink-goerli:/chainlink -it --env-file=.env smartcontract/chainlink local n
 ```
-
+</Fragment>
+<Fragment slot="panel.3">
 ```shell Mainnet
 cd ~/.chainlink && docker run --name chainlink -p 6688:6688 -v ~/.chainlink:/chainlink -it --env-file=.env smartcontract/chainlink local n
 ```
+</Fragment>
+</Tabs>
 
 You will now notice that you no longer receive a randomly generated name from Docker:
 
@@ -104,13 +145,26 @@ Output (truncated):
 
 This will remain your primary Chainlink container, and should always use port 6688 (unless configured otherwise). For the secondary instance, you will run the container in the same way, but with a different name and a different local port:
 
+<Tabs client:visible>
+<Fragment slot="tab.1">Sepolia</Fragment>
+<Fragment slot="tab.2">Goerli</Fragment>
+<Fragment slot="tab.3">Mainnet</Fragment>
+<Fragment slot="panel.1">
+```shell Sepolia
+cd ~/.chainlink-sepolia && docker run --name secondary -p 6687:6688 -v ~/.chainlink-sepolia:/chainlink -it --env-file=.env smartcontract/chainlink local n
+```
+</Fragment>
+<Fragment slot="panel.2">
 ```shell Goerli
 cd ~/.chainlink-goerli && docker run --name secondary -p 6687:6688 -v ~/.chainlink-goerli:/chainlink -it --env-file=.env smartcontract/chainlink local n
 ```
-
+</Fragment>
+<Fragment slot="panel.3">
 ```shell Mainnet
 cd ~/.chainlink && docker run --name secondary -p 6687:6688 -v ~/.chainlink:/chainlink -it --env-file=.env smartcontract/chainlink local n
 ```
+</Fragment>
+</Tabs>
 
 Notice the `--name secondary` was used for this container and the local port is 6687. Be sure to add this port to your SSH tunnel as well so that you can access the secondary node's GUI if it has become active (it will not function until the primary container goes down).
 
@@ -122,13 +176,13 @@ Running `docker ps` now reveals two named containers running (output truncated):
 ... chainlink
 ```
 
-If your primary container goes down, the secondary one will automatically take over. To start the primary container again, simply run:
+If your primary container goes down, the secondary one automatically takes over. To start the primary container again, simply run:
 
 ```shell
 docker start -i chainlink
 ```
 
-This will start the container, but the secondary node still has a lock on the database. To give the primary container access, you can restart the secondary container:
+This starts the container, but the secondary node still has a lock on the database. To give the primary container access, you can restart the secondary container:
 
 ```shell
 docker restart secondary -t 0
@@ -140,6 +194,6 @@ The primary container takes control of the database and resumes operation. You c
 docker attach secondary
 ```
 
-However, it will not produce any output while waiting for a lock on the database.
+However, it does not produce any output while waiting for a lock on the database.
 
 Congratulations! You now have a redundant setup of Chainlink nodes in case the primary container goes down. Get comfortable with the process by passing control of the database back and forth between the `chainlink` and `secondary` containers.

@@ -13,7 +13,7 @@ Manage your Upkeeps to get the best performance.
 You must monitor the balance of your Upkeep. If the Upkeep LINK balance drops below the [minimum balance](/chainlink-automation/automation-economics/#minimum-balance), the Chainlink Automation Network will not perform the Upkeep.
 
 :::note[ERC677 Link]
-For funding on Mainnet, you need ERC-677 LINK. Many token bridges give you ERC-20 LINK tokens. Use PegSwap to [convert Chainlink tokens (LINK) to be ERC-677 compatible](https://pegswap.chain.link/). To fund on a supported testnet, get [LINK](/resources/link-token-contracts/) for the testnet you are using from our [faucet](https://faucets.chain.link/).
+For funding on Mainnet, you need ERC-677 LINK. Many token bridges give you ERC-20 LINK tokens. Use PegSwap to [convert Chainlink tokens (LINK) to be ERC-677 compatible](https://pegswap.chain.link/). To fund on a supported testnet, get [LINK](/resources/link-token-contracts/) from [faucets.chain.link](https://faucets.chain.link/).
 :::
 
 Follow these steps to fund your Upkeep:

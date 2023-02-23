@@ -4,11 +4,11 @@ pragma solidity ^0.8.7;
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
 /**
- * Network: Goerli
+ * Network: Sepolia
  * Base: BTC/USD
- * Base Address: 0xA39434A63A52E749F02807ae27335515BA4b07F7
+ * Base Address: 0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43
  * Quote: EUR/USD
- * Quote Address: 0x44390589104C9164407A0E0562a9DBe6C24A0E05
+ * Quote Address: 0x1a81afB8146aeFfCFc5E50e8479e826E7D55b910
  * Decimals: 8
  */
 
