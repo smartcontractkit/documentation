@@ -18,7 +18,7 @@ For a complete list of Chainlink Price Feeds available on StarkNet testnet, see 
 
 Set up your environment to run the examples.
 
-- [Set up your local StarkNet environment](https://starknet.io/docs/quickstart.html). Note that a Python version in the `>=3.6 <=3.9` range is required for compiling and deploying contracts on-chain. The [`cairo-lang` Python package](https://pypi.org/project/cairo-lang/) is not compatible with newer versions of Python as of the [`cairo-lang` 0.10.3](https://pypi.org/project/cairo-lang/0.10.3/) package. Check [starknet.io](https://starknet.io/docs/quickstart.html) for the latest requirements.
+- [Set up your local StarkNet environment](https://docs.starknet.io/documentation/getting_started/setting_up_the_environment/). Note that a Python version in the `>=3.6 <=3.9` range is required for compiling and deploying contracts on-chain. The [`cairo-lang` Python package](https://pypi.org/project/cairo-lang/) is not compatible with newer versions of Python as of the [`cairo-lang` 0.10.3](https://pypi.org/project/cairo-lang/0.10.3/) package. Check [starknet.io](https://docs.starknet.io/documentation/getting_started/setting_up_the_environment/) for the latest requirements.
 - [Install NodeJS](https://nodejs.org/en/download/) in the version in the `>=14 <=18` version range.
 - [Install Yarn](https://classic.yarnpkg.com/lang/en/docs/install/).
 - Clone and configure the code examples:
@@ -41,7 +41,7 @@ Set up your environment to run the examples.
      yarn install
      ```
 
-- If you want to run the on-chain examples, you must [set up a StarkNet account](https://starknet.io/docs/hello_starknet/account_setup.html) on StarkNet's `alpha-goerli` network and fund it with [testnet ETH](https://faucet.goerli.starknet.io/). These examples expect the OpenZeppelin wallet, which stores your addresses and private keys in the following default path:
+- If you want to run the on-chain examples, you must [set up a StarkNet account](https://docs.starknet.io/documentation/getting_started/account_setup/) on StarkNet's `alpha-goerli` network and fund it with [testnet ETH](https://faucet.goerli.starknet.io/). These examples expect the OpenZeppelin wallet, which stores your addresses and private keys in the following default path:
 
   ```
   ~/.starknet_accounts/starknet_open_zeppelin_accounts.json
