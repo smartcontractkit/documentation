@@ -12,4 +12,4 @@ title: "Chainlink Functions Resources"
 - [Managing Subscriptions](/chainlink-functions/resources/subscriptions/)
 - [Billing](/chainlink-functions/resources/billing/)
 - [Supported Networks](/chainlink-functions/supported-networks/)
-- [Service Limits](/chainlink-functions/tutorials/service-limits/)
+- [Service Limits](/chainlink-functions/resources/service-limits/)
