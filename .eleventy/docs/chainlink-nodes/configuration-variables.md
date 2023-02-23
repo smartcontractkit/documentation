@@ -1251,6 +1251,12 @@ If EIP1559 mode is enabled, and FixedPrice gas estimator is used, this env var c
 The default gas limit for outgoing transactions. This should not need to be changed in most cases.
 Some job types, such as Keeper jobs, might set their own gas limit unrelated to this value.
 
+### ETH_GAS_LIMIT_MAX
+
+- Default: _automatically set based on Chain ID, typically 500000_
+
+The maxium for gas limits estimated by the `Arbitrum` `GAS_ESTIMATOR_MODE`. This should not need to be changed in most cases.
+
 ### ETH_GAS_LIMIT_MULTIPLIER
 
 - Default: `"1.0"`
@@ -1400,8 +1406,8 @@ Controls what type of gas estimator is used.
 
 - `FixedPrice` uses static configured values for gas price (can be set via API call).
 - `BlockHistory` dynamically adjusts default gas price based on heuristics from mined blocks.
-- `Optimism` is a special mode only for use with older versions of the Optimism blockchain.
-- `Optimism2` is a special mode only for use with current versions of the Optimism blockchain.
+- `Optimism2`/`L2Suggested` is a special mode only for use with Optimism and Metis blockchains. This mode will use the gas price suggested by the rpc endpoint via `eth_gasPrice`.
+- `Arbitrum` is a special mode only for use with Arbitrum blockchains. It uses the suggested gas price (up to `ETH_MAX_GAS_PRICE_WEI`, with `1000 gwei` default) as well as an estimated gas limit (up to `ETH_GAS_LIMIT_MAX`, with `1,000,000,000` default).
 
 ### BLOCK_HISTORY_ESTIMATOR_BATCH_SIZE
 
