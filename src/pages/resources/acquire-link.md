@@ -18,7 +18,7 @@ To see your LINK token balance in MetaMask, you must manually add the token.
 1. Find the LINK token contract address for the network that you want to use. On Sepolia, the LINK token address is: `0x779877A7B0D9E8603169DdbD7836e478b4624789`. See the [LINK Token Contracts](/resources/link-token-contracts/) page to find the addresses for different testnets.
 1. Paste the token contract address into MetaMask in the Token Address input. The token symbol and decimals of precision will auto-populate.
    ![Metamask Custom Tokens Screen](/images/getting-started/metamaskImportTokens.webp)
-1. Click **Next**. A new window will appears, showing the LINK token details.
+1. Click **Next**. A new window will appear, showing the LINK token details.
 1. Click **Import Tokens** to confirm adding the new token.
 
 MetaMask should now display the new LINK token balance.
@@ -26,7 +26,7 @@ MetaMask should now display the new LINK token balance.
 ## Get testnet LINK from a faucet
 
 1. Go to [https://faucets.chain.link/](https://faucets.chain.link/).
-1. In Metmask, select the network where you want to receive testnet LINK.
+1. In Metamask, select the network where you want to receive testnet LINK.
 1. Click **Connect wallet** so the faucet app can detect the network and wallet address.
 1. If you want to receive testnet funds at a different address, paste it in the **Wallet address** section. This field defaults to your connected wallet address.
 1. In the **Request type** section, select the testnet funds that you want to receive.
