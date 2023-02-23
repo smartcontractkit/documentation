@@ -2,7 +2,7 @@ export const NETWORKS = [
   {
     page: "ethereum",
     title: "Ethereum Data Feeds",
-    networkStatusUrl: "https://ethstats.net/",
+    networkStatusUrl: "https://ethstats.dev/",
     networks: [
       {
         name: "Ethereum Mainnet",

@@ -53,11 +53,11 @@ contract VRFv2DirectFundingConsumer is
     // Cannot exceed VRFV2Wrapper.getConfig().maxNumWords.
     uint32 numWords = 2;
 
-    // Address LINK - hardcoded for Goerli
-    address linkAddress = 0x326C977E6efc84E512bB9C30f76E30c160eD06FB;
+    // Address LINK - hardcoded for Sepolia
+    address linkAddress = 0x779877A7B0D9E8603169DdbD7836e478b4624789;
 
-    // address WRAPPER - hardcoded for Goerli
-    address wrapperAddress = 0x708701a1DfF4f478de54383E49a627eD4852C816;
+    // address WRAPPER - hardcoded for Sepolia
+    address wrapperAddress = 0xab18414CD93297B0d12ac29E63Ca20f515b3DB46;
 
     constructor()
         ConfirmedOwner(msg.sender)

@@ -28,15 +28,15 @@ contract VRFD20 is VRFConsumerBaseV2 {
     // Your subscription ID.
     uint64 s_subscriptionId;
 
-    // Goerli coordinator. For other networks,
+    // Sepolia coordinator. For other networks,
     // see https://docs.chain.link/docs/vrf-contracts/#configurations
-    address vrfCoordinator = 0x2Ca8E0C643bDe4C2E08ab1fA0da3401AdAD7734D;
+    address vrfCoordinator = 0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625;
 
     // The gas lane to use, which specifies the maximum gas price to bump to.
     // For a list of available gas lanes on each network,
     // see https://docs.chain.link/docs/vrf-contracts/#configurations
     bytes32 s_keyHash =
-        0x79d3d8832d904592c0bf9818b621522c988bb8b0c05cdc3b15aea1b6e8db0c15;
+        0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc56c;
 
     // Depends on the number of requested values that you want sent to the
     // fulfillRandomWords() function. Storing each word costs about 20,000 gas,
@@ -65,7 +65,7 @@ contract VRFD20 is VRFConsumerBaseV2 {
     /**
      * @notice Constructor inherits VRFConsumerBaseV2
      *
-     * @dev NETWORK: Goerli
+     * @dev NETWORK: Sepolia
      *
      * @param subscriptionId subscription id that this consumer contract can use
      */
@@ -135,7 +135,7 @@ contract VRFD20 is VRFConsumerBaseV2 {
     }
 
     /**
-     * @notice Get the house namne from the id
+     * @notice Get the house name from the id
      * @param id uint256
      * @return house name string
      */

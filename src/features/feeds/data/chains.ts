@@ -24,7 +24,7 @@ export const CHAINS: Chain[] = [
     page: "ethereum",
     title: "Ethereum Data Feeds",
     img: "/assets/chains/ethereum.svg",
-    networkStatusUrl: "https://ethstats.net/",
+    networkStatusUrl: "https://ethstats.dev/",
     tags: ["default", "proofOfReserve", "nftFloorPrice"],
     networks: [
       {
@@ -33,6 +33,12 @@ export const CHAINS: Chain[] = [
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-mainnet.json",
         tags: ["proofOfReserve", "nftFloorPrice"],
+      },
+      {
+        name: "Sepolia Testnet",
+        explorerUrl: "https://sepolia.etherscan.io/address/%s",
+        networkType: "testnet",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-sepolia.json",
       },
       {
         name: "Goerli Testnet",
@@ -321,7 +327,7 @@ export const ALL_CHAINS: Chain[] = [
     page: "deprecated",
     title: "All chains",
     img: "/assets/chains/ethereum.svg",
-    networkStatusUrl: "https://ethstats.net/",
+    networkStatusUrl: "https://ethstats.dev/",
     tags: ["default", "proofOfReserve", "nftFloorPrice"],
     networks: [
       {
@@ -337,6 +343,12 @@ export const ALL_CHAINS: Chain[] = [
         networkType: "testnet",
         tags: ["nftFloorPrice"],
         rddUrl: "https://reference-data-directory.vercel.app/feeds-goerli.json",
+      },
+      {
+        name: "Sepolia Testnet",
+        explorerUrl: "https://sepolia.etherscan.io/address/%s",
+        networkType: "testnet",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-sepolia.json",
       },
       {
         name: "BNB Chain Mainnet",

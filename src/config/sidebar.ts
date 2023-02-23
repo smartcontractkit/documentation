@@ -212,45 +212,6 @@ export const SIDEBAR = {
       ],
     },
     {
-      section: "Connect to any API",
-      contents: [
-        { title: "Introduction to Using Any API", url: "any-api/introduction" },
-        {
-          title: "Make a GET Request",
-          url: "any-api/get-request/introduction",
-          children: [
-            {
-              title: "Single Word Response",
-              url: "any-api/get-request/examples/single-word-response",
-            },
-            {
-              title: "Multi-Variable Responses",
-              url: "any-api/get-request/examples/multi-variable-responses",
-            },
-            {
-              title: "Array Response",
-              url: "any-api/get-request/examples/array-response",
-            },
-            {
-              title: "Large Responses",
-              url: "any-api/get-request/examples/large-responses",
-            },
-            {
-              title: "Existing Job Request",
-              url: "any-api/get-request/examples/existing-job-request",
-            },
-          ],
-        },
-        { title: "Find Existing Jobs", url: "any-api/find-oracle" },
-        { title: "Testnet Oracles", url: "any-api/testnet-oracles" },
-        {
-          title: "Data Provider Nodes",
-          url: "any-api/data-providers/introduction",
-        },
-        { title: "API Reference", url: "any-api/api-reference" },
-      ],
-    },
-    {
       section: "AUTOMATE CONTRACTS",
       contents: [
         {
@@ -311,6 +272,45 @@ export const SIDEBAR = {
       ],
     },
     {
+      section: "Connect to any API",
+      contents: [
+        { title: "Introduction to Using Any API", url: "any-api/introduction" },
+        {
+          title: "Make a GET Request",
+          url: "any-api/get-request/introduction",
+          children: [
+            {
+              title: "Single Word Response",
+              url: "any-api/get-request/examples/single-word-response",
+            },
+            {
+              title: "Multi-Variable Responses",
+              url: "any-api/get-request/examples/multi-variable-responses",
+            },
+            {
+              title: "Array Response",
+              url: "any-api/get-request/examples/array-response",
+            },
+            {
+              title: "Large Responses",
+              url: "any-api/get-request/examples/large-responses",
+            },
+            {
+              title: "Existing Job Request",
+              url: "any-api/get-request/examples/existing-job-request",
+            },
+          ],
+        },
+        { title: "Find Existing Jobs", url: "any-api/find-oracle" },
+        { title: "Testnet Oracles", url: "any-api/testnet-oracles" },
+        {
+          title: "Data Provider Nodes",
+          url: "any-api/data-providers/introduction",
+        },
+        { title: "API Reference", url: "any-api/api-reference" },
+      ],
+    },
+    {
       section: "Resources",
       contents: [
         {
@@ -337,6 +337,125 @@ export const SIDEBAR = {
         },
         { title: "Getting Help", url: "resources/getting-help" },
         { title: "Hackathon Resources", url: "resources/hackathon-resources" },
+        {
+          title: "Contributing to Chainlink",
+          url: "resources/contributing-to-chainlink",
+        },
+      ],
+    },
+  ],
+  chainlinkFunctions: [
+    {
+      section: "CHAINLINK FUNCTIONS",
+      contents: [
+        {
+          title: "What is Chainlink Functions?",
+          url: "chainlink-functions",
+        },
+        {
+          title: "Getting Started",
+          url: "chainlink-functions/getting-started",
+        },
+      ],
+    },
+    {
+      section: "Tutorials",
+      contents: [
+        {
+          title: "Request Computation",
+          url: "chainlink-functions/tutorials/simple-computation",
+        },
+        {
+          title: "Call an API",
+          url: "chainlink-functions/tutorials/api-query-parameters",
+        },
+        {
+          title: "Return Custom Data Types",
+          url: "chainlink-functions/tutorials/api-custom-response",
+        },
+        {
+          title: "POST Data to an API",
+          url: "chainlink-functions/tutorials/api-post-data",
+        },
+        {
+          title: "Using Secrets in Requests",
+          url: "chainlink-functions/tutorials/api-use-secrets",
+        },
+        {
+          title: "Call Multiple Data Sources",
+          url: "chainlink-functions/tutorials/api-multiple-calls",
+        },
+        {
+          title: "Using Off-chain Secrets in Requests",
+          url: "chainlink-functions/tutorials/api-use-secrets-offchain",
+        },
+      ],
+    },
+    {
+      section: "Guides",
+      contents: [
+        {
+          title: "Concepts",
+          url: "chainlink-functions/resources/concepts/",
+        },
+        {
+          title: "Architecture",
+          url: "chainlink-functions/resources/architecture/",
+        },
+        {
+          title: "Managing Subscriptions",
+          url: "chainlink-functions/resources/subscriptions",
+        },
+        {
+          title: "Billing",
+          url: "chainlink-functions/resources/billing/",
+        },
+        {
+          title: "Supported Networks",
+          url: "chainlink-functions/supported-networks",
+        },
+        {
+          title: "Service Limits",
+          url: "chainlink-functions/resources/service-limits/",
+        },
+      ],
+    },
+    {
+      section: "API Reference",
+      contents: [
+        {
+          title: "FunctionsClient",
+          url: "chainlink-functions/api-reference/FunctionsClient/",
+        },
+        {
+          title: "Functions library",
+          url: "chainlink-functions/api-reference/Functions/",
+        },
+      ],
+    },
+    {
+      section: "Resources",
+      contents: [
+        {
+          title: "Acquire testnet LINK",
+          url: "resources/acquire-link",
+        },
+        {
+          title: "LINK Token Contracts",
+          url: "resources/link-token-contracts",
+        },
+        {
+          title: "Developer Communications",
+          url: "resources/developer-communications",
+        },
+        {
+          title: "Getting Help",
+          url: "resources/getting-help",
+        },
+        {
+          title: "Hackathon Resources",
+          url: "resources/hackathon-resources",
+        },
         {
           title: "Contributing to Chainlink",
           url: "resources/contributing-to-chainlink",

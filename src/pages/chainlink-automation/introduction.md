@@ -85,7 +85,7 @@ Fund your Upkeep with more LINK than you anticipate you will need. The network w
 :::
 
 :::tip[ERC677 Link]
-For registration you must use ERC-677 LINK. Read our [LINK](/resources/link-token-contracts/) page to determine where to acquire mainnet LINK, or visit our [faucets.chain.link](https://faucets.chain.link/) for testnet LINK.
+For registration you must use ERC-677 LINK. Read our [LINK](/resources/link-token-contracts/) page to determine where to acquire mainnet LINK, or go to [faucets.chain.link](https://faucets.chain.link/) to request testnet LINK.
 :::
 
 ## Supported networks and costs

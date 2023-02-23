@@ -79,5 +79,5 @@ When you create an upkeep through the Job Scheduler, Chainlink Automation deploy
 ![Automation Upkeep Details](/images/contract-devs/automation/automation-upkeep-details.png)
 
 :::tip[ERC677 Link]
-For registration you must use ERC-677 LINK. Read our [LINK](/resources/link-token-contracts/) page to determine where to acquire mainnet LINK, or visit our [faucets.chain.link](https://faucets.chain.link/) for testnet LINK.
+For registration you must use ERC-677 LINK. Read our [LINK](/resources/link-token-contracts/) page to determine where to acquire mainnet LINK, or visit [faucets.chain.link](https://faucets.chain.link/) to request testnet LINK.
 :::
