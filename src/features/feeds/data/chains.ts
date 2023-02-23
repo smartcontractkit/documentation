@@ -31,8 +31,8 @@ export const CHAINS: Chain[] = [
         name: "Ethereum Mainnet",
         explorerUrl: "https://etherscan.io/address/%s",
         networkType: "mainnet",
-        tags: ["proofOfReserve", "nftFloorPrice"],
         rddUrl: "https://reference-data-directory.vercel.app/feeds-mainnet.json",
+        tags: ["proofOfReserve", "nftFloorPrice"],
       },
       {
         name: "Sepolia Testnet",
