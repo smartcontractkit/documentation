@@ -44,7 +44,7 @@ See [shared fields](/chainlink-nodes/oracle-jobs/jobs/#shared-fields).
 - `contractAddress`: The Oracle or Operator contract to monitor for requests
 - `requesters`: Optional - Allows whitelisting requesters
 - `minContractPaymentLinkJuels` Optional - Allows you to specify a job-specific minimum contract payment
-- `minIncomingConfirmations` Optional - Allows you to specify a job-specific `MIN_INCOMING_CONFIRMATIONS` value, must be greater than or equal to 1
+- `minIncomingConfirmations` Optional - Allows you to specify a job-specific `MIN_INCOMING_CONFIRMATIONS` value, must be greater than global `MIN_INCOMING_CONFIRMATIONS`
 
 ### Job type specific pipeline variables
 
