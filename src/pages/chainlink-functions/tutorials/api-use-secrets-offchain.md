@@ -10,7 +10,7 @@ setup: |
 This tutorial shows you how to share encrypted secrets off-chain with a Decentralized Oracle Network (DON) via HTTP. Off-chain secrets are encrypted and stored on AWS S3, Google Drive, IPFS, or any other service where the DON can fetch them via HTTP.
 Using off-chain secrets has two main advantages:
 
-- Security: The encrypted secrets are never stored on-chain. You choose where to store encrypted secrets and include the URLs in your requests. The secrets are encrypted by the DON's public key so that only an oracle node in the DON can decrypt them using the DON's private key. After the DON fulfills a request, you can delete the secrets file from the hosted URL. This mitigates the risk that your secrets are exposed if the DON's private key were ever to be leaked.
+- Security: The encrypted secrets are never stored on-chain. You choose where to store encrypted secrets and include the URLs in your requests. The secrets are encrypted by the DON's public key so that only an oracle node in the DON can decrypt them using the DON's private key. After the DON fulfills a request, you can delete the secrets file from the hosted URL. This allows you to revoke credentials from the DON at any time.
 - Reduced gas consumption: When initiating a request, part of the gas consumption is due to the size of the request parameters: source code, arguments, and secrets. The size of an encrypted secrets object is larger than an encrypted HTTP(s) URL, so using off-chain secrets reduces the gas cost of each request.
 
 Read the [API multiple calls](/chainlink-functions/tutorials/api-multiple-calls/) tutorial before you follow the steps in this example. This tutorial uses the same example, but with a slightly different process:
