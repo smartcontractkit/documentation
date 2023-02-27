@@ -12,9 +12,9 @@ whatsnext:
   }
 ---
 
-![Starter Kits Logos](/files/c6e99c5-Untitled_design_23.png)
+![Starter kit logos](/images/starter-kit-images/starter-kits.webp)
 
-This page explains how to install and use the [Chainlink Library](/any-api/api-reference/) in your projects, either manually or via the user of the Chainlink Starter Kits.
+You can install and use Chainlink in your projects either manually or by using the [Chainlink Starter Kits](https://github.com/smartcontractkit/starter-kits). Once you have the Chainlink library installed, you can more easily access the Chainlink ecosystem.
 
 :::note[ Important]
 
@@ -22,13 +22,13 @@ If you're new to smart contract development and want a step-by-step guide, try o
 
 :::
 
-# Install into Existing Projects
+## Installing into existing projects
 
-Chainlink is supported by [Hardhat](http://hardhat.org), [Brownie](https://eth-brownie.readthedocs.io/en/stable), [Truffle](https://www.trufflesuite.com) and other frameworks.
+Chainlink is supported by [Hardhat](http://hardhat.org), [Brownie](https://eth-brownie.readthedocs.io/en/stable), [Truffle](https://www.trufflesuite.com), and other frameworks.
 
-If you already have a project, you can add Chainlink to it by using the following package managers.
+If you already have a project, install the [@chainlink/contracts](https://www.npmjs.com/package/@chainlink/contracts) NPM package.
 
-## NPM
+### NPM
 
 Install using [NPM](https://www.npmjs.com/):
 
@@ -36,7 +36,7 @@ Install using [NPM](https://www.npmjs.com/):
 npm install @chainlink/contracts --save
 ```
 
-## Yarn
+### Yarn
 
 Install using [Yarn](https://yarnpkg.com/):
 
@@ -44,117 +44,71 @@ Install using [Yarn](https://yarnpkg.com/):
 yarn add @chainlink/contracts
 ```
 
-# Create a New Project
+## Create a new project
 
 If you're creating a new project from scratch, these commands will help you set up your project to interact with Chainlink tools and features via the use of our Starter Kits.
 
-## Hardhat Starter Kit
+### Hardhat Starter Kit
 
-To learn more about Hardhat, see the [Hardhat Documentation](https://hardhat.org/getting-started/).
+For the latest instructions, see the following repositories:
 
-Clone the starter kit. The starter kit includes Hardhat, so you don't need to install it separately.
+- [Hardhat Starter Kit](https://github.com/smartcontractkit/hardhat-starter-kit)
+- [Hardhat Starter Kit (TypeScript)](https://github.com/smartcontractkit/hardhat-starter-kit/tree/typescript)
 
-```shell
-git clone https://github.com/smartcontractkit/hardhat-starter-kit
-cd hardhat-starter-kit
-```
+To learn more about Hardhat, read the [Hardhat Documentation](https://hardhat.org/getting-started/).
 
-For instructions on how to use the starter kit, refer to the [Hardhat starter kit README](https://github.com/smartcontractkit/hardhat-starter-kit/blob/main/README.md).
-
-For more details on how to use Chainlink with Hardhat, see our blog post about [How to use Hardhat with Chainlink](https://blog.chain.link/using-chainlink-with-hardhat/).
+For more details on how to use Chainlink with Hardhat, see the blog post for [How to use Hardhat with Chainlink](https://blog.chain.link/using-chainlink-with-hardhat/).
 
 ---
 
-## Brownie Starter Kit
+### Brownie Starter Kit
 
-Before you begin, [install Brownie](https://eth-brownie.readthedocs.io/en/stable/install.html).
+For the latest instructions, see the [Brownie Starter Kit](https://github.com/smartcontractkit/chainlink-mix) repository.
 
-With Brownie installed, run the commands below to open a Brownie project in a new directory.
-
-```shell
-mkdir MyChainlinkProject
-cd MyChainlinkProject/
-brownie bake chainlink-mix
-cd chainlink-mix
-```
-
-For instructions on how to use the starter kit, refer to the [Brownie starter kit README](https://github.com/smartcontractkit/chainlink-mix/blob/master/README.md).
+To learn more about Brownie, read the [Brownie Documentation](https://eth-brownie.readthedocs.io/en/stable/).
 
 For more details on how to use Chainlink with Brownie, see the [Develop a DeFi Project Using Python](https://blog.chain.link/develop-python-defi-project/) blog post.
 
 ---
 
-## Truffle Starter Kit
+### Truffle Starter Kit
 
-Before you begin, [install Truffle with NPM](https://www.trufflesuite.com/truffle):
+For the latest instructions, see the [Truffle Starter Kit](https://github.com/smartcontractkit/truffle-starter-kit) repository.
 
-```shell
-npm install truffle -g
-```
-
-Once installed, unbox the Truffle Starter Kit:
-
-```shell Truffle
-mkdir MyChainlinkProject
-cd MyChainlinkProject/
-truffle unbox smartcontractkit/truffle-starter-kit
-```
-
-For instructions on how to use the starter kit, refer to the [Truffle starter kit README](https://github.com/smartcontractkit/truffle-starter-kit/blob/master/README.md).
+To learn more about Truffle, read the [Truffle Suite Documentation](https://trufflesuite.com/docs/).
 
 For more details on how to use Chainlink with Truffle, see our blog post about [Using Truffle to interact with Chainlink Smart Contracts](https://www.trufflesuite.com/blog/using-truffle-to-interact-with-chainlink-smart-contracts).
 
 ---
 
-## DappTools Starter Kit
+### Foundry Starter Kit
 
-To learn more about DappTools, refer to the [DappTools Documentation](https://dapp.tools/).
+For the latest instructions, see the following repositories:
 
-1. Install Dapp tools using the [Installation instructions](https://github.com/dapphub/dapptools#installation) in the Dapp tools GitHub repository.
+- [Foundry Starter Kit](https://github.com/smartcontractkit/foundry-starter-kit)
+- [Foundry Starter Kit (Huff)](https://github.com/smartcontractkit/huff-starter-kit)
 
-1. After you install the tools, clone the starter kit and install the dependencies:
-
-   ```shell
-   git clone https://github.com/smartcontractkit/dapptools-starter-kit
-   cd dapptools-starter-kit
-   make # This installs the project's dependencies.
-   ```
-
-For instructions on how to use the starter kit, refer to the DappTools starter kit [README](https://github.com/smartcontractkit/dapptools-starter-kit#readme).
-
-For more details on how to use Chainlink with DappTools, see the [How To Use DappTools](https://blog.chain.link/how-to-use-dapptools/) blog post.
+To learn more about Foundry, read the [Foundry Documentation](https://book.getfoundry.sh/).
 
 ---
 
-## Foundry Starter Kit
+### Apeworx Starter Kit (Vyper)
 
-To learn more about Foundry, refer to the [Foundry Documentation](https://book.getfoundry.sh/).
+For the latest instructions, see the [Apeworx Starter Kit](https://github.com/smartcontractkit/apeworx-starter-kit) repository.
 
-1. Install Foundry using the [Installation instructions](https://onbjerg.github.io/foundry-book/getting-started/installation.html) on GitHub.io.
-
-1. After you install Foundry, clone the starter kit and install the project dependencies:
-
-   ```shell
-   git clone https://github.com/smartcontractkit/foundry-starter-kit
-   cd foundry-starter-kit
-   make # This installs the project's dependencies.
-   ```
-
-For instructions on how to use the starter kit, refer to the [Foundry starter kit README](https://github.com/smartcontractkit/foundry-starter-kit#readme).
+To learn more about Truffle, read the [Apeworx Documentation](https://docs.apeworx.io/ape/stable/).
 
 ---
 
-# Using Chainlink Contracts
+### Anchor Starter Kit (Solana)
 
-Once you have the Chainlink library installed, you can leverage the Chainlink ecosystem.
+For the latest instructions, see the [Chainlink Solana Starter Kit](https://github.com/smartcontractkit/solana-starter-kit) repository.
 
-If you're interested in retrieving up to date crypto prices in your contracts, learn more about our [Data Feeds](/data-feeds/).
+To learn more about Anchor, see the [Anchor Documentation](https://www.anchor-lang.com/).
 
-If you need to consume randomness in your contracts, learn about [Chainlink VRF](/vrf/v2/introduction/).
+---
 
-And if you want your contracts to retrieve data from off-chain APIs, learn about [Using Any API](/any-api/introduction/).
-
-# Testing Chainlink Contracts
+## Testing Chainlink contracts
 
 See our blog post on [Testing Chainlink Smart Contracts](https://blog.chain.link/testing-chainlink-smart-contracts/) or watch the [Chainlink Hackathon Workshop](https://www.youtube.com/watch?v=d8SqLaH8pu0).
 
