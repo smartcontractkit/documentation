@@ -559,7 +559,14 @@ export const SIDEBAR = {
               title: "Best Practices for Nodes on AWS",
               url: "chainlink-nodes/resources/best-practices-aws",
             },
-            { title: "Miscellaneous", url: "chainlink-nodes/resources/miscellaneous" },
+            {
+              url: "chainlink-nodes/resources/running-a-local-node-on-macos",
+              title: "Running a Chainlink Node on MacOS",
+            },
+            {
+              title: "Miscellaneous",
+              url: "chainlink-nodes/resources/miscellaneous",
+            },
           ],
         },
       ],
