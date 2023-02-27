@@ -22,7 +22,7 @@ If you're new to smart contract development and want a step-by-step guide, try o
 
 :::
 
-## Install into Existing Projects
+## Installing into existing projects
 
 Chainlink is supported by [Hardhat](http://hardhat.org), [Brownie](https://eth-brownie.readthedocs.io/en/stable), [Truffle](https://www.trufflesuite.com), and other frameworks.
 
@@ -44,7 +44,7 @@ Install using [Yarn](https://yarnpkg.com/):
 yarn add @chainlink/contracts
 ```
 
-## Create a New Project
+## Create a new project
 
 If you're creating a new project from scratch, these commands will help you set up your project to interact with Chainlink tools and features via the use of our Starter Kits.
 
@@ -108,7 +108,7 @@ To learn more about Anchor, see the [Anchor Documentation](https://www.anchor-la
 
 ---
 
-## Testing Chainlink Contracts
+## Testing Chainlink contracts
 
 See our blog post on [Testing Chainlink Smart Contracts](https://blog.chain.link/testing-chainlink-smart-contracts/) or watch the [Chainlink Hackathon Workshop](https://www.youtube.com/watch?v=d8SqLaH8pu0).
 
