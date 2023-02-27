@@ -1,19 +1,26 @@
 name: Test
-on: 
-  [push, pull_request]
+on: [push, pull_request]
 
 jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./
     steps:
       - name: Checkout Repo
         uses: actions/checkout@5a4ac9002d0be2fb38bd78e4b4dbde5606d7042f
       - name: Install Dependencies
-        run: yarn
+        run: npm i
+      - name: Check Solidity Compilation
+        run: npm run sol:compile
+      - name: Check Solidity Solhint
+        run: npm run lint-solc
+      - name: Check Eslint
+        run: npm run lint
       - name: Build
-        run: yarn build
+        run: npm run build
+      # TODO: fix css files throwing 404 errors
       - name: Check Links
-        run: yarn linkcheck
-      - name: Check Solidity
-        run: yarn test
+        run: npm run linkcheck
