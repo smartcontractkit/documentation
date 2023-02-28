@@ -24,7 +24,7 @@ We're constantly uploading new videos to our [YouTube](https://www.youtube.com/c
 - [Austin Griffith](https://www.youtube.com/watch?v=ffU96UhlA0A)
 - [Patrick Collins](https://www.youtube.com/watch?v=p36tXHX1JD8)
 - [Nader Dabit](https://www.youtube.com/watch?v=nS9xP1hxg3w)
-- [Alchemy Univeristy](https://university.alchemy.com/)
+- [Alchemy University](https://university.alchemy.com/)
 
 ### Applications
 

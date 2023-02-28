@@ -21,19 +21,19 @@ contract VRFv2SubscriptionManager is VRFConsumerBaseV2 {
     VRFCoordinatorV2Interface COORDINATOR;
     LinkTokenInterface LINKTOKEN;
 
-    // Goerli coordinator. For other networks,
+    // Sepolia coordinator. For other networks,
     // see https://docs.chain.link/docs/vrf-contracts/#configurations
-    address vrfCoordinator = 0x2Ca8E0C643bDe4C2E08ab1fA0da3401AdAD7734D;
+    address vrfCoordinator = 0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625;
 
-    // Goerli LINK token contract. For other networks, see
+    // Sepolia LINK token contract. For other networks, see
     // https://docs.chain.link/docs/vrf-contracts/#configurations
-    address link_token_contract = 0x326C977E6efc84E512bB9C30f76E30c160eD06FB;
+    address link_token_contract = 0x779877A7B0D9E8603169DdbD7836e478b4624789;
 
     // The gas lane to use, which specifies the maximum gas price to bump to.
     // For a list of available gas lanes on each network,
     // see https://docs.chain.link/docs/vrf-contracts/#configurations
     bytes32 keyHash =
-        0x79d3d8832d904592c0bf9818b621522c988bb8b0c05cdc3b15aea1b6e8db0c15;
+        0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc56c;
 
     // A reasonable default is 100000, but this value could be different
     // on other networks.

@@ -6,8 +6,8 @@ title: "Getting Started"
 whatsnext:
   {
     "Try out the Chainlink Functions Tutorials": "/chainlink-functions/tutorials/",
-    "Read the Concepts page to learn about the core concepts behind Chainlink Functions": "chainlink-functions/resources/concepts/",
-    "Read the Architecture to understand how Chainlink Functions operates": "chainlink-functions/resources/architecture/",
+    "Read the Concepts page to learn about the core concepts behind Chainlink Functions": "/chainlink-functions/resources/concepts/",
+    "Read the Architecture to understand how Chainlink Functions operates": "/chainlink-functions/resources/architecture/",
   }
 setup: |
   import ChainlinkFunctions from "@features/chainlink-functions/common/ChainlinkFunctions.astro"

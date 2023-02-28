@@ -383,6 +383,10 @@ export const SIDEBAR = {
           url: "chainlink-functions/resources/architecture/",
         },
         {
+          title: "Add Functions to a Project",
+          url: "chainlink-functions/resources/add-functions-to-projects",
+        },
+        {
           title: "Managing Subscriptions",
           url: "chainlink-functions/resources/subscriptions",
         },

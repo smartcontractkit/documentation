@@ -286,7 +286,7 @@ export const CHAINS: Chain[] = [
     label: "StarkNet",
     title: "StarkNet Data Feeds",
     img: "/assets/chains/starknet.svg",
-    networkStatusUrl: "https://starknet.io/network/",
+    networkStatusUrl: "https://testnet.starkscan.co/stats",
     tags: ["default"],
     networks: [
       {

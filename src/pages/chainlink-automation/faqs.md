@@ -31,7 +31,7 @@ The **Gas Limit** specified during Upkeep Registration is the maximum amount of 
 
 ## What is the maximum Gas that my `performUpkeep` can use?
 
-`performUpkeep` is subject to the `callGasLimit` in the [configuration of the registry](/chainlink-automation/supported-networks/#configurations).
+`performUpkeep` is subject to the `performGasLimit` in the [configuration of the registry](/chainlink-automation/supported-networks/#configurations).
 
 ## How often will my Upkeep be checked off-chain to see if it should be executed on-chain?
 
