@@ -19,7 +19,7 @@ export const evmProducts = [
     learnMorelink: "data-feeds/",
     image: dataFeedsLogo,
     links: [
-      ["Introduction to Data Feeds", "data-feeds/"],
+      ["Introduction", "data-feeds/"],
       ["Price Feeds", "data-feeds/price-feeds/"],
       ["Proof of Reserve Feeds", "data-feeds/proof-of-reserve/"],
       ["NFT Floor Pricing Feeds", "data-feeds/nft-floor-price/"],
@@ -39,12 +39,33 @@ export const evmProducts = [
     video: "https://www.youtube.com/watch?v=hw9f84DnTK4&list=PLVP9aGDn-X0Qr4TuqPFNQdqbI735tdPat",
   },
   {
+    title: "Chainlink Functions",
+    description:
+      "Connect smart contracts to a trust-minimized compute infrastructure running on a decentralized oracle network",
+    learnMorelink: "chainlink-functions/",
+    image: automationLogo,
+    links: [
+      ["Introduction", "chainlink-functions/"],
+      ["Getting Started", "chainlink-functions/getting-started/"],
+      ["Request Computation", "chainlink-functions/tutorials/simple-computation/"],
+      ["Call APIs with Query Parameters", "chainlink-functions/tutorials/api-query-parameters/"],
+      ["POST Data to an API", "chainlink-functions/tutorials/api-post-data/"],
+      ["Use Secrets in Requests", "chainlink-functions/tutorials/api-use-secrets/"],
+      ["Add Functions to Your Project", "chainlink-functions/resources/add-functions-to-projects/"],
+      ["Architecture", "chainlink-functions/resources/architecture/"],
+    ],
+    chains: [
+      { id: "ethereum", title: "Ethereum" },
+      { id: "polygon", title: "Polygon" },
+    ],
+  },
+  {
     title: "Automate Contracts",
     description: "Decentralized, highly reliable, cost-efficient and highly secure automation for smart contracts",
     learnMorelink: "chainlink-automation/introduction/",
     image: automationLogo,
     links: [
-      ["Introduction to Chainlink Automation", "chainlink-automation/introduction/"],
+      ["Introduction", "chainlink-automation/introduction/"],
       ["Time-based Automation", "chainlink-automation/job-scheduler/"],
       ["Custom Logic Automation", "chainlink-automation/register-upkeep/"],
       ["Create Compatible Contracts", "chainlink-automation/compatible-contracts/"],
@@ -60,7 +81,7 @@ export const evmProducts = [
     learnMorelink: "/vrf/v2/introduction/",
     image: vrfLogo,
     links: [
-      ["Introduction to Chainlink VRF v2", "/vrf/v2/introduction/"],
+      ["Introduction", "/vrf/v2/introduction/"],
       ["VRF v2 - Subscription Method", "/vrf/v2/subscription/"],
       ["VRF v2 - Direct Funding Method", "/vrf/v2/direct-funding/"],
       ["Security Considerations", "/vrf/v2/security/"],
