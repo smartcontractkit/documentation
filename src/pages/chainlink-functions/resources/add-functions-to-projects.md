@@ -124,7 +124,7 @@ When you are done, you should have the necessary dependencies in the following d
 - `contracts/test`
 - `FunctionsSandboxLibrary`
 
-Run the compile command again again to make sure all the dependencies are satisfied. Add missing dependencies or Hardhat configuration options as necessary. For Hardhat, run `npx hardhat compile`.
+Run the compile command to make sure all the dependencies are satisfied. Add missing dependencies or Hardhat configuration options as necessary. For Hardhat, run `npx hardhat compile`.
 
 ## Configure on-chain resources
 
