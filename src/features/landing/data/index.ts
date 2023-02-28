@@ -36,6 +36,7 @@ export const evmProducts = [
       { id: "moonbeam", title: "Moonbeam" },
       { id: "moonriver", title: "Moonriver" },
       { id: "starknet", title: "StarkNet" },
+      { id: "base", title: "BASE" },
     ],
     video: "https://www.youtube.com/watch?v=hw9f84DnTK4&list=PLVP9aGDn-X0Qr4TuqPFNQdqbI735tdPat",
   },
