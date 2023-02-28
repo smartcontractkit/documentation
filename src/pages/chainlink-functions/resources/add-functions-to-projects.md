@@ -16,7 +16,12 @@ setup: |
 
 The [Chainlink Functions Starter Kit](https://github.com/smartcontractkit/functions-hardhat-starter-kit) lets you run several example requests, but extra steps are required to add Chainlink Functions to your existing projects.
 
-If you are new to Chainlink Functions, complete the steps in the [Getting Started Guide](/chainlink-functions/getting-started) to learn the basics.
+If you are new to Chainlink Functions, complete the steps in the [Getting Started Guide](/chainlink-functions/getting-started) to learn the basics. If you already have a project, you can skip to the [Libraries and Dependencies](#get-the-libraries-and-contract-dependencies) section.
+
+:::note[Request Access]
+Chainlink Functions is currently in a limited BETA.
+Apply [here](http://functions.chain.link/) to add your EVM account address to the Allow List.
+:::
 
 Using Chainlink Functions to your existing projects requires the following components:
 
@@ -27,7 +32,7 @@ Using Chainlink Functions to your existing projects requires the following compo
 
 ## Before you begin
 
-This guide assumes you are using a [Hardhat](https://hardhat.org/) JavaScript project with Node.js, but you can modify it to work with other frameworks.
+This guide assumes you are using a [Hardhat](https://hardhat.org/) JavaScript project with Node.js, but you can modify it to work with other frameworks. If you already have a project, you can skip to the [Libraries and Dependencies](#get-the-libraries-and-contract-dependencies) section.
 
 You must have a wallet with testnet LINK and native tokens to run this example. This example uses Polygon Mumbai. You can get testnet LINK at [faucets.chain.link](https://faucets.chain.link/mumbai) and testnet MATIC at the [Polygon Faucet](https://faucet.polygon.technology/). To get testnet funds for other networks, see the [LINK Token Contracts](/resources/link-token-contracts) page.
 
@@ -38,7 +43,7 @@ Apply [here](http://functions.chain.link/) to add your EVM account address to th
 
 ### Configure Hardhat
 
-If you already have a project, you can skip to the [Libraries and Dependencies](#get-the-libraries-and-contract-dependencies) section. If you don't already have a Hardhat project, start one with the following steps:
+If you don't already have a Hardhat project, start one with the following steps:
 
 1. Install [Node.js](https://nodejs.org/en/download/).
 1. Make a new project directory:
@@ -71,7 +76,7 @@ If you already have a project, you can skip to the [Libraries and Dependencies](
    npx hardhat
    ```
 
-1. Remove the `Lock.sol` contract, which Hardhat creates by default. This contract is not necessary for this tutorial.
+1. Remove the `Lock.sol` contract that Hardhat creates by default. This contract is not necessary to compile it for this tutorial.
 
    ```shell
    rm ./contracts/Lock.sol
@@ -98,16 +103,20 @@ SEPOLIA_RPC_URL="https://sepolia.infura.io/v3/your_api_key"
 PRIVATE_KEY="your_private_key"
 ```
 
-Run `npx hardhat compile` to make sure Hardhat is configured correctly. You will see several warnings, but everything is correct if the Solidity files compile successfully.
+Run the compile command for Hardhat or your framework of choice to make sure everything is configured correctly. You will see several compile warnings, but everything is correct if the Solidity files compile successfully. For this example, you can run `npx hardhat compile`.
 
 ## Get the dependency contracts and scripts
 
-Get the required libraries from the [Chainlink Functions Starter Kit](https://github.com/smartcontractkit/functions-hardhat-starter-kit). You can clone the repo and get the folders manually, or use a single command to get a tarball through the GitHub API and extract the folders you need to the correct location in your project:
+Get the required libraries from the [Chainlink Functions Starter Kit](https://github.com/smartcontractkit/functions-hardhat-starter-kit). You can clone the repo and copy the folders into your existing project manually, or use a single command to get a tarball through the GitHub API and extract the folders you need to the correct location in your project.
 
-```shell
-curl -L -o ../functions.tar.gz https://api.github.com/repos/smartcontractkit/functions-hardhat-starter-kit/tarball/main &&
-tar -xf ../functions.tar.gz --strip=1 --wildcards smartcontractkit-functions-hardhat-starter-kit-*/contracts/dev smartcontractkit-functions-hardhat-starter-kit-*/contracts/test smartcontractkit-functions-hardhat-starter-kit-*/FunctionsSandboxLibrary smartcontractkit-functions-hardhat-starter-kit-*/contracts/FunctionsConsumer.sol
-```
+1. Open a terminal and change directories to the root of your project. Usually this is the folder with `package.json`.
+
+1. Run the `curl` command to download the latest tarball from the starter kit `main` branch and then run `tar -xf` with the `--strip` flag to extract only the files you need. The following command combines both steps:
+
+   ```shell
+   curl -L -o ../functions.tar.gz https://api.github.com/repos/smartcontractkit/functions-hardhat-starter-kit/tarball/main &&
+   tar -xf ../functions.tar.gz --strip=1 --wildcards smartcontractkit-functions-hardhat-starter-kit-*/contracts/dev smartcontractkit-functions-hardhat-starter-kit-*/contracts/test smartcontractkit-functions-hardhat-starter-kit-*/FunctionsSandboxLibrary smartcontractkit-functions-hardhat-starter-kit-*/contracts/FunctionsConsumer.sol
+   ```
 
 When you are done, you should have the necessary dependencies in the following directories:
 
@@ -115,7 +124,7 @@ When you are done, you should have the necessary dependencies in the following d
 - `contracts/test`
 - `FunctionsSandboxLibrary`
 
-Run `npx hardhat compile` again to make sure all the dependencies are satisfied. Add missing dependencies or Hardhat configuration options as necessary.
+Run the compile command again again to make sure all the dependencies are satisfied. Add missing dependencies or Hardhat configuration options as necessary. For Hardhat, run `npx hardhat compile`.
 
 ## Configure on-chain resources
 
@@ -126,7 +135,7 @@ The on-chain resources are critical for Chainlink Functions to process your requ
 
 ### Create a consumer contract
 
-Use the [FunctionsConsumer.sol](https://github.com/smartcontractkit/functions-hardhat-starter-kit/blob/main/contracts/FunctionsConsumer.sol), which is already in your `./contracts` folder. After you complete this tutorial, you can modify it to fit your needs and redeploy it.
+Use the [FunctionsConsumer.sol](https://github.com/smartcontractkit/functions-hardhat-starter-kit/blob/main/contracts/FunctionsConsumer.sol), which is already in your `./contracts` folder. You can modify it to fit your needs and redeploy it later. Optionally, you can take an existing contract of your own and enable it to handle Chainlink Functions requests. Just make sure that it meets the requirements listed in this guide.
 
 In general, a consumer contract requires several components:
 
@@ -182,7 +191,7 @@ Next, create and fund your Chainlink Functions subscription.
 
 You can use the [Chainlink Functions Starter Kit](https://github.com/smartcontractkit/functions-hardhat-starter-kit) to create and manage your subscriptions. See [Managing Subscriptions](/chainlink-functions/resources/subscriptions) for instructions.
 
-This example shows how to create and manage subscriptions programmatically. You can create the subscription, fund the subscription, and authorize the consumer all in one script.
+This example shows how to create and manage subscriptions programmatically. You can create the subscription, fund the subscription, and authorize the consumer all in one script. If you have not already signed up for limited Beta access to Chainlink Functions, apply [here](http://functions.chain.link/) to add your EVM account address to the Allow List.
 
 1. Ensure that the wallet address you are using to create the subscription has a sufficient LINK balance. You can get testnet LINK at [faucets.chain.link](https://faucets.chain.link/mumbai). To get testnet funds for other networks, see the [LINK Token Contracts](/resources/link-token-contracts) page.
 
@@ -240,7 +249,9 @@ Each request has the following components:
 
 ### Create a request script
 
-Download some example source code, and create a script to assemble the required components. The script will read your source code, define arguments, encrypt secrets, and send requests to your consumer contract. This example script does not require Hardhat, so you can modify it to run in a browser using Ethers or another framework.
+If you already have source code or want to write your own source code, put it in a file in your project. Later, you can specify the path to this file before you submit your request.
+
+For this example, download some example source code and create a script to assemble the required components. The script will read your source code, define arguments, encrypt secrets, and send requests to your consumer contract. This example script does not require Hardhat, so you can modify it to run in a browser using Ethers or another framework.
 
 1. Use `curl` to get the example source code. This code runs on each node in the DON and returns a response to your consumer contract. For this example, use the source from the [Call an API](/chainlink-functions/tutorials/api-query-parameters) tutorial. The following `curl` request creates a file named `Functions-request-source.js` with the source code:
 
