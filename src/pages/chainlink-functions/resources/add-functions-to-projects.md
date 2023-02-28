@@ -16,7 +16,7 @@ setup: |
 
 The [Chainlink Functions Starter Kit](https://github.com/smartcontractkit/functions-hardhat-starter-kit) lets you run several example requests, but extra steps are required to add Chainlink Functions to your existing projects.
 
-If you are new to Chainlink Functions, complete the steps in the [Getting Started Guide](/chainlink-functions/getting-started) to learn the basics. If you already have a project, you can skip to the [Libraries and Dependencies](#get-the-libraries-and-contract-dependencies) section.
+If you are new to Chainlink Functions, complete the steps in the [Getting Started Guide](/chainlink-functions/getting-started) to learn the basics. If you already have a project, you can skip to the [Libraries and Dependencies](#get-the-dependency-contracts-and-scripts) section.
 
 :::note[Request Access]
 Chainlink Functions is currently in a limited BETA.
@@ -32,7 +32,7 @@ Using Chainlink Functions to your existing projects requires the following compo
 
 ## Before you begin
 
-This guide assumes you are using a [Hardhat](https://hardhat.org/) JavaScript project with Node.js, but you can modify it to work with other frameworks. If you already have a project, you can skip to the [Libraries and Dependencies](#get-the-libraries-and-contract-dependencies) section.
+This guide assumes you are using a [Hardhat](https://hardhat.org/) JavaScript project with Node.js, but you can modify it to work with other frameworks. If you already have a project, you can skip to the [Libraries and Dependencies](#get-the-dependency-contracts-and-scripts) section.
 
 You must have a wallet with testnet LINK and native tokens to run this example. This example uses Polygon Mumbai. You can get testnet LINK at [faucets.chain.link](https://faucets.chain.link/mumbai) and testnet MATIC at the [Polygon Faucet](https://faucet.polygon.technology/). To get testnet funds for other networks, see the [LINK Token Contracts](/resources/link-token-contracts) page.
 
