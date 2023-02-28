@@ -583,6 +583,11 @@ export const SIDEBAR = {
           title: "Introduction",
           url: "any-api/introduction",
         },
+      ],
+    },
+    {
+      section: "Guides",
+      contents: [
         {
           title: "Make a GET Request",
           url: "any-api/get-request/introduction",
@@ -609,6 +614,11 @@ export const SIDEBAR = {
             },
           ],
         },
+      ],
+    },
+    {
+      section: "Reference",
+      contents: [
         {
           title: "Find Existing Jobs",
           url: "any-api/find-oracle",
@@ -726,57 +736,6 @@ export const SIDEBAR = {
             },
             { title: "Miscellaneous", url: "chainlink-nodes/resources/miscellaneous" },
           ],
-        },
-      ],
-    },
-    {
-      section: "CONNECTING TO APIs",
-      contents: [
-        {
-          title: "Introduction",
-          url: "any-api/introduction",
-        },
-        {
-          title: "Make a GET Request",
-          url: "any-api/get-request/introduction",
-          children: [
-            {
-              title: "Single Word Response",
-              url: "any-api/get-request/examples/single-word-response",
-            },
-            {
-              title: "Multi-Variable Responses",
-              url: "any-api/get-request/examples/multi-variable-responses",
-            },
-            {
-              title: "Array Response",
-              url: "any-api/get-request/examples/array-response",
-            },
-            {
-              title: "Large Responses",
-              url: "any-api/get-request/examples/large-responses",
-            },
-            {
-              title: "Existing Job Request",
-              url: "any-api/get-request/examples/existing-job-request",
-            },
-          ],
-        },
-        {
-          title: "Find Existing Jobs",
-          url: "any-api/find-oracle",
-        },
-        {
-          title: "Testnet Oracles",
-          url: "any-api/testnet-oracles",
-        },
-        {
-          title: "Data Provider Nodes",
-          url: "any-api/data-providers/introduction",
-        },
-        {
-          title: "API Reference",
-          url: "any-api/api-reference",
         },
       ],
     },
