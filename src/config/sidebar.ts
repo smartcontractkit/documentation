@@ -234,9 +234,14 @@ export const SIDEBAR = {
       section: "AUTOMATION",
       contents: [
         {
-          title: "Introduction to Chainlink Automation",
+          title: "Introduction",
           url: "chainlink-automation/introduction/",
         },
+      ],
+    },
+    {
+      section: "Guides",
+      contents: [
         {
           title: "Time-based Automation",
           url: "chainlink-automation/job-scheduler/",
@@ -272,6 +277,11 @@ export const SIDEBAR = {
           title: "Automation Architecture",
           url: "chainlink-automation/overview/",
         },
+      ],
+    },
+    {
+      section: "Reference",
+      contents: [
         {
           title: "Supported Networks",
           url: "chainlink-automation/supported-networks/",
@@ -561,6 +571,59 @@ export const SIDEBAR = {
         {
           title: "Contributing to Chainlink",
           url: "resources/contributing-to-chainlink",
+        },
+      ],
+    },
+  ],
+  anyApi: [
+    {
+      section: "CONNECTING TO APIs",
+      contents: [
+        {
+          title: "Introduction",
+          url: "any-api/introduction",
+        },
+        {
+          title: "Make a GET Request",
+          url: "any-api/get-request/introduction",
+          children: [
+            {
+              title: "Single Word Response",
+              url: "any-api/get-request/examples/single-word-response",
+            },
+            {
+              title: "Multi-Variable Responses",
+              url: "any-api/get-request/examples/multi-variable-responses",
+            },
+            {
+              title: "Array Response",
+              url: "any-api/get-request/examples/array-response",
+            },
+            {
+              title: "Large Responses",
+              url: "any-api/get-request/examples/large-responses",
+            },
+            {
+              title: "Existing Job Request",
+              url: "any-api/get-request/examples/existing-job-request",
+            },
+          ],
+        },
+        {
+          title: "Find Existing Jobs",
+          url: "any-api/find-oracle",
+        },
+        {
+          title: "Testnet Oracles",
+          url: "any-api/testnet-oracles",
+        },
+        {
+          title: "Data Provider Nodes",
+          url: "any-api/data-providers/introduction",
+        },
+        {
+          title: "API Reference",
+          url: "any-api/api-reference",
         },
       ],
     },
