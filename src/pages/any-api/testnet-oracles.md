@@ -1,6 +1,6 @@
 ---
 layout: ../../layouts/MainLayout.astro
-section: nodeOperator
+section: anyApi
 date: Last Modified
 title: "Testnet Oracles"
 permalink: "docs/any-api/testnet-oracles/"

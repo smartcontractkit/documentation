@@ -1,6 +1,6 @@
 ---
 layout: ../../../layouts/MainLayout.astro
-section: nodeOperator
+section: anyApi
 date: Last Modified
 title: "Google Weather Oracle"
 permalink: "docs/any-api/data-providers/google-weather/"

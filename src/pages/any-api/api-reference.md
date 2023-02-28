@@ -1,6 +1,6 @@
 ---
 layout: ../../layouts/MainLayout.astro
-section: nodeOperator
+section: anyApi
 date: Last Modified
 title: "ChainlinkClient API Reference"
 permalink: "docs/any-api/api-reference/"
