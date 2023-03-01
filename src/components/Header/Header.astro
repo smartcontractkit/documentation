@@ -5,13 +5,22 @@ import SkipToContent from "./SkipToContent.astro"
 import SidebarToggle from "./SidebarToggle.tsx"
 import Search from "./Search/Search.tsx"
 import NotificationBanner from "~/features/notifications/components/NotificationBanner.astro"
+import { lastSection } from "../LeftSidebar/lastSection/"
 
 export type Props = {
   frontmatter?: Frontmatter
 }
 const { frontmatter } = Astro.props
 
-const section = frontmatter?.section ?? ""
+// Handle pages marked as section: global
+// If the page is global, use the previous section.
+// Else, set the new section as the last viewed section.
+let section = frontmatter?.section ?? ""
+if (section === "global") {
+  section = lastSection.get()
+} else {
+  lastSection.set(section)
+}
 ---
 
 <!-- Google Tag Manager (noscript) -->
@@ -72,6 +81,7 @@ const section = frontmatter?.section ?? ""
 
   .nav-link {
     color: var(--color-text-primary);
+    white-space: nowrap;
   }
 
   .nav-link:hover {

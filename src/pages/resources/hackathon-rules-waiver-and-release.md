@@ -1,6 +1,6 @@
 ---
 layout: ../../layouts/MainLayout.astro
-section: ethereum
+section: global
 date: Last Modified
 title: "Hackathon Rules, Waiver & Release, and Code of Conduct"
 permalink: "docs/hackathon-rules-waiver-release-and-code-of-conduct/"
