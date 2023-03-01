@@ -139,6 +139,12 @@ AutomatedFunctionsConsumer contract deployed to 0x7a2499dd81D40d12104Af556440099
 
 In the example above, you deployed a Chainlink Functions consumer contract and configured it to get the median bitcoin price every 60 seconds.
 
+**Note**: You can change the request's parameters to build a new request or update other parameters, such as the time interval or the subscription id to which your contract is linked. To do so, run the `functions-set-auto-request`:
+
+```shell
+npx hardhat functions-set-auto-request --network REPLACE_NETWORK --subid REPLACE_SUBSCRIPTION_ID --interval REPLACE_INTERVAL_SECONDS --gaslimit REPLACE_GAS_LIMITS
+```
+
 ### Configure Chainlink Automation
 
 The consumer contract that you deployed is designed to be used with a **custom logic** upkeep. Follow the instructions in the [Registering an Upkeep](/chainlink-automation/register-upkeep/#register-an-upkeep-using-the-chainlink-automation-app) guide to register your deployed contract using the [Chainlink Automation App](https://automation.chain.link/). Use the following upkeep settings:
