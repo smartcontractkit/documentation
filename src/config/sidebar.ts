@@ -55,6 +55,33 @@ export const SIDEBAR = {
           title: "Videos and Tutorials",
           url: "getting-started/other-tutorials",
         },
+        { title: "Acquire testnet LINK", url: "resources/acquire-link" },
+        {
+          title: "Fund Your Contracts",
+          url: "resources/fund-your-contract",
+        },
+        {
+          title: "Install Frameworks",
+          url: "resources/create-a-chainlinked-project",
+        },
+        {
+          title: "LINK Token Contracts",
+          url: "resources/link-token-contracts",
+        },
+        {
+          title: "Bridges and Associated Risks",
+          url: "resources/bridge-risks",
+        },
+        {
+          title: "Developer Communications",
+          url: "resources/developer-communications",
+        },
+        { title: "Getting Help", url: "resources/getting-help" },
+        { title: "Hackathon Resources", url: "resources/hackathon-resources" },
+        {
+          title: "Contributing to Chainlink",
+          url: "resources/contributing-to-chainlink",
+        },
       ],
     },
     {
@@ -189,6 +216,29 @@ export const SIDEBAR = {
         {
           title: "Using Data Feeds on StarkNet",
           url: "data-feeds/starknet",
+        },
+      ],
+    },
+    {
+      section: "Chainlink Architecture",
+      contents: [
+        {
+          title: "Overview",
+          url: "architecture-overview/architecture-overview",
+          children: [
+            {
+              title: "Basic Request Model",
+              url: "architecture-overview/architecture-request-model",
+            },
+            {
+              title: "Decentralized Data Model",
+              url: "architecture-overview/architecture-decentralized-model",
+            },
+            {
+              title: "Off-Chain Reporting",
+              url: "architecture-overview/off-chain-reporting",
+            },
+          ],
         },
       ],
     },
