@@ -141,7 +141,7 @@ In the example above, you deployed a Chainlink Functions consumer contract and c
 
 ### Configure Chainlink Automation
 
-The consumer contract that you deployed is designed to be used as a **custom logic** upkeep. Follow the instructions in the [Registering an Upkeep](/chainlink-automation/register-upkeep/#register-an-upkeep-using-the-chainlink-automation-app) guide to register your deployed contract using the [Chainlink Automation App](https://automation.chain.link/). Use the following upkeep settings:
+The consumer contract that you deployed is designed to be used with a **custom logic** upkeep. Follow the instructions in the [Registering an Upkeep](/chainlink-automation/register-upkeep/#register-an-upkeep-using-the-chainlink-automation-app) guide to register your deployed contract using the [Chainlink Automation App](https://automation.chain.link/). Use the following upkeep settings:
 
 - Trigger: Custom logic
 - Target contract address: The address of the Chainlink Functions consumer contract that you deployed
