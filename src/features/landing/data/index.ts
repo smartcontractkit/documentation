@@ -39,7 +39,7 @@ export const evmProducts = [
       { id: "starknet", title: "StarkNet" },
       { id: "solana", title: "Solana" },
     ],
-    video: "https://www.youtube.com/watch?v=hw9f84DnTK4&list=PLVP9aGDn-X0Qr4TuqPFNQdqbI735tdPat",
+    video: "https://www.youtube.com/watch?v=e75kwGzvtnI&list=PLVP9aGDn-X0QwJVbQvuKr-zrh2_DV5M6J&index=45",
   },
   {
     title: "Chainlink Functions",
@@ -76,7 +76,7 @@ export const evmProducts = [
       ["Creating Flexible Upkeeps", "chainlink-automation/flexible-upkeeps/"],
     ],
     chains: [...baseChains, { id: "arbitrum", title: "Arbitrum" }],
-    video: "https://www.youtube.com/watch?v=xL96sTwQ5Ho&list=PLVP9aGDn-X0RloqS1uYcuaPSW3GIgoCkg",
+    video: "https://www.youtube.com/watch?v=dj0impNJdls&list=PLVP9aGDn-X0RloqS1uYcuaPSW3GIgoCkg&index=2",
   },
   {
     title: "VRF v2",
@@ -91,7 +91,7 @@ export const evmProducts = [
       ["Best Practices", "/vrf/v2/best-practices/"],
     ],
     chains: [...baseChains, { id: "klaytn", title: "Klaytn" }],
-    video: "https://www.youtube.com/watch?v=rpQCKoRvyR4&list=PLVP9aGDn-X0QHDyBRvbITizWrRoecR0D8",
+    video: "https://www.youtube.com/watch?v=JqZWariqh5s&list=PLVP9aGDn-X0QHDyBRvbITizWrRoecR0D8&index=2",
   },
   {
     title: "External API Calls",
