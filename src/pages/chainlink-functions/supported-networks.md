@@ -2,7 +2,7 @@
 layout: ../../layouts/MainLayout.astro
 section: chainlinkFunctions
 date: Last Modified
-title: "Chainlink Functions - Supported Networks"
+title: "Supported Networks"
 setup: |
   import ResourcesCallout from "@features/resources/callouts/ResourcesCallout.astro"
 ---
