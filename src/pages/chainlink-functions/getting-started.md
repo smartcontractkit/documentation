@@ -35,7 +35,7 @@ Install and configure your Web3 wallet:
 
 1. [Install the MetaMask wallet](/getting-started/deploy-your-first-contract#install-and-fund-your-metamask-wallet) or other Ethereum Web3 wallet.
 
-1. Set the network for your wallet to Polygon Mumbai.
+1. Set the network for your wallet to Polygon Mumbai. You can add Polygon Mumbai and the LINK token contract to your wallet on the [LINK Token Contracts](/resources/link-token-contracts#mumbai-testnet) page. Optionally, you can manually add the `ETH_CHAIN_ID` and the LINK token address to your wallet manually in your wallet settings.
 
 1. Request testnet MATIC from the [Polygon Faucet](https://faucet.polygon.technology/).
 
