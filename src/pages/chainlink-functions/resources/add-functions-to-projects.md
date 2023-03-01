@@ -82,9 +82,7 @@ If you don't already have a Hardhat project, start one with the following steps:
    rm ./contracts/Lock.sol
    ```
 
-### Configure Hardhat
-
-Modify `hardhat.config.js` to include the `0.8.7` and `0.8.9` compiler version and supported networks. See the [Supported Networks](/chainlink-functions/supported-networks) page for a list of networks where Chainlink Functions DONs are available. This example uses Polygon Mumbai by default:
+Modify `hardhat.config.js` to include the `0.8.7` compiler version and supported networks. See the [Supported Networks](/chainlink-functions/supported-networks) page for a list of networks where Chainlink Functions DONs are available. This example uses Polygon Mumbai by default:
 
 <CodeSample src="samples/Functions/adding-functions-to-projects/hardhat.config.js" />
 
