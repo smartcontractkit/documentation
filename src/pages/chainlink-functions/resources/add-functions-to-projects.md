@@ -173,10 +173,10 @@ You can deploy consumer contracts using the [Chainlink Functions Starter Kit](ht
    const consumerContract = await ethers.getContractFactory(contractName);
    ```
 
-1. Save the file and run the script to deploy your contract.
+1. Save the file and run the script to deploy your contract. Include the `--network` flag to use a network other than the default in the Hardhat config:
 
    ```shell
-   npx hardhat run ./scripts/deploy.js
+   npx hardhat run ./scripts/deploy.js --network your_network
    ```
 
 1. If your contract deployed successfully, you will see the deployed consumer address. Record this address to use later:
@@ -217,10 +217,10 @@ This example shows how to create and manage subscriptions programmatically. You 
    const consumer = "0xE83188aDF26bd6c18076704fC8EC68CBda454f76"
    ```
 
-1. Save the file and run the script:
+1. Save the file and run the script. Include the `--network` flag to use a network other than the default in the Hardhat config:
 
    ```shell
-   npx hardhat run scripts/functions-sub.js
+   npx hardhat run scripts/functions-sub.js --network your_network
    ```
 
 1. If the script is successful, you the terminal prints your subscription ID. Record this ID to use for Chainlink Functions requests. You should see output similar to the following example:
