@@ -139,7 +139,7 @@ AutomatedFunctionsConsumer contract deployed to 0x7a2499dd81D40d12104Af556440099
 
 In the example above, you deployed a Chainlink Functions consumer contract and configured it to get the median bitcoin price every 60 seconds.
 
-**Note**: You can change the request's parameters to build a new request or update other parameters, such as the time interval or the subscription id to which your contract is linked. To do so, run the `functions-set-auto-request`:
+**Note**: You can change the request's parameters to build a new request or update other parameters, such as the time interval or the subscription ID to which your contract is linked. To do so, run the `functions-set-auto-request`:
 
 ```shell
 npx hardhat functions-set-auto-request --network REPLACE_NETWORK --subid REPLACE_SUBSCRIPTION_ID --interval REPLACE_INTERVAL_SECONDS --gaslimit REPLACE_GAS_LIMITS
