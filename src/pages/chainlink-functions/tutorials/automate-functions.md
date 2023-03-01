@@ -8,10 +8,11 @@ setup: |
   import ClickToZoom from "@components/ClickToZoom.astro"
 ---
 
-This tutorial shows you how to leverage [Chainlink Automation](/chainlink-automation/introduction/) to automate your Chainlink Functions. Automation is essential in case you want to trigger the same Function regularly, such as fetching weather data daily or fetching an asset price on every block.
+This tutorial shows you how to use [Chainlink Automation](/chainlink-automation/introduction/) to automate your Chainlink Functions. Automation is essential when you want to trigger the same function regularly, such as fetching weather data daily or fetching an asset price on every block.
+
 Read the [API multiple calls](/chainlink-functions/tutorials/api-multiple-calls/) tutorial before you follow the steps in this example. This tutorial uses the same example but with an important difference:
 
-- You will deploy [AutomatedFunctionsConsumer.sol](https://github.com/smartcontractkit/functions-hardhat-starter-kit/blob/main/contracts/AutomatedFunctionsConsumer.sol) instead of [FunctionsConsumer.sol](https://github.com/smartcontractkit/functions-hardhat-starter-kit/blob/main/contracts/FunctionsConsumer.sol). `AutomatedFunctionsConsumer.sol` is a Chainlink Functions Consumer contract that is [Chainlink Automation compatible](/chainlink-automation/compatible-contracts/). Once you deploy and set up your contract, Chainlink Automation will trigger your Function according to a time schedule.
+- You will deploy [AutomatedFunctionsConsumer.sol](https://github.com/smartcontractkit/functions-hardhat-starter-kit/blob/main/contracts/AutomatedFunctionsConsumer.sol) instead of [FunctionsConsumer.sol](https://github.com/smartcontractkit/functions-hardhat-starter-kit/blob/main/contracts/FunctionsConsumer.sol). `AutomatedFunctionsConsumer.sol` is a Chainlink Functions Consumer contract that is [Chainlink Automation compatible](/chainlink-automation/compatible-contracts/). After you deploy and set up your contract, Chainlink Automation triggers your function according to a time schedule.
 
 ## Before you begin
 
@@ -24,7 +25,7 @@ Apply [here](http://functions.chain.link/) to add your EVM account address to th
 
 1. Make sure to understand the [API multiple calls](/chainlink-functions/tutorials/api-multiple-calls/) guide.
 
-1. Make sure your subscription has enough LINK to pay for your requests. Read [Get Subscription details](/chainlink-functions/resources/subscriptions#get-subscription-details) to learn how to check your subscription balance. If your subscription runs out of LINK, follow the [Fund a Subscription](/chainlink-functions/resources/subscriptions#fund-a-subscription) guide.
+1. Make sure your subscription has enough LINK to pay for your requests. See the [Get Subscription Details](/chainlink-functions/resources/subscriptions#get-subscription-details) page to learn how to check your subscription balance. If your subscription runs out of LINK, follow the [Fund a Subscription](/chainlink-functions/resources/subscriptions#fund-a-subscription) guide.
 
 1. **Check out the correct branch before you try this tutorial:** Each tutorial is stored in a separate branch of the [Chainlink Functions Starter Kit](https://github.com/smartcontractkit/functions-hardhat-starter-kit) repository.
 
@@ -39,7 +40,7 @@ Apply [here](http://functions.chain.link/) to add your EVM account address to th
 
 ## Tutorial
 
-:::note[Complete the Before you begin section]
+:::note[Set up your environment variables]
 This tutorial has some unique `.env` setup steps. Make sure that you configured your `.env` file with the necessary variables in the [Before you begin](#before-you-begin) section.
 :::
 
@@ -87,8 +88,8 @@ After running the simulator and confirming that your Function runs without issue
 
 - Deploy the [AutomatedFunctionsConsumer.sol](https://github.com/smartcontractkit/functions-hardhat-starter-kit/blob/main/contracts/AutomatedFunctionsConsumer.sol) contract. You can set the interval of executions when deploying the contract.
 - Add the deployed contract to your subscription.
-- Simulate the request that will be stored in your deployed contract.
-- Store the request (which includes the source code, encrypted secrets, and arguments) in the contract storage. **Note**: The stored request will be sent to the DON according to the provided time interval.
+- Simulate the request that is stored in your deployed contract.
+- Store the request, which includes the source code, encrypted secrets, and arguments in the contract storage. **Note**: The stored request is sent to the DON according to the provided time interval.
 
 In your terminal, run the `functions-deploy-auto-client` command:
 
@@ -136,7 +137,7 @@ Set new Functions request in AutomatedFunctionsConsumer contract 0x7a2499dd81D40
 AutomatedFunctionsConsumer contract deployed to 0x7a2499dd81D40d12104Af556440099611E675E02 on mumbai
 ```
 
-In the example above, we deployed a Chainlink Functions consumer contract and configured it to get the median bitcoin price every 60 seconds.
+In the example above, you deployed a Chainlink Functions consumer contract and configured it to get the median bitcoin price every 60 seconds.
 
 ### Configure Chainlink Automation
 
@@ -148,8 +149,8 @@ Chainlink Automation will trigger sending the request according to your provided
 :::note[Monitor your balances]
 There are two balances that you have to monitor:
 
-- Your Subscription balance: Your balance will be charged each time your Chainlink Functions is fulfilled. If your balance is insufficient, your contract cannot send requests. Automating your Chainlink Functions means they will be regularly triggered, so monitor and fund your subscription account regularly. Read [Get Subscription details](/chainlink-functions/resources/subscriptions#get-subscription-details) to learn how to check your subscription balance.
-- Your Upkeep balance: You can check this balance on the [Chainlink Automation App](https://automation.chain.link/). The Upkeep balance pays Chainlink Automation Network to send your requests according to your provided time interval. Chainlink Automation will not trigger your requests if your Upkeep balance runs low.
+- Your subscription balance: Your balance will be charged each time your Chainlink Functions is fulfilled. If your balance is insufficient, your contract cannot send requests. Automating your Chainlink Functions means they will be regularly triggered, so monitor and fund your subscription account regularly. Read [Get Subscription Details](/chainlink-functions/resources/subscriptions#get-subscription-details) to learn how to check your subscription balance.
+- Your upkeep balance: You can check this balance on the [Chainlink Automation App](https://automation.chain.link/). The upkeep balance pays Chainlink Automation Network to send your requests according to your provided time interval. Chainlink Automation will not trigger your requests if your upkeep balance runs low.
   :::
 
 ### Check Result
@@ -216,7 +217,7 @@ The request sent to Chainlink Functions is defined as a state variable. The cont
     bytes public requestCBOR
     ```
 
-The latest request id, latest received response, and latest received error (if any) are defined as state variables. Note that `latestResponse` and `latestError` are encoded as dynamically sized byte array `bytes`, so you will still need to decode them to read the response or error:
+The latest request ID, latest received response, and latest received error (if any) are defined as state variables. Note that `latestResponse` and `latestError` are encoded as dynamically sized byte array `bytes`, so you will still need to decode them to read the response or error:
 
     ```
     bytes32 public latestRequestId;
@@ -224,7 +225,7 @@ The latest request id, latest received response, and latest received error (if a
     bytes public latestError;
     ```
 
-The subscription id (the subscription account your contract is linked to) and the fulfillment gas limit (Maximum amount of gas used to fulfill a Chainlink Function request) are defined as state variables. Only the contract owner can modify these variables.
+The subscription ID (the subscription account your contract is linked to) and the fulfillment gas limit (Maximum amount of gas used to fulfill a Chainlink Function request) are defined as state variables. Only the contract owner can modify these variables.
 
     ```
     uint64 public subscriptionId;
@@ -238,15 +239,15 @@ The update interval (time interval in seconds of triggering a Chainlink Function
     uint256 public lastUpkeepTimeStamp;
     ```
 
-We define `upkeepCounter` and `responseCounter` to keep track of the number of requests (triggered by Chainlink Automation) and the number of fulfilled requests (once the request has been fulfilled by Chainlink Functions).
+Define `upkeepCounter` and `responseCounter` to keep track of the number of requests (triggered by Chainlink Automation) and the number of fulfilled requests (once the request has been fulfilled by Chainlink Functions).
 
-We define the `OCRResponse` event that your smart contract will emit during the callback
+Define the `OCRResponse` event that your smart contract will emit during the callback:
 
     ```
     event OCRResponse(bytes32 indexed requestId, bytes result, bytes err);
     ```
 
-Pass the oracle address for your network, your Chainlink functions id, fulfillment gas limit, and update interval when you deploy the contract:
+Pass the oracle address for your network, your Chainlink functions ID, fulfillment gas limit, and update interval when you deploy the contract:
 
     ```
     constructor(
@@ -277,7 +278,7 @@ To store a request in the `requestCBOR` state variable, the contract owner has t
   return req.encodeCBOR();
   ```
 
-- Call the `setRequest` function and pass the subscription id, fulfillment gas limit, update interval, and the encoded request (returned by `generateRequest`). `setRequest` updates the `updateInterval`, `subscriptionId`, `fulfillGasLimit`, and `requestCBOR` state variables.
+- Call the `setRequest` function and pass the subscription ID, fulfillment gas limit, update interval, and the encoded request (returned by `generateRequest`). `setRequest` updates the `updateInterval`, `subscriptionId`, `fulfillGasLimit`, and `requestCBOR` state variables.
 
 `checkUpkeep` and `performUpkeep` functions are used by Chainlink Automation:
 
@@ -287,7 +288,7 @@ To store a request in the `requestCBOR` state variable, the contract owner has t
   upkeepNeeded = (block.timestamp - lastUpkeepTimeStamp) > updateInterval;
   ```
 
-- `performUpkeep`: Sends the request to the oracle by calling the `FunctionsClient` `sendRequest` function. You can read the API reference for [sending a request](/chainlink-functions/api-reference/FunctionsClient/#sendrequest). Also, it updates `lastUpkeepTimeStamp` with the current timestamp, increments `upkeepCounter`, and sets `latestRequestId` to the last request id.
+- `performUpkeep`: Sends the request to the oracle by calling the `FunctionsClient` `sendRequest` function. You can read the API reference for [sending a request](/chainlink-functions/api-reference/FunctionsClient/#sendrequest). Also, it updates `lastUpkeepTimeStamp` with the current timestamp, increments `upkeepCounter`, and sets `latestRequestId` to the last request ID.
 
   ```
   lastUpkeepTimeStamp = block.timestamp;
@@ -313,8 +314,8 @@ To store a request in the `requestCBOR` state variable, the contract owner has t
 
 ### Functions-request-config.js
 
-Read [explanation](/chainlink-functions/tutorials/api-multiple-calls#functions-request-configjs).
+See the [explanation](/chainlink-functions/tutorials/api-multiple-calls#functions-request-configjs) for the Call Multiple Data Sources tutorial.
 
 ### Functions-request-source.js
 
-Read [explanation](/chainlink-functions/tutorials/api-multiple-calls#functions-request-sourcejs).
+See the [explanation](/chainlink-functions/tutorials/api-multiple-calls#functions-request-sourcejs) for the Call Multiple Data Sources tutorial.
