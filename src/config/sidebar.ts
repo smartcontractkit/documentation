@@ -482,6 +482,29 @@ export const SIDEBAR = {
       ],
     },
     {
+      section: "Chainlink Architecture",
+      contents: [
+        {
+          title: "Overview",
+          url: "architecture-overview/architecture-overview",
+          children: [
+            {
+              title: "Basic Request Model",
+              url: "architecture-overview/architecture-request-model",
+            },
+            {
+              title: "Decentralized Data Model",
+              url: "architecture-overview/architecture-decentralized-model",
+            },
+            {
+              title: "Off-Chain Reporting",
+              url: "architecture-overview/off-chain-reporting",
+            },
+          ],
+        },
+      ],
+    },
+    {
       section: "Resources",
       contents: [
         {
