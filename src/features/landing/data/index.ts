@@ -1,4 +1,5 @@
 import vrfLogo from "../assets/vrf-logo.svg"
+import functionsLogo from "../assets/functions-logo.svg"
 import automationLogo from "../assets/automation-logo.svg"
 import dataFeedsLogo from "../assets/data-feeds-logo.svg"
 import externalApiLogo from "../assets/external-api-logo.svg"
@@ -43,7 +44,7 @@ export const evmProducts = [
     description:
       "Connect smart contracts to a trust-minimized compute infrastructure running on a decentralized oracle network",
     learnMorelink: "chainlink-functions/",
-    image: automationLogo,
+    image: functionsLogo,
     links: [
       ["Introduction", "chainlink-functions/"],
       ["Getting Started", "chainlink-functions/getting-started/"],
