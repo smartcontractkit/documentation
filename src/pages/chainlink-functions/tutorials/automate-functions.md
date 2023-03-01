@@ -146,6 +146,7 @@ The consumer contract that you deployed is designed to be used with a **custom l
 - Trigger: Custom logic
 - Target contract address: The address of the Chainlink Functions consumer contract that you deployed
 - Gas limit: 700000
+- Starting balance (LINK): 0.2
 
 You can leave the other settings at their default values for the example in this tutorial.
 
