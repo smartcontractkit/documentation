@@ -1,6 +1,6 @@
 ---
 layout: ../../layouts/MainLayout.astro
-section: ethereum
+section: global
 date: Last Modified
 title: "Acquire testnet LINK"
 permalink: "docs/acquire-link/"

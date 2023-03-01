@@ -1,6 +1,6 @@
 ---
 layout: ../../layouts/MainLayout.astro
-section: gettingStarted
+section: global
 date: Last Modified
 title: "Learning Resources"
 ---

@@ -1,6 +1,6 @@
 ---
 layout: ../../layouts/MainLayout.astro
-section: ethereum
+section: global
 date: Last Modified
 title: "LINK Token Contracts"
 permalink: "docs/link-token-contracts/"

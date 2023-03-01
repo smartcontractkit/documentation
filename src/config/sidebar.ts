@@ -633,6 +633,42 @@ export const SIDEBAR = {
         },
       ],
     },
+    {
+      section: "Resources",
+      contents: [
+        {
+          title: "Videos and Tutorials",
+          url: "getting-started/other-tutorials",
+        },
+        { title: "Acquire testnet LINK", url: "resources/acquire-link" },
+        {
+          title: "Fund Your Contracts",
+          url: "resources/fund-your-contract",
+        },
+        {
+          title: "Install Frameworks",
+          url: "resources/create-a-chainlinked-project",
+        },
+        {
+          title: "LINK Token Contracts",
+          url: "resources/link-token-contracts",
+        },
+        {
+          title: "Bridges and Associated Risks",
+          url: "resources/bridge-risks",
+        },
+        {
+          title: "Developer Communications",
+          url: "resources/developer-communications",
+        },
+        { title: "Getting Help", url: "resources/getting-help" },
+        { title: "Hackathon Resources", url: "resources/hackathon-resources" },
+        {
+          title: "Contributing to Chainlink",
+          url: "resources/contributing-to-chainlink",
+        },
+      ],
+    },
   ],
   nodeOperator: [
     {

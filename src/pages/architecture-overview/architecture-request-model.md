@@ -1,6 +1,6 @@
 ---
 layout: ../../layouts/MainLayout.astro
-section: ethereum
+section: global
 date: Last Modified
 title: "Basic Request Model"
 permalink: "docs/architecture-request-model/"

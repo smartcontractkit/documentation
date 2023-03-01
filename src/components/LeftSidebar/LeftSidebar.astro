@@ -1,11 +1,23 @@
 ---
 import { SIDEBAR, MENU, Frontmatter } from "../../config"
+import { lastSection } from "./lastSection/"
 
 export type Props = {
   currentPage: string
   content: Frontmatter
 }
 const { currentPage, content } = Astro.props as Props
+
+// Handle pages marked as section: global
+// If the page is global, use the previous section.
+// Else, set the new section as the last viewed section.
+if (content.section === "global") {
+  console.log("Overriding section from: " + content.section + " to " + lastSection.get())
+  content.section = lastSection.get()
+} else {
+  console.log("Writing new lastSection " + content.section + " to " + lastSection.get())
+  lastSection.set(content.section)
+}
 
 // SIDEBAR is a flat array. Group it by sections to properly render.
 const sidebarSections = !!SIDEBAR[content?.section] ? SIDEBAR[content?.section] : []
