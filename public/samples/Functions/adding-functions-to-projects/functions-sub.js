@@ -5,11 +5,14 @@ async function main() {
   // be added as an approved consumer of the subscription.
   const consumer = "your_consumer_address"
 
-  // Network specific configs
+  // Network-specific configs
   // Polygon Mumbai LINK 0x326C977E6efc84E512bB9C30f76E30c160eD06FB
   // See https://docs.chain.link/resources/link-token-contracts
   // to find the LINK token contract address for your network.
   const linkTokenAddress = "0x326C977E6efc84E512bB9C30f76E30c160eD06FB"
+  // Polygon Mumbai billing registry: 0xEe9Bf52E5Ea228404bB54BCFbbDa8c21131b9039
+  // See https://docs.chain.link/chainlink-functions/supported-networks
+  // for a list of supported networks and registry addresses.
   const functionsBillingRegistryProxy = "0xEe9Bf52E5Ea228404bB54BCFbbDa8c21131b9039"
 
   const RegistryFactory = await ethers.getContractFactory(
