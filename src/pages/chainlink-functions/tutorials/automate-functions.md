@@ -8,10 +8,10 @@ setup: |
   import ClickToZoom from "@components/ClickToZoom.astro"
 ---
 
-This tutorial shows you how to leverage [Chainlink Automation](/chainlink-automation/introduction/) to automate your Chainlink Functions. Automation is essential in case you want to trigger the same Chainlink Functions regularly, such as fetching weather data daily or fetching an asset price every block.
+This tutorial shows you how to leverage [Chainlink Automation](/chainlink-automation/introduction/) to automate your Chainlink Functions. Automation is essential in case you want to trigger the same Function regularly, such as fetching weather data daily or fetching an asset price on every block.
 Read the [API multiple calls](/chainlink-functions/tutorials/api-multiple-calls/) tutorial before you follow the steps in this example. This tutorial uses the same example but with an important difference:
 
-- You will deploy [AutomatedFunctionsConsumer.sol](https://github.com/smartcontractkit/functions-hardhat-starter-kit/blob/main/contracts/AutomatedFunctionsConsumer.sol) instead of [FunctionsConsumer.sol](https://github.com/smartcontractkit/functions-hardhat-starter-kit/blob/main/contracts/FunctionsConsumer.sol). `AutomatedFunctionsConsumer.sol` is a Chainlink Functions Consumer contract that is [Chainlink Automation compatible contract](/chainlink-automation/compatible-contracts/).
+- You will deploy [AutomatedFunctionsConsumer.sol](https://github.com/smartcontractkit/functions-hardhat-starter-kit/blob/main/contracts/AutomatedFunctionsConsumer.sol) instead of [FunctionsConsumer.sol](https://github.com/smartcontractkit/functions-hardhat-starter-kit/blob/main/contracts/FunctionsConsumer.sol). `AutomatedFunctionsConsumer.sol` is a Chainlink Functions Consumer contract that is [Chainlink Automation compatible](/chainlink-automation/compatible-contracts/). Once you deploy and set up your contract, Chainlink Automation will trigger your Function according to a time schedule.
 
 ## Before you begin
 
@@ -20,7 +20,7 @@ Chainlink Functions is currently in a limited BETA.
 Apply [here](http://functions.chain.link/) to add your EVM account address to the Allow List.
 :::
 
-1. **[Complete the setup steps in the Getting Started guide](/chainlink-functions/getting-started):** The Getting Started Guide shows you how to set up your environment with the necessary tools for these tutorials.
+1. **[Complete the setup steps in the Getting Started guide](/chainlink-functions/getting-started):** The Getting Started Guide shows you how to set up your environment with the necessary tools for this tutorial.
 
 1. Make sure to understand the [API multiple calls](/chainlink-functions/tutorials/api-multiple-calls/) guide.
 
@@ -88,7 +88,7 @@ After running the simulator and confirming that your Function runs without issue
 - Deploy the [AutomatedFunctionsConsumer.sol](https://github.com/smartcontractkit/functions-hardhat-starter-kit/blob/main/contracts/AutomatedFunctionsConsumer.sol) contract. You can set the interval of executions when deploying the contract.
 - Add the deployed contract to your subscription.
 - Simulate the request that will be stored in your deployed contract.
-- Store the request (which includes the source code, encrypted secrets, and arguments) in the contract storage. **Note**: The stored request will be sent to the DON according to the provided interval.
+- Store the request (which includes the source code, encrypted secrets, and arguments) in the contract storage. **Note**: The stored request will be sent to the DON according to the provided time interval.
 
 In your terminal, run the `functions-deploy-auto-client` command:
 
@@ -140,18 +140,16 @@ In the example above, we deployed a Chainlink Functions consumer contract and co
 
 ### Configure Chainlink Automation
 
-Follow this [guide](/chainlink-automation/register-upkeep/#register-an-upkeep-using-the-chainlink-automation-app) to register your deployed contract using the [Chainlink Automation App](https://automation.chain.link/). **Note**: When registering your upkeep, set a gas limit of 700,000.
-Once registered, you can check your upkeep on the Chainlink Automation App:
+Follow this [guide](/chainlink-automation/register-upkeep/#register-an-upkeep-using-the-chainlink-automation-app) to register your deployed contract using the [Chainlink Automation App](https://automation.chain.link/).
+**Note**: When registering your upkeep, set a gas limit of 700,000.
 
-<ClickToZoom src='/images/chainlink-functions/tutorials/automation/myupkeep.jpg' />
-
-Chainlink Automation will trigger sending the request according to your provided interval.
+Chainlink Automation will trigger sending the request according to your provided time interval.
 
 :::note[Monitor your balances]
 There are two balances that you have to monitor:
 
 - Your Subscription balance: Your balance will be charged each time your Chainlink Functions is fulfilled. If your balance is insufficient, your contract cannot send requests. Automating your Chainlink Functions means they will be regularly triggered, so monitor and fund your subscription account regularly. Read [Get Subscription details](/chainlink-functions/resources/subscriptions#get-subscription-details) to learn how to check your subscription balance.
-- Your Upkeep balance: You can check this balance on the [Chainlink Automation App](https://automation.chain.link/). The Upkeep balance pays Chainlink Automation Network to send your requests according to your provided interval. Chainlink Automation will not trigger your requests if your Upkeep balance runs low.
+- Your Upkeep balance: You can check this balance on the [Chainlink Automation App](https://automation.chain.link/). The Upkeep balance pays Chainlink Automation Network to send your requests according to your provided time interval. Chainlink Automation will not trigger your requests if your Upkeep balance runs low.
   :::
 
 ### Check Result
@@ -186,80 +184,78 @@ Decoded as a uint256: 2384656
 
 ### AutomatedFunctionsConsumer.sol
 
-To write a Chainlink Functions consumer contract, your contract must import [FunctionsClient.sol](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/dev/functions/FunctionsClient.sol). You can read the API reference: [FunctionsClient](/chainlink-functions/api-reference/FunctionsClient).
+To write a Chainlink Functions consumer contract, your contract must import [FunctionsClient.sol](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/dev/functions/FunctionsClient.sol). You can read the API reference: [FunctionsClient](/chainlink-functions/api-reference/FunctionsClient). This contract is not available in an NPM package, so you must download and import it from within your project.
 
-This contract is not available in an NPM package, so you must download and import it from within your project.
-
-```
-import "./dev/functions/FunctionsClient.sol";
-```
+    ```
+    import "./dev/functions/FunctionsClient.sol";
+    ```
 
 To create a Chainlink Automation contract, your contract must import [AutomationCompatible.sol](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/automation/AutomationCompatible.sol)
 
-```
-import "@chainlink/contracts/src/v0.8/AutomationCompatible.sol";
-```
+    ```
+    import "@chainlink/contracts/src/v0.8/AutomationCompatible.sol";
+    ```
 
 Import [ConfirmedOwner](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/ConfirmedOwner.sol) from the [@chainlink/contracts](https://www.npmjs.com/package/@chainlink/contracts) NPM package. This contract includes functions to set up the owner, transfer ownership, and a function modifier `onlyOwner` that restricts certain functions to the contract owner.
 
-Inherit `FunctionsClient` and `ConfirmedOwner`, and implement the interface `AutomationCompatibleInterface`.
+Your contract must inherit `FunctionsClient` and `ConfirmedOwner` contracts, and implement the `AutomationCompatibleInterface` interface.
 
-```
-contract AutomatedFunctionsConsumer is FunctionsClient, ConfirmedOwner, AutomationCompatibleInterface
-```
+    ```
+    contract AutomatedFunctionsConsumer is FunctionsClient, ConfirmedOwner, AutomationCompatibleInterface
+    ```
 
 Use the [Functions.sol](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/dev/functions/Functions.sol) library to get all the functions needed for building a Chainlink Functions request. You can read the API reference: [Functions](/chainlink-functions/api-reference/Functions).
 
-```
-using Functions for Functions.Request;
-```
+    ```
+    using Functions for Functions.Request;
+    ```
 
 The request sent to Chainlink Functions is defined as a state variable. The contract owner stores this request, which is regularly sent to Chainlink Functions whenever Chainlink Automation triggers it.
 
-```
-bytes public requestCBOR
-```
+    ```
+    bytes public requestCBOR
+    ```
 
 The latest request id, latest received response, and latest received error (if any) are defined as state variables. Note that `latestResponse` and `latestError` are encoded as dynamically sized byte array `bytes`, so you will still need to decode them to read the response or error:
 
-```
-bytes32 public latestRequestId;
-bytes public latestResponse;
-bytes public latestError;
-```
+    ```
+    bytes32 public latestRequestId;
+    bytes public latestResponse;
+    bytes public latestError;
+    ```
 
 The subscription id (the subscription account your contract is linked to) and the fulfillment gas limit (Maximum amount of gas used to fulfill a Chainlink Function request) are defined as state variables. Only the contract owner can modify these variables.
 
-```
-uint64 public subscriptionId;
-uint32 public fulfillGasLimit;
-```
+    ```
+    uint64 public subscriptionId;
+    uint32 public fulfillGasLimit;
+    ```
 
 The update interval (time interval in seconds of triggering a Chainlink Function request) and the timestamp of the last request are defined as state variables. They are used to check if the time interval has been reached so that Chainlink Automation can trigger a new request.
 
-```
-uint256 public updateInterval;
-uint256 public lastUpkeepTimeStamp;
-```
+    ```
+    uint256 public updateInterval;
+    uint256 public lastUpkeepTimeStamp;
+    ```
 
 We define `upkeepCounter` and `responseCounter` to keep track of the number of requests (triggered by Chainlink Automation) and the number of fulfilled requests (once the request has been fulfilled by Chainlink Functions).
 
 We define the `OCRResponse` event that your smart contract will emit during the callback
 
-```
-event OCRResponse(bytes32 indexed requestId, bytes result, bytes err);
-```
+    ```
+    event OCRResponse(bytes32 indexed requestId, bytes result, bytes err);
+    ```
 
 Pass the oracle address for your network, your Chainlink functions id, fulfillment gas limit, and update interval when you deploy the contract:
 
-```
-constructor(
-  address oracle,
-  uint64 _subscriptionId,
-  uint32 _fulfillGasLimit,
-  uint256 _updateInterval
-) FunctionsClient(oracle) ConfirmedOwner(msg.sender)
-```
+    ```
+    constructor(
+      address oracle,
+      uint64 _subscriptionId,
+      uint32 _fulfillGasLimit,
+      uint256 _updateInterval
+    ) FunctionsClient(oracle) ConfirmedOwner(msg.sender)
+    ```
 
 You can change the oracle address at any time by calling the `updateOracleAddress` function.
 
@@ -317,8 +313,8 @@ To store a request in the `requestCBOR` state variable, the contract owner has t
 
 ### Functions-request-config.js
 
-Read [](/chainlink-functions/tutorials/api-multiple-calls#functions-request-configjs).
+Read [explanation](/chainlink-functions/tutorials/api-multiple-calls#functions-request-configjs).
 
 ### Functions-request-source.js
 
-Read [](/chainlink-functions/tutorials/api-multiple-calls#functions-request-sourcejs).
+Read [explanation](/chainlink-functions/tutorials/api-multiple-calls#functions-request-sourcejs).
