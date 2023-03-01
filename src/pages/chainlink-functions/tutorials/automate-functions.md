@@ -142,7 +142,15 @@ In the example above, you deployed a Chainlink Functions consumer contract and c
 **Note**: You can change the request's parameters to build a new request or update other parameters, such as the time interval or the subscription ID to which your contract is linked. To do so, run the `functions-set-auto-request`:
 
 ```shell
-npx hardhat functions-set-auto-request --network REPLACE_NETWORK --subid REPLACE_SUBSCRIPTION_ID --interval REPLACE_INTERVAL_SECONDS --gaslimit REPLACE_GAS_LIMITS
+npx hardhat functions-set-auto-request --contract REPLACE_YOUR_CONTRACT --network REPLACE_NETWORK --subid REPLACE_SUBSCRIPTION_ID --interval REPLACE_INTERVAL_SECONDS --gaslimit REPLACE_GAS_LIMITS
+```
+
+`interval` as `gaslimit` are optional.
+
+Example of setting up a new interval (1h):
+
+```shell
+npx hardhat functions-set-auto-request --contract 0x7a2499dd81D40d12104Af556440099611E675E02 --network mumbai --subid 10 --interval 3600
 ```
 
 ### Configure Chainlink Automation
