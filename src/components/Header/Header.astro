@@ -12,14 +12,13 @@ export type Props = {
 }
 const { frontmatter } = Astro.props
 
-// Handle pages marked as section: global
+// Handle pages marked as "section: global"
 // If the page is global, use the previous section.
 // Else, set the new section as the last viewed section.
-let section = frontmatter?.section ?? ""
+// Default to "gettingStarted" for initial opening of global pages.
+let section = frontmatter?.section ?? undefined
 if (section === "global") {
-  section = lastSection.get()
-} else {
-  lastSection.set(section)
+  section = lastSection.get() ?? "gettingStarted"
 }
 ---
 
