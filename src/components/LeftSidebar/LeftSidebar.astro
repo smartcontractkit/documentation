@@ -1,6 +1,5 @@
 ---
 import { SIDEBAR, MENU, Frontmatter } from "../../config"
-import { lastSection } from "./lastSection/"
 
 export type Props = {
   currentPage: string
@@ -13,9 +12,9 @@ const { currentPage, content } = Astro.props as Props
 // Else, set the new section as the last viewed section.
 // Default to "gettingStarted" for initial opening of global pages.
 if (content.section === "global") {
-  content.section = lastSection.get() ?? "gettingStarted"
+  content.section = localStorage.getItem("lastSection") ?? "gettingStarted"
 }
-lastSection.set(content.section)
+localStorage.setItem("lastSection", content.section)
 
 // SIDEBAR is a flat array. Group it by sections to properly render.
 const sidebarSections = !!SIDEBAR[content?.section] ? SIDEBAR[content?.section] : []
