@@ -3,6 +3,8 @@ layout: ../../layouts/MainLayout.astro
 section: chainlinkFunctions
 date: Last Modified
 title: "Getting Started"
+metadata:
+  linkToWallet: true
 whatsnext:
   {
     "Try out the Chainlink Functions Tutorials": "/chainlink-functions/tutorials/",
@@ -13,14 +15,14 @@ setup: |
   import ChainlinkFunctions from "@features/chainlink-functions/common/ChainlinkFunctions.astro"
 ---
 
-Use the [Chainlink Functions Starter Kit](https://github.com/smartcontractkit/functions-hardhat-starter-kit) with [Hardhat](https://hardhat.org/) to set up your on-chain contracts, test your requests, and send your requests to be fulfilled by the Chainlink Functions Decentralized Oracle Network (DON). This guide shows you how to complete the following tasks to get started with Chainlink Functions:
+Use the [Chainlink Functions Starter Kit](https://github.com/smartcontractkit/functions-hardhat-starter-kit) with [Hardhat](https://hardhat.org/) to set up your on-chain contracts, test your requests, and send your requests to be fulfilled by the Chainlink Functions Decentralized Oracle Network (DON). Chainlink Functions is available on Sepolia and Polygon Mumbai, but this guide uses Polygon Mumbai to simplify access to testnet funds. Complete the following tasks to get started with Chainlink Functions:
 
 - Set up your Web3 wallet and find your private key
 - Install the required frameworks
 - Configure the starter kit with your environment variables
 - Simulate a Chainlink Functions request
-- Set up a subscription on the Polygon Mumbai testnet
-- Send a Chainlink Functions request to the DON on the Polygon Mumbai testnet
+- Set up a subscription for Chainlink Functions
+- Send a Chainlink Functions request to the DON
 
 :::note[Request Access]
 Chainlink Functions is currently in a limited BETA.
@@ -31,11 +33,13 @@ Apply [here](http://functions.chain.link/) to add your EVM account address to th
 
 You must provide the private key from a testnet wallet to run the examples in this documentation. Install a Web3 wallet, configure [Node.js](https://nodejs.org/en/download/), clone the [Starter Kit](https://github.com/smartcontractkit/functions-hardhat-starter-kit.git), and configure a `.env` file with the required variables.
 
-Install and configure your Web3 wallet:
+Install and configure your Web3 wallet for Polygon Mumbai:
 
 1. [Install the MetaMask wallet](/getting-started/deploy-your-first-contract#install-and-fund-your-metamask-wallet) or other Ethereum Web3 wallet.
 
-1. Set the network for your wallet to Polygon Mumbai. You can add Polygon Mumbai and the LINK token contract to your wallet on the [LINK Token Contracts](/resources/link-token-contracts#mumbai-testnet) page. Optionally, you can manually add the `ETH_CHAIN_ID` and the LINK token address to your wallet manually in your wallet settings.
+1. Set the network for your wallet to the Polygon Mumbai testnet. If you need to add Mumbai to your wallet, you can find the chain ID and the LINK token contract address on the [LINK Token Contracts](/resources/link-token-contracts#mumbai-testnet) page.
+
+   - <a class="erc-token-address" id="80001_0x326C977E6efc84E512bB9C30f76E30c160eD06FB" href="/resources/link-token-contracts#mumbai-testnet">Polygon Mumbai testnet</a>
 
 1. Request testnet MATIC from the [Polygon Faucet](https://faucet.polygon.technology/).
 
