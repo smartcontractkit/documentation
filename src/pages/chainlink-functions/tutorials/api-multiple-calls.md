@@ -40,7 +40,7 @@ Apply [here](http://functions.chain.link/) to add your EVM account address to th
 
 ## Tutorial
 
-:::note[Complete the Before you begin section]
+:::note[Set up your environment variables]
 This tutorial has some unique `.env` setup steps. Make sure that you configured your `.env` file with the necessary variables in the [Before you begin](#before-you-begin) section.
 :::
 
