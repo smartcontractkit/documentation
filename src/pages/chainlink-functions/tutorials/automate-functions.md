@@ -140,7 +140,8 @@ In the example above, we deployed a Chainlink Functions consumer contract and co
 
 ### Configure Chainlink Automation
 
-Follow this [guide](/chainlink-automation/register-upkeep/#register-an-upkeep-using-the-chainlink-automation-app) to register your deployed contract using the [Chainlink Automation App](https://automation.chain.link/). Once registered, you can check your upkeep on the Chainlink Automation App:
+Follow this [guide](/chainlink-automation/register-upkeep/#register-an-upkeep-using-the-chainlink-automation-app) to register your deployed contract using the [Chainlink Automation App](https://automation.chain.link/). **Note**: When registering your upkeep, set a gas limit of 700,000.
+Once registered, you can check your upkeep on the Chainlink Automation App:
 
 <ClickToZoom src='/images/chainlink-functions/tutorials/automation/myupkeep.jpg' />
 
@@ -149,6 +150,175 @@ Chainlink Automation will trigger sending the request according to your provided
 :::note[Monitor your balances]
 There are two balances that you have to monitor:
 
-- Your Subscription balance: Your balance will be charged each time your Chainlink Functions is fulfilled. If your balance is insufficient, your contract will not be able to send requests. Automating your Chainlink Functions means they will be regularly triggered, so monitor and fund your subscription account regularly. Read [Get Subscription details](/chainlink-functions/resources/subscriptions#get-subscription-details) to learn how to check your subscription balance.
+- Your Subscription balance: Your balance will be charged each time your Chainlink Functions is fulfilled. If your balance is insufficient, your contract cannot send requests. Automating your Chainlink Functions means they will be regularly triggered, so monitor and fund your subscription account regularly. Read [Get Subscription details](/chainlink-functions/resources/subscriptions#get-subscription-details) to learn how to check your subscription balance.
 - Your Upkeep balance: You can check this balance on the [Chainlink Automation App](https://automation.chain.link/). The Upkeep balance pays Chainlink Automation Network to send your requests according to your provided interval. Chainlink Automation will not trigger your requests if your Upkeep balance runs low.
   :::
+
+### Check Result
+
+Go to the [Chainlink Automation App](https://automation.chain.link/) and connect to Polygon Mumbai. Your upkeep will be listed under _My upkeeps_:
+
+<ClickToZoom src='/images/chainlink-functions/tutorials/automation/cl-automation-home.jpg' />
+
+Click on your upkeep to fetch de details:
+
+<ClickToZoom src='/images/chainlink-functions/tutorials/automation/myupkeep-details.jpg' />
+
+As you can see in the _History_ table, the upkeep is running every minute.
+On your terminal, run the `functions-read` task with the `contract` parameter to read the latest received response:
+
+```bash
+npx hardhat functions-read  --contract REPLACE_CONSUMER_CONTRACT_ADDRESS --network REPLACE_NETWORK
+```
+
+Example:
+
+```bash
+$ npx hardhat functions-read  --contract 0x7a2499dd81D40d12104Af556440099611E675E02 --network mumbai
+secp256k1 unavailable, reverting to browser version
+Reading data from Functions client contract 0x7a2499dd81D40d12104Af556440099611E675E02 on network mumbai
+
+On-chain response represented as a hex string: 0x0000000000000000000000000000000000000000000000000000000000246310
+Decoded as a uint256: 2384656
+```
+
+## Explanation
+
+### AutomatedFunctionsConsumer.sol
+
+To write a Chainlink Functions consumer contract, your contract must import [FunctionsClient.sol](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/dev/functions/FunctionsClient.sol). You can read the API reference: [FunctionsClient](/chainlink-functions/api-reference/FunctionsClient).
+
+This contract is not available in an NPM package, so you must download and import it from within your project.
+
+```
+import "./dev/functions/FunctionsClient.sol";
+```
+
+To create a Chainlink Automation contract, your contract must import [AutomationCompatible.sol](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/automation/AutomationCompatible.sol)
+
+```
+import "@chainlink/contracts/src/v0.8/AutomationCompatible.sol";
+```
+
+Import [ConfirmedOwner](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/ConfirmedOwner.sol) from the [@chainlink/contracts](https://www.npmjs.com/package/@chainlink/contracts) NPM package. This contract includes functions to set up the owner, transfer ownership, and a function modifier `onlyOwner` that restricts certain functions to the contract owner.
+
+Inherit `FunctionsClient` and `ConfirmedOwner`, and implement the interface `AutomationCompatibleInterface`.
+
+```
+contract AutomatedFunctionsConsumer is FunctionsClient, ConfirmedOwner, AutomationCompatibleInterface
+```
+
+Use the [Functions.sol](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/dev/functions/Functions.sol) library to get all the functions needed for building a Chainlink Functions request. You can read the API reference: [Functions](/chainlink-functions/api-reference/Functions).
+
+```
+using Functions for Functions.Request;
+```
+
+The request sent to Chainlink Functions is defined as a state variable. The contract owner stores this request, which is regularly sent to Chainlink Functions whenever Chainlink Automation triggers it.
+
+```
+bytes public requestCBOR
+```
+
+The latest request id, latest received response, and latest received error (if any) are defined as state variables. Note that `latestResponse` and `latestError` are encoded as dynamically sized byte array `bytes`, so you will still need to decode them to read the response or error:
+
+```
+bytes32 public latestRequestId;
+bytes public latestResponse;
+bytes public latestError;
+```
+
+The subscription id (the subscription account your contract is linked to) and the fulfillment gas limit (Maximum amount of gas used to fulfill a Chainlink Function request) are defined as state variables. Only the contract owner can modify these variables.
+
+```
+uint64 public subscriptionId;
+uint32 public fulfillGasLimit;
+```
+
+The update interval (time interval in seconds of triggering a Chainlink Function request) and the timestamp of the last request are defined as state variables. They are used to check if the time interval has been reached so that Chainlink Automation can trigger a new request.
+
+```
+uint256 public updateInterval;
+uint256 public lastUpkeepTimeStamp;
+```
+
+We define `upkeepCounter` and `responseCounter` to keep track of the number of requests (triggered by Chainlink Automation) and the number of fulfilled requests (once the request has been fulfilled by Chainlink Functions).
+
+We define the `OCRResponse` event that your smart contract will emit during the callback
+
+```
+event OCRResponse(bytes32 indexed requestId, bytes result, bytes err);
+```
+
+Pass the oracle address for your network, your Chainlink functions id, fulfillment gas limit, and update interval when you deploy the contract:
+
+```
+constructor(
+  address oracle,
+  uint64 _subscriptionId,
+  uint32 _fulfillGasLimit,
+  uint256 _updateInterval
+) FunctionsClient(oracle) ConfirmedOwner(msg.sender)
+```
+
+You can change the oracle address at any time by calling the `updateOracleAddress` function.
+
+To store a request in the `requestCBOR` state variable, the contract owner has to:
+
+- Call the `generateRequest` function. It uses the `Functions`library to initialize the request and add any passed encrypted secrets or arguments. Finally, it returns an encoded request. You can read the API Reference for [Initializing a request](/chainlink-functions/api-reference/Functions/#initializerequest), [adding secrets](/chainlink-functions/api-reference/Functions/#addinlinesecrets), and [adding arguments](/chainlink-functions/api-reference/Functions/#addargs). **Note**: This call is done off-chain to save gas when calling the `setRequest` function.
+
+  ```
+  Functions.Request memory req;
+  req.initializeRequest(Functions.Location.Inline, Functions.CodeLanguage.JavaScript, source);
+  if (secrets.length > 0) {
+    if (secretsLocation == Functions.Location.Inline) {
+       req.addInlineSecrets(secrets);
+    } else {
+      req.addRemoteSecrets(secrets);
+    }
+  }
+  if (args.length > 0) req.addArgs(args);
+  return req.encodeCBOR();
+  ```
+
+- Call the `setRequest` function and pass the subscription id, fulfillment gas limit, update interval, and the encoded request (returned by `generateRequest`). `setRequest` updates the `updateInterval`, `subscriptionId`, `fulfillGasLimit`, and `requestCBOR` state variables.
+
+`checkUpkeep` and `performUpkeep` functions are used by Chainlink Automation:
+
+- `checkUpkeep`: Returns a boolean which determines whether Chainlink Automation can trigger the `performUpkeep` function. The boolean is set to true whenever the time interval is met.
+
+  ```
+  upkeepNeeded = (block.timestamp - lastUpkeepTimeStamp) > updateInterval;
+  ```
+
+- `performUpkeep`: Sends the request to the oracle by calling the `FunctionsClient` `sendRequest` function. You can read the API reference for [sending a request](/chainlink-functions/api-reference/FunctionsClient/#sendrequest). Also, it updates `lastUpkeepTimeStamp` with the current timestamp, increments `upkeepCounter`, and sets `latestRequestId` to the last request id.
+
+  ```
+  lastUpkeepTimeStamp = block.timestamp;
+  upkeepCounter = upkeepCounter + 1;
+  ...
+  bytes32 requestId = s_oracle.sendRequest(
+  subscriptionId,
+  requestCBOR,
+  fulfillGasLimit
+  );
+  ...
+  latestRequestId = assignedReqID;
+  ```
+
+`fulfillRequest` is invoked by Chainlink Functions during the callback. This function is defined in `FunctionsClient` as `virtual` (read `fulfillRequest` [API reference](/chainlink-functions/api-reference/FunctionsClient/#fulfillrequest)). So, your smart contract must override the function to implement the callback. The implementation of the callback is straightforward: the contract stores the latest response and error in `latestResponse` and `latestError` and increments `responseCounter` before emitting the `OCRResponse` event.
+
+    ```
+    latestResponse = response;
+    latestError = err;
+    responseCounter = responseCounter + 1;
+    emit OCRResponse(requestId, response, err);
+    ```
+
+### Functions-request-config.js
+
+Read [](/chainlink-functions/tutorials/api-multiple-calls#functions-request-configjs).
+
+### Functions-request-source.js
+
+Read [](/chainlink-functions/tutorials/api-multiple-calls#functions-request-sourcejs).

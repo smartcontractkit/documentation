@@ -389,6 +389,10 @@ export const SIDEBAR = {
           title: "Using Off-chain Secrets in Requests",
           url: "chainlink-functions/tutorials/api-use-secrets-offchain",
         },
+        {
+          title: "Automate your Functions",
+          url: "chainlink-functions/tutorials/automate-functions/",
+        },
       ],
     },
     {
