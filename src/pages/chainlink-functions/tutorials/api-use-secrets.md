@@ -33,8 +33,8 @@ Apply [here](http://functions.chain.link/) to add your EVM account address to th
 
 ## Tutorial
 
-:::note[Complete the Before you begin section]
-This tutorial has some unique setup steps. Ensure you have completed the [Getting Started](/chainlink-functions/getting-started) guide and configured your `.env` file with the necessary variables.
+:::note[Set up your environment variables]
+This tutorial has some unique `.env` setup steps. Make sure that you configured your `.env` file with the necessary variables in the [Before you begin](#before-you-begin) section.
 :::
 
 This tutorial is configured to get the `BTC/USD` price with a request that requires API keys. For a detailed explanation of the code example, read the [Explanation](#explanation) section.
@@ -85,7 +85,7 @@ Reading the output of the example above, you can note that the `BTC/USD` price i
 ### Request
 
 :::note[Reminder]
-Before you can make a successful request, you must complete the setup steps in the [Before you begin](#before_you_begin) section. Each tutorial is in a separate Git branch and some require unique entries in your `.env` file.
+Before you can make a successful request, you must complete the setup steps in the [Before you begin](#before-you-begin) section. Each tutorial is in a separate Git branch and some require unique entries in your `.env` file.
 :::
 
 Send a request to the Decentralized Oracle Network to fetch the asset price. Run the `functions-request` task with the `subid` (subscription ID) and `contract` parameters. This task passes the functions JavaScript source code, arguments, and secrets to the `executeRequest` function in your deployed `FunctionsConsumer` contract. Read the [functionsConsumer](#functionsconsumersol) section for more details about the consumer contract.
