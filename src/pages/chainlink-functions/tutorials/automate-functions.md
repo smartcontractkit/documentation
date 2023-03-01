@@ -145,9 +145,9 @@ In the example above, you deployed a Chainlink Functions consumer contract and c
 npx hardhat functions-set-auto-request --contract REPLACE_YOUR_CONTRACT --network REPLACE_NETWORK --subid REPLACE_SUBSCRIPTION_ID --interval REPLACE_INTERVAL_SECONDS --gaslimit REPLACE_GAS_LIMITS
 ```
 
-`interval` as `gaslimit` are optional.
+The `--interval` and `--gaslimit` flags are optional.
 
-Example of setting up a new interval (1h):
+As an example, you can use this command to set a new interval of one hour:
 
 ```shell
 npx hardhat functions-set-auto-request --contract 0x7a2499dd81D40d12104Af556440099611E675E02 --network mumbai --subid 10 --interval 3600
