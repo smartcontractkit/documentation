@@ -7,15 +7,6 @@ export type Props = {
 }
 const { currentPage, content } = Astro.props as Props
 
-// Handle pages marked as "section: global"
-// If the page is global, use the previous section.
-// Else, set the new section as the last viewed section.
-// Default to "gettingStarted" for initial opening of global pages.
-if (content.section === "global") {
-  content.section = localStorage.getItem("lastSection") ?? "gettingStarted"
-}
-localStorage.setItem("lastSection", content.section)
-
 // SIDEBAR is a flat array. Group it by sections to properly render.
 const sidebarSections = !!SIDEBAR[content?.section] ? SIDEBAR[content?.section] : []
 
