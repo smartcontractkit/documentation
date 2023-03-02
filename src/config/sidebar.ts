@@ -260,7 +260,7 @@ export const SIDEBAR = {
         },
         {
           title: "LINK Token Contracts",
-          url: "resources/link-token-contracts",
+          url: "resources/link-token-contracts?parent=dataFeeds", // add parent queryParameter to toggle the dynamic sidebar
         },
         {
           title: "Bridges and Associated Risks",
