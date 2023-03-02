@@ -218,8 +218,12 @@ Use the [operator factory](/chainlink-nodes/contracts/operatorfactory) to deploy
    1. Update your environment file. If you followed [Running a Chainlink Node locally](/chainlink-nodes/v1/running-a-chainlink-node) guide then add `ETH_USE_FORWARDERS=true`to your environment file:
 
       ```shell
-      echo "ETH_USE_FORWARDERS=true" >> ~/.chainlink-sepolia/.env
+      echo "ETH_USE_FORWARDERS=true
+      FEATURE_LOG_POLLER=true" >> ~/.chainlink-sepolia/.env
       ```
+
+      - `ETH_USE_FORWARDERS` enables sending transactions through forwarder contracts.
+      - `FEATURE_LOG_POLLER` enables polling forwarder contracts logs to detect any changes to the authorized senders.
 
    1. Start the Chainlink node:
 
@@ -328,3 +332,25 @@ Note that both jobs have the attribute `forwardingAllowed = true`. This attribut
 1. In Remix, click the `id` variable to see the current price updated on your consumer contract.
 
 ### Check Forwarder
+
+Let's confirm that:
+
+- The Chainlink node submitted the callbacks to the Forwarder contract.
+- Each callback used a different account.
+- The Forwarder contract forwarded the callbacks to the Operator contract.
+
+Display your Forwarder contract on the block explorer. Two [forward](/chainlink-nodes/contracts/forwarder#forward) transactions exist.
+
+<ClickToZoom src='/images/chainlink-nodes/node-operators/forwarder/forward-transactions.jpg' />
+
+Click on both transaction hashes and note that the `From` addresses differ. In this example, `0x259c49E65644a020C2A642260a4ffB0CD862cb24` is the EOA used in the `uint256` job, and `0x71a1Eb6534054E75F0D6fD0A3B0A336228DD5cFc` is the EOA used in the `string` job:
+
+<ClickToZoom src='/images/chainlink-nodes/node-operators/forwarder/forward1.jpg' />
+
+<ClickToZoom src='/images/chainlink-nodes/node-operators/forwarder/forward2.jpg' />
+
+Then click on the `Logs` tab to display the list of events. Notice the [OracleResponse](/chainlink-nodes/contracts/operator#oracleresponse) events. The Operator contract emitted them when the Forward contract called it
+
+<ClickToZoom src='/images/chainlink-nodes/node-operators/forwarder/forward1-logs.jpg' />
+
+<ClickToZoom src='/images/chainlink-nodes/node-operators/forwarder/forward2-logs.jpg' />
