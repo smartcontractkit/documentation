@@ -32,7 +32,7 @@ let section = frontmatter?.section ?? undefined
     <div class="navbar">
       {
         MENU.en.map((link) => (
-          <a class="nav-link" href={link.link} aria-current={link.section === section}>
+          <a id={link.section} class="nav-link" href={link.link} aria-current={link.section === section}>
             {link.text}
           </a>
         ))
@@ -193,3 +193,14 @@ let section = frontmatter?.section ?? undefined
     flex-grow: 1;
   }
 </style>
+
+<script is:inline>
+  window.addEventListener("DOMContentLoaded", (event) => {
+    const parentSection = new URLSearchParams(window.location.search).get("parent") || "gettingStarted"
+
+    if (!document.querySelectorAll('a[aria-current="true"]')[0]) {
+      let elem = document.getElementById(parentSection)
+      elem.ariaCurrent = "true"
+    }
+  })
+</script>

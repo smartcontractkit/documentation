@@ -21,8 +21,10 @@ function getSidebarSections(section: string) {
 
 const sidebarSections = getSidebarSections(content.section)
 
+// Remove slashes and params
 const removeSlashes = function (url: string) {
   let sanitizedUrl = url
+  sanitizedUrl = sanitizedUrl.split("?parent")[0]
   if (sanitizedUrl.charAt(0) == "/") sanitizedUrl = sanitizedUrl.substr(1)
   if (sanitizedUrl.charAt(sanitizedUrl.length - 1) == "/")
     sanitizedUrl = sanitizedUrl.substr(0, sanitizedUrl.length - 1)
@@ -188,7 +190,7 @@ const currentPageMatch = removeSlashes(currentPage.slice(1))
 
 <script is:inline>
   window.addEventListener("DOMContentLoaded", (event) => {
-    const parentSection = new URLSearchParams(window.location.search).get("parent")
+    const parentSection = new URLSearchParams(window.location.search).get("parent") || "gettingStarted"
     if (parentSection) {
       for (let elem of document.querySelectorAll(`.parent-${parentSection}`)) {
         elem.ariaHidden = "false"

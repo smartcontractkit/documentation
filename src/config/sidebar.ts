@@ -30,19 +30,19 @@ export const SIDEBAR = {
       contents: [
         {
           title: "Overview",
-          url: "architecture-overview/architecture-overview",
+          url: "architecture-overview/architecture-overview?parent=gettingStarted",
           children: [
             {
               title: "Basic Request Model",
-              url: "architecture-overview/architecture-request-model",
+              url: "architecture-overview/architecture-request-model?parent=gettingStarted",
             },
             {
               title: "Decentralized Data Model",
-              url: "architecture-overview/architecture-decentralized-model",
+              url: "architecture-overview/architecture-decentralized-model?parent=gettingStarted",
             },
             {
               title: "Off-Chain Reporting",
-              url: "architecture-overview/off-chain-reporting",
+              url: "architecture-overview/off-chain-reporting?parent=gettingStarted",
             },
           ],
         },
@@ -53,34 +53,43 @@ export const SIDEBAR = {
       contents: [
         {
           title: "Videos and Tutorials",
-          url: "getting-started/other-tutorials",
+          url: "getting-started/other-tutorials?parent=gettingStarted",
         },
-        { title: "Acquire testnet LINK", url: "resources/acquire-link" },
+        {
+          title: "Acquire testnet LINK",
+          url: "resources/acquire-link?parent=gettingStarted",
+        },
         {
           title: "Fund Your Contracts",
-          url: "resources/fund-your-contract",
+          url: "resources/fund-your-contract?parent=gettingStarted",
         },
         {
           title: "Install Frameworks",
-          url: "resources/create-a-chainlinked-project",
+          url: "resources/create-a-chainlinked-project?parent=gettingStarted",
         },
         {
           title: "LINK Token Contracts",
-          url: "resources/link-token-contracts",
+          url: "resources/link-token-contracts?parent=gettingStarted",
         },
         {
           title: "Bridges and Associated Risks",
-          url: "resources/bridge-risks",
+          url: "resources/bridge-risks?parent=gettingStarted",
         },
         {
           title: "Developer Communications",
-          url: "resources/developer-communications",
+          url: "resources/developer-communications?parent=gettingStarted",
         },
-        { title: "Getting Help", url: "resources/getting-help" },
-        { title: "Hackathon Resources", url: "resources/hackathon-resources" },
+        {
+          title: "Getting Help",
+          url: "resources/getting-help?parent=gettingStarted",
+        },
+        {
+          title: "Hackathon Resources",
+          url: "resources/hackathon-resources?parent=gettingStarted",
+        },
         {
           title: "Contributing to Chainlink",
-          url: "resources/contributing-to-chainlink",
+          url: "resources/contributing-to-chainlink?parent=gettingStarted",
         },
       ],
     },
@@ -224,19 +233,19 @@ export const SIDEBAR = {
       contents: [
         {
           title: "Overview",
-          url: "architecture-overview/architecture-overview",
+          url: "architecture-overview/architecture-overview?parent=dataFeeds",
           children: [
             {
               title: "Basic Request Model",
-              url: "architecture-overview/architecture-request-model",
+              url: "architecture-overview/architecture-request-model?parent=dataFeeds",
             },
             {
               title: "Decentralized Data Model",
-              url: "architecture-overview/architecture-decentralized-model",
+              url: "architecture-overview/architecture-decentralized-model?parent=dataFeeds",
             },
             {
               title: "Off-Chain Reporting",
-              url: "architecture-overview/off-chain-reporting",
+              url: "architecture-overview/off-chain-reporting?parent=dataFeeds",
             },
           ],
         },
@@ -247,34 +256,37 @@ export const SIDEBAR = {
       contents: [
         {
           title: "Videos and Tutorials",
-          url: "getting-started/other-tutorials",
+          url: "getting-started/other-tutorials?parent=dataFeeds",
         },
-        { title: "Acquire testnet LINK", url: "resources/acquire-link" },
+        {
+          title: "Acquire testnet LINK",
+          url: "resources/acquire-link?parent=dataFeeds",
+        },
         {
           title: "Fund Your Contracts",
-          url: "resources/fund-your-contract",
+          url: "resources/fund-your-contract?parent=dataFeeds",
         },
         {
           title: "Install Frameworks",
-          url: "resources/create-a-chainlinked-project",
+          url: "resources/create-a-chainlinked-project?parent=dataFeeds",
         },
         {
           title: "LINK Token Contracts",
-          url: "resources/link-token-contracts?parent=dataFeeds", // add parent queryParameter to toggle the dynamic sidebar
+          url: "resources/link-token-contracts?parent=dataFeeds",
         },
         {
           title: "Bridges and Associated Risks",
-          url: "resources/bridge-risks",
+          url: "resources/bridge-risks?parent=dataFeeds",
         },
         {
           title: "Developer Communications",
-          url: "resources/developer-communications",
+          url: "resources/developer-communications?parent=dataFeeds",
         },
         { title: "Getting Help", url: "resources/getting-help" },
-        { title: "Hackathon Resources", url: "resources/hackathon-resources" },
+        { title: "Hackathon Resources", url: "resources/hackathon-resources?parent=dataFeeds" },
         {
           title: "Contributing to Chainlink",
-          url: "resources/contributing-to-chainlink",
+          url: "resources/contributing-to-chainlink?parent=dataFeeds",
         },
       ],
     },
@@ -355,31 +367,43 @@ export const SIDEBAR = {
       contents: [
         {
           title: "Videos and Tutorials",
-          url: "getting-started/other-tutorials",
+          url: "getting-started/other-tutorials?parent=automation",
         },
-        { title: "Acquire testnet LINK", url: "resources/acquire-link" },
-        { title: "Fund Your Contracts", url: "resources/fund-your-contract" },
+        {
+          title: "Acquire testnet LINK",
+          url: "resources/acquire-link?parent=automation",
+        },
+        {
+          title: "Fund Your Contracts",
+          url: "resources/fund-your-contract?parent=automation",
+        },
         {
           title: "Install Frameworks",
-          url: "resources/create-a-chainlinked-project",
+          url: "resources/create-a-chainlinked-project?parent=automation",
         },
         {
           title: "LINK Token Contracts",
-          url: "resources/link-token-contracts",
+          url: "resources/link-token-contracts?parent=automation",
         },
         {
           title: "Bridges and Associated Risks",
-          url: "resources/bridge-risks",
+          url: "resources/bridge-risks?parent=automation",
         },
         {
           title: "Developer Communications",
-          url: "resources/developer-communications",
+          url: "resources/developer-communications?parent=automation",
         },
-        { title: "Getting Help", url: "resources/getting-help" },
-        { title: "Hackathon Resources", url: "resources/hackathon-resources" },
+        {
+          title: "Getting Help",
+          url: "resources/getting-help?parent=automation",
+        },
+        {
+          title: "Hackathon Resources",
+          url: "resources/hackathon-resources?parent=automation",
+        },
         {
           title: "Contributing to Chainlink",
-          url: "resources/contributing-to-chainlink",
+          url: "resources/contributing-to-chainlink?parent=automation",
         },
       ],
     },
@@ -486,19 +510,19 @@ export const SIDEBAR = {
       contents: [
         {
           title: "Overview",
-          url: "architecture-overview/architecture-overview",
+          url: "architecture-overview/architecture-overview?parent=chainlinkFunctions",
           children: [
             {
               title: "Basic Request Model",
-              url: "architecture-overview/architecture-request-model",
+              url: "architecture-overview/architecture-request-model?parent=chainlinkFunctions",
             },
             {
               title: "Decentralized Data Model",
-              url: "architecture-overview/architecture-decentralized-model",
+              url: "architecture-overview/architecture-decentralized-model?parent=chainlinkFunctions",
             },
             {
               title: "Off-Chain Reporting",
-              url: "architecture-overview/off-chain-reporting",
+              url: "architecture-overview/off-chain-reporting?parent=chainlinkFunctions",
             },
           ],
         },
@@ -509,27 +533,27 @@ export const SIDEBAR = {
       contents: [
         {
           title: "Acquire testnet LINK",
-          url: "resources/acquire-link",
+          url: "resources/acquire-link?parent=chainlinkFunctions",
         },
         {
           title: "LINK Token Contracts",
-          url: "resources/link-token-contracts",
+          url: "resources/link-token-contracts?parent=chainlinkFunctions",
         },
         {
           title: "Developer Communications",
-          url: "resources/developer-communications",
+          url: "resources/developer-communications?parent=chainlinkFunctions",
         },
         {
           title: "Getting Help",
-          url: "resources/getting-help",
+          url: "resources/getting-help?parent=chainlinkFunctions",
         },
         {
           title: "Hackathon Resources",
-          url: "resources/hackathon-resources",
+          url: "resources/hackathon-resources?parent=chainlinkFunctions",
         },
         {
           title: "Contributing to Chainlink",
-          url: "resources/contributing-to-chainlink",
+          url: "resources/contributing-to-chainlink?parent=chainlinkFunctions",
         },
       ],
     },
@@ -607,43 +631,43 @@ export const SIDEBAR = {
       contents: [
         {
           title: "Videos and Tutorials",
-          url: "getting-started/other-tutorials",
+          url: "getting-started/other-tutorials?parent=vrf",
         },
         {
           title: "Acquire testnet LINK",
-          url: "resources/acquire-link",
+          url: "resources/acquire-link?parent=vrf",
         },
         {
           title: "Fund Your Contracts",
-          url: "resources/fund-your-contract",
+          url: "resources/fund-your-contract?parent=vrf",
         },
         {
           title: "Install Frameworks",
-          url: "resources/create-a-chainlinked-project",
+          url: "resources/create-a-chainlinked-project?parent=vrf",
         },
         {
           title: "LINK Token Contracts",
-          url: "resources/link-token-contracts",
+          url: "resources/link-token-contracts?parent=vrf",
         },
         {
           title: "Bridges and Associated Risks",
-          url: "resources/bridge-risks",
+          url: "resources/bridge-risks?parent=vrf",
         },
         {
           title: "Developer Communications",
-          url: "resources/developer-communications",
+          url: "resources/developer-communications?parent=vrf",
         },
         {
           title: "Getting Help",
-          url: "resources/getting-help",
+          url: "resources/getting-help?parent=vrf",
         },
         {
           title: "Hackathon Resources",
-          url: "resources/hackathon-resources",
+          url: "resources/hackathon-resources?parent=vrf",
         },
         {
           title: "Contributing to Chainlink",
-          url: "resources/contributing-to-chainlink",
+          url: "resources/contributing-to-chainlink?parent=vrf",
         },
       ],
     },
@@ -715,34 +739,43 @@ export const SIDEBAR = {
       contents: [
         {
           title: "Videos and Tutorials",
-          url: "getting-started/other-tutorials",
+          url: "getting-started/other-tutorials?parent=anyApi",
         },
-        { title: "Acquire testnet LINK", url: "resources/acquire-link" },
+        {
+          title: "Acquire testnet LINK",
+          url: "resources/acquire-link?parent=anyApi",
+        },
         {
           title: "Fund Your Contracts",
-          url: "resources/fund-your-contract",
+          url: "resources/fund-your-contract?parent=anyApi",
         },
         {
           title: "Install Frameworks",
-          url: "resources/create-a-chainlinked-project",
+          url: "resources/create-a-chainlinked-project?parent=anyApi",
         },
         {
           title: "LINK Token Contracts",
-          url: "resources/link-token-contracts",
+          url: "resources/link-token-contracts?parent=anyApi",
         },
         {
           title: "Bridges and Associated Risks",
-          url: "resources/bridge-risks",
+          url: "resources/bridge-risks?parent=anyApi",
         },
         {
           title: "Developer Communications",
-          url: "resources/developer-communications",
+          url: "resources/developer-communications?parent=anyApi",
         },
-        { title: "Getting Help", url: "resources/getting-help" },
-        { title: "Hackathon Resources", url: "resources/hackathon-resources" },
+        {
+          title: "Getting Help",
+          url: "resources/getting-help?parent=anyApi",
+        },
+        {
+          title: "Hackathon Resources",
+          url: "resources/hackathon-resources?parent=anyApi",
+        },
         {
           title: "Contributing to Chainlink",
-          url: "resources/contributing-to-chainlink",
+          url: "resources/contributing-to-chainlink?parent=anyApi",
         },
       ],
     },
