@@ -12,7 +12,8 @@ setup: |
 ---
 
 :::note[Prerequisites]
-This guide assumes you have a running Chainlink node. See the [Running a Chainlink Node locally](/chainlink-nodes/v1/running-a-chainlink-node) guide to learn how to run a Chainlink node.
+This guide assumes you have a running Chainlink node. See the [Running a Chainlink Node locally](/chainlink-nodes/v1/running-a-chainlink-node) guide to learn how to run a Chainlink node. **Note**: For this example to work, you must use Chainlink node version _1.12.0_ or above.
+
 Also, you must be familiar with these concepts:
 
 - [Forwarder](/chainlink-nodes/contracts/forwarder) contracts.
@@ -22,7 +23,7 @@ Also, you must be familiar with these concepts:
 
 <ClickToZoom src='/images/chainlink-nodes/node-operators/forwarder/forwarder-directrequest-example.png' />
 
-In this tutorial, you will configure your Chainlink node with a simple transaction-sending strategy on the Goerli testnet:
+In this tutorial, you will configure your Chainlink node with a simple transaction-sending strategy on the Sepolia testnet:
 
 - Your node has two externally owned accounts (EOA).
 - Your node has two [direct request](/chainlink-nodes/oracle-jobs/job-types/direct_request) jobs. One job returns _uint256_, and the other returns _string_.
@@ -41,7 +42,7 @@ On your terminal, check that your Chainlink node is running:
  docker ps -a -f name=chainlink
 
  CONTAINER ID   IMAGE                            COMMAND               CREATED         STATUS                   PORTS                    NAMES
- feff39f340d6   smartcontract/chainlink:1.10.0   "chainlink local n"   4 minutes ago   Up 4 minutes (healthy)   0.0.0.0:6688->6688/tcp   chainlink
+ feff39f340d6   smartcontract/chainlink:1.12.0   "chainlink local n"   4 minutes ago   Up 4 minutes (healthy)   0.0.0.0:6688->6688/tcp   chainlink
 ```
 
 Your Chainlink node's UI interface is accessible on [http://localhost:6688](http://localhost:6688).
@@ -51,7 +52,7 @@ If you don't have a running Chainlink node, follow the [Running a Chainlink Node
 
 Use the [operator factory](/chainlink-nodes/contracts/operatorfactory) to deploy both the [forwarder](/chainlink-nodes/contracts/forwarder) and the [operator](/chainlink-nodes/contracts/operator) contracts. You can find the factory address for each network on the [addresses](/chainlink-nodes/contracts/addresses) page.
 
-1. Click on [0x8204c193ade6a1bb59bef25b6a310e417953013f](https://goerli.etherscan.io/address/0x8204c193ade6a1bb59bef25b6a310e417953013f) to display the factory in the block explorer.
+1. Click on [0x447Fd5eC2D383091C22B8549cb231a3bAD6d3fAf](https://sepolia.etherscan.io/address/0x447Fd5eC2D383091C22B8549cb231a3bAD6d3fAf) to display the factory in the block explorer.
 1. Click on _Contract_ then _Write Contract_ to display the _write_ transactions on the factory.
 
    <ClickToZoom src='/images/chainlink-nodes/node-operators/forwarder/factorytransactions.jpg' />
@@ -66,11 +67,11 @@ Use the [operator factory](/chainlink-nodes/contracts/operatorfactory) to deploy
 
       <ClickToZoom src='/images/chainlink-nodes/node-operators/forwarder/deployfromfactorysuccess.jpg' />
 
-1. Click on _Internal Txns_. You will find two internal _create_ transactions. The first corresponds to the Operator contract deployment, while the second corresponds to the Forwarder contract deployment.
+1. Click on _Logs_ to display the list of transaction events. Notice the `OperatorCreated` and `AuthorizedForwarderCreated` events.
 
    <ClickToZoom src='/images/chainlink-nodes/node-operators/forwarder/factorycreatetransactions.jpg' />
 
-1. Right-click on each contract (_To_ column) and open it in a new tab.
+1. Right-click on each contract address and open it in a new tab.
 1. At this point, you should have one tab displaying the Operator contract and one tab displaying the Forwarder contract.
 
    <ClickToZoom src='/images/chainlink-nodes/node-operators/forwarder/operator.jpg' />
@@ -111,15 +112,15 @@ Use the [operator factory](/chainlink-nodes/contracts/operatorfactory) to deploy
    ```shell
    🔑 ETH keys
    -------------------------------------------------------------------------------------------------
-   Address:           0x3218AB3Bf9B2AA2d440a9Ee2c773d1D4FC703Ef1
-   EVM Chain ID:      5
+   Address:           0x71a1Eb6534054E75F0D6fD0A3B0A336228DD5cFc
+   EVM Chain ID:      11155111
    Next Nonce:        0
    ETH:               0.000000000000000000
    LINK:              0
    Disabled:          false
-   Created:           2022-12-21 10:21:48.51936 +0000 UTC
-   Updated:           2022-12-21 10:21:48.51936 +0000 UTC
-   Max Gas Price Wei: 115792089237316195423570985008687907853269984665640564039457584007913129639935
+   Created:           2023-03-02 09:28:26.872791 +0000 UTC
+   Updated:           2023-03-02 09:28:26.872791 +0000 UTC
+   Max Gas Price Wei: 115792089237316195423570985008687907853269984665640564039457584007913129639935chainlink@22480bec8986
    ```
 
 1. Create a new EOA for your Chainlink node:
@@ -131,17 +132,17 @@ Use the [operator factory](/chainlink-nodes/contracts/operatorfactory) to deploy
    ```shell
    ETH key created.
 
-    🔑 New key
-    -------------------------------------------------------------------------------------------------
-    Address:           0x0B87B9Ab848C729F152D87bBEbD4B9708757a59F
-    EVM Chain ID:      5
-    Next Nonce:        0
-    ETH:               0.000000000000000000
-    LINK:              0
-    Disabled:          false
-    Created:           2022-12-21 10:33:12.755408 +0000 UTC
-    Updated:           2022-12-21 10:33:12.755408 +0000 UTC
-    Max Gas Price Wei: 115792089237316195423570985008687907853269984665640564039457584007913129639935
+   🔑 New key
+   -------------------------------------------------------------------------------------------------
+   Address:           0x259c49E65644a020C2A642260a4ffB0CD862cb24
+   EVM Chain ID:      11155111
+   Next Nonce:        0
+   ETH:               0.000000000000000000
+   LINK:              0
+   Disabled:          false
+   Created:           2023-03-02 11:36:48.717074 +0000 UTC
+   Updated:           2023-03-02 11:36:48.717074 +0000 UTC
+   Max Gas Price Wei: 115792089237316195423570985008687907853269984665640564039457584007913129639935
    ```
 
 1. At this point, there are two EOAs:
@@ -152,34 +153,34 @@ Use the [operator factory](/chainlink-nodes/contracts/operatorfactory) to deploy
 
    ```shell
    🔑 ETH keys
-    -------------------------------------------------------------------------------------------------
-    Address:           0x0B87B9Ab848C729F152D87bBEbD4B9708757a59F
-    EVM Chain ID:      5
-    Next Nonce:        0
-    ETH:               0.000000000000000000
-    LINK:              0
-    Disabled:          false
-    Created:           2022-12-21 10:33:12.755408 +0000 UTC
-    Updated:           2022-12-21 10:33:12.755408 +0000 UTC
-    Max Gas Price Wei: 115792089237316195423570985008687907853269984665640564039457584007913129639935
-    -------------------------------------------------------------------------------------------------
-    Address:           0x3218AB3Bf9B2AA2d440a9Ee2c773d1D4FC703Ef1
-    EVM Chain ID:      5
-    Next Nonce:        0
-    ETH:               0.000000000000000000
-    LINK:              0
-    Disabled:          false
-    Created:           2022-12-21 10:21:48.51936 +0000 UTC
-    Updated:           2022-12-21 10:21:48.51936 +0000 UTC
-    Max Gas Price Wei: 115792089237316195423570985008687907853269984665640564039457584007913129639935
+   -------------------------------------------------------------------------------------------------
+   Address:           0x259c49E65644a020C2A642260a4ffB0CD862cb24
+   EVM Chain ID:      11155111
+   Next Nonce:        0
+   ETH:               0.000000000000000000
+   LINK:              0
+   Disabled:          false
+   Created:           2023-03-02 11:36:48.717074 +0000 UTC
+   Updated:           2023-03-02 11:36:48.717074 +0000 UTC
+   Max Gas Price Wei: 115792089237316195423570985008687907853269984665640564039457584007913129639935
+   -------------------------------------------------------------------------------------------------
+   Address:           0x71a1Eb6534054E75F0D6fD0A3B0A336228DD5cFc
+   EVM Chain ID:      11155111
+   Next Nonce:        0
+   ETH:               0.000000000000000000
+   LINK:              0
+   Disabled:          false
+   Created:           2023-03-02 09:28:26.872791 +0000 UTC
+   Updated:           2023-03-02 09:28:26.872791 +0000 UTC
+   Max Gas Price Wei: 115792089237316195423570985008687907853269984665640564039457584007913129639935chainlink@22480bec8986
    ```
 
-1. Fund the two addresses. You can obtain test ETH from several [faucets](/resources/link-token-contracts/). For this tutorial to work, you will have to fund the node's Ethereum address with Goerli ETH.
+1. Fund the two addresses. You can obtain test ETH from several [faucets](/resources/link-token-contracts/). Fund the two addresses with _0.5_ Sepolia ETH.
 1. Note the two addresses, as you will need them later.
 
 ### Activate Forwarder
 
-1. In the shell of your Chainlink node, enable the forwarder using the Chainlink cli. Replace `forwarderAddress` with the forwarder address (created by the factory) and chainId with the EVM chain Id (`5` for Goerli) :
+1. In the shell of your Chainlink node, enable the forwarder using the Chainlink cli. Replace `forwarderAddress` with the forwarder address (created by the factory) and chainId with the EVM chain Id (`11155111` for Sepolia):
 
    ```shell
    chainlink forwarders track --address forwarderAddress --evmChainID chainId
@@ -188,21 +189,27 @@ Use the [operator factory](/chainlink-nodes/contracts/operatorfactory) to deploy
    In this example, the command is:
 
    ```shell
-   chainlink forwarders track --address 0xa3a10AB6A41eA19637Bb21b7decDA2d77138DfBa --evmChainID 5
+   chainlink forwarders track --address 0xA3f07D6773514480b918C2742b027b3acD9E44fA --evmChainID 11155111
    ```
 
    ```shell
    Forwarder created
-    ------------------------------------------------------
-    ID:         1
-    Address:    0xa3a10AB6A41eA19637Bb21b7decDA2d77138DfBa
-    Chain ID:   5
-    Created At: 2022-12-22T16:06:18Zchainlink@1d095e4ceb09
+   ------------------------------------------------------
+   ID:         1
+   Address:    0xA3f07D6773514480b918C2742b027b3acD9E44fA
+   Chain ID:   11155111
+   Created At: 2023-03-02T11:41:43Zchainlink@22480bec8986
    ```
 
-1. Restart node with env [ETH_USE_FORWARDERS](/chainlink-nodes/v1/configuration#eth_use_forwarders)=true:
+1. Exit the shell of your Chainlink node:
 
-   1. Stop your Chainlink node
+   ```shell
+   exit
+   ```
+
+1. Restart your Chainlink node with env [ETH_USE_FORWARDERS](/chainlink-nodes/v1/configuration#eth_use_forwarders)=true:
+
+   1. Stop your Chainlink node:
 
       ```shell
       docker stop chainlink && docker rm chainlink
@@ -211,13 +218,13 @@ Use the [operator factory](/chainlink-nodes/contracts/operatorfactory) to deploy
    1. Update your environment file. If you followed [Running a Chainlink Node locally](/chainlink-nodes/v1/running-a-chainlink-node) guide then add `ETH_USE_FORWARDERS=true`to your environment file:
 
       ```shell
-      echo "ETH_USE_FORWARDERS=true" >> ~/.chainlink-goerli/.env
+      echo "ETH_USE_FORWARDERS=true" >> ~/.chainlink-sepolia/.env
       ```
 
-   1. Start the Chainlink node
+   1. Start the Chainlink node:
 
       ```shell
-      cd ~/.chainlink-goerli && docker run --name chainlink  -v ~/.chainlink-goerli:/chainlink -it --env-file=.env -p 6688:6688 smartcontract/chainlink:1.10.0 local n
+      cd ~/.chainlink-sepolia && docker run --name chainlink  -v ~/.chainlink-sepolia:/chainlink -it --env-file=.env -p 6688:6688 smartcontract/chainlink:1.12.0 local n
       ```
 
    1. You will be prompted to enter the key store password:
@@ -236,16 +243,16 @@ Use the [operator factory](/chainlink-nodes/contracts/operatorfactory) to deploy
 As explained in the [Forwarder](/chainlink-nodes/contracts/forwarder) page:
 
 - The owner of a forwarder contract is an [operator](/chainlink-nodes/contracts/operator) contract. The owner of the operator contract is a more secure address, such as a hardware wallet or a multisig wallet. Therefore, node operators can manage a set of forwarder contracts through an operator contract using a secure account such as hardware or a multisig wallet.
-- Forwarder contracts distinguish between owner and authorized senders. Authorized senders are hot wallets (Chainlink nodes' EOAs).
+- Forwarder contracts distinguish between owners and authorized senders. Authorized senders are hot wallets (Chainlink nodes' EOAs).
 
 For this example to run, you will have to:
 
 - Allow the forwarder contract to call the operator's [fulfillOracleRequest2](/chainlink-nodes/contracts/operator#fulfilloraclerequest2) function by calling the [setauthorizedsenders](/chainlink-nodes/contracts/receiver#setauthorizedsenders) function on the operator contract. Specify the forwarder address as a parameter.
 - Allow the two Chainlink node EOAs to call the forwarder's [forward](/chainlink-nodes/contracts/forwarder#forward) function. Because the operator contract owns the forwarder contract, call [acceptAuthorizedReceivers](/chainlink-nodes/contracts/operator#acceptauthorizedreceivers) on the operator contract. Specify the forwarder contract address and the two Chainlink node EOAs as parameters. This call makes the operator contract accept ownership of the forwarder contract and authorizes the Chainlink node EOAs to call the forwarder contract by calling [setauthorizedsenders](/chainlink-nodes/contracts/receiver#setauthorizedsenders).
 
-### Whitelist the forwarder
+### Whitelist the Forwarder
 
-In the blockchain explorer, view the operator contract and call the `setAuthorizedSenders` method with the address of your forwarder contract. The parameter is an array. For example, `["0xa3a10AB6A41eA19637Bb21b7decDA2d77138DfBa"]`. Metamask prompts you to confirm the transaction.
+In the blockchain explorer, view the operator contract and call the `setAuthorizedSenders` method with the address of your forwarder contract. The parameter is an array. For example, `["0xA3f07D6773514480b918C2742b027b3acD9E44fA"]`. Metamask prompts you to confirm the transaction.
 
 <ClickToZoom src='/images/chainlink-nodes/node-operators/forwarder/operatorsetauthorizedsenders.jpg' />
 
@@ -253,8 +260,8 @@ In the blockchain explorer, view the operator contract and call the `setAuthoriz
 
 In the blockchain explorer, view the operator contract and call the `acceptAuthorizedReceivers` method with the following parameters:
 
-- `targets`: Specify an array of forwarder addresses. For example, `["0xa3a10AB6A41eA19637Bb21b7decDA2d77138DfBa"]`
-- `sender`: Specify an array with the two Chainlink node EOAs. For example, `["0x0B87B9Ab848C729F152D87bBEbD4B9708757a59F","0x3218AB3Bf9B2AA2d440a9Ee2c773d1D4FC703Ef1"]`.
+- `targets`: Specify an array of forwarder addresses. For example, `["0xA3f07D6773514480b918C2742b027b3acD9E44fA"]`
+- `sender`: Specify an array with the two Chainlink node EOAs. For example, `["0x259c49E65644a020C2A642260a4ffB0CD862cb24","0x71a1Eb6534054E75F0D6fD0A3B0A336228DD5cFc"]`.
 
 Metamask prompts you to confirm the transaction.
 
@@ -264,11 +271,11 @@ Metamask prompts you to confirm the transaction.
 
 This section is similar to the [Fulfilling Requests](/chainlink-nodes/v1/fulfilling-requests) guide.
 
-1. In the Chainlink Operator UI on the **Jobs** tab, click **New Job**.
+1. Open the Chainlink Operator UI, then on the **Jobs** tab, click **New Job**.
 1. Create the `uint256` job. Replace:
 
    - `YOUR_OPERATOR_CONTRACT_ADDRESS` with the address of your deployed operator contract address.
-   - `EOA_ADDRESS` by the **first** Chainlink node EOA.
+   - `EOA_ADDRESS` with the **first** Chainlink node EOA.
 
      <CodeSample src="samples/ChainlinkNodes/forwarder/get-uint256.toml"/>
 
@@ -291,13 +298,13 @@ Note that both jobs have the attribute `forwardingAllowed = true`. This attribut
 
 1. Open [APIConsumerForwarder.sol](https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/APIConsumerForwarder.sol) in the Remix IDE.
 
-1. Note that `setChainlinkToken(0x326C977E6efc84E512bB9C30f76E30c160eD06FB)` is configured for _Goerli_.
+1. Note that `setChainlinkToken(0x779877A7B0D9E8603169DdbD7836e478b4624789)` is configured for _Sepolia_.
 
 1. On the **Compiler** tab, click the **Compile** button for `APIConsumerForwarder.sol`.
 
 1. On the **Deploy and Run** tab, configure the following settings:
 
-   - Select _Injected Provider_ as your environment. Make sure your metamask is connected to Goerli.
+   - Select _Injected Provider_ as your environment. Make sure your metamask is connected to Sepolia.
    - Select _APIConsumerForwarder_ from the **Contract** menu.
 
 1. Click **Deploy**. MetaMask prompts you to confirm the transaction.
