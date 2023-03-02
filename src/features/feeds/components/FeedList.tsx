@@ -153,7 +153,7 @@ export const FeedList = ({
                     <label>
                       <input
                         type="checkbox"
-                        className="extra"
+                        style="width:15px;height:15px;display:inline;"
                         checked={showExtraDetails}
                         onChange={() => setShowExtraDetails((old) => !old)}
                       />{" "}
