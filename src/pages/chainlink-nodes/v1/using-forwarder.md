@@ -48,42 +48,9 @@ On your terminal, check that your Chainlink node is running:
 Your Chainlink node's UI interface is accessible on [http://localhost:6688](http://localhost:6688).
 If you don't have a running Chainlink node, follow the [Running a Chainlink Node locally](/chainlink-nodes/v1/running-a-chainlink-node) guide.
 
-## Deploy Operator and Forwarder
+## Set up multiple EOAs
 
-Use the [operator factory](/chainlink-nodes/contracts/operatorfactory) to deploy both the [forwarder](/chainlink-nodes/contracts/forwarder) and the [operator](/chainlink-nodes/contracts/operator) contracts. You can find the factory address for each network on the [addresses](/chainlink-nodes/contracts/addresses) page.
-
-1. Click on [0x447Fd5eC2D383091C22B8549cb231a3bAD6d3fAf](https://sepolia.etherscan.io/address/0x447Fd5eC2D383091C22B8549cb231a3bAD6d3fAf) to display the factory in the block explorer.
-1. Click on _Contract_ then _Write Contract_ to display the _write_ transactions on the factory.
-
-   <ClickToZoom src='/images/chainlink-nodes/node-operators/forwarder/factorytransactions.jpg' />
-
-1. Click on _Connect to Web3_ to connect your wallet.
-   <ClickToZoom src='/images/chainlink-nodes/node-operators/forwarder/factorytransactionsconnected.jpg' />
-
-1. Click on `deployNewOperatorAndForwarder`. Metamask prompts you to confirm the transaction.
-
-1. Click _View your transaction_. _Etherscan_ will open a new tab. Wait for the transaction to be successful.
-   <ClickToZoom src='/images/chainlink-nodes/node-operators/forwarder/factoryviewtransaction.jpg' />
-
-      <ClickToZoom src='/images/chainlink-nodes/node-operators/forwarder/deployfromfactorysuccess.jpg' />
-
-1. Click on _Logs_ to display the list of transaction events. Notice the `OperatorCreated` and `AuthorizedForwarderCreated` events.
-
-   <ClickToZoom src='/images/chainlink-nodes/node-operators/forwarder/factorycreatetransactions.jpg' />
-
-1. Right-click on each contract address and open it in a new tab.
-1. At this point, you should have one tab displaying the Operator contract and one tab displaying the Forwarder contract.
-
-   <ClickToZoom src='/images/chainlink-nodes/node-operators/forwarder/operator.jpg' />
-      <ClickToZoom src='/images/chainlink-nodes/node-operators/forwarder/forwarder.jpg' />
-
-1. Record the operator and forwarder addresses. You will need them later.
-
-## Chainlink node setup
-
-### Multiple EOAs
-
-1. Accessing the shell of your Chainlink node container:
+1. Access the shell of your Chainlink node container:
 
    ```shell
    docker exec -it chainlink /bin/bash
@@ -178,69 +145,36 @@ Use the [operator factory](/chainlink-nodes/contracts/operatorfactory) to deploy
 1. Fund the two addresses. You can obtain test ETH from several [faucets](/resources/link-token-contracts/). Fund the two addresses with _0.5_ Sepolia ETH.
 1. Note the two addresses, as you will need them later.
 
-### Activate Forwarder
+## Deploy Operator and Forwarder
 
-1. In the shell of your Chainlink node, enable the forwarder using the Chainlink cli. Replace `forwarderAddress` with the forwarder address (created by the factory) and chainId with the EVM chain Id (`11155111` for Sepolia):
+Use the [operator factory](/chainlink-nodes/contracts/operatorfactory) to deploy both the [forwarder](/chainlink-nodes/contracts/forwarder) and the [operator](/chainlink-nodes/contracts/operator) contracts. You can find the factory address for each network on the [addresses](/chainlink-nodes/contracts/addresses) page.
 
-   ```shell
-   chainlink forwarders track --address forwarderAddress --evmChainID chainId
-   ```
+1. Click on [0x447Fd5eC2D383091C22B8549cb231a3bAD6d3fAf](https://sepolia.etherscan.io/address/0x447Fd5eC2D383091C22B8549cb231a3bAD6d3fAf) to display the factory in the block explorer.
+1. Click on _Contract_ then _Write Contract_ to display the _write_ transactions on the factory.
 
-   In this example, the command is:
+   <ClickToZoom src='/images/chainlink-nodes/node-operators/forwarder/factorytransactions.jpg' />
 
-   ```shell
-   chainlink forwarders track --address 0xA3f07D6773514480b918C2742b027b3acD9E44fA --evmChainID 11155111
-   ```
+1. Click on _Connect to Web3_ to connect your wallet.
+   <ClickToZoom src='/images/chainlink-nodes/node-operators/forwarder/factorytransactionsconnected.jpg' />
 
-   ```shell
-   Forwarder created
-   ------------------------------------------------------
-   ID:         1
-   Address:    0xA3f07D6773514480b918C2742b027b3acD9E44fA
-   Chain ID:   11155111
-   Created At: 2023-03-02T11:41:43Zchainlink@22480bec8986
-   ```
+1. Click on `deployNewOperatorAndForwarder`. Metamask prompts you to confirm the transaction.
 
-1. Exit the shell of your Chainlink node:
+1. Click _View your transaction_. _Etherscan_ will open a new tab. Wait for the transaction to be successful.
+   <ClickToZoom src='/images/chainlink-nodes/node-operators/forwarder/factoryviewtransaction.jpg' />
 
-   ```shell
-   exit
-   ```
+      <ClickToZoom src='/images/chainlink-nodes/node-operators/forwarder/deployfromfactorysuccess.jpg' />
 
-1. Restart your Chainlink node with env [ETH_USE_FORWARDERS](/chainlink-nodes/v1/configuration#eth_use_forwarders)=true:
+1. Click on _Logs_ to display the list of transaction events. Notice the `OperatorCreated` and `AuthorizedForwarderCreated` events.
 
-   1. Stop your Chainlink node:
+   <ClickToZoom src='/images/chainlink-nodes/node-operators/forwarder/factorycreatetransactions.jpg' />
 
-      ```shell
-      docker stop chainlink && docker rm chainlink
-      ```
+1. Right-click on each contract address and open it in a new tab.
+1. At this point, you should have one tab displaying the Operator contract and one tab displaying the Forwarder contract.
 
-   1. Update your environment file. If you followed [Running a Chainlink Node locally](/chainlink-nodes/v1/running-a-chainlink-node) guide then add `ETH_USE_FORWARDERS=true`to your environment file:
+   <ClickToZoom src='/images/chainlink-nodes/node-operators/forwarder/operator.jpg' />
+      <ClickToZoom src='/images/chainlink-nodes/node-operators/forwarder/forwarder.jpg' />
 
-      ```shell
-      echo "ETH_USE_FORWARDERS=true
-      FEATURE_LOG_POLLER=true" >> ~/.chainlink-sepolia/.env
-      ```
-
-      - `ETH_USE_FORWARDERS` enables sending transactions through forwarder contracts.
-      - `FEATURE_LOG_POLLER` enables polling forwarder contracts logs to detect any changes to the authorized senders.
-
-   1. Start the Chainlink node:
-
-      ```shell
-      cd ~/.chainlink-sepolia && docker run --name chainlink  -v ~/.chainlink-sepolia:/chainlink -it --env-file=.env -p 6688:6688 smartcontract/chainlink:1.12.0 local n
-      ```
-
-   1. You will be prompted to enter the key store password:
-
-      ```shell
-      2022-12-22T16:18:04.706Z [WARN]  P2P_LISTEN_PORT was not set, listening on random port 59763. A new random port will be generated on every boot, for stability it is recommended to set P2P_LISTEN_PORT to a fixed value in your environment config/p2p_v1_config.go:84       logger=1.10.0@aeb8c80.GeneralConfig p2pPort=59763
-      2022-12-22T16:18:04.708Z [DEBUG] Off-chain reporting disabled                       chainlink/application.go:373     logger=1.10.0@aeb8c80
-      2022-12-22T16:18:04.709Z [DEBUG] Off-chain reporting v2 disabled                    chainlink/application.go:422     logger=1.10.0@aeb8c80
-      Enter key store password:
-      ```
-
-   1. Enter the key store password and wait for your Chainlink node to start.
+1. Record the operator and forwarder addresses. You will need them later.
 
 ## Access control setup
 
@@ -270,6 +204,68 @@ In the blockchain explorer, view the operator contract and call the `acceptAutho
 Metamask prompts you to confirm the transaction.
 
 <ClickToZoom src='/images/chainlink-nodes/node-operators/forwarder/acceptAuthorizedReceivers.jpg' />
+
+## Activate Forwarder
+
+1. In the shell of your Chainlink node, enable the forwarder using the Chainlink cli. Replace `forwarderAddress` with the forwarder address (created by the factory) and chainId with the EVM chain Id (`11155111` for Sepolia):
+
+   ```shell
+   chainlink forwarders track --address forwarderAddress --evmChainID chainId
+   ```
+
+   In this example, the command is:
+
+   ```shell
+   chainlink forwarders track --address 0xA3f07D6773514480b918C2742b027b3acD9E44fA --evmChainID 11155111
+   ```
+
+   ```shell
+   Forwarder created
+   ------------------------------------------------------
+   ID:         1
+   Address:    0xA3f07D6773514480b918C2742b027b3acD9E44fA
+   Chain ID:   11155111
+   Created At: 2023-03-02T11:41:43Zchainlink@22480bec8986
+   ```
+
+1. Exit the shell of your Chainlink node:
+
+   ```shell
+   exit
+   ```
+
+1. Stop your Chainlink node:
+
+   ```shell
+   docker stop chainlink && docker rm chainlink
+   ```
+
+1. Update your environment file. If you followed [Running a Chainlink Node locally](/chainlink-nodes/v1/running-a-chainlink-node) guide then add `ETH_USE_FORWARDERS=true` and `FEATURE_LOG_POLLER=true` to your environment file:
+
+   ```shell
+   echo "ETH_USE_FORWARDERS=true
+   FEATURE_LOG_POLLER=true" >> ~/.chainlink-sepolia/.env
+   ```
+
+   - `ETH_USE_FORWARDERS` enables sending transactions through forwarder contracts.
+   - `FEATURE_LOG_POLLER` enables polling forwarder contracts logs to detect any changes to the authorized senders.
+
+1. Start the Chainlink node:
+
+   ```shell
+   cd ~/.chainlink-sepolia && docker run --name chainlink  -v ~/.chainlink-sepolia:/chainlink -it --env-file=.env -p 6688:6688 smartcontract/chainlink:1.12.0 local n
+   ```
+
+1. You will be prompted to enter the key store password:
+
+   ```shell
+   2022-12-22T16:18:04.706Z [WARN]  P2P_LISTEN_PORT was not set, listening on random port 59763. A new random port will be generated on every boot, for stability it is recommended to set P2P_LISTEN_PORT to a fixed value in your environment config/p2p_v1_config.go:84       logger=1.10.0@aeb8c80.GeneralConfig p2pPort=59763
+   2022-12-22T16:18:04.708Z [DEBUG] Off-chain reporting disabled                       chainlink/application.go:373     logger=1.10.0@aeb8c80
+   2022-12-22T16:18:04.709Z [DEBUG] Off-chain reporting v2 disabled                    chainlink/application.go:422     logger=1.10.0@aeb8c80
+   Enter key store password:
+   ```
+
+1. Enter the key store password and wait for your Chainlink node to start.
 
 ## Create directRequest Jobs
 
