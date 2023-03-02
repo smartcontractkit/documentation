@@ -8,7 +8,6 @@ import RightSidebar from "../components/RightSidebar/RightSidebar.astro"
 import * as CONFIG from "../config"
 import { NewsletterCTA } from "../components/Footer/NewsletterCTA.tsx"
 import Footer from "~/components/Footer/Footer.astro"
-import { SIDEBAR } from "../config"
 
 const { content = {}, frontmatter } = Astro.props
 
@@ -24,20 +23,6 @@ const formattedContentTitle = content.title
 const canonicalURL = new URL(Astro.url.pathname, Astro.site)
 
 const includeLinkToWalletScript = !!Astro.props?.content?.metadata?.linkToWallet
-
-function getSidebarSections(section: string) {
-  if (section === "global") {
-    const globalSidebar = Object.keys(SIDEBAR).map((key) => {
-      let content = SIDEBAR[key]
-      return content.map((entry) => ({ ...entry }))
-    })
-    console.log(globalSidebar)
-
-    return globalSidebar
-  }
-
-  return !!SIDEBAR[content?.section] ? SIDEBAR[content?.section] : []
-}
 ---
 
 <html dir={content.dir ?? "ltr"} lang={content.lang ?? "en-us"} class="initial">
