@@ -14,15 +14,6 @@ const { content = {}, frontmatter } = Astro.props
 // Astro.props?.headings is for .mdx pages, Astro.props?.content?.astro.headings is for .md pages
 const headings = Astro.props?.headings || Astro.props?.content?.astro.headings
 
-// Handle pages marked as "section: global"
-// If the page is global, use the previous section.
-// Else, set the new section as the last viewed section.
-// Default to "gettingStarted" for initial opening of global pages.
-if (content.section === "global") {
-  content.section = localStorage.getItem("lastSection") ?? "gettingStarted"
-}
-localStorage.setItem("lastSection", content.section)
-
 const currentPage = new URL(Astro.request.url).pathname
 const currentFile = `src/pages${currentPage.replace(/\/$/, "")}.${frontmatter?.isMdx ? "mdx" : "md"}`
 const githubEditUrl = CONFIG.GITHUB_EDIT_URL + currentFile
