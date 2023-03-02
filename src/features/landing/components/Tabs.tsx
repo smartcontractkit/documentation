@@ -1,15 +1,12 @@
 /** @jsxImportSource preact */
-import h from "preact"
 import { useState } from "preact/hooks"
 import { clsx } from "~/lib"
 import tabs from "./Tabs.module.css"
 import { ProductCard } from "./ProductCard"
-import solanaIcon from "../assets/solana-chains.svg"
-import ethereumIcon from "../assets/evm-chains.svg"
-import { evmProducts, solanaProducts } from "../data"
+import { evmProducts } from "../data"
 
 export const Tabs = () => {
-  const [tabId, setTabId] = useState("evm-products")
+  const [tabId] = useState("evm-products")
 
   return (
     <>
