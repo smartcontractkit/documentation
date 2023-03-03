@@ -5,7 +5,7 @@ import feedList from "./FeedList.module.css"
 import { clsx } from "~/lib"
 import button from "@chainlink/design-system/button.module.css"
 import { updateTableOfContents } from "~/components/RightSidebar/TableOfContents/tocStore"
-import { Chain, CHAINS } from "../data/chains"
+import { Chain, CHAINS, ALL_CHAINS } from "../data/chains"
 import { useGetChainMetadata } from "./useGetChainMetadata"
 import { ChainMetadata } from "../api"
 import useQueryString from "~/hooks/useQueryString"
@@ -21,7 +21,7 @@ export const FeedList = ({
   ecosystem?: string
   initialCache?: Record<string, ChainMetadata>
 }) => {
-  const chains = CHAINS
+  const chains = ecosystem === "deprecating" ? ALL_CHAINS : CHAINS
 
   const [selectedChain, setSelectedChain] = useQueryString("network", chains[0].page)
   const [showExtraDetails, setShowExtraDetails] = useState(false)

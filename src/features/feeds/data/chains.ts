@@ -1,6 +1,6 @@
 import { ChainMetadata } from "../api"
 
-type ChainTags = ("default" | "solana" | "proofOfReserve" | "nftFloorPrice")[]
+type ChainTags = ("default" | "proofOfReserve" | "nftFloorPrice")[]
 export interface ChainNetwork {
   name: string
   explorerUrl: string
