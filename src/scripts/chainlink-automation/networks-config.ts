@@ -2,8 +2,9 @@ import { automationAddresses, chainlinkAutomationConfig as currentConfig } from 
 import { ChainlinkAutomationConfigs, GetStateResponse } from "@features/chainlink-automation/types"
 import { SupportedChain } from "@config"
 import { getWeb3Provider } from "@features/utils"
-import { automationRegistryBaseInterfaceABI } from "@abi"
-import { ethers } from "ethers"
+// eslint-disable-next-line camelcase
+import { KeeperRegistry, keeperRegistry1_3, keeperRegistry2_0 } from "@abi"
+import { ContractInterface, ethers } from "ethers"
 import { normalize } from "path"
 import { isEqual } from "lodash"
 import { writeFile } from "fs/promises"
@@ -11,8 +12,20 @@ import { format } from "prettier"
 
 const configToBePath = normalize("./src/features/chainlink-automation/data/chainlink-automation-configTOBE.json")
 
-const getChainlinkAutomationConfig = async (provider: ethers.providers.Provider, registryAddress: string) => {
-  const registry = new ethers.Contract(registryAddress, automationRegistryBaseInterfaceABI, provider)
+const getRegistryAbi = (supportedChain: SupportedChain) => {
+  if (supportedChain === "ETHEREUM_MAINNET") return KeeperRegistry
+  // eslint-disable-next-line camelcase
+  if (supportedChain === "ETHEREUM_SEPOLIA") return keeperRegistry2_0
+  // eslint-disable-next-line camelcase
+  return keeperRegistry1_3
+}
+
+const getChainlinkAutomationConfig = async (
+  provider: ethers.providers.Provider,
+  abi: ContractInterface,
+  registryAddress: string
+) => {
+  const registry = new ethers.Contract(registryAddress, abi, provider)
   const state = (await registry.getState()) as GetStateResponse
   const {
     paymentPremiumPPB,
@@ -48,6 +61,7 @@ const getChainlinkAutomationConfigs = async () => {
   const configs: ChainlinkAutomationConfigs = {}
   for (const key in automationAddresses) {
     const supportedChain = key as SupportedChain
+    const abi = getRegistryAbi(supportedChain) as ContractInterface
     const registryAddress = automationAddresses[key].registryAddress
     const provider = getWeb3Provider(supportedChain)
     if (!registryAddress) {
@@ -56,7 +70,7 @@ const getChainlinkAutomationConfigs = async () => {
       console.error(`Web3 provider not found for ${key}`)
     } else {
       try {
-        const config = await getChainlinkAutomationConfig(provider, registryAddress)
+        const config = await getChainlinkAutomationConfig(provider, abi, registryAddress)
         configs[key] = config
       } catch (error) {
         console.error(error)

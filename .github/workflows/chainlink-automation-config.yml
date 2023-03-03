@@ -28,14 +28,14 @@ jobs:
           set -x
           if test -f "./src/features/chainlink-automation/data/chainlink-automation-configTOBE.json"; then
             cp "./src/features/chainlink-automation/data/chainlink-automation-configTOBE.json" "./src/features/chainlink-automation/data/chainlink-automation-config.json"
-            echo "::set-output name=createPR::true"
+            echo "{createPR}={true}" >> $GITHUB_OUTPUT
             timestamp=$(date +%Y%m%d%H%M)
-            echo "::set-output name=timestamp::${timestamp}"
+            echo "{timestamp}={${timestamp}}" >> $GITHUB_OUTPUT
           fi
       - if: ${{ steps.compare_configs.outputs.createPR }}
         id: chainlink_automation_config_pr
         name: Create pull request
-        uses: peter-evans/create-pull-request@9825ae65b1cb54b543b938503728b432a0176d29 # v3.1.0
+        uses: peter-evans/create-pull-request@2b011faafdcbc9ceb11414d64d0573f37c774b04 # v4.2.3
         with:
           branch: 'chainlink_automation_config/pr-${{ steps.compare_configs.outputs.timestamp }}'
           commit-message: 'chainlink automation config updated'
