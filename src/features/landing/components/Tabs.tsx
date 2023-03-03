@@ -5,13 +5,10 @@ import { ProductCard } from "./ProductCard"
 import { evmProducts } from "../data"
 
 export const Tabs = () => {
-
   return (
     <>
       <div class={tabs.tabContent}>
-        <div
-          class={clsx(tabs.tabPane, tabs.active)}
-        >
+        <div class={clsx(tabs.tabPane, tabs.active)}>
           {evmProducts.map((props) => (
             <div class={tabs.tabElement}>
               <ProductCard {...props} />
