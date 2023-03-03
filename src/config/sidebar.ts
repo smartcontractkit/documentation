@@ -31,20 +31,18 @@ export const SIDEBAR = {
         {
           title: "Overview",
           url: "architecture-overview/architecture-overview?parent=gettingStarted",
-          children: [
-            {
-              title: "Basic Request Model",
-              url: "architecture-overview/architecture-request-model?parent=gettingStarted",
-            },
-            {
-              title: "Decentralized Data Model",
-              url: "architecture-overview/architecture-decentralized-model?parent=gettingStarted",
-            },
-            {
-              title: "Off-Chain Reporting",
-              url: "architecture-overview/off-chain-reporting?parent=gettingStarted",
-            },
-          ],
+        },
+        {
+          title: "Basic Request Model",
+          url: "architecture-overview/architecture-request-model?parent=gettingStarted",
+        },
+        {
+          title: "Decentralized Data Model",
+          url: "architecture-overview/architecture-decentralized-model?parent=gettingStarted",
+        },
+        {
+          title: "Off-Chain Reporting",
+          url: "architecture-overview/off-chain-reporting?parent=gettingStarted",
         },
       ],
     },
@@ -234,20 +232,18 @@ export const SIDEBAR = {
         {
           title: "Overview",
           url: "architecture-overview/architecture-overview?parent=dataFeeds",
-          children: [
-            {
-              title: "Basic Request Model",
-              url: "architecture-overview/architecture-request-model?parent=dataFeeds",
-            },
-            {
-              title: "Decentralized Data Model",
-              url: "architecture-overview/architecture-decentralized-model?parent=dataFeeds",
-            },
-            {
-              title: "Off-Chain Reporting",
-              url: "architecture-overview/off-chain-reporting?parent=dataFeeds",
-            },
-          ],
+        },
+        {
+          title: "Basic Request Model",
+          url: "architecture-overview/architecture-request-model?parent=dataFeeds",
+        },
+        {
+          title: "Decentralized Data Model",
+          url: "architecture-overview/architecture-decentralized-model?parent=dataFeeds",
+        },
+        {
+          title: "Off-Chain Reporting",
+          url: "architecture-overview/off-chain-reporting?parent=dataFeeds",
         },
       ],
     },
@@ -359,6 +355,27 @@ export const SIDEBAR = {
         {
           title: "FAQs",
           url: "chainlink-automation/faqs/",
+        },
+      ],
+    },
+    {
+      section: "Chainlink Architecture",
+      contents: [
+        {
+          title: "Overview",
+          url: "architecture-overview/architecture-overview?parent=automation",
+        },
+        {
+          title: "Basic Request Model",
+          url: "architecture-overview/architecture-request-model?parent=automation",
+        },
+        {
+          title: "Decentralized Data Model",
+          url: "architecture-overview/architecture-decentralized-model?parent=automation",
+        },
+        {
+          title: "Off-Chain Reporting",
+          url: "architecture-overview/off-chain-reporting?parent=automation",
         },
       ],
     },
@@ -511,20 +528,18 @@ export const SIDEBAR = {
         {
           title: "Overview",
           url: "architecture-overview/architecture-overview?parent=chainlinkFunctions",
-          children: [
-            {
-              title: "Basic Request Model",
-              url: "architecture-overview/architecture-request-model?parent=chainlinkFunctions",
-            },
-            {
-              title: "Decentralized Data Model",
-              url: "architecture-overview/architecture-decentralized-model?parent=chainlinkFunctions",
-            },
-            {
-              title: "Off-Chain Reporting",
-              url: "architecture-overview/off-chain-reporting?parent=chainlinkFunctions",
-            },
-          ],
+        },
+        {
+          title: "Basic Request Model",
+          url: "architecture-overview/architecture-request-model?parent=chainlinkFunctions",
+        },
+        {
+          title: "Decentralized Data Model",
+          url: "architecture-overview/architecture-decentralized-model?parent=chainlinkFunctions",
+        },
+        {
+          title: "Off-Chain Reporting",
+          url: "architecture-overview/off-chain-reporting?parent=chainlinkFunctions",
         },
       ],
     },
@@ -627,6 +642,27 @@ export const SIDEBAR = {
       ],
     },
     {
+      section: "Chainlink Architecture",
+      contents: [
+        {
+          title: "Overview",
+          url: "architecture-overview/architecture-overview?parent=vrf",
+        },
+        {
+          title: "Basic Request Model",
+          url: "architecture-overview/architecture-request-model?parent=vrf",
+        },
+        {
+          title: "Decentralized Data Model",
+          url: "architecture-overview/architecture-decentralized-model?parent=vrf",
+        },
+        {
+          title: "Off-Chain Reporting",
+          url: "architecture-overview/off-chain-reporting?parent=vrf",
+        },
+      ],
+    },
+    {
       section: "Resources",
       contents: [
         {
@@ -683,33 +719,31 @@ export const SIDEBAR = {
       ],
     },
     {
-      section: "Guides",
+      section: "Make a GET Request",
       contents: [
         {
-          title: "Make a GET Request",
+          title: "Overview",
           url: "any-api/get-request/introduction",
-          children: [
-            {
-              title: "Single Word Response",
-              url: "any-api/get-request/examples/single-word-response",
-            },
-            {
-              title: "Multi-Variable Responses",
-              url: "any-api/get-request/examples/multi-variable-responses",
-            },
-            {
-              title: "Array Response",
-              url: "any-api/get-request/examples/array-response",
-            },
-            {
-              title: "Large Responses",
-              url: "any-api/get-request/examples/large-responses",
-            },
-            {
-              title: "Existing Job Request",
-              url: "any-api/get-request/examples/existing-job-request",
-            },
-          ],
+        },
+        {
+          title: "Single Word Response",
+          url: "any-api/get-request/examples/single-word-response",
+        },
+        {
+          title: "Multi-Variable Responses",
+          url: "any-api/get-request/examples/multi-variable-responses",
+        },
+        {
+          title: "Array Response",
+          url: "any-api/get-request/examples/array-response",
+        },
+        {
+          title: "Large Responses",
+          url: "any-api/get-request/examples/large-responses",
+        },
+        {
+          title: "Existing Job Request",
+          url: "any-api/get-request/examples/existing-job-request",
         },
       ],
     },
@@ -731,6 +765,27 @@ export const SIDEBAR = {
         {
           title: "API Reference",
           url: "any-api/api-reference",
+        },
+      ],
+    },
+    {
+      section: "Chainlink Architecture",
+      contents: [
+        {
+          title: "Overview",
+          url: "architecture-overview/architecture-overview?parent=anyApi",
+        },
+        {
+          title: "Basic Request Model",
+          url: "architecture-overview/architecture-request-model?parent=anyApi",
+        },
+        {
+          title: "Decentralized Data Model",
+          url: "architecture-overview/architecture-decentralized-model?parent=anyApi",
+        },
+        {
+          title: "Off-Chain Reporting",
+          url: "architecture-overview/off-chain-reporting?parent=anyApi",
         },
       ],
     },
