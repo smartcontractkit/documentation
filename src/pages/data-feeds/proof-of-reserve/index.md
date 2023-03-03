@@ -3,6 +3,7 @@ layout: ../../../layouts/MainLayout.astro
 section: dataFeeds
 date: Last Modified
 title: "Proof of Reserve Feeds"
+isIndex: true
 permalink: "docs/data-feeds/proof-of-reserve/"
 whatsnext: { "Find contract addresses for Proof of Reserve Feeds": "/data-feeds/proof-of-reserve/addresses/" }
 ---

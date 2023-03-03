@@ -3,6 +3,7 @@ layout: ../../../layouts/MainLayout.astro
 section: nodeOperator
 date: Last Modified
 title: "Contracts"
+isIndex: true
 metadata:
   title: "Contracts"
   description: "Chainlink node contracts"

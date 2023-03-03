@@ -3,6 +3,7 @@ layout: ../../../layouts/MainLayout.astro
 section: dataFeeds
 date: Last Modified
 title: "Price Feeds"
+isIndex: true
 whatsnext:
   {
     "Using Data Feeds on EVM Chains": "/data-feeds/using-data-feeds/",

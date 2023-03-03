@@ -3,6 +3,7 @@ layout: ../../layouts/MainLayout.astro
 section: bif
 date: Last Modified
 title: "Blockchain Integrations Framework"
+isIndex: true
 ---
 
 Chainlink Labs provides self-service tools that node operators and blockchain projects can use to deploy Data Feed integrations on EVM networks. These tools are called the Blockchain Integrations Framework (BIF). This framework includes a command line interface (CLI) and is available as a binary file. The binary is not publicly available. During the Alpha release, you must receive this binary directly from Chainlink Labs.
