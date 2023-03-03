@@ -185,10 +185,6 @@ export const SIDEBAR = {
           url: "data-feeds/l2-sequencer-feeds",
         },
         {
-          title: "Using ENS with Data Feeds",
-          url: "data-feeds/ens",
-        },
-        {
           title: "Feed Registry",
           url: "data-feeds/feed-registry",
           children: [
@@ -197,6 +193,10 @@ export const SIDEBAR = {
               url: "data-feeds/feed-registry/feed-registry-functions",
             },
           ],
+        },
+        {
+          title: "Using ENS with Data Feeds",
+          url: "data-feeds/ens",
         },
       ],
     },
