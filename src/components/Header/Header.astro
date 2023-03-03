@@ -11,7 +11,7 @@ export type Props = {
 }
 const { frontmatter } = Astro.props
 
-const section = frontmatter?.section ?? ""
+const section = frontmatter?.section ?? undefined
 ---
 
 <!-- Google Tag Manager (noscript) -->
@@ -32,7 +32,7 @@ const section = frontmatter?.section ?? ""
     <div class="navbar">
       {
         MENU.en.map((link) => (
-          <a class="nav-link" href={link.link} aria-current={link.section === section}>
+          <a id={link.section} class="nav-link" href={link.link} aria-current={link.section === section}>
             {link.text}
           </a>
         ))
@@ -72,6 +72,7 @@ const section = frontmatter?.section ?? ""
 
   .nav-link {
     color: var(--color-text-primary);
+    white-space: nowrap;
   }
 
   .nav-link:hover {
@@ -192,3 +193,13 @@ const section = frontmatter?.section ?? ""
     flex-grow: 1;
   }
 </style>
+
+<script is:inline>
+  window.addEventListener("DOMContentLoaded", (event) => {
+    const parentSection = new URLSearchParams(window.location.search).get("parent") || "gettingStarted"
+    if (window.location.pathname !== "/" && !document.querySelectorAll('a[aria-current="true"]')[0]) {
+      let elem = document.getElementById(parentSection)
+      elem.ariaCurrent = "true"
+    }
+  })
+</script>

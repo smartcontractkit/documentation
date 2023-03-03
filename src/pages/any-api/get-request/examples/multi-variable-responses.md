@@ -1,6 +1,6 @@
 ---
 layout: ../../../../layouts/MainLayout.astro
-section: ethereum
+section: anyApi
 date: Last Modified
 title: "Multi-Variable Responses"
 permalink: "docs/any-api/get-request/examples/multi-variable-responses/"

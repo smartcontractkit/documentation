@@ -9,31 +9,16 @@ export type Props = {
   dataFeedType?: DataFeedType
 }
 import { getServerSideChainMetadata } from "../api/backend"
-import { ALL_CHAINS, CHAINS, SOLANA_CHAINS } from "../data/chains"
+import { CHAINS } from "../data/chains"
 import { Aside } from "@components"
 
 const { initialNetwork, ecosystem, dataFeedType } = Astro.props
 
-const initialCache = await getServerSideChainMetadata([...CHAINS, ...SOLANA_CHAINS, ...ALL_CHAINS])
+const initialCache = await getServerSideChainMetadata([...CHAINS])
 ---
 
 {
-  ecosystem === "solana" ? (
-    <>
-      <p>
-        To learn how to use these feeds, see the{" "}
-        <a href="/solana/data-feeds/using-data-feeds-off-chain">Solana Examples</a> for Consuming Data Feeds.
-      </p>
-      <p>
-        To learn how to obtain SOL tokens on the Solana Devnet, see the{" "}
-        <a href="https://docs.solana.com/cli/transfer-tokens#airdrop-some-tokens-to-get-started">
-          Solana Documentation.
-        </a>
-      </p>
-      <FeedsCommonCallout callout="etfBestPractices" />
-      <FeedsCommonCallout callout="quality" />
-    </>
-  ) : ecosystem === "deprecating" ? (
+  ecosystem === "deprecating" ? (
     <>
       <p>
         The smart contract ecosystem is constantly evolving. As a result, Data Feeds within the Chainlink ecosystem are
@@ -63,7 +48,7 @@ const initialCache = await getServerSideChainMetadata([...CHAINS, ...SOLANA_CHAI
         <>
           <p>
             To learn how to use these feeds, see the{" "}
-            <a href="/data-feeds/nft-floor-price">NFT Floor Pricing Feeds documentation.</a>
+            <a href="/data-feeds/nft-floor-price">NFT Floor Price Feeds documentation.</a>
           </p>
           <p>
             For LINK token and Faucet details, see the <a href="/docs/link-token-contracts/">LINK Token Contracts</a>{" "}

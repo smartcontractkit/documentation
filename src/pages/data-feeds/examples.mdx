@@ -1,17 +1,12 @@
 ---
-layout: ../../../layouts/MainLayout.astro
-section: ethereum
+layout: ../../layouts/MainLayout.astro
+section: dataFeeds
 date: Last Modified
-title: "Using Price Feeds"
-permalink: "docs/data-feeds/price-feeds/"
+title: "Code Examples"
 whatsnext:
-  {
-    "Historical Price Data": "/data-feeds/price-feeds/historical-data/",
-    "Price Feeds API Reference": "/data-feeds/price-feeds/api-reference/",
-    "Price Feed Contract Addresses": "/data-feeds/price-feeds/addresses/",
-  }
+  { "Historical Price Data": "/data-feeds/historical-data/", "Data Feeds API Reference": "/data-feeds/api-reference/" }
 metadata:
-  title: "Using Data Feeds"
+  title: "Code Examples"
   description: "How to use Chainlink Data Feeds in your smart contracts."
 ---
 
@@ -21,41 +16,49 @@ import { Tabs } from "@components/Tabs"
 import button from "@chainlink/design-system/button.module.css"
 import CodeSample from "@components/CodeSample/CodeSample.astro"
 
-Chainlink Data Feeds are the quickest way to connect your smart contracts to the real-world market prices of assets. For example, one use for data feeds is to enable smart contracts to retrieve the latest pricing data of an asset in a single call.
+The code for reading Data Feeds is the same across all EVM-compatible blockchains and Data Feed types. You choose different types of feeds for different uses, but the request and response format are the same. To read a feed, specify the following variables:
 
-This guide applies specifically to using data feeds on EVM Chains. To get the full list of Chainlink Price Feeds running on the EVM Chains, see the [Contract Addresses](/data-feeds/price-feeds/addresses/) page.
+- **RPC endpoint URL:** This determines which network that your smart contracts will run on. You can use a [node provider service](https://ethereum.org/en/developers/docs/nodes-and-clients/nodes-as-a-service/) or point to your own [client](https://ethereum.org/en/developers/docs/nodes-and-clients/). If you are using a Web3 wallet, it is already configured with the RPC endpoints for several networks and the [Remix IDE](https://remix-project.org/) will automatically detect them for you.
+- **LINK token contract address:** The address for the LINK token contract is different for each network. You can find the full list of addresses for all supported networks on the [LINK Token Contracts](/resources/link-token-contracts) page.
+- **Feed contract address:** This determines which data feed your smart contract will read. Contract addresses are different for each network. You can find the availble contract addresses on the following pages:
+  - [Price Feed Addresses](/data-feeds/price-feeds/addresses)
+  - [Proof of Reserve Feed Addresses](/data-feeds/proof-of-reserve/addresses)
+  - [NFT Floor Price Feed Addresses](/data-feeds/nft-floor-price/addresses/)
 
-<Aside type="caution" title="Select quality data feeds">
-  Be aware of the quality of the data that you use. [Learn more about making responsible data quality
-  decisions.](/data-feeds/selecting-data-feeds/)
-</Aside>
+The examples in this document indicate these variables, but you can modify the examples to work on different networks and read different feeds.
 
-For important updates regarding the use of Chainlink Price Feeds, users should join the official Chainlink Discord and subscribe to the data-feeds-user-notifications channel: [https://discord.gg/Dqy5N9UbsR](https://discord.gg/Dqy5N9UbsR)
+This guide shows example code that reads data feeds using the following languages:
 
-These examples show you how to get the price of Ethereum (ETH) on the Ethereum Sepolia testnet, but you can modify the examples to work on other chains as well. The list of price feeds for each network are available on the [Data Feed Contracts](/data-feeds/price-feeds/addresses/) page. For development, use testnet data feeds such as the [BTC / USD feed](https://sepolia.etherscan.io/address/0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43) on the Sepolia testnet.
+- On-chain consumer contracts:
+  - [Solidity](#solidity)
+  - [Vyper](#vyper)
+- Off-chain reads using Web3 packages:
+  - [Javascript](#javascript) with [web3.js](https://web3js.readthedocs.io/)
+  - [Python](#python) with [Web3.py](https://web3py.readthedocs.io/en/stable/)
+  - [Golang](#golang) with [go-ethereum](https://github.com/ethereum/go-ethereum)
 
-You can write smart contracts that consume Price Feeds using several languages, but this guide shows examples using the following languages:
+## Reading data feeds on-chain
 
-- [Solidity](#solidity)
-- [Vyper](#vyper)
-- [Javascript](#javascript) with [web3.js](https://web3js.readthedocs.io/)
-- [Python](#python) with [Web3.py](https://web3py.readthedocs.io/en/stable/)
-- [Golang](#golang) with [go-ethereum](https://github.com/ethereum/go-ethereum)
+These code examples demonstrate how to deploy a consumer contract on-chain that reads a data feed and stores the value.
 
-## Solidity
+### Solidity
 
 To consume price data, your smart contract should reference [`AggregatorV3Interface`](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol), which defines the external functions implemented by Data Feeds.
 
 <CodeSample src="samples/PriceFeeds/PriceConsumerV3.sol" />
 
-The `latestRoundData` function returns five values representing information about the latest price data. See the [Data Feeds API Reference](/data-feeds/price-feeds/api-reference/) for more details.
+The `latestRoundData` function returns five values representing information about the latest price data. See the [Data Feeds API Reference](/data-feeds/api-reference/) for more details.
 
-## Vyper
+### Vyper
 
 To consume price data, your smart contract should import `AggregatorV3Interface` which defines the external functions implemented by Data Feeds. You can find it [here](https://github.com/smartcontractkit/apeworx-starter-kit/blob/main/contracts/interfaces/AggregatorV3Interface.vy).
 You can find a `PriceConsumer` example [here](https://github.com/smartcontractkit/apeworx-starter-kit/blob/main/contracts/PriceConsumer.vy). Read the _**apeworx-starter-kit**_ [README](https://github.com/smartcontractkit/apeworx-starter-kit) to learn how to run the example.
 
-## Javascript
+## Reading data feeds off-chain
+
+These code examples demonstrate how to read data feeds directly off chain using Web3 packages for each language.
+
+### Javascript
 
 This example uses [web3.js](https://web3js.readthedocs.io/) to retrieve feed data from the [BTC / USD feed](https://sepolia.etherscan.io/address/0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43) on the Sepolia testnet.
 
@@ -72,7 +75,7 @@ This example uses [web3.js](https://web3js.readthedocs.io/) to retrieve feed dat
 
 <LatestPrice client:idle feedAddress={priceFeedAddresses.btc.usd.sepolia.address} supportedChain="ETHEREUM_SEPOLIA" />
 
-## Python
+### Python
 
 This example uses [Web3.py](https://web3py.readthedocs.io/en/stable/) to retrieve feed data from the [BTC / USD feed](https://sepolia.etherscan.io/address/0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43) on the Sepolia testnet.
 
@@ -81,7 +84,7 @@ This example uses [Web3.py](https://web3py.readthedocs.io/en/stable/) to retriev
   {"Run this Python example"}
 </a>
 
-## Golang
+### Golang
 
 You can find an example with all the source files [here](https://github.com/smartcontractkit/smart-contract-examples/tree/main/pricefeed-golang). This example uses [go-ethereum](https://github.com/ethereum/go-ethereum) to retrieve feed data from the [BTC / USD feed](https://sepolia.etherscan.io/address/0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43) on the Sepolia testnet.
 To learn how to run the example, see the [README](https://github.com/smartcontractkit/smart-contract-examples/blob/main/pricefeed-golang/README.md).
@@ -105,12 +108,8 @@ If you require a denomination other than what is provided, you can use two data 
 
 <CodeSample src="samples/PriceFeeds/PriceConverter.sol" />
 
-## How Do Data Feeds Get Their Data?
-
-Data Feeds are aggregated from many data sources by a decentralized set of independent Node Operators. The [Decentralized Data Model](/architecture-overview/architecture-decentralized-model/) describes this in detail.
-
 ## More Aggregator Functions
 
-Getting the latest price is not the only data that aggregators can retrieve. You can also retrieve historical price data. To learn more, see the [Historical Price Data](/data-feeds/price-feeds/historical-data/) page.
+Getting the latest price is not the only data that aggregators can retrieve. You can also retrieve historical price data. To learn more, see the [Historical Price Data](/data-feeds/historical-data/) page.
 
 To understand different use cases for Chainlink Price Feeds, refer to [Other Tutorials](/getting-started/other-tutorials/).
