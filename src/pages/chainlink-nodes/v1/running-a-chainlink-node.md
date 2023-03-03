@@ -122,12 +122,12 @@ Ganache is a mock testnet. Although you can run nodes on Ganache, it is not offi
       <Fragment slot="tab.2">Goerli</Fragment>
       <Fragment slot="panel.1">
       ```shell Sepolia
-      cd ~/.chainlink-sepolia && docker run --name chainlink  -v ~/.chainlink-sepolia:/chainlink -it --env-file=.env -p 6688:6688 --add-host=host.docker.internal:host-gateway smartcontract/chainlink:<version> local n
+      cd ~/.chainlink-sepolia && docker run --platform linux/x86_64/v8 --name chainlink  -v ~/.chainlink-sepolia:/chainlink -it --env-file=.env -p 6688:6688 --add-host=host.docker.internal:host-gateway smartcontract/chainlink:<version> local n
       ```
       </Fragment>
       <Fragment slot="panel.2">
       ```shell Goerli
-      cd ~/.chainlink-goerli && docker run --name chainlink  -v ~/.chainlink-goerli:/chainlink -it --env-file=.env -p 6688:6688 --add-host=host.docker.internal:host-gateway smartcontract/chainlink:<version> local n
+      cd ~/.chainlink-goerli && docker run --platform linux/x86_64/v8 --name chainlink  -v ~/.chainlink-goerli:/chainlink -it --env-file=.env -p 6688:6688 --add-host=host.docker.internal:host-gateway smartcontract/chainlink:<version> local n
       ```
       </Fragment>
    </Tabs>

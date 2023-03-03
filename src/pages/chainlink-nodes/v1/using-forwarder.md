@@ -254,7 +254,7 @@ Metamask prompts you to confirm the transaction.
 1. Start the Chainlink node:
 
    ```shell
-   cd ~/.chainlink-sepolia && docker run --name chainlink  -v ~/.chainlink-sepolia:/chainlink -it --env-file=.env -p 6688:6688 smartcontract/chainlink:1.12.0 local n
+   cd ~/.chainlink-sepolia && docker run --platform linux/x86_64/v8 --name chainlink  -v ~/.chainlink-sepolia:/chainlink -it --env-file=.env -p 6688:6688 smartcontract/chainlink:1.12.0 local n
    ```
 
 1. You will be prompted to enter the key store password:
