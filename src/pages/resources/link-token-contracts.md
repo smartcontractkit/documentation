@@ -158,7 +158,7 @@ xDAI is used to pay for transactions on Gnosis Chain mainnet. Use the [xDai Brid
 | Name           | Chainlink Token on Gnosis Chain (xDai)                                                                                                                                                                            |
 | Symbol         | LINK                                                                                                                                                                                                              |
 | Decimals       | 18                                                                                                                                                                                                                |
-| Network status | [gnosisscan.io/](https://gnosisscan.io/)                                                                                                                                                                          |
+| Network status | [gnosisscan.io](https://gnosisscan.io/)                                                                                                                                                                           |
 
 ## Avalanche
 
@@ -238,7 +238,7 @@ ETH is used to pay for transactions on the Arbitrum mainnet. You can use the [Ar
 
 ### Arbitrum Goerli testnet
 
-Testnet ETH is used to pay for transactions on Arbitrum Goerli. Use the [Arbitrum Bridge](https://bridge.arbitrum.io/) to transfer testnet ETH and LINK from Ethereum Goerli to Arbitrum Goerli.
+Testnet ETH is used to pay for transactions on Arbitrum Goerli. Use the [Arbitrum Bridge](https://bridge.arbitrum.io/) to transfer testnet ETH and LINK from Ethereum Goerli to Arbitrum Goerli. Testnet LINK is available at [faucets.chain.link](https://faucets.chain.link/goerli). Testnet ETH is available at [goerlifaucet.com](https://goerlifaucet.com/) or the faucets listed at [faucetlink.to/goerli](https://faucetlink.to/goerli).
 
 | Parameter      | Value                                                                                                                                                                                                                              |
 | :------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -265,7 +265,7 @@ ETH is used to pay for transactions on Optimism. Use the [Optimism Bridge](https
 
 ### Optimism Goerli testnet
 
-Testnet ETH is used to pay for transactions on Optimism. Use the [Optimism Bridge](https://app.optimism.io/bridge) to transfer testnet ETH and LINK from Ethereum Goerli to Optimistim Goerli. Select Optimism Goerli in your wallet to access the Optimism Goerli bridge.
+Testnet ETH is used to pay for transactions on Optimism. Use the [Optimism Bridge](https://app.optimism.io/bridge) to transfer testnet ETH and LINK from Ethereum Goerli to Optimistim Goerli. Select Optimism Goerli in your wallet to access the Optimism Goerli bridge. Testnet LINK is available at [faucets.chain.link](https://faucets.chain.link/goerli). Testnet ETH is available at [goerlifaucet.com](https://goerlifaucet.com/) or the faucets listed at [faucetlink.to/goerli](https://faucetlink.to/goerli).
 
 | Parameter      | Value                                                                                                                                                                                                                          |
 | :------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -349,3 +349,18 @@ KLAY is the currency that you use to pay for transactions on Klaytn testnet. Tes
 | Symbol         | LINK                                                                                                                                                                                                                        |
 | Decimals       | 18                                                                                                                                                                                                                          |
 | Network status | [status.klaytnapi.com](https://status.klaytnapi.com/)                                                                                                                                                                       |
+
+## BASE
+
+### BASE Goerli testnet
+
+Testnet ETH is used to pay for transactions on BASE. Testnet ETH is available from one of the [BASE Network Faucets](https://docs.base.org/tools/network-faucets). Alternatively, you can get testnet ETH from the faucets listed at [faucetlink.to/goerli](https://faucetlink.to/goerli) and use the [BASE Bridge](https://bridge.base.org/deposit) to transfer testnet ETH from Ethereum Goerli to BASE Goerli.
+
+| Parameter      | Value                                                                                                                                                                                                                      |
+| :------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ETH_CHAIN_ID` | `84531`                                                                                                                                                                                                                    |
+| Address        | <a class="erc-token-address" id="84531_0x6D0F8D488B669aa9BA2D0f0b7B75a88bf5051CD3"  href="https://goerli.basescan.org/address/0x6D0F8D488B669aa9BA2D0f0b7B75a88bf5051CD3">`0x6D0F8D488B669aa9BA2D0f0b7B75a88bf5051CD3`</a> |
+| Name           | Chainlink Token on the BASE Goerli testnet                                                                                                                                                                                 |
+| Symbol         | LINK                                                                                                                                                                                                                       |
+| Decimals       | 18                                                                                                                                                                                                                         |
+| Network status | [goerli.basescan.org](https://goerli.basescan.org/)                                                                                                                                                                        |
