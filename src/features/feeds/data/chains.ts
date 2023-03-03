@@ -297,6 +297,22 @@ export const CHAINS: Chain[] = [
       },
     ],
   },
+  {
+    page: "base",
+    label: "BASE",
+    title: "BASE Data Feeds",
+    img: "/assets/chains/base.svg",
+    networkStatusUrl: "https://goerli.basescan.org",
+    tags: ["default"],
+    networks: [
+      {
+        name: "BASE Goerli testnet",
+        explorerUrl: "https://goerli.basescan.org/address/%s",
+        networkType: "testnet",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-goerli-base-1.json",
+      },
+    ],
+  },
 ]
 
 export const SOLANA_CHAINS: Chain[] = [
@@ -473,6 +489,12 @@ export const ALL_CHAINS: Chain[] = [
         explorerUrl: "https://solscan.io/account/%s?cluster=devnet",
         networkType: "testnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-solana-devnet.json",
+      },
+      {
+        name: "BASE Goerli testnet",
+        explorerUrl: "https://goerli.basescan.org/address/%s",
+        networkType: "testnet",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-goerli-base-1.json",
       },
     ],
     label: "All",

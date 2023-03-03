@@ -1,8 +1,9 @@
 - To write a Chainlink Functions consumer contract, your contract must import [FunctionsClient.sol](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/dev/functions/FunctionsClient.sol). You can read the API reference: [FunctionsClient](/chainlink-functions/api-reference/FunctionsClient).
 
-  ```
-  import "@chainlink/contracts/src/v0.8/dev/functions/FunctionsClient.sol";
+  This contract is not available in an NPM package, so you must download and import it from within your project.
 
+  ```
+  import "./dev/functions/FunctionsClient.sol";
   ```
 
 - Use the [Functions.sol](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/dev/functions/Functions.sol) library to get all the functions needed for building a Chainlink Functions request. You can read the API reference: [Functions](/chainlink-functions/api-reference/Functions).

@@ -16,6 +16,11 @@ export const MENU: MenuItems = {
     { text: "EVM Chains", link: "/ethereum", section: "ethereum" },
     { text: "Solana", link: "/solana", section: "solana" },
     {
+      text: "Functions",
+      link: "/chainlink-functions",
+      section: "chainlinkFunctions",
+    },
+    {
       text: "Node Operators",
       link: "/chainlink-nodes",
       section: "nodeOperator",

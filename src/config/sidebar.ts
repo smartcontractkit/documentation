@@ -389,6 +389,10 @@ export const SIDEBAR = {
           title: "Using Off-chain Secrets in Requests",
           url: "chainlink-functions/tutorials/api-use-secrets-offchain",
         },
+        {
+          title: "Automate your Functions",
+          url: "chainlink-functions/tutorials/automate-functions/",
+        },
       ],
     },
     {
@@ -401,6 +405,10 @@ export const SIDEBAR = {
         {
           title: "Architecture",
           url: "chainlink-functions/resources/architecture/",
+        },
+        {
+          title: "Add Functions to a Project",
+          url: "chainlink-functions/resources/add-functions-to-projects",
         },
         {
           title: "Managing Subscriptions",
