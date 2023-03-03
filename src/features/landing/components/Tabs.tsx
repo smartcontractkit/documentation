@@ -8,7 +8,7 @@ export const Tabs = () => {
   return (
     <>
       <div class={tabs.tabContent}>
-        <div class={clsx(tabs.tabPane, tabs.active)}>
+        <div>
           {evmProducts.map((props) => (
             <div class={tabs.tabElement}>
               <ProductCard {...props} />
