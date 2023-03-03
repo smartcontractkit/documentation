@@ -45,8 +45,8 @@ On your terminal, check that your Chainlink node is running:
  feff39f340d6   smartcontract/chainlink:1.12.0   "chainlink local n"   4 minutes ago   Up 4 minutes (healthy)   0.0.0.0:6688->6688/tcp   chainlink
 ```
 
-Your Chainlink node's UI interface is accessible on [http://localhost:6688](http://localhost:6688).
-If you don't have a running Chainlink node, follow the [Running a Chainlink Node locally](/chainlink-nodes/v1/running-a-chainlink-node) guide.
+Your Chainlink Operator Interface is accessible on [http://localhost:6688](http://localhost:6688).
+If you don't have a running Chainlink node, follow the [Running a Chainlink Node Locally](/chainlink-nodes/v1/running-a-chainlink-node) guide.
 
 ## Set up multiple EOAs
 
@@ -142,29 +142,29 @@ If you don't have a running Chainlink node, follow the [Running a Chainlink Node
    Max Gas Price Wei: 115792089237316195423570985008687907853269984665640564039457584007913129639935chainlink@22480bec8986
    ```
 
-1. Fund the two addresses. You can obtain test ETH from several [faucets](/resources/link-token-contracts/). Fund the two addresses with _0.5_ Sepolia ETH.
+1. Fund the two addresses with _0.5_ Sepolia ETH each. You can obtain testnet ETH from the faucets listed on the [Link Token Contracts](/resources/link-token-contracts/) page.
 1. Note the two addresses, as you will need them later.
 
-## Deploy Operator and Forwarder
+## Deploy operator and forwarder
 
 Use the [operator factory](/chainlink-nodes/contracts/operatorfactory) to deploy both the [forwarder](/chainlink-nodes/contracts/forwarder) and the [operator](/chainlink-nodes/contracts/operator) contracts. You can find the factory address for each network on the [addresses](/chainlink-nodes/contracts/addresses) page.
 
-1. Click on [0x447Fd5eC2D383091C22B8549cb231a3bAD6d3fAf](https://sepolia.etherscan.io/address/0x447Fd5eC2D383091C22B8549cb231a3bAD6d3fAf) to display the factory in the block explorer.
-1. Click on _Contract_ then _Write Contract_ to display the _write_ transactions on the factory.
+1. Open contract [0x447Fd5eC2D383091C22B8549cb231a3bAD6d3fAf](https://sepolia.etherscan.io/address/0x447Fd5eC2D383091C22B8549cb231a3bAD6d3fAf) to display the factory in the Sepolia block explorer.
+1. Click the _Contract_ tab. Then, click _Write Contract_ to display the _write_ transactions on the factory.
 
    <ClickToZoom src='/images/chainlink-nodes/node-operators/forwarder/factorytransactions.jpg' />
 
-1. Click on _Connect to Web3_ to connect your wallet.
+1. Click the _Connect to Web3_ button to connect your wallet.
    <ClickToZoom src='/images/chainlink-nodes/node-operators/forwarder/factorytransactionsconnected.jpg' />
 
-1. Click on `deployNewOperatorAndForwarder`. Metamask prompts you to confirm the transaction.
+1. Click the `deployNewOperatorAndForwarder` function to expand it and then click the _Write_ button to run the function. Metamask prompts you to confirm the transaction.
 
 1. Click _View your transaction_. _Etherscan_ will open a new tab. Wait for the transaction to be successful.
    <ClickToZoom src='/images/chainlink-nodes/node-operators/forwarder/factoryviewtransaction.jpg' />
 
       <ClickToZoom src='/images/chainlink-nodes/node-operators/forwarder/deployfromfactorysuccess.jpg' />
 
-1. Click on _Logs_ to display the list of transaction events. Notice the `OperatorCreated` and `AuthorizedForwarderCreated` events.
+1. On the _Transaction Details_ page, click _Logs_ to display the list of transaction events. Notice the `OperatorCreated` and `AuthorizedForwarderCreated` events.
 
    <ClickToZoom src='/images/chainlink-nodes/node-operators/forwarder/factorycreatetransactions.jpg' />
 
@@ -188,7 +188,7 @@ For this example to run, you will have to:
 - Allow the forwarder contract to call the operator's [fulfillOracleRequest2](/chainlink-nodes/contracts/operator#fulfilloraclerequest2) function by calling the [setauthorizedsenders](/chainlink-nodes/contracts/receiver#setauthorizedsenders) function on the operator contract. Specify the forwarder address as a parameter.
 - Allow the two Chainlink node EOAs to call the forwarder's [forward](/chainlink-nodes/contracts/forwarder#forward) function. Because the operator contract owns the forwarder contract, call [acceptAuthorizedReceivers](/chainlink-nodes/contracts/operator#acceptauthorizedreceivers) on the operator contract. Specify the forwarder contract address and the two Chainlink node EOAs as parameters. This call makes the operator contract accept ownership of the forwarder contract and authorizes the Chainlink node EOAs to call the forwarder contract by calling [setauthorizedsenders](/chainlink-nodes/contracts/receiver#setauthorizedsenders).
 
-### Whitelist the Forwarder
+### Whitelist the forwarder
 
 In the blockchain explorer, view the operator contract and call the `setAuthorizedSenders` method with the address of your forwarder contract. The parameter is an array. For example, `["0xA3f07D6773514480b918C2742b027b3acD9E44fA"]`. Metamask prompts you to confirm the transaction.
 
@@ -205,9 +205,9 @@ Metamask prompts you to confirm the transaction.
 
 <ClickToZoom src='/images/chainlink-nodes/node-operators/forwarder/acceptAuthorizedReceivers.jpg' />
 
-## Activate Forwarder
+## Activate the forwarder
 
-1. In the shell of your Chainlink node, enable the forwarder using the Chainlink cli. Replace `forwarderAddress` with the forwarder address (created by the factory) and chainId with the EVM chain Id (`11155111` for Sepolia):
+1. In the shell of your Chainlink node, enable the forwarder using the Chainlink CLI. Replace `forwarderAddress` with the forwarder address that was created by the factory. Replace `chainId` with the EVM chain ID. (`11155111` for Sepolia):
 
    ```shell
    chainlink forwarders track --address forwarderAddress --evmChainID chainId
@@ -267,11 +267,12 @@ Metamask prompts you to confirm the transaction.
 
 1. Enter the key store password and wait for your Chainlink node to start.
 
-## Create directRequest Jobs
+## Create directRequest jobs
 
 This section is similar to the [Fulfilling Requests](/chainlink-nodes/v1/fulfilling-requests) guide.
 
-1. Open the Chainlink Operator UI, then on the **Jobs** tab, click **New Job**.
+1. Open the Chainlink Operator UI.
+1. On the **Jobs** tab, click **New Job**.
 1. Create the `uint256` job. Replace:
 
    - `YOUR_OPERATOR_CONTRACT_ADDRESS` with the address of your deployed operator contract address.
@@ -294,7 +295,7 @@ Note that both jobs have the attribute `forwardingAllowed = true`. This attribut
 
 ## Test the transaction-sending strategy
 
-### Create API Requests
+### Create API requests
 
 1. Open [APIConsumerForwarder.sol](https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/APIConsumerForwarder.sol) in the Remix IDE.
 
@@ -315,7 +316,7 @@ Note that both jobs have the attribute `forwardingAllowed = true`. This attribut
 
 1. Click the **transact** button for the `requestEthereumPrice` function and approve the transaction in Metamask. The `requestEthereumPrice` function asks the node to retrieve `uint256` data specifically from [https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD](https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD).
 
-1. After the transaction processes, you can see the details for the complete the job run the **Runs** page in the Node Operators UI.
+1. After the transaction processes, open the **Runs** page in the Node Operators UI. You can see the details for the completed the job run.
 
 1. In Remix, click the `currentPrice` variable to see the current price updated on your consumer contract.
 
@@ -327,15 +328,15 @@ Note that both jobs have the attribute `forwardingAllowed = true`. This attribut
 
 1. In Remix, click the `id` variable to see the current price updated on your consumer contract.
 
-### Check Forwarder
+### Check the forwarder
 
-Let's confirm that:
+Confirm the following information:
 
-- The Chainlink node submitted the callbacks to the Forwarder contract.
+- The Chainlink node submitted the callbacks to the forwarder contract.
 - Each callback used a different account.
-- The Forwarder contract forwarded the callbacks to the Operator contract.
+- The Forwarder contract forwarded the callbacks to the operator contract.
 
-Display your Forwarder contract on the block explorer. Two [forward](/chainlink-nodes/contracts/forwarder#forward) transactions exist.
+Open your forwarder contract in the block explorer. Two [forward](/chainlink-nodes/contracts/forwarder#forward) transactions exist.
 
 <ClickToZoom src='/images/chainlink-nodes/node-operators/forwarder/forward-transactions.jpg' />
 
