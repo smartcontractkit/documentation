@@ -3,6 +3,7 @@ layout: ../../../layouts/MainLayout.astro
 section: dataFeeds
 date: Last Modified
 title: "Using Data Feeds on StarkNet"
+isIndex: true
 whatsnext: { "Starknet Price Feed Contract Addresses": "/data-feeds/price-feeds/addresses?network=starknet" }
 metadata:
   description: "Using Chainlink Data Feeds on StarkNet"

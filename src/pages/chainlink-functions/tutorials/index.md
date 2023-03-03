@@ -3,6 +3,7 @@ layout: ../../../layouts/MainLayout.astro
 section: chainlinkFunctions
 date: Last Modified
 title: "Chainlink Functions Tutorials"
+isIndex: true
 ---
 
 ## Topics

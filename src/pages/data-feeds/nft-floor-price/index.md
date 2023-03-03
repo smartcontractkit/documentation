@@ -3,6 +3,7 @@ layout: ../../../layouts/MainLayout.astro
 section: dataFeeds
 date: Last Modified
 title: "NFT Floor Price Feeds"
+isIndex: true
 permalink: "docs/data-feeds/nft-floor-price/"
 whatsnext:
   {

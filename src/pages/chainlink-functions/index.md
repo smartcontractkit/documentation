@@ -3,6 +3,7 @@ layout: ../../layouts/MainLayout.astro
 section: chainlinkFunctions
 date: Last Modified
 title: "What is Chainlink Functions?"
+isIndex: true
 whatsnext:
   {
     "Learn the basics in the Getting Started guide.": "/chainlink-functions/getting-started",

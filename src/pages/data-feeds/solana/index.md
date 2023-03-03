@@ -3,6 +3,7 @@ layout: ../../../layouts/MainLayout.astro
 section: dataFeeds
 date: Last Modified
 title: "Data Feeds on Solana"
+isIndex: true
 whatsnext:
   {
     "Use data feeds off-chain": "/data-feeds/solana/using-data-feeds-off-chain/",
