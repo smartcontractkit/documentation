@@ -5,7 +5,7 @@ date: Last Modified
 title: "Ownership"
 ---
 
-[ConfirmedOwnerWithProposal](https://github.com/smartcontractkit/chainlink/edit/develop/contracts/src/v0.7/ConfirmedOwnerWithProposal.sol) is inherited by [Operator](/chainlink-nodes/contracts/operator) and [Forwarder](/chainlink-nodes/contracts/forwarder) contracts. It contains helpers for basic contract ownership.
+[ConfirmedOwnerWithProposal](https://github.com/smartcontractkit/chainlink/edit/develop/contracts/src/v0.7/ConfirmedOwnerWithProposal.sol) is inherited by [operator](/chainlink-nodes/contracts/operator) and [forwarder](/chainlink-nodes/contracts/forwarder) contracts. It contains helpers for basic contract ownership.
 
 ## Api Reference
 

@@ -5,7 +5,7 @@ date: Last Modified
 title: "Contract addresses"
 ---
 
-This page lists the [Operator Factory](/chainlink-nodes/contracts/operatorfactory) addresses for different networks.
+This page lists the [operator factory](/chainlink-nodes/contracts/operatorfactory) addresses for different networks.
 
 ## Ethereum
 

@@ -7,13 +7,13 @@ title: "Operator"
 
 Oracles must deploy an on-chain contract to handle requests made through the LINK token (Read [Basic Request Model](/architecture-overview/architecture-request-model) to learn more).
 
-When the _Basic Request_ model was introduced, node operators had to deploy [Oracle contracts](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.4/Oracle.sol). However, these come with some limitations, and soon, we introduced [Operator contracts](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/Operator.sol).
+When the _Basic Request_ model was introduced, node operators had to deploy [Oracle contracts](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.4/Oracle.sol). However, these come with some limitations, and soon, we introduced [operator contracts](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/Operator.sol).
 
 :::note
 Node operators are recommended to use _Operator.sol_ over _Oracle.sol_.
 :::
 
-In addition to replacing Oracle contracts, Operator contracts come with additional features that add more security and flexibility for node operators.
+In addition to replacing oracle contracts, operator contracts come with additional features that add more security and flexibility for node operators.
 
 ## Features
 
@@ -25,7 +25,7 @@ In the EVM architecture, a word is made up of 32 bytes. One limitation of the [O
 
 To deploy an _Oracle_ contract, each node operator has to manually compile and deploy [Oracle.sol](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.4/Oracle.sol).
 The vast number of Solidity versions and steps involved in verifying the contract made it difficult for a client to verify that the deployed contract had not been tampered with.
-To fix this, node operators can use a [factory](/chainlink-nodes/contracts/operatorfactory) to deploy an instance of the _Operator_ contract. Moreover, the factory exposes a getter for clients to check if it deployed a specific _Operator_ contract address.
+To fix this, node operators can use a [factory](/chainlink-nodes/contracts/operatorfactory) to deploy an instance of the _operator_ contract. Moreover, the factory exposes a getter for clients to check if it deployed a specific _operator_ contract address.
 
 ### Distributing funds to multiple addresses
 
@@ -33,21 +33,21 @@ A common pain point of node operators is keeping their addresses funded. _Operat
 
 ### Flexibility and Security
 
-By using multiple External-owned accounts(EOA) on Chainlink nodes and [Forwarder](/chainlink-nodes/contracts/forwarder) contracts, node operators can set up different transaction-sending strategies.
+By using multiple External-owned accounts(EOA) on Chainlink nodes and [forwarder](/chainlink-nodes/contracts/forwarder) contracts, node operators can set up different transaction-sending strategies.
 
 :::note
-Read more about [Forwarders](/chainlink-nodes/contracts/forwarder).
+Read more about [forwarders](/chainlink-nodes/contracts/forwarder).
 :::
 
-As discussed in the [Forwarder](/chainlink-nodes/contracts/forwarder) contracts page:
+As discussed in the [forwarder](/chainlink-nodes/contracts/forwarder) contracts page:
 
 - Chainlink nodes' EOAs are hot wallets that fulfill requests.
-- These EOAs can be associated with one or multiple [Forwarder](/chainlink-nodes/contracts/forwarder) contracts. The forwarder's owner must whitelist them to call the [forward](/chainlink-nodes/contracts/forwarder#forward) function. One Operator contract owns one or multiple Forwarder contracts.
-- Node operators manage their Forwarder contracts through Operator contracts. They use a secure wallet such as hardware or a multisig wallet as the Operator's owner account.
+- These EOAs can be associated with one or multiple [forwarder](/chainlink-nodes/contracts/forwarder) contracts. The forwarder's owner must whitelist them to call the [forward](/chainlink-nodes/contracts/forwarder#forward) function. One operator contract owns one or multiple forwarder contracts.
+- Node operators manage their forwarder contracts through operator contracts. They use a secure wallet such as hardware or a multisig wallet as the operator's owner account.
 
 ## API Reference
 
-The Operator contract inherits [AuthorizedReceiver](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/AuthorizedReceiver.sol) and [ConfirmedOwnerWithProposal](https://github.com/smartcontractkit/chainlink/edit/develop/contracts/src/v0.7/ConfirmedOwnerWithProposal.sol). Read [AuthorizedReceiver](/chainlink-nodes/contracts/receiver) and [ConfirmedOwnerWithProposal](/chainlink-nodes/contracts/ownership) API references.
+The operator contract inherits [AuthorizedReceiver](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/AuthorizedReceiver.sol) and [ConfirmedOwnerWithProposal](https://github.com/smartcontractkit/chainlink/edit/develop/contracts/src/v0.7/ConfirmedOwnerWithProposal.sol). Read [AuthorizedReceiver](/chainlink-nodes/contracts/receiver) and [ConfirmedOwnerWithProposal](/chainlink-nodes/contracts/ownership) API references.
 
 ### Methods
 
@@ -156,7 +156,7 @@ Called by the Chainlink node to fulfill requests with multi-word support. Given 
 function transferOwnableContracts(address[] ownable, address newOwner) external
 ```
 
-Transfer the ownership of ownable contracts. This is primarily intended for Authorized Forwarders but could possibly be extended to work with future contracts.
+Transfer the ownership of ownable contracts. This is primarily intended for authorized forwarders but could possibly be extended to work with future contracts.
 
 ##### Parameters
 
@@ -171,7 +171,7 @@ Transfer the ownership of ownable contracts. This is primarily intended for Auth
 function acceptOwnableContracts(address[] ownable) public
 ```
 
-Accept the ownership of an ownable contract. This is primarily intended for Authorized Forwarders but could possibly be extended to work with future contracts. Emits [OwnableContractAccepted](#ownablecontractaccepted) event.
+Accept the ownership of an ownable contract. This is primarily intended for authorized forwarders but could possibly be extended to work with future contracts. Emits [OwnableContractAccepted](#ownablecontractaccepted) event.
 
 _Must be the pending owner on the contract_
 
@@ -202,7 +202,7 @@ Sets the fulfillment permission for `senders` on `targets`. Emits [TargetsUpdate
 function acceptAuthorizedReceivers(address[] targets, address[] senders) external
 ```
 
-Accepts ownership of ownable contracts and then immediately sets the authorized sender list on each of the newly owned contracts. This is primarily intended for Authorized Forwarders but could possibly be extended to work with future contracts.
+Accepts ownership of ownable contracts and then immediately sets the authorized sender list on each of the newly owned contracts. This is primarily intended for authorized forwarders but could possibly be extended to work with future contracts.
 
 ##### Parameters
 

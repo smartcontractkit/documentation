@@ -6,7 +6,7 @@ title: "Operator Factory"
 ---
 
 The [factory](https://www.youtube.com/watch?v=Q1zZo4O_Ong) design pattern is a well know programming pattern: Rather than compiling and creating instances of a contract yourself, the _factory_ does it for you.
-As explained in the [Operator guide](/chainlink-nodes/contracts/operator), the `OperatorFactory` contract comes with these benefits:
+As explained in the [operator guide](/chainlink-nodes/contracts/operator), the `OperatorFactory` contract comes with these benefits:
 
 - Node operators do not need to manually compile and deploy [operator](/chainlink-nodes/contracts/operator) or/and [forwarder](/chainlink-nodes/contracts/forwarder) contracts. They can deploy them directly from the factory. See the[deploynewoperator](#deploynewoperator), [deploynewforwarder](#deploynewforwarder), and [deploynewoperatorandforwarder](#deploynewoperatorandforwarder) functions.
 - Clients can verify if the factory deployed a given contract. See the [created](#created) function.

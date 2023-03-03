@@ -5,7 +5,7 @@ date: Last Modified
 title: "Forwarder tutorial"
 metadata:
   title: "Chainlink Node Operators: Forwarder tutorial"
-  description: "Use a Forwarder contract for more security and flexibility."
+  description: "Use a forwarder contract for more security and flexibility."
 setup: |
   import CodeSample from "@components/CodeSample/CodeSample.astro"
   import ClickToZoom from "@components/ClickToZoom.astro"
@@ -170,7 +170,7 @@ Use the [operator factory](/chainlink-nodes/contracts/operatorfactory) to deploy
    <ClickToZoom src='/images/chainlink-nodes/node-operators/forwarder/factorycreatetransactions.jpg' />
 
 1. Right-click on each contract address and open it in a new tab.
-1. At this point, you should have one tab displaying the Operator contract and one tab displaying the Forwarder contract.
+1. At this point, you should have one tab displaying the operator contract and one tab displaying the forwarder contract.
 
    <ClickToZoom src='/images/chainlink-nodes/node-operators/forwarder/operator.jpg' />
       <ClickToZoom src='/images/chainlink-nodes/node-operators/forwarder/forwarder.jpg' />
@@ -179,7 +179,7 @@ Use the [operator factory](/chainlink-nodes/contracts/operatorfactory) to deploy
 
 ## Access control setup
 
-As explained in the [Forwarder](/chainlink-nodes/contracts/forwarder) page:
+As explained in the [forwarder](/chainlink-nodes/contracts/forwarder) page:
 
 - The owner of a forwarder contract is an [operator](/chainlink-nodes/contracts/operator) contract. The owner of the operator contract is a more secure address, such as a hardware wallet or a multisig wallet. Therefore, node operators can manage a set of forwarder contracts through an operator contract using a secure account such as hardware or a multisig wallet.
 - Forwarder contracts distinguish between owners and authorized senders. Authorized senders are hot wallets (Chainlink nodes' EOAs).
@@ -335,7 +335,7 @@ Confirm the following information:
 
 - The Chainlink node submitted the callbacks to the forwarder contract.
 - Each callback used a different account.
-- The Forwarder contract forwarded the callbacks to the operator contract.
+- The forwarder contract forwarded the callbacks to the operator contract.
 
 Open your forwarder contract in the block explorer. Two [forward](/chainlink-nodes/contracts/forwarder#forward) transactions exist.
 
@@ -347,7 +347,7 @@ Click on both transaction hashes and note that the `From` addresses differ. In t
 
 <ClickToZoom src='/images/chainlink-nodes/node-operators/forwarder/forward2.jpg' />
 
-Then click on the `Logs` tab to display the list of events. Notice the [OracleResponse](/chainlink-nodes/contracts/operator#oracleresponse) events. The Operator contract emitted them when the Forward contract called it
+Then click on the `Logs` tab to display the list of events. Notice the [OracleResponse](/chainlink-nodes/contracts/operator#oracleresponse) events. The operator contract emitted them when the Forward contract called it
 
 <ClickToZoom src='/images/chainlink-nodes/node-operators/forwarder/forward1-logs.jpg' />
 
