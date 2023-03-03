@@ -85,8 +85,8 @@ export const evmProducts = [
     image: vrfLogo,
     links: [
       ["Introduction", "/vrf/v2/introduction/"],
-      ["VRF v2 - Subscription Method", "/vrf/v2/subscription/"],
-      ["VRF v2 - Direct Funding Method", "/vrf/v2/direct-funding/"],
+      ["Subscription Method", "/vrf/v2/subscription/"],
+      ["Direct Funding Method", "/vrf/v2/direct-funding/"],
       ["Security Considerations", "/vrf/v2/security/"],
       ["Best Practices", "/vrf/v2/best-practices/"],
     ],
@@ -99,7 +99,7 @@ export const evmProducts = [
     learnMorelink: "/any-api/introduction/",
     image: externalApiLogo,
     links: [
-      ["Introduction to Using Any API", "/any-api/introduction/"],
+      ["Introduction", "/any-api/introduction/"],
       ["Make a GET Request", "/any-api/get-request/introduction/"],
       ["Find Existing Jobs", "/any-api/find-oracle/"],
       ["API Reference", "/any-api/api-reference/"],
