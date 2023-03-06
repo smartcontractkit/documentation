@@ -14,6 +14,7 @@ metadata:
   description: "This page describes the decentralized architecture which enables Chainlink to aggregate data from multiple independent node operators."
   image:
     0: "/files/OpenGraph_V3.png"
+setup: import ClickToZoom from "@components/ClickToZoom.astro"
 ---
 
 This page describes how data aggregation is applied to produce Chainlink Data Feeds and provides more insight as to how Data Feeds are updated.
@@ -24,7 +25,7 @@ Each data feed is updated by multiple, independent Chainlink oracle operators. T
 
 Off-Chain Reporting (OCR) further enhances the aggregation process. To learn more about OCR and how it works, see the [Off-Chain Reporting](/architecture-overview/off-chain-reporting/) page.
 
-![Chainlink Feeds List](/images/contract-devs/price-aggr.png)
+<ClickToZoom src='/images/contract-devs/price-aggr.png' />
 
 ## Shared Data Resource
 

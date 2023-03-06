@@ -14,6 +14,7 @@ metadata:
   description: "Learn how to securely generate random numbers for your smart contract with Chainlink VRF v2. This guide uses the Direct funding method."
 setup: |
   import VrfCommon from "@features/vrf/v2/common/VrfCommon.astro"
+  import ClickToZoom from "@components/ClickToZoom.astro"
 ---
 
 <VrfCommon callout="directFunding"/>
@@ -52,7 +53,9 @@ Make sure that your consuming contracts are funded with enough LINK tokens to co
 
 ### End To End Diagram
 
-![Vrf v2 Direct funding method end to end diagram](/images/vrf/v2-direct-funding-e2e.webp)
+This end-to-end diagram shows each step in the lifecycle of a VRF direct funding request:
+
+<ClickToZoom src='/images/vrf/v2-direct-funding-e2e.webp' />
 
 Two types of accounts exist in the Ethereum ecosystem:
 

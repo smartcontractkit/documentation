@@ -14,6 +14,7 @@ metadata:
   description: "Learn how to securely generate random numbers for your smart contract with Chainlink VRF v2(an RNG). This guide uses the subscription method."
 setup: |
   import VrfCommon from "@features/vrf/v2/common/VrfCommon.astro"
+  import ClickToZoom from "@components/ClickToZoom.astro"
 ---
 
 <VrfCommon callout="subscription"/>
@@ -54,7 +55,9 @@ The gas price depends on current network conditions. The callback gas depends on
 
 ### End To End Diagram
 
-![VRF v2 subscription method end-to-end diagram](/images/vrf/v2-subscription-e2e.webp)
+This end-to-end diagram shows each step in the lifecycle of a VRF subscription request, and registering a smart contract with a VRF subscription account:
+
+<ClickToZoom src='/images/vrf/v2-subscription-e2e.webp' />
 
 Two types of accounts exist in the Ethereum ecosystem:
 
