@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.6;
 
-// AutomationV2ProgrammaticCreation.sol imports functions from both ./AutomationRegistryInterface2_0.sol and
+// UpkeepIDConsumerExample.sol imports functions from both ./AutomationRegistryInterface1_2.sol and
 // ./interfaces/LinkTokenInterface.sol
 
-import {AutomationRegistryInterface, State, Config} from "@chainlink/contracts/src/v0.8/interfaces/AutomationRegistryInterface2_0.sol";
+import {AutomationRegistryInterface, State, Config} from "@chainlink/contracts/src/v0.8/interfaces/AutomationRegistryInterface1_2.sol";
 import {LinkTokenInterface} from "@chainlink/contracts/src/v0.8/interfaces/LinkTokenInterface.sol";
 
 /**
@@ -21,8 +21,8 @@ interface KeeperRegistrarInterface {
         uint32 gasLimit,
         address adminAddress,
         bytes calldata checkData,
-        bytes calldata offchainConfig,
         uint96 amount,
+        uint8 source,
         address sender
     ) external;
 }
