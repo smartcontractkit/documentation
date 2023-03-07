@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.6;
 
-// AutomationV2ProgrammaticCreation.sol imports functions from both ./AutomationRegistryInterface2_0.sol and
+// UpkeepIDConsumerExample.sol imports functions from both ./AutomationRegistryInterface2_0.sol and
 // ./interfaces/LinkTokenInterface.sol
 
 import {AutomationRegistryInterface, State, Config} from "@chainlink/contracts/src/v0.8/interfaces/AutomationRegistryInterface2_0.sol";
