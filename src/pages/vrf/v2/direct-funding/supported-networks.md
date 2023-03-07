@@ -1,6 +1,6 @@
 ---
 layout: ../../../../layouts/MainLayout.astro
-section: ethereum
+section: vrf
 date: Last Modified
 title: "Supported Networks"
 permalink: "docs/vrf/v2/direct-funding/supported-networks/"

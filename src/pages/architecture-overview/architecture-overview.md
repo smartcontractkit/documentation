@@ -1,6 +1,6 @@
 ---
 layout: ../../layouts/MainLayout.astro
-section: ethereum
+section: global
 date: Last Modified
 title: "Data Feeds Architecture"
 permalink: "docs/architecture-overview/"

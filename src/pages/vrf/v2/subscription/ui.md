@@ -1,6 +1,6 @@
 ---
 layout: ../../../../layouts/MainLayout.astro
-section: ethereum
+section: vrf
 date: Last Modified
 title: "Subscription Manager User Interface"
 permalink: "docs/vrf/v2/subscription/ui/"

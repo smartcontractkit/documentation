@@ -1,6 +1,6 @@
 ---
 layout: ../../../layouts/MainLayout.astro
-section: ethereum
+section: vrf
 date: Last Modified
 title: "VRF Best Practices"
 permalink: "docs/vrf/v2/best-practices/"

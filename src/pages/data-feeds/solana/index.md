@@ -1,14 +1,14 @@
 ---
-layout: ../../layouts/MainLayout.astro
-section: solana
+layout: ../../../layouts/MainLayout.astro
+section: dataFeeds
 date: Last Modified
-title: "Overview"
-permalink: "docs/solana/"
+title: "Data Feeds on Solana"
+isIndex: true
 whatsnext:
   {
-    "Use data feeds off-chain": "/solana/using-data-feeds-off-chain/",
-    "Use data feeds on-chain": "/solana/using-data-feeds-solana/",
-    "See the available data feeds on Solana": "/solana/data-feeds/data-feeds-solana/",
+    "Use data feeds off-chain": "/data-feeds/solana/using-data-feeds-off-chain/",
+    "Use data feeds on-chain": "/data-feeds/solana/using-data-feeds-solana/",
+    "See the available data feeds on Solana": "/data-feeds/price-feeds/addresses?network=solana",
   }
 ---
 
@@ -24,14 +24,14 @@ To learn how to mitigate risk to your applications, read the [Selecting Quality 
 
 ## Chainlink products and Solana clusters
 
-[Data Feeds](/solana/data-feeds/data-feeds-solana/) are available on the following Solana clusters:
+[Price Feeds](/data-feeds/price-feeds/addresses?network=solana) are available on the following Solana clusters:
 
 - [Solana Mainnet](https://solscan.io/)
 - [Solana Devnet](https://solscan.io/?cluster=devnet)
 
 Solana provides a [Testnet cluster](https://docs.solana.com/clusters#testnet) that runs newer [Solana releases](https://github.com/solana-labs/solana/releases), but Chainlink Data Feeds are not available on this cluster.
 
-See the [Solana Data Feeds](/solana/data-feeds/data-feeds-solana/) page for a full list of Chainlink data feeds that are available on Solana.
+See the [Solana Data Feeds](/data-feeds/price-feeds/addresses?network=solana) page for a full list of Chainlink data feeds that are available on Solana.
 
 To learn when more Chainlink services become available, follow us on [Twitter](https://twitter.com/chainlink) or sign up for our [mailing list](/resources/developer-communications/).
 

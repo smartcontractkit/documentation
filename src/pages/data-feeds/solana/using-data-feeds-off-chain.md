@@ -1,13 +1,13 @@
 ---
 layout: ../../../layouts/MainLayout.astro
-section: solana
+section: dataFeeds
 date: Last Modified
 title: "Using Data Feeds Off-Chain (Solana)"
 permalink: "docs/solana/using-data-feeds-off-chain/"
 whatsnext:
   {
-    "Use data feeds on-chain": "/solana/data-feeds/using-data-feeds-solana/",
-    "See the available data feeds on Solana": "/solana/data-feeds/data-feeds-solana/",
+    "Use data feeds on-chain": "/data-feeds/solana/using-data-feeds-solana/",
+    "See the available data feeds on Solana": "/data-feeds/price-feeds/addresses?network=solana/",
   }
 metadata:
   title: "Using Data Feeds Off-Chain (Solana)"
@@ -17,9 +17,9 @@ setup: |
   import { Tabs } from "@components/Tabs"
 ---
 
-Chainlink Data Feeds are the quickest way to access market prices for real-world assets. This guide demonstrates how to read Chainlink Data Feeds on the Solana Devnet using off-chain examples in the [Chainlink Solana Starter Kit](https://github.com/smartcontractkit/solana-starter-kit). To learn how to use Data Feeds in your on-chain Solana programs, see the [Using Data Feeds On-Chain](/solana/data-feeds/using-data-feeds-solana/) guide.
+Chainlink Data Feeds are the quickest way to access market prices for real-world assets. This guide demonstrates how to read Chainlink Data Feeds on the Solana Devnet using off-chain examples in the [Chainlink Solana Starter Kit](https://github.com/smartcontractkit/solana-starter-kit). To learn how to use Data Feeds in your on-chain Solana programs, see the [Using Data Feeds On-Chain](/data-feeds/solana/using-data-feeds-solana/) guide.
 
-To get the full list of Chainlink Data Feeds on Solana, see the [Solana Feeds](/solana/data-feeds/data-feeds-solana/) page.
+To get the full list of Chainlink Data Feeds on Solana, see the [Solana Feeds](/data-feeds/price-feeds/addresses?network=solana/) page.
 
 :::warn[Select quality data feeds]
 
@@ -120,7 +120,7 @@ Install the necessary components and include the example code in your project. O
    export ANCHOR_WALLET=./id.json
    ```
 
-1. Copy the sample code into your project. This example queries price data off-chain. By default, the script reads the SOL/USD feed, but you can change the `CHAINLINK_FEED_ADDRESS` variable to point to the [feed account addresses](/solana/data-feeds/data-feeds-solana/) that you want to query. You can take the components of these code samples and integrate them with your existing project. Because these examples read data feeds without making any on-chain changes, no lamports are required to run them.
+1. Copy the sample code into your project. This example queries price data off-chain. By default, the script reads the SOL/USD feed, but you can change the `CHAINLINK_FEED_ADDRESS` variable to point to the [feed account addresses](/data-feeds/price-feeds/addresses?network=solana/) that you want to query. You can take the components of these code samples and integrate them with your existing project. Because these examples read data feeds without making any on-chain changes, no lamports are required to run them.
 
 ::solidity-remix[samples/Solana/PriceFeeds/off-chain-read.js]
 

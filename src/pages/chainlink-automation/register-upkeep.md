@@ -1,6 +1,6 @@
 ---
 layout: ../../layouts/MainLayout.astro
-section: ethereum
+section: automation
 date: Last Modified
 title: "Register a Custom Logic Upkeep"
 whatsnext: { "Create a compatible contract for custom logic Upkeep": "/chainlink-automation/compatible-contracts/" }

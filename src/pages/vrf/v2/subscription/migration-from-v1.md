@@ -1,6 +1,6 @@
 ---
 layout: ../../../../layouts/MainLayout.astro
-section: ethereum
+section: vrf
 date: Last Modified
 title: "Migrating from VRF v1"
 permalink: "docs/vrf/v2/subscription/migration-from-v1/"

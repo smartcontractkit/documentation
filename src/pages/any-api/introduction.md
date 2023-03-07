@@ -1,6 +1,6 @@
 ---
 layout: ../../layouts/MainLayout.astro
-section: ethereum
+section: anyApi
 date: Last Modified
 title: "Chainlink Any API Documentation"
 permalink: "docs/any-api/introduction/"

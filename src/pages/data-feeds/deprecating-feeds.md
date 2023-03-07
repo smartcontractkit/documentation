@@ -1,7 +1,7 @@
 ---
 layout: ../../layouts/MainLayout.astro
 title: "Deprecation of Chainlink Data Feeds"
-section: ethereum
+section: dataFeeds
 metadata:
   description: "Deprecation of Chainlink Data Feeds"
 date: Last Modified

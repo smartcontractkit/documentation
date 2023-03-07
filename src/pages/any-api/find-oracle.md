@@ -1,6 +1,6 @@
 ---
 layout: ../../layouts/MainLayout.astro
-section: ethereum
+section: anyApi
 date: Last Modified
 title: "Find Existing Jobs"
 permalink: "docs/any-api/find-oracle/"

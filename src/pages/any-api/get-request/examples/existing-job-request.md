@@ -1,6 +1,6 @@
 ---
 layout: ../../../../layouts/MainLayout.astro
-section: ethereum
+section: anyApi
 date: Last Modified
 title: "Existing Job Request"
 permalink: "docs/any-api/get-request/examples/existing-job-request/"
