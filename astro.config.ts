@@ -1,6 +1,5 @@
 import { defineConfig } from "astro/config"
 import preact from "@astrojs/preact"
-import react from "@astrojs/react"
 import { astroCallouts } from "./integrations/astro-callouts"
 import { solidityRemixCode } from "./integrations/solidity-remix"
 import { youtubeEmbed } from "./integrations/youtube-embed"
@@ -35,6 +34,5 @@ export default defineConfig({
       ],
     ],
     syntaxHighlight: "prism",
-    extendDefaultPlugins: true,
   },
 })
