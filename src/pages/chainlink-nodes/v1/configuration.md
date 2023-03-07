@@ -1515,7 +1515,7 @@ Example: `P2PV2_ANNOUNCE_ADDRESSES=1.2.3.4:9999 [a52d:0:a88:1274::abcd]:1337`
 `P2PV2_BOOTSTRAPPERS` returns the default bootstrapper peers for libocr's v2 networking stack.
 Example: `P2PV2_BOOTSTRAPPERS=12D3KooWMHMRLQkgPbFSYHwD3NBuwtS1AmxhvKVUrcfyaGDASR4U@1.2.3.4:9999 12D3KooWLZ9uTC3MrvKfDpGju6RAQubiMDL7CuJcAgDRTYP7fh7R@[a52d:0:a88:1274::abcd]:1337 12D3KooWM55u5Swtpw9r8aFLQHEtw7HR4t44GdNs654ej5gRs2Dh@example.com:1234`
 
-Oracle nodes typically only know each other's PeerIDs, but not their network addresses (i.e. IPs & ports). 
+Oracle nodes typically only know each other's PeerIDs, but not their hostnames, IP addresses, or ports. 
 Bootstrappers are special nodes that help other nodes discover each other's `P2PV2_ANNOUNCE_ADDRESSES` so they can communicate.
 Nodes continuously attempt to connect to bootstrappers configured in `P2PV2_BOOTSTRAPPERS`.
 When a node wants to connect to another node (which it knows only by PeerID, but not by address), it discovers the other node's `P2PV2_ANNOUNCE_ADDRESSES` from communications received from its `P2PV2_BOOTSTRAPPERS` or other discovered nodes.
