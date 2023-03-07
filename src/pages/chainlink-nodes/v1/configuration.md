@@ -1426,7 +1426,7 @@ OCR supports multiple networking stacks. `P2P_NETWORKING_STACK` chooses which st
 - `V1V2` - Runs both stacks simultaneously. For each link with another peer, V2 networking will be preferred. If V2 does not work, the link will automatically fall back to V1. If V2 starts working again later, it will automatically be prefered again. This is useful for migrating networks without downtime. Note that the two networking stacks _must not_ be configured to bind to the same IP/port.
 - `V2`
 
-All nodes in the OCR network should share the same networking stack.
+All nodes in the OCR network should share the same networking stack. The `V1` stack is deprecated and is being phased out. Do not use it for new deployments. Expect the default value of this variable to change to `V2` in the future.
 
 #### P2P_PEER_ID
 
@@ -1499,11 +1499,13 @@ If using the Networking Stack V2, you must unset the following [Networking Stack
 [`P2P_PEER_ID`](#p2p_peer_id) is used for both Networking Stack V1 and V2.
 :::
 
+The Networking Stack V2 uses TCP, any ports mentioned in this section refer to TCP ports.
+
 #### P2PV2_ANNOUNCE_ADDRESSES
 
 - Default: _none_
 
-`P2PV2_ANNOUNCE_ADDRESSES` contains the addresses the peer will advertise on the network in host:port form as accepted by net.Dial. The addresses should be reachable by peers of interest.
+`P2PV2_ANNOUNCE_ADDRESSES` contains the addresses the node will advertise for peer discovery in host:port form as accepted by the TCP version of Go's [`net.Dial`](https://pkg.go.dev/net#Dial). The addresses should be reachable by other nodes on the network. When attempting to connect to another node, a node will attempt to dial all of the other node's `P2PV2_ANNOUNCE_ADDRESSES` in round-robin fashion.
 Example: `P2PV2_ANNOUNCE_ADDRESSES=1.2.3.4:9999 [a52d:0:a88:1274::abcd]:1337`
 
 #### P2PV2_BOOTSTRAPPERS
@@ -1512,6 +1514,9 @@ Example: `P2PV2_ANNOUNCE_ADDRESSES=1.2.3.4:9999 [a52d:0:a88:1274::abcd]:1337`
 
 `P2PV2_BOOTSTRAPPERS` returns the default bootstrapper peers for libocr's v2 networking stack.
 Example: `P2PV2_BOOTSTRAPPERS=12D3KooWMHMRLQkgPbFSYHwD3NBuwtS1AmxhvKVUrcfyaGDASR4U@1.2.3.4:9999 12D3KooWLZ9uTC3MrvKfDpGju6RAQubiMDL7CuJcAgDRTYP7fh7R@[a52d:0:a88:1274::abcd]:1337 12D3KooWM55u5Swtpw9r8aFLQHEtw7HR4t44GdNs654ej5gRs2Dh@example.com:1234`
+
+Oracle nodes typically only know each other's PeerIDs, but not their network addresses (i.e. IPs & ports). 
+Bootstrappers are special nodes that help the oracle nodes discover each other's `P2PV2_ANNOUNCE_ADDRESSES` so they can communicate: when an oracle node wants to connect to another node (which it knows only by PeerID, but not by address), it will communicate with the `P2PV2_BOOTSTRAPPERS` to discover the other node's network address. To facilitate this, nodes will regularly broadcast signed announcements containing their PeerID and `P2PV2_ANNOUNCE_ADDRESSES`.
 
 #### P2PV2_LISTEN_ADDRESSES
 
