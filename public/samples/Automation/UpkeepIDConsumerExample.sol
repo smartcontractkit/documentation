@@ -4,7 +4,7 @@ pragma solidity 0.8.6;
 // UpkeepIDConsumerExample.sol imports functions from both ./AutomationRegistryInterface2_0.sol and
 // ./interfaces/LinkTokenInterface.sol
 
-import {AutomationRegistryInterface, State, Config} from "@chainlink/contracts/src/v0.8/interfaces/AutomationRegistryInterface2_0.sol";
+import {AutomationRegistryInterface, State, OnchainConfig} from "@chainlink/contracts/src/v0.8/interfaces/AutomationRegistryInterface2_0.sol";
 import {LinkTokenInterface} from "@chainlink/contracts/src/v0.8/interfaces/LinkTokenInterface.sol";
 
 /**
@@ -53,8 +53,13 @@ contract UpkeepIDConsumerExample {
         uint96 amount,
         uint8 source
     ) public {
-        (State memory state, Config memory _c, address[] memory _k) = i_registry
-            .getState();
+        (
+            State memory state,
+            OnchainConfig memory _c,
+            address[] memory _s,
+            address[] memory _t,
+            uint8 _f
+        ) = i_registry.getState();
         uint256 oldNonce = state.nonce;
         bytes memory payload = abi.encode(
             name,
@@ -73,7 +78,7 @@ contract UpkeepIDConsumerExample {
             amount,
             bytes.concat(registerSig, payload)
         );
-        (state, _c, _k) = i_registry.getState();
+        (state, _c, _s, _t, _f) = i_registry.getState();
         uint256 newNonce = state.nonce;
         if (newNonce == oldNonce + 1) {
             uint256 upkeepID = uint256(
