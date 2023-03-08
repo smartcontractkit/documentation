@@ -13,9 +13,9 @@ To reiterate: _If you have an environment variable set that is not listed here, 
 
 The environment variables listed here are explicitly supported and current as of Chainlink node v1.3.0.
 
-## Experimental TOML configuration
+### TOML Configuration
 
-Static configuration using TOML files was added in v1.11.0 as an alternative to the existing combination of environment variables and persisted database configurations. This configuration method is _experimental_. In the future, TOML configuration `v2.0.0` will become the only supported configuration method. Enable TOML configuration by specifying the `-config <filename>.toml` flag with the path to your TOML file. Alternatively, you can specify the raw TOML config in the [`CL_CONFIG` environment variable](/chainlink-nodes/v1/configuration#cl_config). See the [CONFIG.md](https://github.com/smartcontractkit/chainlink/blob/v1.12.0/docs/CONFIG.md) and [SECRETS.md](https://github.com/smartcontractkit/chainlink/blob/v1.12.0/docs/SECRETS.md) on GitHub to learn more.
+TOML configuration for Chainlink nodes is stable and recommended for mainnet deployments. TOML configuration will be the only supported configuration method starting with `v2.0.0`. Enable TOML configuration by specifying the `-config <filename>.toml` flag with the path to your TOML file. Alternatively, you can specify the raw TOML config in the [`CL_CONFIG` environment variable](/chainlink-nodes/v1/configuration#cl_config). See the [CONFIG.md](https://github.com/smartcontractkit/chainlink/blob/v1.13.0/docs/CONFIG.md) and [SECRETS.md](https://github.com/smartcontractkit/chainlink/blob/v1.13.0/docs/SECRETS.md) on GitHub to learn more.
 
 ## Changes to node configuration starting in v1.1.0 nodes
 
@@ -46,10 +46,6 @@ The PostgreSQL URI to connect to your database. Chainlink nodes require Postgres
 ## General Node Configuration
 
 ### CL_CONFIG
-
-:::caution[Experimental]
-Use TOML for configuration only on test networks.
-:::
 
 This environment variable is used to set static configuration using TOML format. Specify the raw TOML config in this environment variable. Unlike the `-config` flag, it does not accept a path to a TOML file.
 
@@ -1515,7 +1511,7 @@ Example: `P2PV2_ANNOUNCE_ADDRESSES=1.2.3.4:9999 [a52d:0:a88:1274::abcd]:1337`
 `P2PV2_BOOTSTRAPPERS` returns the default bootstrapper peers for libocr's v2 networking stack.
 Example: `P2PV2_BOOTSTRAPPERS=12D3KooWMHMRLQkgPbFSYHwD3NBuwtS1AmxhvKVUrcfyaGDASR4U@1.2.3.4:9999 12D3KooWLZ9uTC3MrvKfDpGju6RAQubiMDL7CuJcAgDRTYP7fh7R@[a52d:0:a88:1274::abcd]:1337 12D3KooWM55u5Swtpw9r8aFLQHEtw7HR4t44GdNs654ej5gRs2Dh@example.com:1234`
 
-Oracle nodes typically only know each other's PeerIDs, but not their hostnames, IP addresses, or ports. 
+Oracle nodes typically only know each other's PeerIDs, but not their hostnames, IP addresses, or ports.
 Bootstrappers are special nodes that help other nodes discover each other's `P2PV2_ANNOUNCE_ADDRESSES` so they can communicate.
 Nodes continuously attempt to connect to bootstrappers configured in `P2PV2_BOOTSTRAPPERS`.
 When a node wants to connect to another node (which it knows only by PeerID, but not by address), it discovers the other node's `P2PV2_ANNOUNCE_ADDRESSES` from communications received from its `P2PV2_BOOTSTRAPPERS` or other discovered nodes.
