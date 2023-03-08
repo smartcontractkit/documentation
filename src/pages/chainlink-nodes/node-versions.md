@@ -15,6 +15,10 @@ You can find a list of release notes for Chainlink nodes in the [smartcontractki
 
 **[v1.13.0 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v1.13.0)**
 
+### TOML Configuration
+
+TOML configuration for Chainlink nodes is stable and recommended for mainnet deployments. TOML configuration will be the only supported configuration method starting with `v2.0.0`. Enable TOML configuration by specifying the `-config <filename>.toml` flag with the path to your TOML file. Alternatively, you can specify the raw TOML config in the [`CL_CONFIG` environment variable](/chainlink-nodes/v1/configuration#cl_config). See the [CONFIG.md](https://github.com/smartcontractkit/chainlink/blob/v1.13.0/docs/CONFIG.md) and [SECRETS.md](https://github.com/smartcontractkit/chainlink/blob/v1.13.0/docs/SECRETS.md) on GitHub to learn more.
+
 ### Added
 
 - Support for sending OCR2 job specs to the feeds manager
