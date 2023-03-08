@@ -11,6 +11,28 @@ metadata:
 
 You can find a list of release notes for Chainlink nodes in the [smartcontractkit GitHub repository](https://github.com/smartcontractkit/chainlink/releases). Docker images are available in the [Chainlink Docker hub](https://hub.docker.com/r/smartcontract/chainlink/tags).
 
+## Changes in v1.13.0 nodes
+
+**[v1.13.0 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v1.13.0)**
+
+### Added
+
+- Support for sending OCR2 job specs to the feeds manager
+- Log poller filters are now saved in the database and restored on node startup to guard against missing logs during periods where services are temporarily unable to start
+
+### Updated
+
+- TOML config: The environment variable `CL_CONFIG` is always processed as the last configuration. This has the effect of being the final override
+  for any values provided via configuration files.
+
+### Changed
+
+- The Feeds Manager is now enabled by default.
+
+### Removed
+
+- Terra is no longer supported
+
 ## Changes in v1.12.0 nodes
 
 **[v1.12.0 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v1.12.0)**
