@@ -21,8 +21,8 @@ TOML configuration for Chainlink nodes is stable and recommended for mainnet dep
 
 ### Added
 
-- Support for sending OCR2 job specs to the feeds manager
-- Log poller filters are now saved in the database and restored on node startup to guard against missing logs during periods where services are temporarily unable to start
+- Added support for sending OCR2 job specs to the Feeds Manager.
+- Log poller filters are now saved in the database and restored on node startup to guard against missing logs during periods where services are temporarily unable to start.
 
 ### Updated
 
@@ -35,7 +35,7 @@ TOML configuration for Chainlink nodes is stable and recommended for mainnet dep
 
 ### Removed
 
-- Terra is no longer supported
+- Terra is no longer supported.
 
 ## Changes in v1.12.0 nodes
 
