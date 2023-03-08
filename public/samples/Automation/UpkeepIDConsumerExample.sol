@@ -53,13 +53,7 @@ contract UpkeepIDConsumerExample {
         uint96 amount,
         uint8 source
     ) public {
-        (
-            State memory state,
-            OnchainConfig memory _c,
-            address[] memory _s,
-            address[] memory _t,
-            uint8 _f
-        ) = i_registry.getState();
+        (State memory state, , , , ) = i_registry.getState();
         uint256 oldNonce = state.nonce;
         bytes memory payload = abi.encode(
             name,
@@ -78,7 +72,7 @@ contract UpkeepIDConsumerExample {
             amount,
             bytes.concat(registerSig, payload)
         );
-        (state, _c, _s, _t, _f) = i_registry.getState();
+        (state, , , , ) = i_registry.getState();
         uint256 newNonce = state.nonce;
         if (newNonce == oldNonce + 1) {
             uint256 upkeepID = uint256(
