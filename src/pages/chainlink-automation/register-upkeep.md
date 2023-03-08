@@ -71,8 +71,11 @@ Optionally, you can fetch the LINK address and registrar address from the intend
 Make sure your contract has enough [ERC-677 LINK](/resources/link-token-contracts/) to fund the Upkeep at creation. _The minimum amount is 0.1 LINK._
 :::
 
-For Mainnets see [Code example mainnets](#mainnet-parameters)
-For Testnets see [Code example testnets](#testnet-parameters)
+Mainnets and testnets use different versions of the Registry and Registrar interfaces.
+
+- Mainnets: Use the v1.x registrar and registry interfaces. See the [Mainnet parameters](#mainnet-parameters) section.
+- Testnets: Use the v2.0 registrar and registry interfaces. See the [Testnet parameters](#testnet-parameters) section.
+
 
 ## Code examples
 
