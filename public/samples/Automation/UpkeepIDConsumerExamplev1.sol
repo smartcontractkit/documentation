@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.6;
 
-// UpkeepIDConsumerExample.sol imports functions from both ./AutomationRegistryInterface1_2.sol and
+// UpkeepIDConsumerExamplev1.sol imports functions from both ./AutomationRegistryInterface1_2.sol and
 // ./interfaces/LinkTokenInterface.sol
 
 import {AutomationRegistryInterface, State, Config} from "@chainlink/contracts/src/v0.8/interfaces/AutomationRegistryInterface1_2.sol";
@@ -27,7 +27,7 @@ interface KeeperRegistrarInterface {
     ) external;
 }
 
-contract UpkeepIDConsumerExample {
+contract UpkeepIDConsumerExamplev1 {
     LinkTokenInterface public immutable i_link;
     address public immutable registrar;
     AutomationRegistryInterface public immutable i_registry;

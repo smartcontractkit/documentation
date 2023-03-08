@@ -71,16 +71,16 @@ Optionally, you can fetch the LINK address and registrar address from the intend
 Make sure your contract has enough [ERC-677 LINK](/resources/link-token-contracts/) to fund the Upkeep at creation. _The minimum amount is 0.1 LINK._
 :::
 
-For Mainnets see [Code example mainnets](Code-example-mainnets)
-For Testnets see [Code example testnets](Code-example-testnets)
+For Mainnets see [Code example mainnets](#mainnet-parameters)
+For Testnets see [Code example testnets](#testnet-parameters)
 
 ## Code examples
-
-::solidity-remix[samples/Automation/UpkeepIDConsumerExample.sol]
 
 ### Mainnet parameters
 
 This uses v1.x registrar and registry interfaces.
+
+::solidity-remix[samples/Automation/UpkeepIDConsumerExamplev1.sol]
 
 #### `registerAndPredictID` parameters
 
@@ -98,6 +98,8 @@ This uses v1.x registrar and registry interfaces.
 ### Testnet parameters
 
 This uses v2.0 registry and registrar interfaces.
+
+::solidity-remix[samples/Automation/UpkeepIDConsumerExample.sol]
 
 #### `registerAndPredictID` parameters
 
