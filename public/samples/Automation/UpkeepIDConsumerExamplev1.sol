@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.6;
 
-// UpkeepIDConsumerExample.sol imports functions from both ./AutomationRegistryInterface2_0.sol and
+// UpkeepIDConsumerExamplev1.sol imports functions from both ./AutomationRegistryInterface1_2.sol and
 // ./interfaces/LinkTokenInterface.sol
 
-import {AutomationRegistryInterface, State, OnchainConfig} from "@chainlink/contracts/src/v0.8/interfaces/AutomationRegistryInterface2_0.sol";
+import {AutomationRegistryInterface, State, Config} from "@chainlink/contracts/src/v0.8/interfaces/AutomationRegistryInterface1_2.sol";
 import {LinkTokenInterface} from "@chainlink/contracts/src/v0.8/interfaces/LinkTokenInterface.sol";
 
 /**
@@ -21,13 +21,13 @@ interface KeeperRegistrarInterface {
         uint32 gasLimit,
         address adminAddress,
         bytes calldata checkData,
-        bytes calldata offchainConfig,
         uint96 amount,
+        uint8 source,
         address sender
     ) external;
 }
 
-contract UpkeepIDConsumerExample {
+contract UpkeepIDConsumerExamplev1 {
     LinkTokenInterface public immutable i_link;
     address public immutable registrar;
     AutomationRegistryInterface public immutable i_registry;
@@ -53,7 +53,7 @@ contract UpkeepIDConsumerExample {
         uint96 amount,
         uint8 source
     ) public {
-        (State memory state, , , , ) = i_registry.getState();
+        (State memory state, , ) = i_registry.getState();
         uint256 oldNonce = state.nonce;
         bytes memory payload = abi.encode(
             name,
@@ -72,7 +72,7 @@ contract UpkeepIDConsumerExample {
             amount,
             bytes.concat(registerSig, payload)
         );
-        (state, , , , ) = i_registry.getState();
+        (state, , ) = i_registry.getState();
         uint256 newNonce = state.nonce;
         if (newNonce == oldNonce + 1) {
             uint256 upkeepID = uint256(
