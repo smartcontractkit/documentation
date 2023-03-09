@@ -49,7 +49,3 @@ Read answers from Proof of Reserve Feeds the same way that you read other Data F
 Using Solidity, your smart contract should reference [`AggregatorV3Interface`](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol), which defines the external functions implemented by Data Feeds.
 
 ::solidity-remix[samples/PriceFeeds/ReserveConsumerV3.sol]
-
-## Disclaimer
-
-Proof of Reserve feeds can vary in their configurations. Please be careful with the configuration of the feeds used by your smart contracts. You are solely responsible for reviewing the quality of the data (e.g., a Proof of Reserve feed) that you integrate into your smart contracts and assume full responsibility for any damage, injury, or any other loss caused by your use of the feeds used by your smart contracts. Learn more about making responsible data quality decisions.
