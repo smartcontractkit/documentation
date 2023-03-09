@@ -10,10 +10,7 @@ import sitemap from "@astrojs/sitemap"
 
 // https://astro.build/config
 export default defineConfig({
-  site: "https://docs.chain.link",
-  legacy: {
-    astroFlavoredMarkdown: true,
-  },
+  site: "https://docs.chain.link/",
   integrations: [
     preact({ compat: true }),
     sitemap({ changefreq: "daily" }),
