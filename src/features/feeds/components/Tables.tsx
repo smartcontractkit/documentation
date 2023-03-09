@@ -60,7 +60,7 @@ const DefaultTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => (
   <tr>
     <td class={tableStyles.pairCol}>
       <div className={tableStyles.assetPair}>
-        {feedCategories[proxy.feedCategory] || ""}
+        {feedCategories[proxy.docs.feedCategory] || ""}
         {proxy.name}
       </div>
       {proxy.docs.shutdownDate && (
@@ -74,9 +74,9 @@ const DefaultTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => (
     </td>
 
     <td aria-hidden={isTestnet}>
-      <div className={tableStyles.assetName}>{proxy.assetName}</div>
+      <div className={tableStyles.assetName}>{proxy.docs.assetName}</div>
     </td>
-    <td aria-hidden={isTestnet}>{proxy.feedType}</td>
+    <td aria-hidden={isTestnet}>{proxy.docs.feedType}</td>
     <td aria-hidden={!showExtraDetails}>{proxy.threshold ? proxy.threshold + "%" : "N/A"}</td>
     <td aria-hidden={!showExtraDetails}>{proxy.heartbeat ? proxy.heartbeat + "s" : "N/A"}</td>
     <td aria-hidden={!showExtraDetails}>{proxy.decimals ? proxy.decimals : "N/A"}</td>
@@ -125,7 +125,7 @@ const ProofOfReserveTr = ({ network, proxy, showExtraDetails, isTestnet = false 
   <tr>
     <td class={tableStyles.pairCol}>
       <div className={tableStyles.assetPair}>
-        {feedCategories[proxy.feedCategory] || ""}
+        {feedCategories[proxy.docs.feedCategory] || ""}
         {proxy.name}
       </div>
       {proxy.docs.shutdownDate && (
@@ -160,13 +160,7 @@ const ProofOfReserveTr = ({ network, proxy, showExtraDetails, isTestnet = false 
             <dt>
               <span class="label">Asset name:</span>
             </dt>
-            <dd>{proxy.assetName}</dd>
-          </div>
-          <div>
-            <dt>
-              <span class="label">Auditor:</span>
-            </dt>
-            <dd>{proxy.docs.porAuditor}</dd>
+            <dd>{proxy.docs.assetName}</dd>
           </div>
           <div>
             <dt>
@@ -174,6 +168,22 @@ const ProofOfReserveTr = ({ network, proxy, showExtraDetails, isTestnet = false 
             </dt>
             <dd>{proxy.docs.porType}</dd>
           </div>
+          {proxy.docs.porAuditor && (
+            <div>
+              <dt>
+                <span class="label">Data source:</span>
+              </dt>
+              <dd>{proxy.docs.porAuditor}</dd>
+            </div>
+          )}
+          {proxy.docs.porAttestation && (
+            <div>
+              <dt>
+                <span class="label">Attestation:</span>
+              </dt>
+              <dd>{proxy.docs.porAttestation}</dd>
+            </div>
+          )}
         </dl>
       </div>
     </td>
@@ -196,7 +206,7 @@ const NftFloorTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => 
   <tr>
     <td class={tableStyles.pairCol}>
       <div className={tableStyles.assetPair}>
-        {feedCategories[proxy.feedCategory] || ""}
+        {feedCategories[proxy.docs.feedCategory] || ""}
         {proxy.name}
       </div>
       {proxy.docs.shutdownDate && (
