@@ -168,22 +168,18 @@ const ProofOfReserveTr = ({ network, proxy, showExtraDetails, isTestnet = false 
             </dt>
             <dd>{proxy.docs.porType}</dd>
           </div>
-          {proxy.docs.porAuditor && (
-            <div>
-              <dt>
-                <span class="label">Data source:</span>
-              </dt>
-              <dd>{proxy.docs.porAuditor}</dd>
-            </div>
-          )}
-          {proxy.docs.porAttestation && (
-            <div>
-              <dt>
-                <span class="label">Attestation:</span>
-              </dt>
-              <dd>{proxy.docs.porAttestation}</dd>
-            </div>
-          )}
+          <div>
+            <dt>
+              <span class="label">Data source:</span>
+            </dt>
+            <dd>{proxy.docs.porAuditor}</dd>
+          </div>
+          <div>
+            <dt>
+              <span class="label">Attestation:</span>
+            </dt>
+            <dd>{proxy.docs.porAttestation}</dd>
+          </div>
         </dl>
       </div>
     </td>

@@ -74,7 +74,6 @@ const initialCache = await getServerSideChainMetadata([...CHAINS, ...ALL_CHAINS]
             <a href="https://chainlinkcommunity.typeform.com/to/OYQO67EF?page=docs-datafeeds">Contact us</a> to talk to
             an expert about integrating Chainlink Data Feeds with your applications.
           </Aside>
-          <FeedsCommonCallout callout="porVerification" />
           <FeedsCommonCallout callout="quality" />
         </>
       ) : (
@@ -106,11 +105,29 @@ const initialCache = await getServerSideChainMetadata([...CHAINS, ...ALL_CHAINS]
   initialCache={initialCache}
 />
 
-<Aside type="caution">
-  <p>
-    Please be careful with the feeds used by your smart contracts. The feeds listed in our official documentation have
-    been reviewed; feeds built for custom deployments by other community members might have additional risks. Please do
-    close diligence on your feeds before implementing them in your contracts.{" "}
-    <a href="/data-feeds/selecting-data-feeds"> Learn more about making responsible data quality decisions.</a>
-  </p>
-</Aside>
+{
+  dataFeedType === "por" ? (
+    <>
+      <Aside title="Disclaimer" type="caution">
+        <p>
+          Proof of Reserve feeds can vary in their configurations. Please be careful with the configuration of the feeds
+          used by your smart contracts. You are solely responsible for reviewing the quality of the data (e.g., a Proof
+          of Reserve feed) that you integrate into your smart contracts and assume full responsibility for any damage,
+          injury, or any other loss caused by your use of the feeds used by your smart contracts. Learn more about
+          making responsible data quality decisions.
+        </p>
+      </Aside>
+    </>
+  ) : (
+    <>
+      <Aside type="caution">
+        <p>
+          Please be careful with the feeds used by your smart contracts. The feeds listed in our official documentation
+          have been reviewed; feeds built for custom deployments by other community members might have additional risks.
+          Please do close diligence on your feeds before implementing them in your contracts.{" "}
+          <a href="/data-feeds/selecting-data-feeds"> Learn more about making responsible data quality decisions.</a>
+        </p>
+      </Aside>
+    </>
+  )
+}
