@@ -1,6 +1,6 @@
 ---
 layout: ../../layouts/MainLayout.astro
-section: ethereum
+section: global
 date: Last Modified
 title: "Basic Request Model"
 permalink: "docs/architecture-request-model/"
@@ -12,13 +12,14 @@ whatsnext:
   }
 metadata:
   title: "Chainlink Basic Request Model"
+setup: import ClickToZoom from "@components/ClickToZoom.astro"
 ---
 
 ## Contracts Overview
 
 All source code is open source and available in the [Chainlink Github repository](https://github.com/smartcontractkit/chainlink).
 
-![Request Model Diagram](/files/881ade6-Simple_Architecture_Diagram_1_V1.png)
+<ClickToZoom src='/files/881ade6-Simple_Architecture_Diagram_1_V1.png' />
 
 ### ChainlinkClient
 
@@ -66,4 +67,4 @@ For more information on how to become a node operator, learn how to [run a Chain
 
 Below is a UML diagram describing the contract structure of `ATestnetConsumer`, a deployed example contract implementing `ChainlinkClient`.
 
-![Consumer UMK Diagram](/files/8ac3fc1-69a048b-Consumer_UML.svg)
+<ClickToZoom src='/files/8ac3fc1-69a048b-Consumer_UML.svg' />

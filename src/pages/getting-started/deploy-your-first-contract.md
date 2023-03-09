@@ -39,6 +39,7 @@ Deploying smart contracts on-chain requires a wallet and ETH. The ETH pays for t
 1. [Install and configure the MetaMask extension](https://metamask.io/download) in your browser.
 
 1. After you install the extension, open your browser extension list and click MetaMask to open MetaMask.
+
    ![Screenshot showing the browser extension list with MetaMask installed.](/images/getting-started/openMetaMask.png)
 
 1. Follow the instructions in MetaMask to create a new MetaMask wallet. The new wallet includes a 12-word mnemonic phrase. This phrase is the key to your wallet. Copy that phrase down in a very secure location that only you can access. You can use this phrase to retrieve your wallet later or add it to another browser.

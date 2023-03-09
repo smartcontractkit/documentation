@@ -3,7 +3,7 @@ layout: ../../layouts/MainLayout.astro
 date: Last Modified
 title: "Glossary"
 permalink: "docs/glossary/"
-section: ethereum
+section: global
 ---
 
 ### Adapter

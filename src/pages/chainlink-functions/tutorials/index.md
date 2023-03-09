@@ -3,6 +3,7 @@ layout: ../../../layouts/MainLayout.astro
 section: chainlinkFunctions
 date: Last Modified
 title: "Chainlink Functions Tutorials"
+isIndex: true
 ---
 
 ## Topics
@@ -14,3 +15,4 @@ title: "Chainlink Functions Tutorials"
 - [Using Secrets in Requests](/chainlink-functions/tutorials/api-use-secrets/)
 - [Call Multiple Data Sources](/chainlink-functions/tutorials/api-multiple-calls/)
 - [Using Off-chain Secrets in Requests](/chainlink-functions/tutorials/api-use-secrets-offchain/)
+- [Automate your Functions](/chainlink-functions/tutorials/automate-functions/)

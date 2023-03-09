@@ -3,6 +3,7 @@ layout: ../../layouts/MainLayout.astro
 section: chainlinkFunctions
 date: Last Modified
 title: "What is Chainlink Functions?"
+isIndex: true
 whatsnext:
   {
     "Learn the basics in the Getting Started guide.": "/chainlink-functions/getting-started",
@@ -31,7 +32,7 @@ Chainlink Functions is offered "as is" and "as available" without conditions or 
 _Chainlink Functions_ enables a variety of use cases. Use _Chainlink Functions_ to:
 
 - Connect to any public data. For example, you can connect your smart contracts to weather statistics for parametric insurance or real-time sports results for Dynamic NFTs.
-- Connect to public data and transform it before consumption. You could calculate Twitter sentiment after reading data from the Twitter API, or derive asset prices after reading price data from [Chainlink Price Feeds](data-feeds/price-feeds).
+- Connect to public data and transform it before consumption. You could calculate Twitter sentiment after reading data from the Twitter API, or derive asset prices after reading price data from [Chainlink Price Feeds](/data-feeds/price-feeds).
 - Connect to a data from password-protected IoT devices like smartwatches, or enterprise systems such as resource planning systems.
 - Connect to an external decentralized database such as IPFS to facilitate off-chain processes for a dApp or build a low-cost governance voting system.
 - Connect to your Web2 application and build complex hybrid smart contracts.

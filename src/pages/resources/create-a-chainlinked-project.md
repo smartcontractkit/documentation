@@ -1,6 +1,6 @@
 ---
 layout: ../../layouts/MainLayout.astro
-section: ethereum
+section: global
 date: Last Modified
 title: "Install Frameworks"
 permalink: "docs/create-a-chainlinked-project/"

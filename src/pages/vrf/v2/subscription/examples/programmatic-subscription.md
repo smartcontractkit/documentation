@@ -1,6 +1,6 @@
 ---
 layout: ../../../../../layouts/MainLayout.astro
-section: ethereum
+section: vrf
 date: Last Modified
 title: "Programmatic Subscription"
 permalink: "docs/vrf/v2/subscription/examples/programmatic-subscription/"
