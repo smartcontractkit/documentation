@@ -31,7 +31,7 @@ Off-chain reserves provide their data using the following methods:
 
 - Third-party: An auditor, accounting firm, or other third party attests to reserves. This is done by combining both fiat and investment assets into a numeric value that is reported against the token.
 - Custodian: Reserves data are pulled directly from the bank or custodian. The custodian has direct access to the bank or vault holding the assets. Generally, this works when the underlying asset pulled requires no additional valuation and is simply reported on-chain.
-- Self-Attested: Reserve data is read from an API that the token issuer hosts. Self-attested feeds carry additional risk.
+- ⚠️ Self-attested: Reserve data is read from an API that the token issuer hosts. Self-attested feeds carry additional risk.
 
 ### Cross-chain reserves
 
