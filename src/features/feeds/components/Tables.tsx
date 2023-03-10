@@ -178,7 +178,7 @@ const ProofOfReserveTr = ({ network, proxy, showExtraDetails, isTestnet = false 
             <dt>
               <span class="label">Attestation:</span>
             </dt>
-            <dd>{proxy.docs.porAttestation}</dd>
+            <dd>{proxy.docs.porSource}</dd>
           </div>
         </dl>
       </div>
