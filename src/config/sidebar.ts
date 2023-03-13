@@ -587,6 +587,10 @@ export const SIDEBAR = {
           title: "Best Practices",
           url: "vrf/v2/best-practices",
         },
+        {
+          title: "Estimating Costs",
+          url: "vrf/v2/estimating-costs",
+        },
       ],
     },
     {
