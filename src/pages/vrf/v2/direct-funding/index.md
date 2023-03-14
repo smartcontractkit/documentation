@@ -60,7 +60,7 @@ Set up your consuming contract:
 
 After you submit your request, it is processed using the [Request & Receive Data](#request-and-receive-data) cycle:
 
-1. The consuming contract calls the [VRFV2Wrapper](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/VRFV2Wrapper.sol) `calculateRequestPrice` function to estimate the total transaction cost to fulfill randomness. Learn [how to estimate transaction costs](#understanding-transaction-costs).
+1. The consuming contract calls the [VRFV2Wrapper](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/VRFV2Wrapper.sol) `calculateRequestPrice` function to estimate the total transaction cost to fulfill randomness. Learn [how to estimate transaction costs](/vrf/v2/estimating-costs).
 
 1. The consuming contract calls the [LinkToken](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.4/LinkToken.sol) `transferAndCall` function to pay the wrapper with the calculated request price. This method sends LINK tokens and executes the [VRFV2Wrapper](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/VRFV2Wrapper.sol) `onTokenTransfer` logic.
 
