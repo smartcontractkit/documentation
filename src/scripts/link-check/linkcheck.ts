@@ -78,8 +78,8 @@ server.stdout.on("data", (data) => {
     checker.stdout.on("data", (checkerData) => {
       stdout.write(checkerData.toString())
     })
-    checker.on("exit", (code, other) => {
-      console.log(`linkcheck build folder finished, exit code ${code}, signal ${other}`)
+    checker.on("exit", (buildCheckerExitCode, other) => {
+      console.log(`linkcheck build folder finished, exit code ${buildCheckerExitCode}, signal ${other}`)
 
       const linksFile = processSiteMap(baseUrl)
       console.log("check site maps links", linksFile)
@@ -100,8 +100,8 @@ server.stdout.on("data", (data) => {
         stdout.write(checkerData.toString())
       })
 
-      siteMapChecker.on("exit", (codeNumber, signal) => {
-        console.log(`linkcheck of sitemaps link  finished, exit code ${codeNumber}, signal ${signal}`)
+      siteMapChecker.on("exit", (siteMapCheckerExitCode, signal) => {
+        console.log(`linkcheck of sitemaps link  finished, exit code ${siteMapCheckerExitCode}, signal ${signal}`)
         server.stdout.destroy()
         server.kill()
         checker.stdout.destroy()
@@ -109,11 +109,14 @@ server.stdout.on("data", (data) => {
         siteMapChecker.stdout.destroy()
         siteMapChecker.kill()
         let result
-        if (code === null && codeNumber === null) {
+        if (
+          (buildCheckerExitCode === null || buildCheckerExitCode === 0) &&
+          (siteMapCheckerExitCode === null || siteMapCheckerExitCode === 0)
+        ) {
           result = undefined
         } else {
-          console.error(`build folder link checker exited with code ${code}`)
-          console.error(`sitemaps link checker exited with code ${codeNumber}`)
+          console.error(`build folder link checker exited with code ${buildCheckerExitCode}`)
+          console.error(`sitemaps link checker exited with code ${siteMapCheckerExitCode}`)
           result = 2
         }
         exit(result)
