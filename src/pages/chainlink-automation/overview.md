@@ -1,9 +1,10 @@
 ---
 layout: ../../layouts/MainLayout.astro
-section: ethereum
+section: automation
 date: Last Modified
 title: "Chainlink Automation Architecture"
 whatsnext: { "FAQs": "/chainlink-automation/faqs/" }
+setup: import ClickToZoom from "@components/ClickToZoom.astro"
 ---
 
 Chainlink Automation enable you to execute smart contract functions based on conditions that you specify without having to create and maintain your own centralized stack. Chainlink Automation is highly reliable and decentralized, supported by an industry leading team, and enables developers to deploy applications faster.
@@ -16,7 +17,7 @@ There are three main actors in the ecosystem:
 
 The following diagram describes the architecture of the Chainlink Automation Network. The Chainlink Automation Registry governs the actors on the network and compensates Automation Nodes for performing successful upkeeps. Developers can register their Upkeeps, and Node Operators can register as Automation Nodes.
 
-![automation-overview](/images/contract-devs/automation/automation-overview.png)
+<ClickToZoom src='/images/contract-devs/automation/automation-overview.png' />
 
 ## Automation Contracts
 

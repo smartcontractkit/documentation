@@ -13,15 +13,33 @@ export const MENU: MenuItems = {
       link: "/getting-started/conceptual-overview",
       section: "gettingStarted",
     },
-    { text: "EVM Chains", link: "/ethereum", section: "ethereum" },
-    { text: "Solana", link: "/solana", section: "solana" },
+    {
+      text: "Data Feeds",
+      link: "/data-feeds/",
+      section: "dataFeeds",
+    },
+    {
+      text: "VRF",
+      link: "/vrf/",
+      section: "vrf",
+    },
+    {
+      text: "Automation",
+      link: "/chainlink-automation/introduction/",
+      section: "automation",
+    },
     {
       text: "Functions",
       link: "/chainlink-functions",
       section: "chainlinkFunctions",
     },
     {
-      text: "Node Operators",
+      text: "Any API",
+      link: "/any-api/introduction",
+      section: "anyApi",
+    },
+    {
+      text: "Nodes",
       link: "/chainlink-nodes",
       section: "nodeOperator",
     },

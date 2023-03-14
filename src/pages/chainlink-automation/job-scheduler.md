@@ -1,6 +1,6 @@
 ---
 layout: ../../layouts/MainLayout.astro
-section: ethereum
+section: automation
 date: Last Modified
 title: "Chainlink Automation Job Scheduler"
 whatsnext: { "Register a Custom Logic Upkeep": "/chainlink-automation/register-upkeep/" }
@@ -73,7 +73,7 @@ After you enter your CRON expression, click **Next**.
 To complete the upkeep registration process, you must enter some information about your upkeep including its name, gas limit, starting balance LINK, and contact information.
 
 :::note[Job Scheduler Gas requirements]
-When you create an upkeep through the Job Scheduler, Chainlink Automation deploys a new `CronUpkeep` contract from the [CronUpkeepFactory](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/factories/CronUpkeepFactory.sol) to manage your time schedule and ensure that it is compatible. This contract uses roughly 110K gas per call, so it is recommended to add 150K additional gas to the gas limit of the function you are automating.
+When you create an upkeep through the Job Scheduler, Chainlink Automation deploys a new `CronUpkeep` contract from the [CronUpkeepFactory](https://github.com/smartcontractkit/chainlink/blob/d5a253fb6959104844eda8479c08909a76a6fea7/contracts/src/v0.8/automation/upkeeps/CronUpkeepFactory.sol) to manage your time schedule and ensure that it is compatible. This contract uses roughly 110K gas per call, so it is recommended to add 150K additional gas to the gas limit of the function you are automating.
 :::
 
 ![Automation Upkeep Details](/images/contract-devs/automation/automation-upkeep-details.png)

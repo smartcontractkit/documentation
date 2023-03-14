@@ -3,7 +3,7 @@ layout: ../../layouts/MainLayout.astro
 date: Last Modified
 title: "Example Projects"
 permalink: "docs/example-projects/"
-section: ethereum
+section: global
 ---
 
 # Hackathons

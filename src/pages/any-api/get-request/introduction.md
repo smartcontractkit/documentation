@@ -1,6 +1,6 @@
 ---
 layout: ../../../layouts/MainLayout.astro
-section: ethereum
+section: anyApi
 date: Last Modified
 title: "Make a GET Request"
 permalink: "docs/any-api/get-request/introduction/"

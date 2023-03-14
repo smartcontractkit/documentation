@@ -1,9 +1,9 @@
 ---
-layout: ../../../layouts/MainLayout.astro
-section: ethereum
+layout: ../../layouts/MainLayout.astro
+section: dataFeeds
 date: Last Modified
 title: "Data Feeds API Reference"
-permalink: "docs/data-feeds/price-feeds/api-reference/"
+permalink: "docs/data-feeds/api-reference/"
 metadata:
   description: "API reference for using Chainlink Data Feeds in smart contracts."
 ---
@@ -88,7 +88,7 @@ function getRoundData(
 
 #### latestRoundData
 
-Get the price from the latest round.
+Get the data from the latest round.
 
 <!-- prettier-ignore -->
 ```solidity
@@ -105,7 +105,7 @@ function latestRoundData() external view
 **Return values:**
 
 - `roundId`: The round ID.
-- `answer`: The price.
+- `answer`: The data that this specific feed provides. Depending on the feed you selected, this answer provides asset prices, reserves, NFT floor prices, and other types of data.
 - `startedAt`: Timestamp of when the round started.
 - `updatedAt`: Timestamp of when the round was updated.
 - `answeredInRound`: The round ID of the round in which the answer was computed.
@@ -153,17 +153,17 @@ A simple way to read the variables or functions is to get the ABI from a blockch
 | Name                                                    | Description                                                                                                                                                                                                                                 |
 | ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [decimals](#decimals-1)                                 | Return the number of digits of precision for the stored answer. Answers are stored in fixed-point format.                                                                                                                                   |
-| [description](#description-1)                           | Return a description for this data feed. Usually this is an asset pair for a price feed.                                                                                                                                                    |
-| [getAnswer](#getanswer)                                 | (Deprecated)                                                                                                                                                                                                                                |
+| [description](#description-1)                           | Return a description for this data feed. This is different depending on which feed you select.                                                                                                                                              |
+| [getAnswer](#getanswer)                                 | (Deprecated - Do not use this function.)                                                                                                                                                                                                    |
 | [getBilling](#getbilling)                               | Retrieve the current billing configuration.                                                                                                                                                                                                 |
 | [getRoundData](#getrounddata-1)                         | Get the full information for a specific aggregator round including the answer and update timestamps. Use this to get the full historical data for a round.                                                                                  |
-| [getTimestamp](#gettimestamp)                           | (Deprecated)                                                                                                                                                                                                                                |
+| [getTimestamp](#gettimestamp)                           | (Deprecated - Do not use this function.)                                                                                                                                                                                                    |
 | [hasAccess](#hasaccess)                                 | Check if an address has internal access.                                                                                                                                                                                                    |
-| [latestAnswer](#latestanswer)                           | (Deprecated)                                                                                                                                                                                                                                |
+| [latestAnswer](#latestanswer)                           | (Deprecated - Do not use this function.)                                                                                                                                                                                                    |
 | [latestConfigDetails](#latestconfigdetails)             | Return information about the current off-chain reporting protocol configuration.                                                                                                                                                            |
-| [latestRound](#latestround)                             | (Deprecated)                                                                                                                                                                                                                                |
+| [latestRound](#latestround)                             | (Deprecated - Do not use this function.)                                                                                                                                                                                                    |
 | [latestRoundData](#latestrounddata-1)                   | Get the full information for the most recent round including the answer and update timestamps.                                                                                                                                              |
-| [latestTimestamp](#latesttimestamp)                     | (Deprecated)                                                                                                                                                                                                                                |
+| [latestTimestamp](#latesttimestamp)                     | (Deprecated - Do not use this function.)                                                                                                                                                                                                    |
 | [latestTransmissionDetails](#latesttransmissiondetails) | Get information about the most recent answer.                                                                                                                                                                                               |
 | [linkAvailableForPayment](#linkavailableforpayment)     | Get the amount of LINK on this contract that is available to make payments to oracles. This value can be negative if there are outstanding payment obligations.                                                                             |
 | [oracleObservationCount](#oracleobservationcount)       | Returns the number of observations that oracle is due to be reimbursed for.                                                                                                                                                                 |
@@ -198,7 +198,7 @@ function description() public view override checkAccess returns (string memory) 
 
 #### getAnswer
 
-:::caution[ This function is deprecated.]
+:::caution[ This function is deprecated. Do not use this function.]
 
 :::
 
@@ -253,7 +253,7 @@ function getRoundData(
 
 #### getTimestamp
 
-:::caution[ This function is deprecated.]
+:::caution[ This function is deprecated. Do not use this function.]
 
 :::
 
@@ -271,7 +271,7 @@ function hasAccess(address _user, bytes memory _calldata) public view virtual ov
 
 #### latestAnswer
 
-:::caution[ This function is deprecated.]
+:::caution[ This function is deprecated. Do not use this function.]
 
 :::
 
@@ -289,7 +289,7 @@ function latestConfigDetails() external view returns (uint32 configCount, uint32
 
 #### latestRound
 
-:::caution[ This function is deprecated.]
+:::caution[ This function is deprecated. Do not use this function.]
 
 :::
 
@@ -313,7 +313,7 @@ function latestRoundData()
 
 #### latestTimestamp
 
-:::caution[ This function is deprecated.]
+:::caution[ This function is deprecated. Do not use this function.]
 
 :::
 

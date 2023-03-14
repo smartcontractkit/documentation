@@ -1,6 +1,6 @@
 ---
 layout: ../../layouts/MainLayout.astro
-section: ethereum
+section: automation
 date: Last Modified
 title: "Chainlink Automation Release Notes"
 whatsnext:
@@ -23,6 +23,7 @@ whatsnext:
 - [Keepers on Binance Smart Chain and Polygon](#2021-11-18---keepers-on-binance-smart-chain-and-polygon)
 - [Keepers v1.1 launch on Ethereum](#2021-08-05---keepers-v11-launch-on-ethereum)
 - [Questions](#questions)
+
 
 ## Chainlink Keepers is now Chainlink Automation
 

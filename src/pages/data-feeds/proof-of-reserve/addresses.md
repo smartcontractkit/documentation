@@ -1,7 +1,7 @@
 ---
 layout: ../../../layouts/MainLayout.astro
 title: "Proof of Reserve Feed Addresses"
-section: ethereum
+section: dataFeeds
 datafeedtype: por
 metadata:
   title: "Proof of Reserve Feed Addresses"
