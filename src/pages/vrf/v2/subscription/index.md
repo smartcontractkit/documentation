@@ -92,21 +92,6 @@ After you submit your request, it is processed using the [Request & Receive Data
 1. The VRF service picks up the event and waits for the specified number of block confirmations to respond back to the VRF coordinator with the random values and a proof (`requestConfirmations`).
 
 1. The VRF coordinator verifies the proof on-chain, then it calls back the consuming contract `fulfillRandomWords` function.
-   After the request is complete, the final gas cost is recorded based on how much gas is required for the verification and callback. The total gas cost in wei for your request uses the following formula:
-
-   ```
-   (Gas price * (Verification gas + Callback gas)) = total gas cost
-   ```
-
-   The total gas cost is converted to LINK using the ETH/LINK data feed. In the unlikely event that the data feed is unavailable, the VRF coordinator uses the `fallbackWeiPerUnitLink` value for the conversion instead. The `fallbackWeiPerUnitLink` value is defined in the [coordinator contract](/vrf/v2/subscription/supported-networks/#configurations) for your selected network.
-
-   The LINK premium is added to the total gas cost. The premium is defined in the [coordinator contract](/vrf/v2/subscription/supported-networks/#configurations) with the `fulfillmentFlatFeeLinkPPMTier1` parameter in millionths of LINK.
-
-   ```
-   (total gas cost + LINK premium) = total request cost
-   ```
-
-   The total request cost is charged to your subscription balance.
 
 ## Limits
 
@@ -114,16 +99,34 @@ Chainlink VRF v2 has some [subscription limits](#subscription-limits) and [coord
 
 ### Subscription limits
 
-Each subscription has the following limits:
+Subscriptions are required to maintain a minimum balance, and they can support a limited number of consuming contracts.
 
-- Each subscription must maintain a minimum balance to fund requests from consuming contracts. If your balance is below that minimum, your requests remain pending for up to 24 hours before they expire. After you add sufficient LINK to a subscription, pending requests automatically process as long as they have not expired.
-- The minimum subscription balance must be sufficient for each new consuming contract that you add to a subscription. The required size of the minimum balance depends on the gas lane and the size of the request that the consuming contract makes. For example, a consuming contract that requests one random value will require a smaller minimum balance than a consuming contract that requests 50 random values. In general, you can estimate the required minimum LINK balance using the following formula where max verification gas is always 200,000.
+#### Minimum subscription balance
 
-  ```
-  (((Gas lane maximum * (Max verification gas + Callback gas limit)) / (1,000,000,000 Gwei/ETH)) / (ETH/LINK price)) + LINK premium = Minimum LINK
-  ```
+Each subscription must maintain a minimum balance to fund requests from consuming contracts. This minimum balance requirement serves as a buffer against gas volatility by ensuring that all your requests have more than enough funding to go through. If your balance is below the minimum, your requests remain pending for up to 24 hours before they expire. After you add sufficient LINK to a subscription, pending requests automatically process as long as they have not expired.
 
-- Each subscription supports up to 100 consuming contracts. If you need more than 100 consuming contracts, create multiple subscriptions.
+In the Subscription Manager, the minimum subscription balance is displayed as the **Max Cost**, and it indicates the amount of LINK you need to add for a pending request to process. After the request is processed, only the amount actually consumed by the request is deducted from your balance. For example, if your minimum balance is 10 LINK, but your subscription balance is 5 LINK, you need to add at least 5 more LINK for your request to process. This does not mean that your request will ultimately cost 10 LINK. If the request ultimately costs 3 LINK after it has processed, then 3 LINK is deducted from your subscription balance.
+
+The minimum subscription balance must be sufficient for each new consuming contract that you add to a subscription. For example, the minimum balance for a subscription that supports 20 consuming contracts needs to cover all the requests for all 20 contracts, while a subscription with one consuming contract only needs to cover that one contract.
+
+For one request, the required size of the minimum balance depends on the gas lane and the size of the request. For example, a consuming contract that requests one random value will require a smaller minimum balance than a consuming contract that requests 50 random values. In general, you can estimate the required minimum LINK balance using the following formula where max verification gas is always 200,000 gwei.
+
+```
+(((Gas lane maximum * (Max verification gas + Callback gas limit)) / (1,000,000,000 Gwei/ETH)) / (ETH/LINK price)) + LINK premium = Minimum LINK
+```
+
+Here is the same formula, broken out into steps:
+
+```
+Gas lane maximum * (Max verification gas + Callback gas limit) = Total estimated gas (Gwei)
+Total estimated gas (Gwei) / 1,000,000,000 Gwei/ETH = Total estimated gas (ETH)
+Total estimated gas (ETH) / (ETH/LINK price) = Total estimated gas (LINK)
+Total estimated gas (LINK) + LINK premium = Minimum subscription balance (LINK)
+```
+
+#### Maximum consuming contracts
+
+Each subscription supports up to 100 consuming contracts. If you need more than 100 consuming contracts, create multiple subscriptions.
 
 ### Coordinator contract limits
 
