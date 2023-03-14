@@ -15,11 +15,17 @@ metadata:
     0: "/files/04b8e56-cl.png"
 ---
 
-:::note[ Requirements]
+import Aside from "../../components/Aside.astro"
+import { YouTube } from "@astro-community/astro-embed-youtube"
+import CodeSample from "../../components/CodeSample/CodeSample.astro"
 
-This guide requires basic knowledge about smart contracts. If you are new to smart contract development, read the [Consuming Data Feeds](/getting-started/consuming-data-feeds/) and [Random Numbers](/getting-started/intermediates-tutorial/) guides before you begin.
+<Aside type="note" title="Requirements">
+ 
+This guide requires basic knowledge about smart contracts. If you are new to smart contract development,
+read the [Consuming Data Feeds](/getting-started/consuming-data-feeds/) and
+[Random Numbers](/getting-started/intermediates-tutorial/) guides before you begin.
 
-:::
+</Aside>
 
 <YouTube id="https://www.youtube.com/watch?v=ay4rXZhAefs" />
 
@@ -59,7 +65,7 @@ Let's walk through a real example, where you will retrieve 24 volumes of the [ET
 
 1. [HTTP](/chainlink-nodes/oracle-jobs/task-types/task_http) calls the API and returns the body of an HTTP GET result for [ETH/USD pair](https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETH&tsyms=USD). Example:
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```json
 {"RAW":
   {"ETH":
@@ -90,7 +96,7 @@ Let's see what this looks like in a contract:
 
 ### Contract Example
 
-::solidity-remix[samples/APIRequests/APIConsumer.sol]
+<CodeSample src="/samples/APIRequests/APIConsumer.sol" />
 
 Here is a breakdown of each component of this contract:
 
@@ -115,7 +121,7 @@ If all the parameters are defined within the Oracle job, the only things a smart
 
 This will make your smart contract much more succinct. The `requestVolumeData` function from the code example [above](#contract-example) would look more like this:
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```solidity
 function requestVolumeData() public returns (bytes32 requestId) {
     Chainlink.Request memory req = buildChainlinkRequest(jobId, address(this), this.fulfill.selector);
