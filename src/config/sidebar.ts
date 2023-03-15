@@ -110,10 +110,6 @@ export const SIDEBAR = {
           title: "Connect to Public API Data",
           url: "any-api/introduction",
         },
-        {
-          title: "Run a Chainlink Node",
-          url: "chainlink-nodes/v1/running-a-chainlink-node",
-        },
       ],
     },
   ],
@@ -844,96 +840,111 @@ export const SIDEBAR = {
           url: "chainlink-nodes/node-versions",
         },
         {
-          title: "v1.x.x",
-          url: "chainlink-nodes/v1/",
+          title: "System Requirements",
+          url: "chainlink-nodes/resources/requirements",
+        },
+        {
+          title: "Run a Chainlink Node",
+          url: "chainlink-nodes/v1/fulfilling-requests",
+        },
+        {
+          title: "Configuring Nodes",
+          url: "chainlink-nodes/configuring-nodes",
           children: [
             {
-              title: "Tutorial - Running a Chainlink Node locally",
-              url: "chainlink-nodes/v1/running-a-chainlink-node",
+              title: "Node Config (TOML)",
+              url: "chainlink-nodes/node-config",
             },
             {
-              title: "Tutorial - Fulfilling Requests",
-              url: "chainlink-nodes/v1/fulfilling-requests",
+              title: "Secrets Config (TOML)",
+              url: "chainlink-nodes/secrets-config",
             },
             {
-              title: "Tutorial - Using Forwarder",
-              url: "chainlink-nodes/v1/using-forwarder",
-            },
-            {
-              title: "Configuring Nodes",
+              title: "Legacy Config (.env)",
               url: "chainlink-nodes/v1/configuration",
             },
           ],
         },
         {
-          title: "Contracts",
-          url: "chainlink-nodes/contracts/",
-          children: [
-            {
-              title: "Operator",
-              url: "chainlink-nodes/contracts/operator",
-            },
-            {
-              title: "Operator Factory",
-              url: "chainlink-nodes/contracts/operatorfactory",
-            },
-            {
-              title: "Forwarder",
-              url: "chainlink-nodes/contracts/forwarder",
-            },
-            {
-              title: "Receiver",
-              url: "chainlink-nodes/contracts/receiver",
-            },
-            {
-              title: "Ownership",
-              url: "chainlink-nodes/contracts/ownership",
-            },
-            {
-              title: "Contract Addresses",
-              url: "chainlink-nodes/contracts/addresses",
-            },
-          ],
+          title: "Roles and Access Control",
+          url: "chainlink-nodes/v2/roles-and-access",
+        },
+      ],
+    },
+    {
+      section: "Tutorials",
+      contents: [
+        {
+          title: "Fulfilling Requests",
+          url: "chainlink-nodes/v1/fulfilling-requests",
         },
         {
-          title: "Resources",
-          url: "chainlink-nodes/resources",
-          children: [
-            {
-              title: "Requirements",
-              url: "chainlink-nodes/resources/requirements",
-            },
-            {
-              title: "Running an Ethereum Client",
-              url: "chainlink-nodes/resources/run-an-ethereum-client",
-            },
-            {
-              title: "Connecting to a Remote Database",
-              url: "chainlink-nodes/resources/connecting-to-a-remote-database",
-            },
-            {
-              title: "Enabling HTTPS Connections",
-              url: "chainlink-nodes/resources/enabling-https-connections",
-            },
-            {
-              title: "Performing System Maintenance",
-              url: "chainlink-nodes/resources/performing-system-maintenance",
-            },
-            {
-              title: "Security and Operation Best Practices",
-              url: "chainlink-nodes/resources/best-security-practices",
-            },
-            {
-              title: "Optimizing EVM Performance",
-              url: "chainlink-nodes/resources/evm-performance-configuration",
-            },
-            {
-              title: "Best Practices for Nodes on AWS",
-              url: "chainlink-nodes/resources/best-practices-aws",
-            },
-            { title: "Miscellaneous", url: "chainlink-nodes/resources/miscellaneous" },
-          ],
+          title: "Using Forwarder Contracts",
+          url: "chainlink-nodes/v1/using-forwarder",
         },
+      ],
+    },
+    {
+      section: "Contracts",
+      contents: [
+        {
+          title: "Operator",
+          url: "chainlink-nodes/contracts/operator",
+        },
+        {
+          title: "Operator Factory",
+          url: "chainlink-nodes/contracts/operatorfactory",
+        },
+        {
+          title: "Forwarder",
+          url: "chainlink-nodes/contracts/forwarder",
+        },
+        {
+          title: "Receiver",
+          url: "chainlink-nodes/contracts/receiver",
+        },
+        {
+          title: "Ownership",
+          url: "chainlink-nodes/contracts/ownership",
+        },
+        {
+          title: "Contract Addresses",
+          url: "chainlink-nodes/contracts/addresses",
+        },
+      ],
+    },
+    {
+      section: "Resources",
+      contents: [
+        {
+          title: "Running an Ethereum Client",
+          url: "chainlink-nodes/resources/run-an-ethereum-client",
+        },
+        {
+          title: "Connecting to a Remote Database",
+          url: "chainlink-nodes/resources/connecting-to-a-remote-database",
+        },
+        {
+          title: "Enabling HTTPS Connections",
+          url: "chainlink-nodes/resources/enabling-https-connections",
+        },
+        {
+          title: "Performing System Maintenance",
+          url: "chainlink-nodes/resources/performing-system-maintenance",
+        },
+        {
+          title: "Security and Operation Best Practices",
+          url: "chainlink-nodes/resources/best-security-practices",
+        },
+        {
+          title: "Optimizing EVM Performance",
+          url: "chainlink-nodes/resources/evm-performance-configuration",
+        },
+        {
+          title: "Best Practices for Nodes on AWS",
+          url: "chainlink-nodes/resources/best-practices-aws",
+        },
+        { title: "Miscellaneous", url: "chainlink-nodes/resources/miscellaneous" },
       ],
     },
     {
