@@ -8,9 +8,9 @@ whatsnext:
     "Build flexible contracts": "/chainlink-automation/flexible-upkeeps/",
     "Manage your Upkeeps": "/chainlink-automation/manage-upkeeps/",
   }
-setup: |
-  import CodeSample from "@components/CodeSample/CodeSample.astro"
 ---
+
+import { Aside, CodeSample } from "@components"
 
 Use custom logic to allow Chainlink Automation to determine when to execute your smart contract functions.
 
@@ -27,7 +27,7 @@ To use Chainlink Automation, contracts must meet the following requirements:
 
 Use these elements to create a compatible contract that will automatically increment a counter after every `updateInterval` seconds. After you register the contract as an upkeep, the Chainlink Automation Network simulates our `checkUpkeep` off-chain during every block to determine if the `updateInterval` time has passed since the last increment (timestamp). When `checkUpkeep` returns true, the Chainlink Automation Network calls `performUpkeep` on-chain and increments the counter. This cycle repeats until the upkeep is cancelled or runs out of funding.
 
-::solidity-remix[samples/Automation/AutomationCounter.sol]
+<CodeSample src="samples/Automation/AutomationCounter.sol" />
 
 Compile and deploy your own Automation Counter onto a [supported Testnet](/chainlink-automation/supported-networks/).
 
@@ -100,9 +100,11 @@ You can create a highly flexible off-chain computation infrastructure that can p
 
 When `checkUpkeep` returns `upkeepNeeded == true`, the Automation node broadcasts a transaction to the blockchain to execute your `performUpkeep` function on-chain with `performData` as an input.
 
-:::note[Gas limits for performUpkeep]
-During registration you have to specify the maximum gas limit that we should allow your contract to use. We simulate `performUpkeep` during `checkUpkeep` and if the gas exceeds this limit the function will not execute on-chain. One method to determine your upkeep's gas limit is to simulate the `performUpkeep` function and add enough overhead to take into account increases that might happen due to changes in `performData` or on-chain data. The gas limit you specify cannot exceed the `performGasLimit` in the [configuration of the registry](/chainlink-automation/supported-networks/#configurations).
-:::
+<Aside type="note" title="Gas limits for performUpkeep">
+
+During registration you have to specify the maximum gas limit that we should allow your contract to use. We simulate `performUpkeep`during `checkUpkeep` and if the gas exceeds this limit the function will not execute on-chain. One method to determine your upkeep's gas limit is to simulate the `performUpkeep` function and add enough overhead to take into account increases that might happen due to changes in `performData` or on-chain data. The gas limit you specify cannot exceed the `performGasLimit` in the [configuration of the registry](/chainlink-automation/supported-networks/#configurations).
+
+</Aside>
 
 Ensure that your `performUpkeep` is _idempotent_. Your `performUpkeep` function should change state such that `checkUpkeep` will not return `true` for the same subset of work once said work is complete. Otherwise the Upkeep will remain eligible and result in multiple performances by the Chainlink Automation Network on the exactly same subset of work. As a best practice, always [revalidate](#revalidate-performupkeep) conditions for your upkeep at the start of your `performUpkeep` function.
 
@@ -127,9 +129,9 @@ You can perform complex and broad off-chain computation, then execute on-chain s
 
 ## Vyper example
 
-:::note[Note on arrays]
-Make sure the checkdata array size is correct. Vyper does not support dynamic arrays.
-:::
+<Aside type="note" title="Note on arrays">
+  Make sure the checkdata array size is correct. Vyper does not support dynamic arrays.
+</Aside>
 
 You can find a `KeepersConsumer` example [here](https://github.com/smartcontractkit/apeworx-starter-kit/blob/main/contracts/KeepersConsumer.vy). Read the _**apeworx-starter-kit**_ [README](https://github.com/smartcontractkit/apeworx-starter-kit) to learn how to run the example.
 
