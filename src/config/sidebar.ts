@@ -845,7 +845,7 @@ export const SIDEBAR = {
         },
         {
           title: "Run a Chainlink Node",
-          url: "chainlink-nodes/v1/fulfilling-requests",
+          url: "chainlink-nodes/v1/running-a-chainlink-node",
         },
         {
           title: "Configuring Nodes",
@@ -853,11 +853,11 @@ export const SIDEBAR = {
           children: [
             {
               title: "Node Config (TOML)",
-              url: "chainlink-nodes/node-config",
+              url: "chainlink-nodes/v2/node-config",
             },
             {
               title: "Secrets Config (TOML)",
-              url: "chainlink-nodes/secrets-config",
+              url: "chainlink-nodes/v2/secrets-config",
             },
             {
               title: "Legacy Config (.env)",

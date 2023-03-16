@@ -1,22 +1,3 @@
----
-layout: nodes.liquid
-section: nodeOperator
-date: Last Modified
-title: 'Running a Chainlink Node'
-permalink: 'docs/running-a-chainlink-node/'
-whatsnext:
-  {
-    'Fulfilling Requests': '/docs/fulfilling-requests/',
-    'Optimizing EVN Performance': '/docs/evm-performance-configuration/',
-    'Performing System Maintenance': '/docs/performing-system-maintenance/',
-    'Miscellaneous': '/docs/miscellaneous/',
-    'Security and Operation Best Practices': '/docs/best-security-practices/',
-  }
-metadata:
-  title: 'Running a Chainlink Node'
-  description: 'Run your own Chainlink node using this guide which explains the requirements and basics for getting started.'
----
-
 This guide shows you how to run the Chainlink node in [Docker](https://www.docker.com/). Tagged Docker images are available from the [Chainlink Docker Hub](https://hub.docker.com/r/smartcontract/chainlink/tags). If you run Chainlink nodes in Docker, you don't need to configure a complete development environment to run your node.
 
 If you need to run a Chainlink node from source, use the [install instructions](https://github.com/smartcontractkit/chainlink#install) in the Chainlink GitHub repository.
@@ -71,43 +52,47 @@ Install the required software. You can do this on a single system, but as a best
 
 1. On the system where you plan to run your Chainlink node, [install Docker](https://docs.docker.com/install/). For example, you can use the following commands:
 
-    ```shell Amazon Linux 2
-    sudo amazon-linux-extras install -y docker
-    sudo systemctl start docker
-    sudo gpasswd -a $USER docker
-    exit
-    # log in again
-    ```
-    ```shell CentOS
-    curl -sSL https://get.docker.com/ | sh
-    sudo systemctl start docker
-    sudo usermod -aG docker $USER
-    exit
-    # log in again
-    ```
-    ```shell Debian
-    curl -sSL https://get.docker.com/ | sh
-    sudo usermod -aG docker $USER
-    exit
-    # log in again
-    ```
-    ```shell Fedora
-    curl -sSL https://get.docker.com/ | sh
-    sudo systemctl start docker
-    sudo usermod -aG docker $USER
-    exit
-    # log in again
-    ```
-    ```shell Ubuntu
-    curl -sSL https://get.docker.com/ | sh
-    sudo usermod -aG docker $USER
-    exit
-    # log in again
-    ```
+   ```shell Amazon Linux 2
+   sudo amazon-linux-extras install -y docker
+   sudo systemctl start docker
+   sudo gpasswd -a $USER docker
+   exit
+   # log in again
+   ```
+
+   ```shell CentOS
+   curl -sSL https://get.docker.com/ | sh
+   sudo systemctl start docker
+   sudo usermod -aG docker $USER
+   exit
+   # log in again
+   ```
+
+   ```shell Debian
+   curl -sSL https://get.docker.com/ | sh
+   sudo usermod -aG docker $USER
+   exit
+   # log in again
+   ```
+
+   ```shell Fedora
+   curl -sSL https://get.docker.com/ | sh
+   sudo systemctl start docker
+   sudo usermod -aG docker $USER
+   exit
+   # log in again
+   ```
+
+   ```shell Ubuntu
+   curl -sSL https://get.docker.com/ | sh
+   sudo usermod -aG docker $USER
+   exit
+   # log in again
+   ```
 
 1. Start a database that your Chainlink node can use to store data about the node and its processes. Either run the database on the same system as your Chainlink node, or connect your node to a remote database. To learn how to deploy and run PostgreSQL, use one of the following guides:
-    - [Run PostgreSQL locally in Docker](https://hub.docker.com/_/postgres/)
-    - [Connect to a remote database](/docs/connecting-to-a-remote-database/)
+   - [Run PostgreSQL locally in Docker](https://hub.docker.com/_/postgres/)
+   - [Connect to a remote database](/docs/connecting-to-a-remote-database/)
 1. On your database, create a separate user and database for the Chainlink node. Record the username, the user password, and the database name that you configure. You'll provide this information in your Chainlink node's `.env` configuration file later.
 1. Ensure that your Ethereum clients are fully synced before you start your Chainlink node.
 
@@ -127,6 +112,7 @@ Create a local directory to hold the Chainlink Node data and `.env` configuratio
 ```shell Goerli
 mkdir ~/.chainlink-goerli && cd ~/.chainlink-goerli/
 ```
+
 ```shell Mainnet
 mkdir ~/.chainlink && cd ~/.chainlink/
 ```
@@ -147,6 +133,7 @@ ETH_URL=[PROTOCOL]://[CLIENT_ADDRESS]:[CLIENT_PORT]
 DATABASE_URL=postgresql://[USERNAME]:[PASSWORD]@[SERVER]:[PORT]/[DB_NAME]?sslmode=[SSL_MODE]
 ALLOW_ORIGINS=*" > ~/.chainlink-goerli/.env
 ```
+
 ```shell Mainnet
 echo "ROOT=/chainlink
 LOG_LEVEL=debug
@@ -166,17 +153,18 @@ Construct the URL for your Ethereum client and configure it in the `.env` file.
 
 1. Find the hostname or IP address for your Ethereum client using one of the following methods:
 
-    - If you are running the Ethereum client in a local Docker container, use the `docker inspect` command to find the IP address for that container:
+   - If you are running the Ethereum client in a local Docker container, use the `docker inspect` command to find the IP address for that container:
 
-      ```shell Goerli
-      docker inspect --format '{{ "{{ .NetworkSettings.IPAddress " }}}}' geth-goerli
-      ```
-      ```shell Mainnet
-      docker inspect --format '{{ "{{ .NetworkSettings.IPAddress " }}}}' geth
-      ```
+     ```shell Goerli
+     docker inspect --format '{{ "{{ .NetworkSettings.IPAddress " }}}}' geth-goerli
+     ```
 
-    - If you are running the Ethereum client outside of a Docker container on your local system, use `localhost` as your address.
-    - If you are running the Ethereum client on another server or from an external provider, find the DNS hostname or IP address for that system.
+     ```shell Mainnet
+     docker inspect --format '{{ "{{ .NetworkSettings.IPAddress " }}}}' geth
+     ```
+
+   - If you are running the Ethereum client outside of a Docker container on your local system, use `localhost` as your address.
+   - If you are running the Ethereum client on another server or from an external provider, find the DNS hostname or IP address for that system.
 
 1. Find the port for your Ethereum client. The guide to [Run an Ethereum Client](../run-an-ethereum-client) sets `8546` as the port, but this number might be different depending on how you configured the client.
 
@@ -184,13 +172,13 @@ Construct the URL for your Ethereum client and configure it in the `.env` file.
 
 1. In the editor, configure the `ETH_URL` variable with the address and port for your Ethereum client. The URL has the following structure:
 
-    ```
-    ETH_URL=[PROTOCOL]://[CLIENT_ADDRESS]:[CLIENT_PORT]
-    ```
+   ```
+   ETH_URL=[PROTOCOL]://[CLIENT_ADDRESS]:[CLIENT_PORT]
+   ```
 
-    - `[PROTOCOL]`: For local test clients, specify `ws` to use the unencrypted WebSocket protocol. For production clients and external providers, specify `wss` to use an SSL-encrypted WebSocket protocol. If you configure your own client and need `wss`, you might need to create an encrypted reverse proxy.
-    - `[CLIENT_ADDRESS]`: The IP address or hostname that you obtained for your Ethereum client
-    - `[CLIENT_PORT]`: The port for your Ethereum client. By default, Geth uses `8546` and Nethermind uses `8545`.
+   - `[PROTOCOL]`: For local test clients, specify `ws` to use the unencrypted WebSocket protocol. For production clients and external providers, specify `wss` to use an SSL-encrypted WebSocket protocol. If you configure your own client and need `wss`, you might need to create an encrypted reverse proxy.
+   - `[CLIENT_ADDRESS]`: The IP address or hostname that you obtained for your Ethereum client
+   - `[CLIENT_PORT]`: The port for your Ethereum client. By default, Geth uses `8546` and Nethermind uses `8545`.
 
 1. Save the `.env` file.
 
@@ -200,13 +188,14 @@ Construct the address and credentials for your database and configure them in th
 
 1. Find the address for your database using one of the following methods:
 
-    - If you are running PostgreSQL in a local Docker container, use the `docker inspect` command to find the IP address for that container:
+   - If you are running PostgreSQL in a local Docker container, use the `docker inspect` command to find the IP address for that container:
 
-      ```shell
-      docker inspect --format '{{ "{{ .NetworkSettings.IPAddress " }}}}' $(docker ps -f name=some-postgres -q)
-      ```
-    - If you are running PostgreSQL outside of a Docker container on your local system, use `localhost` as your address.
-    - If you are running PostgreSQL on another server, find the DNS hostname or IP address for that system.
+     ```shell
+     docker inspect --format '{{ "{{ .NetworkSettings.IPAddress " }}}}' $(docker ps -f name=some-postgres -q)
+     ```
+
+   - If you are running PostgreSQL outside of a Docker container on your local system, use `localhost` as your address.
+   - If you are running PostgreSQL on another server, find the DNS hostname or IP address for that system.
 
 1. Find the port for your database. The guide to [Run PostgreSQL locally in Docker](https://hub.docker.com/_/postgres/) sets the default `5432` port, but this number might be different depending on how you configured the database.
 
@@ -214,16 +203,16 @@ Construct the address and credentials for your database and configure them in th
 
 1. In the editor, configure the `DATABASE_URL` variable with the URL and credentials for your database. For PostgreSQL, the URL has the following structure:
 
-    ```
-    DATABASE_URL=postgresql://[USERNAME]:[PASSWORD]@[SERVER]:[PORT]/[DB_NAME]?sslmode=[SSL_MODE]
-    ```
+   ```
+   DATABASE_URL=postgresql://[USERNAME]:[PASSWORD]@[SERVER]:[PORT]/[DB_NAME]?sslmode=[SSL_MODE]
+   ```
 
-    - `[USERNAME]`: The username for the database owner.
-    - `[PASSWORD]`: The password for the database owner username.
-    - `[SERVER]`: The hostname or IP address of the database server.
-    - `[PORT]`: The port that the database is listening on. The default port is `5432`.
-    - `[DB_NAME]`: The name of the database to use for the Chainlink node.
-    - `[SSL_MODE]`: If you are testing on a database that does not have SSL enabled, specify `disable` so that you don't need to go through the process of configuring SSL on your database. On a production node, set this value to `require` or `verify-full` to require an encrypted connection between your Chainlink node and the database. See the [PostgreSQL documentation](https://www.postgresql.org/docs/current/libpq-ssl.html#LIBPQ-SSL-PROTECTION) to learn about the available SSL modes.
+   - `[USERNAME]`: The username for the database owner.
+   - `[PASSWORD]`: The password for the database owner username.
+   - `[SERVER]`: The hostname or IP address of the database server.
+   - `[PORT]`: The port that the database is listening on. The default port is `5432`.
+   - `[DB_NAME]`: The name of the database to use for the Chainlink node.
+   - `[SSL_MODE]`: If you are testing on a database that does not have SSL enabled, specify `disable` so that you don't need to go through the process of configuring SSL on your database. On a production node, set this value to `require` or `verify-full` to require an encrypted connection between your Chainlink node and the database. See the [PostgreSQL documentation](https://www.postgresql.org/docs/current/libpq-ssl.html#LIBPQ-SSL-PROTECTION) to learn about the available SSL modes.
 
 1. Save the `.env` file.
 
@@ -234,6 +223,7 @@ After you configure the `.env` file, run the Docker image for the Chainlink node
 ```shell Goerli
 cd ~/.chainlink-goerli && docker run -p 6688:6688 -v ~/.chainlink-goerli:/chainlink -it --env-file=.env smartcontract/chainlink:<version> local n
 ```
+
 ```shell Mainnet
 cd ~/.chainlink && docker run -p 6688:6688 -v ~/.chainlink:/chainlink -it --env-file=.env smartcontract/chainlink:[VERSION] local n
 ```

@@ -1,16 +1,3 @@
----
-layout: nodes.liquid
-section: nodeOperator
-date: Last Modified
-title: "Run an Ethereum Client"
-permalink: "docs/run-an-ethereum-client/"
-whatsnext:
-  {
-    "Running a Chainlink Node": "/docs/running-a-chainlink-node/",
-    "Optimizing Performance": "/docs/evm-performance-configuration/",
-  }
----
-
 Chainlink nodes must be able to connect to an Ethereum client with an active websocket connection. This is accomplished by running both an execution client and a consensus client. You can run these clients yourself, but running Ethereum clients requires significant storage and network resources. Optionally, you can use [External Services](#external-services) that manage these clients for you.
 
 > 📘 If you run these clients yourself, you must enable the websockets API. The websockets API is required for the Chainlink node to communicate with the Ethereum blockchain.
