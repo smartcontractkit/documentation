@@ -6,12 +6,14 @@ title: "Register a Custom Logic Upkeep"
 whatsnext: { "Create a compatible contract for custom logic Upkeep": "/chainlink-automation/compatible-contracts/" }
 ---
 
+import { Aside, CodeSample } from "@components"
+
 This guide explains how to register a custom logic Upkeep that uses a [compatible contract](/chainlink-automation/compatible-contracts). You can register it using the Chainlink Automation App or from within a contract that you deploy.
 
 ## Register an Upkeep using the Chainlink Automation App
 
 <div class="remix-callout">
-    <a href="https://automation.chain.link" >Open the Chainlink Automation App</a>
+  <a href="https://automation.chain.link">Open the Chainlink Automation App</a>
 </div>
 
 1. **Click the Register New Upkeep button**
@@ -31,23 +33,30 @@ This guide explains how to register a custom logic Upkeep that uses a [compatibl
    - **Starting balance (LINK)**: Specify a LINK starting balance to fund your upkeep. See the [LINK Token Contracts](/resources/link-token-contracts/) page to find the correct contract address and access faucets for testnet LINK. This field is required. You must have LINK before you can use the Chainlink Automation service.
    - **Check data**: This field is provided as an input for when your `checkUpkeep` function is simulated. Either leave this field blank or specify a hexadecimal value starting with `0x`. To learn how to make flexible upkeeps using `checkData`, see the [Flexible Upkeeps](/chainlink-automation/flexible-upkeeps) guide.
    - **Your email address**: This email address will be encrypted and is used to send you an email when your upkeep is underfunded.
-      <!-- prettier-ignore -->
+     {/* prettier-ignore */}
 
-     :::tip[Funding Upkeep]
-     You should fund your contract with more LINK that you anticipate you will need. The network will not check or perform your Upkeep if your balance is too low based on current exchange rates. View the [Automation economics](/chainlink-automation/automation-economics) page to learn more about the cost of using Chainlink Automation.
-     :::
+     <Aside type="tip" title="Funding Upkeep">
+       You should fund your contract with more LINK that you anticipate you will need. The network will not check or
+       perform your Upkeep if your balance is too low based on current exchange rates. View the [Automation
+       economics](/chainlink-automation/automation-economics) page to learn more about the cost of using Chainlink
+       Automation.
+     </Aside>
 
-      <!-- prettier-ignore -->
+     {/* prettier-ignore */}
 
-     :::tip[ERC677 Link]
-     Fund your Upkeep with more LINK than you anticipate you will need. The network will not check or perform your upkeep if your balance is too low based on current exchange rates. View the [Automation Economics](/chainlink-automation/automation-economics) page to learn more about the cost of using Chainlink Automation.
-     :::
+     <Aside type="tip" title="ERC677 Link">
+       Fund your Upkeep with more LINK than you anticipate you will need. The network will not check or perform your
+       upkeep if your balance is too low based on current exchange rates. View the [Automation
+       Economics](/chainlink-automation/automation-economics) page to learn more about the cost of using Chainlink
+       Automation.
+     </Aside>
 
-      <!-- prettier-ignore -->
+     {/* prettier-ignore */}
 
-     :::tip[Testing and best practices]
-     Follow the [best practices](/chainlink-automation/compatible-contracts/#best-practices) when creating a compatible contract and test your upkeep on a testnet before deploying it to a mainnet.
-     :::
+     <Aside type="tip" title="Testing and best practices">
+       Follow the [best practices](/chainlink-automation/compatible-contracts/#best-practices) when creating a
+       compatible contract and test your upkeep on a testnet before deploying it to a mainnet.
+     </Aside>
 
 1. **Click `Register upkeep`** and confirm the transaction in MetaMask.
    ![Upkeep Registration Success Message](/images/contract-devs/automation/automation-registration-submitted.png)
@@ -67,15 +76,15 @@ Find the following addresses for your network:
 
 Optionally, you can fetch the LINK address and registrar address from the intended registry at run-time.
 
-:::note[Fund your contract]
-Make sure your contract has enough [ERC-677 LINK](/resources/link-token-contracts/) to fund the Upkeep at creation. _The minimum amount is 0.1 LINK._
-:::
+<Aside type="note" title="Fund your contract">
+  Make sure your contract has enough [ERC-677 LINK](/resources/link-token-contracts/) to fund the Upkeep at creation.
+  _The minimum amount is 0.1 LINK._
+</Aside>
 
 Mainnets and testnets use different versions of the Registry and Registrar interfaces.
 
 - Mainnets: Use the v1.x registrar and registry interfaces. See the [Mainnet parameters](#mainnet-parameters) section.
 - Testnets: Use the v2.0 registrar and registry interfaces. See the [Testnet parameters](#testnet-parameters) section.
-
 
 ## Code examples
 
@@ -83,7 +92,7 @@ Mainnets and testnets use different versions of the Registry and Registrar inter
 
 This uses v1.x registrar and registry interfaces.
 
-::solidity-remix[samples/Automation/UpkeepIDConsumerExamplev1.sol]
+<CodeSample src="samples/Automation/UpkeepIDConsumerExamplev1.sol" />
 
 #### `registerAndPredictID` parameters
 
@@ -102,7 +111,7 @@ This uses v1.x registrar and registry interfaces.
 
 This uses v2.0 registry and registrar interfaces.
 
-::solidity-remix[samples/Automation/UpkeepIDConsumerExample.sol]
+<CodeSample src="samples/Automation/UpkeepIDConsumerExample.sol" />
 
 #### `registerAndPredictID` parameters
 
