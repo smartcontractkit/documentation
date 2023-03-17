@@ -16,12 +16,7 @@ Be aware of the quality of the data that you use. [Learn more about making respo
 
 ## Data Provider Nodes List
 
-| Data Category | Name                                                                                 | Supported Blockchains        |
-| ------------- | ------------------------------------------------------------------------------------ | ---------------------------- |
-| DNS Lookup    | [DNS Ownership Oracle](/any-api/data-providers/dns-ownership/)                       | Ethereum, BNB Chain, Polygon |
-| Equities      | [dxFeed Price Oracle](https://market.link/nodes/dxFeed/integrations)                 | Ethereum, BNB Chain          |
-| Equities      | [Tiingo EOD Stock Price Oracle](https://market.link/nodes/Tiingo/integrations)       | Ethereum, BNB Chain          |
-| Identity      | [CipherTrace DeFi Compli Oracle](https://market.link/nodes/CipherTrace/integrations) | Ethereum, BNB Chain, Polygon |
-| Real Estate   | [SmartZip Real Estate AVM Oracle](https://market.link/nodes/SmartZip/integrations)   | Ethereum, BNB Chain          |
-| Sports        | [TheRunDown Oracle Node](https://market.link/nodes/TheRundown/integrations)          | Ethereum, Polygon            |
-| Weather       | [Google Weather Oracle](/any-api/data-providers/google-weather/)                     | Ethereum                     |
+| Data Category | Name                                                             | Supported Blockchains        |
+| ------------- | ---------------------------------------------------------------- | ---------------------------- |
+| DNS Lookup    | [DNS Ownership Oracle](/any-api/data-providers/dns-ownership/)   | Ethereum, BNB Chain, Polygon |
+| Weather       | [Google Weather Oracle](/any-api/data-providers/google-weather/) | Ethereum                     |

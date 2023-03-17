@@ -158,7 +158,7 @@ Read the [Request Configuration](https://github.com/smartcontractkit/functions-h
 - `codeLocation: Location.Inline`: The JavaScript code is provided within the request.
 - `secretsLocation: Location.Inline`: The encrypted secrets are provided within the request.
 - `source: fs.readFileSync("./Functions-request-source.js").toString()`: The source code must be a script object. That's why we use `fs.readFileSync` to read `Functions-request-source.js` and then call `toString()` to get the content as a `string` object.
-- `args: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]`: These arguments are passed to the source code. This example compute the average(geometric mean) of `1,2,3,4,5,6,7,8,9,10`.
+- `args: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]`: These arguments are passed to the source code. This example computes the average(geometric mean) of `1,2,3,4,5,6,7,8,9,10`.
 - `expectedReturnType: ReturnType.uint256`: The response received by the DON is encoded in `bytes`. Because the average (geometric mean) is a `uint256`, define `ReturnType.uint256` to inform users how to decode the response received by the DON.
 
 ### Functions-request-source.js
