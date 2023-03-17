@@ -11,6 +11,32 @@ metadata:
 
 You can find a list of release notes for Chainlink nodes in the [smartcontractkit GitHub repository](https://github.com/smartcontractkit/chainlink/releases). Docker images are available in the [Chainlink Docker hub](https://hub.docker.com/r/smartcontract/chainlink/tags).
 
+## Changes in v1.13.0 nodes
+
+**[v1.13.0 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v1.13.0)**
+
+### TOML Configuration
+
+TOML configuration for Chainlink nodes is stable and recommended for mainnet deployments. TOML configuration will be the only supported configuration method starting with `v2.0.0`. Enable TOML configuration by specifying the `-config <filename>.toml` flag with the path to your TOML file. Alternatively, you can specify the raw TOML config in the [`CL_CONFIG` environment variable](/chainlink-nodes/v1/configuration#cl_config). See the [CONFIG.md](https://github.com/smartcontractkit/chainlink/blob/v1.13.0/docs/CONFIG.md) and [SECRETS.md](https://github.com/smartcontractkit/chainlink/blob/v1.13.0/docs/SECRETS.md) on GitHub to learn more.
+
+### Added
+
+- Added support for sending OCR2 job specs to the Feeds Manager.
+- Log poller filters are now saved in the database and restored on node startup to guard against missing logs during periods where services are temporarily unable to start.
+
+### Updated
+
+- TOML config: The environment variable `CL_CONFIG` is always processed as the last configuration. This has the effect of being the final override
+  for any values provided via configuration files.
+
+### Changed
+
+- The Feeds Manager is now enabled by default.
+
+### Removed
+
+- Terra is no longer supported.
+
 ## Changes in v1.12.0 nodes
 
 **[v1.12.0 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v1.12.0)**
