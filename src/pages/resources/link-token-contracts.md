@@ -240,13 +240,13 @@ ETH is used to pay for transactions on the Arbitrum mainnet. You can use the [Ar
 
 Testnet ETH is used to pay for transactions on Arbitrum Goerli. Use the [Arbitrum Bridge](https://bridge.arbitrum.io/) to transfer testnet ETH and LINK from Ethereum Goerli to Arbitrum Goerli. Testnet LINK is available at [faucets.chain.link](https://faucets.chain.link/goerli). Testnet ETH is available at [goerlifaucet.com](https://goerlifaucet.com/) or the faucets listed at [faucetlink.to/goerli](https://faucetlink.to/goerli).
 
-| Parameter      | Value                                                                                                                                                                                                                              |
-| :------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ETH_CHAIN_ID` | `421613`                                                                                                                                                                                                                           |
-| Address        | <a class="erc-token-address" id="0xd14838A68E8AFBAdE5efb411d5871ea0011AFd28" href="https://goerli-rollup-explorer.arbitrum.io/address/0xd14838A68E8AFBAdE5efb411d5871ea0011AFd28">`0xd14838A68E8AFBAdE5efb411d5871ea0011AFd28`</a> |
-| Name           | Chainlink Token on Arbitrum Goerli                                                                                                                                                                                                 |
-| Symbol         | LINK                                                                                                                                                                                                                               |
-| Decimals       | 18                                                                                                                                                                                                                                 |
+| Parameter      | Value                                                                                                                                                                                                                                     |
+| :------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ETH_CHAIN_ID` | `421613`                                                                                                                                                                                                                                  |
+| Address        | <a class="erc-token-address" id="421613_0xd14838A68E8AFBAdE5efb411d5871ea0011AFd28" href="https://goerli-rollup-explorer.arbitrum.io/address/0xd14838A68E8AFBAdE5efb411d5871ea0011AFd28">`0xd14838A68E8AFBAdE5efb411d5871ea0011AFd28`</a> |
+| Name           | Chainlink Token on Arbitrum Goerli                                                                                                                                                                                                        |
+| Symbol         | LINK                                                                                                                                                                                                                                      |
+| Decimals       | 18                                                                                                                                                                                                                                        |
 
 ## Optimism
 
