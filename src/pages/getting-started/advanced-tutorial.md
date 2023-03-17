@@ -104,10 +104,7 @@ This is an example of a basic HTTP GET request. However, it requires defining th
 
 ### External Adapters
 
-Here are some examples nodes with external adapters:
-
-- [Google Weather Data](https://docs.chain.link/any-api/data-providers/google-weather/)
-- [Associated Press](https://market.link/nodes/The%20Associated%20Press/integrations)
+[Google Weather Data](https://docs.chain.link/any-api/data-providers/google-weather/) is an example node with external adapters.
 
 If all the parameters are defined within the Oracle job, the only things a smart contract needs to define to consume are:
 
