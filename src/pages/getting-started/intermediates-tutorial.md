@@ -109,6 +109,14 @@ uint32 numWords =  1;
 - `uint16 requestConfirmations`: How many confirmations the Chainlink node should wait before responding. The longer the node waits, the more secure the random value is. It must be greater than the `minimumRequestBlockConfirmations` limit on the coordinator contract.
 - `uint32 numWords`: How many random values to request. If you can use several random values in a single callback, you can reduce the amount of gas that you spend per random value. In this example, each transaction requests one random value.
 
+
+Don't forget to add the `VRFCoordinatorV2Interface` variable to the contract. It will be initialized in the `constructor `
+
+<!-- prettier-ignore -->
+```solidity
+VRFCoordinatorV2Interface COORDINATOR;
+```
+
 To keep track of addresses that roll the dice, the contract uses mappings. [Mappings](https://medium.com/upstate-interactive/mappings-in-solidity-explained-in-under-two-minutes-ecba88aff96e) are unique key-value pair data structures similar to hash tables in Java.
 
 <!-- prettier-ignore -->
