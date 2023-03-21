@@ -100,7 +100,7 @@ Testnet LINK is available at [faucets.chain.link](https://faucets.chain.link/cha
 
 ### Polygon mainnet
 
-MATIC is used to pay for transactions on Polygon. You can use the [Polygon Bridge](https://wallet.polygon.technology/polygon/bridge/) to transfer tokens to Polygon mainnet and then use [Polygon Gas Swap](https://wallet.polygon.technology/gas-swap/) to swap supported tokens to MATIC.
+MATIC is used to pay for transactions on Polygon. You can use the [Polygon Bridge](https://wallet.polygon.technology/polygon/bridge/) to transfer tokens to Polygon mainnet and then use [Polygon Gas Swap](https://wallet.polygon.technology/polygon/gas-swap/) to swap supported tokens to MATIC.
 
 :::caution[ ERC-677 LINK on Polygon]
 
