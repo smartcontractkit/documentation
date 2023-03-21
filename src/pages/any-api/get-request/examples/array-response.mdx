@@ -12,9 +12,10 @@ whatsnext:
     "Testnet Oracles": "/any-api/testnet-oracles/",
     "Data Provider Nodes": "/any-api/data-providers/introduction/",
   }
-setup: |
-  import AnyApiCallout from "@features/any-api/common/AnyApiCallout.astro"
 ---
+
+import { Aside, CodeSample } from "@components"
+import AnyApiCallout from "@features/any-api/common/AnyApiCallout.astro"
 
 This guide explains how to make an HTTP GET request to an external API, that returns a _json_ array, from a smart contract, using Chainlink's [Request & Receive Data](/any-api/introduction/) cycle and then receive the needed data from the array.
 
@@ -37,7 +38,7 @@ curl -X 'GET' \
 
 The response should be similar to the following:
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```json
 [
   {
@@ -64,13 +65,13 @@ Fetch the _id_ of the first element. To consume an API, your contract must impor
 - Task parameters
 - Callback function signature
 
-:::caution[ Note on Funding Contracts]
+<Aside type="caution" title="Note on Funding Contracts">
 
 Making a GET request will fail unless your deployed contract has enough LINK to pay for it. **Learn how to [Acquire testnet LINK](/resources/acquire-link/) and [Fund your contract](/resources/fund-your-contract/)**.
 
-:::
+</Aside>
 
-::solidity-remix[samples/APIRequests/FetchFromArray.sol]
+<CodeSample src="samples/APIRequests/FetchFromArray.sol" />
 
 To use this contract:
 
