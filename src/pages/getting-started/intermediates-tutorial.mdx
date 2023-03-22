@@ -20,11 +20,13 @@ metadata:
     0: "/files/2a242f1-link.png"
 ---
 
-:::note[ Requirements]
+import { Aside, CodeSample } from "@components"
+import { YouTube } from "@astro-community/astro-embed-youtube"
 
-This guide assumes that you have basic knowledge about writing and deploying smart contracts. If you are new to smart contract development, read the [Consuming Data Feeds](/getting-started/consuming-data-feeds/) guide before you begin.
-
-:::
+<Aside type="note" title="Requirements">
+  This guide assumes that you have basic knowledge about writing and deploying smart contracts. If you are new to smart
+  contract development, read the [Consuming Data Feeds](/getting-started/consuming-data-feeds/) guide before you begin.
+</Aside>
 
 <YouTube id="https://www.youtube.com/watch?v=rdJ5d8j1RCg&ab" />
 
@@ -75,7 +77,7 @@ Chainlink maintains a [library of contracts](https://github.com/smartcontractkit
 - [`VRFConsumerBaseV2`](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/VRFConsumerBaseV2.sol) that must be imported and extended from the contract that you create.
 - [`VRFCoordinatorV2Interface`](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol) that must be imported to communicate with the VRF coordinator.
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```solidity
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
@@ -92,7 +94,7 @@ contract VRFD20 is VRFConsumerBaseV2 {
 
 This example is adapted for [Sepolia testnet](/vrf/v2/subscription/supported-networks/#sepolia-testnet) but you can change the configuration and make it run for any [supported network](/vrf/v2/subscription/supported-networks/#configurations).
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```solidity
 uint64 s_subscriptionId;
 address vrfCoordinator = 0x2Ca8E0C643bDe4C2E08ab1fA0da3401AdAD7734D;
@@ -111,7 +113,7 @@ uint32 numWords =  1;
 
 To keep track of addresses that roll the dice, the contract uses mappings. [Mappings](https://medium.com/upstate-interactive/mappings-in-solidity-explained-in-under-two-minutes-ecba88aff96e) are unique key-value pair data structures similar to hash tables in Java.
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```solidity
 mapping(uint256 => address) private s_rollers;
 mapping(address => uint256) private s_results;
@@ -125,7 +127,7 @@ mapping(address => uint256) private s_results;
 The coordinator and subscription id must be initialized in the `constructor` of the contract. To use `VRFConsumerBaseV2` properly, you must also pass the VRF coordinator address into its constructor.
 The address that creates the smart contract is the owner of the contract. the modifier `onlyOwner()` checks that only the owner is allowed to do some tasks.
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```solidity
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
@@ -165,7 +167,7 @@ You must add a `ROLL_IN_PROGRESS` constant to signify that the dice has been rol
 
 Only the owner of the contract can execute the `rollDice` function.
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```solidity
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
@@ -213,7 +215,7 @@ contract VRFD20 is VRFConsumerBaseV2 {
 1. Assign the transformed value to the address in the `s_results` mapping variable.
 1. Emit a `DiceLanded` event.
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```solidity
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
@@ -259,7 +261,7 @@ Finally, the `house` function returns the house of an address.
 
 To have a list of the house's names, create the `getHouseName` function that is called in the `house` function.
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```solidity
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
@@ -332,10 +334,8 @@ contract VRFD20 is VRFConsumerBaseV2 {
 }
 ```
 
-<div class="remix-callout">
-  <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFD20.sol" target="_blank" >Open in Remix</a>
-  <a href="/getting-started/conceptual-overview/#what-is-remix" >What is Remix?</a>
-</div>
+{/* prettier-ignore */}
+<CodeSample src="samples/VRF/VRFD20.sol" showButtonOnly/>
 
 You have now completed all necessary functions to generate randomness and assign the user a _Game of Thrones_ house. We've added a few helper functions in there to make using the contract easier and more flexible. You can deploy and interact with the complete contract in Remix.
 
@@ -357,9 +357,10 @@ Then click the `Deploy` button and use your Metamask account to confirm the tran
 
 **Note**: You should [have some Sepolia ETH](/getting-started/deploy-your-first-contract/#install-and-fund-your-metamask-wallet) in your Metamask account to pay for the gas.
 
-:::note[ Address, Key Hashes and more]
-For a full reference of the addresses, key hashes and fees for each network, see [VRF Supported Networks](/vrf/v2/subscription/supported-networks/#configurations).
-:::
+<Aside type="note" title="Address, Key Hashes and more">
+  For a full reference of the addresses, key hashes and fees for each network, see [VRF Supported
+  Networks](/vrf/v2/subscription/supported-networks/#configurations).
+</Aside>
 
 At this point, your contract should be successfully deployed. However, it can't request anything because it is not yet approved to use the LINK balance in your subscription. If you click `rollDice`, the transaction will revert.
 

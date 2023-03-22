@@ -3,18 +3,19 @@ layout: ../../../layouts/MainLayout.astro
 section: chainlinkFunctions
 date: Last Modified
 title: "Request Computation"
-setup: |
-  import ChainlinkFunctions from "@features/chainlink-functions/common/ChainlinkFunctions.astro"
 ---
+
+import { Aside } from "@components"
+import ChainlinkFunctions from "@features/chainlink-functions/common/ChainlinkFunctions.astro"
 
 This tutorial shows you how to run computations on the Chainlink Functions Decentralized Oracle Network (DON). The example code computes the [geometric mean](https://www.mathsisfun.com/numbers/geometric-mean.html) of numbers in a list. After [OCR](/chainlink-functions/resources/concepts/) completes off-chain computation and aggregation, it returns the result to your smart contract.
 
 ## Before you begin
 
-:::note[Request Access]
-Chainlink Functions is currently in a limited BETA.
-Apply [here](http://functions.chain.link/) to add your EVM account address to the Allow List.
-:::
+<Aside type="note" title="Request Access">
+  Chainlink Functions is currently in a limited BETA. Apply [here](http://functions.chain.link/) to add your EVM account
+  address to the Allow List.
+</Aside>
 
 1. **[Complete the setup steps in the Getting Started guide](/chainlink-functions/getting-started):** The Getting Started Guide shows you how to set up your environment with the necessary tools for these tutorials. You can re-use the same consumer contract for each of these tutorials.
 
@@ -76,9 +77,11 @@ Reading the output of the example above, you can note that the geometric mean wa
 
 ### Request
 
-:::note[Reminder]
-Before you can make a successful request, you must complete the setup steps in the [Before you begin](#before-you-begin) section. Each tutorial is in a separate Git branch and some require unique entries in your `.env` file.
-:::
+<Aside type="note" title="Reminder">
+  Before you can make a successful request, you must complete the setup steps in the [Before you
+  begin](#before-you-begin) section. Each tutorial is in a separate Git branch and some require unique entries in your
+  `.env` file.
+</Aside>
 
 Send a request to the Decentralized Oracle Network to compute the average (geometric mean). Run the `functions-request` task with the `subid` (subscription ID) and `contract` parameters. This task will pass the functions JavaScript source code and any arguments and secrets when calling the `FunctionsConsumer`'s `executeRequest` function. Read the [functionsConsumer](#functionsconsumersol) section for more details about the consumer contract.
 
@@ -158,7 +161,7 @@ Read the [Request Configuration](https://github.com/smartcontractkit/functions-h
 - `codeLocation: Location.Inline`: The JavaScript code is provided within the request.
 - `secretsLocation: Location.Inline`: The encrypted secrets are provided within the request.
 - `source: fs.readFileSync("./Functions-request-source.js").toString()`: The source code must be a script object. That's why we use `fs.readFileSync` to read `Functions-request-source.js` and then call `toString()` to get the content as a `string` object.
-- `args: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]`: These arguments are passed to the source code. This example compute the average(geometric mean) of `1,2,3,4,5,6,7,8,9,10`.
+- `args: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]`: These arguments are passed to the source code. This example computes the average(geometric mean) of `1,2,3,4,5,6,7,8,9,10`.
 - `expectedReturnType: ReturnType.uint256`: The response received by the DON is encoded in `bytes`. Because the average (geometric mean) is a `uint256`, define `ReturnType.uint256` to inform users how to decode the response received by the DON.
 
 ### Functions-request-source.js

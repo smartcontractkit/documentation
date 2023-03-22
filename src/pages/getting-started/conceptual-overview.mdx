@@ -17,6 +17,9 @@ metadata:
     0: "/files/1a63254-link.png"
 ---
 
+import { CodeSample } from "@components"
+import { YouTube } from "@astro-community/astro-embed-youtube"
+
 Welcome to the Smart Contract Getting Started guide. This overview explains the basic concepts of smart contract development and oracle networks.
 
 **Skip ahead:**
@@ -51,7 +54,7 @@ Some networks are not EVM-compatible and use languages other than Solidity for s
 
 The structure of a smart contract is similar to that of a class in Javascript, with a few differences. For example, the following `HelloWorld` contract is a simple smart contract that stores a single variable and includes a function to update the value of that variable.
 
-::solidity-remix[samples/Tutorials/HelloWorld.sol]
+<CodeSample src="samples/Tutorials/HelloWorld.sol" />
 
 ### Solidity versions
 
@@ -59,7 +62,7 @@ The first thing that every Solidity file must have is the Solidity version defin
 
 You can see the latest versions of the Solidity compiler [here](https://github.com/ethereum/solc-bin/blob/gh-pages/bin/list.txt/?target=_blank). You might also notice smart contracts that are compatible with a range of versions.
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```solidity
 pragma solidity >=0.7.0 <0.9.0;
 ```
@@ -70,7 +73,7 @@ This means that the code is written for Solidity version 0.7.0, or a newer versi
 
 The `contract` keyword defines the name of the contract, which in this example is `HelloWorld`. This is similar to declaring a `class` in Javascript. The implementation of `HelloWorld` is inside this definition and denoted with curly braces.
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```solidity
 contract HelloWorld {
 
@@ -83,7 +86,7 @@ Like Javascript, contracts can have state variables and local variables. **State
 
 _Visibility modifiers_ are used to define the level of access to these variables. Here are some examples of state variables with different visibility modifiers:
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```solidity
 string public message;
 uint256 internal internalVar;
@@ -98,7 +101,7 @@ Another familiar concept to programmers is the **constructor**. When you deploy 
 
 In `HelloWorld`, the constructor takes in a `string` as a parameter and sets the `message` state variable to that string.
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```solidity
 constructor(string memory initialMessage) {
   message = initialMessage;
@@ -109,7 +112,7 @@ constructor(string memory initialMessage) {
 
 **Functions** can access and modify the state of the contract or call other functions on external contracts. `HelloWorld` has a function named `updateMessage`, which updates the current message stored in the state.
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```solidity
 constructor(string memory initialMessage) {
   message = initialMessage;
@@ -126,7 +129,7 @@ Functions use visibility modifiers to define the access level. Learn more about 
 
 An **interface** is another concept that is familiar to programmers of other languages. Interfaces define functions without their implementation, which leaves inheriting contracts to define the actual implementation themselves. This makes it easier to know what functions to call in a contract. Here's an example of an interface:
 
-::solidity-remix[samples/Tutorials/Test.sol]
+<CodeSample src="samples/Tutorials/Test.sol" />
 
 For this example, `override` is necessary in the `Test` contract function because it overrides the base function contained in the `numberComparison` interface. The contract uses `pure` instead of `view` because the `isSameNum` function in the `Test` contract does not return a storage variable.
 
