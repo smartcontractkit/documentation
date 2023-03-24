@@ -13,8 +13,8 @@ setup: |
   import { Aside } from "@components"
 ---
 
-<Aside type="note" title="Talk to an expert">
-  <a href="https://chainlinkcommunity.typeform.com/to/OYQO67EF?page=docs-vrf">Contact us</a> to talk to an expert about using Chainlink VRF with your applications.
+<Aside type="note" title="Get Started">
+   Access verified randomness at <a href="https://vrf.chain.link">vrf.chain.link</a>.
 </Aside>
 
 **Chainlink VRF (Verifiable Random Function)** is a provably fair and verifiable random number generator (RNG) that enables smart contracts to access random values without compromising security or usability. For each request, Chainlink VRF generates one or more random values and cryptographic proof of how those values were determined. The proof is published and verified on-chain before any consuming applications can use it. This process ensures that results cannot be tampered with or manipulated by any single entity including oracle operators, miners, users, or smart contract developers.
