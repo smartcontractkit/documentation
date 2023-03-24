@@ -295,6 +295,10 @@ export const SIDEBAR = {
           title: "Introduction",
           url: "chainlink-automation/introduction/",
         },
+        {
+          title: "Supported Networks",
+          url: "chainlink-automation/supported-networks/",
+        },
       ],
     },
     {
@@ -340,10 +344,6 @@ export const SIDEBAR = {
     {
       section: "Reference",
       contents: [
-        {
-          title: "Supported Networks",
-          url: "chainlink-automation/supported-networks/",
-        },
         {
           title: "Automation Pricing",
           url: "chainlink-automation/automation-economics/",
