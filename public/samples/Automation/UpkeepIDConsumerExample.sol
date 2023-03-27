@@ -50,8 +50,8 @@ contract UpkeepIDConsumerExample {
         uint32 gasLimit,
         address adminAddress,
         bytes calldata checkData,
-        uint96 amount,
-        uint8 source
+        bytes calldata offchainConfig,
+        uint96 amount
     ) public {
         (State memory state, , , , ) = i_registry.getState();
         uint256 oldNonce = state.nonce;
@@ -62,8 +62,8 @@ contract UpkeepIDConsumerExample {
             gasLimit,
             adminAddress,
             checkData,
+            offchainConfig,
             amount,
-            source,
             address(this)
         );
 
