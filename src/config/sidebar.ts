@@ -607,6 +607,10 @@ export const SIDEBAR = {
           url: "vrf/v2/subscription/examples/programmatic-subscription",
         },
         {
+          title: "Test locally using a Mock contract",
+          url: "vrf/v2/subscription/examples/test-locally",
+        },
+        {
           title: "Subscription Manager UI",
           url: "vrf/v2/subscription/ui",
         },
