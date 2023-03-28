@@ -131,28 +131,31 @@ A LINK premium is then added to the total gas cost. The premium is divided in tw
 </Fragment>
 </Tabs>
 
-### Example
+### Ethereum example
 
 <Tabs sharedStore="vrfMethod" client:visible>
 <Fragment slot="tab.1">Subscription</Fragment>
 <Fragment slot="tab.2">Direct funding</Fragment>
 <Fragment slot="panel.1">
 
-| Parameter            | Cost        |
-| -------------------- | ----------- |
-| Gas lane             | 500 gwei    |
-| Callback gas limit   | 100000 gwei |
-| Max verification gas | 200000 gwei |
-| LINK premium         | 0.25 LINK   |
+This is an example calculation of a VRF request on the Ethereum network. The values for other supported networks
+are available on the [Supported Networks](/vrf/v2/subscription/supported-networks/) page.
 
-#### Steps
+| Parameter            | Value     |
+| -------------------- | --------- |
+| Gas lane             | 500 gwei  |
+| Callback gas limit   | 100000    |
+| Max verification gas | 200000    |
+| LINK premium         | 0.25 LINK |
+
+#### Calculate minimum subscription balance
 
 1. Calculate the total gas cost:
 
    | Gas cost calculation                          | Total gas cost            |
    | --------------------------------------------- | ------------------------- |
    | Gas price x (Verification gas + Callback gas) |                           |
-   | 500 gwei x (200000 gwei + 100000 gwei)        | 150000000 gwei (0.15 ETH) |
+   | 500 gwei x (200000 + 100000)                  | 150000000 gwei (0.15 ETH) |
 
 1. Convert the gas cost to LINK using the [LINK/ETH feed](https://data.chain.link/ethereum/mainnet/crypto-eth/link-eth).
    For this example, assume the feed returns a conversion value of Ξ0.004 ETH per 1 LINK.
@@ -163,25 +166,28 @@ A LINK premium is then added to the total gas cost. The premium is divided in tw
 
 1. Add the LINK premium to get the total maximum cost of a request:
 
-   | Adding LINK premium                  | Total request cost (LINK) |
-   | ------------------------------------ | ------------------------- |
-   | Total gas cost (LINK) + LINK premium |                           |
-   | 37.5 LINK + 0.25 LINK                | 37.75 LINK                |
+   | Adding LINK premium                  | Maximum request cost (LINK) |
+   | ------------------------------------ | --------------------------- |
+   | Total gas cost (LINK) + LINK premium |                             |
+   | 37.5 LINK + 0.25 LINK                | 37.75 LINK                  |
 
 This example request would cost up to 37.75 LINK.
 
 </Fragment>
 <Fragment slot="panel.2">
 
-| Parameter                  | Cost        |
-| -------------------------- | ----------- |
-| Gas lane                   | 500 gwei    |
-| Callback gas limit         | 100000 gwei |
-| Max verification gas       | 200000 gwei |
-| Coordinator gas overhead   | 90000 gwei  |
-| Wrapper gas overhead       | 40000 gwei  |
-| Coordinator premium        | 0.25 LINK   |
-| Wrapper premium percentage | 0           |
+This is an example calculation of a VRF request on the Ethereum network. The values for other supported networks
+are available on the [Supported Networks](/vrf/v2/direct-funding/supported-networks/) page.
+
+| Parameter                  | Value     |
+| -------------------------- | --------- |
+| Gas lane                   | 500 gwei  |
+| Callback gas limit         | 100000    |
+| Max verification gas       | 200000    |
+| Coordinator gas overhead   | 90000     |
+| Wrapper gas overhead       | 40000     |
+| Coordinator premium        | 0.25 LINK |
+| Wrapper premium percentage | 0         |
 
 #### Steps
 
@@ -190,7 +196,7 @@ This example request would cost up to 37.75 LINK.
    | Gas cost calculation                                                       | Total gas cost            |
    | -------------------------------------------------------------------------- | ------------------------- |
    | Gas price x (Verification gas + Callback gas limit + Wrapper gas overhead) |                           |
-   | 500 gwei x (200000 gwei + 100000 gwei + 40000 gwei)                        | 170000000 gwei (0.17 ETH) |
+   | 500 gwei x (200000 + 100000 + 40000)                                       | 170000000 gwei (0.17 ETH) |
 
 1. Convert the gas cost to LINK using the [LINK/ETH feed](https://data.chain.link/ethereum/mainnet/crypto-eth/link-eth).
    For this example, assume the feed returns a conversion value of Ξ0.004 ETH per 1 LINK.
