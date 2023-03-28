@@ -23,13 +23,14 @@ This guide explains how to test Chainlink VRF v2 on a [Remix IDE](https://remix-
 Complete the following tasks to test your VRF v2 consumer locally:
 
 1. Deploy the [VRFCoordinatorV2Mock](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/mocks/VRFCoordinatorV2Mock.sol). This contract is a mock of the [VRFCoordinatorV2](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/VRFCoordinatorV2.sol) contract.
-1. Call the VRFCoordinatorV2Mock [createSubscription function](https://github.com/smartcontractkit/chainlink/blob/abf1d19c147c4fd54173b48140706780b53be474/contracts/src/v0.8/mocks/VRFCoordinatorV2Mock.sol#L176) to create a new subscription.
-1. Call the VRFCoordinatorV2Mock [fundSubscription function](https://github.com/smartcontractkit/chainlink/blob/abf1d19c147c4fd54173b48140706780b53be474/contracts/src/v0.8/mocks/VRFCoordinatorV2Mock.sol#L138) to fund your newly created subscription. **Note**: You can fund with an arbitrary amount.
 1. Deploy the [MockV3Aggregator](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/tests/MockV3Aggregator.sol) contract.
 1. Deploy the [LinkToken](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.4/LinkToken.sol) contract.
 1. Deploy the [VRFV2Wrapper](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/VRFV2Wrapper.sol) contract.
+1. Call the VRFV2Wrapper [setConfig function](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/VRFV2Wrapper.sol#L119) to set wrapper specific parameters.
+1. Fund the VRFv2Wrapper subscription.
 1. Call the the VRFCoordinatorV2Mock [addConsumer function](https://github.com/smartcontractkit/chainlink/blob/abf1d19c147c4fd54173b48140706780b53be474/contracts/src/v0.8/mocks/VRFCoordinatorV2Mock.sol#L229) to add the wrapper contract to your subscription.
 1. Deploy your VRF consumer contract.
+1. Fund your consumer contract with LINK tokens.
 1. Request random words from your consumer contract.
 1. Call the VRFCoordinatorV2Mock [fulfilRandomWords function](https://github.com/smartcontractkit/chainlink/blob/abf1d19c147c4fd54173b48140706780b53be474/contracts/src/v0.8/mocks/VRFCoordinatorV2Mock.sol#L88) to fulfill your consumer contract request.
 
@@ -58,3 +59,119 @@ Open _RandomNumberDirectFundingConsumerV2_ and compile in Remix:
 <CodeSample src="samples/VRF/mock/RandomNumberDirectFundingConsumerV2.sol" />
 
 Your RemixIDE file explorer should display the opened contracts:
+
+<ClickToZoom src="/images/vrf/mock/v2-df-remix-fileexplorer.jpg" />
+
+### Deploy VRFCoordinatorV2Mock
+
+1. Open _VRFCoordinatorV2Mock.sol_.
+1. Under _DEPLOY & RUN TRANSACTIONS_, select _VRFCoordinatorV2Mock_.
+   <ClickToZoom src="/images/vrf/mock/v2-deploymock.jpg" />
+1. Under _DEPLOY_, fill in the `_BASEFEE` and `_GASPRICELINK`. These variables are used in the _VRFCoordinatorV2Mock_ contract to represent the base fee and the gas price (in LINK tokens) for the VRF requests. You can set: `_BASEFEE=100000000000000000` and `_GASPRICELINK=1000000000`.
+1. Click on _transact_ to deploy the _VRFCoordinatorV2Mock_ contract.
+1. Once deployed, you should see the _VRFCoordinatorV2Mock_ contract under _Deployed Contacts_.
+   <ClickToZoom src="/images/vrf/mock/v2-deployedmock.jpg" />
+1. Note the address of the deployed contract.
+
+### Deploy MockV3Aggregator
+
+The _MockV3Aggregator_ contract is designed for testing purposes, allowing you to simulate an oracle price feed without interacting with the existing Chainlink network.
+
+1. Open _MockV3Aggregator.sol_.
+1. Under _DEPLOY & RUN TRANSACTIONS_, select _MockV3Aggregator_.
+   <ClickToZoom src="/images/vrf/mock/v2-deployaggregatormock.jpg" />
+1. Under _DEPLOY_, fill in `_DECIMALS` and `_INITIALANSWER`. These variables are used in the _MockV3Aggregator_ contract to represent the number of decimals the aggregator's answer should have and the most recent price feed answer. You can set: `_DECIMALS=18` and `_INITIALANSWER=3000000000000000` (We are considering that `1 LINK = 0.003 native tokens`).
+1. Click on _transact_ to deploy the _MockV3Aggregator_ contract.
+1. Once deployed, you should see the _MockV3Aggregator_ contract under _Deployed Contacts_.
+   <ClickToZoom src="/images/vrf/mock/v2-deployedaggregatormock.jpg" />
+1. Note the address of the deployed contract.
+
+### Deploy LinkToken
+
+The Chainlink VRF v2 direct funding method requires your consumer contract to pay for VRF requests in LINK. Therefore, you have to deploy the _LinkToken_ contract to your local blockchain.
+
+1. Open _LinkToken.sol_.
+1. Under _DEPLOY & RUN TRANSACTIONS_, select _LinkToken_.
+   <ClickToZoom src="/images/vrf/mock/v2-deploylink.jpg" />
+1. Under _DEPLOY_, click on _transact_ to deploy the _LinkToken_ contract.
+1. Once deployed, you should see the _LinkToken_ contract under _Deployed Contacts_.
+   <ClickToZoom src="/images/vrf/mock/v2-deployedlink.jpg" />
+1. Note the address of the deployed contract.
+
+### Deploy VRFV2Wrapper
+
+As the VRF v2 direct funding [end-to-end diagram](/vrf/v2/direct-funding#end-to-end-diagram) explains, the _VRFV2Wrapper_ acts as a wrapper for the coordinator contract.
+
+1. Open _VRFV2Wrapper.sol_.
+1. Under _DEPLOY & RUN TRANSACTIONS_, select _VRFV2Wrapper_.
+   <ClickToZoom src="/images/vrf/mock/v2-deploywrapper.jpg" />
+1. Under _DEPLOY_, fill in `_LINK` with the _LinkToken_ contract address, `_LINKETHFEED` with the _MockV3Aggregator_ contract address, and `_COORDINATOR` with the _VRFCoordinatorV2Mock_ contract address.
+1. click on _transact_ to deploy the _VRFV2Wrapper_ contract.
+1. Once deployed, you should see the _VRFV2Wrapper_ contract under _Deployed Contacts_.
+   <ClickToZoom src="/images/vrf/mock/v2-deployedwrapper.jpg" />
+1. Note the address of the deployed contract.
+
+### Configure the VRFV2Wrapper
+
+1. Under _Deployed Contracts_, open the functions list of your deployed _VRFV2Wrapper_ contract.
+1. Click on `setConfig` and fill in `_wrapperGasOverhead` with `60000`, `_coordinatorGasOverhead` with `52000`, `_wrapperPremiumPercentage` with `10`, `_keyHash` with `0xd89b2bf150e3b9e13446986e571fb9cab24b13cea0a43ea20a6049a85cc807cc`, and `_maxNumWords` with `10`. **Note** on these variables:
+
+   1. `_wrapperGasOverhead`: This variable reflects the gas overhead of the wrapper's fulfillRandomWords function. The cost for this gas is passed to the user.
+
+   1. `_coordinatorGasOverhead`: This variable reflects the gas overhead of the coordinator's `fulfillRandomWords` function. The cost for this gas is billed to the _VRFV2Wrapper_ subscription and must, therefore, be included in the VRF v2 direct funding requests pricing.
+
+   1. `_wrapperPremiumPercentage`: This variable is the premium ratio in percentage. For example, a value of 0 indicates no premium. A value of 15 indicates a 15 percent premium.
+
+   1. `_keyHash`: The gas lane key hash value is the maximum gas price you are willing to pay for a request in wei.
+
+   1. `_maxNumWords`: This variable is the maximum number of words requested in a VRF v2 direct funding request.
+
+   <ClickToZoom src="/images/vrf/mock/v2-wrappersetconfig.jpg" />
+
+1. click on _transact_.
+
+### Fund the VRFV2Wrapper subscription
+
+When deployed, the _VRFV2Wrapper_ contract creates a new subscription and adds itself to the newly created subscription. If you started this guide from scratch, the subscription id should be 1.
+
+1. Under _Deployed Contracts_, open the functions list of your deployed _VRFCoordinatorV2Mock_ contract.
+1. Click `fundSubscription` to fund the _VRFV2Wrapper_ subscription. In this example, you can set the `_subid` to `1` (which is your newly created subscription id) and the `_amount` to `10000000000000000000` (10 LINK).
+
+### Deploy the VRF consumer contract
+
+1. In the file explorer, open _RandomNumberDirectFundingConsumerV2.sol_.
+1. Under _DEPLOY & RUN TRANSACTIONS_, select _RandomNumberDirectFundingConsumerV2_.
+   <ClickToZoom src="/images/vrf/mock/v2-deploydfconsumer.jpg" />
+1. Under _DEPLOY_, fill in `_LINKADDRESS_` with the _LinkToken_ contract address, and `_WRAPPERADDRESS_` with the deployed _VRFV2Wrapper_ address.
+1. Click on _transact_ to deploy the _RandomNumberDirectFundingConsumerV2_ contract.
+1. Once deployed, you should see the _RandomNumberDirectFundingConsumerV2_ contract under _Deployed Contacts_.
+   <ClickToZoom src="/images/vrf/mock/v2-deployeddfconsumer.jpg" />
+1. Note the address of the deployed contract.
+
+### Fund your VRF consumer contract
+
+1. Under _Deployed Contracts_, open the functions list of your deployed _LinkToken_ contract.
+1. Click on _transfer_ and fill in the `_to` with your consumer contract address and `_value` with LINK tokens amount. For this example, you can set the `_value` to `5000000000000000000` (5 LINK).
+   <ClickToZoom src="/images/vrf/mock/v2-linktransfer.jpg" />
+1. Click on _transact_.
+
+### Request random words
+
+Request three random words.
+
+1. Under _Deployed Contracts_, open the functions list of your deployed _RandomNumberConsumerV2_ contract.
+1. In `requestRandomWords`, fill in `_callbackGasLimit` with `300000`, `_requestConfirmations` with `3` and `_numWords` with `3`.
+   <ClickToZoom src="/images/vrf/mock/v2-requestrandomwordsdf.jpg" />
+1. Click on _transact_.
+1. In the RemixIDE console, read your transaction logs to find the VRF request id. In this example, the request id is _1_.
+   <ClickToZoom src="/images/vrf/mock/v2-requestrandomwordslogsdf.jpg" />
+1. Note your request id.
+
+### Fulfill the VRF request
+
+Because you are testing on a local blockchain environment, you must fulfill the VRF request yourself.
+
+1. Under _Deployed Contracts_, open the functions list of your deployed _VRFCoordinatorV2Mock_ contract.
+1. Click `fulfillRandomWords` and fill in `_requestId` with your VRF request id and `_consumer` with the _VRFV2Wrapper_ contract address.
+   <ClickToZoom src="/images/vrf/mock/v2-fulfillrandomwordsdf.jpg" />
+1. Click on `transact`.
