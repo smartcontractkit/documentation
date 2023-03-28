@@ -7,6 +7,7 @@ metadata:
 ---
 
 import VrfCommon from "@features/vrf/v2/common/VrfCommon.astro"
+import ContentCommon from "@features/common/ContentCommon.astro"
 import { CodeSample, ClickToZoom } from "@components"
 
 <VrfCommon callout="subscription" />
@@ -15,14 +16,7 @@ This guide explains how to test Chainlink VRF v2 on a [Remix IDE](https://remix-
 
 ## Benefits of local testing
 
-Testing locally using mock contracts saves you time and resources during development. Some of the key benefits include:
-
-1. Faster feedback loop: Immediate feedback on the functionality and correctness of your smart contracts. This helps you quickly identify and fix issues without waiting for transactions to be mined/validated on a testnet.
-1. Saving your native testnet tokens: Deploying and interacting with contracts requires paying gas fees. Although testnet native tokens do not have any value associated with them, their supply is limited by public faucets. Using mock contracts locally allows you to test your contracts freely without incurring any expenses.
-1. Controlled environment: Local testing allows you to create a controlled environment where you can manipulate various parameters, such as block time and gas prices, to test your smart contracts' function as expected under different conditions.
-1. Isolated testing: You can focus on testing individual parts of your contract, ensuring they work as intended before integrating them with other components.
-1. Easier debugging: Because local tests run on your machine, you have better control over the debugging process. You can set breakpoints, inspect variables, and step through your code to identify and fix issues.
-1. Comprehensive test coverage: You can create test cases to cover all possible scenarios and edge cases.
+<ContentCommon section="localTestingBenefits" />
 
 ## Testing logic
 
@@ -32,7 +26,7 @@ Complete the following tasks to test your VRF v2 consumer locally:
 1. Call the VRFCoordinatorV2Mock [createSubscription function](https://github.com/smartcontractkit/chainlink/blob/abf1d19c147c4fd54173b48140706780b53be474/contracts/src/v0.8/mocks/VRFCoordinatorV2Mock.sol#L176) to create a new subscription.
 1. Call the VRFCoordinatorV2Mock [fundSubscription function](https://github.com/smartcontractkit/chainlink/blob/abf1d19c147c4fd54173b48140706780b53be474/contracts/src/v0.8/mocks/VRFCoordinatorV2Mock.sol#L138) to fund your newly created subscription. **Note**: You can fund with an arbitrary amount.
 1. Deploy your VRF consumer contract.
-1. Call the the VRFCoordinatorV2Mock [addConsumer function](https://github.com/smartcontractkit/chainlink/blob/abf1d19c147c4fd54173b48140706780b53be474/contracts/src/v0.8/mocks/VRFCoordinatorV2Mock.sol#L229) to add link your consumer contract to your subscription.
+1. Call the the VRFCoordinatorV2Mock [addConsumer function](https://github.com/smartcontractkit/chainlink/blob/abf1d19c147c4fd54173b48140706780b53be474/contracts/src/v0.8/mocks/VRFCoordinatorV2Mock.sol#L229) to add your consumer contract to your subscription.
 1. Request random words from your consumer contract.
 1. Call the VRFCoordinatorV2Mock [fulfilRandomWords function](https://github.com/smartcontractkit/chainlink/blob/abf1d19c147c4fd54173b48140706780b53be474/contracts/src/v0.8/mocks/VRFCoordinatorV2Mock.sol#L88) to fulfill your consumer contract request.
 

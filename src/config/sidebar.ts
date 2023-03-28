@@ -636,6 +636,10 @@ export const SIDEBAR = {
           url: "vrf/v2/direct-funding/examples/get-a-random-number",
         },
         {
+          title: "Test locally using a Mock contract",
+          url: "vrf/v2/direct-funding/examples/test-locally",
+        },
+        {
           title: "Supported Networks",
           url: "vrf/v2/direct-funding/supported-networks",
         },
