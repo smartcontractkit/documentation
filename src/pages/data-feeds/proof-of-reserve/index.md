@@ -35,7 +35,7 @@ Off-chain reserves provide their data using the following methods:
 
 ### Cross-chain reserves
 
-Cross-Chain reserves are sourced from the network where the reserves are held. This includes but is not limited to networks including Bitcoin, Filecoin, Cardano, and chains where Chainlink has a native integration. Chainlink Node operators can report cross-chain reserves by running an [external adapter](/chainlink-nodes/external-adapters/external-adapters) and querying the source-chain client directly. In some instances, the reserves are composed of a dynamic list of IDs or addresses using a composite adapter.
+Cross-Chain reserves are sourced from the network where the reserves are held. Chainlink Node operators can report cross-chain reserves by running an [external adapter](/chainlink-nodes/external-adapters/external-adapters) and querying the source-chain client directly. In some instances, the reserves are composed of a dynamic list of IDs or addresses using a composite adapter.
 
 <ClickToZoom src='/images/data-feed/cross-chain-reserves.webp' />
 
