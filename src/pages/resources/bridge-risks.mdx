@@ -5,6 +5,8 @@ date: Last Modified
 title: "Cross-chain bridges and associated risks"
 ---
 
+import { Aside } from "@components"
+
 When working with Chainlink on layer-2 chains and sidechains, you must export your LINK tokens from Ethereum to the target chain using a cross-chain bridge. Follow this [video](https://www.youtube.com/watch?v=WKvIGkBWRUA) for an example of moving LINK tokens from Ethereum to Polygon.
 
 Cross-chain bridges come with their own risks. In fact, bridge attacks constitute some of the [largest cryptocurrency hacks](https://rekt.news/leaderboard/) by value. When moving your LINK tokens or any asset across chains, understand the risks that you are taking with your assets. Chainlink Labs does not endorse any bridge. Ultimately, you are responsible for assessing the bridge that you use to move your assets.
@@ -37,10 +39,10 @@ With the growing number of layer-1 and layer-2 chains, the number of bridges has
 
 When choosing a bridge, there is no perfect solution, only trade-offs. As explained in the [interoperability trilemma](https://blog.connext.network/the-interoperability-trilemma-657c2cf69f17) and [Ethereum foundation docs](https://ethereum.org/en/developers/docs/bridges/#trade-offs), bridge designs must compromise between the following characteristics:
 
-- **Trust-minimization:** The system does not introduce new trust or security assumptions beyond those of the underlying blockchains. Read [trust-minimization for more details](#trust-minimization-counterparty-risk).
-- **Generalizability:** The system enables the transfer of complex arbitrary data. Data could be messages or assets/funds.
-- **Extensibility:** How hard is it to integrate a new blockchain?
-- **Latency:** How long does it take to complete a transaction?
+- **Trust-minimization:** The system does not introduce new trust or security assumptions beyond those of the underlying blockchains. Read [trust-minimization for more details](#trust-minimization-counterparty-risk).
+- **Generalizability:** The system enables the transfer of complex arbitrary data. Data could be messages or assets/funds.
+- **Extensibility:** How hard is it to integrate a new blockchain?
+- **Latency:** How long does it take to complete a transaction?
 - **Costs:** How much does it cost to transfer data across chains via a bridge?
 
 ## Risks
@@ -49,7 +51,7 @@ When choosing a bridge, be aware of the following risks.
 
 ### Smart contract risks
 
-Bugs and vulnerabilities can expose users’ assets to different kinds of exploits. Read this [detailed analysis](https://certik.medium.com/qubit-bridge-collapse-exploited-to-the-tune-of-80-million-a7ab9068e1a0) for an example of a bridge exploit where the attacker could leverage a logical error in the bridge’s smart contract.
+Bugs and vulnerabilities can expose users' assets to different kinds of exploits. Read this [detailed analysis](https://certik.medium.com/qubit-bridge-collapse-exploited-to-the-tune-of-80-million-a7ab9068e1a0) for an example of a bridge exploit where the attacker could leverage a logical error in the bridge’s smart contract.
 
 ### Systemic financial risks
 
@@ -88,13 +90,23 @@ External verification typically requires an honest majority assumption, where a 
 
 Despite an additional trust assumption, external verification is currently the only practical way to perform cross-chain contract calls between certain types of blockchains while still providing trust-minimized guarantees. It’s also a highly generalized and extensible form of cross-chain computation that is capable of supporting more complex cross-chain applications.
 
-:::note[Cryptography risk]
-Some externally verified bridges are secured by multisig wallets. [Ronin](https://whitepaper.axieinfinity.com/technology/ronin-ethereum-sidechain) is one example. Multisig wallets are also referred to as m-of-n multisigs, with M being the required number of signatures or keys and N being the total number of signatures or keys (m≤n). This means that an attacker only needs to exploit M keys to be able to hack the whole system. In this case, users must trust that the third party is decentralized enough, signers are independent of each other, and that each signer has proper key management in place. Read this [detailed analysis](https://rekt.news/ronin-rekt/) for an example of a bridge exploit where the attacker could compromise M keys.
-:::
+<Aside type="note" title="Cryptography risk">
+  Some externally verified bridges are secured by multisig wallets.
+  [Ronin](https://whitepaper.axieinfinity.com/technology/ronin-ethereum-sidechain) is one example. Multisig wallets are
+  also referred to as m-of-n multisigs, with M being the required number of signatures or keys and N being the total
+  number of signatures or keys (m≤n). This means that an attacker only needs to exploit M keys to be able to hack the
+  whole system. In this case, users must trust that the third party is decentralized enough, signers are independent of
+  each other, and that each signer has proper key management in place. Read this [detailed
+  analysis](https://rekt.news/ronin-rekt/) for an example of a bridge exploit where the attacker could compromise M
+  keys.
+</Aside>
 
-:::note[Optimistic bridges]
-Optimistic bridges rely on honest watchers to monitor the bridges' operations and report any fraud. Because the watchers of an optimistic system are permissionless, there is no way to know if there is not at least one single watcher monitoring the system. Therefore, the cost of a successful attack is limitless as it requires an attacker to know who the watchers are and hack all of them.
-:::
+<Aside type="note" title="Optimistic bridges">
+  Optimistic bridges rely on honest watchers to monitor the bridges' operations and report any fraud. Because the
+  watchers of an optimistic system are permissionless, there is no way to know if there is not at least one single
+  watcher monitoring the system. Therefore, the cost of a successful attack is limitless as it requires an attacker to
+  know who the watchers are and hack all of them.
+</Aside>
 
 Here are some examples of externally verified bridges that use different techniques to increase trust-minimization :
 
