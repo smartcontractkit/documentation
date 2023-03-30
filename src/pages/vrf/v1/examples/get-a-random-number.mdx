@@ -7,9 +7,10 @@ permalink: "docs/vrf/v1/examples/get-a-random-number/"
 whatsnext: { "API Reference": "/vrf/v1/api-reference/", "Supported Networks": "/vrf/v1/supported-networks/" }
 metadata:
   description: "How to generate a random number inside a smart contract using Chainlink VRF."
-setup: |
-  import VrfCommon from "@features/vrf/v1/common/VrfCommon.astro"
 ---
+
+import VrfCommon from "@features/vrf/v1/common/VrfCommon.astro"
+import { Aside, CodeSample } from "@components"
 
 <VrfCommon />
 
@@ -31,19 +32,20 @@ Note, the below values have to be configured correctly for VRF requests to work.
 - `Key Hash` - public key against which randomness is generated
 - `Fee` - fee required to fulfill a VRF request
 
-:::tip[Security Considerations]
-Be sure to look your contract over with [these security considerations](/vrf/v1/security) in mind!
-:::
+<Aside type="tip" title="Security Considerations">
+  Be sure to look your contract over with [these security considerations](/vrf/v1/security) in mind!
+</Aside>
 
-:::note[Remember to fund your contract with LINK!]
-Requesting randomness will fail unless your deployed contract has enough LINK to pay for it. **Learn how to [Acquire testnet LINK](/resources/acquire-link/) and [Fund your contract](/resources/fund-your-contract/)**.
-:::
+<Aside type="note" title="Remember to fund your contract with LINK!">
+  Requesting randomness will fail unless your deployed contract has enough LINK to pay for it. **Learn how to [Acquire
+  testnet LINK](/resources/acquire-link/) and [Fund your contract](/resources/fund-your-contract/)**.
+</Aside>
 
-::solidity-remix[/samples/VRF/RandomNumberConsumer.sol]
+<CodeSample src="/samples/VRF/RandomNumberConsumer.sol" />
 
-:::note[Maximum Gas for Callback]
-If your `fulfillRandomness` function uses more than 200k gas, the transaction will fail.
-:::
+<Aside type="note" title="Maximum Gas for Callback">
+  If your `fulfillRandomness` function uses more than 200k gas, the transaction will fail.
+</Aside>
 
 ## Getting More Randomness
 
