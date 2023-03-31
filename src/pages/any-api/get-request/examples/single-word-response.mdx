@@ -19,9 +19,10 @@ metadata:
   description: "Learn how to make a GET request to an API from a smart contract, using Chainlink."
   image:
     0: "/files/930cbb7-link.png"
-setup: |
-  import AnyApiCallout from "@features/any-api/common/AnyApiCallout.astro"
 ---
+
+import { Aside, CodeSample } from "@components"
+import AnyApiCallout from "@features/any-api/common/AnyApiCallout.astro"
 
 This guide explains how to make an HTTP GET request to an external API from a smart contract using Chainlink's [Request & Receive Data](/any-api/introduction/) cycle and receive a single response.
 
@@ -43,7 +44,7 @@ curl -X 'GET' \
 
 The response should be similar to the following example:
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```json
 {
   "RAW": {
@@ -76,15 +77,15 @@ To consume an API with multiple responses, your contract must import [ChainlinkC
 - Task parameters
 - Callback function signature
 
-:::caution[ Note on Funding Contracts]
+<Aside type="caution" title="Note on Funding Contracts">
 
 Making a GET request will fail unless your deployed contract has enough LINK to pay for it. **Learn how to [Acquire testnet LINK](/resources/acquire-link/) and [Fund your contract](/resources/fund-your-contract/)**.
 
-:::
+</Aside>
 
 Assume that a user wants to call the API above and retrieve only the 24h ETH trading volume from the response.
 
-::solidity-remix[samples/APIRequests/APIConsumer.sol]
+<CodeSample src="samples/APIRequests/APIConsumer.sol" />
 
 To use this contract:
 

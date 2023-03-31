@@ -12,9 +12,10 @@ whatsnext:
     "API Reference": "/any-api/api-reference/",
     "Testnet Oracles": "/any-api/testnet-oracles/",
   }
-setup: |
-  import AnyApiCallout from "@features/any-api/common/AnyApiCallout.astro"
 ---
+
+import { Aside, CodeSample } from "@components"
+import AnyApiCallout from "@features/any-api/common/AnyApiCallout.astro"
 
 This guide explains how to make an HTTP GET request to an external API from a smart contract, using Chainlink's [Request & Receive Data](/any-api/introduction/) cycle and then receive multiple responses.
 This is known as **multi-variable** or **multi-word** responses.
@@ -53,15 +54,15 @@ To consume an API with multiple responses, your contract should inherit from [Ch
 - Task parameters
 - Callback function signature
 
-:::caution[ Note on Funding Contracts]
+<Aside type="caution" title="Note on Funding Contracts">
 
 Making a GET request will fail unless your deployed contract has enough LINK to pay for it. **Learn how to [Acquire testnet LINK](/resources/acquire-link/) and [Fund your contract](/resources/fund-your-contract/)**.
 
-:::
+</Aside>
 
 Assume that a user wants to obtain the ETH price quoted against three different currencies: _BTC_ , _USD_ and _EUR_. If they use only a single-word job, it would require three different requests. For a comparison, see the [Single Word Response](/any-api/get-request/examples/single-word-response/) example. To make these requests more efficient, use multi-word responses to do it all in a single request as shown in the following example:
 
-::solidity-remix[samples/APIRequests/MultiWordConsumer.sol]
+<CodeSample src="samples/APIRequests/MultiWordConsumer.sol" />
 
 To use this contract:
 
