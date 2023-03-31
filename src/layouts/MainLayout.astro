@@ -8,6 +8,8 @@ import RightSidebar from "../components/RightSidebar/RightSidebar.astro"
 import * as CONFIG from "../config"
 import { NewsletterCTA } from "../components/Footer/NewsletterCTA.tsx"
 import Footer from "~/components/Footer/Footer.astro"
+import path from "path"
+import fs from "fs"
 
 const { content = {}, frontmatter } = Astro.props
 
@@ -16,9 +18,24 @@ const headings = Astro.props?.headings || Astro.props?.content?.astro.headings
 
 const currentPage = new URL(Astro.request.url).pathname
 
-const currentFile = `src/pages${currentPage.replace(/\/$/, "")}${
-  content?.isIndex || frontmatter?.isIndex ? "/index" : ""
-}.${frontmatter?.isMdx ? "mdx" : "md"}`
+const baseDirectory = "src/pages"
+
+let currentFilePath = path.join(
+  baseDirectory,
+  currentPage.replace(/\/$/, ""),
+  content?.isIndex || frontmatter?.isIndex ? "index" : ""
+)
+
+let currentFile = `${currentFilePath}.mdx`
+
+if (!fs.existsSync(currentFile)) {
+  const fallbackFile = `${currentFilePath}.md`
+  if (fs.existsSync(fallbackFile)) {
+    currentFile = fallbackFile
+  } else {
+    currentFile = `${currentFilePath}.mdx`
+  }
+}
 const githubEditUrl = CONFIG.GITHUB_EDIT_URL + currentFile
 const formattedContentTitle = content.title
   ? `${content.title} | ${CONFIG.SITE.title}`
