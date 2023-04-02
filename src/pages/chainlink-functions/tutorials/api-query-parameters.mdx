@@ -46,7 +46,7 @@ npx hardhat functions-simulate
 
 Example:
 
-```bash
+```text
 $ npx hardhat functions-simulate
 secp256k1 unavailable, reverting to browser version
 
@@ -58,29 +58,28 @@ Executing JavaScript request source code locally...
 
 __Console log messages from sandboxed code__
 HTTP GET Request to https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETH&tsyms=USD
-ETH price is: 1549.17 USD
+ETH price is: 1813.50 USD
 
 __Output from sandboxed source code__
-Output represented as a hex string: 0x0000000000000000000000000000000000000000000000000000000000025d25
-Decoded as a uint256: 154917
+Output represented as a hex string: 0x000000000000000000000000000000000000000000000000000000000002c466
+Decoded as a uint256: 181350
 
 __Simulated On-Chain Response__
-Response returned to client contract represented as a hex string: 0x0000000000000000000000000000000000000000000000000000000000025d25
-Decoded as a uint256: 154917
+Response returned to client contract represented as a hex string: 0x000000000000000000000000000000000000000000000000000000000002c466
+Decoded as a uint256: 181350
 
-Estimated transmission cost: 0.000043407196044714 LINK (This will vary based on gas price)
-Base fee: 0.0 LINK
-Total estimated cost: 0.000043407196044714 LINK
+Gas used by sendRequest: 367881
+Gas used by client callback function: 75029
 ```
 
-Reading the output of the example above, you can see that the `ETH/USD` price is: _1549.17 USD_. Because Solidity does not support decimals, we move the decimal point so that the value looks like an integer `154917` before returning the `bytes` encoded value `0x0000000000000000000000000000000000000000000000000000000000025d25` in the callback. Read the [source code explanation](#functions-request-sourcejs) for more information about the source code.
+Reading the output of the example above, you can see that the `ETH/USD` price is: _1813.50 USD_. Because Solidity does not support decimals, we move the decimal point so that the value looks like an integer `181350` before returning the `bytes` encoded value `0x000000000000000000000000000000000000000000000000000000000002c466` in the callback. Read the [source code explanation](#functions-request-sourcejs) for more information about the source code.
 
 ### Request
 
 <Aside type="note" title="Reminder">
   Before you can make a successful request, you must complete the setup steps in the [Before you
   begin](#before-you-begin) section. Each tutorial is in a separate Git branch and some require unique entries in your
-  `.env` file.
+  `.env.enc` file.
 </Aside>
 
 Send a request to the Decentralized Oracle Network to fetch the asset price. Run the `functions-request` task with the `subid` (subscription ID) and `contract` parameters. This task passes the functions JavaScript source code, arguments, and secrets to the `executeRequest` function in your deployed `FunctionsConsumer` contract. Read the [functionsConsumer](#functionsconsumersol) section for more information about the consumer contract.
@@ -91,45 +90,56 @@ npx hardhat functions-request --subid REPLACE_SUBSCRIPTION_ID --contract REPLACE
 
 Example:
 
-```bash
-$ npx hardhat functions-request --subid 6 --contract 0xa9b286E892d579dc727c79D3be9b01949796240A  --network mumbai
+```text
+$ npx hardhat functions-request --subid 443 --contract 0x4B4BA2Fd6b93aDF8d6b6002E10540E58394388Ea --network mumbai
 secp256k1 unavailable, reverting to browser version
+Estimating cost if the current gas price remains the same...
+
+The transaction to initiate this request will charge the wallet (0x9d087fC03ae39b088326b67fA3C788236645b717):
+0.000496339505294288 MATIC, which (using mainnet value) is $0.0005516547067031669
+
+If the request's callback uses all 100,000 gas, this request will charge the subscription:
+0.200148503810857266 LINK
+
+Continue? Enter (y) Yes / (n) No
+y
 Simulating Functions request locally...
 
 __Console log messages from sandboxed code__
 HTTP GET Request to https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETH&tsyms=USD
-ETH price is: 1547.13 USD
+ETH price is: 1813.96 USD
 
 __Output from sandboxed source code__
-Output represented as a hex string: 0x0000000000000000000000000000000000000000000000000000000000025c59
-Decoded as a uint256: 154713
+Output represented as a hex string: 0x000000000000000000000000000000000000000000000000000000000002c494
+Decoded as a uint256: 181396
 
+⣾ Request 0x5e89f3e84cbf80d65de53de816052d1b79c50c1f1f9f283aadc3ad36d33d41aa has been initiated. Waiting for fulfillment from the Decentralized Oracle Network...
 
-If all 100000 callback gas is used, this request is estimated to cost 0.000052391183419864 LINK
-Continue? (y) Yes / (n) No
-y
+ℹ Transaction confirmed, see https://mumbai.polygonscan.com/tx/0x36029c2e49d0d890d00a1b554e4bea564444e48c5449f9d5deaed5d42114d91e for more details.
 
-Requesting new data for FunctionsConsumer contract 0xa9b286E892d579dc727c79D3be9b01949796240A on network mumbai
-Waiting 2 blocks for transaction 0x0e28c3038edbfd1e3ee391fa4f93f0622a3d2dea7f8f3a06edff7669b34bd6cf to be confirmed...
+✔ Request 0x5e89f3e84cbf80d65de53de816052d1b79c50c1f1f9f283aadc3ad36d33d41aa fulfilled! Data has been written on-chain.
 
-Request 0xb471d27b3108cfc97345de4abca32cf3ad004cb1edfeb1a70bb55604b0ce3fa0 initiated
-Waiting for fulfillment...
+Response returned to client contract represented as a hex string: 0x000000000000000000000000000000000000000000000000000000000002c48b
+Decoded as a uint256: 181387
 
-Transmission cost: 0.000071172820353186 LINK
-Base fee: 0.0 LINK
-Total cost: 0.000071172820353186 LINK
+Actual amount billed to subscription #443:
+┌──────────────────────┬─────────────────────────────┐
+│         Type         │           Amount            │
+├──────────────────────┼─────────────────────────────┤
+│  Transmission cost:  │  0.000063268449037502 LINK  │
+│      Base fee:       │          0.2 LINK           │
+│                      │                             │
+│     Total cost:      │  0.200063268449037502 LINK  │
+└──────────────────────┴─────────────────────────────┘
 
-Request 0xb471d27b3108cfc97345de4abca32cf3ad004cb1edfeb1a70bb55604b0ce3fa0 fulfilled!
-Response returned to client contract represented as a hex string: 0x0000000000000000000000000000000000000000000000000000000000025c37
-Decoded as a uint256: 154679
 ```
 
 The output of the example above gives you the following information:
 
-- The `executeRequest` function was successfully called in the `FunctionsConsumer` contract. The transaction in this example is [0x0e28c3038edbfd1e3ee391fa4f93f0622a3d2dea7f8f3a06edff7669b34bd6cf](https://mumbai.polygonscan.com/tx/0x0e28c3038edbfd1e3ee391fa4f93f0622a3d2dea7f8f3a06edff7669b34bd6cf).
-- The request ID is `0xb471d27b3108cfc97345de4abca32cf3ad004cb1edfeb1a70bb55604b0ce3fa0`.
-- The DON successfully fulfilled your request. The total cost was: `0.000071172820353186 LINK`.
-- The consumer contract received a response in `bytes` with a value of `0x0000000000000000000000000000000000000000000000000000000000025c37`. Decoding it off-chain to a `string` gives you a result: `154679`.
+- The `executeRequest` function was successfully called in the `FunctionsConsumer` contract. The transaction in this example is [0x36029c2e49d0d890d00a1b554e4bea564444e48c5449f9d5deaed5d42114d91e](https://mumbai.polygonscan.com/tx/0x36029c2e49d0d890d00a1b554e4bea564444e48c5449f9d5deaed5d42114d91e).
+- The request ID is `0x5e89f3e84cbf80d65de53de816052d1b79c50c1f1f9f283aadc3ad36d33d41aa`.
+- The DON successfully fulfilled your request. The total cost was: `0.200063268449037502 LINK`.
+- The consumer contract received a response in `bytes` with a value of `0x000000000000000000000000000000000000000000000000000000000002c48b`. Decoding it off-chain to a `uint256` gives you a result: `181387`.
 
 At any time, you can run the `functions-read` task again with the `contract` parameter to read the latest received response.
 
@@ -139,13 +149,13 @@ npx hardhat functions-read  --contract REPLACE_CONSUMER_CONTRACT_ADDRESS --netwo
 
 Example:
 
-```bash
-$ npx hardhat functions-read  --contract 0xa9b286E892d579dc727c79D3be9b01949796240A --network mumbai
+```text
+$ npx hardhat functions-read  --contract 0x4B4BA2Fd6b93aDF8d6b6002E10540E58394388Ea  --network mumbai
 secp256k1 unavailable, reverting to browser version
-Reading data from Functions client contract 0xa9b286E892d579dc727c79D3be9b01949796240A on network mumbai
+Reading data from Functions client contract 0x4B4BA2Fd6b93aDF8d6b6002E10540E58394388Ea on network mumbai
 
-On-chain response represented as a hex string: 0x0000000000000000000000000000000000000000000000000000000000025c37
-Decoded as a uint256: 154679
+On-chain response represented as a hex string: 0x000000000000000000000000000000000000000000000000000000000002c48b
+Decoded as a uint256: 181387
 ```
 
 ## Explanation
