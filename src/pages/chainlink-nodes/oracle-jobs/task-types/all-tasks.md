@@ -3,7 +3,7 @@ layout: ../../../../layouts/MainLayout.astro
 section: nodeOperator
 date: Last Modified
 title: "All Tasks"
-permalink: "docs/jobs/task-types/pipelines/"
+permalink: "docs/jobs/task-types/all-tasks/"
 ---
 
 This guide outlines pipelines for tasks and different task types.
@@ -245,7 +245,7 @@ This task will return a map with the following schema:
 
 ## ETH ABI Decode task
 
-Decodes a ETH ABI-encoded payload, typically the result of an [ETH Call task](/chainlink-nodes/oracle-jobs/task-types/task_eth_call/).
+Decodes a ETH ABI-encoded payload, typically the result of an [ETH Call task](/chainlink-nodes/oracle-jobs/task-types/all-tasks/#eth-call-task).
 
 **Parameters**
 
@@ -286,7 +286,7 @@ This task will return a map with the following schema:
 
 ## ETH ABI Encode task
 
-Encodes a bytes payload according to ETH ABI encoding, typically in order to perform an [ETH Call](/chainlink-nodes/oracle-jobs/task-types/task_eth_call/) or an [ETH Tx](/chainlink-nodes/oracle-jobs/task-types/task_eth_tx/).
+Encodes a bytes payload according to ETH ABI encoding, typically in order to perform an [ETH Call](/chainlink-nodes/oracle-jobs/task-types/all-tasks/#eth-call-task) or an [ETH Tx](/chainlink-nodes/oracle-jobs/task-types/all-tasks/#eth-tx-task).
 
 **Parameters**
 

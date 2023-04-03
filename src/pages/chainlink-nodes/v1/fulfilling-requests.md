@@ -25,7 +25,7 @@ You can use your Chainlink nodes to fulfill requests. This guide shows you how t
 
 Chainlink nodes can fulfill requests from open or unauthenticated APIs without the need for [External Adapters](/chainlink-nodes/external-adapters/external-adapters/) as long as you've [added the jobs](#add-a-job-to-the-node) to the node. For these requests, requesters supply the URL to the open API that they want each node to retrieve. The Chainlink node will use [tasks](/chainlink-nodes/oracle-jobs/task-types/tasks/) to fulfill the request.
 
-Some APIs require authentication by providing request headers for the operator's API key, which the Chainlink node supports. If you would like to provide access to an API that requires authentication, you must create a job that is specific for that API either using an [external adapter](/chainlink-nodes/external-adapters/external-adapters/) or by using the parameters of the [HTTP task](/chainlink-nodes/oracle-jobs/task-types/task_http).
+Some APIs require authentication by providing request headers for the operator's API key, which the Chainlink node supports. If you would like to provide access to an API that requires authentication, you must create a job that is specific for that API either using an [external adapter](/chainlink-nodes/external-adapters/external-adapters/) or by using the parameters of the [HTTP task](/chainlink-nodes/oracle-jobs/task-types/all-tasks/#http-task).
 
 ## Requirements
 
