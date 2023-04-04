@@ -11,7 +11,11 @@ You can see the available config options on the [Node Config](/chainlink-nodes/v
 
 ## Migrating from environment variables to TOML
 
-1. Update your Chainlink Node to v1.13.0 and ensure that it operates as expected. This is the last version that supports environment variable configuration, and the best version to use for TOML migration before you update the node to v2.0.0.
+Before you begin, update your Chainlink Node to v1.13.0 and ensure that it operates as expected. This is the last version that supports environment variable configuration, and the best version to use for TOML migration before you update the node to future versions.
+
+### Export your current config
+
+You can generate the `config.toml` file using the `chainlink config dump` command. This guide shows you how to do this for a Chainlink node running in a Docker container:
 
 1. Open an interactive shell inside the Docker container that runs your node:
 
@@ -61,6 +65,8 @@ You can see the available config options on the [Node Config](/chainlink-nodes/v
 
 1. Edit the `secrets.toml` file to include the secrets you need for your specific Chainlink node. See the [Node Secrets](/chainlink-nodes/v2/secrets-config) page for a full list of available config options.
 
+### Validate the configuration
+
 After you have the `config.toml` file and the `secrets.toml` files on the host system, you can validate these files using a temporary Docker container.
 
 1. Validate the configuration:
@@ -89,6 +95,8 @@ After you have the `config.toml` file and the `secrets.toml` files on the host s
    ```shell
    Valid configuration.
    ```
+
+### Restart your Chainlink node using the TOML config
 
 With your valid config and secrets files, you can migrate your Chainlink node to use the new config.
 
