@@ -539,7 +539,7 @@ Example `BRIDGE_CACHE_TTL=10s`, `BRIDGE_CACHE_TTL=1m`
 
 - Default: _none_
 
-`BRIDGE_RESPONSE_URL` defines the URL for bridges to send a response to. This _must_ be set when using async external adapters.
+`BRIDGE_RESPONSE_URL` defines the URL for bridges to send a response to.
 
 Usually this will be the same as the URL/IP and port you use to connect to the Chainlink UI, such as `https://my-chainlink-node.example.com:6688`.
 
