@@ -185,7 +185,7 @@ Ganache is a mock testnet. Although you can run nodes on Ganache, it is not offi
       </Fragment>
    </Tabs>
 
-   The first time running the image, the node asks you to enter an API Email and Password. This will be used to expose the API for the GUI interface, and will be used every time you log into your node. Instructions on how to do that are [here](/chainlink-nodes/resources/miscellaneous/#use-password-and-api-files-on-startup).
+   The first time running the image, the node asks you to enter an API Email and Password. This will be used to expose the API for the GUI interface, and will be used every time you log into your node.
 
 1. Check the container is running. Note the `6688` port is [published](https://docs.docker.com/config/containers/container-networking/#published-ports) `0.0.0.0:6688->6688/tcp` and therefore accessible outside of Docker.
 
