@@ -982,7 +982,7 @@ export const SIDEBAR = {
           title: "Tasks",
           children: [
             {
-              title: "Pipelines and Task Types",
+              title: "Task Types",
               url: "chainlink-nodes/oracle-jobs/all-tasks",
             },
           ],
