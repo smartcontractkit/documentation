@@ -3,35 +3,10 @@ layout: ../../../../layouts/MainLayout.astro
 section: nodeOperator
 date: Last Modified
 title: "All Tasks"
-permalink: "docs/jobs/task-types/all-tasks/"
+permalink: "docs/jobs/all-tasks/"
 ---
 
-This guide outlines pipelines for tasks and different task types.
-
-## Writing pipelines
-
-Pipelines are composed of tasks arranged in a DAG (directed acyclic graph). Pipelines are expressed in [DOT syntax](https://en.wikipedia.org/wiki/DOT_%28graph_description_language%29#Directed_graphs).
-
-Each node in the graph is a task with a user-specified ID and a set of configuration parameters and attributes:
-
-```toml
-my_fetch_task [type="http" method=GET url="https://chain.link/eth_usd"]
-```
-
-The edges between tasks define how data flows from one task to the next. Some tasks can have multiple inputs, such as `median`. Other tasks are limited to 0 (`http`) or 1 (`jsonparse`).
-
-```toml
-data_source_1  [type="http" method=GET url="https://chain.link/eth_usd"]
-data_source_2  [type="http" method=GET url="https://coingecko.com/eth_usd"]
-medianize_data [type="median"]
-submit_to_ea   [type="bridge" name="my_bridge"]
-
-data_source_1 -> medianize_data
-data_source_2 -> medianize_data
-medianize_data -> submit_to_ea
-```
-
-![DAG Example](/images/dag_example.png)
+This guide outlines different task types.
 
 ## 'Any' task
 
@@ -244,7 +219,7 @@ This task will return a map with the following schema:
 
 ## ETH ABI Decode task
 
-Decodes a ETH ABI-encoded payload, typically the result of an [ETH Call task](/chainlink-nodes/oracle-jobs/task-types/all-tasks/#eth-call-task).
+Decodes a ETH ABI-encoded payload, typically the result of an [ETH Call task](/chainlink-nodes/oracle-jobs/all-tasks/#eth-call-task).
 
 **Parameters**
 
@@ -285,7 +260,7 @@ This task will return a map with the following schema:
 
 ## ETH ABI Encode task
 
-Encodes a bytes payload according to ETH ABI encoding, typically in order to perform an [ETH Call](/chainlink-nodes/oracle-jobs/task-types/all-tasks/#eth-call-task) or an [ETH Tx](/chainlink-nodes/oracle-jobs/task-types/all-tasks/#eth-tx-task).
+Encodes a bytes payload according to ETH ABI encoding, typically in order to perform an [ETH Call](/chainlink-nodes/oracle-jobs/all-tasks/#eth-call-task) or an [ETH Tx](/chainlink-nodes/oracle-jobs/all-tasks/#eth-tx-task).
 
 **Parameters**
 
