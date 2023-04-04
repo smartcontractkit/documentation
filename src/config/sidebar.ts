@@ -331,7 +331,7 @@ export const SIDEBAR = {
           children: [
             {
               title: "EthBalanceMonitor",
-              url: "chainlink-automation/utility-contracts/",
+              url: "chainlink-automation/tutorials/eth-balance/",
             },
           ],
         },
