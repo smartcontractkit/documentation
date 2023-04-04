@@ -11,6 +11,7 @@ whatsnext:
 metadata:
   title: "Estimating costs for Chainlink VRF v2"
   description: "Learn how to estimate costs for Chainlink VRF v2."
+isMdx: true
 ---
 
 import VrfCommon from "@features/vrf/v2/common/VrfCommon.astro"
@@ -232,26 +233,26 @@ are available on the [Supported Networks](/vrf/v2/direct-funding/supported-netwo
 
 1. Calculate the total gas cost:
 
-   | Gas cost calculation                                                       | Total gas cost             |
-   | -------------------------------------------------------------------------- | -------------------------- |
-   | Gas price x (Verification gas + Callback gas limit + Wrapper gas overhead) |                            |
-   | 50 gwei x (200000 + 100000 + 90000 + 40000)                                | 21500000 gwei (0.0215 ETH) |
+   | Gas cost calculation                                                       | Total gas cost            |
+   | -------------------------------------------------------------------------- | ------------------------- |
+   | Gas price x (Verification gas + Callback gas limit + Wrapper gas overhead) |                           |
+   | 50 gwei x (200000 + 100000 + 40000)                                        | 17000000 gwei (0.017 ETH) |
 
 1. Convert the gas cost to LINK using the [LINK/ETH feed](https://data.chain.link/ethereum/mainnet/crypto-eth/link-eth).
    For this example, assume the feed returns a conversion value of Ξ0.004 ETH per 1 LINK.
 
    | ETH to LINK cost conversion | Total gas cost (LINK) |
    | --------------------------- | --------------------- |
-   | 0.0215 ETH / 0.004 ETH/LINK | 5.375 LINK            |
+   | 0.017 ETH / 0.004 ETH/LINK  | 4.25 LINK             |
 
 1. Add the LINK premium to get the total cost of a request:
 
    | Adding LINK premium                                                       | Total request cost (LINK) |
    | ------------------------------------------------------------------------- | ------------------------- |
    | Coordinator premium + (Total gas cost x (1 + Wrapper premium percentage)) |                           |
-   | 0.25 LINK + (5.375 x (1 + 0))                                             | 5.625 LINK                |
+   | 0.25 LINK + (4.25 x (1 + 0))                                              | 4.5 LINK                  |
 
-This example request would cost 5.625 LINK.
+This example request would cost 4.5 LINK.
 
 </Fragment>
 </Tabs>
