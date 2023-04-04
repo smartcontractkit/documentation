@@ -989,7 +989,7 @@ export const SIDEBAR = {
           ],
         },
         {
-          url: "chainlink-nodes/oracle-jobs/task-types/tasks",
+          url: "chainlink-nodes/oracle-jobs/tasks",
           title: "Tasks",
           children: [
             {
