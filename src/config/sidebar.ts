@@ -853,11 +853,11 @@ export const SIDEBAR = {
           children: [
             {
               title: "Node Config (TOML)",
-              url: "chainlink-nodes/v2/node-config",
+              url: "chainlink-nodes/v1/node-config",
             },
             {
               title: "Secrets Config (TOML)",
-              url: "chainlink-nodes/v2/secrets-config",
+              url: "chainlink-nodes/v1/secrets-config",
             },
             {
               title: "Legacy Config (.env)",
@@ -867,7 +867,7 @@ export const SIDEBAR = {
         },
         {
           title: "Roles and Access Control",
-          url: "chainlink-nodes/v2/roles-and-access",
+          url: "chainlink-nodes/v1/roles-and-access",
         },
       ],
     },
