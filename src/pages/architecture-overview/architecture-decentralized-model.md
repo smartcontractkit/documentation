@@ -68,7 +68,7 @@ Proxy contracts can vary from one data feed to another, but the [`AggregatorProx
 
 ### Aggregator
 
-An aggregator is the contract that receives periodic data updates from the oracle network. Aggregators store aggregated data on-chain so that consumers can retrieve it and and act upon it within the same transaction.
+An aggregator is the contract that receives periodic data updates from the oracle network. Aggregators store aggregated data on-chain so that consumers can retrieve it and act upon it within the same transaction.
 
 You can access this data using the Data Feed address and the [`AggregatorV3Interface` contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.6/interfaces/AggregatorV3Interface.sol).
 
