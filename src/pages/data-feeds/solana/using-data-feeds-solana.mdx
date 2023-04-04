@@ -11,9 +11,10 @@ whatsnext:
 metadata:
   title: "Using Data Feeds On-Chain (Solana)"
   description: "How to use Chainlink Data Feeds in your on-chain Solana programs."
-setup: |
-  import { Tabs } from "@components/Tabs"
 ---
+
+import { CodeSample } from "@components"
+import { Tabs } from "@components/Tabs"
 
 Chainlink Data Feeds are the quickest way to connect your smart contracts to the real-world market prices of assets. This guide demonstrates how to deploy a program to the Solana Devnet cluster and access Data Feeds on-chain using the [Chainlink Solana Starter Kit](https://github.com/smartcontractkit/solana-starter-kit). To learn how to read price feed data using off-chain applications, see the [Using Data Feeds Off-Chain](/solana/using-data-feeds-off-chain/) guide.
 
@@ -60,34 +61,38 @@ The code sample has the following components:
 - `decimals`: Returns the precision of the price, as in how many numbers the price is padded out to
 - `Display`: A helper function that formats the padded out price data into a human-readable price
 
-::solidity-remix[samples/Solana/PriceFeeds/on-chain-read.rs]
-
-::solidity-remix[samples/Solana/PriceFeeds/on-chain-read-anchor.rs]
+<Tabs client:visible>
+  <Fragment slot="tab.js">Rust</Fragment>
+  <Fragment slot="tab.ts">Rust with Anchor</Fragment>
+  <Fragment slot="panel.js">
+    <CodeSample src="samples/Solana/PriceFeeds/on-chain-read.rs" />
+  </Fragment>
+  <Fragment slot="panel.ts">
+    <CodeSample src="samples/Solana/PriceFeeds/on-chain-read-anchor.rs" />
+  </Fragment>
+</Tabs>
 
 Program Transaction logs:
 
+{/* prettier-ignore */}
 <Tabs client:visible>
-    <Fragment slot="tab.rust">Rust</Fragment>
-    <Fragment slot="tab.rustAnchor">Rust with Anchor</Fragment>
-    <Fragment slot="panel.rust">
-   ```shell Rust
-   > Program logged: "Chainlink Price Feed Consumer entrypoint"
-   > Program logged: "SOL / USD price is 83.99000000"
-   > Program consumed: 95953 of 1400000 compute units
-   > Program return: HNYSbr77Jc9LhHeb9tx53SrWbWfNBnQzQrM4b3BB3PCR CA==
-   ```
-    </Fragment>
-    <Fragment slot="panel.rustAnchor">
-   ```shell Rust with Anchor
-   Fetching transaction logs...
-   [
-   'Program HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny consumed 1826 of 1306895 compute units',
-   'Program return: HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny CA==',
-   'Program HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny success',
-   'Program log: SOL / USD price is 93.76988029',
-   ]
-   ```
-    </Fragment>
+  <Fragment slot="tab.rust">Rust</Fragment>
+  <Fragment slot="tab.rustAnchor">Rust with Anchor</Fragment>
+  <Fragment slot="panel.rust">
+    ```shell Rust
+    > Program logged: "Chainlink Price Feed Consumer entrypoint" > Program logged: "SOL / USD price is
+    83.99000000"
+    > Program consumed: 95953 of 1400000 compute units > Program return:
+    HNYSbr77Jc9LhHeb9tx53SrWbWfNBnQzQrM4b3BB3PCR CA==
+    ```
+  </Fragment>
+  <Fragment slot="panel.rustAnchor">
+    ```shell Rust with Anchor
+    Fetching transaction logs... [ 'Program HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny
+    consumed 1826 of 1306895 compute units', 'Program return: HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny CA==',
+    'Program HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny success', 'Program log: SOL / USD price is 93.76988029', ]
+    ```
+  </Fragment>
 </Tabs>
 
 To learn more about Solana and Anchor, see the [Solana Documentation](https://docs.solana.com/) and the [Anchor Documentation](https://project-serum.github.io/anchor/).
@@ -127,7 +132,7 @@ Before you begin, set up your environment for development on Solana:
 1. Install the latest Mainnet version of [the Solana CLI](https://github.com/solana-labs/solana/releases) and export the path to the CLI:
 
    ```shell
-   sh -c "$(curl -sSfL https://release.solana.com/v1.9.28/install)" &&
+   sh -c "$(curl -sSfL https://release.solana.com/v1.13.6/install)" &&
    export PATH="~/.local/share/solana/install/active_release/bin:$PATH"
    ```
 
