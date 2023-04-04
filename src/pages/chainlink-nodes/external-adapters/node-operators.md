@@ -6,7 +6,7 @@ title: "Bridges: Adding External Adapters to Nodes"
 permalink: "docs/node-operators/"
 ---
 
-You can add external adapters to a Chainlink node by creating a bridge in the Node Operators Interface. Each bridge must have a unique name and a URL for the external adapter. If a job has a [Bridge Task](/chainlink-nodes/oracle-jobs/task-types/all-tasks/#bridge-task), the node searches for a bridge by name and uses that bridge as your external adapter. Bridge names are case insensitive.
+You can add external adapters to a Chainlink node by creating a bridge in the Node Operators Interface. Each bridge must have a unique name and a URL for the external adapter. If a job has a [Bridge Task](/chainlink-nodes/oracle-jobs/all-tasks/#bridge-task), the node searches for a bridge by name and uses that bridge as your external adapter. Bridge names are case insensitive.
 
 To create a bridge on the node, go to the **Create Bridge** tab in the Node Operators Interface. Specify a name for the bridge, the URL for your external adapter, and optionally specify the minimum contract payment and number of confirmations for the bridge. Minimum contract payment is a fee paid in LINK for the Chainlink node making a call to the external adapter via the bridge. This fee is in addition to the fee specified at the global node level for processing job requests.
 
@@ -14,7 +14,7 @@ To create a bridge on the node, go to the **Create Bridge** tab in the Node Oper
 
 The bridge name must be unique to the local node. The bridge URL is the URL of your external adapter, which can be local or on a separate machine.
 
-To add jobs that use the bridge, add a [Bridge Task](/chainlink-nodes/oracle-jobs/task-types/all-tasks/#bridge-task) to your job. The `bridge` task defined in the example below is defined as `fetch` and the name of the bridge is `soccer-data`.
+To add jobs that use the bridge, add a [Bridge Task](/chainlink-nodes/oracle-jobs/all-tasks/#bridge-task) to your job. The `bridge` task defined in the example below is defined as `fetch` and the name of the bridge is `soccer-data`.
 
 <!-- prettier-ignore -->
 ```toml
