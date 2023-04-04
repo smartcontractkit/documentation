@@ -3,7 +3,7 @@ layout: ../../../layouts/MainLayout.astro
 section: dataFeeds
 date: Last Modified
 title: "Using Data Feeds Off-Chain (Solana)"
-permalink: "docs/solana/using-data-feeds-off-chain/"
+ismdx: true
 whatsnext:
   {
     "Use data feeds on-chain": "/data-feeds/solana/using-data-feeds-solana/",
@@ -12,10 +12,11 @@ whatsnext:
 metadata:
   title: "Using Data Feeds Off-Chain (Solana)"
   description: "How to use Chainlink Data Feeds in your off-chain applications."
-setup: |
-  import { PackageManagerTabs } from "@components"
-  import { Tabs } from "@components/Tabs"
 ---
+
+import { CodeSample } from "@components"
+import { PackageManagerTabs } from "@components"
+import { Tabs } from "@components/Tabs"
 
 Chainlink Data Feeds are the quickest way to access market prices for real-world assets. This guide demonstrates how to read Chainlink Data Feeds on the Solana Devnet using off-chain examples in the [Chainlink Solana Starter Kit](https://github.com/smartcontractkit/solana-starter-kit). To learn how to use Data Feeds in your on-chain Solana programs, see the [Using Data Feeds On-Chain](/data-feeds/solana/using-data-feeds-solana/) guide.
 
@@ -47,7 +48,7 @@ Install the necessary components and include the example code in your project. O
 1. Install the latest Mainnet version of [the Solana CLI](https://github.com/solana-labs/solana/releases) and export the path to the CLI:
 
    ```shell
-   sh -c "$(curl -sSfL https://release.solana.com/v1.9.28/install)" &&
+   sh -c "$(curl -sSfL https://release.solana.com/v1.13.6/install)" &&
    export PATH="~/.local/share/solana/install/active_release/bin:$PATH"
    ```
 
@@ -76,36 +77,38 @@ Install the necessary components and include the example code in your project. O
    ```
 
 1. Add the [Anchor library](https://www.npmjs.com/package/@project-serum/anchor) to your project:
+
    <PackageManagerTabs>
-   <Fragment slot="yarn">
+<Fragment slot="yarn">
 
    ```shell yarn
    yarn add @project-serum/anchor
    ```
 
     </Fragment>
-    <Fragment slot="npm">
-    ```shell npm
-    npm i @project-serum/anchor
-    ```
-    </Fragment>
-   </PackageManagerTabs>
+ <Fragment slot="npm">
+ ```shell npm
+ npm i @project-serum/anchor
+ ```
+ </Fragment>
+</PackageManagerTabs>
 
 1. Add the [Chainlink Solana NPM library](https://www.npmjs.com/package/@chainlink/solana-sdk) to your project:
+
    <PackageManagerTabs>
-   <Fragment slot="yarn">
+<Fragment slot="yarn">
 
    ```shell yarn
    yarn add @chainlink/solana-sdk
    ```
 
     </Fragment>
-    <Fragment slot="npm">
-    ```shell npm
-   npm i -g @chainlink/solana-sdk
-    ```
-    </Fragment>
-   </PackageManagerTabs>
+ <Fragment slot="npm">
+ ```shell npm
+npm i -g @chainlink/solana-sdk
+ ```
+ </Fragment>
+</PackageManagerTabs>
 
 1. Create a temporary Solana wallet to use for this example. Alternatively, if you have an existing wallet that you want to use, locate the path to your [keypair](https://docs.solana.com/terminology#keypair) file and use it as the keypair for the rest of this guide.
 
@@ -122,26 +125,27 @@ Install the necessary components and include the example code in your project. O
 
 1. Copy the sample code into your project. This example queries price data off-chain. By default, the script reads the SOL/USD feed, but you can change the `CHAINLINK_FEED_ADDRESS` variable to point to the [feed account addresses](/data-feeds/price-feeds/addresses?network=solana/) that you want to query. You can take the components of these code samples and integrate them with your existing project. Because these examples read data feeds without making any on-chain changes, no lamports are required to run them.
 
-::solidity-remix[samples/Solana/PriceFeeds/off-chain-read.js]
+   <Tabs client:visible>
+     <Fragment slot="tab.js">Javascript</Fragment>
+     <Fragment slot="tab.ts">Typescript</Fragment>
+     <Fragment slot="panel.js">
+       <CodeSample src="samples/Solana/PriceFeeds/off-chain-read.js" />
+     </Fragment>
+     <Fragment slot="panel.ts">
+       <CodeSample src="samples/Solana/PriceFeeds/off-chain-read.ts" />
+     </Fragment>
+   </Tabs>
 
-::solidity-remix[samples/Solana/PriceFeeds/off-chain-read.ts]
+1. Run the example using the following command:
 
-You can run these examples using the following commands:
-
-<Tabs client:visible>
-    <Fragment slot="tab.js">Javascript</Fragment>
-    <Fragment slot="tab.ts">Typescript</Fragment>
-    <Fragment slot="panel.js">
-    ```shell JavaScript
-    node javascript-example.js
-    ```
-    </Fragment>
-    <Fragment slot="panel.ts">
-    ```shell TypeScript
-    yarn add ts-node typescript && yarn ts-node typescript-example.ts
-    ```
-    </Fragment>
-</Tabs>
+   <Tabs client:visible>
+     <Fragment slot="tab.js">Javascript</Fragment>
+     <Fragment slot="tab.ts">Typescript</Fragment>
+     <Fragment slot="panel.js">```shell JavaScript node javascript-example.js ```</Fragment>
+     <Fragment slot="panel.ts">
+       ```shell TypeScript yarn add ts-node typescript && yarn ts-node typescript-example.ts ```
+     </Fragment>
+   </Tabs>
 
 To learn more about Solana and Anchor, see the [Solana Documentation](https://docs.solana.com/) and the [Anchor Documentation](https://book.anchor-lang.com/).
 
@@ -158,7 +162,7 @@ Before you begin, set up your environment for development on Solana:
 1. Install the latest Mainnet version of [the Solana CLI](https://github.com/solana-labs/solana/releases) and export the path to the CLI:
 
    ```shell
-   sh -c "$(curl -sSfL https://release.solana.com/v1.9.28/install)" &&
+   sh -c "$(curl -sSfL https://release.solana.com/v1.13.6/install)" &&
    export PATH="~/.local/share/solana/install/active_release/bin:$PATH"
    ```
 
@@ -216,13 +220,13 @@ After you install the required tools, clone the example code from the [solana-st
 
 1. Run the example:
 
-   ```shell JavaScript
-   node read-data.js
-   ```
-
-   ```shell TypeScript
-   yarn run read-data
-   ```
+   {" "}
+   <Tabs client:visible>
+     <Fragment slot="tab.js">Javascript</Fragment>
+     <Fragment slot="tab.ts">Typescript</Fragment>
+     <Fragment slot="panel.js">```shell JavaScript node read-data.js ```</Fragment>
+     <Fragment slot="panel.ts">```shell TypeScript yarn run read-data ```</Fragment>
+   </Tabs>
 
    The example code retrieves and prints the current price feed data until you close the application:
 
