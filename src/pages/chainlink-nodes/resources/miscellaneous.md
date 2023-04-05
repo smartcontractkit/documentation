@@ -321,7 +321,7 @@ cd ~/.chainlink && docker run -p 6688:6688 -v ~/.chainlink:/chainlink -it --env-
 
 ## Importing a Keystore
 
-If you haven't ran the node before and want to import a key you can use the following command, where `./keystore.json` is the path to the keystore file of your account.
+If you haven't run the node before and want to import a key you can use the following command, where `./keystore.json` is the path to the keystore file of your account.
 
 ```shell import
 chainlink local import ./keystore.json
