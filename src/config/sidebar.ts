@@ -767,10 +767,6 @@ export const SIDEBAR = {
           url: "any-api/testnet-oracles",
         },
         {
-          title: "Data Provider Nodes",
-          url: "any-api/data-providers/introduction",
-        },
-        {
           title: "API Reference",
           url: "any-api/api-reference",
         },
