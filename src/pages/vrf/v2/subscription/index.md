@@ -71,11 +71,11 @@ The Chainlink VRF v2 solution uses both off-chain and on-chain components:
 
 Set up your consuming contract:
 
-1. Your contract must inherit [VRFConsumerBaseV2](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/VRFConsumerBaseV2.sol).
+1. Your contract must inherit [VRFConsumerBaseV2](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/vrf/VRFConsumerBaseV2.sol).
 
 1. Your contract must implement the implement the `fulfillRandomWords` function, which is the _callback VRF function_. Here, you add logic to handle the random values after they are returned to your contract.
 
-1. Submit your VRF request by calling `requestRandomWords` of the [VRF Coordinator](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/VRFCoordinatorV2.sol). Include the following parameters in your request:
+1. Submit your VRF request by calling `requestRandomWords` of the [VRF Coordinator](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/vrf/VRFCoordinatorV2.sol). Include the following parameters in your request:
 
    - `keyHash`: Identifier that maps to a job and a private key on the VRF service and that represents a specified gas lane. If your request is urgent, specify a gas lane with a higher gas price limit. The configuration for your network can be found [here](/vrf/v2/subscription/supported-networks/#configurations).
    - `s_subscriptionId`: The subscription ID that the consuming contract is registered to. LINK funds are deducted from this subscription.

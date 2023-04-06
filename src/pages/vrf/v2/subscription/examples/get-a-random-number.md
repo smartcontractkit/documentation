@@ -52,7 +52,10 @@ For this example, create a new subscription on the Sepolia testnet.
 
 1. Click **Create Subscription** and follow the instructions to create a new subscription account. MetaMask opens and asks you to confirm payment to create the account on-chain. After you approve the transaction, the network confirms the creation of your subscription account on-chain.
 
-1. After the subscription is created, click **Add funds** and follow the instructions to fund your subscription. For this example, a balance of 2 LINK is sufficient. MetaMask opens to confirm the LINK transfer to your subscription. After you approve the transaction, the network confirms the transfer of your LINK token to your subscription account.
+1. After the subscription is created, click **Add funds** and follow the instructions to fund your subscription.
+
+   - For your request to go through, you need to fund your subscription with enough LINK to meet your [minimum subscription balance](/vrf/v2/subscription#minimum-subscription-balance) to serve as a buffer against gas volatility. For this example, a balance of 12 LINK is sufficient. (After your request is processed, it costs around 3 LINK, and that amount will be deducted from your subscription balance.)
+   - MetaMask opens to confirm the LINK transfer to your subscription. After you approve the transaction, the network confirms the transfer of your LINK token to your subscription account.
 
 1. After you add funds, click **Add consumer**. A page opens with your account details and subscription ID.
 

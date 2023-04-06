@@ -70,7 +70,11 @@ Make sure that your consuming contracts are funded with enough LINK tokens to co
 <Fragment slot="tab.2">Direct funding</Fragment>
 <Fragment slot="panel.1">
 
-After the request is complete, the final gas cost is recorded based on how much gas is required for the verification and callback.
+You need to pre-fund your subscription enough to meet the [minimum subscription balance](/vrf/v2/subscription#minimum-subscription-balance)
+in order to have a buffer against gas volatility.
+
+After the request is complete, the final gas cost is recorded based on how much gas is used for the verification and callback.
+The actual cost of the request is deducted from your subscription balance.
 
 The total gas cost in wei for your request uses the following formula:
 
@@ -126,7 +130,7 @@ A LINK premium is then added to the total gas cost. The premium is divided in tw
 
 ```
 (Coordinator premium
-  + (total gas cost * Wrapper premium)) = total request cost
+  + (total gas cost * (1 + Wrapper premium percentage)) = total request cost
 ```
 
 </Fragment>
@@ -155,7 +159,8 @@ request is usually lower than the minimum subscription balance.
 | Max verification gas | 200000    |
 | LINK premium         | 0.25 LINK |
 
-1. Calculate the total gas cost:
+1. Calculate the total gas cost, using the maximum possible gas price for the selected gas lane, the estimated
+   maximum verification gas, and the full callback gas limit:
 
    | Gas cost calculation                          | Total gas cost            |
    | --------------------------------------------- | ------------------------- |
@@ -176,7 +181,9 @@ request is usually lower than the minimum subscription balance.
    | Total gas cost (LINK) + LINK premium |                             |
    | 37.5 LINK + 0.25 LINK                | 37.75 LINK                  |
 
-This example request would cost up to 37.75 LINK.
+This example request requires a minimum subscription balance of 37.75 LINK. Check the **Max Cost** in the
+Subscription Manager to view the minimum subscription balance for all your contracts. When your request is
+processed, the actual cost of the request is deducted from your subscription balance.
 
 #### Estimate VRF request cost
 
@@ -211,7 +218,7 @@ for current gas prices.
    | Total gas cost (LINK) + LINK premium |                           |
    | 2.625 LINK + 0.25 LINK               | 2.875 LINK                |
 
-This example request would cost 2.875 LINK.
+This example request would cost 2.875 LINK, which is deducted from your subscription balance.
 
 </Fragment>
 <Fragment slot="panel.2">
@@ -219,40 +226,39 @@ This example request would cost 2.875 LINK.
 This is an example calculation of a VRF request on the Ethereum network. The values for other supported networks
 are available on the [Supported Networks](/vrf/v2/direct-funding/supported-networks/) page.
 
-| Parameter                  | Value     |
-| -------------------------- | --------- |
-| Gas price                  | 50 gwei   |
-| Callback gas limit         | 100000    |
-| Max verification gas       | 200000    |
-| Coordinator gas overhead   | 90000     |
-| Wrapper gas overhead       | 40000     |
-| Coordinator premium        | 0.25 LINK |
-| Wrapper premium percentage | 0         |
+| Parameter                                   | Value     |
+| ------------------------------------------- | --------- |
+| Gas price                                   | 50 gwei   |
+| Callback gas limit                          | 100000    |
+| Coordinator gas overhead (Verification gas) | 90000     |
+| Wrapper gas overhead                        | 40000     |
+| Coordinator premium                         | 0.25 LINK |
+| Wrapper premium percentage                  | 0         |
 
 #### Steps
 
 1. Calculate the total gas cost:
 
-   | Gas cost calculation                                                       | Total gas cost            |
-   | -------------------------------------------------------------------------- | ------------------------- |
-   | Gas price x (Verification gas + Callback gas limit + Wrapper gas overhead) |                           |
-   | 50 gwei x (200000 + 100000 + 40000)                                        | 17000000 gwei (0.017 ETH) |
+   | Gas cost calculation                                                       | Total gas cost             |
+   | -------------------------------------------------------------------------- | -------------------------- |
+   | Gas price x (Verification gas + Callback gas limit + Wrapper gas overhead) |                            |
+   | 50 gwei x (90000 + 100000 + 40000)                                         | 11500000 gwei (0.0115 ETH) |
 
 1. Convert the gas cost to LINK using the [LINK/ETH feed](https://data.chain.link/ethereum/mainnet/crypto-eth/link-eth).
    For this example, assume the feed returns a conversion value of Ξ0.004 ETH per 1 LINK.
 
    | ETH to LINK cost conversion | Total gas cost (LINK) |
    | --------------------------- | --------------------- |
-   | 0.017 ETH / 0.004 ETH/LINK  | 4.25 LINK             |
+   | 0.0115 ETH / 0.004 ETH/LINK | 2.875 LINK            |
 
 1. Add the LINK premium to get the total cost of a request:
 
    | Adding LINK premium                                                       | Total request cost (LINK) |
    | ------------------------------------------------------------------------- | ------------------------- |
    | Coordinator premium + (Total gas cost x (1 + Wrapper premium percentage)) |                           |
-   | 0.25 LINK + (4.25 x (1 + 0))                                              | 4.5 LINK                  |
+   | 0.25 LINK + (2.875 x (1 + 0))                                             | 3.125 LINK                |
 
-This example request would cost 4.5 LINK.
+This example request would cost 3.125 LINK.
 
 </Fragment>
 </Tabs>
