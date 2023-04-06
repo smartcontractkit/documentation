@@ -83,20 +83,20 @@ Install the required frameworks and dependencies:
 
 1.  For higher security, the starter kit encrypts your environment variables at rest.
 
-            1.  Set an encryption password for your envionment variables.
+            1.  Set an encryption password for your environment variables.
 
                   ```shell
-                  npx @chainlink/env-enc set-pw
+                  npx env-enc set-pw
                   ```
 
-            1.  Run `npx @chainlink/env-enc set` to configure a `.env.enc` file with the basic variables that you need to send your requests to the Polygon Mumbai network.
+            1.  Run `npx env-enc set` to configure a `.env.enc` file with the basic variables that you need to send your requests to the Polygon Mumbai network.
 
                   - `MUMBAI_RPC_URL`: Set a URL for the Polygon Mumbai testnet. You can use the URL in the example config or sign up for a personal endpoint from [Alchemy](https://www.alchemy.com/), [Infura](https://www.infura.io/), or another node provider service.
 
                   - `PRIVATE_KEY`: Find the private key for your testnet wallet. If you use MetaMask, follow the instructions to [Export a Private Key](https://metamask.zendesk.com/hc/en-us/articles/360015289632-How-to-export-an-account-s-private-key). Set this in the `.env` file. **Note**: The Chainlink Functions hardhat starter kit uses your private key to sign any transactions you make such as deploying your consumer contract, creating subscriptions, and making requests.
 
                   ```shell
-                  npx @chainlink/env-enc set
+                  npx env-enc set
                   ```
 
 1.  Compile the contracts in the repository. You will see several compile warnings, but no errors.
@@ -128,7 +128,7 @@ After you configure your local environment, configure some on-chain resources to
 
 Deploy an on-chain [FunctionsConsumer.sol](https://github.com/smartcontractkit/functions-hardhat-starter-kit/blob/main/contracts/FunctionsConsumer.sol) contract, create a [subscription](/chainlink-functions/resources/subscriptions), and fund the subscription with LINK to pay for requests after they are fulfilled.
 
-1. Deploy the consumer contract and record the contract address. For now, you can skip on-chain contract verification with the `--verify false` flag. If you do need to [verify](https://blog.chain.link/how-to-verify-a-smart-contract-on-etherscan) your contract on-chain, sign up for a [free Polygonscan API key](https://polygonscan.com/login) and include the key in your `.env.enc` file by running `npx @chainlink/env-enc set` and set `POLYGONSCAN_API_KEY`.
+1. Deploy the consumer contract and record the contract address. For now, you can skip on-chain contract verification with the `--verify false` flag. If you do need to [verify](https://blog.chain.link/how-to-verify-a-smart-contract-on-etherscan) your contract on-chain, sign up for a [free Polygonscan API key](https://polygonscan.com/login) and include the key in your `.env.enc` file by running `npx env-enc set` and set `POLYGONSCAN_API_KEY`.
 
    ```shell
    npx hardhat functions-deploy-client --network mumbai --verify false
