@@ -121,9 +121,7 @@ curl -XGET localhost:6688/health | jq '.'
         "output": ""
       }
     },
-
     ⋮
-
   ]
 }
 ```
@@ -134,7 +132,7 @@ To check the status of your Chainlink node container, use the `docker ps` comman
 
 Tag versions for Chainlink node releases are available in the [Chainlink docker hub](https://hub.docker.com/r/smartcontract/chainlink/tags)
 
-If the Chainlink node containers are stopped or if you need to start up a new instance during an upgrade or recovery, you must create new `config.toml`, `secrets.toml`, and `.api` files to start the Chainlink node.
+If the Chainlink node containers are stopped or if you need to start up a new instance during an upgrade or recovery, you must create new `.env`, `.password`, and `.api` files to start the Chainlink node.
 
 ### Generating the `.env` file
 
@@ -183,7 +181,8 @@ cd /home/ec2-user/.chainlink && docker run -d \
 --name chainlink \
 -p 6688:6688 \
 -v /home/ec2-user/.chainlink:/chainlink \
-smartcontract/chainlink:$latestimage -config /chainlink/config.toml -secrets /chainlink/secrets.toml node start \
+--env-file=/home/ec2-user/.chainlink/.env  smartcontract/chainlink:$latestimage local n \
+-p /chainlink/.password
 -a /chainlink/.api
 ```
 
