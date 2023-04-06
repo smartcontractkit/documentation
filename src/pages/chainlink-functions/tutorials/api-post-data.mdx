@@ -60,7 +60,7 @@ npx hardhat functions-simulate
 
 Example:
 
-```bash
+```text
 $ npx hardhat functions-simulate
 secp256k1 unavailable, reverting to browser version
 
@@ -83,9 +83,8 @@ __Simulated On-Chain Response__
 Response returned to client contract represented as a hex string: 0x7b226e616d65223a224a6170616e222c226361706974616c223a22546f6b796f222c2263757272656e6379223a224a5059227d
 Decoded as a string: {"name":"Japan","capital":"Tokyo","currency":"JPY"}
 
-Estimated transmission cost: 0.00004738239043141 LINK (This will vary based on gas price)
-Base fee: 0.0 LINK
-Total estimated cost: 0.00004738239043141 LINK
+Gas used by sendRequest: 352913
+Gas used by client callback function: 98242
 ```
 
 The output of this example tells you that the country name is _Japan_, capital is _Tokyo_, and the currency is _JPY_. Because the final result is a JSON object, convert it to a string and return the `bytes` encoded value `0x7b226e616d65223a224a6170616e222c226361706974616c223a22546f6b796f222c2263757272656e6379223a224a5059227d` in the callback. Read the [source code explanation](#functions-request-sourcejs) for a more detailed explanation.
@@ -95,7 +94,7 @@ The output of this example tells you that the country name is _Japan_, capital i
 <Aside type="note" title="Reminder">
   Before you can make a successful request, you must complete the setup steps in the [Before you
   begin](#before-you-begin) section. Each tutorial is in a separate Git branch and some require unique entries in your
-  `.env` file.
+  `.env.enc` file.
 </Aside>
 
 Send a request to the Decentralized Oracle Network to run the GraphQL query. Run the `functions-request` task with the `subid` (subscription ID) and `contract` parameters. This task passes the JavaScript source code, arguments, and secrets when it calls the `executeRequest` function in your deployed `FunctionsConsumer` contract. Read the [functionsConsumer](#functionsconsumersol) section for a more detailed explanation of the contract.
@@ -106,9 +105,19 @@ npx hardhat functions-request --subid REPLACE_SUBSCRIPTION_ID --contract REPLACE
 
 Example:
 
-```bash
-$ npx hardhat functions-request --subid 6 --contract 0xa9b286E892d579dc727c79D3be9b01949796240A  --network mumbai
+```text
+$ npx hardhat functions-request --subid 443 --contract 0x4B4BA2Fd6b93aDF8d6b6002E10540E58394388Ea --network mumbai
 secp256k1 unavailable, reverting to browser version
+Estimating cost if the current gas price remains the same...
+
+The transaction to initiate this request will charge the wallet (0x9d087fC03ae39b088326b67fA3C788236645b717):
+0.0004738875050548 MATIC, which (using mainnet value) is $0.0005282675179223535
+
+If the request's callback uses all 100,000 gas, this request will charge the subscription:
+0.200148583233322474 LINK
+
+Continue? Enter (y) Yes / (n) No
+y
 Simulating Functions request locally...
 
 __Console log messages from sandboxed code__
@@ -121,30 +130,32 @@ Output represented as a hex string: 0x7b226e616d65223a224a6170616e222c2263617069
 Decoded as a string: {"name":"Japan","capital":"Tokyo","currency":"JPY"}
 
 
-If all 100000 callback gas is used, this request is estimated to cost 0.000053129152872322 LINK
-Continue? (y) Yes / (n) No
-y
+⣾ Request 0xfd3458d471506c9c59fce518d8b7267240940903e4a42dac144a29b90c9c9ab4 has been initiated. Waiting for fulfillment from the Decentralized Oracle Network...
 
-Requesting new data for FunctionsConsumer contract 0xa9b286E892d579dc727c79D3be9b01949796240A on network mumbai
-Waiting 2 blocks for transaction 0xc7f20ea644baeb8ab0c66ef1c2c2f86816f59ec03e4040bff212712a1ff41831 to be confirmed...
+ℹ Transaction confirmed, see https://mumbai.polygonscan.com/tx/0xb52fa5780be565ee0df732765d2e0e08e827e46be1df1f1eadab98a717c78c2b for more details.
 
-Request 0x5fc971e03dd0482264445acfeeeaca4c4a76b30f7d47fdb1fe70b8647ba25272 initiated
-Waiting for fulfillment...
+✔ Request 0xfd3458d471506c9c59fce518d8b7267240940903e4a42dac144a29b90c9c9ab4 fulfilled! Data has been written on-chain.
 
-Request 0x5fc971e03dd0482264445acfeeeaca4c4a76b30f7d47fdb1fe70b8647ba25272 fulfilled!
 Response returned to client contract represented as a hex string: 0x7b226e616d65223a224a6170616e222c226361706974616c223a22546f6b796f222c2263757272656e6379223a224a5059227d
 Decoded as a string: {"name":"Japan","capital":"Tokyo","currency":"JPY"}
 
-Transmission cost: 0.000072181713913155 LINK
-Base fee: 0.0 LINK
-Total cost: 0.000072181713913155 LINK
+Actual amount billed to subscription #443:
+┌──────────────────────┬─────────────────────────────┐
+│         Type         │           Amount            │
+├──────────────────────┼─────────────────────────────┤
+│  Transmission cost:  │  0.000067030219895325 LINK  │
+│      Base fee:       │          0.2 LINK           │
+│                      │                             │
+│     Total cost:      │  0.200067030219895325 LINK  │
+└──────────────────────┴─────────────────────────────┘
+
 ```
 
 The output of the example above gives you the following information:
 
-- The `executeRequest` function was successfully called in the `FunctionsConsumer` contract. The transaction in this example is [0xc7f20ea644baeb8ab0c66ef1c2c2f86816f59ec03e4040bff212712a1ff41831](https://mumbai.polygonscan.com/tx/0xc7f20ea644baeb8ab0c66ef1c2c2f86816f59ec03e4040bff212712a1ff41831).
-- The request ID is `0x5fc971e03dd0482264445acfeeeaca4c4a76b30f7d47fdb1fe70b8647ba25272`.
-- The DON successfully fulfilled your request. The total cost was: `0.000072181713913155 LINK`.
+- The `executeRequest` function was successfully called in the `FunctionsConsumer` contract. The transaction in this example is [0xb52fa5780be565ee0df732765d2e0e08e827e46be1df1f1eadab98a717c78c2b](https://mumbai.polygonscan.com/tx/0xb52fa5780be565ee0df732765d2e0e08e827e46be1df1f1eadab98a717c78c2b).
+- The request ID is `0xfd3458d471506c9c59fce518d8b7267240940903e4a42dac144a29b90c9c9ab4`.
+- The DON successfully fulfilled your request. The total cost was: `0.200067030219895325 LINK`.
 - The consumer contract received a response in `bytes` with a value of `0x7b226e616d65223a224a6170616e222c226361706974616c223a22546f6b796f222c2263757272656e6379223a224a5059227d`. Decoding it off-chain to a `string` gives you a result: `{"name":"Japan","capital":"Tokyo","currency":"JPY"}`.
 
 At any time, you can run the `functions-read` task again with the `contract` parameter to read the latest received response.
@@ -155,10 +166,10 @@ npx hardhat functions-read  --contract REPLACE_CONSUMER_CONTRACT_ADDRESS --netwo
 
 Example:
 
-```bash
-$ npx hardhat functions-read  --contract 0xa9b286E892d579dc727c79D3be9b01949796240A --network mumbai
+```text
+$ npx hardhat functions-read  --contract 0x4B4BA2Fd6b93aDF8d6b6002E10540E58394388Ea  --network mumbai
 secp256k1 unavailable, reverting to browser version
-Reading data from Functions client contract 0xa9b286E892d579dc727c79D3be9b01949796240A on network mumbai
+Reading data from Functions client contract 0x4B4BA2Fd6b93aDF8d6b6002E10540E58394388Ea on network mumbai
 
 On-chain response represented as a hex string: 0x7b226e616d65223a224a6170616e222c226361706974616c223a22546f6b796f222c2263757272656e6379223a224a5059227d
 Decoded as a string: {"name":"Japan","capital":"Tokyo","currency":"JPY"}
