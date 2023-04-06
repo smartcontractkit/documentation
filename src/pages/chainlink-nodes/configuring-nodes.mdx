@@ -53,7 +53,9 @@ You can generate the `config.toml` file using the `chainlink config dump` comman
    docker exec -it chainlink cat /home/chainlink/config.toml > ./config.toml
    ```
 
-1. Create a `secrets.toml` file with the minimum required secrets, which are `[Database]` and `[Password]`. If you are working on a test node, you can use `?sslmode=disable` in the database `URL`. You might also need [`AllowSimplePasswords = true`](/chainlink-nodes/v1/secrets-config#allowsimplepasswords) in the `[Database]` section so you can start the node, but you should make the database password sufficiently complex as a best practice:
+1. Create a `secrets.toml` file with the minimum required secrets, which are `[Database]` and `[Password]`. Another common entry is the [`[Explorer]`](/chainlink-nodes/v1/secrets-config#explorer) access key and secret.
+
+   If you are working on a test node, you can use `?sslmode=disable` in the database `URL`. You might also need [`AllowSimplePasswords = true`](/chainlink-nodes/v1/secrets-config#allowsimplepasswords) in the `[Database]` section so you can start the node, but you should make the database password sufficiently complex as a best practice:
 
    ```shell
    echo "[Database]
@@ -81,7 +83,7 @@ After you have the `config.toml` file and the `secrets.toml` files on the host s
    Invalid configuration: invalid configuration: EVM.3.Nodes: missing: must have at least one node
    ```
 
-1. Edit the `config.toml` file and manually correct any errors. See the [Node Config](/chainlink-nodes/v1/node-config) and [Node Secrets](/chainlink-nodes/v1/secrets-config) pages to learn which config settings are valid. For the error in this example, an EVM chain was configured with no nodes. Removing this from the config made the config valid:
+1. Edit the `config.toml` and `secrets.toml` files to manually correct any errors. See the [Node Config](/chainlink-nodes/v1/node-config) and [Node Secrets](/chainlink-nodes/v1/secrets-config) pages to learn which config settings are valid. For the error in this example, an EVM chain was configured with no nodes. Removing this from the config made the config valid:
 
    ```
    [[EVM]]
