@@ -41,10 +41,10 @@ You can generate the `config.toml` file using the `chainlink config dump` comman
    chainlink admin logout && exit
    ```
 
-1. Make a new directory on the host system to store your config files. Then, `cd` to that directory. This directory will be mounted to Docker when you run the node using the TOML config.
+1. Change to the directory where your .env file is located. This is the directory that you mount to Docker when you run the node. You will create your `config.toml` and `secrets.toml` files here so Docker can provide them to your node container.
 
    ```shell
-   mkdir ~/.chainlink-toml && cd ~/.chainlink-toml
+   cd ~/.chainlink
    ```
 
 1. Write the config file from the container to your host:
@@ -72,7 +72,7 @@ After you have the `config.toml` file and the `secrets.toml` files on the host s
 1. Validate the configuration:
 
    ```shell
-   docker run --platform linux/x86_64/v8 --name chainlink-config-validator -v ~/.chainlink-toml:/chainlink -it --rm smartcontract/chainlink:1.13.0 -config /chainlink/config.toml -secrets /chainlink/secrets.toml config validate
+   docker run --platform linux/x86_64/v8 --name chainlink-config-validator -v ~/.chainlink:/chainlink -it --rm smartcontract/chainlink:1.13.0 -config /chainlink/config.toml -secrets /chainlink/secrets.toml config validate
    ```
 
    You will likely see some invalid config errors. For example:
@@ -111,7 +111,7 @@ With your valid config and secrets files, you can migrate your Chainlink node to
 1. Start a new Chainlink node Docker container named using the new `config.toml` and `secrets.toml` files. This example uses `chainlink-toml` as the container name:
 
    ```shell
-   docker run --platform linux/x86_64/v8 --name chainlink-toml  -v ~/.chainlink-toml:/chainlink -it -p 6688:6688 --add-host=host.docker.internal:host-gateway smartcontract/chainlink:1.13.0 local n -config /chainlink/config.toml -secrets /chainlink/secrets.toml
+   docker run --platform linux/x86_64/v8 --name chainlink-toml  -v ~/.chainlink:/chainlink -it -p 6688:6688 --add-host=host.docker.internal:host-gateway smartcontract/chainlink:1.13.0 -config /chainlink/config.toml -secrets /chainlink/secrets.toml node start
    ```
 
 Test your node to verify that it works as intended. If you are using a VPS, open an [SSH tunnel](https://www.howtogeek.com/168145/how-to-use-ssh-tunneling/) using `ssh -i $KEY $USER@$REMOTE-IP -L 6688:localhost:6688 -N`. Connect to the Operator UI in your browser at `localhost:6688`.
@@ -123,5 +123,5 @@ You can use multiple config and secrets files. The config settings from each fil
 To specify multiple config files, add additional `-config` flags to the `docker run` command:
 
 ```shell
-docker run --platform linux/x86_64/v8 --name chainlink-toml  -v ~/.chainlink-toml:/chainlink -it -p 6688:6688 --add-host=host.docker.internal:host-gateway smartcontract/chainlink:1.13.0 -config /chainlink/config.toml -config /chainlink/config2.toml -config /chainlink/config3.toml -secrets /chainlink/secrets.toml local n
+docker run --platform linux/x86_64/v8 --name chainlink -v ~/.chainlink:/chainlink -it -p 6688:6688 --add-host=host.docker.internal:host-gateway smartcontract/chainlink:1.13.0 -config /chainlink/config.toml -config /chainlink/config2.toml -config /chainlink/config3.toml -secrets /chainlink/secrets.toml node start
 ```

@@ -111,5 +111,5 @@ If there is already a key in your database and you want to import another key, y
 ## Full example in detached mode
 
 ```shell
-cd ~/.chainlink-sepolia && docker run --restart=always  -p 6688:6688 -d --name sepolia-primary -v ~/.chainlink-sepolia:/chainlink -it --env-file=.env smartcontract/chainlink:1.0.0 local n -p /chainlink/.password
+cd ~/.chainlink-sepolia && docker run --restart=always  -p 6688:6688 -d --name sepolia-primary -v ~/.chainlink-sepolia:/chainlink -it --env-file=.env smartcontract/chainlink:1.0.0 node start -p /chainlink/.password
 ```
