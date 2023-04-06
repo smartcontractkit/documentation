@@ -603,6 +603,10 @@ export const SIDEBAR = {
           url: "vrf/v2/subscription/examples/programmatic-subscription",
         },
         {
+          title: "Test locally using a Mock contract",
+          url: "vrf/v2/subscription/examples/test-locally",
+        },
+        {
           title: "Subscription Manager UI",
           url: "vrf/v2/subscription/ui",
         },
@@ -626,6 +630,10 @@ export const SIDEBAR = {
         {
           title: "Get a Random Number",
           url: "vrf/v2/direct-funding/examples/get-a-random-number",
+        },
+        {
+          title: "Test locally using a Mock contract",
+          url: "vrf/v2/direct-funding/examples/test-locally",
         },
         {
           title: "Supported Networks",
@@ -753,10 +761,6 @@ export const SIDEBAR = {
         {
           title: "Testnet Oracles",
           url: "any-api/testnet-oracles",
-        },
-        {
-          title: "Data Provider Nodes",
-          url: "any-api/data-providers/introduction",
         },
         {
           title: "API Reference",
