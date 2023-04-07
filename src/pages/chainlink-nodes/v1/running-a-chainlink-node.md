@@ -50,7 +50,7 @@ Ganache is a mock testnet. Although you can run nodes on Ganache, it is not offi
    docker run --name cl-postgres -e POSTGRES_PASSWORD=mysecretpassword -p 5432:5432 -d postgres
    ```
 
-1. Check the container is running (Status `Up`). Note the `5432` port is [published](https://docs.docker.com/config/containers/container-networking/#published-ports) `0.0.0.0:5432->5432/tcp` and therefore accessible outside of Docker.
+1. Confirm that the container is running. Note the `5432` port is [published](https://docs.docker.com/config/containers/container-networking/#published-ports) `0.0.0.0:5432->5432/tcp` and therefore accessible outside of Docker.
 
    ```shell
    docker ps -a -f name=cl-postgres
@@ -80,33 +80,86 @@ Ganache is a mock testnet. Although you can run nodes on Ganache, it is not offi
       </Fragment>
    </Tabs>
 
-1. Run the following as a command to create an environment file and populate with variables specific to the network you're running on. For a full list of available configuration variables, click [here](/chainlink-nodes/v1/configuration/).
-   Be sure to update the value for `CHANGEME` to the value given by your [external Ethereum provider](/chainlink-nodes/resources/run-an-ethereum-client/#external-services). Update the value for `mysecretpassword` to the chosen password in [Run PostgreSQL](#run-postgresql).
+1. Run the following as a command to create a `config.toml` file and populate with variables specific to the network you're running on. For a full list of available configuration variables, see the [Node Config](/chainlink-nodes/v1/node-config) page.
+   Be sure to update the value for `CHANGEME` to the value given by your [external Ethereum provider](/chainlink-nodes/resources/run-an-ethereum-client/#external-services).
 
    <Tabs client:visible>
       <Fragment slot="tab.1">Sepolia</Fragment>
       <Fragment slot="tab.2">Goerli</Fragment>
       <Fragment slot="panel.1">
       ```shell Sepolia
-      echo "LOG_LEVEL=debug
-      ETH_CHAIN_ID=11155111
-      CHAINLINK_TLS_PORT=0
-      SECURE_COOKIES=false
-      ALLOW_ORIGINS=*
-      ETH_URL=CHANGEME
-      DATABASE_URL=postgresql://postgres:mysecretpassword@host.docker.internal:5432/postgres?sslmode=disable" > ~/.chainlink-sepolia/.env
-      ```
+      echo "[Log]
+      Level = 'warn'
+
+   [WebServer]
+   AllowOrigins = '\*'
+   SecureCookies = false
+
+   [WebServer.TLS]
+   HTTPSPort = 0
+
+   [[EVM]]
+   ChainID = '11155111'
+
+   [[EVM.Nodes]]
+   Name = 'Sepolia'
+   WSURL = 'wss://CHANGE_ME'
+   HTTPURL = 'https://CHANGE_ME'
+   " > ~/.chainlink-sepolia/config.toml
+
+   ````
+   </Fragment>
+   <Fragment slot="panel.2">
+   ```shell Goerli
+   echo "[Log]
+   Level = 'warn'
+
+   [WebServer]
+   AllowOrigins = '*'
+   SecureCookies = false
+
+   [WebServer.TLS]
+   HTTPSPort = 0
+
+   [[EVM]]
+   ChainID = '11155111'
+
+   [[EVM.Nodes]]
+   Name = 'Goerli'
+   WSURL = 'wss://CHANGE_ME'
+   HTTPURL = 'https://CHANGE_ME'
+   " > ~/.chainlink-goerli/config.toml
+   ````
+
       </Fragment>
-      <Fragment slot="panel.2">
-      ```shell Goerli
-      echo "LOG_LEVEL=debug
-      ETH_CHAIN_ID=5
-      CHAINLINK_TLS_PORT=0
-      SECURE_COOKIES=false
-      ALLOW_ORIGINS=*
-      ETH_URL=CHANGEME
-      DATABASE_URL=postgresql://postgres:mysecretpassword@host.docker.internal:5432/postgres?sslmode=disable" > ~/.chainlink-goerli/.env
-      ```
+   </Tabs>
+
+1. Create a `secrets.toml` file with a keystore password and the URL to your database. Update the value for `mysecretpassword` to the chosen password in [Run PostgreSQL](#run-postgresql). Specify a complex keystore password. This will be your wallet password that you can use to unlock the keystore file generated for you.
+
+   <Tabs client:visible>
+      <Fragment slot="tab.1">Sepolia</Fragment>
+      <Fragment slot="tab.2">Goerli</Fragment>
+      <Fragment slot="panel.1">
+      ```shell Sepolia
+      echo "[Password]
+      Keystore = 'mysecretkeystorepassword'
+
+   [Database]
+   URL = 'postgresql://postgres:mysecretpassword@host.docker.internal:5433/postgres?sslmode=disable'
+   " > ~/.chainlink-sepolia/secrets.toml
+
+   ````
+   </Fragment>
+   <Fragment slot="panel.2">
+   ```shell Goerli
+   echo "[Password]
+   Keystore = 'mysecretkeystorepassword'
+
+   [Database]
+   URL = 'postgresql://postgres:mysecretpassword@host.docker.internal:5433/postgres?sslmode=disable'
+   " > ~/.chainlink-goerli/secrets.toml
+   ````
+
       </Fragment>
    </Tabs>
 
@@ -122,25 +175,25 @@ Ganache is a mock testnet. Although you can run nodes on Ganache, it is not offi
       <Fragment slot="tab.2">Goerli</Fragment>
       <Fragment slot="panel.1">
       ```shell Sepolia
-      cd ~/.chainlink-sepolia && docker run --platform linux/x86_64/v8 --name chainlink  -v ~/.chainlink-sepolia:/chainlink -it --env-file=.env -p 6688:6688 --add-host=host.docker.internal:host-gateway smartcontract/chainlink:<version> local n
+      cd ~/.chainlink-sepolia && docker run --platform linux/x86_64/v8 --name chainlink -v ~/.chainlink-sepolia:/chainlink -it -p 6688:6688 --add-host=host.docker.internal:host-gateway smartcontract/chainlink:<version> -config /chainlink/config.toml -secrets /chainlink/secrets.toml node start
       ```
       </Fragment>
       <Fragment slot="panel.2">
       ```shell Goerli
-      cd ~/.chainlink-goerli && docker run --platform linux/x86_64/v8 --name chainlink  -v ~/.chainlink-goerli:/chainlink -it --env-file=.env -p 6688:6688 --add-host=host.docker.internal:host-gateway smartcontract/chainlink:<version> local n
+      cd ~/.chainlink-goerli && docker run --platform linux/x86_64/v8 --name chainlink -v ~/.chainlink-goerli:/chainlink -it -p 6688:6688 --add-host=host.docker.internal:host-gateway smartcontract/chainlink:<version> -config /chainlink/config.toml -secrets /chainlink/secrets.toml node start
       ```
       </Fragment>
    </Tabs>
 
-   The first time running the image, it will ask you for a password and confirmation. This will be your wallet password that you can use to unlock the keystore file generated for you. Then, you'll be prompted to enter an API Email and Password. This will be used to expose the API for the GUI interface, and will be used every time you log into your node. When running the node again, you can supply the `-p` option with a path to a text file containing the wallet key password, and a `-a` option, pointing to a text file containing the API email and password. Instructions on how to do that are [here](/chainlink-nodes/resources/miscellaneous/#use-password-and-api-files-on-startup).
+   The first time running the image, the node asks you to enter an API Email and Password. This will be used to expose the API for the GUI interface, and will be used every time you log into your node.
 
-1. Check the container is running (Status `Up`). Note the `6688` port is [published](https://docs.docker.com/config/containers/container-networking/#published-ports) `0.0.0.0:6688->6688/tcp` and therefore accessible outside of Docker.
+1. Check the container is running. Note the `6688` port is [published](https://docs.docker.com/config/containers/container-networking/#published-ports) `0.0.0.0:6688->6688/tcp` and therefore accessible outside of Docker.
 
    ```shell
    docker ps -a -f name=chainlink
 
-   CONTAINER ID   IMAGE                            COMMAND               CREATED         STATUS                   PORTS                    NAMES
-   feff39f340d6   smartcontract/chainlink:1.12.0   "chainlink local n"   4 minutes ago   Up 4 minutes (healthy)   0.0.0.0:6688->6688/tcp   chainlink
+   CONTAINER ID   IMAGE                            COMMAND                CREATED         STATUS                   PORTS                    NAMES
+   feff39f340d6   smartcontract/chainlink:1.13.0   "chainlink node start" 4 minutes ago   Up 4 minutes (healthy)   0.0.0.0:6688->6688/tcp   chainlink
    ```
 
-1. You can now connect to your Chainlink node's UI interface by navigating to [http://localhost:6688](http://localhost:6688). If using a VPS, you can create a [SSH tunnel](https://www.howtogeek.com/168145/how-to-use-ssh-tunneling/) to your node for `6688:localhost:6688` to enable connectivity to the GUI. Typically this is done with `ssh -i $KEY $USER@$REMOTE-IP -L 6688:localhost:6688 -N`. A SSH tunnel is recommended over opening up ports specific to the Chainlink node to be public facing. See the [Security and Operation Best Practices](/chainlink-nodes/resources/best-security-practices/) page for more details on how to secure your node.
+1. You can now connect to your Chainlink node's UI interface by navigating to [http://localhost:6688](http://localhost:6688). If using a VPS, you can create an [SSH tunnel](https://www.howtogeek.com/168145/how-to-use-ssh-tunneling/) to your node for `6688:localhost:6688` to enable connectivity to the GUI. Typically this is done with `ssh -i $KEY $USER@$REMOTE-IP -L 6688:localhost:6688 -N`. An SSH tunnel is recommended over opening public-facing ports specific to the Chainlink node. See the [Security and Operation Best Practices](/chainlink-nodes/resources/best-security-practices/) page for more details on securing your node.
