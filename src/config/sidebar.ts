@@ -603,6 +603,10 @@ export const SIDEBAR = {
           url: "vrf/v2/subscription/examples/programmatic-subscription",
         },
         {
+          title: "Test locally using a Mock contract",
+          url: "vrf/v2/subscription/examples/test-locally",
+        },
+        {
           title: "Subscription Manager UI",
           url: "vrf/v2/subscription/ui",
         },
@@ -626,6 +630,10 @@ export const SIDEBAR = {
         {
           title: "Get a Random Number",
           url: "vrf/v2/direct-funding/examples/get-a-random-number",
+        },
+        {
+          title: "Test locally using a Mock contract",
+          url: "vrf/v2/direct-funding/examples/test-locally",
         },
         {
           title: "Supported Networks",
@@ -753,10 +761,6 @@ export const SIDEBAR = {
         {
           title: "Testnet Oracles",
           url: "any-api/testnet-oracles",
-        },
-        {
-          title: "Data Provider Nodes",
-          url: "any-api/data-providers/introduction",
         },
         {
           title: "API Reference",
@@ -985,12 +989,108 @@ export const SIDEBAR = {
           ],
         },
         {
-          url: "chainlink-nodes/oracle-jobs/tasks",
+          url: "chainlink-nodes/oracle-jobs/task-types/tasks",
           title: "Tasks",
           children: [
             {
-              title: "Task Types",
-              url: "chainlink-nodes/oracle-jobs/all-tasks",
+              title: "Job Pipelines",
+              url: "chainlink-nodes/oracle-jobs/task-types/pipelines",
+            },
+            {
+              title: "HTTP",
+              url: "chainlink-nodes/oracle-jobs/task-types/task_http",
+            },
+            {
+              title: "Bridge",
+              url: "chainlink-nodes/oracle-jobs/task-types/task_bridge",
+            },
+            {
+              title: "JSON Parse",
+              url: "chainlink-nodes/oracle-jobs/task-types/task_jsonparse",
+            },
+            {
+              title: "CBOR Parse",
+              url: "chainlink-nodes/oracle-jobs/task-types/task_cborparse",
+            },
+            {
+              title: "ETH ABI Decode",
+              url: "chainlink-nodes/oracle-jobs/task-types/task_eth_abi_decode",
+            },
+            {
+              title: "ETH ABI Decode Log",
+              url: "chainlink-nodes/oracle-jobs/task-types/task_eth_abi_decode_log",
+            },
+            {
+              title: "ETH ABI Encode",
+              url: "chainlink-nodes/oracle-jobs/task-types/task_eth_abi_encode",
+            },
+            {
+              title: "ETH Call",
+              url: "chainlink-nodes/oracle-jobs/task-types/task_eth_call",
+            },
+            {
+              title: "ETH Tx",
+              url: "chainlink-nodes/oracle-jobs/task-types/task_eth_tx",
+            },
+            {
+              title: "Multiply",
+              url: "chainlink-nodes/oracle-jobs/task-types/task_multiply",
+            },
+            {
+              title: "Divide",
+              url: "chainlink-nodes/oracle-jobs/task-types/task_divide",
+            },
+            {
+              title: "Any",
+              url: "chainlink-nodes/oracle-jobs/task-types/task_any",
+            },
+            {
+              title: "Mean",
+              url: "chainlink-nodes/oracle-jobs/task-types/task_mean",
+            },
+            {
+              title: "Median",
+              url: "chainlink-nodes/oracle-jobs/task-types/task_median",
+            },
+            {
+              title: "Mode",
+              url: "chainlink-nodes/oracle-jobs/task-types/task_mode",
+            },
+            {
+              title: "Sum",
+              url: "chainlink-nodes/oracle-jobs/task-types/task_sum",
+            },
+            {
+              title: "Less Than",
+              url: "chainlink-nodes/oracle-jobs/task-types/task_lessthan",
+            },
+            {
+              title: "Length",
+              url: "chainlink-nodes/oracle-jobs/task-types/task_length",
+            },
+            {
+              title: "Hex Decode",
+              url: "chainlink-nodes/oracle-jobs/task-types/task_hexdecode",
+            },
+            {
+              title: "Hex Encode",
+              url: "chainlink-nodes/oracle-jobs/task-types/task_hexencode",
+            },
+            {
+              title: "Base64 Decode",
+              url: "chainlink-nodes/oracle-jobs/task-types/task_base64decode",
+            },
+            {
+              title: "Base64 Encode",
+              url: "chainlink-nodes/oracle-jobs/task-types/task_base64encode",
+            },
+            {
+              title: "Uppercase",
+              url: "chainlink-nodes/oracle-jobs/task-types/task_uppercase",
+            },
+            {
+              title: "Lowercase",
+              url: "chainlink-nodes/oracle-jobs/task-types/task_lowercase",
             },
           ],
         },
