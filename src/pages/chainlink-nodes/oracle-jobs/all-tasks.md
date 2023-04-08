@@ -2,8 +2,7 @@
 layout: ../../../layouts/MainLayout.astro
 section: nodeOperator
 date: Last Modified
-title: "All Tasks"
-permalink: "docs/all-tasks/"
+title: "Task Types"
 ---
 
 This guide outlines different task types.
