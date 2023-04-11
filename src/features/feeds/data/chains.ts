@@ -266,22 +266,6 @@ export const CHAINS: Chain[] = [
     ],
   },
   {
-    page: "klaytn",
-    label: "Klaytn",
-    title: "Klaytn Data Feeds",
-    img: "/assets/chains/klaytn.svg",
-    networkStatusUrl: "https://status.klaytnapi.com/",
-    tags: ["default"],
-    networks: [
-      {
-        name: "Klaytn Baobab testnet",
-        explorerUrl: "https://baobab.scope.klaytn.com/account/%s",
-        networkType: "testnet",
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-klaytn-testnet-baobab.json",
-      },
-    ],
-  },
-  {
     page: "base",
     label: "BASE",
     title: "BASE Data Feeds",

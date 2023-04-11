@@ -31,10 +31,6 @@ We recommend using the `requestID` to match randomness requests with their corre
 
 ## Choose a safe block confirmation time, which will vary between blockchains
 
-:::note[Customizing block confirmation time]
-[Reach out to customize your VRF block confirmation time](https://chainlinkcommunity.typeform.com/to/OYQO67EF) as this configuration must be done on the VRF service, and cannot be configured as part of a VRF request.
-:::
-
 In principle, miners and validators of your underlying blockchain could rewrite the chain's history to put a randomness request from your contract into a different block, which would result in a different VRF output. Note that this does not enable a miner to determine the random value in advance. It only enables them to get a fresh random value that may or not be to their advantage. By way of analogy, they can only re-roll the dice, not predetermine or predict which side it will land on.
 
 You must choose an appropriate confirmation time for the randomness requests you make (i.e. how many blocks the the VRF service waits before writing a fulfillment to the chain) to make such rewrite attacks unprofitable in the context of your application and its value-at-risk.

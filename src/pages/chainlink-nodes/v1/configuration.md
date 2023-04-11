@@ -21,7 +21,7 @@ TOML configuration for Chainlink nodes is stable and recommended for mainnet dep
 
 As of Chainlink node v1.1.0 and up, the way nodes manage configuration is changing. Previously, environment variables exclusively handled all node configuration. Although this configuration method worked well in the past, it has its limitations. Notably, it doesn't mesh well with chain-specific configuration profiles.
 
-For this reason, Chainlink nodes are moving towards a model where you set variables using the API, [CLI](/chainlink-nodes/v1/configuration/#cli-client), or GUI, and the configuration is saved in the database. We encourage you to become familiar with this model because it is likely that nodes will continue to move away from environment variable configuration in the future.
+For this reason, Chainlink nodes are moving towards a model where you set variables using the API, CLI, or GUI, and the configuration is saved in the database. We encourage you to become familiar with this model because it is likely that nodes will continue to move away from environment variable configuration in the future.
 
 As of v1.1.0, Chainlink nodes still support environment variables to configure node settings and chain-specific settings. If the environment variable is set, it overrides any chain-specific, job-specific, or database configuration setting. The log displays a warning to indicate when an override happens, so you know when variables lower in the hierarchy are being ignored.
 
@@ -539,7 +539,7 @@ Example `BRIDGE_CACHE_TTL=10s`, `BRIDGE_CACHE_TTL=1m`
 
 - Default: _none_
 
-`BRIDGE_RESPONSE_URL` defines the URL for bridges to send a response to. This _must_ be set when using async external adapters.
+`BRIDGE_RESPONSE_URL` defines the URL for bridges to send a response to.
 
 Usually this will be the same as the URL/IP and port you use to connect to the Chainlink UI, such as `https://my-chainlink-node.example.com:6688`.
 
@@ -557,7 +557,7 @@ Do not change this setting unless you know what you are doing.
 
 - Default: `"6688"`
 
-Port used for the Chainlink Node API, [CLI](/chainlink-nodes/v1/configuration/#cli-client), and GUI.
+Port used for the Chainlink Node API, CLI, and GUI.
 
 ### SECURE_COOKIES
 
@@ -639,17 +639,17 @@ The location of the TLS private key file. Example: `/home/$USER/.chainlink/tls/s
 
 Previous Chainlink node versions supported only one chain. From v1.1.0 and up, Chainlink nodes support multiple EVM and non-EVM chains, so the way that chains and nodes are configured has changed.
 
-The preferred way of configuring Chainlink nodes as of v1.1.0 and up is to use the API, [CLI](/chainlink-nodes/v1/configuration/#cli-client), or UI to set chain-specific configuration and create nodes.
+The preferred way of configuring Chainlink nodes as of v1.1.0 and up is to use the API, CLI, or UI to set chain-specific configuration and create nodes.
 
 The old way of specifying chains using environment variables is still supported, but discouraged. It works as follows:
 
 If you set any value for `ETH_URL`, the values of `ETH_CHAIN_ID`, `ETH_URL`, `ETH_HTTP_URL` and `ETH_SECONDARY_URLS` will be used to create and update chains and nodes representing these values in the database. If an existing chain or node is found, it will be overwritten. This mode is used mainly to ease the process of upgrading. On subsequent runs (once your old settings have been written to the database) it is recommended to unset `ETH_URL` and use the API commands exclusively to administer chains and nodes.
 
-In the future, support for the `ETH_URL` and associated environment variables might be removed, so it is recommended to use the API, [CLI](/chainlink-nodes/v1/configuration/#cli-client), or GUI instead to setup chains and nodes.
+In the future, support for the `ETH_URL` and associated environment variables might be removed, so it is recommended to use the API, CLI, or GUI instead to setup chains and nodes.
 
 ### ETH_URL
 
-Setting this will enable "legacy eth ENV" mode, which is not compatible with multi-chain. It is better to configure settings using the API, [CLI](/chainlink-nodes/v1/configuration/#cli-client), or GUI instead.
+Setting this will enable "legacy eth ENV" mode, which is not compatible with multi-chain. It is better to configure settings using the API, CLI, or GUI instead.
 
 - Default: _none_
 
@@ -659,7 +659,7 @@ NOTE: It is also required to set `ETH_CHAIN_ID` if you set ETH_URL.
 
 ### ETH_HTTP_URL
 
-Only has effect if `ETH_URL` set. Otherwise, it can be set in the API, [CLI](/chainlink-nodes/v1/configuration/#cli-client), or GUI.
+Only has effect if `ETH_URL` set. Otherwise, it can be set in the API, CLI, or GUI.
 
 - Default: _none_
 
@@ -736,7 +736,7 @@ EVM_NODES=[{"name":"primary_0_1","evmChainId":"0","wsUrl":"ws://test1.invalid","
 
 ### ETH_SECONDARY_URLS
 
-Only has effect if `ETH_URL` set. Otherwise, it can be set in the API, [CLI](/chainlink-nodes/v1/configuration/#cli-client), or GUI.
+Only has effect if `ETH_URL` set. Otherwise, it can be set in the API, CLI, or GUI.
 
 - Default: _none_
 
@@ -795,7 +795,7 @@ This might be useful on fast chains and if only recent chain events are relevant
 
 ### ETH_TX_REAPER_INTERVAL
 
-NOTE: This overrides the setting for _all_ chains, you might want to set this on a per-chain basis using the API, [CLI](/chainlink-nodes/v1/configuration/#cli-client), or GUI instead
+NOTE: This overrides the setting for _all_ chains, you might want to set this on a per-chain basis using the API, CLI, or GUI instead
 
 - Default: `"1h"`
 
@@ -816,7 +816,7 @@ Setting to `0` disables the reaper.
 
 ### ETH_TX_RESEND_AFTER_THRESHOLD
 
-NOTE: This overrides the setting for _all_ chains, you might want to set this on a per-chain basis using the API, [CLI](/chainlink-nodes/v1/configuration/#cli-client), or GUI instead.
+NOTE: This overrides the setting for _all_ chains, you might want to set this on a per-chain basis using the API, CLI, or GUI instead.
 
 - Default: _automatically set based on Chain ID, typically 1m_
 
@@ -968,7 +968,7 @@ Set to `0` to disable this check.
 
 These settings allow you to tune your node's gas limits and pricing. In most cases, leaving these values at their defaults should give good results.
 
-As of Chainlink node v1.1.0, it is recommended to use the API, [CLI](/chainlink-nodes/v1/configuration/#cli-client), or GUI to configure gas controls because you might want to use different settings for different chains. Setting the environment variable typically overrides the setting for all chains.
+As of Chainlink node v1.1.0, it is recommended to use the API, CLI, or GUI to configure gas controls because you might want to use different settings for different chains. Setting the environment variable typically overrides the setting for all chains.
 
 ### Configuring your ETH node
 
@@ -1229,7 +1229,7 @@ Enables or disables sending transactions through forwarder contracts.
 
 These settings allow you to configure how your node calculates gas prices. In most cases, leaving these values at their defaults should give good results.
 
-As of Chainlink node v1.1.0, it is recommended to use the API, [CLI](/chainlink-nodes/v1/configuration/#cli-client), or GUI to configure gas controls because you might want to use different settings for different chains. Setting the environment variable typically overrides the setting for all chains.
+As of Chainlink node v1.1.0, it is recommended to use the API, CLI, or GUI to configure gas controls because you might want to use different settings for different chains. Setting the environment variable typically overrides the setting for all chains.
 
 Chainlink nodes decide what gas price to use using an `Estimator`. It ships with several simple and battle-hardened built-in estimators that should work well for almost all use-cases. Note that estimators will change their behaviour slightly depending on if you are in EIP-1559 mode or not.
 
