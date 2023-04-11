@@ -9,31 +9,16 @@ export type Props = {
   dataFeedType?: DataFeedType
 }
 import { getServerSideChainMetadata } from "../api/backend"
-import { ALL_CHAINS, CHAINS, SOLANA_CHAINS } from "../data/chains"
+import { CHAINS, ALL_CHAINS } from "../data/chains"
 import { Aside } from "@components"
 
 const { initialNetwork, ecosystem, dataFeedType } = Astro.props
 
-const initialCache = await getServerSideChainMetadata([...CHAINS, ...SOLANA_CHAINS, ...ALL_CHAINS])
+const initialCache = await getServerSideChainMetadata([...CHAINS, ...ALL_CHAINS])
 ---
 
 {
-  ecosystem === "solana" ? (
-    <>
-      <p>
-        To learn how to use these feeds, see the{" "}
-        <a href="/solana/data-feeds/using-data-feeds-off-chain">Solana Examples</a> for Consuming Data Feeds.
-      </p>
-      <p>
-        To learn how to obtain SOL tokens on the Solana Devnet, see the{" "}
-        <a href="https://docs.solana.com/cli/transfer-tokens#airdrop-some-tokens-to-get-started">
-          Solana Documentation.
-        </a>
-      </p>
-      <FeedsCommonCallout callout="etfBestPractices" />
-      <FeedsCommonCallout callout="quality" />
-    </>
-  ) : ecosystem === "deprecating" ? (
+  ecosystem === "deprecating" ? (
     <>
       <p>
         The smart contract ecosystem is constantly evolving. As a result, Data Feeds within the Chainlink ecosystem are
@@ -52,7 +37,10 @@ const initialCache = await getServerSideChainMetadata([...CHAINS, ...SOLANA_CHAI
         For status updates regarding Data Feeds, users should join the official Chainlink Discord and subscribe to the{" "}
         <a href="https://discord.gg/Dqy5N9UbsR">data-feeds-user-notifications channel</a>.
       </p>
-      <p>Users with additional questions are encouraged to reach out here.</p>
+      <p>
+        Users with additional questions are encouraged to reach out{" "}
+        <a href="https://chainlinkcommunity.typeform.com/s/dataFeedQs">here</a>.
+      </p>
       <p>
         A list of data feeds designated for deprecation along with their corresponding shutdown date can be found below.
       </p>
@@ -63,16 +51,17 @@ const initialCache = await getServerSideChainMetadata([...CHAINS, ...SOLANA_CHAI
         <>
           <p>
             To learn how to use these feeds, see the{" "}
-            <a href="/data-feeds/nft-floor-price">NFT Floor Pricing Feeds documentation.</a>
+            <a href="/data-feeds/nft-floor-price">NFT Floor Price Feeds documentation.</a>
           </p>
           <p>
             For LINK token and Faucet details, see the <a href="/docs/link-token-contracts/">LINK Token Contracts</a>{" "}
             page.
           </p>
           <Aside type="note" title="Talk to an expert">
-            <a href="https://chainlinkcommunity.typeform.com/to/OYQO67EF?page=docs-datafeeds">Contact us</a> to talk to
-            an expert about integrating Chainlink Data Feeds with your applications.
+            <a href="https://chain.link/contact?ref_id=DataFeed">Contact us</a> to talk to an expert about integrating
+            Chainlink Data Feeds with your applications.
           </Aside>
+          <FeedsCommonCallout callout="quality" />
         </>
       ) : dataFeedType === "por" ? (
         <>
@@ -85,10 +74,10 @@ const initialCache = await getServerSideChainMetadata([...CHAINS, ...SOLANA_CHAI
             page.
           </p>
           <Aside type="note" title="Talk to an expert">
-            <a href="https://chainlinkcommunity.typeform.com/to/OYQO67EF?page=docs-datafeeds">Contact us</a> to talk to
-            an expert about integrating Chainlink Data Feeds with your applications.
+            <a href="https://chain.link/contact?ref_id=DataFeed">Contact us</a> to talk to an expert about integrating
+            Chainlink Data Feeds with your applications.
           </Aside>
-          <FeedsCommonCallout callout="porVerification" />
+          <FeedsCommonCallout callout="porWalletAddressManager" />
           <FeedsCommonCallout callout="quality" />
         </>
       ) : (
@@ -101,8 +90,8 @@ const initialCache = await getServerSideChainMetadata([...CHAINS, ...SOLANA_CHAI
             page.
           </p>
           <Aside type="note" title="Talk to an expert">
-            <a href="https://chainlinkcommunity.typeform.com/to/OYQO67EF?page=docs-datafeeds">Contact us</a> to talk to
-            an expert about integrating Chainlink Data Feeds with your applications.
+            <a href="https://chain.link/contact?ref_id=DataFeed">Contact us</a> to talk to an expert about integrating
+            Chainlink Data Feeds with your applications.
           </Aside>
           <FeedsCommonCallout callout="etfBestPractices" />
           <FeedsCommonCallout callout="quality" />
@@ -120,11 +109,31 @@ const initialCache = await getServerSideChainMetadata([...CHAINS, ...SOLANA_CHAI
   initialCache={initialCache}
 />
 
-<Aside type="caution">
-  <p>
-    Please be careful with the feeds used by your smart contracts. The feeds listed in our official documentation have
-    been reviewed; feeds built for custom deployments by other community members might have additional risks. Please do
-    close diligence on your feeds before implementing them in your contracts.{" "}
-    <a href="/data-feeds/selecting-data-feeds"> Learn more about making responsible data quality decisions.</a>
-  </p>
-</Aside>
+{
+  dataFeedType === "por" ? (
+    <>
+      <Aside title="Disclaimer" type="caution">
+        <p>
+          Proof of Reserve feeds can vary in their configurations. Please be careful with the configuration of the feeds
+          used by your smart contracts. You are solely responsible for reviewing the quality of the data (e.g., a Proof
+          of Reserve feed) that you integrate into your smart contracts and assume full responsibility for any damage,
+          injury, or any other loss caused by your use of the feeds used by your smart contracts.
+          <a href="/data-feeds/selecting-data-feeds#risk-mitigation">
+            Learn more about making responsible data quality decisions.
+          </a>
+        </p>
+      </Aside>
+    </>
+  ) : (
+    <>
+      <Aside type="caution">
+        <p>
+          Please be careful with the feeds used by your smart contracts. The feeds listed in our official documentation
+          have been reviewed; feeds built for custom deployments by other community members might have additional risks.
+          Please do close diligence on your feeds before implementing them in your contracts.{" "}
+          <a href="/data-feeds/selecting-data-feeds"> Learn more about making responsible data quality decisions.</a>
+        </p>
+      </Aside>
+    </>
+  )
+}

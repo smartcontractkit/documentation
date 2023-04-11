@@ -1,6 +1,6 @@
 ---
 layout: ../../layouts/MainLayout.astro
-section: ethereum
+section: dataFeeds
 date: Last Modified
 title: "Selecting Quality Data Feeds"
 excerpt: "Learn how to assess data feeds that you use in your smart contracts."
@@ -56,7 +56,7 @@ Data feeds might be under review for the following reasons:
 
 ### 🔵 Custom Feeds
 
-Custom Feeds are built to serve a specific use case and might not be suitable for general use or your use case's risk parameters. Users must evaluate the properties of a feed to make sure it aligns with their intended use case. [Contact the Chainlink Labs team](https://chainlinkcommunity.typeform.com/to/OYQO67EF?page=market-data-feeds) if you want more detail on any specific feeds in this category.
+Custom Feeds are built to serve a specific use case and might not be suitable for general use or your use case's risk parameters. Users must evaluate the properties of a feed to make sure it aligns with their intended use case. [Contact the Chainlink Labs team](https://chain.link/contact?ref_id=DataFeed) if you want more detail on any specific feeds in this category.
 
 Custom feeds have the following categories and compositions:
 
@@ -66,13 +66,13 @@ Custom feeds have the following categories and compositions:
 - **Total Value Locked Feeds:** These feeds measure the total value locked in a particular protocol.
 - **Custom Index Feeds:** An index calculates a function of the values for multiple underlying assets. The function is specific to that index and is typically calculated by node operators following an agreed formula.
 
-If you plan on using one of these feeds and would like to get a more detailed understanding, [contact the Chainlink Labs team](https://chainlinkcommunity.typeform.com/to/OYQO67EF?page=market-data-feeds).
+If you plan on using one of these feeds and would like to get a more detailed understanding, [contact the Chainlink Labs team](https://chain.link/contact?ref_id=DataFeed).
 
 ### ⚫ Specialized Feeds
 
 These are purpose-built feeds that might rely heavily on contracts maintained by external entities. Typical users of these feeds are large institutional users with deep expertise in the market space they operate in.
 
-These feeds are monitored and well-supported, but they might not meet the same levels of resiliency as the above categories. We strongly advise you to [speak with the Chainlink Labs team](https://chainlinkcommunity.typeform.com/to/OYQO67EF?page=market-data-feeds) to understand their use cases, properties, and associated risks.
+These feeds are monitored and well-supported, but they might not meet the same levels of resiliency as the above categories. We strongly advise you to [speak with the Chainlink Labs team](https://chain.link/contact?ref_id=DataFeed) to understand their use cases, properties, and associated risks.
 
 **Examples of Specialized feeds:**
 
@@ -81,7 +81,7 @@ These feeds are monitored and well-supported, but they might not meet the same l
 - **LP Token Feeds:** These feeds use a decentralized feed for the underlying asset as well as calculations to value the LP tokens.
 - **Wrapped Calculated Feeds:** These feeds are typically pegged 1:1 to the underlying token or asset. Under normal market conditions, these feeds track their underlying value accurately. However, the price is a derivative formed from a calculated method and might not always track value precisely.
 
-If you plan on using one of these feeds and would like to get a more detailed understanding, [contact the Chainlink Labs team](https://chainlinkcommunity.typeform.com/to/OYQO67EF?page=market-data-feeds).
+If you plan on using one of these feeds and would like to get a more detailed understanding, [contact the Chainlink Labs team](https://chain.link/contact?ref_id=DataFeed).
 
 ### ⭕ Deprecating
 
@@ -113,7 +113,7 @@ It is always recommended that you conduct a thorough analysis of your requiremen
 
 > **The Chainlink Labs team does not monitor community deployments** and users should use best practices in observability, monitoring, and risk mitigation as appropriate for your application's stage of development and use case.
 
-As your usage of data feeds evolves and requirements for higher availability and greater security increases, such as securing substantive value, the reliability properties of your data feed will become crucial. [Contact Chainlink Labs team](https://chainlinkcommunity.typeform.com/to/OYQO67EF?page=market-data-feeds) for services to ensure deployments meet the highest levels of availability and security.
+As your usage of data feeds evolves and requirements for higher availability and greater security increases, such as securing substantive value, the reliability properties of your data feed will become crucial. [Contact Chainlink Labs team](https://chain.link/contact?ref_id=DataFeed) for services to ensure deployments meet the highest levels of availability and security.
 
 **High Risk: Forked, modified, or custom software:**
 
@@ -167,9 +167,9 @@ Data Feed performance relies on the chains they are deployed on. Periods of high
 
 Routine maintenance is carried out on Chainlink Data Feeds, including decommissioning, on an ad-hoc basis. These maintenance periods might require users to take action in order to maintain business continuity.
 
-Notifications are sent to inform known users regarding such occurrences, and it is strongly encouraged for all users, including those users utilizing data feeds for off-chain purposes, [to provide their contact information](https://chainlinkcommunity.typeform.com/unknownDfUsers?typeform-source=docs.chain.link) before utilizing data feeds. Without providing contact information, users will be unable to receive notifications regarding important price feed updates.
+Notifications are sent to inform known users regarding such occurrences, and it is strongly encouraged for all users, including those users utilizing data feeds for off-chain purposes, [to provide their contact information](https://chain.link/contact?ref_id=DataFeed) before utilizing data feeds. Without providing contact information, users will be unable to receive notifications regarding important price feed updates.
 
-If you are using Price Feeds but have not provided your contact information, you can do so [here](https://chainlinkcommunity.typeform.com/unknownDfUsers?typeform-source=docs.chain.link). Users that fail to provide notification information do so at their own risk.
+If you are using Price Feeds but have not provided your contact information, you can do so [here](https://chain.link/contact?ref_id=DataFeed). Users that fail to provide notification information do so at their own risk.
 
 ## Evaluating Wrapped or Bridged Assets
 

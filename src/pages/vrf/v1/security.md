@@ -14,7 +14,7 @@ Gaining access to high quality randomness on-chain requires a solution like Chai
 
 - [Use `requestId` to match randomness requests with their fulfillment in order](#use-requestid-to-match-randomness-requests-with-their-fulfillment-in-order)
 - [Choose a safe block confirmation time, which will vary between blockchains](#choose-a-safe-block-confirmation-time-which-will-vary-between-blockchains)
-- [Do not re-request randomness, even if you don't get an answer right away](#do-not-re-request-randomness-even-if-you-dont-get-an-answer-right-away)
+- [Do not re-request randomness](#do-not-re-request-randomness)
 - [Don't accept bids/bets/inputs after you have made a randomness request](#dont-accept-bidsbetsinputs-after-you-have-made-a-randomness-request)
 - [`fulfillRandomness` must not revert](#fulfillrandomness-must-not-revert)
 - [Use `VRFConsumerBase` in your contract, to interact with the VRF service](#use-vrfconsumerbase-in-your-contract-to-interact-with-the-vrf-service)
@@ -31,10 +31,6 @@ We recommend using the `requestID` to match randomness requests with their corre
 
 ## Choose a safe block confirmation time, which will vary between blockchains
 
-:::note[Customizing block confirmation time]
-[Reach out to customize your VRF block confirmation time](https://chainlinkcommunity.typeform.com/to/OYQO67EF) as this configuration must be done on the VRF service, and cannot be configured as part of a VRF request.
-:::
-
 In principle, miners and validators of your underlying blockchain could rewrite the chain's history to put a randomness request from your contract into a different block, which would result in a different VRF output. Note that this does not enable a miner to determine the random value in advance. It only enables them to get a fresh random value that may or not be to their advantage. By way of analogy, they can only re-roll the dice, not predetermine or predict which side it will land on.
 
 You must choose an appropriate confirmation time for the randomness requests you make (i.e. how many blocks the the VRF service waits before writing a fulfillment to the chain) to make such rewrite attacks unprofitable in the context of your application and its value-at-risk.
@@ -49,9 +45,11 @@ For further details, take a look at the consensus documentation for the chain yo
 
 Understanding the blockchains you build your application on is very important. You should take time to understand [chain reorganization](https://blog.ethereum.org/2015/08/08/chain-reorganisation-depth-expectations/) which will also result in a different VRF output, which could be exploited.
 
-## Do not re-request randomness, even if you don't get an answer right away
+## Do not re-request randomness
 
-Doing so would give the VRF service provider the option to withhold a VRF fulfillment, if it doesn't like the outcome, and wait for the re-request in the hopes that it gets a better outcome, similar to the considerations with block confirmation time.
+Any re-request of randomness is an incorrect use of VRF. Doing so would give the VRF service provider the option to withhold a VRF fulfillment if the outcome is not favorable to them and wait for the re-request in the hopes that they get a better outcome, similar to the considerations with block confirmation time.
+
+Re-requesting randomness is easily detectable on-chain and should be avoided for use cases that want to be considered as using VRF correctly.
 
 ## Don't accept bids/bets/inputs after you have made a randomness request
 

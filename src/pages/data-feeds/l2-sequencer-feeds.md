@@ -1,11 +1,12 @@
 ---
 layout: ../../layouts/MainLayout.astro
-section: ethereum
+section: dataFeeds
 date: Last Modified
 title: "L2 Sequencer Uptime Feeds"
+setup: import ClickToZoom from "@components/ClickToZoom.astro"
 ---
 
-Optimistic rollup protocols move all execution off the layer 1 (L1) Ethereum chain, complete execution on a layer 2 (L2) chain, and return the results of the L2 execution back to the L1. These protocols have a [sequencer](https://community.optimism.io/docs/how-optimism-works/#block-production) that executes and rolls up the L2 transactions by batching multiple transactions into a single transaction.
+Optimistic rollup protocols move all execution off the layer 1 (L1) Ethereum chain, complete execution on a layer 2 (L2) chain, and return the results of the L2 execution back to the L1. These protocols have a [sequencer](https://community.optimism.io/docs/protocol/2-rollup-protocol/) that executes and rolls up the L2 transactions by batching multiple transactions into a single transaction.
 
 If a sequencer becomes unavailable, it is impossible to access read/write APIs that consumers are using and applications on the L2 network will be down for most users without interacting directly through the L1 optimistic rollup contracts. The L2 has not stopped, but it would be unfair to continue providing service on your applications when only a few users can use them.
 
@@ -28,7 +29,7 @@ You can find proxy addresses for the L2 sequencer feeds at the following address
 
 The diagram below shows how these feeds update and how a consumer retrieves the status of the Arbitrum sequencer.
 
-![L2 Sequencer Feed Diagram](/images/data-feed/l2-diagram-arbitrum.webp)
+<ClickToZoom src='/images/data-feed/l2-diagram-arbitrum.webp' />
 
 1. Chainlink nodes trigger an OCR round every 30s and update the sequencer status by calling the `validate` function in the [`ArbitrumValidator` contract](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/dev/ArbitrumValidator.sol) by calling it through the [`ValidatorProxy` contract](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/ValidatorProxy.sol).
 1. The `ArbitrumValidator` checks to see if the latest update is different from the previous update. If it detects a difference, it places a message in the [Arbitrum inbox contract](https://developer.offchainlabs.com/docs/inside_arbitrum#the-big-picture).
@@ -43,7 +44,7 @@ If the Arbitrum network becomes unavailable, the `ArbitrumValidator` contract co
 
 On Optimism and Metis, the sequencer’s status is relayed from L1 to L2 where the consumer can retrieve it.
 
-![L2 Sequencer Feed Diagram](/images/data-feed/l2-diagram-optimism-metis.webp)
+<ClickToZoom src='/images/data-feed/l2-diagram-optimism-metis.webp' />
 
 **On the L1 network:**
 
@@ -74,18 +75,18 @@ When the Sequencer is down, all L2 transactions sent from the L1 network wait in
 1. **Transaction 3** contains Chainlink’s transaction to set the status of the sequencer as being down on L2.
 1. **Transaction 4** is a transaction made by a consumer that is dependent on the sequencer status.
 
-![L2 Sequencer Feed Diagram](/images/data-feed/seq-down-1.webp)
+<ClickToZoom src='/images/data-feed/seq-down-1.webp' />
 
 After the sequencer comes back up, it moves moves all transactions in the pending queue to the processed queue.
 
 1. Transactions are processed in the order they arrived so **Transaction 3** is processed before **Transaction 4**.
 1. Because **Transaction 3** happens before **Transaction 4**, **Transaction 4** will read the status of the Sequencer as being down and responds accordingly.
 
-![L2 Sequencer Feed Diagram](/images/data-feed/seq-down-2.webp)
+<ClickToZoom src='/images/data-feed/seq-down-2.webp' />
 
 ## Example code
 
-Create the consumer contract for sequencer uptime feeds similarly to contracts you use for [Chainlink Data Feeds](/data-feeds/price-feeds/#solidity). Configure the constructor using the following variables:
+Create the consumer contract for sequencer uptime feeds similarly to contracts you use for [Chainlink Data Feeds](/data-feeds/using-data-feeds/). Configure the constructor using the following variables:
 
 - Configure the `sequencerUptimeFeed` object with the [sequencer uptime feed proxy address](#available-networks) for your L2 network.
 - Configure the `priceFeed` object with one of the [Data Feed proxy addresses](/data-feeds/price-feeds/addresses/) that are available for your network.

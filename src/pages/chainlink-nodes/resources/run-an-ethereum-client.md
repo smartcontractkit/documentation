@@ -20,7 +20,7 @@ If you run these clients yourself, you must enable the websockets API. The webso
 
 ## Geth
 
-You can use the [Geth client](https://geth.ethereum.org/docs/) for the Goerli testnet and the Ethereum Mainnet. See the [Geth Documentation](https://geth.ethereum.org/docs/interface/peer-to-peer/) for a list of supported networks.
+You can use the [Geth client](https://geth.ethereum.org/docs/) for the Sepolia testnet and the Ethereum Mainnet. See the [Geth Documentation](https://geth.ethereum.org/docs/interface/peer-to-peer/) for a list of supported networks.
 
 Download the latest version:
 
@@ -31,14 +31,20 @@ docker pull ethereum/client-go:latest
 Create a local directory to persist the data:
 
 <Tabs client:visible>
-    <Fragment slot="tab.1">Goerli</Fragment>
-    <Fragment slot="tab.2">Mainnet</Fragment>
+    <Fragment slot="tab.1">Sepolia</Fragment>
+    <Fragment slot="tab.2">Goerli</Fragment>
+    <Fragment slot="tab.3">Mainnet</Fragment>
     <Fragment slot="panel.1">
+    ```shell Sepolia
+    mkdir ~/.geth-sepolia
+    ```
+    </Fragment>
+    <Fragment slot="panel.2">
     ```shell Goerli
     mkdir ~/.geth-goerli
     ```
     </Fragment>
-    <Fragment slot="panel.2">
+    <Fragment slot="panel.3">
     ```shell Mainnet
     mkdir ~/.geth
     ```
@@ -48,16 +54,24 @@ Create a local directory to persist the data:
 Run the container:
 
 <Tabs client:visible>
-    <Fragment slot="tab.1">Goerli</Fragment>
-    <Fragment slot="tab.2">Mainnet</Fragment>
+    <Fragment slot="tab.1">Sepolia</Fragment>
+    <Fragment slot="tab.2">Goerli</Fragment>
+    <Fragment slot="tab.3">Mainnet</Fragment>
     <Fragment slot="panel.1">
+    ```shell Sepolia
+    docker run --name eth -p 8546:8546 -v ~/.geth-sepolia:/geth -it \
+    ethereum/client-go --sepolia --ws --ipcdisable \
+    --ws.addr 0.0.0.0 --ws.origins="*" --datadir /geth
+    ```
+    </Fragment>
+    <Fragment slot="panel.2">
     ```shell Goerli
     docker run --name eth -p 8546:8546 -v ~/.geth-goerli:/geth -it \
     ethereum/client-go --goerli --ws --ipcdisable \
     --ws.addr 0.0.0.0 --ws.origins="*" --datadir /geth
     ```
     </Fragment>
-    <Fragment slot="panel.2">
+    <Fragment slot="panel.3">
     ```shell Mainnet
     docker run --name eth -p 8546:8546 -v ~/.geth:/geth -it \
     ethereum/client-go --ws --ipcdisable \
@@ -91,14 +105,20 @@ docker pull nethermind/nethermind:latest
 Create a local directory to persist the data:
 
 <Tabs client:visible>
-    <Fragment slot="tab.1">Goerli</Fragment>
-    <Fragment slot="tab.2">Mainnet</Fragment>
+    <Fragment slot="tab.1">Sepolia</Fragment>
+    <Fragment slot="tab.2">Goerli</Fragment>
+    <Fragment slot="tab.3">Mainnet</Fragment>
     <Fragment slot="panel.1">
+    ```shell Sepolia
+    mkdir ~/.nethermind-sepolia
+    ```
+    </Fragment>
+    <Fragment slot="panel.2">
     ```shell Goerli
     mkdir ~/.nethermind-goerli
     ```
     </Fragment>
-    <Fragment slot="panel.2">
+    <Fragment slot="panel.3">
     ```shell Mainnet
     mkdir ~/.nethermind
     ```
@@ -108,9 +128,19 @@ Create a local directory to persist the data:
 Run the container:
 
 <Tabs client:visible>
-    <Fragment slot="tab.1">Goerli</Fragment>
-    <Fragment slot="tab.2">Mainnet</Fragment>
+    <Fragment slot="tab.1">Sepolia</Fragment>
+    <Fragment slot="tab.2">Goerli</Fragment>
+    <Fragment slot="tab.3">Mainnet</Fragment>
     <Fragment slot="panel.1">
+    ```shell Sepolia
+    docker run --name eth -p 8545:8545 \
+              -v ~/.nethermind-sepolia/:/nethermind/data \
+              -it nethermind/nethermind:latest --config sepolia \
+              --Init.WebSocketsEnabled true --JsonRpc.Enabled true --JsonRpc.Host 0.0.0.0 --NoCategory.CorsOrigins * \
+              --datadir data
+    ```
+    </Fragment>
+    <Fragment slot="panel.2">
     ```shell Goerli
     docker run --name eth -p 8545:8545 \
               -v ~/.nethermind-goerli/:/nethermind/data \
@@ -119,7 +149,7 @@ Run the container:
               --datadir data
     ```
     </Fragment>
-    <Fragment slot="panel.2">
+    <Fragment slot="panel.3">
     ```shell Mainnet
     docker run --name eth -p 8545:8545 \
               -v ~/.nethermind/:/nethermind/data \
@@ -151,14 +181,20 @@ The following services offer Ethereum clients with websockets connectivity known
 Example connection setting:
 
 <Tabs client:visible>
-    <Fragment slot="tab.1">Goerli</Fragment>
-    <Fragment slot="tab.2">Mainnet</Fragment>
+    <Fragment slot="tab.1">Sepolia</Fragment>
+    <Fragment slot="tab.2">Goerli</Fragment>
+    <Fragment slot="tab.3">Mainnet</Fragment>
     <Fragment slot="panel.1">
+    ```text Goerli
+    ETH_URL=wss://eth-sepolia.alchemyapi.io/v2/YOUR_PROJECT_ID
+    ```
+    </Fragment>
+    <Fragment slot="panel.2">
     ```text Goerli
     ETH_URL=wss://eth-goerli.alchemyapi.io/v2/YOUR_PROJECT_ID
     ```
     </Fragment>
-    <Fragment slot="panel.2">
+    <Fragment slot="panel.3">
     ```text Mainnet
     ETH_URL=wss://eth-mainnet.alchemyapi.io/v2/YOUR_PROJECT_ID
     ```
@@ -186,17 +222,17 @@ ETH_URL=wss://cl-main.fiews.io/v2/YOUR_API_KEY
 Example connection setting:
 
 <Tabs client:visible>
-    <Fragment slot="tab.1">Goerli</Fragment>
-    <Fragment slot="tab.2">Sepolia</Fragment>
+    <Fragment slot="tab.1">Sepolia</Fragment>
+    <Fragment slot="tab.2">Goerli</Fragment>
     <Fragment slot="tab.3">Mainnet</Fragment>
     <Fragment slot="panel.1">
-    ```text Goerli
-    ETH_URL=wss://eth.getblock.io/goerli/?api_key=YOUR_API_KEY
+    ```text Sepolia
+    ETH_URL=wss://eth.getblock.io/sepolia/?api_key=YOUR_API_KEY
     ```
     </Fragment>
     <Fragment slot="panel.2">
-    ```text Sepolia
-    ETH_URL=wss://eth.getblock.io/sepolia/?api_key=YOUR_API_KEY
+    ```text Goerli
+    ETH_URL=wss://eth.getblock.io/goerli/?api_key=YOUR_API_KEY
     ```
     </Fragment>
     <Fragment slot="panel.3">
@@ -211,14 +247,20 @@ Example connection setting:
 Example connection setting. Replace YOUR_PROJECT_ID with the ID Infura provides you on your project settings page.
 
 <Tabs client:visible>
-    <Fragment slot="tab.1">Goerli</Fragment>
-    <Fragment slot="tab.2">Mainnet</Fragment>
+    <Fragment slot="tab.1">Sepolia</Fragment>
+    <Fragment slot="tab.2">Goerli</Fragment>
+    <Fragment slot="tab.3">Mainnet</Fragment>
     <Fragment slot="panel.1">
+    ```text Sepolia
+    ETH_URL=wss://sepolia.infura.io/ws/v3/YOUR_PROJECT_ID
+    ```
+    </Fragment>
+    <Fragment slot="panel.2">
     ```text Goerli
     ETH_URL=wss://goerli.infura.io/ws/v3/YOUR_PROJECT_ID
     ```
     </Fragment>
-    <Fragment slot="panel.2">
+    <Fragment slot="panel.3">
     ```text Mainnet
     ETH_URL=wss://mainnet.infura.io/ws/v3/YOUR_PROJECT_ID
     ```
@@ -238,14 +280,20 @@ ETH_URL=wss://main-rpc.linkpool.io/ws
 Example connection setting:
 
 <Tabs client:visible>
-    <Fragment slot="tab.1">Goerli</Fragment>
-    <Fragment slot="tab.2">Mainnet</Fragment>
+    <Fragment slot="tab.1">Sepolia</Fragment>
+    <Fragment slot="tab.2">Goerli</Fragment>
+    <Fragment slot="tab.3">Mainnet</Fragment>
     <Fragment slot="panel.1">
+    ```text Sepolia
+    ETH_URL=wss://your-node-name.sepolia.quiknode.pro/security-hash/
+    ```
+    </Fragment>
+    <Fragment slot="panel.2">
     ```text Goerli
     ETH_URL=wss://your-node-name.goerli.quiknode.pro/security-hash/
     ```
     </Fragment>
-    <Fragment slot="panel.2">
+    <Fragment slot="panel.3">
     ```text Mainnet
     ETH_URL=wss://your-node-name.quiknode.pro/security-hash/
     ```

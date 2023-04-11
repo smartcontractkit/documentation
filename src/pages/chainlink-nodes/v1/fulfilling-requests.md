@@ -23,9 +23,9 @@ This guide assumes you have a running Chainlink node. To learn how to run a node
 
 You can use your Chainlink nodes to fulfill requests. This guide shows you how to deploy your own operator contract and add jobs to your node so that it can provide data to smart contracts.
 
-Chainlink nodes can fulfill requests from open or unauthenticated APIs without the need for [External Adapters](/chainlink-nodes/external-adapters/external-adapters/) as long as you've [added the jobs](#add-a-job-to-the-node) to the node. For these requests, requesters supply the URL to the open API that they want each node to retrieve. The Chainlink node will use [tasks](/chainlink-nodes/oracle-jobs/task-types/tasks/) to fulfill the request.
+Chainlink nodes can fulfill requests from open or unauthenticated APIs without the need for [External Adapters](/chainlink-nodes/external-adapters/external-adapters/) as long as you've [added the jobs](#add-a-job-to-the-node) to the node. For these requests, requesters supply the URL to the open API that they want each node to retrieve. The Chainlink node will use [tasks](/chainlink-nodes/oracle-jobs/tasks/) to fulfill the request.
 
-Some APIs require authentication by providing request headers for the operator's API key, which the Chainlink node supports. If you would like to provide access to an API that requires authentication, you must create a job that is specific for that API either using an [external adapter](/chainlink-nodes/external-adapters/external-adapters/) or by using the parameters of the [HTTP task](/chainlink-nodes/oracle-jobs/task-types/task_http).
+Some APIs require authentication by providing request headers for the operator's API key, which the Chainlink node supports. If you would like to provide access to an API that requires authentication, you must create a job that is specific for that API either using an [external adapter](/chainlink-nodes/external-adapters/external-adapters/) or by using the parameters of the [HTTP task](/chainlink-nodes/oracle-jobs/all-tasks/#http-task).
 
 ## Requirements
 
@@ -33,15 +33,15 @@ Before you begin this guide, complete the following tasks to make sure you have 
 
 - [Set up MetaMask](/getting-started/deploy-your-first-contract/#install-and-fund-your-metamask-wallet) and [obtain testnet LINK](/resources/acquire-link/).
 - [Run a Chainlink Node](/chainlink-nodes/v1/running-a-chainlink-node).
-- Fund the Ethereum address that your Chainlink node uses. You can find the address in the node Operator GUI under the **Key Management** configuration. The address of the node is the `Regular` type. You can obtain test ETH from several [faucets](/resources/link-token-contracts/). For this tutorial to work, you will have to fund the node's Ethereum address with Goerli ETH. Here is an example:
+- Fund the Ethereum address that your Chainlink node uses. You can find the address in the node Operator GUI under the **Key Management** configuration. The address of the node is the `Regular` type. You can obtain test ETH from several [faucets](/resources/link-token-contracts/). For this tutorial to work, you will have to fund the node's Ethereum address with Sepolia ETH. Here is an example:
 
-  ![chainlink node goerli fund address](/images/chainlink-nodes/node-operators/key-management.jpg)
+  ![chainlink node Goerli fund address](/images/chainlink-nodes/node-operators/key-management.jpg)
 
 ## Address Types
 
 Your node works with several different types of addresses. Each address type has a specific function:
 
-- **Node address:** This is the address for your Chainlink node wallet. The node requires native blockchain tokens at all times to respond to requests. For this example, the node uses Goerli ETH. When you start a Chainlink node, it automatically generates this address. You can find this address on the Node Operator GUI under Key Management > EVM Chain Accounts.
+- **Node address:** This is the address for your Chainlink node wallet. The node requires native blockchain tokens at all times to respond to requests. For this example, the node uses Sepolia ETH. When you start a Chainlink node, it automatically generates this address. You can find this address on the Node Operator GUI under **Key Management > EVM Chain Accounts**.
 - **Oracle contract address:** This is the address for contracts like `Operator.sol` or `Oracle.sol` that are deployed to a blockchain. Do not fund these addresses with native blockchain tokens such as ETH. When you make API call requests, the funds pass through this contract to interact with your Chainlink node. This will be the address that smart contract developers point to when they choose a node for an API call.
 - **Admin wallet address:** This is the address that owns your `Operator.sol` or `Oracle.sol` contract addresses. If you're on OCR, this is the wallet address that receives LINK tokens.
 
@@ -55,12 +55,12 @@ Your node works with several different types of addresses. Each address type has
 
 1. On the **Deploy and Run** tab, configure the following settings:
 
-   - Select "Injected Provider" as your **Environment**. The Javascript VM environment cannot access your oracle node. Make sure your Metamask is connected to Goerli testnet.
+   - Select "Injected Provider" as your **Environment**. The Javascript VM environment cannot access your oracle node. Make sure your Metamask is connected to Sepolia testnet.
    - Select the "Operator" contract from the **Contract** menu.
-   - Copy the [LINK token contract address](/resources/link-token-contracts/) for the network you are using and paste it into the `LINK` field next to the **Deploy** button. For Goerli, you can use this address:
+   - Copy the [LINK token contract address](/resources/link-token-contracts/) for the network you are using and paste it into the `LINK` field next to the **Deploy** button. For Sepolia, you can use this address:
 
-     ```text Goerli
-     0x326C977E6efc84E512bB9C30f76E30c160eD06FB
+     ```text Sepolia
+     0x779877A7B0D9E8603169DdbD7836e478b4624789
      ```
 
    - Copy the _Admin wallet address_ into the `OWNER` field.
@@ -123,13 +123,13 @@ After you add jobs to your node, you can use the node to fulfill requests. This 
 
 1. Open [ATestnetConsumer.sol in Remix](https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/ATestnetConsumer.sol).
 
-1. Note that `setChainlinkToken(0x326C977E6efc84E512bB9C30f76E30c160eD06FB)` is configured for _Goerli_.
+1. Note that `setChainlinkToken(0x779877A7B0D9E8603169DdbD7836e478b4624789)` is configured for _Sepolia_.
 
 1. On the **Compiler** tab, click the **Compile** button for `ATestnetConsumer.sol`.
 
 1. On the **Deploy and Run** tab, configure the following settings:
 
-   - Select _Injected Provider_ as your environment. Make sure your metamask is connected to Goerli.
+   - Select _Injected Provider_ as your environment. Make sure your metamask is connected to Sepolia.
    - Select _ATestnetConsumer_ from the **Contract** menu.
 
 1. Click **Deploy**. MetaMask prompts you to confirm the transaction.

@@ -1,6 +1,6 @@
 ---
 layout: ../../../../layouts/MainLayout.astro
-section: ethereum
+section: vrf
 date: Last Modified
 title: "Migrating from VRF v1"
 permalink: "docs/vrf/v2/direct-funding/migration-from-v1/"
@@ -24,7 +24,7 @@ The main similarity between VRF v1 and VRF v2 Direct funding method is that cons
 
 To modify your existing smart contract code to work with VRF v2, complete the following changes. See the [Get a Random Number](/vrf/v2/direct-funding/examples/get-a-random-number/) guide for an example.
 
-1. Import and inherit the new [`VRFV2WrapperConsumerBase.sol` contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/VRFV2WrapperConsumerBase.sol) and remove the v1 `VRFConsumerBase.sol` import. This contract includes the `fulfillRandomWords` function.
+1. Import and inherit the new [`VRFV2WrapperConsumerBase.sol` contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/vrf/VRFV2WrapperConsumerBase.sol) and remove the v1 `VRFConsumerBase.sol` import. This contract includes the `fulfillRandomWords` function.
 
 1. Add a `VRFV2WrapperConsumerBase` constructor as shown in the [Get a Random Number](/vrf/v2/direct-funding/examples/get-a-random-number/) example and use the correct VRF v2 Direct funding configuration.
 

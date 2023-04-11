@@ -14,9 +14,11 @@ export type SupportedTechnology =
   | "MOONBEAM"
   | "METIS"
   | "KLAYTN"
+  | "BASE"
 
 export type SupportedChain =
   | "ETHEREUM_MAINNET"
+  | "ETHEREUM_SEPOLIA"
   | "ETHEREUM_GOERLI"
   | "BNB_MAINNET"
   | "BNB_TESTNET"
@@ -38,6 +40,7 @@ export type SupportedChain =
   | "MOONBEAM_MAINNET"
   | "METIS_MAINNET"
   | "KLAYTN_BAOBAB"
+  | "BASE_GOERLI"
 
 export type Chains = Record<
   SupportedTechnology,

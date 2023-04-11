@@ -1,6 +1,6 @@
 ---
 layout: ../../layouts/MainLayout.astro
-section: ethereum
+section: global
 date: Last Modified
 title: "Decentralized Data Model"
 permalink: "docs/architecture-decentralized-model/"
@@ -14,6 +14,7 @@ metadata:
   description: "This page describes the decentralized architecture which enables Chainlink to aggregate data from multiple independent node operators."
   image:
     0: "/files/OpenGraph_V3.png"
+setup: import ClickToZoom from "@components/ClickToZoom.astro"
 ---
 
 This page describes how data aggregation is applied to produce Chainlink Data Feeds and provides more insight as to how Data Feeds are updated.
@@ -24,7 +25,7 @@ Each data feed is updated by multiple, independent Chainlink oracle operators. T
 
 Off-Chain Reporting (OCR) further enhances the aggregation process. To learn more about OCR and how it works, see the [Off-Chain Reporting](/architecture-overview/off-chain-reporting/) page.
 
-![Chainlink Feeds List](/images/contract-devs/price-aggr.png)
+<ClickToZoom src='/images/contract-devs/price-aggr.png' />
 
 ## Shared Data Resource
 
@@ -67,7 +68,7 @@ Proxy contracts can vary from one data feed to another, but the [`AggregatorProx
 
 ### Aggregator
 
-An aggregator is the contract that receives periodic data updates from the oracle network. Aggregators store aggregated data on-chain so that consumers can retrieve it and and act upon it within the same transaction.
+An aggregator is the contract that receives periodic data updates from the oracle network. Aggregators store aggregated data on-chain so that consumers can retrieve it and act upon it within the same transaction.
 
 You can access this data using the Data Feed address and the [`AggregatorV3Interface` contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.6/interfaces/AggregatorV3Interface.sol).
 

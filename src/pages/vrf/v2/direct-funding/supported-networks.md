@@ -1,6 +1,6 @@
 ---
 layout: ../../../../layouts/MainLayout.astro
-section: ethereum
+section: vrf
 date: Last Modified
 title: "Supported Networks"
 permalink: "docs/vrf/v2/direct-funding/supported-networks/"
@@ -47,18 +47,9 @@ The details for calculating the total transaction cost can be found [here](/vrf/
 
 ## Configurations
 
-<ResourcesCallout callout="bridgeRisks" />
+VRF v2 coordinators for direct funding are available on several networks. To see a list of coordinators for subscription funding, see the [Subscription Configurations](/vrf/v2/subscription/supported-networks) page.
 
-- [Ethereum Mainnet](#ethereum-mainnet)
-- [Goerli testnet](#goerli-testnet)
-- [BNB Chain](#bnb-chain)
-- [BNB Chain testnet](#bnb-chain-testnet)
-- [Polygon Mainnet](#polygon-matic-mainnet)
-- [Polygon Mumbai Testnet](#polygon-matic-mumbai-testnet)
-- [Avalanche Mainnet](#avalanche-mainnet)
-- [Avalanche Fuji Testnet](#avalanche-fuji-testnet)
-- [Fantom Mainnet](#fantom-mainnet)
-- [Fantom Testnet](#fantom-testnet)
+<ResourcesCallout callout="bridgeRisks" />
 
 ### Ethereum Mainnet
 
@@ -73,6 +64,25 @@ The details for calculating the total transaction cost can be found [here](/vrf/
 | Maximum Random Values      | 10                                                                                                                                                                                                           |
 | Wrapper Gas overhead       | 40000                                                                                                                                                                                                        |
 | Coordinator Gas Overhead   | 90000                                                                                                                                                                                                        |
+
+### Sepolia testnet
+
+:::note[Sepolia Faucets]
+Testnet LINK and ETH are available from <a href="https://faucets.chain.link/sepolia">faucets.chain.link</a>.<br/>
+Testnet ETH is also available from several public <a href="https://faucetlink.to/sepolia">ETH faucets</a>.
+:::
+
+| Item                       | Value                                                                                                                                                                                                                       |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| LINK Token                 | <a class="erc-token-address" id="11155111_0x779877A7B0D9E8603169DdbD7836e478b4624789" href="https://sepolia.etherscan.io/token/0x779877A7B0D9E8603169DdbD7836e478b4624789">`0x779877A7B0D9E8603169DdbD7836e478b4624789`</a> |
+| VRF Wrapper                | [`0xab18414CD93297B0d12ac29E63Ca20f515b3DB46`](https://sepolia.etherscan.io/address/0xab18414CD93297B0d12ac29E63Ca20f515b3DB46/)                                                                                            |
+| VRF Coordinator            | [`0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625`](https://sepolia.etherscan.io/address/0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625/)                                                                                            |
+| Wrapper Premium Percentage | 0                                                                                                                                                                                                                           |
+| Coordinator Flat Fee       | 0.25 LINK                                                                                                                                                                                                                   |
+| Maximum Confirmations      | 200                                                                                                                                                                                                                         |
+| Maximum Random Values      | 10                                                                                                                                                                                                                          |
+| Wrapper Gas overhead       | 40000                                                                                                                                                                                                                       |
+| Coordinator Gas Overhead   | 90000                                                                                                                                                                                                                       |
 
 ### Goerli testnet
 

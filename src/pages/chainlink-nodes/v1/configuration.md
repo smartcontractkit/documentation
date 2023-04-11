@@ -13,15 +13,15 @@ To reiterate: _If you have an environment variable set that is not listed here, 
 
 The environment variables listed here are explicitly supported and current as of Chainlink node v1.3.0.
 
-## Experimental TOML configuration
+### TOML Configuration
 
-Static configuration using TOML files was added in v1.11.0 as an alternative to the existing combination of environment variables and persisted database configurations. This configuration method is _experimental_. In the future, TOML configuration `v2.0.0` will become the only supported configuration method. Enable TOML configuration by specifying the `-config <filename>.toml` flag with the path to your TOML file. Alternatively, you can specify the raw TOML config in the [`CL_CONFIG` environment variable](/chainlink-nodes/v1/configuration#cl_config). See the [CONFIG.md](https://github.com/smartcontractkit/chainlink/blob/v1.11.0/docs/CONFIG.md) and [SECRETS.md](https://github.com/smartcontractkit/chainlink/blob/v1.11.0/docs/SECRETS.md) on GitHub to learn more.
+TOML configuration for Chainlink nodes is stable and recommended for mainnet deployments. TOML configuration will be the only supported configuration method starting with `v2.0.0`. Enable TOML configuration by specifying the `-config <filename>.toml` flag with the path to your TOML file. Alternatively, you can specify the raw TOML config in the [`CL_CONFIG` environment variable](/chainlink-nodes/v1/configuration#cl_config). See the [CONFIG.md](https://github.com/smartcontractkit/chainlink/blob/v1.13.0/docs/CONFIG.md) and [SECRETS.md](https://github.com/smartcontractkit/chainlink/blob/v1.13.0/docs/SECRETS.md) on GitHub to learn more.
 
 ## Changes to node configuration starting in v1.1.0 nodes
 
 As of Chainlink node v1.1.0 and up, the way nodes manage configuration is changing. Previously, environment variables exclusively handled all node configuration. Although this configuration method worked well in the past, it has its limitations. Notably, it doesn't mesh well with chain-specific configuration profiles.
 
-For this reason, Chainlink nodes are moving towards a model where you set variables using the API, [CLI](/chainlink-nodes/v1/configuration/#cli-client), or GUI, and the configuration is saved in the database. We encourage you to become familiar with this model because it is likely that nodes will continue to move away from environment variable configuration in the future.
+For this reason, Chainlink nodes are moving towards a model where you set variables using the API, CLI, or GUI, and the configuration is saved in the database. We encourage you to become familiar with this model because it is likely that nodes will continue to move away from environment variable configuration in the future.
 
 As of v1.1.0, Chainlink nodes still support environment variables to configure node settings and chain-specific settings. If the environment variable is set, it overrides any chain-specific, job-specific, or database configuration setting. The log displays a warning to indicate when an override happens, so you know when variables lower in the hierarchy are being ignored.
 
@@ -30,205 +30,6 @@ Your node applies configuration settings using following hierarchy:
 1. Environment variables
 1. Chain-specific variables
 1. Job-specific variables
-
-**Table of contents:**
-
-- [Changes to node configuration starting in v1.1.0 nodes](#changes-to-node-configuration-starting-in-v110-nodes)
-- [Essential environment variables](#essential-environment-variables)
-  - [DATABASE_URL](#database_url)
-- [General Node Configuration](#general-node-configuration)
-  - [CL_CONFIG](#cl_config)
-  - [CHAIN_TYPE](#chain_type)
-  - [CHAINLINK_DEV](#chainlink_dev)
-  - [EXPLORER_ACCESS_KEY](#explorer_access_key)
-  - [EXPLORER_SECRET](#explorer_secret)
-  - [EXPLORER_URL](#explorer_url)
-  - [ROOT](#root)
-  - [TELEMETRY_INGRESS_UNICONN](#telemetry_ingress_uniconn)
-  - [TELEMETRY_INGRESS_LOGGING](#telemetry_ingress_logging)
-  - [TELEMETRY_INGRESS_URL](#telemetry_ingress_url)
-  - [TELEMETRY_INGRESS_SERVER_PUB_KEY](#telemetry_ingress_server_pub_key)
-  - [TELEMETRY_INGRESS_BUFFER_SIZE](#telemetry_ingress_buffer_size)
-  - [TELEMETRY_INGRESS_MAX_BATCH_SIZE](#telemetry_ingress_max_batch_size)
-  - [TELEMETRY_INGRESS_SEND_INTERVAL](#telemetry_ingress_send_interval)
-  - [TELEMETRY_INGRESS_SEND_TIMEOUT](#telemetry_ingress_send_timeout)
-  - [TELEMETRY_INGRESS_USE_BATCH_SEND](#telemetry_ingress_use_batch_send)
-- [Chains](#chains)
-  - [SOLANA_ENABLED](#solana_enabled)
-  - [EVM_ENABLED](#evm_enabled)
-- [Database Settings](#database-settings)
-  - [MIGRATE_DATABASE](#migrate_database)
-  - [ORM_MAX_IDLE_CONNS](#orm_max_idle_conns)
-  - [ORM_MAX_OPEN_CONNS](#orm_max_open_conns)
-- [Database Global Lock](#database-global-lock)
-  - [DATABASE_LOCKING_MODE](#database_locking_mode)
-    - [Technical details](#technical-details)
-  - [ADVISORY_LOCK_CHECK_INTERVAL](#advisory_lock_check_interval)
-  - [ADVISORY_LOCK_ID](#advisory_lock_id)
-  - [LEASE_LOCK_DURATION](#lease_lock_duration)
-  - [LEASE_LOCK_REFRESH_INTERVAL](#lease_lock_refresh_interval)
-- [Database Automatic Backups](#database-automatic-backups)
-  - [DATABASE_BACKUP_FREQUENCY](#database_backup_frequency)
-  - [DATABASE_BACKUP_MODE](#database_backup_mode)
-  - [DATABASE_BACKUP_URL](#database_backup_url)
-  - [DATABASE_BACKUP_DIR](#database_backup_dir)
-- [Logging](#logging)
-  - [JSON_CONSOLE](#json_console)
-  - [LOG_FILE_DIR](#log_file_dir)
-  - [LOG_LEVEL](#log_level)
-  - [LOG_SQL](#log_sql)
-  - [LOG_FILE_MAX_SIZE](#log_file_max_size)
-  - [LOG_FILE_MAX_AGE](#log_file_max_age)
-  - [LOG_FILE_MAX_BACKUPS](#log_file_max_backups)
-  - [LOG_UNIX_TS](#log_unix_ts)
-  - [AUDIT_LOGGER_FORWARD_TO_URL](#audit_logger_forward_to_url)
-  - [AUDIT_LOGGER_HEADERS](#audit_logger_headers)
-  - [AUDIT_LOGGER_JSON_WRAPPER_KEY](#audit_logger_json_wrapper_key)
-- [Nurse service (auto-pprof)](#nurse-service-auto-pprof)
-  - [AUTO_PPROF_ENABLED](#auto_pprof_enabled)
-  - [AUTO_PPROF_PROFILE_ROOT](#auto_pprof_profile_root)
-  - [AUTO_PPROF_POLL_INTERVAL](#auto_pprof_poll_interval)
-  - [AUTO_PPROF_GATHER_DURATION](#auto_pprof_gather_duration)
-  - [AUTO_PPROF_GATHER_TRACE_DURATION](#auto_pprof_gather_trace_duration)
-  - [AUTO_PPROF_MAX_PROFILE_SIZE](#auto_pprof_max_profile_size)
-  - [AUTO_PPROF_CPU_PROFILE_RATE](#auto_pprof_cpu_profile_rate)
-  - [AUTO_PPROF_MEM_PROFILE_RATE](#auto_pprof_mem_profile_rate)
-  - [AUTO_PPROF_BLOCK_PROFILE_RATE](#auto_pprof_block_profile_rate)
-  - [AUTO_PPROF_MUTEX_PROFILE_FRACTION](#auto_pprof_mutex_profile_fraction)
-  - [AUTO_PPROF_MEM_THRESHOLD](#auto_pprof_mem_threshold)
-  - [AUTO_PPROF_GOROUTINE_THRESHOLD](#auto_pprof_goroutine_threshold)
-- [Chainlink Web Server](#chainlink-web-server)
-  - [ALLOW_ORIGINS](#allow_origins)
-  - [AUTHENTICATED_RATE_LIMIT](#authenticated_rate_limit)
-  - [AUTHENTICATED_RATE_LIMIT_PERIOD](#authenticated_rate_limit_period)
-  - [BRIDGE_CACHE_TTL](#bridge_cache_ttl)
-  - [BRIDGE_RESPONSE_URL](#bridge_response_url)
-  - [HTTP_SERVER_WRITE_TIMEOUT](#http_server_write_timeout)
-  - [CHAINLINK_PORT](#chainlink_port)
-  - [SECURE_COOKIES](#secure_cookies)
-  - [SESSION_TIMEOUT](#session_timeout)
-  - [UNAUTHENTICATED_RATE_LIMIT](#unauthenticated_rate_limit)
-  - [UNAUTHENTICATED_RATE_LIMIT_PERIOD](#unauthenticated_rate_limit_period)
-- [Web Server MFA](#web-server-mfa)
-  - [MFA_RPID](#mfa_rpid)
-  - [MFA_RPORIGIN](#mfa_rporigin)
-- [Web Server TLS](#web-server-tls)
-  - [CHAINLINK_TLS_HOST](#chainlink_tls_host)
-  - [CHAINLINK_TLS_PORT](#chainlink_tls_port)
-  - [CHAINLINK_TLS_REDIRECT](#chainlink_tls_redirect)
-  - [TLS_CERT_PATH](#tls_cert_path)
-  - [TLS_KEY_PATH](#tls_key_path)
-- [EVM/Ethereum Legacy Environment Variables](#evmethereum-legacy-environment-variables)
-  - [ETH_URL](#eth_url)
-  - [ETH_HTTP_URL](#eth_http_url)
-  - [EVM_NODES](#evm_nodes)
-  - [ETH_SECONDARY_URLS](#eth_secondary_urls)
-- [EVM/Ethereum Global Settings](#evmethereum-global-settings)
-  - [ETH_CHAIN_ID](#eth_chain_id)
-  - [EVM_RPC_ENABLED](#evm_rpc_enabled)
-- [EVM/Ethereum Chain-specific Overrides](#evmethereum-chain-specific-overrides)
-  - [BALANCE_MONITOR_ENABLED](#balance_monitor_enabled)
-  - [BLOCK_BACKFILL_DEPTH](#block_backfill_depth)
-  - [BLOCK_BACKFILL_SKIP](#block_backfill_skip)
-  - [ETH_TX_REAPER_INTERVAL](#eth_tx_reaper_interval)
-  - [ETH_TX_REAPER_THRESHOLD](#eth_tx_reaper_threshold)
-  - [ETH_TX_RESEND_AFTER_THRESHOLD](#eth_tx_resend_after_threshold)
-  - [ETH_FINALITY_DEPTH](#eth_finality_depth)
-  - [ETH_HEAD_TRACKER_HISTORY_DEPTH](#eth_head_tracker_history_depth)
-  - [ETH_HEAD_TRACKER_MAX_BUFFER_SIZE](#eth_head_tracker_max_buffer_size)
-  - [ETH_HEAD_TRACKER_SAMPLING_INTERVAL](#eth_head_tracker_sampling_interval)
-  - [ETH_LOG_BACKFILL_BATCH_SIZE](#eth_log_backfill_batch_size)
-  - [ETH_LOG_POLL_INTERVAL](#eth_log_poll_interval)
-  - [ETH_RPC_DEFAULT_BATCH_SIZE](#eth_rpc_default_batch_size)
-  - [LINK_CONTRACT_ADDRESS](#link_contract_address)
-  - [MIN_INCOMING_CONFIRMATIONS](#min_incoming_confirmations)
-  - [MIN_OUTGOING_CONFIRMATIONS](#min_outgoing_confirmations)
-  - [MINIMUM_CONTRACT_PAYMENT_LINK_JUELS](#minimum_contract_payment_link_juels)
-  - [NODE_NO_NEW_HEADS_THRESHOLD](#node_no_new_heads_threshold)
-  - [NODE_POLL_FAILURE_THRESHOLD](#node_poll_failure_threshold)
-  - [NODE_POLL_INTERVAL](#node_poll_interval)
-  - [NODE_SELECTION_MODE](#node_selection_mode)
-- [EVM Gas Controls](#evm-gas-controls)
-  - [Configuring your ETH node](#configuring-your-eth-node)
-    - [go-ethereum](#go-ethereum)
-  - [EVM_EIP1559_DYNAMIC_FEES](#evm_eip1559_dynamic_fees)
-    - [Technical details](#technical-details-1)
-  - [ETH_GAS_BUMP_PERCENT](#eth_gas_bump_percent)
-  - [ETH_GAS_BUMP_THRESHOLD](#eth_gas_bump_threshold)
-  - [ETH_GAS_BUMP_TX_DEPTH](#eth_gas_bump_tx_depth)
-  - [ETH_GAS_BUMP_WEI](#eth_gas_bump_wei)
-  - [EVM_GAS_FEE_CAP_DEFAULT](#evm_gas_fee_cap_default)
-  - [ETH_GAS_LIMIT_DEFAULT](#eth_gas_limit_default)
-  - [ETH_GAS_LIMIT_MULTIPLIER](#eth_gas_limit_multiplier)
-  - [ETH_GAS_LIMIT_TRANSFER](#eth_gas_limit_transfer)
-  - [ETH_GAS_PRICE_DEFAULT](#eth_gas_price_default)
-  - [EVM_GAS_TIP_CAP_DEFAULT](#evm_gas_tip_cap_default)
-  - [EVM_GAS_TIP_CAP_MINIMUM](#evm_gas_tip_cap_minimum)
-  - [ETH_MAX_GAS_PRICE_WEI](#eth_max_gas_price_wei)
-  - [ETH_MAX_IN_FLIGHT_TRANSACTIONS](#eth_max_in_flight_transactions)
-  - [ETH_MAX_QUEUED_TRANSACTIONS](#eth_max_queued_transactions)
-  - [ETH_MIN_GAS_PRICE_WEI](#eth_min_gas_price_wei)
-  - [ETH_GAS_LIMIT_OCR_JOB_TYPE](#eth_gas_limit_ocr_job_type)
-  - [ETH_GAS_LIMIT_DR_JOB_TYPE](#eth_gas_limit_dr_job_type)
-  - [ETH_GAS_LIMIT_VRF_JOB_TYPE](#eth_gas_limit_vrf_job_type)
-  - [ETH_GAS_LIMIT_FM_JOB_TYPE](#eth_gas_limit_fm_job_type)
-  - [ETH_GAS_LIMIT_KEEPER_JOB_TYPE](#eth_gas_limit_keeper_job_type)
-  - [ETH_NONCE_AUTO_SYNC](#eth_nonce_auto_sync)
-  - [ETH_USE_FORWARDERS](#eth_use_forwarders)
-- [EVM/Ethereum Gas Price Estimation](#evmethereum-gas-price-estimation)
-  - [GAS_ESTIMATOR_MODE](#gas_estimator_mode)
-  - [BLOCK_HISTORY_ESTIMATOR_BATCH_SIZE](#block_history_estimator_batch_size)
-  - [BLOCK_HISTORY_ESTIMATOR_BLOCK_HISTORY_SIZE](#block_history_estimator_block_history_size)
-  - [BLOCK_HISTORY_ESTIMATOR_BLOCK_DELAY](#block_history_estimator_block_delay)
-  - [BLOCK_HISTORY_ESTIMATOR_EIP1559_FEE_CAP_BUFFER_BLOCKS](#block_history_estimator_eip1559_fee_cap_buffer_blocks)
-  - [BLOCK_HISTORY_ESTIMATOR_TRANSACTION_PERCENTILE](#block_history_estimator_transaction_percentile)
-- [EVM/Ethereum Transaction Simulation](#evmethereum-transaction-simulation)
-  - [FM_SIMULATE_TRANSACTIONS](#fm_simulate_transactions)
-  - [OCR_SIMULATE_TRANSACTIONS](#ocr_simulate_transactions)
-- [Job Pipeline and tasks](#job-pipeline-and-tasks)
-  - [DEFAULT_HTTP_LIMIT](#default_http_limit)
-  - [DEFAULT_HTTP_TIMEOUT](#default_http_timeout)
-  - [FEATURE_EXTERNAL_INITIATORS](#feature_external_initiators)
-  - [JOB_PIPELINE_MAX_RUN_DURATION](#job_pipeline_max_run_duration)
-  - [JOB_PIPELINE_REAPER_INTERVAL](#job_pipeline_reaper_interval)
-  - [JOB_PIPELINE_REAPER_THRESHOLD](#job_pipeline_reaper_threshold)
-  - [JOB_PIPELINE_RESULT_WRITE_QUEUE_DEPTH](#job_pipeline_result_write_queue_depth)
-- [OCR](#ocr)
-
-  - [FEATURE_OFFCHAIN_REPORTING](#feature_offchain_reporting)
-  - [OCR_KEY_BUNDLE_ID](#ocr_key_bundle_id)
-  - [OCR_MONITORING_ENDPOINT](#ocr_monitoring_endpoint)
-  - [OCR_TRANSMITTER_ADDRESS](#ocr_transmitter_address)
-  - [P2P_NETWORKING_STACK](#p2p_networking_stack)
-  - [P2P_PEER_ID](#p2p_peer_id)
-  - [Networking Stack V1](#networking-stack-v1)
-    - [P2P_ANNOUNCE_IP](#p2p_announce_ip)
-    - [P2P_ANNOUNCE_PORT](#p2p_announce_port)
-    - [P2P_BOOTSTRAP_PEERS](#p2p_bootstrap_peers)
-    - [P2P_LISTEN_IP](#p2p_listen_ip)
-    - [P2P_LISTEN_PORT](#p2p_listen_port)
-  - [Networking Stack V2](#networking-stack-v2)
-    - [P2PV2_ANNOUNCE_ADDRESSES](#p2pv2_announce_addresses)
-    - [P2PV2_BOOTSTRAPPERS](#p2pv2_bootstrappers)
-    - [P2PV2_LISTEN_ADDRESSES](#p2pv2_listen_addresses)
-
-- [Keeper](#keeper)
-  - [KEEPER_CHECK_UPKEEP_GAS_PRICE_FEATURE_ENABLED](#keeper_check_upkeep_gas_price_feature_enabled)
-  - [KEEPER_GAS_PRICE_BUFFER_PERCENT](#keeper_gas_price_buffer_percent)
-  - [KEEPER_GAS_TIP_CAP_BUFFER_PERCENT](#keeper_gas_tip_cap_buffer_percent)
-  - [KEEPER_BASE_FEE_BUFFER_PERCENT](#keeper_base_fee_buffer_percent)
-  - [KEEPER_MAXIMUM_GRACE_PERIOD](#keeper_maximum_grace_period)
-  - [KEEPER_REGISTRY_CHECK_GAS_OVERHEAD](#keeper_registry_check_gas_overhead)
-  - [KEEPER_REGISTRY_PERFORM_GAS_OVERHEAD](#keeper_registry_perform_gas_overhead)
-  - [KEEPER_REGISTRY_SYNC_INTERVAL](#keeper_registry_sync_interval)
-  - [KEEPER_REGISTRY_SYNC_UPKEEP_QUEUE_SIZE](#keeper_registry_sync_upkeep_queue_size)
-  - [KEEPER_TURN_LOOK_BACK](#keeper_turn_look_back)
-  - [KEEPER_TURN_FLAG_ENABLED](#keeper_turn_flag_enabled)
-- [CLI Client](#cli-client)
-  - [ADMIN_CREDENTIALS_FILE](#admin_credentials_file)
-  - [CLIENT_NODE_URL](#client_node_url)
-  - [INSECURE_SKIP_VERIFY](#insecure_skip_verify)
-- [Notes on setting environment variables](#notes-on-setting-environment-variables)
 
 ## Essential environment variables
 
@@ -246,13 +47,9 @@ The PostgreSQL URI to connect to your database. Chainlink nodes require Postgres
 
 ### CL_CONFIG
 
-:::caution[Experimental]
-Use TOML for configuration only on test networks.
-:::
-
 This environment variable is used to set static configuration using TOML format. Specify the raw TOML config in this environment variable. Unlike the `-config` flag, it does not accept a path to a TOML file.
 
-See the [CONFIG.md](https://github.com/smartcontractkit/chainlink/blob/v1.11.0/docs/CONFIG.md) and [SECRETS.md](https://github.com/smartcontractkit/chainlink/blob/v1.11.0/docs/SECRETS.md) on GitHub to learn more.
+See the [CONFIG.md](https://github.com/smartcontractkit/chainlink/blob/v1.13.0/docs/CONFIG.md) and [SECRETS.md](https://github.com/smartcontractkit/chainlink/blob/v1.13.0/docs/SECRETS.md) on GitHub to learn more.
 
 ### CHAIN_TYPE
 
@@ -272,19 +69,19 @@ Setting `CHAINLINK_DEV` to `true` enables development mode. Do not use this for 
 
 - Default: _none_
 
-The access key for authenticating with the Explorer.
+The access key for authenticating with the explorer. This variable is required to deliver telemetry.
 
 ### EXPLORER_SECRET
 
 - Default: _none_
 
-The secret for authenticating with the Explorer.
+The secret for authenticating with the explorer. This variable is required to deliver telemetry.
 
 ### EXPLORER_URL
 
 - Default: _none_
 
-The Explorer websocket URL for the node to push stats to.
+The explorer websocket URL for the node to push stats to. This variable is required to deliver telemetry.
 
 ### ROOT
 
@@ -742,7 +539,7 @@ Example `BRIDGE_CACHE_TTL=10s`, `BRIDGE_CACHE_TTL=1m`
 
 - Default: _none_
 
-`BRIDGE_RESPONSE_URL` defines the URL for bridges to send a response to. This _must_ be set when using async external adapters.
+`BRIDGE_RESPONSE_URL` defines the URL for bridges to send a response to.
 
 Usually this will be the same as the URL/IP and port you use to connect to the Chainlink UI, such as `https://my-chainlink-node.example.com:6688`.
 
@@ -760,7 +557,7 @@ Do not change this setting unless you know what you are doing.
 
 - Default: `"6688"`
 
-Port used for the Chainlink Node API, [CLI](/chainlink-nodes/v1/configuration/#cli-client), and GUI.
+Port used for the Chainlink Node API, CLI, and GUI.
 
 ### SECURE_COOKIES
 
@@ -842,17 +639,17 @@ The location of the TLS private key file. Example: `/home/$USER/.chainlink/tls/s
 
 Previous Chainlink node versions supported only one chain. From v1.1.0 and up, Chainlink nodes support multiple EVM and non-EVM chains, so the way that chains and nodes are configured has changed.
 
-The preferred way of configuring Chainlink nodes as of v1.1.0 and up is to use the API, [CLI](/chainlink-nodes/v1/configuration/#cli-client), or UI to set chain-specific configuration and create nodes.
+The preferred way of configuring Chainlink nodes as of v1.1.0 and up is to use the API, CLI, or UI to set chain-specific configuration and create nodes.
 
 The old way of specifying chains using environment variables is still supported, but discouraged. It works as follows:
 
 If you set any value for `ETH_URL`, the values of `ETH_CHAIN_ID`, `ETH_URL`, `ETH_HTTP_URL` and `ETH_SECONDARY_URLS` will be used to create and update chains and nodes representing these values in the database. If an existing chain or node is found, it will be overwritten. This mode is used mainly to ease the process of upgrading. On subsequent runs (once your old settings have been written to the database) it is recommended to unset `ETH_URL` and use the API commands exclusively to administer chains and nodes.
 
-In the future, support for the `ETH_URL` and associated environment variables might be removed, so it is recommended to use the API, [CLI](/chainlink-nodes/v1/configuration/#cli-client), or GUI instead to setup chains and nodes.
+In the future, support for the `ETH_URL` and associated environment variables might be removed, so it is recommended to use the API, CLI, or GUI instead to setup chains and nodes.
 
 ### ETH_URL
 
-Setting this will enable "legacy eth ENV" mode, which is not compatible with multi-chain. It is better to configure settings using the API, [CLI](/chainlink-nodes/v1/configuration/#cli-client), or GUI instead.
+Setting this will enable "legacy eth ENV" mode, which is not compatible with multi-chain. It is better to configure settings using the API, CLI, or GUI instead.
 
 - Default: _none_
 
@@ -862,7 +659,7 @@ NOTE: It is also required to set `ETH_CHAIN_ID` if you set ETH_URL.
 
 ### ETH_HTTP_URL
 
-Only has effect if `ETH_URL` set. Otherwise, it can be set in the API, [CLI](/chainlink-nodes/v1/configuration/#cli-client), or GUI.
+Only has effect if `ETH_URL` set. Otherwise, it can be set in the API, CLI, or GUI.
 
 - Default: _none_
 
@@ -939,7 +736,7 @@ EVM_NODES=[{"name":"primary_0_1","evmChainId":"0","wsUrl":"ws://test1.invalid","
 
 ### ETH_SECONDARY_URLS
 
-Only has effect if `ETH_URL` set. Otherwise, it can be set in the API, [CLI](/chainlink-nodes/v1/configuration/#cli-client), or GUI.
+Only has effect if `ETH_URL` set. Otherwise, it can be set in the API, CLI, or GUI.
 
 - Default: _none_
 
@@ -998,7 +795,7 @@ This might be useful on fast chains and if only recent chain events are relevant
 
 ### ETH_TX_REAPER_INTERVAL
 
-NOTE: This overrides the setting for _all_ chains, you might want to set this on a per-chain basis using the API, [CLI](/chainlink-nodes/v1/configuration/#cli-client), or GUI instead
+NOTE: This overrides the setting for _all_ chains, you might want to set this on a per-chain basis using the API, CLI, or GUI instead
 
 - Default: `"1h"`
 
@@ -1019,7 +816,7 @@ Setting to `0` disables the reaper.
 
 ### ETH_TX_RESEND_AFTER_THRESHOLD
 
-NOTE: This overrides the setting for _all_ chains, you might want to set this on a per-chain basis using the API, [CLI](/chainlink-nodes/v1/configuration/#cli-client), or GUI instead.
+NOTE: This overrides the setting for _all_ chains, you might want to set this on a per-chain basis using the API, CLI, or GUI instead.
 
 - Default: _automatically set based on Chain ID, typically 1m_
 
@@ -1117,7 +914,7 @@ This can be overridden on a per-task basis by setting the `MinRequiredOutgoingCo
 This has replaced the formerly used MINIMUM_CONTRACT_PAYMENT.
 :::
 
-- Default: _automatically set based on Chain ID, typically 10000000000000 (0.00001 LINK) on all chains except Ethereum Mainnet and Goerli where it is 100000000000000000 (0.1 LINK)._
+- Default: _automatically set based on Chain ID, typically 10000000000000 (0.00001 LINK) on all chains except Ethereum Mainnet and Sepolia where it is 100000000000000000 (0.1 LINK)._
 
 For jobs that use the `EthTx` adapter, this is the minimum payment amount in order for the node to accept and process the job. Since there are no decimals on the EVM, the value is represented like wei.
 
@@ -1171,7 +968,7 @@ Set to `0` to disable this check.
 
 These settings allow you to tune your node's gas limits and pricing. In most cases, leaving these values at their defaults should give good results.
 
-As of Chainlink node v1.1.0, it is recommended to use the API, [CLI](/chainlink-nodes/v1/configuration/#cli-client), or GUI to configure gas controls because you might want to use different settings for different chains. Setting the environment variable typically overrides the setting for all chains.
+As of Chainlink node v1.1.0, it is recommended to use the API, CLI, or GUI to configure gas controls because you might want to use different settings for different chains. Setting the environment variable typically overrides the setting for all chains.
 
 ### Configuring your ETH node
 
@@ -1292,6 +1089,12 @@ If EIP1559 mode is enabled, and FixedPrice gas estimator is used, this env var c
 
 The default gas limit for outgoing transactions. This should not need to be changed in most cases.
 Some job types, such as Keeper jobs, might set their own gas limit unrelated to this value.
+
+### ETH_GAS_LIMIT_MAX
+
+- Default: _automatically set based on Chain ID, typically 500000_
+
+The maxium for gas limits estimated by the `Arbitrum` `GAS_ESTIMATOR_MODE`. This should not need to be changed in most cases.
 
 ### ETH_GAS_LIMIT_MULTIPLIER
 
@@ -1426,7 +1229,7 @@ Enables or disables sending transactions through forwarder contracts.
 
 These settings allow you to configure how your node calculates gas prices. In most cases, leaving these values at their defaults should give good results.
 
-As of Chainlink node v1.1.0, it is recommended to use the API, [CLI](/chainlink-nodes/v1/configuration/#cli-client), or GUI to configure gas controls because you might want to use different settings for different chains. Setting the environment variable typically overrides the setting for all chains.
+As of Chainlink node v1.1.0, it is recommended to use the API, CLI, or GUI to configure gas controls because you might want to use different settings for different chains. Setting the environment variable typically overrides the setting for all chains.
 
 Chainlink nodes decide what gas price to use using an `Estimator`. It ships with several simple and battle-hardened built-in estimators that should work well for almost all use-cases. Note that estimators will change their behaviour slightly depending on if you are in EIP-1559 mode or not.
 
@@ -1442,8 +1245,8 @@ Controls what type of gas estimator is used.
 
 - `FixedPrice` uses static configured values for gas price (can be set via API call).
 - `BlockHistory` dynamically adjusts default gas price based on heuristics from mined blocks.
-- `Optimism` is a special mode only for use with older versions of the Optimism blockchain.
-- `Optimism2` is a special mode only for use with current versions of the Optimism blockchain.
+- `Optimism2`/`L2Suggested` is a special mode only for use with Optimism and Metis blockchains. This mode will use the gas price suggested by the rpc endpoint via `eth_gasPrice`.
+- `Arbitrum` is a special mode only for use with Arbitrum blockchains. It uses the suggested gas price (up to `ETH_MAX_GAS_PRICE_WEI`, with `1000 gwei` default) as well as an estimated gas limit (up to `ETH_GAS_LIMIT_MAX`, with `1,000,000,000` default).
 
 ### BLOCK_HISTORY_ESTIMATOR_BATCH_SIZE
 
@@ -1555,6 +1358,10 @@ Enables the External Initiator feature. If disabled, `webhook` jobs can ONLY be 
 
 `JOB_PIPELINE_MAX_RUN_DURATION` is the maximum time that a single job run might take. If it takes longer, it will exit early and be marked errored. If set to zero, disables the time limit completely.
 
+### JOB_PIPELINE_MAX_SUCCESSFUL_RUNS
+
+This option is not supported as an environment variable. Use `JobPipeline.MaxSuccessfulRuns` in the config file instead. See the [CONFIG.md](https://github.com/smartcontractkit/chainlink/blob/v1.12.0/docs/CONFIG.md) reference for details.
+
 ### JOB_PIPELINE_REAPER_INTERVAL
 
 - Default: `"1h"`
@@ -1615,7 +1422,7 @@ OCR supports multiple networking stacks. `P2P_NETWORKING_STACK` chooses which st
 - `V1V2` - Runs both stacks simultaneously. For each link with another peer, V2 networking will be preferred. If V2 does not work, the link will automatically fall back to V1. If V2 starts working again later, it will automatically be prefered again. This is useful for migrating networks without downtime. Note that the two networking stacks _must not_ be configured to bind to the same IP/port.
 - `V2`
 
-All nodes in the OCR network should share the same networking stack.
+All nodes in the OCR network should share the same networking stack. The `V1` stack is deprecated and is being phased out. Do not use it for new deployments. Expect the default value of this variable to change to `V2` in the future.
 
 #### P2P_PEER_ID
 
@@ -1688,11 +1495,13 @@ If using the Networking Stack V2, you must unset the following [Networking Stack
 [`P2P_PEER_ID`](#p2p_peer_id) is used for both Networking Stack V1 and V2.
 :::
 
+The Networking Stack V2 uses TCP, any ports mentioned in this section refer to TCP ports.
+
 #### P2PV2_ANNOUNCE_ADDRESSES
 
 - Default: _none_
 
-`P2PV2_ANNOUNCE_ADDRESSES` contains the addresses the peer will advertise on the network in host:port form as accepted by net.Dial. The addresses should be reachable by peers of interest.
+`P2PV2_ANNOUNCE_ADDRESSES` contains the addresses the node will advertise for peer discovery in host:port form as accepted by the TCP version of Go's [`net.Dial`](https://pkg.go.dev/net#Dial). The addresses should be reachable by other nodes on the network. When attempting to connect to another node, a node will attempt to dial all of the other node's `P2PV2_ANNOUNCE_ADDRESSES` in round-robin fashion.
 Example: `P2PV2_ANNOUNCE_ADDRESSES=1.2.3.4:9999 [a52d:0:a88:1274::abcd]:1337`
 
 #### P2PV2_BOOTSTRAPPERS
@@ -1701,6 +1510,12 @@ Example: `P2PV2_ANNOUNCE_ADDRESSES=1.2.3.4:9999 [a52d:0:a88:1274::abcd]:1337`
 
 `P2PV2_BOOTSTRAPPERS` returns the default bootstrapper peers for libocr's v2 networking stack.
 Example: `P2PV2_BOOTSTRAPPERS=12D3KooWMHMRLQkgPbFSYHwD3NBuwtS1AmxhvKVUrcfyaGDASR4U@1.2.3.4:9999 12D3KooWLZ9uTC3MrvKfDpGju6RAQubiMDL7CuJcAgDRTYP7fh7R@[a52d:0:a88:1274::abcd]:1337 12D3KooWM55u5Swtpw9r8aFLQHEtw7HR4t44GdNs654ej5gRs2Dh@example.com:1234`
+
+Oracle nodes typically only know each other's PeerIDs, but not their hostnames, IP addresses, or ports.
+Bootstrappers are special nodes that help other nodes discover each other's `P2PV2_ANNOUNCE_ADDRESSES` so they can communicate.
+Nodes continuously attempt to connect to bootstrappers configured in `P2PV2_BOOTSTRAPPERS`.
+When a node wants to connect to another node (which it knows only by PeerID, but not by address), it discovers the other node's `P2PV2_ANNOUNCE_ADDRESSES` from communications received from its `P2PV2_BOOTSTRAPPERS` or other discovered nodes.
+To facilitate discovery, nodes will regularly broadcast signed announcements containing their PeerID and `P2PV2_ANNOUNCE_ADDRESSES`.
 
 #### P2PV2_LISTEN_ADDRESSES
 
@@ -1713,18 +1528,6 @@ Example: `P2PV2_LISTEN_ADDRESSES=1.2.3.4:9999 [a52d:0:a88:1274::abcd]:1337`
 ## Keeper
 
 These environment variables are used specificly for Chainlink Keepers. For most Chainlink Nodes, leave these values at their defaults and do not configure these environment variables.
-
-### KEEPER_CHECK_UPKEEP_GAS_PRICE_FEATURE_ENABLED
-
-:::caution
-Do not change this setting unless you know what you are doing.
-:::
-
-- Default: `"false"`
-
-Use this setting _only_ on Polygon networks.
-
-Includes gas price in calls to `checkUpkeep()` when set to `true`.
 
 ### KEEPER_GAS_PRICE_BUFFER_PERCENT
 
@@ -1815,16 +1618,6 @@ Do not change this setting unless you know what you are doing.
 - Default: `"1000"`
 
 The number of blocks in the past to look back when getting a block for a turn.
-
-### KEEPER_TURN_FLAG_ENABLED
-
-:::caution
-Do not change this setting unless you know what you are doing.
-:::
-
-- Default: `"false"`
-
-Enables a new algorithm for how keepers take turns.
 
 ## CLI Client
 

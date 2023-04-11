@@ -10,11 +10,15 @@ import { NewsletterCTA } from "../components/Footer/NewsletterCTA.tsx"
 import Footer from "~/components/Footer/Footer.astro"
 
 const { content = {}, frontmatter } = Astro.props
+
 // Astro.props?.headings is for .mdx pages, Astro.props?.content?.astro.headings is for .md pages
 const headings = Astro.props?.headings || Astro.props?.content?.astro.headings
 
 const currentPage = new URL(Astro.request.url).pathname
-const currentFile = `src/pages${currentPage.replace(/\/$/, "")}.${frontmatter?.isMdx ? "mdx" : "md"}`
+
+const currentFile = `src/pages${currentPage.replace(/\/$/, "")}${
+  content?.isIndex || frontmatter?.isIndex ? "/index" : ""
+}.${frontmatter?.isMdx ? "mdx" : "md"}`
 const githubEditUrl = CONFIG.GITHUB_EDIT_URL + currentFile
 const formattedContentTitle = content.title
   ? `${content.title} | ${CONFIG.SITE.title}`

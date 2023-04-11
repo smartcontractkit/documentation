@@ -8,10 +8,23 @@ export type Props = {
 const { currentPage, content } = Astro.props as Props
 
 // SIDEBAR is a flat array. Group it by sections to properly render.
-const sidebarSections = !!SIDEBAR[content?.section] ? SIDEBAR[content?.section] : []
 
+function getSidebarSections(section: string) {
+  if (section === "global") {
+    return Object.keys(SIDEBAR).flatMap((parentSection) => {
+      return SIDEBAR[parentSection].map((entry) => ({ ...entry, parentSection }))
+    })
+  }
+
+  return !!SIDEBAR[content?.section] ? SIDEBAR[content?.section] : []
+}
+
+const sidebarSections = getSidebarSections(content.section)
+
+// Remove slashes and params
 const removeSlashes = function (url: string) {
   let sanitizedUrl = url
+  sanitizedUrl = sanitizedUrl.split("?parent")[0]
   if (sanitizedUrl.charAt(0) == "/") sanitizedUrl = sanitizedUrl.substr(1)
   if (sanitizedUrl.charAt(sanitizedUrl.length - 1) == "/")
     sanitizedUrl = sanitizedUrl.substr(0, sanitizedUrl.length - 1)
@@ -43,7 +56,7 @@ const currentPageMatch = removeSlashes(currentPage.slice(1))
   <ul class="nav-groups sidebar-nav-groups">
     {
       sidebarSections.map((section) => (
-        <li>
+        <li aria-hidden={content.section === "global"} class={`parent-${section.parentSection}`}>
           <div class="nav-group">
             <h2 class="nav-group-title">{section.section}</h2>
             <ul>
@@ -169,4 +182,19 @@ const currentPageMatch = removeSlashes(currentPage.slice(1))
       padding: 0;
     }
   }
+
+  .sidebar-nav-groups > li[aria-hidden="true"] {
+    display: none;
+  }
 </style>
+
+<script is:inline>
+  window.addEventListener("DOMContentLoaded", (event) => {
+    const parentSection = new URLSearchParams(window.location.search).get("parent") || "gettingStarted"
+    if (parentSection) {
+      for (let elem of document.querySelectorAll(`.parent-${parentSection}`)) {
+        elem.ariaHidden = "false"
+      }
+    }
+  })
+</script>

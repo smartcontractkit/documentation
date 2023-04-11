@@ -1,6 +1,6 @@
 ---
 layout: ../../../layouts/MainLayout.astro
-section: ethereum
+section: vrf
 date: Last Modified
 title: "VRF Security Considerations"
 permalink: "docs/vrf/v2/security/"
@@ -12,7 +12,7 @@ Gaining access to high quality randomness on-chain requires a solution like Chai
 
 - [Use `requestId` to match randomness requests with their fulfillment in order](#use-requestid-to-match-randomness-requests-with-their-fulfillment-in-order)
 - [Choose a safe block confirmation time, which will vary between blockchains](#choose-a-safe-block-confirmation-time-which-will-vary-between-blockchains)
-- [Do not re-request randomness, even if you don't get an answer right away](#do-not-re-request-randomness-even-if-you-dont-get-an-answer-right-away)
+- [Do not re-request randomness](#do-not-re-request-randomness)
 - [Don't accept bids/bets/inputs after you have made a randomness request](#dont-accept-bidsbetsinputs-after-you-have-made-a-randomness-request)
 - [The `fulfillRandomWords` function must not revert](#fulfillrandomwords-must-not-revert)
 - [Use `VRFConsumerBaseV2` in your contract to interact with the VRF service](#use-vrfconsumerbasev2-in-your-contract-to-interact-with-the-vrf-service)
@@ -33,9 +33,11 @@ In principle, miners/validators of your underlying blockchain could rewrite the 
 
 You must choose an appropriate confirmation time for the randomness requests you make. Confirmation time is how many blocks the VRF service waits before writing a fulfillment to the chain to make potential rewrite attacks unprofitable in the context of your application and its value-at-risk.
 
-## Do not re-request randomness, even if you don't get an answer right away
+## Do not re-request randomness
 
-Doing so would give the VRF service provider the option to withhold a VRF fulfillment, if it doesn't like the outcome, and wait for the re-request in the hopes that it gets a better outcome, similar to the considerations with block confirmation time.
+Any re-request of randomness is an incorrect use of VRFv2. Doing so would give the VRF service provider the option to withhold a VRF fulfillment if the outcome is not favorable to them and wait for the re-request in the hopes that they get a better outcome, similar to the considerations with block confirmation time.
+
+Re-requesting randomness is easily detectable on-chain and should be avoided for use cases that want to be considered as using VRFv2 correctly.
 
 ## Don't accept bids/bets/inputs after you have made a randomness request
 

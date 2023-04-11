@@ -11,6 +11,53 @@ metadata:
 
 You can find a list of release notes for Chainlink nodes in the [smartcontractkit GitHub repository](https://github.com/smartcontractkit/chainlink/releases). Docker images are available in the [Chainlink Docker hub](https://hub.docker.com/r/smartcontract/chainlink/tags).
 
+## Changes in v1.13.0 nodes
+
+**[v1.13.0 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v1.13.0)**
+
+### TOML Configuration
+
+TOML configuration for Chainlink nodes is stable and recommended for mainnet deployments. TOML configuration will be the only supported configuration method starting with `v2.0.0`. Enable TOML configuration by specifying the `-config <filename>.toml` flag with the path to your TOML file. Alternatively, you can specify the raw TOML config in the [`CL_CONFIG` environment variable](/chainlink-nodes/v1/configuration#cl_config). See the [CONFIG.md](https://github.com/smartcontractkit/chainlink/blob/v1.13.0/docs/CONFIG.md) and [SECRETS.md](https://github.com/smartcontractkit/chainlink/blob/v1.13.0/docs/SECRETS.md) on GitHub to learn more.
+
+### Added
+
+- Added support for sending OCR2 job specs to the Feeds Manager.
+- Log poller filters are now saved in the database and restored on node startup to guard against missing logs during periods where services are temporarily unable to start.
+
+### Updated
+
+- TOML config: The environment variable `CL_CONFIG` is always processed as the last configuration. This has the effect of being the final override
+  for any values provided via configuration files.
+
+### Changed
+
+- The Feeds Manager is now enabled by default.
+
+### Removed
+
+- Terra is no longer supported.
+
+## Changes in v1.12.0 nodes
+
+**[v1.12.0 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v1.12.0)**
+
+### Added
+
+- Prometheus gauge `mailbox_load_percent` for percent of "`Mailbox`" capacity used.
+- New config option `JobPipeline.MaxSuccessfulRuns` caps the total number of saved completed runs per job. This is done in response to the `pipeline_runs` table potentially becoming large, which can cause performance degradation. The default is set to 10,000. You can set it to 0 to disable run saving entirely. **NOTE**: This can only be configured via TOML and not with an environment variable.
+- Prometheus gauge vector `feeds_job_proposal_count` to track counts of job proposals partitioned by proposal status.
+- Support for variable expression for the `minConfirmations` parameter on the `ethtx` task.
+
+### Updated
+
+- Removed the `KEEPER_TURN_FLAG_ENABLED` as all networks and nodes have switched this to `true`. The variable should be completely removed.
+- Removed the `Keeper.UpkeepCheckGasPriceEnabled` config and the `KEEPER_CHECK_UPKEEP_GAS_PRICE_FEATURE_ENABLED` environment variable. This feature is deprecated and the variable should be completely removed.
+
+### Fixed
+
+- Fixed (SQLSTATE 42P18) error on Job Runs page, when attempting to view specific older or infrequenty run jobs.
+- The `config dump` subcommand was fixed to dump the correct config data. The P2P.V1.Enabled config logic incorrectly matched V2, by only setting explicit true values so that otherwise the default is used. The V1.Enabled default value is actually true already, and is now updated to only set explicit false values.
+
 ## Changes in v1.11.0 nodes
 
 **[v1.11.0 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v1.11.0)**
@@ -25,7 +72,7 @@ You can find a list of release notes for Chainlink nodes in the [smartcontractki
   - `bridge_errors_total`
   - `bridge_cache_hits_total`
   - `bridge_cache_errors_total`
-- ⚠️ Experimental: ⚠️ Added static configuration using TOML files as an alternative to the existing combination of environment variables and persisted database configurations. For this release, use TOML for configuration only on test networks. In the future with `v2.0.0`, TOML configuration will become the only supported configuration method. Enable TOML configuration by specifying the `-config <filename>.toml` flag with the path to your TOML file. Alternatively, you can specify the raw TOML config in the [`CL_CONFIG` environment variable](/chainlink-nodes/v1/configuration#cl_config). See the [CONFIG.md](https://github.com/smartcontractkit/chainlink/blob/v1.11.0/docs/CONFIG.md) and [SECRETS.md](https://github.com/smartcontractkit/chainlink/blob/v1.11.0/docs/SECRETS.md) on GitHub to learn more.
+- ⚠️ Experimental: ⚠️ Added static configuration using TOML files as an alternative to the existing combination of environment variables and persisted database configurations. For this release, use TOML for configuration only on test networks. In the future with `v2.0.0`, TOML configuration will become the only supported configuration method. Enable TOML configuration by specifying the `-config <filename>.toml` flag with the path to your TOML file. Alternatively, you can specify the raw TOML config in the [`CL_CONFIG` environment variable](/chainlink-nodes/v1/configuration#cl_config). See the [CONFIG.md](https://github.com/smartcontractkit/chainlink/blob/v1.12.0/docs/CONFIG.md) and [SECRETS.md](https://github.com/smartcontractkit/chainlink/blob/v1.12.0/docs/SECRETS.md) on GitHub to learn more.
 
 ### Fixed
 
@@ -80,8 +127,8 @@ To disable connectivity checking completely, set `BLOCK_HISTORY_ESTIMATOR_CHECK_
 
 **[v1.9.0 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v1.9.0)**
 
-- Added the [`length` task](/chainlink-nodes/oracle-jobs/task-types/task_length) and the [`lessthan` task](/chainlink-nodes/oracle-jobs/task-types/task_lessthan) for jobs.
-- Added the `gasUnlimited` parameter to the [`ethcall` task](/chainlink-nodes/oracle-jobs/task-types/task_eth_call).
+- Added the [`length` task](/chainlink-nodes/oracle-jobs/all-tasks/#length-task) and the [`lessthan` task](/chainlink-nodes/oracle-jobs/all-tasks/#less-than-task) for jobs.
+- Added the `gasUnlimited` parameter to the [`ethcall` task](/chainlink-nodes/oracle-jobs/all-tasks/#eth-call-task).
 - The **Keys** page in Operator UI includes several admin commands that were previously available only by using the `keys eth chain` commands:
   - Ability to abandon all current transactions: This is the same as the `abandon` CLI command. Previously it was necessary to edit the database directly to abandon transactions. This command makes it easier to resolve issues that require transactions to be abandoned.
   - Ability to enable/disable a key for a specific chain: This allows you to control keys on a per-chain basis.
@@ -102,7 +149,7 @@ To disable connectivity checking completely, set `BLOCK_HISTORY_ESTIMATOR_CHECK_
 
 ### Added
 
-- Added the `hexencode` and `base64encode` tasks (pipeline). See the [Hex Encode Task](/chainlink-nodes/oracle-jobs/task-types/task_hexencode) and [Base64 Encode Task](/chainlink-nodes/oracle-jobs/task-types/task_base64encode) pages for examples.
+- Added the `hexencode` and `base64encode` tasks (pipeline). See the [Hex Encode Task](/chainlink-nodes/oracle-jobs/all-tasks/#hex-encode-task) and [Base64 Encode Task](/chainlink-nodes/oracle-jobs/all-tasks/#base64-encode-task) pages for examples.
 - `forwardingAllowed` per job attribute to allow forwarding txs submitted by the job.
 - Added `Arbitrum Goerli` configuration support.
 - Added the [`NODE_SELECTION_MODE` (`EVM.NodePool.SelectionMode`) environment variable](/chainlink-nodes/v1/configuration/#node_selection_mode), which controls node picking strategy. Supported values are:
@@ -143,7 +190,7 @@ To disable connectivity checking completely, set `BLOCK_HISTORY_ESTIMATOR_CHECK_
 
 - Added official support for the [Sepolia testnet](https://sepolia.dev) on Chainlink nodes.
 
-- Added [`hexdecode` task](/chainlink-nodes/oracle-jobs/task-types/task_hexdecode) and the [`base64decode` task](/chainlink-nodes/oracle-jobs/task-types/task_base64decode) (pipeline).
+- Added [`hexdecode` task](/chainlink-nodes/oracle-jobs/all-tasks/#hex-decode-task) and the [`base64decode` task](/chainlink-nodes/oracle-jobs/all-tasks/#base64-decode-task) (pipeline).
 
 - Added support for the Besu execution client. Although Chainlink supports Besu, Besu itself has several issues that can make it unreliable. For additional context, see the following issues:
 
@@ -270,7 +317,7 @@ To disable connectivity checking completely, set `BLOCK_HISTORY_ESTIMATOR_CHECK_
 - JSON parse tasks in TOML now support a custom `separator` parameter to substitute for the default `,`.
 - Slow SQL queries are now logged.
 - Updated the block explorer URLs to include FTMScan and SnowTrace.
-- Keeper upkeep order can now be shuffled. See [KEEPER_TURN_FLAG_ENABLED](/chainlink-nodes/v1/configuration/#keeper_turn_flag_enabled) for details.
+- Keeper upkeep order can now be shuffled.
 - Several fixes. See the [release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v1.4.0) for a full list of changes.
 
 ## Changes in v1.3.0 nodes
@@ -283,7 +330,7 @@ To disable connectivity checking completely, set `BLOCK_HISTORY_ESTIMATOR_CHECK_
 - Changed default locking mode to "dual". See the [DATABASE_LOCKING_MODE](/chainlink-nodes/v1/configuration/#database_locking_mode) documentation for details.
 - Specifying multiple EVM RPC nodes with the same URL is no longer supported. If you see `ERROR 0106_evm_node_uniqueness.sql: failed to run SQL migration`, you have multiple nodes specified with the same URL and you must fix this before proceeding with the upgrade.
 - EIP-1559 is now enabled by default on the Ethereum Mainnet. See the [EVM_EIP1559_DYNAMIC_FEES](/chainlink-nodes/v1/configuration/#evm_eip1559_dynamic_fees) documentation for details.
-- Added new Chainlink Automation feature that includes gas price in calls to `checkUpkeep()`. To enable the feature, set [KEEPER_CHECK_UPKEEP_GAS_PRICE_FEATURE_ENABLED](/chainlink-nodes/v1/configuration#keeper_check_upkeep_gas_price_feature_enabled) to `true`. Use this setting _only_ on Polygon networks.
+- Added new Chainlink Automation feature that includes gas price in calls to `checkUpkeep()`. To enable the feature, set `KEEPER_CHECK_UPKEEP_GAS_PRICE_FEATURE_ENABLED` to `true`. Use this setting _only_ on Polygon networks.
 
 ## Changes in v1.2.0 nodes
 

@@ -1,4 +1,5 @@
 import vrfLogo from "../assets/vrf-logo.svg"
+import functionsLogo from "../assets/functions-logo.svg"
 import automationLogo from "../assets/automation-logo.svg"
 import dataFeedsLogo from "../assets/data-feeds-logo.svg"
 import externalApiLogo from "../assets/external-api-logo.svg"
@@ -19,7 +20,7 @@ export const evmProducts = [
     learnMorelink: "data-feeds/",
     image: dataFeedsLogo,
     links: [
-      ["Introduction to Data Feeds", "data-feeds/"],
+      ["Introduction", "data-feeds/"],
       ["Price Feeds", "data-feeds/price-feeds/"],
       ["Proof of Reserve Feeds", "data-feeds/proof-of-reserve/"],
       ["NFT Floor Pricing Feeds", "data-feeds/nft-floor-price/"],
@@ -30,13 +31,35 @@ export const evmProducts = [
       { id: "optimism", title: "Optimism" },
       { id: "gnosis-chain", title: "Gnosis Chain" },
       { id: "harmony", title: "Harmony" },
-      { id: "klaytn", title: "Klaytn" },
       { id: "metis", title: "Metis" },
       { id: "moonbeam", title: "Moonbeam" },
       { id: "moonriver", title: "Moonriver" },
+      { id: "base", title: "BASE" },
       { id: "starknet", title: "StarkNet" },
+      { id: "solana", title: "Solana" },
     ],
-    video: "https://www.youtube.com/watch?v=hw9f84DnTK4&list=PLVP9aGDn-X0Qr4TuqPFNQdqbI735tdPat",
+    video: "https://www.youtube.com/watch?v=e75kwGzvtnI&list=PLVP9aGDn-X0QwJVbQvuKr-zrh2_DV5M6J&index=45",
+  },
+  {
+    title: "Chainlink Functions",
+    description:
+      "Connect smart contracts to a trust-minimized compute infrastructure running on a decentralized oracle network",
+    learnMorelink: "chainlink-functions/",
+    image: functionsLogo,
+    links: [
+      ["Introduction", "chainlink-functions/"],
+      ["Getting Started", "chainlink-functions/getting-started/"],
+      ["Request Computation", "chainlink-functions/tutorials/simple-computation/"],
+      ["Call APIs with Query Parameters", "chainlink-functions/tutorials/api-query-parameters/"],
+      ["POST Data to an API", "chainlink-functions/tutorials/api-post-data/"],
+      ["Use Secrets in Requests", "chainlink-functions/tutorials/api-use-secrets/"],
+      ["Add Functions to Your Project", "chainlink-functions/resources/add-functions-to-projects/"],
+      ["Architecture", "chainlink-functions/resources/architecture/"],
+    ],
+    chains: [
+      { id: "ethereum", title: "Ethereum" },
+      { id: "polygon", title: "Polygon" },
+    ],
   },
   {
     title: "Automate Contracts",
@@ -44,7 +67,7 @@ export const evmProducts = [
     learnMorelink: "chainlink-automation/introduction/",
     image: automationLogo,
     links: [
-      ["Introduction to Chainlink Automation", "chainlink-automation/introduction/"],
+      ["Introduction", "chainlink-automation/introduction/"],
       ["Time-based Automation", "chainlink-automation/job-scheduler/"],
       ["Custom Logic Automation", "chainlink-automation/register-upkeep/"],
       ["Create Compatible Contracts", "chainlink-automation/compatible-contracts/"],
@@ -52,7 +75,7 @@ export const evmProducts = [
       ["Creating Flexible Upkeeps", "chainlink-automation/flexible-upkeeps/"],
     ],
     chains: [...baseChains, { id: "arbitrum", title: "Arbitrum" }],
-    video: "https://www.youtube.com/watch?v=xL96sTwQ5Ho&list=PLVP9aGDn-X0RloqS1uYcuaPSW3GIgoCkg",
+    video: "https://www.youtube.com/watch?v=dj0impNJdls&list=PLVP9aGDn-X0RloqS1uYcuaPSW3GIgoCkg&index=2",
   },
   {
     title: "VRF v2",
@@ -60,14 +83,14 @@ export const evmProducts = [
     learnMorelink: "/vrf/v2/introduction/",
     image: vrfLogo,
     links: [
-      ["Introduction to Chainlink VRF v2", "/vrf/v2/introduction/"],
-      ["VRF v2 - Subscription Method", "/vrf/v2/subscription/"],
-      ["VRF v2 - Direct Funding Method", "/vrf/v2/direct-funding/"],
+      ["Introduction", "/vrf/v2/introduction/"],
+      ["Subscription Method", "/vrf/v2/subscription/"],
+      ["Direct Funding Method", "/vrf/v2/direct-funding/"],
       ["Security Considerations", "/vrf/v2/security/"],
       ["Best Practices", "/vrf/v2/best-practices/"],
     ],
     chains: [...baseChains, { id: "klaytn", title: "Klaytn" }],
-    video: "https://www.youtube.com/watch?v=rpQCKoRvyR4&list=PLVP9aGDn-X0QHDyBRvbITizWrRoecR0D8",
+    video: "https://www.youtube.com/watch?v=JqZWariqh5s&list=PLVP9aGDn-X0QHDyBRvbITizWrRoecR0D8&index=2",
   },
   {
     title: "External API Calls",
@@ -75,7 +98,7 @@ export const evmProducts = [
     learnMorelink: "/any-api/introduction/",
     image: externalApiLogo,
     links: [
-      ["Introduction to Using Any API", "/any-api/introduction/"],
+      ["Introduction", "/any-api/introduction/"],
       ["Make a GET Request", "/any-api/get-request/introduction/"],
       ["Find Existing Jobs", "/any-api/find-oracle/"],
       ["API Reference", "/any-api/api-reference/"],
@@ -90,20 +113,6 @@ export const evmProducts = [
       { id: "metis", title: "Metis" },
       { id: "moonbeam", title: "Moonbeam" },
       { id: "moonriver", title: "Moonriver" },
-    ],
-  },
-] as ProductCardProps[]
-
-export const solanaProducts = [
-  {
-    title: "Data Feeds",
-    description: "Decentralized and high-quality data feeds for DeFi, sports, weather, and more",
-    learnMorelink: "/solana/overview/",
-    image: dataFeedsLogo,
-    links: [
-      ["Using Data Feeds Off-Chain", "/solana/data-feeds/using-data-feeds-off-chain/"],
-      ["Using Data Feeds On-Chain", "/solana/data-feeds/using-data-feeds-solana/"],
-      ["Solana Data Feeds Addresses", "/solana/data-feeds/data-feeds-solana/"],
     ],
   },
 ] as ProductCardProps[]

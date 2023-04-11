@@ -5,7 +5,7 @@
  */
 
 const { ethers } = require("ethers") // for nodejs only
-const provider = new ethers.providers.JsonRpcProvider("https://rpc.ankr.com/eth_goerli")
+const provider = new ethers.providers.JsonRpcProvider("https://rpc.ankr.com/eth_sepolia")
 const aggregatorV3InterfaceABI = [
   {
     inputs: [],
@@ -55,7 +55,7 @@ const aggregatorV3InterfaceABI = [
     type: "function",
   },
 ]
-const addr = "0xA39434A63A52E749F02807ae27335515BA4b07F7"
+const addr = "0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43"
 const priceFeed = new ethers.Contract(addr, aggregatorV3InterfaceABI, provider)
 priceFeed.latestRoundData().then((roundData) => {
   // Do something with roundData

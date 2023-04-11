@@ -7,13 +7,13 @@ contract PriceConsumerV3 {
     AggregatorV3Interface internal priceFeed;
 
     /**
-     * Network: Goerli
-     * Aggregator: ETH/USD
-     * Address: 0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e
+     * Network: Sepolia
+     * Aggregator: BTC/USD
+     * Address: 0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43
      */
     constructor() {
         priceFeed = AggregatorV3Interface(
-            0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e
+            0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43
         );
     }
 

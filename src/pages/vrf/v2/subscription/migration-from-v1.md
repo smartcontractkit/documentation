@@ -1,6 +1,6 @@
 ---
 layout: ../../../../layouts/MainLayout.astro
-section: ethereum
+section: vrf
 date: Last Modified
 title: "Migrating from VRF v1"
 permalink: "docs/vrf/v2/subscription/migration-from-v1/"
@@ -39,7 +39,7 @@ To modify your existing smart contract code to work with VRF v2, complete the fo
           <a href="https://vrf.chain.link" target="_blank" >Open the Subscription Manager</a>
     </div>
 
-1. Import the new [`VRFConsumerBaseV2.sol` contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/VRFConsumerBaseV2.sol) and remove the v1 `VRFConsumerBase.sol` import. This contract includes the `fulfillRandomWords` function.
+1. Import the new [`VRFConsumerBaseV2.sol` contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/vrf/VRFConsumerBaseV2.sol) and remove the v1 `VRFConsumerBase.sol` import. This contract includes the `fulfillRandomWords` function.
 
 1. Import the [`VRFCoordinatorV2Interface.sol` interface](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol). This interface includes the new `requestRandomWords` function.
 

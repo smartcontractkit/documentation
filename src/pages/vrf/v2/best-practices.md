@@ -1,12 +1,12 @@
 ---
 layout: ../../../layouts/MainLayout.astro
-section: ethereum
+section: vrf
 date: Last Modified
 title: "VRF Best Practices"
 permalink: "docs/vrf/v2/best-practices/"
 metadata:
   title: "Chainlink VRF API Reference"
-  description: "Best pracices for using Chainlink VRF."
+  description: "Best practices for using Chainlink VRF."
 setup: |
   import VrfCommon from "@features/vrf/v2/common/VrfCommon.astro"
 ---
