@@ -1,5 +1,5 @@
 require("@nomiclabs/hardhat-ethers")
-require("dotenv").config()
+require("@chainlink/env-enc").config()
 
 /**
  * @type import('hardhat/config').HardhatUserConfig
