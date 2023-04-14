@@ -14,12 +14,12 @@ whatsnext:
   }
 metadata:
   description: "Example contracts for generating a random number inside a smart contract using Chainlink VRF v2."
-setup: |
-  import VrfCommon from "@features/vrf/v2/common/VrfCommon.astro"
-  import CodeSample from "@components/CodeSample/CodeSample.astro"
 ---
 
-<VrfCommon callout="subscription"/>
+import VrfCommon from "@features/vrf/v2/common/VrfCommon.astro"
+import { Aside, CodeSample } from "@components"
+
+<VrfCommon callout="subscription" />
 
 How you manage the subscription depends on your randomness needs. You can configure your subscriptions using the [Subscription Manager](/vrf/v2/subscription/ui/), but these examples demonstrate how to create your subscription and add your consumer contracts programmatically. For these examples, the contract owns and manages the subscription. Any wallet can provide funding to those subscriptions.
 
@@ -48,7 +48,7 @@ In this example, the contract operates as a subscription owner and can run funct
 
 Subscription owners and consumers do not have to be separate. This contract not only allows adding consumers with `addConsumer(address consumerAddress)` but can also act as a consumer by running its own `requestRandomWords()` function. This example contract includes a `createNewSubscription()` function in the `constructor()` that creates the subscription and adds itself as a consumer automatically when you deploy it.
 
-::solidity-remix[samples/VRF/VRFv2SubscriptionManager.sol]
+<CodeSample src="samples/VRF/VRFv2SubscriptionManager.sol" />
 
 To use this contract, compile and deploy it in Remix.
 
