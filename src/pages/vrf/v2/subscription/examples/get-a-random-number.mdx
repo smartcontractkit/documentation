@@ -15,16 +15,16 @@ whatsnext:
   }
 metadata:
   description: "How to generate a random number inside a smart contract using Chainlink VRF."
-setup: |
-  import VrfCommon from "@features/vrf/v2/common/VrfCommon.astro"
-  import CodeSample from "@components/CodeSample/CodeSample.astro"
 ---
 
-<VrfCommon callout="subscription"/>
+import VrfCommon from "@features/vrf/v2/common/VrfCommon.astro"
+import { Aside, CodeSample } from "@components"
+
+<VrfCommon callout="subscription" />
 
 This guide explains how to get random values using a simple contract to request and receive random values from Chainlink VRF v2. For more advanced examples with programmatic subscription configuration, see the [Programmatic Subscription](/vrf/v2/subscription/examples/programmatic-subscription/) page. To explore more applications of VRF, refer to our [blog](https://blog.chain.link/).
 
-<VrfCommon callout="ui"/>
+<VrfCommon callout="ui" />
 
 ## Requirements
 
@@ -45,10 +45,11 @@ For this example, create a new subscription on the Sepolia testnet.
 1. Check MetaMask to make sure you have testnet ETH and LINK on Sepolia. You can get testnet ETH and LINK at [faucets.chain.link](https://faucets.chain.link/sepolia/).
 
 1. Open the Subscription Manager at [vrf.chain.link](https://vrf.chain.link).
-   <!-- prettier-ignore -->
+   {/* prettier-ignore */}
+
    <div class="remix-callout">
-          <a href="https://vrf.chain.link">Open the Subscription Manager</a>
-    </div>
+     <a href="https://vrf.chain.link">Open the Subscription Manager</a>
+   </div>
 
 1. Click **Create Subscription** and follow the instructions to create a new subscription account. MetaMask opens and asks you to confirm payment to create the account on-chain. After you approve the transaction, the network confirms the creation of your subscription account on-chain.
 
@@ -79,7 +80,7 @@ Build and deploy the contract on Sepolia.
 
 1. Open the [`VRFv2Consumer.sol` contract](https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFv2Consumer.sol) in Remix.
 
-   <!-- prettier-ignore -->
+   {/* prettier-ignore */}
    <CodeSample src="samples/VRF/VRFv2Consumer.sol" showButtonOnly/>
 
 1. On the **Compile** tab in Remix, compile the `VRFv2Consumer.sol` contract.
@@ -120,15 +121,15 @@ The deployed contract requests random values from Chainlink VRF, receives those 
 
 You deployed a simple contract that can request and receive random values from Chainlink VRF. To see more advanced examples where the contract can complete the entire process including subscription setup and management, see the [Programmatic Subscription](/vrf/v2/subscription/examples/programmatic-subscription/) page.
 
-:::note[Note on Requesting Randomness]
-Do not re-request randomness. For more information, see the [VRF Security Considerations](/vrf/v2/security/) page.
-:::
+<Aside type="note" title="Note on Requesting Randomness">
+  Do not re-request randomness. For more information, see the [VRF Security Considerations](/vrf/v2/security/) page.
+</Aside>
 
 ## Analyzing the contract
 
 In this example, your MetaMask wallet is the subscription owner and you created a consuming contract to use that subscription. The consuming contract uses static configuration parameters.
 
-::solidity-remix[samples/VRF/VRFv2Consumer.sol]
+<CodeSample src="samples/VRF/VRFv2Consumer.sol" />
 
 The parameters define how your requests will be processed. You can find the values for your network in the [Configuration](/vrf/v2/subscription/supported-networks/) page.
 
@@ -150,9 +151,10 @@ The contract includes the following functions:
 
 - `getRequestStatus()`: Retrive request details for a given `_requestId`.
 
-:::note[Security Considerations]
-Be sure to review your contracts to make sure they follow the best practices on the [security considerations](/vrf/v2/security/) page.
-:::
+<Aside type="note" title="Security Considerations">
+  Be sure to review your contracts to make sure they follow the best practices on the [security
+  considerations](/vrf/v2/security/) page.
+</Aside>
 
 ## Clean up
 
