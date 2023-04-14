@@ -67,28 +67,28 @@ Requests for randomness will fail unless your consuming contract has enough LINK
 
 The deployed contract requests random values from Chainlink VRF, receives those values, builds a struct `RequestStatus` containing them, and stores the struct in a mapping `s_requests`. Run the `requestRandomWords()` function on your contract to start the request.
 
-1. Return to Remix and view your deployed contract functions in the **Deployed Contracts** list.
+1.  Return to Remix and view your deployed contract functions in the **Deployed Contracts** list.
 
-1. Click the `requestRandomWords()` function to send the request for random values to Chainlink VRF. MetaMask opens and asks you to confirm the transaction.
+1.  Click the `requestRandomWords()` function to send the request for random values to Chainlink VRF. MetaMask opens and asks you to confirm the transaction.
 
-   <Aside type="note" title="Set your gas limit in MetaMask">
-Remix IDE doesn't set the right gas limit, so you must [edit the
-gas limit in MetaMask](https://support.metamask.io/hc/en-us/articles/360022895972) within the **Advanced gas controls** settings.
+       <Aside type="note" title="Set your gas limit in MetaMask">
+    Remix IDE doesn't set the right gas limit, so you must [edit the
+    gas limit in MetaMask](https://support.metamask.io/hc/en-us/articles/360022895972) within the **Advanced gas controls** settings.
 
-   For this example to work, set the gas limit to _400,000_ in MetaMask.
+        For this example to work, set the gas limit to _400,000_ in MetaMask.
 
-   First, [enable **Advanced gas controls** in your MetaMask settings](https://support.metamask.io/hc/en-us/articles/360022895972).
+        First, [enable **Advanced gas controls** in your MetaMask settings](https://support.metamask.io/hc/en-us/articles/360022895972).
 
-   Before confirming your transaction in MetaMask, navigate to the screen where you can edit the gas limit: Select **Site suggested** > **Advanced** > **Advanced gas controls** and select **Edit** next to the **Gas limit** amount. Update the **Gas limit** value to _400000_ and select **Save**. Finally, confirm the transaction.
+        Before confirming your transaction in MetaMask, navigate to the screen where you can edit the gas limit: Select **Site suggested** > **Advanced** > **Advanced gas controls** and select **Edit** next to the **Gas limit** amount. Update the **Gas limit** value to _400000_ and select **Save**. Finally, confirm the transaction.
 
-   </Aside>
+       </Aside>
 After you approve the transaction, Chainlink VRF processes your request. Chainlink VRF fulfills the request and returns the random values to your contract in a callback to the `fulfillRandomWords()` function. At this point, a new key `requestId` is added to the mapping `s_requests`. Depending on current testnet conditions, it might take a few minutes for the callback to return the requested random values to your contract.
 
-1. To fetch the request ID of your request, call `lastRequestId()`.
+1.  To fetch the request ID of your request, call `lastRequestId()`.
 
-1. After the oracle returns the random values to your contract, the mapping `s_requests` is updated. The received random values are stored in `s_requests[_requestId].randomWords`.
+1.  After the oracle returns the random values to your contract, the mapping `s_requests` is updated. The received random values are stored in `s_requests[_requestId].randomWords`.
 
-1. Call `getRequestStatus()` and specify the `requestId` to display the random words.
+1.  Call `getRequestStatus()` and specify the `requestId` to display the random words.
 
 <Aside type="note" title="Note on Requesting Randomness">
   Do not re-request randomness. For more information, see the [VRF Security Considerations](/vrf/v2/security/) page.
