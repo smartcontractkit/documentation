@@ -145,7 +145,7 @@ Ganache is a mock testnet. Although you can run nodes on Ganache, it is not offi
       Keystore = 'mysecretkeystorepassword'
 
    [Database]
-   URL = 'postgresql://postgres:mysecretpassword@host.docker.internal:5433/postgres?sslmode=disable'
+   URL = 'postgresql://postgres:mysecretpassword@host.docker.internal:5432/postgres?sslmode=disable'
    " > ~/.chainlink-sepolia/secrets.toml
 
    ````
@@ -156,7 +156,7 @@ Ganache is a mock testnet. Although you can run nodes on Ganache, it is not offi
    Keystore = 'mysecretkeystorepassword'
 
    [Database]
-   URL = 'postgresql://postgres:mysecretpassword@host.docker.internal:5433/postgres?sslmode=disable'
+   URL = 'postgresql://postgres:mysecretpassword@host.docker.internal:5432/postgres?sslmode=disable'
    " > ~/.chainlink-goerli/secrets.toml
    ````
 
