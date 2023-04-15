@@ -1,11 +1,15 @@
 import { Chain } from "../data/chains"
 
 interface Docs {
+  assetClass?: string
+  assetSubClass?: string
   nftFloorUnits: any
   assetName?: string
   feedCategory?: string
   feedType?: string
   hidden?: boolean
+  productSubType?: string
+  productType?: string
   porAuditor?: string
   porType?: string
   shutdownDate?: string

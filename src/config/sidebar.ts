@@ -152,6 +152,16 @@ export const SIDEBAR = {
           ],
         },
         {
+          title: "Misc Feeds",
+          url: "data-feeds/misc-feeds",
+          children: [
+            {
+              title: "Misc Feed Addresses",
+              url: "data-feeds/misc-feeds/addresses",
+            },
+          ],
+        },
+        {
           title: "Selecting Quality Data Feeds",
           url: "data-feeds/selecting-data-feeds",
         },
