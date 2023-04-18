@@ -3,6 +3,7 @@ layout: ../../../layouts/MainLayout.astro
 section: chainlinkFunctions
 date: Last Modified
 title: "Managing Subscriptions"
+isMdx: true
 ---
 
 import ChainlinkFunctions from "@features/chainlink-functions/common/ChainlinkFunctions.astro"
@@ -121,10 +122,14 @@ Subscription 28 has a total balance of 0.6 LINK
 
 You must deploy a Chainlink Functions consumer contract before you can add it to your subscription. You can skip on-chain contract verification with the `--verify false` flag.
 
-If you do need to [verify](https://blog.chain.link/how-to-verify-a-smart-contract-on-etherscan) your contract on-chain, sign up for a free API key for your network scanner and include it in your `.env` file:
+If you do need to [verify](https://blog.chain.link/how-to-verify-a-smart-contract-on-etherscan) your contract on-chain, sign up for a free API key for your network scanner and include it in your `.env.enc` file:
 
-- Polygon Mumbai: Sign up for a [free Polygonscan API key](https://polygonscan.com/login) and include it in your `.env` file under the `POLYGONSCAN_API_KEY=` variable.
-- Sepolia: Sign up for a [free Etherscan API key](https://etherscan.io/login) and include it in your `.env` file under the `ETHERSCAN_API_KEY=` variable.
+1. Sign up for an API key:
+
+   - Polygon Mumbai: Sign up for a [free Polygonscan API key](https://polygonscan.com/login).
+   - Sepolia: Sign up for a [free Etherscan API key](https://etherscan.io/login).
+
+1. Include it in your `.env.enc` by running `npx env-enc set` and set `POLYGONSCAN_API_KEY` or `ETHERSCAN_API_KEY` depending on your network.
 
 Deploy a consumer contract:
 
@@ -237,7 +242,7 @@ Removed consumer contract address 0x191D570c489e73e4869aE4D62ab8a0ab71Ce2B5C fro
    npx hardhat functions-sub-accept --subid REPLACE_SUBSCRIPTION_ID --network REPLACE_NETWORK
    ```
 
-   If you are the new owner, set the `PRIVATE_KEY` in the `.env` file to the new owner's account private key.
+   If you are the new owner, set the `PRIVATE_KEY` in the `.env.enc` file to the new owner's account private key by running `npx env-enc set`.
 
    ```bash
    $ npx hardhat functions-sub-accept --subid 28 --network mumbai

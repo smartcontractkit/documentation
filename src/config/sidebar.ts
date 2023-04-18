@@ -110,10 +110,6 @@ export const SIDEBAR = {
           title: "Connect to Public API Data",
           url: "any-api/introduction",
         },
-        {
-          title: "Run a Chainlink Node",
-          url: "chainlink-nodes/v1/running-a-chainlink-node",
-        },
       ],
     },
   ],
@@ -618,6 +614,10 @@ export const SIDEBAR = {
           title: "Best Practices",
           url: "vrf/v2/best-practices",
         },
+        {
+          title: "Estimating Costs",
+          url: "vrf/v2/estimating-costs",
+        },
       ],
     },
     {
@@ -634,6 +634,10 @@ export const SIDEBAR = {
         {
           title: "Programmatic Subscription",
           url: "vrf/v2/subscription/examples/programmatic-subscription",
+        },
+        {
+          title: "Test locally using a Mock contract",
+          url: "vrf/v2/subscription/examples/test-locally",
         },
         {
           title: "Subscription Manager UI",
@@ -659,6 +663,10 @@ export const SIDEBAR = {
         {
           title: "Get a Random Number",
           url: "vrf/v2/direct-funding/examples/get-a-random-number",
+        },
+        {
+          title: "Test locally using a Mock contract",
+          url: "vrf/v2/direct-funding/examples/test-locally",
         },
         {
           title: "Supported Networks",
@@ -788,10 +796,6 @@ export const SIDEBAR = {
           url: "any-api/testnet-oracles",
         },
         {
-          title: "Data Provider Nodes",
-          url: "any-api/data-providers/introduction",
-        },
-        {
           title: "API Reference",
           url: "any-api/api-reference",
         },
@@ -873,96 +877,111 @@ export const SIDEBAR = {
           url: "chainlink-nodes/node-versions",
         },
         {
-          title: "v1.x.x",
-          url: "chainlink-nodes/v1/",
+          title: "System Requirements",
+          url: "chainlink-nodes/resources/requirements",
+        },
+        {
+          title: "Run a Chainlink Node",
+          url: "chainlink-nodes/v1/running-a-chainlink-node",
+        },
+        {
+          title: "Configuring Nodes",
+          url: "chainlink-nodes/configuring-nodes",
           children: [
             {
-              title: "Tutorial - Running a Chainlink Node locally",
-              url: "chainlink-nodes/v1/running-a-chainlink-node",
+              title: "Node Config (TOML)",
+              url: "chainlink-nodes/v1/node-config",
             },
             {
-              title: "Tutorial - Fulfilling Requests",
-              url: "chainlink-nodes/v1/fulfilling-requests",
+              title: "Secrets Config (TOML)",
+              url: "chainlink-nodes/v1/secrets-config",
             },
             {
-              title: "Tutorial - Using Forwarder",
-              url: "chainlink-nodes/v1/using-forwarder",
-            },
-            {
-              title: "Configuring Nodes",
+              title: "Legacy Config (.env)",
               url: "chainlink-nodes/v1/configuration",
             },
           ],
         },
         {
-          title: "Contracts",
-          url: "chainlink-nodes/contracts/",
-          children: [
-            {
-              title: "Operator",
-              url: "chainlink-nodes/contracts/operator",
-            },
-            {
-              title: "Operator Factory",
-              url: "chainlink-nodes/contracts/operatorfactory",
-            },
-            {
-              title: "Forwarder",
-              url: "chainlink-nodes/contracts/forwarder",
-            },
-            {
-              title: "Receiver",
-              url: "chainlink-nodes/contracts/receiver",
-            },
-            {
-              title: "Ownership",
-              url: "chainlink-nodes/contracts/ownership",
-            },
-            {
-              title: "Contract Addresses",
-              url: "chainlink-nodes/contracts/addresses",
-            },
-          ],
+          title: "Roles and Access Control",
+          url: "chainlink-nodes/v1/roles-and-access",
+        },
+      ],
+    },
+    {
+      section: "Tutorials",
+      contents: [
+        {
+          title: "Fulfilling Requests",
+          url: "chainlink-nodes/v1/fulfilling-requests",
         },
         {
-          title: "Resources",
-          url: "chainlink-nodes/resources",
-          children: [
-            {
-              title: "Requirements",
-              url: "chainlink-nodes/resources/requirements",
-            },
-            {
-              title: "Running an Ethereum Client",
-              url: "chainlink-nodes/resources/run-an-ethereum-client",
-            },
-            {
-              title: "Connecting to a Remote Database",
-              url: "chainlink-nodes/resources/connecting-to-a-remote-database",
-            },
-            {
-              title: "Enabling HTTPS Connections",
-              url: "chainlink-nodes/resources/enabling-https-connections",
-            },
-            {
-              title: "Performing System Maintenance",
-              url: "chainlink-nodes/resources/performing-system-maintenance",
-            },
-            {
-              title: "Security and Operation Best Practices",
-              url: "chainlink-nodes/resources/best-security-practices",
-            },
-            {
-              title: "Optimizing EVM Performance",
-              url: "chainlink-nodes/resources/evm-performance-configuration",
-            },
-            {
-              title: "Best Practices for Nodes on AWS",
-              url: "chainlink-nodes/resources/best-practices-aws",
-            },
-            { title: "Miscellaneous", url: "chainlink-nodes/resources/miscellaneous" },
-          ],
+          title: "Using Forwarder Contracts",
+          url: "chainlink-nodes/v1/using-forwarder",
         },
+      ],
+    },
+    {
+      section: "Contracts",
+      contents: [
+        {
+          title: "Operator",
+          url: "chainlink-nodes/contracts/operator",
+        },
+        {
+          title: "Operator Factory",
+          url: "chainlink-nodes/contracts/operatorfactory",
+        },
+        {
+          title: "Forwarder",
+          url: "chainlink-nodes/contracts/forwarder",
+        },
+        {
+          title: "Receiver",
+          url: "chainlink-nodes/contracts/receiver",
+        },
+        {
+          title: "Ownership",
+          url: "chainlink-nodes/contracts/ownership",
+        },
+        {
+          title: "Contract Addresses",
+          url: "chainlink-nodes/contracts/addresses",
+        },
+      ],
+    },
+    {
+      section: "Resources",
+      contents: [
+        {
+          title: "Running an Ethereum Client",
+          url: "chainlink-nodes/resources/run-an-ethereum-client",
+        },
+        {
+          title: "Connecting to a Remote Database",
+          url: "chainlink-nodes/resources/connecting-to-a-remote-database",
+        },
+        {
+          title: "Enabling HTTPS Connections",
+          url: "chainlink-nodes/resources/enabling-https-connections",
+        },
+        {
+          title: "Performing System Maintenance",
+          url: "chainlink-nodes/resources/performing-system-maintenance",
+        },
+        {
+          title: "Security and Operation Best Practices",
+          url: "chainlink-nodes/resources/best-security-practices",
+        },
+        {
+          title: "Optimizing EVM Performance",
+          url: "chainlink-nodes/resources/evm-performance-configuration",
+        },
+        {
+          title: "Best Practices for Nodes on AWS",
+          url: "chainlink-nodes/resources/best-practices-aws",
+        },
+        { title: "Miscellaneous", url: "chainlink-nodes/resources/miscellaneous" },
       ],
     },
     {
@@ -1003,108 +1022,12 @@ export const SIDEBAR = {
           ],
         },
         {
-          url: "chainlink-nodes/oracle-jobs/task-types/tasks",
+          url: "chainlink-nodes/oracle-jobs/tasks",
           title: "Tasks",
           children: [
             {
-              title: "Job Pipelines",
-              url: "chainlink-nodes/oracle-jobs/task-types/pipelines",
-            },
-            {
-              title: "HTTP",
-              url: "chainlink-nodes/oracle-jobs/task-types/task_http",
-            },
-            {
-              title: "Bridge",
-              url: "chainlink-nodes/oracle-jobs/task-types/task_bridge",
-            },
-            {
-              title: "JSON Parse",
-              url: "chainlink-nodes/oracle-jobs/task-types/task_jsonparse",
-            },
-            {
-              title: "CBOR Parse",
-              url: "chainlink-nodes/oracle-jobs/task-types/task_cborparse",
-            },
-            {
-              title: "ETH ABI Decode",
-              url: "chainlink-nodes/oracle-jobs/task-types/task_eth_abi_decode",
-            },
-            {
-              title: "ETH ABI Decode Log",
-              url: "chainlink-nodes/oracle-jobs/task-types/task_eth_abi_decode_log",
-            },
-            {
-              title: "ETH ABI Encode",
-              url: "chainlink-nodes/oracle-jobs/task-types/task_eth_abi_encode",
-            },
-            {
-              title: "ETH Call",
-              url: "chainlink-nodes/oracle-jobs/task-types/task_eth_call",
-            },
-            {
-              title: "ETH Tx",
-              url: "chainlink-nodes/oracle-jobs/task-types/task_eth_tx",
-            },
-            {
-              title: "Multiply",
-              url: "chainlink-nodes/oracle-jobs/task-types/task_multiply",
-            },
-            {
-              title: "Divide",
-              url: "chainlink-nodes/oracle-jobs/task-types/task_divide",
-            },
-            {
-              title: "Any",
-              url: "chainlink-nodes/oracle-jobs/task-types/task_any",
-            },
-            {
-              title: "Mean",
-              url: "chainlink-nodes/oracle-jobs/task-types/task_mean",
-            },
-            {
-              title: "Median",
-              url: "chainlink-nodes/oracle-jobs/task-types/task_median",
-            },
-            {
-              title: "Mode",
-              url: "chainlink-nodes/oracle-jobs/task-types/task_mode",
-            },
-            {
-              title: "Sum",
-              url: "chainlink-nodes/oracle-jobs/task-types/task_sum",
-            },
-            {
-              title: "Less Than",
-              url: "chainlink-nodes/oracle-jobs/task-types/task_lessthan",
-            },
-            {
-              title: "Length",
-              url: "chainlink-nodes/oracle-jobs/task-types/task_length",
-            },
-            {
-              title: "Hex Decode",
-              url: "chainlink-nodes/oracle-jobs/task-types/task_hexdecode",
-            },
-            {
-              title: "Hex Encode",
-              url: "chainlink-nodes/oracle-jobs/task-types/task_hexencode",
-            },
-            {
-              title: "Base64 Decode",
-              url: "chainlink-nodes/oracle-jobs/task-types/task_base64decode",
-            },
-            {
-              title: "Base64 Encode",
-              url: "chainlink-nodes/oracle-jobs/task-types/task_base64encode",
-            },
-            {
-              title: "Uppercase",
-              url: "chainlink-nodes/oracle-jobs/task-types/task_uppercase",
-            },
-            {
-              title: "Lowercase",
-              url: "chainlink-nodes/oracle-jobs/task-types/task_lowercase",
+              title: "Task Types",
+              url: "chainlink-nodes/oracle-jobs/all-tasks",
             },
           ],
         },

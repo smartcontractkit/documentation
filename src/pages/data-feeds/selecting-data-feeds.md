@@ -155,7 +155,7 @@ Sustaining data quality is dependent on data sources implementing the necessary 
 
 ### Market Failures Resulting from Extreme Events
 
-Users are strongly advised to set up monitoring and alerts in the event of unexpected market failures. Black swan events, hacks, coordinated attacks, or extreme market conditions may trigger unanticipated outcomes such as liquidity pools becoming unbalanced, unexpected re-weighting of indices, abnormal behavior by centralized or decentralized exchanges, or the de-pegging of synthetic assets and currencies from their intended exchange rates.
+Users are strongly advised to set up monitoring and alerts in the event of unexpected market failures. Black swan events, hacks, coordinated attacks, or extreme market conditions may trigger unanticipated outcomes such as liquidity pools becoming unbalanced, unexpected re-weighting of indices, abnormal behavior by centralized or decentralized exchanges, or the de-pegging of synthetic assets, stablecoins, and currencies from their intended exchange rates.
 
 Circuit breakers can be created using [Chainlink Automation](/chainlink-automation/introduction/). Circuit breakers are safety measures that monitor data feeds for unexpected scenarios such as stale prices, drastic price changes, or prices approaching a predetermined min/max threshold. If an unexpected scenario occurs, the circuit breaker can send an on-chain transaction to pause or halt contract functionality.
 

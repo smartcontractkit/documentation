@@ -12,7 +12,7 @@ Chainlink nodes with version 1.0.0 and later support v2 jobs in TOML format. Sup
 
 v1 jobs were intended for extremely targeted use cases, so they opted for simplicity in the job spec over explicitness.
 
-The v2 Job Specs support expanding functionality in Chainlink nodes and prefer explicitness, so they are are much more powerful and support advanced capabilities like running tasks in parallel. This change provides the following benefits to node operators:
+The v2 Job Specs support expanding functionality in Chainlink nodes and prefer explicitness, so they are much more powerful and support advanced capabilities like running tasks in parallel. This change provides the following benefits to node operators:
 
 - Support increased job complexity
 - Better performance
@@ -110,7 +110,7 @@ This spec relies on CBOR-encoded on-chain values for the `httpget` URL and `json
 Notes:
 
 - In v1, the job ID is randomly generated at creation time. In v2 jobs, the job ID can be manually specified or the Chainlink node will automatically generate it.
-- In v2, the `ethbytes32` task and all of the other ABI encoding tasks are now encapsulated in the `ethabiencode` task with much more flexibility. See the [ETH ABI Encode task](/chainlink-nodes/oracle-jobs/task-types/task_eth_abi_encode/) page to learn more.
+- In v2, the `ethbytes32` task and all of the other ABI encoding tasks are now encapsulated in the `ethabiencode` task with much more flexibility. See the [ETH ABI Encode task](/chainlink-nodes/oracle-jobs/all-tasks/#eth-abi-encode-task) page to learn more.
 
 **Equivalent v2 spec:**
 

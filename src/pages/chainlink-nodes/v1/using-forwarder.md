@@ -21,7 +21,7 @@ Also, you must be familiar with these concepts:
 - [OperatorFactory](/chainlink-nodes/contracts/operatorfactory) contracts.
   :::
 
-<ClickToZoom src='/images/chainlink-nodes/node-operators/forwarder/forwarder-directrequest-example.png' />
+<ClickToZoom src='/images/chainlink-nodes/node-operators/forwarder/forwarder-directrequest-example.webp' />
 
 In this tutorial, you will configure your Chainlink node with a simple transaction-sending strategy on the Sepolia testnet:
 

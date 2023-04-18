@@ -3,6 +3,7 @@ layout: ../../../layouts/MainLayout.astro
 section: chainlinkFunctions
 date: Last Modified
 title: "Return Custom Data Types"
+isMdx: true
 ---
 
 import { Aside } from "@components"
@@ -51,7 +52,7 @@ npx hardhat functions-simulate
 
 Example:
 
-```bash
+```text
 $ npx hardhat functions-simulate
 secp256k1 unavailable, reverting to browser version
 
@@ -63,29 +64,28 @@ Executing JavaScript request source code locally...
 
 __Console log messages from sandboxed code__
 HTTP GET Request to https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETH&tsyms=USD
-ETH price is: 1606.70 USD. 24h Volume is 658844.24 USD. Market: lmax
+ETH price is: 1810.29 USD. 24h Volume is 113255.87 USD. Market: Coinbase
 
 __Output from sandboxed source code__
-Output represented as a hex string: 0x7b227072696365223a22313630362e3730222c22766f6c756d65223a223635383834342e3234222c226c6173744d61726b6574223a226c6d6178227d
-Decoded as a string: {"price":"1606.70","volume":"658844.24","lastMarket":"lmax"}
+Output represented as a hex string: 0x7b227072696365223a22313831302e3239222c22766f6c756d65223a223131333235352e3837222c226c6173744d61726b6574223a22436f696e62617365227d
+Decoded as a string: {"price":"1810.29","volume":"113255.87","lastMarket":"Coinbase"}
 
 __Simulated On-Chain Response__
-Response returned to client contract represented as a hex string: 0x7b227072696365223a22313630362e3730222c22766f6c756d65223a223635383834342e3234222c226c6173744d61726b6574223a226c6d6178227d
-Decoded as a string: {"price":"1606.70","volume":"658844.24","lastMarket":"lmax"}
+Response returned to client contract represented as a hex string: 0x7b227072696365223a22313831302e3239222c22766f6c756d65223a223131333235352e3837222c226c6173744d61726b6574223a22436f696e62617365227d
+Decoded as a string: {"price":"1810.29","volume":"113255.87","lastMarket":"Coinbase"}
 
-Estimated transmission cost: 0.000047242892373668 LINK (This will vary based on gas price)
-Base fee: 0.0 LINK
-Total estimated cost: 0.000047242892373668 LINK
+Gas used by sendRequest: 376604
+Gas used by client callback function: 98391
 ```
 
-Reading the output of the example above, you can see that the `ETH/USD` price is _1606.70 USD_, volume is _658844.24_, and the market is _lmax_. Because the final result is a JSON object, the example converts it to a string and returns the `bytes` encoded value `0x7b227072696365223a22313630362e3730222c22766f6c756d65223a223635383834342e3234222c226c6173744d61726b6574223a226c6d6178227d` in the callback. Read the [source code explanation](#functions-request-sourcejs) for a more detailed explanation.
+Reading the output of the example above, you can see that the `ETH/USD` price is _1810.29 USD_, volume is _113255.87_, and the market is _Coinbase_. Because the final result is a JSON object, the example converts it to a string and returns the `bytes` encoded value `0x7b227072696365223a22313831302e3239222c22766f6c756d65223a223131333235352e3837222c226c6173744d61726b6574223a22436f696e62617365227d` in the callback. Read the [source code explanation](#functions-request-sourcejs) for a more detailed explanation.
 
 ### Request
 
 <Aside type="note" title="Reminder">
   Before you can make a successful request, you must complete the setup steps in the [Before you
   begin](#before-you-begin) section. Each tutorial is in a separate Git branch and some require unique entries in your
-  `.env` file.
+  `.env.enc` file.
 </Aside>
 
 Send a request to the Decentralized Oracle Network to fetch the asset price. Run the `functions-request` task with the `subid` (subscription ID) and `contract` parameters. This task passes the JavaScript source code, arguments, and secrets when you call the `executeRequest` function in your deployed `FunctionsConsumer` contract. Read the [functionsConsumer](#functionsconsumersol) section for a more detailed explanation.
@@ -96,45 +96,57 @@ npx hardhat functions-request --subid REPLACE_SUBSCRIPTION_ID --contract REPLACE
 
 Example:
 
-```bash
-$ npx hardhat functions-request --subid 6 --contract 0xa9b286E892d579dc727c79D3be9b01949796240A  --network mumbai
+```text
+$ npx hardhat functions-request --subid 443 --contract 0x4B4BA2Fd6b93aDF8d6b6002E10540E58394388Ea --network mumbai
 secp256k1 unavailable, reverting to browser version
+Estimating cost if the current gas price remains the same...
+
+The transaction to initiate this request will charge the wallet (0x9d087fC03ae39b088326b67fA3C788236645b717):
+0.00050942400509424 MATIC, which (using mainnet value) is $0.0005628062918760629
+
+If the request's callback uses all 100,000 gas, this request will charge the subscription:
+0.200148583233223418 LINK
+
+Continue? Enter (y) Yes / (n) No
+y
 Simulating Functions request locally...
 
 __Console log messages from sandboxed code__
 HTTP GET Request to https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETH&tsyms=USD
-ETH price is: 1609.01 USD. 24h Volume is 664907.71 USD. Market: Coinbase
+ETH price is: 1811.08 USD. 24h Volume is 113909.01 USD. Market: Bitfinex
 
 __Output from sandboxed source code__
-Output represented as a hex string: 0x7b227072696365223a22313630392e3031222c22766f6c756d65223a223636343930372e3731222c226c6173744d61726b6574223a22436f696e62617365227d
-Decoded as a string: {"price":"1609.01","volume":"664907.71","lastMarket":"Coinbase"}
+Output represented as a hex string: 0x7b227072696365223a22313831312e3038222c22766f6c756d65223a223131333930392e3031222c226c6173744d61726b6574223a2242697466696e6578227d
+Decoded as a string: {"price":"1811.08","volume":"113909.01","lastMarket":"Bitfinex"}
 
 
-If all 100000 callback gas is used, this request is estimated to cost 0.000052991755396126 LINK
-Continue? (y) Yes / (n) No
-y
+⣾ Request 0x51d3aa3be08c71c49a37d586de07eb85e87a403e35a73521c5c914c430e2de2d has been initiated. Waiting for fulfillment from the Decentralized Oracle Network...
 
-Requesting new data for FunctionsConsumer contract 0xa9b286E892d579dc727c79D3be9b01949796240A on network mumbai
-Waiting 2 blocks for transaction 0xb219bced3f395a0320155369006406da1f2c894b21ee59a80ee952898449889b to be confirmed...
+ℹ Transaction confirmed, see https://mumbai.polygonscan.com/tx/0xd0140c40e65fdf51ea1b4396258915438693b61cfacb6d28a368bdd4f94b0443 for more details.
 
-Request 0x71e7e87772e5f60e41b945d7fad2c12affa65dba469cd164d27c32cab30806b7 initiated
-Waiting for fulfillment...
+✔ Request 0x51d3aa3be08c71c49a37d586de07eb85e87a403e35a73521c5c914c430e2de2d fulfilled! Data has been written on-chain.
 
-Transmission cost: 0.00006213736353407 LINK
-Base fee: 0.0 LINK
-Total cost: 0.00006213736353407 LINK
+Response returned to client contract represented as a hex string: 0x7b227072696365223a22313831312e3139222c22766f6c756d65223a223131333931302e3933222c226c6173744d61726b6574223a2242697466696e6578227d
+Decoded as a string: {"price":"1811.19","volume":"113910.93","lastMarket":"Bitfinex"}
 
-Request 0x71e7e87772e5f60e41b945d7fad2c12affa65dba469cd164d27c32cab30806b7 fulfilled!
-Response returned to client contract represented as a hex string: 0x7b227072696365223a22313630382e3731222c22766f6c756d65223a223636353030342e3930222c226c6173744d61726b6574223a22436f696e62617365227d
-Decoded as a string: {"price":"1608.71","volume":"665004.90","lastMarket":"Coinbase"}
+Actual amount billed to subscription #443:
+┌──────────────────────┬─────────────────────────────┐
+│         Type         │           Amount            │
+├──────────────────────┼─────────────────────────────┤
+│  Transmission cost:  │  0.000071836060128269 LINK  │
+│      Base fee:       │          0.2 LINK           │
+│                      │                             │
+│     Total cost:      │  0.200071836060128269 LINK  │
+└──────────────────────┴─────────────────────────────┘
+
 ```
 
 The output of the example above gives you the following information:
 
-- The `executeRequest` function was successfully called in the `FunctionsConsumer` contract. The transaction in this example is [0xb219bced3f395a0320155369006406da1f2c894b21ee59a80ee952898449889b](https://mumbai.polygonscan.com/tx/0xb219bced3f395a0320155369006406da1f2c894b21ee59a80ee952898449889b).
-- The request ID is `0x71e7e87772e5f60e41b945d7fad2c12affa65dba469cd164d27c32cab30806b7`.
-- The DON successfully fulfilled your request. The total cost was: `0.00006213736353407 LINK`.
-- The consumer contract received a response in `bytes` with a value of `0x7b227072696365223a22313630382e3731222c22766f6c756d65223a223636353030342e3930222c226c6173744d61726b6574223a22436f696e62617365227d`. Decoding it off-chain to `string` gives you the following result: `{"price":"1608.71","volume":"665004.90","lastMarket":"Coinbase"}`.
+- The `executeRequest` function was successfully called in the `FunctionsConsumer` contract. The transaction in this example is [0xd0140c40e65fdf51ea1b4396258915438693b61cfacb6d28a368bdd4f94b0443](https://mumbai.polygonscan.com/tx/0xd0140c40e65fdf51ea1b4396258915438693b61cfacb6d28a368bdd4f94b0443).
+- The request ID is `0x51d3aa3be08c71c49a37d586de07eb85e87a403e35a73521c5c914c430e2de2d`.
+- The DON successfully fulfilled your request. The total cost was: `0.200071836060128269 LINK`.
+- The consumer contract received a response in `bytes` with a value of `0x7b227072696365223a22313831312e3038222c22766f6c756d65223a223131333930392e3031222c226c6173744d61726b6574223a2242697466696e6578227d`. Decoding it off-chain to `string` gives you the following result: `{"price":"1811.19","volume":"113910.93","lastMarket":"Bitfinex"}`.
 
 At any time, you can run the `functions-read` task with the `contract` parameter to read the latest received response.
 
@@ -144,16 +156,16 @@ npx hardhat functions-read  --contract REPLACE_CONSUMER_CONTRACT_ADDRESS --netwo
 
 Example:
 
-```bash
-$ npx hardhat functions-read  --contract 0xa9b286E892d579dc727c79D3be9b01949796240A --network mumbai
+```text
+$ npx hardhat functions-read  --contract 0x4B4BA2Fd6b93aDF8d6b6002E10540E58394388Ea  --network mumbai
 secp256k1 unavailable, reverting to browser version
-Reading data from Functions client contract 0xa9b286E892d579dc727c79D3be9b01949796240A on network mumbai
+Reading data from Functions client contract 0x4B4BA2Fd6b93aDF8d6b6002E10540E58394388Ea on network mumbai
 
-On-chain response represented as a hex string: 0x7b227072696365223a22313630382e3731222c22766f6c756d65223a223636353030342e3930222c226c6173744d61726b6574223a22436f696e62617365227d
-Decoded as a string: {"price":"1608.71","volume":"665004.90","lastMarket":"Coinbase"}
+On-chain response represented as a hex string: 0x7b227072696365223a22313831312e3139222c22766f6c756d65223a223131333931302e3933222c226c6173744d61726b6574223a2242697466696e6578227d
+Decoded as a string: {"price":"1811.19","volume":"113910.93","lastMarket":"Bitfinex"}
 ```
 
-Decoding `0x7b227072696365223a22313630382e3731222c22766f6c756d65223a223636353030342e3930222c226c6173744d61726b6574223a22436f696e62617365227d` from `bytes` to `string` gives you `{"price":"1608.71","volume":"665004.90","lastMarket":"Coinbase"}`. Off-chain, you can use [JSON.parse()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse) to convert the JSON string to a JSON object.
+Decoding `0x7b227072696365223a22313831312e3139222c22766f6c756d65223a223131333931302e3933222c226c6173744d61726b6574223a2242697466696e6578227d` from `bytes` to `string` gives you `{"price":"1811.19","volume":"113910.93","lastMarket":"Bitfinex"}`. Off-chain, you can use [JSON.parse()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse) to convert the JSON string to a JSON object.
 
 ## Explanation
 

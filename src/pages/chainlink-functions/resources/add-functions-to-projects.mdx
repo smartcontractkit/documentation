@@ -3,6 +3,7 @@ layout: ../../../layouts/MainLayout.astro
 section: chainlinkFunctions
 date: Last Modified
 title: "Adding Chainlink Functions to an Existing Project"
+isMdx: true
 whatsnext:
   {
     "Try out the Chainlink Functions Tutorials": "/chainlink-functions/tutorials/",
@@ -45,7 +46,7 @@ You must have a wallet with testnet LINK and native tokens to run this example. 
 
 If you don't already have a Hardhat project, start one with the following steps:
 
-1. Install [Node.js](https://nodejs.org/en/download/).
+1. Install [Node.js](https://nodejs.org/en/download/). **Note**: Node.js version 18 is required.
 1. Make a new project directory:
 
    ```shell
@@ -67,7 +68,7 @@ If you don't already have a Hardhat project, start one with the following steps:
 1. Install the dependency packages:
 
    ```shell
-   npm install @chainlink/contracts @openzeppelin/contracts @openzeppelin/contracts-upgradeable eth-crypto dotenv axios vm2 is-http-url prompt-sync
+   npm install @chainlink/contracts @chainlink/env-enc @openzeppelin/contracts @openzeppelin/contracts-upgradeable eth-crypto dotenv axios vm2 is-http-url prompt-sync
    ```
 
 1. Create a new Hardhat project. For this example, create a JavaScript project and use the default configurations:
@@ -86,20 +87,25 @@ Modify `hardhat.config.js` to include the `0.8.7` compiler version and supported
 
 <CodeSample src="samples/Functions/adding-functions-to-projects/hardhat.config.js" />
 
-If you use this configuration with `require('dotenv').config()` to get your RPC URLs and private keys, you must also create a `.env` file with these variables set. Add your RPC URLs with your API keys and the private key to the wallet you will use to fund transactions on these testnets.
+1.  For higher security, you should encrypt your environment variables at rest.
 
-```shell
-touch .env && open .env
-```
+            1.  Set an encryption password for your environment variables.
 
-```text
-# RPC URLs
-MUMBAI_RPC_URL="https://polygon-mumbai.infura.io/v3/your_api_key"
-SEPOLIA_RPC_URL="https://sepolia.infura.io/v3/your_api_key"
+                  ```shell
+                  npx env-enc set-pw
+                  ```
 
-# Wallet private key
-PRIVATE_KEY="your_private_key"
-```
+            1.  Run `npx env-enc set` to configure a `.env.enc` file with the basic variables that you need to send your requests to the Polygon Mumbai network.
+
+                  - `MUMBAI_RPC_URL`: Set a URL for the Polygon Mumbai testnet. You can sign up for a personal endpoint from [Alchemy](https://www.alchemy.com/), [Infura](https://www.infura.io/), or another node provider service.
+
+                  - `SEPOLIA_RPC_URL`: Set a URL for the Ethereum Sepolia testnet. You can sign up for a personal endpoint from [Alchemy](https://www.alchemy.com/), [Infura](https://www.infura.io/), or another node provider service.
+
+                  - `PRIVATE_KEY`: Find the private key for your testnet wallet. If you use MetaMask, follow the instructions to [Export a Private Key](https://metamask.zendesk.com/hc/en-us/articles/360015289632-How-to-export-an-account-s-private-key). Set this in the `.env` file. **Note**: The Chainlink Functions hardhat starter kit uses your private key to sign any transactions you make such as deploying your consumer contract, creating subscriptions, and making requests.
+
+                  ```shell
+                  npx env-enc set
+                  ```
 
 Run the compile command for Hardhat or your framework of choice to make sure everything is configured correctly. You will see several compile warnings, but everything is correct if the Solidity files compile successfully. For this example, you can run `npx hardhat compile`.
 
@@ -113,7 +119,7 @@ Get the required libraries from the [Chainlink Functions Starter Kit](https://gi
 
    ```shell
    curl -L -o ../functions.tar.gz https://api.github.com/repos/smartcontractkit/functions-hardhat-starter-kit/tarball/main &&
-   tar -xf ../functions.tar.gz --strip=1 --wildcards smartcontractkit-functions-hardhat-starter-kit-*/contracts/dev smartcontractkit-functions-hardhat-starter-kit-*/contracts/test smartcontractkit-functions-hardhat-starter-kit-*/FunctionsSandboxLibrary smartcontractkit-functions-hardhat-starter-kit-*/contracts/FunctionsConsumer.sol
+   tar -xf ../functions.tar.gz --strip=1 -T <(echo -e "smartcontractkit-functions-hardhat-starter-kit-*/contracts/dev\nsmartcontractkit-functions-hardhat-starter-kit-*/contracts/test\nsmartcontractkit-functions-hardhat-starter-kit-*/FunctionsSandboxLibrary\nsmartcontractkit-functions-hardhat-starter-kit-*/contracts/FunctionsConsumer.sol")
    ```
 
 When you are done, you should have the necessary dependencies in the following directories:
@@ -123,6 +129,10 @@ When you are done, you should have the necessary dependencies in the following d
 - `FunctionsSandboxLibrary`
 
 Run the compile command to make sure all the dependencies are satisfied. Add missing dependencies or Hardhat configuration options as necessary. For Hardhat, run `npx hardhat compile`.
+
+```shell
+npx hardhat compile
+```
 
 ## Configure on-chain resources
 
@@ -242,8 +252,7 @@ Each request has the following components:
 
 - **Source code:** JavaScript code that will run on the DON.
 - **Arguments:** Optional arguments for the source code. The arguments that you need are defined in your source code. Depending on how you configured your source, you might not need any arguments at all.
-- **Secrets:** Optional secrets that your source code needs to access APIs or other interfaces. Secrets can be included inline with your request or hosted off-chain. See the [Using Secrets in Requests](/chainlink-functions/tutorials/api-use-secrets) and [Using Off-chain Secrets](/chainlink-functions/tutorials/api-use-secrets-offchain) tutorials for examples.
-- **Secrets location:** This tells the DON where to obtain your secrets.
+- **Secrets:** Optional secrets that your source code needs to access APIs or other interfaces. See the [Using Secrets in Requests](/chainlink-functions/tutorials/api-use-secrets) and [Using Off-chain Secrets](/chainlink-functions/tutorials/api-use-secrets-offchain) tutorials for examples.
 
 ### Create a request script
 
@@ -305,7 +314,7 @@ For this example, download some example source code and create a script to assem
    const oracleAbiPath = "./artifacts/contracts/dev/functions/FunctionsOracle.sol/FunctionsOracle.json"
    ```
 
-1. Secrets are not required for this example, but if you need them for a future example you can specify them in `const secrets`. You can set inline secrets or off-chain secrets in an array of URLs. Both options are encrypted before you send them to the DON. Note that the encryption process for off-chain secrets is different from inline secrets. The script takes care of either type. You must also tell the DON where to look for your secrets with `const secretsLocation`. Set `0` for inline or `1` for off-chain.
+1. Secrets are not required for this example.
 
 1. Save and close the script.
 
