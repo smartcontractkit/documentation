@@ -302,6 +302,35 @@ export const SIDEBAR = {
       ],
     },
     {
+      section: "TUTORIALS",
+      contents: [
+        {
+          title: "Batch-NFT-reveal",
+          url: "chainlink-automation/tutorials/batch-nft",
+        },
+        {
+          title: "Counting dNFT",
+          urL: "chainlink-automation/tutorials/counting-dnft",
+        },
+        {
+          title: "Creating Dynamic NFTs",
+          urL: "chainlink-automation/tutorials/dynamic-nft",
+        },
+        {
+          title: "EthBalanceMonitor",
+          urL: "chainlink-automation/tutorials/eth-balance",
+        },
+        {
+          title: "Vault Harvester",
+          urL: "chainlink-automation/tutorials/vault-harvester",
+        },
+        {
+          title: "VRF Subscription Monitor",
+          urL: "chainlink-automation/tutorials/vrf-sub-monitor",
+        },
+      ],
+    },
+    {
       section: "Guides",
       contents: [
         {
