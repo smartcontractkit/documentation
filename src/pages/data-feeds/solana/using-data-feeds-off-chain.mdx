@@ -14,18 +14,18 @@ metadata:
   description: "How to use Chainlink Data Feeds in your off-chain applications."
 ---
 
-import { CodeSample } from "@components"
-import { PackageManagerTabs } from "@components"
+import { Aside, CodeSample, PackageManagerTabs } from "@components"
 import { Tabs } from "@components/Tabs"
 
 Chainlink Data Feeds are the quickest way to access market prices for real-world assets. This guide demonstrates how to read Chainlink Data Feeds on the Solana Devnet using off-chain examples in the [Chainlink Solana Starter Kit](https://github.com/smartcontractkit/solana-starter-kit). To learn how to use Data Feeds in your on-chain Solana programs, see the [Using Data Feeds On-Chain](/data-feeds/solana/using-data-feeds-solana/) guide.
 
 To get the full list of Chainlink Data Feeds on Solana, see the [Solana Feeds](/data-feeds/price-feeds/addresses?network=solana/) page.
 
-:::warn[Select quality data feeds]
+<Aside type="danger" title="Select quality data feeds">
 
-Be aware of the quality of the data that you use. [Learn more about making responsible data quality decisions.](/data-feeds/selecting-data-feeds/)
-:::
+Be aware of the quality of the data that you use. [Learn more about making responsible data quality decisions](/data-feeds/selecting-data-feeds/).
+
+</Aside>
 
 ## The Chainlink Data Feeds Store Program
 
@@ -37,49 +37,49 @@ You can [add data feeds to an existing off-chain project](#adding-data-feeds-to-
 
 You can read Chainlink Data Feeds off-chain in your existing project by using the [Chainlink Solana NPM library](https://www.npmjs.com/package/@chainlink/solana-sdk).
 
-:::caution[ Reading feed data]
+<Aside type="caution" title="Reading feed data">
 
 Although you can directly query the data feed accounts, you should not rely on the memory layout always being the same as it currently is. Based on this, the recommendation is to always use the consumer library.
 
-:::
+</Aside>
 
 Install the necessary components and include the example code in your project. Optionally, you can run the example code by itself to learn how it works before you integrate it with your project.
 
-1. Install the latest Mainnet version of [the Solana CLI](https://github.com/solana-labs/solana/releases) and export the path to the CLI:
+1.  Install the latest Mainnet version of [the Solana CLI](https://github.com/solana-labs/solana/releases) and export the path to the CLI:
 
-   ```shell
-   sh -c "$(curl -sSfL https://release.solana.com/v1.13.6/install)" &&
-   export PATH="~/.local/share/solana/install/active_release/bin:$PATH"
-   ```
+    ```shell
+    sh -c "$(curl -sSfL https://release.solana.com/v1.13.6/install)" &&
+    export PATH="~/.local/share/solana/install/active_release/bin:$PATH"
+    ```
 
-   Run `solana --version` to make sure the Solana CLI is installed correctly.
+    Run `solana --version` to make sure the Solana CLI is installed correctly.
 
-   ```shell
-   solana --version
-   ```
+    ```shell
+    solana --version
+    ```
 
-1. Install [Node.js 14 or higher](https://nodejs.org/en/download/). Run `node --version` to verify which version you have installed:
+1.  Install [Node.js 14 or higher](https://nodejs.org/en/download/). Run `node --version` to verify which version you have installed:
 
-   ```shell
-   node --version
-   ```
+    ```shell
+    node --version
+    ```
 
-1. Change to your project directory or create a new directory.
+1.  Change to your project directory or create a new directory.
 
-   ```shell
-   mkdir off-chain-project && cd off-chain-project
-   ```
+    ```shell
+    mkdir off-chain-project && cd off-chain-project
+    ```
 
-1. Optionally [install Yarn](https://classic.yarnpkg.com/lang/en/docs/install/) to use as a package manager and initialize yarn if your project does not already have a `package.json` file:
+1.  Optionally [install Yarn](https://classic.yarnpkg.com/lang/en/docs/install/) to use as a package manager and initialize yarn if your project does not already have a `package.json` file:
 
-   ```shell
-   npm install -g yarn && yarn init
-   ```
+    ```shell
+    npm install -g yarn && yarn init
+    ```
 
-1. Add the [Anchor library](https://www.npmjs.com/package/@project-serum/anchor) to your project:
+1.  Add the [Anchor library](https://www.npmjs.com/package/@project-serum/anchor) to your project:
 
-   {/* prettier-ignore */}
-   <PackageManagerTabs>
+    {/* prettier-ignore */}
+    <PackageManagerTabs>
     <Fragment slot="yarn">
     ```shell yarn
     yarn add @project-serum/anchor
@@ -92,10 +92,10 @@ Install the necessary components and include the example code in your project. O
     </Fragment>
     </PackageManagerTabs>
 
-1. Add the [Chainlink Solana NPM library](https://www.npmjs.com/package/@chainlink/solana-sdk) to your project:
+1.  Add the [Chainlink Solana NPM library](https://www.npmjs.com/package/@chainlink/solana-sdk) to your project:
 
-   {/* prettier-ignore */}
-   <PackageManagerTabs>
+    {/* prettier-ignore */}
+    <PackageManagerTabs>
     <Fragment slot="yarn">
     ```shell yarn
     yarn add @chainlink/solana-sdk
@@ -108,49 +108,41 @@ Install the necessary components and include the example code in your project. O
     </Fragment>
     </PackageManagerTabs>
 
-1. Create a temporary Solana wallet to use for this example. Alternatively, if you have an existing wallet that you want to use, locate the path to your [keypair](https://docs.solana.com/terminology#keypair) file and use it as the keypair for the rest of this guide.
+1.  Create a temporary Solana wallet to use for this example. Alternatively, if you have an existing wallet that you want to use, locate the path to your [keypair](https://docs.solana.com/terminology#keypair) file and use it as the keypair for the rest of this guide.
 
-   ```shell
-   solana-keygen new --outfile ./id.json
-   ```
+    ```shell
+    solana-keygen new --outfile ./id.json
+    ```
 
-1. Set the [Anchor environment variables](https://www.twilio.com/blog/2017/01/how-to-set-environment-variables.html). Anchor uses these to determine which wallet to use and how to get a connection to a Solana cluster. Because this example does not generate or sign any transactions, no lamports are required. The wallet is required only by the Anchor library. For a list of available networks and endpoints, see the [Solana Cluster RPC Endpoints](https://docs.solana.com/cluster/rpc-endpoints) documentation.
+1.  Set the [Anchor environment variables](https://www.twilio.com/blog/2017/01/how-to-set-environment-variables.html). Anchor uses these to determine which wallet to use and how to get a connection to a Solana cluster. Because this example does not generate or sign any transactions, no lamports are required. The wallet is required only by the Anchor library. For a list of available networks and endpoints, see the [Solana Cluster RPC Endpoints](https://docs.solana.com/cluster/rpc-endpoints) documentation.
 
-   ```shell
-   export ANCHOR_PROVIDER_URL=https://api.devnet.solana.com &&
-   export ANCHOR_WALLET=./id.json
-   ```
+    ```shell
+    export ANCHOR_PROVIDER_URL=https://api.devnet.solana.com &&
+    export ANCHOR_WALLET=./id.json
+    ```
 
-1. Copy the sample code into your project. This example queries price data off-chain. By default, the script reads the SOL/USD feed, but you can change the `CHAINLINK_FEED_ADDRESS` variable to point to the [feed account addresses](/data-feeds/price-feeds/addresses?network=solana/) that you want to query. You can take the components of these code samples and integrate them with your existing project. Because these examples read data feeds without making any on-chain changes, no lamports are required to run them.
+1.  Copy the sample code into your project. This example queries price data off-chain. By default, the script reads the SOL/USD feed, but you can change the `CHAINLINK_FEED_ADDRESS` variable to point to the [feed account addresses](/data-feeds/price-feeds/addresses?network=solana/) that you want to query. You can take the components of these code samples and integrate them with your existing project. Because these examples read data feeds without making any on-chain changes, no lamports are required to run them.
 
-   {/* prettier-ignore */}
-   <Tabs client:visible>
-        <Fragment slot="tab.js">Javascript</Fragment>
-        <Fragment slot="tab.ts">Typescript</Fragment>
-        <Fragment slot="panel.js">
-        <CodeSample src="samples/Solana/PriceFeeds/off-chain-read.js" />
-        </Fragment>
-        <Fragment slot="panel.ts">
-        <CodeSample src="samples/Solana/PriceFeeds/off-chain-read.ts" />
-        </Fragment>
-    </Tabs>
+    <CodeSample src="samples/Solana/PriceFeeds/off-chain-read.js" />
 
-1. Run the example using the following command:
+    <CodeSample src="samples/Solana/PriceFeeds/off-chain-read.ts" />
 
-   {/* prettier-ignore */}
-   <Tabs client:visible>
-        <Fragment slot="tab.js">Javascript</Fragment>
-        <Fragment slot="tab.ts">Typescript</Fragment>
-        <Fragment slot="panel.js">
-        ```shell JavaScript
-        node javascript-example.js
-        ```
-        </Fragment>
-        <Fragment slot="panel.ts">
-        ```shell TypeScript
-        yarn add ts-node typescript && yarn ts-node typescript-example.ts
-        ```
-        </Fragment>
+    You can run these examples using the following commands:
+
+    {/* prettier-ignore */}
+    <Tabs client:visible>
+    <Fragment slot="tab.js">Javascript</Fragment>
+    <Fragment slot="tab.ts">Typescript</Fragment>
+    <Fragment slot="panel.js">
+    ```shell javascript
+    node javascript-example.js
+    ```
+    </Fragment>
+    <Fragment slot="panel.ts">
+    ```shell typescript
+    yarn add ts-node typescript && yarn ts-node typescript-example.ts
+    ```
+    </Fragment>
     </Tabs>
 
 To learn more about Solana and Anchor, see the [Solana Documentation](https://docs.solana.com/) and the [Anchor Documentation](https://book.anchor-lang.com/).
