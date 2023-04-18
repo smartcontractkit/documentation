@@ -32,7 +32,7 @@ See the [Rate and Volatility Feed Addresses](/data-feeds/rates-feeds/addresses) 
 
 ## ETH Staking APR
 
-ETH Staking APR feeds provide the estimated returns over specific measurement periods. They reflect the rate of return for staking historically over 30-day and 90-day periods. Data providers use off-chain computation to calculate the rate of return from staking, reach consensus on the APR, and write the results on-chain to be used by decentralized protocols and Web 3 applications.
+ETH Staking APR feeds provide the estimated returns for staking ETH as a validator to secure the Ethereum network. The data reflects the rate of return historically over 30-day and 90-day periods. Data providers use off-chain computation to calculate the rate of return from staking, reach consensus on the APR, and write the results on-chain to be used by decentralized protocols and Web 3 applications.
 
 See the [Rate and Volatility Feed Addresses](/data-feeds/rates-feeds/addresses) page to find the ETH Staking APR feeds that are currently available.
 
