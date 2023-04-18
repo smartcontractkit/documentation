@@ -122,7 +122,7 @@ Ganache is a mock testnet. Although you can run nodes on Ganache, it is not offi
    HTTPSPort = 0
 
    [[EVM]]
-   ChainID = '11155111'
+   ChainID = '5'
 
    [[EVM.Nodes]]
    Name = 'Goerli'
