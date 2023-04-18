@@ -1,6 +1,6 @@
 import { ChainMetadata } from "../api"
 
-type ChainTags = ("price" | "proofOfReserve" | "nftFloorPrice" | "misc")[]
+type ChainTags = ("price" | "proofOfReserve" | "nftFloorPrice" | "index" | "rate" | "blockchain")[]
 export interface ChainNetwork {
   name: string
   explorerUrl: string
@@ -25,14 +25,14 @@ export const CHAINS: Chain[] = [
     title: "Data Feeds",
     img: "/assets/chains/ethereum.svg",
     networkStatusUrl: "https://ethstats.dev/",
-    tags: ["price", "proofOfReserve", "nftFloorPrice", "misc"],
+    tags: ["price", "proofOfReserve", "nftFloorPrice", "index", "rate", "blockchain"],
     networks: [
       {
         name: "Ethereum Mainnet",
         explorerUrl: "https://etherscan.io/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory-2or4hj8xd-chainlinklabs.vercel.app/feeds-mainnet.json",
-        tags: ["price", "proofOfReserve", "nftFloorPrice", "misc"],
+        tags: ["price", "proofOfReserve", "nftFloorPrice", "index", "rate", "blockchain"],
       },
       {
         name: "Sepolia Testnet",
@@ -40,7 +40,7 @@ export const CHAINS: Chain[] = [
         networkType: "testnet",
         rddUrl:
           "https://reference-data-directory-2or4hj8xd-chainlinklabs.vercel.app/feeds-ethereum-testnet-sepolia.json",
-        tags: ["price", "misc"],
+        tags: ["price", "index", "rate", "blockchain"],
       },
       {
         name: "Goerli Testnet",
@@ -82,14 +82,14 @@ export const CHAINS: Chain[] = [
     label: "Polygon (Matic)",
     img: "/assets/chains/polygon.svg",
     networkStatusUrl: "https://polygon.io/system",
-    tags: ["price", "proofOfReserve", "misc"],
+    tags: ["price", "proofOfReserve", "index", "rate", "blockchain"],
     networks: [
       {
         name: "Polygon Mainnet",
         explorerUrl: "https://polygonscan.com/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-matic-mainnet.json",
-        tags: ["price", "proofOfReserve", "misc"],
+        tags: ["price", "proofOfReserve", "index", "rate", "blockchain"],
       },
       {
         name: "Mumbai Testnet",
@@ -147,14 +147,14 @@ export const CHAINS: Chain[] = [
     label: "Fantom",
     img: "/assets/chains/fantom.svg",
     networkStatusUrl: "https://ftmscan.com/",
-    tags: ["price", "misc"],
+    tags: ["price", "index", "rate", "blockchain"],
     networks: [
       {
         name: "Fantom Mainnet",
         explorerUrl: "https://ftmscan.com/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-fantom-mainnet.json",
-        tags: ["price", "misc"],
+        tags: ["price", "index", "rate", "blockchain"],
       },
       {
         name: "Fantom Testnet",
@@ -171,14 +171,14 @@ export const CHAINS: Chain[] = [
     title: "Arbitrum Data Feeds",
     img: "/assets/chains/arbitrum.svg",
     networkStatusUrl: "https://arbiscan.freshstatus.io/",
-    tags: ["price", "misc"],
+    tags: ["price", "index", "rate", "blockchain"],
     networks: [
       {
         name: "Arbitrum Mainnet",
         explorerUrl: "https://arbiscan.io/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-arbitrum-1.json",
-        tags: ["price", "misc"],
+        tags: ["price", "index", "rate", "blockchain"],
       },
       {
         name: "Arbitrum Goerli",
@@ -212,14 +212,14 @@ export const CHAINS: Chain[] = [
     title: "Optimism Data Feeds",
     img: "/assets/chains/optimism.svg",
     networkStatusUrl: "https://status.optimism.io/",
-    tags: ["price", "misc"],
+    tags: ["price", "index", "rate", "blockchain"],
     networks: [
       {
         name: "Optimism Mainnet",
         explorerUrl: "https://optimistic.etherscan.io/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-optimism-1.json",
-        tags: ["price", "misc"],
+        tags: ["price", "index", "rate", "blockchain"],
       },
       {
         name: "Optimism Goerli",
@@ -347,98 +347,84 @@ export const ALL_CHAINS: Chain[] = [
     title: "All chains",
     img: "/assets/chains/ethereum.svg",
     networkStatusUrl: "https://ethstats.dev/",
-    tags: ["price", "proofOfReserve", "nftFloorPrice", "misc"],
     networks: [
       {
         name: "Ethereum Mainnet",
         explorerUrl: "https://etherscan.io/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-mainnet.json",
-        tags: ["price", "proofOfReserve", "nftFloorPrice", "misc"],
       },
       {
         name: "BNB Chain Mainnet",
         explorerUrl: "https://bscscan.com/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-bsc-mainnet.json",
-        tags: ["price", "proofOfReserve", "misc"],
       },
       {
         name: "Polygon Mainnet",
         explorerUrl: "https://polygonscan.com/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-matic-mainnet.json",
-        tags: ["price", "proofOfReserve", "misc"],
       },
       {
         name: "Gnosis Chain Mainnet",
         explorerUrl: "https://gnosisscan.io/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-xdai-mainnet.json",
-        tags: ["price", "misc"],
       },
       {
         name: "Avalanche Mainnet",
         explorerUrl: "https://snowtrace.io/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-avalanche-mainnet.json",
-        tags: ["price", "proofOfReserve", "misc"],
       },
       {
         name: "Fantom Mainnet",
         explorerUrl: "https://ftmscan.com/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-fantom-mainnet.json",
-        tags: ["price", "misc"],
       },
       {
         name: "Arbitrum Mainnet",
         explorerUrl: "https://arbiscan.io/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-arbitrum-1.json",
-        tags: ["price", "misc"],
       },
       {
         name: "Harmony Mainnet",
         explorerUrl: "https://explorer.harmony.one/#/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-harmony-mainnet-0.json",
-        tags: ["price", "misc"],
       },
       {
         name: "Optimism Mainnet",
         explorerUrl: "https://optimistic.etherscan.io/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-optimism-1.json",
-        tags: ["price", "misc"],
       },
       {
         name: "Moonriver Mainnet",
         explorerUrl: "https://moonriver.moonscan.io/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-polkadot-mainnet-moonbeam.json",
-        tags: ["price", "misc"],
       },
       {
         name: "Moonbeam Mainnet",
         explorerUrl: "https://moonscan.io/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-kusama-mainnet-moonriver.json",
-        tags: ["price", "misc"],
       },
       {
         name: "Metis Mainnet",
         explorerUrl: "https://andromeda-explorer.metis.io/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-andromeda-1.json",
-        tags: ["price", "misc"],
       },
       {
         name: "Solana Mainnet",
         explorerUrl: "https://solscan.io/account/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-solana-mainnet.json",
-        tags: ["price", "misc"],
       },
     ],
     label: "All",

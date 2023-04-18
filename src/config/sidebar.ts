@@ -152,12 +152,32 @@ export const SIDEBAR = {
           ],
         },
         {
-          title: "Misc Feeds",
-          url: "data-feeds/misc-feeds",
+          title: "Index Feeds",
+          url: "data-feeds/index-feeds",
           children: [
             {
-              title: "Misc Feed Addresses",
-              url: "data-feeds/misc-feeds/addresses",
+              title: "Index Feed Addresses",
+              url: "data-feeds/index-feeds/addresses",
+            },
+          ],
+        },
+        {
+          title: "Rate Feeds",
+          url: "data-feeds/rate-feeds",
+          children: [
+            {
+              title: "Rate Feed Addresses",
+              url: "data-feeds/rate-feeds/addresses",
+            },
+          ],
+        },
+        {
+          title: "Blockchain Feeds",
+          url: "data-feeds/blockchain-feeds",
+          children: [
+            {
+              title: "Blockchain Feed Addresses",
+              url: "data-feeds/blockchain-feeds/addresses",
             },
           ],
         },

@@ -10,7 +10,7 @@ import { useGetChainMetadata } from "./useGetChainMetadata"
 import { ChainMetadata } from "../api"
 import useQueryString from "~/hooks/useQueryString"
 
-export type DataFeedType = "price" | "por" | "nftFloor" | "misc"
+export type DataFeedType = "price" | "por" | "nftFloor" | "index" | "rate" | "blockchain"
 export const FeedList = ({
   dataFeedType = "price",
   ecosystem = "",
@@ -35,11 +35,12 @@ export const FeedList = ({
   useEffect(() => {
     updateTableOfContents()
   }, [chainMetadata.processedData])
-
   const isPrice = dataFeedType === "price"
   const isPor = dataFeedType === "por"
   const isNftFloor = dataFeedType === "nftFloor"
-  const isMisc = dataFeedType === "misc"
+  const isIndex = dataFeedType === "index"
+  const isRate = dataFeedType === "rate"
+  const isBlockchain = dataFeedType === "blockchain"
   const isDeprecating = ecosystem === "deprecating"
   let netCount = 0
 
@@ -60,7 +61,12 @@ export const FeedList = ({
 
                       if (isNftFloor) return chain.tags?.includes("nftFloorPrice")
 
-                      if (isMisc) return chain.tags?.includes("misc")
+                      if (isIndex) return chain.tags?.includes("index")
+
+                      if (isRate) return chain.tags?.includes("rate")
+
+                      if (isBlockchain) return chain.tags?.includes("blockchain")
+                      
                     })
                     .map((chain) => (
                       <button
@@ -120,7 +126,11 @@ export const FeedList = ({
 
               if (isNftFloor) return network.tags?.includes("nftFloorPrice")
 
-              if (isMisc) return network.tags?.includes("misc")
+              if (isIndex) return network.tags?.includes("index")
+
+              if (isRate) return network.tags?.includes("rate")
+
+              if (isBlockchain) return network.tags?.includes("blockchain")
 
               return true
             })

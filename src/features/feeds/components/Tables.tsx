@@ -5,51 +5,6 @@ import { clsx } from "../../../lib"
 import { ChainNetwork } from "../data/chains"
 import tableStyles from "./Tables.module.css"
 
-// Feed type definitions
-const feedDefs = {
-  "price": {
-    "productType": [
-      "Price",
-      "Index"
-    ],
-    "productSubType": [
-      "Reference",
-      "Calculated"
-    ]
-  },
-  "por": {
-    "productType": [
-      "Proof of Reserve"
-    ],
-  },
-  "nftFloor": {
-    "productType": [
-      "Price"
-    ],
-    "productSubType": [
-      "Floor"
-    ],
-    "assetSubClass": [
-      "NFT"
-    ]
-  },
-  "misc": {
-    "productType": [
-      "Index",
-      "Rates"
-    ],
-    "productSubType": [
-      "IRC",
-      "Rvol",
-      "Staking"
-    ],
-    "assetClass": [
-      "Index"
-    ]
-  }
-}
-
-
 const feedCategories = {
   verified: (
     <span className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")} title="Verified">
@@ -345,38 +300,42 @@ export const MainnetTable = ({
   const isPrice = dataFeedType === "price"
   const isPor = dataFeedType === "por"
   const isNftFloor = dataFeedType === "nftFloor"
-  const isMisc = dataFeedType === "misc"
+  const isIndex = dataFeedType === "index"
+  const isRate = dataFeedType === "rate"
+  const isBlockchain = dataFeedType === "blockchain"
   const filteredMetadata = network.metadata
     .sort((a, b) => (a.name < b.name ? -1 : 1))
     .filter((chain) => {
       if (isDeprecating) return !!chain.docs.shutdownDate
 
-      // Price feeds require 
       if (isPrice) return !!(
-        feedDefs.price.productType.includes(chain.docs.productType) &&
-        feedDefs.price.productSubType.includes(chain.docs.productSubType) &&
-        chain.docs.assetClass !== "Index"
+        chain.docs.productType === "Price" &&
+        chain.docs.assetSubClass !== "NFT"
         )
 
       // PoR feeds require only the Proof of Reserve product type
       if (isPor) return !!(
-        feedDefs.por.productType.includes(chain.docs.productType)
+        chain.docs.productType === "Proof of Reserve"
         )
       
       // NFT Floor price feeds must include all three properties
       if (isNftFloor) return !!(
-        feedDefs.nftFloor.productType.includes(chain.docs.productType) &&
-        feedDefs.nftFloor.productSubType.includes(chain.docs.productSubType) &&
-        feedDefs.nftFloor.assetSubClass.includes(chain.docs.assetSubClass)
+        chain.docs.productType === "Price" &&
+        chain.docs.assetSubClass === "NFT"
         )
 
-      
-      if (isMisc) return (
-        feedDefs.misc.productType.includes(chain.docs.productType) &&
-        feedDefs.misc.productSubType.includes(chain.docs.productSubType) ||
-        feedDefs.misc.assetClass.includes(chain.docs.assetClass) ||
-        ["Marketcap"].includes(chain.docs.productSubType)
+      if (isIndex) return (
+        chain.docs.productType === "Index"
         )
+      
+      if (isRate) return (
+        chain.docs.productType === "Rates"
+        )
+
+      if (isBlockchain) return (
+        chain.docs.productType === "Blockchain"
+        )
+
     })
   return (
     <div style={{ overflowX: "auto" }}>
@@ -384,14 +343,18 @@ export const MainnetTable = ({
         {isPrice && <PriceTHead showExtraDetails={showExtraDetails} />}
         {isPor && <ProofOfReserveTHead showExtraDetails={showExtraDetails} />}
         {isNftFloor && <NftFloorTHead showExtraDetails={showExtraDetails} />}
-        {isMisc && <MiscTHead showExtraDetails={showExtraDetails} />}
+        {isIndex && <MiscTHead showExtraDetails={showExtraDetails} />}
+        {isRate && <MiscTHead showExtraDetails={showExtraDetails} />}
+        {isBlockchain && <MiscTHead showExtraDetails={showExtraDetails} />}
         <tbody>
           {filteredMetadata.map((proxy) => (
             <>
               {isPrice && <PriceTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
               {isPor && <ProofOfReserveTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
               {isNftFloor && <NftFloorTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
-              {isMisc && <MiscTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
+              {isIndex && <MiscTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
+              {isRate && <MiscTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
+              {isBlockchain && <MiscTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
             </>
           ))}
         </tbody>
@@ -414,25 +377,37 @@ export const TestnetTable = ({
   const isPrice = dataFeedType === "price"
   const isPor = dataFeedType === "por"
   const isNftFloor = dataFeedType === "nftFloor"
-  const isMisc = dataFeedType === "misc"
+  const isIndex = dataFeedType === "index"
+  const isRate = dataFeedType === "rate"
+  const isBlockchain = dataFeedType === "blockchain"
   
   const filteredMetadata = network.metadata
     .sort((a, b) => (a.name < b.name ? -1 : 1))
     .filter((chain) => {
 
+      if (isPrice) return !!(!chain.docs.nftFloorUnits &&
+        !chain.docs.porType && 
+        chain.docs.productType !== "Index" &&
+        chain.docs.productType !== "Rates"
+        )
+
       if (isPor) return !!chain.docs.porType
-      if (isNftFloor) return !!chain.docs.nftFloorUnits
+      
+      if (isNftFloor) return chain.docs.nftFloorUnits
 
-      if (isMisc) return (
-        feedDefs.misc.productType.includes(chain.docs.productType) &&
-        feedDefs.misc.productSubType.includes(chain.docs.productSubType)
+      if (isIndex) return (
+        chain.docs.productType === "Index" ||
+        chain.docs.productType === "Price"
+        )
+      
+      if (isRate) return (
+        chain.docs.productType === "Rates"
         )
 
-      return !chain.docs.nftFloorUnits && !chain.docs.porType &&
-      !(
-        feedDefs.misc.productType.includes(chain.docs.productType) &&
-        feedDefs.misc.productSubType.includes(chain.docs.productSubType)
+      if (isBlockchain) return (
+        chain.docs.productType === "Blockchain"
         )
+
     })
 
   return (
@@ -441,7 +416,9 @@ export const TestnetTable = ({
         {isPrice && <PriceTHead showExtraDetails={showExtraDetails} isTestnet />}
         {isPor && <ProofOfReserveTHead showExtraDetails={showExtraDetails} isTestnet />}
         {isNftFloor && <NftFloorTHead showExtraDetails={showExtraDetails} isTestnet />}
-        {isMisc && <MiscTHead showExtraDetails={showExtraDetails} isTestnet />}
+        {isIndex && <MiscTHead showExtraDetails={showExtraDetails} isTestnet />}
+        {isRate && <MiscTHead showExtraDetails={showExtraDetails} isTestnet />}
+        {isBlockchain && <MiscTHead showExtraDetails={showExtraDetails} isTestnet />}
         <tbody>
           {filteredMetadata.map((proxy) => (
             <>
@@ -454,7 +431,13 @@ export const TestnetTable = ({
               {isNftFloor && (
                 <NftFloorTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} isTestnet />
               )}
-              {isMisc && (
+              {isIndex && (
+                <MiscTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} isTestnet />
+              )}
+              {isRate && (
+                <MiscTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} isTestnet />
+              )}
+              {isBlockchain && (
                 <MiscTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} isTestnet />
               )}
             </>
