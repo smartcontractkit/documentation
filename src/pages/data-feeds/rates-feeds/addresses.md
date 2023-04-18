@@ -2,6 +2,7 @@
 layout: ../../../layouts/MainLayout.astro
 title: "Rate and Volatility Feed Addresses"
 section: dataFeeds
+datafeedtype: rates
 metadata:
   title: "Rate and Volatility Feed Addresses"
   description: "Address lists for Rate and Volatility feeds."

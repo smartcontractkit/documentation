@@ -2,6 +2,7 @@
 layout: ../../../layouts/MainLayout.astro
 title: "Proof of Reserve Feed Addresses"
 section: dataFeeds
+datafeedtype: por
 metadata:
   title: "Proof of Reserve Feed Addresses"
   description: "Chainlink Proof of Reserve Feed Addresses"
