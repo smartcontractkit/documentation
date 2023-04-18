@@ -11,6 +11,30 @@ metadata:
 
 You can find a list of release notes for Chainlink nodes in the [smartcontractkit GitHub repository](https://github.com/smartcontractkit/chainlink/releases). Docker images are available in the [Chainlink Docker hub](https://hub.docker.com/r/smartcontract/chainlink/tags).
 
+## Changes in v2.0.0 nodes
+
+**[v2.0.0 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v2.0.0)**
+
+### Added
+
+- Add OCR2 Plugin selection for FMS
+- Added kebab case aliases for the following flags:
+  - `evm-chain-id` alias for `evmChainID` in commands: `chainlink blocks replay`, `chainlink forwarders track`, `chainlink keys ... chain`
+  - `old-password` alias for `oldpassword` in commands: `chainlink keys ... import`
+  - `new-password` alias for `newpassword` in commands: `chainlink keys ... export`
+  - `new-role` alias for `newrole` in commands: `admin users chrole`
+  - `set-next-nonce` alias for `setNextNonce` in commands: `chainlink keys ... chain`
+
+### Changed
+
+- TOML configuration and secrets are now scoped to `chainlink node` command rather than being global flags.
+- TOML configuration validation has been moved from `chainlink config validate` to `chainlink node validate`.
+- Move `chainlink node {status,profile}` to `chainlink admin {status,profile}`.
+
+### Removed
+
+- Configuration with legacy environment variables is no longer supported. TOML is required.
+
 ## Changes in v1.13.0 nodes
 
 **[v1.13.0 release notes](https://github.com/smartcontractkit/chainlink/releases/tag/v1.13.0)**
