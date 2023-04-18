@@ -10,7 +10,7 @@ import { useGetChainMetadata } from "./useGetChainMetadata"
 import { ChainMetadata } from "../api"
 import useQueryString from "~/hooks/useQueryString"
 
-export type DataFeedType = "default" | "por" | "nftFloor"
+export type DataFeedType = "default" | "por" | "nftFloor" | "rates"
 export const FeedList = ({
   dataFeedType = "default",
   ecosystem = "",
@@ -38,7 +38,8 @@ export const FeedList = ({
 
   const isPor = dataFeedType === "por"
   const isNftFloor = dataFeedType === "nftFloor"
-  const isDefault = !isPor && !isNftFloor
+  const isRates = dataFeedType === "rates"
+  const isDefault = !isPor && !isNftFloor && !isRates
   const isDeprecating = ecosystem === "deprecating"
   let netCount = 0
 
@@ -55,6 +56,8 @@ export const FeedList = ({
                       if (isPor) return chain.tags?.includes("proofOfReserve")
 
                       if (isNftFloor) return chain.tags?.includes("nftFloorPrice")
+
+                      if (isRates) return chain.tags?.includes("rates")
 
                       return chain.tags?.includes("default")
                     })
@@ -113,6 +116,8 @@ export const FeedList = ({
               if (isPor) return network.tags?.includes("proofOfReserve")
 
               if (isNftFloor) return network.tags?.includes("nftFloorPrice")
+
+              if (isRates) return network.tags?.includes("rates")
 
               return true
             })

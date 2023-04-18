@@ -8,6 +8,8 @@ interface Docs {
   hidden?: boolean
   porAuditor?: string
   porType?: string
+  productSubType?: string
+  productType?: string
   shutdownDate?: string
 }
 export interface ChainMetadata {

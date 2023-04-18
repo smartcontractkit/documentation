@@ -12,7 +12,7 @@ whatsnext:
   }
 ---
 
-Chainlink provides data feeds on the [Solana](https://solana.com/) network. Chainlink data feeds on Solana employ [Off-Chain Reporting (OCR)](/architecture-overview/off-chain-reporting/) to aggregate data from data providers who pull from both centralized and decentralized exchanges. Chainlink’s Solana deployment has no dependencies on external blockchain networks such as Ethereum. In Solana, storage and smart contract logic are separate. Programs store all the logic similar to an EVM (Ethereum) smart contract. The accounts store all the data. Compared to Solidity, the combination of an account and a program is equivalent to a smart contract on an EVM chain. State and logic are separate in Solana.
+Chainlink provides data feeds on the [Solana](https://solana.com/) network. Chainlink data feeds on Solana employ [Off-Chain Reporting (OCR)](/architecture-overview/off-chain-reporting?parent=dataFeeds) to aggregate data from data providers who pull from both centralized and decentralized exchanges. Chainlink’s Solana deployment has no dependencies on external blockchain networks such as Ethereum. In Solana, storage and smart contract logic are separate. Programs store all the logic similar to an EVM (Ethereum) smart contract. The accounts store all the data. Compared to Solidity, the combination of an account and a program is equivalent to a smart contract on an EVM chain. State and logic are separate in Solana.
 
 Solana programs are stateless, so you don't always need to deploy your program to the network to test it. You can deploy and test your programs on a [Solana Test Validator](https://docs.solana.com/developing/test-validator). However, to use Chainlink products on Solana, you must deploy your contract on-chain to one of the [supported Solana clusters](#chainlink-products-and-solana-clusters).
 
@@ -33,7 +33,7 @@ Solana provides a [Testnet cluster](https://docs.solana.com/clusters#testnet) th
 
 See the [Solana Data Feeds](/data-feeds/price-feeds/addresses?network=solana) page for a full list of Chainlink data feeds that are available on Solana.
 
-To learn when more Chainlink services become available, follow us on [Twitter](https://twitter.com/chainlink) or sign up for our [mailing list](/resources/developer-communications/).
+To learn when more Chainlink services become available, follow us on [Twitter](https://twitter.com/chainlink) or sign up for our [mailing list](/resources/developer-communications?parent=dataFeeds).
 
 ## Languages, tools, and frameworks
 

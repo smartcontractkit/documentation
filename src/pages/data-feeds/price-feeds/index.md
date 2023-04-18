@@ -6,8 +6,9 @@ title: "Price Feeds"
 isIndex: true
 whatsnext:
   {
-    "Using Data Feeds on EVM Chains": "/data-feeds/using-data-feeds/",
-    "Getting Historical Price Data": "/data-feeds/historical-data/",
+    "Learn how to read answers from Data Feeds": "/data-feeds/price-feeds/",
+    "Learn how to get Historical Price Data": "/data-feeds/historical-data/",
+    "Find contract addresses for Price Feeds": "/data-feeds/price-feeds/addresses/",
     "Data Feeds API Reference": "/data-feeds/api-reference/",
   }
 metadata:
@@ -15,4 +16,4 @@ metadata:
   description: "How to use Chainlink Data Feeds in your smart contracts."
 ---
 
-Many Chainlink Data Feeds provide data that is aggregated from many data sources by a decentralized set of independent node operators. The [Decentralized Data Model](/architecture-overview/architecture-decentralized-model/) describes this in detail. However, there are some exceptions where data for a feed can come only from a single data source or where data values are calculated. Read the [Selecting Quality Data Feeds](/data-feeds/selecting-data-feeds) to learn about the different data feed categories and how to identify them.
+Many Chainlink Data Feeds provide data that is aggregated from many data sources by a decentralized set of independent node operators. The [Decentralized Data Model](/architecture-overview/architecture-decentralized-model?parent=dataFeeds) describes this in detail. However, there are some exceptions where data for a feed can come only from a single data source or where data values are calculated. Read the [Selecting Quality Data Feeds](/data-feeds/selecting-data-feeds) to learn about the different data feed categories and how to identify them.

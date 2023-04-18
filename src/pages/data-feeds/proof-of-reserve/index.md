@@ -5,13 +5,19 @@ date: Last Modified
 title: "Proof of Reserve Feeds"
 isIndex: true
 permalink: "docs/data-feeds/proof-of-reserve/"
-whatsnext: { "Find contract addresses for Proof of Reserve Feeds": "/data-feeds/proof-of-reserve/addresses/" }
+whatsnext:
+  {
+    "Learn how to read answers from Data Feeds": "/data-feeds/price-feeds/",
+    "Learn how to get Historical Price Data": "/data-feeds/historical-data/",
+    "Find contract addresses for Proof of Reserve Feeds": "/data-feeds/proof-of-reserve/addresses/",
+    "Data Feeds API Reference": "/data-feeds/api-reference/",
+  }
 setup: |
   import ClickToZoom from "@components/ClickToZoom.astro"
   import { Aside } from "~/components"
 ---
 
-Chainlink Proof of Reserve Feeds provide the status of the reserves for several assets. You can use these feeds the same way that you read other Data Feeds. Specify the [Proof of Reserve Feed Address](/data-feeds/proof-of-reserve/addresses/) that you want to read instead of specifying a Price Feed address. See the [Using Data Feeds](/data-feeds/using-data-feeds/) page to learn more.
+Chainlink Proof of Reserve Feeds provide the status of the reserves for several assets. You can read these feeds the same way that you read other Data Feeds. Specify the [Proof of Reserve Feed Address](/data-feeds/proof-of-reserve/addresses/) that you want to read instead of specifying a Price Feed address. See the [Using Data Feeds](/data-feeds/using-data-feeds/) page to learn more.
 
 To find a list of available Proof of Reserve Feeds, see the [Proof of Reserve Feed Addresses](/data-feeds/proof-of-reserve/addresses/) page.
 
