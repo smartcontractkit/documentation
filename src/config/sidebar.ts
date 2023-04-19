@@ -306,23 +306,23 @@ export const SIDEBAR = {
         },
         {
           title: "Counting dNFT",
-          urL: "chainlink-automation/tutorials/counting-dnft",
+          url: "chainlink-automation/tutorials/counting-dnft",
         },
         {
           title: "Creating Dynamic NFTs",
-          urL: "chainlink-automation/tutorials/dynamic-nft",
+          url: "chainlink-automation/tutorials/dynamic-nft",
         },
         {
           title: "EthBalanceMonitor",
-          urL: "chainlink-automation/tutorials/eth-balance",
+          url: "chainlink-automation/tutorials/eth-balance",
         },
         {
           title: "Vault Harvester",
-          urL: "chainlink-automation/tutorials/vault-harvester",
+          url: "chainlink-automation/tutorials/vault-harvester",
         },
         {
           title: "VRF Subscription Monitor",
-          urL: "chainlink-automation/tutorials/vrf-sub-monitor",
+          url: "chainlink-automation/tutorials/vrf-sub-monitor",
         },
       ],
     },
