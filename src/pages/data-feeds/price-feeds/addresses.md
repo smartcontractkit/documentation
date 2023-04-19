@@ -10,4 +10,4 @@ setup: |
   import FeedPage from "@features/feeds/components/FeedPage.astro"
 ---
 
-<FeedPage  />
+<FeedPage />
