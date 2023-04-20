@@ -9,7 +9,7 @@ export const priceFeedAddresses = {
   },
 }
 
-export const registryAdddresses = {
+export const registryAddresses = {
   "link-usd": {
     baseSymbol: "LINK",
     quoteSymbol: "USD",
