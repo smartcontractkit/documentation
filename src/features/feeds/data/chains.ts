@@ -38,8 +38,7 @@ export const CHAINS: Chain[] = [
         name: "Sepolia Testnet",
         explorerUrl: "https://sepolia.etherscan.io/address/%s",
         networkType: "testnet",
-        rddUrl:
-          "https://reference-data-directory-97twdpl0w-chainlinklabs.vercel.app/feeds-ethereum-testnet-sepolia.json",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-sepolia.json",
         tags: ["rates"],
       },
       {
