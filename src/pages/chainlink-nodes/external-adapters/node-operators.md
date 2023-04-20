@@ -47,7 +47,7 @@ Since `soccer-data` is a bridge task, each node that has this job defined needs 
 
 ## Testing External Adapters and Bridges
 
-The easiest way to test if your external adapter is working is to use a [Webhook Job](/chainlink-nodes/oracle-jobs/job-types/webhook/).
+The easiest way to test if your external adapter is working is to use a [Webhook Job](/chainlink-nodes/oracle-jobs/all-jobs/#webhook-jobs).
 
 As an example, assume you have an external adapter named `soccer-data` that is registered in the `bridges` section and it takes one parameter named `playerId`. In solidity, you would pass the parameter with the following request:
 
@@ -58,7 +58,7 @@ request.add("playerId","12345678")
 
 How can you test the adapter on your node?
 
-The easiest way is to setup a [Webhook Job](/chainlink-nodes/oracle-jobs/job-types/webhook/) that uses the external adapter, and manually set the parameter.
+The easiest way is to setup a [Webhook Job](/chainlink-nodes/oracle-jobs/all-jobs/#webhook-jobs/) that uses the external adapter, and manually set the parameter.
 
 :::note
 You might need to set the [configuration variable](/chainlink-nodes/v1/configuration/) `FEATURE_WEBHOOK_V2=true` in your `.env` file.

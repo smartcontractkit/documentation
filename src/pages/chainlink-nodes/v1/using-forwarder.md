@@ -26,12 +26,12 @@ Also, you must be familiar with these concepts:
 In this tutorial, you will configure your Chainlink node with a simple transaction-sending strategy on the Sepolia testnet:
 
 - Your node has two externally owned accounts (EOA).
-- Your node has two [direct request](/chainlink-nodes/oracle-jobs/job-types/direct_request) jobs. One job returns _uint256_, and the other returns _string_.
+- Your node has two [direct request](/chainlink-nodes/oracle-jobs/all-jobs/#direct-request-jobs) jobs. One job returns _uint256_, and the other returns _string_.
 - Each job uses a different EOA.
 - You use a [forwarder](/chainlink-nodes/contracts/forwarder) contract to fulfill requests with two EOAs that look like a single address.
 
 :::note
-Here you are using a forwarder contract and two EOAs for two [direct request](/chainlink-nodes/oracle-jobs/job-types/direct_request) jobs. You can use the same strategy for different job types, VRF and OCR. Supporting different job types on the same Chainlink node reduces your infrastructure and maintenance costs.
+Here you are using a forwarder contract and two EOAs for two [direct request](/chainlink-nodes/oracle-jobs/all-jobs/#direct-request-jobs) jobs. You can use the same strategy for different job types, VRF and OCR. Supporting different job types on the same Chainlink node reduces your infrastructure and maintenance costs.
 :::
 
 ## Check your Chainlink node is running

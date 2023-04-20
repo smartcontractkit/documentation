@@ -91,7 +91,7 @@ To try a real-life example, feel free to follow along with the <a href="https://
 <a href="https://github.com/smartcontractkit/chainlink/wiki/External-Initiators">Additional external initiator reference</a>
 
 :::note
-The External Initiator can only initiate [webhook jobs](/chainlink-nodes/oracle-jobs/job-types/webhook) that have been linked to it. Trying to initiate a job that is not linked will give an unauthorised error.
+The External Initiator can only initiate [webhook jobs](/chainlink-nodes/oracle-jobs/all-jobs/#webhook-jobs) that have been linked to it. Trying to initiate a job that is not linked will give an unauthorised error.
 :::
 
 ## Deleting an external initiator
