@@ -12,6 +12,7 @@ whatsnext:
   }
 ---
 
+import { Tabs } from "@components/Tabs"
 import { Aside, CodeSample } from "@components"
 import ChainlinkFunctions from "@features/chainlink-functions/common/ChainlinkFunctions.astro"
 
@@ -117,10 +118,22 @@ Get the required libraries from the [Chainlink Functions Starter Kit](https://gi
 
 1. Run the `curl` command to download the latest tarball from the starter kit `main` branch and then run `tar -xf` with the `--strip` flag to extract only the files you need. The following command combines both steps:
 
+   <Tabs client:visible>
+   <Fragment slot="tab.1">MacOS</Fragment>
+   <Fragment slot="tab.2">Linux</Fragment>
+   <Fragment slot="panel.1">
    ```shell
    curl -L -o ../functions.tar.gz https://api.github.com/repos/smartcontractkit/functions-hardhat-starter-kit/tarball/main &&
    tar -xf ../functions.tar.gz --strip=1 -T <(echo -e "smartcontractkit-functions-hardhat-starter-kit-*/contracts/dev\nsmartcontractkit-functions-hardhat-starter-kit-*/contracts/test\nsmartcontractkit-functions-hardhat-starter-kit-*/FunctionsSandboxLibrary\nsmartcontractkit-functions-hardhat-starter-kit-*/contracts/FunctionsConsumer.sol")
    ```
+   </Fragment>
+   <Fragment slot="panel.2">
+   ```shell Linux
+   curl -L -o ../functions.tar.gz https://api.github.com/repos/smartcontractkit/functions-hardhat-starter-kit/tarball/main &&
+   tar -xf ../functions.tar.gz --strip=1 --wildcards smartcontractkit-functions-hardhat-starter-kit-*/contracts/dev smartcontractkit-functions-hardhat-starter-kit-*/contracts/test smartcontractkit-functions-hardhat-starter-kit-*/FunctionsSandboxLibrary smartcontractkit-functions-hardhat-starter-kit-*/contracts/FunctionsConsumer.sol
+   ```
+   </Fragment>
+</Tabs>
 
 When you are done, you should have the necessary dependencies in the following directories:
 
