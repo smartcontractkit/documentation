@@ -50,7 +50,7 @@ export const SIDEBAR = {
       section: "Resources",
       contents: [
         {
-          title: "Videos and Tutorials",
+          title: "Learning Resources",
           url: "getting-started/other-tutorials?parent=gettingStarted",
         },
         {
@@ -257,7 +257,7 @@ export const SIDEBAR = {
       section: "Resources",
       contents: [
         {
-          title: "Videos and Tutorials",
+          title: "Learning Resources",
           url: "getting-started/other-tutorials?parent=dataFeeds",
         },
         {
@@ -389,7 +389,7 @@ export const SIDEBAR = {
       section: "Resources",
       contents: [
         {
-          title: "Videos and Tutorials",
+          title: "Learning Resources",
           url: "getting-started/other-tutorials?parent=automation",
         },
         {
@@ -684,7 +684,7 @@ export const SIDEBAR = {
       section: "Resources",
       contents: [
         {
-          title: "Videos and Tutorials",
+          title: "Learning Resources",
           url: "getting-started/other-tutorials?parent=vrf",
         },
         {
@@ -807,7 +807,7 @@ export const SIDEBAR = {
       section: "Resources",
       contents: [
         {
-          title: "Videos and Tutorials",
+          title: "Learning Resources",
           url: "getting-started/other-tutorials?parent=anyApi",
         },
         {
