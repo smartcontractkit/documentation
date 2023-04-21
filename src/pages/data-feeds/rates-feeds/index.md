@@ -9,12 +9,12 @@ whatsnext:
   {
     "Learn how to read answers from Data Feeds": "/data-feeds/price-feeds/",
     "Learn how to get Historical Price Data": "/data-feeds/historical-data/",
-    "Find contract addresses for Rate and Volatility  Feeds": "/data-feeds/rates-feeds/addresses/",
+    "Find contract addresses for Rate and Volatility Feeds": "/data-feeds/rates-feeds/addresses/",
     "Data Feeds API Reference": "/data-feeds/api-reference/",
   }
 ---
 
-Several feeds provide data for interest rates, interest rate curves, and asset volatility. You can read these feeds the same way that you read other Data Feeds. Specify the [Rate or Volatility Feed Address](/data-feeds/rates-feeds/addresses/) that you want to read instead of specifying a Price Feed address. See the [Using Data Feeds](/data-feeds/using-data-feeds/) page to learn more.
+Chainlink rate and volatility feeds provide data for interest rates, interest rate curves, and asset volatility. You can read these feeds the same way that you read other Data Feeds. Specify the [Rate or Volatility Feed Address](/data-feeds/rates-feeds/addresses/) that you want to read instead of specifying a Price Feed address. See the [Using Data Feeds](/data-feeds/using-data-feeds/) page to learn more.
 
 The following data types are available:
 
@@ -36,7 +36,7 @@ ETH Staking APR feeds provide the estimated returns for staking ETH as a validat
 
 See the [Rate and Volatility Feed Addresses](/data-feeds/rates-feeds/addresses) page to find the ETH Staking APR feeds that are currently available.
 
-## Realized Volatility
+## Realized volatility
 
 Realized volatility measures how much an asset price has changed in the past. This value is expressed as a percent of the asset price. The more an asset price changes over time, the higher the realized volatility is for that asset. Prices are measured at regular intervals to track the change in an asset's price. Realized volatility is not the same as implied volatility, which is a measure of the market’s expectation about future volatility.
 
