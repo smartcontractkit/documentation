@@ -293,13 +293,20 @@ export const TestnetTable = ({
 
   const isPor = dataFeedType === "por"
   const isNftFloor = dataFeedType === "nftFloor"
-  const isDefault = !isNftFloor && !isPor
+  const isRates = dataFeedType === "rates"
+  const isDefault = !isNftFloor && !isPor && !isRates
   const filteredMetadata = network.metadata
     .sort((a, b) => (a.name < b.name ? -1 : 1))
     .filter((chain) => {
       if (isPor) return !!chain.docs.porType
       if (isNftFloor) return !!chain.docs.nftFloorUnits
-      return !chain.docs.nftFloorUnits && !chain.docs.porType
+      if (isRates) return !!(chain.docs.productType === "Rates" || chain.docs.productSubType === "Rvol")
+      return (
+        !chain.docs.nftFloorUnits &&
+        !chain.docs.porType &&
+        chain.docs.productType !== "Rates" &&
+        chain.docs.productSubType !== "Rvol"
+      )
     })
 
   return (
@@ -308,6 +315,7 @@ export const TestnetTable = ({
         {isPor && <ProofOfReserveTHead showExtraDetails={showExtraDetails} isTestnet />}
         {isDefault && <DefaultTHead showExtraDetails={showExtraDetails} isTestnet />}
         {isNftFloor && <NftFloorTHead showExtraDetails={showExtraDetails} isTestnet />}
+        {isRates && <DefaultTHead showExtraDetails={showExtraDetails} isTestnet />}
         <tbody>
           {filteredMetadata.map((proxy) => (
             <>
@@ -318,6 +326,7 @@ export const TestnetTable = ({
               {isNftFloor && (
                 <NftFloorTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} isTestnet />
               )}
+              {isRates && <DefaultTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} isTestnet />}
             </>
           ))}
         </tbody>

@@ -152,6 +152,16 @@ export const SIDEBAR = {
           ],
         },
         {
+          title: "Rate and Volatility Feeds",
+          url: "data-feeds/rates-feeds",
+          children: [
+            {
+              title: "Rate and Volatility Feed Addresses",
+              url: "data-feeds/rates-feeds/addresses",
+            },
+          ],
+        },
+        {
           title: "Selecting Quality Data Feeds",
           url: "data-feeds/selecting-data-feeds",
         },
