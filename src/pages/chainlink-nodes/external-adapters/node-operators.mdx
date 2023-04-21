@@ -6,6 +6,8 @@ title: "Bridges: Adding External Adapters to Nodes"
 permalink: "docs/node-operators/"
 ---
 
+import { Aside } from "@components"
+
 You can add external adapters to a Chainlink node by creating a bridge in the Node Operators Interface. Each bridge must have a unique name and a URL for the external adapter. If a job has a [Bridge Task](/chainlink-nodes/oracle-jobs/all-tasks/#bridge-task), the node searches for a bridge by name and uses that bridge as your external adapter. Bridge names are case insensitive.
 
 To create a bridge on the node, go to the **Create Bridge** tab in the Node Operators Interface. Specify a name for the bridge, the URL for your external adapter, and optionally specify the minimum contract payment and number of confirmations for the bridge. Minimum contract payment is a fee paid in LINK for the Chainlink node making a call to the external adapter via the bridge. This fee is in addition to the fee specified at the global node level for processing job requests.
@@ -16,7 +18,7 @@ The bridge name must be unique to the local node. The bridge URL is the URL of y
 
 To add jobs that use the bridge, add a [Bridge Task](/chainlink-nodes/oracle-jobs/all-tasks/#bridge-task) to your job. The `bridge` task defined in the example below is defined as `fetch` and the name of the bridge is `soccer-data`.
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```toml
 type = "directrequest"
 schemaVersion = 1
@@ -51,7 +53,7 @@ The easiest way to test if your external adapter is working is to use a [Webhook
 
 As an example, assume you have an external adapter named `soccer-data` that is registered in the `bridges` section and it takes one parameter named `playerId`. In solidity, you would pass the parameter with the following request:
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```solidity
 request.add("playerId","12345678")
 ```
@@ -60,11 +62,12 @@ How can you test the adapter on your node?
 
 The easiest way is to setup a [Webhook Job](/chainlink-nodes/oracle-jobs/job-types/webhook/) that uses the external adapter, and manually set the parameter.
 
-:::note
-You might need to set the [configuration variable](/chainlink-nodes/v1/configuration/) `FEATURE_WEBHOOK_V2=true` in your `.env` file.
-:::
+<Aside type="note">
+  You might need to set the [configuration variable](/chainlink-nodes/v1/configuration/) `FEATURE_WEBHOOK_V2=true` in
+  your `.env` file.
+</Aside>
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```toml
 type = "webhook"
 schemaVersion = 1
@@ -78,7 +81,7 @@ fetch        [type=bridge name="soccer-data" requestData="{\\"id\\": \\"0\\", \\
 
 Adding the following into the TOML spec manually sets the parameters passed into the bridge task. It is equivalent to using `request.add` as shown above or adding the data with the `--d` flag if you're using [curl](https://curl.se/).
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```json
 requestData="{\\"id\\": \\"0\\", \\"data\\": { \\"playerId\\": \\"12345678\\"}}"
 ```

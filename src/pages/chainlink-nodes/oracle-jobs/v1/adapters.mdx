@@ -11,12 +11,16 @@ whatsnext:
   }
 ---
 
+import { Aside } from "@components"
+
 # REMOVED
 
-:::caution[v1 Jobs are removed]
-The initiators for v1 Jobs are removed for Chainlink nodes running version 1.0.0 and later. Use [v2 job types](/chainlink-nodes/oracle-jobs/jobs) instead.<br/>
-See the [v2 jobs migration page](/chainlink-nodes/oracle-jobs/migration-v1-v2) to learn how to migrate to v2 jobs.
-:::
+<Aside type="caution" title="v1 Jobs are removed">
+  The initiators for v1 Jobs are removed for Chainlink nodes running version 1.0.0 and later. Use [v2 job
+  types](/chainlink-nodes/oracle-jobs/jobs) instead.
+  <br />
+  See the [v2 jobs migration page](/chainlink-nodes/oracle-jobs/migration-v1-v2) to learn how to migrate to v2 jobs.
+</Aside>
 
 ## Adapters
 
@@ -50,7 +54,7 @@ This core adapter compares a user-specified value with the value from the previo
 
 #### Solidity Example
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```solidity
 req.addInt("value", 10000);
 req.add("operator", "gte");
@@ -68,14 +72,14 @@ The core adapter walks the `copyPath` specified and returns the value found at t
 
 For the JSON object:
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```json
 { "RAW": { "ETH": { "USD": { "LASTMARKET": "_someValue" } } } }
 ```
 
 You would use the following for an array of strings:
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```solidity
 string[] memory path = new string(4);
 path[0] = "RAW";
@@ -87,18 +91,16 @@ req.addStringArray("copyPath", path);
 
 Or the following for a single comma-delimited string:
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```solidity
 req.add("copyPath", "RAW,ETH,USD,LASTMARKET");
 ```
 
-:::note
-Chainlink nodes prior to `1.0.0` supported dot delimited strings instead of commas.
-:::
+<Aside type="note">Chainlink nodes prior to `1.0.0` supported dot delimited strings instead of commas.</Aside>
 
 #### Job Specification Example
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```json
 {
   "type": "Copy",
@@ -110,14 +112,14 @@ Chainlink nodes prior to `1.0.0` supported dot delimited strings instead of comm
 
 For arrays, you can access the path of an array by using the index. If this is your JSON:
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```json
 { "endpoint": [{ "path": "value" }] }
 ```
 
 You could get the `"value"` by:
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```solidity
 req.add("copyPath", "endpoint.0.path");
 ```
@@ -178,13 +180,13 @@ The core adapter will report the body of a successful `GET` request to the speci
 - `extPath`: takes a slash-delimited string or array of strings to be appended to the job's URL.
 - `headers`: takes a object containing keys as strings and values as arrays of strings.
 
-:::note[Headers]
-Currently not available on-chain. Available for job specs only.
-:::
+<Aside type="note" title="Headers">
+  Currently not available on-chain. Available for job specs only.
+</Aside>
 
 #### Solidity Example
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```solidity
 req.add("get", "http://example.com");
 req.add("queryParams", "firstKey=firstVal&secondKey=secondVal");
@@ -193,7 +195,7 @@ req.add("extPath", "price/BTC/USD");
 
 #### Job Specification Example
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```json
 {
   "type": "HttpGet",
@@ -206,9 +208,10 @@ req.add("extPath", "price/BTC/USD");
 }
 ```
 
-:::note[Local network and multicast IPs are disallowed by default]
-For security, because the URL can come from an untrusted source, HTTPGet imposes some restrictions on which IPs may be fetched. Local network and multicast IPs are disallowed by default and attempting to connect will result in an error.
-:::
+<Aside type="note" title="Local network and multicast IPs are disallowed by default">
+  For security, because the URL can come from an untrusted source, HTTPGet imposes some restrictions on which IPs may be
+  fetched. Local network and multicast IPs are disallowed by default and attempting to connect will result in an error.
+</Aside>
 
 If you really must access one of these IPs, you can use the `HTTPGetWithUnrestrictedNetworkAccess` adapter instead.
 
@@ -224,13 +227,11 @@ The core adapter will report the body of a successful `POST` request to the spec
 - `extPath`: takes a slash-delimited string or array of strings to be appended to the job's URL.
 - `body`: the JSON body (as a string) that will be used as the data in the request.
 
-:::note[Headers & Body]
-Currently not available on-chain. Available for job specs only.
-:::
+<Aside type="note">[Headers & Body] Currently not available on-chain. Available for job specs only.</Aside>
 
 #### Solidity Example
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```solidity
 req.add("post", "http://post.example.com");
 req.add("queryParams", "firstKey=firstVal&secondKey=secondVal");
@@ -253,9 +254,10 @@ req.add("extPath", "price/BTC/USD");
 }
 ```
 
-:::note[Local network and multicast IPs are disallowed by default]
-For security, because the URL can come from an untrusted source, HTTPGet imposes some restrictions on which IPs may be fetched. Local network and multicast IPs are disallowed by default and attempting to connect will result in an error.
-:::
+<Aside type="note" title="Local network and multicast IPs are disallowed by default">
+  For security, because the URL can come from an untrusted source, HTTPGet imposes some restrictions on which IPs may be
+  fetched. Local network and multicast IPs are disallowed by default and attempting to connect will result in an error.
+</Aside>
 
 If you really must access one of these IPs, you can use the `HTTPPostWithUnrestrictedNetworkAccess` adapter instead.
 
@@ -271,14 +273,14 @@ The core adapter walks the `path` specified and returns the value found at that 
 
 For the stringified JSON:
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```json
 { "RAW": { "ETH": { "USD": { "LASTMARKET": "_someValue" } } } }
 ```
 
 You would use the following for an array of strings:
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```solidity
 string[] memory path = new string[](4);
 path[0] = "RAW";
@@ -290,18 +292,18 @@ req.addStringArray("path", path);
 
 Or the following for a single comma-delimited string:
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```solidity
 req.add("path", "RAW,ETH,USD,LASTMARKET");
 ```
 
-:::note
-Chainlink nodes prior to 1.0.0 support dot-delimited strings instead of comma-delimited strings.
-:::
+<Aside type="note">
+  Chainlink nodes prior to 1.0.0 support dot-delimited strings instead of comma-delimited strings.
+</Aside>
 
 #### Job Specification Example
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```json
 {
   "type": "JsonParse",
@@ -313,14 +315,14 @@ Chainlink nodes prior to 1.0.0 support dot-delimited strings instead of comma-de
 
 #### Parsing Arrays
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```solidity
 req.add("path", "3,standardId");
 ```
 
 The above example parses the 4th object of the following JSON response and returns 677 as a result:
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```javascript
 ;[
   {
@@ -352,7 +354,7 @@ The core adapter parses the input into a float and then multiplies it by the `ti
 
 #### Solidity Example
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```solidity
 run.addInt("times", 100);
 ```
@@ -389,9 +391,9 @@ This can be useful for inverting outputs, e.g. if your API only offers a USD/ETH
 
 The core adapter will pause the current task pipeline for the given duration.
 
-:::note[ENABLE_EXPERIMENTAL_ADAPTERS]
-You must set `ENABLE_EXPERIMENTAL_ADAPTERS=true` in order to use the sleep adapter.
-:::
+<Aside type="note" title="ENABLE_EXPERIMENTAL_ADAPTERS">
+  You must set `ENABLE_EXPERIMENTAL_ADAPTERS=true` in order to use the sleep adapter.
+</Aside>
 
 #### Parameters
 
@@ -399,14 +401,14 @@ You must set `ENABLE_EXPERIMENTAL_ADAPTERS=true` in order to use the sleep adapt
 
 #### Solidity Example
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```solidity
 req.addUint("until", now + 1 hours);
 ```
 
 #### Job Specification example
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```
 {
   "initiators": [

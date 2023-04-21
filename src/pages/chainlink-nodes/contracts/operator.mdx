@@ -5,13 +5,13 @@ date: Last Modified
 title: "Operator"
 ---
 
+import { Aside } from "@components"
+
 Oracles must deploy an on-chain contract to handle requests made through the LINK token (Read [Basic Request Model](/architecture-overview/architecture-request-model) to learn more).
 
 When the _Basic Request_ model was introduced, node operators had to deploy [Oracle contracts](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.4/Oracle.sol). However, these come with some limitations, and soon, we introduced [operator contracts](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/Operator.sol).
 
-:::note
-Node operators are recommended to use _Operator.sol_ over _Oracle.sol_.
-:::
+<Aside type="note">Node operators are recommended to use _Operator.sol_ over _Oracle.sol_.</Aside>
 
 In addition to replacing oracle contracts, operator contracts come with additional features that add more security and flexibility for node operators.
 
@@ -35,9 +35,7 @@ A common pain point of node operators is keeping their addresses funded. _Operat
 
 By using multiple External-owned accounts(EOA) on Chainlink nodes and [forwarder](/chainlink-nodes/contracts/forwarder) contracts, node operators can set up different transaction-sending strategies.
 
-:::note
-Read more about [forwarders](/chainlink-nodes/contracts/forwarder).
-:::
+<Aside type="note">Read more about [forwarders](/chainlink-nodes/contracts/forwarder).</Aside>
 
 As discussed in the [forwarder](/chainlink-nodes/contracts/forwarder) contracts page:
 
@@ -53,9 +51,9 @@ The operator contract inherits [AuthorizedReceiver](https://github.com/smartcont
 
 #### oracleRequest
 
-:::note[Legacy]
-Use `operatorRequest` [function](#operatorrequest) instead.
-:::
+<Aside type="note" title="Legacy">
+  Use `operatorRequest` [function](#operatorrequest) instead.
+</Aside>
 
 ```solidity
 function oracleRequest(address sender, uint256 payment, bytes32 specId, address callbackAddress, bytes4 callbackFunctionId, uint256 nonce, uint256 dataVersion, bytes data) external
@@ -98,9 +96,9 @@ Creates the Chainlink request. Stores the hash of the params as the on-chain com
 
 #### fulfillOracleRequest
 
-:::note[Legacy]
-Use `fulfillOracleRequest2` [function](#fulfilloraclerequest2) instead.
-:::
+<Aside type="note" title="Legacy">
+  Use `fulfillOracleRequest2` [function](#fulfilloraclerequest2) instead.
+</Aside>
 
 ```solidity
 function fulfillOracleRequest(bytes32 requestId, uint256 payment, address callbackAddress, bytes4 callbackFunctionId, uint256 expiration, bytes32 data) external returns (bool)

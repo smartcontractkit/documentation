@@ -4,37 +4,26 @@ section: nodeOperator
 date: Last Modified
 title: "Enabling HTTPS Connections"
 whatsnext: { "Miscellaneous": "/chainlink-nodes/resources/miscellaneous/" }
-setup: |
-  import { Tabs } from "@components/Tabs"
 ---
+
+import { Aside } from "@components"
+import { Tabs } from "@components/Tabs"
 
 This guide will walk you through how to generate your own self-signed certificates for use by the Chainlink node. You can also substitute self-signed certificates with certificates of your own, like those created by <a href="https://letsencrypt.org/" target="_blank">Let's Encrypt</a>.
 
-:::tip[TLS]
-You will need [OpenSSL](https://www.openssl.org) in order to generate your own self-signed certificates.
-:::
+<Aside type="tip" title="TLS">
+  You will need [OpenSSL](https://www.openssl.org) in order to generate your own self-signed certificates.
+</Aside>
 
 Create a directory `tls/` within your local Chainlink directory:
 
 <Tabs client:visible>
-<Fragment slot="tab.1">Sepolia</Fragment>
-<Fragment slot="tab.2">Goerli</Fragment>
-<Fragment slot="tab.3">Mainnet</Fragment>
-<Fragment slot="panel.1">
-```text Sepolia
-mkdir ~/.chainlink-sepolia/tls
-```
-</Fragment>
-<Fragment slot="panel.2">
-```text Goerli
-mkdir ~/.chainlink-goerli/tls
-```
-</Fragment>
-<Fragment slot="panel.3">
-```text Mainnet
-mkdir ~/.chainlink/tls
-```
-</Fragment>
+  <Fragment slot="tab.1">Sepolia</Fragment>
+  <Fragment slot="tab.2">Goerli</Fragment>
+  <Fragment slot="tab.3">Mainnet</Fragment>
+  <Fragment slot="panel.1">```text Sepolia mkdir ~/.chainlink-sepolia/tls ```</Fragment>
+  <Fragment slot="panel.2">```text Goerli mkdir ~/.chainlink-goerli/tls ```</Fragment>
+  <Fragment slot="panel.3">```text Mainnet mkdir ~/.chainlink/tls ```</Fragment>
 </Tabs>
 
 Run this command to create a `server.crt` and `server.key` file in the previously created directory:
@@ -91,24 +80,21 @@ code": "sed -i '/SECURE_COOKIES=false/d' .env
 Finally, update your run command to forward port 6689 to the container instead of 6688:
 
 <Tabs client:visible>
-<Fragment slot="tab.1">Sepolia</Fragment>
-<Fragment slot="tab.2">Goerli</Fragment>
-<Fragment slot="tab.3">Mainnet</Fragment>
-<Fragment slot="panel.1">
-```shell Sepolia
-cd ~/.chainlink-sepolia && docker run -p 6689:6689 -v ~/.chainlink-sepolia:/chainlink -it --env-file=.env smartcontract/chainlink local n
-```
-</Fragment>
-<Fragment slot="panel.2">
-```shell Goerli
-cd ~/.chainlink-goerli && docker run -p 6689:6689 -v ~/.chainlink-goerli:/chainlink -it --env-file=.env smartcontract/chainlink local n
-```
-</Fragment>
-<Fragment slot="panel.3">
-```shell Mainnet
-cd ~/.chainlink && docker run -p 6689:6689 -v ~/.chainlink:/chainlink -it --env-file=.env smartcontract/chainlink local n
-```
-</Fragment>
+  <Fragment slot="tab.1">Sepolia</Fragment>
+  <Fragment slot="tab.2">Goerli</Fragment>
+  <Fragment slot="tab.3">Mainnet</Fragment>
+  <Fragment slot="panel.1">
+    ```shell Sepolia cd ~/.chainlink-sepolia && docker run -p 6689:6689 -v ~/.chainlink-sepolia:/chainlink -it
+    --env-file=.env smartcontract/chainlink local n ```
+  </Fragment>
+  <Fragment slot="panel.2">
+    ```shell Goerli cd ~/.chainlink-goerli && docker run -p 6689:6689 -v ~/.chainlink-goerli:/chainlink -it
+    --env-file=.env smartcontract/chainlink local n ```
+  </Fragment>
+  <Fragment slot="panel.3">
+    ```shell Mainnet cd ~/.chainlink && docker run -p 6689:6689 -v ~/.chainlink:/chainlink -it --env-file=.env
+    smartcontract/chainlink local n ```
+  </Fragment>
 </Tabs>
 
 Now when running the node, you can access it by navigating to [https://localhost:6689](https://localhost:6689) if running on the same machine or with a ssh tunnel.
