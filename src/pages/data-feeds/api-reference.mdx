@@ -8,13 +8,15 @@ metadata:
   description: "API reference for using Chainlink Data Feeds in smart contracts."
 ---
 
+import { Aside } from "@components"
+
 When you use data feeds, retrieve the feeds through the `AggregatorV3Interface` and the proxy address. Optionally, you can call variables and functions in the `AccessControlledOffchainAggregator` contract to get information about the aggregator behind the proxy.
 
 ## AggregatorV3Interface
 
 Import this interface to your contract and use it to run functions in the proxy contract. Create the interface object by pointing to the proxy address. For example, on Sepolia you could create the interface object in the constructor of your contract using the following example:
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```solidity
 /**
  * Network: Sepolia
@@ -45,7 +47,7 @@ You can see the code for the [`AggregatorV3Interface` contract](https://github.c
 
 Get the number of decimals present in the response value.
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```solidity
 function decimals() external view returns (uint8);
 ```
@@ -56,7 +58,7 @@ function decimals() external view returns (uint8);
 
 Get the description of the underlying aggregator that the proxy points to.
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```solidity
 function description() external view returns (string memory);
 ```
@@ -67,7 +69,7 @@ function description() external view returns (string memory);
 
 Get data about a specific round, using the `roundId`.
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```solidity
 function getRoundData(
   uint80 _roundId
@@ -90,7 +92,7 @@ function getRoundData(
 
 Get the data from the latest round.
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```solidity
 function latestRoundData() external view
     returns (
@@ -114,7 +116,7 @@ function latestRoundData() external view
 
 The version representing the type of aggregator the proxy points to.
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```solidity
 function version() external view returns (uint256)
 ```
@@ -178,7 +180,7 @@ A simple way to read the variables or functions is to get the ABI from a blockch
 
 Return the number of digits of precision for the stored answer. Answers are stored in fixed-point format.
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```solidity
 function decimals() external view returns (uint8 decimalPlaces);
 
@@ -188,7 +190,7 @@ function decimals() external view returns (uint8 decimalPlaces);
 
 Return a description for this data feed. Usually this is an asset pair for a price feed.
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```solidity
 function description() public view override checkAccess returns (string memory) {
   return super.description();
@@ -198,15 +200,13 @@ function description() public view override checkAccess returns (string memory) 
 
 #### getAnswer
 
-:::caution[ This function is deprecated. Do not use this function.]
-
-:::
+<Aside type="caution">This function is deprecated. Do not use this function.</Aside>
 
 #### getBilling
 
 Retrieve the current billing configuration.
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```solidity
 function getBilling()
   external
@@ -235,7 +235,7 @@ function getBilling()
 
 Get the full information for a specific aggregator round including the answer and update timestamps. Use this to get the full historical data for a round.
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```solidity
 function getRoundData(
   uint80 _roundId
@@ -261,7 +261,7 @@ function getRoundData(
 
 Check if an address has internal access.
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```solidity
 function hasAccess(address _user, bytes memory _calldata) public view virtual override returns (bool) {
   return super.hasAccess(_user, _calldata) || _user == tx.origin;
@@ -279,7 +279,7 @@ function hasAccess(address _user, bytes memory _calldata) public view virtual ov
 
 Return information about the current off-chain reporting protocol configuration.
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```solidity
 function latestConfigDetails() external view returns (uint32 configCount, uint32 blockNumber, bytes16 configDigest) {
   return (s_configCount, s_latestConfigBlockNumber, s_hotVars.latestConfigDigest);
@@ -297,7 +297,7 @@ function latestConfigDetails() external view returns (uint32 configCount, uint32
 
 Get the full information for the most recent round including the answer and update timestamps.
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```solidity
 function latestRoundData()
   public
@@ -321,7 +321,7 @@ function latestRoundData()
 
 Get information about the most recent answer.
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```solidity
 function latestTransmissionDetails()
   external
@@ -344,7 +344,7 @@ function latestTransmissionDetails()
 
 Get the amount of LINK on this contract that is available to make payments to oracles. This value can be negative if there are outstanding payment obligations.
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```solidity
 function linkAvailableForPayment() external view returns (int256 availableBalance) {
   // there are at most one billion LINK, so this cast is safe
@@ -362,7 +362,7 @@ function linkAvailableForPayment() external view returns (int256 availableBalanc
 
 Returns the number of observations that oracle is due to be reimbursed for.
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```solidity
 function oracleObservationCount(address _signerOrTransmitter) external view returns (uint16) {
   Oracle memory oracle = s_oracles[_signerOrTransmitter];
@@ -378,7 +378,7 @@ function oracleObservationCount(address _signerOrTransmitter) external view retu
 
 Returns how much LINK an oracle is owed for its observations.
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```solidity
 function owedPayment(address _transmitter) public view returns (uint256) {
   Oracle memory oracle = s_oracles[_transmitter];
@@ -399,7 +399,7 @@ function owedPayment(address _transmitter) public view returns (uint256) {
 
 Returns the address for the access controller contract.
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```solidity
 function requesterAccessController() external view returns (AccessControllerInterface) {
   return s_requesterAccessController;
@@ -411,7 +411,7 @@ function requesterAccessController() external view returns (AccessControllerInte
 
 The oracle addresses that can report answers to this aggregator.
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```solidity
 function transmitters() external view returns (address[] memory) {
   return s_transmitters;
@@ -423,7 +423,7 @@ function transmitters() external view returns (address[] memory) {
 
 Returns the aggregator type and version. Many aggregators are `AccessControlledOffchainAggregator 2.0.0`, but there are other variants in production. The version is for the type of aggregator, and different from the contract `version`.
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```solidity
 function typeAndVersion() external pure virtual override returns (string memory) {
   return "AccessControlledOffchainAggregator 2.0.0";
@@ -435,7 +435,7 @@ function typeAndVersion() external pure virtual override returns (string memory)
 
 Returns the address and the gas limit for the validator contract.
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```solidity
 function validatorConfig() external view returns (AggregatorValidatorInterface validator, uint32 gasLimit) {
   ValidatorConfig memory vc = s_validatorConfig;
@@ -448,7 +448,7 @@ function validatorConfig() external view returns (AggregatorValidatorInterface v
 
 Returns the contract version. This is different from the `typeAndVersion` for the aggregator.
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```solidity
 function version() external view returns (uint256);
 

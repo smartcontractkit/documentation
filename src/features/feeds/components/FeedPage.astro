@@ -2,7 +2,7 @@
 import FeedsCommonCallout from "../callouts/FeedsCommonCallout.astro"
 import { FeedList } from "./FeedList.tsx"
 import type { DataFeedType } from "./FeedList.tsx"
-import { Aside } from "~/components"
+import { Aside } from "@components"
 export type Props = {
   initialNetwork?: string
   ecosystem: string
@@ -10,7 +10,6 @@ export type Props = {
 }
 import { getServerSideChainMetadata } from "../api/backend"
 import { CHAINS, ALL_CHAINS } from "../data/chains"
-import { Aside } from "@components"
 
 const { initialNetwork, ecosystem, dataFeedType } = Astro.props
 
@@ -54,8 +53,8 @@ const initialCache = await getServerSideChainMetadata([...CHAINS, ...ALL_CHAINS]
             <a href="/data-feeds/nft-floor-price">NFT Floor Price Feeds documentation.</a>
           </p>
           <p>
-            For LINK token and Faucet details, see the <a href="/docs/link-token-contracts/">LINK Token Contracts</a>{" "}
-            page.
+            For LINK token and Faucet details, see the{" "}
+            <a href="/resources/link-token-contracts?parent=dataFeeds">LINK Token Contracts</a> page.
           </p>
           <Aside type="note" title="Talk to an expert">
             <a href="https://chain.link/contact?ref_id=DataFeed">Contact us</a> to talk to an expert about integrating
@@ -70,8 +69,8 @@ const initialCache = await getServerSideChainMetadata([...CHAINS, ...ALL_CHAINS]
             <a href="/data-feeds/proof-of-reserve/">Proof Of Reserve Feeds documentation.</a>
           </p>
           <p>
-            For LINK token and Faucet details, see the <a href="/docs/link-token-contracts/">LINK Token Contracts</a>{" "}
-            page.
+            For LINK token and Faucet details, see the{" "}
+            <a href="/resources/link-token-contracts?parent=dataFeeds">LINK Token Contracts</a> page.
           </p>
           <Aside type="note" title="Talk to an expert">
             <a href="https://chain.link/contact?ref_id=DataFeed">Contact us</a> to talk to an expert about integrating
@@ -80,19 +79,30 @@ const initialCache = await getServerSideChainMetadata([...CHAINS, ...ALL_CHAINS]
           <FeedsCommonCallout callout="porWalletAddressManager" />
           <FeedsCommonCallout callout="quality" />
         </>
+      ) : dataFeedType === "rates" ? (
+        <>
+          <p>
+            To learn how to use these feeds, see the <a href="/data-feeds/using-data-feeds">Using Data Feeds</a> guide.
+          </p>
+          <p>
+            For LINK token and Faucet details, see the{" "}
+            <a href="/resources/link-token-contracts?parent=dataFeeds">LINK Token Contracts</a> page.
+          </p>
+        </>
       ) : (
         <>
           <p>
-            To learn how to use these feeds, see the <a href="/data-feeds/price-feeds/">Using Price Feeds guide.</a>
+            To learn how to use these feeds, see the <a href="/data-feeds/using-data-feeds">Using Data Feeds</a> guide.
           </p>
           <p>
-            For LINK token and Faucet details, see the <a href="/docs/link-token-contracts/">LINK Token Contracts</a>{" "}
-            page.
+            For LINK token and Faucet details, see the{" "}
+            <a href="/resources/link-token-contracts?parent=dataFeeds">LINK Token Contracts</a> page.
           </p>
           <Aside type="note" title="Talk to an expert">
             <a href="https://chain.link/contact?ref_id=DataFeed">Contact us</a> to talk to an expert about integrating
             Chainlink Data Feeds with your applications.
           </Aside>
+
           <FeedsCommonCallout callout="etfBestPractices" />
           <FeedsCommonCallout callout="quality" />
         </>

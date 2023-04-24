@@ -13,16 +13,18 @@ metadata:
   description: "How to use Chainlink Data Feeds in your on-chain Solana programs."
 ---
 
-import { CodeSample } from "@components"
+import { Aside, CodeSample } from "@components"
 import { Tabs } from "@components/Tabs"
 
 Chainlink Data Feeds are the quickest way to connect your smart contracts to the real-world market prices of assets. This guide demonstrates how to deploy a program to the Solana Devnet cluster and access Data Feeds on-chain using the [Chainlink Solana Starter Kit](https://github.com/smartcontractkit/solana-starter-kit). To learn how to read price feed data using off-chain applications, see the [Using Data Feeds Off-Chain](/solana/using-data-feeds-off-chain/) guide.
 
 To get the full list of available Chainlink Data Feeds on Solana, see the [Solana Feeds](/data-feeds/price-feeds/addresses?network=solana/) page. View the program that owns the Chainlink Data Feeds in the [Solana Devnet Explorer](https://solscan.io/account/HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny?cluster=devnet), or the [Solana Mainnet Explorer](https://solscan.io/account/HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny).
 
-> 🚧 Select quality data feeds
->
-> Be aware of the quality of the data that you use. [Learn more about making responsible data quality decisions.](/data-feeds/selecting-data-feeds/)
+<Aside type="danger" title="Select quality data feeds">
+
+Be aware of the quality of the data that you use. [Learn more about making responsible data quality decisions](/data-feeds/selecting-data-feeds/).
+
+</Aside>
 
 ## The Chainlink Data Feeds OCR2 Program
 
@@ -34,11 +36,11 @@ You can [add data feeds to an existing project](#adding-data-feeds-on-chain-in-a
 
 You can read Chainlink Data Feed data on-chain in your existing project using the [Chainlink Solana Crate](https://crates.io/crates/chainlink_solana).
 
-:::caution[ Reading feed data]
+<Aside type="caution"title="Reading feed data">
 
 Although you can directly query the data feed accounts, you should not rely on the memory layout always being the same as it currently is. Based on this, the recommendation is to always use the consumer library queries below.
 
-:::
+</Aside>
 
 Import the Chainlink Solana Crate into your project and use the code sample to make function calls.
 
@@ -54,25 +56,18 @@ Import the Chainlink Solana Crate into your project and use the code sample to m
    - The [feed account](/data-feeds/price-feeds/addresses?network=solana/) that you want to query.
    - The [Chainlink Data Feeds OCR2 Program](#the-chainlink-data-feeds-ocr2-program) for the network. This is a static value that never changes.
 
-The code sample has the following components:
+   The code sample has the following components:
 
-- `latest_round_data`: Returns the latest round information for the specified price pair including the latest price
-- `description`: Returns a price pair description such as SOL/USD
-- `decimals`: Returns the precision of the price, as in how many numbers the price is padded out to
-- `Display`: A helper function that formats the padded out price data into a human-readable price
+   - `latest_round_data`: Returns the latest round information for the specified price pair including the latest price
+   - `description`: Returns a price pair description such as SOL/USD
+   - `decimals`: Returns the precision of the price, as in how many numbers the price is padded out to
+   - `Display`: A helper function that formats the padded out price data into a human-readable price
 
-<Tabs client:visible>
-  <Fragment slot="tab.js">Rust</Fragment>
-  <Fragment slot="tab.ts">Rust with Anchor</Fragment>
-  <Fragment slot="panel.js">
-    <CodeSample src="samples/Solana/PriceFeeds/on-chain-read.rs" />
-  </Fragment>
-  <Fragment slot="panel.ts">
-    <CodeSample src="samples/Solana/PriceFeeds/on-chain-read-anchor.rs" />
-  </Fragment>
-</Tabs>
+   <CodeSample src="samples/Solana/PriceFeeds/on-chain-read.rs" />
 
-Program Transaction logs:
+   <CodeSample src="samples/Solana/PriceFeeds/on-chain-read-anchor.rs" />
+
+   Program Transaction logs:
 
 {/* prettier-ignore */}
 <Tabs client:visible>
