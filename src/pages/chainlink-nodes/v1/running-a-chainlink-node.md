@@ -168,19 +168,19 @@ Ganache is a mock testnet. Although you can run nodes on Ganache, it is not offi
    `DATABASE_URL`. However you should _never_ do this on a production node.
    :::
 
-1. Start the Chainlink Node. Now you can run the Docker image. Replace `<version>` with your desired version. Tag versions are available in the [Chainlink docker hub](https://hub.docker.com/r/smartcontract/chainlink/tags). _The `latest` version does not work._
+1. Start the Chainlink Node. Now you can run the Docker image. Change the version number in `smartcontract/chainlink:2.0.0` with the version of the Docker image that you need to run. For most new nodes, use version `2.0.0` or later. Tag versions are available in the [Chainlink docker hub](https://hub.docker.com/r/smartcontract/chainlink/tags). _The `latest` version does not work._ Chainlink Nodes running `2.0.0` and later require the `-config` and `-secrets` flags after the `node start` part of the command. Versions `1.13.1` and earlier require the `-config` and `-secrets` flags to be placed before `node start`.
 
    <Tabs client:visible>
       <Fragment slot="tab.1">Sepolia</Fragment>
       <Fragment slot="tab.2">Goerli</Fragment>
       <Fragment slot="panel.1">
       ```shell Sepolia
-      cd ~/.chainlink-sepolia && docker run --platform linux/x86_64/v8 --name chainlink -v ~/.chainlink-sepolia:/chainlink -it -p 6688:6688 --add-host=host.docker.internal:host-gateway smartcontract/chainlink:<version> -config /chainlink/config.toml -secrets /chainlink/secrets.toml node start
+      cd ~/.chainlink-sepolia && docker run --platform linux/x86_64/v8 --name chainlink -v ~/.chainlink-sepolia:/chainlink -it -p 6688:6688 --add-host=host.docker.internal:host-gateway smartcontract/chainlink:2.0.0 node start -config /chainlink/config.toml -secrets /chainlink/secrets.toml 
       ```
       </Fragment>
       <Fragment slot="panel.2">
       ```shell Goerli
-      cd ~/.chainlink-goerli && docker run --platform linux/x86_64/v8 --name chainlink -v ~/.chainlink-goerli:/chainlink -it -p 6688:6688 --add-host=host.docker.internal:host-gateway smartcontract/chainlink:<version> -config /chainlink/config.toml -secrets /chainlink/secrets.toml node start
+      cd ~/.chainlink-goerli && docker run --platform linux/x86_64/v8 --name chainlink -v ~/.chainlink-goerli:/chainlink -it -p 6688:6688 --add-host=host.docker.internal:host-gateway smartcontract/chainlink:2.0.0 node start -config /chainlink/config.toml -secrets /chainlink/secrets.toml
       ```
       </Fragment>
    </Tabs>
