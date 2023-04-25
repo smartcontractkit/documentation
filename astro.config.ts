@@ -11,14 +11,7 @@ import sitemap from "@astrojs/sitemap"
 // https://astro.build/config
 export default defineConfig({
   site: "https://docs.chain.link/",
-  integrations: [
-    preact({ compat: true }),
-    sitemap({ changefreq: "daily" }),
-    astroCallouts(),
-    solidityRemixCode(),
-    youtubeEmbed(),
-    mdx(),
-  ],
+  integrations: [preact({ compat: true }), sitemap({ changefreq: "daily" }), mdx()],
   markdown: {
     drafts: true,
     rehypePlugins: [
