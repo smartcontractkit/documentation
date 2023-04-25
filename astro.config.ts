@@ -1,8 +1,5 @@
 import { defineConfig } from "astro/config"
 import preact from "@astrojs/preact"
-import { astroCallouts } from "./integrations/astro-callouts"
-import { solidityRemixCode } from "./integrations/solidity-remix"
-import { youtubeEmbed } from "./integrations/youtube-embed"
 import mdx from "@astrojs/mdx"
 import rehypeSlug from "rehype-slug"
 import rehypeAutolinkHeadings from "rehype-autolink-headings"
