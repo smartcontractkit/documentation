@@ -16,23 +16,29 @@ whatsnext:
 metadata:
   title: "Running a Chainlink Node locally"
   description: "Run your own Chainlink node using this guide which explains the requirements and basics for getting started."
-setup: |
-  import { Tabs } from "@components/Tabs"
 ---
+
+import { Aside } from "@components"
+import { Tabs } from "@components/Tabs"
 
 This guide will teach you how to run a Chainlink node locally using [Docker](#using-docker). The Chainlink node will be configured to connect to the Ethereum Sepolia or Goerli testnet.
 
-:::note[Running from source]
-To run a Chainlink node from source, use the [following instructions](https://github.com/smartcontractkit/chainlink#install). However, it’s recommended to run the Chainlink node with Docker. This is because we continuously build and deploy the code from our repository on Github, which means you don’t need a complete development environment to run a node.
-:::
+<Aside type="note" title="Running from source">
+  To run a Chainlink node from source, use the [following
+  instructions](https://github.com/smartcontractkit/chainlink#install). However, it's recommended to run the Chainlink
+  node with Docker. This is because we continuously build and deploy the code from our repository on Github, which means
+  you don't need a complete development environment to run a node.
+</Aside>
 
-:::note[Other Supported Networks]
-Chainlink is blockchain agnostic technology. The [LINK Token Contracts](/resources/link-token-contracts/) page details networks which support the LINK token. You can setup your node to provide data to any of these blockchains.
-:::
+<Aside type="note" title="Other Supported Networks">
+  Chainlink is blockchain agnostic technology. The [LINK Token Contracts](/resources/link-token-contracts/) page details
+  networks which support the LINK token. You can setup your node to provide data to any of these blockchains.
+</Aside>
 
-:::note[Running Chainlink Node on Ganache]
-Ganache is a mock testnet. Although you can run nodes on Ganache, it is not officially supported. Most node operators should use one of the supported [testnets](/resources/link-token-contracts/) for development and testing.
-:::
+<Aside type="note" title="Running Chainlink Node on Ganache">
+  Ganache is a mock testnet. Although you can run nodes on Ganache, it is not officially supported. Most node operators
+  should use one of the supported [testnets](/resources/link-token-contracts/) for development and testing.
+</Aside>
 
 ## Requirements
 
@@ -65,6 +71,7 @@ Ganache is a mock testnet. Although you can run nodes on Ganache, it is not offi
 
 1. Create a local directory to hold the Chainlink data:
 
+   {/* prettier-ignore */}
    <Tabs client:visible>
       <Fragment slot="tab.1">Sepolia</Fragment>
       <Fragment slot="tab.2">Goerli</Fragment>
@@ -83,6 +90,7 @@ Ganache is a mock testnet. Although you can run nodes on Ganache, it is not offi
 1. Run the following as a command to create a `config.toml` file and populate with variables specific to the network you're running on. For a full list of available configuration variables, see the [Node Config](/chainlink-nodes/v1/node-config) page.
    Be sure to update the value for `CHANGEME` to the value given by your [external Ethereum provider](/chainlink-nodes/resources/run-an-ethereum-client/#external-services).
 
+   {/* prettier-ignore */}
    <Tabs client:visible>
       <Fragment slot="tab.1">Sepolia</Fragment>
       <Fragment slot="tab.2">Goerli</Fragment>
@@ -91,51 +99,50 @@ Ganache is a mock testnet. Although you can run nodes on Ganache, it is not offi
       echo "[Log]
       Level = 'warn'
 
-   [WebServer]
-   AllowOrigins = '\*'
-   SecureCookies = false
+      [WebServer]
+      AllowOrigins = '\*'
+      SecureCookies = false
 
-   [WebServer.TLS]
-   HTTPSPort = 0
+      [WebServer.TLS]
+      HTTPSPort = 0
 
-   [[EVM]]
-   ChainID = '11155111'
+      [[EVM]]
+      ChainID = '11155111'
 
-   [[EVM.Nodes]]
-   Name = 'Sepolia'
-   WSURL = 'wss://CHANGE_ME'
-   HTTPURL = 'https://CHANGE_ME'
-   " > ~/.chainlink-sepolia/config.toml
+      [[EVM.Nodes]]
+      Name = 'Sepolia'
+      WSURL = 'wss://CHANGE_ME'
+      HTTPURL = 'https://CHANGE_ME'
+      " > ~/.chainlink-sepolia/config.toml
+      ```
+      </Fragment>
+      <Fragment slot="panel.2">
+      ```shell Goerli
+      echo "[Log]
+      Level = 'warn'
 
-   ````
-   </Fragment>
-   <Fragment slot="panel.2">
-   ```shell Goerli
-   echo "[Log]
-   Level = 'warn'
+      [WebServer]
+      AllowOrigins = '*'
+      SecureCookies = false
 
-   [WebServer]
-   AllowOrigins = '*'
-   SecureCookies = false
+      [WebServer.TLS]
+      HTTPSPort = 0
 
-   [WebServer.TLS]
-   HTTPSPort = 0
+      [[EVM]]
+      ChainID = '5'
 
-   [[EVM]]
-   ChainID = '5'
-
-   [[EVM.Nodes]]
-   Name = 'Goerli'
-   WSURL = 'wss://CHANGE_ME'
-   HTTPURL = 'https://CHANGE_ME'
-   " > ~/.chainlink-goerli/config.toml
-   ````
-
+      [[EVM.Nodes]]
+      Name = 'Goerli'
+      WSURL = 'wss://CHANGE_ME'
+      HTTPURL = 'https://CHANGE_ME'
+      " > ~/.chainlink-goerli/config.toml
+      ```
       </Fragment>
    </Tabs>
 
 1. Create a `secrets.toml` file with a keystore password and the URL to your database. Update the value for `mysecretpassword` to the chosen password in [Run PostgreSQL](#run-postgresql). Specify a complex keystore password. This will be your wallet password that you can use to unlock the keystore file generated for you.
 
+   {/* prettier-ignore */}
    <Tabs client:visible>
       <Fragment slot="tab.1">Sepolia</Fragment>
       <Fragment slot="tab.2">Goerli</Fragment>
@@ -143,33 +150,30 @@ Ganache is a mock testnet. Although you can run nodes on Ganache, it is not offi
       ```shell Sepolia
       echo "[Password]
       Keystore = 'mysecretkeystorepassword'
-
-   [Database]
-   URL = 'postgresql://postgres:mysecretpassword@host.docker.internal:5432/postgres?sslmode=disable'
-   " > ~/.chainlink-sepolia/secrets.toml
-
-   ````
-   </Fragment>
-   <Fragment slot="panel.2">
-   ```shell Goerli
-   echo "[Password]
-   Keystore = 'mysecretkeystorepassword'
-
-   [Database]
-   URL = 'postgresql://postgres:mysecretpassword@host.docker.internal:5432/postgres?sslmode=disable'
-   " > ~/.chainlink-goerli/secrets.toml
-   ````
-
+      [Database]
+      URL = 'postgresql://postgres:mysecretpassword@host.docker.internal:5432/postgres?sslmode=disable'
+      " > ~/.chainlink-sepolia/secrets.toml
+      ```
+      </Fragment>
+      <Fragment slot="panel.2">
+      ```shell Goerli
+      echo "[Password]
+      Keystore = 'mysecretkeystorepassword'
+      [Database]
+      URL = 'postgresql://postgres:mysecretpassword@host.docker.internal:5432/postgres?sslmode=disable'
+      " > ~/.chainlink-goerli/secrets.toml
+      ```
       </Fragment>
    </Tabs>
 
-   :::tip[Important]
-   Because you are testing locally, add `?sslmode=disable` to the end of your
-   `DATABASE_URL`. However you should _never_ do this on a production node.
-   :::
+   <Aside type="tip" title="Important">
+     Because you are testing locally, add `?sslmode=disable` to the end of your `DATABASE_URL`. However you should
+     _never_ do this on a production node.
+   </Aside>
 
 1. Start the Chainlink Node. Now you can run the Docker image. Replace `<version>` with your desired version. Tag versions are available in the [Chainlink docker hub](https://hub.docker.com/r/smartcontract/chainlink/tags). _The `latest` version does not work._
 
+   {/* prettier-ignore */}
    <Tabs client:visible>
       <Fragment slot="tab.1">Sepolia</Fragment>
       <Fragment slot="tab.2">Goerli</Fragment>

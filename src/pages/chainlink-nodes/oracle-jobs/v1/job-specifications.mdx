@@ -11,12 +11,16 @@ whatsnext:
   }
 ---
 
+import { Aside } from "@components"
+
 # REMOVED
 
-:::caution[v1 Jobs are removed]
-The v1 job spec or JSON spec removed for Chainlink nodes running version 1.0.0 and later. If you are still running this type of job, migrate them to v2 specs.<br/>
-See the [v2 jobs migration page](/chainlink-nodes/oracle-jobs/migration-v1-v2) to learn how to migrate to v2 jobs.
-:::
+<Aside type="caution" title="v1 Jobs are removed">
+  The v1 job spec or JSON spec removed for Chainlink nodes running version 1.0.0 and later. If you are still running
+  this type of job, migrate them to v2 specs.
+  <br />
+  See the [v2 jobs migration page](/chainlink-nodes/oracle-jobs/migration-v1-v2) to learn how to migrate to v2 jobs.
+</Aside>
 
 ## What is a job?
 
@@ -72,10 +76,10 @@ In the example above, we see that the only initiator is a RunLog. This means tha
 The five tasks (referred to as [core adapters](/chainlink-nodes/oracle-jobs/v1/adapters/)) in the example above follow a common pattern for requesting data from the Chainlink network, and returning a single result. Each task takes three fields: `type`, `confirmations`, and `params`. The `type` is the adapter or [bridge](/resources/glossary/#bridge) name and is required. `confirmations` is optional, and will default to 0. `params` is also optional, and will default to an empty object if not specified. See the [core adapters](/chainlink-nodes/oracle-jobs/v1/adapters/) page for a complete list of `params` for each adapter.
 
 1. The **HTTPGet** adapter uses the value in the `get` field to perform a standard HTTP GET request at the value specified. The body of that result is passed on to the next task, JSONParse.
-2. The **JSONParse** adapter takes a dot-delimited string or an array of strings, and will walk the given path to store the value at the end. In this case, there is only one field to save, "last". JSONParse will then pass the value stored in the "last" field to the Multiply adapter.
-3. The **Multiply** adapter will, as its name describes, multiply the given value by the value of the `times` field, in this case, 100.
-4. The multiplied value will be passed to the **EthUint256** adapter, which will format it specifically for the `uint256` data type on Ethereum. Notice there are no parameters supplied to the EthUint256 adapter, as it does not accept any.
-5. Finally, that formatted value is written to the blockchain with the **EthTx** adapter. The parameters for the EthTx adapter are given by the oracle contract when the run is initiated through the RunLog initiator.
+1. The **JSONParse** adapter takes a dot-delimited string or an array of strings, and will walk the given path to store the value at the end. In this case, there is only one field to save, "last". JSONParse will then pass the value stored in the "last" field to the Multiply adapter.
+1. The **Multiply** adapter will, as its name describes, multiply the given value by the value of the `times` field, in this case, 100.
+1. The multiplied value will be passed to the **EthUint256** adapter, which will format it specifically for the `uint256` data type on Ethereum. Notice there are no parameters supplied to the EthUint256 adapter, as it does not accept any.
+1. Finally, that formatted value is written to the blockchain with the **EthTx** adapter. The parameters for the EthTx adapter are given by the oracle contract when the run is initiated through the RunLog initiator.
 
 Note: If specifying multiple adapters of the same type, the parameters can be specified in the job spec itself if the key values need to be different. The requester can also use run parameters for these requests, but shared keys will be the same for any adapter that uses them.
 
