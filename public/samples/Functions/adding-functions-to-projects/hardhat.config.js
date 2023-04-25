@@ -1,5 +1,5 @@
-require("@nomiclabs/hardhat-ethers")
 require("@chainlink/env-enc").config()
+require("@nomicfoundation/hardhat-toolbox")
 
 /**
  * @type import('hardhat/config').HardhatUserConfig
@@ -29,6 +29,15 @@ module.exports = {
     compilers: [
       {
         version: "0.8.7",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 1_000,
+          },
+        },
+      },
+      {
+        version: "0.7.0",
         settings: {
           optimizer: {
             enabled: true,

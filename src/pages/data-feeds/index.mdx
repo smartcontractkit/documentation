@@ -28,7 +28,7 @@ import button from "@chainlink/design-system/button.module.css"
 
 Chainlink Data Feeds are the quickest way to connect your smart contracts to the real-world data such as asset prices, reserve balances, NFT floor prices, and L2 sequencer health.
 
-If you already started a project and need to integrate Chainlink, you can [add Chainlink to your existing project](/resources/create-a-chainlinked-project/#installing-into-existing-projects) with the [`@chainlink/contracts` NPM package](https://www.npmjs.com/package/@chainlink/contracts).
+If you already started a project and need to integrate Chainlink, you can [add Chainlink to your existing project](/resources/create-a-chainlinked-project?parent=dataFeeds#installing-into-existing-projects) with the [`@chainlink/contracts` NPM package](https://www.npmjs.com/package/@chainlink/contracts).
 
 ## Types of data feeds
 
@@ -36,7 +36,8 @@ Data feeds provide many different types of data for your applications.
 
 - [Price Feeds](#price-feeds)
 - [Proof of Reserve Feeds](#proof-of-reserve-feeds)
-- [NFT Floor Price Feeds](/data-feeds/nft-floor-price)
+- [NFT Floor Price Feeds](#nft-floor-price-feeds)
+- [Rate and Volatility Feeds](#rate-and-volatility-feeds)
 - [L2 sequencer uptime feeds](#l2-sequencer-uptime-feeds)
 
 ### Price Feeds
@@ -45,7 +46,7 @@ Smart contracts often act in real-time on data such as prices of assets. This is
 
 For example, [Synthetix](https://www.synthetix.io/) uses Data Feeds to determine prices on their derivatives platform. Lending and borrowing platforms like [AAVE](https://aave.com/) use Data Feeds to ensure the total value of the collateral.
 
-Data Feeds aggregate many data sources and publish them on-chain using a combination of the [Decentralized Data Model](/architecture-overview/architecture-decentralized-model/) and [Off-Chain Reporting](/architecture-overview/off-chain-reporting/).
+Data Feeds aggregate many data sources and publish them on-chain using a combination of the [Decentralized Data Model](/architecture-overview/architecture-decentralized-model?parent=dataFeeds) and [Off-Chain Reporting](/architecture-overview/off-chain-reporting?parent=dataFeeds).
 
 To learn how to use Price Feeds, see the [Price Feeds](/data-feeds/price-feeds/) documentation.
 
@@ -67,15 +68,19 @@ To learn more, see the [NFT Floor Price Feeds](/data-feeds/nft-floor-price/) doc
 
 See the [NFT Floor Price Contract Addresses](/data-feeds/nft-floor-price/addresses/) page for a list of available networks and addresses.
 
+### Rate and Volatility Feeds
+
+Several feeds provide interest rate curve data, APY data, and realized asset price volatility.
+
+To learn more, see the [Rate and Volatility Feeds](/data-feeds/rates-feeds/) documentation.
+
+See the [Rate and Volatility Contract Addresses](/data-feeds/rates-feeds/addresses/) page for a list of available networks and addresses.
+
 ### L2 sequencer uptime feeds
 
 L2 sequencer feeds track the last known status of the sequencer on an L2 network at a given point in time. This helps you prevent mass liquidations by providing a grace period to allow customers to react to these events.
 
 To learn how to use L2 sequencer uptime feeds feeds, see the [L2 Sequencer Uptime Feeds](/data-feeds/l2-sequencer-feeds/) documentation.
-
-<a href="/data-feeds/l2-sequencer-feeds/" class={button.primary}>
-  {"L2 Sequencer Uptime Feeds"}
-</a>
 
 ## Components of a data feed
 
@@ -141,4 +146,4 @@ During periods of low volatility, the heartbeat triggers updates to the latest a
 
 Users should build applications with the understanding that data feeds for wrapped or liquid staking assets might have different heartbeat and deviation thresholds than that of the underlying asset. Heartbeat and deviation thresholds can also differ for the same asset across different blockchains. Combining data from multiple feeds, even those with a common denominator, might result in a margin of error that users must account for in their risk mitigation practices.
 
-To learn more about the heartbeat and deviation threshold, read the [Decentralized Data Model](/architecture-overview/architecture-decentralized-model#aggregator) page.
+To learn more about the heartbeat and deviation threshold, read the [Decentralized Data Model](/architecture-overview/architecture-decentralized-model?parent=dataFeeds#aggregator) page.
