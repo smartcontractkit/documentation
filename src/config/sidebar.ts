@@ -341,10 +341,6 @@ export const SIDEBAR = {
             },
           ],
         },
-        {
-          title: "Automation Architecture",
-          url: "chainlink-automation/overview/",
-        },
       ],
     },
     {
@@ -353,6 +349,10 @@ export const SIDEBAR = {
         {
           title: "Automation Pricing",
           url: "chainlink-automation/automation-economics/",
+        },
+        {
+          title: "Automation Architecture",
+          url: "chainlink-automation/overview/",
         },
         {
           title: "Automation Release Notes",
