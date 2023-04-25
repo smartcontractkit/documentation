@@ -8,7 +8,9 @@ permalink: "docs/data-feeds/nft-floor-price/"
 whatsnext:
   {
     "Learn how to read answers from Data Feeds": "/data-feeds/price-feeds/",
+    "Learn how to get Historical Price Data": "/data-feeds/historical-data/",
     "Find contract addresses for NFT Floor Price Feeds": "/data-feeds/nft-floor-price/addresses/",
+    "Data Feeds API Reference": "/data-feeds/api-reference/",
   }
 ---
 

@@ -1,6 +1,6 @@
 import { ChainMetadata } from "../api"
 
-type ChainTags = ("default" | "proofOfReserve" | "nftFloorPrice")[]
+type ChainTags = ("default" | "proofOfReserve" | "nftFloorPrice" | "rates")[]
 export interface ChainNetwork {
   name: string
   explorerUrl: string
@@ -25,7 +25,7 @@ export const CHAINS: Chain[] = [
     title: "Data Feeds",
     img: "/assets/chains/ethereum.svg",
     networkStatusUrl: "https://ethstats.dev/",
-    tags: ["default", "proofOfReserve", "nftFloorPrice"],
+    tags: ["default", "proofOfReserve", "nftFloorPrice", "rates"],
     networks: [
       {
         name: "Ethereum Mainnet",
@@ -39,13 +39,14 @@ export const CHAINS: Chain[] = [
         explorerUrl: "https://sepolia.etherscan.io/address/%s",
         networkType: "testnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-sepolia.json",
+        tags: ["rates"],
       },
       {
         name: "Goerli Testnet",
         explorerUrl: "https://goerli.etherscan.io/address/%s",
         networkType: "testnet",
-        tags: ["proofOfReserve", "nftFloorPrice"],
         rddUrl: "https://reference-data-directory.vercel.app/feeds-goerli.json",
+        tags: ["proofOfReserve", "nftFloorPrice"],
       },
     ],
     label: "Ethereum",
@@ -78,20 +79,21 @@ export const CHAINS: Chain[] = [
     label: "Polygon (Matic)",
     img: "/assets/chains/polygon.svg",
     networkStatusUrl: "https://polygon.io/system",
-    tags: ["default", "proofOfReserve"],
+    tags: ["default", "proofOfReserve", "nftFloorPrice"],
     networks: [
       {
         name: "Polygon Mainnet",
         explorerUrl: "https://polygonscan.com/address/%s",
         networkType: "mainnet",
-        tags: ["proofOfReserve"],
         rddUrl: "https://reference-data-directory.vercel.app/feeds-matic-mainnet.json",
+        tags: ["proofOfReserve"],
       },
       {
         name: "Mumbai Testnet",
         explorerUrl: "https://mumbai.polygonscan.com/address/%s",
         networkType: "testnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-matic-testnet.json",
+        tags: ["nftFloorPrice"],
       },
     ],
   },
@@ -122,15 +124,15 @@ export const CHAINS: Chain[] = [
         name: "Avalanche Mainnet",
         explorerUrl: "https://snowtrace.io/address/%s",
         networkType: "mainnet",
-        tags: ["proofOfReserve"],
         rddUrl: "https://reference-data-directory.vercel.app/feeds-avalanche-mainnet.json",
+        tags: ["proofOfReserve"],
       },
       {
         name: "Avalanche Testnet",
         explorerUrl: "https://testnet.snowtrace.io/address/%s",
         networkType: "testnet",
-        tags: ["proofOfReserve"],
         rddUrl: "https://reference-data-directory.vercel.app/feeds-avalanche-fuji-testnet.json",
+        tags: ["proofOfReserve"],
       },
     ],
     label: "Avalanche",
@@ -321,6 +323,7 @@ export const CHAINS: Chain[] = [
   },
 ]
 
+// All mainnet feeds. Used for deprecated feeds.
 export const ALL_CHAINS: Chain[] = [
   {
     page: "deprecated",
