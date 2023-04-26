@@ -7,7 +7,8 @@ import sitemap from "@astrojs/sitemap"
 
 // https://astro.build/config
 export default defineConfig({
-  site: "https://docs.chain.link/",
+  site: "https://docs.chain.link",
+  // trailingSlash: 'never',
   integrations: [preact({ compat: true }), sitemap({ changefreq: "daily" }), mdx()],
   markdown: {
     drafts: true,
@@ -21,5 +22,7 @@ export default defineConfig({
       ],
     ],
     syntaxHighlight: "prism",
+    smartypants: false,
+    gfm: false,
   },
 })
