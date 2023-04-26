@@ -6,22 +6,25 @@ title: "Adding External Initiators to Nodes"
 permalink: "docs/external-initiators-in-nodes/"
 ---
 
-:::note
-External initiators are disabled on nodes by default. Set the `FEATURE_EXTERNAL_INITIATORS=true` [configuration variable](/chainlink-nodes/v1/configuration/#feature_external_initiators) to enable this feature.
-:::
+import { Aside } from "@components"
+
+<Aside type="note">
+  External initiators are disabled on nodes by default. Set the `FEATURE_EXTERNAL_INITIATORS=true` [configuration
+  variable](/chainlink-nodes/v1/configuration/#feature_external_initiators) to enable this feature.
+</Aside>
 
 ## Creating an external initiator
 
 To create an external initiator you must use the remote API. You can do this yourself, like so:
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```text
 POST http://<your chainlink node>/v2/external_initiators -d <PAYLOAD>
 ```
 
 where payload is a JSON blob that contains:
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```json
 {
   "name": <MANDATORY UNIQUE NAME>,
@@ -33,14 +36,14 @@ If a URL is provided, Chainlink will notify this URL of added and deleted jobs t
 
 On creation:
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```text
 POST <URL> -d {"jobId": <job external UUID>, "type": <name of external initiator>, "params": <optional arbitrary JSON specified at job creation time>}
 ```
 
 On deletion:
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```text
 DELETE <URL>/<job external UUID>
 ```
@@ -49,7 +52,7 @@ You can use the chainlink client for convenience to access this API.
 
 Enter the [Chainlink nodes CLI](/chainlink-nodes/resources/miscellaneous/#execute-commands-running-docker) and run the following command
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```shell
 chainlink initiators create <NAME> <URL>
 ```
@@ -88,11 +91,14 @@ You'll want to test that your job is running properly. Meeting the criteria of y
 
 To try a real-life example, feel free to follow along with the <a href="https://www.youtube.com/watch?v=J8oJEp4qz5w">Conflux EI demo</a>.
 
-<a href="https://github.com/smartcontractkit/chainlink/wiki/External-Initiators">Additional external initiator reference</a>
+<a href="https://github.com/smartcontractkit/chainlink/wiki/External-Initiators">
+  Additional external initiator reference
+</a>
 
-:::note
-The External Initiator can only initiate [webhook jobs](/chainlink-nodes/oracle-jobs/all-jobs/#webhook-jobs) that have been linked to it. Trying to initiate a job that is not linked will give an unauthorised error.
-:::
+<Aside type="note">
+  The External Initiator can only initiate [webhook jobs](/chainlink-nodes/oracle-jobs/job-types/webhook) that have been
+  linked to it. Trying to initiate a job that is not linked will give an unauthorised error.
+</Aside>
 
 ## Deleting an external initiator
 

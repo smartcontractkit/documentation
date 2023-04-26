@@ -4,17 +4,19 @@ section: nodeOperator
 date: Last Modified
 title: "Performing System Maintenance"
 whatsnext: { "Connecting to a Remote Database": "/chainlink-nodes/resources/connecting-to-a-remote-database/" }
-setup: |
-  import { Tabs } from "@components/Tabs"
 ---
+
+import { Aside } from "@components"
+import { Tabs } from "@components/Tabs"
 
 You might occasionally need to restart the system that the Chainlink node runs on. To restart without any downtime for completing requests, perform the upgrade as a series of steps that passes database access to a new instance while the first instance is down.
 
 ## Maintenance and Image Update Example
 
-:::note[Docker]
-This example uses Docker to run the Chainlink node, see the [Running a Chainlink Node](/chainlink-nodes/v1/running-a-chainlink-node/) page for instructions on how to set it up.
-:::
+<Aside type="note" title="Docker">
+  This example uses Docker to run the Chainlink node, see the [Running a Chainlink
+  Node](/chainlink-nodes/v1/running-a-chainlink-node/) page for instructions on how to set it up.
+</Aside>
 
 First, find the most recent Chainlink image on [Docker Hub](https://hub.docker.com/r/smartcontract/chainlink/) and pull that Docker image. For version 1.11.0:
 
@@ -39,25 +41,29 @@ Look under the PORTS label to see the ports in use by the running container, in 
 
 Now start the second instance of the node. The local port option has been modified so that both containers run simultaneously.
 
+{/* prettier-ignore */}
 <Tabs client:visible>
-<Fragment slot="tab.1">Sepolia</Fragment>
-<Fragment slot="tab.2">Goerli</Fragment>
-<Fragment slot="tab.3">Mainnet</Fragment>
-<Fragment slot="panel.1">
-```shell Sepolia
-cd ~/.chainlink-sepolia && docker run -p 6687:6688 -v ~/.chainlink-sepolia:/chainlink -it --env-file=.env smartcontract/chainlink local n
-```
-</Fragment>
-<Fragment slot="panel.2">
-```shell Goerli
-cd ~/.chainlink-goerli && docker run -p 6687:6688 -v ~/.chainlink-goerli:/chainlink -it --env-file=.env smartcontract/chainlink local n
-```
-</Fragment>
-<Fragment slot="panel.3">
-```shell Mainnet
-cd ~/.chainlink && docker run -p 6687:6688 -v ~/.chainlink:/chainlink -it --env-file=.env smartcontract/chainlink local n
-```
-</Fragment>
+  <Fragment slot="tab.1">Sepolia</Fragment>
+  <Fragment slot="tab.2">Goerli</Fragment>
+  <Fragment slot="tab.3">Mainnet</Fragment>
+  <Fragment slot="panel.1">
+    ```shell Sepolia
+    cd ~/.chainlink-sepolia && docker run -p 6687:6688 -v ~/.chainlink-sepolia:/chainlink -it
+    --env-file=.env smartcontract/chainlink local n
+    ```
+  </Fragment>
+  <Fragment slot="panel.2">
+    ```shell Goerli
+    cd ~/.chainlink-goerli && docker run -p 6687:6688 -v ~/.chainlink-goerli:/chainlink -it
+    --env-file=.env smartcontract/chainlink local n
+    ```
+  </Fragment>
+  <Fragment slot="panel.3">
+    ```shell Mainnet
+    cd ~/.chainlink && docker run -p 6687:6688 -v ~/.chainlink:/chainlink -it --env-file=.env
+    smartcontract/chainlink local n
+    ```
+  </Fragment>
 </Tabs>
 
 The log messages on the second node instance inform you that it is waiting for the database lock.
@@ -74,34 +80,39 @@ At this point, you're now running the latest image on your secondary container. 
 
 Next, run the container again with the local port 6688 in order to go back to normal operations.
 
+{/* prettier-ignore */}
 <Tabs client:visible>
-<Fragment slot="tab.1">Sepolia</Fragment>
-<Fragment slot="tab.2">Goerli</Fragment>
-<Fragment slot="tab.3">Mainnet</Fragment>
-<Fragment slot="panel.1">
-```shell Sepolia
-cd ~/.chainlink-sepolia && docker run -p 6688:6688 -v ~/.chainlink-sepolia:/chainlink -it --env-file=.env smartcontract/chainlink local n
-```
-</Fragment>
-<Fragment slot="panel.2">
-```shell Goerli
-cd ~/.chainlink-goerli && docker run -p 6688:6688 -v ~/.chainlink-goerli:/chainlink -it --env-file=.env smartcontract/chainlink local n
-```
-</Fragment>
-<Fragment slot="panel.3">
-```shell Mainnet
-cd ~/.chainlink && docker run -p 6688:6688 -v ~/.chainlink:/chainlink -it --env-file=.env smartcontract/chainlink local n
-```
-</Fragment>
+  <Fragment slot="tab.1">Sepolia</Fragment>
+  <Fragment slot="tab.2">Goerli</Fragment>
+  <Fragment slot="tab.3">Mainnet</Fragment>
+  <Fragment slot="panel.1">
+    ```shell Sepolia
+    cd ~/.chainlink-sepolia && docker run -p 6688:6688 -v ~/.chainlink-sepolia:/chainlink -it
+    --env-file=.env smartcontract/chainlink local n
+    ```
+  </Fragment>
+  <Fragment slot="panel.2">
+    ```shell Goerli
+    cd ~/.chainlink-goerli && docker run -p 6688:6688 -v ~/.chainlink-goerli:/chainlink -it
+    --env-file=.env smartcontract/chainlink local n
+    ```
+  </Fragment>
+  <Fragment slot="panel.3">
+    ```shell Mainnet
+    cd ~/.chainlink && docker run -p 6688:6688 -v ~/.chainlink:/chainlink -it --env-file=.env
+    smartcontract/chainlink local n
+    ```
+  </Fragment>
 </Tabs>
 
 When the log messages on the first node indicate that it is waiting for the database lock, shut down the second instance of the node. The original instance automatically obtains a lock and resumes normal operation.
 
 ## Failover Node Example
 
-:::note[Docker]
-This example uses Docker to run the Chainlink node, see the [Running a Chainlink Node](/chainlink-nodes/v1/running-a-chainlink-node/) page for instructions on how to set it up.
-:::
+<Aside type="note" title="Docker">
+  This example uses Docker to run the Chainlink node, see the [Running a Chainlink
+  Node](/chainlink-nodes/v1/running-a-chainlink-node/) page for instructions on how to set it up.
+</Aside>
 
 You might want to run multiple instances of the Chainlink node on the same machine. If one instance goes down, the second instance can automatically pick up requests. Building off the concepts in the previous example, use Docker to have primary and a secondary containers referencing the same database URL.
 
@@ -109,25 +120,29 @@ Use the default `DATABASE_LOCKING_MODE=advisorylock` setting unless you want to 
 
 Run the Chainlink node with a name option specified:
 
+{/* prettier-ignore */}
 <Tabs client:visible>
-<Fragment slot="tab.1">Sepolia</Fragment>
-<Fragment slot="tab.2">Goerli</Fragment>
-<Fragment slot="tab.3">Mainnet</Fragment>
-<Fragment slot="panel.1">
-```shell Sepolia
-cd ~/.chainlink-sepolia && docker run --name chainlink -p 6688:6688 -v ~/.chainlink-sepolia:/chainlink -it --env-file=.env smartcontract/chainlink local n
-```
-</Fragment>
-<Fragment slot="panel.2">
-```shell Goerli
-cd ~/.chainlink-goerli && docker run --name chainlink -p 6688:6688 -v ~/.chainlink-goerli:/chainlink -it --env-file=.env smartcontract/chainlink local n
-```
-</Fragment>
-<Fragment slot="panel.3">
-```shell Mainnet
-cd ~/.chainlink && docker run --name chainlink -p 6688:6688 -v ~/.chainlink:/chainlink -it --env-file=.env smartcontract/chainlink local n
-```
-</Fragment>
+  <Fragment slot="tab.1">Sepolia</Fragment>
+  <Fragment slot="tab.2">Goerli</Fragment>
+  <Fragment slot="tab.3">Mainnet</Fragment>
+  <Fragment slot="panel.1">
+    ```shell Sepolia
+    cd ~/.chainlink-sepolia && docker run --name chainlink -p 6688:6688 -v
+    ~/.chainlink-sepolia:/chainlink -it --env-file=.env smartcontract/chainlink local n
+    ```
+  </Fragment>
+  <Fragment slot="panel.2">
+    ```shell Goerli
+    cd ~/.chainlink-goerli && docker run --name chainlink -p 6688:6688 -v ~/.chainlink-goerli:/chainlink
+    -it --env-file=.env smartcontract/chainlink local n
+    ```
+  </Fragment>
+  <Fragment slot="panel.3">
+    ```shell Mainnet
+    cd ~/.chainlink && docker run --name chainlink -p 6688:6688 -v ~/.chainlink:/chainlink -it
+    --env-file=.env smartcontract/chainlink local n
+    ```
+  </Fragment>
 </Tabs>
 
 You will now notice that you no longer receive a randomly generated name from Docker:
@@ -145,25 +160,29 @@ Output (truncated):
 
 This will remain your primary Chainlink container, and should always use port 6688 (unless configured otherwise). For the secondary instance, you will run the container in the same way, but with a different name and a different local port:
 
+{/* prettier-ignore */}
 <Tabs client:visible>
-<Fragment slot="tab.1">Sepolia</Fragment>
-<Fragment slot="tab.2">Goerli</Fragment>
-<Fragment slot="tab.3">Mainnet</Fragment>
-<Fragment slot="panel.1">
-```shell Sepolia
-cd ~/.chainlink-sepolia && docker run --name secondary -p 6687:6688 -v ~/.chainlink-sepolia:/chainlink -it --env-file=.env smartcontract/chainlink local n
-```
-</Fragment>
-<Fragment slot="panel.2">
-```shell Goerli
-cd ~/.chainlink-goerli && docker run --name secondary -p 6687:6688 -v ~/.chainlink-goerli:/chainlink -it --env-file=.env smartcontract/chainlink local n
-```
-</Fragment>
-<Fragment slot="panel.3">
-```shell Mainnet
-cd ~/.chainlink && docker run --name secondary -p 6687:6688 -v ~/.chainlink:/chainlink -it --env-file=.env smartcontract/chainlink local n
-```
-</Fragment>
+  <Fragment slot="tab.1">Sepolia</Fragment>
+  <Fragment slot="tab.2">Goerli</Fragment>
+  <Fragment slot="tab.3">Mainnet</Fragment>
+  <Fragment slot="panel.1">
+    ```shell Sepolia
+    cd ~/.chainlink-sepolia && docker run --name secondary -p 6687:6688 -v
+    ~/.chainlink-sepolia:/chainlink -it --env-file=.env smartcontract/chainlink local n
+    ```
+  </Fragment>
+  <Fragment slot="panel.2">
+    ```shell Goerli
+    cd ~/.chainlink-goerli && docker run --name secondary -p 6687:6688 -v ~/.chainlink-goerli:/chainlink
+    -it --env-file=.env smartcontract/chainlink local n
+    ```
+  </Fragment>
+  <Fragment slot="panel.3">
+    ```shell Mainnet
+    cd ~/.chainlink && docker run --name secondary -p 6687:6688 -v ~/.chainlink:/chainlink -it
+    --env-file=.env smartcontract/chainlink local n
+    ```
+  </Fragment>
 </Tabs>
 
 Notice the `--name secondary` was used for this container and the local port is 6687. Be sure to add this port to your SSH tunnel as well so that you can access the secondary node's GUI if it has become active (it will not function until the primary container goes down).

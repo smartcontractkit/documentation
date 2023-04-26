@@ -6,12 +6,11 @@ title: "Forwarder tutorial"
 metadata:
   title: "Chainlink Node Operators: Forwarder tutorial"
   description: "Use a forwarder contract for more security and flexibility."
-setup: |
-  import CodeSample from "@components/CodeSample/CodeSample.astro"
-  import ClickToZoom from "@components/ClickToZoom.astro"
 ---
 
-:::note[Prerequisites]
+import { Aside, ClickToZoom, CodeSample } from "@components"
+
+<Aside type="note" title="Prerequisites">
 This guide assumes you have a running Chainlink node. See the [Running a Chainlink Node locally](/chainlink-nodes/v1/running-a-chainlink-node) guide to learn how to run a Chainlink node. **Note**: For this example to work, you must use Chainlink node version _1.12.0_ or above.
 
 Also, you must be familiar with these concepts:
@@ -19,9 +18,10 @@ Also, you must be familiar with these concepts:
 - [Forwarder](/chainlink-nodes/contracts/forwarder) contracts.
 - [Operator](/chainlink-nodes/contracts/operator) contracts.
 - [OperatorFactory](/chainlink-nodes/contracts/operatorfactory) contracts.
-  :::
 
-<ClickToZoom src='/images/chainlink-nodes/node-operators/forwarder/forwarder-directrequest-example.webp' />
+</Aside>
+
+<ClickToZoom src="/images/chainlink-nodes/node-operators/forwarder/forwarder-directrequest-example.webp" />
 
 In this tutorial, you will configure your Chainlink node with a simple transaction-sending strategy on the Sepolia testnet:
 
@@ -30,9 +30,12 @@ In this tutorial, you will configure your Chainlink node with a simple transacti
 - Each job uses a different EOA.
 - You use a [forwarder](/chainlink-nodes/contracts/forwarder) contract to fulfill requests with two EOAs that look like a single address.
 
-:::note
-Here you are using a forwarder contract and two EOAs for two [direct request](/chainlink-nodes/oracle-jobs/all-jobs/#direct-request-jobs) jobs. You can use the same strategy for different job types, VRF and OCR. Supporting different job types on the same Chainlink node reduces your infrastructure and maintenance costs.
-:::
+<Aside type="note">
+  Here you are using a forwarder contract and two EOAs for two [direct
+  request](/chainlink-nodes/oracle-jobs/job-types/direct_request) jobs. You can use the same strategy for different job
+  types, VRF and OCR. Supporting different job types on the same Chainlink node reduces your infrastructure and
+  maintenance costs.
+</Aside>
 
 ## Check your Chainlink node is running
 
@@ -153,27 +156,31 @@ Use the [operator factory](/chainlink-nodes/contracts/operatorfactory) to deploy
 1. Open contract [0x447Fd5eC2D383091C22B8549cb231a3bAD6d3fAf](https://sepolia.etherscan.io/address/0x447Fd5eC2D383091C22B8549cb231a3bAD6d3fAf) to display the factory in the Sepolia block explorer.
 1. Click the _Contract_ tab. Then, click _Write Contract_ to display the _write_ transactions on the factory.
 
-   <ClickToZoom src='/images/chainlink-nodes/node-operators/forwarder/factorytransactions.jpg' />
+   <ClickToZoom src="/images/chainlink-nodes/node-operators/forwarder/factorytransactions.jpg" />
 
 1. Click the _Connect to Web3_ button to connect your wallet.
-   <ClickToZoom src='/images/chainlink-nodes/node-operators/forwarder/factorytransactionsconnected.jpg' />
+
+   <ClickToZoom src="/images/chainlink-nodes/node-operators/forwarder/factorytransactionsconnected.jpg" />
 
 1. Click the `deployNewOperatorAndForwarder` function to expand it and then click the _Write_ button to run the function. Metamask prompts you to confirm the transaction.
 
 1. Click _View your transaction_. _Etherscan_ will open a new tab. Wait for the transaction to be successful.
-   <ClickToZoom src='/images/chainlink-nodes/node-operators/forwarder/factoryviewtransaction.jpg' />
 
-      <ClickToZoom src='/images/chainlink-nodes/node-operators/forwarder/deployfromfactorysuccess.jpg' />
+   <ClickToZoom src="/images/chainlink-nodes/node-operators/forwarder/factoryviewtransaction.jpg" />
+
+   {" "}
+
+   <ClickToZoom src="/images/chainlink-nodes/node-operators/forwarder/deployfromfactorysuccess.jpg" />
 
 1. On the _Transaction Details_ page, click _Logs_ to display the list of transaction events. Notice the `OperatorCreated` and `AuthorizedForwarderCreated` events.
 
-   <ClickToZoom src='/images/chainlink-nodes/node-operators/forwarder/factorycreatetransactions.jpg' />
+   <ClickToZoom src="/images/chainlink-nodes/node-operators/forwarder/factorycreatetransactions.jpg" />
 
 1. Right-click on each contract address and open it in a new tab.
 1. At this point, you should have one tab displaying the operator contract and one tab displaying the forwarder contract.
 
-   <ClickToZoom src='/images/chainlink-nodes/node-operators/forwarder/operator.jpg' />
-      <ClickToZoom src='/images/chainlink-nodes/node-operators/forwarder/forwarder.jpg' />
+   <ClickToZoom src="/images/chainlink-nodes/node-operators/forwarder/operator.jpg" />
+   <ClickToZoom src="/images/chainlink-nodes/node-operators/forwarder/forwarder.jpg" />
 
 1. Record the operator and forwarder addresses. You will need them later.
 
@@ -193,7 +200,7 @@ For this example to run, you will have to:
 
 In the blockchain explorer, view the operator contract and call the `setAuthorizedSenders` method with the address of your forwarder contract. The parameter is an array. For example, `["0xA3f07D6773514480b918C2742b027b3acD9E44fA"]`. Metamask prompts you to confirm the transaction.
 
-<ClickToZoom src='/images/chainlink-nodes/node-operators/forwarder/operatorsetauthorizedsenders.jpg' />
+<ClickToZoom src="/images/chainlink-nodes/node-operators/forwarder/operatorsetauthorizedsenders.jpg" />
 
 ### Whitelist the Chainlink node EOAs
 
@@ -204,7 +211,7 @@ In the blockchain explorer, view the operator contract and call the `acceptAutho
 
 Metamask prompts you to confirm the transaction.
 
-<ClickToZoom src='/images/chainlink-nodes/node-operators/forwarder/acceptAuthorizedReceivers.jpg' />
+<ClickToZoom src="/images/chainlink-nodes/node-operators/forwarder/acceptAuthorizedReceivers.jpg" />
 
 ## Activate the forwarder
 
@@ -279,20 +286,22 @@ This section is similar to the [Fulfilling Requests](/chainlink-nodes/v1/fulfill
    - `YOUR_OPERATOR_CONTRACT_ADDRESS` with the address of your deployed operator contract address.
    - `EOA_ADDRESS` with the **first** Chainlink node EOA.
 
-     <CodeSample src="samples/ChainlinkNodes/forwarder/get-uint256.toml"/>
+     <CodeSample src="samples/ChainlinkNodes/forwarder/get-uint256.toml" />
 
 1. Create the `string` job. Replace:
 
    - `YOUR_OPERATOR_CONTRACT_ADDRESS` with the address of your deployed operator contract address.
    - `EOA_ADDRESS` with the **second** Chainlink node EOA.
 
-     <CodeSample src="samples/ChainlinkNodes/forwarder/get-string.toml"/>
+     <CodeSample src="samples/ChainlinkNodes/forwarder/get-string.toml" />
 
 1. After you create the jobs, record the two job IDs.
 
-:::note
-Note that both jobs have the attribute `forwardingAllowed = true`. This attribute will make the jobs attempt to run through the forwarder before falling back to default mode. For example, if the Chainlink node tracks no forwarder, the job falls back to the default mode.
-:::
+<Aside type="note">
+  Note that both jobs have the attribute `forwardingAllowed = true`. This attribute will make the jobs attempt to run
+  through the forwarder before falling back to default mode. For example, if the Chainlink node tracks no forwarder, the
+  job falls back to the default mode.
+</Aside>
 
 ## Test the transaction-sending strategy
 
@@ -339,16 +348,16 @@ Confirm the following information:
 
 Open your forwarder contract in the block explorer. Two [forward](/chainlink-nodes/contracts/forwarder#forward) transactions exist.
 
-<ClickToZoom src='/images/chainlink-nodes/node-operators/forwarder/forward-transactions.jpg' />
+<ClickToZoom src="/images/chainlink-nodes/node-operators/forwarder/forward-transactions.jpg" />
 
 Click on both transaction hashes and note that the `From` addresses differ. In this example, `0x259c49E65644a020C2A642260a4ffB0CD862cb24` is the EOA used in the `uint256` job, and `0x71a1Eb6534054E75F0D6fD0A3B0A336228DD5cFc` is the EOA used in the `string` job:
 
-<ClickToZoom src='/images/chainlink-nodes/node-operators/forwarder/forward1.jpg' />
+<ClickToZoom src="/images/chainlink-nodes/node-operators/forwarder/forward1.jpg" />
 
-<ClickToZoom src='/images/chainlink-nodes/node-operators/forwarder/forward2.jpg' />
+<ClickToZoom src="/images/chainlink-nodes/node-operators/forwarder/forward2.jpg" />
 
 Then click on the `Logs` tab to display the list of events. Notice the [OracleResponse](/chainlink-nodes/contracts/operator#oracleresponse) events. The operator contract emitted them when the Forward contract called it
 
-<ClickToZoom src='/images/chainlink-nodes/node-operators/forwarder/forward1-logs.jpg' />
+<ClickToZoom src="/images/chainlink-nodes/node-operators/forwarder/forward1-logs.jpg" />
 
-<ClickToZoom src='/images/chainlink-nodes/node-operators/forwarder/forward2-logs.jpg' />
+<ClickToZoom src="/images/chainlink-nodes/node-operators/forwarder/forward2-logs.jpg" />
