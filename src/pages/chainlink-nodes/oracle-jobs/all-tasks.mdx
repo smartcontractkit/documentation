@@ -134,7 +134,7 @@ parse [type="jsonparse" path="$(decode_cbor.jsonPath)" data="$(fetch)"]
 // ... etc ...
 ```
 
-See the [Direct Request page](/chainlink-nodes/oracle-jobs/job-types/direct_request) for a more comprehensive example.
+See the [Direct Request page](/chainlink-nodes/oracle-jobs/all-jobs/#direct-request-jobs) for a more comprehensive example.
 
 ## Divide task
 
@@ -185,11 +185,11 @@ Decodes a log emitted by an ETH contract.
 - `data`: the ABI-encoded log data. Can be:
   - a byte array
   - a hex-encoded string beginning with `0x`
-  - ... but generally should just be set to `$(jobRun.logData)` (see the [Direct Request page](/chainlink-nodes/oracle-jobs/job-types/direct_request))
+  - ... but generally should just be set to `$(jobRun.logData)` (see the [Direct Request page](/chainlink-nodes/oracle-jobs/all-jobs/#direct-request-jobs))
 - `topics`: the ABI-encoded log topics (i.e., the `indexed` parameters)
   - an array of bytes32 values
   - an array of hex-encoded bytes32 values beginning with `0x`
-  - ... but generally should just be set to `$(jobRun.logTopics)` (see the [Direct Request page](/chainlink-nodes/oracle-jobs/job-types/direct_request))
+  - ... but generally should just be set to `$(jobRun.logTopics)` (see the [Direct Request page](/chainlink-nodes/oracle-jobs/all-jobs/#direct-request-jobs))
 
 **Outputs**
 

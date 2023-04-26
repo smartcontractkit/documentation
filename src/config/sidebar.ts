@@ -977,28 +977,8 @@ export const SIDEBAR = {
           url: "chainlink-nodes/oracle-jobs/jobs",
           children: [
             {
-              title: "Cron",
-              url: "chainlink-nodes/oracle-jobs/job-types/cron",
-            },
-            {
-              title: "Direct Request",
-              url: "chainlink-nodes/oracle-jobs/job-types/direct_request",
-            },
-            {
-              title: "Flux Monitor",
-              url: "chainlink-nodes/oracle-jobs/job-types/flux_monitor",
-            },
-            {
-              title: "Keeper",
-              url: "chainlink-nodes/oracle-jobs/job-types/keeper",
-            },
-            {
-              title: "Off-chain Reporting",
-              url: "chainlink-nodes/oracle-jobs/job-types/offchain_reporting",
-            },
-            {
-              title: "Webhook",
-              url: "chainlink-nodes/oracle-jobs/job-types/webhook",
+              title: "Job Types",
+              url: "chainlink-nodes/oracle-jobs/all-jobs",
             },
           ],
         },
