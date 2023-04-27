@@ -50,7 +50,7 @@ export const SIDEBAR = {
       section: "Resources",
       contents: [
         {
-          title: "Videos and Tutorials",
+          title: "Learning Resources",
           url: "getting-started/other-tutorials?parent=gettingStarted",
         },
         {
@@ -257,7 +257,7 @@ export const SIDEBAR = {
       section: "Resources",
       contents: [
         {
-          title: "Videos and Tutorials",
+          title: "Learning Resources",
           url: "getting-started/other-tutorials?parent=dataFeeds",
         },
         {
@@ -370,10 +370,6 @@ export const SIDEBAR = {
             },
           ],
         },
-        {
-          title: "Automation Architecture",
-          url: "chainlink-automation/overview/",
-        },
       ],
     },
     {
@@ -382,6 +378,10 @@ export const SIDEBAR = {
         {
           title: "Automation Pricing",
           url: "chainlink-automation/automation-economics/",
+        },
+        {
+          title: "Automation Architecture",
+          url: "chainlink-automation/overview/",
         },
         {
           title: "Automation Release Notes",
@@ -418,7 +418,7 @@ export const SIDEBAR = {
       section: "Resources",
       contents: [
         {
-          title: "Videos and Tutorials",
+          title: "Learning Resources",
           url: "getting-started/other-tutorials?parent=automation",
         },
         {
@@ -713,7 +713,7 @@ export const SIDEBAR = {
       section: "Resources",
       contents: [
         {
-          title: "Videos and Tutorials",
+          title: "Learning Resources",
           url: "getting-started/other-tutorials?parent=vrf",
         },
         {
@@ -836,7 +836,7 @@ export const SIDEBAR = {
       section: "Resources",
       contents: [
         {
-          title: "Videos and Tutorials",
+          title: "Learning Resources",
           url: "getting-started/other-tutorials?parent=anyApi",
         },
         {
@@ -1006,28 +1006,8 @@ export const SIDEBAR = {
           url: "chainlink-nodes/oracle-jobs/jobs",
           children: [
             {
-              title: "Cron",
-              url: "chainlink-nodes/oracle-jobs/job-types/cron",
-            },
-            {
-              title: "Direct Request",
-              url: "chainlink-nodes/oracle-jobs/job-types/direct_request",
-            },
-            {
-              title: "Flux Monitor",
-              url: "chainlink-nodes/oracle-jobs/job-types/flux_monitor",
-            },
-            {
-              title: "Keeper",
-              url: "chainlink-nodes/oracle-jobs/job-types/keeper",
-            },
-            {
-              title: "Off-chain Reporting",
-              url: "chainlink-nodes/oracle-jobs/job-types/offchain_reporting",
-            },
-            {
-              title: "Webhook",
-              url: "chainlink-nodes/oracle-jobs/job-types/webhook",
+              title: "Job Types",
+              url: "chainlink-nodes/oracle-jobs/all-jobs",
             },
           ],
         },
