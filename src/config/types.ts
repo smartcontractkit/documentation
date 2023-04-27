@@ -13,7 +13,6 @@ export type SupportedTechnology =
   | "MOONRIVER"
   | "MOONBEAM"
   | "METIS"
-  | "KLAYTN"
   | "BASE"
 
 export type SupportedChain =
@@ -39,7 +38,6 @@ export type SupportedChain =
   | "MOONRIVER_MAINNET"
   | "MOONBEAM_MAINNET"
   | "METIS_MAINNET"
-  | "KLAYTN_BAOBAB"
   | "BASE_GOERLI"
 
 export type Chains = Record<

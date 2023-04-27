@@ -28,5 +28,4 @@ export const chainToProvider: Record<SupportedChain, () => providers.Provider> =
   MOONRIVER_MAINNET: () => new providers.JsonRpcProvider("https://rpc.api.moonriver.moonbeam.network"),
   MOONBEAM_MAINNET: () => new providers.JsonRpcProvider("https://rpc.ankr.com/moonbeam"),
   METIS_MAINNET: () => new providers.JsonRpcProvider("https://andromeda.metis.io/?owner=1088"),
-  KLAYTN_BAOBAB: () => new providers.JsonRpcProvider("https://api.baobab.klaytn.net:8651"),
 }
