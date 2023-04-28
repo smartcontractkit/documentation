@@ -23,6 +23,6 @@ export default defineConfig({
     ],
     syntaxHighlight: "prism",
     smartypants: false,
-    gfm: false,
+    gfm: true,
   },
 })
