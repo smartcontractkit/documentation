@@ -79,7 +79,7 @@ export const CHAINS: Chain[] = [
     label: "Polygon (Matic)",
     img: "/assets/chains/polygon.svg",
     networkStatusUrl: "https://polygon.io/system",
-    tags: ["default", "proofOfReserve"],
+    tags: ["default", "proofOfReserve", "nftFloorPrice"],
     networks: [
       {
         name: "Polygon Mainnet",
@@ -93,6 +93,7 @@ export const CHAINS: Chain[] = [
         explorerUrl: "https://mumbai.polygonscan.com/address/%s",
         networkType: "testnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-matic-testnet.json",
+        tags: ["nftFloorPrice"],
       },
     ],
   },
