@@ -20,11 +20,11 @@ export const evmProducts = [
     learnMorelink: "data-feeds",
     image: dataFeedsLogo,
     links: [
-      ["Introduction", "data-feeds/"],
-      ["Price Feeds", "data-feeds/price-feeds/"],
-      ["Proof of Reserve Feeds", "data-feeds/proof-of-reserve/"],
-      ["NFT Floor Pricing Feeds", "data-feeds/nft-floor-price/"],
-      ["Rate and Volatility Feeds", "data-feeds/rates-feeds/"],
+      ["Introduction", "data-feeds"],
+      ["Price Feeds", "data-feeds/price-feeds"],
+      ["Proof of Reserve Feeds", "data-feeds/proof-of-reserve"],
+      ["NFT Floor Pricing Feeds", "data-feeds/nft-floor-price"],
+      ["Rate and Volatility Feeds", "data-feeds/rates-feeds"],
     ],
     chains: [
       ...baseChains,
