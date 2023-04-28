@@ -11,5 +11,5 @@ export const NotificationData: BannerContent | null = {
   type: "info",
   linkText: "Sign up now.",
   linkUrl:
-    "https://chain.link/hackathon/?utm_medium=referral&utm_source=chainlink-docs&utm_campaign=spring-2023-hackathon&agid=herc3mbxlrtw",
+    "https://smartcon.chain.link/?utm_medium=referral&utm_source=chainlink-docs&utm_campaign=smartcon-2023&agid=kgmdzq5cr7sn",
 }
