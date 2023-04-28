@@ -7,9 +7,9 @@ import { BannerContent } from "../components/HeaderBanner"
 // export const NotificationData: BannerContent | null = null
 
 export const NotificationData: BannerContent | null = {
-  description: "The Chainlink Hackathon kicks off April 28th!",
+  description: "Attend SmartCon 2023 to explore the future of Web3.",
   type: "info",
-  linkText: "Register today to compete for $450K+ in prizes.",
+  linkText: "Sign up now.",
   linkUrl:
     "https://chain.link/hackathon/?utm_medium=referral&utm_source=chainlink-docs&utm_campaign=spring-2023-hackathon&agid=herc3mbxlrtw",
 }
