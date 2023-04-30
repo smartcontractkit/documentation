@@ -15,12 +15,12 @@ module.exports = {
     },
     localhost: {},
     mumbai: {
-      url: process.env.MUMBAI_RPC_URL,
+      url: process.env.POLYGON_MUMBAI_RPC_URL,
       accounts: [process.env.PRIVATE_KEY],
       saveDeployments: true,
     },
     sepolia: {
-      url: process.env.SEPOLIA_RPC_URL,
+      url: process.env.ETHEREUM_SEPOLIA_RPC_URL,
       accounts: [process.env.PRIVATE_KEY],
       saveDeployments: true,
     },
