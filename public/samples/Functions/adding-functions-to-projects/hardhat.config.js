@@ -14,12 +14,12 @@ module.exports = {
       // }
     },
     localhost: {},
-    mumbai: {
+    polygonMumbai: {
       url: process.env.POLYGON_MUMBAI_RPC_URL,
       accounts: [process.env.PRIVATE_KEY],
       saveDeployments: true,
     },
-    sepolia: {
+    ethereumSepolia: {
       url: process.env.ETHEREUM_SEPOLIA_RPC_URL,
       accounts: [process.env.PRIVATE_KEY],
       saveDeployments: true,
