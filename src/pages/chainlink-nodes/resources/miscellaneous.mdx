@@ -101,15 +101,145 @@ Once complete, you should see a message "Password updated."
 
 See the [Roles and Access Control](/chainlink-nodes/v1/roles-and-access) page.
 
-## Importing a Keystore
+## Key management
 
-If you haven't run the node before and want to import a key you can use the following command, where `./keystore.json` is the path to the keystore file of your account.
+In this section, ensure you log into the CLI by executing the following command:
 
-```shell import
-chainlink local import ./keystore.json
+```shell
+chainlink admin login
 ```
 
-If there is already a key in your database and you want to import another key, you will need to make sure that the same password unlocks all accounts.
+Authenticate using your API email and password.
+
+### List ETH keys
+
+To list available Ethereum accounts along with their ETH & LINK balances, nonces, and other metadata, execute the following command:
+
+```shell
+chainlink keys eth list
+```
+
+Example:
+
+```text
+🔑 ETH keys
+-------------------------------------------------------------------------------------------------
+Address:           0x2d4f5FBD00E5A4fD53D162cE7EDFdb5b7664C542
+EVM Chain ID:      11155111
+Next Nonce:        0
+ETH:               0.000000000000000000
+LINK:              0
+Disabled:          false
+Created:           2023-04-26 08:12:51.340348 +0000 UTC
+Updated:           2023-04-26 08:12:51.340348 +0000 UTC
+```
+
+### Create a new ETH Key
+
+To create a key in the node's keystore alongside the existing keys, run the following command:
+
+```shell
+chainlink keys eth create
+```
+
+Example:
+
+```text
+ETH key created.
+
+🔑 New key
+-------------------------------------------------------------------------------------------------
+Address:           0xd31961E1f62A2FaB824AC3C1A7a332daF8B11eE0
+EVM Chain ID:      11155111
+Next Nonce:        0
+ETH:               0.000000000000000000
+LINK:              0
+Disabled:          false
+Created:           2023-04-26 08:28:36.52974 +0000 UTC
+Updated:           2023-04-26 08:28:36.52974 +0000 UTC
+Max Gas Price Wei: 115792089237316195423570985008687907853269984665640564039457584007913129639935
+```
+
+### Export an ETH key
+
+To export an Ethereum key to a JSON file, run the following command:
+
+```shell
+chainlink keys eth export [address] [command options]
+```
+
+where:
+
+- `address`: The EVM account address for which you want to export the private key.
+
+- Options:
+
+  - `--newpassword FILE, -p FILE FILE`: A file containing the password to encrypt the key.
+  - `--output value, -o value`: The path where the JSON file will be saved.
+
+Example:
+
+```text
+chainlink keys eth export 0xd31961E1f62A2FaB824AC3C1A7a332daF8B11eE0 --newpassword .chainlink/pass --output privatekey.json
+
+🔑 Exported ETH key 0xd31961E1f62A2FaB824AC3C1A7a332daF8B11eE0 to privatekey.json
+```
+
+### Delete an ETH key
+
+To remove an Ethereum key, run the following command:
+
+```shell
+chainlink keys eth delete [address] [command options]
+```
+
+where:
+
+- `address`: The EVM account address that you want to remove.
+
+- Options:
+
+  - `--yes, -y`: Skip the confirmation prompt.
+
+Example:
+
+```text
+$ chainlink keys eth delete 0xd31961E1f62A2FaB824AC3C1A7a332daF8B11eE0 --yes
+Deleted ETH key: 0xd31961E1f62A2FaB824AC3C1A7a332daF8B11eE0
+```
+
+### Import an ETH key
+
+To import an Ethereum key from a JSON file, run the following command:
+
+```shell
+chainlink keys eth import [JSON file] [command options]
+```
+
+where:
+
+- `JSON file`: The path where the JSON file containing the ETH key is saved.
+
+- Options:
+  - `--oldpassword FILE, -p FILE`: FILE containing the password used to encrypt the key in the JSON file.
+  - `--evmChainID value`: Chain ID for the key. If left blank, default chain will be used.
+
+Example:
+
+```text
+$ chainlink keys eth import privatekey.json --oldpassword .chainlink/pass
+🔑 Imported ETH key
+-------------------------------------------------------------
+Address:           0xd31961E1f62A2FaB824AC3C1A7a332daF8B11eE0
+EVM Chain ID:      11155111
+Next Nonce:        0
+ETH:               0.000000000000000000
+LINK:              0
+Disabled:          false
+Created:           2023-04-26 08:51:02.04186 +0000 UTC
+Updated:           2023-04-26 08:51:02.04186 +0000 UTC
+Max Gas Price Wei: <nil>
+```
 
 ## Full example in detached mode
 
