@@ -30,13 +30,13 @@ Use these elements to create a compatible contract that will automatically incre
 
 <CodeSample src="samples/Automation/AutomationCounter.sol" />
 
-Compile and deploy your own Automation Counter onto a [supported Testnet](/chainlink-automation/supported-networks/).
+Compile and deploy your own Automation Counter onto a [supported Testnet](/chainlink-automation/supported-networks).
 
 1. In the Remix example, select the compile tab on the left and press the compile button. Make sure that your contract compiles without any errors. Note that the Warning messages in this example are acceptable and will not block the deployment.
 1. Select the **Deploy** tab and deploy the `Counter` smart contract in the `injected web3` environment. When deploying the contract, specify the `updateInterval` value. For this example, set a short interval of 60. This is the interval at which the `performUpkeep` function will be called.
 1. After deployment is complete, copy the address of the deployed contract. This address is required to register your upkeep.
 
-To see more complex examples, go to the [utility contracts](/chainlink-automation/utility-contracts/) page.
+To see more complex examples, go to the [utility contracts](/chainlink-automation/utility-contracts) page.
 
 We will now look at each function in a compatible contract in detail.
 
@@ -61,7 +61,6 @@ Because `checkUpkeep` is only off-chain in simulation it is best to treat this a
 function checkUpkeep(
   bytes calldata checkData
 ) external view override returns (bool upkeepNeeded, bytes memory performData);
-
 ```
 
 Below are the parameters and return values of the `checkUpkeep` function. Click each value to learn more about its design patterns and best practices:
@@ -77,7 +76,7 @@ Below are the parameters and return values of the `checkUpkeep` function. Click 
 
 #### `checkData`
 
-You can pass information into your `checkUpkeep` function from your [upkeep registration](/chainlink-automation/register-upkeep/) to execute different code paths. For example, to check the balance on an specific address, set the `checkData` to abi encode of the address. To learn how to create flexible upkeeps with checkData, please see out [flexible upkeeps](/chainlink-automation/flexible-upkeeps/) page.
+You can pass information into your `checkUpkeep` function from your [upkeep registration](/chainlink-automation/register-upkeep) to execute different code paths. For example, to check the balance on an specific address, set the `checkData` to abi encode of the address. To learn how to create flexible upkeeps with checkData, please see out [flexible upkeeps](/chainlink-automation/flexible-upkeeps) page.
 
 <CodeSample src="snippets/Automation/checkData.sol" />
 
@@ -111,7 +110,6 @@ Ensure that your `performUpkeep` is _idempotent_. Your `performUpkeep` function 
 
 ```solidity
 function performUpkeep(bytes calldata performData) external override;
-
 ```
 
 **Parameters:**
