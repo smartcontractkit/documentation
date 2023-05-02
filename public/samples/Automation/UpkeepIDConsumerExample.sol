@@ -4,7 +4,6 @@ pragma solidity 0.8.6;
 // UpkeepIDConsumerExample.sol imports functions from both ./AutomationRegistryInterface2_0.sol and
 // ./interfaces/LinkTokenInterface.sol
 
-import {AutomationRegistryInterface, State, OnchainConfig} from "@chainlink/contracts/src/v0.8/interfaces/AutomationRegistryInterface2_0.sol";
 import {LinkTokenInterface} from "@chainlink/contracts/src/v0.8/interfaces/LinkTokenInterface.sol";
 
 /**
@@ -13,77 +12,38 @@ import {LinkTokenInterface} from "@chainlink/contracts/src/v0.8/interfaces/LinkT
  * DO NOT USE THIS CODE IN PRODUCTION.
  */
 
+struct RegistrationParams {
+    string name;
+    bytes encryptedEmail;
+    address upkeepContract;
+    uint32 gasLimit;
+    address adminAddress;
+    bytes checkData;
+    bytes offchainConfig;
+    uint96 amount;
+}
+
 interface KeeperRegistrarInterface {
-    function register(
-        string memory name,
-        bytes calldata encryptedEmail,
-        address upkeepContract,
-        uint32 gasLimit,
-        address adminAddress,
-        bytes calldata checkData,
-        bytes calldata offchainConfig,
-        uint96 amount,
-        address sender
-    ) external;
+    function registerUpkeep(
+        RegistrationParams calldata requestParams
+    ) external returns (uint256);
 }
 
 contract UpkeepIDConsumerExample {
     LinkTokenInterface public immutable i_link;
-    address public immutable registrar;
-    AutomationRegistryInterface public immutable i_registry;
-    bytes4 registerSig = KeeperRegistrarInterface.register.selector;
+    KeeperRegistrarInterface public immutable i_registrar;
 
-    constructor(
-        LinkTokenInterface _link,
-        address _registrar,
-        AutomationRegistryInterface _registry
-    ) {
-        i_link = _link;
-        registrar = _registrar;
-        i_registry = _registry;
+    constructor(LinkTokenInterface link, KeeperRegistrarInterface registrar) {
+        i_link = link;
+        i_registrar = registrar;
     }
 
-    function registerAndPredictID(
-        string memory name,
-        bytes calldata encryptedEmail,
-        address upkeepContract,
-        uint32 gasLimit,
-        address adminAddress,
-        bytes calldata checkData,
-        bytes calldata offchainConfig,
-        uint96 amount
-    ) public {
-        (State memory state, , , , ) = i_registry.getState();
-        uint256 oldNonce = state.nonce;
-        bytes memory payload = abi.encode(
-            name,
-            encryptedEmail,
-            upkeepContract,
-            gasLimit,
-            adminAddress,
-            checkData,
-            offchainConfig,
-            amount,
-            address(this)
-        );
-
-        i_link.transferAndCall(
-            registrar,
-            amount,
-            bytes.concat(registerSig, payload)
-        );
-        (state, , , , ) = i_registry.getState();
-        uint256 newNonce = state.nonce;
-        if (newNonce == oldNonce + 1) {
-            uint256 upkeepID = uint256(
-                keccak256(
-                    abi.encodePacked(
-                        blockhash(block.number - 1),
-                        address(i_registry),
-                        uint32(oldNonce)
-                    )
-                )
-            );
+    function registerAndPredictID(RegistrationParams memory params) public {
+        // LINK must be approved for transfer - this can be done every time or once
+        // with an infinite approval
+        i_link.approve(address(i_registrar), params.amount);
+        uint256 upkeepID = i_registrar.registerUpkeep(params);
+        if (upkeepID != 0) {
             // DEV - Use the upkeepID however you see fit
         } else {
             revert("auto-approve disabled");
