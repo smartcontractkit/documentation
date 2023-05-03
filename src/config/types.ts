@@ -7,13 +7,11 @@ export type SupportedTechnology =
   | "AVALANCHE"
   | "FANTOM"
   | "ARBITRUM"
-  | "HECO"
   | "OPTIMISM"
   | "HARMONY"
   | "MOONRIVER"
   | "MOONBEAM"
   | "METIS"
-  | "KLAYTN"
   | "BASE"
 
 export type SupportedChain =
@@ -32,14 +30,12 @@ export type SupportedChain =
   | "FANTOM_TESTNET"
   | "ARBITRUM_MAINNET"
   | "ARBITRUM_GOERLI"
-  | "HECO_MAINNET"
   | "OPTIMISM_MAINNET"
   | "OPTIMISM_GOERLI"
   | "HARMONY_MAINNET"
   | "MOONRIVER_MAINNET"
   | "MOONBEAM_MAINNET"
   | "METIS_MAINNET"
-  | "KLAYTN_BAOBAB"
   | "BASE_GOERLI"
 
 export type Chains = Record<

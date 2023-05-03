@@ -92,7 +92,7 @@ Install the required frameworks and dependencies:
 
             1.  Run `npx env-enc set` to configure a `.env.enc` file with the basic variables that you need to send your requests to the Polygon Mumbai network.
 
-                  - `MUMBAI_RPC_URL`: Set a URL for the Polygon Mumbai testnet. You can sign up for a personal endpoint from [Alchemy](https://www.alchemy.com/), [Infura](https://www.infura.io/), or another node provider service.
+                  - `POLYGON_MUMBAI_RPC_URL`: Set a URL for the Polygon Mumbai testnet. You can sign up for a personal endpoint from [Alchemy](https://www.alchemy.com/), [Infura](https://www.infura.io/), or another node provider service.
 
                   - `PRIVATE_KEY`: Find the private key for your testnet wallet. If you use MetaMask, follow the instructions to [Export a Private Key](https://metamask.zendesk.com/hc/en-us/articles/360015289632-How-to-export-an-account-s-private-key). Set this in the `.env` file. **Note**: The Chainlink Functions hardhat starter kit uses your private key to sign any transactions you make such as deploying your consumer contract, creating subscriptions, and making requests.
 
@@ -132,7 +132,7 @@ Deploy an on-chain [FunctionsConsumer.sol](https://github.com/smartcontractkit/f
 1. Deploy the consumer contract and record the contract address. For now, you can skip on-chain contract verification with the `--verify false` flag. If you do need to [verify](https://blog.chain.link/how-to-verify-a-smart-contract-on-etherscan) your contract on-chain, sign up for a [free Polygonscan API key](https://polygonscan.com/login) and include the key in your `.env.enc` file by running `npx env-enc set` and set `POLYGONSCAN_API_KEY`.
 
    ```shell
-   npx hardhat functions-deploy-client --network mumbai --verify false
+   npx hardhat functions-deploy-client --network polygonMumbai --verify false
    ```
 
    Find the contract address in the output:
@@ -144,7 +144,7 @@ Deploy an on-chain [FunctionsConsumer.sol](https://github.com/smartcontractkit/f
 1. Create a Chainlink Functions subscription and add your contract as an approved consumer contract. You can do this with a single transaction if you include your contract address with the `--contract` flag. For this example, 1 LINK is more than enough on the Mumbai testnet. You can always get more LINK from [faucets.chain.link](https://faucets.chain.link/mumbai) and later add it to the subscription. See the [Subscriptions Management](/chainlink-functions/resources/subscriptions#fund-a-subscription) page for details.
 
    ```shell
-   npx hardhat functions-sub-create --network mumbai --amount 1 --contract YOUR_CONSUMER_CONTRACT_ADDRESS
+   npx hardhat functions-sub-create --network polygonMumbai --amount 1 --contract YOUR_CONSUMER_CONTRACT_ADDRESS
    ```
 
    Record the subscription ID from the output.
@@ -162,7 +162,7 @@ Deploy an on-chain [FunctionsConsumer.sol](https://github.com/smartcontractkit/f
 After your environment and on-chain resources are configured, you can send your request to the DON to execute the request defined in the [Functions-request-config.js](https://github.com/smartcontractkit/functions-hardhat-starter-kit/blob/main/Functions-request-config.js) file. Run `npx hardhat functions-request`. Specify your subscription ID with the `--subid` flag and specify your consumer contract address with the `--contract` flag.
 
 ```shell
-npx hardhat functions-request --subid YOUR_SUBSCRIPTION_ID --contract YOUR_CONSUMER_CONTRACT_ADDRESS --network mumbai
+npx hardhat functions-request --subid YOUR_SUBSCRIPTION_ID --contract YOUR_CONSUMER_CONTRACT_ADDRESS --network polygonMumbai
 ```
 
 The on-chain transaction and request will take longer to complete than the simulation. The output includes a decoded response:
