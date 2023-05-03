@@ -1,17 +1,12 @@
-<p align="center"><img src="https://user-images.githubusercontent.com/99068989/233969677-72ce0ba4-7cf3-4ea9-bb9d-61479ddca307.png" width="300px"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/smartcontractkit/documentation/main/public/chainlink-docs.svg" style="background: white; padding: 8px;" alt="Chainlink Docs logo" width="400"></p>
 
-<h2 align="center" style="font-size: 32px;">Start building with Chainlink Docs 📃</h2>
+Welcome to Chainlink developer documentation repository. This repository is the source for developer documentation on [docs.chain.link](https://docs.chain.link/), which is a resource for smart contract developers and node operators building decentralized applications on several networks.
 
-<p>Welcome to Chainlink developer documentation website for Blockchain Devs, Smart Contract Devs and Node Operators. Chainlink gives the go-to resource for smart contract developers and node operators looking to integrate external data into their decentralized applications. As the leading oracle infrastructure provider, Chainlink offers a robust set of tools and services that enable developers to build scalable and externally-connected dApps on any blockchain or layer-2 network.
-  
-This open source project is dedicated to providing comprehensive documentation for the Chainlink platform, empowering users to leverage the full potential of our technology. Whether you're a seasoned developer or just getting started, the Chainlink Docs are here to help you succeed. Let's get building! 🚀 </p>
-
-<p>For more information, please visit the <a href="https://docs.chain.link/">Chainlink documentation website</a>.</p>
-
-<br>
-
+This documentation is open source. If you want to contribute tutorials or improvements, see the [Contributing](https://github.com/smartcontractkit/documentation/blob/main/CONTRIBUTING.md) guide.
 
 ## Developing
+
+To run a local development environment, use the following command:
 
 ```
 npm install && npm run dev
@@ -24,9 +19,8 @@ npm install && npm run dev
 
 ## Deploy Preview
 
-This repo is configured to automatically create a preview environment
-on Vercel when a PR is opened. The Vercel bot will leave a comment with a link to the preview on your PR.
+This repo is configured to automatically create a preview environment on Vercel when a PR is opened. After the deployment is approved, the Vercel bot will leave a comment with a link to the preview on your PR.
 
 ## Deploying to Production
 
-This repo is configured to automatically update production (`https://docs.chain.link`) when the `main` branch is updated.
+This repo is configured to automatically update the production (`https://docs.chain.link`) site when commits are pushed to the `main` branch.
