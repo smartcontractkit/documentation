@@ -13,7 +13,9 @@ const currentPage = new URL(Astro.request.url).pathname
 const formattedContentTitle = content.title
   ? `${content.title} | ${CONFIG.SITE.title}`
   : `${CONFIG.PAGE.titleFallback} | ${CONFIG.SITE.title}`
-const canonicalURL = new URL(Astro.url.pathname, Astro.site)
+
+const canonicalURLStr = new URL(Astro.url.pathname, Astro.site).href.replace(/\/+$/, "")
+const canonicalURL = new URL(canonicalURLStr)
 ---
 
 <html dir={content.dir ?? "ltr"} lang={content.lang ?? "en-us"} class="initial">

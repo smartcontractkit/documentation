@@ -26,7 +26,7 @@ import { YouTube } from "@astro-community/astro-embed-youtube"
 
 <Aside type="note" title="Requirements">
   This guide assumes that you have basic knowledge about writing and deploying smart contracts. If you are new to smart
-  contract development, read the [Consuming Data Feeds](/getting-started/consuming-data-feeds/) guide before you begin.
+  contract development, read the [Consuming Data Feeds](/getting-started/consuming-data-feeds) guide before you begin.
 </Aside>
 
 <YouTube id="https://www.youtube.com/watch?v=rdJ5d8j1RCg&ab" />
@@ -37,13 +37,13 @@ In this guide, you will learn about generating randomness on blockchains. This i
 
 ## How is randomness generated on blockchains? What is Chainlink VRF?
 
-Randomness is very difficult to generate on blockchains. This is because every node on the blockchain must come to the same conclusion and form a consensus. Even though random numbers are versatile and useful in a variety of blockchain applications, they cannot be generated natively in smart contracts. The solution to this issue is [**Chainlink VRF**](/vrf/v2/introduction/), also known as Chainlink Verifiable Random Function.
+Randomness is very difficult to generate on blockchains. This is because every node on the blockchain must come to the same conclusion and form a consensus. Even though random numbers are versatile and useful in a variety of blockchain applications, they cannot be generated natively in smart contracts. The solution to this issue is [**Chainlink VRF**](/vrf/v2/introduction), also known as Chainlink Verifiable Random Function.
 
 ## What is the Request and Receive cycle?
 
-The [previous guide](/getting-started/consuming-data-feeds/) explained how to consume Chainlink Data Feeds, which consist of reference data posted on-chain by oracles. This data is stored in a contract and can be referenced by consumers until the oracle updates the data again.
+The [previous guide](/getting-started/consuming-data-feeds) explained how to consume Chainlink Data Feeds, which consist of reference data posted on-chain by oracles. This data is stored in a contract and can be referenced by consumers until the oracle updates the data again.
 
-Randomness, on the other hand, cannot be reference data. If the result of randomness is stored on-chain, any actor could retrieve the value and predict the outcome. Instead, randomness must be requested from an oracle, which generates a number and a cryptographic proof. Then, the oracle returns that result to the contract that requested it. This sequence is known as the **[Request and Receive cycle](/architecture-overview/architecture-request-model/)**.
+Randomness, on the other hand, cannot be reference data. If the result of randomness is stored on-chain, any actor could retrieve the value and predict the outcome. Instead, randomness must be requested from an oracle, which generates a number and a cryptographic proof. Then, the oracle returns that result to the contract that requested it. This sequence is known as the **[Request and Receive cycle](/architecture-overview/architecture-request-model)**.
 
 ## What is the payment process for generating a random number?
 
@@ -52,13 +52,13 @@ To learn more about VRF requests funding, see [Subscriptions limits](/vrf/v2/sub
 
 ## How can I use Chainlink VRF?
 
-To see a basic implementation of Chainlink VRF, see [Get a Random Number](/vrf/v2/subscription/examples/get-a-random-number/). In this section, you will create an application that uses Chainlink VRF to generate randomness. The contract used in this application will have a [_Game of Thrones_](https://en.wikipedia.org/wiki/Game_of_Thrones) theme.
+To see a basic implementation of Chainlink VRF, see [Get a Random Number](/vrf/v2/subscription/examples/get-a-random-number). In this section, you will create an application that uses Chainlink VRF to generate randomness. The contract used in this application has a [_Game of Thrones_](https://en.wikipedia.org/wiki/Game_of_Thrones) theme.
 
-The contract will request randomness from Chainlink VRF. The result of the randomness will transform into a number between 1 and 20, mimicking the rolling of a 20 sided die. Each number represents a _Game of Thrones_ house. If the dice land on the value 1, the user is assigned house Targaryan, 2 for Lannister, and so on. A full list of houses can be found [here](https://gameofthrones.fandom.com/wiki/Great_House).
+After the contract requests randomness from Chainlink VRF, the result of the randomness will transform into a number between 1 and 20, mimicking the rolling of a 20 sided die. Each number represents a _Game of Thrones_ house. If the dice land on the value 1, the user is assigned house Targaryan, 2 for Lannister, and so on. A full list of houses can be found [here](https://gameofthrones.fandom.com/wiki/Great_House).
 
-When rolling the dice, it will accept an `address` variable to track which address is assigned to each house.
+When rolling the dice, it uses an `address` variable to track which address is assigned to each house.
 
-The contract will have the following functions:
+The contract has the following functions:
 
 - `rollDice`: This submits a randomness request to Chainlink VRF
 - `fulfillRandomWords`: The function that the Oracle uses to send the result back
@@ -342,21 +342,21 @@ You have now completed all necessary functions to generate randomness and assign
 
 ## How do I deploy to testnet?
 
-You will now deploy your completed contract. This deployment is slightly different than the example in the [Deploy Your First Contract](/getting-started/deploy-your-first-contract/) guide. In our case, you will have to pass in parameters to the constructor upon deployment.
+You will deploy this contract on the Sepolia test network. You need to [have some Sepolia ETH](/getting-started/deploy-your-first-contract/#install-and-fund-your-metamask-wallet) in your MetaMask account to pay for the gas.
+
+This deployment is slightly different than the example in the [Deploy Your First Contract](/getting-started/deploy-your-first-contract) guide. In this case, you pass in parameters to the constructor upon deployment.
 
 Once compiled, you'll see a dropdown menu that looks like this in the deploy pane:
 
 ![Remix contract selected](/files/intermediates-tutorial-01.png)
 
-Select the `VRFD20` contract or the name that you gave to your contract. You will deploy this contract on the Sepolia test network.
+Select the `VRFD20` contract or the name that you gave to your contract.
 
-Click the caret arrow on the right hand side of **Deploy** to expand the parameter fields, and paste your subscription id.
+Click the caret arrow on the right hand side of **Deploy** to expand the parameter fields, and paste your subscription ID.
 
 ![Remix contract parameters to deploy](/files/intermediates-tutorial-02.png)
 
-Then click the `Deploy` button and use your Metamask account to confirm the transaction.
-
-**Note**: You should [have some Sepolia ETH](/getting-started/deploy-your-first-contract/#install-and-fund-your-metamask-wallet) in your Metamask account to pay for the gas.
+Then click the `Deploy` button and use your MetaMask account to confirm the transaction.
 
 <Aside type="note" title="Address, Key Hashes and more">
   For a full reference of the addresses, key hashes and fees for each network, see [VRF Supported
@@ -375,7 +375,7 @@ After you deploy your contract, you must add it as an approved consumer contract
 
 After you open the deployed contract tab in the bottom left, the function buttons are available. Find `rollDice` and click the caret to expand the parameter fields. Enter an Ethereum address to specify a "dice roller", and click 'rollDice'.
 
-You will have to wait a few minutes for your transaction to confirm and the response to be sent back. You can get your house by clicking the `house` function button with the address passed in `rollDice`. After the response is sent back, you'll be assigned a _Game of Thrones_ house!
+It takes a few minutes for the transaction to confirm and the response to be sent back. You can get your house by clicking the `house` function button with the address passed in `rollDice`. After the response is sent back, you'll be assigned a _Game of Thrones_ house!
 
 ## Further Reading
 

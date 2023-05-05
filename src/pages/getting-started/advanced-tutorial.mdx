@@ -21,8 +21,8 @@ import { YouTube } from "@astro-community/astro-embed-youtube"
 
 <Aside type="note" title="Requirements">
   This guide requires basic knowledge about smart contracts. If you are new to smart contract development, read the
-  [Consuming Data Feeds](/getting-started/consuming-data-feeds/) and [Random
-  Numbers](/getting-started/intermediates-tutorial/) guides before you begin.
+  [Consuming Data Feeds](/getting-started/consuming-data-feeds) and [Random
+  Numbers](/getting-started/intermediates-tutorial) guides before you begin.
 </Aside>
 
 <YouTube id="https://www.youtube.com/watch?v=ay4rXZhAefs" />
@@ -31,22 +31,22 @@ In this guide, you will learn how to request data from a public API in a smart c
 
 ## How does the request and receive cycle work for API calls?
 
-The request and receive cycle describes how a smart contract requests data from an oracle and receives the response in a separate transaction. If you need a refresher, check out the [Basic Request Model](/architecture-overview/architecture-request-model/).
+The request and receive cycle describes how a smart contract requests data from an oracle and receives the response in a separate transaction. If you need a refresher, check out the [Basic Request Model](/architecture-overview/architecture-request-model).
 
-For contracts that use [Chainlink VRF](/vrf/v2/introduction/), you request randomness from a VRF oracle and then await the response. The fulfillment function is already given to us from the `VRFConsumerBase` contract, so oracles already know where to send the response to. However, with API calls, the contract itself _defines_ which function it wants to receive the response to.
+For contracts that use [Chainlink VRF](/vrf/v2/introduction), you request randomness from a VRF oracle and then await the response. The fulfillment function is already given to us from the `VRFConsumerBase` contract, so oracles already know where to send the response to. However, with API calls, the contract itself _defines_ which function it wants to receive the response to.
 
 Before creating any code, you should understand how Oracle jobs can get data on-chain.
 
 ## What are jobs?
 
-Chainlink nodes require [**Jobs**](/chainlink-nodes/oracle-jobs/jobs/) to do anything useful. In the case of a Request and Receive job, the [Direct Request](/chainlink-nodes/oracle-jobs/all-jobs#direct-request-jobs) job monitors the blockchain for a request from a smart contract. Once it catches a request, it runs the tasks (both core and external adapters) that the job is configured to run and eventually returns the response to the requesting contract.
+Chainlink nodes require [**Jobs**](/chainlink-nodes/oracle-jobs/jobs) to do anything useful. In the case of a Request and Receive job, the [Direct Request](/chainlink-nodes/oracle-jobs/all-jobs#direct-request-jobs) job monitors the blockchain for a request from a smart contract. Once it catches a request, it runs the tasks (both core and external adapters) that the job is configured to run and eventually returns the response to the requesting contract.
 
-## What are Tasks?
+## What are tasks?
 
 Each oracle job has a configured set of tasks it must complete when it is run. These tasks are split into two subcategories:
 
-- [**Tasks**](/chainlink-nodes/oracle-jobs/all-tasks/) - These are tasks that come built-in to each node. (examples: http, ethabidecode, etc).
-- [**External Adapters**](/chainlink-nodes/external-adapters/external-adapters/) - These are custom adapters built by node operators and community members, which perform specific tasks like calling a particular endpoint with a specific set of parameters (like authentication secrets that shouldn't be publicly visible).
+- [**Tasks**](/chainlink-nodes/oracle-jobs/all-tasks) - These are tasks that come built-in to each node. (examples: http, ethabidecode, etc).
+- [**External Adapters**](/chainlink-nodes/external-adapters/external-adapters) - These are custom adapters built by node operators and community members, which perform specific tasks like calling a particular endpoint with a specific set of parameters (like authentication secrets that shouldn't be publicly visible).
 
 ### Tasks
 
@@ -58,7 +58,7 @@ If a job needs to make a GET request to an API, find a specific unsigned integer
 - [ETH ABI Encode](/chainlink-nodes/oracle-jobs/all-tasks/#eth-abi-encode-task) converts the data to a bytes payload according to ETH ABI encoding.
 - [ETH Tx](/chainlink-nodes/oracle-jobs/all-tasks/#eth-tx-task) submits the transaction to the chain, completing the cycle.
 
-The job specs example can be found [here](/chainlink-nodes/job-specs/direct-request-get-uint256/).
+The job specs example can be found [here](/chainlink-nodes/job-specs/direct-request-get-uint256).
 Let's walk through a real example, where you will retrieve 24 volumes of the [ETH/USD pair](https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETH&tsyms=USD) from the cryptocompare API.
 
 1. [HTTP](/chainlink-nodes/oracle-jobs/all-tasks/#http-task) calls the API and returns the body of an HTTP GET result for [ETH/USD pair](https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETH&tsyms=USD). Example:
@@ -92,7 +92,7 @@ Let's walk through a real example, where you will retrieve 24 volumes of the [ET
 
 Let's see what this looks like in a contract:
 
-### Contract Example
+### Contract example
 
 <CodeSample src="/samples/APIRequests/APIConsumer.sol" />
 
@@ -102,11 +102,11 @@ Here is a breakdown of each component of this contract:
 2. `requestVolumeData` functions: This builds and sends a request - which includes the fulfillment functions selector - to the oracle. Notice how it adds the `get`, `path` and `times` parameters. These are read by the Tasks in the job to perform correctly. `get` is used by [HTTP](/chainlink-nodes/oracle-jobs/all-tasks/#http-task), `path` is used by [JSON Parse](/chainlink-nodes/oracle-jobs/all-tasks/#json-parse-task) and `times` is used by [Multiply](/chainlink-nodes/oracle-jobs/all-tasks/#multiply-task).
 3. `fulfill` function: This is where the result is sent upon the Oracle Job's completion.
 
-**Note:** The calling contract should own enough LINK to pay the fee, which by default is 0.1 LINK. You can use [this tutorial](/resources/fund-your-contract/) to learn how to fund your contract.
+**Note:** The calling contract should own enough LINK to pay the fee, which by default is 0.1 LINK. You can use [this tutorial](/resources/fund-your-contract) to learn how to fund your contract.
 
-This is an example of a basic HTTP GET request. However, it requires defining the API URL directly in the smart contract. This can, in fact, be extracted and configured on the Job level inside the Oracle node. You can follow the _APIConsumer_ tutorial [here](/any-api/get-request/examples/single-word-response/).
+This is an example of a basic HTTP GET request. However, it requires defining the API URL directly in the smart contract. This can, in fact, be extracted and configured on the Job level inside the Oracle node. You can follow the _APIConsumer_ tutorial [here](/any-api/get-request/examples/single-word-response).
 
-### External Adapters
+### External adapters
 
 If all the parameters are defined within the Oracle job, the only things a smart contract needs to define to consume are:
 
@@ -128,10 +128,10 @@ function requestVolumeData() public returns (bytes32 requestId) {
 }
 ```
 
-You can follow a full _Existing Job Tutorial_ [here](/any-api/get-request/examples/existing-job-request/).
-More on External Adapters can be found [here](/chainlink-nodes/external-adapters/external-adapters/).
+You can follow a full _Existing Job Tutorial_ [here](/any-api/get-request/examples/existing-job-request).
+More on External Adapters can be found [here](/chainlink-nodes/external-adapters/external-adapters).
 
-## Further Reading
+## Further reading
 
 To learn more about connecting smart contracts to external APIs, read our blog posts:
 

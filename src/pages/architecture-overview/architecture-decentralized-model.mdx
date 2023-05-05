@@ -14,8 +14,9 @@ metadata:
   description: "This page describes the decentralized architecture which enables Chainlink to aggregate data from multiple independent node operators."
   image:
     0: "/files/OpenGraph_V3.png"
-setup: import ClickToZoom from "@components/ClickToZoom.astro"
 ---
+
+import { ClickToZoom } from "@components"
 
 This page describes how data aggregation is applied to produce Chainlink Data Feeds and provides more insight as to how Data Feeds are updated.
 
@@ -23,9 +24,9 @@ This page describes how data aggregation is applied to produce Chainlink Data Fe
 
 Each data feed is updated by multiple, independent Chainlink oracle operators. The [AccessControlledOffchainAggregator](https://github.com/smartcontractkit/libocr/blob/master/contract/AccessControlledOffchainAggregator.sol) aggregates the data on-chain.
 
-Off-Chain Reporting (OCR) further enhances the aggregation process. To learn more about OCR and how it works, see the [Off-Chain Reporting](/architecture-overview/off-chain-reporting/) page.
+Off-Chain Reporting (OCR) further enhances the aggregation process. To learn more about OCR and how it works, see the [Off-Chain Reporting](/architecture-overview/off-chain-reporting) page.
 
-<ClickToZoom src='/images/contract-devs/price-aggr.png' />
+<ClickToZoom src="/images/contract-devs/price-aggr.png" />
 
 ## Shared Data Resource
 
@@ -45,20 +46,20 @@ Data Feeds are an example of a decentralized oracle network, and include the fol
 - [A proxy contract](#proxy)
 - [An aggregator contract](#aggregator)
 
-To learn how to create a consumer contract that uses an existing data feed, read the [Using Data Feeds](/data-feeds/price-feeds/) documentation.
+To learn how to create a consumer contract that uses an existing data feed, read the [Using Data Feeds](/data-feeds/price-feeds) documentation.
 
 ### Consumer
 
 A Consumer contract is any contract that uses Chainlink Data Feeds to consume aggregated data. Consumer contracts must reference the correct [`AggregatorV3Interface`](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol) contract and call one of the exposed functions.
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```solidity
 ...
 AggregatorV3Interface feed = AggregatorV3Interface(address);
 return feed.latestRoundData();
 ```
 
-Off-chain applications can also consume data feeds. See the Javascript and Python example code on the [Using Data Feeds](/data-feeds/price-feeds/) page to learn more.
+Off-chain applications can also consume data feeds. See the Javascript and Python example code on the [Using Data Feeds](/data-feeds/price-feeds) page to learn more.
 
 ### Proxy
 
