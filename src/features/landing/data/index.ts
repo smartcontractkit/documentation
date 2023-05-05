@@ -60,6 +60,7 @@ export const evmProducts = [
     chains: [
       { id: "ethereum", title: "Ethereum" },
       { id: "polygon", title: "Polygon" },
+      { id: "avalanche", title: "Avalanche" },
     ],
   },
   {
