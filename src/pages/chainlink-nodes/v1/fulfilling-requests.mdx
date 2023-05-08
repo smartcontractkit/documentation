@@ -24,17 +24,17 @@ import { Aside, CodeSample } from "@components"
 
 You can use your Chainlink nodes to fulfill requests. This guide shows you how to deploy your own operator contract and add jobs to your node so that it can provide data to smart contracts.
 
-Chainlink nodes can fulfill requests from open or unauthenticated APIs without the need for [External Adapters](/chainlink-nodes/external-adapters/external-adapters/) as long as you've [added the jobs](#add-a-job-to-the-node) to the node. For these requests, requesters supply the URL to the open API that they want each node to retrieve. The Chainlink node will use [tasks](/chainlink-nodes/oracle-jobs/tasks/) to fulfill the request.
+Chainlink nodes can fulfill requests from open or unauthenticated APIs without the need for [External Adapters](/chainlink-nodes/external-adapters/external-adapters) as long as you've [added the jobs](#add-a-job-to-the-node) to the node. For these requests, requesters supply the URL to the open API that they want each node to retrieve. The Chainlink node will use [tasks](/chainlink-nodes/oracle-jobs/tasks) to fulfill the request.
 
-Some APIs require authentication by providing request headers for the operator's API key, which the Chainlink node supports. If you would like to provide access to an API that requires authentication, you must create a job that is specific for that API either using an [external adapter](/chainlink-nodes/external-adapters/external-adapters/) or by using the parameters of the [HTTP task](/chainlink-nodes/oracle-jobs/all-tasks/#http-task).
+Some APIs require authentication by providing request headers for the operator's API key, which the Chainlink node supports. If you would like to provide access to an API that requires authentication, you must create a job that is specific for that API either using an [external adapter](/chainlink-nodes/external-adapters/external-adapters) or by using the parameters of the [HTTP task](/chainlink-nodes/oracle-jobs/all-tasks/#http-task).
 
 ## Requirements
 
 Before you begin this guide, complete the following tasks to make sure you have all of the tools that you need:
 
-- [Set up MetaMask](/getting-started/deploy-your-first-contract/#install-and-fund-your-metamask-wallet) and [obtain testnet LINK](/resources/acquire-link/).
+- [Set up MetaMask](/getting-started/deploy-your-first-contract/#install-and-fund-your-metamask-wallet) and [obtain testnet LINK](/resources/acquire-link).
 - [Run a Chainlink Node](/chainlink-nodes/v1/running-a-chainlink-node).
-- Fund the Ethereum address that your Chainlink node uses. You can find the address in the node Operator GUI under the **Key Management** configuration. The address of the node is the `Regular` type. You can obtain test ETH from several [faucets](/resources/link-token-contracts/). For this tutorial to work, you will have to fund the node's Ethereum address with Sepolia ETH. Here is an example:
+- Fund the Ethereum address that your Chainlink node uses. You can find the address in the node Operator GUI under the **Key Management** configuration. The address of the node is the `Regular` type. You can obtain test ETH from several [faucets](/resources/link-token-contracts). For this tutorial to work, you will have to fund the node's Ethereum address with Sepolia ETH. Here is an example:
 
   ![chainlink node Goerli fund address](/images/chainlink-nodes/node-operators/key-management.jpg)
 
@@ -58,7 +58,7 @@ Your node works with several different types of addresses. Each address type has
 
    - Select "Injected Provider" as your **Environment**. The Javascript VM environment cannot access your oracle node. Make sure your Metamask is connected to Sepolia testnet.
    - Select the "Operator" contract from the **Contract** menu.
-   - Copy the [LINK token contract address](/resources/link-token-contracts/) for the network you are using and paste it into the `LINK` field next to the **Deploy** button. For Sepolia, you can use this address:
+   - Copy the [LINK token contract address](/resources/link-token-contracts) for the network you are using and paste it into the `LINK` field next to the **Deploy** button. For Sepolia, you can use this address:
 
      ```text Sepolia
      0x779877A7B0D9E8603169DdbD7836e478b4624789
@@ -139,7 +139,7 @@ After you add jobs to your node, you can use the node to fulfill requests. This 
 
 1. Click **Deploy**. MetaMask prompts you to confirm the transaction.
 
-1. Fund the contract by sending LINK to the contract's address. See the [Fund your contract](/resources/fund-your-contract/) page for instructions. The address for the `ATestnetConsumer` contract is on the list of your deployed contracts in Remix. You can fund your contract with 1 LINK.
+1. Fund the contract by sending LINK to the contract's address. See the [Fund your contract](/resources/fund-your-contract) page for instructions. The address for the `ATestnetConsumer` contract is on the list of your deployed contracts in Remix. You can fund your contract with 1 LINK.
 
 1. After you fund the contract, create a request. Input your operator contract address and the job ID for the `Get > Uint256` job into the `requestEthereumPrice` request method **without dashes**. The job ID is the `externalJobID` parameter, which you can find on your job's definition page in the Node Operators UI.
 

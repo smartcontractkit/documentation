@@ -15,17 +15,17 @@ export const MENU: MenuItems = {
     },
     {
       text: "Data Feeds",
-      link: "/data-feeds/",
+      link: "/data-feeds",
       section: "dataFeeds",
     },
     {
       text: "VRF",
-      link: "/vrf/",
+      link: "/vrf",
       section: "vrf",
     },
     {
       text: "Automation",
-      link: "/chainlink-automation/introduction/",
+      link: "/chainlink-automation/introduction",
       section: "automation",
     },
     {

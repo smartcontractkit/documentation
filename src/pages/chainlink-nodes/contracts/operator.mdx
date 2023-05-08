@@ -11,7 +11,7 @@ Oracles must deploy an on-chain contract to handle requests made through the LIN
 
 When the _Basic Request_ model was introduced, node operators had to deploy [Oracle contracts](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.4/Oracle.sol). However, these come with some limitations, and soon, we introduced [operator contracts](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/Operator.sol).
 
-<Aside type="note">Node operators are recommended to use _Operator.sol_ over _Oracle.sol_.</Aside>
+<Aside type="note">Node operators are recommended to use _Operator.sol_ instead of _Oracle.sol_.</Aside>
 
 In addition to replacing oracle contracts, operator contracts come with additional features that add more security and flexibility for node operators.
 
@@ -19,7 +19,9 @@ In addition to replacing oracle contracts, operator contracts come with addition
 
 ### Multi-word Response
 
-In the EVM architecture, a word is made up of 32 bytes. One limitation of the [Oracle.sol](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.4/Oracle.sol) contract is that it limits responses to requests to 32 bytes. [Operator.sol](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/Operator.sol) doesn't have the same limitation as it supports a response made of multiple EVM words.
+In the EVM architecture, a word is made up of 32 bytes. One limitation of the [Oracle.sol](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.4/Oracle.sol) contract is that it limits responses to requests to 32 bytes.
+
+[Operator.sol](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/Operator.sol) doesn't have the same limitation as it supports a response made of multiple EVM words.
 
 ### Factory deployment
 
@@ -31,9 +33,9 @@ To fix this, node operators can use a [factory](/chainlink-nodes/contracts/opera
 
 A common pain point of node operators is keeping their addresses funded. _Operator_'s `distributeFunds` method allows node operators to fund multiple addresses in a single transaction.
 
-### Flexibility and Security
+### Flexibility and security
 
-By using multiple External-owned accounts(EOA) on Chainlink nodes and [forwarder](/chainlink-nodes/contracts/forwarder) contracts, node operators can set up different transaction-sending strategies.
+By using multiple externally-owned accounts (EOAs) on Chainlink nodes and [forwarder](/chainlink-nodes/contracts/forwarder) contracts, node operators can set up different transaction-sending strategies.
 
 <Aside type="note">Read more about [forwarders](/chainlink-nodes/contracts/forwarder).</Aside>
 
@@ -117,7 +119,7 @@ Called by the Chainlink node to fulfill requests. Given params must hash back to
 | expiration         | uint256 | The expiration that the node should respond by before the requester can cancel |
 | data               | bytes32 | The data to return to the consuming contract                                   |
 
-##### Return Values
+##### Return values
 
 | Name | Type | Description                                |
 | ---- | ---- | ------------------------------------------ |
@@ -142,7 +144,7 @@ Called by the Chainlink node to fulfill requests with multi-word support. Given 
 | expiration         | uint256 | The expiration that the node should respond by before the requester can cancel |
 | data               | bytes   | The data to return to the consuming contract                                   |
 
-##### Return Values
+##### Return values
 
 | Name | Type | Description                                |
 | ---- | ---- | ------------------------------------------ |
@@ -236,7 +238,7 @@ Displays the amount of LINK that is available for the node operator to withdraw.
 
 _We use `1` in place of 0 in storage_
 
-##### Return Values
+##### Return values
 
 | Name | Type    | Description                                     |
 | ---- | ------- | ----------------------------------------------- |
@@ -275,7 +277,7 @@ Interact with other LinkTokenReceiver contracts by calling transferAndCall.
 | value | uint256 | The amount to be transferred.                          |
 | data  | bytes   | The extra data to be passed to the receiving contract. |
 
-##### Return Values
+##### Return values
 
 | Name    | Type | Description |
 | ------- | ---- | ----------- |

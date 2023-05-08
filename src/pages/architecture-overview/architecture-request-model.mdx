@@ -12,28 +12,29 @@ whatsnext:
   }
 metadata:
   title: "Chainlink Basic Request Model"
-setup: import ClickToZoom from "@components/ClickToZoom.astro"
 ---
+
+import { ClickToZoom } from "@components"
 
 ## Contracts Overview
 
 All source code is open source and available in the [Chainlink Github repository](https://github.com/smartcontractkit/chainlink).
 
-<ClickToZoom src='/files/881ade6-Simple_Architecture_Diagram_1_V1.png' />
+<ClickToZoom src="/files/881ade6-Simple_Architecture_Diagram_1_V1.png" />
 
 ### ChainlinkClient
 
-[`ChainlinkClient`](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/ChainlinkClient.sol) is a parent contract that enables smart contracts to consume data from oracles. It's available in the Chainlink smart contract library which can be [installed using the latest package managers](/resources/create-a-chainlinked-project/).
+[`ChainlinkClient`](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/ChainlinkClient.sol) is a parent contract that enables smart contracts to consume data from oracles. It's available in the Chainlink smart contract library which can be [installed using the latest package managers](/resources/create-a-chainlinked-project).
 
 The client constructs and makes a request to a known Chainlink oracle through the `transferAndCall` function, implemented by the LINK token. This request contains encoded information that is required for the cycle to succeed. In the `ChainlinkClient` contract, this call is initiated with a call to `sendChainlinkRequestTo`.
 
-To build your own client contract using `ChainlinkClient`, see [Introduction to Using Any API](/any-api/introduction/), or view the [ChainlinkClient API Reference](/any-api/api-reference/) for the `ChainlinkClient` contract.
+To build your own client contract using `ChainlinkClient`, see [Introduction to Using Any API](/any-api/introduction), or view the [ChainlinkClient API Reference](/any-api/api-reference) for the `ChainlinkClient` contract.
 
 ### LINK Token
 
 LINK is an [ERC-677](https://github.com/ethereum/EIPs/issues/677) compliant token which implements `transferAndCall`, a function that allows tokens to be transferred whilst also triggering logic in the receiving contract within a single transaction.
 
-Learn more about [ERC-677 and the LINK token](/resources/link-token-contracts/).
+Learn more about [ERC-677 and the LINK token](/resources/link-token-contracts).
 
 ### Oracle Contract
 
@@ -47,7 +48,7 @@ The client contract that initiates this cycle must create a request with the fol
 - The job ID, so the oracle knows which tasks to perform.
 - The callback function, which the oracle sends the response to.
 
-To learn about how to find oracles to suit your needs, see [Find Existing Jobs](/any-api/find-oracle/).
+To learn about how to find oracles to suit your needs, see [Find Existing Jobs](/any-api/find-oracle).
 
 Oracle contracts are responsible for handling on-chain requests made through the LINK token, by implementing `onTokenTransfer` as a <a href="https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.6/LinkTokenReceiver.sol">`LinkTokenReceiver`</a>. Upon execution of this function, the oracle contract **emits an `OracleRequest` event** containing information about the request. This event is crucial, as it is monitored by the off-chain oracle node which acts upon it.
 
@@ -61,10 +62,10 @@ The off-chain oracle node is responsible for listening for events emitted by its
 
 The most common job type for a Node is to make a GET request to an API, retrieve some data from it, parse the response, convert the result into blockchain compatible data, then submit it in a transaction back to the oracle contract, using the `fulfillOracleRequest` function.
 
-For more information on how to become a node operator, learn how to [run a Chainlink node](/chainlink-nodes/v1/running-a-chainlink-node/).
+For more information on how to become a node operator, learn how to [run a Chainlink node](/chainlink-nodes/v1/running-a-chainlink-node).
 
 ## Consumer UML
 
 Below is a UML diagram describing the contract structure of `ATestnetConsumer`, a deployed example contract implementing `ChainlinkClient`.
 
-<ClickToZoom src='/files/8ac3fc1-69a048b-Consumer_UML.svg' />
+<ClickToZoom src="/files/8ac3fc1-69a048b-Consumer_UML.svg" />

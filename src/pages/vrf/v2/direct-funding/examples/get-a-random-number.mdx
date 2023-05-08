@@ -30,7 +30,7 @@ This guide assumes that you know how to create and deploy smart contracts on Eth
 - [MetaMask](https://metamask.io/)
 - [Sepolia testnet ETH](/resources/link-token-contracts/#sepolia-testnet)
 
-If you are new to developing smart contracts on Ethereum, see the [Getting Started](/getting-started/conceptual-overview/) guide to learn the basics.
+If you are new to developing smart contracts on Ethereum, see the [Getting Started](/getting-started/conceptual-overview) guide to learn the basics.
 
 ## Create and deploy a VRF v2 compatible contract
 
@@ -60,8 +60,8 @@ Build and deploy the contract on Sepolia.
 
 Requests for randomness will fail unless your consuming contract has enough LINK.
 
-1. [Acquire testnet LINK](/resources/acquire-link/).
-1. [Fund your contract with testnet LINK](/resources/fund-your-contract/). For this example, funding your contract with 2 LINK should be sufficient.
+1. [Acquire testnet LINK](/resources/acquire-link).
+1. [Fund your contract with testnet LINK](/resources/fund-your-contract). For this example, funding your contract with 2 LINK should be sufficient.
 
 ## Request random values
 
@@ -71,18 +71,19 @@ The deployed contract requests random values from Chainlink VRF, receives those 
 
 1.  Click the `requestRandomWords()` function to send the request for random values to Chainlink VRF. MetaMask opens and asks you to confirm the transaction.
 
-       <Aside type="note" title="Set your gas limit in MetaMask">
-    Remix IDE doesn't set the right gas limit, so you must [edit the
-    gas limit in MetaMask](https://support.metamask.io/hc/en-us/articles/360022895972) within the **Advanced gas controls** settings.
+           <Aside type="note" title="Set your gas limit in MetaMask">
+        Remix IDE doesn't set the right gas limit, so you must [edit the
+        gas limit in MetaMask](https://support.metamask.io/hc/en-us/articles/360022895972) within the **Advanced gas controls** settings.
 
-        For this example to work, set the gas limit to _400,000_ in MetaMask.
+            For this example to work, set the gas limit to _400,000_ in MetaMask.
 
-        First, [enable **Advanced gas controls** in your MetaMask settings](https://support.metamask.io/hc/en-us/articles/360022895972).
+            First, [enable **Advanced gas controls** in your MetaMask settings](https://support.metamask.io/hc/en-us/articles/360022895972).
 
-        Before confirming your transaction in MetaMask, navigate to the screen where you can edit the gas limit: Select **Site suggested** > **Advanced** > **Advanced gas controls** and select **Edit** next to the **Gas limit** amount. Update the **Gas limit** value to _400000_ and select **Save**. Finally, confirm the transaction.
+            Before confirming your transaction in MetaMask, navigate to the screen where you can edit the gas limit: Select **Site suggested** > **Advanced** > **Advanced gas controls** and select **Edit** next to the **Gas limit** amount. Update the **Gas limit** value to _400000_ and select **Save**. Finally, confirm the transaction.
 
-       </Aside>
-After you approve the transaction, Chainlink VRF processes your request. Chainlink VRF fulfills the request and returns the random values to your contract in a callback to the `fulfillRandomWords()` function. At this point, a new key `requestId` is added to the mapping `s_requests`. Depending on current testnet conditions, it might take a few minutes for the callback to return the requested random values to your contract.
+           </Aside>
+
+    After you approve the transaction, Chainlink VRF processes your request. Chainlink VRF fulfills the request and returns the random values to your contract in a callback to the `fulfillRandomWords()` function. At this point, a new key `requestId` is added to the mapping `s_requests`. Depending on current testnet conditions, it might take a few minutes for the callback to return the requested random values to your contract.
 
 1.  To fetch the request ID of your request, call `lastRequestId()`.
 
@@ -91,7 +92,7 @@ After you approve the transaction, Chainlink VRF processes your request. Chainli
 1.  Call `getRequestStatus()` and specify the `requestId` to display the random words.
 
 <Aside type="note" title="Note on Requesting Randomness">
-  Do not re-request randomness. For more information, see the [VRF Security Considerations](/vrf/v2/security/) page.
+  Do not re-request randomness. For more information, see the [VRF Security Considerations](/vrf/v2/security) page.
 </Aside>
 
 ## Analyzing the contract
@@ -100,7 +101,7 @@ In this example, the consuming contract uses static configuration parameters.
 
 <CodeSample src="samples/VRF/VRFv2DirectFundingConsumer.sol" />
 
-The parameters define how your requests will be processed. You can find the values for your network in the [Supported networks](/vrf/v2/direct-funding/supported-networks/) page.
+The parameters define how your requests will be processed. You can find the values for your network in the [Supported networks](/vrf/v2/direct-funding/supported-networks) page.
 
 - `uint32 callbackGasLimit`: The limit for how much gas to use for the callback request to your contract's `fulfillRandomWords()` function. It must be less than the `maxGasLimit` limit on the coordinator contract minus the `wrapperGasOverhead`. See the [VRF v2 Direct funding limits](/vrf/v2/direct-funding/#limits) for more details. Adjust this value for larger requests depending on how your `fulfillRandomWords()` function processes and stores the received random values. If your `callbackGasLimit` is not sufficient, the callback will fail and your consuming contract is still charged for the work done to generate your requested random values.
 
@@ -120,7 +121,7 @@ The contract includes the following functions:
 
 <Aside type="note" title="Security Considerations">
   Be sure to review your contracts to make sure they follow the best practices on the [security
-  considerations](/vrf/v2/security/) page.
+  considerations](/vrf/v2/security) page.
 </Aside>
 
 ## Clean up
