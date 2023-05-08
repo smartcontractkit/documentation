@@ -88,6 +88,7 @@ Bridge tasks make HTTP POST requests to pre-configured URLs. Bridges can be conf
 - `requestData` (optional): a statically-defined payload to be sent to the external adapter.
 - `cacheTTL` (optional): a duration-formatted string indicating the maximum acceptable staleness for cached bridge responses in case of intermittent failures. This is disabled by default.
 - `headers` (optional): an array of strings. The number of strings must be even. Example: `foo [type="bridge" name="foo" headers="[\\"X-Header-1\\", \\"value1\\", \\"X-Header-2\\", \\"value2\\"]"]`
+- `includeInputAtKey`(optional):
 
 **Outputs**
 
@@ -295,6 +296,7 @@ Makes a non-mutating contract call to the specified contract with the specified 
 - `gasTipCap`: The gasTipCap (EIP-1559) for the call. Defaults to zero.
 - `gasFeeCap`: The gasFeeCap (EIP-1559) for the call. Defaults to zero.
 - `gasUnlimited`: A boolean indicating if unlimited gas should be provided for the call. If set to true, do not pass the `gas` parameter.
+- `evmChainID`: set this optional parameter to transmit on the given chain. You must have the chain configured with RPC nodes for this to work. If left blank, it will use the default chain.
 
 **Outputs**
 
@@ -571,6 +573,56 @@ my_median_task [type="median"
 ```
 
 Given the inputs `2`, `5`, and `20`, the task will return `5`.
+
+## Memo task
+
+Memo task returns its value as a result
+
+**Parameters**
+
+- `value`: value to return. Possible values:
+  - number
+  - boolean
+  - float
+  - string
+  - array
+
+**Outputs**
+
+The value.
+
+**Example**
+
+```toml
+memo [type="memo" value="10"]
+```
+
+The task will return the value `10`
+
+## Merge task
+
+Merge task returns the merged value of 2 maps.
+
+**Parameters**
+
+- `left`: left map.
+- `right`: right map, overwrites the left side.
+
+**Outputs**
+
+Combined map of left and right, null if invalid.
+
+**Example**
+
+```toml
+merge [type="merge" left="{\\"foo\\":\\"abc\\", \\"bar\\":\\"123\\"}" right="{\\"bar\\":\\"xyz\\", \\"biz\\":\\"buzz\\"}"]
+```
+
+The task will return the map
+
+```json
+{ "foo": "abc", "bar": "xyz", "biz": "buzz" }
+```
 
 ## Mode task
 
