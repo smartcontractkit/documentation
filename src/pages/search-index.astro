@@ -6,7 +6,7 @@ import fs from "node:fs"
 const pages = await Astro.glob("./**/*.astro")
 
 // import .md files
-const posts = [...(await Astro.glob("./**/*.md")).filter((post) => !post.frontmatter.draft)]
+//const posts = [...(await Astro.glob("./**/*.md")).filter((post) => !post.frontmatter.draft)]
 const postsMdx = [...(await Astro.glob("./**/*.mdx")).filter((post) => !post.frontmatter.draft)]
 const postsMdxWithContent = postsMdx.map((post) => {
   const url = new URL(post.file, import.meta.url)
@@ -14,9 +14,9 @@ const postsMdxWithContent = postsMdx.map((post) => {
   return { ...post, rawContent: () => content }
 })
 
-const markDownFiles = [...posts, ...postsMdxWithContent]
+const markDownFiles = [...postsMdxWithContent]
 
-const allContent = [...pages, ...posts, ...postsMdx]
+const allContent = [...pages, ...postsMdx]
 
 const transformMarkdownInstancesToIndexes = async (instances: MarkdownInstance<Record<string, any>>[]) => {
   return Promise.all(

@@ -96,7 +96,7 @@ export const SIDEBAR = {
       contents: [
         {
           title: "Data Feeds",
-          url: "data-feeds/",
+          url: "data-feeds",
         },
         {
           title: "Chainlink VRF",
@@ -104,7 +104,7 @@ export const SIDEBAR = {
         },
         {
           title: "Chainlink Automation",
-          url: "chainlink-automation/introduction/",
+          url: "chainlink-automation/introduction",
         },
         {
           title: "Connect to Public API Data",
@@ -312,32 +312,32 @@ export const SIDEBAR = {
       contents: [
         {
           title: "Time-based Automation",
-          url: "chainlink-automation/job-scheduler/",
+          url: "chainlink-automation/job-scheduler",
         },
         {
           title: "Custom Logic Automation",
-          url: "chainlink-automation/register-upkeep/",
+          url: "chainlink-automation/register-upkeep",
         },
         {
           title: "Create Compatible Contracts",
-          url: "chainlink-automation/compatible-contracts/",
+          url: "chainlink-automation/compatible-contracts",
         },
 
         {
           title: "Manage your Upkeeps",
-          url: "chainlink-automation/manage-upkeeps/",
+          url: "chainlink-automation/manage-upkeeps",
         },
         {
           title: "Creating Flexible Upkeeps",
-          url: "chainlink-automation/flexible-upkeeps/",
+          url: "chainlink-automation/flexible-upkeeps",
         },
         {
           title: "Example Contracts",
-          url: "chainlink-automation/util-overview/",
+          url: "chainlink-automation/util-overview",
           children: [
             {
               title: "EthBalanceMonitor",
-              url: "chainlink-automation/utility-contracts/",
+              url: "chainlink-automation/utility-contracts",
             },
           ],
         },
@@ -348,19 +348,19 @@ export const SIDEBAR = {
       contents: [
         {
           title: "Automation Pricing",
-          url: "chainlink-automation/automation-economics/",
+          url: "chainlink-automation/automation-economics",
         },
         {
           title: "Automation Architecture",
-          url: "chainlink-automation/overview/",
+          url: "chainlink-automation/overview",
         },
         {
           title: "Automation Release Notes",
-          url: "chainlink-automation/automation-release-notes/",
+          url: "chainlink-automation/automation-release-notes",
         },
         {
           title: "FAQs",
-          url: "chainlink-automation/faqs/",
+          url: "chainlink-automation/faqs",
         },
       ],
     },
@@ -487,11 +487,11 @@ export const SIDEBAR = {
       contents: [
         {
           title: "Concepts",
-          url: "chainlink-functions/resources/concepts/",
+          url: "chainlink-functions/resources/concepts",
         },
         {
           title: "Architecture",
-          url: "chainlink-functions/resources/architecture/",
+          url: "chainlink-functions/resources/architecture",
         },
         {
           title: "Add Functions to a Project",
@@ -503,7 +503,7 @@ export const SIDEBAR = {
         },
         {
           title: "Billing",
-          url: "chainlink-functions/resources/billing/",
+          url: "chainlink-functions/resources/billing",
         },
         {
           title: "Supported Networks",
@@ -511,7 +511,7 @@ export const SIDEBAR = {
         },
         {
           title: "Service Limits",
-          url: "chainlink-functions/resources/service-limits/",
+          url: "chainlink-functions/resources/service-limits",
         },
       ],
     },
@@ -520,11 +520,11 @@ export const SIDEBAR = {
       contents: [
         {
           title: "FunctionsClient",
-          url: "chainlink-functions/api-reference/FunctionsClient/",
+          url: "chainlink-functions/api-reference/FunctionsClient",
         },
         {
           title: "Functions library",
-          url: "chainlink-functions/api-reference/Functions/",
+          url: "chainlink-functions/api-reference/Functions",
         },
       ],
     },
