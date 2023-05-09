@@ -295,6 +295,7 @@ Makes a non-mutating contract call to the specified contract with the specified 
 - `gasTipCap`: The gasTipCap (EIP-1559) for the call. Defaults to zero.
 - `gasFeeCap`: The gasFeeCap (EIP-1559) for the call. Defaults to zero.
 - `gasUnlimited`: A boolean indicating if unlimited gas should be provided for the call. If set to true, do not pass the `gas` parameter.
+- `evmChainID`: Set this optional parameter to transmit on the given chain. You must have the chain configured with RPC nodes for this to work. If left blank, it will use the default chain.
 
 **Outputs**
 
@@ -571,6 +572,56 @@ my_median_task [type="median"
 ```
 
 Given the inputs `2`, `5`, and `20`, the task will return `5`.
+
+## Memo task
+
+The `memo` task returns its value as a result.
+
+**Parameters**
+
+- `value`: value to return. Possible values:
+  - number
+  - boolean
+  - float
+  - string
+  - array
+
+**Outputs**
+
+The value.
+
+**Example**
+
+```toml
+memo [type="memo" value="10"]
+```
+
+The task will return the value `10`
+
+## Merge task
+
+Merge task returns the merged value of two maps.
+
+**Parameters**
+
+- `left`: The left map.
+- `right`: The right map, which overwrites the left side.
+
+**Outputs**
+
+Returns the combined map of left and right. If the merged map is invalid, it returns `null`.
+
+**Example**
+
+```toml
+merge [type="merge" left="{\\"foo\\":\\"abc\\", \\"bar\\":\\"123\\"}" right="{\\"bar\\":\\"xyz\\", \\"biz\\":\\"buzz\\"}"]
+```
+
+This example task returns the following map:
+
+```json
+{ "foo": "abc", "bar": "xyz", "biz": "buzz" }
+```
 
 ## Mode task
 
