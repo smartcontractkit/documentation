@@ -36,10 +36,10 @@ To build a decentralized asset price, send a request to the DON to fetch the pri
 
 1. Make sure your subscription has enough LINK to pay for your requests. Read [Get Subscription details](/chainlink-functions/resources/subscriptions#get-subscription-details) to learn how to check your subscription balance. If your subscription runs out of LINK, follow the [Fund a Subscription](/chainlink-functions/resources/subscriptions#fund-a-subscription) guide.
 
-1. **Check out the correct branch before you try this tutorial:** Each tutorial is stored in a separate branch of the [Chainlink Functions Starter Kit](https://github.com/smartcontractkit/functions-hardhat-starter-kit) repository.
+1. Check out the _tutorials_ branch of the [Chainlink Functions Starter Kit](https://github.com/smartcontractkit/functions-hardhat-starter-kit). You can locate this tutorial in [the _/tutorials/6-multiple-apis_ directory](https://github.com/smartcontractkit/functions-hardhat-starter-kit/tree/tutorials/tutorials/6-multiple-apis).
 
    ```bash
-   git checkout tutorial-6
+   git checkout tutorials
    ```
 
 1. Get a free API key from [CoinMarketCap](https://coinmarketcap.com/api/) and note your API key.
@@ -67,23 +67,23 @@ To build a decentralized asset price, send a request to the DON to fetch the pri
 
 This tutorial is configured to get the median `BTC/USD` price from multiple data sources. For a detailed explanation of the code example, read the [Explanation](#explanation) section.
 
-- Open `Functions-request-config.js`. Note the `args` value is `["1", "bitcoin", "btc-bitcoin"]`. These arguments are BTC IDs at CoinMarketCap, CoinGecko, and Coinpaprika. You can adapt `args` to fetch other asset prices. See the API docs for [CoinMarketCap](https://coinmarketcap.com/api/documentation/v1/), [CoinGecko](https://www.coingecko.com/en/api/documentation), and [CoinPaprika](https://api.coinpaprika.com/) for details. For more information about the request, read the [request config](#functions-request-configjs) section.
-- Open `Functions-request-source.js` to analyze the JavaScript source code. Read the [source code explanation](#functions-request-sourcejs) for a more detailed explanation of the request source file.
+- Open `config.js`. Note the `args` value is `["1", "bitcoin", "btc-bitcoin"]`. These arguments are BTC IDs at CoinMarketCap, CoinGecko, and Coinpaprika. You can adapt `args` to fetch other asset prices. See the API docs for [CoinMarketCap](https://coinmarketcap.com/api/documentation/v1/), [CoinGecko](https://www.coingecko.com/en/api/documentation), and [CoinPaprika](https://api.coinpaprika.com/) for details. For more information about the request, read the [request config](#configjs) section.
+- Open `source.js` to analyze the JavaScript source code. Read the [source code explanation](#sourcejs) for a more detailed explanation of the request source file.
 
 ### Simulation
 
 The [Chainlink Functions Hardhat Starter Kit](https://github.com/smartcontractkit/functions-hardhat-starter-kit) includes a simulator to test your Functions code on your local machine. The `functions-simulate` command executes your code in a local runtime environment and simulates an end-to-end fulfillment. This helps you to fix issues before you submit functions to the Decentralized Oracle Network.
 
-Run the `functions-simulate` task to run the source code locally and make sure `Functions-request-config.js` and `Functions-request-source.js` are correctly written:
+Run the `functions-simulate` task to run the source code locally and make sure `config.js` and `source.js` are correctly written:
 
 ```bash
-npx hardhat functions-simulate
+npx hardhat functions-simulate --configpath REPLACE_CONFIG_PATH
 ```
 
 Example:
 
 ```text
-$ npx hardhat functions-simulate
+$ npx hardhat functions-simulate --configpath tutorials/6-multiple-apis/config.js
 secp256k1 unavailable, reverting to browser version
 
 __Compiling Contracts__
@@ -107,7 +107,7 @@ Gas used by sendRequest: 398311
 Gas used by client callback function: 75029
 ```
 
-Reading the output of the example above, you can note that the `BTC/USD` median price is: _28354.00 USD_. Because Solidity does not support decimals, we move the decimal point so that the value looks like the integer `2835400` before returning the `bytes` encoded value `0x00000000000000000000000000000000000000000000000000000000002b43c8` in the callback. Read the [source code explanation](#functions-request-sourcejs) for a more detailed explanation.
+Reading the output of the example above, you can note that the `BTC/USD` median price is: _28354.00 USD_. Because Solidity does not support decimals, we move the decimal point so that the value looks like the integer `2835400` before returning the `bytes` encoded value `0x00000000000000000000000000000000000000000000000000000000002b43c8` in the callback. Read the [source code explanation](#sourcejs) for a more detailed explanation.
 
 ### Request
 
@@ -120,13 +120,13 @@ Reading the output of the example above, you can note that the `BTC/USD` median 
 Send a request to the Decentralized Oracle Network to fetch the asset price. Run the `functions-request` task with the `subid` (subscription ID) and `contract` parameters. This task passes the functions JavaScript source code and any arguments and secrets when calling the `executeRequest` function in your deployed `FunctionsConsumer` contract. Read the [functionsConsumer](#functionsconsumersol) section for a more detailed explanation about the consumer contract.
 
 ```bash
-npx hardhat functions-request --subid REPLACE_SUBSCRIPTION_ID --contract REPLACE_CONSUMER_CONTRACT_ADDRESS --network REPLACE_NETWORK
+npx hardhat functions-request --subid REPLACE_SUBSCRIPTION_ID --contract REPLACE_CONSUMER_CONTRACT_ADDRESS --network REPLACE_NETWORK --configpath REPLACE_CONFIG_PATH
 ```
 
 Example:
 
 ```text
-$ npx hardhat functions-request --subid 443 --contract 0x4B4BA2Fd6b93aDF8d6b6002E10540E58394388Ea --network polygonMumbai
+$ npx hardhat functions-request --subid 443 --contract 0x4B4BA2Fd6b93aDF8d6b6002E10540E58394388Ea --network polygonMumbai --configpath tutorials/6-multiple-apis/config.js
 secp256k1 unavailable, reverting to browser version
 Estimating cost if the current gas price remains the same...
 
@@ -184,13 +184,13 @@ The output of the example above gives you the following information:
 At any time, you can run the `functions-read` task with the `contract` parameter to read the latest received response.
 
 ```bash
-npx hardhat functions-read  --contract REPLACE_CONSUMER_CONTRACT_ADDRESS --network REPLACE_NETWORK
+npx hardhat functions-read  --contract REPLACE_CONSUMER_CONTRACT_ADDRESS --network REPLACE_NETWORK --configpath REPLACE_CONFIG_PATH
 ```
 
 Example:
 
 ```text
-$ npx hardhat functions-read  --contract 0x4B4BA2Fd6b93aDF8d6b6002E10540E58394388Ea  --network polygonMumbai
+$ npx hardhat functions-read  --contract 0x4B4BA2Fd6b93aDF8d6b6002E10540E58394388Ea  --network polygonMumbai --configpath tutorials/6-multiple-apis/config.js
 secp256k1 unavailable, reverting to browser version
 Reading data from Functions client contract 0x4B4BA2Fd6b93aDF8d6b6002E10540E58394388Ea on network mumbai
 
@@ -204,19 +204,19 @@ Decoded as a uint256: 2834800
 
 <ChainlinkFunctions section="functions-consumer" />
 
-### Functions-request-config.js
+### config.js
 
 Read the [Request Configuration](https://github.com/smartcontractkit/functions-hardhat-starter-kit#functions-library) section for a detailed description of each setting. In this example, the settings are the following:
 
 - `codeLocation: Location.Inline`: The JavaScript code is provided within the request.
 - `codeLanguage: CodeLanguage.JavaScript`: The source code is developed in the JavaScript language.
-- `source: fs.readFileSync("./Functions-request-source.js").toString()`: The source code must be a script object. This example uses `fs.readFileSync` to read `Functions-request-source.js` and calls `toString()` to get the content as a `string` object.
+- `source: fs.readFileSync(path.resolve(__dirname, "source.js")).toString()`: The source code must be a script object. This example uses `fs.readFileSync` to read `sourcejs` and calls `toString()` to get the content as a `string` object.
 - `secrets: { apiKey: process.env.COINMARKETCAP_API_KEY }`: JavaScript object which contains secret values. Before making the request, these secrets are encrypted using the DON public key. The `process.env.COINMARKETCAP_API_KEY` setting means `COINMARKETCAP_API_KEY` is fetched from the environment variables. **Note**: `secrets` is limited to a key-value map that can only contain strings. It cannot include any other types or nested parameters.
 - `walletPrivateKey: process.env["PRIVATE_KEY"]`: This is your EVM account private key. It is used to generate a signature for the encrypted secrets such that an unauthorized third party cannot reuse them.
 - `args: ["1", "bitcoin", "btc-bitcoin"]`: These arguments are passed to the source code. This example requests the `BTC/USD` price. These arguments are BTC IDs at CoinMarketCap, CoinGecko, and Coinpaprika. You can adapt `args` to fetch other asset prices. See the API docs for [CoinMarketCap](https://coinmarketcap.com/api/documentation/v1/), [CoinGecko](https://www.coingecko.com/en/api/documentation), and [CoinPaprika](https://api.coinpaprika.com/) for details.
 - `expectedReturnType: ReturnType.uint256`: The response received by the DON is encoded in `bytes`. Because the asset price is `uint256`, you must define `ReturnType.uint256` to inform users how to decode the response received by the DON.
 
-### Functions-request-source.js
+### source.js
 
 To check the expected API responses, run these commands in your terminal:
 
@@ -253,7 +253,7 @@ Read the [JavaScript code](https://github.com/smartcontractkit/functions-hardhat
 
 The code is self-explanatory and has comments to help you understand all the steps. The main steps are:
 
-- Construct the HTTP objects `coinMarketCapRequest`, `coinGeckoRequest`, and `coinPaprikaRequest` using `Functions.makeHttpRequest`. The values for `coinMarketCapCoinId`, `coinGeckoCoinId`, and `coinPaprikaCoinId` are fetched from the `args`. See the [request config](#functions-request-configjs) section for details.
+- Construct the HTTP objects `coinMarketCapRequest`, `coinGeckoRequest`, and `coinPaprikaRequest` using `Functions.makeHttpRequest`. The values for `coinMarketCapCoinId`, `coinGeckoCoinId`, and `coinPaprikaCoinId` are fetched from the `args`. See the [request config](#configjs) section for details.
 - Make the HTTP calls.
 - Read the asset price from each response.
 - Calculate the median of all the prices.

@@ -35,10 +35,10 @@ Read the [API multiple calls](/chainlink-functions/tutorials/api-multiple-calls)
 
 1. Make sure your subscription has enough LINK to pay for your requests. See the [Get Subscription Details](/chainlink-functions/resources/subscriptions#get-subscription-details) page to learn how to check your subscription balance. If your subscription runs out of LINK, follow the [Fund a Subscription](/chainlink-functions/resources/subscriptions#fund-a-subscription) guide.
 
-1. **Check out the correct branch before you try this tutorial:** Each tutorial is stored in a separate branch of the [Chainlink Functions Starter Kit](https://github.com/smartcontractkit/functions-hardhat-starter-kit) repository.
+1. Check out the _tutorials_ branch of the [Chainlink Functions Starter Kit](https://github.com/smartcontractkit/functions-hardhat-starter-kit). You can locate this tutorial in [the _/tutorials/6-multiple-apis_ directory](https://github.com/smartcontractkit/functions-hardhat-starter-kit/tree/tutorials/tutorials/6-multiple-apis).
 
    ```bash
-   git checkout tutorial-6
+   git checkout tutorials
    ```
 
 1. Get a free API key from [CoinMarketCap](https://coinmarketcap.com/api/) and note your API key.
@@ -66,23 +66,23 @@ Read the [API multiple calls](/chainlink-functions/tutorials/api-multiple-calls)
 
 This tutorial is configured to get the median `BTC/USD` price from multiple data sources according to a time schedule. For a detailed explanation of the code example, read the [Explanation](#explanation) section.
 
-- Open `Functions-request-config.js`. Note the `args` value is `["1", "bitcoin", "btc-bitcoin"]`. These arguments are BTC IDs at CoinMarketCap, CoinGecko, and Coinpaprika. You can adapt `args` to fetch other asset prices. See the API docs for [CoinMarketCap](https://coinmarketcap.com/api/documentation/v1/), [CoinGecko](https://www.coingecko.com/en/api/documentation), and [CoinPaprika](https://api.coinpaprika.com/) for details. For more information about the request, read the [request config](#functions-request-configjs) section.
-- Open `Functions-request-source.js` to analyze the JavaScript source code. Read the [source code explanation](#functions-request-sourcejs) for a more detailed explanation of the request source file.
+- Open `configjs`. Note the `args` value is `["1", "bitcoin", "btc-bitcoin"]`. These arguments are BTC IDs at CoinMarketCap, CoinGecko, and Coinpaprika. You can adapt `args` to fetch other asset prices. See the API docs for [CoinMarketCap](https://coinmarketcap.com/api/documentation/v1/), [CoinGecko](https://www.coingecko.com/en/api/documentation), and [CoinPaprika](https://api.coinpaprika.com/) for details. For more information about the request, read the [request config](#configjs) section.
+- Open `source.js` to analyze the JavaScript source code. Read the [source code explanation](#sourcejs) for a more detailed explanation of the request source file.
 
 ### Simulation
 
 The [Chainlink Functions Hardhat Starter Kit](https://github.com/smartcontractkit/functions-hardhat-starter-kit) includes a simulator to test your Functions code on your local machine. The `functions-simulate` command executes your code in a local runtime environment and simulates an end-to-end fulfillment. This helps you to fix issues before you submit functions to the Decentralized Oracle Network.
 
-Run the `functions-simulate` task to run the source code locally and make sure `Functions-request-config.js` and `Functions-request-source.js` are correctly written:
+Run the `functions-simulate` task to run the source code locally and make sure `config.js` and `source.js` are correctly written:
 
 ```bash
-npx hardhat functions-simulate
+npx hardhat functions-simulate --configpath REPLACE_CONFIG_PATH
 ```
 
 Example:
 
 ```text
-$ npx hardhat functions-simulate
+$ npx hardhat functions-simulate --configpath tutorials/6-multiple-apis/config.js
 secp256k1 unavailable, reverting to browser version
 
 __Compiling Contracts__
@@ -106,11 +106,11 @@ Gas used by sendRequest: 398311
 Gas used by client callback function: 75029
 ```
 
-Reading the output of the example above, you can note that the `BTC/USD` median price is: _28347.05 USD_. Because Solidity does not support decimals, we move the decimal point so that the value looks like the integer `2834705` before returning the `bytes` encoded value `0x00000000000000000000000000000000000000000000000000000000002b4111` in the callback. Read the [source code explanation](#functions-request-sourcejs) for a more detailed explanation.
+Reading the output of the example above, you can note that the `BTC/USD` median price is: _28347.05 USD_. Because Solidity does not support decimals, we move the decimal point so that the value looks like the integer `2834705` before returning the `bytes` encoded value `0x00000000000000000000000000000000000000000000000000000000002b4111` in the callback. Read the [source code explanation](#sourcejs) for a more detailed explanation.
 
 ### Deploy an Automation Consumer contract
 
-After running the simulator and confirming that your Function runs without issues, run the `functions-deploy-auto-client` command. This command does the following:
+After running the simulator and confirming d that your Function runs without issues, run the `functions-deploy-auto-client` command. This command does the following:
 
 - Deploy the [AutomatedFunctionsConsumer.sol](https://github.com/smartcontractkit/functions-hardhat-starter-kit/blob/main/contracts/AutomatedFunctionsConsumer.sol) contract. You can set the interval of executions when deploying the contract.
 - Add the deployed contract to your subscription.
@@ -120,13 +120,13 @@ After running the simulator and confirming that your Function runs without issue
 In your terminal, run the `functions-deploy-auto-client` command:
 
 ```shell
-npx hardhat functions-deploy-auto-client --network REPLACE_NETWORK --subid REPLACE_SUBSCRIPTION_ID --interval REPLACE_INTERVAL_SECONDS
+npx hardhat functions-deploy-auto-client --network REPLACE_NETWORK --subid REPLACE_SUBSCRIPTION_ID --interval REPLACE_INTERVAL_SECONDS --configpath REPLACE_CONFIG_PATH
 ```
 
 Example:
 
 ```text
-$ npx hardhat functions-deploy-auto-client --network polygonMumbai --subid 443 --interval 60
+$ npx hardhat functions-deploy-auto-client --network polygonMumbai --subid 443 --interval 60 --configpath tutorials/6-multiple-apis/config.js
 secp256k1 unavailable, reverting to browser version
 Deploying AutomatedFunctionsConsumer contract to mumbai
 
@@ -178,7 +178,7 @@ In the example above, you deployed a Chainlink Functions consumer contract and c
 **Note**: You can change the request's parameters to build a new request or update other parameters, such as the time interval or the subscription ID to which your contract is linked. To do so, run the `functions-set-auto-request`:
 
 ```shell
-npx hardhat functions-set-auto-request --contract REPLACE_YOUR_CONTRACT --network REPLACE_NETWORK --subid REPLACE_SUBSCRIPTION_ID --interval REPLACE_INTERVAL_SECONDS --gaslimit REPLACE_GAS_LIMITS
+npx hardhat functions-set-auto-request --contract REPLACE_YOUR_CONTRACT --network REPLACE_NETWORK --subid REPLACE_SUBSCRIPTION_ID --interval REPLACE_INTERVAL_SECONDS --gaslimit REPLACE_GAS_LIMITS --configpath tutorials/6-multiple-apis/config.js
 ```
 
 The `--interval` and `--gaslimit` flags are optional.
@@ -186,7 +186,7 @@ The `--interval` and `--gaslimit` flags are optional.
 As an example, you can use this command to set a new interval of one hour:
 
 ```shell
-npx hardhat functions-set-auto-request --contract 0x6164Df3A2b2899124400c064306c74dA71804865 --network polygonMumbai --subid 443 --interval 3600
+npx hardhat functions-set-auto-request --contract 0x6164Df3A2b2899124400c064306c74dA71804865 --network polygonMumbai --subid 443 --interval 3600 --configpath tutorials/6-multiple-apis/config.js
 ```
 
 ### Configure Chainlink Automation
@@ -224,13 +224,13 @@ As you can see in the _History_ table, the upkeep is running every minute.
 On your terminal, run the `functions-read` task with the `contract` parameter to read the latest received response:
 
 ```bash
-npx hardhat functions-read  --contract REPLACE_CONSUMER_CONTRACT_ADDRESS --network REPLACE_NETWORK
+npx hardhat functions-read  --contract REPLACE_CONSUMER_CONTRACT_ADDRESS --network REPLACE_NETWORK --configpath REPLACE_CONFIG_PATH
 ```
 
 Example:
 
 ```text
-$ npx hardhat functions-read  --contract 0x6164Df3A2b2899124400c064306c74dA71804865  --network polygonMumbai
+$ npx hardhat functions-read  --contract 0x6164Df3A2b2899124400c064306c74dA71804865  --network polygonMumbai --configpath tutorials/6-multiple-apis/config.js
 secp256k1 unavailable, reverting to browser version
 Reading data from Functions client contract 0x6164Df3A2b2899124400c064306c74dA71804865 on network mumbai
 
@@ -387,10 +387,10 @@ To store a request in the `requestCBOR` state variable, the contract owner has t
     emit OCRResponse(requestId, response, err);
     ```
 
-### Functions-request-config.js
+### configjs
 
-See the [explanation](/chainlink-functions/tutorials/api-multiple-calls#functions-request-configjs) for the Call Multiple Data Sources tutorial.
+See the [explanation](/chainlink-functions/tutorials/api-multiple-calls#configjs) for the Call Multiple Data Sources tutorial.
 
-### Functions-request-source.js
+### source.js
 
-See the [explanation](/chainlink-functions/tutorials/api-multiple-calls#functions-request-sourcejs) for the Call Multiple Data Sources tutorial.
+See the [explanation](/chainlink-functions/tutorials/api-multiple-calls#sourcejs) for the Call Multiple Data Sources tutorial.
