@@ -312,6 +312,35 @@ export const SIDEBAR = {
       ],
     },
     {
+      section: "TUTORIALS",
+      contents: [
+        {
+          title: "Batch-NFT-reveal",
+          url: "chainlink-automation/tutorials/batch-nft",
+        },
+        {
+          title: "Counting dNFT",
+          url: "chainlink-automation/tutorials/counting-dnft",
+        },
+        {
+          title: "Creating Dynamic NFTs",
+          url: "chainlink-automation/tutorials/dynamic-nft",
+        },
+        {
+          title: "EthBalanceMonitor",
+          url: "chainlink-automation/tutorials/eth-balance",
+        },
+        {
+          title: "Vault Harvester",
+          url: "chainlink-automation/tutorials/vault-harvester",
+        },
+        {
+          title: "VRF Subscription Monitor",
+          url: "chainlink-automation/tutorials/vrf-sub-monitor",
+        },
+      ],
+    },
+    {
       section: "Guides",
       contents: [
         {
@@ -334,16 +363,6 @@ export const SIDEBAR = {
         {
           title: "Creating Flexible Upkeeps",
           url: "chainlink-automation/flexible-upkeeps",
-        },
-        {
-          title: "Example Contracts",
-          url: "chainlink-automation/util-overview",
-          children: [
-            {
-              title: "EthBalanceMonitor",
-              url: "chainlink-automation/utility-contracts",
-            },
-          ],
         },
       ],
     },
