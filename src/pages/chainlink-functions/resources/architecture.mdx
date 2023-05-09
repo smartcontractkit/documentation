@@ -10,7 +10,7 @@ whatsnext: { "Billing": "/chainlink-functions/resources/billing/" }
 import { Aside, ClickToZoom } from "@components"
 
 <Aside type="note" title="Prerequisites">
-  Read the Chainlink Functions [introduction](/chainlink-functions/) to understand all the concepts discussed on this
+  Read the Chainlink Functions [introduction](/chainlink-functions) to understand all the concepts discussed on this
   page.
 </Aside>
 
@@ -18,7 +18,7 @@ import { Aside, ClickToZoom } from "@components"
 
 <ClickToZoom src="/images/chainlink-functions/requestAndReceive.png" />
 
-Requests to _Chainlink Functions_ follow the [Request & Receive Data](/chainlink-functions/resources/concepts/) cycle.
+Requests to _Chainlink Functions_ follow the [Request & Receive Data](/chainlink-functions/resources/concepts) cycle.
 
 1. A EOA initiates the transaction by calling the consumer contract.
 1. The consumer contract must inherit [FunctionsClient](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/dev/functions/FunctionsClient.sol) to send the request to the [FunctionsOracle](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/dev/functions/FunctionsOracle.sol) contract.
@@ -27,7 +27,7 @@ Requests to _Chainlink Functions_ follow the [Request & Receive Data](/chainlink
    1. Emits an `OracleRequest` event containing information about the request.
 1. On reception of the event, each _DON_'s oracle initiates the API call on a serverless environment.
 1. Each serverless environment calls the API provider to fetch the API response.
-1. The _DON_ runs the [Off-chain Reporting protocol(OCR)](/chainlink-functions/resources/concepts/) to aggregate all the API responses.
+1. The _DON_ runs the [Off-chain Reporting protocol(OCR)](/chainlink-functions/resources/concepts) to aggregate all the API responses.
 1. The aggregate API response is transmitted by a DON's oracle node to the _FunctionsOracle_ contract.
 1. The _FunctionsOracle_ contract calls the _FunctionsBillingRegistry_'s `fulfillAndBill` function to calculate the fulfillment costs and finalize the billing (To learn more, read [Cost calculation](/chainlink-functions/resources/billing#cost-calculation-fulfillment)).
 1. The _FunctionsBillingRegistry_ contract calls back the consumer contract.
@@ -36,7 +36,7 @@ Requests to _Chainlink Functions_ follow the [Request & Receive Data](/chainlink
 
 ## Subscription Management
 
-Chainlink Functions requests receive funding from [subscription accounts](/chainlink-functions/resources/concepts/). As explained in [Concepts](/chainlink-functions/resources/concepts/), the _Subscription App_ is a User Interface that abstracts the communications with the _Subscriptions contract_ (aka _Functions Billing Registry_ contract). The _Functions Billing Registry_ lets you manage your subscription accounts.
+Chainlink Functions requests receive funding from [subscription accounts](/chainlink-functions/resources/concepts). As explained in [Concepts](/chainlink-functions/resources/concepts), the _Subscription App_ is a User Interface that abstracts the communications with the _Subscriptions contract_ (aka _Functions Billing Registry_ contract). The _Functions Billing Registry_ lets you manage your subscription accounts.
 
 <Aside type="note">
   The _Subscriptions App_ is not available now, we recommend using the [functions hardhat starter

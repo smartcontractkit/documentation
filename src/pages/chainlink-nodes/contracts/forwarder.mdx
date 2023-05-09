@@ -5,7 +5,7 @@ date: Last Modified
 title: "Forwarder"
 ---
 
-In the EVM world, [externally-owned account'](https://ethereum.org/en/developers/docs/accounts/) transactions are confirmed sequentially. Chainlink nodes that use a single externally-owned account (EOA) per chain face several important challenges:
+In the EVM world, [externally-owned account](https://ethereum.org/en/developers/docs/accounts/) transactions are confirmed sequentially. Chainlink nodes that use a single externally-owned account (EOA) per chain face several important challenges:
 
 - Transactions are broadcast through a single FIFO queue, so the throughput is limited to a single lane. Low throughput is terrible for the overall user experience because concurrent clients must wait to have their requests fulfilled. When more clients make requests, the longer it takes for requests to be fulfilled.
 - Transactions are not executed by priority. For example, consider a situation where there are two transactions in a row. The first transaction is a fulfillment of an API request to get the winner of the FIFA world cup 2022, and the second transaction is an _ETH/USD_ price feed update used by multiple DeFi protocols. Relying on a single EOA forces the second transaction to be confirmed only after the first transaction is fulfilled. The first transaction is not as time-sensitive, but it is still fulfilled first.
@@ -24,7 +24,7 @@ Combining multiple EOAs and forwarder contracts allows greater flexibility and s
 - Security-wise, forwarder contracts distinguish between owner accounts and authorized sender accounts. Authorized senders are hot wallets such as the EOAs of a Chainlink node. If a node is compromised, the owner is responsible for changing the authorized senders list.
 - Node operators do not need to manually compile and deploy [operator](/chainlink-nodes/contracts/operator) and [forwarder](/chainlink-nodes/contracts/forwarder) contracts. They can deploy them directly from the [operator factory](/chainlink-nodes/contracts/operatorfactory) by calling the [deploynewoperatorandforwarder](/chainlink-nodes/contracts/operatorfactory#deploynewoperatorandforwarder) function. From a design perspective, the owner of a forwarder contract is an [operator](/chainlink-nodes/contracts/operator) contract. The owner of the operator contract is usually a more secure address with keys stored in a hardware wallet or protected by a multisig. Node operators can manage a set of forwarder contracts through an operator contract.
 
-## Api Reference
+## API Reference
 
 The forwarder contract inherits [AuthorizedReceiver.sol](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/AuthorizedReceiver.sol) and [ConfirmedOwnerWithProposal.sol](https://github.com/smartcontractkit/chainlink/edit/develop/contracts/src/v0.7/ConfirmedOwnerWithProposal.sol). Read the [Receiver](/chainlink-nodes/contracts/receiver) and [Ownership](/chainlink-nodes/contracts/ownership) API references to learn more.
 

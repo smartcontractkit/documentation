@@ -7,11 +7,11 @@ isIndex: true
 isMdx: true
 whatsnext:
   {
-    "Using Data Feeds": "/data-feeds/using-data-feeds/",
-    "Read the API reference for using Data Feeds": "/data-feeds/api-reference/",
-    "Price Feed Addresses": "/data-feeds/price-feeds/addresses/",
-    "Proof of Reserve Feed Addresses": "/data-feeds/proof-of-reserve/addresses/",
-    "NFT Floor Price Feed Addresses": "/data-feeds/nft-floor-price/addresses/",
+    "Using Data Feeds": "/data-feeds/using-data-feeds",
+    "Read the API reference for using Data Feeds": "/data-feeds/api-reference",
+    "Price Feed Addresses": "/data-feeds/price-feeds/addresses",
+    "Proof of Reserve Feed Addresses": "/data-feeds/proof-of-reserve/addresses",
+    "NFT Floor Price Feed Addresses": "/data-feeds/nft-floor-price/addresses",
   }
 metadata:
   title: "Chainlink Data Feeds Documentation"
@@ -48,39 +48,39 @@ For example, [Synthetix](https://www.synthetix.io/) uses Data Feeds to determine
 
 Data Feeds aggregate many data sources and publish them on-chain using a combination of the [Decentralized Data Model](/architecture-overview/architecture-decentralized-model?parent=dataFeeds) and [Off-Chain Reporting](/architecture-overview/off-chain-reporting?parent=dataFeeds).
 
-To learn how to use Price Feeds, see the [Price Feeds](/data-feeds/price-feeds/) documentation.
+To learn how to use Price Feeds, see the [Price Feeds](/data-feeds/price-feeds) documentation.
 
-See the [Data Feeds Contract Addresses](/data-feeds/price-feeds/addresses/) page for a list of available networks and addresses.
+See the [Data Feeds Contract Addresses](/data-feeds/price-feeds/addresses) page for a list of available networks and addresses.
 
 ### Proof of Reserve Feeds
 
 Proof of Reserves feeds provide the status of reserves for stablecoins, wrapped assets, and real world assets. Proof of Reserve Feeds operate similarly to Price Feeds, but provide answers in units of measurement such as ounces (oz) or number of tokens.
 
-To learn more about Proof of Reserve Feeds, see the [Proof of Reserve](/data-feeds/proof-of-reserve/) documentation.
+To learn more about Proof of Reserve Feeds, see the [Proof of Reserve](/data-feeds/proof-of-reserve) documentation.
 
-See the [Proof of Reserve Contract Addresses](/data-feeds/proof-of-reserve/addresses/) page for a list of available networks and addresses.
+See the [Proof of Reserve Contract Addresses](/data-feeds/proof-of-reserve/addresses) page for a list of available networks and addresses.
 
 ### NFT Floor Price Feeds
 
-NFT Floor Price Feeds provide the price of the lowest priced NFT available in a collection. These feeds operate similarly to [Price Feeds](/data-feeds/price-feeds/) so you can use the [AggregatorV3Interface.sol](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol) contract to retrieve price answers.
+NFT Floor Price Feeds provide the price of the lowest priced NFT available in a collection. These feeds operate similarly to [Price Feeds](/data-feeds/price-feeds) so you can use the [AggregatorV3Interface.sol](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol) contract to retrieve price answers.
 
-To learn more, see the [NFT Floor Price Feeds](/data-feeds/nft-floor-price/) documentation.
+To learn more, see the [NFT Floor Price Feeds](/data-feeds/nft-floor-price) documentation.
 
-See the [NFT Floor Price Contract Addresses](/data-feeds/nft-floor-price/addresses/) page for a list of available networks and addresses.
+See the [NFT Floor Price Contract Addresses](/data-feeds/nft-floor-price/addresses) page for a list of available networks and addresses.
 
 ### Rate and Volatility Feeds
 
 Several feeds provide interest rate curve data, APY data, and realized asset price volatility.
 
-To learn more, see the [Rate and Volatility Feeds](/data-feeds/rates-feeds/) documentation.
+To learn more, see the [Rate and Volatility Feeds](/data-feeds/rates-feeds) documentation.
 
-See the [Rate and Volatility Contract Addresses](/data-feeds/rates-feeds/addresses/) page for a list of available networks and addresses.
+See the [Rate and Volatility Contract Addresses](/data-feeds/rates-feeds/addresses) page for a list of available networks and addresses.
 
 ### L2 sequencer uptime feeds
 
 L2 sequencer feeds track the last known status of the sequencer on an L2 network at a given point in time. This helps you prevent mass liquidations by providing a grace period to allow customers to react to these events.
 
-To learn how to use L2 sequencer uptime feeds feeds, see the [L2 Sequencer Uptime Feeds](/data-feeds/l2-sequencer-feeds/) documentation.
+To learn how to use L2 sequencer uptime feeds feeds, see the [L2 Sequencer Uptime Feeds](/data-feeds/l2-sequencer-feeds) documentation.
 
 ## Components of a data feed
 
@@ -90,7 +90,7 @@ Data Feeds are an example of a decentralized oracle network and include the foll
 - **Proxy contract**: Proxy contracts are on-chain proxies that point to the aggregator for a particular data feed. Using proxies enables the underlying aggregator to be upgraded without any service interruption to consuming contracts. Proxy contracts can vary from one data feed to another, but the [`AggregatorProxy.sol` contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/dev/AggregatorProxy.sol) on Github is a common example.
 - **Aggregator contract**: An aggregator is a contract that receives periodic data updates from the oracle network. Aggregators store aggregated data on-chain so that consumers can retrieve it and act upon it within the same transaction. For a complete list of functions and variables available on most aggregator contracts, see the [Data Feeds API Reference](/data-feeds/api-reference/#accesscontrolledoffchainaggregator).
 
-To learn how to create a consumer contract that uses an existing data feed, read the [Using Data Feeds](/data-feeds/price-feeds/) documentation.
+To learn how to create a consumer contract that uses an existing data feed, read the [Using Data Feeds](/data-feeds/price-feeds) documentation.
 
 ## Reading proxy and aggregator configurations
 
@@ -138,7 +138,7 @@ Configure your application to detect when the reported answer is close to reachi
 
 ### Check the timestamp of the latest answer
 
-Chainlink Data Feeds do not provide streaming data. Rather, the aggregator updates its `latestAnswer` when the value deviates beyond a specified threshold or when the heartbeat idle time has passed. You can find the heartbeat and deviation values for each data feed at [data.chain.link](https://data.chain.link/) or in the [Contract Addresses](/data-feeds/price-feeds/addresses/) lists.
+Chainlink Data Feeds do not provide streaming data. Rather, the aggregator updates its `latestAnswer` when the value deviates beyond a specified threshold or when the heartbeat idle time has passed. You can find the heartbeat and deviation values for each data feed at [data.chain.link](https://data.chain.link/) or in the [Contract Addresses](/data-feeds/price-feeds/addresses) lists.
 
 Your application should track the `latestTimestamp` variable or use the `updatedAt` value from the `latestRoundData()` function to make sure that the latest answer is recent enough for your application to use it. If your application detects that the reported answer is not updated within the heartbeat or within time limits that you determine are acceptable for your application, pause operation or switch to an alternate operation mode while identifying the cause of the delay.
 
