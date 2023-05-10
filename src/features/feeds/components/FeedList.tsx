@@ -67,7 +67,7 @@ export const FeedList = ({
                         id={chain.page}
                         role="tab"
                         aria-selected={selectedChain === chain.page}
-                        class={clsx(button.tertiary, feedList.networkSwitchButton)}
+                        class={clsx(feedList.networkSwitchButton)}
                         onClick={() => handleNetworkSelect(chain)}
                       >
                         <img src={chain.img} title={chain.label} loading="lazy" width={32} height={32} />
