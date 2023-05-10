@@ -323,7 +323,7 @@ export const SIDEBAR = {
           url: "chainlink-automation/compatible-contracts",
           children: [
             {
-              title: "Best Practice",
+              title: "Best Practices",
               url: "chainlink-automation/compatible-contract-best-practice",
             },
           ],
