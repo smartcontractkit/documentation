@@ -14,6 +14,7 @@ export async function getStaticPaths(): Promise<GetStaticPathsResult> {
     return {
       params: { redirect: sanitizeSource(entry.source) },
       props: {
+        from: sanitizeSource(entry.source),
         to:
           entry.destination.charAt(0) === "/" || entry.destination.includes("https://")
             ? entry.destination
@@ -23,7 +24,7 @@ export async function getStaticPaths(): Promise<GetStaticPathsResult> {
   })
 }
 
-const { to } = Astro.props
+const { to, from } = Astro.props
 ---
 
-<meta http-equiv="refresh" content={`0; url=${to}`} />
+<meta http-equiv="refresh" content={`0; url=${to}?from=${from}`} />
