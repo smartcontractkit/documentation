@@ -21,33 +21,33 @@ This tutorial shows you how to run computations on the Chainlink Functions Decen
 
 1. Make sure your subscription has enough LINK to pay for your requests. Read [Get Subscription details](/chainlink-functions/resources/subscriptions#get-subscription-details) to learn how to check your subscription balance. If your subscription runs out of LINK, follow the [Fund a Subscription](/chainlink-functions/resources/subscriptions#fund-a-subscription) guide.
 
-1. **Check out the correct branch before you try this tutorial:** Each tutorial is stored in a separate branch of the [Chainlink Functions Starter Kit](https://github.com/smartcontractkit/functions-hardhat-starter-kit) repository.
+1. Check out the _tutorials_ branch of the [Chainlink Functions Starter Kit](https://github.com/smartcontractkit/functions-hardhat-starter-kit). You can locate this tutorial in [the _/tutorials/1-simple-computation_ directory](https://github.com/smartcontractkit/functions-hardhat-starter-kit/tree/tutorials/tutorials/1-simple-computation).
 
    ```bash
-   git checkout tutorial-1
+   git checkout tutorials
    ```
 
 ## Tutorial
 
 This tutorial is configured to get the average (geometric mean) from a list of numbers. For a detailed explanation of the code example, read the [Explanation](#explanation) section.
 
-- Open `Functions-request-config.js`. Note that the `args` value is `["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]`, so the source code will calculate the average (geometric mean) of "1,2,3,4,5,6,7,8,9,10". You can change the `args` value to compute another set's average. Read the [request config explanation](#functions-request-configjs) for more information about the request config file.
-- Open `Functions-request-source.js` to analyze the JavaScript source code. Read the [source code explanation](#functions-request-sourcejs) for a more detailed description of the source code.
+- Open `config.js`. Note that the `args` value is `["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]`, so the source code will calculate the average (geometric mean) of "1,2,3,4,5,6,7,8,9,10". You can change the `args` value to compute another set's average. Read the [request config explanation](#configjs) for more information about the request config file.
+- Open `source.js` to analyze the JavaScript source code. Read the [source code explanation](#sourcejs) for a more detailed description of the source code.
 
 ### Simulation
 
 The [Chainlink Functions hardhat starter kit](https://github.com/smartcontractkit/functions-hardhat-starter-kit) includes a simulator to test your Functions code on your local machine. The `functions-simulate` command will execute your code in a local runtime environment and simulate an end-to-end fulfillment, helping you fix any issues before submitting your functions to a Decentralized Oracle Network.
 
-Run the `functions-simulate` task to run the source code locally and make sure `Functions-request-config.js` and `Functions-request-source.js` are correctly written:
+Run the `functions-simulate` task to run the source code locally and make sure `config.js` and `source.js` are correctly written:
 
 ```bash
-npx hardhat functions-simulate
+npx hardhat functions-simulate --configpath REPLACE_CONFIG_PATH
 ```
 
 Example:
 
 ```text
-$ npx hardhat functions-simulate
+$ npx hardhat functions-simulate --configpath tutorials/1-simple-computation/config.js
 secp256k1 unavailable, reverting to browser version
 
 __Compiling Contracts__
@@ -72,7 +72,7 @@ Gas used by sendRequest: 351895
 Gas used by client callback function: 75017
 ```
 
-Reading the output of the example above, you can note that the geometric mean was correctly computed: `4.53`. Because Solidity does not support decimals, we move the decimal point so that the value looks like an integer `453` before returning the `bytes` encoded value `0x00000000000000000000000000000000000000000000000000000000000001c5` in the callback. Note: Read the [source code explanation](#functions-request-sourcejs) for a more detailed explanation.
+Reading the output of the example above, you can note that the geometric mean was correctly computed: `4.53`. Because Solidity does not support decimals, we move the decimal point so that the value looks like an integer `453` before returning the `bytes` encoded value `0x00000000000000000000000000000000000000000000000000000000000001c5` in the callback. Note: Read the [source code explanation](#sourcejs) for a more detailed explanation.
 
 ### Request
 
@@ -85,13 +85,13 @@ Reading the output of the example above, you can note that the geometric mean wa
 Send a request to the Decentralized Oracle Network to compute the average (geometric mean). Run the `functions-request` task with the `subid` (subscription ID) and `contract` parameters. This task will pass the functions JavaScript source code and any arguments and secrets when calling the `FunctionsConsumer`'s `executeRequest` function. Read the [functionsConsumer](#functionsconsumersol) section for more details about the consumer contract.
 
 ```bash
-npx hardhat functions-request --subid REPLACE_SUBSCRIPTION_ID --contract REPLACE_CONSUMER_CONTRACT_ADDRESS --network REPLACE_NETWORK
+npx hardhat functions-request --subid REPLACE_SUBSCRIPTION_ID --contract REPLACE_CONSUMER_CONTRACT_ADDRESS --network REPLACE_NETWORK --configpath REPLACE_CONFIG_PATH
 ```
 
 Example:
 
 ```text
-$ npx hardhat functions-request --subid 443 --contract 0x4B4BA2Fd6b93aDF8d6b6002E10540E58394388Ea --network polygonMumbai
+$ npx hardhat functions-request --subid 443 --contract 0x4B4BA2Fd6b93aDF8d6b6002E10540E58394388Ea --network polygonMumbai --configpath tutorials/1-simple-computation/config.js
 secp256k1 unavailable, reverting to browser version
 Estimating cost if the current gas price remains the same...
 
@@ -144,13 +144,13 @@ The output of the example gives you the following information:
 At any time, you can run the `functions-read` task with the `contract` parameter to read the latest received response.
 
 ```bash
-npx hardhat functions-read  --contract REPLACE_CONSUMER_CONTRACT_ADDRESS --network REPLACE_NETWORK
+npx hardhat functions-read  --contract REPLACE_CONSUMER_CONTRACT_ADDRESS --network REPLACE_NETWORK --configpath REPLACE_CONFIG_PATH
 ```
 
 Example:
 
 ```text
-$ npx hardhat functions-read  --contract 0x4B4BA2Fd6b93aDF8d6b6002E10540E58394388Ea  --network polygonMumbai
+$ npx hardhat functions-read  --contract 0x4B4BA2Fd6b93aDF8d6b6002E10540E58394388Ea  --network polygonMumbai --configpath tutorials/1-simple-computation/config.js
 secp256k1 unavailable, reverting to browser version
 Reading data from Functions client contract 0x4B4BA2Fd6b93aDF8d6b6002E10540E58394388Ea on network mumbai
 
@@ -164,17 +164,17 @@ Decoded as a uint256: 453
 
 <ChainlinkFunctions section="functions-consumer" />
 
-### Functions-request-config.js
+### config.js
 
 Read the [Request Configuration](https://github.com/smartcontractkit/functions-hardhat-starter-kit#functions-library) section for a detailed description of each setting. In this example, the settings are the following:
 
 - `codeLocation: Location.Inline`: The JavaScript code is provided within the request.
 - `codeLanguage: CodeLanguage.JavaScript`: The source code is developed in the JavaScript language.
-- `source: fs.readFileSync("./Functions-request-source.js").toString()`: The source code must be a script object. That's why we use `fs.readFileSync` to read `Functions-request-source.js` and then call `toString()` to get the content as a `string` object.
+- `source: fs.readFileSync(path.resolve(__dirname, "source.js")).toString()`: The source code must be a script object. That's why we use `fs.readFileSync` to read `source.js` and then call `toString()` to get the content as a `string` object.
 - `args: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]`: These arguments are passed to the source code. This example computes the average(geometric mean) of `1,2,3,4,5,6,7,8,9,10`.
 - `expectedReturnType: ReturnType.uint256`: The response received by the DON is encoded in `bytes`. Because the average (geometric mean) is a `uint256`, define `ReturnType.uint256` to inform users how to decode the response received by the DON.
 
-### Functions-request-source.js
+### source.js
 
 Read the [JavaScript code](https://github.com/smartcontractkit/functions-hardhat-starter-kit#javascript-code) section for a detailed explanation of how to write compatible JavaScript source code. This JavaScript source code uses only vanilla Node.js and makes no API calls. The code is self-explanatory and has comments to help you understand all the steps. The main steps are:
 

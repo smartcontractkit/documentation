@@ -26,33 +26,33 @@ In this tutorial, you send a request to a Decentralized Oracle Network to call t
 
 1. Make sure your subscription has enough LINK to pay for your requests. Read [Get Subscription details](/chainlink-functions/resources/subscriptions#get-subscription-details) to learn how to check your subscription balance. If your subscription runs out of LINK, follow the [Fund a Subscription](/chainlink-functions/resources/subscriptions#fund-a-subscription) guide.
 
-1. **Check out the correct branch before you try this tutorial:** Each tutorial is stored in a separate branch of the [Chainlink Functions Starter Kit](https://github.com/smartcontractkit/functions-hardhat-starter-kit) repository.
+1. Check out the _tutorials_ branch of the [Chainlink Functions Starter Kit](https://github.com/smartcontractkit/functions-hardhat-starter-kit). You can locate this tutorial in [the _/tutorials/3-custom-response_ directory](https://github.com/smartcontractkit/functions-hardhat-starter-kit/tree/tutorials/tutorials/3-custom-response).
 
    ```bash
-   git checkout tutorial-3
+   git checkout tutorials
    ```
 
 ## Tutorial
 
 This tutorial is configured to get the `ETH/USD`, daily volume, and market in a single request. For a detailed explanation of the code example, read the [Explanation](#explanation) section.
 
-- Open `Functions-request-config.js`. Note the `args` value is `["ETH", "USD"]`: We want to fetch the current `ETH/USD` price and daily volume. You can adapt `args` to get the list of supported symbols. Read the [API docs](https://min-api.cryptocompare.com/documentation?key=Price&cat=multipleSymbolsFullPriceEndpoint) to learn more about these configuration variables. For a more detailed explanation about the configuration in this example, read the [request config explanation](#functions-request-configjs) section.
-- Open `Functions-request-source.js` to analyze the JavaScript source code. Read the [source code explanation](#functions-request-sourcejs) section for a more detailed explanation of how the source file is written.
+- Open `config.js`. Note the `args` value is `["ETH", "USD"]`: We want to fetch the current `ETH/USD` price and daily volume. You can adapt `args` to get the list of supported symbols. Read the [API docs](https://min-api.cryptocompare.com/documentation?key=Price&cat=multipleSymbolsFullPriceEndpoint) to learn more about these configuration variables. For a more detailed explanation about the configuration in this example, read the [request config explanation](#configjs) section.
+- Open `source.js` to analyze the JavaScript source code. Read the [source code explanation](#sourcejs) section for a more detailed explanation of how the source file is written.
 
 ### Simulation
 
 The [Chainlink Functions hardhat starter kit](https://github.com/smartcontractkit/functions-hardhat-starter-kit) includes a simulator to test your Functions code on your local machine. The `functions-simulate` command will execute your code in a local runtime environment and simulate an end-to-end fulfillment. Simulation can help you to fix any issues before you submit your requests to the Decentralized Oracle Network.
 
-Run the `functions-simulate` task to run the source code locally and make sure `Functions-request-config.js` and `Functions-request-source.js` are correctly written:
+Run the `functions-simulate` task to run the source code locally and make sure `config.js` and `Functions-request-source.js` are correctly written:
 
 ```bash
-npx hardhat functions-simulate
+npx hardhat functions-simulate --configpath REPLACE_CONFIG_PATH
 ```
 
 Example:
 
 ```text
-$ npx hardhat functions-simulate
+$ npx hardhat functions-simulate --configpath tutorials/3-custom-response/config.js
 secp256k1 unavailable, reverting to browser version
 
 __Compiling Contracts__
@@ -77,7 +77,7 @@ Gas used by sendRequest: 376604
 Gas used by client callback function: 98391
 ```
 
-Reading the output of the example above, you can see that the `ETH/USD` price is _1810.29 USD_, volume is _113255.87_, and the market is _Coinbase_. Because the final result is a JSON object, the example converts it to a string and returns the `bytes` encoded value `0x7b227072696365223a22313831302e3239222c22766f6c756d65223a223131333235352e3837222c226c6173744d61726b6574223a22436f696e62617365227d` in the callback. Read the [source code explanation](#functions-request-sourcejs) for a more detailed explanation.
+Reading the output of the example above, you can see that the `ETH/USD` price is _1810.29 USD_, volume is _113255.87_, and the market is _Coinbase_. Because the final result is a JSON object, the example converts it to a string and returns the `bytes` encoded value `0x7b227072696365223a22313831302e3239222c22766f6c756d65223a223131333235352e3837222c226c6173744d61726b6574223a22436f696e62617365227d` in the callback. Read the [source code explanation](#sourcejs) for a more detailed explanation.
 
 ### Request
 
@@ -90,13 +90,13 @@ Reading the output of the example above, you can see that the `ETH/USD` price is
 Send a request to the Decentralized Oracle Network to fetch the asset price. Run the `functions-request` task with the `subid` (subscription ID) and `contract` parameters. This task passes the JavaScript source code, arguments, and secrets when you call the `executeRequest` function in your deployed `FunctionsConsumer` contract. Read the [functionsConsumer](#functionsconsumersol) section for a more detailed explanation.
 
 ```bash
-npx hardhat functions-request --subid REPLACE_SUBSCRIPTION_ID --contract REPLACE_CONSUMER_CONTRACT_ADDRESS --network REPLACE_NETWORK
+npx hardhat functions-request --subid REPLACE_SUBSCRIPTION_ID --contract REPLACE_CONSUMER_CONTRACT_ADDRESS --network REPLACE_NETWORK --configpath REPLACE_CONFIG_PATH
 ```
 
 Example:
 
 ```text
-$ npx hardhat functions-request --subid 443 --contract 0x4B4BA2Fd6b93aDF8d6b6002E10540E58394388Ea --network polygonMumbai
+$ npx hardhat functions-request --subid 443 --contract 0x4B4BA2Fd6b93aDF8d6b6002E10540E58394388Ea --network polygonMumbai --configpath tutorials/3-custom-response/config.js
 secp256k1 unavailable, reverting to browser version
 Estimating cost if the current gas price remains the same...
 
@@ -150,13 +150,13 @@ The output of the example above gives you the following information:
 At any time, you can run the `functions-read` task with the `contract` parameter to read the latest received response.
 
 ```bash
-npx hardhat functions-read  --contract REPLACE_CONSUMER_CONTRACT_ADDRESS --network REPLACE_NETWORK
+npx hardhat functions-read  --contract REPLACE_CONSUMER_CONTRACT_ADDRESS --network REPLACE_NETWORK --configpath REPLACE_CONFIG_PATH
 ```
 
 Example:
 
 ```text
-$ npx hardhat functions-read  --contract 0x4B4BA2Fd6b93aDF8d6b6002E10540E58394388Ea  --network polygonMumbai
+$ npx hardhat functions-read  --contract 0x4B4BA2Fd6b93aDF8d6b6002E10540E58394388Ea  --network polygonMumbai --configpath tutorials/3-custom-response/config.js
 secp256k1 unavailable, reverting to browser version
 Reading data from Functions client contract 0x4B4BA2Fd6b93aDF8d6b6002E10540E58394388Ea on network mumbai
 
@@ -172,17 +172,17 @@ Decoding `0x7b227072696365223a22313831312e3139222c22766f6c756d65223a223131333931
 
 <ChainlinkFunctions section="functions-consumer" />
 
-### Functions-request-config.js
+### config.js
 
 Read the [Request Configuration](https://github.com/smartcontractkit/functions-hardhat-starter-kit#functions-library) section for a detailed description of each setting. This example uses the following settings:
 
 - `codeLocation: Location.Inline`: The JavaScript code is provided within the request.
 - `codeLanguage: CodeLanguage.JavaScript`: The source code is developed in the JavaScript language.
-- `source: fs.readFileSync("./Functions-request-source.js").toString()`: The source code must be a script object. This example uses `fs.readFileSync` to read `Functions-request-source.js` and calls `toString()` to get the content as a `string` object.
+- `source: fs.readFileSync(path.resolve(__dirname, "source.js")).toString()`: The source code must be a script object. This example uses `fs.readFileSync` to read `source.js` and calls `toString()` to get the content as a `string` object.
 - `args: ["ETH", "USD"]`: These arguments are passed to the source code. This example requests the `ETH/USD` price and daily volume.
-- `expectedReturnType: ReturnType.string`: The response received by the DON is encoded in `bytes`. Because the price, daily volume and market are put in a JSON string, define `ReturnType.string` to inform users how to decode the response received by the DON. Read [source code explanation](#functions-request-sourcejs) for more information.
+- `expectedReturnType: ReturnType.string`: The response received by the DON is encoded in `bytes`. Because the price, daily volume and market are put in a JSON string, define `ReturnType.string` to inform users how to decode the response received by the DON. Read [source code explanation](#sourcejs) for more information.
 
-### Functions-request-source.js
+### source.js
 
 You can check the expected API response. Directly paste the following URL in your browser `https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETH&tsyms=USD` or run a `curl` command in your terminal:
 
@@ -232,7 +232,7 @@ Read the [JavaScript code](https://github.com/smartcontractkit/functions-hardhat
   }
   ```
 
-Note `fromSymbol` and `toSymbol` are fetched from `args` (see [request config](#functions-request-configjs)).
+Note `fromSymbol` and `toSymbol` are fetched from `args` (see [request config](#configjs)).
 
 The code is self-explanatory and has comments to help you understand all the steps. The main steps are:
 
