@@ -46,46 +46,50 @@ You must have a wallet with testnet LINK and native tokens to run this example. 
 
 If you don't already have a Hardhat project, start one with the following steps:
 
-1. Install [Node.js](https://nodejs.org/en/download/). **Note**: Node.js version 18 is required.
-1. Make a new project directory:
+1.  Install [Node.js](https://nodejs.org/en/download/). **Note**: Node.js version 18 is required.
+1.  Make a new project directory:
 
-   ```shell
-   mkdir new-functions-project && cd new-functions-project
-   ```
+    ```shell
+    mkdir new-functions-project && cd new-functions-project
+    ```
 
-1. Create a new Node.js project:
+1.  Create a new Node.js project:
 
-   ```shell
-   npm init
-   ```
+    ```shell
+    npm init
+    ```
 
-1. Install Hardhat as a dev dependency:
+1.  Install Hardhat as a dev dependency:
 
-   ```shell
-   npm install --save-dev hardhat
-   ```
+    ```shell
+    npm install --save-dev hardhat
+    ```
 
-1. Install the dependency packages:
+1.  Install the dependency packages:
 
-   ```shell
-   npm install @chainlink/contracts @chainlink/env-enc @openzeppelin/contracts @openzeppelin/contracts-upgradeable eth-crypto dotenv axios vm2 is-http-url prompt-sync
-   ```
+    ```shell
+    npm install @chainlink/contracts @chainlink/env-enc @openzeppelin/contracts @openzeppelin/contracts-upgradeable eth-crypto dotenv axios vm2 is-http-url prompt-sync
+    ```
 
-1. Create a new Hardhat project. For this example, create a JavaScript project and use the default configurations:
+1.  Create a new Hardhat project. For this example, create a JavaScript project and use the default configurations:
 
-   ```shell
-   npx hardhat
-   ```
+    ```shell
+    npx hardhat
+    ```
 
-1. Remove the `Lock.sol` contract that Hardhat creates by default. This contract is not necessary to compile it for this tutorial.
+1.  Remove the `Lock.sol` contract that Hardhat creates by default. This contract is not necessary to compile it for this tutorial.
 
-   ```shell
-   rm ./contracts/Lock.sol
-   ```
+    ```shell
+    rm ./contracts/Lock.sol
+    ```
 
-Modify `hardhat.config.js` to include the `0.8.7` compiler version and supported networks. See the [Supported Networks](/chainlink-functions/supported-networks) page for a list of networks where Chainlink Functions DONs are available. This example uses Polygon Mumbai by default:
+1.  Use `curl` to get the example hardhat config file `hardhat.config.js`:
 
-<CodeSample src="samples/Functions/adding-functions-to-projects/hardhat.config.js" />
+    ```shell
+    curl -o hardhat.config.js https://raw.githubusercontent.com/smartcontractkit/smart-contract-examples/main/add-functions-to-project/hardhat.config.js
+    ```
+
+1.  Open `hardhat.config.js`. To use a different network, see the [Supported Networks](/chainlink-functions/supported-networks) page for a list of networks where Chainlink Functions DONs are available. This example uses Polygon Mumbai by default.
 
 1.  For higher security, you should encrypt your environment variables at rest.
 
@@ -99,7 +103,6 @@ Modify `hardhat.config.js` to include the `0.8.7` compiler version and supported
 
                   - `POLYGON_MUMBAI_RPC_URL`: Set a URL for the Polygon Mumbai testnet. You can sign up for a personal endpoint from [Alchemy](https://www.alchemy.com/), [Infura](https://www.infura.io/), or another node provider service.
 
-                  - `ETHEREUM_SEPOLIA_RPC_URL`: Set a URL for the Ethereum Sepolia testnet. You can sign up for a personal endpoint from [Alchemy](https://www.alchemy.com/), [Infura](https://www.infura.io/), or another node provider service.
 
                   - `PRIVATE_KEY`: Find the private key for your testnet wallet. If you use MetaMask, follow the instructions to [Export a Private Key](https://metamask.zendesk.com/hc/en-us/articles/360015289632-How-to-export-an-account-s-private-key). Set this in the `.env` file. **Note**: The Chainlink Functions hardhat starter kit uses your private key to sign any transactions you make such as deploying your consumer contract, creating subscriptions, and making requests.
 
@@ -107,7 +110,11 @@ Modify `hardhat.config.js` to include the `0.8.7` compiler version and supported
                   npx env-enc set
                   ```
 
-Run the compile command for Hardhat or your framework of choice to make sure everything is configured correctly. You will see several compile warnings, but everything is correct if the Solidity files compile successfully. For this example, you can run `npx hardhat compile`.
+Run the compile command for Hardhat or your framework of choice to make sure everything is configured correctly. You will see several compile warnings, but everything is correct if the Solidity files compile successfully. For this example, run:
+
+```shell
+npx hardhat compile
+```
 
 ## Get the dependency contracts and scripts
 
@@ -168,16 +175,13 @@ Next, deploy the contract.
 
 You can deploy consumer contracts using the [Chainlink Functions Starter Kit](https://github.com/smartcontractkit/functions-hardhat-starter-kit), but this example shows how to deploy the contract programmatically using a script.
 
-1. Create a script named `deploy.js` in the `./scripts` folder of your project:
+1. Use `curl` to get the example deployment script `deploy.js` and put it in the `./scripts` folder of your project:
 
    ```shell
-   touch ./scripts/deploy.js && open ./scripts/deploy.js
+   curl -o ./scripts/deploy.js https://raw.githubusercontent.com/smartcontractkit/smart-contract-examples/main/add-functions-to-project/scripts/deploy.js
    ```
 
-1. Copy the following code into the script.
-
-   <CodeSample src="samples/Functions/adding-functions-to-projects/deploy.js" />
-
+1. Open `deploy.js` in your editor of choice.
 1. Set the `oracleAddress` to the oracle address on the network that you want to use. Each network has a unique DON with a unique oracle address. See the [Supported Networks](/chainlink-functions/supported-networks) page for a list of supported networks and oracle addresses. For this example, use the address for the oracle on Polygon Mumbai:
 
    ```javascript
@@ -200,10 +204,16 @@ You can deploy consumer contracts using the [Chainlink Functions Starter Kit](ht
    npx hardhat run ./scripts/deploy.js --network your_network
    ```
 
+   Example:
+
+   ```shell
+   npx hardhat run ./scripts/deploy.js --network polygonMumbai
+   ```
+
 1. If your contract deployed successfully, you will see the deployed consumer address. Record this address to use later:
 
    ```text
-   Deployed Functions Consumer address: 0xE83188aDF26bd6c18076704fC8EC68CBda454f76
+   Deployed Functions Consumer address: 0x5484e266c2cD379800e6F27EaB097Bb806647CbF
    ```
 
 Next, create and fund your Chainlink Functions subscription.
@@ -216,15 +226,13 @@ This example shows how to create and manage subscriptions programmatically. You 
 
 1. Ensure that the wallet address you are using to create the subscription has a sufficient LINK balance. You can get testnet LINK at [faucets.chain.link](https://faucets.chain.link/mumbai). To get testnet funds for other networks, see the [LINK Token Contracts](/resources/link-token-contracts?parent=chainlinkFunctions) page.
 
-1. Create a script named `functions-sub.js` in the `./scripts` folder of your project:
+1. Use `curl` to get the example subscription script `functions-sub.js` and put it in the `./scripts` folder of your project:
 
    ```shell
-   touch ./scripts/functions-sub.js && open ./scripts/functions-sub.js
+   curl -o ./scripts/functions-sub.js https://raw.githubusercontent.com/smartcontractkit/smart-contract-examples/main/add-functions-to-project/scripts/functions-sub.js
    ```
 
-1. Copy the following code into the script:
-
-   <CodeSample src="samples/Functions/adding-functions-to-projects/functions-sub.js" />
+1. Open `functions-sub.js` in your editor of choice.
 
 1. Set `const linkAmount` with the amount of LINK you want to send to the subscription. You can retrieve extra funds later when you cancel the subscription.
 
@@ -235,7 +243,7 @@ This example shows how to create and manage subscriptions programmatically. You 
 1. Set `const consumer` to the address of the consumer contract that you deployed:
 
    ```javascript
-   const consumer = "0xE83188aDF26bd6c18076704fC8EC68CBda454f76"
+   const consumer = "0x5484e266c2cD379800e6F27EaB097Bb806647CbF"
    ```
 
 1. Save the file and run the script. Include the `--network` flag to use a network other than the default in the Hardhat config:
@@ -244,15 +252,21 @@ This example shows how to create and manage subscriptions programmatically. You 
    npx hardhat run scripts/functions-sub.js --network your_network
    ```
 
+   Example:
+
+   ```shell
+   npx hardhat run scripts/functions-sub.js --network polygonMumbai
+   ```
+
 1. If the script is successful, you the terminal prints your subscription ID. Record this ID to use for Chainlink Functions requests. You should see output similar to the following example:
 
    ```text
-   Subscription created with ID: 1337
+   Subscription created with ID: 917
    Duplicate definition of Transfer (Transfer(address,address,uint256,bytes), Transfer(address,address,uint256))
-   Funding with 1000000000000000000 LINK
-   Subscription 1337 funded with 1000000000000000000 LINK
-   Adding consumer contract address 0xE83188aDF26bd6c18076704fC8EC68CBda454f76 to subscription 1337
-   Authorized consumer contract: 0xE83188aDF26bd6c18076704fC8EC68CBda454f76
+   Funding with 1000000000000000000 Juels (1 LINK = 10^18 Juels)
+   Subscription 917 funded with 1000000000000000000 Juels (1 LINK = 10^18 Juels)
+   Adding consumer contract address 0x5484e266c2cD379800e6F27EaB097Bb806647CbF to subscription 917
+   Authorized consumer contract: 0x5484e266c2cD379800e6F27EaB097Bb806647CbF
    ```
 
 Now that the consumer contract is deployed and the subscription is created and funded with LINK, the on-chain resources are ready to handle your requests. Next, create JavaScript code that you want to run on the DON, configure arguments for the code, and create a script to send your request.
@@ -285,16 +299,16 @@ For this example, download some example source code and create a script to assem
    curl -o ./scripts/request.js https://raw.githubusercontent.com/smartcontractkit/smart-contract-examples/main/add-functions-to-project/scripts/request.js
    ```
 
-1. Edit the script and set your deployed consumer address in `const consumerAddress`:
+1. Edit the `request.js` script and set your deployed consumer address in `const consumerAddress`:
 
    ```javascript
-   const consumerAddress = 0xe83188adf26bd6c18076704fc8ec68cbda454f76
+   const consumerAddress = 0x5484e266c2cd379800e6f27eab097bb806647cbf
    ```
 
 1. Set `const subscriptionId` to your Chainlink Functions subscription ID. This must be the same ID that your consumer contract is authorized to use. You can [add a consumer contract to a subscription](/chainlink-functions/resources/subscriptions#add-a-consumer-contract-to-a-subscription) later if you need to.
 
    ```javascript
-   const subscriptionId = 1337
+   const subscriptionId = 917
    ```
 
 1. Set `const consumerAbiPath` to the ABI file that you created when you ran `npx hardhat compile`. The ABI tells Ethers how to interact with your deployed contract. If you compiled and deployed `FunctionsConsumer.sol`, set a path like the following example:
@@ -337,12 +351,23 @@ For this example, download some example source code and create a script to assem
    npx hardhat run scripts/request.js --network your_network
    ```
 
+   Example:
+
+   ```shell
+   npx hardhat run scripts/request.js --network polygonMumbai
+   ```
+
 If the script runs successfully, the script reads your consumer contract and prints the stored value that the DON returned.
 
 ```text
+Waiting 2 blocks for transaction 0x949184e7b605f034ce1d1d954973dc7132efb815bfa4861c54774cee457566d8 to be confirmed...
+
+Request 0xb3a4f9f47caeb83c5125ee61e2db1ca41beaa8a6781fb3c4364b4d394c40bc6b initiated
 Waiting for fulfillment...
 
-Stored value is: 164144
+
+Request 0xb3a4f9f47caeb83c5125ee61e2db1ca41beaa8a6781fb3c4364b4d394c40bc6b fulfilled!
+Response returned to client contract represented as a hex string: 180972
 ```
 
 Now you have the tools you need to build your own applications that use Chainlink Functions. Modify `Functions-request-source.js` and your input arguments to try out different capabilities. For more examples, see the [Tutorials](/chainlink-functions/tutorials) section.
