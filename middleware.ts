@@ -5,8 +5,15 @@ export function middleware(request: Request) {
   const url = new URL(request.url)
   const pathname = url.pathname
 
-  const redirect = redirects.redirects.find((entry) => entry.source === pathname)
-  console.log({ url, pathname, redirect })
+  const sanitizeSource = (source: string) => {
+    let newSource = source
+    if (newSource[newSource.length - 1] === "/") newSource = newSource.slice(0, newSource.length - 1)
+    if (newSource[0] === "/") return newSource.slice(1, newSource.length)
+    return newSource
+  }
+
+  const redirect = redirects.redirects.find((entry) => sanitizeSource(entry.source) === pathname)
+  console.info({ url, pathname, redirect })
 
   if (redirect) {
     // You can also set request headers in NextResponse.rewrite
