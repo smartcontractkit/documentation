@@ -6,6 +6,7 @@ export function middleware(request: Request) {
   const pathname = url.pathname
 
   const redirect = redirects.redirects.find((entry) => entry.source === pathname)
+  console.log({ url, pathname, redirect })
 
   if (redirect) {
     // You can also set request headers in NextResponse.rewrite
