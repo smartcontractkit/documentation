@@ -1,5 +1,4 @@
-import { rewrite } from "@vercel/edge"
-import redirects from "./features/redirects/redirects.json"
+import redirects from "./src/features/redirects/redirects.json"
 
 export function middleware(request: Request) {
   const referrer = request.referrer
@@ -14,6 +13,6 @@ export function middleware(request: Request) {
     const finalUrl = new URL(redirect.destination)
     finalUrl.searchParams.append("referrer", referrer)
 
-    return rewrite(new URL(redirect.destination, request.url))
+    return Response.redirect(new URL(redirect.destination, request.url))
   }
 }
