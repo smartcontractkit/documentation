@@ -305,6 +305,10 @@ export const SIDEBAR = {
           title: "Supported Networks",
           url: "chainlink-automation/supported-networks/",
         },
+        {
+          title: "Best Practices",
+          url: "chainlink-automation/compatible-contract-best-practice",
+        },
       ],
     },
     {
