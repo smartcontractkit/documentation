@@ -12,7 +12,7 @@ export function middleware(request: Request) {
     return newSource
   }
 
-  const redirect = redirects.redirects.find((entry) => sanitizeSource(entry.source) === pathname)
+  const redirect = redirects.redirects.find((entry) => sanitizeSource(entry.source) === sanitizeSource(pathname))
   console.info({ url, pathname, redirect })
 
   if (redirect) {
