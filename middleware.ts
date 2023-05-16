@@ -1,25 +1,23 @@
 import redirects from "./src/features/redirects/redirects.json"
 
-export function middleware(request: Request) {
+export const config = {
+  matcher: ["/((?!api|src|_astro|assets|.ico|.png|.svg|images|favicon.ico).*)"],
+}
+
+export default function middleware(request: Request) {
   const referrer = request.referrer
   const url = new URL(request.url)
   const pathname = url.pathname
 
-  const sanitizeSource = (source: string) => {
-    let newSource = source
-    if (newSource[newSource.length - 1] === "/") newSource = newSource.slice(0, newSource.length - 1)
-    if (newSource[0] === "/") return newSource.slice(1, newSource.length)
-    return newSource
-  }
-
-  const redirect = redirects.redirects.find((entry) => sanitizeSource(entry.source) === sanitizeSource(pathname))
-  console.info({ url, pathname, redirect })
+  const redirect = redirects.redirects.find((entry) => entry.source === pathname)
 
   if (redirect) {
-    // You can also set request headers in NextResponse.rewrite
-    const finalUrl = new URL(redirect.destination)
-    finalUrl.searchParams.append("referrer", referrer)
+    console.log("redirect found")
 
-    return Response.redirect(new URL(redirect.destination, request.url))
+    // You can also set request headers in NextResponse.rewrite
+    const finalUrl = new URL(request.url)
+    finalUrl.pathname = redirect.destination
+    finalUrl.searchParams.append("referrer", referrer)
+    return Response.redirect(finalUrl)
   }
 }
