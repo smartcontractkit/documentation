@@ -1,7 +1,7 @@
 import redirects from "./src/features/redirects/redirects.json"
 
 export const config = {
-  matcher: ["/((?!api|src|_astro|assets|.ico|.png|.svg|images|favicon.ico).*)"],
+  matcher: "/((?!api|static|.*\\..*|_astro|src).*)",
 }
 
 export default function middleware(request: Request) {
