@@ -302,6 +302,10 @@ export const SIDEBAR = {
           url: "chainlink-automation/introduction/",
         },
         {
+          title: "Getting Started",
+          url: "chainlink-automation/compatible-contracts",
+        },
+        {
           title: "Supported Networks",
           url: "chainlink-automation/supported-networks/",
         },
@@ -312,22 +316,22 @@ export const SIDEBAR = {
       ],
     },
     {
-      section: "TUTORIALS",
+      section: "EXAMPLES",
       contents: [
         {
-          title: "Batch-NFT-reveal",
+          title: "Automate the Reveal of Batch NFTs",
           url: "chainlink-automation/tutorials/batch-nft",
         },
         {
-          title: "Counting dNFT",
-          url: "chainlink-automation/tutorials/counting-dnft",
-        },
-        {
-          title: "Creating Dynamic NFTs",
+          title: "Create Dynamic NFTs",
           url: "chainlink-automation/tutorials/dynamic-nft",
         },
         {
-          title: "EthBalanceMonitor",
+          title: "Count Dynamic NFTs",
+          url: "chainlink-automation/tutorials/counting-dnft",
+        },
+        {
+          title: "Monitor Upkeep for Registered Contracts",
           url: "chainlink-automation/tutorials/eth-balance",
         },
         {
@@ -335,7 +339,7 @@ export const SIDEBAR = {
           url: "chainlink-automation/tutorials/vault-harvester",
         },
         {
-          title: "VRF Subscription Monitor",
+          title: "Monitor a VRF Subscription",
           url: "chainlink-automation/tutorials/vrf-sub-monitor",
         },
       ],
@@ -351,11 +355,6 @@ export const SIDEBAR = {
           title: "Custom Logic Automation",
           url: "chainlink-automation/register-upkeep",
         },
-        {
-          title: "Create Compatible Contracts",
-          url: "chainlink-automation/compatible-contracts",
-        },
-
         {
           title: "Manage your Upkeeps",
           url: "chainlink-automation/manage-upkeeps",
