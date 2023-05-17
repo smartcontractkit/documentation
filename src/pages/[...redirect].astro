@@ -1,0 +1,19 @@
+---
+import { GetStaticPathsResult } from "astro"
+import redirects from "../features/redirects/redirects.json"
+
+export async function getStaticPaths(): Promise<GetStaticPathsResult> {
+  return redirects.redirects.map((entry) => {
+    return {
+      params: { redirect: entry.source },
+      props: {
+        to: entry.destination,
+      },
+    }
+  })
+}
+
+const { to } = Astro.props
+---
+
+<meta http-equiv="refresh" content={`0; url=${to}`} />
