@@ -7,15 +7,22 @@ import tableStyles from "./Tables.module.css"
 const feedCategories = {
   verified: (
     <span className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")} title="Verified">
-      <a href="/docs/selecting-data-feeds/#🟢-verified-feeds" alt="Verified" target="_blank">
+      <a href="/docs/selecting-data-feeds/#-verified-feeds" alt="Verified" target="_blank">
         🟢
       </a>
     </span>
   ),
   monitored: (
     <span className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")} title="Monitored">
-      <a href="/docs/selecting-data-feeds/#🟡-monitored-feeds" alt="Monitored" target="_blank">
+      <a href="/docs/selecting-data-feeds/#-monitored-feeds" alt="Monitored" target="_blank">
         🟡
+      </a>
+    </span>
+  ),
+  provisional: (
+    <span className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")} title="Provisional">
+      <a href="/docs/selecting-data-feeds/#-provisional-feeds" alt="Provisional" target="_blank">
+        🟠
       </a>
     </span>
   ),
