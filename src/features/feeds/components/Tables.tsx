@@ -7,42 +7,42 @@ import tableStyles from "./Tables.module.css"
 const feedCategories = {
   verified: (
     <span className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")} title="Verified">
-      <a href="/docs/selecting-data-feeds/#-verified-feeds" alt="Verified" target="_blank">
+      <a href="/data-feeds/selecting-data-feeds#-verified-feeds" alt="Verified" target="_blank">
         🟢
       </a>
     </span>
   ),
   monitored: (
     <span className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")} title="Monitored">
-      <a href="/docs/selecting-data-feeds/#-monitored-feeds" alt="Monitored" target="_blank">
+      <a href="/data-feeds/selecting-data-feeds#-monitored-feeds" alt="Monitored" target="_blank">
         🟡
       </a>
     </span>
   ),
   provisional: (
     <span className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")} title="Provisional">
-      <a href="/docs/selecting-data-feeds/#-provisional-feeds" alt="Provisional" target="_blank">
+      <a href="/data-feeds/selecting-data-feeds#-provisional-feeds" alt="Provisional" target="_blank">
         🟠
       </a>
     </span>
   ),
   custom: (
     <span className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")} title="Custom">
-      <a href="/docs/selecting-data-feeds/#-custom-feeds" alt="Custom" target="_blank">
+      <a href="/data-feeds/selecting-data-feeds#-custom-feeds" alt="Custom" target="_blank">
         🔵
       </a>
     </span>
   ),
   specialized: (
     <span className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")} title="Specialized">
-      <a href="/docs/selecting-data-feeds/#-specialized-feeds" alt="Specialized" target="_blank">
+      <a href="/data-feeds/selecting-data-feeds#-specialized-feeds" alt="Specialized" target="_blank">
         ⚫
       </a>
     </span>
   ),
   deprecating: (
     <span className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")} title="Deprecating">
-      <a href="#categories" alt="Deprecating" target="_blank">
+      <a href="/data-feeds/deprecating-feeds" alt="Deprecating" target="_blank">
         ⭕
       </a>
     </span>
