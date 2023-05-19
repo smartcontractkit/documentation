@@ -176,8 +176,10 @@ Read the [Request Configuration](https://github.com/smartcontractkit/functions-h
 
 ### source.js
 
-Read the [JavaScript code](https://github.com/smartcontractkit/functions-hardhat-starter-kit#javascript-code) section for a detailed explanation of how to write compatible JavaScript source code. This JavaScript source code uses only vanilla Node.js and makes no API calls. The code is self-explanatory and has comments to help you understand all the steps. The main steps are:
+Read the [JavaScript code](https://github.com/smartcontractkit/functions-hardhat-starter-kit#javascript-code) section for a detailed explanation of how to write compatible JavaScript source code.  The code is self-explanatory and has comments to help you understand all the steps. The main steps are:
 
 - Read the numbers provided as arguments in the `args` setting. Because `args` is an array of `string`, call `parseInt` to convert from `string` to `number`.
 - Calculate the average (geometric mean): First, compute the product of the numbers. Then, calculate the nth root of the product where `n` is the length of `args`.
 - Return the result as a [buffer](https://nodejs.org/api/buffer.html#buffer) using the `Functions.encodeUint256` helper function. Because solidity doesn't support decimals, multiply the result by `100` and round the result to the nearest integer. **Note**: Read this [article](https://www.freecodecamp.org/news/do-you-want-a-better-understanding-of-buffer-in-node-js-check-this-out-2e29de2968e8/) if you are new to Javascript Buffers and want to understand why they are important.
+
+It is important to note that the custom source code you want to execute in a Functions request can use vanilla Node.js features, but cannot use any require statements or imported modules other than the built-in modules buffer, crypto, querystring, string_decoder, url, and util.
