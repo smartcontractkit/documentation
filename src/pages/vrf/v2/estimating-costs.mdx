@@ -262,3 +262,99 @@ This example request would cost 3.125 LINK.
 
 </Fragment>
 </Tabs>
+
+### Arbitrum example
+
+Similarly to supported L1 networks, VRF gas costs are calculated based on the amount of verification gas and callback gas used, multiplied by the gas price:
+
+```
+(L2 gas price * (Verification gas + Callback gas)) = total gas cost
+```
+
+Set your `callbackGasLimit` to account for L2 gas costs only. As with VRF requests on L1 chains, the request fails if your `callbackGasLimit` is too low. 
+
+Although the total transaction costs for using Arbitrum involve both L2 gas costs and L1 costs, the Chainlink node pays any L1 gas costs to post the transaction. To understand how Arbitrum's total transaction fees are calculated, including L1 costs, refer to this [Arbitrum gas estimation tutorial](https://developer.arbitrum.io/devs-how-tos/how-to-estimate-gas#an-example-of-how-to-apply-this-formula-in-your-code).
+
+<Tabs sharedStore="vrfMethod" client:visible>
+<Fragment slot="tab.1">Subscription</Fragment>
+<Fragment slot="tab.2">Direct funding</Fragment>
+<Fragment slot="panel.1">
+
+This is an example calculation of a VRF request on the Arbitrum network. Arbitrum is the only L2 network supported by Chainlink VRF. The values for other supported networks
+are available on the [Supported Networks](/vrf/v2/subscription/supported-networks) page.
+
+#### Estimate minimum subscription balance
+
+You must provide the [minimum subscription balance](/vrf/v2/subscription#minimum-subscription-balance) of LINK for your requests to be processed. This provides a buffer in case gas prices go higher while processing a request. The actual cost of the request is usually lower than the minimum subscription balance.
+
+| Parameter            | Value     |
+| -------------------- | --------- |
+| Gas lane             | 30 gwei  |
+| Callback gas limit   | 100000    |
+| Max verification gas | 200000    |
+| LINK premium         | 0.005 LINK |
+
+1. Calculate the total gas cost using the maximum possible gas price for the selected gas lane, the estimated  maximum verification gas, and the full callback gas limit:
+
+   | Gas cost calculation                          | Total gas cost            |
+   | --------------------------------------------- | ------------------------- |
+   | Gas price x (Verification gas + Callback gas) |                           |
+   | 30 gwei x (200000 + 100000)                   | 9000000 gwei (0.009 ETH)  |
+
+1. Convert the gas cost to LINK using the [LINK/ETH feed](https://data.chain.link/ethereum/mainnet/crypto-eth/link-eth).
+   For this example, assume the feed returns a conversion value of Ξ0.004 ETH per 1 LINK.
+
+   | ETH to LINK cost conversion | Total gas cost (LINK) |
+   | --------------------------- | --------------------- |
+   | 0.009 ETH / 0.004 ETH/LINK  | 2.25 LINK             |
+
+1. Add the LINK premium to get the total maximum cost of a request:
+
+   | Adding LINK premium                  | Maximum request cost (LINK) |
+   | ------------------------------------ | --------------------------- |
+   | Total gas cost (LINK) + LINK premium |                             |
+   | 2.25 LINK + 0.005 LINK               | 2.255 LINK                  |
+
+This example request requires a minimum subscription balance of 2.255 LINK. Check the **Max Cost** in the [Subscription Manager](https://vrf.chain.link/) to view the minimum subscription balance for all your contracts. When your request is processed, the actual cost of the request is deducted from your subscription balance.
+
+#### Estimate VRF request cost
+
+This example is an estimate of how much a VRF request costs. Check [Arbiscan](https://arbiscan.io/) for current gas prices.
+
+| Parameter             | Value     |
+| --------------------- | --------- |
+| Actual gas price      | 0.1 gwei   |
+| Callback gas used     | 95000     |
+| Verification gas used | 115000    |
+| LINK premium          | 0.005 LINK |
+
+1. Calculate the total gas cost:
+
+   | Gas cost calculation                          | Total gas cost             |
+   | --------------------------------------------- | -------------------------- |
+   | Gas price x (Verification gas + Callback gas) |                            |
+   | 0.1 gwei x (115000 + 95000)                   | 21000 gwei (0.000021 ETH)  |
+
+1. Convert the gas cost to LINK using the [LINK/ETH feed](https://data.chain.link/ethereum/mainnet/crypto-eth/link-eth).
+   For this example, assume the feed returns a conversion value of Ξ0.004 ETH per 1 LINK.
+
+   | ETH to LINK cost conversion | Total gas cost (LINK) |
+   | --------------------------- | --------------------- |
+   | 0.000021 ETH / 0.004 ETH/LINK | 0.00525 LINK            |
+
+1. Add the LINK premium to get the total cost of a request:
+
+   | Adding LINK premium                  | Total request cost (LINK) |
+   | ------------------------------------ | ------------------------- |
+   | Total gas cost (LINK) + LINK premium |                           |
+   | 0.00525 LINK + 0.005 LINK            | 0.1025 LINK               |
+
+This example request would cost 0.1025 LINK, which is deducted from your subscription balance.
+
+</Fragment>
+<Fragment slot="panel.2">
+
+VRF direct funding is not yet supported on Arbitrum.
+
+</Fragment>
+</Tabs>
