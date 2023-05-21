@@ -90,6 +90,7 @@ export const Feedback = () => {
           style={{
             padding: "var(--space-4x)",
             marginRight: "var(--space-4x)",
+            width:"max-content"
           }}
         >
           <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
