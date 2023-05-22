@@ -8,8 +8,18 @@ import sitemap from "@astrojs/sitemap"
 // https://astro.build/config
 export default defineConfig({
   site: "https://docs.chain.link",
-  // trailingSlash: 'never',
-  integrations: [preact({ compat: true }), sitemap({ changefreq: "daily" }), mdx()],
+  trailingSlash: "never",
+  integrations: [
+    preact({ compat: true }),
+    sitemap({
+      serialize(item) {
+        item.url = item.url.replace(/\/+$/, "")
+        return item
+      },
+      changefreq: "daily",
+    }),
+    mdx(),
+  ],
   markdown: {
     drafts: true,
     rehypePlugins: [
