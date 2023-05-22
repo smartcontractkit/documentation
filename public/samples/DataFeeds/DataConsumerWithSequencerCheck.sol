@@ -9,8 +9,8 @@ import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV2V3Interface.sol";
  * DO NOT USE THIS CODE IN PRODUCTION.
  */
 
-contract PriceConsumerWithSequencerCheck {
-    AggregatorV2V3Interface internal priceFeed;
+contract DataConsumerWithSequencerCheck {
+    AggregatorV2V3Interface internal dataFeed;
     AggregatorV2V3Interface internal sequencerUptimeFeed;
 
     uint256 private constant GRACE_PERIOD_TIME = 3600;
@@ -27,7 +27,7 @@ contract PriceConsumerWithSequencerCheck {
      * https://docs.chain.link/docs/data-feeds/l2-sequencer-feeds/#available-networks
      */
     constructor() {
-        priceFeed = AggregatorV2V3Interface(
+        dataFeed = AggregatorV2V3Interface(
             0xD702DD976Fb76Fffc2D3963D037dfDae5b04E593
         );
         sequencerUptimeFeed = AggregatorV2V3Interface(
@@ -35,8 +35,8 @@ contract PriceConsumerWithSequencerCheck {
         );
     }
 
-    // Check the sequencer status and return the latest price
-    function getLatestPrice() public view returns (int) {
+    // Check the sequencer status and return the latest data
+    function getLatestData() public view returns (int) {
         // prettier-ignore
         (
             /*uint80 roundID*/,
@@ -62,12 +62,12 @@ contract PriceConsumerWithSequencerCheck {
         // prettier-ignore
         (
             /*uint80 roundID*/,
-            int price,
+            int data,
             /*uint startedAt*/,
             /*uint timeStamp*/,
             /*uint80 answeredInRound*/
-        ) = priceFeed.latestRoundData();
+        ) = dataFeed.latestRoundData();
 
-        return price;
+        return data;
     }
 }

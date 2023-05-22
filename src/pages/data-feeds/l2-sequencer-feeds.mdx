@@ -87,18 +87,18 @@ After the sequencer comes back up, it moves moves all transactions in the pendin
 
 ## Example code
 
-Create the consumer contract for sequencer uptime feeds similarly to contracts you use for [Chainlink Data Feeds](/data-feeds/using-data-feeds). Configure the constructor using the following variables:
+This example code works on the Arbitrum, Optimism, and Metis networks. Create the consumer contract for sequencer uptime feeds similarly to the contracts that you use for other [Chainlink Data Feeds](/data-feeds/using-data-feeds). Configure the constructor using the following variables:
 
 - Configure the `sequencerUptimeFeed` object with the [sequencer uptime feed proxy address](#available-networks) for your L2 network.
-- Configure the `priceFeed` object with one of the [Data Feed proxy addresses](/data-feeds/price-feeds/addresses) that are available for your network.
+- Configure the `dataFeed` object with one of the [Data Feed proxy addresses](/data-feeds/price-feeds/addresses) that are available for your network.
 
-<CodeSample src="samples/PriceFeeds/PriceConsumerWithSequencerCheck.sol" />
+<CodeSample src="samples/DataFeeds/DataConsumerWithSequencerCheck.sol" />
 
 The `sequencerUptimeFeed` object returns the following values:
 
 - `answer`: A variable with a value of either `1` or `0`
   - 0: The sequencer is up
   - 1: The sequencer is down
-- `startedAt`: This timestamp indicates when the sequencer changed status. This timestamp returns `0` if a round is invalid. When the sequencer comes back up after an outage, wait for the `GRACE_PERIOD_TIME` to pass before accepting answers from the price data feed. Subtract `startedAt` from `block.timestamp` and revert the request if the result is less than the `GRACE_PERIOD_TIME`.
+- `startedAt`: This timestamp indicates when the sequencer changed status. This timestamp returns `0` if a round is invalid. When the sequencer comes back up after an outage, wait for the `GRACE_PERIOD_TIME` to pass before accepting answers from the data feed. Subtract `startedAt` from `block.timestamp` and revert the request if the result is less than the `GRACE_PERIOD_TIME`.
 
-If the sequencer is up and the `GRACE_PERIOD_TIME` has passed, the function retrieves the latest price from the data feed using the `priceFeed` object.
+If the sequencer is up and the `GRACE_PERIOD_TIME` has passed, the function retrieves the latest answer from the data feed using the `dataFeed` object.
