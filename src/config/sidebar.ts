@@ -327,10 +327,6 @@ export const SIDEBAR = {
           url: "chainlink-automation/tutorials/dynamic-nft",
         },
         {
-          title: "Count Dynamic NFTs",
-          url: "chainlink-automation/tutorials/counting-dnft",
-        },
-        {
           title: "Monitor Upkeep for Registered Contracts",
           url: "chainlink-automation/tutorials/eth-balance",
         },
