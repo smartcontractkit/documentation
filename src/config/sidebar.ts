@@ -331,11 +331,11 @@ export const SIDEBAR = {
           url: "chainlink-automation/tutorials/vault-harvester",
         },
         {
-          title: "Auto top-up contract balances",
+          title: "Automate Top-Up for Contract Balances",
           url: "chainlink-automation/tutorials/eth-balance",
         },
         {
-          title: "Auto top-up VRF subscriptions",
+          title: "Automate Top-Up for VRF Subscriptions",
           url: "chainlink-automation/tutorials/vrf-sub-monitor",
         },
       ],
