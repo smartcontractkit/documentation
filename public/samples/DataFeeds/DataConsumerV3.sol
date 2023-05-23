@@ -15,7 +15,7 @@ import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
  * Feed to ensure that the data is accurate in the event
  * of an L2 sequencer outage. See the
  * https://docs.chain.link/data-feeds/l2-sequencer-feeds
- * for details.
+ * page for details.
  */
 
 contract DataConsumerV3 {
