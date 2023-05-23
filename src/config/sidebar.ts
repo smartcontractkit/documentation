@@ -327,15 +327,15 @@ export const SIDEBAR = {
           url: "chainlink-automation/tutorials/dynamic-nft",
         },
         {
-          title: "Monitor Upkeep for Registered Contracts",
-          url: "chainlink-automation/tutorials/eth-balance",
-        },
-        {
           title: "Vault Harvester",
           url: "chainlink-automation/tutorials/vault-harvester",
         },
         {
-          title: "Monitor a VRF Subscription",
+          title: "Auto top-up contract balances",
+          url: "chainlink-automation/tutorials/eth-balance",
+        },
+        {
+          title: "Auto top-up VRF subscriptions",
           url: "chainlink-automation/tutorials/vrf-sub-monitor",
         },
       ],
