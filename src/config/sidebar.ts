@@ -327,7 +327,7 @@ export const SIDEBAR = {
           url: "chainlink-automation/tutorials/dynamic-nft",
         },
         {
-          title: "Vault Harvester",
+          title: "Create a Vault Harvester",
           url: "chainlink-automation/tutorials/vault-harvester",
         },
         {
