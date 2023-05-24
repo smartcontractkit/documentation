@@ -125,8 +125,8 @@ export const FeedList = ({
                     </h2>
                     {(selectedChain === "arbitrum" || selectedChain === "optimism" || selectedChain === "metis") && (
                       <p>
-                        {network.name}{" "} is an L2 network. As a best practice, use the L2 sequencer feed to verify the status of the sequencer
-                        when running applications on L2 networks. See the{" "}
+                        {network.name} is an L2 network. As a best practice, use the L2 sequencer feed to verify the
+                        status of the sequencer when running applications on L2 networks. See the{" "}
                         <a href="/docs/data-feeds/l2-sequencer-feeds/">L2 Sequencer Uptime Feeds</a> page for examples.
                       </p>
                     )}
