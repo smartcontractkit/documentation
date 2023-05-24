@@ -338,6 +338,18 @@ export const SIDEBAR = {
           title: "Automate Top-Up for VRF Subscriptions",
           url: "chainlink-automation/tutorials/vrf-sub-monitor",
         },
+        {
+          title: "Create and Manage a Raffle",
+          url: "chainlink-automation/tutorials/raffle-manager",
+        },
+        {
+          title: "Create and Manage a Lottery",
+          url: "chainlink-automation/tutorials/lottery-manager",
+        },
+        {
+          title: "Use Automation with OCR Price Feeds",
+          url: "chainlink-automation/tutorials/circuit-breaker",
+        },
       ],
     },
     {
