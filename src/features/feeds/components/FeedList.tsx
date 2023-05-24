@@ -79,14 +79,6 @@ export const FeedList = ({
             </div>
           )}
 
-          {(selectedChain === "arbitrum" || selectedChain === "optimism" || selectedChain === "metis") && (
-            <p>
-              This is an L2 network. As a best practice, use the L2 sequencer feed to verify the status of the sequencer
-              when running applications on L2 networks. See the{" "}
-              <a href="/docs/data-feeds/l2-sequencer-feeds/">L2 Sequencer Uptime Feeds</a> page for examples.
-            </p>
-          )}
-
           {chainMetadata.processedData?.networkStatusUrl && !isDeprecating && (
             <p>
               Track the status of this network at{" "}
@@ -131,6 +123,13 @@ export const FeedList = ({
                         <img src="/images/link.svg" alt="Link to this section" />
                       </a>
                     </h2>
+                    {(selectedChain === "arbitrum" || selectedChain === "optimism" || selectedChain === "metis") && (
+                      <p>
+                        {network.name}{" "} is an L2 network. As a best practice, use the L2 sequencer feed to verify the status of the sequencer
+                        when running applications on L2 networks. See the{" "}
+                        <a href="/docs/data-feeds/l2-sequencer-feeds/">L2 Sequencer Uptime Feeds</a> page for examples.
+                      </p>
+                    )}
                     <label>
                       <input
                         type="checkbox"

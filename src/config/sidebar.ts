@@ -162,6 +162,10 @@ export const SIDEBAR = {
           ],
         },
         {
+          title: "L2 Sequencer Uptime Feeds",
+          url: "data-feeds/l2-sequencer-feeds",
+        },
+        {
           title: "Selecting Quality Data Feeds",
           url: "data-feeds/selecting-data-feeds",
         },
@@ -185,10 +189,6 @@ export const SIDEBAR = {
         {
           title: "Data Feeds API Reference",
           url: "data-feeds/api-reference",
-        },
-        {
-          title: "L2 Sequencer Uptime Feeds",
-          url: "data-feeds/l2-sequencer-feeds",
         },
         {
           title: "Feed Registry",
