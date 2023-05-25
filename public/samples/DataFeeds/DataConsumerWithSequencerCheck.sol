@@ -19,19 +19,19 @@ contract DataConsumerWithSequencerCheck {
     error GracePeriodNotOver();
 
     /**
-     * Network: Optimism
+     * Network: Optimism Goerli testnet
      * Data Feed: BTC/USD
-     * Data Feed Proxy Address: 0xD702DD976Fb76Fffc2D3963D037dfDae5b04E593
+     * Data Feed Proxy Address: 0xC16679B963CeB52089aD2d95312A5b85E318e9d2
      * Sequencer Uptime Proxy Address: 0x371EAD81c9102C9BF4874A9075FFFf170F2Ee389
      * For a list of available sequencer proxy addresses, see:
      * https://docs.chain.link/docs/data-feeds/l2-sequencer-feeds/#available-networks
      */
     constructor() {
         dataFeed = AggregatorV2V3Interface(
-            0xD702DD976Fb76Fffc2D3963D037dfDae5b04E593
+            0xC16679B963CeB52089aD2d95312A5b85E318e9d2
         );
         sequencerUptimeFeed = AggregatorV2V3Interface(
-            0x371EAD81c9102C9BF4874A9075FFFf170F2Ee389
+            0x4C4814aa04433e0FB31310379a4D6946D5e1D353
         );
     }
 
