@@ -165,7 +165,7 @@ export const CHAINS: Chain[] = [
     title: "Arbitrum Data Feeds",
     img: "/assets/chains/arbitrum.svg",
     networkStatusUrl: "https://arbiscan.freshstatus.io/",
-    tags: ["default"],
+    tags: ["default", "rates"],
     networks: [
       {
         name: "Arbitrum Mainnet",
@@ -178,6 +178,7 @@ export const CHAINS: Chain[] = [
         explorerUrl: "https://goerli-rollup-explorer.arbitrum.io/address/%s",
         networkType: "testnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-goerli-arbitrum-1.json",
+        tags: ["rates"],
       },
     ],
   },
