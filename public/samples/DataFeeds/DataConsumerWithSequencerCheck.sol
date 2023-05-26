@@ -21,9 +21,9 @@ contract DataConsumerWithSequencerCheck {
     /**
      * Network: Optimism Goerli testnet
      * Data Feed: BTC/USD
-     * Data Feed Proxy Address: 0xC16679B963CeB52089aD2d95312A5b85E318e9d2
-     * Sequencer Uptime Proxy Address: 0x371EAD81c9102C9BF4874A9075FFFf170F2Ee389
-     * For a list of available sequencer proxy addresses, see:
+     * Data Feed proxy address: 0xC16679B963CeB52089aD2d95312A5b85E318e9d2
+     * Sequencer Uptime Feed proxy address: 0x4C4814aa04433e0FB31310379a4D6946D5e1D353
+     * For a list of available Sequencer Uptime Feed proxy addresses, see:
      * https://docs.chain.link/docs/data-feeds/l2-sequencer-feeds/#available-networks
      */
     constructor() {
