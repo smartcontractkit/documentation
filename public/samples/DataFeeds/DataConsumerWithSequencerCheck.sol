@@ -21,10 +21,10 @@ contract DataConsumerWithSequencerCheck {
     /**
      * Network: Optimism Goerli testnet
      * Data Feed: BTC/USD
-     * Data Feed proxy address: 0xC16679B963CeB52089aD2d95312A5b85E318e9d2
-     * Sequencer Uptime Feed proxy address: 0x4C4814aa04433e0FB31310379a4D6946D5e1D353
+     * Data Feed address: 0xC16679B963CeB52089aD2d95312A5b85E318e9d2
+     * Uptime Feed address: 0x4C4814aa04433e0FB31310379a4D6946D5e1D353
      * For a list of available Sequencer Uptime Feed proxy addresses, see:
-     * https://docs.chain.link/docs/data-feeds/l2-sequencer-feeds/#available-networks
+     * https://docs.chain.link/docs/data-feeds/l2-sequencer-feeds
      */
     constructor() {
         dataFeed = AggregatorV2V3Interface(
@@ -53,7 +53,8 @@ contract DataConsumerWithSequencerCheck {
             revert SequencerDown();
         }
 
-        // Make sure the grace period has passed after the sequencer is back up.
+        // Make sure the grace period has passed after the
+        // sequencer is back up.
         uint256 timeSinceUp = block.timestamp - startedAt;
         if (timeSinceUp <= GRACE_PERIOD_TIME) {
             revert GracePeriodNotOver();
