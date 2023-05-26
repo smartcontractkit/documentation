@@ -63,7 +63,7 @@ where:
 
 **Example:**
 
-When you query historical data, it is important to know when you reach the end of the history of the underlying aggregator. As an example, if the `latestRoundData` [function](/data-feeds/api-reference/#latestrounddata) of the [LINK / USD feed on Ethereum Mainnet](/data-feeds/price-feeds/addresses/?network=ethereum) returns `roundId = 92233720368547771158`, you can use this value to compute the `phaseId` and `aggregatorRoundId`:
+When you query historical data, it is important to know when you reach the end of the history of the underlying aggregator. As an example, if the [`latestRoundData` function](/data-feeds/api-reference/#latestrounddata) of the [LINK / USD Price Feed on Ethereum Mainnet](/data-feeds/price-feeds/addresses/?network=ethereum) returns `roundId = 92233720368547771158`, you can use this value to compute the `phaseId` and `aggregatorRoundId`:
 
 - `phaseId = 92233720368547771158 >> 64`: Right shifting an integer by 64 bits is equivalent to dividing it by 2^64: `phaseId = 92233720368547771158/ 2^64 = 5`. The current phase id is 5 , which means that this proxy has had 5 underlying aggregators since its initial deployment.
 - `aggregatorRoundId = uint64(92233720368547771158)`: This retrieves the first 64 bits from the right. To calculate this off-chain, you can use the following JavaScript example:
@@ -104,7 +104,7 @@ Loop over the [`getRoundData` function](/data-feeds/api-reference/#getrounddata)
 The [`getRoundData` function](/data-feeds/api-reference/#getrounddata) returns the following values:
 
 - `roundId`: The combination of `aggregatorRoundId` and `phaseId` (see explanation above). The `roundId` can jump significantly when the `phaseId` is updated.
-- `answer`: Depending on the feed you selected, the answer reflects the price of an asset, reserve balance, or NFT floor price recorded for the specified round.
+- `answer`: The answer reflects the data recorded for the specified round.
 - `answeredInRound`: The combination of `aggregatorAnsweredInRound` and `phaseId`. `aggregatorAnsweredInRound`: The round the answer was updated in. You can check `answeredInRound` against the current `roundId`. If `answeredInRound` is less than `roundId`, the answer is being carried over. If `answeredInRound` is equal to `roundId`, then the answer is fresh.
 - `startedAt`: The timestamp when the round started.
 - `updatedAt`: The timestamp when the answer was computed.
@@ -119,11 +119,11 @@ The [`getRoundData` function](/data-feeds/api-reference/#getrounddata) returns t
 
 ### Solidity
 
-<CodeSample src="samples/PriceFeeds/HistoricalPriceConsumer.sol" />
+<CodeSample src="samples/DataFeeds/HistoricalDataConsumer.sol" />
 
 ### Javascript
 
-<CodeSample src="samples/PriceFeeds/HistoricalPriceConsumer.js" />
+<CodeSample src="samples/DataFeeds/HistoricalPriceConsumer.js" />
 
 <HistoricalPrice
   client:idle
@@ -134,7 +134,7 @@ The [`getRoundData` function](/data-feeds/api-reference/#getrounddata) returns t
 
 ### Python
 
-<CodeSample src="samples/PriceFeeds/HistoricalPriceConsumer.py" />
+<CodeSample src="samples/DataFeeds/HistoricalPriceConsumer.py" />
 <a href="https://repl.it/@DwightLyle/GetHistoricalPriceWeb3PY" class={button.primary}>
   {"Run this Python example"}
 </a>
