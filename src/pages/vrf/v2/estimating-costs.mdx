@@ -274,3 +274,26 @@ This example request would cost 3.125 LINK.
 The total transaction costs for using Arbitrum involve both L2 gas costs and L1 costs. Arbitrum transactions are [posted in batches to L1 Ethereum](https://developer.arbitrum.io/inside-arbitrum-nitro/#how-the-sequencer-publishes-the-sequence), which incurs an L1 cost. For an individual transaction, the total cost includes part of the L1 cost incurred to post the batch that included the transaction.
 
 To learn how to estimate gas costs for Arbitrum, refer to the [**Arbitrum gas estimation tutorial**](https://developer.arbitrum.io/devs-how-tos/how-to-estimate-gas) and the full [**Arbitrum gas estimation script**](https://github.com/OffchainLabs/arbitrum-tutorials/tree/master/packages/gas-estimation) using their SDK.
+
+#### Estimating Arbitrum gas costs with VRF
+
+VRF gas costs are calculated based on the amount of verification gas and callback gas used, multiplied by the gas price:
+
+```
+(Gas price * (Verification gas + Callback gas)) = total gas cost
+```
+
+For your callback gas limit on VRF Arbitrum transactions, include a buffer for the L1 cost:
+
+```
+(L2 gas price
+   * (Verification gas
+      + (L2 callback gas + L1 buffer for callback gas))) = total estimated gas cost
+```
+
+The L1 cost of posting your transaction depends on the size of the data. According to the [Arbitrum gas estimation tutorial](https://developer.arbitrum.io/devs-how-tos/how-to-estimate-gas#breaking-down-the-formula), this is how you calculate the L1 buffer:
+
+```
+L1 Estimated Cost (L1C) = L1 price per byte of data (L1P) * Size of data to be posted in bytes (L1S)
+Extra Buffer (B) = L1 Estimated Cost (L1C) / L2 Gas Price (P)
+```
