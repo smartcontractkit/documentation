@@ -653,7 +653,7 @@ my_mode_task [type="mode"
                 allowedFaults=3]
 ```
 
-Given a `values` array containing `[ 2, 5, 2, "foo", "foo" "bar", "foo", 2 ]`, the task will return:
+Given a `values` array containing `[ 2, 5, 2, "foo", "foo" "bar", "foo", 2 ]`, the task returns the following JSON:
 
 {/* prettier-ignore */}
 ```json
@@ -663,13 +663,20 @@ Given a `values` array containing `[ 2, 5, 2, "foo", "foo" "bar", "foo", 2 ]`, t
 }
 ```
 
+To encode the results array into the `ethabiencode` task, specify that the data is an array in the `abi` and point the data parameter to the results from your mode task:
+
+{/* prettier-ignore */}
+```toml
+encode_mode_task [type="ethabiencode" abi="(bytes32 requestId, bytes32[] _data)" data="{\\"requestId\\": $(decode_log.requestId), \\"_data\\": $(my_mode_task.results)}"]
+```
+
 ## Multiply task
 
 Multiplies the provided `input` and `times` values.
 
 **Parameters**
 
-- `input`: the value to be multipled. Possible values:
+- `input`: the value to be multiplied. Possible values:
   - number
   - stringified number
   - bytes-ified number
