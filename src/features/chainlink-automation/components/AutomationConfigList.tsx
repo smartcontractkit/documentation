@@ -54,10 +54,10 @@ export const AutomationConfigList = () => {
                   <p>
                     <strong>
                       PLEASE NOTE: During the downtime, please do not consume Chainlink Data Feeds or use Chainlink
-                      Automation services until we update you of the services availability. If you are actively
-                      consuming Chainlink Data Feeds or using Chainlink Automation on Optimism, we advise pausing your
-                      protocol operation in advance of the Bedrock upgrade. You can resume once Chainlink services are
-                      available for use.
+                      Automation services on Optimism mainnet until we update you of the services availability. If you
+                      are actively consuming Chainlink Data Feeds or using Chainlink Automation on Optimism, we advise
+                      pausing your protocol operation in advance of the Bedrock upgrade. You can resume once Chainlink
+                      services are available for use.
                     </strong>
                   </p>
                 </section>
