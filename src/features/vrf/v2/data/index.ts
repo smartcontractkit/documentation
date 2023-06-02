@@ -2,6 +2,9 @@ export interface network {
   name: string
   type: "mainnet" | "testnet"
   baseApiUrl: string
+  vrfCoordinatorContractAddress?: string
+  vrfWrapperContractAddress?: string
+  priceFeedAddress?: string
 }
 
 export interface vrfChain {
@@ -19,7 +22,14 @@ export const supportedNetworks: vrfNetsByMethod = {
     {
       name: "ethereum",
       nets: [
-        { name: "ethereum", type: "mainnet", baseApiUrl: "https://api.etherscan.io/" },
+        {
+          name: "ethereum",
+          type: "mainnet",
+          baseApiUrl: "https://api.etherscan.io/",
+          vrfCoordinatorContractAddress: "0x271682DEB8C4E0901D1a1550aD2e64D568E69909",
+          vrfWrapperContractAddress: "0x5A861794B927983406fCE1D062e00b9368d97Df6",
+          priceFeedAddress: "0xDC530D9457755926550b59e8ECcdaE7624181557",
+        },
         { name: "goerli", type: "testnet", baseApiUrl: "https://api-goerli.etherscan.io/" },
         { name: "sepolia", type: "testnet", baseApiUrl: "https://api-sepolia.etherscan.io/" },
       ],
@@ -64,7 +74,14 @@ export const supportedNetworks: vrfNetsByMethod = {
     {
       name: "ethereum",
       nets: [
-        { name: "ethereum", type: "mainnet", baseApiUrl: "https://api.etherscan.io/" },
+        {
+          name: "ethereum",
+          type: "mainnet",
+          baseApiUrl: "https://api.etherscan.io/",
+          vrfCoordinatorContractAddress: "0x271682DEB8C4E0901D1a1550aD2e64D568E69909",
+          vrfWrapperContractAddress: "0x5A861794B927983406fCE1D062e00b9368d97Df6",
+          priceFeedAddress: "0xDC530D9457755926550b59e8ECcdaE7624181557",
+        },
         { name: "goerli", type: "testnet", baseApiUrl: "https://api-goerli.etherscan.io/" },
         { name: "sepolia", type: "testnet", baseApiUrl: "https://api-sepolia.etherscan.io/" },
       ],
