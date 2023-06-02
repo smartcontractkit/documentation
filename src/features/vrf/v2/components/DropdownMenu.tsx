@@ -9,6 +9,7 @@ interface Props {
   placeholder?: string
   options: vrfChain[]
   keys: APIKeys
+  method: "subscription" | "directFunding"
 }
 
 const Icon = () => {
@@ -37,7 +38,7 @@ const SubIcon = () => {
   )
 }
 
-export const DropDownMenu = ({ placeholder = "Select a network...", options, keys }: Props) => {
+export const DropDownMenu = ({ placeholder = "Select a network...", options, keys, method }: Props) => {
   const [selectedChain, setSelectedChain] = useState<network | null>(null)
   const [selectedNet, setSelectNet] = useState<string>(placeholder)
   const [showMenu, setShowMenu] = useState<boolean>(false)
@@ -129,7 +130,7 @@ export const DropDownMenu = ({ placeholder = "Select a network...", options, key
             ))}
         </div>
       </div>
-      <div>{selectedNet !== placeholder && <CostTable chain={selectedChain} apiKeys={keys} />}</div>
+      <div>{selectedNet !== placeholder && <CostTable method={method} chain={selectedChain} apiKeys={keys} />}</div>
     </div>
   )
 }

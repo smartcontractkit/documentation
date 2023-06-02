@@ -37,7 +37,7 @@ export const MethodCheckbox = ({ apiKeys }) => {
           <label for="funding">Direct funding</label>
         </div>
       </div>
-      <DropDownMenu options={supportedNetworks[vrfMethodUsed]} keys={apiKeys} />
+      <DropDownMenu method={vrfMethodUsed} options={supportedNetworks[vrfMethodUsed]} keys={apiKeys} />
     </div>
   )
 }

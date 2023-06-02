@@ -7,10 +7,10 @@ export interface APIKeys {
 
 // fetch API keys to request ABIs and gasPrice from supported networks. Keys only created for testing purposes
 const apiKeys: APIKeys = {
-  ethereum: import.meta.env.ETHEREUM_API_KEY,
+  ethereum: import.meta.env.ETHEREUM_API_KEY ?? process.env.ETHERSCAN_API_KEY,
 }
 ---
 
 <div>
-  <MethodCheckbox apiKeys={apiKeys} client:only="preact" />
+  <MethodCheckbox apiKeys={apiKeys} client:load />
 </div>
