@@ -126,7 +126,7 @@ export const FeedList = ({
                     {(selectedChain === "optimism") && (
                       <aside class="content danger astro-DUQFCLOB" aria-label="Optimism Bedrock Upgrade">
                         <div class="icon astro-DUQFCLOB">
-                          <img src="/src/components/Alert/Assets/danger-icon.svg" style="width: 1.5em;height: 1.5em;" alt="danger" class="astro-DUQFCLOB">
+                          <img src="/_astro/danger-icon.1d4263e7.svg" style="width: 1.5em;height: 1.5em;" alt="danger" class="astro-DUQFCLOB">
                           </img>
                         </div>
                         <section class="asideContent astro-DUQFCLOB">
