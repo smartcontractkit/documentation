@@ -3,6 +3,7 @@ import { AutomationConfig, chainlinkAutomationConfig, automationAddresses } from
 import { SupportedChain, SupportedTechnology } from "@config"
 import { getTitle, getExplorer, getExplorerAddressUrl, normalizeConfig } from "@features/utils"
 import GithubSlugger from "github-slugger"
+import { Aside } from "@components"
 
 export const AutomationConfigList = () => {
   const slugger = new GithubSlugger()
@@ -26,6 +27,18 @@ export const AutomationConfigList = () => {
           ) : (
             <div key={supportedChain}>
               <h4 id={slugger.slug(title)}>{title}</h4>
+              <aside class="content danger astro-DUQFCLOB" aria-label="Optimism Bedrock Upgrade">
+                <div class="icon astro-DUQFCLOB">
+                  <img src="/src/components/Alert/Assets/danger-icon.svg" style="width: 1.5em;height: 1.5em;" alt="danger" class="astro-DUQFCLOB">
+                  </img>
+                </div>
+                <section class="asideContent astro-DUQFCLOB">
+                  <p class="title heading-100 astro-DUQFCLOB" aria-hidden="true">
+                    Optimism Bedrock Upgrade
+                  </p>
+                  <p>Optimism Mainnet will <a href="https://community.optimism.io/docs/developers/bedrock/explainer/" target="_blank" rel="noopener">migrate to Bedrock</a> on June 6th at 16:00 UTC. During this process, Optimism’s Mainnet will have a 2-4 hour downtime as the Optimism team performs the upgrade.</p>
+                </section>
+              </aside>
               <AutomationConfig
                 config={chainlinkAutomationConfig[supportedChain]}
                 registryAddress={registryAddress}
