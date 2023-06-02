@@ -283,17 +283,34 @@ VRF gas costs are calculated based on the amount of verification gas and callbac
 (Gas price * (Verification gas + Callback gas)) = total gas cost
 ```
 
-For your callback gas limit on VRF Arbitrum transactions, include a buffer for the L1 cost:
+For VRF Arbitrum transactions, add a buffer to estimate the additional L1 cost:
 
 ```
-(L2 gas price
+(L2GasPrice
    * (Verification gas
-      + (L2 callback gas + L1 buffer for callback gas))) = total estimated gas cost
+      + Callback gas
+      + L1 calldata gas buffer))) = total estimated gas cost
 ```
 
-The L1 cost of posting your transaction depends on the size of the data. According to the [Arbitrum gas estimation tutorial](https://developer.arbitrum.io/devs-how-tos/how-to-estimate-gas#breaking-down-the-formula), this is how you calculate the L1 buffer:
+To calculate the L1 callback gas buffer:
+
+- `calldataSizeBytes`: A static size for the transaction's calldata in bytes. Total: 720 bytes.
+  - The amount Arbitrum adds to account for the static part of the transaction, fixed at 140 bytes.
+  - The size of an ABI-encoded VRF V2 fulfillment, fixed at 580 bytes (`fulfillmentTxSizeBytes`).
+- `L1PricePerByte`: The estimated cost of posting 1 byte of data on L1, which varies with L1 network gas prices.
+- `L2GasPrice`: The L2 gas price, which varies with L2 network gas prices.
 
 ```
-L1 Estimated Cost (L1C) = L1 price per byte of data (L1P) * Size of data to be posted in bytes (L1S)
-Extra Buffer (B) = L1 Estimated Cost (L1C) / L2 Gas Price (P)
+L1 calldata gas buffer = (calldataSizeBytes * L1PricePerByte) / L2GasPrice
+
+ = (720 * L1PricePerByte) / L2GasPrice
+```
+
+This conversion allows us to estimate the L1 callback gas cost and incorporate it into the overall L2 gas estimate. You can add this estimated L1 callback gas buffer directly to the verification and callback gas:
+
+```
+(L2GasPrice
+   * (Verification gas
+      + Callback gas
+      + ((calldataSizeBytes * L1PricePerByte) / L2GasPrice)))) = total estimated gas cost
 ```
