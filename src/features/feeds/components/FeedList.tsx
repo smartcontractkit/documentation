@@ -9,7 +9,6 @@ import { Chain, CHAINS, ALL_CHAINS } from "../data/chains"
 import { useGetChainMetadata } from "./useGetChainMetadata"
 import { ChainMetadata } from "../api"
 import useQueryString from "~/hooks/useQueryString"
-import { Aside } from "@components"
 
 export type DataFeedType = "default" | "por" | "nftFloor" | "rates"
 export const FeedList = ({
