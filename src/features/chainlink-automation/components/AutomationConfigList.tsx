@@ -35,7 +35,7 @@ export const AutomationConfigList = () => {
                   <p class="title heading-100 astro-DUQFCLOB" aria-hidden="true">
                     Optimism Bedrock Upgrade
                   </p>
-                  <p>Optimism Mainnet will <a href="https://community.optimism.io/docs/developers/bedrock/explainer/" target="_blank" rel="noopener">migrate to Bedrock</a> on June 6th at 16:00 UTC. During this process, Optimism’s Mainnet will have a 2-4 hour downtime as the Optimism team performs the upgrade.</p>
+                  <p>Optimism Mainnet will <a href="https://community.optimism.io/docs/developers/bedrock/explainer/" target="_blank" rel="noopener">migrate to Bedrock</a> on June 6th at 16:00 UTC. During this process, Optimism’s Mainnet will have an estimated 2-4 hour downtime as the Optimism team performs the upgrade.</p>
                 </section>
               </aside>
               <AutomationConfig
