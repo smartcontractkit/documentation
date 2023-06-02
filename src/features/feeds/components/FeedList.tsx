@@ -123,6 +123,44 @@ export const FeedList = ({
                         <img src="/images/link.svg" alt="Link to this section" />
                       </a>
                     </h2>
+                    {selectedChain === "optimism" && (
+                      <aside class="content danger astro-DUQFCLOB" aria-label="Optimism Bedrock Upgrade">
+                        <div class="icon astro-DUQFCLOB">
+                          <img
+                            src="/_astro/danger-icon.1d4263e7.svg"
+                            style="width: 1.5em;height: 1.5em;"
+                            alt="danger"
+                            class="astro-DUQFCLOB"
+                          ></img>
+                        </div>
+                        <section class="asideContent astro-DUQFCLOB">
+                          <p class="title heading-100 astro-DUQFCLOB" aria-hidden="true">
+                            Optimism Bedrock Upgrade
+                          </p>
+                          <p>
+                            Optimism Mainnet will{" "}
+                            <a
+                              href="https://community.optimism.io/docs/developers/bedrock/explainer/"
+                              target="_blank"
+                              rel="noopener"
+                            >
+                              migrate to Bedrock
+                            </a>{" "}
+                            on June 6th at 16:00 UTC. During this process, Optimism Mainnet will have an estimated 2-4
+                            hour downtime as the Optimism team performs the upgrade.
+                          </p>
+                          <p>
+                            <strong>
+                              PLEASE NOTE: During the downtime, please do not consume Chainlink Data Feeds or use
+                              Chainlink Automation services on Optimism Mainnet until we update you of the services
+                              availability. If you are actively consuming Chainlink Data Feeds or using Chainlink
+                              Automation on Optimism, we advise pausing your protocol operation in advance of the
+                              Bedrock upgrade. You can resume once Chainlink services are available for use.
+                            </strong>
+                          </p>
+                        </section>
+                      </aside>
+                    )}
                     {(selectedChain === "arbitrum" || selectedChain === "optimism" || selectedChain === "metis") && (
                       <p>
                         {network.name} is an L2 network. As a best practice, use the L2 sequencer feed to verify the
