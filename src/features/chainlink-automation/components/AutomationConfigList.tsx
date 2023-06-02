@@ -50,6 +50,8 @@ export const AutomationConfigList = () => {
                     </a>{" "}
                     on June 6th at 16:00 UTC. During this process, Optimism’s Mainnet will have an estimated 2-4 hour
                     downtime as the Optimism team performs the upgrade.
+                  </p>
+                  <p>
                     <strong>
                       PLEASE NOTE: During the downtime, please do not consume Chainlink Data Feeds or use Chainlink
                       Automation services until we update you of the services availability. If you are actively
