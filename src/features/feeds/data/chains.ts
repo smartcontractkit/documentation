@@ -118,7 +118,7 @@ export const CHAINS: Chain[] = [
     title: "Avalanche Data Feeds",
     img: "/assets/chains/avalanche.svg",
     networkStatusUrl: "https://status.avax.network/",
-    tags: ["default", "proofOfReserve"],
+    tags: ["default", "proofOfReserve", "rates"],
     networks: [
       {
         name: "Avalanche Mainnet",
@@ -132,7 +132,7 @@ export const CHAINS: Chain[] = [
         explorerUrl: "https://testnet.snowtrace.io/address/%s",
         networkType: "testnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-avalanche-fuji-testnet.json",
-        tags: ["proofOfReserve"],
+        tags: ["proofOfReserve", "rates"],
       },
     ],
     label: "Avalanche",
