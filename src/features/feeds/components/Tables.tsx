@@ -307,12 +307,12 @@ export const TestnetTable = ({
     .filter((chain) => {
       if (isPor) return !!chain.docs.porType
       if (isNftFloor) return !!chain.docs.nftFloorUnits
-      if (isRates) return !!(chain.docs.productType === "Rates" || chain.docs.productSubType === "Rvol")
+      if (isRates) return !!(chain.docs.productType === "Rates" || chain.docs.productSubType === "Realized Volatility")
       return (
         !chain.docs.nftFloorUnits &&
         !chain.docs.porType &&
         chain.docs.productType !== "Rates" &&
-        chain.docs.productSubType !== "Rvol"
+        chain.docs.productSubType !== "Realized Volatility"
       )
     })
 
