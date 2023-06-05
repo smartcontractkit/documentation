@@ -26,6 +26,7 @@ export const AutomationConfigList = () => {
           ) : (
             <div key={supportedChain}>
               <h4 id={slugger.slug(title)}>{title}</h4>
+              {technologyTitle === "Optimism" && (
               <aside class="content danger astro-DUQFCLOB" aria-label="Optimism Bedrock Upgrade">
                 <div class="icon astro-DUQFCLOB">
                   <img
@@ -62,6 +63,7 @@ export const AutomationConfigList = () => {
                   </p>
                 </section>
               </aside>
+              )}
               <AutomationConfig
                 config={chainlinkAutomationConfig[supportedChain]}
                 registryAddress={registryAddress}
