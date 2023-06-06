@@ -28,7 +28,14 @@ export const AutomationConfigList = () => {
               <h4 id={slugger.slug(title)}>{title}</h4>
               {technologyTitle === "Optimism" && (
                 <aside class="content note astro-DUQFCLOB" aria-label="Optimism Bedrock Upgrade">
-                  <div class="icon astro-DUQFCLOB"></div>
+                  <div class="icon astro-DUQFCLOB">
+                    <img
+                      src="/src/components/Alert/Assets/info-icon.svg"
+                      style="width: 1.5em;height: 1.5em;"
+                      alt="note"
+                      class="astro-DUQFCLOB"
+                    ></img>
+                  </div>
                   <section class="asideContent astro-DUQFCLOB">
                     <p class="title heading-100 astro-DUQFCLOB" aria-hidden="true">
                       Optimism Bedrock Upgrade
