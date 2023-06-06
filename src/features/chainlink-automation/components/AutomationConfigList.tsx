@@ -30,7 +30,7 @@ export const AutomationConfigList = () => {
                 <aside class="content note astro-DUQFCLOB" aria-label="Optimism Bedrock Upgrade">
                   <div class="icon astro-DUQFCLOB">
                     <img
-                      src="/src/components/Alert/Assets/info-icon.svg"
+                      src="/_astro/info-icon.ca56bc94.svg"
                       style="width: 1.5em;height: 1.5em;"
                       alt="note"
                       class="astro-DUQFCLOB"
