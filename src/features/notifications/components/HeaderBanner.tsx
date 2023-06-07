@@ -41,7 +41,7 @@ export const HeaderBanner: React.FC<{ bannerContent?: BannerContent }> = ({ bann
       </div>
       <p>
         {bannerContent.description}{" "}
-        {bannerContent.linkUrl && <a href={bannerContent.linkUrl}>{bannerContent.linkText}</a>}
+        {bannerContent.linkUrl && <a target="_blank" href={bannerContent.linkUrl}>{bannerContent.linkText}</a>}
       </p>
     </div>
   )
