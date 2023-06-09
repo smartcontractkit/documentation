@@ -100,24 +100,33 @@ const DefaultTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => (
         <div>
           <dl class={tableStyles.porDl}>
             {proxy.docs.assetName ? (
-            <div>
-              <dt>
-                <span class="label">Asset name:</span>
-              </dt>
-              <dd>{proxy.docs.assetName}</dd>
-            </div>
-            ) : ""}
+              <div>
+                <dt>
+                  <span class="label">Asset name:</span>
+                </dt>
+                <dd>{proxy.docs.assetName}</dd>
+              </div>
+            ) : (
+              ""
+            )}
             {proxy.docs.assetClass ? (
-            <div>
-              <dt>
-                <span class="label">Asset class:</span>
-              </dt>
-              <dd>{proxy.docs.assetClass}{proxy.docs.assetSubClass ? " - " + proxy.docs.assetSubClass : ""}</dd>
-            </div>
-            ) : ""}
+              <div>
+                <dt>
+                  <span class="label">Asset class:</span>
+                </dt>
+                <dd>
+                  {proxy.docs.assetClass}
+                  {proxy.docs.assetSubClass ? " - " + proxy.docs.assetSubClass : ""}
+                </dd>
+              </div>
+            ) : (
+              ""
+            )}
           </dl>
         </div>
-        ) : ""}
+      ) : (
+        ""
+      )}
     </td>
   </tr>
 )
