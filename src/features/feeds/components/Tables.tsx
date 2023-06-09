@@ -109,14 +109,14 @@ const DefaultTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => (
             ) : (
               ""
             )}
-            {proxy.docs.assetClass ? (
+            {proxy.docs.feedType ? (
               <div>
                 <dt>
-                  <span class="label">Asset class:</span>
+                  <span class="label">Asset type:</span>
                 </dt>
                 <dd>
-                  {proxy.docs.assetClass}
-                  {proxy.docs.assetSubClass ? " - " + proxy.docs.assetSubClass : ""}
+                  {proxy.docs.feedType}
+                  {proxy.docs.assetSubClass === "UK" ? " - " + proxy.docs.assetSubClass : ""}
                 </dd>
               </div>
             ) : (
