@@ -26,27 +26,6 @@ export const AutomationConfigList = () => {
           ) : (
             <div key={supportedChain}>
               <h4 id={slugger.slug(title)}>{title}</h4>
-              {technologyTitle === "Optimism" && (
-                <aside class="content note astro-DUQFCLOB" aria-label="Optimism Bedrock Upgrade">
-                  <div class="icon astro-DUQFCLOB">
-                    <img
-                      src="/_astro/info-icon.ca56bc94.svg"
-                      style="width: 1.5em;height: 1.5em;"
-                      alt="note"
-                      class="astro-DUQFCLOB"
-                    ></img>
-                  </div>
-                  <section class="asideContent astro-DUQFCLOB">
-                    <p class="title heading-100 astro-DUQFCLOB" aria-hidden="true">
-                      Optimism Bedrock Upgrade
-                    </p>
-                    <p>
-                      Optimism Bedrock mainnet feeds and Chainlink Automation services are now live and ready for
-                      consumption. Let us know if you experience any issues or have any questions.
-                    </p>
-                  </section>
-                </aside>
-              )}
               <AutomationConfig
                 config={chainlinkAutomationConfig[supportedChain]}
                 registryAddress={registryAddress}
