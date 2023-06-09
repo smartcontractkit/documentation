@@ -53,8 +53,6 @@ const DefaultTHead = ({ showExtraDetails, isTestnet = false }: { showExtraDetail
   <thead>
     <tr>
       <th class={tableStyles.heading}>Pair</th>
-      <th aria-hidden={isTestnet}>Asset</th>
-      <th aria-hidden={isTestnet}>Type</th>
       <th aria-hidden={!showExtraDetails}>Deviation</th>
       <th aria-hidden={!showExtraDetails}>Heartbeat</th>
       <th aria-hidden={!showExtraDetails}>Dec</th>
@@ -79,18 +77,10 @@ const DefaultTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => (
         </div>
       )}
     </td>
-
-    <td aria-hidden={isTestnet}>
-      <div className={tableStyles.assetName}>{proxy.docs.assetName}</div>
-    </td>
-    <td aria-hidden={isTestnet}>{proxy.docs.feedType}</td>
     <td aria-hidden={!showExtraDetails}>{proxy.threshold ? proxy.threshold + "%" : "N/A"}</td>
     <td aria-hidden={!showExtraDetails}>{proxy.heartbeat ? proxy.heartbeat + "s" : "N/A"}</td>
     <td aria-hidden={!showExtraDetails}>{proxy.decimals ? proxy.decimals : "N/A"}</td>
     <td>
-      {/*
-        EVM feeds use proxy.proxyAddress. The proxy.transmissionsAccount is specific to Solana.
-      */}
       <div className={tableStyles.assetAddress}>
         <button
           class={clsx(tableStyles.copyBtn, "copy-iconbutton")}
@@ -106,6 +96,28 @@ const DefaultTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => (
           {proxy.proxyAddress ?? proxy.transmissionsAccount}
         </a>
       </div>
+      {!isTestnet ? (
+        <div>
+          <dl class={tableStyles.porDl}>
+            {proxy.docs.assetName ? (
+            <div>
+              <dt>
+                <span class="label">Asset name:</span>
+              </dt>
+              <dd>{proxy.docs.assetName}</dd>
+            </div>
+            ) : ""}
+            {proxy.docs.assetClass ? (
+            <div>
+              <dt>
+                <span class="label">Asset class:</span>
+              </dt>
+              <dd>{proxy.docs.assetClass}{proxy.docs.assetSubClass ? " - " + proxy.docs.assetSubClass : ""}</dd>
+            </div>
+            ) : ""}
+          </dl>
+        </div>
+        ) : ""}
     </td>
   </tr>
 )
