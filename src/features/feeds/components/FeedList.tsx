@@ -123,25 +123,6 @@ export const FeedList = ({
                         <img src="/images/link.svg" alt="Link to this section" />
                       </a>
                     </h2>
-                    {selectedChain === "optimism" && (
-                      <aside class="content note astro-DUQFCLOB" aria-label="Optimism Bedrock Upgrade">
-                        <img
-                          src="/_astro/info-icon.ca56bc94.svg"
-                          style="width: 1.5em;height: 1.5em;"
-                          alt="note"
-                          class="astro-DUQFCLOB"
-                        ></img>
-                        <section class="asideContent astro-DUQFCLOB">
-                          <p class="title heading-100 astro-DUQFCLOB" aria-hidden="true">
-                            Optimism Bedrock Upgrade
-                          </p>
-                          <p>
-                            Optimism Bedrock mainnet feeds and Chainlink Automation services are now live and ready for
-                            consumption. Let us know if you experience any issues or have any questions.
-                          </p>
-                        </section>
-                      </aside>
-                    )}
                     {(selectedChain === "arbitrum" || selectedChain === "optimism" || selectedChain === "metis") && (
                       <p>
                         {network.name} is an L2 network. As a best practice, use the L2 sequencer feed to verify the
