@@ -16,7 +16,7 @@ isMdx: true
 
 import VrfCommon from "@features/vrf/v2/common/VrfCommon.astro"
 import { Tabs } from "@components/Tabs"
-import { Aside } from "@components"
+import { Aside, CodeSample } from "@components"
 
 This guide explains how to estimate VRF costs for both the subscription and direct funding methods.
 
@@ -360,3 +360,63 @@ This conversion allows us to estimate the L1 callback gas cost and incorporate i
 
 </Fragment>
 </Tabs>
+
+#### Arbitrum and VRF gas estimation code
+
+This sample extends the original [**Arbitrum gas estimation script**](https://github.com/OffchainLabs/arbitrum-tutorials/tree/master/packages/gas-estimation) to estimate gas costs for VRF subscription and direct funding requests on Arbitrum.
+
+To run this code, see the [full script that includes VRF](https://github.com/thedriftofwords/arbitrum-tutorials/tree/vrf/packages/gas-estimation).
+
+```typescript
+// VRF variables and calculations
+// ---------------------------------
+const maxVerificationGas = 200000
+const avgVerificationGas = 115000
+
+// L1 Calldata size includes:
+// Arbitrum's static 140 bytes for transaction metadata
+// VRF V2's 580 fulfillment tx bytes
+const VRFCallDataSizeBytes = 140 + 580
+
+// For direct funding only. Coordinator gas is verification gas
+const wrapperGasOverhead = 40000
+const coordinatorGasOverhead = 90000
+
+// VRF user settings
+const callbackGasLimit = 175000
+
+// Estimate VRF L1 buffer
+const VRFL1CostEstimate = L1P.mul(VRFCallDataSizeBytes)
+const VRFL1Buffer = VRFL1CostEstimate.div(P)
+
+// VRF Subscription gas estimate
+// L2 gas price (P) * (avgVerificationGas + callbackGasLimit + VRFL1Buffer)
+const VRFL2SubscriptionGasSubtotal = BigNumber.from(avgVerificationGas + callbackGasLimit)
+const VRFSubscriptionGasTotal = VRFL2SubscriptionGasSubtotal.add(VRFL1Buffer)
+const VRFSubscriptionGasEstimate = P.mul(VRFSubscriptionGasTotal)
+
+// VRF Direct funding gas estimate
+// L2 gas price (P) * (coordinatorGasOverhead + callbackGasLimit + wrapperGasOverhead + VRFL1Buffer)
+const VRFL2DirectFundingGasSubtotal = BigNumber.from(coordinatorGasOverhead + wrapperGasOverhead + callbackGasLimit)
+const VRFDirectFundingGasTotal = VRFL2DirectFundingGasSubtotal.add(VRFL1Buffer)
+const VRFDirectFundingGasEstimate = P.mul(VRFDirectFundingGasTotal)
+
+console.log("VRF transaction summary")
+console.log("-------------------")
+console.log(`P (L2 Gas Price) = ${utils.formatUnits(P, "gwei")} gwei`)
+console.log(
+  `VRFL2SubscriptionGasSubtotal (avgVerificationGas + callbackGasLimit)  = ${VRFL2SubscriptionGasSubtotal.toNumber()} units`
+)
+console.log(
+  `VRFL2DirectFundingGasSubtotal (coordinatorGasOverhead + wrapperGasOverhead + callbackGasLimit)  = ${VRFL2DirectFundingGasSubtotal.toNumber()} units`
+)
+console.log(`VRFL1Buffer = ${VRFL1Buffer}`)
+console.log(`L1P (raw value) = ${L1P}`)
+console.log(`L1P (L1 estimated calldata price per byte) = ${utils.formatUnits(L1P, "gwei")} gwei`)
+console.log(`VRFCallDataSizeBytes (L1 Calldata size in bytes) = ${VRFCallDataSizeBytes} bytes`)
+console.log("-------------------")
+console.log(`VRF Subscription transaction estimated fees to pay = ${utils.formatEther(VRFSubscriptionGasEstimate)} ETH`)
+console.log(
+  `VRF Direct funding transaction estimated fees to pay = ${utils.formatEther(VRFDirectFundingGasEstimate)} ETH`
+)
+```
