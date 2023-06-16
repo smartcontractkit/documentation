@@ -162,6 +162,10 @@ export const SIDEBAR = {
           ],
         },
         {
+          title: "L2 Sequencer Uptime Feeds",
+          url: "data-feeds/l2-sequencer-feeds",
+        },
+        {
           title: "Selecting Quality Data Feeds",
           url: "data-feeds/selecting-data-feeds",
         },
@@ -185,10 +189,6 @@ export const SIDEBAR = {
         {
           title: "Data Feeds API Reference",
           url: "data-feeds/api-reference",
-        },
-        {
-          title: "L2 Sequencer Uptime Feeds",
-          url: "data-feeds/l2-sequencer-feeds",
         },
         {
           title: "Feed Registry",
@@ -302,12 +302,41 @@ export const SIDEBAR = {
           url: "chainlink-automation/introduction/",
         },
         {
+          title: "Getting Started",
+          url: "chainlink-automation/compatible-contracts",
+        },
+        {
           title: "Supported Networks",
           url: "chainlink-automation/supported-networks/",
         },
         {
           title: "Best Practices",
           url: "chainlink-automation/compatible-contract-best-practice",
+        },
+      ],
+    },
+    {
+      section: "EXAMPLES",
+      contents: [
+        {
+          title: "Automate the Reveal of Batch NFTs",
+          url: "chainlink-automation/tutorials/batch-nft",
+        },
+        {
+          title: "Create Dynamic NFTs",
+          url: "chainlink-automation/tutorials/dynamic-nft",
+        },
+        {
+          title: "Create a Vault Harvester",
+          url: "chainlink-automation/tutorials/vault-harvester",
+        },
+        {
+          title: "Automate Top-Up for Contract Balances",
+          url: "chainlink-automation/tutorials/eth-balance",
+        },
+        {
+          title: "Automate Top-Up for VRF Subscriptions",
+          url: "chainlink-automation/tutorials/vrf-sub-monitor",
         },
       ],
     },
@@ -323,27 +352,12 @@ export const SIDEBAR = {
           url: "chainlink-automation/register-upkeep",
         },
         {
-          title: "Create Compatible Contracts",
-          url: "chainlink-automation/compatible-contracts",
-        },
-
-        {
           title: "Manage your Upkeeps",
           url: "chainlink-automation/manage-upkeeps",
         },
         {
           title: "Creating Flexible Upkeeps",
           url: "chainlink-automation/flexible-upkeeps",
-        },
-        {
-          title: "Example Contracts",
-          url: "chainlink-automation/util-overview",
-          children: [
-            {
-              title: "EthBalanceMonitor",
-              url: "chainlink-automation/utility-contracts",
-            },
-          ],
         },
       ],
     },
