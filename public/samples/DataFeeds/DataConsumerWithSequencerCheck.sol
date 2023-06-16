@@ -9,8 +9,8 @@ import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV2V3Interface.sol";
  * DO NOT USE THIS CODE IN PRODUCTION.
  */
 
-contract PriceConsumerWithSequencerCheck {
-    AggregatorV2V3Interface internal priceFeed;
+contract DataConsumerWithSequencerCheck {
+    AggregatorV2V3Interface internal dataFeed;
     AggregatorV2V3Interface internal sequencerUptimeFeed;
 
     uint256 private constant GRACE_PERIOD_TIME = 3600;
@@ -19,24 +19,24 @@ contract PriceConsumerWithSequencerCheck {
     error GracePeriodNotOver();
 
     /**
-     * Network: Optimism
+     * Network: Optimism Goerli testnet
      * Data Feed: BTC/USD
-     * Data Feed Proxy Address: 0xD702DD976Fb76Fffc2D3963D037dfDae5b04E593
-     * Sequencer Uptime Proxy Address: 0x371EAD81c9102C9BF4874A9075FFFf170F2Ee389
-     * For a list of available sequencer proxy addresses, see:
-     * https://docs.chain.link/docs/data-feeds/l2-sequencer-feeds/#available-networks
+     * Data Feed address: 0xC16679B963CeB52089aD2d95312A5b85E318e9d2
+     * Uptime Feed address: 0x4C4814aa04433e0FB31310379a4D6946D5e1D353
+     * For a list of available Sequencer Uptime Feed proxy addresses, see:
+     * https://docs.chain.link/docs/data-feeds/l2-sequencer-feeds
      */
     constructor() {
-        priceFeed = AggregatorV2V3Interface(
-            0xD702DD976Fb76Fffc2D3963D037dfDae5b04E593
+        dataFeed = AggregatorV2V3Interface(
+            0xC16679B963CeB52089aD2d95312A5b85E318e9d2
         );
         sequencerUptimeFeed = AggregatorV2V3Interface(
-            0x371EAD81c9102C9BF4874A9075FFFf170F2Ee389
+            0x4C4814aa04433e0FB31310379a4D6946D5e1D353
         );
     }
 
-    // Check the sequencer status and return the latest price
-    function getLatestPrice() public view returns (int) {
+    // Check the sequencer status and return the latest data
+    function getLatestData() public view returns (int) {
         // prettier-ignore
         (
             /*uint80 roundID*/,
@@ -53,7 +53,8 @@ contract PriceConsumerWithSequencerCheck {
             revert SequencerDown();
         }
 
-        // Make sure the grace period has passed after the sequencer is back up.
+        // Make sure the grace period has passed after the
+        // sequencer is back up.
         uint256 timeSinceUp = block.timestamp - startedAt;
         if (timeSinceUp <= GRACE_PERIOD_TIME) {
             revert GracePeriodNotOver();
@@ -62,12 +63,12 @@ contract PriceConsumerWithSequencerCheck {
         // prettier-ignore
         (
             /*uint80 roundID*/,
-            int price,
+            int data,
             /*uint startedAt*/,
             /*uint timeStamp*/,
             /*uint80 answeredInRound*/
-        ) = priceFeed.latestRoundData();
+        ) = dataFeed.latestRoundData();
 
-        return price;
+        return data;
     }
 }

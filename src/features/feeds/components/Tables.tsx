@@ -7,35 +7,42 @@ import tableStyles from "./Tables.module.css"
 const feedCategories = {
   verified: (
     <span className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")} title="Verified">
-      <a href="/docs/selecting-data-feeds/#🟢-verified-feeds" alt="Verified" target="_blank">
+      <a href="/data-feeds/selecting-data-feeds#-verified-feeds" alt="Verified" target="_blank">
         🟢
       </a>
     </span>
   ),
   monitored: (
     <span className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")} title="Monitored">
-      <a href="/docs/selecting-data-feeds/#🟡-monitored-feeds" alt="Monitored" target="_blank">
+      <a href="/data-feeds/selecting-data-feeds#-monitored-feeds" alt="Monitored" target="_blank">
         🟡
+      </a>
+    </span>
+  ),
+  provisional: (
+    <span className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")} title="Provisional">
+      <a href="/data-feeds/selecting-data-feeds#-provisional-feeds" alt="Provisional" target="_blank">
+        🟠
       </a>
     </span>
   ),
   custom: (
     <span className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")} title="Custom">
-      <a href="/docs/selecting-data-feeds/#-custom-feeds" alt="Custom" target="_blank">
+      <a href="/data-feeds/selecting-data-feeds#-custom-feeds" alt="Custom" target="_blank">
         🔵
       </a>
     </span>
   ),
   specialized: (
     <span className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")} title="Specialized">
-      <a href="/docs/selecting-data-feeds/#-specialized-feeds" alt="Specialized" target="_blank">
+      <a href="/data-feeds/selecting-data-feeds#-specialized-feeds" alt="Specialized" target="_blank">
         ⚫
       </a>
     </span>
   ),
   deprecating: (
     <span className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")} title="Deprecating">
-      <a href="#categories" alt="Deprecating" target="_blank">
+      <a href="/data-feeds/deprecating-feeds" alt="Deprecating" target="_blank">
         ⭕
       </a>
     </span>
@@ -46,8 +53,6 @@ const DefaultTHead = ({ showExtraDetails, isTestnet = false }: { showExtraDetail
   <thead>
     <tr>
       <th class={tableStyles.heading}>Pair</th>
-      <th aria-hidden={isTestnet}>Asset</th>
-      <th aria-hidden={isTestnet}>Type</th>
       <th aria-hidden={!showExtraDetails}>Deviation</th>
       <th aria-hidden={!showExtraDetails}>Heartbeat</th>
       <th aria-hidden={!showExtraDetails}>Dec</th>
@@ -72,18 +77,10 @@ const DefaultTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => (
         </div>
       )}
     </td>
-
-    <td aria-hidden={isTestnet}>
-      <div className={tableStyles.assetName}>{proxy.docs.assetName}</div>
-    </td>
-    <td aria-hidden={isTestnet}>{proxy.docs.feedType}</td>
     <td aria-hidden={!showExtraDetails}>{proxy.threshold ? proxy.threshold + "%" : "N/A"}</td>
     <td aria-hidden={!showExtraDetails}>{proxy.heartbeat ? proxy.heartbeat + "s" : "N/A"}</td>
     <td aria-hidden={!showExtraDetails}>{proxy.decimals ? proxy.decimals : "N/A"}</td>
     <td>
-      {/*
-        EVM feeds use proxy.proxyAddress. The proxy.transmissionsAccount is specific to Solana.
-      */}
       <div className={tableStyles.assetAddress}>
         <button
           class={clsx(tableStyles.copyBtn, "copy-iconbutton")}
@@ -99,6 +96,37 @@ const DefaultTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => (
           {proxy.proxyAddress ?? proxy.transmissionsAccount}
         </a>
       </div>
+      {!isTestnet ? (
+        <div>
+          <dl class={tableStyles.porDl}>
+            {proxy.docs.assetName ? (
+              <div>
+                <dt>
+                  <span class="label">Asset name:</span>
+                </dt>
+                <dd>{proxy.docs.assetName}</dd>
+              </div>
+            ) : (
+              ""
+            )}
+            {proxy.docs.feedType ? (
+              <div>
+                <dt>
+                  <span class="label">Asset type:</span>
+                </dt>
+                <dd>
+                  {proxy.docs.feedType}
+                  {proxy.docs.assetSubClass === "UK" ? " - " + proxy.docs.assetSubClass : ""}
+                </dd>
+              </div>
+            ) : (
+              ""
+            )}
+          </dl>
+        </div>
+      ) : (
+        ""
+      )}
     </td>
   </tr>
 )
@@ -300,12 +328,12 @@ export const TestnetTable = ({
     .filter((chain) => {
       if (isPor) return !!chain.docs.porType
       if (isNftFloor) return !!chain.docs.nftFloorUnits
-      if (isRates) return !!(chain.docs.productType === "Rates" || chain.docs.productSubType === "Rvol")
+      if (isRates) return !!(chain.docs.productType === "Rates" || chain.docs.productSubType === "Realized Volatility")
       return (
         !chain.docs.nftFloorUnits &&
         !chain.docs.porType &&
         chain.docs.productType !== "Rates" &&
-        chain.docs.productSubType !== "Rvol"
+        chain.docs.productSubType !== "Realized Volatility"
       )
     })
 

@@ -653,15 +653,36 @@ my_mode_task [type="mode"
                 allowedFaults=3]
 ```
 
-Given a `values` array containing `[ 2, 5, 2, "foo", "foo" "bar", "foo", 2 ]`, the task will return:
+This task can handle arrays with mixed types. For example, given a `values` array containing both strings and ints like `[ 2, 5, 2, "foo", "foo" "bar", "foo", 2 ]`, the task returns the following JSON:
 
 {/* prettier-ignore */}
 ```json
 {
-  "results": [2, "foo"],
-  "occurrences": 3
+  "occurrences": 3,
+  "results": [2, "foo"]
 }
 ```
+
+To encode the results array into the `ethabiencode` task, specify that the data is an array in the `abi` and point the data parameter to the results from your mode task. Because [argument encoding](https://docs.soliditylang.org/en/develop/abi-spec.html#argument-encoding) enforces types, all of the values in the array must be of the same type. As an example, you can encode the results of a `mode` task with an array of integers:
+
+{/* prettier-ignore */}
+```toml
+mode_task [type="mode" values=<[ 1, 2, 2, 3, 1 ]>]
+
+encode_mode_task [type="ethabiencode" abi="(bytes32 requestId, uint64 occurrences, uint256[] results)" data="{\\"requestId\\": $(decode_log.requestId), \\"occurrences\\": $(mode_task.occurrences), \\"results\\": $(mode_task.results) }"]
+```
+
+In this example, the `mode` task returns the following result:
+
+{/* prettier-ignore */}
+```json
+{
+  "occurrences": 2,
+  "results": [2, 1]
+}
+```
+
+The `ethabiencode` task encodes `results` as a `uint256[]` array.
 
 ## Multiply task
 
@@ -669,7 +690,7 @@ Multiplies the provided `input` and `times` values.
 
 **Parameters**
 
-- `input`: the value to be multipled. Possible values:
+- `input`: the value to be multiplied. Possible values:
   - number
   - stringified number
   - bytes-ified number

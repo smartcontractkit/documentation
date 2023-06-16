@@ -79,7 +79,7 @@ export const CHAINS: Chain[] = [
     label: "Polygon (Matic)",
     img: "/assets/chains/polygon.svg",
     networkStatusUrl: "https://polygon.io/system",
-    tags: ["default", "proofOfReserve", "nftFloorPrice"],
+    tags: ["default", "proofOfReserve", "nftFloorPrice", "rates"],
     networks: [
       {
         name: "Polygon Mainnet",
@@ -93,7 +93,7 @@ export const CHAINS: Chain[] = [
         explorerUrl: "https://mumbai.polygonscan.com/address/%s",
         networkType: "testnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-matic-testnet.json",
-        tags: ["nftFloorPrice"],
+        tags: ["nftFloorPrice", "rates"],
       },
     ],
   },
@@ -118,7 +118,7 @@ export const CHAINS: Chain[] = [
     title: "Avalanche Data Feeds",
     img: "/assets/chains/avalanche.svg",
     networkStatusUrl: "https://status.avax.network/",
-    tags: ["default", "proofOfReserve"],
+    tags: ["default", "proofOfReserve", "rates"],
     networks: [
       {
         name: "Avalanche Mainnet",
@@ -132,7 +132,7 @@ export const CHAINS: Chain[] = [
         explorerUrl: "https://testnet.snowtrace.io/address/%s",
         networkType: "testnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-avalanche-fuji-testnet.json",
-        tags: ["proofOfReserve"],
+        tags: ["proofOfReserve", "rates"],
       },
     ],
     label: "Avalanche",
@@ -165,7 +165,7 @@ export const CHAINS: Chain[] = [
     title: "Arbitrum Data Feeds",
     img: "/assets/chains/arbitrum.svg",
     networkStatusUrl: "https://arbiscan.freshstatus.io/",
-    tags: ["default"],
+    tags: ["default", "rates"],
     networks: [
       {
         name: "Arbitrum Mainnet",
@@ -178,6 +178,7 @@ export const CHAINS: Chain[] = [
         explorerUrl: "https://goerli-rollup-explorer.arbitrum.io/address/%s",
         networkType: "testnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-goerli-arbitrum-1.json",
+        tags: ["rates"],
       },
     ],
   },
