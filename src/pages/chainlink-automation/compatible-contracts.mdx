@@ -28,7 +28,7 @@ Before you deploy contracts to use with Chainlink Automation, read the [Best Pra
 To use Chainlink Automation, contracts must meet the following requirements:
 
 - Import `AutomationCompatible.sol`. You can refer to the [Chainlink Contracts](https://github.com/smartcontractkit/chainlink/tree/develop/contracts/src) on GitHub to find the latest version.
-- Use the `AutomationCompatibleInterface` from the library to ensure your `checkUpkeep` and `performUpkeep`function definitions match the definitions expected by the Chainlink Automation Network.
+- Use the `AutomationCompatibleInterface` from the library to ensure your `checkUpkeep` and `performUpkeep` function definitions match the definitions expected by the Chainlink Automation Network.
 - Include a `checkUpkeep` function that contains the logic that will be executed off-chain to see if `performUpkeep` should be executed. `checkUpkeep` can use on-chain data and a specified `checkData` parameter to perform complex calculations off-chain and then send the result to `performUpkeep` as `performData`.
 - Include a `performUpkeep` function that will be executed on-chain when `checkUpkeep` returns `true`. Because `performUpkeep` is external, users are advised to revalidate conditions and performData.
 
@@ -68,7 +68,6 @@ Because `checkUpkeep` is only off-chain in simulation it is best to treat this a
 function checkUpkeep(
   bytes calldata checkData
 ) external view override returns (bool upkeepNeeded, bytes memory performData);
-
 ```
 
 Below are the parameters and return values of the `checkUpkeep` function. Click each value to learn more about its design patterns and best practices:
@@ -84,7 +83,7 @@ Below are the parameters and return values of the `checkUpkeep` function. Click 
 
 #### `checkData`
 
-You can pass information into your `checkUpkeep` function from your [upkeep registration](/chainlink-automation/register-upkeep) to execute different code paths. For example, to check the balance on an specific address, set the `checkData` to abi encode of the address. To learn how to create flexible upkeeps with checkData, please see out [flexible upkeeps](/chainlink-automation/flexible-upkeeps) page.
+You can pass information into your `checkUpkeep` function from your [upkeep registration](/chainlink-automation/register-upkeep) to execute different code paths. For example, to check the balance on an specific address, set the `checkData` to abi encode the address. To learn how to create flexible upkeeps with checkData, please see out [flexible upkeeps](/chainlink-automation/flexible-upkeeps) page.
 
 <CodeSample src="snippets/Automation/checkData.sol" />
 
@@ -110,7 +109,7 @@ When `checkUpkeep` returns `upkeepNeeded == true`, the Automation node broadcast
 
 <Aside type="note" title="Gas limits for performUpkeep">
 
-During registration you have to specify the maximum gas limit that we should allow your contract to use. We simulate `performUpkeep`during `checkUpkeep` and if the gas exceeds this limit the function will not execute on-chain. One method to determine your upkeep's gas limit is to simulate the `performUpkeep` function and add enough overhead to take into account increases that might happen due to changes in `performData` or on-chain data. The gas limit you specify cannot exceed the `performGasLimit` in the [configuration of the registry](/chainlink-automation/supported-networks/#configurations).
+During registration you have to specify the maximum gas limit that we should allow your contract to use. We simulate `performUpkeep` during `checkUpkeep` and if the gas exceeds this limit the function will not execute on-chain. One method to determine your upkeep's gas limit is to simulate the `performUpkeep` function and add enough overhead to take into account increases that might happen due to changes in `performData` or on-chain data. The gas limit you specify cannot exceed the `performGasLimit` in the [configuration of the registry](/chainlink-automation/supported-networks/#configurations).
 
 </Aside>
 
@@ -118,7 +117,6 @@ Ensure that your `performUpkeep` is _idempotent_. Your `performUpkeep` function 
 
 ```solidity
 function performUpkeep(bytes calldata performData) external override;
-
 ```
 
 **Parameters:**

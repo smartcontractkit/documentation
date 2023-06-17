@@ -3,8 +3,7 @@ layout: ../../layouts/MainLayout.astro
 section: automation
 date: Last Modified
 title: "Chainlink Automation Economics"
-isMdx: true
-whatsnext: { "FAQs": "/chainlink-automation/faqs/" }
+whatsnext: { "FAQs": "/chainlink-automation/faqs" }
 ---
 
 ## Cost of using Chainlink Automation
@@ -19,11 +18,11 @@ There is no registration fee or other fees for any off-chain computation.
 
 ![Automation Pricing Example](/images/automation/automation-pricing-example.png)
 
-## How Funding Works
+## How funding works
 
 Upkeeps have a LINK (ERC-677) balance. Every time an on-chain transaction is performed for your upkeep, its LINK balance will be reduced by the LINK fee.
 
-Your upkeep's balance must exceed the minimum balance. If this requirement is not met, the Automation Network will not perform on-chain transactions. You can add funds using the [Chainlink Automation App](https://automation.chain.link/) or by directly calling the `addFunds()` function on the `AutomationRegistry` contract. Anyone can call the `addFunds()` function.
+Your upkeep's balance must exceed the [minimum balance](#minimum-balance). If this requirement is not met, the Automation Network will not perform on-chain transactions. You can add funds using the [Chainlink Automation App](https://automation.chain.link/) or by directly calling the `addFunds()` function on the `AutomationRegistry` contract. Anyone can call the `addFunds()` function.
 
 ## Withdrawing funds
 
@@ -44,12 +43,12 @@ The minimum balance is calculated using the current fast gas price, the gas limi
 
 Follow [maintain a minimum balance](/chainlink-automation/manage-upkeeps/#maintain-a-minimum-balance) to ensure that your upkeep is funded.
 
-## Price selection and Gas Bumping
+## Price selection and gas bumping
 
 Automation Nodes select the gas price dynamically based on the prices of transactions within the last several blocks. This optimizes the gas price based on current network conditions. Automation Nodes are configured to select a price based on a target percentile.
 
 If the Automation Node does not see the `performUpkeep` transaction get confirmed within the next few blocks, it automatically replaces the transaction and bumps the gas price. This process repeats until the transaction is confirmed.
 
-## ERC-677 Link
+## ERC-677 LINK
 
 For funding on mainnet, you will need ERC-677 LINK. Many token bridges give you ERC-20 LINK tokens. Use PegSwap to [convert Chainlink tokens (LINK) to be ERC-677 compatible](https://pegswap.chain.link/). To fund on a supported testnet, get [LINK](/resources/link-token-contracts) for the testnet you are using from our [faucet](https://faucets.chain.link/).
