@@ -10,13 +10,14 @@ const pages = await Astro.glob("./**/*.astro")
 const postsMdx = [...(await Astro.glob("./**/*.mdx")).filter((post) => !post.frontmatter.draft)]
 const postsMdxWithContent = postsMdx.map((post) => {
   const url = new URL(post.file, import.meta.url)
-  const content = fs.readFileSync(url, "utf-8")
+  // Temp fix for Algolia record size limits: Limit record size with .substring()
+  const content = fs.readFileSync(url, "utf-8").substring(0, 78000)
   return { ...post, rawContent: () => content }
 })
 
 const markDownFiles = [...postsMdxWithContent]
 
-const allContent = [...pages, ...postsMdx]
+//const allContent = [...pages, ...postsMdx]
 
 const transformMarkdownInstancesToIndexes = async (instances: MarkdownInstance<Record<string, any>>[]) => {
   return Promise.all(
@@ -24,6 +25,7 @@ const transformMarkdownInstancesToIndexes = async (instances: MarkdownInstance<R
       const { title, section, metadata } = instance.frontmatter
       const headings = await instance.getHeadings()
       const content = !!instance.rawContent ? await instance.rawContent() : undefined
+
       return {
         title,
         headings,
