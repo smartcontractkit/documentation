@@ -3,7 +3,7 @@ import "./methodCheckbox.css"
 import { DropDownMenu } from "./DropdownMenu"
 import { supportedNetworks } from "../data"
 
-export const MethodCheckbox = ({ apiKeys }) => {
+export const MethodCheckbox = () => {
   const [vrfMethodUsed, setVrfMethodUsed] = useState<"subscription" | "directFunding">("subscription")
 
   const handleChange = (event) => {
@@ -37,7 +37,8 @@ export const MethodCheckbox = ({ apiKeys }) => {
           <label for="funding">Direct funding</label>
         </div>
       </div>
-      <DropDownMenu method={vrfMethodUsed} options={supportedNetworks[vrfMethodUsed]} keys={apiKeys} />
+
+      <DropDownMenu method={vrfMethodUsed} options={supportedNetworks[vrfMethodUsed]} />
     </div>
   )
 }
