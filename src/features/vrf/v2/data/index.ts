@@ -1,10 +1,6 @@
 export interface network {
   name: string
   type: "mainnet" | "testnet"
-  baseApiUrl: string
-  vrfCoordinatorContractAddress?: string
-  vrfWrapperContractAddress?: string
-  priceFeedAddress?: string
 }
 
 export interface vrfChain {
@@ -25,48 +21,44 @@ export const supportedNetworks: vrfNetsByMethod = {
         {
           name: "ethereum",
           type: "mainnet",
-          baseApiUrl: "https://api.etherscan.io/",
-          vrfCoordinatorContractAddress: "0x271682DEB8C4E0901D1a1550aD2e64D568E69909",
-          vrfWrapperContractAddress: "0x5A861794B927983406fCE1D062e00b9368d97Df6",
-          priceFeedAddress: "0xDC530D9457755926550b59e8ECcdaE7624181557",
         },
-        { name: "goerli", type: "testnet", baseApiUrl: "https://api-goerli.etherscan.io/" },
-        { name: "sepolia", type: "testnet", baseApiUrl: "https://api-sepolia.etherscan.io/" },
+        { name: "goerli", type: "testnet" },
+        { name: "sepolia", type: "testnet" },
       ],
     },
     {
-      name: "BNB Chain",
+      name: "BNB",
       nets: [
-        { name: "BNB Chain", type: "mainnet", baseApiUrl: "https://api.bscscan.com/" },
-        { name: "BNB Chain", type: "testnet", baseApiUrl: "https://api-testnet.bscscan.com/" },
+        { name: "BNB", type: "mainnet" },
+        { name: "BNB", type: "testnet" },
       ],
     },
     {
-      name: "Polygon (MATIC)",
+      name: "Polygon",
       nets: [
-        { name: "Polygon", type: "mainnet", baseApiUrl: "https://api.polygonscan.com/" },
-        { name: "mumbai", type: "testnet", baseApiUrl: "https://api-testnet.polygonscan.com/" },
+        { name: "Polygon", type: "mainnet" },
+        { name: "mumbai", type: "testnet" },
       ],
     },
     {
       name: "Avalanche",
       nets: [
-        { name: "Avalanche", type: "mainnet", baseApiUrl: "https://api.snowtrace.io/" },
-        { name: "fuji", type: "testnet", baseApiUrl: "https://api-testnet.snowtrace.io/" },
+        { name: "Avalanche", type: "mainnet" },
+        { name: "fuji", type: "testnet" },
       ],
     },
     {
       name: "Fantom",
       nets: [
-        { name: "Fantom", type: "mainnet", baseApiUrl: "https://api.ftmscan.com/" },
-        { name: "Fantom", type: "testnet", baseApiUrl: "https://api-testnet.ftmscan.com/" },
+        { name: "Fantom", type: "mainnet" },
+        { name: "Fantom", type: "testnet" },
       ],
     },
     {
       name: "Arbitrum",
       nets: [
-        { name: "Arbitrum", type: "mainnet", baseApiUrl: "https://arb-mainnet.g.alchemy.com/v2/" },
-        { name: "goerli", type: "testnet", baseApiUrl: "https://arb-testnet.g.alchemy.com/v2/" },
+        { name: "Arbitrum", type: "mainnet" },
+        { name: "goerli", type: "testnet" },
       ],
     },
   ],
@@ -77,41 +69,44 @@ export const supportedNetworks: vrfNetsByMethod = {
         {
           name: "ethereum",
           type: "mainnet",
-          baseApiUrl: "https://api.etherscan.io/",
-          vrfCoordinatorContractAddress: "0x271682DEB8C4E0901D1a1550aD2e64D568E69909",
-          vrfWrapperContractAddress: "0x5A861794B927983406fCE1D062e00b9368d97Df6",
-          priceFeedAddress: "0xDC530D9457755926550b59e8ECcdaE7624181557",
         },
-        { name: "goerli", type: "testnet", baseApiUrl: "https://api-goerli.etherscan.io/" },
-        { name: "sepolia", type: "testnet", baseApiUrl: "https://api-sepolia.etherscan.io/" },
+        { name: "goerli", type: "testnet" },
+        { name: "sepolia", type: "testnet" },
       ],
     },
     {
-      name: "BNB Chain",
+      name: "BNB",
       nets: [
-        { name: "BNB Chain", type: "mainnet", baseApiUrl: "https://api.bscscan.com/" },
-        { name: "BNB Chain", type: "testnet", baseApiUrl: "https://api-testnet.bscscan.com/" },
+        { name: "BNB", type: "mainnet" },
+        { name: "BNB", type: "testnet" },
       ],
     },
     {
-      name: "Polygon (MATIC)",
+      name: "Polygon",
       nets: [
-        { name: "Polygon", type: "mainnet", baseApiUrl: "https://api.polygonscan.com/" },
-        { name: "mumbai", type: "testnet", baseApiUrl: "https://api-testnet.polygonscan.com/" },
+        { name: "Polygon", type: "mainnet" },
+        { name: "mumbai", type: "testnet" },
       ],
     },
     {
       name: "Avalanche",
       nets: [
-        { name: "Avalanche", type: "mainnet", baseApiUrl: "https://api.snowtrace.io/" },
-        { name: "fuji", type: "testnet", baseApiUrl: "https://api-testnet.snowtrace.io/" },
+        { name: "Avalanche", type: "mainnet" },
+        { name: "fuji", type: "testnet" },
       ],
     },
     {
       name: "Fantom",
       nets: [
-        { name: "Fantom", type: "mainnet", baseApiUrl: "https://api.ftmscan.com/" },
-        { name: "Fantom", type: "testnet", baseApiUrl: "https://api-testnet.ftmscan.com/" },
+        { name: "Fantom", type: "mainnet" },
+        { name: "Fantom", type: "testnet" },
+      ],
+    },
+    {
+      name: "Arbitrum",
+      nets: [
+        { name: "Arbitrum", type: "mainnet" },
+        { name: "goerli", type: "testnet" },
       ],
     },
   ],
