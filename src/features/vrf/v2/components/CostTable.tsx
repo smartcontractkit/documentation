@@ -141,7 +141,7 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
         return cache[cacheKey].data
       }
       const response = await fetch(
-        `http://localhost:3001/api/calculator?networkName=${mainChain.name.toLowerCase()}&networkType=${
+        `https://vrf.chain.link//api/calculator?networkName=${mainChain.name.toLowerCase()}&networkType=${
           chain.name.toLowerCase() === mainChain.name.toLowerCase()
             ? chain.type.toLowerCase()
             : chain.name.toLowerCase()
