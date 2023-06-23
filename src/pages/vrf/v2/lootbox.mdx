@@ -1,47 +1,17 @@
 ---
-layout: ../../layouts/MainLayout.astro
+layout: ../../../layouts/MainLayout.astro
 section: vrf
 title: "Chainlink Solution Accelerator: Lootbox"
 ---
 
 import { Aside } from "@components"
+import { Tabs } from "@components/Tabs"
 
 The lootbox is a utility contract that allow users to open it to receive a random reward.
 
 It supports [ERC20](https://eips.ethereum.org/EIPS/eip-20), [ERC721](https://eips.ethereum.org/EIPS/eip-721), and [ERC1155](https://eips.ethereum.org/EIPS/eip-1155) tokens as rewards. The rewards are distributed from a pool of tokens that are trasferred to the contract on deploy.
 
-The lootbox contract uses [Chainlink VRF](https://docs.chain.link/docs/get-a-random-number/) to generate a random number that is used to determine the reward.
-
-## Before you begin
-
-Before you start this tutorial, complete the following items:
-
-- [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
-  - You'll know you did it right if you can run `git --version` and you see a response like `git version x.x.x`
-- [Nodejs](https://nodejs.org/en/) 16.0.0 or higher
-  - You'll know you've installed nodejs right if you can run:
-    - `node --version` and get an output like: `v16.x.x`
-
-## Setup steps
-
-{/* A brief description of the components the user will set up in the tutorial. Include an unordered list with heading links to the sub-sections */}
-This tutorial requires you to set up two primary components:
-
-- [Component 1](#setup-sub-section-1)
-- [Component 2](#setup-sub-section-1)
-
-{/* Use sub-sections for major components of the tutorial. Usually multiple major components go into creating a tutorial. Separate each one into a different section if it makes sense. */}
-
-### Setup sub-section 1
-
-{/_
-Optional - Use the <Aside> component to call extra attention to risks, warnings, or potential issues.
-Available types are:
-note
-tip
-caution
-danger
-_/}
+The lootbox contract uses VRF to generate a random number that is used to determine the reward.
 
 <Aside type="caution" title="Disclaimer">
   This repository represents an example of using a Chainlink product or service. It is provided to to help you
@@ -51,25 +21,57 @@ _/}
   copy pasted into a production ready service.
 </Aside>
 
-{/* Brief description of what components you are setting up and why it is necessary for the guide. */}
+## Before you begin
+
+Before you start this tutorial, complete the following items:
+
+- Install [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
+  - To check your installation, run `git --version`. You should see an output similar to `git version x.x.x`.
+- Install [Nodejs](https://nodejs.org/en/) 16.0.0 or higher
+  - To check your installation, run `node --version`. You should see an output similar to `v16.x.x`.
+- Make sure the deployer account has enough LINK to fund the VRF subscription. If you don't already have a VRF subscription, the deployment script creates one for you.
+  - Configure the initial funding amount in [`network-config.ts`](https://github.com/smartcontractkit/quickstarts-lootbox/blob/main/network-config.ts).
+  - For testnets, you can use the [LINK faucet](https://faucets.chain.link/).
+
+## Setup steps
+
+This tutorial requires you to set up two primary components:
+
+- [Install dependencies](#install-dependencies)
+- [Configuration](#configuration)
+
+### Install dependencies
 
 Clone the repo and install all dependencies.
 
+<Tabs client:visible>
+<Fragment slot="tab.1">npm</Fragment>
+<Fragment slot="tab.2">yarn</Fragment>
+<Fragment slot="panel.1">
 ```bash
 git clone git@github.com:hackbg/chainlink-solutions-lootbox.git
 
 cd chainlink-solutions-lootbox
 
 npm install
-```
 
+````
+</Fragment>
+<Fragment slot="panel.2">
 Alternatively, you can use [yarn](https://yarnpkg.com/) to install dependencies.
 
 ```bash
-yarn install
-```
+git clone git@github.com:hackbg/chainlink-solutions-lootbox.git
 
-{/* An ordered list of steps to run with example output and descriptions of each step where possible. */}
+cd chainlink-solutions-lootbox
+
+yarn install
+````
+
+</Fragment>
+</Tabs>
+
+### Configuration
 
 Copy the `.env.example` file to `.env` and fill in the values.
 
@@ -77,15 +79,21 @@ Copy the `.env.example` file to `.env` and fill in the values.
 cp .env.example .env
 ```
 
-### Hardhat Project
+#### Hardhat project
 
-| Parameter         | Description                                                 | Example                                     |
-| ----------------- | ----------------------------------------------------------- | ------------------------------------------- |
-| `NETWORK_RPC_URL` | The RPC URL for the network you want to deploy to.          | `https://sepolia.infura.io/v3/your-api-key` |
-| `PRIVATE_KEY`     | The private key of the account you want to deploy from.     | `0xabc123abc123abc123abc123abc123...`       |
-| `ETHERSCAN_API`   | The API key for Etherscan needed for contract verification. | `ABC123ABC123ABC123ABC123ABC123ABC1`        |
+1. In your `.env` file, fill in these values:
 
-### Contract Params
+   | Parameter         | Description                                                 | Example                                     |
+   | ----------------- | ----------------------------------------------------------- | ------------------------------------------- |
+   | `NETWORK_RPC_URL` | The RPC URL for the network you want to deploy to.          | `https://sepolia.infura.io/v3/your-api-key` |
+   | `PRIVATE_KEY`     | The private key of the account you want to deploy from.     | `0xabc123abc123abc123abc123abc123...`       |
+   | `ETHERSCAN_API`   | The API key for Etherscan needed for contract verification. | `ABC123ABC123ABC123ABC123ABC123ABC1`        |
+
+1. Configure your deployment network in [`hardhat.config.ts`](https://github.com/smartcontractkit/quickstarts-lootbox/blob/main/hardhat.config.ts).
+
+#### Contract parameters
+
+In your `.env` file, fill in these values:
 
 | Parameter                             | Description                                                                                                               | Example      |
 | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- | ------------ |
@@ -94,12 +102,21 @@ cp .env.example .env
 | `LOOTBOX_OPEN_START_TIMESTAMP`        | The start timestamp in UNIX time for the public open. Leave blank to start immediately.                                   | `1630000000` |
 | `VRF_SUBSCRIPTION_ID`                 | A funded Chainlink VRF subscription ID. If you leave this blank, a new subscription will be created and funded on deploy. | `123`        |
 
-### Reward Tokens
+#### Reward tokens
 
-There's an example configuration file in `scripts/data/tokens.json` which includes a list of all suppoted token types:
+The amounts per unit are used to calculate the lootbox supply of rewards. For example, if you want to distribute 100 tokens of a specific ERC20 token, you would set the `totalAmount` to `100000000000000000000` and the `amountPerUnit` to `1000000000000000000`. This would result in a lootbox supply of 100 units.
 
-- ERC20
+Add all the tokens you want to distribute as rewards to the array in the list of tokens by following the format below.
 
+<Aside type="note">The deployer account must own all the tokens you want to distribute as rewards.</Aside>
+
+There's an example configuration file in [`scripts/data/tokens.json`](https://github.com/smartcontractkit/quickstarts-lootbox/blob/main/scripts/data/tokens.json) which includes a list of all supported token types:
+
+<Tabs client:visible>
+<Fragment slot="tab.1">ERC20</Fragment>
+<Fragment slot="tab.2">ERC721</Fragment>
+<Fragment slot="tab.3">ERC1155</Fragment>
+<Fragment slot="panel.1">
 ```json
 {
   "tokenType": "ERC20",
@@ -108,9 +125,8 @@ There's an example configuration file in `scripts/data/tokens.json` which includ
   "amountPerUnit": "10000000"
 }
 ```
-
-- ERC721
-
+</Fragment>
+<Fragment slot="panel.2">
 ```json
 {
   "tokenType": "ERC721",
@@ -118,9 +134,8 @@ There's an example configuration file in `scripts/data/tokens.json` which includ
   "tokenIds": ["1", "2"]
 }
 ```
-
-- ERC1155
-
+</Fragment>
+<Fragment slot="panel.3">
 ```json
 {
   "tokenType": "ERC1155",
@@ -130,116 +145,38 @@ There's an example configuration file in `scripts/data/tokens.json` which includ
   "amountPerUnit": "10"
 }
 ```
+</Fragment>
+</Tabs>
 
-The amounts per unit are used to calculate the lootbox supply of rewards. For example, if you want to distribute 100 tokens of a specific ERC20 token, you would set the `totalAmount` to `100000000000000000000` and the `amountPerUnit` to `1000000000000000000`. This would result in a lootbox supply of 100 units.
+#### Whitelist
 
-Add all the tokens you want to distribute as rewards to the array in the list of tokens by following the format above.
+The merkle tree for the private opening stage is generated from the address list in the [`scripts/data/whitelist.json`](https://github.com/smartcontractkit/quickstarts-lootbox/blob/main/scripts/data/whitelist.json) file. Edit the file and add all the addresses you want to list.
 
-Note: The deployer account must own all the tokens you want to distribute as rewards.
-
-### Whitelist
-
-The merkle tree for the private openning stage is generated from the address list in `scripts/data/whitelist.json` file. Edit the file and add all the addresses you want to list.
-
-Leave the file empty if you don't want to do a private mint and the contract will be initialized in public openning mode.
-
-1. Run the `./setup-example` command.
-
-   {/* Command to run for setting up */}
-
-   ```shell
-   ./setup-example
-   ```
-
-   This command prints the expected result.
-
-   {/* Command output */}
-
-   ```text
-   Expected results
-   ```
-
-1. {/* Step 2 */}
-
-   1. {/* Sub-step A */}
-   1. {/* Sub-step B */}
-
-1. {/* Step 3 */}
-
-{/* Sub-section 2 - Add additional sub sections for each major component of the tutorial. */}
-
-### Setup sub-section 2
-
-{/* The section for running the tutorial and reaching the final result. */}
+Leave the file empty if you don't want to do a private mint and the contract will be initialized in public opening mode.
 
 ## Run steps
 
-{/* Brief description for running or deploying the completed tutorial result. This section should be the final section of the tutorial instructions. */}
-Run the example in a terminal. When you are done, you will have a complete running solution.
+### Test
 
-{/* An ordered list of steps to run with example output and descriptions of what is happening in each step. */}
+- To run the unit tests, run the following command:
 
-1. Run the `./run-tutorial` command.
+  ```bash
+  npm run test
+  ```
 
-   {/* Command to run */}
+- If you want to see gas usage, run the following command:
 
-   ```shell
-   ./run-tutorial
-   ```
+  ```bash
+  REPORT_GAS=true npm run test
+  ```
 
-   This command prints the expected result.
+- For coverage reports, run the following command:
 
-   {/* Command output */}
+  ```bash
+  npm run coverage
+  ```
 
-   ```text
-   Expected result
-   ```
-
-1. {/* Step 2 */}
-
-1. {/* Step 3 */}
-
-{/* Optional - Include code examples and a description of how it works. If there are specific best practices or details that you want to call out, highlight them. */}
-
-## Test
-
-To run the unit tests, run the following command.
-
-```bash
-npm run test
-```
-
-If you want to see gas usage, run the following command.
-
-```bash
-REPORT_GAS=true npm run test
-```
-
-For coverage reports, run the following command.
-
-```bash
-npm run coverage
-```
-
-## Deploy
-
-Besides deploying the contract, the deploy script will also:
-
-1. Approve each token configured in `scripts/data/tokens.json` for the deployed contract address.
-
-   Note: This is a mandatory step because the contract must store the tokens in its own balance. So make sure the deployer account owns all the tokens you want to distribute as rewards.
-
-2. Generate a merkle tree for the whitelist.
-
-3. Create and fund a VRF subscription if one is not provided.
-
-   Note: Make sure the deployer account has enough LINK to fund the subscription. The initial funding amount is configured in `network-config.js`. For testnets, you can use the [LINK faucet](https://docs.chain.link/docs/link-token-contracts/#faucets).
-
-4. Add the deployed contract address as a consumer to the VRF subscription.
-
-   Note: If you provided a subscription ID, make sure the deployer account is the owner of the subscription. Otherwise, comment out the `addVrfConsumer` function in the deploy script and add the contract address manually.
-
-5. Verify the contract on Etherscan. If you want to skip this step, comment out the `verify` function in the deploy script.
+### Deploy
 
 To run the deploy script, run the following command and replace `<network>` with the network you want to deploy to.
 
@@ -247,21 +184,47 @@ To run the deploy script, run the following command and replace `<network>` with
 npx hardhat run scripts/deploy.js --network <network>
 ```
 
-Note: The network must be configured in `hardhat.config.js`.
+<Aside type="note">
+  The network must be configured in
+  [`hardhat.config.ts`](https://github.com/smartcontractkit/quickstarts-lootbox/blob/main/hardhat.config.ts).
+</Aside>
 
-## Open
+Besides deploying the contract, the [deploy script](https://github.com/smartcontractkit/quickstarts-lootbox/blob/main/scripts/deploy.ts) will also:
+
+1.  Approve each token configured in [`scripts/data/tokens.json`](https://github.com/smartcontractkit/quickstarts-lootbox/blob/main/scripts/data/tokens.json) for the deployed contract address.
+
+    This is a mandatory step because the contract must store the tokens in its own balance. So make sure the deployer account owns all the tokens you want to distribute as rewards.
+
+1.  Generate a merkle tree for the whitelist.
+
+1.  Create and fund a VRF subscription if one is not provided.
+
+    <Aside type="note">
+Make sure the deployer account has enough LINK to fund the subscription. The initial funding amount is configured in [`network-config.ts`](https://github.com/smartcontractkit/quickstarts-lootbox/blob/main/network-config.ts).
+
+    For testnets, you can use the [LINK faucet](https://faucets.chain.link/).
+
+    </Aside>
+
+1.  Add the deployed contract address as a consumer to the VRF subscription.
+
+    If you provided a subscription ID, make sure the deployer account is the owner of the subscription. Otherwise, comment out the `addVrfConsumer` function in the deploy script and add the contract address manually.
+
+1.  Verify the contract on Etherscan. If you want to skip this step, comment out the `verify` function in the deploy script.
+
+## Open the lootbox
 
 Once the contract is deployed and the start timestamp is reached, users can start opening the lootbox. The amount of rewards they receive depends on the amount of units they open by specifying the `amountToOpen` parameter and paying the corresponding fee.
 
 There are two modes for opening the lootbox which can be toggled by the owner account.
 
-### Private
+### Private mode
 
 In this mode, the lootbox is only open to whitelisted addresses by calling the `privateOpen` function and providing merkle proof for the address. To generate it, see [merkletreejs](https://github.com/merkletreejs/merkletreejs).
 
 The whitelist is set on contract deployment and can be changed by calling the `setWhitelistRoot` function from the owner account. The private mode can be enabled or disabled at any time by calling the `setPrivateOpen` function from the owner account.
 
-### Public
+### Public mode
 
 When the private mode is disabled, anyone can open the lootbox by calling the `publicOpen` function. It will do the same thing as the `privateOpen` function but without the merkle proof.
 
@@ -273,39 +236,23 @@ Because the randomness is generated off-chain, the contract will not be able to 
 
 The lootbox creator can also call the `claimRewards` function and improve the user experience by transferring the rewards to the user immediately. This can be further automated by using [Chainlink Automation](https://automation.chain.link/).
 
-## Claim Rewards
+## Claim rewards
 
 The rewards for an open request can be claimed by calling the `claimRewards` function and passing the opener address as the parameter. This will transfer the rewards to the opener address.
 
-The claim function can only be called after the randomness is fulfilled. It can be checked by calling the `canClaimRewards` function and passing the opener address as the parameter.
+The claim function can only be called after the randomness is fulfilled. To check this, call the `canClaimRewards` function and pass the opener address as the parameter.
 
-Note: One address can only have one open request at a time. If you try to open the lootbox again before the previous request is fulfilled, the transaction will revert with `PendingOpenRequest` error.
+One address can only have one open request at a time. If you try to open the lootbox again before the previous request is fulfilled, the transaction will revert with `PendingOpenRequest` error.
 
-## Withdraw Funds
+## Withdraw funds
 
 At any time, the owner can withdraw funds from the collected fees by calling the `withdraw` function. By doing so the contract balance will be transferred to the owner account.
 
-## Configuration
+## Post-deployment configuration
 
-Upon deployment, some of the contract parameters can be changed by calling the following functions from the owner account.
+After deployment, you can change some contract parameters by calling the following functions from the owner account:
 
 | Function           | Description                            | Parameters           |
 | ------------------ | -------------------------------------- | -------------------- |
 | `setWhitelistRoot` | Set new merkle root for the whitelist. | `whitelistRoot`      |
-| `setPrivateOpen`   | Enable/disable public openning mode.   | `privateOpenEnabled` |
-
-### Code example
-
-The main part of this tutorial is the [`test.js` script](samples/productName/tutorialName/test.js).
-
-{/* Add the code sample to the /public/samples folder and reference it using the CodeSample component. */}
-
-https://github.com/smartcontractkit/quickstarts-lootbox/blob/main/scripts/deploy.ts
-
-<CodeSample src="samples/productName/tutorialName/test.js" />
-
-{/* Describe the important parts of the code example and what they accomplish. */}
-This example has the following components:
-
-- `const test`: An example constant storing a string.
-- `print()`: A function used to print `test` to the console.
+| `setPrivateOpen`   | Enable/disable public opening mode.    | `privateOpenEnabled` |

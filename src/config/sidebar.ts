@@ -702,6 +702,10 @@ export const SIDEBAR = {
       section: "Resources",
       contents: [
         {
+          title: "Chainlink Solution Accelerator: Lootbox",
+          url: "vrf/v2/lootbox",
+        },
+        {
           title: "Learning Resources",
           url: "getting-started/other-tutorials?parent=vrf",
         },
