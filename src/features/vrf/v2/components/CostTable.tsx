@@ -172,6 +172,7 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
       dispatch({
         type: "UPDATE_STATE",
         payload: {
+          ...initialState,
           gasPrice,
           L1GasPriceEstimate,
           decimalPlaces,
