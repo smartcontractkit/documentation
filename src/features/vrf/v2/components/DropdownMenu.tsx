@@ -41,6 +41,11 @@ export const DropDownMenu = ({ placeholder = "Select a network...", options, met
   }
 
   const matchingOptions: vrfChain[] = useMemo(() => {
+    const formattedSearchValue = searchValue.replaceAll(" ", "")
+    const splittedSearchValueArr = formattedSearchValue.split("-")
+    if (splittedSearchValueArr.length >= 2) {
+      return options
+    }
     return options.filter((chain: vrfChain) => {
       return searchValue === "" ? chain : chain.name.toLowerCase().includes(searchValue.toLowerCase())
     })
@@ -84,21 +89,20 @@ export const DropDownMenu = ({ placeholder = "Select a network...", options, met
         </div>
         <div className="dropdown-content-container">
           <div
-            className={
-              (showMenu && matchingOptions.length) || searchValue !== "" ? "dropdown-content show" : "dropdown-content"
-            }
+            className={showMenu && matchingOptions.length ? "dropdown-content show" : "dropdown-content"}
             ref={wrapperRef}
           >
             {matchingOptions &&
               matchingOptions.map((item: vrfChain, index: number) => (
                 <div className="dropdown-item-container">
                   <div
-                    className="droprown-main-menu-content"
+                    className="dropown-main-menu-content"
                     onMouseEnter={() => {
                       setShowSubMenu(index)
                     }}
                   >
-                    <a class={showMenu ? "show" : "nothing"}>{item.name}</a>
+                    <img src={item.img} width="20" height="20" />
+                    <a className={showMenu ? "show" : "nothing"}>{item.name}</a>
                   </div>
                   <div className="dropdown-sub-menu-content">
                     {showSubMenu === index &&
@@ -111,7 +115,7 @@ export const DropDownMenu = ({ placeholder = "Select a network...", options, met
                               setSelectedChain(network)
                               setSelectedMainChain(item)
                               handleSelectedChain(network, item)
-                              setShowMenu(!showMenu)
+                              setShowMenu(false)
                               setShowSubMenu(-1)
                             }}
                           >

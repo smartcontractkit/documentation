@@ -5,7 +5,8 @@ export interface network {
 
 export interface vrfChain {
   name: string
-  nets?: network[]
+  img?: string
+  nets: network[]
 }
 
 export interface vrfNetsByMethod {
@@ -17,6 +18,7 @@ export const supportedNetworks: vrfNetsByMethod = {
   subscription: [
     {
       name: "ethereum",
+      img: "/assets/chains/ethereum.svg",
       nets: [
         {
           name: "ethereum",
@@ -28,6 +30,7 @@ export const supportedNetworks: vrfNetsByMethod = {
     },
     {
       name: "BNB",
+      img: "/assets/chains/bnb-chain.svg",
       nets: [
         { name: "BNB", type: "mainnet" },
         { name: "BNB", type: "testnet" },
@@ -35,6 +38,7 @@ export const supportedNetworks: vrfNetsByMethod = {
     },
     {
       name: "Polygon",
+      img: "/assets/chains/polygon.svg",
       nets: [
         { name: "Polygon", type: "mainnet" },
         { name: "mumbai", type: "testnet" },
@@ -42,6 +46,7 @@ export const supportedNetworks: vrfNetsByMethod = {
     },
     {
       name: "Avalanche",
+      img: "/assets/chains/avalanche.svg",
       nets: [
         { name: "Avalanche", type: "mainnet" },
         { name: "fuji", type: "testnet" },
@@ -49,6 +54,7 @@ export const supportedNetworks: vrfNetsByMethod = {
     },
     {
       name: "Fantom",
+      img: "/assets/chains/fantom.svg",
       nets: [
         { name: "Fantom", type: "mainnet" },
         { name: "Fantom", type: "testnet" },
@@ -56,6 +62,7 @@ export const supportedNetworks: vrfNetsByMethod = {
     },
     {
       name: "Arbitrum",
+      img: "/assets/chains/arbitrum.svg",
       nets: [
         { name: "Arbitrum", type: "mainnet" },
         { name: "goerli", type: "testnet" },
@@ -65,6 +72,7 @@ export const supportedNetworks: vrfNetsByMethod = {
   directFunding: [
     {
       name: "ethereum",
+      img: "/assets/chains/ethereum.svg",
       nets: [
         {
           name: "ethereum",
@@ -76,6 +84,7 @@ export const supportedNetworks: vrfNetsByMethod = {
     },
     {
       name: "BNB",
+      img: "/assets/chains/bnb-chain.svg",
       nets: [
         { name: "BNB", type: "mainnet" },
         { name: "BNB", type: "testnet" },
@@ -83,6 +92,7 @@ export const supportedNetworks: vrfNetsByMethod = {
     },
     {
       name: "Polygon",
+      img: "/assets/chains/polygon.svg",
       nets: [
         { name: "Polygon", type: "mainnet" },
         { name: "mumbai", type: "testnet" },
@@ -90,6 +100,7 @@ export const supportedNetworks: vrfNetsByMethod = {
     },
     {
       name: "Avalanche",
+      img: "/assets/chains/avalanche.svg",
       nets: [
         { name: "Avalanche", type: "mainnet" },
         { name: "fuji", type: "testnet" },
@@ -97,6 +108,7 @@ export const supportedNetworks: vrfNetsByMethod = {
     },
     {
       name: "Fantom",
+      img: "/assets/chains/fantom.svg",
       nets: [
         { name: "Fantom", type: "mainnet" },
         { name: "Fantom", type: "testnet" },
@@ -104,6 +116,7 @@ export const supportedNetworks: vrfNetsByMethod = {
     },
     {
       name: "Arbitrum",
+      img: "/assets/chains/arbitrum.svg",
       nets: [
         { name: "Arbitrum", type: "mainnet" },
         { name: "goerli", type: "testnet" },

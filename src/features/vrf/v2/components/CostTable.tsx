@@ -294,7 +294,14 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
     const { target } = e
     if (target instanceof HTMLInputElement) {
       const val = target.value
-      dispatch({ type: "SET_CALLBACK_GAS", payload: parseInt(val) })
+      if (parseInt(val) >= state.callbackGasLimit) {
+        dispatch({
+          type: "SET_CALLBACK_GAS",
+          payload: state.callbackGasLimit,
+        })
+      } else {
+        dispatch({ type: "SET_CALLBACK_GAS", payload: parseInt(val) })
+      }
     }
   }
 
@@ -319,15 +326,20 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
     if (state.total === "0.00") {
       return state.total
     }
-    let idx = 2
+    let idx = state.total.indexOf(".") + 1
     let countNonZeroDigits = 0
-    let res = parseInt(state.total) + "."
+    let res = parseInt(state.total).toString().includes(".")
+      ? parseInt(state.total).toString()
+      : parseInt(state.total).toString() + "."
     while (countNonZeroDigits < 1) {
       if (state.total[idx] !== "0") {
         countNonZeroDigits++
       }
       res += state.total[idx]
       idx++
+    }
+    if (idx === state.total.length) {
+      return res
     }
     if (parseInt(state.total[idx + 1]) >= 5) {
       const digitPlusOne = parseInt(state.total[idx]) + 1
@@ -362,6 +374,7 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
                 id="callback-gas-value"
                 type="number"
                 max={state.callbackGasLimit}
+                value={state.callbackGas}
                 min={0}
                 onChange={handleChangeCallback}
               />
