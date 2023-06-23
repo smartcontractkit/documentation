@@ -388,7 +388,7 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
               </>
             ) : (
               <>
-                <td>Gas Lane chosen</td>
+                <td>Gas lane (Hash)</td>
                 <td>
                   {state.gasLaneList &&
                     state.gasLaneList.map((gasLane: number, index: number) => (

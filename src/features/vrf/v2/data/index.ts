@@ -17,109 +17,103 @@ export interface vrfNetsByMethod {
 export const supportedNetworks: vrfNetsByMethod = {
   subscription: [
     {
-      name: "ethereum",
+      name: "Ethereum",
       img: "/assets/chains/ethereum.svg",
       nets: [
-        {
-          name: "ethereum",
-          type: "mainnet",
-        },
-        { name: "goerli", type: "testnet" },
-        { name: "sepolia", type: "testnet" },
+        { name: "Mainnet", type: "mainnet" },
+        { name: "Goerli", type: "testnet" },
+        { name: "Sepolia", type: "testnet" },
       ],
     },
     {
-      name: "BNB",
+      name: "BNB Chain",
       img: "/assets/chains/bnb-chain.svg",
       nets: [
-        { name: "BNB", type: "mainnet" },
-        { name: "BNB", type: "testnet" },
+        { name: "Mainnet", type: "mainnet" },
+        { name: "Testnet", type: "testnet" },
       ],
     },
     {
       name: "Polygon",
       img: "/assets/chains/polygon.svg",
       nets: [
-        { name: "Polygon", type: "mainnet" },
-        { name: "mumbai", type: "testnet" },
+        { name: "Mainnet", type: "mainnet" },
+        { name: "Mumbai", type: "testnet" },
       ],
     },
     {
       name: "Avalanche",
       img: "/assets/chains/avalanche.svg",
       nets: [
-        { name: "Avalanche", type: "mainnet" },
-        { name: "fuji", type: "testnet" },
+        { name: "Mainnet", type: "mainnet" },
+        { name: "Fuji", type: "testnet" },
       ],
     },
     {
       name: "Fantom",
       img: "/assets/chains/fantom.svg",
       nets: [
-        { name: "Fantom", type: "mainnet" },
-        { name: "Fantom", type: "testnet" },
+        { name: "Mainnet", type: "mainnet" },
+        { name: "Testnet", type: "testnet" },
       ],
     },
     {
       name: "Arbitrum",
       img: "/assets/chains/arbitrum.svg",
       nets: [
-        { name: "Arbitrum", type: "mainnet" },
-        { name: "goerli", type: "testnet" },
+        { name: "Mainnet", type: "mainnet" },
+        { name: "Goerli", type: "testnet" },
       ],
     },
   ],
   directFunding: [
     {
-      name: "ethereum",
+      name: "Ethereum",
       img: "/assets/chains/ethereum.svg",
       nets: [
-        {
-          name: "ethereum",
-          type: "mainnet",
-        },
-        { name: "goerli", type: "testnet" },
-        { name: "sepolia", type: "testnet" },
+        { name: "Mainnet", type: "mainnet" },
+        { name: "Goerli", type: "testnet" },
+        { name: "Sepolia", type: "testnet" },
       ],
     },
     {
-      name: "BNB",
+      name: "BNB Chain",
       img: "/assets/chains/bnb-chain.svg",
       nets: [
-        { name: "BNB", type: "mainnet" },
-        { name: "BNB", type: "testnet" },
+        { name: "Mainnet", type: "mainnet" },
+        { name: "Testnet", type: "testnet" },
       ],
     },
     {
       name: "Polygon",
       img: "/assets/chains/polygon.svg",
       nets: [
-        { name: "Polygon", type: "mainnet" },
-        { name: "mumbai", type: "testnet" },
+        { name: "Mainnet", type: "mainnet" },
+        { name: "Mumbai", type: "testnet" },
       ],
     },
     {
       name: "Avalanche",
       img: "/assets/chains/avalanche.svg",
       nets: [
-        { name: "Avalanche", type: "mainnet" },
-        { name: "fuji", type: "testnet" },
+        { name: "Mainnet", type: "mainnet" },
+        { name: "Fuji", type: "testnet" },
       ],
     },
     {
       name: "Fantom",
       img: "/assets/chains/fantom.svg",
       nets: [
-        { name: "Fantom", type: "mainnet" },
-        { name: "Fantom", type: "testnet" },
+        { name: "Mainnet", type: "mainnet" },
+        { name: "Testnet", type: "testnet" },
       ],
     },
     {
       name: "Arbitrum",
       img: "/assets/chains/arbitrum.svg",
       nets: [
-        { name: "Arbitrum", type: "mainnet" },
-        { name: "goerli", type: "testnet" },
+        { name: "Mainnet", type: "mainnet" },
+        { name: "Goerli", type: "testnet" },
       ],
     },
   ],
