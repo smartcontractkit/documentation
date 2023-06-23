@@ -104,12 +104,13 @@ export const DropDownMenu = ({ placeholder = "Select a network...", options, met
                     <img src={item.img} width="20" height="20" />
                     <a className={showMenu ? "show" : "nothing"}>{item.name}</a>
                   </div>
-                  <div className="dropdown-sub-menu-content">
+                  
+                    <div className="subdropdown-menu-container">
                     {showSubMenu === index &&
                       item.nets &&
                       item.nets.length > 0 &&
                       item.nets.map((network: network) => (
-                        <div className="subdropdown-menu-container">
+                        <div className="subdropdown-menu-item">
                           <a
                             onClick={() => {
                               setSelectedChain(network)
@@ -123,7 +124,7 @@ export const DropDownMenu = ({ placeholder = "Select a network...", options, met
                           </a>
                         </div>
                       ))}
-                  </div>
+                    </div>
                 </div>
               ))}
           </div>
