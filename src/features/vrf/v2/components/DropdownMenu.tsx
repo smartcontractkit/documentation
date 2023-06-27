@@ -74,7 +74,7 @@ export const DropDownMenu = ({ placeholder = "Select a network...", options, met
   useOutsideAlerter(wrapperRef)
 
   return (
-    <div className="container">
+    <div className="main-container">
       <div className="dropdown">
         <div className="dropdown-btn-container">
           <input
@@ -129,11 +129,7 @@ export const DropDownMenu = ({ placeholder = "Select a network...", options, met
           </div>
         </div>
       </div>
-      <div>
-        {selectedNet !== placeholder && (
-          <CostTable method={method} mainChain={selectedMainChain} chain={selectedChain} />
-        )}
-      </div>
+      {selectedNet !== placeholder && <CostTable method={method} mainChain={selectedMainChain} chain={selectedChain} />}
     </div>
   )
 }

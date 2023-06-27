@@ -134,7 +134,7 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
   useEffect(() => {
     const mainChainName = mainChain.name.toLowerCase()
     const networkName = chain.name.toLowerCase()
-    const cacheKey = `${mainChainName}-${networkName === mainChainName ? chain.type : networkName}`
+    const cacheKey = `${mainChainName}-${networkName === mainChainName ? chain.type : networkName}-${method}`
     dispatch({ type: "SET_LOADING", payload: true })
     const getDataResponse = async (): Promise<dataResponse> => {
       if (cache[cacheKey] && cache[cacheKey].latestCacheUpdate - Date.now() < CACHE_EXPIRY_TIME) {
@@ -352,7 +352,7 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
   }
 
   if (state.isLoading) {
-    return <p>Data is fetched. Please wait a moment...</p>
+    return <p className="loading-text">Data is fetched. Please wait a moment...</p>
   } else {
     return (
       <div className="table-container">
@@ -362,14 +362,13 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
             <th>Value</th>
           </tr>
           <tr>
-            {/* <td>Gas price (current is {parseFloat(state.gasPrice).toFixed(2).toString()} gwei)</td> */}
             <td>Gas price (current is {getGasPrice()} gwei)</td>
             <td>
               <input type="number" id="gas" value={state.currentGasPrice} onChange={handleChangeGas} />
             </td>
           </tr>
           <tr>
-            <td>Callback gas chosen ( max. {utils.commify(state.callbackGasLimit)})</td>
+            <td>Callback gas chosen (max. {utils.commify(state.callbackGasLimit)})</td>
             <td>
               <input
                 id="callback-gas-value"
