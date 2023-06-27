@@ -131,33 +131,40 @@ const cache: Cache = {}
 
 export const CostTable = ({ mainChain, chain, method }: Props) => {
   const [state, dispatch] = useReducer(reducer, initialState)
-  useEffect(() => {
-    const mainChainName = mainChain.name.toLowerCase()
-    const networkName = chain.name.toLowerCase()
-    const cacheKey = `${mainChainName}-${networkName === mainChainName ? chain.type : networkName}-${method}`
-    dispatch({ type: "SET_LOADING", payload: true })
-    const getDataResponse = async (): Promise<dataResponse> => {
-      if (cache[cacheKey] && cache[cacheKey].latestCacheUpdate - Date.now() < CACHE_EXPIRY_TIME) {
-        return cache[cacheKey].data
-      }
-      const response = await fetch(
-        `https://vrf.chain.link/api/calculator?networkName=${mainChain.name.toLowerCase()}&networkType=${
-          chain.name.toLowerCase() === mainChain.name.toLowerCase()
-            ? chain.type.toLowerCase()
-            : chain.name.toLowerCase()
-        }&method=${method}`,
-        { method: "GET" }
-      )
 
-      const json: dataResponse = await response.json()
-      cache[cacheKey] = {
-        data: json,
-        latestCacheUpdate: Date.now(),
-      }
-      return json
+  const getDataResponse = async (mainChainName: string, networkName: string): Promise<dataResponse> => {
+    const cacheKey = `${mainChainName}-${networkName === mainChainName ? chain.type : networkName}-${method}`
+    if (cache[cacheKey] && cache[cacheKey].latestCacheUpdate - Date.now() < CACHE_EXPIRY_TIME) {
+      return cache[cacheKey].data
     }
+
+    const response = await fetch(
+      `https://vrf.chain.link/api/calculator?networkName=${mainChainName}&networkType=${
+        networkName === mainChainName ? chain.type.toLowerCase() : networkName
+      }&method=${method}`,
+      { method: "GET" }
+    )
+
+    const json: dataResponse = await response.json()
+    cache[cacheKey] = {
+      data: json,
+      latestCacheUpdate: Date.now(),
+    }
+    return json
+  }
+
+  useEffect(() => {
+    const mainChainName =
+      mainChain.name === "BNB Chain"
+        ? mainChain.name.replace("Chain", "").replace(" ", "").toLowerCase()
+        : mainChain.name.toLowerCase()
+    const networkName =
+      chain.name === "BNB Chain"
+        ? chain.name.replace("Chain", "").replace(" ", "").toLowerCase()
+        : chain.name.toLowerCase()
+    dispatch({ type: "SET_LOADING", payload: true })
     const fillInputs = async () => {
-      const responseJson: dataResponse = await getDataResponse()
+      const responseJson: dataResponse = await getDataResponse(mainChainName, networkName)
       const {
         gasPrice,
         L1GasPriceEstimate,
@@ -241,7 +248,7 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
     switch (mainChainName) {
       case "ethereum":
         return `${mainChainName}-${chain.type}`
-      case "bnb":
+      case "bnb chain":
         return `${mainChainName}-chain${chain.type === "testnet" ? "-" + chain.type : ""}`
       case "polygon":
         return `${mainChainName}-matic-${chain.type === "testnet" ? chain.name + "-" + chain.type : chain.type}`
