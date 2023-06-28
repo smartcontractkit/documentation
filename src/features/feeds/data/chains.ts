@@ -294,7 +294,7 @@ export const CHAINS: Chain[] = [
     networks: [
       {
         name: "Celo mainnet",
-        explorerUrl: "https://explorer.celo.org/alfajores/%s",
+        explorerUrl: "https://explorer.celo.org/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-celo-mainnet.json",
       },
