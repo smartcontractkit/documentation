@@ -289,7 +289,7 @@ export const CHAINS: Chain[] = [
     label: "Celo",
     title: "Celo Data Feeds",
     img: "/assets/chains/celo.svg",
-    networkStatusUrl: "https://https://explorer.celo.org/alfajores",
+    networkStatusUrl: "https://stats.celo.org/",
     tags: ["default"],
     networks: [
       {
