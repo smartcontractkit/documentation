@@ -285,6 +285,28 @@ export const CHAINS: Chain[] = [
     ],
   },
   {
+    page: "celo",
+    label: "Celo",
+    title: "Celo Data Feeds",
+    img: "/assets/chains/celo.svg",
+    networkStatusUrl: "https://https://explorer.celo.org/alfajores",
+    tags: ["default"],
+    networks: [
+      {
+        name: "Celo mainnet",
+        explorerUrl: "https://explorer.celo.org/address/%s",
+        networkType: "mainnet",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-celo-mainnet.json",
+      },
+      {
+        name: "Celo Alfajores testnet",
+        explorerUrl: "https://explorer.celo.org/alfajores/address/%s",
+        networkType: "testnet",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-celo-testnet-alfajores.json",
+      },
+    ],
+  },
+  {
     page: "starknet",
     label: "StarkNet",
     title: "StarkNet Data Feeds",
