@@ -266,6 +266,15 @@ declare module "astro:content" {
         data: InferEntrySchema<"architecture-overview">
       } & { render(): Render[".mdx"] }
     }
+    "blockchain-integrations-framework": {
+      "index.mdx": {
+        id: "index.mdx"
+        slug: "index"
+        body: string
+        collection: "blockchain-integrations-framework"
+        data: InferEntrySchema<"blockchain-integrations-framework">
+      } & { render(): Render[".mdx"] }
+    }
   }
 
   type DataEntryMap = {}

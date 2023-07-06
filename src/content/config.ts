@@ -46,9 +46,21 @@ const architectureOverviewCollection = defineCollection({
     })
     .strict(),
 })
+const bifCollection = defineCollection({
+  type: "content",
+  schema: z
+    .object({
+      section: z.string(),
+      date: z.string(),
+      title: z.string(),
+      isIndex: z.boolean(),
+    })
+    .strict(),
+})
 
 // Export a single `collections` object to register collections
 export const collections = {
   "any-api": anyApiCollection,
   "architecture-overview": architectureOverviewCollection,
+  "blockchain-integrations-framework": bifCollection,
 }
