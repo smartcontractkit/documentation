@@ -275,6 +275,141 @@ declare module "astro:content" {
         data: InferEntrySchema<"blockchain-integrations-framework">
       } & { render(): Render[".mdx"] }
     }
+    "chainlink-automation": {
+      "automation-economics.mdx": {
+        id: "automation-economics.mdx"
+        slug: "automation-economics"
+        body: string
+        collection: "chainlink-automation"
+        data: InferEntrySchema<"chainlink-automation">
+      } & { render(): Render[".mdx"] }
+      "automation-release-notes.mdx": {
+        id: "automation-release-notes.mdx"
+        slug: "automation-release-notes"
+        body: string
+        collection: "chainlink-automation"
+        data: InferEntrySchema<"chainlink-automation">
+      } & { render(): Render[".mdx"] }
+      "compatible-contract-best-practice.mdx": {
+        id: "compatible-contract-best-practice.mdx"
+        slug: "compatible-contract-best-practice"
+        body: string
+        collection: "chainlink-automation"
+        data: InferEntrySchema<"chainlink-automation">
+      } & { render(): Render[".mdx"] }
+      "compatible-contracts.mdx": {
+        id: "compatible-contracts.mdx"
+        slug: "compatible-contracts"
+        body: string
+        collection: "chainlink-automation"
+        data: InferEntrySchema<"chainlink-automation">
+      } & { render(): Render[".mdx"] }
+      "faqs.mdx": {
+        id: "faqs.mdx"
+        slug: "faqs"
+        body: string
+        collection: "chainlink-automation"
+        data: InferEntrySchema<"chainlink-automation">
+      } & { render(): Render[".mdx"] }
+      "flexible-upkeeps.mdx": {
+        id: "flexible-upkeeps.mdx"
+        slug: "flexible-upkeeps"
+        body: string
+        collection: "chainlink-automation"
+        data: InferEntrySchema<"chainlink-automation">
+      } & { render(): Render[".mdx"] }
+      "introduction.mdx": {
+        id: "introduction.mdx"
+        slug: "introduction"
+        body: string
+        collection: "chainlink-automation"
+        data: InferEntrySchema<"chainlink-automation">
+      } & { render(): Render[".mdx"] }
+      "job-scheduler.mdx": {
+        id: "job-scheduler.mdx"
+        slug: "job-scheduler"
+        body: string
+        collection: "chainlink-automation"
+        data: InferEntrySchema<"chainlink-automation">
+      } & { render(): Render[".mdx"] }
+      "manage-upkeeps.mdx": {
+        id: "manage-upkeeps.mdx"
+        slug: "manage-upkeeps"
+        body: string
+        collection: "chainlink-automation"
+        data: InferEntrySchema<"chainlink-automation">
+      } & { render(): Render[".mdx"] }
+      "overview.mdx": {
+        id: "overview.mdx"
+        slug: "overview"
+        body: string
+        collection: "chainlink-automation"
+        data: InferEntrySchema<"chainlink-automation">
+      } & { render(): Render[".mdx"] }
+      "register-upkeep.mdx": {
+        id: "register-upkeep.mdx"
+        slug: "register-upkeep"
+        body: string
+        collection: "chainlink-automation"
+        data: InferEntrySchema<"chainlink-automation">
+      } & { render(): Render[".mdx"] }
+      "supported-networks.mdx": {
+        id: "supported-networks.mdx"
+        slug: "supported-networks"
+        body: string
+        collection: "chainlink-automation"
+        data: InferEntrySchema<"chainlink-automation">
+      } & { render(): Render[".mdx"] }
+      "tutorials/batch-nft.mdx": {
+        id: "tutorials/batch-nft.mdx"
+        slug: "tutorials/batch-nft"
+        body: string
+        collection: "chainlink-automation"
+        data: InferEntrySchema<"chainlink-automation">
+      } & { render(): Render[".mdx"] }
+      "tutorials/counting-dnft.mdx": {
+        id: "tutorials/counting-dnft.mdx"
+        slug: "tutorials/counting-dnft"
+        body: string
+        collection: "chainlink-automation"
+        data: InferEntrySchema<"chainlink-automation">
+      } & { render(): Render[".mdx"] }
+      "tutorials/dynamic-nft.mdx": {
+        id: "tutorials/dynamic-nft.mdx"
+        slug: "tutorials/dynamic-nft"
+        body: string
+        collection: "chainlink-automation"
+        data: InferEntrySchema<"chainlink-automation">
+      } & { render(): Render[".mdx"] }
+      "tutorials/eth-balance.mdx": {
+        id: "tutorials/eth-balance.mdx"
+        slug: "tutorials/eth-balance"
+        body: string
+        collection: "chainlink-automation"
+        data: InferEntrySchema<"chainlink-automation">
+      } & { render(): Render[".mdx"] }
+      "tutorials/vault-harvester.mdx": {
+        id: "tutorials/vault-harvester.mdx"
+        slug: "tutorials/vault-harvester"
+        body: string
+        collection: "chainlink-automation"
+        data: InferEntrySchema<"chainlink-automation">
+      } & { render(): Render[".mdx"] }
+      "tutorials/vrf-sub-monitor.mdx": {
+        id: "tutorials/vrf-sub-monitor.mdx"
+        slug: "tutorials/vrf-sub-monitor"
+        body: string
+        collection: "chainlink-automation"
+        data: InferEntrySchema<"chainlink-automation">
+      } & { render(): Render[".mdx"] }
+      "util-overview.mdx": {
+        id: "util-overview.mdx"
+        slug: "util-overview"
+        body: string
+        collection: "chainlink-automation"
+        data: InferEntrySchema<"chainlink-automation">
+      } & { render(): Render[".mdx"] }
+    }
   }
 
   type DataEntryMap = {}
