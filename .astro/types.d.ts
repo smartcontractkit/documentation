@@ -164,7 +164,108 @@ declare module "astro:content" {
   >
 
   type ContentEntryMap = {
-    "any-api": {}
+    "any-api": {
+      "api-reference.mdx": {
+        id: "api-reference.mdx"
+        slug: "api-reference"
+        body: string
+        collection: "any-api"
+        data: InferEntrySchema<"any-api">
+      } & { render(): Render[".mdx"] }
+      "find-oracle.mdx": {
+        id: "find-oracle.mdx"
+        slug: "find-oracle"
+        body: string
+        collection: "any-api"
+        data: InferEntrySchema<"any-api">
+      } & { render(): Render[".mdx"] }
+      "get-request/examples/array-response.mdx": {
+        id: "get-request/examples/array-response.mdx"
+        slug: "get-request/examples/array-response"
+        body: string
+        collection: "any-api"
+        data: InferEntrySchema<"any-api">
+      } & { render(): Render[".mdx"] }
+      "get-request/examples/existing-job-request.mdx": {
+        id: "get-request/examples/existing-job-request.mdx"
+        slug: "get-request/examples/existing-job-request"
+        body: string
+        collection: "any-api"
+        data: InferEntrySchema<"any-api">
+      } & { render(): Render[".mdx"] }
+      "get-request/examples/large-responses.mdx": {
+        id: "get-request/examples/large-responses.mdx"
+        slug: "get-request/examples/large-responses"
+        body: string
+        collection: "any-api"
+        data: InferEntrySchema<"any-api">
+      } & { render(): Render[".mdx"] }
+      "get-request/examples/multi-variable-responses.mdx": {
+        id: "get-request/examples/multi-variable-responses.mdx"
+        slug: "get-request/examples/multi-variable-responses"
+        body: string
+        collection: "any-api"
+        data: InferEntrySchema<"any-api">
+      } & { render(): Render[".mdx"] }
+      "get-request/examples/single-word-response.mdx": {
+        id: "get-request/examples/single-word-response.mdx"
+        slug: "get-request/examples/single-word-response"
+        body: string
+        collection: "any-api"
+        data: InferEntrySchema<"any-api">
+      } & { render(): Render[".mdx"] }
+      "get-request/introduction.mdx": {
+        id: "get-request/introduction.mdx"
+        slug: "get-request/introduction"
+        body: string
+        collection: "any-api"
+        data: InferEntrySchema<"any-api">
+      } & { render(): Render[".mdx"] }
+      "introduction.mdx": {
+        id: "introduction.mdx"
+        slug: "introduction"
+        body: string
+        collection: "any-api"
+        data: InferEntrySchema<"any-api">
+      } & { render(): Render[".mdx"] }
+      "testnet-oracles.mdx": {
+        id: "testnet-oracles.mdx"
+        slug: "testnet-oracles"
+        body: string
+        collection: "any-api"
+        data: InferEntrySchema<"any-api">
+      } & { render(): Render[".mdx"] }
+    }
+    "architecture-overview": {
+      "architecture-decentralized-model.mdx": {
+        id: "architecture-decentralized-model.mdx"
+        slug: "architecture-decentralized-model"
+        body: string
+        collection: "architecture-overview"
+        data: InferEntrySchema<"architecture-overview">
+      } & { render(): Render[".mdx"] }
+      "architecture-overview.mdx": {
+        id: "architecture-overview.mdx"
+        slug: "architecture-overview"
+        body: string
+        collection: "architecture-overview"
+        data: InferEntrySchema<"architecture-overview">
+      } & { render(): Render[".mdx"] }
+      "architecture-request-model.mdx": {
+        id: "architecture-request-model.mdx"
+        slug: "architecture-request-model"
+        body: string
+        collection: "architecture-overview"
+        data: InferEntrySchema<"architecture-overview">
+      } & { render(): Render[".mdx"] }
+      "off-chain-reporting.mdx": {
+        id: "off-chain-reporting.mdx"
+        slug: "off-chain-reporting"
+        body: string
+        collection: "architecture-overview"
+        data: InferEntrySchema<"architecture-overview">
+      } & { render(): Render[".mdx"] }
+    }
   }
 
   type DataEntryMap = {}
