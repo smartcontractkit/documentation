@@ -410,6 +410,155 @@ declare module "astro:content" {
         data: InferEntrySchema<"chainlink-automation">
       } & { render(): Render[".mdx"] }
     }
+    "chainlink-functions": {
+      "api-reference/Functions.mdx": {
+        id: "api-reference/Functions.mdx"
+        slug: "api-reference/functions"
+        body: string
+        collection: "chainlink-functions"
+        data: InferEntrySchema<"chainlink-functions">
+      } & { render(): Render[".mdx"] }
+      "api-reference/FunctionsClient.mdx": {
+        id: "api-reference/FunctionsClient.mdx"
+        slug: "api-reference/functionsclient"
+        body: string
+        collection: "chainlink-functions"
+        data: InferEntrySchema<"chainlink-functions">
+      } & { render(): Render[".mdx"] }
+      "getting-started.mdx": {
+        id: "getting-started.mdx"
+        slug: "getting-started"
+        body: string
+        collection: "chainlink-functions"
+        data: InferEntrySchema<"chainlink-functions">
+      } & { render(): Render[".mdx"] }
+      "index.mdx": {
+        id: "index.mdx"
+        slug: "index"
+        body: string
+        collection: "chainlink-functions"
+        data: InferEntrySchema<"chainlink-functions">
+      } & { render(): Render[".mdx"] }
+      "resources/add-functions-to-projects.mdx": {
+        id: "resources/add-functions-to-projects.mdx"
+        slug: "resources/add-functions-to-projects"
+        body: string
+        collection: "chainlink-functions"
+        data: InferEntrySchema<"chainlink-functions">
+      } & { render(): Render[".mdx"] }
+      "resources/architecture.mdx": {
+        id: "resources/architecture.mdx"
+        slug: "resources/architecture"
+        body: string
+        collection: "chainlink-functions"
+        data: InferEntrySchema<"chainlink-functions">
+      } & { render(): Render[".mdx"] }
+      "resources/billing.mdx": {
+        id: "resources/billing.mdx"
+        slug: "resources/billing"
+        body: string
+        collection: "chainlink-functions"
+        data: InferEntrySchema<"chainlink-functions">
+      } & { render(): Render[".mdx"] }
+      "resources/concepts.mdx": {
+        id: "resources/concepts.mdx"
+        slug: "resources/concepts"
+        body: string
+        collection: "chainlink-functions"
+        data: InferEntrySchema<"chainlink-functions">
+      } & { render(): Render[".mdx"] }
+      "resources/index.mdx": {
+        id: "resources/index.mdx"
+        slug: "resources"
+        body: string
+        collection: "chainlink-functions"
+        data: InferEntrySchema<"chainlink-functions">
+      } & { render(): Render[".mdx"] }
+      "resources/service-limits.mdx": {
+        id: "resources/service-limits.mdx"
+        slug: "resources/service-limits"
+        body: string
+        collection: "chainlink-functions"
+        data: InferEntrySchema<"chainlink-functions">
+      } & { render(): Render[".mdx"] }
+      "resources/subscriptions.mdx": {
+        id: "resources/subscriptions.mdx"
+        slug: "resources/subscriptions"
+        body: string
+        collection: "chainlink-functions"
+        data: InferEntrySchema<"chainlink-functions">
+      } & { render(): Render[".mdx"] }
+      "supported-networks.mdx": {
+        id: "supported-networks.mdx"
+        slug: "supported-networks"
+        body: string
+        collection: "chainlink-functions"
+        data: InferEntrySchema<"chainlink-functions">
+      } & { render(): Render[".mdx"] }
+      "tutorials/api-custom-response.mdx": {
+        id: "tutorials/api-custom-response.mdx"
+        slug: "tutorials/api-custom-response"
+        body: string
+        collection: "chainlink-functions"
+        data: InferEntrySchema<"chainlink-functions">
+      } & { render(): Render[".mdx"] }
+      "tutorials/api-multiple-calls.mdx": {
+        id: "tutorials/api-multiple-calls.mdx"
+        slug: "tutorials/api-multiple-calls"
+        body: string
+        collection: "chainlink-functions"
+        data: InferEntrySchema<"chainlink-functions">
+      } & { render(): Render[".mdx"] }
+      "tutorials/api-post-data.mdx": {
+        id: "tutorials/api-post-data.mdx"
+        slug: "tutorials/api-post-data"
+        body: string
+        collection: "chainlink-functions"
+        data: InferEntrySchema<"chainlink-functions">
+      } & { render(): Render[".mdx"] }
+      "tutorials/api-query-parameters.mdx": {
+        id: "tutorials/api-query-parameters.mdx"
+        slug: "tutorials/api-query-parameters"
+        body: string
+        collection: "chainlink-functions"
+        data: InferEntrySchema<"chainlink-functions">
+      } & { render(): Render[".mdx"] }
+      "tutorials/api-use-secrets-offchain.mdx": {
+        id: "tutorials/api-use-secrets-offchain.mdx"
+        slug: "tutorials/api-use-secrets-offchain"
+        body: string
+        collection: "chainlink-functions"
+        data: InferEntrySchema<"chainlink-functions">
+      } & { render(): Render[".mdx"] }
+      "tutorials/api-use-secrets.mdx": {
+        id: "tutorials/api-use-secrets.mdx"
+        slug: "tutorials/api-use-secrets"
+        body: string
+        collection: "chainlink-functions"
+        data: InferEntrySchema<"chainlink-functions">
+      } & { render(): Render[".mdx"] }
+      "tutorials/automate-functions.mdx": {
+        id: "tutorials/automate-functions.mdx"
+        slug: "tutorials/automate-functions"
+        body: string
+        collection: "chainlink-functions"
+        data: InferEntrySchema<"chainlink-functions">
+      } & { render(): Render[".mdx"] }
+      "tutorials/index.mdx": {
+        id: "tutorials/index.mdx"
+        slug: "tutorials"
+        body: string
+        collection: "chainlink-functions"
+        data: InferEntrySchema<"chainlink-functions">
+      } & { render(): Render[".mdx"] }
+      "tutorials/simple-computation.mdx": {
+        id: "tutorials/simple-computation.mdx"
+        slug: "tutorials/simple-computation"
+        body: string
+        collection: "chainlink-functions"
+        data: InferEntrySchema<"chainlink-functions">
+      } & { render(): Render[".mdx"] }
+    }
   }
 
   type DataEntryMap = {}

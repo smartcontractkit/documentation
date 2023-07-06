@@ -69,10 +69,28 @@ const chainlinkAutomationCollection = defineCollection({
     })
     .strict(),
 })
+const chainlinkFunctionsCollection = defineCollection({
+  type: "content",
+  schema: z
+    .object({
+      section: z.string(),
+      date: z.string(),
+      title: z.string(),
+      metadata: z
+        .object({
+          linkToWallet: z.boolean(),
+        })
+        .optional(),
+      whatsnext: z.object({}).optional(),
+      isIndex: z.boolean().optional(),
+    })
+    .strict(),
+})
 // Export a single `collections` object to register collections
 export const collections = {
   "any-api": anyApiCollection,
   "architecture-overview": architectureOverviewCollection,
   "blockchain-integrations-framework": bifCollection,
   "chainlink-automation": chainlinkAutomationCollection,
+  "chainlink-functions": chainlinkFunctionsCollection,
 }
