@@ -105,6 +105,28 @@ const chainlinkNodesCollection = defineCollection({
     .strict(),
 })
 
+const dataFeedsCollection = defineCollection({
+  type: "content",
+  schema: z
+    .object({
+      section: z.string(),
+      date: z.string(),
+      title: z.string(),
+      permalink: z.string().optional(),
+      isIndex: z.boolean().optional(),
+      excerpt: z.string().optional(),
+      datafeedtype: z.string().optional(),
+      whatsnext: z.record(z.string(), z.string()).optional(),
+      metadata: z
+        .object({
+          title: z.string().optional(),
+          description: z.string(),
+        })
+        .optional(),
+    })
+    .strict(),
+})
+
 // Export a single `collections` object to register collections
 export const collections = {
   "any-api": anyApiCollection,
@@ -113,4 +135,5 @@ export const collections = {
   "chainlink-automation": chainlinkAutomationCollection,
   "chainlink-functions": chainlinkFunctionsCollection,
   "chainlink-nodes": chainlinkNodesCollection,
+  "data-feeds": dataFeedsCollection,
 }
