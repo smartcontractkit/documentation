@@ -1053,6 +1053,50 @@ declare module "astro:content" {
         data: InferEntrySchema<"data-feeds">
       } & { render(): Render[".mdx"] }
     }
+    "getting-started": {
+      "advanced-tutorial.mdx": {
+        id: "advanced-tutorial.mdx"
+        slug: "advanced-tutorial"
+        body: string
+        collection: "getting-started"
+        data: InferEntrySchema<"getting-started">
+      } & { render(): Render[".mdx"] }
+      "conceptual-overview.mdx": {
+        id: "conceptual-overview.mdx"
+        slug: "conceptual-overview"
+        body: string
+        collection: "getting-started"
+        data: InferEntrySchema<"getting-started">
+      } & { render(): Render[".mdx"] }
+      "consuming-data-feeds.mdx": {
+        id: "consuming-data-feeds.mdx"
+        slug: "consuming-data-feeds"
+        body: string
+        collection: "getting-started"
+        data: InferEntrySchema<"getting-started">
+      } & { render(): Render[".mdx"] }
+      "deploy-your-first-contract.mdx": {
+        id: "deploy-your-first-contract.mdx"
+        slug: "deploy-your-first-contract"
+        body: string
+        collection: "getting-started"
+        data: InferEntrySchema<"getting-started">
+      } & { render(): Render[".mdx"] }
+      "intermediates-tutorial.mdx": {
+        id: "intermediates-tutorial.mdx"
+        slug: "intermediates-tutorial"
+        body: string
+        collection: "getting-started"
+        data: InferEntrySchema<"getting-started">
+      } & { render(): Render[".mdx"] }
+      "other-tutorials.mdx": {
+        id: "other-tutorials.mdx"
+        slug: "other-tutorials"
+        body: string
+        collection: "getting-started"
+        data: InferEntrySchema<"getting-started">
+      } & { render(): Render[".mdx"] }
+    }
   }
 
   type DataEntryMap = {}

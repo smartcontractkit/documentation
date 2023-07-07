@@ -127,6 +127,29 @@ const dataFeedsCollection = defineCollection({
     .strict(),
 })
 
+const gettingStartedCollection = defineCollection({
+  type: "content",
+  schema: z
+    .object({
+      section: z.string(),
+      date: z.string(),
+      title: z.string(),
+      permalink: z.string().optional(),
+      excerpt: z.string().optional(),
+      whatsnext: z.record(z.string(), z.string()).optional(),
+      metadata: z
+        .object({
+          title: z.string().optional(),
+          description: z.string().optional(),
+          image: z.object({
+            0: z.string(),
+          }),
+        })
+        .optional(),
+    })
+    .strict(),
+})
+
 // Export a single `collections` object to register collections
 export const collections = {
   "any-api": anyApiCollection,
@@ -136,4 +159,5 @@ export const collections = {
   "chainlink-functions": chainlinkFunctionsCollection,
   "chainlink-nodes": chainlinkNodesCollection,
   "data-feeds": dataFeedsCollection,
+  "getting-started": gettingStartedCollection,
 }
