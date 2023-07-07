@@ -10,7 +10,7 @@ const anyApiCollection = defineCollection({
       title: z.string(),
       isMdx: z.boolean(),
       permalink: z.string(),
-      whatsnext: z.object({}).optional(),
+      whatsnext: z.record(z.string(), z.string()).optional(),
       metadata: z
         .object({
           title: z.string(),
@@ -31,7 +31,7 @@ const architectureOverviewCollection = defineCollection({
       date: z.string(),
       title: z.string(),
       permalink: z.string(),
-      whatsnext: z.object({}).optional(),
+      whatsnext: z.record(z.string(), z.string()).optional(),
       metadata: z
         .object({
           title: z.string().optional(),
@@ -64,7 +64,7 @@ const chainlinkAutomationCollection = defineCollection({
       section: z.string(),
       date: z.string(),
       title: z.string(),
-      whatsnext: z.object({}).optional(),
+      whatsnext: z.record(z.string(), z.string()).optional(),
       isMdx: z.boolean().optional(),
     })
     .strict(),
@@ -81,11 +81,30 @@ const chainlinkFunctionsCollection = defineCollection({
           linkToWallet: z.boolean(),
         })
         .optional(),
-      whatsnext: z.object({}).optional(),
+      whatsnext: z.record(z.string(), z.string()).optional(),
       isIndex: z.boolean().optional(),
     })
     .strict(),
 })
+const chainlinkNodesCollection = defineCollection({
+  type: "content",
+  schema: z
+    .object({
+      section: z.string(),
+      date: z.string(),
+      title: z.string(),
+      permalink: z.string().optional(),
+      whatsnext: z.record(z.string(), z.string()).optional(),
+      metadata: z
+        .object({
+          title: z.string(),
+          description: z.string(),
+        })
+        .optional(),
+    })
+    .strict(),
+})
+
 // Export a single `collections` object to register collections
 export const collections = {
   "any-api": anyApiCollection,
@@ -93,4 +112,5 @@ export const collections = {
   "blockchain-integrations-framework": bifCollection,
   "chainlink-automation": chainlinkAutomationCollection,
   "chainlink-functions": chainlinkFunctionsCollection,
+  "chainlink-nodes": chainlinkNodesCollection,
 }
