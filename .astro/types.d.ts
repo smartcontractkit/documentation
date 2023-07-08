@@ -1183,6 +1183,162 @@ declare module "astro:content" {
         data: InferEntrySchema<"resources">
       } & { render(): Render[".mdx"] }
     }
+    vrf: {
+      "v1/api-reference.mdx": {
+        id: "v1/api-reference.mdx"
+        slug: "v1/api-reference"
+        body: string
+        collection: "vrf"
+        data: InferEntrySchema<"vrf">
+      } & { render(): Render[".mdx"] }
+      "v1/best-practices.mdx": {
+        id: "v1/best-practices.mdx"
+        slug: "v1/best-practices"
+        body: string
+        collection: "vrf"
+        data: InferEntrySchema<"vrf">
+      } & { render(): Render[".mdx"] }
+      "v1/examples/get-a-random-number.mdx": {
+        id: "v1/examples/get-a-random-number.mdx"
+        slug: "v1/examples/get-a-random-number"
+        body: string
+        collection: "vrf"
+        data: InferEntrySchema<"vrf">
+      } & { render(): Render[".mdx"] }
+      "v1/introduction.mdx": {
+        id: "v1/introduction.mdx"
+        slug: "v1/introduction"
+        body: string
+        collection: "vrf"
+        data: InferEntrySchema<"vrf">
+      } & { render(): Render[".mdx"] }
+      "v1/security.mdx": {
+        id: "v1/security.mdx"
+        slug: "v1/security"
+        body: string
+        collection: "vrf"
+        data: InferEntrySchema<"vrf">
+      } & { render(): Render[".mdx"] }
+      "v1/supported-networks.mdx": {
+        id: "v1/supported-networks.mdx"
+        slug: "v1/supported-networks"
+        body: string
+        collection: "vrf"
+        data: InferEntrySchema<"vrf">
+      } & { render(): Render[".mdx"] }
+      "v2/best-practices.mdx": {
+        id: "v2/best-practices.mdx"
+        slug: "v2/best-practices"
+        body: string
+        collection: "vrf"
+        data: InferEntrySchema<"vrf">
+      } & { render(): Render[".mdx"] }
+      "v2/direct-funding/examples/get-a-random-number.mdx": {
+        id: "v2/direct-funding/examples/get-a-random-number.mdx"
+        slug: "v2/direct-funding/examples/get-a-random-number"
+        body: string
+        collection: "vrf"
+        data: InferEntrySchema<"vrf">
+      } & { render(): Render[".mdx"] }
+      "v2/direct-funding/examples/test-locally.mdx": {
+        id: "v2/direct-funding/examples/test-locally.mdx"
+        slug: "v2/direct-funding/examples/test-locally"
+        body: string
+        collection: "vrf"
+        data: InferEntrySchema<"vrf">
+      } & { render(): Render[".mdx"] }
+      "v2/direct-funding/index.mdx": {
+        id: "v2/direct-funding/index.mdx"
+        slug: "v2/direct-funding"
+        body: string
+        collection: "vrf"
+        data: InferEntrySchema<"vrf">
+      } & { render(): Render[".mdx"] }
+      "v2/direct-funding/migration-from-v1.mdx": {
+        id: "v2/direct-funding/migration-from-v1.mdx"
+        slug: "v2/direct-funding/migration-from-v1"
+        body: string
+        collection: "vrf"
+        data: InferEntrySchema<"vrf">
+      } & { render(): Render[".mdx"] }
+      "v2/direct-funding/supported-networks.mdx": {
+        id: "v2/direct-funding/supported-networks.mdx"
+        slug: "v2/direct-funding/supported-networks"
+        body: string
+        collection: "vrf"
+        data: InferEntrySchema<"vrf">
+      } & { render(): Render[".mdx"] }
+      "v2/estimating-costs.mdx": {
+        id: "v2/estimating-costs.mdx"
+        slug: "v2/estimating-costs"
+        body: string
+        collection: "vrf"
+        data: InferEntrySchema<"vrf">
+      } & { render(): Render[".mdx"] }
+      "v2/introduction.mdx": {
+        id: "v2/introduction.mdx"
+        slug: "v2/introduction"
+        body: string
+        collection: "vrf"
+        data: InferEntrySchema<"vrf">
+      } & { render(): Render[".mdx"] }
+      "v2/security.mdx": {
+        id: "v2/security.mdx"
+        slug: "v2/security"
+        body: string
+        collection: "vrf"
+        data: InferEntrySchema<"vrf">
+      } & { render(): Render[".mdx"] }
+      "v2/subscription/examples/get-a-random-number.mdx": {
+        id: "v2/subscription/examples/get-a-random-number.mdx"
+        slug: "v2/subscription/examples/get-a-random-number"
+        body: string
+        collection: "vrf"
+        data: InferEntrySchema<"vrf">
+      } & { render(): Render[".mdx"] }
+      "v2/subscription/examples/programmatic-subscription.mdx": {
+        id: "v2/subscription/examples/programmatic-subscription.mdx"
+        slug: "v2/subscription/examples/programmatic-subscription"
+        body: string
+        collection: "vrf"
+        data: InferEntrySchema<"vrf">
+      } & { render(): Render[".mdx"] }
+      "v2/subscription/examples/test-locally.mdx": {
+        id: "v2/subscription/examples/test-locally.mdx"
+        slug: "v2/subscription/examples/test-locally"
+        body: string
+        collection: "vrf"
+        data: InferEntrySchema<"vrf">
+      } & { render(): Render[".mdx"] }
+      "v2/subscription/index.mdx": {
+        id: "v2/subscription/index.mdx"
+        slug: "v2/subscription"
+        body: string
+        collection: "vrf"
+        data: InferEntrySchema<"vrf">
+      } & { render(): Render[".mdx"] }
+      "v2/subscription/migration-from-v1.mdx": {
+        id: "v2/subscription/migration-from-v1.mdx"
+        slug: "v2/subscription/migration-from-v1"
+        body: string
+        collection: "vrf"
+        data: InferEntrySchema<"vrf">
+      } & { render(): Render[".mdx"] }
+      "v2/subscription/supported-networks.mdx": {
+        id: "v2/subscription/supported-networks.mdx"
+        slug: "v2/subscription/supported-networks"
+        body: string
+        collection: "vrf"
+        data: InferEntrySchema<"vrf">
+      } & { render(): Render[".mdx"] }
+      "v2/subscription/ui.mdx": {
+        id: "v2/subscription/ui.mdx"
+        slug: "v2/subscription/ui"
+        body: string
+        collection: "vrf"
+        data: InferEntrySchema<"vrf">
+      } & { render(): Render[".mdx"] }
+    }
   }
 
   type DataEntryMap = {}
