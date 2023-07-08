@@ -149,6 +149,30 @@ const gettingStartedCollection = defineCollection({
     })
     .strict(),
 })
+const resourcesCollection = defineCollection({
+  type: "content",
+  schema: z
+    .object({
+      section: z.string(),
+      date: z.string(),
+      title: z.string(),
+      permalink: z.string().optional(),
+      whatsnext: z.record(z.string(), z.string()).optional(),
+      metadata: z
+        .object({
+          title: z.string().optional(),
+          description: z.string().optional(),
+          linkToWallet: z.boolean().optional(),
+          image: z
+            .object({
+              0: z.string(),
+            })
+            .optional(),
+        })
+        .optional(),
+    })
+    .strict(),
+})
 
 // Export a single `collections` object to register collections
 export const collections = {
@@ -160,4 +184,5 @@ export const collections = {
   "chainlink-nodes": chainlinkNodesCollection,
   "data-feeds": dataFeedsCollection,
   "getting-started": gettingStartedCollection,
+  resources: resourcesCollection,
 }

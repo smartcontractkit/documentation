@@ -1097,6 +1097,92 @@ declare module "astro:content" {
         data: InferEntrySchema<"getting-started">
       } & { render(): Render[".mdx"] }
     }
+    resources: {
+      "acquire-link.mdx": {
+        id: "acquire-link.mdx"
+        slug: "acquire-link"
+        body: string
+        collection: "resources"
+        data: InferEntrySchema<"resources">
+      } & { render(): Render[".mdx"] }
+      "bridge-risks.mdx": {
+        id: "bridge-risks.mdx"
+        slug: "bridge-risks"
+        body: string
+        collection: "resources"
+        data: InferEntrySchema<"resources">
+      } & { render(): Render[".mdx"] }
+      "contributing-to-chainlink.mdx": {
+        id: "contributing-to-chainlink.mdx"
+        slug: "contributing-to-chainlink"
+        body: string
+        collection: "resources"
+        data: InferEntrySchema<"resources">
+      } & { render(): Render[".mdx"] }
+      "create-a-chainlinked-project.mdx": {
+        id: "create-a-chainlinked-project.mdx"
+        slug: "create-a-chainlinked-project"
+        body: string
+        collection: "resources"
+        data: InferEntrySchema<"resources">
+      } & { render(): Render[".mdx"] }
+      "developer-communications.mdx": {
+        id: "developer-communications.mdx"
+        slug: "developer-communications"
+        body: string
+        collection: "resources"
+        data: InferEntrySchema<"resources">
+      } & { render(): Render[".mdx"] }
+      "example-projects.mdx": {
+        id: "example-projects.mdx"
+        slug: "example-projects"
+        body: string
+        collection: "resources"
+        data: InferEntrySchema<"resources">
+      } & { render(): Render[".mdx"] }
+      "fund-your-contract.mdx": {
+        id: "fund-your-contract.mdx"
+        slug: "fund-your-contract"
+        body: string
+        collection: "resources"
+        data: InferEntrySchema<"resources">
+      } & { render(): Render[".mdx"] }
+      "getting-help.mdx": {
+        id: "getting-help.mdx"
+        slug: "getting-help"
+        body: string
+        collection: "resources"
+        data: InferEntrySchema<"resources">
+      } & { render(): Render[".mdx"] }
+      "glossary.mdx": {
+        id: "glossary.mdx"
+        slug: "glossary"
+        body: string
+        collection: "resources"
+        data: InferEntrySchema<"resources">
+      } & { render(): Render[".mdx"] }
+      "hackathon-resources.mdx": {
+        id: "hackathon-resources.mdx"
+        slug: "hackathon-resources"
+        body: string
+        collection: "resources"
+        data: InferEntrySchema<"resources">
+      } & { render(): Render[".mdx"] }
+      "hackathon-rules-waiver-and-release.mdx": {
+        id: "hackathon-rules-waiver-and-release.mdx"
+        slug: "hackathon-rules-waiver-and-release"
+        body: string
+        collection: "resources"
+        data: InferEntrySchema<"resources">
+      } & { render(): Render[".mdx"] }
+      "link-token-contracts.mdx": {
+        id: "link-token-contracts.mdx"
+        slug: "link-token-contracts"
+        body: string
+        collection: "resources"
+        data: InferEntrySchema<"resources">
+      } & { render(): Render[".mdx"] }
+    }
   }
 
   type DataEntryMap = {}
