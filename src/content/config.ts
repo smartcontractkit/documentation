@@ -1,8 +1,7 @@
 import { z, defineCollection } from "astro:content"
 
-// Define a `type` and `schema` for each collection
 const anyApiCollection = defineCollection({
-  type: "content", // 'content' for Markdown
+  type: "content",
   schema: z
     .object({
       section: z.string(),
@@ -199,7 +198,6 @@ const vrfCollection = defineCollection({
     .strict(),
 })
 
-// Export a single `collections` object to register collections
 export const collections = {
   "any-api": anyApiCollection,
   "architecture-overview": architectureOverviewCollection,
