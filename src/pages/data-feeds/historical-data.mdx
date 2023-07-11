@@ -30,7 +30,7 @@ To learn how data feeds update, see the [Decentralized Data Model](/architecture
 
 As shown in the [decentralized model](/architecture-overview/architecture-decentralized-model), the consumer contracts call the proxy contract, which abstracts the underlying aggregator contract. The main advantage is to enable upgrades of the aggregator without impacting the consumer contracts. That also means that historical data can can be stored in different aggregators.
 
-As show in the following sequence diagram, to get historical data, call the `getRoundData` [function](/data-feeds/api-reference/#getrounddata) function and provide `roundId` as a parameter.
+As shown in the following sequence diagram, to get historical data, call the `getRoundData` [function](/data-feeds/api-reference/#getrounddata) and provide `roundId` as a parameter.
 
 <ClickToZoom src="/images/data-feed/getRoundData-sequence.png" />
 
@@ -53,7 +53,7 @@ roundId = uint80((uint256(phaseId) << 64) | aggregatorRoundId);
 
 where:
 
-- `phaseId` is incremented each time the underlying aggregator implementation is updated. It is used as key to find the aggregator address.
+- `phaseId` is incremented each time the underlying aggregator implementation is updated. It is used as a key to find the aggregator address.
 - `aggregatorRoundId` is the aggregator `roundId`. The id starts at 1.
 - `roundId` is the computed round id. From the above formula, you can think of it as a large number containing the `phaseId` and the `aggregatorRoundId`.
 
