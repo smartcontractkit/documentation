@@ -44,6 +44,7 @@ interface State {
   wrapperLinkPremiumPercentage: number
   totalGasLimit: number
   total: string
+  maxCost: string
 }
 
 interface CacheEntry {
@@ -60,8 +61,8 @@ const CACHE_EXPIRY_TIME = 5 * 60 * 1000 // 5 min in milliseconds
 const initialState: State = {
   isLoading: false,
   gasPrice: "0",
-  L1GasPriceEstimate: "",
-  currentGasPrice: "",
+  L1GasPriceEstimate: "0",
+  currentGasPrice: "1",
   LINKPremium: 0.5,
   decimalPlaces: 0,
   callbackGasLimit: 0,
@@ -74,6 +75,7 @@ const initialState: State = {
   wrapperLinkPremiumPercentage: 0,
   totalGasLimit: 0,
   total: "0.00",
+  maxCost: "0.00",
 }
 
 type Action =
@@ -91,6 +93,7 @@ type Action =
   | { type: "SET_PRICE_FEED"; payload: string }
   | { type: "SET_WRAPPER_LINK_PREMIUM_PERCENTAGE"; payload: number }
   | { type: "SET_TOTAL"; payload: string }
+  | { type: "SET_MAX_COST"; payload: string }
 
 const reducer = (state: State, action: Action) => {
   switch (action.type) {
@@ -122,6 +125,8 @@ const reducer = (state: State, action: Action) => {
       return { ...state, wrapperLinkPremiumPercentage: action.payload }
     case "SET_TOTAL":
       return { ...state, total: action.payload }
+    case "SET_MAX_COST":
+      return { ...state, maxCost: action.payload }
     default:
       return state
   }
@@ -183,7 +188,7 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
           gasPrice,
           L1GasPriceEstimate,
           decimalPlaces,
-          currentGasPrice: utils.formatUnits(gasPrice, "gwei"),
+          currentGasPrice: gasPrice,
           callbackGasLimit,
           LINKPremium,
           gasLaneList,
@@ -218,27 +223,51 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
 
   const computeArbitrumCost = () => {
     const VRFCallDataSizeBytes = 140 + 580
-    const { L1GasPriceEstimate, gasPrice, decimalPlaces, currentVerificationGas, callbackGas, wrapperOverheadGas } =
-      state
+    const {
+      L1GasPriceEstimate,
+      currentGasPrice,
+      decimalPlaces,
+      currentVerificationGas,
+      currentGasLane,
+      callbackGas,
+      wrapperOverheadGas,
+    } = state
     const L1P = BigNumber.from(L1GasPriceEstimate)
-    const L2P = BigNumber.from(gasPrice)
+    const L2P = BigNumber.from(currentGasPrice)
+
+    const L2PGasLane = utils.parseUnits(currentGasLane.toString(), "gwei")
     const VRFL1CostEstimate = L1P.mul(VRFCallDataSizeBytes)
+
     const VRFL1Buffer = VRFL1CostEstimate.div(L2P)
+    const VRFL1GasLaneBuffer = VRFL1CostEstimate.div(L2PGasLane)
     if (method === "subscription") {
       const VRFL2SubscriptionGasSubtotal = BigNumber.from(currentVerificationGas + callbackGas)
       const VRFSubscriptionGasTotal = VRFL2SubscriptionGasSubtotal.add(VRFL1Buffer)
       const VRFSubscriptionGasEstimate = L2P.mul(VRFSubscriptionGasTotal)
+
+      const VRFSubscriptionMaxCostTotal = VRFL2SubscriptionGasSubtotal.add(VRFL1GasLaneBuffer)
+      const VRFSubscriptionMaxCostEstimate = L2PGasLane.mul(VRFSubscriptionMaxCostTotal)
       dispatch({
-        type: "SET_TOTAL",
-        payload: utils.formatUnits(VRFSubscriptionGasEstimate, decimalPlaces),
+        type: "UPDATE_STATE",
+        payload: {
+          total: utils.formatUnits(VRFSubscriptionGasEstimate, decimalPlaces),
+          maxCost: utils.formatUnits(VRFSubscriptionMaxCostEstimate, decimalPlaces),
+        },
       })
     } else {
       const VRFL2DirectFundingGasSubtotal = BigNumber.from(currentVerificationGas + wrapperOverheadGas + callbackGas)
       const VRFDirectFundingGasTotal = VRFL2DirectFundingGasSubtotal.add(VRFL1Buffer)
       const VRFDirectFundingGasEstimate = L2P.mul(VRFDirectFundingGasTotal)
+
+      const VRFDirectFundingTotalWithGasLane = VRFL2DirectFundingGasSubtotal.add(VRFL1GasLaneBuffer)
+      const VRFDirectFundingGasMaxCostEstimate = L2PGasLane.mul(VRFDirectFundingTotalWithGasLane)
+
       dispatch({
-        type: "SET_TOTAL",
-        payload: utils.formatUnits(VRFDirectFundingGasEstimate, decimalPlaces),
+        type: "UPDATE_STATE",
+        payload: {
+          total: utils.formatUnits(VRFDirectFundingGasEstimate, decimalPlaces),
+          maxCost: utils.formatUnits(VRFDirectFundingGasMaxCostEstimate, decimalPlaces),
+        },
       })
     }
   }
@@ -265,32 +294,52 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
 
   const computeTotalRequestCost = () => {
     if (mainChain.name.toLowerCase() === "arbitrum") {
-      return computeArbitrumCost()
+      computeArbitrumCost()
+      return
     }
     const {
-      gasPrice,
+      currentGasPrice,
+      decimalPlaces,
       callbackGas,
       currentVerificationGas,
       priceFeed,
+      currentGasLane,
       LINKPremium,
       wrapperOverheadGas,
       wrapperLinkPremiumPercentage,
     } = state
-    const bigNumberGasPrice = BigNumber.from(gasPrice)
-    const bigNumberPriceFeed = BigNumber.from(priceFeed)
+    const bigNumberGasPrice = BigNumber.from(currentGasPrice)
+    const bigNumberGasLane = utils.parseUnits(currentGasLane.toString(), "gwei")
+    const bigNumberPriceFeed = utils.formatUnits(BigNumber.from(priceFeed), decimalPlaces)
+    const formattedPriceFeed = utils.parseEther(bigNumberPriceFeed)
     if (method === "subscription") {
       const vrfSubscriptionGasSubTotal = BigNumber.from(callbackGas + currentVerificationGas)
-      const totalGasCost = bigNumberGasPrice.mul(vrfSubscriptionGasSubTotal)
-      const total = totalGasCost.div(bigNumberPriceFeed).toNumber() + LINKPremium
+
+      const addition = bigNumberGasPrice.mul(vrfSubscriptionGasSubTotal)
+      const maxCostAddition = bigNumberGasLane.mul(vrfSubscriptionGasSubTotal)
+
+      const formattedMaxCostAddition = utils.parseEther(maxCostAddition.toString())
+      const formattedAddition = utils.parseEther(addition.toString())
+
+      const total = utils.formatUnits(formattedAddition.div(formattedPriceFeed).toString(), decimalPlaces)
+      const maxCost = utils.formatUnits(formattedMaxCostAddition.div(formattedPriceFeed).toString(), decimalPlaces)
+      const [result, maxResult] = [parseFloat(total) + LINKPremium, parseFloat(maxCost) + LINKPremium]
       dispatch({
-        type: "SET_TOTAL",
-        payload: total.toString(),
+        type: "UPDATE_STATE",
+        payload: {
+          total: result.toString(),
+          maxCost: maxResult.toString(),
+        },
       })
     } else {
       const vrfDirectFundingGasSubTotal = BigNumber.from(callbackGas + currentVerificationGas + wrapperOverheadGas)
       const totalGasCost = bigNumberGasPrice.mul(vrfDirectFundingGasSubTotal)
-      const totalGasCostInToken = totalGasCost.div(bigNumberPriceFeed)
-      const total = LINKPremium + totalGasCostInToken.add(BigNumber.from(1 + wrapperLinkPremiumPercentage)).toNumber()
+      const formattedTotalGasCost = utils.parseEther(totalGasCost.toString())
+      const totalGasCostInToken = utils.formatUnits(
+        formattedTotalGasCost.div(formattedPriceFeed).toString(),
+        decimalPlaces
+      )
+      const total = LINKPremium + parseFloat(totalGasCostInToken) * (1 + wrapperLinkPremiumPercentage)
       dispatch({
         type: "SET_TOTAL",
         payload: total.toString(),
@@ -317,7 +366,7 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
     const { target } = e
     if (target instanceof HTMLInputElement) {
       const val = target.value
-      dispatch({ type: "SET_CURRENT_GAS_PRICE", payload: val.toString() })
+      dispatch({ type: "SET_CURRENT_GAS_PRICE", payload: utils.parseUnits(val, "gwei").toString() })
     }
   }
 
@@ -358,8 +407,37 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
     return res
   }
 
+  // Format total VRF cost to stop after second non-zero decimal.
+  const formatmaxCost = () => {
+    if (state.maxCost === "0.00") {
+      return state.maxCost
+    }
+    let idx = state.maxCost.indexOf(".") + 1
+    let countNonZeroDigits = 0
+    let res = parseInt(state.maxCost).toString().includes(".")
+      ? parseInt(state.maxCost).toString()
+      : parseInt(state.maxCost).toString() + "."
+    while (countNonZeroDigits < 1) {
+      if (state.maxCost[idx] !== "0") {
+        countNonZeroDigits++
+      }
+      res += state.maxCost[idx]
+      idx++
+    }
+    if (idx === state.maxCost.length) {
+      return res
+    }
+    if (parseInt(state.maxCost[idx + 1]) >= 5) {
+      const digitPlusOne = parseInt(state.maxCost[idx]) + 1
+      res += digitPlusOne.toString()
+    } else {
+      res += state.maxCost[idx]
+    }
+    return res
+  }
+
   if (state.isLoading) {
-    return <p className="loading-text">Data is fetched. Please wait a moment...</p>
+    return <p className="loading-text">Data is being fetched. Please wait a moment...</p>
   } else {
     return (
       <div className="table-container">
@@ -371,7 +449,13 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
           <tr>
             <td>Gas price (current is {getGasPrice()} gwei)</td>
             <td>
-              <input type="number" id="gas" value={state.currentGasPrice} onChange={handleChangeGas} />
+              <input
+                type="number"
+                id="gas"
+                min={1}
+                value={utils.formatUnits(state.currentGasPrice, "gwei")}
+                onChange={handleChangeGas}
+              />
             </td>
           </tr>
           <tr>
@@ -436,19 +520,20 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
             Calculate
           </button>
         </div>
-        <h6>
-          {chain.name}: {formatTotal()} LINK
-        </h6>
+        <h6>Estimated Cost: {formatTotal()} LINK</h6>
 
         {method === "subscription" && (
-          <p>
-            When using the subscription balance, a minimum amount of funds is necessary in order to use the VRF. Take a
-            look at your balance in the Subscription manager
-            <a href="https://vrf.chain.link" target="_blank">
-              {" "}
-              here.
-            </a>
-          </p>
+          <>
+            <h6>Maximum Cost during a gas spike: {formatmaxCost()} LINK</h6>
+            <p>
+              When using the subscription balance, a minimum amount of funds is necessary in order to use the VRF. Take
+              a look at your balance in the Subscription manager
+              <a href="https://vrf.chain.link" target="_blank">
+                {" "}
+                here.
+              </a>
+            </p>
+          </>
         )}
         <h6>
           If you want to take a look at the parameters in more details, click
