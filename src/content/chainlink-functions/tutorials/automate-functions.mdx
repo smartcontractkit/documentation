@@ -261,7 +261,7 @@ All off-chain secret Gists for Automated Consumer 0x6164Df3A2b2899124400c064306c
 
 ### AutomatedFunctionsConsumer.sol
 
-To write a Chainlink Functions consumer contract, your contract must import [FunctionsClient.sol](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/dev/functions/FunctionsClient.sol). You can read the API reference: [FunctionsClient](/chainlink-functions/api-reference/FunctionsClient). This contract is not available in an NPM package, so you must download and import it from within your project.
+To write a Chainlink Functions consumer contract, your contract must import [FunctionsClient.sol](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/dev/functions/FunctionsClient.sol). You can read the API reference: [FunctionsClient](/chainlink-functions/api-reference/functionsclient). This contract is not available in an NPM package, so you must download and import it from within your project.
 
     ```
     import {Functions, FunctionsClient} from "./dev/functions/FunctionsClient.sol";
@@ -281,7 +281,7 @@ Your contract must inherit `FunctionsClient` and `ConfirmedOwner` contracts, and
     contract AutomatedFunctionsConsumer is FunctionsClient, ConfirmedOwner, AutomationCompatibleInterface
     ```
 
-Use the [Functions.sol](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/dev/functions/Functions.sol) library to get all the functions needed for building a Chainlink Functions request. You can read the API reference: [Functions](/chainlink-functions/api-reference/Functions).
+Use the [Functions.sol](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/dev/functions/Functions.sol) library to get all the functions needed for building a Chainlink Functions request. You can read the API reference: [Functions](/chainlink-functions/api-reference/functions).
 
     ```
     using Functions for Functions.Request;
@@ -338,7 +338,7 @@ You can change the oracle address at any time by calling the `updateOracleAddres
 
 To store a request in the `requestCBOR` state variable, the contract owner has to:
 
-- Call the `generateRequest` function. It uses the `Functions`library to initialize the request and add any passed encrypted secrets or arguments. Finally, it returns an encoded request. You can read the API Reference for [Initializing a request](/chainlink-functions/api-reference/Functions/#initializerequest), [adding secrets](/chainlink-functions/api-reference/Functions/#addinlinesecrets), and [adding arguments](/chainlink-functions/api-reference/Functions/#addargs). **Note**: This call is done off-chain to save gas when calling the `setRequest` function.
+- Call the `generateRequest` function. It uses the `Functions`library to initialize the request and add any passed encrypted secrets or arguments. Finally, it returns an encoded request. You can read the API Reference for [Initializing a request](/chainlink-functions/api-reference/functions/#initializerequest), [adding secrets](/chainlink-functions/api-reference/functions/#addinlinesecrets), and [adding arguments](/chainlink-functions/api-reference/functions/#addargs). **Note**: This call is done off-chain to save gas when calling the `setRequest` function.
 
   ```
   Functions.Request memory req;
@@ -361,7 +361,7 @@ To store a request in the `requestCBOR` state variable, the contract owner has t
   upkeepNeeded = (block.timestamp - lastUpkeepTimeStamp) > updateInterval;
   ```
 
-- `performUpkeep`: Sends the request to the oracle by calling the `FunctionsClient` `sendRequest` function. You can read the API reference for [sending a request](/chainlink-functions/api-reference/FunctionsClient/#sendrequest). Also, it updates `lastUpkeepTimeStamp` with the current timestamp, increments `upkeepCounter`, and sets `latestRequestId` to the last request ID.
+- `performUpkeep`: Sends the request to the oracle by calling the `FunctionsClient` `sendRequest` function. You can read the API reference for [sending a request](/chainlink-functions/api-reference/functionsclient/#sendrequest). Also, it updates `lastUpkeepTimeStamp` with the current timestamp, increments `upkeepCounter`, and sets `latestRequestId` to the last request ID.
 
   ```
   lastUpkeepTimeStamp = block.timestamp;
@@ -376,7 +376,7 @@ To store a request in the `requestCBOR` state variable, the contract owner has t
   latestRequestId = assignedReqID;
   ```
 
-`fulfillRequest` is invoked by Chainlink Functions during the callback. This function is defined in `FunctionsClient` as `virtual` (read `fulfillRequest` [API reference](/chainlink-functions/api-reference/FunctionsClient/#fulfillrequest)). So, your smart contract must override the function to implement the callback. The implementation of the callback is straightforward: the contract stores the latest response and error in `latestResponse` and `latestError` and increments `responseCounter` before emitting the `OCRResponse` event.
+`fulfillRequest` is invoked by Chainlink Functions during the callback. This function is defined in `FunctionsClient` as `virtual` (read `fulfillRequest` [API reference](/chainlink-functions/api-reference/functionsclient/#fulfillrequest)). So, your smart contract must override the function to implement the callback. The implementation of the callback is straightforward: the contract stores the latest response and error in `latestResponse` and `latestError` and increments `responseCounter` before emitting the `OCRResponse` event.
 
     ```
     latestResponse = response;
