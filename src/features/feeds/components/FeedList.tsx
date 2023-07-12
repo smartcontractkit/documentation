@@ -25,6 +25,7 @@ export const FeedList = ({
 
   const [selectedChain, setSelectedChain] = useQueryString("network", chains[0].page)
   const [showExtraDetails, setShowExtraDetails] = useState(false)
+  const [selectedFeedCategory, setSelectedFeedCategory] = useState("")
 
   const chainMetadata = useGetChainMetadata(chains.filter((chain) => chain.page === selectedChain)[0], { initialCache })
 
@@ -139,7 +140,38 @@ export const FeedList = ({
                       />{" "}
                       Show more details
                     </label>
+
+                    <label
+                      style={{
+                        marginLeft: "60px",
+                      }}
+                      htmlFor="feedCategorySelect"
+                    >
+                      Data Feed Category:
+                    </label>
+                    <select
+                      id="feedCategorySelect"
+                      value={selectedFeedCategory}
+                      onChange={(e: any) => setSelectedFeedCategory(e.target.value)}
+                      style={{
+                        margin: "5px",
+
+                        borderRadius: "4px",
+                        backgroundColor: "#f3f3f3",
+                        border: "none",
+                        width: "120px",
+                      }}
+                    >
+                      <option value="">All</option>
+                      <option value="verified">Verified</option>
+                      <option value="monitored">Monitored</option>
+                      <option value="provisional">Provisional</option>
+                      <option value="custom">Custom</option>
+                      <option value="specialized">Specialized</option>
+                      <option value="deprecating">Deprecating</option>
+                    </select>
                     <MainnetTable
+                      selectedFeedCategory={selectedFeedCategory}
                       network={network}
                       showExtraDetails={showExtraDetails}
                       dataFeedType={dataFeedType}

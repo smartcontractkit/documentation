@@ -268,11 +268,13 @@ export const MainnetTable = ({
   showExtraDetails,
   dataFeedType,
   ecosystem,
+  selectedFeedCategory,
 }: {
   network: ChainNetwork
   showExtraDetails: boolean
   dataFeedType: string
   ecosystem: string
+  selectedFeedCategory: string
 }) => {
   if (!network.metadata) return null
 
@@ -288,6 +290,7 @@ export const MainnetTable = ({
       if (isNftFloor) return !!chain.docs.nftFloorUnits
       return !chain.docs.nftFloorUnits && !chain.docs.porType
     })
+    .filter((chain) => selectedFeedCategory === "" || chain.feedCategory === selectedFeedCategory)
   return (
     <div style={{ overflowX: "auto" }}>
       <table class={tableStyles.table}>
@@ -302,6 +305,15 @@ export const MainnetTable = ({
               {isNftFloor && <NftFloorTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
             </>
           ))}
+          {filteredMetadata.length === 0 && (
+            <div
+              style={{
+                margin: "5px",
+              }}
+            >
+              There are no data feeds in this category at this time.
+            </div>
+          )}
         </tbody>
       </table>
     </div>
