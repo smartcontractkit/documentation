@@ -77,7 +77,11 @@ export const evmProducts = [
       ["Manage your Upkeeps", "chainlink-automation/manage-upkeeps"],
       ["Creating Flexible Upkeeps", "chainlink-automation/flexible-upkeeps"],
     ],
-    chains: [...baseChains, { id: "arbitrum", title: "Arbitrum" }],
+    chains: [
+      ...baseChains, 
+      { id: "arbitrum", title: "Arbitrum" },
+      { id: "optimism", title: "Optimism" }
+    ],
     video: "https://www.youtube.com/watch?v=dj0impNJdls&list=PLVP9aGDn-X0RloqS1uYcuaPSW3GIgoCkg&index=2",
   },
   {
