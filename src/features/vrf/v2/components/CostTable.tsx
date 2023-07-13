@@ -365,7 +365,7 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
   const handleChangeGas = (e: Event) => {
     const { target } = e
     if (target instanceof HTMLInputElement) {
-      const val = target.value
+      const val = target.value || "0.0"
       dispatch({ type: "SET_CURRENT_GAS_PRICE", payload: utils.parseUnits(val, "gwei").toString() })
     }
   }
@@ -454,7 +454,7 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
                 id="gas"
                 min={1}
                 value={utils.formatUnits(state.currentGasPrice, "gwei")}
-                onChange={handleChangeGas}
+                onBlur={handleChangeGas}
               />
             </td>
           </tr>
@@ -495,7 +495,7 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
                               checked={index === 0 || state.currentGasLane === gasLane}
                               onChange={handleRadioChange}
                             />
-                            <label for={gasLane.toString()}>{gasLane} gwei</label>
+                            <label htmlFor={gasLane.toString()}>{gasLane} gwei</label>
                           </div>
                         }
                       </>
