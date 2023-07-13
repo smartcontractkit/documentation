@@ -171,7 +171,11 @@ This guide will teach you how to run a Chainlink node locally using [Docker](#us
      _never_ do this on a production node.
    </Aside>
 
-1. Start the Chainlink Node. Now you can run the Docker image. Change the version number in `smartcontract/chainlink:2.0.0` with the version of the Docker image that you need to run. For most new nodes, use version `2.0.0` or later. Tag versions are available in the [Chainlink docker hub](https://hub.docker.com/r/smartcontract/chainlink/tags). _The `latest` version does not work._ Chainlink Nodes running `2.0.0` and later require the `-config` and `-secrets` flags after the `node` part of the command. Versions `1.13.1` and earlier require the `-config` and `-secrets` flags to be placed before the `node start` portion of the command.
+1. Start the Chainlink Node by running the Docker image.
+
+   Change the version number in `smartcontract/chainlink:2.0.0` with the version of the Docker image that you need to run. For most new nodes, use version `2.0.0` or later. Tag versions are available in the [Chainlink docker hub](https://hub.docker.com/r/smartcontract/chainlink/tags). _The `latest` version does not work._ 
+   
+   Chainlink Nodes running `2.0.0` and later require the `-config` and `-secrets` flags after the `node` part of the command. Versions `1.13.1` and earlier require the `-config` and `-secrets` flags to be placed before the `node start` portion of the command.
 
    {/* prettier-ignore */}
    <Tabs client:visible>
@@ -202,6 +206,23 @@ This guide will teach you how to run a Chainlink node locally using [Docker](#us
    </Tabs>
 
    The first time running the image, the node asks you to enter an API Email and Password. This will be used to expose the API for the GUI interface, and will be used every time you log into your node.
+
+   Alternatively, you can pass the API credentials to Docker using a `.api` file. Create the file in the same directory as your TOML config files (for example, `/chainlink/.api`) and list your API credentials:
+
+   ```
+   API Email
+   API Password
+   ```
+
+   At the end of the `docker run` command, include the `.api` file using the `-a` flag:
+
+   ```
+   ...
+   -config /chainlink/.node.toml \
+   -secrets /chainlink/.secrets.toml \
+    node start \
+    -a /chainlink/.api
+   ```
 
 1. Check the container is running. Note the `6688` port is [published](https://docs.docker.com/config/containers/container-networking/#published-ports) `0.0.0.0:6688->6688/tcp` and therefore accessible outside of Docker.
 
