@@ -57,13 +57,13 @@ const aggregatorV3InterfaceABI = [
   },
 ]
 const addr = "0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43"
-const priceFeed = new web3.eth.Contract(aggregatorV3InterfaceABI, addr)
+const dataFeed = new web3.eth.Contract(aggregatorV3InterfaceABI, addr)
 
 // Valid roundId must be known. They are NOT incremental.
 let validId = BigInt("18446744073709554177")
-priceFeed.methods
+dataFeed.methods
   .getRoundData(validId)
   .call()
   .then((historicalRoundData) => {
-    document.getElementById("get-price-field").value = historicalRoundData.answer
+    document.getElementById("get-data-field").value = historicalRoundData.answer
   })

@@ -36,6 +36,7 @@ export const evmProducts = [
       { id: "moonbeam", title: "Moonbeam" },
       { id: "moonriver", title: "Moonriver" },
       { id: "base", title: "BASE" },
+      { id: "celo", title: "Celo" },
       { id: "starknet", title: "StarkNet" },
       { id: "solana", title: "Solana" },
     ],

@@ -20,7 +20,7 @@ export const MENU: MenuItems = {
     },
     {
       text: "VRF",
-      link: "/vrf",
+      link: "/vrf/v2/introduction",
       section: "vrf",
     },
     {
