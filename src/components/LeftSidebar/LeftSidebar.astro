@@ -57,36 +57,47 @@ const currentPageMatch = removeSlashes(currentPage.slice(1))
       sidebarSections.map((section) => (
         <li aria-hidden={content.section === "global"} class={`parent-${section.parentSection}`}>
           <div class="nav-group">
-            <h2 class="nav-group-title">{section.section}</h2>
-            <ul>
-              {!!section.contents &&
-                section.contents.map((child) => (
-                  <>
-                    <li class="nav-link">
-                      <a
-                        href={`${Astro.site.pathname}${child.url}`}
-                        aria-current={`${currentPageMatch === removeSlashes(child.url) ? "page" : "false"}`}
-                      >
-                        {child.title}
-                      </a>
-                    </li>
-                    {!!child.children && (
-                      <ul>
-                        {child.children.map((childItem) => (
-                          <li class="nav-link nested">
-                            <a
-                              href={`${Astro.site.pathname}${childItem.url}`}
-                              aria-current={`${currentPageMatch === removeSlashes(childItem.url) ? "page" : "false"}`}
-                            >
-                              {childItem.title}
-                            </a>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </>
-                ))}
-            </ul>
+            <details open="true">
+              <summary
+                class="nav-group-title"
+                style={`color: var(--blue-800); background-image: url("https://smartcontract.imgix.net/icons/Caret.svg?auto=compress%2Cformat"); background-repeat: no-repeat; background-position: right var(--space-2x) top 50%; letter-spacing: normal;`}
+              >
+                {section.section}
+              </summary>
+              <nav>
+                <ul>
+                  {!!section.contents &&
+                    section.contents.map((child) => (
+                      <>
+                        <li class="nav-link">
+                          <a
+                            href={`${Astro.site.pathname}${child.url}`}
+                            aria-current={`${currentPageMatch === removeSlashes(child.url) ? "page" : "false"}`}
+                          >
+                            {child.title}
+                          </a>
+                        </li>
+                        {!!child.children && (
+                          <ul>
+                            {child.children.map((childItem) => (
+                              <li class="nav-link nested">
+                                <a
+                                  href={`${Astro.site.pathname}${childItem.url}`}
+                                  aria-current={`${
+                                    currentPageMatch === removeSlashes(childItem.url) ? "page" : "false"
+                                  }`}
+                                >
+                                  {childItem.title}
+                                </a>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </>
+                    ))}
+                </ul>
+              </nav>
+            </details>
           </div>
         </li>
       ))
