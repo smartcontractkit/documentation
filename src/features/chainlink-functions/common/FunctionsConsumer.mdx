@@ -1,4 +1,4 @@
-- To write a Chainlink Functions consumer contract, your contract must import [FunctionsClient.sol](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/functions/dev/0_0_0/FunctionsClient.sol). You can read the API reference: [FunctionsClient](/chainlink-functions/api-reference/functionsclient).
+- To write a Chainlink Functions consumer contract, your contract must import [FunctionsClient.sol](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/functions/dev/0_0_0/FunctionsClient.sol). You can read the API reference: [FunctionsClient](/chainlink-functions/api-reference/functions-client).
 
   This contract is not available in an NPM package, so you must download and import it from within your project.
 
@@ -50,14 +50,14 @@
       if (args.length > 0) req.addArgs(args);
       ```
 
-    - It sends the request to the oracle by calling the `FunctionsClient` `sendRequest` function. You can read the API reference for [sending a request](/chainlink-functions/api-reference/functionsclient/#sendrequest). Finally, it stores the request id in `latestRequestId`.
+    - It sends the request to the oracle by calling the `FunctionsClient` `sendRequest` function. You can read the API reference for [sending a request](/chainlink-functions/api-reference/functions-client/#sendrequest). Finally, it stores the request id in `latestRequestId`.
 
       ```
       bytes32 assignedReqID = sendRequest(req, subscriptionId, gasLimit);
       latestRequestId = assignedReqID;
       ```
 
-  - `fulfillRequest` to be invoked during the callback. This function is defined in `FunctionsClient` as `virtual` (read `fulfillRequest` [API reference](/chainlink-functions/api-reference/functionsclient/#fulfillrequest)). So, your smart contract must override the function to implement the callback. The implementation of the callback is straightforward: the contract stores the latest response and error in `latestResponse` and `latestError` before emitting the `OCRResponse` event.
+  - `fulfillRequest` to be invoked during the callback. This function is defined in `FunctionsClient` as `virtual` (read `fulfillRequest` [API reference](/chainlink-functions/api-reference/functions-client/#fulfillrequest)). So, your smart contract must override the function to implement the callback. The implementation of the callback is straightforward: the contract stores the latest response and error in `latestResponse` and `latestError` before emitting the `OCRResponse` event.
 
     ```
     latestResponse = response;

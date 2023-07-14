@@ -538,7 +538,7 @@ export const SIDEBAR = {
       contents: [
         {
           title: "FunctionsClient",
-          url: "chainlink-functions/api-reference/functionsclient",
+          url: "chainlink-functions/api-reference/functions-client",
         },
         {
           title: "Functions library",
