@@ -1,6 +1,6 @@
 ---
 import { SIDEBAR, MENU, Frontmatter } from "../../config"
-
+import { flatteningArray } from "../../scripts/flattening-array"
 export type Props = {
   currentPage: string
   content: Frontmatter
@@ -57,7 +57,12 @@ const currentPageMatch = removeSlashes(currentPage.slice(1))
       sidebarSections.map((section) => (
         <li aria-hidden={content.section === "global"} class={`parent-${section.parentSection}`}>
           <div class="nav-group">
-            <details open="true">
+            <details
+              open={
+                !!flatteningArray(section.contents).filter((object) => removeSlashes(object.url) == currentPageMatch)
+                  .length
+              }
+            >
               <summary
                 class="nav-group-title"
                 style={`color: var(--blue-800); background-image: url("https://smartcontract.imgix.net/icons/Caret.svg?auto=compress%2Cformat"); background-repeat: no-repeat; background-position: right var(--space-2x) top 50%; letter-spacing: normal;`}
