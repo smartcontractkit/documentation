@@ -49,6 +49,26 @@ const feedCategories = {
   ),
 }
 
+const Pagination = ({ addrPerPage, totalAddr, paginate }) => {
+  const pageNumbers = []
+
+  for (let i = 1; i <= Math.ceil(totalAddr / addrPerPage); i++) {
+    pageNumbers.push(i)
+  }
+
+  return (
+    <nav>
+      <ul class={tableStyles.pagination}>
+        {pageNumbers.map((number) => (
+          <button class={tableStyles.paginationButton} onClick={() => paginate(number)}>
+            {number}
+          </button>
+        ))}
+      </ul>
+    </nav>
+  )
+}
+
 const DefaultTHead = ({ showExtraDetails, isTestnet = false }: { showExtraDetails: boolean; isTestnet?: boolean }) => (
   <thead>
     <tr>
@@ -269,12 +289,20 @@ export const MainnetTable = ({
   dataFeedType,
   ecosystem,
   selectedFeedCategory,
+  firstAddr,
+  lastAddr,
+  addrPerPage,
+  paginate,
 }: {
   network: ChainNetwork
   showExtraDetails: boolean
   dataFeedType: string
   ecosystem: string
   selectedFeedCategory: string
+  firstAddr: number
+  lastAddr: number
+  addrPerPage: number
+  paginate
 }) => {
   if (!network.metadata) return null
 
@@ -291,6 +319,7 @@ export const MainnetTable = ({
       return !chain.docs.nftFloorUnits && !chain.docs.porType
     })
     .filter((chain) => selectedFeedCategory === "" || chain.feedCategory === selectedFeedCategory)
+  const slicedFilteredMetadata = filteredMetadata.slice(firstAddr, lastAddr)
   return (
     <div style={{ overflowX: "auto" }}>
       <table class={tableStyles.table}>
@@ -298,14 +327,14 @@ export const MainnetTable = ({
         {isDefault && <DefaultTHead showExtraDetails={showExtraDetails} />}
         {isNftFloor && <NftFloorTHead showExtraDetails={showExtraDetails} />}
         <tbody>
-          {filteredMetadata.map((proxy) => (
+          {slicedFilteredMetadata.map((proxy) => (
             <>
               {isPor && <ProofOfReserveTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
               {isDefault && <DefaultTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
               {isNftFloor && <NftFloorTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
             </>
           ))}
-          {filteredMetadata.length === 0 && (
+          {slicedFilteredMetadata.length === 0 && (
             <div
               style={{
                 margin: "5px",
@@ -316,6 +345,7 @@ export const MainnetTable = ({
           )}
         </tbody>
       </table>
+      <Pagination addrPerPage={addrPerPage} totalAddr={filteredMetadata.length} paginate={paginate} />
     </div>
   )
 }
