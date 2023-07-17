@@ -872,6 +872,10 @@ export const SIDEBAR = {
       section: "Chainlink Nodes",
       contents: [
         {
+          title: "Overview",
+          url: "chainlink-nodes",
+        },
+        {
           title: "Release Notes",
           url: "chainlink-nodes/node-versions",
         },
