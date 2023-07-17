@@ -897,11 +897,11 @@ export const SIDEBAR = {
           url: "ccip/tutorials/cross-chain-tokens",
         },
         {
-          title: "Transfer Tokens with Data",
+          title: "Transfer Tokens With Data",
           url: "ccip/tutorials/programmable-token-transfers",
         },
         {
-          title: "Transfer Tokens between EOAs",
+          title: "Transfer Tokens Between EOAs",
           url: "ccip/tutorials/cross-chain-tokens-from-eoa",
         },
         {
