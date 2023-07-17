@@ -23,6 +23,15 @@ try {
 
 const index = client.initIndex(process.env.ALGOLIA_INDEX_NAME)
 
+index
+  .setSettings({
+    attributeForDistinct: "title",
+    distinct: true,
+  })
+  .then(() => {
+    // done
+  })
+
 if (!objects.index) throw Error("no index object")
 
 index
