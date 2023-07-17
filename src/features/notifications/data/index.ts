@@ -7,9 +7,8 @@ import { BannerContent } from "../components/HeaderBanner"
 // export const NotificationData: BannerContent | null = null
 
 export const NotificationData: BannerContent | null = {
-  description: "Chainlink is collaborating with Swift and 12+ leading financial institutions.",
+  description: "CCIP opens to all developers on testnet July 20.",
   type: "info",
-  linkText: "Read the announcement.",
-  linkUrl:
-    "https://www.swift.com/news-events/news/swift-explores-blockchain-interoperability-remove-friction-tokenised-asset-settlement",
+  linkText: "Get notified.",
+  linkUrl: "https://chainlinkcommunity.typeform.com/to/H4XhW3JE?#ref_id=ccip_docs",
 }

@@ -1,0 +1,44 @@
+---
+import { clsx } from "../lib"
+
+export type Props = {
+  contractUrl: string
+  address: string
+  endLength?: number
+}
+
+const { contractUrl, address = contractUrl.split("/").pop(), endLength } = Astro.props as Props
+---
+
+<ph class="addressContainer">
+  <a title={address} class="addressLink" href={contractUrl}>
+    {endLength ? address.slice(0, endLength + 2) + "..." + address.slice(-endLength) : address}
+  </a>
+  <button
+    class={clsx("copyBtn", "copy-iconbutton")}
+    style={{ height: "16px", width: "16px" }}
+    data-clipboard-text={address}
+  >
+    <img src="/assets/icons/copyIcon.svg" alt="Copy to clipboard" />
+  </button>
+</ph>
+
+<style>
+  .addressContainer {
+    white-space: nowrap;
+  }
+
+  .addressLink {
+    background: var(--color-background-secondary);
+    padding: 1px 5px;
+    border-radius: var(--border-radius-10);
+  }
+
+  .copyBtn {
+    background: none;
+    border: none;
+  }
+  .copyBtn:hover {
+    color: var(--color-text-link);
+  }
+</style>

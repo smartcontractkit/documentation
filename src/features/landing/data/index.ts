@@ -1,3 +1,4 @@
+import ccipLogo from "../assets/ccip-logo.svg"
 import vrfLogo from "../assets/vrf-logo.svg"
 import functionsLogo from "../assets/functions-logo.svg"
 import automationLogo from "../assets/automation-logo.svg"
@@ -43,25 +44,25 @@ export const evmProducts = [
     video: "https://www.youtube.com/watch?v=e75kwGzvtnI&list=PLVP9aGDn-X0QwJVbQvuKr-zrh2_DV5M6J&index=45",
   },
   {
-    title: "Chainlink Functions",
+    title: "CCIP",
     description:
-      "Connect smart contracts to a trust-minimized compute infrastructure running on a decentralized oracle network",
-    learnMorelink: "chainlink-functions",
-    image: functionsLogo,
+      "Connect decentralized applications and transfer tokens across chains using the Chainlink Cross-Chain Interoperability Protocol (CCIP)",
+    learnMorelink: "ccip",
+    image: ccipLogo,
     links: [
-      ["Introduction", "chainlink-functions"],
-      ["Getting Started", "chainlink-functions/getting-started"],
-      ["Request Computation", "chainlink-functions/tutorials/simple-computation"],
-      ["Call APIs with Query Parameters", "chainlink-functions/tutorials/api-query-parameters"],
-      ["POST Data to an API", "chainlink-functions/tutorials/api-post-data"],
-      ["Use Secrets in Requests", "chainlink-functions/tutorials/api-use-secrets"],
-      ["Add Functions to Your Project", "chainlink-functions/resources/add-functions-to-projects"],
-      ["Architecture", "chainlink-functions/resources/architecture"],
+      ["Introduction", "ccip"],
+      ["Getting Started", "ccip/getting-started"],
+      ["Transfer Tokens Between Chains", "ccip/tutorials/cross-chain-tokens"],
+      ["Transfer Tokens from an EOA", "ccip/tutorials/cross-chain-tokens-from-eoa"],
+      ["Send Arbitrary Data", "ccip/tutorials/send-arbitrary-data"],
+      ["CCIP Architecture", "ccip/architecture"],
     ],
     chains: [
       { id: "ethereum", title: "Ethereum" },
       { id: "polygon", title: "Polygon" },
       { id: "avalanche", title: "Avalanche" },
+      { id: "arbitrum", title: "Arbitrum" },
+      { id: "optimism", title: "Optimism" },
     ],
   },
   {
@@ -94,6 +95,28 @@ export const evmProducts = [
     ],
     chains: [...baseChains],
     video: "https://www.youtube.com/watch?v=JqZWariqh5s&list=PLVP9aGDn-X0QHDyBRvbITizWrRoecR0D8&index=2",
+  },
+  {
+    title: "Chainlink Functions",
+    description:
+      "Connect smart contracts to a trust-minimized compute infrastructure running on a decentralized oracle network",
+    learnMorelink: "chainlink-functions",
+    image: functionsLogo,
+    links: [
+      ["Introduction", "chainlink-functions"],
+      ["Getting Started", "chainlink-functions/getting-started"],
+      ["Request Computation", "chainlink-functions/tutorials/simple-computation"],
+      ["Call APIs with Query Parameters", "chainlink-functions/tutorials/api-query-parameters"],
+      ["POST Data to an API", "chainlink-functions/tutorials/api-post-data"],
+      ["Use Secrets in Requests", "chainlink-functions/tutorials/api-use-secrets"],
+      ["Add Functions to Your Project", "chainlink-functions/resources/add-functions-to-projects"],
+      ["Architecture", "chainlink-functions/resources/architecture"],
+    ],
+    chains: [
+      { id: "ethereum", title: "Ethereum" },
+      { id: "polygon", title: "Polygon" },
+      { id: "avalanche", title: "Avalanche" },
+    ],
   },
   {
     title: "External API Calls",
