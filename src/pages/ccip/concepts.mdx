@@ -38,7 +38,7 @@ Finality varies across different networks. Some networks offer instant finality 
 
 ## Lane
 
-A Chainlink CCIP _lane_ is a distinct pathway between a source and a destination blockchain. Lanes are unidirectional. For instance, _Ethereum Sepolia - Polygon Mumbai_ and _Polygon Mumbai - Ethereum Sepolia_ are two different lanes.
+A Chainlink CCIP _lane_ is a distinct pathway between a source and a destination blockchain. Lanes are unidirectional. For instance, _Ethereum Sepolia => Polygon Mumbai_ and _Polygon Mumbai => Ethereum Sepolia_ are two different lanes.
 
 ## Decentralized Oracle Network (DON)
 
@@ -69,6 +69,6 @@ The ARM network has two main modes of operation:
 There is one ARM contract for each supported destination chain. The ARM contract maintains a group of nodes authorized to participate in the ARM blessing/cursing. Each ARM node has five components: an address for voting to curse, an address for voting to bless, an address for withdrawing a vote to curse, a curse weight, and a blessing weight. The contract also maintains two thresholds to determine the quorum for blessing and cursing. There are two different voting logics depending on the mode:
 
 - **Blessing voting procedure:** every time an ARM node blesses a Merkle root, the ARM contract adds the blessing weight for that node. If the sum exceeds the blessing threshold, the ARM contract considers the contract _blessed_.
-- **Cursing voting procedure:** an ARM node that sends a vote to curse assigns the vote a random 32bytes ID. The node may have multiple active votes to curse at any time. However, if there is at least one active cursing vote, the ARM contract considers the node to have voted to curse. The ARM contract adds the cursing weight for that node.If the sum of the weights of votes to curse exceeds the curse threshold, the ARM contract considers the contract _cursed_.
+- **Cursing voting procedure:** an ARM node that sends a vote to curse assigns the vote a random 32-byte ID. The node may have multiple active votes to curse at any time. However, if there is at least one active cursing vote, the ARM contract considers the node to have voted to curse. The ARM contract adds the cursing weight for that node. If the sum of the weights of votes to curse exceeds the curse threshold, the ARM contract considers the contract _cursed_.
 
 If the ARM contract is cursed, then the owner of the original contract must resolve any underlying issues the original contract might have. If the owner is satisfied that these issues have been resolved, they can revoke the cursing on behalf of ARM nodes.

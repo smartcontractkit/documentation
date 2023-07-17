@@ -58,7 +58,7 @@ The figure below outlines the different components involved in a cross-chain tra
 The Router is the primary contract CCIP users interface with. This contract is responsible for initiating cross-chain interactions. One router contact exists per chain. When transferring tokens, callers have to approve tokens for the router contract.
 The router contract routes the instruction to the destination-specific [OnRamp](#onramp).
 
-When a message is received on the destination chain, the router is the contract that “delivers” tokens to the user’s account or the message to the receiver’s smart contract.
+When a message is received on the destination chain, the router is the contract that “delivers” tokens to the user's account or the message to the receiver's smart contract.
 
 #### Commit Store
 
@@ -85,12 +85,12 @@ One OffRamp contract per [lane](/ccip/concepts#lane) exists. This contract perfo
 
 #### Token pools
 
-Each token has its own token pool, an abstraction layer over ERC-20 tokens that facilitates OnRamp and OffRamp token-related operations. Token pools are configurable to `lock` or `burn` at the source blockchain and `unlock` or `mint` at the destination blockchain. The mechanism for handling tokens is dependent on the characteristics of the token in question. Here are a few examples:
+Each token has its own token pool, an abstraction layer over ERC-20 tokens that facilitates OnRamp and OffRamp token-related operations. Token pools are configurable to `lock` or `burn` at the source blockchain and `unlock` or `mint` at the destination blockchain. The mechanism for handling tokens depends on the characteristics of the token in question. Here are a few examples:
 
 - Blockchain-native gas coins, such as ETH, MATIC, and AVAX, can only be minted on their native chains. These tokens cannot be burned on the source and minted at the destination to transfer these tokens between chains. Instead, the linked token pool uses a "Lock and Mint" approach that locks the token at its source and then mints a wrapped or synthetic asset on the destination blockchain. This synthetic asset represents the locked asset and is essential for redeeming the locked asset.
 - A token like LINK is minted on a single chain (Ethereum mainnet) with a fixed total supply. CCIP cannot natively mint it on another chain. In this case, the "Lock and Mint" approach is required.
-- Some tokens can be minted on multiple chains. Examples of such tokens include stablecoins like USDC, TUSD, USDT, and FRAX. The linked token pools use a "Burn & Mint" method to burn the token at its source and then mint it natively on the destination blockchain. Wrapped assets such as WBTC or WETH are other examples that use the "Burn and Mint" approach.
-- A token with a PoR (Proof Of Reserve) feed on a specific chain poses a challenge for the "Burn & Mint" method when applied to other chains because it conflicts with the PoR feed. For these tokens, "Lock and Mint" is the preferred approach.
+- Some tokens can be minted on multiple chains. Examples of such tokens include stablecoins like USDC, TUSD, USDT, and FRAX. The linked token pools use a "Burn and Mint" method to burn the token at its source and then mint it natively on the destination blockchain. Wrapped assets such as WBTC or WETH are other examples that use the "Burn and Mint" approach.
+- A token with a Proof Of Reserve (PoR) feed on a specific chain poses a challenge for the "Burn and Mint" method when applied to other chains because it conflicts with the PoR feed. For these tokens, "Lock and Mint" is the preferred approach.
 
 Token pools provide rate limiting, which is a security feature enabling token issuers to set a maximum rate at which their token can be transferred.
 
