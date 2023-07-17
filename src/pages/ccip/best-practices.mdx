@@ -6,6 +6,8 @@ title: "CCIP Best Practices"
 whatsnext: { "Supported networks": "/ccip/supported-networks" }
 ---
 
+import { Aside } from "@components"
+
 Before you deploy your cross-chain dApps to mainnet, make sure that your dApps follow the best practices in this document. You are responsible for thoroughly reviewing your code and applying best practices to ensure that your cross-chain dApps are secure and reliable. If you have a unique use case for CCIP that might involve additional cross-chain risk, [Contact the Chainlink Labs Team](https://chain.link/contact?ref_id=CCIP) before deploying your application to mainnet.
 
 ## Verify destination chain
@@ -44,6 +46,11 @@ To estimate the accurate gas limit for your destination contract, consider the f
 If `extraArgs` are left empty, a default of _200000_ `gasLimit` will be set with no strict sequencing. For production deployments, make sure that `extraArgs` is mutable. This allows you to build it off-chain and pass it in a call to a function or store it in a variable that you can update on-demand. This makes `extraArgs` compatible with future CCIP upgrades.
 
 ## Sequencing
+
+<Aside type="caution" title="Experimental Feature">
+  This feature is currently experimental. While we're actively evaluating its performance and usefulness, we do not
+  guarantee its maintenance or further development in the future.
+</Aside>
 
 CCIP will always process messages sent from a specific sender to a specific destination blockchain in the order they were sent. If you set `strict: true` in the `extraArgs` part of the message, and if the `ccipReceive` fails (reverts), it will **_prevent any following messages from the same sender from being processed until the current message is successfully executed_**.
 
