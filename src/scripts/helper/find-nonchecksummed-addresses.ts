@@ -11,7 +11,12 @@ const ignoreFiles = [path.resolve(__dirname, "../../../public/search-index.json"
 const getCorrectAddress = (value: string) => {
   try {
     return ethers.utils.getAddress(value)
-  } catch {
+  } catch (error) {
+    if (error.reason && (error.reason as string).includes("bad address checksum")) {
+      console.error(error.reason)
+      console.error(`Search manually for ${error.value} and replace its occurences with a valid checksum`)
+    }
+
     return undefined
   }
 }
