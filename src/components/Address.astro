@@ -5,15 +5,15 @@ export type Props = {
   contractUrl: string
   address: string
   endLength?: number
-  urlClass: string
-  urlId: string
+  urlClass?: string
+  urlId?: string
 }
 
 const { contractUrl, address = contractUrl.split("/").pop(), endLength, urlClass, urlId } = Astro.props as Props
 ---
 
-<ph class="addressContainer">
-  <a title={address} id={urlId} class={urlClass ? "addressLink" + " " + urlClass : "addressLink"} href={contractUrl}>
+<ph class={`addressContainer ${urlClass || ""}`} id={urlId}>
+  <a title={address} class="addressLink" href={contractUrl}>
     {endLength ? address.slice(0, endLength + 2) + "..." + address.slice(-endLength) : address}
   </a>
   <button
