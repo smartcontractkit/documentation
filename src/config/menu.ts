@@ -29,6 +29,11 @@ export const MENU: MenuItems = {
       section: "automation",
     },
     {
+      text: "CCIP",
+      link: "/ccip",
+      section: "ccip",
+    },
+    {
       text: "Functions",
       link: "/chainlink-functions",
       section: "chainlinkFunctions",

@@ -1,0 +1,35 @@
+---
+import { clsx } from "../lib"
+
+export type Props = {
+  text: string
+  code?: boolean
+}
+
+const { text, code } = Astro.props as Props
+---
+
+<ph class="copyContainer">
+  {code ? <code>{text}</code> : text}
+  <button
+    class={clsx("copyBtn", "copy-iconbutton")}
+    style={{ height: "16px", width: "16px" }}
+    data-clipboard-text={text}
+  >
+    <img src="/assets/icons/copyIcon.svg" alt="Copy to clipboard" />
+  </button>
+</ph>
+
+<style>
+  .copyContainer {
+    white-space: nowrap;
+  }
+
+  .copyBtn {
+    background: none;
+    border: none;
+  }
+  .copyBtn:hover {
+    color: var(--color-text-link);
+  }
+</style>

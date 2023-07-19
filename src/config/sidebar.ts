@@ -867,6 +867,152 @@ export const SIDEBAR = {
       ],
     },
   ],
+  ccip: [
+    {
+      section: "CHAINLINK CCIP",
+      contents: [
+        {
+          title: "What is Chainlink CCIP?",
+          url: "ccip",
+        },
+        {
+          title: "Getting Started",
+          url: "ccip/getting-started",
+        },
+        {
+          title: "Supported Networks",
+          url: "ccip/supported-networks",
+        },
+        {
+          title: "Release Notes",
+          url: "ccip/release-notes",
+        },
+      ],
+    },
+    {
+      section: "TUTORIALS",
+      contents: [
+        {
+          title: "Transfer Tokens",
+          url: "ccip/tutorials/cross-chain-tokens",
+        },
+        {
+          title: "Transfer Tokens With Data",
+          url: "ccip/tutorials/programmable-token-transfers",
+        },
+        {
+          title: "Transfer Tokens Between EOAs",
+          url: "ccip/tutorials/cross-chain-tokens-from-eoa",
+        },
+        {
+          title: "Send Arbitrary Data",
+          url: "ccip/tutorials/send-arbitrary-data",
+        },
+      ],
+    },
+    {
+      section: "API Reference",
+      contents: [
+        {
+          title: "IRouterClient",
+          url: "ccip/api-reference/IRouterClient",
+        },
+        {
+          title: "CCIPReceiver",
+          url: "ccip/api-reference/CCIPReceiver",
+        },
+        {
+          title: "Client Library",
+          url: "ccip/api-reference/Client",
+        },
+        {
+          title: "Errors",
+          url: "ccip/api-reference/errors",
+        },
+      ],
+    },
+    {
+      section: "GUIDES",
+      contents: [
+        {
+          title: "Concepts",
+          url: "ccip/concepts",
+        },
+        {
+          title: "Architecture and Billing",
+          url: "ccip/architecture",
+        },
+        {
+          title: "Test Tokens",
+          url: "ccip/test-tokens",
+        },
+        {
+          title: "Best Practices",
+          url: "ccip/best-practices",
+        },
+      ],
+    },
+    {
+      section: "Chainlink Architecture",
+      contents: [
+        {
+          title: "Overview",
+          url: "architecture-overview/architecture-overview?parent=ccip",
+        },
+        {
+          title: "Basic Request Model",
+          url: "architecture-overview/architecture-request-model?parent=ccip",
+        },
+        {
+          title: "Decentralized Data Model",
+          url: "architecture-overview/architecture-decentralized-model?parent=ccip",
+        },
+        {
+          title: "Off-Chain Reporting",
+          url: "architecture-overview/off-chain-reporting?parent=ccip",
+        },
+      ],
+    },
+    {
+      section: "Resources",
+      contents: [
+        {
+          title: "Learning Resources",
+          url: "getting-started/other-tutorials?parent=ccip",
+        },
+        {
+          title: "Acquire testnet LINK",
+          url: "resources/acquire-link?parent=ccip",
+        },
+        {
+          title: "Fund Your Contracts",
+          url: "resources/fund-your-contract?parent=ccip",
+        },
+        {
+          title: "Install Frameworks",
+          url: "resources/create-a-chainlinked-project?parent=ccip",
+        },
+        {
+          title: "LINK Token Contracts",
+          url: "resources/link-token-contracts?parent=ccip",
+        },
+        {
+          title: "Bridges and Associated Risks",
+          url: "resources/bridge-risks?parent=ccip",
+        },
+        {
+          title: "Developer Communications",
+          url: "resources/developer-communications?parent=ccip",
+        },
+        { title: "Getting Help", url: "resources/getting-help" },
+        { title: "Hackathon Resources", url: "resources/hackathon-resources?parent=ccip" },
+        {
+          title: "Contributing to Chainlink",
+          url: "resources/contributing-to-chainlink?parent=ccip",
+        },
+      ],
+    },
+  ],
   nodeOperator: [
     {
       section: "Chainlink Nodes",
