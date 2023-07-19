@@ -953,6 +953,15 @@ export const SIDEBAR = {
       ],
     },
     {
+      section: "EXAMPLES",
+      contents: [
+        {
+          title: "Cross-chain dApps and Tools",
+          url: "ccip/examples",
+        },
+      ],
+    },
+    {
       section: "Chainlink Architecture",
       contents: [
         {
