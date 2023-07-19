@@ -13,7 +13,7 @@ const AddressComponent = ({ contractUrl, address, endLength, urlClass, urlId }: 
   address = address || contractUrl.split("/").pop()
 
   return (
-    <div className={`addressContainer ${urlClass || ""}`} id={urlId}>
+    <span className={`addressContainer ${urlClass || ""}`} id={urlId}>
       <a title={address} className="addressLink" href={contractUrl}>
         {endLength ? address.slice(0, endLength + 2) + "..." + address.slice(-endLength) : address}
       </a>
@@ -45,7 +45,7 @@ const AddressComponent = ({ contractUrl, address, endLength, urlClass, urlId }: 
           color: var(--color-text-link);
         }
       `}</style>
-    </div>
+    </span>
   )
 }
 
