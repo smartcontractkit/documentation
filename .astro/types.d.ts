@@ -275,6 +275,120 @@ declare module "astro:content" {
         data: InferEntrySchema<"blockchain-integrations-framework">
       } & { render(): Render[".mdx"] }
     }
+    ccip: {
+      "api-reference/ccip-receiver.mdx": {
+        id: "api-reference/ccip-receiver.mdx"
+        slug: "api-reference/ccip-receiver"
+        body: string
+        collection: "ccip"
+        data: InferEntrySchema<"ccip">
+      } & { render(): Render[".mdx"] }
+      "api-reference/client.mdx": {
+        id: "api-reference/client.mdx"
+        slug: "api-reference/client"
+        body: string
+        collection: "ccip"
+        data: InferEntrySchema<"ccip">
+      } & { render(): Render[".mdx"] }
+      "api-reference/errors.mdx": {
+        id: "api-reference/errors.mdx"
+        slug: "api-reference/errors"
+        body: string
+        collection: "ccip"
+        data: InferEntrySchema<"ccip">
+      } & { render(): Render[".mdx"] }
+      "api-reference/i-router-client.mdx": {
+        id: "api-reference/i-router-client.mdx"
+        slug: "api-reference/i-router-client"
+        body: string
+        collection: "ccip"
+        data: InferEntrySchema<"ccip">
+      } & { render(): Render[".mdx"] }
+      "architecture.mdx": {
+        id: "architecture.mdx"
+        slug: "architecture"
+        body: string
+        collection: "ccip"
+        data: InferEntrySchema<"ccip">
+      } & { render(): Render[".mdx"] }
+      "best-practices.mdx": {
+        id: "best-practices.mdx"
+        slug: "best-practices"
+        body: string
+        collection: "ccip"
+        data: InferEntrySchema<"ccip">
+      } & { render(): Render[".mdx"] }
+      "concepts.mdx": {
+        id: "concepts.mdx"
+        slug: "concepts"
+        body: string
+        collection: "ccip"
+        data: InferEntrySchema<"ccip">
+      } & { render(): Render[".mdx"] }
+      "getting-started.mdx": {
+        id: "getting-started.mdx"
+        slug: "getting-started"
+        body: string
+        collection: "ccip"
+        data: InferEntrySchema<"ccip">
+      } & { render(): Render[".mdx"] }
+      "index.mdx": {
+        id: "index.mdx"
+        slug: "index"
+        body: string
+        collection: "ccip"
+        data: InferEntrySchema<"ccip">
+      } & { render(): Render[".mdx"] }
+      "release-notes.mdx": {
+        id: "release-notes.mdx"
+        slug: "release-notes"
+        body: string
+        collection: "ccip"
+        data: InferEntrySchema<"ccip">
+      } & { render(): Render[".mdx"] }
+      "supported-networks.mdx": {
+        id: "supported-networks.mdx"
+        slug: "supported-networks"
+        body: string
+        collection: "ccip"
+        data: InferEntrySchema<"ccip">
+      } & { render(): Render[".mdx"] }
+      "test-tokens.mdx": {
+        id: "test-tokens.mdx"
+        slug: "test-tokens"
+        body: string
+        collection: "ccip"
+        data: InferEntrySchema<"ccip">
+      } & { render(): Render[".mdx"] }
+      "tutorials/cross-chain-tokens-from-eoa.mdx": {
+        id: "tutorials/cross-chain-tokens-from-eoa.mdx"
+        slug: "tutorials/cross-chain-tokens-from-eoa"
+        body: string
+        collection: "ccip"
+        data: InferEntrySchema<"ccip">
+      } & { render(): Render[".mdx"] }
+      "tutorials/cross-chain-tokens.mdx": {
+        id: "tutorials/cross-chain-tokens.mdx"
+        slug: "tutorials/cross-chain-tokens"
+        body: string
+        collection: "ccip"
+        data: InferEntrySchema<"ccip">
+      } & { render(): Render[".mdx"] }
+      "tutorials/programmable-token-transfers.mdx": {
+        id: "tutorials/programmable-token-transfers.mdx"
+        slug: "tutorials/programmable-token-transfers"
+        body: string
+        collection: "ccip"
+        data: InferEntrySchema<"ccip">
+      } & { render(): Render[".mdx"] }
+      "tutorials/send-arbitrary-data.mdx": {
+        id: "tutorials/send-arbitrary-data.mdx"
+        slug: "tutorials/send-arbitrary-data"
+        body: string
+        collection: "ccip"
+        data: InferEntrySchema<"ccip">
+      } & { render(): Render[".mdx"] }
+    }
     "chainlink-automation": {
       "automation-economics.mdx": {
         id: "automation-economics.mdx"
@@ -411,16 +525,16 @@ declare module "astro:content" {
       } & { render(): Render[".mdx"] }
     }
     "chainlink-functions": {
-      "api-reference/functions-client.mdx": {
-        id: "api-reference/functions-client.mdx"
-        slug: "api-reference/functions-client"
+      "api-reference/Functions.mdx": {
+        id: "api-reference/Functions.mdx"
+        slug: "api-reference/functions"
         body: string
         collection: "chainlink-functions"
         data: InferEntrySchema<"chainlink-functions">
       } & { render(): Render[".mdx"] }
-      "api-reference/functions.mdx": {
-        id: "api-reference/functions.mdx"
-        slug: "api-reference/functions"
+      "api-reference/functions-client.mdx": {
+        id: "api-reference/functions-client.mdx"
+        slug: "api-reference/functions-client"
         body: string
         collection: "chainlink-functions"
         data: InferEntrySchema<"chainlink-functions">

@@ -197,6 +197,18 @@ const vrfCollection = defineCollection({
     })
     .strict(),
 })
+const ccipCollection = defineCollection({
+  type: "content",
+  schema: z
+    .object({
+      section: z.string(),
+      date: z.string(),
+      title: z.string(),
+      whatsnext: z.record(z.string(), z.string()).optional(),
+      isIndex: z.boolean().optional(),
+    })
+    .strict(),
+})
 
 export const collections = {
   "any-api": anyApiCollection,
@@ -209,4 +221,5 @@ export const collections = {
   "getting-started": gettingStartedCollection,
   resources: resourcesCollection,
   vrf: vrfCollection,
+  ccip: ccipCollection,
 }

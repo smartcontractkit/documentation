@@ -915,15 +915,15 @@ export const SIDEBAR = {
       contents: [
         {
           title: "IRouterClient",
-          url: "ccip/api-reference/IRouterClient",
+          url: "ccip/api-reference/i-router-client",
         },
         {
           title: "CCIPReceiver",
-          url: "ccip/api-reference/CCIPReceiver",
+          url: "ccip/api-reference/ccip-receiver",
         },
         {
           title: "Client Library",
-          url: "ccip/api-reference/Client",
+          url: "ccip/api-reference/client",
         },
         {
           title: "Errors",

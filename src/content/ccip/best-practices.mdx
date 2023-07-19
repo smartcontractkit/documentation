@@ -1,5 +1,4 @@
 ---
-layout: ../../layouts/MainLayout.astro
 section: ccip
 date: Last Modified
 title: "CCIP Best Practices"
@@ -12,21 +11,21 @@ Before you deploy your cross-chain dApps to mainnet, make sure that your dApps f
 
 ## Verify destination chain
 
-Before calling the router's `ccipSend` [function](/ccip/api-reference/IRouterClient#ccipsend), ensure that your code allows users to send CCIP messages to trusted destination chains.
+Before calling the router's `ccipSend` [function](/ccip/api-reference/i-router-client#ccipsend), ensure that your code allows users to send CCIP messages to trusted destination chains.
 
 ## Verify source chain
 
-When implementing the `ccipReceive` [method](/ccip/api-reference/CCIPReceiver#ccipreceive) in a contract residing on the destination chain, ensure to verify the source chain of the incoming CCIP message. This verification ensures that CCIP messages can only be received from trusted source chains.
+When implementing the `ccipReceive` [method](/ccip/api-reference/ccip-receiver#ccipreceive) in a contract residing on the destination chain, ensure to verify the source chain of the incoming CCIP message. This verification ensures that CCIP messages can only be received from trusted source chains.
 
 ## Verify sender
 
-When implementing the `ccipReceive` [method](/ccip/api-reference/CCIPReceiver#ccipreceive) in a contract residing on the destination chain, it's important to validate the sender of the incoming CCIP message. This check ensures that CCIP messages are received only from trusted sender addresses.
+When implementing the `ccipReceive` [method](/ccip/api-reference/ccip-receiver#ccipreceive) in a contract residing on the destination chain, it's important to validate the sender of the incoming CCIP message. This check ensures that CCIP messages are received only from trusted sender addresses.
 
 **Note**: Depending on your use case, this verification might not always be necessary.
 
 ## Verify router addresses
 
-When you implement the `ccipReceive` [method](/ccip/api-reference/CCIPReceiver#ccipreceive) in the contract residing on the destination chain, validate that the `msg.sender` is the correct router address. This verification ensures that only the router contract can call the `ccipReceive` function on the receiver contract and is for developers that want to restrict which accounts are allowed to call `ccipReceive`.
+When you implement the `ccipReceive` [method](/ccip/api-reference/ccip-receiver#ccipreceive) in the contract residing on the destination chain, validate that the `msg.sender` is the correct router address. This verification ensures that only the router contract can call the `ccipReceive` function on the receiver contract and is for developers that want to restrict which accounts are allowed to call `ccipReceive`.
 
 ## Setting `gasLimit`
 
