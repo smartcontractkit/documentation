@@ -525,16 +525,16 @@ declare module "astro:content" {
       } & { render(): Render[".mdx"] }
     }
     "chainlink-functions": {
-      "api-reference/Functions.mdx": {
-        id: "api-reference/Functions.mdx"
-        slug: "api-reference/functions"
+      "api-reference/functions-client.mdx": {
+        id: "api-reference/functions-client.mdx"
+        slug: "api-reference/functions-client"
         body: string
         collection: "chainlink-functions"
         data: InferEntrySchema<"chainlink-functions">
       } & { render(): Render[".mdx"] }
-      "api-reference/functions-client.mdx": {
-        id: "api-reference/functions-client.mdx"
-        slug: "api-reference/functions-client"
+      "api-reference/functions.mdx": {
+        id: "api-reference/functions.mdx"
+        slug: "api-reference/functions"
         body: string
         collection: "chainlink-functions"
         data: InferEntrySchema<"chainlink-functions">
