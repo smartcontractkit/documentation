@@ -9,7 +9,7 @@ import { Tabs } from "@components/Tabs"
 
 The lootbox is a utility contract that allow users to open it to receive a random reward.
 
-It supports [ERC20](https://eips.ethereum.org/EIPS/eip-20), [ERC721](https://eips.ethereum.org/EIPS/eip-721), and [ERC1155](https://eips.ethereum.org/EIPS/eip-1155) tokens as rewards. The rewards are distributed from a pool of tokens that are transferred to the contract on deploy.
+It supports [ERC-20](https://eips.ethereum.org/EIPS/eip-20), [ERC-721](https://eips.ethereum.org/EIPS/eip-721), and [ERC-1155](https://eips.ethereum.org/EIPS/eip-1155) tokens as rewards. The rewards are distributed from a pool of tokens that are transferred to the contract when the lootbox contract is deployed.
 
 The lootbox contract uses VRF to generate a random number that is used to determine the reward.
 
@@ -29,10 +29,10 @@ Before you start this tutorial, complete the following items:
   - To check your installation, run `git --version`. You should see an output similar to `git version x.x.x`.
 - Install [Nodejs](https://nodejs.org/en/) 16.0.0 or higher
   - To check your installation, run `node --version`. You should see an output similar to `v16.x.x`.
-- Make sure the deployer account has enough LINK to fund the VRF subscription. If you don't already have a VRF subscription, the deployment script creates one for you.
-  - [Estimate your minimum subscription balance](/vrf/v2/estimating-costs#estimate-minimum-subscription-balance), or if your VRF request is pending, check the [Subscription Manager](https://vrf.chain.link]) to see if the subscription is underfunded.
+- Make sure the deployer account has enough LINK to fund the [VRF subscription](/vrf/v2/subscription). If you don't already have a VRF subscription, the deployment script creates one for you.
+  - [Estimate the minimum subscription balance](/vrf/v2/estimating-costs#estimate-minimum-subscription-balance) that VRF requires to process your randomness request. The minimum subscription balance provides a buffer against gas volatility, and only the actual cost of your request will be deducted from your account. If your subscription is underfunded, your VRF request will be pending for 24 hours. If that happens, check the [Subscription Manager](https://vrf.chain.link]) to see the additional balance needed.
   - Configure the initial funding amount in [`network-config.ts`](https://github.com/smartcontractkit/quickstarts-lootbox/blob/main/network-config.ts).
-  - For testnets, you can use the [LINK faucet](https://faucets.chain.link/). 20 LINK should be sufficient to run this tutorial with a testnet.
+  - For testnets, you can use the [LINK faucet](https://faucets.chain.link/). Request 20 LINK from the faucet - this amount should be sufficient to run this tutorial with a testnet.
 
 ## Setup steps
 
@@ -82,6 +82,8 @@ cp .env.example .env
 
 #### Hardhat project
 
+[Hardhat](https://hardhat.org/) is an Ethereum development environment that is used here to configure and deploy the lootbox contract.
+
 1. In your `.env` file, fill in these values:
 
    | Parameter         | Description                                                 | Example                                     |
@@ -105,6 +107,12 @@ In your `.env` file, fill in these values:
 
 #### Reward tokens
 
+For rewards, the lootbox contracts supports any tokens from the following [token standards](https://ethereum.org/en/developers/docs/standards/tokens/):
+
+- [ERC-20](https://ethereum.org/en/developers/docs/standards/tokens/erc-20/): the fungible token standard
+- [ERC-721](https://ethereum.org/en/developers/docs/standards/tokens/erc-721/): the NFT standard
+- [ERC-1155](https://ethereum.org/en/developers/docs/standards/tokens/erc-1155/): the multi-token standard
+
 The amounts per unit are used to calculate the lootbox supply of rewards. For example, if you want to distribute 100 tokens of a specific ERC20 token, you would set the `totalAmount` to `100000000000000000000` and the `amountPerUnit` to `1000000000000000000`. This would result in a lootbox supply of 100 units.
 
 Add all the tokens you want to distribute as rewards to the array in the list of tokens by following the format below.
@@ -114,9 +122,9 @@ Add all the tokens you want to distribute as rewards to the array in the list of
 There's an example configuration file in [`scripts/data/tokens.json`](https://github.com/smartcontractkit/quickstarts-lootbox/blob/main/scripts/data/tokens.json) which includes a list of all supported token types:
 
 <Tabs client:visible>
-<Fragment slot="tab.1">ERC20</Fragment>
-<Fragment slot="tab.2">ERC721</Fragment>
-<Fragment slot="tab.3">ERC1155</Fragment>
+<Fragment slot="tab.1">ERC-20</Fragment>
+<Fragment slot="tab.2">ERC-721</Fragment>
+<Fragment slot="tab.3">ERC-1155</Fragment>
 <Fragment slot="panel.1">
 ```json
 {
@@ -199,9 +207,11 @@ Besides deploying the contract, the [deploy script](https://github.com/smartcont
 
     {/* prettier-ignore */}
     <Aside type="note">
-    Make sure the deployer account has enough LINK to fund the subscription. The initial funding amount is configured in [`network-config.ts`](https://github.com/smartcontractkit/quickstarts-lootbox/blob/main/network-config.ts).
+    Make sure the deployer account has enough LINK to fund the subscription. The initial funding amount is configured in [`network-config.ts`](https://github.com/smartcontractkit/quickstarts-lootbox/blob/main/network-config.ts). For testnets, you can use the [LINK faucet](https://faucets.chain.link/).
 
-    For testnets, you can use the [LINK faucet](https://faucets.chain.link/).
+    [Estimate the minimum subscription balance](/vrf/v2/estimating-costs#estimate-minimum-subscription-balance) that VRF requires to process your randomness request. The minimum subscription balance provides a buffer against gas volatility, and only the actual cost of your request will be deducted from your account.
+
+    If your subscription is underfunded, your VRF request will be pending for 24 hours. If that happens, check the [Subscription Manager](https://vrf.chain.link]) to see the additional balance needed.
 
     </Aside>
 
@@ -233,7 +243,7 @@ The contract uses [Chainlink VRF](https://vrf.chain.link) to generate randomness
 
 Because the randomness is generated off-chain, the contract will not be able to transfer the rewards immediately. Instead, it will store the request and once the randomness is received, the user or anyone else can call the `claimRewards` function to transfer the rewards to the user.
 
-The lootbox creator can also call the `claimRewards` function and improve the user experience by transferring the rewards to the user immediately. This can be further automated by using [Chainlink Automation](https://automation.chain.link/).
+The lootbox creator can also call the `claimRewards` function and improve the user experience by transferring the rewards to the user immediately. You can automate this further by using [Chainlink Automation](https://automation.chain.link/).
 
 ## Claim rewards
 
