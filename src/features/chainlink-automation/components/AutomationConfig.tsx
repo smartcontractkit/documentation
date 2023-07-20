@@ -1,6 +1,7 @@
 /** @jsxImportSource preact */
 import { ethers, BigNumber } from "ethers"
 import { ChainlinkAutomationConfig } from "@features/chainlink-automation"
+import { Address } from "@components"
 
 export const AutomationConfig = ({
   config,
@@ -37,7 +38,7 @@ export const AutomationConfig = ({
               <td />
             ) : (
               <td>
-                <a href={getUrl(registryAddress)}>{registryAddress.toLocaleString()}</a>
+                <Address contractUrl={getUrl(registryAddress)} />
               </td>
             )}
           </tr>
@@ -47,7 +48,7 @@ export const AutomationConfig = ({
               <td />
             ) : (
               <td>
-                <a href={getUrl(registrar)}>{registrar.toLocaleString()}</a>
+                <Address contractUrl={getUrl(registrar)} />
               </td>
             )}
           </tr>
