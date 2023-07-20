@@ -678,10 +678,10 @@ export const SIDEBAR = {
       ],
     },
     {
-      section: "SOLUTIONS",
+      section: "EXAMPLES",
       contents: [
         {
-          title: "Chainlink Solution Accelerator: Lootbox",
+          title: "Create a lootbox to distribute random rewards",
           url: "vrf/v2/lootbox",
         },
       ],
