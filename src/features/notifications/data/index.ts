@@ -7,8 +7,8 @@ import { BannerContent } from "../components/HeaderBanner"
 // export const NotificationData: BannerContent | null = null
 
 export const NotificationData: BannerContent | null = {
-  description: "CCIP is available on testnet!",
+  description: "CCIP is now available on testnet for all developers.",
   type: "info",
-  linkText: "Get started.",
-  linkUrl: "/ccip/getting-started",
+  linkText: "Get started today.",
+  linkUrl: "https://docs.chain.link/ccip",
 }
