@@ -9,7 +9,7 @@ import { Tabs } from "@components/Tabs"
 
 The lootbox is a utility contract that allow users to open it to receive a random reward.
 
-It supports [ERC20](https://eips.ethereum.org/EIPS/eip-20), [ERC721](https://eips.ethereum.org/EIPS/eip-721), and [ERC1155](https://eips.ethereum.org/EIPS/eip-1155) tokens as rewards. The rewards are distributed from a pool of tokens that are trasferred to the contract on deploy.
+It supports [ERC20](https://eips.ethereum.org/EIPS/eip-20), [ERC721](https://eips.ethereum.org/EIPS/eip-721), and [ERC1155](https://eips.ethereum.org/EIPS/eip-1155) tokens as rewards. The rewards are distributed from a pool of tokens that are transferred to the contract on deploy.
 
 The lootbox contract uses VRF to generate a random number that is used to determine the reward.
 
@@ -30,8 +30,9 @@ Before you start this tutorial, complete the following items:
 - Install [Nodejs](https://nodejs.org/en/) 16.0.0 or higher
   - To check your installation, run `node --version`. You should see an output similar to `v16.x.x`.
 - Make sure the deployer account has enough LINK to fund the VRF subscription. If you don't already have a VRF subscription, the deployment script creates one for you.
+  - [Estimate your minimum subscription balance](/vrf/v2/estimating-costs#estimate-minimum-subscription-balance), or if your VRF request is pending, check the [Subscription Manager](https://vrf.chain.link]) to see if the subscription is underfunded.
   - Configure the initial funding amount in [`network-config.ts`](https://github.com/smartcontractkit/quickstarts-lootbox/blob/main/network-config.ts).
-  - For testnets, you can use the [LINK faucet](https://faucets.chain.link/).
+  - For testnets, you can use the [LINK faucet](https://faucets.chain.link/). 20 LINK should be sufficient to run this tutorial with a testnet.
 
 ## Setup steps
 
@@ -150,9 +151,9 @@ There's an example configuration file in [`scripts/data/tokens.json`](https://gi
 
 #### Whitelist
 
-The merkle tree for the private opening stage is generated from the address list in the [`scripts/data/whitelist.json`](https://github.com/smartcontractkit/quickstarts-lootbox/blob/main/scripts/data/whitelist.json) file. Edit the file and add all the addresses you want to list.
+The [Merkle tree](https://ethereum.org/en/developers/tutorials/merkle-proofs-for-offline-data-integrity/#introduction) for the private opening stage is generated from the address list in the [`scripts/data/whitelist.json`](https://github.com/smartcontractkit/quickstarts-lootbox/blob/main/scripts/data/whitelist.json) file. Edit the file and add all the addresses you want to list.
 
-Leave the file empty if you don't want to do a private mint and the contract will be initialized in public opening mode.
+If you don't want to do a private mint, leave the `whitelist.json` file empty, and the contract will be initialized in [public opening mode](#public-mode).
 
 ## Run steps
 
@@ -192,7 +193,7 @@ Besides deploying the contract, the [deploy script](https://github.com/smartcont
 
     This is a mandatory step because the contract must store the tokens in its own balance. So make sure the deployer account owns all the tokens you want to distribute as rewards.
 
-1.  Generate a merkle tree for the whitelist.
+1.  Generate a [Merkle tree](https://ethereum.org/en/developers/tutorials/merkle-proofs-for-offline-data-integrity/#introduction) for the whitelist.
 
 1.  Create and fund a VRF subscription if one is not provided.
 
@@ -214,17 +215,17 @@ Besides deploying the contract, the [deploy script](https://github.com/smartcont
 
 Once the contract is deployed and the start timestamp is reached, users can start opening the lootbox. The amount of rewards they receive depends on the amount of units they open by specifying the `amountToOpen` parameter and paying the corresponding fee.
 
-There are two modes for opening the lootbox which can be toggled by the owner account.
+You can control access to the lootbox with two modes: private and public. Use these modes to determine which users can open the lootbox. The owner account can update this setting after deployment, so you can test the opening functionality privately before making the lootbox available to the public.
 
 ### Private mode
 
-In this mode, the lootbox is only open to whitelisted addresses by calling the `privateOpen` function and providing merkle proof for the address. To generate it, see [merkletreejs](https://github.com/merkletreejs/merkletreejs).
+In this mode, the lootbox is only open to whitelisted addresses by calling the `privateOpen` function and providing Merkle proof for the address. To generate it, see [merkletreejs](https://github.com/merkletreejs/merkletreejs).
 
 The whitelist is set on contract deployment and can be changed by calling the `setWhitelistRoot` function from the owner account. The private mode can be enabled or disabled at any time by calling the `setPrivateOpen` function from the owner account.
 
 ### Public mode
 
-When the private mode is disabled, anyone can open the lootbox by calling the `publicOpen` function. It will do the same thing as the `privateOpen` function but without the merkle proof.
+When the private mode is disabled, anyone can open the lootbox by calling the `publicOpen` function. It will do the same thing as the `privateOpen` function but without the Merkle proof.
 
 ## Randomness
 
@@ -240,11 +241,11 @@ The rewards for an open request can be claimed by calling the `claimRewards` fun
 
 The claim function can only be called after the randomness is fulfilled. To check this, call the `canClaimRewards` function and pass the opener address as the parameter.
 
-One address can only have one open request at a time. If you try to open the lootbox again before the previous request is fulfilled, the transaction will revert with `PendingOpenRequest` error.
+One address can only have one open request at a time. If you try to open the lootbox again before the previous request is fulfilled, the transaction reverts with a `PendingOpenRequest` error.
 
 ## Withdraw funds
 
-At any time, the owner can withdraw funds from the collected fees by calling the `withdraw` function. By doing so the contract balance will be transferred to the owner account.
+At any time, the owner can withdraw funds from the collected fees by calling the `withdraw` function. By doing so, the contract balance will be transferred to the owner account.
 
 ## Post-deployment configuration
 
@@ -252,5 +253,5 @@ After deployment, you can change some contract parameters by calling the followi
 
 | Function           | Description                            | Parameters           |
 | ------------------ | -------------------------------------- | -------------------- |
-| `setWhitelistRoot` | Set new merkle root for the whitelist. | `whitelistRoot`      |
+| `setWhitelistRoot` | Set new Merkle root for the whitelist. | `whitelistRoot`      |
 | `setPrivateOpen`   | Enable/disable public opening mode.    | `privateOpenEnabled` |
