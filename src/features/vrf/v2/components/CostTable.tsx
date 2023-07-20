@@ -524,7 +524,7 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
 
         {method === "subscription" && (
           <>
-            <h6>Maximum Cost during a gas spike: {formatmaxCost()} LINK</h6>
+            <h6>Maximum Cost: {formatmaxCost()} LINK</h6>
             <p>
               When using the subscription balance, a minimum amount of funds is necessary in order to use the VRF. Take
               a look at your balance in the Subscription manager
