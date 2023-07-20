@@ -9,8 +9,8 @@ import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
  * DO NOT USE THIS CODE IN PRODUCTION.
  */
 
-contract HistoricalPriceConsumerV3 {
-    AggregatorV3Interface internal priceFeed;
+contract HistoricalDataConsumerV3 {
+    AggregatorV3Interface internal dataFeed;
 
     /**
      * Network: Sepolia
@@ -18,13 +18,13 @@ contract HistoricalPriceConsumerV3 {
      * Address:	0x694AA1769357215DE4FAC081bf1f309aDC325306
      */
     constructor() {
-        priceFeed = AggregatorV3Interface(
+        dataFeed = AggregatorV3Interface(
             0x694AA1769357215DE4FAC081bf1f309aDC325306
         );
     }
 
     /**
-     * Returns historical price for a round id.
+     * Returns historical data for a round ID.
      * roundId is NOT incremental. Not all roundIds are valid.
      * You must know a valid roundId before consuming historical data.
      *
@@ -34,16 +34,15 @@ contract HistoricalPriceConsumerV3 {
      *
      * @dev A timestamp with zero value means the round is not complete and should not be used.
      */
-    function getHistoricalPrice(uint80 roundId) public view returns (int256) {
+    function getHistoricalData(uint80 roundId) public view returns (int256) {
         // prettier-ignore
         (
             /*uint80 roundID*/,
-            int price,
+            int answer,
             /*uint startedAt*/,
-            uint timeStamp,
+            /*uint timeStamp*/,
             /*uint80 answeredInRound*/
-        ) = priceFeed.getRoundData(roundId);
-        require(timeStamp > 0, "Round not complete");
-        return price;
+        ) = dataFeed.getRoundData(roundId);
+        return answer;
     }
 }

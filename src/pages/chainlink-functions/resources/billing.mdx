@@ -31,7 +31,7 @@ Gas cost calculation includes the following variables:
 - Gas after payment: The amount of gas used to cover additional operations such as decrementing the subscription balance and incrementing the oracle's withdrawable balance.
 - Callback gas limit: This specifies the maximum amount of gas to spend for a client callback. It is an estimate of the total gas cost to fulfil a request. See the [Cost Simulation](#cost-simulation-reservation) section.
 - Native to LINK conversion: This allows your subscription balance to be billed only in LINK tokens.
-  - Convert the network's native currency to LINK: The total gas cost in _native_ units is converted to LINK using the correct [Price Feed](/data-feeds/price-feeds/addresses). On Sepolia, the conversion uses the ETH/LINK Price Feed. On Polygon Mumbai, the conversion uses the MATIC/LINK Price Feed.
+  - Convert the network's native gas coins to LINK: The total gas cost in _native_ units is converted to LINK using the correct [Price Feed](/data-feeds/price-feeds/addresses). On Sepolia, the conversion uses the ETH/LINK Price Feed. On Polygon Mumbai, the conversion uses the MATIC/LINK Price Feed.
   - Fallback Wei to LINK ratio: In the unlikely event that the _Native to LINK_ price data feed is unavailable, the fallback conversion is used. You can find this ratio by running the `gitConfig` function in the Oracle Registry proxy contract. See the [Supported Networks](/chainlink-functions/supported-networks) page to find the contract addresses for each network.
 
 ## Cost Simulation (Reservation)
@@ -41,7 +41,7 @@ During the _Request_ step:
 - The total cost in LINK is **estimated** using the following formula:
 
   ```
-  (Gas price * (Estimated gas overhead + Callback gas limit + Gas after payment)) / Native to Link conversion = total estimated gas cost in LINK
+  (Gas price * (Estimated gas overhead + Callback gas limit + Gas after payment)) / Native to LINK conversion = total estimated gas cost in LINK
 
   total estimated cost in LINK = total gas cost + DON fees + Registry fees
   ```
@@ -55,7 +55,7 @@ When a DON's oracle reports the response, subscription accounts are charged base
 - The total cost in LINK is **calculated** using the following formula:
 
   ```
-  (Gas price * (Gas Report + Callback gas + Gas after payment)) / Native to Link conversion = total gas cost in LINK
+  (Gas price * (Gas Report + Callback gas + Gas after payment)) / Native to LINK conversion = total gas cost in LINK
 
   total cost in LINK = total gas cost + DON fees + Registry fees
   ```
