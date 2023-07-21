@@ -1,4 +1,5 @@
 ---
+import { splitTextByHeadings } from "../scripts/split-text-by-headings"
 import { MarkdownInstance } from "astro"
 import fs from "node:fs"
 
@@ -11,16 +12,14 @@ const postsMdx = [...(await Astro.glob("./**/*.mdx")).filter((post) => !post.fro
 const postsMdxWithContent = postsMdx.map((post) => {
   const url = new URL(post.file, import.meta.url)
   var content = fs.readFileSync(url, "utf-8")
-
-  // Temp fix for Algolia record size limits: Limit record size with .substring()
-  if (content.length > 78000) {
-    content = content.substring(0, 78000)
-    console.warn("\x1b[1;43mRecord exceeds 78000 chars and was trimmed - " + url + "\x1b[0m")
-  }
-  return { ...post, rawContent: () => content }
+  const splittedContent = splitTextByHeadings(content)
+  const chunks = splittedContent.map((chunk) => {
+    return { ...post, rawContent: () => chunk }
+  })
+  return chunks
 })
 
-const markDownFiles = [...postsMdxWithContent]
+const markDownFiles = [...postsMdxWithContent].flat()
 
 //const allContent = [...pages, ...postsMdx]
 
