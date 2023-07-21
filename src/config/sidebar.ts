@@ -1,12 +1,18 @@
-export const SIDEBAR = {
+import { sectionEnum } from "../content/config"
+import { z } from "astro:content"
+type Sections = z.infer<typeof sectionEnum>
+
+type SectionEntry = {
+  section: string
+  contents: { title: string; url: string; children?: { title: string; url: string }[] }[]
+}
+
+export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
   gettingStarted: [
     {
       section: "Getting Started",
       contents: [
-        {
-          title: "Overview",
-          url: "getting-started/conceptual-overview",
-        },
+        { title: "Overview", url: "getting-started/conceptual-overview" },
         {
           title: "Deploy Your First Contract",
           url: "getting-started/deploy-your-first-contract",

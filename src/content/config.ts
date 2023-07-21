@@ -1,214 +1,61 @@
 import { z, defineCollection } from "astro:content"
 
-const anyApiCollection = defineCollection({
-  type: "content",
-  schema: z
-    .object({
-      section: z.string(),
-      date: z.string(),
-      title: z.string(),
-      isMdx: z.boolean(),
-      permalink: z.string(),
-      whatsnext: z.record(z.string(), z.string()).optional(),
-      metadata: z
-        .object({
-          title: z.string(),
-          description: z.string(),
-          image: z.object({
+export const sectionEnum = z.enum([
+  "anyApi",
+  "global",
+  "bif",
+  "ccip",
+  "automation",
+  "chainlinkFunctions",
+  "nodeOperator",
+  "dataFeeds",
+  "gettingStarted",
+  "legacy",
+  "vrf",
+])
+
+const baseFrontmatter = z
+  .object({
+    section: sectionEnum,
+    date: z.string().optional(),
+    title: z.string(),
+    whatsnext: z.record(z.string(), z.string()).optional(),
+    isMdx: z.boolean().optional(),
+    permalink: z.string().optional(),
+    isIndex: z.boolean().optional(),
+    metadata: z
+      .object({
+        title: z.string().optional(),
+        description: z.string().optional(),
+        image: z
+          .object({
             0: z.string(),
-          }),
-        })
-        .optional(),
-    })
-    .strict(),
-})
-const architectureOverviewCollection = defineCollection({
+          })
+          .optional(),
+        linkToWallet: z.boolean().optional(),
+      })
+      .optional(),
+    excerpt: z.string().optional(),
+    datafeedtype: z.string().optional(),
+  })
+  .strict()
+
+const baseCollection = defineCollection({
   type: "content",
-  schema: z
-    .object({
-      section: z.string(),
-      date: z.string(),
-      title: z.string(),
-      permalink: z.string(),
-      whatsnext: z.record(z.string(), z.string()).optional(),
-      metadata: z
-        .object({
-          title: z.string().optional(),
-          description: z.string().optional(),
-          image: z
-            .object({
-              0: z.string(),
-            })
-            .optional(),
-        })
-        .optional(),
-    })
-    .strict(),
-})
-const bifCollection = defineCollection({
-  type: "content",
-  schema: z
-    .object({
-      section: z.string(),
-      date: z.string(),
-      title: z.string(),
-      isIndex: z.boolean(),
-    })
-    .strict(),
-})
-const chainlinkAutomationCollection = defineCollection({
-  type: "content",
-  schema: z
-    .object({
-      section: z.string(),
-      date: z.string(),
-      title: z.string(),
-      whatsnext: z.record(z.string(), z.string()).optional(),
-      isMdx: z.boolean().optional(),
-    })
-    .strict(),
-})
-const chainlinkFunctionsCollection = defineCollection({
-  type: "content",
-  schema: z
-    .object({
-      section: z.string(),
-      date: z.string(),
-      title: z.string(),
-      metadata: z
-        .object({
-          linkToWallet: z.boolean(),
-        })
-        .optional(),
-      whatsnext: z.record(z.string(), z.string()).optional(),
-      isIndex: z.boolean().optional(),
-    })
-    .strict(),
-})
-const chainlinkNodesCollection = defineCollection({
-  type: "content",
-  schema: z
-    .object({
-      section: z.string(),
-      date: z.string(),
-      title: z.string(),
-      permalink: z.string().optional(),
-      whatsnext: z.record(z.string(), z.string()).optional(),
-      metadata: z
-        .object({
-          title: z.string(),
-          description: z.string(),
-        })
-        .optional(),
-    })
-    .strict(),
+  schema: baseFrontmatter,
 })
 
-const dataFeedsCollection = defineCollection({
-  type: "content",
-  schema: z
-    .object({
-      section: z.string(),
-      date: z.string(),
-      title: z.string(),
-      permalink: z.string().optional(),
-      isIndex: z.boolean().optional(),
-      excerpt: z.string().optional(),
-      datafeedtype: z.string().optional(),
-      whatsnext: z.record(z.string(), z.string()).optional(),
-      metadata: z
-        .object({
-          title: z.string().optional(),
-          description: z.string(),
-        })
-        .optional(),
-    })
-    .strict(),
-})
-
-const gettingStartedCollection = defineCollection({
-  type: "content",
-  schema: z
-    .object({
-      section: z.string(),
-      date: z.string(),
-      title: z.string(),
-      permalink: z.string().optional(),
-      excerpt: z.string().optional(),
-      whatsnext: z.record(z.string(), z.string()).optional(),
-      metadata: z
-        .object({
-          title: z.string().optional(),
-          description: z.string().optional(),
-          image: z.object({
-            0: z.string(),
-          }),
-        })
-        .optional(),
-    })
-    .strict(),
-})
-const resourcesCollection = defineCollection({
-  type: "content",
-  schema: z
-    .object({
-      section: z.string(),
-      date: z.string(),
-      title: z.string(),
-      permalink: z.string().optional(),
-      whatsnext: z.record(z.string(), z.string()).optional(),
-      metadata: z
-        .object({
-          title: z.string().optional(),
-          description: z.string().optional(),
-          linkToWallet: z.boolean().optional(),
-          image: z
-            .object({
-              0: z.string(),
-            })
-            .optional(),
-        })
-        .optional(),
-    })
-    .strict(),
-})
-const vrfCollection = defineCollection({
-  type: "content",
-  schema: z
-    .object({
-      section: z.string(),
-      date: z.string().optional(),
-      title: z.string(),
-      permalink: z.string().optional(),
-      whatsnext: z.record(z.string(), z.string()).optional(),
-      metadata: z
-        .object({
-          title: z.string().optional(),
-          description: z.string().optional(),
-          linkToWallet: z.boolean().optional(),
-          image: z
-            .object({
-              0: z.string(),
-            })
-            .optional(),
-        })
-        .optional(),
-      isMdx: z.boolean().optional(),
-    })
-    .strict(),
-})
-const ccipCollection = defineCollection({
-  type: "content",
-  schema: z
-    .object({
-      section: z.string(),
-      date: z.string(),
-      title: z.string(),
-      whatsnext: z.record(z.string(), z.string()).optional(),
-      isIndex: z.boolean().optional(),
-    })
-    .strict(),
-})
+const anyApiCollection = baseCollection
+const architectureOverviewCollection = baseCollection
+const bifCollection = baseCollection
+const chainlinkAutomationCollection = baseCollection
+const chainlinkFunctionsCollection = baseCollection
+const chainlinkNodesCollection = baseCollection
+const dataFeedsCollection = baseCollection
+const gettingStartedCollection = baseCollection
+const resourcesCollection = baseCollection
+const vrfCollection = baseCollection
+const ccipCollection = baseCollection
 
 export const collections = {
   "any-api": anyApiCollection,
