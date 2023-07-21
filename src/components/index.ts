@@ -6,6 +6,8 @@
  */
 
 export { default as CodeSample } from "./CodeSample/CodeSample.astro"
+export { default as Address } from "./Address"
+export { default as CopyText } from "./CopyText"
 export { default as Aside } from "./Aside.astro"
 export { default as ClickToZoom } from "./ClickToZoom.astro"
 export { default as NetworkTabs } from "./Tabs/NetworkTabs.astro"

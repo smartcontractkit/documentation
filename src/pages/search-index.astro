@@ -1,4 +1,5 @@
 ---
+import { splitTextByHeadings } from "../scripts/split-text-by-headings"
 import { MarkdownInstance } from "astro"
 import fs from "node:fs"
 
@@ -10,13 +11,17 @@ const pages = await Astro.glob("./**/*.astro")
 const postsMdx = [...(await Astro.glob("./**/*.mdx")).filter((post) => !post.frontmatter.draft)]
 const postsMdxWithContent = postsMdx.map((post) => {
   const url = new URL(post.file, import.meta.url)
-  const content = fs.readFileSync(url, "utf-8")
-  return { ...post, rawContent: () => content }
+  var content = fs.readFileSync(url, "utf-8")
+  const splittedContent = splitTextByHeadings(content)
+  const chunks = splittedContent.map((chunk) => {
+    return { ...post, rawContent: () => chunk }
+  })
+  return chunks
 })
 
-const markDownFiles = [...postsMdxWithContent]
+const markDownFiles = [...postsMdxWithContent].flat()
 
-const allContent = [...pages, ...postsMdx]
+//const allContent = [...pages, ...postsMdx]
 
 const transformMarkdownInstancesToIndexes = async (instances: MarkdownInstance<Record<string, any>>[]) => {
   return Promise.all(
@@ -24,6 +29,7 @@ const transformMarkdownInstancesToIndexes = async (instances: MarkdownInstance<R
       const { title, section, metadata } = instance.frontmatter
       const headings = await instance.getHeadings()
       const content = !!instance.rawContent ? await instance.rawContent() : undefined
+
       return {
         title,
         headings,

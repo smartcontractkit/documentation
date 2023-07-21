@@ -6,6 +6,7 @@ title: "L2 Sequencer Uptime Feeds"
 ---
 
 import { ClickToZoom, CodeSample } from "@components"
+import { Aside } from "@components"
 
 Optimistic rollup protocols move all execution off the layer 1 (L1) Ethereum chain, complete execution on a layer 2 (L2) chain, and return the results of the L2 execution back to the L1. These protocols have a [sequencer](https://community.optimism.io/docs/protocol/2-rollup-protocol/) that executes and rolls up the L2 transactions by batching multiple transactions into a single transaction.
 
@@ -18,7 +19,7 @@ To help your applications identify when the sequencer is unavailable, you can us
 You can find proxy addresses for the L2 sequencer feeds at the following addresses:
 
 - Arbitrum:
-  - Arbitrum mainnet: [0xFdB631F5EE196F0ed6FAa767959853A9F217697D](https://arbiscan.io/address/0xfdb631f5ee196f0ed6faa767959853a9f217697d)
+  - Arbitrum mainnet: [0xFdB631F5EE196F0ed6FAa767959853A9F217697D](https://arbiscan.io/address/0xFdB631F5EE196F0ed6FAa767959853A9F217697D)
   - Arbitrum Goerli testnet: [0x4da69F028a5790fCCAfe81a75C0D24f46ceCDd69](https://goerli-rollup-explorer.arbitrum.io/address/0x4da69F028a5790fCCAfe81a75C0D24f46ceCDd69)
 - Optimism:
   - Optimism mainnet: [0x371EAD81c9102C9BF4874A9075FFFf170F2Ee389](https://optimistic.etherscan.io/address/0x371EAD81c9102C9BF4874A9075FFFf170F2Ee389)
@@ -78,7 +79,7 @@ When the Sequencer is down, all L2 transactions sent from the L1 network wait in
 
 <ClickToZoom src="/images/data-feed/seq-down-1.webp" />
 
-After the sequencer comes back up, it moves moves all transactions in the pending queue to the processed queue.
+After the sequencer comes back up, it moves all transactions in the pending queue to the processed queue.
 
 1. Transactions are processed in the order they arrived so **Transaction 3** is processed before **Transaction 4**.
 1. Because **Transaction 3** happens before **Transaction 4**, **Transaction 4** will read the status of the Sequencer as being down and responds accordingly.
@@ -87,18 +88,18 @@ After the sequencer comes back up, it moves moves all transactions in the pendin
 
 ## Example code
 
-Create the consumer contract for sequencer uptime feeds similarly to contracts you use for [Chainlink Data Feeds](/data-feeds/using-data-feeds). Configure the constructor using the following variables:
+This example code works on the Arbitrum, Optimism, and Metis networks. Create the consumer contract for sequencer uptime feeds similarly to the contracts that you use for other [Chainlink Data Feeds](/data-feeds/using-data-feeds). Configure the constructor using the following variables:
 
 - Configure the `sequencerUptimeFeed` object with the [sequencer uptime feed proxy address](#available-networks) for your L2 network.
-- Configure the `priceFeed` object with one of the [Data Feed proxy addresses](/data-feeds/price-feeds/addresses) that are available for your network.
+- Configure the `dataFeed` object with one of the [Data Feed proxy addresses](/data-feeds/price-feeds/addresses) that are available for your network.
 
-<CodeSample src="samples/PriceFeeds/PriceConsumerWithSequencerCheck.sol" />
+<CodeSample src="samples/DataFeeds/DataConsumerWithSequencerCheck.sol" />
 
 The `sequencerUptimeFeed` object returns the following values:
 
 - `answer`: A variable with a value of either `1` or `0`
   - 0: The sequencer is up
   - 1: The sequencer is down
-- `startedAt`: This timestamp indicates when the sequencer changed status. This timestamp returns `0` if a round is invalid. When the sequencer comes back up after an outage, wait for the `GRACE_PERIOD_TIME` to pass before accepting answers from the price data feed. Subtract `startedAt` from `block.timestamp` and revert the request if the result is less than the `GRACE_PERIOD_TIME`.
+- `startedAt`: This timestamp indicates when the sequencer changed status. This timestamp returns `0` if a round is invalid. When the sequencer comes back up after an outage, wait for the `GRACE_PERIOD_TIME` to pass before accepting answers from the data feed. Subtract `startedAt` from `block.timestamp` and revert the request if the result is less than the `GRACE_PERIOD_TIME`.
 
-If the sequencer is up and the `GRACE_PERIOD_TIME` has passed, the function retrieves the latest price from the data feed using the `priceFeed` object.
+If the sequencer is up and the `GRACE_PERIOD_TIME` has passed, the function retrieves the latest answer from the data feed using the `dataFeed` object.

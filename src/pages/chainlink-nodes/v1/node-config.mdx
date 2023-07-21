@@ -15,8 +15,10 @@ Also see the [Secrets Config](/chainlink-nodes/v1/secrets-config) page.
 
 ```toml
 Log.Level = 'debug'
+
 [[EVM]]
 ChainID = '1' # Required
+
 [[EVM.Nodes]]
 Name = 'fake' # Required
 WSURL = 'wss://foo.bar/ws'
@@ -1658,12 +1660,57 @@ Release = 'v1.2.3' # Example
 
 Release overrides the Sentry release to the given value. Otherwise uses the compiled-in version number.
 
+## Insecure
+
+```toml
+[Insecure]
+DevWebServer = false # Default
+OCRDevelopmentMode = false # Default
+InfiniteDepthQueries = false # Default
+DisableRateLimiting = false # Default
+```
+
+Insecure config family is only allowed in development builds.
+
+### DevWebServer
+
+⚠️ **_ADVANCED_**: _Do not change this setting unless you know what you are doing._
+
+```toml
+DevWebServer = false # Default
+```
+
+DevWebServer skips secure configuration for webserver AllowedHosts, SSL, etc.
+
+### OCRDevelopmentMode
+
+```toml
+OCRDevelopmentMode = false # Default
+```
+
+OCRDevelopmentMode run OCR in development mode.
+
+### InfiniteDepthQueries
+
+```toml
+InfiniteDepthQueries = false # Default
+```
+
+InfiniteDepthQueries skips graphql query depth limit checks.
+
+### DisableRateLimiting
+
+```toml
+DisableRateLimiting = false # Default
+```
+
+DisableRateLimiting skips ratelimiting on asset requests.
+
 ## EVM
 
 EVM defaults depend on ChainID:
 
-<summary>Ethereum Mainnet (1)</summary>
-<p>
+Ethereum Mainnet (1)
 
 ```toml
 AutoCreateKey = true
@@ -1671,7 +1718,7 @@ BlockBackfillDepth = 10
 BlockBackfillSkip = false
 FinalityDepth = 50
 LinkContractAddress = '0x514910771AF9Ca656af840dff83E8264EcF986CA'
-LogBackfillBatchSize = 100
+LogBackfillBatchSize = 1000
 LogPollInterval = '15s'
 LogKeepBlocksDepth = 100000
 MinIncomingConfirmations = 3
@@ -1679,8 +1726,9 @@ MinContractPayment = '0.1 link'
 NonceAutoSync = true
 NoNewHeadsThreshold = '3m0s'
 OperatorFactoryAddress = '0x3E64Cd889482443324F91bFA9c84fE72A511f48A'
-RPCDefaultBatchSize = 100
+RPCDefaultBatchSize = 250
 RPCBlockQueryDelay = 1
+
 [Transactions]
 ForwardersEnabled = false
 MaxInFlight = 16
@@ -1688,8 +1736,10 @@ MaxQueued = 250
 ReaperInterval = '1h0m0s'
 ReaperThreshold = '168h0m0s'
 ResendAfterThreshold = '1m0s'
+
 [BalanceMonitor]
 Enabled = true
+
 [GasEstimator]
 Mode = 'BlockHistory'
 PriceDefault = '20 gwei'
@@ -1702,40 +1752,41 @@ LimitTransfer = 21000
 BumpMin = '5 gwei'
 BumpPercent = 20
 BumpThreshold = 3
-BumpTxDepth = 10
 EIP1559DynamicFees = true
 FeeCapDefault = '100 gwei'
 TipCapDefault = '1 wei'
 TipCapMin = '1 wei'
+
 [GasEstimator.BlockHistory]
-BatchSize = 4
+BatchSize = 25
 BlockHistorySize = 4
 CheckInclusionBlocks = 12
 CheckInclusionPercentile = 90
 TransactionPercentile = 50
+
 [HeadTracker]
 HistoryDepth = 100
 MaxBufferSize = 3
 SamplingInterval = '1s'
+
 [NodePool]
 PollFailureThreshold = 5
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
+
 [OCR]
 ContractConfirmations = 4
 ContractTransmitterTransmitTimeout = '10s'
 DatabaseTimeout = '10s'
 ObservationGracePeriod = '1s'
+
 [OCR2]
 [OCR2.Automation]
 GasLimit = 5300000
 ```
 
-</p>
-
-<summary>Ethereum Ropsten (3)</summary>
-<p>
+Ethereum Ropsten (3)
 
 ```toml
 AutoCreateKey = true
@@ -1743,15 +1794,16 @@ BlockBackfillDepth = 10
 BlockBackfillSkip = false
 FinalityDepth = 50
 LinkContractAddress = '0x20fE562d797A42Dcb3399062AE9546cd06f63280'
-LogBackfillBatchSize = 100
+LogBackfillBatchSize = 1000
 LogPollInterval = '15s'
 LogKeepBlocksDepth = 100000
 MinIncomingConfirmations = 3
 MinContractPayment = '0.1 link'
 NonceAutoSync = true
 NoNewHeadsThreshold = '3m0s'
-RPCDefaultBatchSize = 100
+RPCDefaultBatchSize = 250
 RPCBlockQueryDelay = 1
+
 [Transactions]
 ForwardersEnabled = false
 MaxInFlight = 16
@@ -1759,8 +1811,10 @@ MaxQueued = 250
 ReaperInterval = '1h0m0s'
 ReaperThreshold = '168h0m0s'
 ResendAfterThreshold = '1m0s'
+
 [BalanceMonitor]
 Enabled = true
+
 [GasEstimator]
 Mode = 'BlockHistory'
 PriceDefault = '20 gwei'
@@ -1773,40 +1827,41 @@ LimitTransfer = 21000
 BumpMin = '5 gwei'
 BumpPercent = 20
 BumpThreshold = 3
-BumpTxDepth = 10
 EIP1559DynamicFees = true
 FeeCapDefault = '100 gwei'
 TipCapDefault = '1 wei'
 TipCapMin = '1 wei'
+
 [GasEstimator.BlockHistory]
-BatchSize = 4
+BatchSize = 25
 BlockHistorySize = 4
 CheckInclusionBlocks = 12
 CheckInclusionPercentile = 90
 TransactionPercentile = 50
+
 [HeadTracker]
 HistoryDepth = 100
 MaxBufferSize = 3
 SamplingInterval = '1s'
+
 [NodePool]
 PollFailureThreshold = 5
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
+
 [OCR]
 ContractConfirmations = 4
 ContractTransmitterTransmitTimeout = '10s'
 DatabaseTimeout = '10s'
 ObservationGracePeriod = '1s'
+
 [OCR2]
 [OCR2.Automation]
 GasLimit = 5300000
 ```
 
-</p>
-
-<summary>Ethereum Rinkeby (4)</summary>
-<p>
+Ethereum Rinkeby (4)
 
 ```toml
 AutoCreateKey = true
@@ -1814,15 +1869,16 @@ BlockBackfillDepth = 10
 BlockBackfillSkip = false
 FinalityDepth = 50
 LinkContractAddress = '0x01BE23585060835E02B77ef475b0Cc51aA1e0709'
-LogBackfillBatchSize = 100
+LogBackfillBatchSize = 1000
 LogPollInterval = '15s'
 LogKeepBlocksDepth = 100000
 MinIncomingConfirmations = 3
 MinContractPayment = '0.1 link'
 NonceAutoSync = true
 NoNewHeadsThreshold = '3m0s'
-RPCDefaultBatchSize = 100
+RPCDefaultBatchSize = 250
 RPCBlockQueryDelay = 1
+
 [Transactions]
 ForwardersEnabled = false
 MaxInFlight = 16
@@ -1830,8 +1886,10 @@ MaxQueued = 250
 ReaperInterval = '1h0m0s'
 ReaperThreshold = '168h0m0s'
 ResendAfterThreshold = '1m0s'
+
 [BalanceMonitor]
 Enabled = true
+
 [GasEstimator]
 Mode = 'BlockHistory'
 PriceDefault = '20 gwei'
@@ -1844,40 +1902,41 @@ LimitTransfer = 21000
 BumpMin = '5 gwei'
 BumpPercent = 20
 BumpThreshold = 3
-BumpTxDepth = 10
 EIP1559DynamicFees = false
 FeeCapDefault = '100 gwei'
 TipCapDefault = '1 wei'
 TipCapMin = '1 wei'
+
 [GasEstimator.BlockHistory]
-BatchSize = 4
+BatchSize = 25
 BlockHistorySize = 4
 CheckInclusionBlocks = 12
 CheckInclusionPercentile = 90
 TransactionPercentile = 50
+
 [HeadTracker]
 HistoryDepth = 100
 MaxBufferSize = 3
 SamplingInterval = '1s'
+
 [NodePool]
 PollFailureThreshold = 5
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
+
 [OCR]
 ContractConfirmations = 4
 ContractTransmitterTransmitTimeout = '10s'
 DatabaseTimeout = '10s'
 ObservationGracePeriod = '1s'
+
 [OCR2]
 [OCR2.Automation]
 GasLimit = 5300000
 ```
 
-</p>
-
-<summary>Ethereum Goerli (5)</summary>
-<p>
+Ethereum Goerli (5)
 
 ```toml
 AutoCreateKey = true
@@ -1885,15 +1944,16 @@ BlockBackfillDepth = 10
 BlockBackfillSkip = false
 FinalityDepth = 50
 LinkContractAddress = '0x326C977E6efc84E512bB9C30f76E30c160eD06FB'
-LogBackfillBatchSize = 100
+LogBackfillBatchSize = 1000
 LogPollInterval = '15s'
 LogKeepBlocksDepth = 100000
 MinIncomingConfirmations = 3
 MinContractPayment = '0.1 link'
 NonceAutoSync = true
 NoNewHeadsThreshold = '3m0s'
-RPCDefaultBatchSize = 100
+RPCDefaultBatchSize = 250
 RPCBlockQueryDelay = 1
+
 [Transactions]
 ForwardersEnabled = false
 MaxInFlight = 16
@@ -1901,8 +1961,10 @@ MaxQueued = 250
 ReaperInterval = '1h0m0s'
 ReaperThreshold = '168h0m0s'
 ResendAfterThreshold = '1m0s'
+
 [BalanceMonitor]
 Enabled = true
+
 [GasEstimator]
 Mode = 'BlockHistory'
 PriceDefault = '20 gwei'
@@ -1915,40 +1977,41 @@ LimitTransfer = 21000
 BumpMin = '5 gwei'
 BumpPercent = 20
 BumpThreshold = 3
-BumpTxDepth = 10
 EIP1559DynamicFees = true
 FeeCapDefault = '100 gwei'
 TipCapDefault = '1 wei'
 TipCapMin = '1 wei'
+
 [GasEstimator.BlockHistory]
-BatchSize = 4
+BatchSize = 25
 BlockHistorySize = 4
 CheckInclusionBlocks = 12
 CheckInclusionPercentile = 90
 TransactionPercentile = 50
+
 [HeadTracker]
 HistoryDepth = 100
 MaxBufferSize = 3
 SamplingInterval = '1s'
+
 [NodePool]
 PollFailureThreshold = 5
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
+
 [OCR]
 ContractConfirmations = 4
 ContractTransmitterTransmitTimeout = '10s'
 DatabaseTimeout = '10s'
 ObservationGracePeriod = '1s'
+
 [OCR2]
 [OCR2.Automation]
 GasLimit = 5300000
 ```
 
-</p>
-
-<summary>Optimism Mainnet (10)</summary>
-<p>
+Optimism Mainnet (10)
 
 ```toml
 AutoCreateKey = true
@@ -1957,15 +2020,16 @@ BlockBackfillSkip = false
 ChainType = 'optimism'
 FinalityDepth = 1
 LinkContractAddress = '0x350a791Bfc2C21F9Ed5d10980Dad2e2638ffa7f6'
-LogBackfillBatchSize = 100
+LogBackfillBatchSize = 1000
 LogPollInterval = '15s'
 LogKeepBlocksDepth = 100000
 MinIncomingConfirmations = 1
 MinContractPayment = '0.00001 link'
 NonceAutoSync = true
 NoNewHeadsThreshold = '0s'
-RPCDefaultBatchSize = 100
+RPCDefaultBatchSize = 250
 RPCBlockQueryDelay = 1
+
 [Transactions]
 ForwardersEnabled = false
 MaxInFlight = 16
@@ -1973,8 +2037,10 @@ MaxQueued = 250
 ReaperInterval = '1h0m0s'
 ReaperThreshold = '168h0m0s'
 ResendAfterThreshold = '15s'
+
 [BalanceMonitor]
 Enabled = true
+
 [GasEstimator]
 Mode = 'L2Suggested'
 PriceDefault = '20 gwei'
@@ -1987,40 +2053,41 @@ LimitTransfer = 21000
 BumpMin = '5 gwei'
 BumpPercent = 20
 BumpThreshold = 0
-BumpTxDepth = 10
 EIP1559DynamicFees = false
 FeeCapDefault = '100 gwei'
 TipCapDefault = '1 wei'
 TipCapMin = '1 wei'
+
 [GasEstimator.BlockHistory]
-BatchSize = 4
+BatchSize = 25
 BlockHistorySize = 0
 CheckInclusionBlocks = 12
 CheckInclusionPercentile = 90
 TransactionPercentile = 60
+
 [HeadTracker]
 HistoryDepth = 10
 MaxBufferSize = 3
 SamplingInterval = '1s'
+
 [NodePool]
 PollFailureThreshold = 5
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 10
+
 [OCR]
 ContractConfirmations = 1
 ContractTransmitterTransmitTimeout = '10s'
 DatabaseTimeout = '10s'
 ObservationGracePeriod = '1s'
+
 [OCR2]
 [OCR2.Automation]
 GasLimit = 6500000
 ```
 
-</p>
-
-<summary>RSK Mainnet (30)</summary>
-<p>
+RSK Mainnet (30)
 
 ```toml
 AutoCreateKey = true
@@ -2028,15 +2095,16 @@ BlockBackfillDepth = 10
 BlockBackfillSkip = false
 FinalityDepth = 50
 LinkContractAddress = '0x14AdaE34beF7ca957Ce2dDe5ADD97ea050123827'
-LogBackfillBatchSize = 100
+LogBackfillBatchSize = 1000
 LogPollInterval = '30s'
 LogKeepBlocksDepth = 100000
 MinIncomingConfirmations = 3
 MinContractPayment = '0.001 link'
 NonceAutoSync = true
 NoNewHeadsThreshold = '3m0s'
-RPCDefaultBatchSize = 100
+RPCDefaultBatchSize = 250
 RPCBlockQueryDelay = 1
+
 [Transactions]
 ForwardersEnabled = false
 MaxInFlight = 16
@@ -2044,8 +2112,10 @@ MaxQueued = 250
 ReaperInterval = '1h0m0s'
 ReaperThreshold = '168h0m0s'
 ResendAfterThreshold = '1m0s'
+
 [BalanceMonitor]
 Enabled = true
+
 [GasEstimator]
 Mode = 'BlockHistory'
 PriceDefault = '50 mwei'
@@ -2058,40 +2128,41 @@ LimitTransfer = 21000
 BumpMin = '5 gwei'
 BumpPercent = 20
 BumpThreshold = 3
-BumpTxDepth = 10
 EIP1559DynamicFees = false
 FeeCapDefault = '100 mwei'
 TipCapDefault = '1 wei'
 TipCapMin = '1 wei'
+
 [GasEstimator.BlockHistory]
-BatchSize = 4
+BatchSize = 25
 BlockHistorySize = 8
 CheckInclusionBlocks = 12
 CheckInclusionPercentile = 90
 TransactionPercentile = 60
+
 [HeadTracker]
 HistoryDepth = 100
 MaxBufferSize = 3
 SamplingInterval = '1s'
+
 [NodePool]
 PollFailureThreshold = 5
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
+
 [OCR]
 ContractConfirmations = 4
 ContractTransmitterTransmitTimeout = '10s'
 DatabaseTimeout = '10s'
 ObservationGracePeriod = '1s'
+
 [OCR2]
 [OCR2.Automation]
 GasLimit = 5300000
 ```
 
-</p>
-
-<summary>RSK Testnet (31)</summary>
-<p>
+RSK Testnet (31)
 
 ```toml
 AutoCreateKey = true
@@ -2099,15 +2170,16 @@ BlockBackfillDepth = 10
 BlockBackfillSkip = false
 FinalityDepth = 50
 LinkContractAddress = '0x8bBbd80981FE76d44854D8DF305e8985c19f0e78'
-LogBackfillBatchSize = 100
+LogBackfillBatchSize = 1000
 LogPollInterval = '30s'
 LogKeepBlocksDepth = 100000
 MinIncomingConfirmations = 3
 MinContractPayment = '0.001 link'
 NonceAutoSync = true
 NoNewHeadsThreshold = '3m0s'
-RPCDefaultBatchSize = 100
+RPCDefaultBatchSize = 250
 RPCBlockQueryDelay = 1
+
 [Transactions]
 ForwardersEnabled = false
 MaxInFlight = 16
@@ -2115,8 +2187,10 @@ MaxQueued = 250
 ReaperInterval = '1h0m0s'
 ReaperThreshold = '168h0m0s'
 ResendAfterThreshold = '1m0s'
+
 [BalanceMonitor]
 Enabled = true
+
 [GasEstimator]
 Mode = 'BlockHistory'
 PriceDefault = '50 mwei'
@@ -2129,40 +2203,41 @@ LimitTransfer = 21000
 BumpMin = '5 gwei'
 BumpPercent = 20
 BumpThreshold = 3
-BumpTxDepth = 10
 EIP1559DynamicFees = false
 FeeCapDefault = '100 mwei'
 TipCapDefault = '1 wei'
 TipCapMin = '1 wei'
+
 [GasEstimator.BlockHistory]
-BatchSize = 4
+BatchSize = 25
 BlockHistorySize = 8
 CheckInclusionBlocks = 12
 CheckInclusionPercentile = 90
 TransactionPercentile = 60
+
 [HeadTracker]
 HistoryDepth = 100
 MaxBufferSize = 3
 SamplingInterval = '1s'
+
 [NodePool]
 PollFailureThreshold = 5
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
+
 [OCR]
 ContractConfirmations = 4
 ContractTransmitterTransmitTimeout = '10s'
 DatabaseTimeout = '10s'
 ObservationGracePeriod = '1s'
+
 [OCR2]
 [OCR2.Automation]
 GasLimit = 5300000
 ```
 
-</p>
-
-<summary>Ethereum Kovan (42)</summary>
-<p>
+Ethereum Kovan (42)
 
 ```toml
 AutoCreateKey = true
@@ -2170,7 +2245,7 @@ BlockBackfillDepth = 10
 BlockBackfillSkip = false
 FinalityDepth = 50
 LinkContractAddress = '0xa36085F69e2889c224210F603D836748e7dC0088'
-LogBackfillBatchSize = 100
+LogBackfillBatchSize = 1000
 LogPollInterval = '15s'
 LogKeepBlocksDepth = 100000
 MinIncomingConfirmations = 3
@@ -2178,8 +2253,9 @@ MinContractPayment = '0.1 link'
 NonceAutoSync = true
 NoNewHeadsThreshold = '3m0s'
 OperatorFactoryAddress = '0x8007e24251b1D2Fc518Eb843A701d9cD21fe0aA3'
-RPCDefaultBatchSize = 100
+RPCDefaultBatchSize = 250
 RPCBlockQueryDelay = 1
+
 [Transactions]
 ForwardersEnabled = false
 MaxInFlight = 16
@@ -2187,8 +2263,10 @@ MaxQueued = 250
 ReaperInterval = '1h0m0s'
 ReaperThreshold = '168h0m0s'
 ResendAfterThreshold = '1m0s'
+
 [BalanceMonitor]
 Enabled = true
+
 [GasEstimator]
 Mode = 'BlockHistory'
 PriceDefault = '20 gwei'
@@ -2201,40 +2279,41 @@ LimitTransfer = 21000
 BumpMin = '5 gwei'
 BumpPercent = 20
 BumpThreshold = 3
-BumpTxDepth = 10
 EIP1559DynamicFees = false
 FeeCapDefault = '100 gwei'
 TipCapDefault = '1 wei'
 TipCapMin = '1 wei'
+
 [GasEstimator.BlockHistory]
-BatchSize = 4
+BatchSize = 25
 BlockHistorySize = 4
 CheckInclusionBlocks = 12
 CheckInclusionPercentile = 90
 TransactionPercentile = 50
+
 [HeadTracker]
 HistoryDepth = 100
 MaxBufferSize = 3
 SamplingInterval = '1s'
+
 [NodePool]
 PollFailureThreshold = 5
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
+
 [OCR]
 ContractConfirmations = 4
 ContractTransmitterTransmitTimeout = '10s'
 DatabaseTimeout = '10s'
 ObservationGracePeriod = '1s'
+
 [OCR2]
 [OCR2.Automation]
 GasLimit = 5300000
 ```
 
-</p>
-
-<summary>BSC Mainnet (56)</summary>
-<p>
+BSC Mainnet (56)
 
 ```toml
 AutoCreateKey = true
@@ -2242,15 +2321,16 @@ BlockBackfillDepth = 10
 BlockBackfillSkip = false
 FinalityDepth = 50
 LinkContractAddress = '0x404460C6A5EdE2D891e8297795264fDe62ADBB75'
-LogBackfillBatchSize = 100
+LogBackfillBatchSize = 1000
 LogPollInterval = '3s'
 LogKeepBlocksDepth = 100000
 MinIncomingConfirmations = 3
 MinContractPayment = '0.00001 link'
 NonceAutoSync = true
 NoNewHeadsThreshold = '30s'
-RPCDefaultBatchSize = 100
+RPCDefaultBatchSize = 250
 RPCBlockQueryDelay = 2
+
 [Transactions]
 ForwardersEnabled = false
 MaxInFlight = 16
@@ -2258,8 +2338,10 @@ MaxQueued = 250
 ReaperInterval = '1h0m0s'
 ReaperThreshold = '168h0m0s'
 ResendAfterThreshold = '1m0s'
+
 [BalanceMonitor]
 Enabled = true
+
 [GasEstimator]
 Mode = 'BlockHistory'
 PriceDefault = '5 gwei'
@@ -2272,55 +2354,57 @@ LimitTransfer = 21000
 BumpMin = '5 gwei'
 BumpPercent = 20
 BumpThreshold = 5
-BumpTxDepth = 10
 EIP1559DynamicFees = false
 FeeCapDefault = '100 gwei'
 TipCapDefault = '1 wei'
 TipCapMin = '1 wei'
+
 [GasEstimator.BlockHistory]
-BatchSize = 4
+BatchSize = 25
 BlockHistorySize = 24
 CheckInclusionBlocks = 12
 CheckInclusionPercentile = 90
 TransactionPercentile = 60
+
 [HeadTracker]
 HistoryDepth = 100
 MaxBufferSize = 3
 SamplingInterval = '1s'
+
 [NodePool]
 PollFailureThreshold = 5
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 10
+
 [OCR]
 ContractConfirmations = 4
 ContractTransmitterTransmitTimeout = '2s'
 DatabaseTimeout = '2s'
 ObservationGracePeriod = '500ms'
+
 [OCR2]
 [OCR2.Automation]
 GasLimit = 5300000
 ```
 
-</p>
-
-<summary>OKX Testnet (65)</summary>
-<p>
+OKX Testnet (65)
 
 ```toml
 AutoCreateKey = true
 BlockBackfillDepth = 10
 BlockBackfillSkip = false
 FinalityDepth = 50
-LogBackfillBatchSize = 100
+LogBackfillBatchSize = 1000
 LogPollInterval = '15s'
 LogKeepBlocksDepth = 100000
 MinIncomingConfirmations = 3
 MinContractPayment = '0.00001 link'
 NonceAutoSync = true
 NoNewHeadsThreshold = '3m0s'
-RPCDefaultBatchSize = 100
+RPCDefaultBatchSize = 250
 RPCBlockQueryDelay = 1
+
 [Transactions]
 ForwardersEnabled = false
 MaxInFlight = 16
@@ -2328,8 +2412,10 @@ MaxQueued = 250
 ReaperInterval = '1h0m0s'
 ReaperThreshold = '168h0m0s'
 ResendAfterThreshold = '1m0s'
+
 [BalanceMonitor]
 Enabled = true
+
 [GasEstimator]
 Mode = 'BlockHistory'
 PriceDefault = '20 gwei'
@@ -2342,55 +2428,57 @@ LimitTransfer = 21000
 BumpMin = '5 gwei'
 BumpPercent = 20
 BumpThreshold = 3
-BumpTxDepth = 10
 EIP1559DynamicFees = false
 FeeCapDefault = '100 gwei'
 TipCapDefault = '1 wei'
 TipCapMin = '1 wei'
+
 [GasEstimator.BlockHistory]
-BatchSize = 4
+BatchSize = 25
 BlockHistorySize = 8
 CheckInclusionBlocks = 12
 CheckInclusionPercentile = 90
 TransactionPercentile = 60
+
 [HeadTracker]
 HistoryDepth = 100
 MaxBufferSize = 3
 SamplingInterval = '1s'
+
 [NodePool]
 PollFailureThreshold = 5
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
+
 [OCR]
 ContractConfirmations = 4
 ContractTransmitterTransmitTimeout = '10s'
 DatabaseTimeout = '10s'
 ObservationGracePeriod = '1s'
+
 [OCR2]
 [OCR2.Automation]
 GasLimit = 5300000
 ```
 
-</p>
-
-<summary>OKX Mainnet (66)</summary>
-<p>
+OKX Mainnet (66)
 
 ```toml
 AutoCreateKey = true
 BlockBackfillDepth = 10
 BlockBackfillSkip = false
 FinalityDepth = 50
-LogBackfillBatchSize = 100
+LogBackfillBatchSize = 1000
 LogPollInterval = '15s'
 LogKeepBlocksDepth = 100000
 MinIncomingConfirmations = 3
 MinContractPayment = '0.00001 link'
 NonceAutoSync = true
 NoNewHeadsThreshold = '3m0s'
-RPCDefaultBatchSize = 100
+RPCDefaultBatchSize = 250
 RPCBlockQueryDelay = 1
+
 [Transactions]
 ForwardersEnabled = false
 MaxInFlight = 16
@@ -2398,8 +2486,10 @@ MaxQueued = 250
 ReaperInterval = '1h0m0s'
 ReaperThreshold = '168h0m0s'
 ResendAfterThreshold = '1m0s'
+
 [BalanceMonitor]
 Enabled = true
+
 [GasEstimator]
 Mode = 'BlockHistory'
 PriceDefault = '20 gwei'
@@ -2412,40 +2502,41 @@ LimitTransfer = 21000
 BumpMin = '5 gwei'
 BumpPercent = 20
 BumpThreshold = 3
-BumpTxDepth = 10
 EIP1559DynamicFees = false
 FeeCapDefault = '100 gwei'
 TipCapDefault = '1 wei'
 TipCapMin = '1 wei'
+
 [GasEstimator.BlockHistory]
-BatchSize = 4
+BatchSize = 25
 BlockHistorySize = 8
 CheckInclusionBlocks = 12
 CheckInclusionPercentile = 90
 TransactionPercentile = 60
+
 [HeadTracker]
 HistoryDepth = 100
 MaxBufferSize = 3
 SamplingInterval = '1s'
+
 [NodePool]
 PollFailureThreshold = 5
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
+
 [OCR]
 ContractConfirmations = 4
 ContractTransmitterTransmitTimeout = '10s'
 DatabaseTimeout = '10s'
 ObservationGracePeriod = '1s'
+
 [OCR2]
 [OCR2.Automation]
 GasLimit = 5300000
 ```
 
-</p>
-
-<summary>Optimism Kovan (69)</summary>
-<p>
+Optimism Kovan (69)
 
 ```toml
 AutoCreateKey = true
@@ -2454,15 +2545,16 @@ BlockBackfillSkip = false
 ChainType = 'optimism'
 FinalityDepth = 1
 LinkContractAddress = '0x4911b761993b9c8c0d14Ba2d86902AF6B0074F5B'
-LogBackfillBatchSize = 100
+LogBackfillBatchSize = 1000
 LogPollInterval = '15s'
 LogKeepBlocksDepth = 100000
 MinIncomingConfirmations = 1
 MinContractPayment = '0.00001 link'
 NonceAutoSync = true
 NoNewHeadsThreshold = '0s'
-RPCDefaultBatchSize = 100
+RPCDefaultBatchSize = 250
 RPCBlockQueryDelay = 1
+
 [Transactions]
 ForwardersEnabled = false
 MaxInFlight = 16
@@ -2470,8 +2562,10 @@ MaxQueued = 250
 ReaperInterval = '1h0m0s'
 ReaperThreshold = '168h0m0s'
 ResendAfterThreshold = '15s'
+
 [BalanceMonitor]
 Enabled = true
+
 [GasEstimator]
 Mode = 'L2Suggested'
 PriceDefault = '20 gwei'
@@ -2484,40 +2578,41 @@ LimitTransfer = 21000
 BumpMin = '5 gwei'
 BumpPercent = 20
 BumpThreshold = 0
-BumpTxDepth = 10
 EIP1559DynamicFees = false
 FeeCapDefault = '100 gwei'
 TipCapDefault = '1 wei'
 TipCapMin = '1 wei'
+
 [GasEstimator.BlockHistory]
-BatchSize = 4
+BatchSize = 25
 BlockHistorySize = 0
 CheckInclusionBlocks = 12
 CheckInclusionPercentile = 90
 TransactionPercentile = 60
+
 [HeadTracker]
 HistoryDepth = 10
 MaxBufferSize = 3
 SamplingInterval = '1s'
+
 [NodePool]
 PollFailureThreshold = 5
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 10
+
 [OCR]
 ContractConfirmations = 1
 ContractTransmitterTransmitTimeout = '10s'
 DatabaseTimeout = '10s'
 ObservationGracePeriod = '1s'
+
 [OCR2]
 [OCR2.Automation]
 GasLimit = 6500000
 ```
 
-</p>
-
-<summary>xDai Mainnet (100)</summary>
-<p>
+xDai Mainnet (100)
 
 ```toml
 AutoCreateKey = true
@@ -2526,15 +2621,16 @@ BlockBackfillSkip = false
 ChainType = 'xdai'
 FinalityDepth = 50
 LinkContractAddress = '0xE2e73A1c69ecF83F464EFCE6A5be353a37cA09b2'
-LogBackfillBatchSize = 100
+LogBackfillBatchSize = 1000
 LogPollInterval = '5s'
 LogKeepBlocksDepth = 100000
 MinIncomingConfirmations = 3
 MinContractPayment = '0.00001 link'
 NonceAutoSync = true
 NoNewHeadsThreshold = '3m0s'
-RPCDefaultBatchSize = 100
+RPCDefaultBatchSize = 250
 RPCBlockQueryDelay = 1
+
 [Transactions]
 ForwardersEnabled = false
 MaxInFlight = 16
@@ -2542,8 +2638,10 @@ MaxQueued = 250
 ReaperInterval = '1h0m0s'
 ReaperThreshold = '168h0m0s'
 ResendAfterThreshold = '1m0s'
+
 [BalanceMonitor]
 Enabled = true
+
 [GasEstimator]
 Mode = 'BlockHistory'
 PriceDefault = '1 gwei'
@@ -2556,40 +2654,41 @@ LimitTransfer = 21000
 BumpMin = '5 gwei'
 BumpPercent = 20
 BumpThreshold = 3
-BumpTxDepth = 10
 EIP1559DynamicFees = false
 FeeCapDefault = '100 gwei'
 TipCapDefault = '1 wei'
 TipCapMin = '1 wei'
+
 [GasEstimator.BlockHistory]
-BatchSize = 4
+BatchSize = 25
 BlockHistorySize = 8
 CheckInclusionBlocks = 12
 CheckInclusionPercentile = 90
 TransactionPercentile = 60
+
 [HeadTracker]
 HistoryDepth = 100
 MaxBufferSize = 3
 SamplingInterval = '1s'
+
 [NodePool]
 PollFailureThreshold = 5
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
+
 [OCR]
 ContractConfirmations = 4
 ContractTransmitterTransmitTimeout = '10s'
 DatabaseTimeout = '10s'
 ObservationGracePeriod = '1s'
+
 [OCR2]
 [OCR2.Automation]
 GasLimit = 5300000
 ```
 
-</p>
-
-<summary>Heco Mainnet (128)</summary>
-<p>
+Heco Mainnet (128)
 
 ```toml
 AutoCreateKey = true
@@ -2597,15 +2696,16 @@ BlockBackfillDepth = 10
 BlockBackfillSkip = false
 FinalityDepth = 50
 LinkContractAddress = '0x404460C6A5EdE2D891e8297795264fDe62ADBB75'
-LogBackfillBatchSize = 100
+LogBackfillBatchSize = 1000
 LogPollInterval = '3s'
 LogKeepBlocksDepth = 100000
 MinIncomingConfirmations = 3
 MinContractPayment = '0.00001 link'
 NonceAutoSync = true
 NoNewHeadsThreshold = '30s'
-RPCDefaultBatchSize = 100
+RPCDefaultBatchSize = 250
 RPCBlockQueryDelay = 2
+
 [Transactions]
 ForwardersEnabled = false
 MaxInFlight = 16
@@ -2613,8 +2713,10 @@ MaxQueued = 250
 ReaperInterval = '1h0m0s'
 ReaperThreshold = '168h0m0s'
 ResendAfterThreshold = '1m0s'
+
 [BalanceMonitor]
 Enabled = true
+
 [GasEstimator]
 Mode = 'BlockHistory'
 PriceDefault = '5 gwei'
@@ -2627,40 +2729,41 @@ LimitTransfer = 21000
 BumpMin = '5 gwei'
 BumpPercent = 20
 BumpThreshold = 5
-BumpTxDepth = 10
 EIP1559DynamicFees = false
 FeeCapDefault = '100 gwei'
 TipCapDefault = '1 wei'
 TipCapMin = '1 wei'
+
 [GasEstimator.BlockHistory]
-BatchSize = 4
+BatchSize = 25
 BlockHistorySize = 24
 CheckInclusionBlocks = 12
 CheckInclusionPercentile = 90
 TransactionPercentile = 60
+
 [HeadTracker]
 HistoryDepth = 100
 MaxBufferSize = 3
 SamplingInterval = '1s'
+
 [NodePool]
 PollFailureThreshold = 5
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 10
+
 [OCR]
 ContractConfirmations = 4
 ContractTransmitterTransmitTimeout = '2s'
 DatabaseTimeout = '2s'
 ObservationGracePeriod = '500ms'
+
 [OCR2]
 [OCR2.Automation]
 GasLimit = 5300000
 ```
 
-</p>
-
-<summary>Polygon Mainnet (137)</summary>
-<p>
+Polygon Mainnet (137)
 
 ```toml
 AutoCreateKey = true
@@ -2668,15 +2771,16 @@ BlockBackfillDepth = 10
 BlockBackfillSkip = false
 FinalityDepth = 500
 LinkContractAddress = '0xb0897686c545045aFc77CF20eC7A532E3120E0F1'
-LogBackfillBatchSize = 100
+LogBackfillBatchSize = 1000
 LogPollInterval = '1s'
 LogKeepBlocksDepth = 100000
 MinIncomingConfirmations = 5
 MinContractPayment = '0.00001 link'
 NonceAutoSync = true
 NoNewHeadsThreshold = '30s'
-RPCDefaultBatchSize = 100
+RPCDefaultBatchSize = 250
 RPCBlockQueryDelay = 10
+
 [Transactions]
 ForwardersEnabled = false
 MaxInFlight = 16
@@ -2684,8 +2788,10 @@ MaxQueued = 5000
 ReaperInterval = '1h0m0s'
 ReaperThreshold = '168h0m0s'
 ResendAfterThreshold = '1m0s'
+
 [BalanceMonitor]
 Enabled = true
+
 [GasEstimator]
 Mode = 'BlockHistory'
 PriceDefault = '30 gwei'
@@ -2698,40 +2804,41 @@ LimitTransfer = 21000
 BumpMin = '20 gwei'
 BumpPercent = 20
 BumpThreshold = 5
-BumpTxDepth = 10
 EIP1559DynamicFees = false
 FeeCapDefault = '100 gwei'
 TipCapDefault = '1 wei'
 TipCapMin = '1 wei'
+
 [GasEstimator.BlockHistory]
-BatchSize = 4
+BatchSize = 25
 BlockHistorySize = 24
 CheckInclusionBlocks = 12
 CheckInclusionPercentile = 90
 TransactionPercentile = 60
+
 [HeadTracker]
 HistoryDepth = 2000
 MaxBufferSize = 3
 SamplingInterval = '1s'
+
 [NodePool]
 PollFailureThreshold = 5
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 10
+
 [OCR]
 ContractConfirmations = 4
 ContractTransmitterTransmitTimeout = '10s'
 DatabaseTimeout = '10s'
 ObservationGracePeriod = '1s'
+
 [OCR2]
 [OCR2.Automation]
 GasLimit = 5300000
 ```
 
-</p>
-
-<summary>Fantom Mainnet (250)</summary>
-<p>
+Fantom Mainnet (250)
 
 ```toml
 AutoCreateKey = true
@@ -2739,15 +2846,16 @@ BlockBackfillDepth = 10
 BlockBackfillSkip = false
 FinalityDepth = 50
 LinkContractAddress = '0x6F43FF82CCA38001B6699a8AC47A2d0E66939407'
-LogBackfillBatchSize = 100
+LogBackfillBatchSize = 1000
 LogPollInterval = '1s'
 LogKeepBlocksDepth = 100000
 MinIncomingConfirmations = 3
 MinContractPayment = '0.00001 link'
 NonceAutoSync = true
 NoNewHeadsThreshold = '30s'
-RPCDefaultBatchSize = 100
+RPCDefaultBatchSize = 250
 RPCBlockQueryDelay = 2
+
 [Transactions]
 ForwardersEnabled = false
 MaxInFlight = 16
@@ -2755,8 +2863,10 @@ MaxQueued = 250
 ReaperInterval = '1h0m0s'
 ReaperThreshold = '168h0m0s'
 ResendAfterThreshold = '1m0s'
+
 [BalanceMonitor]
 Enabled = true
+
 [GasEstimator]
 Mode = 'BlockHistory'
 PriceDefault = '15 gwei'
@@ -2769,40 +2879,41 @@ LimitTransfer = 21000
 BumpMin = '5 gwei'
 BumpPercent = 20
 BumpThreshold = 3
-BumpTxDepth = 10
 EIP1559DynamicFees = false
 FeeCapDefault = '100 gwei'
 TipCapDefault = '1 wei'
 TipCapMin = '1 wei'
+
 [GasEstimator.BlockHistory]
-BatchSize = 4
+BatchSize = 25
 BlockHistorySize = 8
 CheckInclusionBlocks = 12
 CheckInclusionPercentile = 90
 TransactionPercentile = 60
+
 [HeadTracker]
 HistoryDepth = 100
 MaxBufferSize = 3
 SamplingInterval = '1s'
+
 [NodePool]
 PollFailureThreshold = 5
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
+
 [OCR]
 ContractConfirmations = 4
 ContractTransmitterTransmitTimeout = '10s'
 DatabaseTimeout = '10s'
 ObservationGracePeriod = '1s'
+
 [OCR2]
 [OCR2.Automation]
 GasLimit = 3800000
 ```
 
-</p>
-
-<summary>Optimism Goerli (420)</summary>
-<p>
+Optimism Goerli (420)
 
 ```toml
 AutoCreateKey = true
@@ -2811,15 +2922,16 @@ BlockBackfillSkip = false
 ChainType = 'optimismBedrock'
 FinalityDepth = 200
 LinkContractAddress = '0xdc2CC710e42857672E7907CF474a69B63B93089f'
-LogBackfillBatchSize = 100
+LogBackfillBatchSize = 1000
 LogPollInterval = '2s'
 LogKeepBlocksDepth = 100000
 MinIncomingConfirmations = 3
 MinContractPayment = '0.00001 link'
 NonceAutoSync = true
 NoNewHeadsThreshold = '1m0s'
-RPCDefaultBatchSize = 100
+RPCDefaultBatchSize = 250
 RPCBlockQueryDelay = 1
+
 [Transactions]
 ForwardersEnabled = false
 MaxInFlight = 16
@@ -2827,8 +2939,10 @@ MaxQueued = 250
 ReaperInterval = '1h0m0s'
 ReaperThreshold = '168h0m0s'
 ResendAfterThreshold = '30s'
+
 [BalanceMonitor]
 Enabled = true
+
 [GasEstimator]
 Mode = 'BlockHistory'
 PriceDefault = '20 gwei'
@@ -2841,40 +2955,41 @@ LimitTransfer = 21000
 BumpMin = '5 gwei'
 BumpPercent = 20
 BumpThreshold = 3
-BumpTxDepth = 10
 EIP1559DynamicFees = true
 FeeCapDefault = '100 gwei'
 TipCapDefault = '1 wei'
 TipCapMin = '1 wei'
+
 [GasEstimator.BlockHistory]
-BatchSize = 4
+BatchSize = 25
 BlockHistorySize = 24
 CheckInclusionBlocks = 12
 CheckInclusionPercentile = 90
 TransactionPercentile = 60
+
 [HeadTracker]
 HistoryDepth = 300
 MaxBufferSize = 3
 SamplingInterval = '1s'
+
 [NodePool]
 PollFailureThreshold = 5
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 10
+
 [OCR]
 ContractConfirmations = 4
 ContractTransmitterTransmitTimeout = '10s'
 DatabaseTimeout = '10s'
 ObservationGracePeriod = '1s'
+
 [OCR2]
 [OCR2.Automation]
 GasLimit = 6500000
 ```
 
-</p>
-
-<summary>Metis Rinkeby (588)</summary>
-<p>
+Metis Rinkeby (588)
 
 ```toml
 AutoCreateKey = true
@@ -2882,15 +2997,16 @@ BlockBackfillDepth = 10
 BlockBackfillSkip = false
 ChainType = 'metis'
 FinalityDepth = 1
-LogBackfillBatchSize = 100
+LogBackfillBatchSize = 1000
 LogPollInterval = '15s'
 LogKeepBlocksDepth = 100000
 MinIncomingConfirmations = 1
 MinContractPayment = '0.00001 link'
 NonceAutoSync = true
 NoNewHeadsThreshold = '0s'
-RPCDefaultBatchSize = 100
+RPCDefaultBatchSize = 250
 RPCBlockQueryDelay = 1
+
 [Transactions]
 ForwardersEnabled = false
 MaxInFlight = 16
@@ -2898,8 +3014,10 @@ MaxQueued = 250
 ReaperInterval = '1h0m0s'
 ReaperThreshold = '168h0m0s'
 ResendAfterThreshold = '1m0s'
+
 [BalanceMonitor]
 Enabled = true
+
 [GasEstimator]
 Mode = 'L2Suggested'
 PriceDefault = '20 gwei'
@@ -2912,55 +3030,57 @@ LimitTransfer = 21000
 BumpMin = '5 gwei'
 BumpPercent = 20
 BumpThreshold = 0
-BumpTxDepth = 10
 EIP1559DynamicFees = false
 FeeCapDefault = '100 gwei'
 TipCapDefault = '1 wei'
 TipCapMin = '1 wei'
+
 [GasEstimator.BlockHistory]
-BatchSize = 4
+BatchSize = 25
 BlockHistorySize = 0
 CheckInclusionBlocks = 12
 CheckInclusionPercentile = 90
 TransactionPercentile = 60
+
 [HeadTracker]
 HistoryDepth = 100
 MaxBufferSize = 3
 SamplingInterval = '1s'
+
 [NodePool]
 PollFailureThreshold = 5
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 10
+
 [OCR]
 ContractConfirmations = 1
 ContractTransmitterTransmitTimeout = '10s'
 DatabaseTimeout = '10s'
 ObservationGracePeriod = '1s'
+
 [OCR2]
 [OCR2.Automation]
 GasLimit = 5300000
 ```
 
-</p>
-
-<summary>Klaytn Testnet (1001)</summary>
-<p>
+Klaytn Testnet (1001)
 
 ```toml
 AutoCreateKey = true
 BlockBackfillDepth = 10
 BlockBackfillSkip = false
 FinalityDepth = 1
-LogBackfillBatchSize = 100
+LogBackfillBatchSize = 1000
 LogPollInterval = '15s'
 LogKeepBlocksDepth = 100000
 MinIncomingConfirmations = 1
 MinContractPayment = '0.00001 link'
 NonceAutoSync = true
 NoNewHeadsThreshold = '30s'
-RPCDefaultBatchSize = 100
+RPCDefaultBatchSize = 250
 RPCBlockQueryDelay = 1
+
 [Transactions]
 ForwardersEnabled = false
 MaxInFlight = 16
@@ -2968,8 +3088,10 @@ MaxQueued = 250
 ReaperInterval = '1h0m0s'
 ReaperThreshold = '168h0m0s'
 ResendAfterThreshold = '1m0s'
+
 [BalanceMonitor]
 Enabled = true
+
 [GasEstimator]
 Mode = 'L2Suggested'
 PriceDefault = '750 gwei'
@@ -2982,40 +3104,41 @@ LimitTransfer = 21000
 BumpMin = '5 gwei'
 BumpPercent = 20
 BumpThreshold = 0
-BumpTxDepth = 10
 EIP1559DynamicFees = false
 FeeCapDefault = '100 gwei'
 TipCapDefault = '1 wei'
 TipCapMin = '1 wei'
+
 [GasEstimator.BlockHistory]
-BatchSize = 4
+BatchSize = 25
 BlockHistorySize = 8
 CheckInclusionBlocks = 12
 CheckInclusionPercentile = 90
 TransactionPercentile = 60
+
 [HeadTracker]
 HistoryDepth = 100
 MaxBufferSize = 3
 SamplingInterval = '1s'
+
 [NodePool]
 PollFailureThreshold = 5
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
+
 [OCR]
 ContractConfirmations = 1
 ContractTransmitterTransmitTimeout = '10s'
 DatabaseTimeout = '10s'
 ObservationGracePeriod = '1s'
+
 [OCR2]
 [OCR2.Automation]
 GasLimit = 5300000
 ```
 
-</p>
-
-<summary>Metis Mainnet (1088)</summary>
-<p>
+Metis Mainnet (1088)
 
 ```toml
 AutoCreateKey = true
@@ -3023,15 +3146,16 @@ BlockBackfillDepth = 10
 BlockBackfillSkip = false
 ChainType = 'metis'
 FinalityDepth = 1
-LogBackfillBatchSize = 100
+LogBackfillBatchSize = 1000
 LogPollInterval = '15s'
 LogKeepBlocksDepth = 100000
 MinIncomingConfirmations = 1
 MinContractPayment = '0.00001 link'
 NonceAutoSync = true
 NoNewHeadsThreshold = '0s'
-RPCDefaultBatchSize = 100
+RPCDefaultBatchSize = 250
 RPCBlockQueryDelay = 1
+
 [Transactions]
 ForwardersEnabled = false
 MaxInFlight = 16
@@ -3039,8 +3163,10 @@ MaxQueued = 250
 ReaperInterval = '1h0m0s'
 ReaperThreshold = '168h0m0s'
 ResendAfterThreshold = '1m0s'
+
 [BalanceMonitor]
 Enabled = true
+
 [GasEstimator]
 Mode = 'L2Suggested'
 PriceDefault = '20 gwei'
@@ -3053,55 +3179,57 @@ LimitTransfer = 21000
 BumpMin = '5 gwei'
 BumpPercent = 20
 BumpThreshold = 0
-BumpTxDepth = 10
 EIP1559DynamicFees = false
 FeeCapDefault = '100 gwei'
 TipCapDefault = '1 wei'
 TipCapMin = '1 wei'
+
 [GasEstimator.BlockHistory]
-BatchSize = 4
+BatchSize = 25
 BlockHistorySize = 0
 CheckInclusionBlocks = 12
 CheckInclusionPercentile = 90
 TransactionPercentile = 60
+
 [HeadTracker]
 HistoryDepth = 100
 MaxBufferSize = 3
 SamplingInterval = '1s'
+
 [NodePool]
 PollFailureThreshold = 5
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 10
+
 [OCR]
 ContractConfirmations = 1
 ContractTransmitterTransmitTimeout = '10s'
 DatabaseTimeout = '10s'
 ObservationGracePeriod = '1s'
+
 [OCR2]
 [OCR2.Automation]
 GasLimit = 5300000
 ```
 
-</p>
-
-<summary>Simulated (1337)</summary>
-<p>
+Simulated (1337)
 
 ```toml
 AutoCreateKey = true
 BlockBackfillDepth = 10
 BlockBackfillSkip = false
 FinalityDepth = 1
-LogBackfillBatchSize = 100
+LogBackfillBatchSize = 1000
 LogPollInterval = '15s'
 LogKeepBlocksDepth = 100000
 MinIncomingConfirmations = 1
 MinContractPayment = '100'
 NonceAutoSync = true
 NoNewHeadsThreshold = '0s'
-RPCDefaultBatchSize = 100
+RPCDefaultBatchSize = 250
 RPCBlockQueryDelay = 1
+
 [Transactions]
 ForwardersEnabled = false
 MaxInFlight = 16
@@ -3109,8 +3237,10 @@ MaxQueued = 250
 ReaperInterval = '1h0m0s'
 ReaperThreshold = '0s'
 ResendAfterThreshold = '0s'
+
 [BalanceMonitor]
 Enabled = true
+
 [GasEstimator]
 Mode = 'FixedPrice'
 PriceDefault = '20 gwei'
@@ -3123,40 +3253,41 @@ LimitTransfer = 21000
 BumpMin = '5 gwei'
 BumpPercent = 20
 BumpThreshold = 0
-BumpTxDepth = 10
 EIP1559DynamicFees = false
 FeeCapDefault = '100 micro'
 TipCapDefault = '1 wei'
 TipCapMin = '1 wei'
+
 [GasEstimator.BlockHistory]
-BatchSize = 4
+BatchSize = 25
 BlockHistorySize = 8
 CheckInclusionBlocks = 12
 CheckInclusionPercentile = 90
 TransactionPercentile = 60
+
 [HeadTracker]
 HistoryDepth = 10
 MaxBufferSize = 100
 SamplingInterval = '0s'
+
 [NodePool]
 PollFailureThreshold = 5
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
+
 [OCR]
 ContractConfirmations = 1
 ContractTransmitterTransmitTimeout = '10s'
 DatabaseTimeout = '10s'
 ObservationGracePeriod = '1s'
+
 [OCR2]
 [OCR2.Automation]
 GasLimit = 5300000
 ```
 
-</p>
-
-<summary>Fantom Testnet (4002)</summary>
-<p>
+Fantom Testnet (4002)
 
 ```toml
 AutoCreateKey = true
@@ -3164,15 +3295,16 @@ BlockBackfillDepth = 10
 BlockBackfillSkip = false
 FinalityDepth = 50
 LinkContractAddress = '0xfaFedb041c0DD4fA2Dc0d87a6B0979Ee6FA7af5F'
-LogBackfillBatchSize = 100
+LogBackfillBatchSize = 1000
 LogPollInterval = '1s'
 LogKeepBlocksDepth = 100000
 MinIncomingConfirmations = 3
 MinContractPayment = '0.00001 link'
 NonceAutoSync = true
 NoNewHeadsThreshold = '0s'
-RPCDefaultBatchSize = 100
+RPCDefaultBatchSize = 250
 RPCBlockQueryDelay = 2
+
 [Transactions]
 ForwardersEnabled = false
 MaxInFlight = 16
@@ -3180,8 +3312,10 @@ MaxQueued = 250
 ReaperInterval = '1h0m0s'
 ReaperThreshold = '168h0m0s'
 ResendAfterThreshold = '1m0s'
+
 [BalanceMonitor]
 Enabled = true
+
 [GasEstimator]
 Mode = 'BlockHistory'
 PriceDefault = '15 gwei'
@@ -3194,55 +3328,57 @@ LimitTransfer = 21000
 BumpMin = '5 gwei'
 BumpPercent = 20
 BumpThreshold = 3
-BumpTxDepth = 10
 EIP1559DynamicFees = false
 FeeCapDefault = '100 gwei'
 TipCapDefault = '1 wei'
 TipCapMin = '1 wei'
+
 [GasEstimator.BlockHistory]
-BatchSize = 4
+BatchSize = 25
 BlockHistorySize = 8
 CheckInclusionBlocks = 12
 CheckInclusionPercentile = 90
 TransactionPercentile = 60
+
 [HeadTracker]
 HistoryDepth = 100
 MaxBufferSize = 3
 SamplingInterval = '1s'
+
 [NodePool]
 PollFailureThreshold = 5
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
+
 [OCR]
 ContractConfirmations = 4
 ContractTransmitterTransmitTimeout = '10s'
 DatabaseTimeout = '10s'
 ObservationGracePeriod = '1s'
+
 [OCR2]
 [OCR2.Automation]
 GasLimit = 3800000
 ```
 
-</p>
-
-<summary>Klaytn Mainnet (8217)</summary>
-<p>
+Klaytn Mainnet (8217)
 
 ```toml
 AutoCreateKey = true
 BlockBackfillDepth = 10
 BlockBackfillSkip = false
 FinalityDepth = 1
-LogBackfillBatchSize = 100
+LogBackfillBatchSize = 1000
 LogPollInterval = '15s'
 LogKeepBlocksDepth = 100000
 MinIncomingConfirmations = 1
 MinContractPayment = '0.00001 link'
 NonceAutoSync = true
 NoNewHeadsThreshold = '30s'
-RPCDefaultBatchSize = 100
+RPCDefaultBatchSize = 250
 RPCBlockQueryDelay = 1
+
 [Transactions]
 ForwardersEnabled = false
 MaxInFlight = 16
@@ -3250,8 +3386,10 @@ MaxQueued = 250
 ReaperInterval = '1h0m0s'
 ReaperThreshold = '168h0m0s'
 ResendAfterThreshold = '1m0s'
+
 [BalanceMonitor]
 Enabled = true
+
 [GasEstimator]
 Mode = 'L2Suggested'
 PriceDefault = '750 gwei'
@@ -3264,40 +3402,41 @@ LimitTransfer = 21000
 BumpMin = '5 gwei'
 BumpPercent = 20
 BumpThreshold = 0
-BumpTxDepth = 10
 EIP1559DynamicFees = false
 FeeCapDefault = '100 gwei'
 TipCapDefault = '1 wei'
 TipCapMin = '1 wei'
+
 [GasEstimator.BlockHistory]
-BatchSize = 4
+BatchSize = 25
 BlockHistorySize = 8
 CheckInclusionBlocks = 12
 CheckInclusionPercentile = 90
 TransactionPercentile = 60
+
 [HeadTracker]
 HistoryDepth = 100
 MaxBufferSize = 3
 SamplingInterval = '1s'
+
 [NodePool]
 PollFailureThreshold = 5
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
+
 [OCR]
 ContractConfirmations = 1
 ContractTransmitterTransmitTimeout = '10s'
 DatabaseTimeout = '10s'
 ObservationGracePeriod = '1s'
+
 [OCR2]
 [OCR2.Automation]
 GasLimit = 5300000
 ```
 
-</p>
-
-<summary>Arbitrum Mainnet (42161)</summary>
-<p>
+Arbitrum Mainnet (42161)
 
 ```toml
 AutoCreateKey = true
@@ -3306,15 +3445,16 @@ BlockBackfillSkip = false
 ChainType = 'arbitrum'
 FinalityDepth = 50
 LinkContractAddress = '0xf97f4df75117a78c1A5a0DBb814Af92458539FB4'
-LogBackfillBatchSize = 100
+LogBackfillBatchSize = 1000
 LogPollInterval = '1s'
 LogKeepBlocksDepth = 100000
 MinIncomingConfirmations = 3
 MinContractPayment = '0.00001 link'
 NonceAutoSync = true
 NoNewHeadsThreshold = '0s'
-RPCDefaultBatchSize = 100
+RPCDefaultBatchSize = 250
 RPCBlockQueryDelay = 1
+
 [Transactions]
 ForwardersEnabled = false
 MaxInFlight = 16
@@ -3322,8 +3462,10 @@ MaxQueued = 250
 ReaperInterval = '1h0m0s'
 ReaperThreshold = '168h0m0s'
 ResendAfterThreshold = '1m0s'
+
 [BalanceMonitor]
 Enabled = true
+
 [GasEstimator]
 Mode = 'Arbitrum'
 PriceDefault = '100 mwei'
@@ -3336,270 +3478,57 @@ LimitTransfer = 21000
 BumpMin = '5 gwei'
 BumpPercent = 20
 BumpThreshold = 0
-BumpTxDepth = 10
 EIP1559DynamicFees = false
 FeeCapDefault = '1 micro'
 TipCapDefault = '1 wei'
 TipCapMin = '1 wei'
+
 [GasEstimator.BlockHistory]
-BatchSize = 4
+BatchSize = 25
 BlockHistorySize = 0
 CheckInclusionBlocks = 12
 CheckInclusionPercentile = 90
 TransactionPercentile = 60
+
 [HeadTracker]
 HistoryDepth = 100
 MaxBufferSize = 3
 SamplingInterval = '1s'
+
 [NodePool]
 PollFailureThreshold = 5
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 10
+
 [OCR]
 ContractConfirmations = 1
 ContractTransmitterTransmitTimeout = '10s'
 DatabaseTimeout = '10s'
 ObservationGracePeriod = '1s'
+
 [OCR2]
 [OCR2.Automation]
 GasLimit = 5300000
 ```
 
-</p>
-
-<summary>Avalanche Fuji (43113)</summary>
-<p>
+Celo Mainnet (42220)
 
 ```toml
 AutoCreateKey = true
 BlockBackfillDepth = 10
 BlockBackfillSkip = false
 FinalityDepth = 1
-LinkContractAddress = '0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846'
-LogBackfillBatchSize = 100
-LogPollInterval = '3s'
+LogBackfillBatchSize = 1000
+LogPollInterval = '5s'
 LogKeepBlocksDepth = 100000
 MinIncomingConfirmations = 1
 MinContractPayment = '0.00001 link'
 NonceAutoSync = true
-NoNewHeadsThreshold = '30s'
-RPCDefaultBatchSize = 100
-RPCBlockQueryDelay = 2
-[Transactions]
-ForwardersEnabled = false
-MaxInFlight = 16
-MaxQueued = 250
-ReaperInterval = '1h0m0s'
-ReaperThreshold = '168h0m0s'
-ResendAfterThreshold = '1m0s'
-[BalanceMonitor]
-Enabled = true
-[GasEstimator]
-Mode = 'BlockHistory'
-PriceDefault = '25 gwei'
-PriceMax = '115792089237316195423570985008687907853269984665.640564039457584007913129639935 tether'
-PriceMin = '25 gwei'
-LimitDefault = 500000
-LimitMax = 500000
-LimitMultiplier = '1'
-LimitTransfer = 21000
-BumpMin = '5 gwei'
-BumpPercent = 20
-BumpThreshold = 3
-BumpTxDepth = 10
-EIP1559DynamicFees = false
-FeeCapDefault = '100 gwei'
-TipCapDefault = '1 wei'
-TipCapMin = '1 wei'
-[GasEstimator.BlockHistory]
-BatchSize = 4
-BlockHistorySize = 24
-CheckInclusionBlocks = 12
-CheckInclusionPercentile = 90
-TransactionPercentile = 60
-[HeadTracker]
-HistoryDepth = 100
-MaxBufferSize = 3
-SamplingInterval = '1s'
-[NodePool]
-PollFailureThreshold = 5
-PollInterval = '10s'
-SelectionMode = 'HighestHead'
-SyncThreshold = 5
-[OCR]
-ContractConfirmations = 1
-ContractTransmitterTransmitTimeout = '10s'
-DatabaseTimeout = '10s'
-ObservationGracePeriod = '1s'
-[OCR2]
-[OCR2.Automation]
-GasLimit = 5300000
-```
-
-</p>
-
-<summary>Avalanche Mainnet (43114)</summary>
-<p>
-
-```toml
-AutoCreateKey = true
-BlockBackfillDepth = 10
-BlockBackfillSkip = false
-FinalityDepth = 1
-LinkContractAddress = '0x5947BB275c521040051D82396192181b413227A3'
-LogBackfillBatchSize = 100
-LogPollInterval = '3s'
-LogKeepBlocksDepth = 100000
-MinIncomingConfirmations = 1
-MinContractPayment = '0.00001 link'
-NonceAutoSync = true
-NoNewHeadsThreshold = '30s'
-RPCDefaultBatchSize = 100
-RPCBlockQueryDelay = 2
-[Transactions]
-ForwardersEnabled = false
-MaxInFlight = 16
-MaxQueued = 250
-ReaperInterval = '1h0m0s'
-ReaperThreshold = '168h0m0s'
-ResendAfterThreshold = '1m0s'
-[BalanceMonitor]
-Enabled = true
-[GasEstimator]
-Mode = 'BlockHistory'
-PriceDefault = '25 gwei'
-PriceMax = '115792089237316195423570985008687907853269984665.640564039457584007913129639935 tether'
-PriceMin = '25 gwei'
-LimitDefault = 500000
-LimitMax = 500000
-LimitMultiplier = '1'
-LimitTransfer = 21000
-BumpMin = '5 gwei'
-BumpPercent = 20
-BumpThreshold = 3
-BumpTxDepth = 10
-EIP1559DynamicFees = false
-FeeCapDefault = '100 gwei'
-TipCapDefault = '1 wei'
-TipCapMin = '1 wei'
-[GasEstimator.BlockHistory]
-BatchSize = 4
-BlockHistorySize = 24
-CheckInclusionBlocks = 12
-CheckInclusionPercentile = 90
-TransactionPercentile = 60
-[HeadTracker]
-HistoryDepth = 100
-MaxBufferSize = 3
-SamplingInterval = '1s'
-[NodePool]
-PollFailureThreshold = 5
-PollInterval = '10s'
-SelectionMode = 'HighestHead'
-SyncThreshold = 5
-[OCR]
-ContractConfirmations = 1
-ContractTransmitterTransmitTimeout = '10s'
-DatabaseTimeout = '10s'
-ObservationGracePeriod = '1s'
-[OCR2]
-[OCR2.Automation]
-GasLimit = 5300000
-```
-
-</p>
-
-<summary>Polygon Mumbai (80001)</summary>
-<p>
-
-```toml
-AutoCreateKey = true
-BlockBackfillDepth = 10
-BlockBackfillSkip = false
-FinalityDepth = 500
-LinkContractAddress = '0x326C977E6efc84E512bB9C30f76E30c160eD06FB'
-LogBackfillBatchSize = 100
-LogPollInterval = '1s'
-LogKeepBlocksDepth = 100000
-MinIncomingConfirmations = 5
-MinContractPayment = '0.00001 link'
-NonceAutoSync = true
-NoNewHeadsThreshold = '30s'
-RPCDefaultBatchSize = 100
-RPCBlockQueryDelay = 10
-[Transactions]
-ForwardersEnabled = false
-MaxInFlight = 16
-MaxQueued = 5000
-ReaperInterval = '1h0m0s'
-ReaperThreshold = '168h0m0s'
-ResendAfterThreshold = '1m0s'
-[BalanceMonitor]
-Enabled = true
-[GasEstimator]
-Mode = 'BlockHistory'
-PriceDefault = '1 gwei'
-PriceMax = '115792089237316195423570985008687907853269984665.640564039457584007913129639935 tether'
-PriceMin = '1 gwei'
-LimitDefault = 500000
-LimitMax = 500000
-LimitMultiplier = '1'
-LimitTransfer = 21000
-BumpMin = '20 gwei'
-BumpPercent = 20
-BumpThreshold = 5
-BumpTxDepth = 10
-EIP1559DynamicFees = false
-FeeCapDefault = '100 gwei'
-TipCapDefault = '1 wei'
-TipCapMin = '1 wei'
-[GasEstimator.BlockHistory]
-BatchSize = 4
-BlockHistorySize = 24
-CheckInclusionBlocks = 12
-CheckInclusionPercentile = 90
-TransactionPercentile = 60
-[HeadTracker]
-HistoryDepth = 2000
-MaxBufferSize = 3
-SamplingInterval = '1s'
-[NodePool]
-PollFailureThreshold = 5
-PollInterval = '10s'
-SelectionMode = 'HighestHead'
-SyncThreshold = 10
-[OCR]
-ContractConfirmations = 4
-ContractTransmitterTransmitTimeout = '10s'
-DatabaseTimeout = '10s'
-ObservationGracePeriod = '1s'
-[OCR2]
-[OCR2.Automation]
-GasLimit = 5300000
-```
-
-</p>
-
-<summary>Arbitrum Rinkeby (421611)</summary>
-<p>
-
-```toml
-AutoCreateKey = true
-BlockBackfillDepth = 10
-BlockBackfillSkip = false
-ChainType = 'arbitrum'
-FinalityDepth = 50
-LinkContractAddress = '0x615fBe6372676474d9e6933d310469c9b68e9726'
-LogBackfillBatchSize = 100
-LogPollInterval = '1s'
-LogKeepBlocksDepth = 100000
-MinIncomingConfirmations = 3
-MinContractPayment = '0.00001 link'
-NonceAutoSync = true
-NoNewHeadsThreshold = '0s'
-RPCDefaultBatchSize = 100
+NoNewHeadsThreshold = '1m0s'
+RPCDefaultBatchSize = 250
 RPCBlockQueryDelay = 1
+
 [Transactions]
 ForwardersEnabled = false
 MaxInFlight = 16
@@ -3607,151 +3536,10 @@ MaxQueued = 250
 ReaperInterval = '1h0m0s'
 ReaperThreshold = '168h0m0s'
 ResendAfterThreshold = '1m0s'
+
 [BalanceMonitor]
 Enabled = true
-[GasEstimator]
-Mode = 'Arbitrum'
-PriceDefault = '100 mwei'
-PriceMax = '115792089237316195423570985008687907853269984665.640564039457584007913129639935 tether'
-PriceMin = '0'
-LimitDefault = 500000
-LimitMax = 1000000000
-LimitMultiplier = '1'
-LimitTransfer = 21000
-BumpMin = '5 gwei'
-BumpPercent = 20
-BumpThreshold = 0
-BumpTxDepth = 10
-EIP1559DynamicFees = false
-FeeCapDefault = '1 micro'
-TipCapDefault = '1 wei'
-TipCapMin = '1 wei'
-[GasEstimator.BlockHistory]
-BatchSize = 4
-BlockHistorySize = 0
-CheckInclusionBlocks = 12
-CheckInclusionPercentile = 90
-TransactionPercentile = 60
-[HeadTracker]
-HistoryDepth = 100
-MaxBufferSize = 3
-SamplingInterval = '1s'
-[NodePool]
-PollFailureThreshold = 5
-PollInterval = '10s'
-SelectionMode = 'HighestHead'
-SyncThreshold = 10
-[OCR]
-ContractConfirmations = 1
-ContractTransmitterTransmitTimeout = '10s'
-DatabaseTimeout = '10s'
-ObservationGracePeriod = '1s'
-[OCR2]
-[OCR2.Automation]
-GasLimit = 5300000
-```
 
-</p>
-
-<summary>Arbitrum Goerli (421613)</summary>
-<p>
-
-```toml
-AutoCreateKey = true
-BlockBackfillDepth = 10
-BlockBackfillSkip = false
-ChainType = 'arbitrum'
-FinalityDepth = 50
-LinkContractAddress = '0xd14838A68E8AFBAdE5efb411d5871ea0011AFd28'
-LogBackfillBatchSize = 100
-LogPollInterval = '1s'
-LogKeepBlocksDepth = 100000
-MinIncomingConfirmations = 3
-MinContractPayment = '0.00001 link'
-NonceAutoSync = true
-NoNewHeadsThreshold = '0s'
-RPCDefaultBatchSize = 100
-RPCBlockQueryDelay = 1
-[Transactions]
-ForwardersEnabled = false
-MaxInFlight = 16
-MaxQueued = 250
-ReaperInterval = '1h0m0s'
-ReaperThreshold = '168h0m0s'
-ResendAfterThreshold = '1m0s'
-[BalanceMonitor]
-Enabled = true
-[GasEstimator]
-Mode = 'Arbitrum'
-PriceDefault = '100 mwei'
-PriceMax = '115792089237316195423570985008687907853269984665.640564039457584007913129639935 tether'
-PriceMin = '0'
-LimitDefault = 500000
-LimitMax = 1000000000
-LimitMultiplier = '1'
-LimitTransfer = 21000
-BumpMin = '5 gwei'
-BumpPercent = 20
-BumpThreshold = 0
-BumpTxDepth = 10
-EIP1559DynamicFees = false
-FeeCapDefault = '1 micro'
-TipCapDefault = '1 wei'
-TipCapMin = '1 wei'
-[GasEstimator.BlockHistory]
-BatchSize = 4
-BlockHistorySize = 0
-CheckInclusionBlocks = 12
-CheckInclusionPercentile = 90
-TransactionPercentile = 60
-[HeadTracker]
-HistoryDepth = 100
-MaxBufferSize = 3
-SamplingInterval = '1s'
-[NodePool]
-PollFailureThreshold = 5
-PollInterval = '10s'
-SelectionMode = 'HighestHead'
-SyncThreshold = 10
-[OCR]
-ContractConfirmations = 1
-ContractTransmitterTransmitTimeout = '10s'
-DatabaseTimeout = '10s'
-ObservationGracePeriod = '1s'
-[OCR2]
-[OCR2.Automation]
-GasLimit = 5300000
-```
-
-</p>
-
-<summary>Ethereum Sepolia (11155111)</summary>
-<p>
-
-```toml
-AutoCreateKey = true
-BlockBackfillDepth = 10
-BlockBackfillSkip = false
-FinalityDepth = 50
-LinkContractAddress = '0xb227f007804c16546Bd054dfED2E7A1fD5437678'
-LogBackfillBatchSize = 100
-LogPollInterval = '15s'
-LogKeepBlocksDepth = 100000
-MinIncomingConfirmations = 3
-MinContractPayment = '0.1 link'
-NonceAutoSync = true
-NoNewHeadsThreshold = '3m0s'
-RPCDefaultBatchSize = 100
-RPCBlockQueryDelay = 1
-[Transactions]
-ForwardersEnabled = false
-MaxInFlight = 16
-MaxQueued = 250
-ReaperInterval = '1h0m0s'
-ReaperThreshold = '168h0m0s'
-ResendAfterThreshold = '1m0s'
-[BalanceMonitor]
-Enabled = true
 [GasEstimator]
 Mode = 'BlockHistory'
 PriceDefault = '20 gwei'
@@ -3764,40 +3552,567 @@ LimitTransfer = 21000
 BumpMin = '5 gwei'
 BumpPercent = 20
 BumpThreshold = 3
-BumpTxDepth = 10
 EIP1559DynamicFees = true
 FeeCapDefault = '100 gwei'
 TipCapDefault = '1 wei'
 TipCapMin = '1 wei'
+
 [GasEstimator.BlockHistory]
-BatchSize = 4
-BlockHistorySize = 4
+BatchSize = 25
+BlockHistorySize = 12
 CheckInclusionBlocks = 12
 CheckInclusionPercentile = 90
-TransactionPercentile = 50
+TransactionPercentile = 60
+
 [HeadTracker]
-HistoryDepth = 100
+HistoryDepth = 50
 MaxBufferSize = 3
 SamplingInterval = '1s'
+
 [NodePool]
 PollFailureThreshold = 5
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
+
 [OCR]
-ContractConfirmations = 4
+ContractConfirmations = 1
 ContractTransmitterTransmitTimeout = '10s'
 DatabaseTimeout = '10s'
 ObservationGracePeriod = '1s'
+
 [OCR2]
 [OCR2.Automation]
 GasLimit = 5300000
 ```
 
-</p>
+Avalanche Fuji (43113)
 
-<summary>Harmony Mainnet (1666600000)</summary>
-<p>
+```toml
+AutoCreateKey = true
+BlockBackfillDepth = 10
+BlockBackfillSkip = false
+FinalityDepth = 1
+LinkContractAddress = '0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846'
+LogBackfillBatchSize = 1000
+LogPollInterval = '3s'
+LogKeepBlocksDepth = 100000
+MinIncomingConfirmations = 1
+MinContractPayment = '0.00001 link'
+NonceAutoSync = true
+NoNewHeadsThreshold = '30s'
+RPCDefaultBatchSize = 250
+RPCBlockQueryDelay = 2
+
+[Transactions]
+ForwardersEnabled = false
+MaxInFlight = 16
+MaxQueued = 250
+ReaperInterval = '1h0m0s'
+ReaperThreshold = '168h0m0s'
+ResendAfterThreshold = '1m0s'
+
+[BalanceMonitor]
+Enabled = true
+
+[GasEstimator]
+Mode = 'BlockHistory'
+PriceDefault = '25 gwei'
+PriceMax = '115792089237316195423570985008687907853269984665.640564039457584007913129639935 tether'
+PriceMin = '25 gwei'
+LimitDefault = 500000
+LimitMax = 500000
+LimitMultiplier = '1'
+LimitTransfer = 21000
+BumpMin = '5 gwei'
+BumpPercent = 20
+BumpThreshold = 3
+EIP1559DynamicFees = false
+FeeCapDefault = '100 gwei'
+TipCapDefault = '1 wei'
+TipCapMin = '1 wei'
+
+[GasEstimator.BlockHistory]
+BatchSize = 25
+BlockHistorySize = 24
+CheckInclusionBlocks = 12
+CheckInclusionPercentile = 90
+TransactionPercentile = 60
+
+[HeadTracker]
+HistoryDepth = 100
+MaxBufferSize = 3
+SamplingInterval = '1s'
+
+[NodePool]
+PollFailureThreshold = 5
+PollInterval = '10s'
+SelectionMode = 'HighestHead'
+SyncThreshold = 5
+
+[OCR]
+ContractConfirmations = 1
+ContractTransmitterTransmitTimeout = '10s'
+DatabaseTimeout = '10s'
+ObservationGracePeriod = '1s'
+
+[OCR2]
+[OCR2.Automation]
+GasLimit = 5300000
+```
+
+Avalanche Mainnet (43114)
+
+```toml
+AutoCreateKey = true
+BlockBackfillDepth = 10
+BlockBackfillSkip = false
+FinalityDepth = 1
+LinkContractAddress = '0x5947BB275c521040051D82396192181b413227A3'
+LogBackfillBatchSize = 1000
+LogPollInterval = '3s'
+LogKeepBlocksDepth = 100000
+MinIncomingConfirmations = 1
+MinContractPayment = '0.00001 link'
+NonceAutoSync = true
+NoNewHeadsThreshold = '30s'
+RPCDefaultBatchSize = 250
+RPCBlockQueryDelay = 2
+
+[Transactions]
+ForwardersEnabled = false
+MaxInFlight = 16
+MaxQueued = 250
+ReaperInterval = '1h0m0s'
+ReaperThreshold = '168h0m0s'
+ResendAfterThreshold = '1m0s'
+
+[BalanceMonitor]
+Enabled = true
+
+[GasEstimator]
+Mode = 'BlockHistory'
+PriceDefault = '25 gwei'
+PriceMax = '115792089237316195423570985008687907853269984665.640564039457584007913129639935 tether'
+PriceMin = '25 gwei'
+LimitDefault = 500000
+LimitMax = 500000
+LimitMultiplier = '1'
+LimitTransfer = 21000
+BumpMin = '5 gwei'
+BumpPercent = 20
+BumpThreshold = 3
+EIP1559DynamicFees = false
+FeeCapDefault = '100 gwei'
+TipCapDefault = '1 wei'
+TipCapMin = '1 wei'
+
+[GasEstimator.BlockHistory]
+BatchSize = 25
+BlockHistorySize = 24
+CheckInclusionBlocks = 12
+CheckInclusionPercentile = 90
+TransactionPercentile = 60
+
+[HeadTracker]
+HistoryDepth = 100
+MaxBufferSize = 3
+SamplingInterval = '1s'
+
+[NodePool]
+PollFailureThreshold = 5
+PollInterval = '10s'
+SelectionMode = 'HighestHead'
+SyncThreshold = 5
+
+[OCR]
+ContractConfirmations = 1
+ContractTransmitterTransmitTimeout = '10s'
+DatabaseTimeout = '10s'
+ObservationGracePeriod = '1s'
+
+[OCR2]
+[OCR2.Automation]
+GasLimit = 5300000
+```
+
+Celo Testnet (44787)
+
+```toml
+AutoCreateKey = true
+BlockBackfillDepth = 10
+BlockBackfillSkip = false
+FinalityDepth = 1
+LogBackfillBatchSize = 1000
+LogPollInterval = '5s'
+LogKeepBlocksDepth = 100000
+MinIncomingConfirmations = 1
+MinContractPayment = '0.00001 link'
+NonceAutoSync = true
+NoNewHeadsThreshold = '1m0s'
+RPCDefaultBatchSize = 250
+RPCBlockQueryDelay = 1
+
+[Transactions]
+ForwardersEnabled = false
+MaxInFlight = 16
+MaxQueued = 250
+ReaperInterval = '1h0m0s'
+ReaperThreshold = '168h0m0s'
+ResendAfterThreshold = '1m0s'
+
+[BalanceMonitor]
+Enabled = true
+
+[GasEstimator]
+Mode = 'BlockHistory'
+PriceDefault = '20 gwei'
+PriceMax = '115792089237316195423570985008687907853269984665.640564039457584007913129639935 tether'
+PriceMin = '1 gwei'
+LimitDefault = 500000
+LimitMax = 500000
+LimitMultiplier = '1'
+LimitTransfer = 21000
+BumpMin = '5 gwei'
+BumpPercent = 20
+BumpThreshold = 3
+EIP1559DynamicFees = true
+FeeCapDefault = '100 gwei'
+TipCapDefault = '1 wei'
+TipCapMin = '1 wei'
+
+[GasEstimator.BlockHistory]
+BatchSize = 25
+BlockHistorySize = 12
+CheckInclusionBlocks = 12
+CheckInclusionPercentile = 90
+TransactionPercentile = 60
+
+[HeadTracker]
+HistoryDepth = 50
+MaxBufferSize = 3
+SamplingInterval = '1s'
+
+[NodePool]
+PollFailureThreshold = 5
+PollInterval = '10s'
+SelectionMode = 'HighestHead'
+SyncThreshold = 5
+
+[OCR]
+ContractConfirmations = 1
+ContractTransmitterTransmitTimeout = '10s'
+DatabaseTimeout = '10s'
+ObservationGracePeriod = '1s'
+
+[OCR2]
+[OCR2.Automation]
+GasLimit = 5300000
+```
+
+Polygon Mumbai (80001)
+
+```toml
+AutoCreateKey = true
+BlockBackfillDepth = 10
+BlockBackfillSkip = false
+FinalityDepth = 500
+LinkContractAddress = '0x326C977E6efc84E512bB9C30f76E30c160eD06FB'
+LogBackfillBatchSize = 1000
+LogPollInterval = '1s'
+LogKeepBlocksDepth = 100000
+MinIncomingConfirmations = 5
+MinContractPayment = '0.00001 link'
+NonceAutoSync = true
+NoNewHeadsThreshold = '30s'
+RPCDefaultBatchSize = 250
+RPCBlockQueryDelay = 10
+
+[Transactions]
+ForwardersEnabled = false
+MaxInFlight = 16
+MaxQueued = 5000
+ReaperInterval = '1h0m0s'
+ReaperThreshold = '168h0m0s'
+ResendAfterThreshold = '1m0s'
+
+[BalanceMonitor]
+Enabled = true
+
+[GasEstimator]
+Mode = 'BlockHistory'
+PriceDefault = '1 gwei'
+PriceMax = '115792089237316195423570985008687907853269984665.640564039457584007913129639935 tether'
+PriceMin = '1 gwei'
+LimitDefault = 500000
+LimitMax = 500000
+LimitMultiplier = '1'
+LimitTransfer = 21000
+BumpMin = '20 gwei'
+BumpPercent = 20
+BumpThreshold = 5
+EIP1559DynamicFees = false
+FeeCapDefault = '100 gwei'
+TipCapDefault = '1 wei'
+TipCapMin = '1 wei'
+
+[GasEstimator.BlockHistory]
+BatchSize = 25
+BlockHistorySize = 24
+CheckInclusionBlocks = 12
+CheckInclusionPercentile = 90
+TransactionPercentile = 60
+
+[HeadTracker]
+HistoryDepth = 2000
+MaxBufferSize = 3
+SamplingInterval = '1s'
+
+[NodePool]
+PollFailureThreshold = 5
+PollInterval = '10s'
+SelectionMode = 'HighestHead'
+SyncThreshold = 10
+
+[OCR]
+ContractConfirmations = 4
+ContractTransmitterTransmitTimeout = '10s'
+DatabaseTimeout = '10s'
+ObservationGracePeriod = '1s'
+
+[OCR2]
+[OCR2.Automation]
+GasLimit = 5300000
+```
+
+Arbitrum Rinkeby (421611)
+
+```toml
+AutoCreateKey = true
+BlockBackfillDepth = 10
+BlockBackfillSkip = false
+ChainType = 'arbitrum'
+FinalityDepth = 50
+LinkContractAddress = '0x615fBe6372676474d9e6933d310469c9b68e9726'
+LogBackfillBatchSize = 1000
+LogPollInterval = '1s'
+LogKeepBlocksDepth = 100000
+MinIncomingConfirmations = 3
+MinContractPayment = '0.00001 link'
+NonceAutoSync = true
+NoNewHeadsThreshold = '0s'
+RPCDefaultBatchSize = 250
+RPCBlockQueryDelay = 1
+
+[Transactions]
+ForwardersEnabled = false
+MaxInFlight = 16
+MaxQueued = 250
+ReaperInterval = '1h0m0s'
+ReaperThreshold = '168h0m0s'
+ResendAfterThreshold = '1m0s'
+
+[BalanceMonitor]
+Enabled = true
+
+[GasEstimator]
+Mode = 'Arbitrum'
+PriceDefault = '100 mwei'
+PriceMax = '115792089237316195423570985008687907853269984665.640564039457584007913129639935 tether'
+PriceMin = '0'
+LimitDefault = 500000
+LimitMax = 1000000000
+LimitMultiplier = '1'
+LimitTransfer = 21000
+BumpMin = '5 gwei'
+BumpPercent = 20
+BumpThreshold = 0
+EIP1559DynamicFees = false
+FeeCapDefault = '1 micro'
+TipCapDefault = '1 wei'
+TipCapMin = '1 wei'
+
+[GasEstimator.BlockHistory]
+BatchSize = 25
+BlockHistorySize = 0
+CheckInclusionBlocks = 12
+CheckInclusionPercentile = 90
+TransactionPercentile = 60
+
+[HeadTracker]
+HistoryDepth = 100
+MaxBufferSize = 3
+SamplingInterval = '1s'
+
+[NodePool]
+PollFailureThreshold = 5
+PollInterval = '10s'
+SelectionMode = 'HighestHead'
+SyncThreshold = 10
+
+[OCR]
+ContractConfirmations = 1
+ContractTransmitterTransmitTimeout = '10s'
+DatabaseTimeout = '10s'
+ObservationGracePeriod = '1s'
+
+[OCR2]
+[OCR2.Automation]
+GasLimit = 5300000
+```
+
+Arbitrum Goerli (421613)
+
+```toml
+AutoCreateKey = true
+BlockBackfillDepth = 10
+BlockBackfillSkip = false
+ChainType = 'arbitrum'
+FinalityDepth = 50
+LinkContractAddress = '0xd14838A68E8AFBAdE5efb411d5871ea0011AFd28'
+LogBackfillBatchSize = 1000
+LogPollInterval = '1s'
+LogKeepBlocksDepth = 100000
+MinIncomingConfirmations = 3
+MinContractPayment = '0.00001 link'
+NonceAutoSync = true
+NoNewHeadsThreshold = '0s'
+RPCDefaultBatchSize = 250
+RPCBlockQueryDelay = 1
+
+[Transactions]
+ForwardersEnabled = false
+MaxInFlight = 16
+MaxQueued = 250
+ReaperInterval = '1h0m0s'
+ReaperThreshold = '168h0m0s'
+ResendAfterThreshold = '1m0s'
+
+[BalanceMonitor]
+Enabled = true
+
+[GasEstimator]
+Mode = 'Arbitrum'
+PriceDefault = '100 mwei'
+PriceMax = '115792089237316195423570985008687907853269984665.640564039457584007913129639935 tether'
+PriceMin = '0'
+LimitDefault = 500000
+LimitMax = 1000000000
+LimitMultiplier = '1'
+LimitTransfer = 21000
+BumpMin = '5 gwei'
+BumpPercent = 20
+BumpThreshold = 0
+EIP1559DynamicFees = false
+FeeCapDefault = '1 micro'
+TipCapDefault = '1 wei'
+TipCapMin = '1 wei'
+
+[GasEstimator.BlockHistory]
+BatchSize = 25
+BlockHistorySize = 0
+CheckInclusionBlocks = 12
+CheckInclusionPercentile = 90
+TransactionPercentile = 60
+
+[HeadTracker]
+HistoryDepth = 100
+MaxBufferSize = 3
+SamplingInterval = '1s'
+
+[NodePool]
+PollFailureThreshold = 5
+PollInterval = '10s'
+SelectionMode = 'HighestHead'
+SyncThreshold = 10
+
+[OCR]
+ContractConfirmations = 1
+ContractTransmitterTransmitTimeout = '10s'
+DatabaseTimeout = '10s'
+ObservationGracePeriod = '1s'
+
+[OCR2]
+[OCR2.Automation]
+GasLimit = 5300000
+```
+
+Ethereum Sepolia (11155111)
+
+```toml
+AutoCreateKey = true
+BlockBackfillDepth = 10
+BlockBackfillSkip = false
+FinalityDepth = 50
+LinkContractAddress = '0xb227f007804c16546Bd054dfED2E7A1fD5437678'
+LogBackfillBatchSize = 1000
+LogPollInterval = '15s'
+LogKeepBlocksDepth = 100000
+MinIncomingConfirmations = 3
+MinContractPayment = '0.1 link'
+NonceAutoSync = true
+NoNewHeadsThreshold = '3m0s'
+RPCDefaultBatchSize = 250
+RPCBlockQueryDelay = 1
+
+[Transactions]
+ForwardersEnabled = false
+MaxInFlight = 16
+MaxQueued = 250
+ReaperInterval = '1h0m0s'
+ReaperThreshold = '168h0m0s'
+ResendAfterThreshold = '1m0s'
+
+[BalanceMonitor]
+Enabled = true
+
+[GasEstimator]
+Mode = 'BlockHistory'
+PriceDefault = '20 gwei'
+PriceMax = '115792089237316195423570985008687907853269984665.640564039457584007913129639935 tether'
+PriceMin = '1 gwei'
+LimitDefault = 500000
+LimitMax = 500000
+LimitMultiplier = '1'
+LimitTransfer = 21000
+BumpMin = '5 gwei'
+BumpPercent = 20
+BumpThreshold = 3
+EIP1559DynamicFees = true
+FeeCapDefault = '100 gwei'
+TipCapDefault = '1 wei'
+TipCapMin = '1 wei'
+
+[GasEstimator.BlockHistory]
+BatchSize = 25
+BlockHistorySize = 4
+CheckInclusionBlocks = 12
+CheckInclusionPercentile = 90
+TransactionPercentile = 50
+
+[HeadTracker]
+HistoryDepth = 100
+MaxBufferSize = 3
+SamplingInterval = '1s'
+
+[NodePool]
+PollFailureThreshold = 5
+PollInterval = '10s'
+SelectionMode = 'HighestHead'
+SyncThreshold = 5
+
+[OCR]
+ContractConfirmations = 4
+ContractTransmitterTransmitTimeout = '10s'
+DatabaseTimeout = '10s'
+ObservationGracePeriod = '1s'
+
+[OCR2]
+[OCR2.Automation]
+GasLimit = 5300000
+```
+
+Harmony Mainnet (1666600000)
 
 ```toml
 AutoCreateKey = true
@@ -3805,15 +4120,16 @@ BlockBackfillDepth = 10
 BlockBackfillSkip = false
 FinalityDepth = 50
 LinkContractAddress = '0x218532a12a389a4a92fC0C5Fb22901D1c19198aA'
-LogBackfillBatchSize = 100
+LogBackfillBatchSize = 1000
 LogPollInterval = '2s'
 LogKeepBlocksDepth = 100000
 MinIncomingConfirmations = 1
 MinContractPayment = '0.00001 link'
 NonceAutoSync = true
 NoNewHeadsThreshold = '30s'
-RPCDefaultBatchSize = 100
+RPCDefaultBatchSize = 250
 RPCBlockQueryDelay = 1
+
 [Transactions]
 ForwardersEnabled = false
 MaxInFlight = 16
@@ -3821,8 +4137,10 @@ MaxQueued = 250
 ReaperInterval = '1h0m0s'
 ReaperThreshold = '168h0m0s'
 ResendAfterThreshold = '1m0s'
+
 [BalanceMonitor]
 Enabled = true
+
 [GasEstimator]
 Mode = 'BlockHistory'
 PriceDefault = '5 gwei'
@@ -3835,40 +4153,41 @@ LimitTransfer = 21000
 BumpMin = '5 gwei'
 BumpPercent = 20
 BumpThreshold = 3
-BumpTxDepth = 10
 EIP1559DynamicFees = false
 FeeCapDefault = '100 gwei'
 TipCapDefault = '1 wei'
 TipCapMin = '1 wei'
+
 [GasEstimator.BlockHistory]
-BatchSize = 4
+BatchSize = 25
 BlockHistorySize = 8
 CheckInclusionBlocks = 12
 CheckInclusionPercentile = 90
 TransactionPercentile = 60
+
 [HeadTracker]
 HistoryDepth = 100
 MaxBufferSize = 3
 SamplingInterval = '1s'
+
 [NodePool]
 PollFailureThreshold = 5
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
+
 [OCR]
 ContractConfirmations = 4
 ContractTransmitterTransmitTimeout = '10s'
 DatabaseTimeout = '10s'
 ObservationGracePeriod = '1s'
+
 [OCR2]
 [OCR2.Automation]
 GasLimit = 5300000
 ```
 
-</p>
-
-<summary>Harmony Testnet (1666700000)</summary>
-<p>
+Harmony Testnet (1666700000)
 
 ```toml
 AutoCreateKey = true
@@ -3876,15 +4195,16 @@ BlockBackfillDepth = 10
 BlockBackfillSkip = false
 FinalityDepth = 50
 LinkContractAddress = '0x8b12Ac23BFe11cAb03a634C1F117D64a7f2cFD3e'
-LogBackfillBatchSize = 100
+LogBackfillBatchSize = 1000
 LogPollInterval = '2s'
 LogKeepBlocksDepth = 100000
 MinIncomingConfirmations = 1
 MinContractPayment = '0.00001 link'
 NonceAutoSync = true
 NoNewHeadsThreshold = '30s'
-RPCDefaultBatchSize = 100
+RPCDefaultBatchSize = 250
 RPCBlockQueryDelay = 1
+
 [Transactions]
 ForwardersEnabled = false
 MaxInFlight = 16
@@ -3892,8 +4212,10 @@ MaxQueued = 250
 ReaperInterval = '1h0m0s'
 ReaperThreshold = '168h0m0s'
 ResendAfterThreshold = '1m0s'
+
 [BalanceMonitor]
 Enabled = true
+
 [GasEstimator]
 Mode = 'BlockHistory'
 PriceDefault = '5 gwei'
@@ -3906,37 +4228,39 @@ LimitTransfer = 21000
 BumpMin = '5 gwei'
 BumpPercent = 20
 BumpThreshold = 3
-BumpTxDepth = 10
 EIP1559DynamicFees = false
 FeeCapDefault = '100 gwei'
 TipCapDefault = '1 wei'
 TipCapMin = '1 wei'
+
 [GasEstimator.BlockHistory]
-BatchSize = 4
+BatchSize = 25
 BlockHistorySize = 8
 CheckInclusionBlocks = 12
 CheckInclusionPercentile = 90
 TransactionPercentile = 60
+
 [HeadTracker]
 HistoryDepth = 100
 MaxBufferSize = 3
 SamplingInterval = '1s'
+
 [NodePool]
 PollFailureThreshold = 5
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
+
 [OCR]
 ContractConfirmations = 4
 ContractTransmitterTransmitTimeout = '10s'
 DatabaseTimeout = '10s'
 ObservationGracePeriod = '1s'
+
 [OCR2]
 [OCR2.Automation]
 GasLimit = 5300000
 ```
-
-</p>
 
 ### ChainID
 
@@ -4023,7 +4347,7 @@ A re-org occurs at height 47 starting at block 41, transaction is NOT marked for
 FlagsContractAddress = '0xae4E781a6218A8031764928E88d457937A954fC3' # Example
 ```
 
-FlagsContractAddress can optionally point to a [Flags contract](https://github.com/smartcontractkit/chainlink/blob/v2.0.0/contracts/src/v0.8/Flags.sol). If set, the node will lookup that contract for each job that supports flags contracts (currently OCR and FM jobs are supported). If the job's contractAddress is set as hibernating in the FlagsContractAddress address, it overrides the standard update parameters (such as heartbeat/threshold).
+FlagsContractAddress can optionally point to a [Flags contract](https://github.com/smartcontractkit/chainlink/blob/v2.2.0/contracts/src/v0.8/Flags.sol). If set, the node will lookup that contract for each job that supports flags contracts (currently OCR and FM jobs are supported). If the job's contractAddress is set as hibernating in the FlagsContractAddress address, it overrides the standard update parameters (such as heartbeat/threshold).
 
 ### LinkContractAddress
 
@@ -4038,7 +4362,7 @@ LinkContractAddress is the canonical ERC-677 LINK token contract address on the 
 ⚠️ **_ADVANCED_**: _Do not change this setting unless you know what you are doing._
 
 ```toml
-LogBackfillBatchSize = 100 # Default
+LogBackfillBatchSize = 1000 # Default
 ```
 
 LogBackfillBatchSize sets the batch size for calling FilterLogs when we backfill missing logs.
@@ -4109,7 +4433,7 @@ OperatorFactoryAddress is the address of the canonical operator forwarder contra
 ### RPCDefaultBatchSize
 
 ```toml
-RPCDefaultBatchSize = 100 # Default
+RPCDefaultBatchSize = 250 # Default
 ```
 
 RPCDefaultBatchSize is the default batch size for batched RPC calls.
@@ -4230,7 +4554,7 @@ LimitTransfer = 21_000 # Default
 BumpMin = '5 gwei' # Default
 BumpPercent = 20 # Default
 BumpThreshold = 3 # Default
-BumpTxDepth = 10 # Default
+BumpTxDepth = 16 # Example
 EIP1559DynamicFees = false # Default
 FeeCapDefault = '100 gwei' # Default
 TipCapDefault = '1 wei' # Default
@@ -4362,10 +4686,10 @@ BumpThreshold is the number of blocks to wait for a transaction stuck in the mem
 ### BumpTxDepth
 
 ```toml
-BumpTxDepth = 10 # Default
+BumpTxDepth = 16 # Example
 ```
 
-BumpTxDepth is the number of transactions to gas bump starting from oldest. Set to 0 for no limit (i.e. bump all).
+BumpTxDepth is the number of transactions to gas bump starting from oldest. Set to 0 for no limit (i.e. bump all). Can not be greater than EVM.Transactions.MaxInFlight. If not set, defaults to EVM.Transactions.MaxInFlight.
 
 ### EIP1559DynamicFees
 
@@ -4503,7 +4827,7 @@ Keeper overrides LimitDefault for Keeper jobs.
 
 ```toml
 [EVM.GasEstimator.BlockHistory]
-BatchSize = 4 # Default
+BatchSize = 25 # Default
 BlockHistorySize = 8 # Default
 CheckInclusionBlocks = 12 # Default
 CheckInclusionPercentile = 90 # Default
@@ -4517,7 +4841,7 @@ In most cases, leaving these values at their defaults should give good results.
 ### BatchSize
 
 ```toml
-BatchSize = 4 # Default
+BatchSize = 25 # Default
 ```
 
 BatchSize sets the maximum number of blocks to fetch in one batch in the block history estimator.
@@ -5138,9 +5462,8 @@ Enabled = true # Default
 OCR2CachePollPeriod = '5s' # Default
 OCR2CacheTTL = '1m' # Default
 RequestTimeout = '10s' # Default
-TxTimeout = '1m' # Default
-TxSendFrequency = '5s' # Default
-TxMaxBatchSize = 100 # Default
+TxTimeout = '10s' # Default
+ConfirmationPoll = '5s' # Default
 ```
 
 ### ChainID
@@ -5186,26 +5509,18 @@ RequestTimeout is the RPC client timeout.
 ### TxTimeout
 
 ```toml
-TxTimeout = '1m' # Default
+TxTimeout = '10s' # Default
 ```
 
 TxTimeout is the timeout for sending txes to an RPC endpoint.
 
-### TxSendFrequency
+### ConfirmationPoll
 
 ```toml
-TxSendFrequency = '5s' # Default
+ConfirmationPoll = '5s' # Default
 ```
 
-TxSendFrequency is how often to broadcast batches of txes.
-
-### TxMaxBatchSize
-
-```toml
-TxMaxBatchSize = 100 # Default
-```
-
-TxMaxBatchSize limits the size of tx batches.
+ConfirmationPoll is how often to confirmer checks for tx inclusion on chain.
 
 ## Starknet.Nodes
 

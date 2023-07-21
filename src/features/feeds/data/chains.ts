@@ -79,7 +79,7 @@ export const CHAINS: Chain[] = [
     label: "Polygon (Matic)",
     img: "/assets/chains/polygon.svg",
     networkStatusUrl: "https://polygon.io/system",
-    tags: ["default", "proofOfReserve", "nftFloorPrice"],
+    tags: ["default", "proofOfReserve", "nftFloorPrice", "rates"],
     networks: [
       {
         name: "Polygon Mainnet",
@@ -93,7 +93,7 @@ export const CHAINS: Chain[] = [
         explorerUrl: "https://mumbai.polygonscan.com/address/%s",
         networkType: "testnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-matic-testnet.json",
-        tags: ["nftFloorPrice"],
+        tags: ["nftFloorPrice", "rates"],
       },
     ],
   },
@@ -118,7 +118,7 @@ export const CHAINS: Chain[] = [
     title: "Avalanche Data Feeds",
     img: "/assets/chains/avalanche.svg",
     networkStatusUrl: "https://status.avax.network/",
-    tags: ["default", "proofOfReserve"],
+    tags: ["default", "proofOfReserve", "rates"],
     networks: [
       {
         name: "Avalanche Mainnet",
@@ -132,7 +132,7 @@ export const CHAINS: Chain[] = [
         explorerUrl: "https://testnet.snowtrace.io/address/%s",
         networkType: "testnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-avalanche-fuji-testnet.json",
-        tags: ["proofOfReserve"],
+        tags: ["proofOfReserve", "rates"],
       },
     ],
     label: "Avalanche",
@@ -281,6 +281,28 @@ export const CHAINS: Chain[] = [
         explorerUrl: "https://goerli.basescan.org/address/%s",
         networkType: "testnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-goerli-base-1.json",
+      },
+    ],
+  },
+  {
+    page: "celo",
+    label: "Celo",
+    title: "Celo Data Feeds",
+    img: "/assets/chains/celo.svg",
+    networkStatusUrl: "https://stats.celo.org/",
+    tags: ["default"],
+    networks: [
+      {
+        name: "Celo mainnet",
+        explorerUrl: "https://explorer.celo.org/address/%s",
+        networkType: "mainnet",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-celo-mainnet.json",
+      },
+      {
+        name: "Celo Alfajores testnet",
+        explorerUrl: "https://explorer.celo.org/alfajores/address/%s",
+        networkType: "testnet",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-celo-testnet-alfajores.json",
       },
     ],
   },
