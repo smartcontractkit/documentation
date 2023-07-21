@@ -4,6 +4,8 @@ import feedList from "./FeedList.module.css"
 import { clsx } from "../../../lib"
 import { ChainNetwork } from "../data/chains"
 import tableStyles from "./Tables.module.css"
+import button from "@chainlink/design-system/button.module.css"
+
 const feedCategories = {
   verified: (
     <span className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")} title="Verified">
@@ -49,7 +51,7 @@ const feedCategories = {
   ),
 }
 
-const Pagination = ({ addrPerPage, totalAddr, paginate }) => {
+const Pagination = ({ addrPerPage, totalAddr, paginate, currentPage, firstAddr, lastAddr }) => {
   const pageNumbers = []
 
   for (let i = 1; i <= Math.ceil(totalAddr / addrPerPage); i++) {
@@ -57,15 +59,31 @@ const Pagination = ({ addrPerPage, totalAddr, paginate }) => {
   }
 
   return (
-    <nav>
-      <ul class={tableStyles.pagination}>
-        {pageNumbers.map((number) => (
-          <button class={tableStyles.paginationButton} onClick={() => paginate(number)}>
-            {number}
+    <div class={tableStyles.pagination}>
+      {totalAddr !== 0 && (
+        <>
+          <button
+            className={button.secondary}
+            style={"outline-offset: 2px"}
+            disabled={currentPage === 1}
+            onClick={() => paginate(currentPage - 1)}
+          >
+            Prev
           </button>
-        ))}
-      </ul>
-    </nav>
+          <p>
+            Showing {firstAddr + 1} to {lastAddr > totalAddr ? totalAddr : lastAddr} of {totalAddr} entries
+          </p>
+          <button
+            className={button.secondary}
+            style={"outline-offset: 2px"}
+            disabled={lastAddr >= totalAddr}
+            onClick={() => paginate(currentPage + 1)}
+          >
+            Next
+          </button>
+        </>
+      )}
+    </div>
   )
 }
 
@@ -288,20 +306,22 @@ export const MainnetTable = ({
   showExtraDetails,
   dataFeedType,
   ecosystem,
-  selectedFeedCategory,
+  selectedFeedCategories,
   firstAddr,
   lastAddr,
   addrPerPage,
+  currentPage,
   paginate,
 }: {
   network: ChainNetwork
   showExtraDetails: boolean
   dataFeedType: string
   ecosystem: string
-  selectedFeedCategory: string
+  selectedFeedCategories: string[]
   firstAddr: number
   lastAddr: number
   addrPerPage: number
+  currentPage: number
   paginate
 }) => {
   if (!network.metadata) return null
@@ -318,34 +338,49 @@ export const MainnetTable = ({
       if (isNftFloor) return !!chain.docs.nftFloorUnits
       return !chain.docs.nftFloorUnits && !chain.docs.porType
     })
-    .filter((chain) => selectedFeedCategory === "" || chain.feedCategory === selectedFeedCategory)
+    .filter((chain) => selectedFeedCategories.length === 0 || selectedFeedCategories.includes(chain.feedCategory))
   const slicedFilteredMetadata = filteredMetadata.slice(firstAddr, lastAddr)
   return (
-    <div style={{ overflowX: "auto" }}>
-      <table class={tableStyles.table}>
-        {isPor && <ProofOfReserveTHead showExtraDetails={showExtraDetails} />}
-        {isDefault && <DefaultTHead showExtraDetails={showExtraDetails} />}
-        {isNftFloor && <NftFloorTHead showExtraDetails={showExtraDetails} />}
-        <tbody>
-          {slicedFilteredMetadata.map((proxy) => (
+    <div>
+      <div style={{ overflowX: "auto" }}>
+        <table class={tableStyles.mainnetTable} style={{ overflowX: "auto" }}>
+          {slicedFilteredMetadata.length === 0 ? (
+            <tr>
+              <td style={{ textAlign: "center" }}>
+                <img
+                  src="https://smartcontract.imgix.net/icons/null-search.svg?auto=compress%2Cformat"
+                  style={{ height: "160px" }}
+                />
+                <h4>No results found</h4>
+                <p>There are no data feeds in this category at the moment.</p>
+              </td>
+            </tr>
+          ) : (
             <>
-              {isPor && <ProofOfReserveTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
-              {isDefault && <DefaultTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
-              {isNftFloor && <NftFloorTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
+              {isPor && <ProofOfReserveTHead showExtraDetails={showExtraDetails} />}
+              {isDefault && <DefaultTHead showExtraDetails={showExtraDetails} />}
+              {isNftFloor && <NftFloorTHead showExtraDetails={showExtraDetails} />}
+              <tbody>
+                {slicedFilteredMetadata.map((proxy) => (
+                  <>
+                    {isPor && <ProofOfReserveTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
+                    {isDefault && <DefaultTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
+                    {isNftFloor && <NftFloorTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
+                  </>
+                ))}
+              </tbody>
             </>
-          ))}
-          {slicedFilteredMetadata.length === 0 && (
-            <div
-              style={{
-                margin: "5px",
-              }}
-            >
-              There are no data feeds in this category at this time.
-            </div>
           )}
-        </tbody>
-      </table>
-      <Pagination addrPerPage={addrPerPage} totalAddr={filteredMetadata.length} paginate={paginate} />
+        </table>
+      </div>
+      <Pagination
+        addrPerPage={addrPerPage}
+        totalAddr={filteredMetadata.length}
+        currentPage={currentPage}
+        firstAddr={firstAddr}
+        lastAddr={lastAddr}
+        paginate={paginate}
+      />
     </div>
   )
 }

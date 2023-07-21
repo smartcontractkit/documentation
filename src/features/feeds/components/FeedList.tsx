@@ -25,17 +25,27 @@ export const FeedList = ({
 
   const [selectedChain, setSelectedChain] = useQueryString("network", chains[0].page)
   const [showExtraDetails, setShowExtraDetails] = useState(false)
-  const [selectedFeedCategory, setSelectedFeedCategory] = useState("")
+  const [selectedFeedCategories, setSelectedFeedCategories] = useState([])
   const [currentPage, setCurrentPage] = useState(1)
   const paginate = (pageNumber) => setCurrentPage(pageNumber)
   const addrPerPage = 8
   const lastAddr = currentPage * addrPerPage
   const firstAddr = lastAddr - addrPerPage
+  const dataFeedCategory = ["verified", "monitored", "provisional", "custom", "specialized", "deprecating"]
 
   const chainMetadata = useGetChainMetadata(chains.filter((chain) => chain.page === selectedChain)[0], { initialCache })
 
   function handleNetworkSelect(chain: Chain) {
     setSelectedChain(chain.page)
+  }
+
+  const handleCategorySelection = (category) => {
+    paginate(1)
+    if (selectedFeedCategories.includes(category)) {
+      setSelectedFeedCategories(selectedFeedCategories.filter((item) => item !== category))
+    } else {
+      setSelectedFeedCategories([...selectedFeedCategories, category])
+    }
   }
 
   useEffect(() => {
@@ -145,37 +155,30 @@ export const FeedList = ({
                       />{" "}
                       Show more details
                     </label>
-
-                    <label
-                      style={{
-                        marginLeft: "60px",
-                      }}
-                      htmlFor="feedCategorySelect"
-                    >
-                      Data Feed Category:
-                    </label>
-                    <select
-                      id="feedCategorySelect"
-                      value={selectedFeedCategory}
-                      onChange={(e: any) => setSelectedFeedCategory(e.target.value)}
-                      style={{
-                        margin: "5px",
-                        borderRadius: "4px",
-                        backgroundColor: "#f3f3f3",
-                        border: "none",
-                        width: "120px",
-                      }}
-                    >
-                      <option value="">All</option>
-                      <option value="verified">Verified</option>
-                      <option value="monitored">Monitored</option>
-                      <option value="provisional">Provisional</option>
-                      <option value="custom">Custom</option>
-                      <option value="specialized">Specialized</option>
-                      <option value="deprecating">Deprecating</option>
-                    </select>
+                    <details class={feedList.filterDropdown_details}>
+                      <summary class={feedList.filterDropdown_details} className="text-200">
+                        Data Feed Categories
+                      </summary>
+                      <nav>
+                        <ul>
+                          {dataFeedCategory.map((category) => (
+                            <li>
+                              <button onClick={() => handleCategorySelection(category)}>
+                                <input
+                                  type="checkbox"
+                                  checked={selectedFeedCategories.includes(category)}
+                                  readonly
+                                  style="cursor:pointer;"
+                                />
+                                <span> {category}</span>
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      </nav>
+                    </details>
                     <MainnetTable
-                      selectedFeedCategory={selectedFeedCategory}
+                      selectedFeedCategories={selectedFeedCategories}
                       network={network}
                       showExtraDetails={showExtraDetails}
                       dataFeedType={dataFeedType}
@@ -183,6 +186,7 @@ export const FeedList = ({
                       lastAddr={lastAddr}
                       firstAddr={firstAddr}
                       addrPerPage={addrPerPage}
+                      currentPage={currentPage}
                       paginate={paginate}
                     />
                   </div>
