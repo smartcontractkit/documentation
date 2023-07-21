@@ -20,13 +20,18 @@ export const MENU: MenuItems = {
     },
     {
       text: "VRF",
-      link: "/vrf",
+      link: "/vrf/v2/introduction",
       section: "vrf",
     },
     {
       text: "Automation",
       link: "/chainlink-automation/introduction",
       section: "automation",
+    },
+    {
+      text: "CCIP",
+      link: "/ccip",
+      section: "ccip",
     },
     {
       text: "Functions",
