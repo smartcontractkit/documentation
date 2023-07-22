@@ -77,8 +77,12 @@ export const NetworkDropdown = ({ options, userAddress }: Props) => {
   }, [activeNetwork])
   const dropdownDisabled = !window.ethereum.isConnected || isNetworkChangePending
 
-  const isSwitchNetworkError = (error): error is SwitchNetworkError => {
-    return "code" in error && "message" in error && "stack" in error
+  const isSwitchNetworkError = (error: unknown): error is SwitchNetworkError => {
+    if (!error || typeof error !== "object") return false
+    const isCode = "code" in error && error.code
+    const isMessage = "message" in error && error.message
+    const isStack = "stack" in error && error.stack
+    return !!(isCode && isMessage && isStack)
   }
 
   const handleNetworkChange = async (option: CCIPNetworkOptions) => {
