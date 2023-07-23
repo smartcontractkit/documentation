@@ -55,7 +55,7 @@ The figure below outlines the different components involved in a cross-chain tra
 
 #### Router
 
-The Router is the primary contract CCIP users interface with. This contract is responsible for initiating cross-chain interactions. One router contact exists per chain. When transferring tokens, callers have to approve tokens for the router contract.
+The Router is the primary contract CCIP users interface with. This contract is responsible for initiating cross-chain interactions. One router contract exists per chain. When transferring tokens, callers have to approve tokens for the router contract.
 The router contract routes the instruction to the destination-specific [OnRamp](#onramp).
 
 When a message is received on the destination chain, the router is the contract that “delivers” tokens to the user's account or the message to the receiver's smart contract.
@@ -113,7 +113,8 @@ The Committing DON has several jobs where each job monitors cross-chain transact
 
 Like the [Committing DON](#committing-don), the Executing DON has several jobs where each executes cross-chain transactions between a source blockchain and a destination blockchain:
 
-- Each job monitors events from a given [OnRamp contract](#onramp) on the source blockchain. - The job checks whether the transaction is part of the relayed Merkle root in the [CommitStore contract](#commit-store).
+- Each job monitors events from a given [OnRamp contract](#onramp) on the source blockchain.
+- The job checks whether the transaction is part of the relayed Merkle root in the [CommitStore contract](#commit-store).
 - The job waits for the [Active Risk Management](#active-risk-management-arm-network) network to bless the message.
 - Finally, the job creates a valid Merkle proof, which is verified by the [OffRamp contract](#offramp) against the Merkle root in the [CommitStore contract](#commit-store). After these check pass, the job calls the [OffRamp contract](#offramp) to complete the CCIP transactions on the destination blockchain.
 
@@ -125,7 +126,7 @@ Saving a commitment is compact and has a fixed gas cost, whereas executing user 
 
 The Active Risk Management (ARM) network is a set of independent nodes that monitor the Merkle roots committed by the [Committing DON](#committing-don) into the [Commit Store](#commit-store).
 
-Each node compares the committed Merkle roots with the transactions received by the [OnRamp contract](#onramp). After the verification succeeds, it calls the ARM contract to _"bless"_ the committed Merkle root. When there are enough blessing votes, the root becomes available for execution. In case of anomalies, each ARM node calls the ARM contract to _"curse"_ the system. If the cursed quorum is reached, the ARM contract is paused to prevent any CCIP transaction from being executed.
+Each node compares the committed Merkle roots with the transactions received by the [OnRamp contract](#onramp). After the verification succeeds, it calls the ARM contract to _"bless"_ &nbsp;the committed Merkle root. When there are enough blessing votes, the root becomes available for execution. In case of anomalies, each ARM node calls the ARM contract to _"curse"_ &nbsp;the system. If the cursed quorum is reached, the ARM contract is paused to prevent any CCIP transaction from being executed.
 
 Read the [ARM concepts](/ccip/concepts#active-risk-management-arm-network) page to learn more.
 
