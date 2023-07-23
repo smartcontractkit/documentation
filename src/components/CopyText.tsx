@@ -8,7 +8,7 @@ export type Props = {
 
 const CopyContainer = ({ text, code }: Props) => {
   return (
-    <div className="copyContainer">
+    <span className="copyContainer">
       {code ? <code>{text}</code> : text}
       <button
         className={clsx("copyBtn", "copy-iconbutton")}
@@ -32,7 +32,7 @@ const CopyContainer = ({ text, code }: Props) => {
           color: var(--color-text-link);
         }
       `}</style>
-    </div>
+    </span>
   )
 }
 

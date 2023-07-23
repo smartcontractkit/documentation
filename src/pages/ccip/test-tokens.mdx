@@ -6,6 +6,7 @@ title: "CCIP Test Tokens"
 ---
 
 import { ClickToZoom, Aside } from "@components"
+import { MintTokenButton } from "@features/ccip/components/MintTokenButton"
 
 As a best practice, always test your applications thoroughly on testnet before going live on mainnet. When testing token transfers, you must have enough tokens and ensure the [token pools](/ccip/architecture#token-pools) have enough funds. Public faucets sometimes limit how many tokens a user can create and token pools might not have enough liquidity. To resolve these issues, CCIP supports two test tokens that you can mint permissionlessly so you don't run out of tokens while testing different scenarios.
 
@@ -20,7 +21,7 @@ Two ERC20 test tokens are currently available on each testnet. You can find the 
 
 ## Mint Test Tokens
 
-You can mint both of these tokens using the following function call, which acts like a faucet. Each call will mint 10\*\*18 units of a token to the specified address.
+You can mint both of these tokens using the following function call on the token contract. This function acts like a faucet. Each call mints 10\*\*18 units of a token to the specified address.
 
 - For _CCIP-BnM_, you can call `drip` on all testnet blockchains.
 - For _CCIP-LnM_, you can call `drip` only on Ethereum Sepolia.
@@ -30,6 +31,14 @@ function drip(address to) external {
   _mint(to, 1e18);
 }
 ```
+
+### Mint tokens in the documentation
+
+You can use this interface to connect your MetaMask wallet, select a testnet, and mint tokens to your wallet address. Alternatively, you can call these same functions in the [block explorer](#mint-tokens-in-a-block-explorer).
+
+<MintTokenButton client:visible />
+
+### Mint tokens in a block explorer
 
 Follow these steps to learn how to mint these tokens. The steps explain how to mint _CCIP-BnM_ on _Ethereum Sepolia_:
 
