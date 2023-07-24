@@ -473,9 +473,9 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
           </tr>
           <tr>
             <td>
-              {method === "subscription" ? "Average Verification Gas" : "Coordinator Gas Overhead (Verification Gas)"}
+              {method === "subscription" ? "Average verification Gas" : "Coordinator Gas Overhead (Verification Gas)"}
             </td>
-            <td>{state.currentVerificationGas}</td>
+            <td>{utils.commify(state.currentVerificationGas)}</td>
           </tr>
           <tr>
             {method === "subscription" && (
@@ -525,7 +525,7 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
 
         {method === "subscription" && (
           <>
-            <h6>Maximum Cost per Request : {formatmaxCost()} LINK</h6>
+            <h6>Maximum Cost per Request under chosen gas lane : {formatmaxCost()} LINK</h6>
             <p>
               When using the subscription balance, a minimum amount of funds is necessary in order to use the VRF. Take
               a look at your balance in the Subscription manager
