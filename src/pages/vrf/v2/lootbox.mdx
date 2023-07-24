@@ -7,11 +7,10 @@ title: "Create a lootbox to distribute random rewards"
 import { Aside } from "@components"
 import { Tabs } from "@components/Tabs"
 
-The lootbox is a utility contract that allow users to open it to receive a random reward.
+The lootbox is a utility contract that uses Chainlink VRF to determine a random reward. The user receives the reward after opening the contract. 
 
 It supports [ERC-20](https://eips.ethereum.org/EIPS/eip-20), [ERC-721](https://eips.ethereum.org/EIPS/eip-721), and [ERC-1155](https://eips.ethereum.org/EIPS/eip-1155) tokens as rewards. The rewards are distributed from a pool of tokens that are transferred to the contract when the lootbox contract is deployed.
 
-The lootbox contract uses VRF to generate a random number that is used to determine the reward.
 
 <Aside type="caution" title="Disclaimer">
   This repository represents an example of using a Chainlink product or service. It is provided to to help you
@@ -29,10 +28,10 @@ Before you start this tutorial, complete the following items:
   - To check your installation, run `git --version`. You should see an output similar to `git version x.x.x`.
 - Install [Nodejs](https://nodejs.org/en/) 16.0.0 or higher
   - To check your installation, run `node --version`. You should see an output similar to `v16.x.x`.
-- Make sure the deployer account has enough LINK to fund the [VRF subscription](/vrf/v2/subscription). If you don't already have a VRF subscription, the deployment script creates one for you.
+- Ensure the deployer account has enough LINK to fund the [VRF subscription](/vrf/v2/subscription). If you don't already have a VRF subscription, the deployment script will create one for you.
   - [Estimate the minimum subscription balance](/vrf/v2/estimating-costs#estimate-minimum-subscription-balance) that VRF requires to process your randomness request. The minimum subscription balance provides a buffer against gas volatility, and only the actual cost of your request will be deducted from your account. If your subscription is underfunded, your VRF request will be pending for 24 hours. If that happens, check the [Subscription Manager](https://vrf.chain.link]) to see the additional balance needed.
   - Configure the initial funding amount in [`network-config.ts`](https://github.com/smartcontractkit/quickstarts-lootbox/blob/main/network-config.ts).
-  - For testnets, you can use the [LINK faucet](https://faucets.chain.link/). Request 20 LINK from the faucet - this amount should be sufficient to run this tutorial with a testnet.
+  - To deploy this contract on testnets, use the [LINK faucet](https://faucets.chain.link/) to retrieve testnet LINK. Request 20 LINK from the faucet - this amount should be sufficient to run this tutorial on a testnet.
 
 ## Setup steps
 
@@ -113,7 +112,7 @@ For rewards, the lootbox contracts supports any tokens from the following [token
 - [ERC-721](https://ethereum.org/en/developers/docs/standards/tokens/erc-721/): the NFT standard
 - [ERC-1155](https://ethereum.org/en/developers/docs/standards/tokens/erc-1155/): the multi-token standard
 
-The amounts per unit are used to calculate the lootbox supply of rewards. For example, if you want to distribute 100 tokens of a specific ERC20 token, you would set the `totalAmount` to `100000000000000000000` and the `amountPerUnit` to `1000000000000000000`. This would result in a lootbox supply of 100 units.
+The amounts per unit are used to calculate the lootbox supply of rewards. For example, if you want to distribute 100 tokens of a specific ERC-20 token, you would set the `totalAmount` to `100000000000000000000` and the `amountPerUnit` to `1000000000000000000`. This would result in a lootbox supply of 100 units.
 
 Add all the tokens you want to distribute as rewards to the array in the list of tokens by following the format below.
 
@@ -173,7 +172,7 @@ If you don't want to do a private mint, leave the `whitelist.json` file empty, a
   npm run test
   ```
 
-- If you want to see gas usage, run the following command:
+- To view gas usage, run the following command:
 
   ```bash
   REPORT_GAS=true npm run test
@@ -187,19 +186,18 @@ If you don't want to do a private mint, leave the `whitelist.json` file empty, a
 
 ### Deploy
 
-To run the deploy script, run the following command and replace `<network>` with the network you want to deploy to.
+To run the deploy script, run the following command and replace `<network>` with the network you want to deploy to. The network must be configured in [`hardhat.config.ts`](https://github.com/smartcontractkit/quickstarts-lootbox/blob/main/hardhat.config.ts).
 
 ```bash
 npx hardhat run scripts/deploy.js --network <network>
 ```
 
-The network must be configured in [`hardhat.config.ts`](https://github.com/smartcontractkit/quickstarts-lootbox/blob/main/hardhat.config.ts).
 
 Besides deploying the contract, the [deploy script](https://github.com/smartcontractkit/quickstarts-lootbox/blob/main/scripts/deploy.ts) will also:
 
 1.  Approve each token configured in [`scripts/data/tokens.json`](https://github.com/smartcontractkit/quickstarts-lootbox/blob/main/scripts/data/tokens.json) for the deployed contract address.
 
-    This is a mandatory step because the contract must store the tokens in its own balance. So make sure the deployer account owns all the tokens you want to distribute as rewards.
+    This is a mandatory step because the contract must store the tokens in its own balance. It is important to ensure the deployer account owns all the tokens you want to distribute as rewards.
 
 1.  Generate a [Merkle tree](https://ethereum.org/en/developers/tutorials/merkle-proofs-for-offline-data-integrity/#introduction) for the whitelist.
 
@@ -211,7 +209,7 @@ Besides deploying the contract, the [deploy script](https://github.com/smartcont
 
     [Estimate the minimum subscription balance](/vrf/v2/estimating-costs#estimate-minimum-subscription-balance) that VRF requires to process your randomness request. The minimum subscription balance provides a buffer against gas volatility, and only the actual cost of your request will be deducted from your account.
 
-    If your subscription is underfunded, your VRF request will be pending for 24 hours. If that happens, check the [Subscription Manager](https://vrf.chain.link]) to see the additional balance needed.
+    If your subscription is underfunded, your VRF request will be pending for 24 hours. If this happens, check the [Subscription Manager](https://vrf.chain.link]) to see the additional balance needed.
 
     </Aside>
 
