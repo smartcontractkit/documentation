@@ -190,7 +190,7 @@ export const NetworkDropdown = ({ options, userAddress }: Props) => {
       const res = await mintTokensContract.drip(userAddress)
       if (!res) {
         setMintBnMTokenButtonDisabled(false)
-        setToastMessage("Something went wrong ! Please check your wallet.")
+        setToastMessage("Something went wrong ! Check your wallet.")
         setIsLoading(LoadingState.ERROR)
         setShowToast(true)
         return
@@ -203,7 +203,7 @@ export const NetworkDropdown = ({ options, userAddress }: Props) => {
         setIsLoading(LoadingState.ERROR)
       } else {
         setMintBnMTokenButtonDisabled(false)
-        setToastMessage("Transaction failed to be included in the block. Please check your wallet and try again.")
+        setToastMessage("Transaction failed to be included in the block. Check your wallet and try again.")
         setIsLoading(LoadingState.ERROR)
       }
       setShowToast(true)
@@ -226,7 +226,7 @@ export const NetworkDropdown = ({ options, userAddress }: Props) => {
       const res = await mintTokensContract.drip(userAddress)
       if (!res) {
         setMintBnMTokenButtonDisabled(false)
-        setToastMessage("Something went wrong ! Please check your wallet.")
+        setToastMessage("Something went wrong ! Check your wallet.")
         setIsLoading(LoadingState.ERROR)
         setShowToast(true)
         return
@@ -239,7 +239,7 @@ export const NetworkDropdown = ({ options, userAddress }: Props) => {
         setIsLoading(LoadingState.ERROR)
       } else {
         setMintLnMTokenButtonDisabled(false)
-        setToastMessage("Transaction failed to be included in the block. Please check your wallet and try again.")
+        setToastMessage("Transaction failed to be included in the block. Check your wallet and try again.")
         setIsLoading(LoadingState.ERROR)
       }
       setShowToast(true)
@@ -357,55 +357,62 @@ export const NetworkDropdown = ({ options, userAddress }: Props) => {
                   }}
                   src="https://smartcontract.imgix.net/icons/alert.svg"
                 />
-                Your wallet is connected to an unknown network.
+                Your wallet is connected to an unsupported network.
               </p>
             </div>
           )}
         </div>
       </details>
       {activeNetwork !== undefined ? (
-        <>
-          <div className="add-asset-button-container">
-            {activeNetwork && activeNetwork.BnM && (
-              <div class="add-to-wallet-button">
-                <button
-                  className={button.secondary}
-                  style="margin: 1em;"
-                  onClick={async () => {
-                    await addBnMAssetToWallet()
-                  }}
-                >
-                  Add CCIP-BnM to wallet
-                </button>
-                <button className={button.primary} onClick={mintBnMTokens} disabled={mintBnMTokenButtonDisabled}>
-                  {mintBnMTokenButtonDisabled ? "Minting Process Pending..." : "Mint 1 CCIP-BnM Token"}
-                </button>
-              </div>
-            )}
-            {activeNetwork && activeNetwork.LnM && (
-              <div class="add-to-wallet-button">
-                <hr />
-                <button
-                  className={button.secondary}
-                  style="margin: 1em;"
-                  onClick={async () => {
-                    await addLnMAssetToWallet()
-                  }}
-                >
-                  Add CCIP-LnM to wallet
-                </button>
-                <button className={button.primary} onClick={mintLnMTokens} disabled={mintLnMTokenButtonDisabled}>
-                  {mintLnMTokenButtonDisabled ? "Minting Process Pending..." : "Mint 1 CCIP-LnM Token"}
-                </button>
-              </div>
-            )}
-          </div>
-          {isLoading === LoadingState.ERROR && showToast && <Toast message={toastMessage} onClose={closeToast} />}
-          {isLoading === LoadingState.END && showToast && <Toast message={toastMessage} onClose={closeToast} />}
-        </>
+        activeNetwork.BnM || activeNetwork.LnM ? (
+          <>
+            <div className="add-asset-button-container">
+              {activeNetwork && activeNetwork.BnM && (
+                <div class="add-to-wallet-button">
+                  <button
+                    className={button.secondary}
+                    style="margin: 1em;"
+                    onClick={async () => {
+                      await addBnMAssetToWallet()
+                    }}
+                  >
+                    Add CCIP-BnM to wallet
+                  </button>
+                  <button className={button.primary} onClick={mintBnMTokens} disabled={mintBnMTokenButtonDisabled}>
+                    {mintBnMTokenButtonDisabled ? "Minting Process Pending..." : "Mint 1 CCIP-BnM Token"}
+                  </button>
+                </div>
+              )}
+              {activeNetwork && activeNetwork.LnM && (
+                <div class="add-to-wallet-button">
+                  <hr />
+                  <button
+                    className={button.secondary}
+                    style="margin: 1em;"
+                    onClick={async () => {
+                      await addLnMAssetToWallet()
+                    }}
+                  >
+                    Add CCIP-LnM to wallet
+                  </button>
+                  <button className={button.primary} onClick={mintLnMTokens} disabled={mintLnMTokenButtonDisabled}>
+                    {mintLnMTokenButtonDisabled ? "Minting Process Pending..." : "Mint 1 CCIP-LnM Token"}
+                  </button>
+                </div>
+              )}
+            </div>
+            {isLoading === LoadingState.ERROR && showToast && <Toast message={toastMessage} onClose={closeToast} />}
+            {isLoading === LoadingState.END && showToast && <Toast message={toastMessage} onClose={closeToast} />}
+          </>
+        ) : (
+          <p>
+            While CCIP does support this network, there are no test tokens available for it. Select a different network
+            network from the dropdown menu.
+          </p>
+        )
       ) : (
         <>
-          <p>Chainlink CCIP does not support this network. Switch to a supported network to your wallet: </p>
+          <p>Chainlink CCIP does not support this network. Switch your wallet to a supported network. </p>
           <ul style={{ marginTop: "1.5rem" }}>
             {options.map((option: CCIPNetworkOptions) => {
               if (option.BnM || option.LnM) {
