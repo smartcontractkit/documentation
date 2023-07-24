@@ -309,22 +309,26 @@ export const NetworkDropdown = ({ options, userAddress }: Props) => {
           {activeNetwork ? (
             <ul style={{ listStyle: "none" }}>
               {options.map((option) => {
-                return (
-                  <li
-                    className={option.name === activeNetwork.name ? styles["selected-option"] : styles.option}
-                    key={option.name}
-                  >
-                    <button onClick={() => handleNetworkChange(option)} className="text-200">
-                      <span>
-                        <img src={option.icon} style={{ minHeight: "1em", minWidth: "1em" }} />
-                        {option.name}
-                      </span>
-                      {option.name === activeNetwork.name && (
-                        <img src="https://smartcontract.imgix.net/icons/check_circle_bold.svg" />
-                      )}
-                    </button>
-                  </li>
-                )
+                if (option.BnM || option.LnM) {
+                  return (
+                    <li
+                      className={option.name === activeNetwork.name ? styles["selected-option"] : styles.option}
+                      key={option.name}
+                    >
+                      <button onClick={() => handleNetworkChange(option)} className="text-200">
+                        <span>
+                          <img src={option.icon} style={{ minHeight: "1em", minWidth: "1em" }} />
+                          {option.name}
+                        </span>
+                        {option.name === activeNetwork.name && (
+                          <img src="https://smartcontract.imgix.net/icons/check_circle_bold.svg" />
+                        )}
+                      </button>
+                    </li>
+                  )
+                } else {
+                  return undefined
+                }
               })}
             </ul>
           ) : (
