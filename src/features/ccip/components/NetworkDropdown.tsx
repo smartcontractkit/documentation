@@ -408,30 +408,34 @@ export const NetworkDropdown = ({ options, userAddress }: Props) => {
           <p>Chainlink CCIP does not support this network. Switch to a supported network to your wallet: </p>
           <ul style={{ marginTop: "1.5rem" }}>
             {options.map((option: CCIPNetworkOptions) => {
-              return (
-                <li style={{ display: "flex", justifyContent: "space-evenly", alignItems: "center" }}>
-                  <div style={{ display: "flex", alignItems: "center", width: "9.673rem" }}>
-                    <img
-                      style={{
-                        width: "var(--space-4x)",
-                        height: "var(--space-4x)",
-                        marginRight: "var(--space-3x)",
+              if (option.BnM || option.LnM) {
+                return (
+                  <li style={{ display: "flex", justifyContent: "space-evenly", alignItems: "center" }}>
+                    <div style={{ display: "flex", alignItems: "center", width: "9.673rem" }}>
+                      <img
+                        style={{
+                          width: "var(--space-4x)",
+                          height: "var(--space-4x)",
+                          marginRight: "var(--space-3x)",
+                        }}
+                        src={option.icon}
+                        alt="chain icon"
+                      />
+                      {option.name}
+                    </div>
+                    <button
+                      className={button.secondary}
+                      onClick={async () => {
+                        await handleNetworkChange(option)
                       }}
-                      src={option.icon}
-                      alt="chain icon"
-                    />
-                    {option.name}
-                  </div>
-                  <button
-                    className={button.secondary}
-                    onClick={async () => {
-                      await handleNetworkChange(option)
-                    }}
-                  >
-                    Switch to Network
-                  </button>
-                </li>
-              )
+                    >
+                      Switch to Network
+                    </button>
+                  </li>
+                )
+              } else {
+                return undefined
+              }
             })}
           </ul>
         </>
