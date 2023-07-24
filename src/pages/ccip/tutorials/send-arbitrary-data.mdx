@@ -15,7 +15,7 @@ whatsnext:
 import { CodeSample, ClickToZoom, CopyText, Aside } from "@components"
 import CcipCommon from "@features/ccip/CcipCommon.astro"
 
-In this tutorial, you will use Chainlink CCIP to send data between smart contracts on different blockchains. First, you will pay for the CCIP fees on the source blockchain using LINK. Then, you will use the same contract to pay CCIP fees in native gas coins. For example, you would use ETH on Ethereum or MATIC on Polygon.
+In this tutorial, you will use Chainlink CCIP to send data between smart contracts on different blockchains. First, you will pay for the CCIP fees on the source blockchain using LINK. Then, you will use the same contract to pay CCIP fees in native gas tokens. For example, you would use ETH on Ethereum or MATIC on Polygon.
 
 <Aside type="note" title="Node Operator Rewards">
   CCIP rewards the oracle node and ARM node operators in LINK.
@@ -161,7 +161,7 @@ You will use CCIP to send a text. The CCIP fees for using CCIP will be paid in n
             alt="Chainlink CCIP Explorer transaction details"
           />
 
-1.  The CCIP transaction is completed once the status is marked as "Success". In this example, the CCIP message ID is _0x0190507591e4857764ede9e37748364a0ed98ec0b7a866eb4140de59f12dcbce_. Note that CCIP fees are denominated in LINK. Even if CCIP fees are paid using native gas coins, node operators will be paid in LINK.
+1.  The CCIP transaction is completed once the status is marked as "Success". In this example, the CCIP message ID is _0x0190507591e4857764ede9e37748364a0ed98ec0b7a866eb4140de59f12dcbce_. Note that CCIP fees are denominated in LINK. Even if CCIP fees are paid using native gas tokens, node operators will be paid in LINK.
 
                 <br />
 
@@ -237,7 +237,7 @@ The `sendMessagePayNative` function undertakes four primary operations:
    - The `data` is encoded from a `string` to `bytes` using [abi.encode](https://docs.soliditylang.org/en/develop/abi-spec.html).
    - The `tokenAmounts` is an empty `EVMTokenAmount` [struct](/ccip/api-reference/Client#evmtokenamount) array as no tokens are transferred.
    - The `extraArgs` specifies the `gasLimit` for relaying the message to the recipient contract on the destination blockchain, along with a `strict` parameter. In this example, the `gasLimit` is set to `200000` and `strict` is set to `false`. **Note**: If `strict` is true and `ccipReceive` reverts on the destination blockchain, subsequent messages from the same sender will be blocked by CCIP until the reverted message can be executed.
-   - The `_feeTokenAddress` designates the token address used for CCIP fees. Here, `address(0)` signifies payment in native gas coins (ETH).
+   - The `_feeTokenAddress` designates the token address used for CCIP fees. Here, `address(0)` signifies payment in native gas tokens (ETH).
 
      {" "}
 

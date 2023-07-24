@@ -15,7 +15,7 @@ whatsnext:
 import { CodeSample, ClickToZoom, CopyText, Aside } from "@components"
 import CcipCommon from "@features/ccip/CcipCommon.astro"
 
-In this tutorial, you will use Chainlink CCIP to transfer tokens and arbitrary data between smart contracts on different blockchains. First, you will pay for the CCIP fees on the source blockchain using LINK. Then, you will use the same contract to pay CCIP fees in native gas coins. For example, you would use ETH on Ethereum or MATIC on Polygon.
+In this tutorial, you will use Chainlink CCIP to transfer tokens and arbitrary data between smart contracts on different blockchains. First, you will pay for the CCIP fees on the source blockchain using LINK. Then, you will use the same contract to pay CCIP fees in native gas tokens. For example, you would use ETH on Ethereum or MATIC on Polygon.
 
 <Aside type="note" title="Node Operator Rewards">
   CCIP rewards the oracle node and ARM node operators in LINK.
@@ -146,7 +146,7 @@ You will transfer _0.001 CCIP-BnM_ and a text. The CCIP fees for using CCIP will
 
 You will transfer _0.001 CCIP-BnM_ and a text. The CCIP fees for using CCIP will be paid in Sepolia's native ETH. Read this [explanation](#transferring-tokens-and-data-and-pay-in-native) for a detailed description of the code example.
 
-1.  Open MetaMask and connect to _Ethereum Sepolia_. Fund your contract with ETH tokens. You can transfer <CopyText text="0.01" code/> _ETH_ to your contract. The native gas coins are used to pay the CCIP fees.
+1.  Open MetaMask and connect to _Ethereum Sepolia_. Fund your contract with ETH tokens. You can transfer <CopyText text="0.01" code/> _ETH_ to your contract. The native gas tokens are used to pay the CCIP fees.
 
 1.  Send a string data with tokens from _Ethereum Sepolia_:
 
@@ -178,7 +178,7 @@ You will transfer _0.001 CCIP-BnM_ and a text. The CCIP fees for using CCIP will
             alt="Chainlink CCIP Explorer transaction details"
           />
 
-1.  The CCIP transaction is completed once the status is marked as "Success". In this example, the CCIP message ID is _0x3a2cde0d0dd07f2b2e7841b550221101d57792eb581a75ed11419022f13fd865_. Note that CCIP fees are denominated in LINK. Even if CCIP fees are paid using native gas coins, node operators will be paid in LINK.
+1.  The CCIP transaction is completed once the status is marked as "Success". In this example, the CCIP message ID is _0x3a2cde0d0dd07f2b2e7841b550221101d57792eb581a75ed11419022f13fd865_. Note that CCIP fees are denominated in LINK. Even if CCIP fees are paid using native gas tokens, node operators will be paid in LINK.
 
                 <br />
 
@@ -255,7 +255,7 @@ The `sendMessagePayNative` function undertakes five primary operations:
    - The `data` is encoded from a `string` to `bytes` using [abi.encode](https://docs.soliditylang.org/en/develop/abi-spec.html).
    - The `tokenAmounts` is an array, with each element comprising an `EVMTokenAmount` [struct](/ccip/api-reference/Client#evmtokenamount) containing the token address and amount. The array contains one element where the `_token` (token address) and `_amount` (token amount) are passed by the user when calling the `transferTokensPayNative` function.
    - The `extraArgs` specifies the `gasLimit` for relaying the message to the recipient contract on the destination blockchain, along with a `strict` parameter. In this example, the `gasLimit` is set to `200000` and `strict` is set to `false`. **Note**: If `strict` is true and `ccipReceive` reverts on the destination blockchain, subsequent messages from the same sender will be blocked by CCIP until the reverted message can be executed.
-   - The `_feeTokenAddress` designates the token address used for CCIP fees. Here, `address(0)` signifies payment in native gas coins (ETH).
+   - The `_feeTokenAddress` designates the token address used for CCIP fees. Here, `address(0)` signifies payment in native gas tokens (ETH).
 
      {" "}
 
