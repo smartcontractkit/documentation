@@ -312,6 +312,7 @@ export const MainnetTable = ({
   addrPerPage,
   currentPage,
   paginate,
+  searchValue,
 }: {
   network: ChainNetwork
   showExtraDetails: boolean
@@ -323,9 +324,9 @@ export const MainnetTable = ({
   addrPerPage: number
   currentPage: number
   paginate
+  searchValue: string
 }) => {
   if (!network.metadata) return null
-
   const isDeprecating = ecosystem === "deprecating"
   const isPor = dataFeedType === "por"
   const isNftFloor = dataFeedType === "nftFloor"
@@ -339,6 +340,9 @@ export const MainnetTable = ({
       return !chain.docs.nftFloorUnits && !chain.docs.porType
     })
     .filter((chain) => selectedFeedCategories.length === 0 || selectedFeedCategories.includes(chain.feedCategory))
+    .filter((pair) =>
+      pair.name.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", ""))
+    )
   const slicedFilteredMetadata = filteredMetadata.slice(firstAddr, lastAddr)
   return (
     <div>

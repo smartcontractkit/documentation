@@ -9,6 +9,7 @@ import { Chain, CHAINS, ALL_CHAINS } from "../data/chains"
 import { useGetChainMetadata } from "./useGetChainMetadata"
 import { ChainMetadata } from "../api"
 import useQueryString from "~/hooks/useQueryString"
+import { ChangeEvent } from "react"
 
 export type DataFeedType = "default" | "por" | "nftFloor" | "rates"
 export const FeedList = ({
@@ -27,11 +28,17 @@ export const FeedList = ({
   const [showExtraDetails, setShowExtraDetails] = useState(false)
   const [selectedFeedCategories, setSelectedFeedCategories] = useState([])
   const [currentPage, setCurrentPage] = useState(1)
+  const [searchValue, setSearchValue] = useState("")
   const paginate = (pageNumber) => setCurrentPage(pageNumber)
   const addrPerPage = 8
   const lastAddr = currentPage * addrPerPage
   const firstAddr = lastAddr - addrPerPage
   const dataFeedCategory = ["verified", "monitored", "provisional", "custom", "specialized", "deprecating"]
+
+  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setSearchValue(event.target.value)
+    console.log(searchValue.toLowerCase().replaceAll(" ", ""))
+  }
 
   const chainMetadata = useGetChainMetadata(chains.filter((chain) => chain.page === selectedChain)[0], { initialCache })
 
@@ -146,15 +153,7 @@ export const FeedList = ({
                         <a href="/docs/data-feeds/l2-sequencer-feeds/">L2 Sequencer Uptime Feeds</a> page for examples.
                       </p>
                     )}
-                    <label>
-                      <input
-                        type="checkbox"
-                        style="width:15px;height:15px;display:inline;"
-                        checked={showExtraDetails}
-                        onChange={() => setShowExtraDetails((old) => !old)}
-                      />{" "}
-                      Show more details
-                    </label>
+
                     <details class={feedList.filterDropdown_details}>
                       <summary class={feedList.filterDropdown_details} className="text-200">
                         Data Feed Categories
@@ -177,6 +176,24 @@ export const FeedList = ({
                         </ul>
                       </nav>
                     </details>
+
+                    <div class={feedList.filterDropdown_search}>
+                      <input
+                        id="filterDropdown_search"
+                        class={feedList.filterDropdown_searchInput}
+                        placeholder="Search price feeds"
+                        onInput={handleChange}
+                      />
+                    </div>
+                    <label class={feedList.detailsLabel}>
+                      <input
+                        type="checkbox"
+                        style="width:15px;height:15px;display:inline;"
+                        checked={showExtraDetails}
+                        onChange={() => setShowExtraDetails((old) => !old)}
+                      />{" "}
+                      Show more details
+                    </label>
                     <MainnetTable
                       selectedFeedCategories={selectedFeedCategories}
                       network={network}
@@ -188,6 +205,7 @@ export const FeedList = ({
                       addrPerPage={addrPerPage}
                       currentPage={currentPage}
                       paginate={paginate}
+                      searchValue={searchValue}
                     />
                   </div>
                 ) : (
