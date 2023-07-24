@@ -190,7 +190,7 @@ export const NetworkDropdown = ({ options, userAddress }: Props) => {
       const res = await mintTokensContract.drip(userAddress)
       if (!res) {
         setMintBnMTokenButtonDisabled(false)
-        setToastMessage("Something went wrong ! Please check your wallet.")
+        setToastMessage("Something went wrong ! Check your wallet.")
         setIsLoading(LoadingState.ERROR)
         setShowToast(true)
         return
@@ -203,7 +203,7 @@ export const NetworkDropdown = ({ options, userAddress }: Props) => {
         setIsLoading(LoadingState.ERROR)
       } else {
         setMintBnMTokenButtonDisabled(false)
-        setToastMessage("Transaction failed to be included in the block. Please check your wallet and try again.")
+        setToastMessage("Transaction failed to be included in the block. Check your wallet and try again.")
         setIsLoading(LoadingState.ERROR)
       }
       setShowToast(true)
@@ -226,7 +226,7 @@ export const NetworkDropdown = ({ options, userAddress }: Props) => {
       const res = await mintTokensContract.drip(userAddress)
       if (!res) {
         setMintBnMTokenButtonDisabled(false)
-        setToastMessage("Something went wrong ! Please check your wallet.")
+        setToastMessage("Something went wrong ! Check your wallet.")
         setIsLoading(LoadingState.ERROR)
         setShowToast(true)
         return
@@ -239,7 +239,7 @@ export const NetworkDropdown = ({ options, userAddress }: Props) => {
         setIsLoading(LoadingState.ERROR)
       } else {
         setMintLnMTokenButtonDisabled(false)
-        setToastMessage("Transaction failed to be included in the block. Please check your wallet and try again.")
+        setToastMessage("Transaction failed to be included in the block. Check your wallet and try again.")
         setIsLoading(LoadingState.ERROR)
       }
       setShowToast(true)
@@ -309,22 +309,26 @@ export const NetworkDropdown = ({ options, userAddress }: Props) => {
           {activeNetwork ? (
             <ul style={{ listStyle: "none" }}>
               {options.map((option) => {
-                return (
-                  <li
-                    className={option.name === activeNetwork.name ? styles["selected-option"] : styles.option}
-                    key={option.name}
-                  >
-                    <button onClick={() => handleNetworkChange(option)} className="text-200">
-                      <span>
-                        <img src={option.icon} style={{ minHeight: "1em", minWidth: "1em" }} />
-                        {option.name}
-                      </span>
-                      {option.name === activeNetwork.name && (
-                        <img src="https://smartcontract.imgix.net/icons/check_circle_bold.svg" />
-                      )}
-                    </button>
-                  </li>
-                )
+                if (option.BnM || option.LnM) {
+                  return (
+                    <li
+                      className={option.name === activeNetwork.name ? styles["selected-option"] : styles.option}
+                      key={option.name}
+                    >
+                      <button onClick={() => handleNetworkChange(option)} className="text-200">
+                        <span>
+                          <img src={option.icon} style={{ minHeight: "1em", minWidth: "1em" }} />
+                          {option.name}
+                        </span>
+                        {option.name === activeNetwork.name && (
+                          <img src="https://smartcontract.imgix.net/icons/check_circle_bold.svg" />
+                        )}
+                      </button>
+                    </li>
+                  )
+                } else {
+                  return undefined
+                }
               })}
             </ul>
           ) : (
@@ -353,81 +357,92 @@ export const NetworkDropdown = ({ options, userAddress }: Props) => {
                   }}
                   src="https://smartcontract.imgix.net/icons/alert.svg"
                 />
-                Your wallet is connected to an unknown network.
+                Your wallet is connected to an unsupported network.
               </p>
             </div>
           )}
         </div>
       </details>
       {activeNetwork !== undefined ? (
-        <>
-          <div className="add-asset-button-container">
-            {activeNetwork && activeNetwork.BnM && (
-              <div class="add-to-wallet-button">
-                <button
-                  className={button.secondary}
-                  style="margin: 1em;"
-                  onClick={async () => {
-                    await addBnMAssetToWallet()
-                  }}
-                >
-                  Add CCIP-BnM to wallet
-                </button>
-                <button className={button.primary} onClick={mintBnMTokens} disabled={mintBnMTokenButtonDisabled}>
-                  {mintBnMTokenButtonDisabled ? "Minting Process Pending..." : "Mint 1 CCIP-BnM Token"}
-                </button>
-              </div>
-            )}
-            {activeNetwork && activeNetwork.LnM && (
-              <div class="add-to-wallet-button">
-                <hr />
-                <button
-                  className={button.secondary}
-                  style="margin: 1em;"
-                  onClick={async () => {
-                    await addLnMAssetToWallet()
-                  }}
-                >
-                  Add CCIP-LnM to wallet
-                </button>
-                <button className={button.primary} onClick={mintLnMTokens} disabled={mintLnMTokenButtonDisabled}>
-                  {mintLnMTokenButtonDisabled ? "Minting Process Pending..." : "Mint 1 CCIP-LnM Token"}
-                </button>
-              </div>
-            )}
-          </div>
-          {isLoading === LoadingState.ERROR && showToast && <Toast message={toastMessage} onClose={closeToast} />}
-          {isLoading === LoadingState.END && showToast && <Toast message={toastMessage} onClose={closeToast} />}
-        </>
-      ) : (
-        <>
-          <p>Chainlink CCIP does not support this network. Switch to a supported network to your wallet: </p>
-          <ul style={{ marginTop: "1.5rem" }}>
-            {options.map((option: CCIPNetworkOptions) => {
-              return (
-                <li style={{ display: "flex", justifyContent: "space-evenly", alignItems: "center" }}>
-                  <div style={{ display: "flex", alignItems: "center", width: "9.673rem" }}>
-                    <img
-                      style={{
-                        width: "var(--space-4x)",
-                        height: "var(--space-4x)",
-                        marginRight: "var(--space-3x)",
-                      }}
-                      src={option.icon}
-                      alt="chain icon"
-                    />
-                    {option.name}
-                  </div>
+        activeNetwork.BnM || activeNetwork.LnM ? (
+          <>
+            <div className="add-asset-button-container">
+              {activeNetwork && activeNetwork.BnM && (
+                <div class="add-to-wallet-button">
                   <button
                     className={button.secondary}
+                    style="margin: 1em;"
                     onClick={async () => {
-                      await handleNetworkChange(option)
+                      await addBnMAssetToWallet()
                     }}
                   >
-                    Switch to Network
+                    Add CCIP-BnM to wallet
                   </button>
-                </li>
-              )
+                  <button className={button.primary} onClick={mintBnMTokens} disabled={mintBnMTokenButtonDisabled}>
+                    {mintBnMTokenButtonDisabled ? "Minting Process Pending..." : "Mint 1 CCIP-BnM Token"}
+                  </button>
+                </div>
+              )}
+              {activeNetwork && activeNetwork.LnM && (
+                <div class="add-to-wallet-button">
+                  <hr />
+                  <button
+                    className={button.secondary}
+                    style="margin: 1em;"
+                    onClick={async () => {
+                      await addLnMAssetToWallet()
+                    }}
+                  >
+                    Add CCIP-LnM to wallet
+                  </button>
+                  <button className={button.primary} onClick={mintLnMTokens} disabled={mintLnMTokenButtonDisabled}>
+                    {mintLnMTokenButtonDisabled ? "Minting Process Pending..." : "Mint 1 CCIP-LnM Token"}
+                  </button>
+                </div>
+              )}
+            </div>
+            {isLoading === LoadingState.ERROR && showToast && <Toast message={toastMessage} onClose={closeToast} />}
+            {isLoading === LoadingState.END && showToast && <Toast message={toastMessage} onClose={closeToast} />}
+          </>
+        ) : (
+          <p>
+            While CCIP does support this network, there are no test tokens available for it. Select a different network
+            network from the dropdown menu.
+          </p>
+        )
+      ) : (
+        <>
+          <p>Chainlink CCIP does not support this network. Switch your wallet to a supported network. </p>
+          <ul style={{ marginTop: "1.5rem" }}>
+            {options.map((option: CCIPNetworkOptions) => {
+              if (option.BnM || option.LnM) {
+                return (
+                  <li style={{ display: "flex", justifyContent: "space-evenly", alignItems: "center" }}>
+                    <div style={{ display: "flex", alignItems: "center", width: "9.673rem" }}>
+                      <img
+                        style={{
+                          width: "var(--space-4x)",
+                          height: "var(--space-4x)",
+                          marginRight: "var(--space-3x)",
+                        }}
+                        src={option.icon}
+                        alt="chain icon"
+                      />
+                      {option.name}
+                    </div>
+                    <button
+                      className={button.secondary}
+                      onClick={async () => {
+                        await handleNetworkChange(option)
+                      }}
+                    >
+                      Switch to Network
+                    </button>
+                  </li>
+                )
+              } else {
+                return undefined
+              }
             })}
           </ul>
         </>
