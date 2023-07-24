@@ -7,10 +7,9 @@ title: "Create a lootbox to distribute random rewards"
 import { Aside } from "@components"
 import { Tabs } from "@components/Tabs"
 
-The lootbox is a utility contract that uses Chainlink VRF to determine a random reward. The user receives the reward after opening the contract. 
+The lootbox is a utility contract that uses Chainlink VRF to determine a random reward. The user receives the reward after opening the contract.
 
 It supports [ERC-20](https://eips.ethereum.org/EIPS/eip-20), [ERC-721](https://eips.ethereum.org/EIPS/eip-721), and [ERC-1155](https://eips.ethereum.org/EIPS/eip-1155) tokens as rewards. The rewards are distributed from a pool of tokens that are transferred to the contract when the lootbox contract is deployed.
-
 
 <Aside type="caution" title="Disclaimer">
   This repository represents an example of using a Chainlink product or service. It is provided to to help you
@@ -156,9 +155,9 @@ There's an example configuration file in [`scripts/data/tokens.json`](https://gi
 </Fragment>
 </Tabs>
 
-#### Whitelist
+#### Allow list for private mints
 
-The [Merkle tree](https://ethereum.org/en/developers/tutorials/merkle-proofs-for-offline-data-integrity/#introduction) for the private opening stage is generated from the address list in the [`scripts/data/whitelist.json`](https://github.com/smartcontractkit/quickstarts-lootbox/blob/main/scripts/data/whitelist.json) file. Edit the file and add all the addresses you want to list.
+The [Merkle tree](https://ethereum.org/en/developers/tutorials/merkle-proofs-for-offline-data-integrity/#introduction) for the [private opening mode](#private-mode) is generated from the address list in the [`scripts/data/whitelist.json`](https://github.com/smartcontractkit/quickstarts-lootbox/blob/main/scripts/data/whitelist.json) file. Edit the file and add all the addresses you want to list.
 
 If you don't want to do a private mint, leave the `whitelist.json` file empty, and the contract will be initialized in [public opening mode](#public-mode).
 
@@ -192,14 +191,13 @@ To run the deploy script, run the following command and replace `<network>` with
 npx hardhat run scripts/deploy.js --network <network>
 ```
 
-
 Besides deploying the contract, the [deploy script](https://github.com/smartcontractkit/quickstarts-lootbox/blob/main/scripts/deploy.ts) will also:
 
 1.  Approve each token configured in [`scripts/data/tokens.json`](https://github.com/smartcontractkit/quickstarts-lootbox/blob/main/scripts/data/tokens.json) for the deployed contract address.
 
     This is a mandatory step because the contract must store the tokens in its own balance. It is important to ensure the deployer account owns all the tokens you want to distribute as rewards.
 
-1.  Generate a [Merkle tree](https://ethereum.org/en/developers/tutorials/merkle-proofs-for-offline-data-integrity/#introduction) for the whitelist.
+1.  Generate a [Merkle tree](https://ethereum.org/en/developers/tutorials/merkle-proofs-for-offline-data-integrity/#introduction) for the allow list.
 
 1.  Create and fund a VRF subscription if one is not provided.
 
@@ -227,9 +225,9 @@ You can control access to the lootbox with two modes: private and public. Use th
 
 ### Private mode
 
-In this mode, the lootbox is only open to whitelisted addresses by calling the `privateOpen` function and providing Merkle proof for the address. To generate it, see [merkletreejs](https://github.com/merkletreejs/merkletreejs).
+In this mode, the lootbox is only open to addresses on the allow list by calling the `privateOpen` function and providing Merkle proof for the address. To generate it, see [merkletreejs](https://github.com/merkletreejs/merkletreejs).
 
-The whitelist is set on contract deployment and can be changed by calling the `setWhitelistRoot` function from the owner account. The private mode can be enabled or disabled at any time by calling the `setPrivateOpen` function from the owner account.
+The allow list is set on contract deployment and can be changed by calling the `setWhitelistRoot` function from the owner account. The private mode can be enabled or disabled at any time by calling the `setPrivateOpen` function from the owner account.
 
 ### Public mode
 
@@ -259,7 +257,7 @@ At any time, the owner can withdraw funds from the collected fees by calling the
 
 After deployment, you can change some contract parameters by calling the following functions from the owner account:
 
-| Function           | Description                            | Parameters           |
-| ------------------ | -------------------------------------- | -------------------- |
-| `setWhitelistRoot` | Set new Merkle root for the whitelist. | `whitelistRoot`      |
-| `setPrivateOpen`   | Enable/disable public opening mode.    | `privateOpenEnabled` |
+| Function           | Description                             | Parameters           |
+| ------------------ | --------------------------------------- | -------------------- |
+| `setWhitelistRoot` | Set new Merkle root for the allow list. | `whitelistRoot`      |
+| `setPrivateOpen`   | Enable/disable public opening mode.     | `privateOpenEnabled` |
