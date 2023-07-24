@@ -9,7 +9,6 @@ import { Chain, CHAINS, ALL_CHAINS } from "../data/chains"
 import { useGetChainMetadata } from "./useGetChainMetadata"
 import { ChainMetadata } from "../api"
 import useQueryString from "~/hooks/useQueryString"
-import { ChangeEvent } from "react"
 
 export type DataFeedType = "default" | "por" | "nftFloor" | "rates"
 export const FeedList = ({
@@ -35,9 +34,18 @@ export const FeedList = ({
   const firstAddr = lastAddr - addrPerPage
   const dataFeedCategory = ["verified", "monitored", "provisional", "custom", "specialized", "deprecating"]
 
-  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setSearchValue(event.target.value)
-    console.log(searchValue.toLowerCase().replaceAll(" ", ""))
+  const handleChange = (event, inputId: string) => {
+    const search = event.target.value
+    const queryParams = new URLSearchParams(window.location.search)
+    if (search) {
+      queryParams.set(inputId, search)
+    } else {
+      queryParams.delete(inputId)
+    }
+    const newUrl = `${window.location.pathname}?${queryParams.toString()}`
+    window.history.pushState({ path: newUrl }, "", newUrl)
+    const input = queryParams.get(inputId)
+    setSearchValue(input || "")
   }
 
   const chainMetadata = useGetChainMetadata(chains.filter((chain) => chain.page === selectedChain)[0], { initialCache })
@@ -58,6 +66,17 @@ export const FeedList = ({
   useEffect(() => {
     updateTableOfContents()
   }, [chainMetadata.processedData])
+
+  useEffect(() => {
+    const queryParams = new URLSearchParams(window.location.search)
+    const url = `${window.location.href}`
+    const searchRegex = /search.*?(?==)/
+    const searchQuery = url.match(searchRegex)
+    if (searchQuery) {
+      const searchInput = queryParams.get(searchQuery[0])
+      setSearchValue(searchInput || "")
+    }
+  }, [])
 
   const isPor = dataFeedType === "por"
   const isNftFloor = dataFeedType === "nftFloor"
@@ -179,10 +198,10 @@ export const FeedList = ({
 
                     <div class={feedList.filterDropdown_search}>
                       <input
-                        id="filterDropdown_search"
+                        id="searchEthereumMainnet"
                         class={feedList.filterDropdown_searchInput}
                         placeholder="Search price feeds"
-                        onInput={handleChange}
+                        onInput={(event) => handleChange(event, "searchEthereumMainnet")}
                       />
                     </div>
                     <label class={feedList.detailsLabel}>
