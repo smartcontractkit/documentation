@@ -542,7 +542,7 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
           </>
         )}
         <p>
-          To see these parameters in more details, read the
+          To see these parameters in greater detail, read the
           <a href={`/vrf/v2/${kebabize(method)}/supported-networks/#${getsupportedNetworkShortcut()}`} target="_blank">
             {" "}
             Supported Networks{" "}
