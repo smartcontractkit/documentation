@@ -274,19 +274,23 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
 
   const getsupportedNetworkShortcut = () => {
     const mainChainName = mainChain.name.toLowerCase()
+    const subChainName = chain.name.toLowerCase()
     switch (mainChainName) {
       case "ethereum":
+        if (subChainName !== "mainnet") {
+          return `${chain.name.toLowerCase()}-${chain.type}`
+        }
         return `${mainChainName}-${chain.type}`
       case "bnb chain":
-        return `${mainChainName}-chain${chain.type === "testnet" ? "-" + chain.type : ""}`
+        return `${mainChainName.replace(" ", "-")}${chain.type === "testnet" ? "-" + chain.type : ""}`
       case "polygon":
-        return `${mainChainName}-matic-${chain.type === "testnet" ? chain.name + "-" + chain.type : chain.type}`
+        return `${mainChainName}-matic-${chain.type === "testnet" ? subChainName + "-" + chain.type : chain.type}`
       case "avalanche":
-        return `${mainChainName}-${chain.type === "testnet" ? chain.name + "-" + chain.type : chain.type}`
+        return `${mainChainName}-${chain.type === "testnet" ? subChainName + "-" + chain.type : chain.type}`
       case "fantom":
         return `${mainChainName}-${chain.type}`
       case "arbitrum":
-        return `${mainChainName}-${chain.type === "testnet" ? chain.name + "-" + chain.type : chain.type}`
+        return `${mainChainName}-${chain.type === "testnet" ? subChainName + "-" + chain.type : chain.type}`
       default:
         throw new Error("network/chain does not exist or is not supported by VRF yet.")
     }
@@ -527,7 +531,8 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
           <>
             <h6>Maximum cost per request under the selected gas lane: {formatmaxCost()} LINK</h6>
             <p>
-              If you use the subscription method, a minimum balance of LINK is required use VRF. Check your balance at
+              If you use the subscription method, a minimum balance of LINK is required to use VRF. Check your balance
+              at
               <a href="https://vrf.chain.link" target="_blank">
                 {" "}
                 vrf.chain.link
@@ -537,7 +542,7 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
           </>
         )}
         <p>
-          To see these parameters in more detail, read the
+          To see these parameters in more details, read the
           <a href={`/vrf/v2/${kebabize(method)}/supported-networks/#${getsupportedNetworkShortcut()}`} target="_blank">
             {" "}
             Supported Networks{" "}
