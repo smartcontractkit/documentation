@@ -77,15 +77,22 @@ export const DropDownMenu = ({ placeholder = "Select a network...", options, met
     <div className="main-container">
       <div className="dropdown">
         <div className="dropdown-btn-container">
-          <input
-            className="dropInput"
-            placeholder={placeholder}
-            value={searchValue}
-            onFocus={() => {
-              setShowMenu(true)
-            }}
-            onInput={handleInputChange}
-          />
+          <div style={{ position: "relative" }}>
+            <input
+              className="dropInput"
+              placeholder={placeholder}
+              value={searchValue}
+              onFocus={() => {
+                setShowMenu(true)
+              }}
+              onInput={handleInputChange}
+            />
+            <img
+              src="https://smartcontract.imgix.net/icons/Caret2.svg"
+              alt="Caret icon"
+              style={{ position: "absolute", top: "30%", right: 0, transform: "translateX(-50%)" }}
+            />
+          </div>
         </div>
         <div className="dropdown-content-container">
           <div
