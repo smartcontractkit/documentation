@@ -278,7 +278,7 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
     switch (mainChainName) {
       case "ethereum":
         if (subChainName !== "mainnet") {
-          return `${chain.name.toLowerCase()}-${chain.type}`
+          return `${subChainName}-${chain.type}`
         }
         return `${mainChainName}-${chain.type}`
       case "bnb chain":
