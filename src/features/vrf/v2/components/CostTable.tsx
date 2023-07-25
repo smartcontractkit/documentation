@@ -531,7 +531,8 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
               <a href="https://vrf.chain.link" target="_blank">
                 {" "}
                 vrf.chain.link
-              </a>.
+              </a>
+              .
             </p>
           </>
         )}
@@ -539,10 +540,9 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
           To see these parameters in more detail, read the
           <a href={`/vrf/v2/${kebabize(method)}/supported-networks/#${getsupportedNetworkShortcut()}`} target="_blank">
             {" "}
-            Supported Networks
-            {" "}
+            Supported Networks{" "}
           </a>
-           page.
+          page.
         </p>
       </div>
     )
