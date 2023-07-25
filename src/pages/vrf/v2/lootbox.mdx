@@ -27,6 +27,8 @@ Before you start this tutorial, complete the following items:
   - To check your installation, run `git --version`. You should see an output similar to `git version x.x.x`.
 - Install [Nodejs](https://nodejs.org/en/) 16.0.0 or higher
   - To check your installation, run `node --version`. You should see an output similar to `v16.x.x`.
+- [Create an Etherscan API key](https://docs.etherscan.io/getting-started/viewing-api-usage-statistics) if you do not already have one.
+- Ensure the deployer account owns all the tokens you wish to distribute as rewards.
 - Ensure the deployer account has enough LINK to fund the [VRF subscription](/vrf/v2/subscription). If you don't already have a VRF subscription, the deployment script will create one for you.
   - [Estimate the minimum subscription balance](/vrf/v2/estimating-costs#estimate-minimum-subscription-balance) that VRF requires to process your randomness request. The minimum subscription balance provides a buffer against gas volatility, and only the actual cost of your request will be deducted from your account. If your subscription is underfunded, your VRF request will be pending for 24 hours. If that happens, check the [Subscription Manager](https://vrf.chain.link]) to see the additional balance needed.
   - Configure the initial funding amount in [`network-config.ts`](https://github.com/smartcontractkit/quickstarts-lootbox/blob/main/network-config.ts).
@@ -37,20 +39,21 @@ Before you start this tutorial, complete the following items:
 This tutorial requires you to set up two primary components:
 
 - [Install dependencies](#install-dependencies)
-- [Configuration](#configuration)
+- [Configure your project](#configure-your-project)
 
 ### Install dependencies
 
 Clone the repo and install all dependencies.
 
+{/* prettier-ignore */}
 <Tabs client:visible>
 <Fragment slot="tab.1">npm</Fragment>
 <Fragment slot="tab.2">yarn</Fragment>
 <Fragment slot="panel.1">
 ```bash
-git clone git@github.com:hackbg/chainlink-solutions-lootbox.git
+git clone git@github.com:smartcontractkit/quickstarts-lootbox.git
 
-cd chainlink-solutions-lootbox
+cd quickstarts-lootbox
 
 npm install
 
@@ -60,9 +63,9 @@ npm install
 Alternatively, you can use [yarn](https://yarnpkg.com/) to install dependencies.
 
 ```bash
-git clone git@github.com:hackbg/chainlink-solutions-lootbox.git
+git clone git@github.com:smartcontractkit/quickstarts-lootbox.git
 
-cd chainlink-solutions-lootbox
+cd quickstarts-lootbox
 
 yarn install
 ````
@@ -70,7 +73,7 @@ yarn install
 </Fragment>
 </Tabs>
 
-### Configuration
+### Configure your project
 
 Copy the `.env.example` file to `.env` and fill in the values.
 
@@ -80,17 +83,21 @@ cp .env.example .env
 
 #### Hardhat project
 
-[Hardhat](https://hardhat.org/) is an Ethereum development environment that is used here to configure and deploy the lootbox contract.
+[Hardhat](https://hardhat.org/) is an Ethereum development environment that is used here to configure and deploy the lootbox contract. You need the following information:
+
+- The [RPC URL for your deployment network](https://hardhat.org/hardhat-runner/docs/config#json-rpc-based-networks), using an RPC node provider such as [Infura](https://www.infura.io/) or [Alchemy](https://www.alchemy.com/).
+- The [private key for your deployer account](https://hardhat.org/hardhat-runner/docs/guides/verifying#deploying-and-verifying-a-contract-in-the-sepolia-testnet). If your deployer account is in MetaMask, [export your private key from MetaMask](https://support.metamask.io/hc/en-us/articles/360015289632-How-to-export-an-account-s-private-key).
+- An [Etherscan API key](https://hardhat.org/hardhat-runner/docs/guides/verifying#getting-an-api-key-from-etherscan) for contract verification. [Create an Etherscan API key](https://docs.etherscan.io/getting-started/viewing-api-usage-statistics) if you do not already have one.
 
 1. In your `.env` file, fill in these values:
 
-   | Parameter         | Description                                                 | Example                                     |
-   | ----------------- | ----------------------------------------------------------- | ------------------------------------------- |
-   | `NETWORK_RPC_URL` | The RPC URL for the network you want to deploy to.          | `https://sepolia.infura.io/v3/your-api-key` |
-   | `PRIVATE_KEY`     | The private key of the account you want to deploy from.     | `0xabc123abc123abc123abc123abc123...`       |
-   | `ETHERSCAN_API`   | The API key for Etherscan needed for contract verification. | `ABC123ABC123ABC123ABC123ABC123ABC1`        |
+   | Parameter           | Description                                                 | Example                                     |
+   | ------------------- | ----------------------------------------------------------- | ------------------------------------------- |
+   | `NETWORK_RPC_URL`   | The RPC URL for the network you want to deploy to.          | `https://sepolia.infura.io/v3/your-api-key` |
+   | `PRIVATE_KEY`       | The private key of the account you want to deploy from.     | `0xabc123abc123abc123abc123abc123...`       |
+   | `ETHERSCAN_API_KEY` | The API key for Etherscan needed for contract verification. | `ABC123ABC123ABC123ABC123ABC123ABC1`        |
 
-1. Configure your deployment network in [`hardhat.config.ts`](https://github.com/smartcontractkit/quickstarts-lootbox/blob/main/hardhat.config.ts).
+1. If you're using a deployment network other than Sepolia, Goerli, or Ethereum: configure your deployment network in both the `.env` file and in the [`hardhat.config.ts`](https://github.com/smartcontractkit/quickstarts-lootbox/blob/main/hardhat.config.ts) file.
 
 #### Contract parameters
 
@@ -119,6 +126,7 @@ Add all the tokens you want to distribute as rewards to the array in the list of
 
 There's an example configuration file in [`scripts/data/tokens.json`](https://github.com/smartcontractkit/quickstarts-lootbox/blob/main/scripts/data/tokens.json) which includes a list of all supported token types:
 
+{/* prettier-ignore */}
 <Tabs client:visible>
 <Fragment slot="tab.1">ERC-20</Fragment>
 <Fragment slot="tab.2">ERC-721</Fragment>
