@@ -459,7 +459,7 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
             </td>
           </tr>
           <tr>
-            <td>Callback gas chosen (max. {utils.commify(state.callbackGasLimit)})</td>
+            <td>Callback gas (max. {utils.commify(state.callbackGasLimit)})</td>
             <td>
               <input
                 id="callback-gas-value"
@@ -521,28 +521,29 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
             Calculate
           </button>
         </div>
-        <h6>Estimated Cost per Request : {formatTotal()} LINK</h6>
+        <h6>Estimated cost per request: {formatTotal()} LINK</h6>
 
         {method === "subscription" && (
           <>
-            <h6>Maximum Cost per Request under chosen gas lane : {formatmaxCost()} LINK</h6>
+            <h6>Maximum cost per request under the selected gas lane: {formatmaxCost()} LINK</h6>
             <p>
-              When using the subscription balance, a minimum amount of funds is necessary in order to use the VRF. Take
-              a look at your balance in the Subscription manager
+              If you use the subscription method, a minimum balance of LINK is required use VRF. Check your balance at
               <a href="https://vrf.chain.link" target="_blank">
                 {" "}
-                here.
-              </a>
+                vrf.chain.link
+              </a>.
             </p>
           </>
         )}
-        <h6>
-          If you want to take a look at the parameters in more details, click
+        <p>
+          To see these parameters in more detail, read the
           <a href={`/vrf/v2/${kebabize(method)}/supported-networks/#${getsupportedNetworkShortcut()}`} target="_blank">
             {" "}
-            here.
+            Supported Networks
+            {" "}
           </a>
-        </h6>
+           page.
+        </p>
       </div>
     )
   }
