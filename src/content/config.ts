@@ -21,7 +21,6 @@ const baseFrontmatter = z
     title: z.string(),
     whatsnext: z.record(z.string(), z.string()).optional(),
     isMdx: z.boolean().optional(),
-    permalink: z.string().optional(),
     isIndex: z.boolean().optional(),
     metadata: z
       .object({
