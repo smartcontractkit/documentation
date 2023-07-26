@@ -31,6 +31,7 @@ interface State {
   isLoading: boolean
   gasPrice: string
   L1GasPriceEstimate: string | undefined
+  currentL1GasPriceEstimate: string
   currentGasPrice: string
   LINKPremium: number
   callbackGasLimit: number
@@ -62,6 +63,7 @@ const initialState: State = {
   isLoading: false,
   gasPrice: "0",
   L1GasPriceEstimate: "0",
+  currentL1GasPriceEstimate: "0",
   currentGasPrice: "1",
   LINKPremium: 0.5,
   decimalPlaces: 0,
@@ -94,6 +96,7 @@ type Action =
   | { type: "SET_WRAPPER_LINK_PREMIUM_PERCENTAGE"; payload: number }
   | { type: "SET_TOTAL"; payload: string }
   | { type: "SET_MAX_COST"; payload: string }
+  | { type: "SET_CURRENT_L1_GAS_PRICE_ESTIMATE"; payload: string }
 
 const reducer = (state: State, action: Action) => {
   switch (action.type) {
@@ -127,6 +130,8 @@ const reducer = (state: State, action: Action) => {
       return { ...state, total: action.payload }
     case "SET_MAX_COST":
       return { ...state, maxCost: action.payload }
+    case "SET_CURRENT_L1_GAS_PRICE_ESTIMATE":
+      return { ...state, currentL1GasPriceEstimate: action.payload }
     default:
       return state
   }
@@ -143,8 +148,15 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
       return cache[cacheKey].data
     }
 
+    // const response = await fetch(
+    //   `https://vrf.chain.link/api/calculator?networkName=${mainChainName}&networkType=${
+    //     networkName === mainChainName ? chain.type.toLowerCase() : networkName
+    //   }&method=${method}`,
+    //   { method: "GET" }
+    // )
+
     const response = await fetch(
-      `https://vrf.chain.link/api/calculator?networkName=${mainChainName}&networkType=${
+      `http://localhost:3001/api/calculator?networkName=${mainChainName}&networkType=${
         networkName === mainChainName ? chain.type.toLowerCase() : networkName
       }&method=${method}`,
       { method: "GET" }
@@ -187,6 +199,7 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
           ...initialState,
           gasPrice,
           L1GasPriceEstimate,
+          currentL1GasPriceEstimate: L1GasPriceEstimate,
           decimalPlaces,
           currentGasPrice: gasPrice,
           callbackGasLimit,
@@ -224,22 +237,26 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
   const computeArbitrumCost = () => {
     const VRFCallDataSizeBytes = 140 + 580
     const {
-      L1GasPriceEstimate,
+      currentL1GasPriceEstimate,
       currentGasPrice,
       decimalPlaces,
       currentVerificationGas,
       currentGasLane,
       callbackGas,
+      LINKPremium,
+      priceFeed,
       wrapperOverheadGas,
     } = state
-    const L1P = BigNumber.from(L1GasPriceEstimate)
+    const L1P = BigNumber.from(currentL1GasPriceEstimate)
     const L2P = BigNumber.from(currentGasPrice)
 
     const L2PGasLane = utils.parseUnits(currentGasLane.toString(), "gwei")
     const VRFL1CostEstimate = L1P.mul(VRFCallDataSizeBytes)
-
+    const bigNumberPriceFeed = utils.formatUnits(BigNumber.from(priceFeed), decimalPlaces)
+    const formattedPriceFeed = utils.parseEther(bigNumberPriceFeed)
     const VRFL1Buffer = VRFL1CostEstimate.div(L2P)
     const VRFL1GasLaneBuffer = VRFL1CostEstimate.div(L2PGasLane)
+    const bigNumberLINKPremium = utils.parseUnits(LINKPremium.toString())
     if (method === "subscription") {
       const VRFL2SubscriptionGasSubtotal = BigNumber.from(currentVerificationGas + callbackGas)
       const VRFSubscriptionGasTotal = VRFL2SubscriptionGasSubtotal.add(VRFL1Buffer)
@@ -247,11 +264,24 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
 
       const VRFSubscriptionMaxCostTotal = VRFL2SubscriptionGasSubtotal.add(VRFL1GasLaneBuffer)
       const VRFSubscriptionMaxCostEstimate = L2PGasLane.mul(VRFSubscriptionMaxCostTotal)
+
+      const formattedGasEstimate = utils.parseEther(VRFSubscriptionGasEstimate.toString())
+      const VRFSubscriptionGasEstimateTotal = utils.formatUnits(
+        formattedGasEstimate.div(formattedPriceFeed).add(bigNumberLINKPremium).toString(),
+        decimalPlaces
+      )
+
+      const formattedMaxCostEstimate = utils.parseEther(VRFSubscriptionMaxCostEstimate.toString())
+      const VRFSubscriptionMaxCostEstimateTotal = utils.formatUnits(
+        formattedMaxCostEstimate.div(formattedPriceFeed).add(bigNumberLINKPremium).toString(),
+        decimalPlaces
+      )
+
       dispatch({
         type: "UPDATE_STATE",
         payload: {
-          total: utils.formatUnits(VRFSubscriptionGasEstimate, decimalPlaces),
-          maxCost: utils.formatUnits(VRFSubscriptionMaxCostEstimate, decimalPlaces),
+          total: VRFSubscriptionGasEstimateTotal,
+          maxCost: VRFSubscriptionMaxCostEstimateTotal,
         },
       })
     } else {
@@ -259,14 +289,16 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
       const VRFDirectFundingGasTotal = VRFL2DirectFundingGasSubtotal.add(VRFL1Buffer)
       const VRFDirectFundingGasEstimate = L2P.mul(VRFDirectFundingGasTotal)
 
-      const VRFDirectFundingTotalWithGasLane = VRFL2DirectFundingGasSubtotal.add(VRFL1GasLaneBuffer)
-      const VRFDirectFundingGasMaxCostEstimate = L2PGasLane.mul(VRFDirectFundingTotalWithGasLane)
+      const formattedGasEstimate = utils.parseEther(VRFDirectFundingGasEstimate.toString())
+      const VRFDirectFundingGasEstimateTotal = utils.formatUnits(
+        formattedGasEstimate.div(formattedPriceFeed).add(bigNumberLINKPremium).toString(),
+        decimalPlaces
+      )
 
       dispatch({
         type: "UPDATE_STATE",
         payload: {
-          total: utils.formatUnits(VRFDirectFundingGasEstimate, decimalPlaces),
-          maxCost: utils.formatUnits(VRFDirectFundingGasMaxCostEstimate, decimalPlaces),
+          total: VRFDirectFundingGasEstimateTotal,
         },
       })
     }
@@ -374,11 +406,19 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
     }
   }
 
+  const handleChangeGasL1 = (e: Event) => {
+    const { target } = e
+    if (target instanceof HTMLInputElement) {
+      const val = target.value || "0.0"
+      dispatch({ type: "SET_CURRENT_L1_GAS_PRICE_ESTIMATE", payload: utils.parseUnits(val, "gwei").toString() })
+    }
+  }
+
   const kebabize = (str: string) =>
     str.replace(/[A-Z]+(?![a-z])|[A-Z]/g, ($, ofs) => (ofs ? "-" : "") + $.toLowerCase())
 
-  const getGasPrice = () => {
-    const fullGasPrice = utils.formatUnits(BigNumber.from(state.gasPrice).toHexString(), "gwei")
+  const getGasPrice = (gasPrice: string) => {
+    const fullGasPrice = utils.formatUnits(BigNumber.from(gasPrice).toHexString(), "gwei")
     return parseFloat(fullGasPrice).toFixed(2)
   }
 
@@ -451,7 +491,7 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
             <th>Value</th>
           </tr>
           <tr>
-            <td>Gas price (current is {getGasPrice()} gwei)</td>
+            <td>Gas price (current is {getGasPrice(state.gasPrice)} gwei)</td>
             <td>
               <input
                 type="number"
@@ -462,6 +502,20 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
               />
             </td>
           </tr>
+          {mainChain.name.toLowerCase() === "arbitrum" && (
+            <tr>
+              <td>L1 Gas price (current is {getGasPrice(state.L1GasPriceEstimate)})</td>
+              <td>
+                <input
+                  type="number"
+                  id="L1Gas"
+                  min={0}
+                  value={utils.formatUnits(state.currentL1GasPriceEstimate, "gwei")}
+                  onBlur={handleChangeGasL1}
+                />
+              </td>
+            </tr>
+          )}
           <tr>
             <td>Callback gas (max. {utils.commify(state.callbackGasLimit)})</td>
             <td>
