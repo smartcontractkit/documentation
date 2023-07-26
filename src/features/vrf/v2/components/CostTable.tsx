@@ -493,9 +493,9 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
               />
             </td>
           </tr>
-          {mainChain.name.toLowerCase() === "arbitrum" && (
+          {mainChain.name.toLowerCase() === "arbitrum" && state.L1GasPriceEstimate && (
             <tr>
-              <td>L1 Gas price (current is {getGasPrice(state.L1GasPriceEstimate)})</td>
+              <td>L1 Gas price (current is {getGasPrice(state.L1GasPriceEstimate)} gwei)</td>
               <td>
                 <input
                   type="number"
