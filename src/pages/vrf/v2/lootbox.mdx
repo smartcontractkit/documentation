@@ -28,11 +28,19 @@ Before you start this tutorial, complete the following items:
 - Install [Nodejs](https://nodejs.org/en/) 16.0.0 or higher
   - To check your installation, run `node --version`. You should see an output similar to `v16.x.x`.
 - [Create an Etherscan API key](https://docs.etherscan.io/getting-started/viewing-api-usage-statistics) if you do not already have one.
+- Create an account with [Infura](https://www.infura.io/) or [Alchemy](https://www.alchemy.com/) if you do not already have one.
+
+Your _deployer account_ is the main account you will use to deploy the lootbox contract, distribute reward tokens, pay for transaction fees, and pay for VRF costs.
+
 - Ensure the deployer account owns all the tokens you wish to distribute as rewards.
+- To deploy this contract on testnets, ensure the deployer account has testnet LINK and testnet ETH (Sepolia). Use the [LINK faucet](https://faucets.chain.link/) to retrieve 20 testnet LINK and 0.1 Sepolia ETH.
 - Ensure the deployer account has enough LINK to fund the [VRF subscription](/vrf/v2/subscription). If you don't already have a VRF subscription, the deployment script will create one for you.
-  - [Estimate the minimum subscription balance](/vrf/v2/estimating-costs#estimate-minimum-subscription-balance) that VRF requires to process your randomness request. The minimum subscription balance provides a buffer against gas volatility, and only the actual cost of your request will be deducted from your account. If your subscription is underfunded, your VRF request will be pending for 24 hours. If that happens, check the [Subscription Manager](https://vrf.chain.link]) to see the additional balance needed.
-  - Configure the initial funding amount in [`network-config.ts`](https://github.com/smartcontractkit/quickstarts-lootbox/blob/main/network-config.ts).
-  - To deploy this contract on testnets, use the [LINK faucet](https://faucets.chain.link/) to retrieve testnet LINK. Request 20 LINK from the faucet - this amount should be sufficient to run this tutorial on a testnet.
+  - [Estimate the minimum subscription balance](/vrf/v2/estimating-costs#estimate-minimum-subscription-balance) that VRF requires to process your randomness request. The minimum subscription balance provides a buffer against gas volatility, and only the actual cost of your request will be deducted from your account. If your subscription is underfunded, your VRF request will be [pending](/vrf/v2/subscription/ui#pending) for 24 hours. If that happens, check the [Subscription Manager](https://vrf.chain.link]) to see the additional balance needed.
+  - The initial funding amount is set to 10 LINK. If needed, update the initial funding amount in [`network-config.ts`](https://github.com/smartcontractkit/quickstarts-lootbox/blob/main/network-config.ts).
+
+In this tutorial, you will use a second account (the _receiving account_) to test opening the lootbox and receiving the reward tokens as a user.
+
+- [Create a second account in your MetaMask wallet](https://support.metamask.io/hc/en-us/articles/360015289452-How-to-create-an-additional-account-in-your-wallet) if you do not already have one, and [configure the account](https://support.metamask.io/hc/en-us/articles/360015489031-How-to-display-tokens-in-MetaMask) to receive the reward tokens you want to distribute from the lootbox.
 
 ## Setup steps
 
@@ -85,7 +93,7 @@ cp .env.example .env
 
 [Hardhat](https://hardhat.org/) is an Ethereum development environment that is used here to configure and deploy the lootbox contract. You need the following information:
 
-- The [RPC URL for your deployment network](https://hardhat.org/hardhat-runner/docs/config#json-rpc-based-networks), using an RPC node provider such as [Infura](https://www.infura.io/) or [Alchemy](https://www.alchemy.com/).
+- The [RPC URL for your deployment network](https://hardhat.org/hardhat-runner/docs/config#json-rpc-based-networks), using an [RPC node provider] such as [Infura](https://www.infura.io/) or [Alchemy](https://www.alchemy.com/). Learn more about [Ethereum nodes as a service](https://ethereum.org/en/developers/docs/nodes-and-clients/nodes-as-a-service/).
 - The [private key for your deployer account](https://hardhat.org/hardhat-runner/docs/guides/verifying#deploying-and-verifying-a-contract-in-the-sepolia-testnet). If your deployer account is in MetaMask, [export your private key from MetaMask](https://support.metamask.io/hc/en-us/articles/360015289632-How-to-export-an-account-s-private-key).
 - An [Etherscan API key](https://hardhat.org/hardhat-runner/docs/guides/verifying#getting-an-api-key-from-etherscan) for contract verification. [Create an Etherscan API key](https://docs.etherscan.io/getting-started/viewing-api-usage-statistics) if you do not already have one.
 
@@ -105,10 +113,12 @@ In your `.env` file, fill in these values:
 
 | Parameter                             | Description                                                                                                               | Example      |
 | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- | ------------ |
-| `LOOTBOX_FEE_PER_OPEN`                | The fee per open in ETH                                                                                                   | `0.1`        |
+| `LOOTBOX_FEE_PER_OPEN`                | The fee per open in ETH                                                                                                   | `0.05`       |
 | `LOOTBOX_AMOUNT_DISTRIBUTED_PER_OPEN` | The amount of reward units distributed per open                                                                           | `1`          |
 | `LOOTBOX_OPEN_START_TIMESTAMP`        | The start timestamp in UNIX time for the public open. Leave blank to start immediately.                                   | `1630000000` |
-| `VRF_SUBSCRIPTION_ID`                 | A funded Chainlink VRF subscription ID. If you leave this blank, a new subscription will be created and funded on deploy. | `123`        |
+| `VRF_SUBSCRIPTION_ID`                 | A funded Chainlink VRF subscription ID. If you leave this blank, a new subscription will be created and funded on deploy. | `7123`       |
+
+The `LOOTBOX_FEE_PER_OPEN` allows you to pass transaction and VRF costs to the user when they open the lootbox.
 
 #### Reward tokens
 
@@ -215,7 +225,7 @@ Besides deploying the contract, the [deploy script](https://github.com/smartcont
 
     [Estimate the minimum subscription balance](/vrf/v2/estimating-costs#estimate-minimum-subscription-balance) that VRF requires to process your randomness request. The minimum subscription balance provides a buffer against gas volatility, and only the actual cost of your request will be deducted from your account.
 
-    If your subscription is underfunded, your VRF request will be pending for 24 hours. If this happens, check the [Subscription Manager](https://vrf.chain.link]) to see the additional balance needed.
+    If your subscription is underfunded, your VRF request will be [pending](/vrf/v2/subscription/ui#pending) for 24 hours. If this happens, check the [Subscription Manager](https://vrf.chain.link]) to see the additional balance needed.
 
     </Aside>
 
