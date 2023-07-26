@@ -148,15 +148,8 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
       return cache[cacheKey].data
     }
 
-    // const response = await fetch(
-    //   `https://vrf.chain.link/api/calculator?networkName=${mainChainName}&networkType=${
-    //     networkName === mainChainName ? chain.type.toLowerCase() : networkName
-    //   }&method=${method}`,
-    //   { method: "GET" }
-    // )
-
     const response = await fetch(
-      `http://localhost:3001/api/calculator?networkName=${mainChainName}&networkType=${
+      `https://vrf.chain.link/api/calculator?networkName=${mainChainName}&networkType=${
         networkName === mainChainName ? chain.type.toLowerCase() : networkName
       }&method=${method}`,
       { method: "GET" }
@@ -296,10 +289,8 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
       )
 
       dispatch({
-        type: "UPDATE_STATE",
-        payload: {
-          total: VRFDirectFundingGasEstimateTotal,
-        },
+        type: "SET_TOTAL",
+        payload: VRFDirectFundingGasEstimateTotal,
       })
     }
   }
