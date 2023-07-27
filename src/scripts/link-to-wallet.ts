@@ -28,7 +28,7 @@ const switchToNetworkText = "Switch network and add to wallet"
 const initChainChangeEventName = "InitChainChange"
 
 /**
- * Converts a nulber to HexString (a string which has a 0x prefix followed by any number of nibbles (i.e. case-insensitive hexadecimal characters, 0-9 and a-f).)
+ * Converts a number to HexString (a string which has a 0x prefix followed by any number of nibbles (i.e. case-insensitive hexadecimal characters, 0-9 and a-f).)
  */
 const toHex = ethers.utils.hexValue
 

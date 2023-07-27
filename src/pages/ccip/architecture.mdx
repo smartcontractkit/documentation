@@ -55,7 +55,7 @@ The figure below outlines the different components involved in a cross-chain tra
 
 #### Router
 
-The Router is the primary contract CCIP users interface with. This contract is responsible for initiating cross-chain interactions. One router contact exists per chain. When transferring tokens, callers have to approve tokens for the router contract.
+The Router is the primary contract CCIP users interface with. This contract is responsible for initiating cross-chain interactions. One router contract exists per chain. When transferring tokens, callers have to approve tokens for the router contract.
 The router contract routes the instruction to the destination-specific [OnRamp](#onramp).
 
 When a message is received on the destination chain, the router is the contract that “delivers” tokens to the user's account or the message to the receiver's smart contract.
@@ -87,7 +87,7 @@ One OffRamp contract per [lane](/ccip/concepts#lane) exists. This contract perfo
 
 Each token has its own token pool, an abstraction layer over ERC-20 tokens that facilitates OnRamp and OffRamp token-related operations. Token pools are configurable to `lock` or `burn` at the source blockchain and `unlock` or `mint` at the destination blockchain. The mechanism for handling tokens depends on the characteristics of the token in question. Here are a few examples:
 
-- Blockchain-native gas coins, such as ETH, MATIC, and AVAX, can only be minted on their native chains. These tokens cannot be burned on the source and minted at the destination to transfer these tokens between chains. Instead, the linked token pool uses a "Lock and Mint" approach that locks the token at its source and then mints a wrapped or synthetic asset on the destination blockchain. This synthetic asset represents the locked asset and is essential for redeeming the locked asset.
+- Blockchain-native gas tokens, such as ETH, MATIC, and AVAX, can only be minted on their native chains. These tokens cannot be burned on the source and minted at the destination to transfer these tokens between chains. Instead, the linked token pool uses a "Lock and Mint" approach that locks the token at its source and then mints a wrapped or synthetic asset on the destination blockchain. This synthetic asset represents the locked asset and is essential for redeeming the locked asset.
 - A token like LINK is minted on a single chain (Ethereum mainnet) with a fixed total supply. CCIP cannot natively mint it on another chain. In this case, the "Lock and Mint" approach is required.
 - Some tokens can be minted on multiple chains. Examples of such tokens include stablecoins like USDC, TUSD, USDT, and FRAX. The linked token pools use a "Burn and Mint" method to burn the token at its source and then mint it natively on the destination blockchain. Wrapped assets such as WBTC or WETH are other examples that use the "Burn and Mint" approach.
 - A token with a Proof Of Reserve (PoR) feed on a specific chain poses a challenge for the "Burn and Mint" method when applied to other chains because it conflicts with the PoR feed. For these tokens, "Lock and Mint" is the preferred approach.
@@ -113,7 +113,8 @@ The Committing DON has several jobs where each job monitors cross-chain transact
 
 Like the [Committing DON](#committing-don), the Executing DON has several jobs where each executes cross-chain transactions between a source blockchain and a destination blockchain:
 
-- Each job monitors events from a given [OnRamp contract](#onramp) on the source blockchain. - The job checks whether the transaction is part of the relayed Merkle root in the [CommitStore contract](#commit-store).
+- Each job monitors events from a given [OnRamp contract](#onramp) on the source blockchain.
+- The job checks whether the transaction is part of the relayed Merkle root in the [CommitStore contract](#commit-store).
 - The job waits for the [Active Risk Management](#active-risk-management-arm-network) network to bless the message.
 - Finally, the job creates a valid Merkle proof, which is verified by the [OffRamp contract](#offramp) against the Merkle root in the [CommitStore contract](#commit-store). After these check pass, the job calls the [OffRamp contract](#offramp) to complete the CCIP transactions on the destination blockchain.
 
@@ -125,7 +126,7 @@ Saving a commitment is compact and has a fixed gas cost, whereas executing user 
 
 The Active Risk Management (ARM) network is a set of independent nodes that monitor the Merkle roots committed by the [Committing DON](#committing-don) into the [Commit Store](#commit-store).
 
-Each node compares the committed Merkle roots with the transactions received by the [OnRamp contract](#onramp). After the verification succeeds, it calls the ARM contract to _"bless"_ the committed Merkle root. When there are enough blessing votes, the root becomes available for execution. In case of anomalies, each ARM node calls the ARM contract to _"curse"_ the system. If the cursed quorum is reached, the ARM contract is paused to prevent any CCIP transaction from being executed.
+Each node compares the committed Merkle roots with the transactions received by the [OnRamp contract](#onramp). After the verification succeeds, it calls the ARM contract to _"bless"_ &nbsp;the committed Merkle root. When there are enough blessing votes, the root becomes available for execution. In case of anomalies, each ARM node calls the ARM contract to _"curse"_ &nbsp;the system. If the cursed quorum is reached, the ARM contract is paused to prevent any CCIP transaction from being executed.
 
 Read the [ARM concepts](/ccip/concepts#active-risk-management-arm-network) page to learn more.
 
@@ -133,7 +134,7 @@ Read the [ARM concepts](/ccip/concepts#active-risk-management-arm-network) page 
 
 The CCIP billing model uses the `feeToken` specified in the message to pay a single fee on the source chain. CCIP uses a gas-locked fee payment mechanism, referred to as _Smart Execution_, to help ensure the reliable execution of cross-chain transactions regardless of destination chain gas spikes. For developers, this means you can simply pay on the source chain and CCIP will take care of execution on the destination chain.
 
-On each source chain, CCIP maintains a cache of destination gas prices, denominated in each `feeToken`. To prevent staleness, these prices are routinely updated by either piggybacking user messages or timeouts. CCIP supports fee payments in LINK and in alternative assets, which currently includes native blockchain gas coins and their ERC20 wrapped versions. The payment model for CCIP is designed to significantly reduce friction for users and quickly scale CCIP to more blockchains by supporting fee payments that originate across a multitude of chains over time.
+On each source chain, CCIP maintains a cache of destination gas prices, denominated in each `feeToken`. To prevent staleness, these prices are routinely updated by either piggybacking user messages or timeouts. CCIP supports fee payments in LINK and in alternative assets, which currently includes blockchain-native gas tokens and their ERC20 wrapped versions. The payment model for CCIP is designed to significantly reduce friction for users and quickly scale CCIP to more blockchains by supporting fee payments that originate across a multitude of chains over time.
 
 ### Overheads and fees
 
