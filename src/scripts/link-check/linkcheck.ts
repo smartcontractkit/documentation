@@ -4,7 +4,11 @@ import { Readable } from "node:stream"
 import { exit, cwd, stdout } from "process"
 
 const tempDir = `${cwd()}/temp`
+if (!existsSync(tempDir)) {
+  mkdirSync(tempDir)
+}
 const logFile = `${tempDir}/link-checker.log`
+const logStream = createWriteStream(logFile, { flags: "w" })
 
 const displayLogFile = () => {
   if (existsSync(logFile) && statSync(logFile).size > 0) {
@@ -55,10 +59,6 @@ const processSiteMap = (baseUrl: string): string => {
   const siteMap = `${cwd()}/dist/sitemap-0.xml`
   const linksFile = `${tempDir}/sitemap-urls.txt`
 
-  if (!existsSync(tempDir)) {
-    mkdirSync(tempDir)
-  }
-
   const data = readFileSync(siteMap, { encoding: "utf8" })
   const regex = /<loc>(?<link>.*?)<\/loc>/gm
   const links: string[] = []
@@ -90,8 +90,6 @@ try {
   console.error("Failed to generate the build.", error)
   exit(1)
 }
-
-const logStream = createWriteStream(logFile, { flags: "w" })
 
 server = spawn("npm", ["run", "preview"], {
   stdio: ["ignore", "pipe", "pipe"],
