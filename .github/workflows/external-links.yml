@@ -1,0 +1,21 @@
+name: Check external links
+
+on:
+  schedule:
+    - cron: '59 23 * * */7'
+  workflow_dispatch:
+
+jobs:
+  check-external-links:
+    name: Check external links
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b # v3.0.2
+      - name: Install Dependencies
+        run: npm i
+      - name: Run external link checks
+        run: npm run linkcheck-external
