@@ -31,6 +31,7 @@ interface State {
   isLoading: boolean
   gasPrice: string
   L1GasPriceEstimate: string | undefined
+  currentL1GasPriceEstimate: string
   currentGasPrice: string
   LINKPremium: number
   callbackGasLimit: number
@@ -62,6 +63,7 @@ const initialState: State = {
   isLoading: false,
   gasPrice: "0",
   L1GasPriceEstimate: "0",
+  currentL1GasPriceEstimate: "0",
   currentGasPrice: "1",
   LINKPremium: 0.5,
   decimalPlaces: 0,
@@ -94,6 +96,7 @@ type Action =
   | { type: "SET_WRAPPER_LINK_PREMIUM_PERCENTAGE"; payload: number }
   | { type: "SET_TOTAL"; payload: string }
   | { type: "SET_MAX_COST"; payload: string }
+  | { type: "SET_CURRENT_L1_GAS_PRICE_ESTIMATE"; payload: string }
 
 const reducer = (state: State, action: Action) => {
   switch (action.type) {
@@ -127,6 +130,8 @@ const reducer = (state: State, action: Action) => {
       return { ...state, total: action.payload }
     case "SET_MAX_COST":
       return { ...state, maxCost: action.payload }
+    case "SET_CURRENT_L1_GAS_PRICE_ESTIMATE":
+      return { ...state, currentL1GasPriceEstimate: action.payload }
     default:
       return state
   }
@@ -187,6 +192,7 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
           ...initialState,
           gasPrice,
           L1GasPriceEstimate,
+          currentL1GasPriceEstimate: L1GasPriceEstimate,
           decimalPlaces,
           currentGasPrice: gasPrice,
           callbackGasLimit,
@@ -224,22 +230,26 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
   const computeArbitrumCost = () => {
     const VRFCallDataSizeBytes = 140 + 580
     const {
-      L1GasPriceEstimate,
+      currentL1GasPriceEstimate,
       currentGasPrice,
       decimalPlaces,
       currentVerificationGas,
       currentGasLane,
       callbackGas,
+      LINKPremium,
+      priceFeed,
       wrapperOverheadGas,
     } = state
-    const L1P = BigNumber.from(L1GasPriceEstimate)
+    const L1P = BigNumber.from(currentL1GasPriceEstimate)
     const L2P = BigNumber.from(currentGasPrice)
 
     const L2PGasLane = utils.parseUnits(currentGasLane.toString(), "gwei")
     const VRFL1CostEstimate = L1P.mul(VRFCallDataSizeBytes)
-
+    const bigNumberPriceFeed = utils.formatUnits(BigNumber.from(priceFeed), decimalPlaces)
+    const formattedPriceFeed = utils.parseEther(bigNumberPriceFeed)
     const VRFL1Buffer = VRFL1CostEstimate.div(L2P)
     const VRFL1GasLaneBuffer = VRFL1CostEstimate.div(L2PGasLane)
+    const bigNumberLINKPremium = utils.parseUnits(LINKPremium.toString())
     if (method === "subscription") {
       const VRFL2SubscriptionGasSubtotal = BigNumber.from(currentVerificationGas + callbackGas)
       const VRFSubscriptionGasTotal = VRFL2SubscriptionGasSubtotal.add(VRFL1Buffer)
@@ -247,11 +257,24 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
 
       const VRFSubscriptionMaxCostTotal = VRFL2SubscriptionGasSubtotal.add(VRFL1GasLaneBuffer)
       const VRFSubscriptionMaxCostEstimate = L2PGasLane.mul(VRFSubscriptionMaxCostTotal)
+
+      const formattedGasEstimate = utils.parseEther(VRFSubscriptionGasEstimate.toString())
+      const VRFSubscriptionGasEstimateTotal = utils.formatUnits(
+        formattedGasEstimate.div(formattedPriceFeed).add(bigNumberLINKPremium).toString(),
+        decimalPlaces
+      )
+
+      const formattedMaxCostEstimate = utils.parseEther(VRFSubscriptionMaxCostEstimate.toString())
+      const VRFSubscriptionMaxCostEstimateTotal = utils.formatUnits(
+        formattedMaxCostEstimate.div(formattedPriceFeed).add(bigNumberLINKPremium).toString(),
+        decimalPlaces
+      )
+
       dispatch({
         type: "UPDATE_STATE",
         payload: {
-          total: utils.formatUnits(VRFSubscriptionGasEstimate, decimalPlaces),
-          maxCost: utils.formatUnits(VRFSubscriptionMaxCostEstimate, decimalPlaces),
+          total: VRFSubscriptionGasEstimateTotal,
+          maxCost: VRFSubscriptionMaxCostEstimateTotal,
         },
       })
     } else {
@@ -259,34 +282,38 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
       const VRFDirectFundingGasTotal = VRFL2DirectFundingGasSubtotal.add(VRFL1Buffer)
       const VRFDirectFundingGasEstimate = L2P.mul(VRFDirectFundingGasTotal)
 
-      const VRFDirectFundingTotalWithGasLane = VRFL2DirectFundingGasSubtotal.add(VRFL1GasLaneBuffer)
-      const VRFDirectFundingGasMaxCostEstimate = L2PGasLane.mul(VRFDirectFundingTotalWithGasLane)
+      const formattedGasEstimate = utils.parseEther(VRFDirectFundingGasEstimate.toString())
+      const VRFDirectFundingGasEstimateTotal = utils.formatUnits(
+        formattedGasEstimate.div(formattedPriceFeed).add(bigNumberLINKPremium).toString(),
+        decimalPlaces
+      )
 
       dispatch({
-        type: "UPDATE_STATE",
-        payload: {
-          total: utils.formatUnits(VRFDirectFundingGasEstimate, decimalPlaces),
-          maxCost: utils.formatUnits(VRFDirectFundingGasMaxCostEstimate, decimalPlaces),
-        },
+        type: "SET_TOTAL",
+        payload: VRFDirectFundingGasEstimateTotal,
       })
     }
   }
 
   const getsupportedNetworkShortcut = () => {
     const mainChainName = mainChain.name.toLowerCase()
+    const subChainName = chain.name.toLowerCase()
     switch (mainChainName) {
       case "ethereum":
+        if (subChainName !== "mainnet") {
+          return `${subChainName}-${chain.type}`
+        }
         return `${mainChainName}-${chain.type}`
       case "bnb chain":
-        return `${mainChainName}-chain${chain.type === "testnet" ? "-" + chain.type : ""}`
+        return `${mainChainName.replace(" ", "-")}${chain.type === "testnet" ? "-" + chain.type : ""}`
       case "polygon":
-        return `${mainChainName}-matic-${chain.type === "testnet" ? chain.name + "-" + chain.type : chain.type}`
+        return `${mainChainName}-matic-${chain.type === "testnet" ? subChainName + "-" + chain.type : chain.type}`
       case "avalanche":
-        return `${mainChainName}-${chain.type === "testnet" ? chain.name + "-" + chain.type : chain.type}`
+        return `${mainChainName}-${chain.type === "testnet" ? subChainName + "-" + chain.type : chain.type}`
       case "fantom":
         return `${mainChainName}-${chain.type}`
       case "arbitrum":
-        return `${mainChainName}-${chain.type === "testnet" ? chain.name + "-" + chain.type : chain.type}`
+        return `${mainChainName}-${chain.type === "testnet" ? subChainName + "-" + chain.type : chain.type}`
       default:
         throw new Error("network/chain does not exist or is not supported by VRF yet.")
     }
@@ -370,11 +397,19 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
     }
   }
 
+  const handleChangeGasL1 = (e: Event) => {
+    const { target } = e
+    if (target instanceof HTMLInputElement) {
+      const val = target.value || "0.0"
+      dispatch({ type: "SET_CURRENT_L1_GAS_PRICE_ESTIMATE", payload: utils.parseUnits(val, "gwei").toString() })
+    }
+  }
+
   const kebabize = (str: string) =>
     str.replace(/[A-Z]+(?![a-z])|[A-Z]/g, ($, ofs) => (ofs ? "-" : "") + $.toLowerCase())
 
-  const getGasPrice = () => {
-    const fullGasPrice = utils.formatUnits(BigNumber.from(state.gasPrice).toHexString(), "gwei")
+  const getGasPrice = (gasPrice: string) => {
+    const fullGasPrice = utils.formatUnits(BigNumber.from(gasPrice).toHexString(), "gwei")
     return parseFloat(fullGasPrice).toFixed(2)
   }
 
@@ -447,7 +482,7 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
             <th>Value</th>
           </tr>
           <tr>
-            <td>Gas price (current is {getGasPrice()} gwei)</td>
+            <td>Gas price (current is {getGasPrice(state.gasPrice)} gwei)</td>
             <td>
               <input
                 type="number"
@@ -458,6 +493,20 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
               />
             </td>
           </tr>
+          {mainChain.name.toLowerCase() === "arbitrum" && state.L1GasPriceEstimate && (
+            <tr>
+              <td>L1 gas price (current is {getGasPrice(state.L1GasPriceEstimate)} gwei)</td>
+              <td>
+                <input
+                  type="number"
+                  id="L1Gas"
+                  min={0}
+                  value={utils.formatUnits(state.currentL1GasPriceEstimate, "gwei")}
+                  onBlur={handleChangeGasL1}
+                />
+              </td>
+            </tr>
+          )}
           <tr>
             <td>Callback gas (max. {utils.commify(state.callbackGasLimit)})</td>
             <td>
@@ -473,7 +522,7 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
           </tr>
           <tr>
             <td>
-              {method === "subscription" ? "Average verification Gas" : "Coordinator Gas Overhead (Verification Gas)"}
+              {method === "subscription" ? "Average verification gas" : "Coordinator gas overhead (verification gas)"}
             </td>
             <td>{utils.commify(state.currentVerificationGas)}</td>
           </tr>
@@ -527,7 +576,8 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
           <>
             <h6>Maximum cost per request under the selected gas lane: {formatmaxCost()} LINK</h6>
             <p>
-              If you use the subscription method, a minimum balance of LINK is required use VRF. Check your balance at
+              If you use the subscription method, a minimum balance of LINK is required to use VRF. Check your balance
+              at
               <a href="https://vrf.chain.link" target="_blank">
                 {" "}
                 vrf.chain.link
@@ -537,7 +587,7 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
           </>
         )}
         <p>
-          To see these parameters in more detail, read the
+          To see these parameters in greater detail, read the
           <a href={`/vrf/v2/${kebabize(method)}/supported-networks/#${getsupportedNetworkShortcut()}`} target="_blank">
             {" "}
             Supported Networks{" "}
