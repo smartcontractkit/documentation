@@ -1,4 +1,4 @@
-import { ChainMetadata } from "../api"
+import { ChainMetadata } from "./api"
 
 type ChainTags = ("default" | "proofOfReserve" | "nftFloorPrice" | "rates")[]
 export interface ChainNetwork {

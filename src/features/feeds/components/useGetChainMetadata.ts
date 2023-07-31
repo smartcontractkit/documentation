@@ -1,6 +1,6 @@
 import { useEffect, useState } from "preact/hooks"
-import { getChainMetadata } from "../api"
-import { Chain } from "../data/chains"
+import { getChainMetadata } from "../../data/api"
+import { Chain } from "../../data/chains"
 
 export function useGetChainMetadata(chain: Chain, { initialCache }) {
   const [cache, setCache] = useState(initialCache ?? { [chain.page]: chain })
