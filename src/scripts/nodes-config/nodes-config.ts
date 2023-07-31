@@ -1,23 +1,20 @@
+import nodesConfig from "./config.json"
 import { Octokit } from "octokit"
 import { createTokenAuth } from "@octokit/auth-token"
 import fetch from "node-fetch"
-import { writeFile, readFile } from "fs/promises"
-import { normalize } from "path"
+import { writeFile, readFile, mkdir, access } from "fs/promises"
+import path, { normalize } from "path"
 import { format } from "prettier"
-
+import { rules } from "./transformation"
 import * as dotenv from "dotenv"
+
 dotenv.config()
 
-const nodesConfig = {
-  owner: "smartcontractkit",
-  repo: "chainlink",
-  path: "docs/CONFIG.md",
-  "current-tags": ["v1.6.0", "v1.7.0", "v1.7.1", "v1.8.0"],
-}
-
+const chainlinkNodesAbsolute = "/chainlink-nodes"
+const nodesPageDir = `./src/pages${chainlinkNodesAbsolute}`
 const getTags = async () => {
-  const PAT = process.env.PAT
-  if (!PAT) throw new Error("PAT not found in .env")
+  const PAT = process.env.PAT_PUBLIC_READ
+  if (!PAT) throw new Error("PAT_PUBLIC_READ not found in .env")
   const auth = createTokenAuth(PAT)
   const authentication = await auth()
   const octokit = new Octokit({
@@ -54,22 +51,44 @@ const getTags = async () => {
   return response.repository.releases.edges.map((edge) => edge.node.tagName)
 }
 
-const filterTags = (tags: string[]) => {
-  const currentTags = nodesConfig["current-tags"] as string[]
-  // Test to follow this pattern: v0.8.1 , v0.8.11 , v0.11.12...Etc
-  const pattern = /^v\d{1,2}\.\d{1,2}\.\d{1,2}$/
-
-  return tags.filter((tag) => pattern.test(tag) && currentTags.indexOf(tag) === -1)
+interface TagInfo {
+  tag: string
+  majorVersion: number
 }
 
-const sortTags = (tags: string[]) => {
-  return tags.sort((t1, t2) => {
-    // remove v
-    const tag1 = t1.slice(1)
-    const tag2 = t2.slice(1)
+const filterTags = (tags: string[]): TagInfo[] => {
+  const currentTags = nodesConfig["current-tags"] as string[]
+  // Test to follow this pattern: v0.8.1 , v0.8.11 , v0.11.12...Etc
+  const pattern = /^v(\d{1,2})\.\d{1,2}\.\d{1,2}$/
+  const result: TagInfo[] = []
+
+  tags.forEach((tag) => {
+    const match = pattern.exec(tag)
+    if (match && currentTags.indexOf(tag) === -1) {
+      if (Number(match[1]) === 0) {
+        // console.log("Skip tag:", tag) // no docs available for tags v0
+      } else {
+        result.push({
+          tag,
+          majorVersion: Number(match[1]),
+        })
+      }
+    }
+  })
+
+  return result
+}
+
+const sortTags = (tags: TagInfo[]): TagInfo[] => {
+  return tags.sort((a, b) => {
+    // Extract tag value from the TagInfo object
+    const tag1 = a.tag.slice(1)
+    const tag2 = b.tag.slice(1)
     const version1 = tag1.split(".").map((x) => parseInt(x))
     const version2 = tag2.split(".").map((x) => parseInt(x))
-    if (version1.length !== version2.length) throw new Error(`cannot sort tags ${t1},${t2}`)
+
+    if (version1.length !== version2.length) throw new Error(`cannot sort tags ${a.tag},${b.tag}`)
+
     for (let i = 0; i < version1.length; i++) {
       if (version1[i] < version2[i]) {
         return -1
@@ -77,42 +96,82 @@ const sortTags = (tags: string[]) => {
         return 1
       }
     }
+
     return 0
   })
 }
 
-const updateIndex = async (tags: { tagName: string; path: string }[]) => {
-  if (tags.length === 0) return
-  const path = normalize(`./docs/chainlink-nodes/config/index.md`)
-  let data = (await readFile(path)).toString()
+const updateIndex = async (results: { tagInfo: TagInfo; path: string }[]) => {
+  if (results.length === 0) return
 
-  for (const tag of tags) {
-    const entry = `- [${tag.tagName}](${tag.path})`
-    data = data.replace("**Topics**", `**Topics**\n${entry}`)
+  const defaultContent = `---
+layout: ../../../../layouts/MainLayout.astro
+section: nodeOperator
+date: Last Modified
+title: "Configuring Chainlink Nodes"
+---
+
+**Topics**`
+
+  // Group results by majorVersion
+  const groupedByVersion: { [key: number]: { tagInfo: TagInfo; path: string }[] } = {}
+
+  for (const result of results) {
+    if (!groupedByVersion[result.tagInfo.majorVersion]) {
+      groupedByVersion[result.tagInfo.majorVersion] = []
+    }
+    groupedByVersion[result.tagInfo.majorVersion].push(result)
   }
 
-  await writeFile(
-    path,
-    format(data, {
-      parser: "markdown",
-      semi: true,
-      trailingComma: "es5",
-      singleQuote: true,
-      printWidth: 120,
-    }),
-    {
-      flag: "w",
+  for (const majorVersion in groupedByVersion) {
+    const versionResults = groupedByVersion[majorVersion]
+
+    // Build path for the current majorVersion's index.mdx
+    const indexDirPath = normalize(`${nodesPageDir}/v${majorVersion}/config`)
+    const indexPath = normalize(`${indexDirPath}/index.mdx`)
+
+    // Ensure the directory and file exist
+    await mkdir(indexDirPath, { recursive: true })
+    try {
+      await access(indexPath) // This will throw if file does not exist
+    } catch (error) {
+      await writeFile(indexPath, defaultContent)
     }
-  )
+
+    let data = (await readFile(indexPath)).toString()
+
+    for (const result of versionResults) {
+      const entry = `- [${result.tagInfo.tag}](${result.path})`
+      data = data.replace("**Topics**", `**Topics**\n${entry}`)
+    }
+
+    // Write updated data to the index.mdx
+    await writeFile(
+      indexPath,
+      data,
+      /*
+      format(data, {
+        parser: "markdown",
+        semi: true,
+        trailingComma: "es5",
+        singleQuote: true,
+        printWidth: 120,
+      }),
+      */
+      {
+        flag: "w",
+      }
+    )
+  }
 }
 
-const updateTags = async (tags: { tagName: string; path: string }[]) => {
-  if (tags.length === 0) return
-  for (const tag of tags) {
-    ;(nodesConfig["current-tags"] as string[]).push(tag.tagName)
+const updateTags = async (results: { tagInfo: TagInfo; path: string }[]) => {
+  if (results.length === 0) return
+  for (const result of results) {
+    ;(nodesConfig["current-tags"] as string[]).push(result.tagInfo.tag)
   }
 
-  const nodesConfigPath = normalize("./_src/reference/nodesConf.json")
+  const nodesConfigPath = normalize(path.join(__dirname, "config.json"))
   await writeFile(
     nodesConfigPath,
     format(JSON.stringify(nodesConfig), {
@@ -128,35 +187,45 @@ const updateTags = async (tags: { tagName: string; path: string }[]) => {
   )
 }
 
-const writeConfigFile = async (tagName: string) => {
+const writeConfigFile = async (tagInfo: TagInfo) => {
   const patternTagInFile = "__TAG__"
   const fileHeader = `
 ---
-layout: nodes.liquid
+layout: ../../../../layouts/MainLayout.astro
 section: nodeOperator
 date: Last Modified
 title: "Configuring Chainlink Nodes"
-permalink: "docs/chainlink-nodes/config/${patternTagInFile}/"
 ---
+import { Aside } from "@components"
 `
 
-  const tagInPath = tagName.replace(/\./g, "_")
+  const tagInPath = tagInfo.tag.replace(/\./g, "_")
   const clean = [
     {
       from: ":warning:",
       to: "⚠️",
     },
   ]
-  const path = normalize(`./docs/chainlink-nodes/config/${tagInPath}.md`)
+  const configDirPath = normalize(`${nodesPageDir}/v${tagInfo.majorVersion}/config`)
+  await mkdir(configDirPath, { recursive: true }) // ensure the directory is created if not exist
+
+  const path = normalize(`${configDirPath}/${tagInPath}.mdx`)
+  const pathInPage = `${chainlinkNodesAbsolute}/v${tagInfo.majorVersion}/config/${tagInPath}`
   const url = normalize(
-    `https://raw.githubusercontent.com/${nodesConfig.owner}/${nodesConfig.repo}/${tagName}/${nodesConfig.path}`
+    `https://raw.githubusercontent.com/${nodesConfig.owner}/${nodesConfig.repo}/${tagInfo.tag}/${nodesConfig.path}`
   )
   const response = await fetch(url)
   if (response.status === 200) {
     let data = await (await fetch(url)).text()
+    for (const rule of rules) {
+      data = rule(data)
+    }
+    /*
     for (const key in clean) {
       data = data.replace(new RegExp(clean[key].from, "g"), clean[key].to)
     }
+    */
+
     const content = fileHeader.replace(patternTagInFile, tagInPath) + data
 
     await writeFile(
@@ -173,30 +242,32 @@ permalink: "docs/chainlink-nodes/config/${patternTagInFile}/"
       }
     )
 
-    return { tagName, path: `/docs/chainlink-nodes/config/${tagInPath}/` }
+    return { tagInfo, path: pathInPage }
   } else if (response.status !== 404) {
     throw new Error(`couldn't fetch ${url}. status ${response.status}`)
   }
-  return { tagName: "", path: "" }
+  return { tagInfo: null, path: "" }
 }
 
-const writeConfigFiles = async (tags: string[]) => {
+const writeConfigFiles = async (tags: TagInfo[]) => {
   interface Result {
-    success: { tagName: string; path: string }[]
+    success: { tagInfo: TagInfo; path: string }[]
     error: {
       tag: string
       errorMessage: unknown
     }[]
   }
   const result: Result = { success: [], error: [] }
-  for (const tag of tags) {
+
+  for (const tagInfo of tags) {
     try {
-      const successTag = await writeConfigFile(tag)
-      if (successTag.tagName) result.success.push(successTag)
+      const successTag = await writeConfigFile(tagInfo)
+      if (successTag.tagInfo) result.success.push(successTag)
     } catch (error) {
-      result.error.push({ tag, errorMessage: error })
+      result.error.push({ tag: tagInfo.tag, errorMessage: error })
     }
   }
+
   return result
 }
 getTags().then(async (w) => {
