@@ -31,10 +31,11 @@ const rule2 = (content: string): string => {
 
 const rule3 = (content: string): string => {
   // This regex matches the specific pattern to be removed
-  const regex = /\[\/\/\]: # \(Documentation generated from docs(\/\*.toml)? - DO NOT EDIT.\)\n/g
+  const regex1 = /\[\/\/\]: # \(Documentation generated from docs(\/\*.toml)? - DO NOT EDIT.\)(\r\n|\n)/g
+  const regex2 = /\[\/\/\]: # \(Documentation generated from docs\.toml - DO NOT EDIT\.\)(\r\n|\n)?/g
 
   // Remove the matched pattern
-  const cleanedContent = content.replace(regex, "")
+  const cleanedContent = content.replace(regex1, "").replace(regex2, "")
 
   return cleanedContent
 }
