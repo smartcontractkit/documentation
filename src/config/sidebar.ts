@@ -681,8 +681,8 @@ export const SIDEBAR = {
       section: "EXAMPLES",
       contents: [
         {
-          title: "Create a lootbox to distribute random rewards",
-          url: "vrf/v2/lootbox",
+          title: "Lootbox - Use VRF to create random rewards",
+          url: "vrf/v2/examples/lootbox",
         },
       ],
     },
