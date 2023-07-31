@@ -1,13 +1,13 @@
 import { network, vrfChain } from "~/features/vrf/v2/data"
 import "./costTable.css"
-import { useEffect, useReducer } from "preact/hooks"
+import { useEffect, useReducer, useState } from "preact/hooks"
 import { BigNumber, utils } from "ethers"
 import button from "@chainlink/design-system/button.module.css"
+import useQueryString from "~/hooks/useQueryString"
 
 interface Props {
-  mainChain: vrfChain
-  chain: network
   method: "subscription" | "directFunding"
+  options: vrfChain[]
 }
 
 interface directFundingResponse {
@@ -139,8 +139,11 @@ const reducer = (state: State, action: Action) => {
 
 const cache: Cache = {}
 
-export const CostTable = ({ mainChain, chain, method }: Props) => {
+export const CostTable = ({ options, method }: Props) => {
   const [state, dispatch] = useReducer(reducer, initialState)
+  const [mainChain, setMainChain] = useState<vrfChain | null>(null)
+  const [chain, setChain] = useState<network | null>(null)
+  const [network] = useQueryString("network")
 
   const getDataResponse = async (mainChainName: string, networkName: string): Promise<dataResponse> => {
     const cacheKey = `${mainChainName}-${networkName === mainChainName ? chain.type : networkName}-${method}`
@@ -164,11 +167,23 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
   }
 
   useEffect(() => {
-    const mainChainName =
+    let mainChainName, networkName
+    if (typeof network === "string") {
+      mainChainName = network.split("-")[0]
+      networkName = network.split("-")[1]
+      const newMainChain = options.filter((chain) => chain.name.toLowerCase() === mainChainName)[0]
+      setMainChain(newMainChain)
+      const newChain = newMainChain.nets.filter((network) => network.name.toLowerCase() === networkName)[0]
+      setChain(newChain)
+    }
+    if (!mainChain || !chain) {
+      return
+    }
+    mainChainName =
       mainChain.name === "BNB Chain"
         ? mainChain.name.replace("Chain", "").replace(" ", "").toLowerCase()
         : mainChain.name.toLowerCase()
-    const networkName =
+    networkName =
       chain.name === "BNB Chain"
         ? chain.name.replace("Chain", "").replace(" ", "").toLowerCase()
         : chain.name.toLowerCase()
@@ -221,7 +236,7 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
     })
 
     return () => dispatch({ type: "SET_LOADING", payload: false })
-  }, [method, mainChain, chain])
+  }, [method, network])
 
   const handleRadioChange = (event) => {
     dispatch({ type: "SET_CURRENT_GAS_LANE", payload: parseInt(event.target.value) })
@@ -471,6 +486,9 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
     return res
   }
 
+  if (!mainChain || !chain) {
+    return
+  }
   if (state.isLoading) {
     return <p className="loading-text">Data is being fetched. Please wait a moment...</p>
   } else {

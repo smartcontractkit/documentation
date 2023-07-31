@@ -2,16 +2,15 @@ import { useEffect, useMemo, useRef, useState } from "preact/hooks"
 import "./dropdown.css"
 import { vrfChain, network } from "~/features/vrf/v2/data"
 import { RefObject } from "preact"
+import useQueryString from "~/hooks/useQueryString"
 
 interface Props {
   placeholder?: string
   options: vrfChain[]
-  setSelectedMainChain
-  setSelectedChain
-  setSelectNet
 }
 
-export const Dropdown = ({ placeholder, options, setSelectedMainChain, setSelectedChain, setSelectNet }: Props) => {
+export const Dropdown = ({ placeholder, options }: Props) => {
+  const [network, setNetwork] = useQueryString("network")
   const [searchValue, setSearchValue] = useState<string>("")
   const [showMenu, setShowMenu] = useState<boolean>(false)
   const [showSubMenu, setShowSubMenu] = useState<number>(-1)
@@ -57,7 +56,6 @@ export const Dropdown = ({ placeholder, options, setSelectedMainChain, setSelect
       res += net.name
     }
 
-    setSelectNet(res)
     setSearchValue(res)
   }
 
@@ -116,8 +114,7 @@ export const Dropdown = ({ placeholder, options, setSelectedMainChain, setSelect
                       <div className="subdropdown-menu-container">
                         <a
                           onClick={() => {
-                            setSelectedChain(network)
-                            setSelectedMainChain(item)
+                            setNetwork(`${item.name.toLowerCase()}-${network.name.toLowerCase()}`)
                             handleSelectedChain(network, item)
                             setShowMenu(false)
                             setShowSubMenu(-1)
