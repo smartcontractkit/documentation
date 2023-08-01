@@ -119,7 +119,9 @@ export const DropDownMenu = ({ placeholder = "Select a network...", method }: Pr
                               setShowSubMenu(-1)
                             }}
                           >
-                            {network.name}
+                            {network.name.includes("Mainnet")
+                              ? "Mainnet"
+                              : network.name.replace(`${item.label} `, "").split(" ")[0]}
                           </a>
                         </div>
                       ))}
