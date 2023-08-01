@@ -17,6 +17,7 @@ export interface Chain {
   networks: ChainNetwork[]
   label?: string
   tags?: ChainTags
+  supportedFeatures: ("vrfSubscription" | "vrfDirectFunding" | "feeds")[]
 }
 
 export const CHAINS: Chain[] = [
@@ -26,6 +27,7 @@ export const CHAINS: Chain[] = [
     img: "/assets/chains/ethereum.svg",
     networkStatusUrl: "https://ethstats.dev/",
     tags: ["default", "proofOfReserve", "nftFloorPrice", "rates"],
+    supportedFeatures: ["vrfSubscription", "vrfDirectFunding", "feeds"],
     networks: [
       {
         name: "Ethereum Mainnet",
@@ -57,6 +59,7 @@ export const CHAINS: Chain[] = [
     img: "/assets/chains/bnb-chain.svg",
     networkStatusUrl: "https://bscscan.freshstatus.io/",
     tags: ["default"],
+    supportedFeatures: ["vrfSubscription", "vrfDirectFunding", "feeds"],
     networks: [
       {
         name: "BNB Chain Mainnet",
@@ -80,6 +83,7 @@ export const CHAINS: Chain[] = [
     img: "/assets/chains/polygon.svg",
     networkStatusUrl: "https://polygon.io/system",
     tags: ["default", "proofOfReserve", "nftFloorPrice", "rates"],
+    supportedFeatures: ["vrfSubscription", "vrfDirectFunding", "feeds"],
     networks: [
       {
         name: "Polygon Mainnet",
@@ -103,6 +107,7 @@ export const CHAINS: Chain[] = [
     img: "/assets/chains/gnosis-chain.svg",
     networkStatusUrl: "https://gnosisscan.io/",
     tags: ["default"],
+    supportedFeatures: ["feeds"],
     networks: [
       {
         name: "Gnosis Chain Mainnet",
@@ -119,6 +124,7 @@ export const CHAINS: Chain[] = [
     img: "/assets/chains/avalanche.svg",
     networkStatusUrl: "https://status.avax.network/",
     tags: ["default", "proofOfReserve", "rates"],
+    supportedFeatures: ["vrfSubscription", "vrfDirectFunding", "feeds"],
     networks: [
       {
         name: "Avalanche Mainnet",
@@ -144,6 +150,7 @@ export const CHAINS: Chain[] = [
     img: "/assets/chains/fantom.svg",
     networkStatusUrl: "https://ftmscan.com/",
     tags: ["default"],
+    supportedFeatures: ["vrfSubscription", "vrfDirectFunding", "feeds"],
     networks: [
       {
         name: "Fantom Mainnet",
@@ -166,6 +173,7 @@ export const CHAINS: Chain[] = [
     img: "/assets/chains/arbitrum.svg",
     networkStatusUrl: "https://arbiscan.freshstatus.io/",
     tags: ["default", "rates"],
+    supportedFeatures: ["vrfSubscription", "vrfDirectFunding", "feeds"],
     networks: [
       {
         name: "Arbitrum Mainnet",
@@ -189,6 +197,7 @@ export const CHAINS: Chain[] = [
     img: "/assets/chains/harmony.svg",
     networkStatusUrl: "https://status.harmony.one/",
     tags: ["default"],
+    supportedFeatures: ["feeds"],
     networks: [
       {
         name: "Harmony Mainnet",
@@ -205,6 +214,7 @@ export const CHAINS: Chain[] = [
     img: "/assets/chains/optimism.svg",
     networkStatusUrl: "https://status.optimism.io/",
     tags: ["default"],
+    supportedFeatures: ["feeds"],
     networks: [
       {
         name: "Optimism Mainnet",
@@ -227,6 +237,7 @@ export const CHAINS: Chain[] = [
     img: "/assets/chains/moonriver.svg",
     networkStatusUrl: "https://moonscan.freshstatus.io/",
     tags: ["default"],
+    supportedFeatures: ["feeds"],
     networks: [
       {
         name: "Moonriver Mainnet",
@@ -243,6 +254,7 @@ export const CHAINS: Chain[] = [
     img: "/assets/chains/moonbeam.svg",
     networkStatusUrl: "https://moonscan.freshstatus.io/",
     tags: ["default"],
+    supportedFeatures: ["feeds"],
     networks: [
       {
         name: "Moonbeam Mainnet",
@@ -259,6 +271,7 @@ export const CHAINS: Chain[] = [
     img: "/assets/chains/metis.svg",
     networkStatusUrl: "https://andromeda-explorer.metis.io/",
     tags: ["default"],
+    supportedFeatures: ["feeds"],
     networks: [
       {
         name: "Metis Mainnet",
@@ -275,6 +288,7 @@ export const CHAINS: Chain[] = [
     img: "/assets/chains/base.svg",
     networkStatusUrl: "https://goerli.basescan.org",
     tags: ["default"],
+    supportedFeatures: ["feeds"],
     networks: [
       {
         name: "BASE Goerli testnet",
@@ -291,6 +305,7 @@ export const CHAINS: Chain[] = [
     img: "/assets/chains/celo.svg",
     networkStatusUrl: "https://stats.celo.org/",
     tags: ["default"],
+    supportedFeatures: ["feeds"],
     networks: [
       {
         name: "Celo mainnet",
@@ -313,6 +328,7 @@ export const CHAINS: Chain[] = [
     img: "/assets/chains/starknet.svg",
     networkStatusUrl: "https://testnet.starkscan.co/stats",
     tags: ["default"],
+    supportedFeatures: ["feeds"],
     networks: [
       {
         name: "StarkNet testnet",
@@ -329,6 +345,7 @@ export const CHAINS: Chain[] = [
     img: "/assets/chains/solana.svg",
     networkStatusUrl: "https://status.solana.com/",
     tags: ["default"],
+    supportedFeatures: ["feeds"],
     networks: [
       {
         name: "Solana Mainnet",
@@ -354,6 +371,7 @@ export const ALL_CHAINS: Chain[] = [
     img: "/assets/chains/ethereum.svg",
     networkStatusUrl: "https://ethstats.dev/",
     tags: ["default", "proofOfReserve", "nftFloorPrice"],
+    supportedFeatures: ["feeds"],
     networks: [
       {
         name: "Ethereum Mainnet",

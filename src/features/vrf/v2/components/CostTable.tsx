@@ -1,13 +1,14 @@
 import { network, vrfChain } from "~/features/vrf/v2/data"
+import { Chain, ChainNetwork } from "../../../data/chains"
 import "./costTable.css"
 import { useEffect, useReducer } from "preact/hooks"
 import { BigNumber, utils } from "ethers"
 import button from "@chainlink/design-system/button.module.css"
 
 interface Props {
-  mainChain: vrfChain
-  chain: network
-  method: "subscription" | "directFunding"
+  mainChain: Chain
+  chain: ChainNetwork
+  method: "vrfSubscription" | "vrfDirectFunding"
 }
 
 interface directFundingResponse {
@@ -141,17 +142,20 @@ const cache: Cache = {}
 
 export const CostTable = ({ mainChain, chain, method }: Props) => {
   const [state, dispatch] = useReducer(reducer, initialState)
+  let mainChainName, networkName
 
   const getDataResponse = async (mainChainName: string, networkName: string): Promise<dataResponse> => {
-    const cacheKey = `${mainChainName}-${networkName === mainChainName ? chain.type : networkName}-${method}`
+    const cacheKey = `${mainChainName}-${networkName === mainChainName ? chain.networkType : networkName}-${
+      method === "vrfSubscription" ? "subscription" : "directFunding"
+    }`
     if (cache[cacheKey] && cache[cacheKey].latestCacheUpdate - Date.now() < CACHE_EXPIRY_TIME) {
       return cache[cacheKey].data
     }
 
     const response = await fetch(
       `https://vrf.chain.link/api/calculator?networkName=${mainChainName}&networkType=${
-        networkName === mainChainName ? chain.type.toLowerCase() : networkName
-      }&method=${method}`,
+        networkName === mainChainName ? chain.networkType.toLowerCase() : networkName
+      }&method=${method === "vrfSubscription" ? "subscription" : "directFunding"}`,
       { method: "GET" }
     )
 
@@ -164,14 +168,58 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
   }
 
   useEffect(() => {
-    const mainChainName =
-      mainChain.name === "BNB Chain"
-        ? mainChain.name.replace("Chain", "").replace(" ", "").toLowerCase()
-        : mainChain.name.toLowerCase()
-    const networkName =
-      chain.name === "BNB Chain"
-        ? chain.name.replace("Chain", "").replace(" ", "").toLowerCase()
-        : chain.name.toLowerCase()
+    switch (mainChain.label) {
+      case "BNB Chain":
+        mainChainName = mainChain.label.replace("Chain", "").replace(" ", "").toLowerCase()
+        break
+      case "Polygon (Matic)":
+        mainChainName = mainChain.label.replace(" (Matic)", "").toLowerCase()
+        break
+      default:
+        mainChainName = mainChain.label.toLowerCase()
+    }
+
+    switch (chain.name) {
+      case "Ethereum Mainnet":
+        networkName = "mainnet"
+        break
+      case "Sepolia Testnet":
+        networkName = "sepolia"
+        break
+      case "Goerli Testnet":
+        networkName = "goerli"
+        break
+      case "BNB Chain Mainnet":
+        networkName = "mainnet"
+        break
+      case "BNB Chain Testnet":
+        networkName = "mainnet"
+        break
+      case "Polygon Mainnet":
+        networkName = "mainnet"
+        break
+      case "Mumbai Testnet":
+        networkName = "mumbai"
+        break
+      case "Avalanche Mainnet":
+        networkName = "mainnet"
+        break
+      case "Avalanche Testnet":
+        networkName = "fuji"
+        break
+      case "Fantom Mainnet":
+        networkName = "mainnet"
+        break
+      case "Fantom Testnet":
+        networkName = "testnet"
+        break
+      case "Arbitrum Mainnet":
+        networkName = "mainnet"
+        break
+      case "Arbitrum Goerli":
+        networkName = "goerli"
+        break
+    }
     dispatch({ type: "SET_LOADING", payload: true })
     const fillInputs = async () => {
       const responseJson: dataResponse = await getDataResponse(mainChainName, networkName)
@@ -250,7 +298,7 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
     const VRFL1Buffer = VRFL1CostEstimate.div(L2P)
     const VRFL1GasLaneBuffer = VRFL1CostEstimate.div(L2PGasLane)
     const bigNumberLINKPremium = utils.parseUnits(LINKPremium.toString())
-    if (method === "subscription") {
+    if (method === "vrfSubscription") {
       const VRFL2SubscriptionGasSubtotal = BigNumber.from(currentVerificationGas + callbackGas)
       const VRFSubscriptionGasTotal = VRFL2SubscriptionGasSubtotal.add(VRFL1Buffer)
       const VRFSubscriptionGasEstimate = L2P.mul(VRFSubscriptionGasTotal)
@@ -296,31 +344,37 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
   }
 
   const getsupportedNetworkShortcut = () => {
-    const mainChainName = mainChain.name.toLowerCase()
-    const subChainName = chain.name.toLowerCase()
+    const mainChainName = mainChain.label.toLowerCase()
+    const subChainName = networkName
     switch (mainChainName) {
       case "ethereum":
         if (subChainName !== "mainnet") {
-          return `${subChainName}-${chain.type}`
+          return `${subChainName}-${chain.networkType}`
         }
-        return `${mainChainName}-${chain.type}`
+        return `${mainChainName}-${chain.networkType}`
       case "bnb chain":
-        return `${mainChainName.replace(" ", "-")}${chain.type === "testnet" ? "-" + chain.type : ""}`
-      case "polygon":
-        return `${mainChainName}-matic-${chain.type === "testnet" ? subChainName + "-" + chain.type : chain.type}`
+        return `${mainChainName.replace(" ", "-")}${chain.networkType === "testnet" ? "-" + chain.networkType : ""}`
+      case "polygon (matic)":
+        return `polygon-matic-${
+          chain.networkType === "testnet" ? subChainName + "-" + chain.networkType : chain.networkType
+        }`
       case "avalanche":
-        return `${mainChainName}-${chain.type === "testnet" ? subChainName + "-" + chain.type : chain.type}`
+        return `${mainChainName}-${
+          chain.networkType === "testnet" ? subChainName + "-" + chain.networkType : chain.networkType
+        }`
       case "fantom":
-        return `${mainChainName}-${chain.type}`
+        return `${mainChainName}-${chain.networkType}`
       case "arbitrum":
-        return `${mainChainName}-${chain.type === "testnet" ? subChainName + "-" + chain.type : chain.type}`
+        return `${mainChainName}-${
+          chain.networkType === "testnet" ? subChainName + "-" + chain.networkType : chain.networkType
+        }`
       default:
         throw new Error("network/chain does not exist or is not supported by VRF yet.")
     }
   }
 
   const computeTotalRequestCost = () => {
-    if (mainChain.name.toLowerCase() === "arbitrum") {
+    if (mainChain.label.toLowerCase() === "arbitrum") {
       computeArbitrumCost()
       return
     }
@@ -339,7 +393,7 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
     const bigNumberGasLane = utils.parseUnits(currentGasLane.toString(), "gwei")
     const bigNumberPriceFeed = utils.formatUnits(BigNumber.from(priceFeed), decimalPlaces)
     const formattedPriceFeed = utils.parseEther(bigNumberPriceFeed)
-    if (method === "subscription") {
+    if (method === "vrfSubscription") {
       const vrfSubscriptionGasSubTotal = BigNumber.from(callbackGas + currentVerificationGas)
 
       const addition = bigNumberGasPrice.mul(vrfSubscriptionGasSubTotal)
@@ -493,7 +547,7 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
               />
             </td>
           </tr>
-          {mainChain.name.toLowerCase() === "arbitrum" && state.L1GasPriceEstimate && (
+          {mainChain.label.toLowerCase() === "arbitrum" && state.L1GasPriceEstimate && (
             <tr>
               <td>L1 gas price (current is {getGasPrice(state.L1GasPriceEstimate)} gwei)</td>
               <td>
@@ -522,12 +576,14 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
           </tr>
           <tr>
             <td>
-              {method === "subscription" ? "Average verification gas" : "Coordinator gas overhead (verification gas)"}
+              {method === "vrfSubscription"
+                ? "Average verification gas"
+                : "Coordinator gas overhead (verification gas)"}
             </td>
             <td>{utils.commify(state.currentVerificationGas)}</td>
           </tr>
           <tr>
-            {method === "subscription" && (
+            {method === "vrfSubscription" && (
               <>
                 <td>Gas lane (Hash)</td>
                 <td>
@@ -554,7 +610,7 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
               </>
             )}
           </tr>
-          {method === "directFunding" && (
+          {method === "vrfDirectFunding" && (
             <tr>
               <td>Wrapper overhead gas</td>
               <td>{state.wrapperOverheadGas}</td>
@@ -572,7 +628,7 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
         </div>
         <h6>Estimated cost per request: {formatTotal()} LINK</h6>
 
-        {method === "subscription" && (
+        {method === "vrfSubscription" && (
           <>
             <h6>Maximum cost per request under the selected gas lane: {formatmaxCost()} LINK</h6>
             <p>
@@ -588,7 +644,12 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
         )}
         <p>
           To see these parameters in greater detail, read the
-          <a href={`/vrf/v2/${kebabize(method)}/supported-networks/#${getsupportedNetworkShortcut()}`} target="_blank">
+          <a
+            href={`/vrf/v2/${kebabize(
+              method === "vrfSubscription" ? "subscription" : "directFunding"
+            )}/supported-networks/#${getsupportedNetworkShortcut()}`}
+            target="_blank"
+          >
             {" "}
             Supported Networks{" "}
           </a>

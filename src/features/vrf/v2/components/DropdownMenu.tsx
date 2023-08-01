@@ -1,23 +1,23 @@
 import { useEffect, useMemo, useRef, useState } from "preact/hooks"
 import "./dropdown.css"
 import { CostTable } from "./CostTable"
-import { vrfChain, network } from "~/features/vrf/v2/data"
 import { RefObject } from "preact"
+import { CHAINS, Chain, ChainNetwork } from "../../../data/chains"
 
 interface Props {
   placeholder?: string
-  options: vrfChain[]
-  method: "subscription" | "directFunding"
+  method: "vrfSubscription" | "vrfDirectFunding"
 }
 
-export const DropDownMenu = ({ placeholder = "Select a network...", options, method }: Props) => {
-  const [selectedMainChain, setSelectedMainChain] = useState<vrfChain | null>(null)
-  const [selectedChain, setSelectedChain] = useState<network | null>(null)
+export const DropDownMenu = ({ placeholder = "Select a network...", method }: Props) => {
+  const [selectedMainChain, setSelectedMainChain] = useState<Chain | null>(null)
+  const [selectedChain, setSelectedChain] = useState<ChainNetwork | null>(null)
   const [selectedNet, setSelectNet] = useState<string>(placeholder)
   const [searchValue, setSearchValue] = useState<string>("")
   const [showMenu, setShowMenu] = useState<boolean>(false)
   const [showSubMenu, setShowSubMenu] = useState<number>(-1)
   const wrapperRef = useRef(null)
+  const options = CHAINS.filter((chain) => chain.supportedFeatures.includes(method))
 
   const useOutsideAlerter = (ref: RefObject<HTMLDivElement>) => {
     useEffect(() => {
@@ -40,27 +40,20 @@ export const DropDownMenu = ({ placeholder = "Select a network...", options, met
     }, [ref])
   }
 
-  const matchingOptions: vrfChain[] = useMemo(() => {
+  const matchingOptions: Chain[] = useMemo(() => {
     const formattedSearchValue = searchValue.replaceAll(" ", "")
     const splittedSearchValueArr = formattedSearchValue.split("-")
     if (splittedSearchValueArr.length >= 2) {
       return options
     }
-    return options.filter((chain: vrfChain) => {
-      return searchValue === "" ? chain : chain.name.toLowerCase().includes(searchValue.toLowerCase())
+    return options.filter((chain: Chain) => {
+      return searchValue === "" ? chain : chain.label.toLowerCase().includes(searchValue.toLowerCase())
     })
   }, [searchValue, options])
 
-  const handleSelectedChain = (net: network, chain: vrfChain) => {
-    let res: string = chain.name + " - "
-    if (chain.name === net.name) {
-      res += net.type
-    } else {
-      res += net.name
-    }
-
-    setSelectNet(res)
-    setSearchValue(res)
+  const handleSelectedChain = (net: ChainNetwork) => {
+    setSelectNet(net.name)
+    setSearchValue(net.name)
   }
 
   const handleInputChange = (event: Event) => {
@@ -100,7 +93,7 @@ export const DropDownMenu = ({ placeholder = "Select a network...", options, met
             ref={wrapperRef}
           >
             {matchingOptions &&
-              matchingOptions.map((item: vrfChain, index: number) => (
+              matchingOptions.map((item: Chain, index: number) => (
                 <div className="dropdown-item-container">
                   <div
                     className="dropown-main-menu-content"
@@ -109,24 +102,24 @@ export const DropDownMenu = ({ placeholder = "Select a network...", options, met
                     }}
                   >
                     <img src={item.img} width="20" height="20" />
-                    <a className={showMenu ? "show" : "nothing"}>{item.name}</a>
+                    <a className={showMenu ? "show" : "nothing"}>{item.label}</a>
                   </div>
                   <div className="dropdown-sub-menu-content">
                     {showSubMenu === index &&
-                      item.nets &&
-                      item.nets.length > 0 &&
-                      item.nets.map((network: network) => (
+                      item.networks &&
+                      item.networks.length > 0 &&
+                      item.networks.map((network: ChainNetwork) => (
                         <div className="subdropdown-menu-container">
                           <a
                             onClick={() => {
                               setSelectedChain(network)
                               setSelectedMainChain(item)
-                              handleSelectedChain(network, item)
+                              handleSelectedChain(network)
                               setShowMenu(false)
                               setShowSubMenu(-1)
                             }}
                           >
-                            {network.name !== item.name ? network.name : network.type}
+                            {network.name}
                           </a>
                         </div>
                       ))}
