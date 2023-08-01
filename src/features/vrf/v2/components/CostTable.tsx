@@ -1,4 +1,3 @@
-import { network, vrfChain } from "~/features/vrf/v2/data"
 import { Chain, ChainNetwork } from "../../../data/chains"
 import "./costTable.css"
 import { useEffect, useReducer } from "preact/hooks"
@@ -193,7 +192,7 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
         networkName = "mainnet"
         break
       case "BNB Chain Testnet":
-        networkName = "mainnet"
+        networkName = "testnet"
         break
       case "Polygon Mainnet":
         networkName = "mainnet"

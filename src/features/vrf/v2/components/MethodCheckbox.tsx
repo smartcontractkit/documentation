@@ -16,9 +16,9 @@ export const MethodCheckbox = () => {
         <div class="checkbox-container">
           <input
             type="radio"
-            id="subscription"
+            id="vrfSubscription"
             name="vrfMethod"
-            value="subscription"
+            value="vrfSubscription"
             checked={vrfMethodUsed === "vrfSubscription"}
             onClick={handleChange}
           />
@@ -27,9 +27,9 @@ export const MethodCheckbox = () => {
         <div class="checkbox-container">
           <input
             type="radio"
-            id="funding"
+            id="vrfDirectFunding"
             name="vrfMethod"
-            value="directFunding"
+            value="vrfDirectFunding"
             checked={vrfMethodUsed === "vrfDirectFunding"}
             onClick={handleChange}
           />
