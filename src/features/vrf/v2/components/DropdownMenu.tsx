@@ -41,8 +41,7 @@ export const DropDownMenu = ({ placeholder = "Select a network...", method }: Pr
   }
 
   const matchingOptions: Chain[] = useMemo(() => {
-    const formattedSearchValue = searchValue.replaceAll(" ", "")
-    const splittedSearchValueArr = formattedSearchValue.split("-")
+    const splittedSearchValueArr = searchValue.split(" ")
     if (splittedSearchValueArr.length >= 2) {
       return options
     }
@@ -53,6 +52,7 @@ export const DropDownMenu = ({ placeholder = "Select a network...", method }: Pr
 
   const handleSelectedChain = (net: ChainNetwork) => {
     setSelectNet(net.name)
+    console.log(net.name)
     setSearchValue(net.name)
   }
 
