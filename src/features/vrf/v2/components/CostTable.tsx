@@ -177,43 +177,27 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
       default:
         mainChainName = mainChain.label.toLowerCase()
     }
-
+    if (chain.name.includes("Mainnet")) {
+      networkName = "mainnet"
+    }
     switch (chain.name) {
-      case "Ethereum Mainnet":
-        networkName = "mainnet"
-        break
       case "Sepolia Testnet":
         networkName = "sepolia"
         break
       case "Goerli Testnet":
         networkName = "goerli"
         break
-      case "BNB Chain Mainnet":
-        networkName = "mainnet"
-        break
       case "BNB Chain Testnet":
         networkName = "testnet"
-        break
-      case "Polygon Mainnet":
-        networkName = "mainnet"
         break
       case "Mumbai Testnet":
         networkName = "mumbai"
         break
-      case "Avalanche Mainnet":
-        networkName = "mainnet"
-        break
       case "Avalanche Testnet":
         networkName = "fuji"
         break
-      case "Fantom Mainnet":
-        networkName = "mainnet"
-        break
       case "Fantom Testnet":
         networkName = "testnet"
-        break
-      case "Arbitrum Mainnet":
-        networkName = "mainnet"
         break
       case "Arbitrum Goerli":
         networkName = "goerli"
