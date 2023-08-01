@@ -52,7 +52,6 @@ export const DropDownMenu = ({ placeholder = "Select a network...", method }: Pr
 
   const handleSelectedChain = (net: ChainNetwork) => {
     setSelectNet(net.name)
-    console.log(net.name)
     setSearchValue(net.name)
   }
 
