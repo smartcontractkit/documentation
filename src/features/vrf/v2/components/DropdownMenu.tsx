@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "preact/hooks"
 import "./dropdown.css"
 import { CostTable } from "./CostTable"
 import { RefObject } from "preact"
-import { CHAINS, Chain, ChainNetwork } from "../../../data/chains"
+import { CHAINS, Chain, ChainNetwork } from "~/features/data/chains"
 
 interface Props {
   placeholder?: string

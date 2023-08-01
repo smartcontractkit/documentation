@@ -1,4 +1,5 @@
-import { Chain, ChainNetwork } from "../../../data/chains"
+import { Chain, ChainNetwork } from "~/features/data/chains"
+
 import "./costTable.css"
 import { useEffect, useReducer } from "preact/hooks"
 import { BigNumber, utils } from "ethers"
@@ -148,7 +149,7 @@ export const getGasCalculatorUrl = ({
   mainChainName: string
   networkName: string
   chain: ChainNetwork
-  method: string
+  method: Props["method"]
 }) => {
   return `https://vrf.chain.link/api/calculator?networkName=${mainChainName}&networkType=${
     networkName === mainChainName ? chain.networkType.toLowerCase() : networkName

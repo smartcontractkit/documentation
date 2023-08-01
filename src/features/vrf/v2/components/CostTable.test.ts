@@ -30,7 +30,7 @@ describe("getGasCalculatorUrl", () => {
       rddUrl: "https://reference-data-directory.vercel.app/feeds-matic-mainnet.json",
       tags: ["proofOfReserve"],
     }
-    const method = "directFunding"
+    const method = "vrfDirectFunding"
 
     expect(getGasCalculatorUrl({ mainChainName, networkName, chain, method })).toEqual(
       "https://vrf.chain.link/api/calculator?networkName=polygon&networkType=mainnet&method=directFunding"
