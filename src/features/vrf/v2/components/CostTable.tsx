@@ -139,6 +139,22 @@ const reducer = (state: State, action: Action) => {
 
 const cache: Cache = {}
 
+export const getGasCalculatorUrl = ({
+  mainChainName,
+  networkName,
+  chain,
+  method,
+}: {
+  mainChainName: string
+  networkName: string
+  chain: ChainNetwork
+  method: string
+}) => {
+  return `https://vrf.chain.link/api/calculator?networkName=${mainChainName}&networkType=${
+    networkName === mainChainName ? chain.networkType.toLowerCase() : networkName
+  }&method=${method === "vrfSubscription" ? "subscription" : "directFunding"}`
+}
+
 export const CostTable = ({ mainChain, chain, method }: Props) => {
   const [state, dispatch] = useReducer(reducer, initialState)
   let mainChainName, networkName
@@ -151,12 +167,7 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
       return cache[cacheKey].data
     }
 
-    const response = await fetch(
-      `https://vrf.chain.link/api/calculator?networkName=${mainChainName}&networkType=${
-        networkName === mainChainName ? chain.networkType.toLowerCase() : networkName
-      }&method=${method === "vrfSubscription" ? "subscription" : "directFunding"}`,
-      { method: "GET" }
-    )
+    const response = await fetch(getGasCalculatorUrl({ mainChainName, networkName, chain, method }), { method: "GET" })
 
     const json: dataResponse = await response.json()
     cache[cacheKey] = {
