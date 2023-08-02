@@ -62,7 +62,7 @@ When a message is received on the destination chain, the router is the contract 
 
 #### Commit Store
 
-The [Committing DON](#committing-don) interacts with the `CommitStore` contract on the destination blockchain to store the Merkle root of the finalized messages on the source blockchain. This Merkle root must be blessed by the [Active Risk Management](/ccip/concepts#active-risk-management-arm-network) before [Executing DON](#executing-don) can execute them on the destination blockchain. The `CommitStore` ensures the message is blessed by the [Active Risk Management](#active-risk-management-arm-network) Network and only one `CommitStore` exists per [lane](/ccip/concepts#lane).
+The [Committing DON](#committing-don) interacts with the `CommitStore` contract on the destination blockchain to store the Merkle root of the finalized messages on the source blockchain. This Merkle root must be blessed by the [Risk Management](/ccip/concepts#risk-management-network) before [Executing DON](#executing-don) can execute them on the destination blockchain. The `CommitStore` ensures the message is blessed by the [Risk Management](#risk-management-network) Network and only one `CommitStore` exists per [lane](/ccip/concepts#lane).
 
 #### OnRamp
 
@@ -94,9 +94,9 @@ Each token has its own token pool, an abstraction layer over ERC-20 tokens that 
 
 Token pools provide rate limiting, which is a security feature enabling token issuers to set a maximum rate at which their token can be transferred.
 
-#### Active Risk Management (ARM) network contract
+#### Risk Management network contract
 
-The ARM contract maintains the list of ARM nodes' addresses allowed to bless/curse and holds the quorum logic for blessing a committed Merkle Root and cursing CCIP on a destination blockchain. Read the [ARM concepts](/ccip/concepts#active-risk-management-arm-network) to learn more.
+The Risk Management contract maintains the list of Risk Management nodes' addresses allowed to bless/curse and holds the quorum logic for blessing a committed Merkle Root and cursing CCIP on a destination blockchain. Read the [Risk Management concepts](/ccip/concepts#risk-management-network) to learn more.
 
 ### Off-chain Components
 
@@ -115,20 +115,20 @@ Like the [Committing DON](#committing-don), the Executing DON has several jobs w
 
 - Each job monitors events from a given [OnRamp contract](#onramp) on the source blockchain.
 - The job checks whether the transaction is part of the relayed Merkle root in the [CommitStore contract](#commit-store).
-- The job waits for the [Active Risk Management](#active-risk-management-arm-network) network to bless the message.
+- The job waits for the [Risk Management](#risk-management-network) network to bless the message.
 - Finally, the job creates a valid Merkle proof, which is verified by the [OffRamp contract](#offramp) against the Merkle root in the [CommitStore contract](#commit-store). After these check pass, the job calls the [OffRamp contract](#offramp) to complete the CCIP transactions on the destination blockchain.
 
-Separating commitment and execution permits the [Active Risk Management](#active-risk-management-arm-network) network to have enough time to check the commitment of messages before executing them. The delay between commitment and execution also permits additional checks such as abnormal reorg depth, potential simulation, and slashing.
+Separating commitment and execution permits the [Risk Management](#risk-management-network) network to have enough time to check the commitment of messages before executing them. The delay between commitment and execution also permits additional checks such as abnormal reorg depth, potential simulation, and slashing.
 
 Saving a commitment is compact and has a fixed gas cost, whereas executing user callbacks can be highly gas intensive. Separating commitment and execution permits execution by end users in various cases, such as retrying failed executions.
 
-#### Active Risk Management (ARM) network
+#### Risk Management network
 
-The Active Risk Management (ARM) network is a set of independent nodes that monitor the Merkle roots committed by the [Committing DON](#committing-don) into the [Commit Store](#commit-store).
+The Risk Management network is a set of independent nodes that monitor the Merkle roots committed by the [Committing DON](#committing-don) into the [Commit Store](#commit-store).
 
-Each node compares the committed Merkle roots with the transactions received by the [OnRamp contract](#onramp). After the verification succeeds, it calls the ARM contract to _"bless"_ &nbsp;the committed Merkle root. When there are enough blessing votes, the root becomes available for execution. In case of anomalies, each ARM node calls the ARM contract to _"curse"_ &nbsp;the system. If the cursed quorum is reached, the ARM contract is paused to prevent any CCIP transaction from being executed.
+Each node compares the committed Merkle roots with the transactions received by the [OnRamp contract](#onramp). After the verification succeeds, it calls the Risk Management contract to _"bless"_ &nbsp;the committed Merkle root. When there are enough blessing votes, the root becomes available for execution. In case of anomalies, each Risk Management node calls the Risk Management contract to _"curse"_ &nbsp;the system. If the cursed quorum is reached, the Risk Management contract is paused to prevent any CCIP transaction from being executed.
 
-Read the [ARM concepts](/ccip/concepts#active-risk-management-arm-network) page to learn more.
+Read the [Risk Management concepts](/ccip/concepts#risk-management-network) page to learn more.
 
 ## CCIP Billing
 
@@ -148,6 +148,6 @@ Current CCIP premium fees are in line with industry standards within the cross-c
 
 ### Execution latency
 
-If the fee paid on the source chain is within an acceptable range of the execution cost on the destination chain, the message will be transmitted as soon as possible after it is blessed by the ARM Network. If the cost of execution increases between request and execution time, CCIP will incrementally increase the gas price to attempt to reach eventual execution, but this might introduce additional latency.
+If the fee paid on the source chain is within an acceptable range of the execution cost on the destination chain, the message will be transmitted as soon as possible after it is blessed by the Risk Management Network. If the cost of execution increases between request and execution time, CCIP will incrementally increase the gas price to attempt to reach eventual execution, but this might introduce additional latency.
 
 Execution delays in excess of one hour should be rare as a result of _Smart Execution_. The `permissionlessExecutionThresholdSeconds` parameter represents the waiting time before manual execution is enabled. If the DON fails to execute within the duration of `permissionlessExecutionThresholdSeconds` due to extreme network conditions, a user can manually execute their message. If a user wishes to execute in such circumstances, they can manually execute the message through the [CCIP Explorer](https://ccip.chain.link/).
