@@ -11,7 +11,7 @@ whatsnext:
   }
 ---
 
-import { Aside } from "@components"
+import { Aside, CodeSample } from "@components"
 import { Tabs } from "@components/Tabs"
 
 The lootbox utility contract uses Chainlink VRF to determine a random reward that you can distribute as a [Loot Box](https://en.wikipedia.org/wiki/Loot_box) to users. This allows you to issue rewards fairly and transparently using verified randomness that the recipients can verify on-chain.
@@ -302,3 +302,103 @@ One address can only have one open request at a time. If you try to open the loo
 ## Withdraw funds
 
 At any time, the owner can withdraw funds from the collected fees by calling the `withdraw` function. By doing so, the contract balance will be transferred to the owner account.
+
+## Code example
+
+The main part of this tutorial is in the [`Lootbox.sol` contract](https://github.com/smartcontractkit/quickstarts-lootbox/blob/main/contracts/Lootbox.sol). The Lootbox contract manages the following tasks:
+
+- Requests a random value from VRF for each open request
+- Uses the random value to determine the reward
+- Tracks and validates requests to open the lootbox
+- Transfers reward tokens to the user, for valid requests
+- Tracks how many reward tokens remain in the lootbox
+- Validates user addresses against the allowlist, if in private mode
+
+This section focuses on how VRF is used in the lootbox contract:
+
+- The processing done in the `fulfillRandomWords` callback function is minimal. Here, the function simply stores the randomness result from VRF and emits an event to indicate that the randomness is ready, so the lootbox open request can now be fulfilled.
+
+```solidity
+
+/*//////////////////////////////////////////////////////////////
+                              VRF LOGIC
+  //////////////////////////////////////////////////////////////*/
+
+    /// @notice Requests randomness from Chainlink VRF
+    /// @dev The VRF subscription must be active and sufficient LINK must be available
+    /// @return requestId The ID of the request
+    function _requestRandomness() internal returns (uint256 requestId) {
+        requestId = VRFCoordinatorV2Interface(i_vrfCoordinatorV2)
+            .requestRandomWords(
+                i_vrfKeyHash,
+                i_vrfSubscriptionId,
+                REQUEST_CONFIRMATIONS,
+                CALLBACK_GASLIMIT,
+                NUMWORDS
+            );
+    }
+
+    /// @inheritdoc VRFConsumerBaseV2
+    function fulfillRandomWords(
+        uint256 requestId,
+        uint256[] memory randomWords
+    ) internal override {
+        s_requests[requestId].randomness = randomWords[0];
+        emit OpenRequestFulfilled(requestId, randomWords[0]);
+    }
+
+    ...
+
+    /// @notice Picks the rewards using the given randomness as a seed
+    /// @param amountToOpen The amount of lootbox units the user is opening
+    /// @param randomness The random number used to pick the rewards
+    /// @return rewardUnits The list of tokens and amounts that the user will receive as rewards
+    /// @return updatedTokens The list of tokens and amounts that are left after the rewards are picked
+    function _getRewardUnits(
+        uint256 amountToOpen,
+        uint256 randomness
+    )
+        internal
+        view
+        returns (Token[] memory rewardUnits, Token[] memory updatedTokens)
+    {
+        uint256 totalRewardUnits = s_supply * s_amountDistributedPerOpen;
+        uint256 totalRewardKinds = s_perUnitAmounts.length;
+
+        uint256 numOfRewardUnitsToDistribute = amountToOpen *
+            s_amountDistributedPerOpen;
+        rewardUnits = new Token[](numOfRewardUnitsToDistribute);
+
+        (Token[] memory tokens, ) = getLootboxTokens();
+        for (uint256 i = 0; i < numOfRewardUnitsToDistribute; i += 1) {
+            uint256 randomNumber = uint256(
+                keccak256(abi.encode(randomness, i))
+            );
+            uint256 target = randomNumber % totalRewardUnits;
+            uint256 step;
+
+            for (uint256 j = 0; j < totalRewardKinds; j += 1) {
+                uint256 totalRewardUnitsOfKind = tokens[j].totalAmount /
+                    s_perUnitAmounts[j];
+
+                if (step + totalRewardUnitsOfKind > target) {
+                    tokens[j].totalAmount -= s_perUnitAmounts[j];
+
+                    rewardUnits[i].assetContract = tokens[j].assetContract;
+                    rewardUnits[i].tokenType = tokens[j].tokenType;
+                    rewardUnits[i].tokenId = tokens[j].tokenId;
+                    rewardUnits[i].totalAmount = s_perUnitAmounts[j];
+
+                    totalRewardUnits -= 1;
+
+                    break;
+                } else {
+                    step += totalRewardUnitsOfKind;
+                }
+            }
+        }
+
+        updatedTokens = tokens;
+    }
+
+```
