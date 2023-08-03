@@ -44,17 +44,17 @@ A Chainlink CCIP _lane_ is a distinct pathway between a source and a destination
 
 Chainlink Decentralized Oracle Networks, or **DONs**, run [Chainlink OCR2](https://docs.chain.link/architecture-overview/off-chain-reporting). The protocol runs in rounds during which an observed data value might be agreed upon. The output of this process results in a _report_ which is attested to by a quorum of participants. The report is then _transmitted_ on-chain by one of the participants. No single participant is responsible for transmitting on every round, and all of them will attempt to do so in a round-robin fashion until a transmission has taken place. In the context of CCIP, a [lane](#lane) contains two OCR DON committees that monitor transactions between a source and destination blockchain: the **Committing DON** and **Executing DON**. Read the [Architecture page](/ccip/architecture) to learn more.
 
-## Risk Management network
+## Risk Management Network
 
-The Risk Management network is built using off-chain and on-chain components:
+The Risk Management Network is built using off-chain and on-chain components:
 
 - **[Off-chain](#off-chain-risk-management-node):** Several Risk Management nodes continually monitor all supported chains against abnormal activities
 - **[On-chain](#on-chain-risk-management-contract):** One Risk Management contract per supported CCIP chain
 
 ### Off-chain Risk Management node
 
-The Risk Management network is a secondary validation service parallel to the primary CCIP system. It doesn't run the same codebase as the [DON](#decentralized-oracle-network-don) to mitigate against security vulnerabilities that might affect the DON's codebase.
-The Risk Management network has two main modes of operation:
+The Risk Management Network is a secondary validation service parallel to the primary CCIP system. It doesn't run the same codebase as the [DON](#decentralized-oracle-network-don) to mitigate against security vulnerabilities that might affect the DON's codebase.
+The Risk Management Network has two main modes of operation:
 
 - **Blessing:** Each Risk Management node monitors all Merkle roots of messages committed on each destination chain. The Committing DON commits these Merkle roots. (More information on Merkle roots can be found on the [architecture page](/ccip/architecture)). The Risk Management node independently reconstructs the Merkle tree by fetching all messages on the source chain. Then, it checks for a match between the Merkle root committed by the Committing DON and the root of the reconstructed Merkle tree. If both Merkle roots match, the Risk Management node blesses the root to the Risk Management contract on the destination chain. The Risk Management contract tracks the votes. When a quorum is met, the Risk Management contract dubs the Merkle root **blessed**.
 
