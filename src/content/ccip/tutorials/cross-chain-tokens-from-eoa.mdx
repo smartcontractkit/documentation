@@ -1,0 +1,283 @@
+---
+section: ccip
+date: Last Modified
+title: "Transfer Tokens Between EOAs"
+whatsnext:
+  {
+    "Learn how to send arbitrary data over CCIP": "/ccip/tutorials/send-arbitrary-data",
+    "See example cross-chain dApps and tools": "/ccip/examples",
+    "See the list of supported networks": "/ccip/supported-networks",
+    "Learn CCIP best practices": "/ccip/best-practices",
+  }
+---
+
+import { CodeSample, ClickToZoom, CopyText, Aside } from "@components"
+
+In this tutorial, you will use Chainlink CCIP to transfer tokens directly from your [EOA (Externally Owned Account)](https://ethereum.org/en/developers/docs/accounts/#types-of-account) to an account on a different blockchain. First, you will pay for CCIP fees on the source blockchain using LINK. Then, you will run the same example paying for CCIP fees in native gas, such as ETH on Ethereum or MATIC on Polygon.
+
+<Aside type="note" title="Node Operator Rewards">
+  CCIP rewards the oracle node and Risk Management node operators in LINK.
+</Aside>
+
+<Aside type="caution" title="Transferring tokens">
+  This tutorial uses the term "transferring tokens" even though the tokens are not technically transferred. Instead,
+  they are locked or burned on the source chain and then unlocked or minted on the destination chain. Read the [Token
+  Pools](/ccip/architecture#token-pools) section to understand the various mechanisms that are used to transfer value
+  across chains.
+</Aside>
+
+## Before you begin
+
+1.  [Install Node.js 18](https://nodejs.org/en/download/). Optionally, you can use the [nvm package](https://www.npmjs.com/package/nvm) to switch between Node.js versions with `nvm use 18`.
+
+    ```shell
+    node -v
+    ```
+
+    ```shell
+    $ node -v
+    v18.7.0
+    ```
+
+1.  Your [EOA (Externally Owned Account)](https://ethereum.org/en/developers/docs/accounts/#types-of-account) must have both ETH and LINK tokens on _Ethereum Sepolia_ to pay for the gas fees and CCIP fees.
+
+    - [Configure MetaMask to use LINK tokens](/resources/acquire-link#configure-metamask-to-use-link-tokens)
+    - Acquire testnet ETH and LINK from [faucets.chain.link](https://faucets.chain.link/sepolia)
+
+1.  Check the [Supported Networks page](/ccip/supported-networks) to confirm that the tokens you will transfer are supported for your lane. In this example, you will transfer tokens from _Ethereum Sepolia_ to _Polygon Mumbai_ so check the list of supported tokens [here](/ccip/supported-networks#ethereum-sepolia--polygon-mumbai-lane).
+
+1.  Learn how to [acquire CCIP test tokens](/ccip/test-tokens#mint-test-tokens). After following this guide, your [EOA (Externally Owned Account)](https://ethereum.org/en/developers/docs/accounts/#types-of-account) should have CCIP-BnM tokens, and CCIP-BnM should appear in the list of your tokens in MetaMask.
+
+1.  In a terminal, clone the [smart-contract-examples repository](https://github.com/smartcontractkit/smart-contract-examples) and change to the `smart-contract-examples/ccip-offchain/javascript` directory.
+
+    ```shell
+    git clone https://github.com/smartcontractkit/smart-contract-examples.git && \
+    cd smart-contract-examples/ccip-offchain/javascript
+    ```
+
+1.  Run `npm install` to install the dependencies.
+
+    ```shell
+    npm install
+    ```
+
+1.  For higher security, the starter kit imports [@chainlink/env-enc](https://www.npmjs.com/package/@chainlink/env-enc). Use this tool to encrypt your environment variables at rest.
+
+    1.  Set an encryption password for your environment variables.
+
+        ```shell
+        npx env-enc set-pw
+        ```
+
+    1.  Run `npx env-enc set` to configure a `.env.enc` file with the basic variables that you need to send your requests to _Polygon Mumbai_.
+
+        - `ETHEREUM_SEPOLIA_RPC_URL`: Set a URL for the _Ethereum Sepolia_ testnet. You can sign up for a personal endpoint from [Alchemy](https://www.alchemy.com/), [Infura](https://www.infura.io/), or another node provider service.
+
+        - `POLYGON_MUMBAI_RPC_URL`: Set a URL for the _Polygon Mumbai_ testnet. You can sign up for a personal endpoint from [Alchemy](https://www.alchemy.com/), [Infura](https://www.infura.io/), or another node provider service.
+
+        - `PRIVATE_KEY`: Find the private key for your testnet wallet. If you use MetaMask, follow the instructions to [Export a Private Key](https://metamask.zendesk.com/hc/en-us/articles/360015289632-How-to-export-an-account-s-private-key).**Note**: The off-chain script uses your private key to sign any transactions you make such as transferring tokens.
+
+        ```shell
+        npx env-enc set
+        ```
+
+## Tutorial
+
+### Transfer tokens and pay in LINK
+
+In this example, you will transfer CCIP-BnM tokens from your EOA on _Ethereum Sepolia_ to an account on _Polygon Mumbai_. The destination account could be an [EOA (Externally Owned Account)](https://ethereum.org/en/developers/docs/accounts/#types-of-account) or a smart contract. The example shows how to transfer CCIP-BnM tokens, but you can re-use the same example to transfer other tokens as long as they are supported for your [lane](/ccip/concepts#lane).
+
+For this example, CCIP fees are paid in LINK tokens. To learn how to pay CCIP fees in native ETH, read the [Pay in native](#transfer-tokens-and-pay-in-native) section. To see a detailed description of the example code, read the [code explanation](#code-explanation) section.
+
+To transfer tokens and pay in LINK, use the following command:
+
+```
+node src/transfer-tokens.js sourceChain destinationChain destinationAccount tokenAddress amount feeTokenAddress
+```
+
+The `feeTokenAddress` parameter specifies the token address for paying CCIP fees. The supported tokens for paying fees include LINK, the native gas token of the source blockchain (ETH for Ethereum), and the wrapped native gas token (WETH for Ethereum).
+
+Complete the following steps in your terminal:
+
+1.  Send 1,000,000,000,000,000 (0.001 CCIP-BnM ) from your EOA on _Ethereum Sepolia_ to another account on _Polygon Mumbai_:
+
+    ```
+    node src/transfer-tokens.js ethereumSepolia polygonMumbai YOUR_ACCOUNT 0xFd57b4ddBf88a4e07fF4e34C487b99af2Fe82a05 1000000000000000 0x779877A7B0D9E8603169DdbD7836e478b4624789
+    ```
+
+    Command arguments:
+
+    | Argument                                                           | Explanation                                                                                                                                                                                                                      |
+    | ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+    | <CopyText text="node src/transfer-tokens.js" code/>                | Node.js will execute the JavaScript code inside the `transfer-tokens.js` file.                                                                                                                                                   |
+    | <CopyText text="ethereumSepolia" code/>                            | This specifies the source blockchain, in this case, _Ethereum Sepolia_.                                                                                                                                                          |
+    | <CopyText text="polygonMumbai" code/>                              | This specifies the destination blockchain, which is _Polygon Mumbai_ in this case.                                                                                                                                               |
+    | `YOUR_ACCOUNT`                                                     | This is the account address on the destination blockchain. You can replace this with your account address.                                                                                                                       |
+    | <CopyText text="0xFd57b4ddBf88a4e07fF4e34C487b99af2Fe82a05" code/> | This is the CCIP-BnM token contract address on Ethereum Sepolia. The contract addresses for each network can be found on the [Supported Networks page](/ccip/supported-networks).                                                |
+    | <CopyText text="1000000000000000" code/>                           | This is the amount of CCIP-BnM tokens to be transferred. In this example, 0.001 CCIP-BnM are transferred.                                                                                                                        |
+    | <CopyText text="0x779877A7B0D9E8603169DdbD7836e478b4624789" code/> | Since you will pay for CCIP fees in LINK, this is the LINK token contract address on _Ethereum Sepolia_. The LINK contract address can be found on the [Link Token contracts page](/resources/link-token-contracts?parent=ccip). |
+
+1.  Once you execute the command, you should see the following logs:
+
+        ```
+        $ node src/transfer-tokens.js ethereumSepolia polygonMumbai 0x9d087fC03ae39b088326b67fA3C788236645b717 0xFd57b4ddBf88a4e07fF4e34C487b99af2Fe82a05 1000000000000000 0x779877A7B0D9E8603169DdbD7836e478b4624789
+        Estimated fees (wei): 1545523076996923
+        approved router 0xD0daae2231E9CB96b94C8512223533293C3693Bf to spend 1000000000000000 of token 0xFd57b4ddBf88a4e07fF4e34C487b99af2Fe82a05. Transaction: 0x1c62300452171a011c3dfa417324d9cd5b87ea167bc458e05a24518689ab06f3
+        approved router 0xD0daae2231E9CB96b94C8512223533293C3693Bf to spend  fees 1545523076996923 of token 0x779877A7B0D9E8603169DdbD7836e478b4624789. Transaction: 0x4f5e2d59eefe422c8bbce38a490bb0a405ebecbbff4ef7c12c8f05f0f89fa734
+
+        ✅ 1000000000000000 of Tokens(0xFd57b4ddBf88a4e07fF4e34C487b99af2Fe82a05) Sent to account 0x9d087fC03ae39b088326b67fA3C788236645b717 on destination chain polygonMumbai using CCIP. Transaction hash 0xfa3620aedb0a090593812fdd49cd697d38530ed4b91f89435195e1eefcf0dbd6 -  Message id is 0xa54e44186143b05a257239679ba512a5fd1c020557ef39edc9c62ac628f8e86d
+
+        Wait for message 0xa54e44186143b05a257239679ba512a5fd1c020557ef39edc9c62ac628f8e86d to be executed on the destination chain - Check the explorer https://ccip.chain.link/msg/0xa54e44186143b05a257239679ba512a5fd1c020557ef39edc9c62ac628f8e86d
+        ...
+        ```
+
+1.  Analyze the logs:
+
+    - The script communicates with the router to calculate the transaction fees required to transfer tokens, which amounts to 1,545,523,076,996,923 Juels (equivalent to 0,0015 LINK).
+    - The script engages with the Link token contract, authorizing the router contract to spend 1,545,523,076,996,923 Juels for the fees and 1000000000000000 (0.001 CCIP-BnM) from your Externally Owned Account (EOA) balance.
+    - The script initiates a transaction through the router to transfer 1000000000000000 (0.001 CCIP-BnM) to your account on _Polygon Mumbai_. It also returns the CCIP message ID.
+    - The script continuously monitors the destination blockchain (_Polygon Mumbai_) to track the progress and completion of the cross-chain transaction.
+
+1.  While the script is waiting for the cross-chain transaction to proceed, open the [CCIP explorer](https://ccip.chain.link/) and search your cross-chain transaction using the message ID. Notice that the status is _Waiting for finality_.
+
+                <br />
+
+          <ClickToZoom
+            src="/images/ccip/tutorials/ccip-explorer-offchain-send-tokens-paylink-waiting-tx-details.jpg"
+            alt="Chainlink CCIP Explorer transaction details"
+          />
+
+1.  After several minutes (the waiting time depends on the [finality of the source blockchain](/ccip/concepts#finality)), the script will complete the polling process, and the following logs will be displayed:
+
+        ```
+        Message 0xa54e44186143b05a257239679ba512a5fd1c020557ef39edc9c62ac628f8e86d is not processed yet on destination chain.Try again in 60sec - Check the explorer https://ccip.chain.link/msg/0xa54e44186143b05a257239679ba512a5fd1c020557ef39edc9c62ac628f8e86d
+
+        ✅Status of message 0xa54e44186143b05a257239679ba512a5fd1c020557ef39edc9c62ac628f8e86d is SUCCESS - Check the explorer https://ccip.chain.link/msg/0xa54e44186143b05a257239679ba512a5fd1c020557ef39edc9c62ac628f8e86d
+        ```
+
+1.  Open the [CCIP explorer](https://ccip.chain.link/) and use the message ID to find your cross-chain transaction.
+
+    <ClickToZoom
+      src="/images/ccip/tutorials/ccip-explorer-offchain-send-tokens-paylink-tx-details.jpg"
+      alt="Chainlink CCIP Explorer transaction details"
+    />
+
+1.  The data field is empty because only tokens are transferred. The gas limit is set to 0 because the transaction is directed to an Externally Owned Account (EOA). With an empty data field, no function calls on a smart contract are expected on the destination chain.
+
+### Transfer tokens and pay in native
+
+In this example, you will transfer CCIP-BnM tokens from your EOA on _Ethereum Sepolia_ to an account on _Polygon Mumbai_. The destination account could be an [EOA (Externally Owned Account)](https://ethereum.org/en/developers/docs/accounts/#types-of-account) or a smart contract. The example shows how to transfer LINK tokens, but you can re-use the same example to transfer other tokens as long as they are supported for your [lane](/ccip/concepts#lane).
+
+For this example, CCIP fees are paid in Sepolia's native ETH. To learn how to pay CCIP fees in LINK, read the [Pay in LINK](#transfer-tokens-and-pay-in-link) section. To see a detailed description of the example code, read the [code explanation](#code-explanation) section.
+
+To transfer tokens and pay in native, use the following command:
+
+```
+node src/transfer-tokens.js sourceChain destinationChain destinationAccount tokenAddress amount
+```
+
+Complete the following steps in your terminal:
+
+1.  Send 1,000,000,000,000,000 (0.001 CCIP-BnM ) from your EOA on _Ethereum Sepolia_ to another account on _Polygon Mumbai_:
+
+    ```
+    node src/transfer-tokens.js ethereumSepolia polygonMumbai YOUR_ACCOUNT 0xFd57b4ddBf88a4e07fF4e34C487b99af2Fe82a05 1000000000000000
+    ```
+
+    Command arguments:
+
+    | Argument                                                           | Explanation                                                                                                                                                                                          |
+    | ------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+    | <CopyText text="node src/transfer-tokens.js" code/>                | Node.js will execute the JavaScript code inside the `transfer-tokens.js` file.                                                                                                                       |
+    | <CopyText text="ethereumSepolia" code/>                            | This specifies the source blockchain, in this case, _Ethereum Sepolia_.                                                                                                                              |
+    | <CopyText text="polygonMumbai" code/>                              | This specifies the destination blockchain, which is _Polygon Mumbai_ in this case.                                                                                                                   |
+    | `YOUR_ACCOUNT`                                                     | This is the account address on the destination blockchain. Replace this with your account address.                                                                                                   |
+    | <CopyText text="0xFd57b4ddBf88a4e07fF4e34C487b99af2Fe82a05" code/> | This is the CCIP-BnM token contract address on _Ethereum Sepolia_. The contract addresses for each network can be found on the [Supported Networks page](/ccip/supported-networks#ethereum-sepolia). |
+    | <CopyText text="1000000000000000" code/>                           | This is the amount of CCIP-BnM tokens to be transferred. In this example, 0.001 CCIP-BnM are transferred.                                                                                            |
+
+1.  After you execute the command, you should see the following logs:
+
+        ```
+        $ node src/transfer-tokens.js ethereumSepolia polygonMumbai 0x9d087fC03ae39b088326b67fA3C788236645b717 0xFd57b4ddBf88a4e07fF4e34C487b99af2Fe82a05 1000000000000000
+        Estimated fees (wei): 5810555558222
+        approved router 0xD0daae2231E9CB96b94C8512223533293C3693Bf to spend 1000000000000000 of token 0xFd57b4ddBf88a4e07fF4e34C487b99af2Fe82a05. Transaction: 0x8a115653cc2f12bc772f7ebe51f0fd26665d8efe920f8a4152a1403ad86240d8
+
+        ✅ 1000000000000000 of Tokens(0xFd57b4ddBf88a4e07fF4e34C487b99af2Fe82a05) Sent to account 0x9d087fC03ae39b088326b67fA3C788236645b717 on destination chain polygonMumbai using CCIP. Transaction hash 0x6be6508cc29f8d8da3c334f7063cc1a8a40d1a2cc13698751edf28f6c816a1aa -  Message id is 0xa57bd1a6a343b78e1b05a78b1725bfd43a418601ca3d2d24118c8a5f7a81e4ae
+
+        Wait for message 0xa57bd1a6a343b78e1b05a78b1725bfd43a418601ca3d2d24118c8a5f7a81e4ae to be executed on the destination chain - Check the explorer https://ccip.chain.link/msg/0xa57bd1a6a343b78e1b05a78b1725bfd43a418601ca3d2d24118c8a5f7a81e4ae
+        ...
+        ```
+
+1.  Analyze the logs:
+
+    - The script communicates with the router to calculate the transaction fees required to transfer tokens, which amounts to 5,810,555,558,222 wei (equivalent to 0.00058 ETH).
+    - The script engages with the CCIP-BnM token contract, authorizing the router contract to deduct 0.001 CCIP-BnM from your Externally Owned Account (EOA) balance.
+    - The script initiates a transaction through the router to transfer 0.001 CCIP-BnM tokens to your destination account on _Polygon Mumbai_. It also returns the CCIP message ID.
+    - The script continuously monitors the destination blockchain (_Polygon Mumbai_) to track the progress and completion of the cross-chain transaction.
+
+1.  The transaction time depends on the [finality of the source blockchain](/ccip/concepts#finality). After several minutes, the script will complete the polling process and the following logs will be displayed:
+
+    ```
+    Message 0xa57bd1a6a343b78e1b05a78b1725bfd43a418601ca3d2d24118c8a5f7a81e4ae is not processed yet on destination chain.Try again in 60sec - Check the explorer https://ccip.chain.link/msg/0xa57bd1a6a343b78e1b05a78b1725bfd43a418601ca3d2d24118c8a5f7a81e4ae
+
+    ✅Status of message 0xa57bd1a6a343b78e1b05a78b1725bfd43a418601ca3d2d24118c8a5f7a81e4ae is SUCCESS - Check the explorer https://ccip.chain.link/msg/0xa57bd1a6a343b78e1b05a78b1725bfd43a418601ca3d2d24118c8a5f7a81e4ae
+    ```
+
+1.  Open the [CCIP explorer](https://ccip.chain.link/) and use the message ID to find your cross-chain transaction.
+
+    <ClickToZoom
+      src="/images/ccip/tutorials/ccip-explorer-offchain-send-tokens-tx-details.jpg"
+      alt="Chainlink CCIP Explorer transaction details"
+    />
+
+1.  The data field is empty because only tokens are transferred. The gas limit is set to 0 because the transaction is directed to an Externally Owned Account (EOA), so no function calls are expected on the destination chain.
+
+## Code explanation
+
+The Javascript featured in this tutorial is designed to interact with CCIP to transfer tokens. The contract code includes several code comments to clarify each step, but this section explains the key elements.
+
+### Imports
+
+The script starts by importing the necessary modules and data. It imports ethers.js and ABIs (Application Binary Interface) from a config file for different contracts and configurations.
+
+### Handling arguments
+
+The `handleArguments` function validates and parses the command line arguments passed to the script.
+
+### Main function: transferTokens
+
+This asynchronous function, `transferTokens` performs the token transfer.
+
+#### Initialization
+
+The script initializes ethers providers to communicate with the blockchains in this section. It parses source and destination router addresses and blockchain selectors. A signer is created to sign transactions.
+
+#### Token validity check
+
+The script fetches a list of supported tokens for the destination chain and checks if the token you want to transfer is supported.
+
+#### Building the CCIP message
+
+A Cross-Chain Interoperability Protocol (CCIP) message is built, which will be sent to the router contract. It includes the destination account, amount, token address, and additional parameters.
+
+#### Fee calculation
+
+The script calls the router to estimate the fees for transferring tokens.
+
+#### Transferring tokens
+
+This section handles the actual transferring of tokens. It covers three cases:
+
+    - **Fees paid using the native gas token:** The contract makes one approval for the transfer amount. The fees are included in the `value` transaction field.
+    - **Fees paid using an asset different from the native gas token and the token being transferred:** The contracts makes two approvals. The first approval is for the transfer amount and the second approval is for the fees.
+    - **Fees paid using the same asset that is being transferred, but not the native gas token:** The contract makes a single approval for the sum of the transfer amount and fees.
+
+The script waits for the transaction to be validated and stores the transaction receipt.
+
+#### Fetching message ID
+
+The router's `ccipSend` function returns a message ID. The script simulates a call to the blockchain to fetch the message ID that the router returned.
+
+#### Checking the status on the destination chain
+
+The script polls the off-ramp contracts on the destination chain to wait for the message to be executed. If the message is executed, it returns the status. Otherwise, the message times out after 40 minutes.

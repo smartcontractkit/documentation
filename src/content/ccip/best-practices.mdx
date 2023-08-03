@@ -1,0 +1,79 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP Best Practices"
+whatsnext: { "Supported networks": "/ccip/supported-networks" }
+---
+
+import { Aside } from "@components"
+
+Before you deploy your cross-chain dApps to mainnet, make sure that your dApps follow the best practices in this document. You are responsible for thoroughly reviewing your code and applying best practices to ensure that your cross-chain dApps are secure and reliable. If you have a unique use case for CCIP that might involve additional cross-chain risk, [contact the Chainlink Labs Team](https://chain.link/contact?ref_id=CCIP) before deploying your application to mainnet.
+
+## Verify destination chain
+
+Before calling the router's `ccipSend` [function](/ccip/api-reference/i-router-client#ccipsend), ensure that your code allows users to send CCIP messages to trusted destination chains.
+
+## Verify source chain
+
+When implementing the `ccipReceive` [method](/ccip/api-reference/ccip-receiver#ccipreceive) in a contract residing on the destination chain, ensure to verify the source chain of the incoming CCIP message. This verification ensures that CCIP messages can only be received from trusted source chains.
+
+## Verify sender
+
+When implementing the `ccipReceive` [method](/ccip/api-reference/ccip-receiver#ccipreceive) in a contract residing on the destination chain, it's important to validate the sender of the incoming CCIP message. This check ensures that CCIP messages are received only from trusted sender addresses.
+
+**Note**: Depending on your use case, this verification might not always be necessary.
+
+## Verify router addresses
+
+When you implement the `ccipReceive` [method](/ccip/api-reference/ccip-receiver#ccipreceive) in the contract residing on the destination chain, validate that the `msg.sender` is the correct router address. This verification ensures that only the router contract can call the `ccipReceive` function on the receiver contract and is for developers that want to restrict which accounts are allowed to call `ccipReceive`.
+
+## Setting `gasLimit`
+
+The `gasLimit` specifies the maximum amount of gas CCIP can consume to execute `ccipReceive()` on the contract located on the destination blockchain. It is the main factor in determining the fee to send a message. Unspent gas is not refunded.
+
+To transfer tokens directly to an EOA as a _receiver_ on the destination blockchain, the `gasLimit` should be set to `0` since there is no `ccipReceive()` implementation to call.
+
+To estimate the accurate gas limit for your destination contract, consider the following options:
+
+- Leveraging Ethereum client RPC by applying `eth_estimateGas` on `receiver.ccipReceive()`. You can find more information on the [Ethereum API Documentation](https://ethereum.github.io/execution-apis/api-documentation/) and [Alchemy documentation](https://docs.alchemy.com/reference/eth-estimategas).
+- Conducting [Foundry gas tests](https://book.getfoundry.sh/forge/gas-tracking).
+- Using [Hardhat plugin for gas tests](https://github.com/cgewecke/eth-gas-reporter).
+- Using a blockchain explorer to look up the gas consumption of a particular internal tx.
+
+## Using `extraArgs`
+
+If `extraArgs` are left empty, a default of _200000_ `gasLimit` will be set with no strict sequencing. For production deployments, make sure that `extraArgs` is mutable. This allows you to build it off-chain and pass it in a call to a function or store it in a variable that you can update on-demand. This makes `extraArgs` compatible with future CCIP upgrades.
+
+## Sequencing
+
+<Aside type="caution" title="Experimental Feature">
+  This feature is currently experimental. While we're actively evaluating its performance and usefulness, we do not
+  guarantee its maintenance or further development in the future.
+</Aside>
+
+CCIP will always process messages sent from a specific sender to a specific destination blockchain in the order they were sent. If you set `strict: true` in the `extraArgs` part of the message, and if the `ccipReceive` fails (reverts), it will **_prevent any following messages from the same sender from being processed until the current message is successfully executed_**.
+
+You should be very careful when using this feature to avoid unintentionally stopping messages from the sender from being processed. If you use `strict: true`, you should foresee the following mitigations:
+
+- On the Receiver contract: You should be able to change the state of the dApp by taking out some restricting action, allowing for successful manual execution of the message. For example, you can implement a function enabling you to "skip" a specific message so that the rest of the messages can proceed.
+- On the Sender contract: Give up on the messages that are in progress from the sender by upgrading the Sender contract.
+
+The sender must make sure that the receiver is the correct one. Test without using `strict: true` first before setting it.
+
+## Evaluate the security and reliability of the networks that you use
+
+Although CCIP has been thoroughly reviewed and audited, inherent risks might still exist based on your use case, the blockchain networks where you deploy your contracts, and the network conditions on those blockchains.
+
+## Review and audit your code
+
+Before secure value with contracts that implement CCIP interfaces and routers, ensure that your code is secure and reliable. If you have a unique use case for CCIP that might involve additional cross-chain risk, [Contact the Chainlink Labs Team](https://chain.link/contact?ref_id=CCIP) before deploying your application to mainnet.
+
+## Soak test your dApps
+
+Be aware of the [Service Limits and Rate Limits for Supported Networks](/ccip/supported-networks). Before you provide access to end users or secure value, soak test your cross-chain dApps. Ensure that your dApps can operate within these limits and operate correctly during usage spikes or unfavorable network conditions.
+
+## Monitor your dApps
+
+When you build applications that depend on CCIP, include monitoring and safeguards to protect against the negative impact of extreme market events, possible malicious activity on your, potential delays, and outages.
+
+Create your own monitoring alerts based on deviations normal activity. This will notify you when potential issues occur so you can respond to them.

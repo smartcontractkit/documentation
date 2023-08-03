@@ -1,0 +1,247 @@
+---
+section: nodeOperator
+date: Last Modified
+title: "Miscellaneous"
+whatsnext: { "Security and Operation Best Practices": "/chainlink-nodes/resources/best-security-practices" }
+---
+
+import { Aside } from "@components"
+import { Tabs } from "@components/Tabs"
+
+## Execute Commands Running Docker
+
+In order to interact with the node's CLI commands, you need to be authenticated. This means that you need to access a shell within the Chainlink node's running container first. You can obtain the running container's `NAME` by running:
+
+```shell
+docker ps
+```
+
+The output will look similar to:
+
+```
+CONTAINER ID        IMAGE                     COMMAND                  CREATED             STATUS              PORTS                              NAMES
+436882efd51d        smartcontract/chainlink   "./chainlink-launche…"   33 minutes ago      Up 21 minutes       6688/tcp, 0.0.0.0:6688->6688/tcp   chainlink
+```
+
+The last item, `chainlink`, is the name of the running container (using `--name chainlink` in your `docker run` command will give you a common name). Accessing a shell for this container is accomplished by running:
+
+```shell
+docker exec -it chainlink /bin/bash
+```
+
+This changes the prompt to something similar to:
+
+```shell
+root@436882efd51d:~#
+```
+
+You can now log in by running:
+
+```shell
+chainlink admin login
+```
+
+You will be prompted to enter your API Email and Password, and if successful, the prompt will simply appear again. You can check that you are authenticated by running:
+
+```shell
+chainlink jobs list
+```
+
+If no jobs have been added, you will receive the following output, otherwise, the list of added jobs will be returned:
+
+```
+╔ Jobs
+╬════╬════════════╬════════════╬═══════╬
+║ ID ║ CREATED AT ║ INITIATORS ║ TASKS ║
+╬════╬════════════╬════════════╬═══════╬
+```
+
+## Transfer funds from node wallet.
+
+<Aside type="note" title="Note for Docker">
+  If using Docker, you will first need to follow the [Execute Commands Running Docker](#execute-commands-running-docker)
+  guide to enter the running container.
+</Aside>
+
+To transfer funds from the node wallet to another address, use the following CLI command:
+
+```shell
+chainlink txs create <amount> <your-cl-node-address> <send-to-address>
+```
+
+This method is the preferred way to interact with your node wallet. Using other methods to manually interact with the node wallet can cause nonce issues.
+
+## Change your API password
+
+<Aside type="note" title="Note for Docker">
+  If using Docker, you will first need to follow the [Execute Commands Running Docker](#execute-commands-running-docker)
+  guide to enter the running container.
+</Aside>
+
+In order to change your password, you first need to log into the CLI by running:
+
+```shell
+chainlink admin login
+```
+
+Use your API email and old password in order to authenticate.
+
+Then run the following in order to update the password:
+
+```shell
+chainlink admin chpass
+```
+
+It will ask for your old password first, then ask for the new password and a confirmation.
+
+Once complete, you should see a message "Password updated."
+
+## Multi-user and Role Based Access Control (RBAC)
+
+See the [Roles and Access Control](/chainlink-nodes/v1/roles-and-access) page.
+
+## Key management
+
+In this section, ensure you log into the CLI by executing the following command:
+
+```shell
+chainlink admin login
+```
+
+Authenticate using your API email and password.
+
+### List ETH keys
+
+To list available Ethereum accounts along with their ETH & LINK balances, nonces, and other metadata, execute the following command:
+
+```shell
+chainlink keys eth list
+```
+
+Example:
+
+```text
+🔑 ETH keys
+-------------------------------------------------------------------------------------------------
+Address:           0x2d4f5FBD00E5A4fD53D162cE7EDFdb5b7664C542
+EVM Chain ID:      11155111
+Next Nonce:        0
+ETH:               0.000000000000000000
+LINK:              0
+Disabled:          false
+Created:           2023-04-26 08:12:51.340348 +0000 UTC
+Updated:           2023-04-26 08:12:51.340348 +0000 UTC
+```
+
+### Create a new ETH Key
+
+To create a key in the node's keystore alongside the existing keys, run the following command:
+
+```shell
+chainlink keys eth create
+```
+
+Example:
+
+```text
+ETH key created.
+
+🔑 New key
+-------------------------------------------------------------------------------------------------
+Address:           0xd31961E1f62A2FaB824AC3C1A7a332daF8B11eE0
+EVM Chain ID:      11155111
+Next Nonce:        0
+ETH:               0.000000000000000000
+LINK:              0
+Disabled:          false
+Created:           2023-04-26 08:28:36.52974 +0000 UTC
+Updated:           2023-04-26 08:28:36.52974 +0000 UTC
+Max Gas Price Wei: 115792089237316195423570985008687907853269984665640564039457584007913129639935
+```
+
+### Export an ETH key
+
+To export an Ethereum key to a JSON file, run the following command:
+
+```shell
+chainlink keys eth export [address] [command options]
+```
+
+where:
+
+- `address`: The EVM account address for which you want to export the private key.
+
+- Options:
+
+  - `--newpassword FILE, -p FILE FILE`: A file containing the password to encrypt the key.
+  - `--output value, -o value`: The path where the JSON file will be saved.
+
+Example:
+
+```text
+chainlink keys eth export 0xd31961E1f62A2FaB824AC3C1A7a332daF8B11eE0 --newpassword .chainlink/pass --output privatekey.json
+
+🔑 Exported ETH key 0xd31961E1f62A2FaB824AC3C1A7a332daF8B11eE0 to privatekey.json
+```
+
+### Delete an ETH key
+
+To remove an Ethereum key, run the following command:
+
+```shell
+chainlink keys eth delete [address] [command options]
+```
+
+where:
+
+- `address`: The EVM account address that you want to remove.
+
+- Options:
+
+  - `--yes, -y`: Skip the confirmation prompt.
+
+Example:
+
+```text
+$ chainlink keys eth delete 0xd31961E1f62A2FaB824AC3C1A7a332daF8B11eE0 --yes
+Deleted ETH key: 0xd31961E1f62A2FaB824AC3C1A7a332daF8B11eE0
+```
+
+### Import an ETH key
+
+To import an Ethereum key from a JSON file, run the following command:
+
+```shell
+chainlink keys eth import [JSON file] [command options]
+```
+
+where:
+
+- `JSON file`: The path where the JSON file containing the ETH key is saved.
+
+- Options:
+  - `--oldpassword FILE, -p FILE`: FILE containing the password used to encrypt the key in the JSON file.
+  - `--evmChainID value`: Chain ID for the key. If left blank, default chain will be used.
+
+Example:
+
+```text
+$ chainlink keys eth import privatekey.json --oldpassword .chainlink/pass
+🔑 Imported ETH key
+-------------------------------------------------------------
+Address:           0xd31961E1f62A2FaB824AC3C1A7a332daF8B11eE0
+EVM Chain ID:      11155111
+Next Nonce:        0
+ETH:               0.000000000000000000
+LINK:              0
+Disabled:          false
+Created:           2023-04-26 08:51:02.04186 +0000 UTC
+Updated:           2023-04-26 08:51:02.04186 +0000 UTC
+Max Gas Price Wei: <nil>
+```
+
+## Full example in detached mode
+
+```shell
+cd ~/.chainlink-sepolia && docker run --restart=always  -p 6688:6688 -d --name sepolia-primary -v ~/.chainlink-sepolia:/chainlink -it --env-file=.env smartcontract/chainlink:1.0.0 node start -p /chainlink/.password
+```
