@@ -1,0 +1,756 @@
+---
+section: nodeOperator
+date: Last Modified
+title: "Task Types"
+---
+
+This guide outlines different task types.
+
+## 'Any' task
+
+Returns a random value from the set of inputs passed in.
+
+**Parameters**
+
+None.
+
+**Inputs**
+
+Can be anything.
+
+**Outputs**
+
+A randomly-selected value from the set of inputs.
+
+**Example**
+
+```toml
+fetch1   [type="http" ...]
+fetch2   [type="http" ...]
+fetch3   [type="http" ...]
+pick_any [type="any"]
+
+fetch1 -> pick_any
+fetch2 -> pick_any
+fetch3 -> pick_any
+```
+
+`pick_any` will return either the result of `fetch1`, `fetch2`, or `fetch3`.
+
+## Base64 Decode task
+
+Accepts a base64 encoded string and returns decoded bytes.
+
+**Parameters**
+
+- `input`: a base64 encoded string.
+
+**Outputs**
+
+Decoded bytes.
+
+**Example**
+
+```toml
+my_base64decode_task [type="base64decode" input="SGVsbG8sIHBsYXlncm91bmQ="]
+```
+
+Given the input `SGVsbG8sIHBsYXlncm91bmQ=`, the task will return `Hello, playground` (as ASCII bytes).
+
+## Base64 Encode task
+
+Encodes bytes/string into a Base64 string.
+
+**Parameters**
+
+- `input`: Byte array or string to be encoded.
+
+**Outputs**
+
+String with Base64 encoding of input.
+
+**Example**
+
+```toml
+my_base64encode_task [type="base64encode" input="Hello, playground"]
+```
+
+Given the input string "Hello, playground", the task will return "SGVsbG8sIHBsYXlncm91bmQ=".
+
+## Bridge task
+
+Bridge tasks make HTTP POST requests to pre-configured URLs. Bridges can be configured via the UI or the CLI, and are referred to by a simple user-specified name. This is the way that most jobs interact with [External Adapters](/chainlink-nodes/external-adapters/external-adapters).
+
+**Parameters**
+
+- `name`: an arbitrary name given to the bridge by the node operator.
+- `requestData` (optional): a statically-defined payload to be sent to the external adapter.
+- `cacheTTL` (optional): a duration-formatted string indicating the maximum acceptable staleness for cached bridge responses in case of intermittent failures. This is disabled by default.
+- `headers` (optional): an array of strings. The number of strings must be even. Example: `foo [type="bridge" name="foo" headers="[\\"X-Header-1\\", \\"value1\\", \\"X-Header-2\\", \\"value2\\"]"]`
+
+**Outputs**
+
+A string containing the response body.
+
+**Example**
+
+```toml
+my_bridge_task [type="bridge"
+                name="some_bridge"
+                requestData="{\\"data\\":{\\"foo\\": $(foo), \\"bar\\": $(bar)}}"
+                ]
+```
+
+## CBOR Parse task
+
+CBOR Parse tasks parse a CBOR payload, typically as part of a Direct Request workflow. In Direct Request, a user makes an on-chain request using a `ChainlinkClient` contract, which encodes the request parameters as CBOR. See below for an example.
+
+**Parameters**
+
+- `data`: A byte array containing the CBOR payload.
+- `mode`: An optional parameter that specifies how to parse the incoming CBOR. The default mode is `diet`, which expects the input to be a map. Set the mode to `standard` to pass literal values through "as-is". Empty inputs return nil.
+
+**Outputs**
+
+A map containing the request parameters. Parameters can be individually accessed using `$(dot.accessors)`.
+
+**Example**
+
+```toml
+// First, we parse the request log and the CBOR payload inside of it
+decode_log  [type="ethabidecodelog"
+             data="$(jobRun.logData)"
+             topics="$(jobRun.logTopics)"
+             abi="SomeContractEvent(bytes32 requestID, bytes cborPayload)"]
+
+decode_cbor [type="cborparse"
+             data="$(decode_log.cborPayload)"]
+
+// Then, we use the decoded request parameters to make an HTTP fetch
+fetch [type="http" url="$(decode_cbor.fetchURL)" method=GET]
+parse [type="jsonparse" path="$(decode_cbor.jsonPath)" data="$(fetch)"]
+
+// ... etc ...
+```
+
+See the [Direct Request page](/chainlink-nodes/oracle-jobs/all-jobs/#direct-request-jobs) for a more comprehensive example.
+
+## Divide task
+
+Divides the provided `input` by the `divisor` and returns the result with a number of decimal places defined in the `precision` value.
+
+**Parameters**
+
+- `input`: The value to be divided
+  - number
+  - stringified number
+  - bytes-ified number
+  - `$(variable)`
+- `divisor`: The value by which to divide the `input`
+  - number
+  - stringified number
+  - bytes-ified number
+  - `$(variable)`
+- `precision`: The number of decimal places to retain in the result
+  - number
+  - stringified number
+  - bytes-ified number
+  - `$(variable)`
+
+**Outputs**
+
+The result of the division.
+
+**Example**
+
+```toml
+my_divide_task [type="divide"
+                input="$(json_parse_result)"
+                divisor="3"
+                precision="2"]
+```
+
+Given the input `10`, this example returns `3.33`.
+
+## ETH ABI Decode Log task
+
+Decodes a log emitted by an ETH contract.
+
+**Parameters**
+
+- `abi`: a canonical ETH log event definition. Should be formatted exactly as in Solidity. Each argument must be named. Examples:
+  - `NewRound(uint256 indexed roundId, address indexed startedBy, uint256 startedAt)`
+  - `AuthorizedSendersChanged(address[] senders)`
+- `data`: the ABI-encoded log data. Can be:
+  - a byte array
+  - a hex-encoded string beginning with `0x`
+  - ... but generally should just be set to `$(jobRun.logData)` (see the [Direct Request page](/chainlink-nodes/oracle-jobs/all-jobs/#direct-request-jobs))
+- `topics`: the ABI-encoded log topics (i.e., the `indexed` parameters)
+  - an array of bytes32 values
+  - an array of hex-encoded bytes32 values beginning with `0x`
+  - ... but generally should just be set to `$(jobRun.logTopics)` (see the [Direct Request page](/chainlink-nodes/oracle-jobs/all-jobs/#direct-request-jobs))
+
+**Outputs**
+
+A map containing the decoded values.
+
+**Example**
+
+{/* prettier-ignore */}
+```toml
+decode [type="ethabidecodelog"
+        abi="NewRound(uint256 indexed roundId, address indexed startedBy, uint256 startedAt)"
+        data="$(jobRun.logData)"
+        topics="$(jobRun.logTopics)"]
+```
+
+This task will return a map with the following schema:
+
+{/* prettier-ignore */}
+```json
+{
+    "roundId": ...,   // a number
+    "startedBy": ..., // an address
+    "startedAt": ..., // a number
+}
+```
+
+## ETH ABI Decode task
+
+Decodes a ETH ABI-encoded payload, typically the result of an [ETH Call task](/chainlink-nodes/oracle-jobs/all-tasks/#eth-call-task).
+
+**Parameters**
+
+- `abi`: a canonical ETH ABI argument string. Should be formatted exactly as in Solidity. Each argument must be named. Examples:
+  - `uint256 foo, bytes32 bar, address[] baz`
+  - `address a, uint80[3][] u, bytes b, bytes32 b32`
+- `data`: the ABI-encoded payload to decode. Can be:
+  - a byte array
+  - a hex-encoded string beginning with `0x`
+
+**Outputs**
+
+A map containing the decoded values.
+
+**Example**
+
+{/* prettier-ignore */}
+```toml
+decode [type="ethabidecode"
+        abi="bytes32 requestID, uint256 price, address[] oracles"
+        data="$(eth_call_result)"]
+```
+
+This task will return a map with the following schema:
+
+{/* prettier-ignore */}
+```json
+{
+    "requestID": ..., // [32]byte value
+    "price": ...,     // a number
+    "oracles": [
+        "0x859AAa51961284C94d970B47E82b8771942F1980",
+        "0x51DE85B0cD5B3684865ECfEedfBAF12777cd0Ff8",
+        ...
+    ]
+}
+```
+
+## ETH ABI Encode task
+
+Encodes a bytes payload according to ETH ABI encoding, typically in order to perform an [ETH Call](/chainlink-nodes/oracle-jobs/all-tasks/#eth-call-task) or an [ETH Tx](/chainlink-nodes/oracle-jobs/all-tasks/#eth-tx-task).
+
+**Parameters**
+
+- `abi`: a canonical ETH ABI argument string. Should be formatted exactly as in Solidity. Each argument must be named. If a method name is provided, the 4-byte method signature is prepended to the result. Examples:
+  - `uint256 foo, bytes32 bar, address[] baz`
+  - `fulfillRequest(bytes32 requestID, uint256 answer)`
+- `data`: a map of the values to be encoded. The task will make a best effort at converting values to the appropriate types.
+
+**Outputs**
+
+A byte array.
+
+**Example**
+
+```toml
+encode [type="ethabiencode"
+        abi="fulfillRequest(bytes32 requestID, uint256 answer)"
+        data="{\\"requestID\\": $(foo), \\"answer\\": $(bar)}"
+        ]
+```
+
+## ETH Call task
+
+Makes a non-mutating contract call to the specified contract with the specified data payload.
+
+**Parameters**
+
+- `contract`: the address of the contract to call.
+- `data`: the data to attach to the call (including the function selector).
+- `gas`: the amount of gas to attach to the transaction.
+- `from`: The from address with which the call should be made. Defaults to zero address.
+- `gasPrice`: The gasPrice for the call. Defaults to zero.
+- `gasTipCap`: The gasTipCap (EIP-1559) for the call. Defaults to zero.
+- `gasFeeCap`: The gasFeeCap (EIP-1559) for the call. Defaults to zero.
+- `gasUnlimited`: A boolean indicating if unlimited gas should be provided for the call. If set to true, do not pass the `gas` parameter.
+- `evmChainID`: Set this optional parameter to transmit on the given chain. You must have the chain configured with RPC nodes for this to work. If left blank, it will use the default chain.
+
+**Outputs**
+
+An ABI-encoded byte array containing the return value of the contract function.
+
+**Example**
+
+```toml
+encode_call  [type="ethabiencode"
+              abi="checkUpkeep(bytes data)"
+              data="{ \\"data\\": $(upkeep_data) }"]
+
+call          [type="ethcall"
+               contract="0xa36085F69e2889c224210F603D836748e7dC0088"
+               data="$(encode_call)"
+               gas="1000"]
+
+decode_result [type="ethabidecode"
+               abi="bool upkeepNeeded, bytes performData"
+               data="$(call)"]
+
+encode_call -> call -> decode_result
+```
+
+## ETH Tx task
+
+Makes a mutating transaction to the specified contract with the specified data payload. The transaction is guaranteed to succeed eventually.
+
+**Parameters**
+
+- `from`: one or more addresses of the externally-owned account from which to send the transaction. If left blank, it will select a random address on every send for the given chain ID.
+- `to`: the address of the contract to make a transaction to.
+- `data`: the data to attach to the call (including the function selector). Most likely, this will be the output of an `ethabiencode` task.
+- `gasLimit`: the amount of gas to attach to the transaction.
+- `txMeta`: a map of metadata that is saved into the database for debugging.
+- `minConfirmations`: minimum number of confirmations required before this task will continue. Set to zero to continue immediately. Note that this does not affect transaction inclusion. All transactions will always be included in the chain up to the configured finality depth.
+- `evmChainID`: set this optional parameter to transmit on the given chain. You must have the chain configured with RPC nodes for this to work. If left blank, it will use the default chain.
+- `failOnRevert`: an optional parameter, a boolean, that allows a ChainLink node operator's UI to display and color the status of the task within a job's pipeline depending on a transaction status. _default_: false.
+
+**Outputs**
+
+The hash of the transaction attempt that eventually succeeds (after potentially going through a gas bumping process to ensure confirmation).
+
+**Example**
+
+```toml
+encode_tx    [type="ethabiencode"
+              abi="performUpkeep(bytes performData)"
+              data="{ \\"data\\": $(upkeep_data) }"]
+
+submit_tx    [type="ethtx"
+               to="0xa36085F69e2889c224210F603D836748e7dC0088"
+               data="$(encode_tx)"
+               failOnRevert="true"]
+
+encode_tx -> submit_tx
+```
+
+## Hex Decode task
+
+Accepts a hexadecimal encoded string and returns decoded bytes.
+
+**Parameters**
+
+- `input`: a hexadecimal encoded string, must have prefix `0x`.
+
+**Outputs**
+
+Decoded bytes.
+
+**Example**
+
+```toml
+my_hexdecode_task [type="hexdecode" input="0x12345678"]
+```
+
+Given the input `0x12345678`, the task will return `[0x12, 0x34, 0x56, 0x78]`.
+
+## Hex Encode task
+
+Encodes bytes/string/integer into a hexadecimal string.
+
+**Parameters**
+
+- `input`: Byte array, string or integer to be encoded.
+
+**Outputs**
+
+Hexadecimal string prefixed with "0x" (or empty string if input was empty).
+
+**Example**
+
+```toml
+my_hexencode_task [type="hexencode" input="xyz"]
+```
+
+Given the input string "xyz", the task will return "0x78797a", which are the ascii values of characters in the string.
+
+## HTTP task
+
+HTTP tasks make HTTP requests to arbitrary URLs.
+
+**Parameters**
+
+- `method`: the HTTP method that the request should use.
+- `url`: the URL to make the HTTP request to.
+- `requestData` (optional): a statically-defined payload to be sent to the external adapter.
+- `allowUnrestrictedNetworkAccess` (optional): permits the task to access a URL at `localhost`, which could present a security risk. Note that Bridge tasks allow this by default.
+- `headers` (optional): an array of strings. The number of strings must be even. Example: `foo [type=http headers="[\\"X-Header-1\\", \\"value1\\", \\"X-Header-2\\", \\"value2\\"]"]`
+
+**Outputs**
+
+A string containing the response body.
+
+**Example**
+
+```toml
+my_http_task [type="http"
+              method=PUT
+              url="http://chain.link"
+              requestData="{\\"foo\\": $(foo), \\"bar\\": $(bar), \\"jobID\\": 123}"
+              allowUnrestrictedNetworkAccess=true
+              ]
+```
+
+## JSON Parse task
+
+JSON Parse tasks parse a JSON payload and extract a value at a given keypath.
+
+**Parameters**
+
+- `data`: the JSON string. Can be:
+  - string
+  - byte array
+- `path`: the keypath to extract. Must be a comma-delimited list of keys, or specify a custom `separator` alternative.
+- `separator`: (optional) custom `path` key separator. Defaults to comma (`,`).
+- `lax` (optional): if false (or omitted), and the keypath doesn't exist, the task will error. If true, the task will return `nil` to the next task.
+
+**Outputs**
+
+The value at the provided keypath.
+
+**Example**
+
+```toml
+my_json_task [type="jsonparse"
+              data="$(http_fetch_result)"
+              path="data,0,price"]
+```
+
+This task returns `123.45` (float64) when given the following example `data` value:
+
+```json
+{
+  "data": [{ "price": 123.45 }, { "price": 678.9 }]
+}
+```
+
+## Length task
+
+Returns the length of a byte array or string.
+
+**Parameters**
+
+- `input`: Byte array, or string to get the length for.
+
+**Outputs**
+
+The length of the byte array or string.
+
+**Note**: For strings containing multi-byte unicode characters, the output is the length in bytes and not number of characters.
+
+**Example**
+
+```toml
+my_length_task [type="length" input="xyz"]
+```
+
+Given the input string "xyz", the task will return 3, length of the string.
+
+## Less Than task
+
+Returns a boolean, result of computing `left < right`.
+
+**Parameters**
+
+- `left`: the left hand side of comparison. Possible values:
+  - number
+  - stringified number
+  - bytes-ified number
+  - `$(variable)`
+- `right`: the right hand side of comparison. Possible values:
+  - number
+  - stringified number
+  - bytes-ified number
+  - `$(variable)`
+
+**Outputs**
+
+The result of less than comparison.
+
+**Example**
+
+```toml
+my_lessthan_task [type="lessthan" left="3" right="10"]
+```
+
+the task will return true which is the result of `3 < 10`
+
+## Lowercase task
+
+Accepts a string and returns a lowercase string.
+
+**Parameters**
+
+- `input`: a string.
+
+**Outputs**
+
+Lowercase string.
+
+**Example**
+
+```toml
+my_lowercase_task [type="lowercase" input="Hello World!"]
+```
+
+Given the input `Hello World!`, the task will return `hello world!`.
+
+## Mean task
+
+Accepts multiple numerical inputs and returns the mean (average) of them.
+
+**Parameters**
+
+- `values`: an array of values to be averaged.
+- `allowedFaults` (optional): the maximum number of input tasks that can error without the Mean task erroring. If not specified, this value defaults to `N - 1`, where `N` is the number of inputs.
+- `precision`: the number of decimal places in the result.
+
+**Outputs**
+
+The average of the values in the `values` array.
+
+**Example**
+
+```toml
+my_mean_task [type="mean"
+              values=<[ $(fetch1), $(fetch2), $(fetch3) ]>
+              precision=2
+              allowedFaults=1]
+```
+
+Given the inputs `2`, `5`, and `20`, the task will return `9`.
+
+## Median task
+
+Accepts multiple numerical inputs and returns the median of them.
+
+**Parameters**
+
+- `values`: an array of values from which to select a median.
+- `allowedFaults` (optional): the maximum number of input tasks that can error without the Median task erroring. If not specified, this value defaults to `N - 1`, where `N` is the number of inputs.
+
+**Outputs**
+
+The median of the values in the `values` array.
+
+**Example**
+
+```toml
+my_median_task [type="median"
+                values=<[ $(fetch1), $(fetch2), $(fetch3) ]>
+                allowedFaults=1]
+```
+
+Given the inputs `2`, `5`, and `20`, the task will return `5`.
+
+## Memo task
+
+The `memo` task returns its value as a result.
+
+**Parameters**
+
+- `value`: value to return. Possible values:
+  - number
+  - boolean
+  - float
+  - string
+  - array
+
+**Outputs**
+
+The value.
+
+**Example**
+
+```toml
+memo [type="memo" value="10"]
+```
+
+The task will return the value `10`
+
+## Merge task
+
+Merge task returns the merged value of two maps.
+
+**Parameters**
+
+- `left`: The left map.
+- `right`: The right map, which overwrites the left side.
+
+**Outputs**
+
+Returns the combined map of left and right. If the merged map is invalid, it returns `null`.
+
+**Example**
+
+```toml
+merge [type="merge" left="{\\"foo\\":\\"abc\\", \\"bar\\":\\"123\\"}" right="{\\"bar\\":\\"xyz\\", \\"biz\\":\\"buzz\\"}"]
+```
+
+This example task returns the following map:
+
+```json
+{ "foo": "abc", "bar": "xyz", "biz": "buzz" }
+```
+
+## Mode task
+
+Accepts multiple numerical inputs and returns the mode (most common) of them. If more than one value occur the maximum number of times, it returns all of them.
+
+**Parameters**
+
+- `values`: an array of values from which to select a mode.
+- `allowedFaults` (optional): the maximum number of input tasks that can error without the Mode task erroring. If not specified, this value defaults to `N - 1`, where `N` is the number of inputs.
+
+**Outputs**
+
+A map containing two keys:
+
+{/* prettier-ignore */}
+```json
+{
+    "results": [ ... ], // An array containing all of the values that occurred the maximum number of times
+    "occurrences": ..., // The number of times those values occurred
+}
+```
+
+**Example**
+
+{/* prettier-ignore */}
+```toml
+my_mode_task [type="mode"
+                values=<[ $(fetch1), $(fetch2), $(fetch3), $(fetch4), $(fetch5), $(fetch6), $(fetch7), $(fetch8) ]>
+                allowedFaults=3]
+```
+
+This task can handle arrays with mixed types. For example, given a `values` array containing both strings and ints like `[ 2, 5, 2, "foo", "foo" "bar", "foo", 2 ]`, the task returns the following JSON:
+
+{/* prettier-ignore */}
+```json
+{
+  "occurrences": 3,
+  "results": [2, "foo"]
+}
+```
+
+To encode the results array into the `ethabiencode` task, specify that the data is an array in the `abi` and point the data parameter to the results from your mode task. Because [argument encoding](https://docs.soliditylang.org/en/develop/abi-spec.html#argument-encoding) enforces types, all of the values in the array must be of the same type. As an example, you can encode the results of a `mode` task with an array of integers:
+
+{/* prettier-ignore */}
+```toml
+mode_task [type="mode" values=<[ 1, 2, 2, 3, 1 ]>]
+
+encode_mode_task [type="ethabiencode" abi="(bytes32 requestId, uint64 occurrences, uint256[] results)" data="{\\"requestId\\": $(decode_log.requestId), \\"occurrences\\": $(mode_task.occurrences), \\"results\\": $(mode_task.results) }"]
+```
+
+In this example, the `mode` task returns the following result:
+
+{/* prettier-ignore */}
+```json
+{
+  "occurrences": 2,
+  "results": [2, 1]
+}
+```
+
+The `ethabiencode` task encodes `results` as a `uint256[]` array.
+
+## Multiply task
+
+Multiplies the provided `input` and `times` values.
+
+**Parameters**
+
+- `input`: the value to be multiplied. Possible values:
+  - number
+  - stringified number
+  - bytes-ified number
+  - `$(variable)`
+- `times`: the value to multiply the input with.
+  - number
+  - stringified number
+  - bytes-ified number
+  - `$(variable)`
+
+**Outputs**
+
+The result of the multiplication.
+
+**Example**
+
+```toml
+my_multiply_task [type="multiply" input="$(json_parse_result)" times=3]
+```
+
+Given the input `10`, the task will return `30`.
+
+## Sum Task
+
+Accepts multiple numerical inputs and returns the sum of them.
+
+**Parameters**
+
+- `values`: an array of values to sum.
+- `allowedFaults` (optional): the maximum number of input tasks that can error without the Sum task erroring. If not specified, this value defaults to `N - 1`, where `N` is the number of inputs.
+
+**Outputs**
+
+The sum of the values in the `values` array.
+
+**Example**
+
+```toml
+my_sum_task [type="sum"
+             values=<[ $(fetch1), $(fetch2), $(fetch3) ]>
+             allowedFaults=1]
+```
+
+Given the inputs `2`, `5`, and `20`, the task will return `27`.
+
+## Uppercase task
+
+Accepts a string and returns an uppercase string.
+
+**Parameters**
+
+- `input`: a string.
+
+**Outputs**
+
+Uppercase string.
+
+**Example**
+
+```toml
+my_uppercase_task [type="uppercase" input="Hello World!"]
+```
+
+Given the input `Hello World!`, the task will return `HELLO WORLD!`.

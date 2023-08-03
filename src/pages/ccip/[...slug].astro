@@ -1,0 +1,18 @@
+---
+import { getCollection } from "astro:content"
+import MainLayout from "~/layouts/MainLayout.astro"
+
+export async function getStaticPaths() {
+  const ccipEntries = await getCollection("ccip")
+  return ccipEntries.map((entry) => ({
+    params: { slug: entry.slug },
+    props: { entry },
+  }))
+}
+const { entry } = Astro.props
+const { Content, headings } = await entry.render()
+---
+
+<MainLayout frontmatter={entry.data} headings={headings}>
+  <Content />
+</MainLayout>

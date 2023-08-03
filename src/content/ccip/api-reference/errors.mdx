@@ -1,0 +1,68 @@
+---
+section: ccip
+date: Last Modified
+title: "Errors API Reference"
+---
+
+import { Aside, CopyText } from "@components"
+
+<Aside type="note" title="Add Chainlink CCIP to your project">
+   If you need to integrate Chainlink CCIP into your project, install the [@chainlink-ccip/contracts NPM package](https://www.npmjs.com/package/@chainlink/contracts-ccip).
+
+- If you use [NPM](https://www.npmjs.com/): <CopyText text="npm install @chainlink-ccip/contracts --save" code/>
+
+- If you use [Yarn](https://yarnpkg.com/): <CopyText text="yarn add @chainlink-ccip/contracts" code/>
+
+</Aside>
+
+When invoking the `ccipSend` [function](/ccip/api-reference/i-router-client#ccipsend), it is possible to encounter various errors. These might be thrown either by the CCIP router or by one of the downstream contracts called by the CCIP router. Below is a compiled list of potential errors you might encounter. Referencing this list will enable you to capture and handle these exceptions gracefully.
+
+## Router
+
+| Error                       | Parameters                                 | Description                                                                                         |
+| --------------------------- | ------------------------------------------ | --------------------------------------------------------------------------------------------------- |
+| UnsupportedDestinationChain | <ul><li>uint64 destChainSelector</li></ul> | Thrown when the destination chain is not supported.                                                 |
+| InsufficientFeeTokenAmount  | -                                          | Thrown when the CCIP fees are paid with native tokens, but not enough is sent with the transaction. |
+| InvalidMsgValue             | -                                          | Thrown when the CCIP fees are _not_ paid in native tokens, but `msg.value` is non-zero.             |
+
+## Onramp
+
+| Error                       | Parameters                             | Description                                                                                                             |
+| --------------------------- | -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| NotAFeeToken                | <ul><li>address token</li></ul>        | Thrown when an unsupported fee token is used.                                                                           |
+| UnsupportedToken            | <ul><li>IERC20 token</li></ul>         | Thrown when an unsupported transfer token is used.                                                                      |
+| InvalidAddress              | <ul><li>bytes encodedAddress</li></ul> | Thrown when the receiver address is invalid.                                                                            |
+| InvalidExtraArgsTag         | -                                      | Thrown when an invalid extra arguments tag is used.                                                                     |
+| RouterMustSetOriginalSender | -                                      | This error should never be thrown as the router always sets the sender.                                                 |
+| MustBeCalledByRouter        | -                                      | This error should never be thrown as the router always makes the call.                                                  |
+| MessageGasLimitTooHigh      | -                                      | Thrown when the gas limit is too high.                                                                                  |
+| UnsupportedNumberOfTokens   | -                                      | Thrown when too many tokens are involved in the transfer.                                                               |
+| SenderNotAllowed            | <ul><li>address sender</li></ul>       | Thrown when the sender is not whitelisted.                                                                              |
+| MaxFeeBalanceReached        | -                                      | Thrown when the onRamp has reached its maximum fee storage capacity. If it is full, it cannot process new transactions. |
+
+## RateLimiter
+
+| Error                             | Parameters                                                                                        | Description                                                                                                                                                                                                                      |
+| --------------------------------- | ------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| PriceNotFoundForToken             | <ul><li>address token</li></ul>                                                                   | Thrown when a price cannot be found for a specific token.                                                                                                                                                                        |
+| BucketOverfilled                  | -                                                                                                 | This error should never be thrown as it indicates an invalid bucket state.                                                                                                                                                       |
+| AggregateValueMaxCapacityExceeded | <ul><li>uint256 capacity</li><li>uint256 requested</li></ul>                                      | Thrown when the user requests to transfer more value than the capacity of the aggregate rate limit bucket.                                                                                                                       |
+| TokenMaxCapacityExceeded          | <ul><li>uint256 capacity</li><li>uint256 requested</li><li>address tokenAddress</li></ul>         | Thrown when the user requests to transfer more of a token than the capacity of the bucket.                                                                                                                                       |
+| AggregateValueRateLimitReached    | <ul><li>uint256 minWaitInSeconds</li><li>uint256 available</li></ul>                              | Thrown when the user requests to transfer more value than currently available in the bucket. The user might have to wait for at least `minWaitInSeconds` for enough availability or transfer the currently `available` amount.   |
+| TokenRateLimitReached             | <ul><li>uint256 minWaitInSeconds</li><li>uint256 available</li><li>address tokenAddress</li></ul> | Thrown when the user requests to transfer more of a token than currently available in the bucket. The user might have to wait at least `minWaitInSeconds` for enough availability, or transfer the currently `available` amount. |
+
+## ERC20
+
+| Error                                    | Description                                                   |
+| ---------------------------------------- | ------------------------------------------------------------- |
+| ERC20: burn amount exceeds balance       | Thrown when the amount to be burned exceeds the pool balance. |
+| ERC20: transfer amount exceeds allowance | Thrown when the transfer amount exceeds the allowance.        |
+
+## PriceRegistry
+
+| Error             | Parameters                                                                                      | Description                                |
+| ----------------- | ----------------------------------------------------------------------------------------------- | ------------------------------------------ |
+| ChainNotSupported | <ul><li>uint64 chain</li></ul>                                                                  | Thrown when a chain is not supported.      |
+| StaleGasPrice     | <ul><li>uint64 destChainSelector</li><li>uint256 threshold</li><li>uint256 timePassed</li></ul> | Thrown when the gas price is stale.        |
+| TokenNotSupported | <ul><li>address token</li></ul>                                                                 | Thrown when a token is not supported.      |
+| StaleTokenPrice   | <ul><li>address token</li><li>uint256 threshold</li><li>uint256 timePassed</li></ul>            | Thrown when the price of a token is stale. |

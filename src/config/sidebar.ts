@@ -1,12 +1,18 @@
-export const SIDEBAR = {
+import { sectionEnum } from "../content/config"
+import { z } from "astro:content"
+type Sections = z.infer<typeof sectionEnum>
+
+type SectionEntry = {
+  section: string
+  contents: { title: string; url: string; children?: { title: string; url: string }[] }[]
+}
+
+export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
   gettingStarted: [
     {
       section: "Getting Started",
       contents: [
-        {
-          title: "Overview",
-          url: "getting-started/conceptual-overview",
-        },
+        { title: "Overview", url: "getting-started/conceptual-overview" },
         {
           title: "Deploy Your First Contract",
           url: "getting-started/deploy-your-first-contract",
@@ -538,11 +544,11 @@ export const SIDEBAR = {
       contents: [
         {
           title: "FunctionsClient",
-          url: "chainlink-functions/api-reference/FunctionsClient",
+          url: "chainlink-functions/api-reference/functions-client",
         },
         {
           title: "Functions library",
-          url: "chainlink-functions/api-reference/Functions",
+          url: "chainlink-functions/api-reference/functions",
         },
       ],
     },
@@ -915,15 +921,15 @@ export const SIDEBAR = {
       contents: [
         {
           title: "IRouterClient",
-          url: "ccip/api-reference/IRouterClient",
+          url: "ccip/api-reference/i-router-client",
         },
         {
           title: "CCIPReceiver",
-          url: "ccip/api-reference/CCIPReceiver",
+          url: "ccip/api-reference/ccip-receiver",
         },
         {
           title: "Client Library",
-          url: "ccip/api-reference/Client",
+          url: "ccip/api-reference/client",
         },
         {
           title: "Errors",
