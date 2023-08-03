@@ -6,6 +6,7 @@ title: "Transfer Tokens Between EOAs"
 whatsnext:
   {
     "Learn how to send arbitrary data over CCIP": "/ccip/tutorials/send-arbitrary-data",
+    "See example cross-chain dApps and tools": "/ccip/examples",
     "See the list of supported networks": "/ccip/supported-networks",
     "Learn CCIP best practices": "/ccip/best-practices",
   }
@@ -16,7 +17,7 @@ import { CodeSample, ClickToZoom, CopyText, Aside } from "@components"
 In this tutorial, you will use Chainlink CCIP to transfer tokens directly from your [EOA (Externally Owned Account)](https://ethereum.org/en/developers/docs/accounts/#types-of-account) to an account on a different blockchain. First, you will pay for CCIP fees on the source blockchain using LINK. Then, you will run the same example paying for CCIP fees in native gas, such as ETH on Ethereum or MATIC on Polygon.
 
 <Aside type="note" title="Node Operator Rewards">
-  CCIP rewards the oracle node and ARM node operators in LINK.
+  CCIP rewards the oracle node and Risk Management node operators in LINK.
 </Aside>
 
 <Aside type="caution" title="Transferring tokens">
@@ -27,13 +28,6 @@ In this tutorial, you will use Chainlink CCIP to transfer tokens directly from y
 </Aside>
 
 ## Before you begin
-
-<Aside type="note" title="Mainnet and Testnet Access">
-  [Apply for Mainnet Early Access](https://chainlinkcommunity.typeform.com/ccip-form?#ref_id=ccip_docs) to get started.
-  This documentation uses testnet router contracts for demonstration purposes. [Sign up
-  here](https://chainlinkcommunity.typeform.com/to/H4XhW3JE?#ref_id=ccip_docs) to be notified when CCIP is available on
-  testnet.
-</Aside>
 
 1.  [Install Node.js 18](https://nodejs.org/en/download/). Optionally, you can use the [nvm package](https://www.npmjs.com/package/nvm) to switch between Node.js versions with `nvm use 18`.
 
@@ -102,7 +96,7 @@ To transfer tokens and pay in LINK, use the following command:
 node src/transfer-tokens.js sourceChain destinationChain destinationAccount tokenAddress amount feeTokenAddress
 ```
 
-The `feeTokenAddress` parameter specifies the token address for paying CCIP fees. The supported tokens for paying fees include LINK, the native gas coin of the source blockchain (ETH for Ethereum), and the wrapped native gas coin (WETH for Ethereum).
+The `feeTokenAddress` parameter specifies the token address for paying CCIP fees. The supported tokens for paying fees include LINK, the native gas token of the source blockchain (ETH for Ethereum), and the wrapped native gas token (WETH for Ethereum).
 
 Complete the following steps in your terminal:
 
@@ -129,8 +123,8 @@ Complete the following steps in your terminal:
         ```
         $ node src/transfer-tokens.js ethereumSepolia polygonMumbai 0x9d087fC03ae39b088326b67fA3C788236645b717 0xFd57b4ddBf88a4e07fF4e34C487b99af2Fe82a05 1000000000000000 0x779877A7B0D9E8603169DdbD7836e478b4624789
         Estimated fees (wei): 1545523076996923
-        approved router 0xd0daae2231e9cb96b94c8512223533293c3693bf to spend 1000000000000000 of token 0xFd57b4ddBf88a4e07fF4e34C487b99af2Fe82a05. Transaction: 0x1c62300452171a011c3dfa417324d9cd5b87ea167bc458e05a24518689ab06f3
-        approved router 0xd0daae2231e9cb96b94c8512223533293c3693bf to spend  fees 1545523076996923 of token 0x779877A7B0D9E8603169DdbD7836e478b4624789. Transaction: 0x4f5e2d59eefe422c8bbce38a490bb0a405ebecbbff4ef7c12c8f05f0f89fa734
+        approved router 0xD0daae2231E9CB96b94C8512223533293C3693Bf to spend 1000000000000000 of token 0xFd57b4ddBf88a4e07fF4e34C487b99af2Fe82a05. Transaction: 0x1c62300452171a011c3dfa417324d9cd5b87ea167bc458e05a24518689ab06f3
+        approved router 0xD0daae2231E9CB96b94C8512223533293C3693Bf to spend  fees 1545523076996923 of token 0x779877A7B0D9E8603169DdbD7836e478b4624789. Transaction: 0x4f5e2d59eefe422c8bbce38a490bb0a405ebecbbff4ef7c12c8f05f0f89fa734
 
         ✅ 1000000000000000 of Tokens(0xFd57b4ddBf88a4e07fF4e34C487b99af2Fe82a05) Sent to account 0x9d087fC03ae39b088326b67fA3C788236645b717 on destination chain polygonMumbai using CCIP. Transaction hash 0xfa3620aedb0a090593812fdd49cd697d38530ed4b91f89435195e1eefcf0dbd6 -  Message id is 0xa54e44186143b05a257239679ba512a5fd1c020557ef39edc9c62ac628f8e86d
 
@@ -207,7 +201,7 @@ Complete the following steps in your terminal:
         ```
         $ node src/transfer-tokens.js ethereumSepolia polygonMumbai 0x9d087fC03ae39b088326b67fA3C788236645b717 0xFd57b4ddBf88a4e07fF4e34C487b99af2Fe82a05 1000000000000000
         Estimated fees (wei): 5810555558222
-        approved router 0xd0daae2231e9cb96b94c8512223533293c3693bf to spend 1000000000000000 of token 0xFd57b4ddBf88a4e07fF4e34C487b99af2Fe82a05. Transaction: 0x8a115653cc2f12bc772f7ebe51f0fd26665d8efe920f8a4152a1403ad86240d8
+        approved router 0xD0daae2231E9CB96b94C8512223533293C3693Bf to spend 1000000000000000 of token 0xFd57b4ddBf88a4e07fF4e34C487b99af2Fe82a05. Transaction: 0x8a115653cc2f12bc772f7ebe51f0fd26665d8efe920f8a4152a1403ad86240d8
 
         ✅ 1000000000000000 of Tokens(0xFd57b4ddBf88a4e07fF4e34C487b99af2Fe82a05) Sent to account 0x9d087fC03ae39b088326b67fA3C788236645b717 on destination chain polygonMumbai using CCIP. Transaction hash 0x6be6508cc29f8d8da3c334f7063cc1a8a40d1a2cc13698751edf28f6c816a1aa -  Message id is 0xa57bd1a6a343b78e1b05a78b1725bfd43a418601ca3d2d24118c8a5f7a81e4ae
 
@@ -275,9 +269,9 @@ The script calls the router to estimate the fees for transferring tokens.
 
 This section handles the actual transferring of tokens. It covers three cases:
 
-    - **Fees paid using the native gas coin:** The contract makes one approval for the transfer amount. The fees are included in the `value` transaction field.
-    - **Fees paid using an asset different from the native gas coin and the token being transferred:** The contracts makes two approvals. The first approval is for the transfer amount and the second approval is for the fees.
-    - **Fees paid using the same asset that is being transferred, but not the native gas coin:** The contract makes a single approval for the sum of the transfer amount and fees.
+    - **Fees paid using the native gas token:** The contract makes one approval for the transfer amount. The fees are included in the `value` transaction field.
+    - **Fees paid using an asset different from the native gas token and the token being transferred:** The contracts makes two approvals. The first approval is for the transfer amount and the second approval is for the fees.
+    - **Fees paid using the same asset that is being transferred, but not the native gas token:** The contract makes a single approval for the sum of the transfer amount and fees.
 
 The script waits for the transaction to be validated and stores the transaction receipt.
 

@@ -6,6 +6,7 @@ title: "Transfer Tokens and Data Across Chains"
 whatsnext:
   {
     "Transfer Tokens Between EOAs": "/ccip/tutorials/cross-chain-tokens-from-eoa",
+    "See example cross-chain dApps and tools": "/ccip/examples",
     "See the list of supported networks": "/ccip/supported-networks",
     "Learn CCIP best practices": "/ccip/best-practices",
   }
@@ -14,10 +15,10 @@ whatsnext:
 import { CodeSample, ClickToZoom, CopyText, Aside } from "@components"
 import CcipCommon from "@features/ccip/CcipCommon.astro"
 
-In this tutorial, you will use Chainlink CCIP to transfer tokens and arbitrary data between smart contracts on different blockchains. First, you will pay for the CCIP fees on the source blockchain using LINK. Then, you will use the same contract to pay CCIP fees in native gas coins. For example, you would use ETH on Ethereum or MATIC on Polygon.
+In this tutorial, you will use Chainlink CCIP to transfer tokens and arbitrary data between smart contracts on different blockchains. First, you will pay for the CCIP fees on the source blockchain using LINK. Then, you will use the same contract to pay CCIP fees in native gas tokens. For example, you would use ETH on Ethereum or MATIC on Polygon.
 
 <Aside type="note" title="Node Operator Rewards">
-  CCIP rewards the oracle node and ARM node operators in LINK.
+  CCIP rewards the oracle node and Risk Management node operators in LINK.
 </Aside>
 
 <Aside type="caution" title="Transferring tokens">
@@ -28,13 +29,6 @@ In this tutorial, you will use Chainlink CCIP to transfer tokens and arbitrary d
 </Aside>
 
 ## Before you begin
-
-<Aside type="note" title="Mainnet and Testnet Access">
-  [Apply for Mainnet Early Access](https://chainlinkcommunity.typeform.com/ccip-form?#ref_id=ccip_docs) to get started.
-  This documentation uses testnet router contracts for demonstration purposes. [Sign up
-  here](https://chainlinkcommunity.typeform.com/to/H4XhW3JE?#ref_id=ccip_docs) to be notified when CCIP is available on
-  testnet.
-</Aside>
 
 1. You should understand how to write, compile, deploy, and fund a smart contract. If you need to brush up on the basics, read this [tutorial](/getting-started/deploy-your-first-contract), which will guide you through using the [Solidity programming language](https://soliditylang.org/), interacting with the [MetaMask wallet](https://metamask.io) and working within the [Remix Development Environment](https://remix.ethereum.org/).
 1. Your account must have some ETH and LINK tokens on _Ethereum Sepolia_ and MATIC tokens on _Polygon Mumbai_. Learn how to [Acquire testnet LINK](/resources/acquire-link).
@@ -60,7 +54,7 @@ To use this contract:
 
    1. Open MetaMask and select the network _Ethereum Sepolia_.
    1. In Remix IDE, click on _Deploy & Run Transactions_ and select _Injected Provider - MetaMask_ from the environment list. Remix will then interact with your MetaMask wallet to communicate with _Ethereum Sepolia_.
-   1. Fill in your blockchain's router and LINK contract addresses. The router address can be found on the [supported networks page](/ccip/supported-networks) and the LINK contract address on the [LINK token contracts page](/resources/link-token-contracts). For _Ethereum Sepolia_, the router address is <CopyText text="0xd0daae2231e9cb96b94c8512223533293c3693bf" code/> and the LINK contract address is <CopyText text="0x779877A7B0D9E8603169DdbD7836e478b4624789" code/>.
+   1. Fill in your blockchain's router and LINK contract addresses. The router address can be found on the [supported networks page](/ccip/supported-networks) and the LINK contract address on the [LINK token contracts page](/resources/link-token-contracts). For _Ethereum Sepolia_, the router address is <CopyText text="0xD0daae2231E9CB96b94C8512223533293C3693Bf" code/> and the LINK contract address is <CopyText text="0x779877A7B0D9E8603169DdbD7836e478b4624789" code/>.
    1. Click the **transact** button. After you confirm the transaction, the contract address appears on the _Deployed Contracts_ list.
       Note your contract address.
    1. Open MetaMask and fund your contract with CCIP-BnM tokens. You can transfer <CopyText text="0.002" code/> _CCIP-BnM_ to your contract.
@@ -72,14 +66,14 @@ To use this contract:
 
    1. Open MetaMask and select the network _Polygon Mumbai_.
    1. In Remix IDE, under _Deploy & Run Transactions_, make sure the environment is still _Injected Provider - MetaMask_.
-   1. Fill in your blockchain's router and LINK contract addresses. The router address can be found on the [supported networks page](/ccip/supported-networks) and the LINK contract address on the [LINK token contracts page](/resources/link-token-contracts). For _Polygon Mumbai_, the router address is <CopyText text="0x70499c328e1e2a3c41108bd3730f6670a44595d1" code/> and the LINK contract address is <CopyText text="0x326C977E6efc84E512bB9C30f76E30c160eD06FB" code/>.
+   1. Fill in your blockchain's router and LINK contract addresses. The router address can be found on the [supported networks page](/ccip/supported-networks) and the LINK contract address on the [LINK token contracts page](/resources/link-token-contracts). For _Polygon Mumbai_, the router address is <CopyText text="0x70499c328e1E2a3c41108bd3730F6670a44595D1" code/> and the LINK contract address is <CopyText text="0x326C977E6efc84E512bB9C30f76E30c160eD06FB" code/>.
    1. Click the **transact** button. After you confirm the transaction, the contract address appears on the _Deployed Contracts_ list.
       Note your contract address.
    1. Enable your contract to receive CCIP messages from _Ethereum Sepolia_:
-      1. In Remix IDE, under _Deploy & Run Transactions_, open the list of transactions of your smart contract deployed on _Ethereum Sepolia_.
-      1. Call the `whitelistSourceChain` with <CopyText text="16015286601757825753" code/> as the destination chain selector. Each chain selector is found on the [supported networks page](/ccip/supported-networks).
+      1. In Remix IDE, under _Deploy & Run Transactions_, open the list of transactions of your smart contract deployed on _Polygon Mumbai_.
+      1. Call the `whitelistSourceChain` with <CopyText text="16015286601757825753" code/> as the source chain selector. Each chain selector is found on the [supported networks page](/ccip/supported-networks).
    1. Enable your contract to receive CCIP messages from the contract that you deployed on _Ethereum Sepolia_:
-      1. In Remix IDE, under _Deploy & Run Transactions_, open the list of transactions of your smart contract deployed on _Ethereum Sepolia_.
+      1. In Remix IDE, under _Deploy & Run Transactions_, open the list of transactions of your smart contract deployed on _Polygon Mumbai_.
       1. Call the `whitelistSender` with the contract address of the contract that you deployed on _Ethereum Sepolia_.
 
 1. At this point, you have one _sender_ contract on _Ethereum Sepolia_ and one _receiver_ contract on _Polygon Mumbai_. As security measures, you enabled the sender contract to send CCIP messages to _Polygon Mumbai_ and the receiver contract to receive CCIP messages from the sender and _Ethereum Sepolia_.
@@ -110,6 +104,8 @@ You will transfer _0.001 CCIP-BnM_ and a text. The CCIP fees for using CCIP will
 
     1.  Click on `transact` and confirm the transaction on MetaMask.
     1.  After the transaction is successful, record the transaction hash. Here is an [example](https://sepolia.etherscan.io/tx/0x807ef3a86828f3e7e7bed6fa38f770c39a67704221ece124c55ca1ba8b771992) of a transaction on _Ethereum Sepolia_.
+
+    **Note**: During gas price spikes, your transaction might fail, requiring more than _0.01 LINK_ to proceed. If your transaction fails, fund your contract with more _LINK_ tokens and try again.
 
 1.  Open the [CCIP explorer](https://ccip.chain.link/) and search your cross-chain transaction using the transaction hash.
 
@@ -150,7 +146,7 @@ You will transfer _0.001 CCIP-BnM_ and a text. The CCIP fees for using CCIP will
 
 You will transfer _0.001 CCIP-BnM_ and a text. The CCIP fees for using CCIP will be paid in Sepolia's native ETH. Read this [explanation](#transferring-tokens-and-data-and-pay-in-native) for a detailed description of the code example.
 
-1.  Open MetaMask and connect to _Ethereum Sepolia_. Fund your contract with ETH tokens. You can transfer <CopyText text="0.01" code/> _ETH_ to your contract. The native gas coins are used to pay the CCIP fees.
+1.  Open MetaMask and connect to _Ethereum Sepolia_. Fund your contract with ETH tokens. You can transfer <CopyText text="0.01" code/> _ETH_ to your contract. The native gas tokens are used to pay the CCIP fees.
 
 1.  Send a string data with tokens from _Ethereum Sepolia_:
 
@@ -171,6 +167,8 @@ You will transfer _0.001 CCIP-BnM_ and a text. The CCIP fees for using CCIP will
     1.  Click on `transact` and confirm the transaction on MetaMask.
     1.  Once the transaction is successful, note the transaction hash. Here is an [example](https://sepolia.etherscan.io/tx/0x1484af3c9d0fc1cb5b93d22117f29bf24b9ec3604dea25502f0a68370136a1be) of a transaction on _Ethereum Sepolia_.
 
+    **Note**: During gas price spikes, your transaction might fail, requiring more than _0.01 ETH_ to proceed. If your transaction fails, fund your contract with more _ETH_ and try again.
+
 1.  Open the [CCIP explorer](https://ccip.chain.link/) and search your cross-chain transaction using the transaction hash.
 
                 <br />
@@ -180,7 +178,7 @@ You will transfer _0.001 CCIP-BnM_ and a text. The CCIP fees for using CCIP will
             alt="Chainlink CCIP Explorer transaction details"
           />
 
-1.  The CCIP transaction is completed once the status is marked as "Success". In this example, the CCIP message ID is _0x3a2cde0d0dd07f2b2e7841b550221101d57792eb581a75ed11419022f13fd865_. Note that CCIP fees are denominated in LINK. Even if CCIP fees are paid using native gas coins, node operators will be paid in LINK.
+1.  The CCIP transaction is completed once the status is marked as "Success". In this example, the CCIP message ID is _0x3a2cde0d0dd07f2b2e7841b550221101d57792eb581a75ed11419022f13fd865_. Note that CCIP fees are denominated in LINK. Even if CCIP fees are paid using native gas tokens, node operators will be paid in LINK.
 
                 <br />
 
@@ -257,7 +255,7 @@ The `sendMessagePayNative` function undertakes five primary operations:
    - The `data` is encoded from a `string` to `bytes` using [abi.encode](https://docs.soliditylang.org/en/develop/abi-spec.html).
    - The `tokenAmounts` is an array, with each element comprising an `EVMTokenAmount` [struct](/ccip/api-reference/Client#evmtokenamount) containing the token address and amount. The array contains one element where the `_token` (token address) and `_amount` (token amount) are passed by the user when calling the `transferTokensPayNative` function.
    - The `extraArgs` specifies the `gasLimit` for relaying the message to the recipient contract on the destination blockchain, along with a `strict` parameter. In this example, the `gasLimit` is set to `200000` and `strict` is set to `false`. **Note**: If `strict` is true and `ccipReceive` reverts on the destination blockchain, subsequent messages from the same sender will be blocked by CCIP until the reverted message can be executed.
-   - The `_feeTokenAddress` designates the token address used for CCIP fees. Here, `address(0)` signifies payment in native gas coins (ETH).
+   - The `_feeTokenAddress` designates the token address used for CCIP fees. Here, `address(0)` signifies payment in native gas tokens (ETH).
 
      {" "}
 

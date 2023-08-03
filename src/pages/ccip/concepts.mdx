@@ -44,31 +44,31 @@ A Chainlink CCIP _lane_ is a distinct pathway between a source and a destination
 
 Chainlink Decentralized Oracle Networks, or **DONs**, run [Chainlink OCR2](https://docs.chain.link/architecture-overview/off-chain-reporting). The protocol runs in rounds during which an observed data value might be agreed upon. The output of this process results in a _report_ which is attested to by a quorum of participants. The report is then _transmitted_ on-chain by one of the participants. No single participant is responsible for transmitting on every round, and all of them will attempt to do so in a round-robin fashion until a transmission has taken place. In the context of CCIP, a [lane](#lane) contains two OCR DON committees that monitor transactions between a source and destination blockchain: the **Committing DON** and **Executing DON**. Read the [Architecture page](/ccip/architecture) to learn more.
 
-## Active Risk Management (ARM) network
+## Risk Management network
 
-The Active Risk Management (ARM) network is built using off-chain and on-chain components:
+The Risk Management network is built using off-chain and on-chain components:
 
-- **[Off-chain](#off-chain-arm-node):** Several ARM nodes continually monitor all supported chains against abnormal activities
-- **[On-chain](#on-chain-arm-contract):** One ARM contract per supported CCIP chain
+- **[Off-chain](#off-chain-risk-management-node):** Several Risk Management nodes continually monitor all supported chains against abnormal activities
+- **[On-chain](#on-chain-risk-management-contract):** One Risk Management contract per supported CCIP chain
 
-### Off-chain (ARM node)
+### Off-chain Risk Management node
 
-The ARM network is a secondary validation service parallel to the primary CCIP system. It doesn't run the same codebase as the [DON](#decentralized-oracle-network-don) to mitigate against security vulnerabilities that might affect the DON's codebase.
-The ARM network has two main modes of operation:
+The Risk Management network is a secondary validation service parallel to the primary CCIP system. It doesn't run the same codebase as the [DON](#decentralized-oracle-network-don) to mitigate against security vulnerabilities that might affect the DON's codebase.
+The Risk Management network has two main modes of operation:
 
-- **Blessing:** Each ARM node monitors all Merkle roots of messages committed on each destination chain. The Committing DON commits these Merkle roots. (More information on Merkle roots can be found on the [architecture page](/ccip/architecture)). The ARM node independently reconstructs the Merkle tree by fetching all messages on the source chain. Then, it checks for a match between the Merkle root committed by the Committing DON and the root of the reconstructed Merkle tree. If both Merkle roots match, the ARM node blesses the root to the ARM contract on the destination chain. The ARM contract tracks the votes. When a quorum is met, the ARM contract dubs the Merkle root **blessed**.
+- **Blessing:** Each Risk Management node monitors all Merkle roots of messages committed on each destination chain. The Committing DON commits these Merkle roots. (More information on Merkle roots can be found on the [architecture page](/ccip/architecture)). The Risk Management node independently reconstructs the Merkle tree by fetching all messages on the source chain. Then, it checks for a match between the Merkle root committed by the Committing DON and the root of the reconstructed Merkle tree. If both Merkle roots match, the Risk Management node blesses the root to the Risk Management contract on the destination chain. The Risk Management contract tracks the votes. When a quorum is met, the Risk Management contract dubs the Merkle root **blessed**.
 
-- **Cursing:** If an ARM node detects an anomaly, the ARM node will curse the CCIP system. After a quorum of votes has been met, the ARM contract dubs the CCIP system **cursed**. CCIP will automatically pause on that chain and wait until the contract owner assesses the situation before potentially lifting the curse. There are two cases where ARM nodes pause CCIP:
+- **Cursing:** If a Risk Management node detects an anomaly, the Risk Management node will curse the CCIP system. After a quorum of votes has been met, the Risk Management contract dubs the CCIP system **cursed**. CCIP will automatically pause on that chain and wait until the contract owner assesses the situation before potentially lifting the curse. There are two cases where Risk Management nodes pause CCIP:
 
-  - **Finality violation:** A deep reorganization which violates the safety parameters set by the ARM configuration occurs on a CCIP chain.
+  - **Finality violation:** A deep reorganization which violates the safety parameters set by the Risk Management configuration occurs on a CCIP chain.
 
   - **Execution safety violation:** A message is executed on the destination chain without any matching transaction being on the source chain. Double executions fall into this category since the executing DON can only execute a message once.
 
-### On-chain (ARM contract)
+### On-chain Risk Management contract
 
-There is one ARM contract for each supported destination chain. The ARM contract maintains a group of nodes authorized to participate in the ARM blessing/cursing. Each ARM node has five components: an address for voting to curse, an address for voting to bless, an address for withdrawing a vote to curse, a curse weight, and a blessing weight. The contract also maintains two thresholds to determine the quorum for blessing and cursing. There are two different voting logics depending on the mode:
+There is one Risk Management contract for each supported destination chain. The Risk Management contract maintains a group of nodes authorized to participate in the Risk Management blessing/cursing. Each Risk Management node has five components: an address for voting to curse, an address for voting to bless, an address for withdrawing a vote to curse, a curse weight, and a blessing weight. The contract also maintains two thresholds to determine the quorum for blessing and cursing. There are two different voting logics depending on the mode:
 
-- **Blessing voting procedure:** every time an ARM node blesses a Merkle root, the ARM contract adds the blessing weight for that node. If the sum exceeds the blessing threshold, the ARM contract considers the contract _blessed_.
-- **Cursing voting procedure:** an ARM node that sends a vote to curse assigns the vote a random 32-byte ID. The node may have multiple active votes to curse at any time. However, if there is at least one active cursing vote, the ARM contract considers the node to have voted to curse. The ARM contract adds the cursing weight for that node. If the sum of the weights of votes to curse exceeds the curse threshold, the ARM contract considers the contract _cursed_.
+- **Blessing voting procedure:** every time a Risk Management node blesses a Merkle root, the Risk Management contract adds the blessing weight for that node. If the sum exceeds the blessing threshold, the Risk Management contract considers the contract _blessed_.
+- **Cursing voting procedure:** a Risk Management node that sends a vote to curse assigns the vote a random 32-byte ID. The node may have multiple active votes to curse at any time. However, if there is at least one active cursing vote, the Risk Management contract considers the node to have voted to curse. The Risk Management contract adds the cursing weight for that node. If the sum of the weights of votes to curse exceeds the curse threshold, the Risk Management contract considers the contract _cursed_.
 
-If the ARM contract is cursed, then the owner of the original contract must resolve any underlying issues the original contract might have. If the owner is satisfied that these issues have been resolved, they can revoke the cursing on behalf of ARM nodes.
+If the Risk Management contract is cursed, then the owner of the original contract must resolve any underlying issues the original contract might have. If the owner is satisfied that these issues have been resolved, they can revoke the cursing on behalf of Risk Management nodes.

@@ -191,7 +191,7 @@ contract Messenger is CCIPReceiver, OwnerIsCreator {
 
     /// @notice Sends data to receiver on the destination chain.
     /// @notice Pay for fees in native gas.
-    /// @dev Assumes your contract has sufficient native gas coins.
+    /// @dev Assumes your contract has sufficient native gas tokens.
     /// @param _destinationChainSelector The identifier (aka selector) for the destination blockchain.
     /// @param _receiver The address of the recipient on the destination blockchain.
     /// @param _text The text to be sent.
