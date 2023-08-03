@@ -1,0 +1,78 @@
+---
+section: nodeOperator
+date: Last Modified
+title: "Receiver"
+---
+
+import { Aside } from "@components"
+
+[AuthorizedReceiver](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.7/AuthorizedReceiver.sol) is an abstract contract inherited by [operator](/chainlink-nodes/contracts/operator) and [forwarder](/chainlink-nodes/contracts/forwarder) contracts.
+
+<Aside type="note">
+Calling [setAuthorizedSenders](#setauthorizedsenders) has a different effect depending if it is called from an [operator](/chainlink-nodes/contracts/operator) or a [forwarder](/chainlink-nodes/contracts/forwarder) contract:
+
+- Owners of forwarder contracts allow authorized senders to call [forward](/chainlink-nodes/contracts/forwarder#forward).
+- Owners of operator contracts allow authorized senders to call the [fulfillOracleRequest](/chainlink-nodes/contracts/operator#fulfilloraclerequest) and [fulfillOracleRequest2](/chainlink-nodes/contracts/operator#fulfilloraclerequest2) methods.
+
+</Aside>
+
+## API Reference
+
+### Methods
+
+#### setAuthorizedSenders
+
+```solidity
+function setAuthorizedSenders(address[] senders) external
+```
+
+Sets the fulfillment permission for a given node. Use `true` to allow, `false` to disallow.
+Emits an [AuthorizedSendersChanged](#authorizedsenderschanged) event.
+
+##### Parameters
+
+| Name    | Type      | Description                                    |
+| ------- | --------- | ---------------------------------------------- |
+| senders | address[] | The addresses of the authorized Chainlink node |
+
+#### getAuthorizedSenders
+
+```solidity
+function getAuthorizedSenders() external view returns (address[])
+```
+
+Retrieve a list of authorized senders.
+
+##### Return values
+
+| Name | Type      | Description        |
+| ---- | --------- | ------------------ |
+|      | address[] | array of addresses |
+
+#### isAuthorizedSender
+
+```solidity
+function isAuthorizedSender(address sender) public view returns (bool)
+```
+
+Use this to check if a node is authorized to fulfill requests.
+
+##### Parameters
+
+| Name   | Type    | Description                       |
+| ------ | ------- | --------------------------------- |
+| sender | address | The address of the Chainlink node |
+
+##### Return values
+
+| Name | Type | Description                          |
+| ---- | ---- | ------------------------------------ |
+|      | bool | The authorization status of the node |
+
+### Events
+
+#### AuthorizedSendersChanged
+
+```solidity
+event AuthorizedSendersChanged(address[] senders, address changedBy)
+```
