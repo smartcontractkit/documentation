@@ -314,11 +314,14 @@ The main part of this tutorial is in the [`Lootbox.sol` contract](https://github
 - Tracks how many reward tokens remain in the lootbox
 - Validates user addresses against the allowlist, if in private mode
 
-This section focuses on how VRF is used in the lootbox contract:
+This section focuses on how VRF is used in the lootbox contract.
 
-- The processing done in the `fulfillRandomWords` callback function is minimal. Here, the function simply stores the randomness result from VRF and emits an event to indicate that the randomness is ready, so the lootbox open request can now be fulfilled.
+### How the lootbox interacts with the VRF service
+
+The processing done in the `fulfillRandomWords` callback function is minimal. Here, the function simply stores the randomness result from VRF and emits an event to indicate that the randomness is ready, so the lootbox open request can now be fulfilled. Reducing the computational processing in your `fulfillRandomWords` callback function is gas efficient, and it reduces the chance that your `callbackGasLimit` will be too low for the VRF request to go through.
 
 ```solidity
+...
 
 /*//////////////////////////////////////////////////////////////
                               VRF LOGIC
@@ -346,7 +349,11 @@ This section focuses on how VRF is used in the lootbox contract:
         s_requests[requestId].randomness = randomWords[0];
         emit OpenRequestFulfilled(requestId, randomWords[0]);
     }
+```
 
+### How the lootbox uses random values
+
+```solidity
     ...
 
     /// @notice Picks the rewards using the given randomness as a seed
@@ -400,5 +407,4 @@ This section focuses on how VRF is used in the lootbox contract:
 
         updatedTokens = tokens;
     }
-
 ```
