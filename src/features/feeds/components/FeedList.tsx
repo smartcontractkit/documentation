@@ -24,30 +24,15 @@ export const FeedList = ({
   const chains = ecosystem === "deprecating" ? ALL_CHAINS : CHAINS
 
   const [selectedChain, setSelectedChain] = useQueryString("network", chains[0].page)
+  const [searchValue, setSearchValue] = useQueryString("search", "")
+  const [selectedFeedCategories, setSelectedFeedCategories] = useQueryString("categories", [])
   const [showExtraDetails, setShowExtraDetails] = useState(false)
-  const [selectedFeedCategories, setSelectedFeedCategories] = useState([])
   const [currentPage, setCurrentPage] = useState(1)
-  const [searchValue, setSearchValue] = useState("")
   const paginate = (pageNumber) => setCurrentPage(pageNumber)
   const addrPerPage = 8
   const lastAddr = currentPage * addrPerPage
   const firstAddr = lastAddr - addrPerPage
   const dataFeedCategory = ["verified", "monitored", "provisional", "custom", "specialized", "deprecating"]
-
-  const handleChange = (event, inputId: string) => {
-    const search = event.target.value
-    const queryParams = new URLSearchParams(window.location.search)
-    if (search) {
-      queryParams.set(inputId, search)
-    } else {
-      queryParams.delete(inputId)
-    }
-    const newUrl = `${window.location.pathname}?${queryParams.toString()}`
-    window.history.pushState({ path: newUrl }, "", newUrl)
-    const input = queryParams.get(inputId)
-    setSearchValue(input || "")
-  }
-
   const chainMetadata = useGetChainMetadata(chains.filter((chain) => chain.page === selectedChain)[0], { initialCache })
 
   function handleNetworkSelect(chain: Chain) {
@@ -65,18 +50,15 @@ export const FeedList = ({
 
   useEffect(() => {
     updateTableOfContents()
-  }, [chainMetadata.processedData])
-
-  useEffect(() => {
-    const queryParams = new URLSearchParams(window.location.search)
-    const url = `${window.location.href}`
-    const searchRegex = /search.*?(?==)/
-    const searchQuery = url.match(searchRegex)
-    if (searchQuery) {
-      const searchInput = queryParams.get(searchQuery[0])
-      setSearchValue(searchInput || "")
+    if (searchValue === "") {
+      const searchParams = new URLSearchParams(window.location.search)
+      searchParams.delete("search")
+      const newUrl = window.location.pathname + "?" + searchParams.toString()
+      window.history.replaceState({ path: newUrl }, "", newUrl)
+      const inputElement = document.getElementById("search") as HTMLInputElement
+      inputElement.placeholder = "Search price feeds"
     }
-  }, [])
+  }, [chainMetadata.processedData, searchValue])
 
   const isPor = dataFeedType === "por"
   const isNftFloor = dataFeedType === "nftFloor"
@@ -198,10 +180,10 @@ export const FeedList = ({
 
                     <div class={feedList.filterDropdown_search}>
                       <input
-                        id="searchEthereumMainnet"
+                        id="search"
                         class={feedList.filterDropdown_searchInput}
                         placeholder="Search price feeds"
-                        onInput={(event) => handleChange(event, "searchEthereumMainnet")}
+                        onInput={(event) => setSearchValue((event.target as HTMLInputElement).value)}
                       />
                     </div>
                     <label class={feedList.detailsLabel}>
