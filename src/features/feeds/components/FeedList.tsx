@@ -1,5 +1,5 @@
 /** @jsxImportSource preact */
-import { useEffect, useState } from "preact/hooks"
+import { useEffect, useState, useRef } from "preact/hooks"
 import { MainnetTable, TestnetTable } from "./Tables"
 import feedList from "./FeedList.module.css"
 import { clsx } from "~/lib"
@@ -9,6 +9,7 @@ import { Chain, CHAINS, ALL_CHAINS } from "../data/chains"
 import { useGetChainMetadata } from "./useGetChainMetadata"
 import { ChainMetadata } from "../api"
 import useQueryString from "~/hooks/useQueryString"
+import { RefObject } from "preact"
 
 export type DataFeedType = "default" | "por" | "nftFloor" | "rates"
 export const FeedList = ({
@@ -26,6 +27,7 @@ export const FeedList = ({
   const [selectedChain, setSelectedChain] = useQueryString("network", chains[0].page)
   const [searchValue, setSearchValue] = useQueryString("search", "")
   const [selectedFeedCategories, setSelectedFeedCategories] = useQueryString("categories", [])
+  const [showCategoriesDropdown, setShowCategoriesDropdown] = useState<boolean>(false)
   const [showExtraDetails, setShowExtraDetails] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const paginate = (pageNumber) => setCurrentPage(pageNumber)
@@ -34,6 +36,7 @@ export const FeedList = ({
   const firstAddr = lastAddr - addrPerPage
   const dataFeedCategory = ["verified", "monitored", "provisional", "custom", "specialized", "deprecating"]
   const chainMetadata = useGetChainMetadata(chains.filter((chain) => chain.page === selectedChain)[0], { initialCache })
+  const wrapperRef = useRef(null)
 
   function handleNetworkSelect(chain: Chain) {
     setSelectedChain(chain.page)
@@ -60,6 +63,20 @@ export const FeedList = ({
     }
   }, [chainMetadata.processedData, searchValue])
 
+  const useOutsideAlerter = (ref: RefObject<HTMLDivElement>) => {
+    useEffect(() => {
+      function handleClickOutside(event: MouseEvent) {
+        if (ref.current && event.target instanceof Node && !ref.current.contains(event.target)) {
+          setShowCategoriesDropdown(false)
+        }
+      }
+      document.addEventListener("mousedown", handleClickOutside)
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside)
+      }
+    }, [ref])
+  }
+  useOutsideAlerter(wrapperRef)
   const isPor = dataFeedType === "por"
   const isNftFloor = dataFeedType === "nftFloor"
   const isRates = dataFeedType === "rates"
@@ -156,10 +173,14 @@ export const FeedList = ({
                     )}
 
                     <details class={feedList.filterDropdown_details}>
-                      <summary class={feedList.filterDropdown_details} className="text-200">
+                      <summary
+                        class={feedList.filterDropdown_details}
+                        className="text-200"
+                        onClick={() => setShowCategoriesDropdown((prev) => !prev)}
+                      >
                         Data Feed Categories
                       </summary>
-                      <nav>
+                      <nav ref={wrapperRef} style={!showCategoriesDropdown && "display: none"}>
                         <ul>
                           {dataFeedCategory.map((category) => (
                             <li>
