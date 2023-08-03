@@ -14,9 +14,8 @@ metadata:
 isMdx: true
 ---
 
-import VrfCommon from "@features/vrf/v2/common/VrfCommon.astro"
-import { Tabs } from "@components/Tabs"
-import { Aside } from "@components"
+import { Tabs, TabsContent } from "@components/Tabs"
+import { Aside, CodeSample } from "@components"
 import DropDown from "@features/vrf/v2/components/Dropdown.astro"
 
 This guide explains how to estimate VRF costs for both the subscription and direct funding methods.
@@ -27,7 +26,7 @@ This guide explains how to estimate VRF costs for both the subscription and dire
 
 ## Understanding transaction costs
 
-<Tabs sharedStore="vrfMethod" client:visible>
+<TabsContent sharedStore="vrfMethod" client:visible>
 <Fragment slot="tab.1">Subscription</Fragment>
 <Fragment slot="tab.2">Direct funding</Fragment>
 <Fragment slot="panel.1">
@@ -67,11 +66,11 @@ Because the consuming contract directly pays the LINK for the request, the cost 
 Make sure that your consuming contracts are funded with enough LINK tokens to cover the transaction costs. If the consuming contract doesn't have enough LINK tokens, your request will revert.
 
 </Fragment>
-</Tabs>
+</TabsContent>
 
 ### Estimate gas costs
 
-<Tabs sharedStore="vrfMethod"  client:visible>
+<TabsContent sharedStore="vrfMethod" client:visible>
 <Fragment slot="tab.1">Subscription</Fragment>
 <Fragment slot="tab.2">Direct funding</Fragment>
 <Fragment slot="panel.1">
@@ -109,11 +108,11 @@ The total gas cost is converted to LINK using the ETH/LINK data feed. In the unl
 The maximum allowed `callbackGasLimit` value for your requests is defined in the [Coordinator contract supported networks](/vrf/v2/subscription/supported-networks) page. Because the VRF v2 Wrapper adds a gas overhead, your `callbackGasLimit` must not exceed `maxGasLimit - wrapperGasOverhead`.
 
 </Fragment>
-</Tabs>
+</TabsContent>
 
 ### Add LINK premium
 
-<Tabs sharedStore="vrfMethod" client:visible>
+<TabsContent sharedStore="vrfMethod" client:visible>
 <Fragment slot="tab.1">Subscription</Fragment>
 <Fragment slot="tab.2">Direct funding</Fragment>
 <Fragment slot="panel.1">
@@ -140,11 +139,11 @@ A LINK premium is then added to the total gas cost. The premium is divided in tw
 ```
 
 </Fragment>
-</Tabs>
+</TabsContent>
 
 ### Ethereum example
 
-<Tabs sharedStore="vrfMethod" client:visible>
+<TabsContent sharedStore="vrfMethod" client:visible>
 <Fragment slot="tab.1">Subscription</Fragment>
 <Fragment slot="tab.2">Direct funding</Fragment>
 <Fragment slot="panel.1">
@@ -267,7 +266,7 @@ are available on the [Supported Networks](/vrf/v2/direct-funding/supported-netwo
 This example request would cost 3.125 LINK.
 
 </Fragment>
-</Tabs>
+</TabsContent>
 
 ### Arbitrum
 
@@ -277,7 +276,7 @@ To learn how to estimate gas costs for Arbitrum, refer to the [Arbitrum gas esti
 
 #### Estimating Arbitrum gas costs with VRF
 
-<Tabs sharedStore="vrfMethod" client:visible>
+<TabsContent sharedStore="vrfMethod" client:visible>
 <Fragment slot="tab.1">Subscription</Fragment>
 <Fragment slot="tab.2">Direct funding</Fragment>
 <Fragment slot="panel.1">
@@ -364,7 +363,7 @@ This conversion allows us to estimate the L1 callback gas cost and incorporate i
 ```
 
 </Fragment>
-</Tabs>
+</TabsContent>
 
 #### Arbitrum and VRF gas estimation code
 
