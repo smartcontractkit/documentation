@@ -1,6 +1,6 @@
 ---
 import { SIDEBAR, MENU, Frontmatter } from "../../config"
-
+import { flattenChildren } from "../../scripts/flatten-children"
 export type Props = {
   currentPage: string
   content: Frontmatter
@@ -57,36 +57,47 @@ const currentPageMatch = removeSlashes(currentPage.slice(1))
       sidebarSections.map((section) => (
         <li aria-hidden={content.section === "global"} class={`parent-${section.parentSection}`}>
           <div class="nav-group">
-            <h2 class="nav-group-title">{section.section}</h2>
-            <ul>
-              {!!section.contents &&
-                section.contents.map((child) => (
-                  <>
-                    <li class="nav-link">
-                      <a
-                        href={`${Astro.site.pathname}${child.url}`}
-                        aria-current={`${currentPageMatch === removeSlashes(child.url) ? "page" : "false"}`}
-                      >
-                        {child.title}
-                      </a>
-                    </li>
-                    {!!child.children && (
-                      <ul>
-                        {child.children.map((childItem) => (
-                          <li class="nav-link nested">
-                            <a
-                              href={`${Astro.site.pathname}${childItem.url}`}
-                              aria-current={`${currentPageMatch === removeSlashes(childItem.url) ? "page" : "false"}`}
-                            >
-                              {childItem.title}
-                            </a>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </>
-                ))}
-            </ul>
+            <details
+              open={
+                !!flattenChildren(section.contents).filter((object) => removeSlashes(object.url) == currentPageMatch)
+                  .length
+              }
+            >
+              <summary class="nav-group-title">{section.section}</summary>
+              <nav>
+                <ul>
+                  {!!section.contents &&
+                    section.contents.map((child) => (
+                      <>
+                        <li class="nav-link">
+                          <a
+                            href={`${Astro.site.pathname}${child.url}`}
+                            aria-current={`${currentPageMatch === removeSlashes(child.url) ? "page" : "false"}`}
+                          >
+                            {child.title}
+                          </a>
+                        </li>
+                        {!!child.children && (
+                          <ul>
+                            {child.children.map((childItem) => (
+                              <li class="nav-link nested">
+                                <a
+                                  href={`${Astro.site.pathname}${childItem.url}`}
+                                  aria-current={`${
+                                    currentPageMatch === removeSlashes(childItem.url) ? "page" : "false"
+                                  }`}
+                                >
+                                  {childItem.title}
+                                </a>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </>
+                    ))}
+                </ul>
+              </nav>
+            </details>
           </div>
         </li>
       ))
@@ -127,7 +138,7 @@ const currentPageMatch = removeSlashes(currentPage.slice(1))
   }
 
   .nav-groups > li + li {
-    margin-top: 2rem;
+    margin-top: 0.8rem;
   }
 
   .nav-groups > :first-child {
@@ -144,7 +155,6 @@ const currentPageMatch = removeSlashes(currentPage.slice(1))
     font-weight: 700;
     padding: 0.1rem 1rem;
     text-transform: uppercase;
-    margin-bottom: 0.5rem;
   }
 
   .nav-link a {
@@ -184,6 +194,25 @@ const currentPageMatch = removeSlashes(currentPage.slice(1))
 
   .sidebar-nav-groups > li[aria-hidden="true"] {
     display: none;
+  }
+
+  details summary {
+    cursor: pointer;
+    color: var(--blue-800);
+  }
+
+  details summary::after {
+    content: "";
+    display: inline-flex;
+    width: 24px;
+    height: 24px;
+    background-image: url(https://smartcontract.imgix.net/icons/Caret.svg?auto=compress%2Cformat);
+    background-repeat: no-repeat;
+    float: right;
+  }
+
+  details[open] summary::after {
+    transform: rotate(180deg);
   }
 </style>
 
