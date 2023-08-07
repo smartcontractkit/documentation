@@ -30,7 +30,6 @@ export const CheckHeartbeat = ({
     const dataFeed = new Contract(feedAddress, aggregatorV3InterfaceABI, rpcProvider)
     const roundData: ROUND_DATA_RESPONSE = await dataFeed.latestRoundData()
     if (!roundData.updatedAt) {
-      console.log("Wrong entry")
       return
     }
     const updatedTimestamp = roundData.updatedAt.toNumber()
