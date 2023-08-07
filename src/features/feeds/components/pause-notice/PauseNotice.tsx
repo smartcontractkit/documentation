@@ -49,10 +49,9 @@ export const PauseNotice = ({
       console.error(error)
     })
   }, [ripCord])
-
   // TODO: Add dynamic scanner URL paths from chain data.
   if (timeSinceUpdate > threshhold && ripCord) {
-    if (list) {
+    if (!list) {
       return (
         <>
           <div class={styles.banner + " " + styles[type]}>

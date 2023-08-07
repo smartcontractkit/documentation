@@ -17,7 +17,7 @@ export const CheckHeartbeat = ({
   feedAddress: string
   supportedChain: SupportedChain
   feedName: string
-  list: boolean
+  list?: boolean
   currencyName: string
 }) => {
   const [latestUpdateTimestamp, setLatestUpdateTimestamp] = useState<number | undefined>(undefined)
