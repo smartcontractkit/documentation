@@ -32,7 +32,7 @@ export const PauseNotice = ({
   const [ripCord, setRipCord] = useState<boolean>(false)
   const date = Math.floor(new Date().getTime() / 1000)
   const timeSinceUpdate = date - value
-  const threshhold = heartbeat + buffer
+  const threshold = heartbeat + buffer
 
   useEffect(() => {
     const fetchRipCord = async () => {
@@ -50,7 +50,7 @@ export const PauseNotice = ({
     })
   }, [ripCord])
   // TODO: Add dynamic scanner URL paths from chain data.
-  if (timeSinceUpdate > threshhold && ripCord) {
+  if (timeSinceUpdate > threshold && ripCord) {
     if (!list) {
       return (
         <>
