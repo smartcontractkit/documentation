@@ -38,7 +38,6 @@ export const FeedList = ({
   const isPor = dataFeedType === "por"
   const isNftFloor = dataFeedType === "nftFloor"
   const isRates = dataFeedType === "rates"
-  const isDefault = !isPor && !isNftFloor && !isRates
   const isDeprecating = ecosystem === "deprecating"
   let netCount = 0
 

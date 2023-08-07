@@ -8,18 +8,15 @@ export type Props = {
   ecosystem: string
   dataFeedType?: DataFeedType
 }
-type FeedDataItem = {
-  [key: string]: string
-}
 import { getServerSideChainMetadata } from "../api/backend"
 import { CHAINS, ALL_CHAINS } from "../data/chains"
 import { CheckHeartbeat } from "./pause-notice/CheckHeartbeat"
-import { monitoredFeeds } from "../data"
+import { FeedDataItem, monitoredFeeds } from "../data"
 
 const { initialNetwork, ecosystem, dataFeedType } = Astro.props
 
 const initialCache = await getServerSideChainMetadata([...CHAINS, ...ALL_CHAINS])
-const feedItems = monitoredFeeds.mainnet
+const feedItems: FeedDataItem[] = monitoredFeeds.mainnet
 ---
 
 {

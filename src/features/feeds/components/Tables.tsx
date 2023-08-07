@@ -4,12 +4,9 @@ import { clsx } from "../../../lib"
 import { ChainNetwork } from "../data/chains"
 import tableStyles from "./Tables.module.css"
 import { CheckHeartbeat } from "./pause-notice/CheckHeartbeat"
-import { monitoredFeeds } from "../data"
-type FeedDataItem = {
-  [key: string]: string
-}
-const feedItems = monitoredFeeds.mainnet
+import { monitoredFeeds, FeedDataItem } from "../data"
 
+const feedItems = monitoredFeeds.mainnet
 const feedCategories = {
   verified: (
     <span className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")} title="Verified">
@@ -166,6 +163,7 @@ const ProofOfReserveTr = ({ network, proxy, showExtraDetails, isTestnet = false 
               feedAddress={proxy.proxyAddress}
               supportedChain="ETHEREUM_MAINNET"
               feedName="TUSD Reserves"
+              list
               currencyName={feedItem[feedAddress]}
             />
           )

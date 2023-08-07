@@ -1,3 +1,7 @@
+export type FeedDataItem = {
+  [key: string]: string
+}
+
 export const priceFeedAddresses = {
   btc: {
     usd: {

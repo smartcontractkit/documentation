@@ -31,7 +31,7 @@ export const PauseNotice = ({
 }) => {
   const [ripCord, setRipCord] = useState<boolean>(false)
   const date = Math.floor(new Date().getTime() / 1000)
-  const timeSinceUpdate = Math.floor(new Date().getTime() / 1000) - value
+  const timeSinceUpdate = date - value
   const threshhold = heartbeat + buffer
 
   useEffect(() => {
@@ -78,5 +78,7 @@ export const PauseNotice = ({
         </>
       )
     }
+  } else {
+    return null
   }
 }
