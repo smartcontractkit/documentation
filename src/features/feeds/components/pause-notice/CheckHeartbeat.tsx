@@ -63,9 +63,5 @@ export const CheckHeartbeat = ({
         currencyName={currencyName}
       />
     </div>
-  ) : (
-    <div>
-      <p>The latest updated timestamp is undefined or equal to 0. Please refresh the page or wait for a few minutes.</p>
-    </div>
-  )
+  ) : null
 }
