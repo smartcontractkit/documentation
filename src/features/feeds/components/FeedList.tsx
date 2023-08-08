@@ -30,6 +30,9 @@ export const FeedList = ({
   function handleNetworkSelect(chain: Chain) {
     setSelectedChain(chain.page)
   }
+  useEffect(() => {
+    setSelectedChain("ethereum")
+  }, [])
 
   useEffect(() => {
     updateTableOfContents()

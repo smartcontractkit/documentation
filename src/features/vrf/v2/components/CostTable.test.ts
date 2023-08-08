@@ -11,6 +11,7 @@ describe("getGasCalculatorUrl", () => {
       explorerUrl: "https://goerli.etherscan.io/address/%s",
       networkType: "testnet",
       rddUrl: "https://reference-data-directory.vercel.app/feeds-goerli.json",
+      queryString: "ethereum-goerli",
       tags: ["proofOfReserve", "nftFloorPrice"],
     }
     const method = "vrfSubscription"
@@ -28,6 +29,7 @@ describe("getGasCalculatorUrl", () => {
       explorerUrl: "https://polygonscan.com/address/%s",
       networkType: "mainnet",
       rddUrl: "https://reference-data-directory.vercel.app/feeds-matic-mainnet.json",
+      queryString: "polygon-mainnet",
       tags: ["proofOfReserve"],
     }
     const method = "vrfDirectFunding"

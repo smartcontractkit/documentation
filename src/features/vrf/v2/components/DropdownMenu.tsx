@@ -1,8 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from "preact/hooks"
 import "./dropdown.css"
 import { CostTable } from "./CostTable"
-import { RefObject } from "preact"
-import { CHAINS, Chain, ChainNetwork } from "~/features/data/chains"
+import { Dropdown } from "./Dropdown"
+import { CHAINS } from "~/features/data/chains"
 
 interface Props {
   placeholder?: string
@@ -10,61 +9,7 @@ interface Props {
 }
 
 export const DropDownMenu = ({ placeholder = "Select a network...", method }: Props) => {
-  const [selectedMainChain, setSelectedMainChain] = useState<Chain | null>(null)
-  const [selectedChain, setSelectedChain] = useState<ChainNetwork | null>(null)
-  const [selectedNet, setSelectNet] = useState<string>(placeholder)
-  const [searchValue, setSearchValue] = useState<string>("")
-  const [showMenu, setShowMenu] = useState<boolean>(false)
-  const [showSubMenu, setShowSubMenu] = useState<number>(-1)
-  const wrapperRef = useRef(null)
   const options = CHAINS.filter((chain) => chain.supportedFeatures.includes(method))
-
-  const useOutsideAlerter = (ref: RefObject<HTMLDivElement>) => {
-    useEffect(() => {
-      /**
-       * quit menu if click outside of dropdown
-       */
-      function handleClickOutside(event: MouseEvent) {
-        if (ref.current && event.target instanceof Node && !ref.current.contains(event.target)) {
-          setShowMenu(false)
-          setShowSubMenu(-1)
-        }
-      }
-      // Bind the event listener
-      document.addEventListener("mousedown", handleClickOutside)
-
-      return () => {
-        // Unbind the event listener on clean up
-        document.removeEventListener("mousedown", handleClickOutside)
-      }
-    }, [ref])
-  }
-
-  const matchingOptions: Chain[] = useMemo(() => {
-    const splittedSearchValueArr = searchValue.split(" ")
-    if (splittedSearchValueArr.length >= 2) {
-      return options
-    }
-    return options.filter((chain: Chain) => {
-      return searchValue === "" ? chain : chain.label.toLowerCase().includes(searchValue.toLowerCase())
-    })
-  }, [searchValue, options])
-
-  const handleSelectedChain = (net: ChainNetwork) => {
-    setSelectNet(net.name)
-    setSearchValue(net.name)
-  }
-
-  const handleInputChange = (event: Event) => {
-    const { target } = event
-    if (target instanceof HTMLInputElement) {
-      const inputValue = target.value
-      setSearchValue(inputValue)
-    }
-  }
-
-  useOutsideAlerter(wrapperRef)
-
   return (
     <div className="main-container">
       <div className="dropdown">
