@@ -291,6 +291,12 @@ export const CHAINS: Chain[] = [
     supportedFeatures: ["feeds"],
     networks: [
       {
+        name: "BASE Mainnet",
+        explorerUrl: "https://basescan.org/address/%s",
+        networkType: "mainnet",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-base-1.json",
+      },
+      {
         name: "BASE Goerli testnet",
         explorerUrl: "https://goerli.basescan.org/address/%s",
         networkType: "testnet",
