@@ -1,10 +1,9 @@
 import { useState } from "preact/hooks"
 import "./methodCheckbox.css"
 import { DropDownMenu } from "./DropdownMenu"
-import { supportedNetworks } from "../data"
 
 export const MethodCheckbox = () => {
-  const [vrfMethodUsed, setVrfMethodUsed] = useState<"subscription" | "directFunding">("subscription")
+  const [vrfMethodUsed, setVrfMethodUsed] = useState<"vrfSubscription" | "vrfDirectFunding">("vrfSubscription")
 
   const handleChange = (event) => {
     setVrfMethodUsed(event.target.value)
@@ -17,10 +16,10 @@ export const MethodCheckbox = () => {
         <div class="checkbox-container">
           <input
             type="radio"
-            id="subscription"
+            id="vrfSubscription"
             name="vrfMethod"
-            value="subscription"
-            checked={vrfMethodUsed === "subscription"}
+            value="vrfSubscription"
+            checked={vrfMethodUsed === "vrfSubscription"}
             onClick={handleChange}
           />
           <label for="subscription">Subscription</label>
@@ -28,17 +27,17 @@ export const MethodCheckbox = () => {
         <div class="checkbox-container">
           <input
             type="radio"
-            id="funding"
+            id="vrfDirectFunding"
             name="vrfMethod"
-            value="directFunding"
-            checked={vrfMethodUsed === "directFunding"}
+            value="vrfDirectFunding"
+            checked={vrfMethodUsed === "vrfDirectFunding"}
             onClick={handleChange}
           />
           <label for="funding">Direct funding</label>
         </div>
       </div>
 
-      <DropDownMenu method={vrfMethodUsed} options={supportedNetworks[vrfMethodUsed]} />
+      <DropDownMenu method={vrfMethodUsed} />
     </div>
   )
 }

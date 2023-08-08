@@ -9,31 +9,28 @@ import * as CONFIG from "../config"
 import { NewsletterCTA } from "../components/Footer/NewsletterCTA"
 import Footer from "~/components/Footer/Footer.astro"
 
-const { content = {}, frontmatter } = Astro.props
+const { frontmatter } = Astro.props
 
-// Astro.props?.headings is for .mdx pages, Astro.props?.content?.astro.headings is for .md pages
-const headings = Astro.props?.headings || Astro.props?.content?.astro.headings
+const headings = Astro.props?.headings
 
 const currentPage = new URL(Astro.request.url).pathname
 
-const currentFile = `src/pages${currentPage.replace(/\/$/, "")}${
-  content?.isIndex || frontmatter?.isIndex ? "/index" : ""
-}.mdx`
+const currentFile = `src/pages${currentPage.replace(/\/$/, "")}${frontmatter?.isIndex ? "/index" : ""}.mdx`
 const githubEditUrl = CONFIG.GITHUB_EDIT_URL + currentFile
-const formattedContentTitle = content.title
-  ? `${content.title} | ${CONFIG.SITE.title}`
+const formattedContentTitle = frontmatter.title
+  ? `${frontmatter.title} | ${CONFIG.SITE.title}`
   : `${CONFIG.PAGE.titleFallback} | ${CONFIG.SITE.title}`
 
 const canonicalURLStr = new URL(Astro.url.pathname, Astro.site).href.replace(/\/+$/, "")
 const canonicalURL = new URL(canonicalURLStr)
 
-const includeLinkToWalletScript = !!Astro.props?.content?.metadata?.linkToWallet
+const includeLinkToWalletScript = !!Astro.props?.frontmatter?.metadata?.linkToWallet
 ---
 
-<html dir={content.dir ?? "ltr"} lang={content.lang ?? "en-us"} class="initial">
+<html dir={frontmatter.dir ?? "ltr"} lang={frontmatter.lang ?? "en-us"} class="initial">
   <head>
     <HeadCommon />
-    <HeadSEO {content} {canonicalURL} />
+    <HeadSEO content={frontmatter} {canonicalURL} />
     <title>{formattedContentTitle}</title>
     <style>
       body {
@@ -133,10 +130,10 @@ const includeLinkToWalletScript = !!Astro.props?.content?.metadata?.linkToWallet
     <script define:vars={{ includeLinkToWalletScript }}>
       window.includeLinkToWalletScript = includeLinkToWalletScript
     </script>
-    <script define:vars={{ content }}>
+    <script define:vars={{ frontmatter }}>
       const persistedArticle = {
-        title: content.title,
-        url: content.url,
+        title: frontmatter.title,
+        url: frontmatter.url,
       }
 
       const recentArticles = JSON.parse(localStorage.getItem("recentArticles") || "[]")
@@ -149,18 +146,28 @@ const includeLinkToWalletScript = !!Astro.props?.content?.metadata?.linkToWallet
   </head>
 
   <body>
-    <Header frontmatter={content} />
+    <Header frontmatter={frontmatter} />
     <main class="layout">
       <aside id="grid-left" class="grid-sidebar" title="Site Navigation">
-        <LeftSidebar currentPage={currentPage} {content} />
+        <LeftSidebar currentPage={currentPage} content={frontmatter} />
       </aside>
       <div id="grid-main">
-        <PageContent {content} githubEditUrl={githubEditUrl} {headings} clientSideToc={!!frontmatter?.clientSideToc}>
+        <PageContent
+          content={frontmatter}
+          githubEditUrl={githubEditUrl}
+          {headings}
+          clientSideToc={!!frontmatter?.clientSideToc}
+        >
           <slot />
         </PageContent>
       </div>
       <aside id="grid-right" class="grid-sidebar" title="Table of Contents">
-        <RightSidebar {content} githubEditUrl={githubEditUrl} {headings} clientSideToc={!!frontmatter?.clientSideToc} />
+        <RightSidebar
+          content={frontmatter}
+          githubEditUrl={githubEditUrl}
+          {headings}
+          clientSideToc={!!frontmatter?.clientSideToc}
+        />
       </aside>
     </main>
     <NewsletterCTA client:visible />

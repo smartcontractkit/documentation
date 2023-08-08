@@ -1,0 +1,103 @@
+---
+section: dataFeeds
+date: Last Modified
+title: "Feed Registry"
+isIndex: true
+metadata:
+  title: "How to Use Chainlink Feed Registry"
+  description: "The Chainlink Feed Registry is an on-chain mapping of assets to feeds. It allows users and DeFi protocols to query Chainlink data feeds from a given pair of asset and denomination addresses."
+whatsnext:
+  {
+    "Read the Feed Registry API Reference": "/data-feeds/feed-registry/feed-registry-functions",
+    "See the FeedRegistryInterface contract on GitHub": "https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/interfaces/FeedRegistryInterface.sol",
+  }
+---
+
+import { RegistryPrice } from "@features/feeds"
+import { registryAddresses } from "@features/data"
+
+import { Aside, ClickToZoom, CodeSample } from "@components"
+
+The Chainlink Feed Registry is an on-chain mapping of assets to feeds. It enables you to query Chainlink data feeds from asset addresses directly, without needing to know the feed contract addresses. They enable smart contracts to get the latest price of an asset in a single call, from a single contract.
+
+<ClickToZoom src="/files/feed-registry.png" />
+
+<Aside type="note" title="Note">
+  The Feed Registry only lists feeds with a canonical token address on a network. Non-token feeds such as stock indexes
+  are not supported because they do not have a canonical token address.
+</Aside>
+
+For a complete list of functions and parameters for the `FeedRegistryInterface` contract, see the [Feed Registry API Reference](/data-feeds/feed-registry/feed-registry-functions).
+
+## Base and Quote
+
+The Feed Registry fully supports the [`AggregatorV3Interface`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol) API for multiple feeds. It maps feeds from `base` and `quote` address pairs. To get the latest LINK / USD round data from the registry, call:
+
+{/* prettier-ignore */}
+```solidity
+latestRoundData(address base, address quote)
+```
+
+For example, to get the latest LINK / USD price:
+
+- `base`: The LINK token address on that network e.g. `0x514910771AF9Ca656af840dff83E8264EcF986CA` for LINK on Ethereum mainnet
+- `quote`: A `Denominations.USD` address (`0x0000000000000000000000000000000000000348`), which is based on [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217).
+
+{/* prettier-ignore */}
+```solidity Mainnet
+latestRoundData(0x514910771AF9Ca656af840dff83E8264EcF986CA, 0x0000000000000000000000000000000000000348)
+```
+
+To get the latest LINK / ETH price on Ethereum:
+
+- `base`: The LINK token address on that network e.g. `0x514910771AF9Ca656af840dff83E8264EcF986CA` for LINK on Ethereum mainnet
+- `quote`: A `Denominations.ETH` address (`0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE`)
+
+{/* prettier-ignore */}
+```solidity Mainnet
+latestRoundData(0x514910771AF9Ca656af840dff83E8264EcF986CA, 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE)
+```
+
+### Denominations library
+
+A [`Denominations`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/Denominations.sol) Solidity library is available for you to fetch currency identifiers which lack a canonical Ethereum address:
+
+<CodeSample src="samples/FeedRegistry/Denominations.sol" />
+
+## Code Examples
+
+### Solidity
+
+To consume price data from the Feed Registry, your smart contract should reference [`FeedRegistryInterface`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/interfaces/FeedRegistryInterface.sol), which defines the external functions implemented by the Feed Registry.
+
+<CodeSample src="samples/FeedRegistry/PriceConsumer.sol" />
+
+### Solidity Hardhat Example
+
+<Aside type="note" title="Note">
+  You can find a working Feed Registry Hardhat project
+  [here](https://github.com/smartcontractkit/feed-registry-example). Clone the repo and follow the setup instructions to
+  run the example locally.
+</Aside>
+
+### Javascript
+
+<CodeSample src="samples/FeedRegistry/PriceConsumer.js" />
+
+<RegistryPrice
+  client:idle
+  registryAddress={registryAddresses["link-usd"].network.mainnet.address}
+  baseSymbol={registryAddresses["link-usd"].baseSymbol}
+  baseAddress={registryAddresses["link-usd"].network.mainnet.baseAddress}
+  quoteSymbol={registryAddresses["link-usd"].quoteSymbol}
+  quoteAddress={registryAddresses["link-usd"].network.mainnet.quoteAddress}
+  supportedChain="ETHEREUM_MAINNET"
+/>
+
+## Contract Addresses
+
+This section lists the blockchains that Chainlink Feed Registry are currently available on.
+
+| Network          | Address                                                                                                                 |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Ethereum Mainnet | [`0x47Fb2585D2C56Fe188D0E6ec628a38b74fCeeeDf`](https://etherscan.io/address/0x47Fb2585D2C56Fe188D0E6ec628a38b74fCeeeDf) |

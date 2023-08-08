@@ -51,5 +51,5 @@ proc.on("exit", (code) => {
   if (code !== 0) {
     console.error(`Binary exited with code: ${code}`)
   }
-  process.exit(code)
+  process.exit(code ?? 0)
 })
