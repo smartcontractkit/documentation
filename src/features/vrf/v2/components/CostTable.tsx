@@ -1,7 +1,7 @@
 import { Chain, ChainNetwork } from "~/features/data/chains"
 
 import "./costTable.css"
-import { useEffect, useReducer } from "preact/hooks"
+import { useEffect, useReducer, useState } from "preact/hooks"
 import { BigNumber, utils } from "ethers"
 import button from "@chainlink/design-system/button.module.css"
 
@@ -155,11 +155,9 @@ export const getGasCalculatorUrl = ({
     networkName === mainChainName ? chain.networkType.toLowerCase() : networkName
   }&method=${method === "vrfSubscription" ? "subscription" : "directFunding"}`
 }
-
 export const CostTable = ({ mainChain, chain, method }: Props) => {
   const [state, dispatch] = useReducer(reducer, initialState)
-  let mainChainName, networkName
-
+  const [supportedNetworkShortcut, setSupportedNetworkShortcut] = useState("")
   const getDataResponse = async (mainChainName: string, networkName: string): Promise<dataResponse> => {
     const cacheKey = `${mainChainName}-${networkName === mainChainName ? chain.networkType : networkName}-${
       method === "vrfSubscription" ? "subscription" : "directFunding"
@@ -179,6 +177,7 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
   }
 
   useEffect(() => {
+    let mainChainName, networkName
     switch (mainChain.label) {
       case "BNB Chain":
         mainChainName = mainChain.label.replace("Chain", "").replace(" ", "").toLowerCase()
@@ -262,7 +261,7 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
       dispatch({ type: "SET_LOADING", payload: false })
       console.error(error)
     })
-
+    setSupportedNetworkShortcut(getsupportedNetworkShortcut(networkName))
     return () => dispatch({ type: "SET_LOADING", payload: false })
   }, [method, mainChain, chain])
 
@@ -338,30 +337,26 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
     }
   }
 
-  const getsupportedNetworkShortcut = () => {
+  const getsupportedNetworkShortcut = (networkName) => {
     const mainChainName = mainChain.label.toLowerCase()
-    const subChainName = networkName
     switch (mainChainName) {
       case "ethereum":
-        if (subChainName !== "mainnet") {
-          return `${subChainName}-${chain.networkType}`
-        }
-        return `${mainChainName}-${chain.networkType}`
+        return `${chain.networkType !== "mainnet" ? networkName : mainChainName}-${chain.networkType}`
       case "bnb chain":
         return `${mainChainName.replace(" ", "-")}${chain.networkType === "testnet" ? "-" + chain.networkType : ""}`
       case "polygon (matic)":
         return `polygon-matic-${
-          chain.networkType === "testnet" ? subChainName + "-" + chain.networkType : chain.networkType
+          chain.networkType === "testnet" ? networkName + "-" + chain.networkType : chain.networkType
         }`
       case "avalanche":
         return `${mainChainName}-${
-          chain.networkType === "testnet" ? subChainName + "-" + chain.networkType : chain.networkType
+          chain.networkType === "testnet" ? networkName + "-" + chain.networkType : chain.networkType
         }`
       case "fantom":
         return `${mainChainName}-${chain.networkType}`
       case "arbitrum":
         return `${mainChainName}-${
-          chain.networkType === "testnet" ? subChainName + "-" + chain.networkType : chain.networkType
+          chain.networkType === "testnet" ? networkName + "-" + chain.networkType : chain.networkType
         }`
       default:
         throw new Error("network/chain does not exist or is not supported by VRF yet.")
@@ -642,7 +637,7 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
           <a
             href={`/vrf/v2/${kebabize(
               method === "vrfSubscription" ? "subscription" : "directFunding"
-            )}/supported-networks/#${getsupportedNetworkShortcut()}`}
+            )}/supported-networks/#${supportedNetworkShortcut}`}
             target="_blank"
           >
             {" "}
