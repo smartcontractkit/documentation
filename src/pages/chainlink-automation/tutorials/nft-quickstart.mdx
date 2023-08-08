@@ -25,100 +25,47 @@ This template uses the [Chainlink Automation](https://automation.chain.link) dec
   production environment without completing your own audits and application of best practices.
 </Aside>
 
-# Chainlink Automation Template: Batch NFT Reveal
+## Overview
 
-- [Open in Remix IDE](https://remix.ethereum.org/#url=https://github.com/hackbg/chainlink-automation-templates/batch-nft-reveal/flatten/NFTCollection.flat.sol)
+In this tutorial, you will use a [demo user interface](https://automation.chainlink-demo.app) to learn how to use Chainlink Automation to automate batch reveal of NFT mints. The demo includes setting up a Chainlink VRF subscription, funding it, automatically generating a smart contract that will then be used by both VRF (as a consumer) and in Automation (as the target contract). VRF is used for randomizing the metadata for the NFTs and Automation is used to set trigger conditions for when the NFT metadata is revealed via batch size and/or time interval parameters
 
-- [App Live Demo](https://automation.chainlink-demo.app)
+## Before you begin
 
-Using [Chainlink VRF](https://docs.chain.link/vrf/v2/introduction/) in generative art NFT collections is de-facto the standard approach for getting provably random source in smart contracts. By batching the reveal process, instead of making VRF calls for each NFT we can save cost up to 100x (in a collection of 10,000 with batch size of 100).
+Before you start this tutorial, complete the following items:
 
-The reveal process can be automated and further decentralized by having [Chainlink Automation](https://automation.chain.link) call the reveal function when certain criteria is met. In this template there are two configurable criterias: batch size and time interval.
+- Set up a cryptocurrency wallet
+- To deploy this contract on testnets, ensure the deployer account has testnet ERC-677 LINK. Use the [LINK faucet](https://faucets.chain.link/) to retrieve testnet LINK.
 
-## Randomness
+## Run steps
 
-All NFTs in a collection have unique set of traits which determine their value, so it's important they're randomly distributed amongst participants of the drop.
+1. Go to the [demo app](https://automation.chainlink-demo.app/) and connect to your wallet with the right network. Then click on the **Get Started** button.
 
-Revealing multiple NFTs with a single random number is achieved by assigning that number as entropy to a range of tokens (batch) and then deriving a new random number for each unique token:
+   <ClickToZoom
+     src="/images/automation/tutorials/batch-nft1.png"
+     alt="Batch NFT Quickstart Step 1"
+     style="max-width: 70%;"
+   />
 
-```solidity
-uint256 randomness = uint256(keccak256(abi.encode(entropy, tokenId)));
-```
+1. Enter the basic information regarding your NFT collection. The tool tips on the demo app explain what each field is. Notice that you'll need a VRF Subscription ID.
 
-## Metadata
+   <ClickToZoom
+     src="/images/automation/tutorials/batch-nft2.png"
+     alt="Batch NFT Quickstart Step 2"
+     style="max-width: 70%;"
+   />
 
-NFT metadata is the standard description of an asset which allows applications (like wallets and marketplaces) to present them with rich data. You can learn more about this in the [Metadata Standards Guide](https://docs.opensea.io/docs/metadata-standards) by OpenSea.
+1. At this stage, you will need to create a VRF subscription and fund it with LINK by visiting the [Chainlink VRF Subscription Manager](https://vrf.chain.link/). Follow the steps outlined in the interface to create a subscription.
 
-In this template we generate an SVG image on-chain and display the random number as text for demonstration purposes. In reality you may want to use it to generate random traits.
+1. Add funds to yout subscription. Copy the resulting subscription ID to your clipboard.
 
-Here's an example of how to randomly select the color of an item with the token randomness in Solidity:
+<ClickToZoom
+  src="/images/automation/tutorials/batch-nft3.png"
+  alt="Batch NFT Quickstart Step 2"
+  style="max-width: 70%;"
+/>
 
-```solidity
-string[] memory colors = ["red", "blue", "green", "yellow"];
-string memory itemColor = colors[randomness % colors.length];
-```
-
-You can use that color to fill an SVG shape on-chain or generate more complex art off-chain on a metadata server. Take a look at this full example of an [on-chain generated SVG art](https://github.com/hackbg/chainlink-fullstack/blob/main/packages/hardhat/contracts/RandomSVG.sol).
-
-## Setup
-
-Begin by setting the parameters for the NFT collection as environment variables:
-
-| Name                     | Description                                                                                                                                                                                                                                  |
-| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `NFT_NAME `              | Name of the collection.                                                                                                                                                                                                                      |
-| `NFT_SYMBOL `            | Symbol of the collection. Usually a few capital case letters.                                                                                                                                                                                |
-| `NFT_MAX_SUPPLY `        | Maximum amount of tokens that can be minted.                                                                                                                                                                                                 |
-| `NFT_MINT_COST `         | Cost to mint a single NFT in Ether.                                                                                                                                                                                                          |
-| `NFT_REVEAL_BATCH_SIZE ` | Minimum number of newly minted tokens required to trigger metadata reveal of a new batch. Set `0` to disable.                                                                                                                                |
-| `NFT_REVEAL_INTERVAL `   | Minimum time required to pass (in seconds) since last metadata reveal to trigger new batch reveal. It's recommended to be combined with batch size param to prevent unefficient batch revealing (ex: the minumum 1 NFT). Set `0` to disable. |
-
-Note: Either batch size or time interval params must be set or metadata won't be revealed. It's also possible for the contract owner to change these params after contract deployment via the setter functions.
-
-Additionally, you need to set variables required for the Hardhat project:
-
-| Name                | Description                                                                                                                                                          |
-| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `NETWORK_RPC_URL`   | Required to deploy to public networks. You can obtain this from websites like [Infura](https://infura.io), [Alchemy](https://www.alchemy.com) or host your own node. |
-| `PRIVATE_KEY`       | Deployer's account private key. Can be exported from wallets, i.e. MetaMask.                                                                                         |
-| `ETHERSCAN_API_KEY` | Verify contract code on Etherscan.                                                                                                                                   |
-
-The easiest way to complete this step is by copying the `.env.example` file into `.env` and replacing the values with your own.
-
-## Test
-
-To run the unit tests on the local Hardhat network:
-
-```bash
-yarn test
-```
-
-## Deploy
-
-To deploy the collection to a network, run:
-
-```bash
-yarn deploy <network>
-```
-
-The deploy scripts utilize an additional config (`helper-hardhat-config.ts`) which contains the parameters required for VRF on test networks like Goerli and Sepolia.
-
-However, you still need to manually replace the `subscriptionId` value with your own. To obtain one, you need to [Create and fund a VRF subscription](https://docs.chain.link/docs/vrf/v2/subscription/ui/).
-
-To have a fully working solution, both [Chainlink VRF](https://docs.chain.link/docs/vrf-contracts/) and [Chainlink Automation](https://docs.chain.link/docs/chainlink-automation/supported-networks/) have to be supported on the network.
-
-## Register Upkeep
-
-To automate the metadata reveal with Chainlink’s Automation network, you need to [register new Upkeeep](https://automation.chain.link/new) by following this [step-by-step guide](https://docs.chain.link/docs/chainlink-automation/register-upkeep/).
-
-## User Interface
-
-An app is included in this repo which helps you configure and deploy collections from the browser using MetaMask or WalletConnect. It then generates a shareable collection page to mint, monitor when the next reveal is, and browse through the collection of NFTs.
-
-## Misc
-
-To flatten the contract which is used to open and deploy via Remix IDE:
-
-```bash
-yarn flatten
-```
+<ClickToZoom
+  src="/images/automation/tutorials/batch-nft4.png"
+  alt="Batch NFT Quickstart Step 3"
+  style="max-width: 70%;"
+/>
