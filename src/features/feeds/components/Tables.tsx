@@ -4,7 +4,7 @@ import { clsx } from "../../../lib"
 import { ChainNetwork } from "~/features/data/chains"
 import tableStyles from "./Tables.module.css"
 import { CheckHeartbeat } from "./pause-notice/CheckHeartbeat"
-import { monitoredFeeds, FeedDataItem } from "../data"
+import { monitoredFeeds, FeedDataItem } from "~/features/data"
 
 const feedItems = monitoredFeeds.mainnet
 const feedCategories = {
