@@ -29,7 +29,6 @@ export const Dropdown = ({ placeholder = "Select a network...", options }: Props
       }
       // Bind the event listener
       document.addEventListener("mousedown", handleClickOutside)
-
       // Find and set the search value based on the current network that is in the URL params.
       const currentNetwork = matchingOptions
         .flatMap((option: Chain) => option.networks)
@@ -40,7 +39,7 @@ export const Dropdown = ({ placeholder = "Select a network...", options }: Props
         // Unbind the event listener on clean up
         document.removeEventListener("mousedown", handleClickOutside)
       }
-    }, [ref])
+    }, [ref, network])
   }
 
   const matchingOptions: Chain[] = useMemo(() => {
