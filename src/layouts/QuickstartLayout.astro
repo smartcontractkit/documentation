@@ -3,19 +3,19 @@ import HeadCommon from "../components/HeadCommon.astro"
 import HeadSEO from "../components/HeadSEO.astro"
 import Header from "../components/Header/Header.astro"
 import Quickstart from "../components/Quickstart/Quickstart.astro"
-import RightSidebar from "../components/RightSidebar/RightSidebar.astro"
+import QuickstartPanel from "../components/Quickstart/QuickstartPanel.astro"
 import * as CONFIG from "../config"
 import { NewsletterCTA } from "../components/Footer/NewsletterCTA"
 import Footer from "~/components/Footer/Footer.astro"
+import { QuickstartsFrontmatter } from "~/content/config"
+import { MarkdownHeading } from "astro"
 
-const { frontmatter } = Astro.props
+interface Props {
+  frontmatter: QuickstartsFrontmatter
+  headings: MarkdownHeading[]
+}
+const { frontmatter, headings } = Astro.props
 
-const headings = Astro.props?.headings
-
-const currentPage = new URL(Astro.request.url).pathname
-
-const currentFile = `src/pages${currentPage.replace(/\/$/, "")}${frontmatter?.isIndex ? "/index" : ""}.mdx`
-const githubEditUrl = CONFIG.GITHUB_EDIT_URL + currentFile
 const formattedContentTitle = frontmatter.title
   ? `${frontmatter.title} | ${CONFIG.SITE.title}`
   : `${CONFIG.PAGE.titleFallback} | ${CONFIG.SITE.title}`
@@ -26,7 +26,7 @@ const canonicalURL = new URL(canonicalURLStr)
 const includeLinkToWalletScript = !!Astro.props?.frontmatter?.metadata?.linkToWallet
 ---
 
-<html dir={frontmatter.dir ?? "ltr"} lang={frontmatter.lang ?? "en-us"} class="initial">
+<html dir="ltr" lang="en-us" class="initial">
   <head>
     <HeadCommon />
     <HeadSEO content={frontmatter} {canonicalURL} />
@@ -43,35 +43,15 @@ const includeLinkToWalletScript = !!Astro.props?.frontmatter?.metadata?.linkToWa
       .layout {
         display: grid;
         grid-auto-flow: column;
-        grid-template-columns: 0fr minmax(0, var(--max-width)) 0fr;
+        grid-template-columns: minmax(0, var(--max-width)) 0fr;
         overflow-x: hidden;
-      }
-
-      .layout :global(> *) {
-        width: 100%;
-        height: 100%;
-      }
-
-      .grid-sidebar {
-        height: 100vh;
-        position: sticky;
-        top: 0;
-        padding: 0;
-      }
-
-      #grid-left {
-        position: fixed;
-        background-color: var(--theme-bg);
-        z-index: 10;
-        display: none;
       }
 
       #grid-main {
         padding: var(--doc-padding) var(--gutter);
-        grid-column: 2;
+        grid-column: 1;
         display: flex;
         flex-direction: column;
-        height: 100%;
       }
 
       #grid-right {
@@ -81,21 +61,14 @@ const includeLinkToWalletScript = !!Astro.props?.frontmatter?.metadata?.linkToWa
       @media (min-width: 50em) {
         .layout {
           overflow: initial;
-          grid-template-columns: 18rem minmax(0, var(--max-width));
+          grid-template-columns: minmax(0, var(--max-width)) 18rem;
           gap: 1em;
-        }
-
-        #grid-left {
-          display: flex;
-          position: sticky;
-          grid-column: 1;
-          background: transparent;
         }
       }
 
       @media (min-width: 72em) {
         .layout {
-          grid-template-columns: 18rem minmax(0, var(--max-width)) 18rem;
+          grid-template-columns: minmax(0, var(--max-width)) 18rem;
           padding-left: 0;
           padding-right: 0;
           margin-left: auto;
@@ -103,7 +76,7 @@ const includeLinkToWalletScript = !!Astro.props?.frontmatter?.metadata?.linkToWa
         }
 
         #grid-right {
-          grid-column: 3;
+          grid-column: 2;
           display: flex;
         }
       }
@@ -148,15 +121,14 @@ const includeLinkToWalletScript = !!Astro.props?.frontmatter?.metadata?.linkToWa
     <Header frontmatter={frontmatter} />
     <main class="layout">
       <div id="grid-main">
-        <Quickstart
-          content={frontmatter}
-          githubEditUrl={githubEditUrl}
-          {headings}
-          clientSideToc={!!frontmatter?.clientSideToc}
-        >
+        <Quickstart frontmatter={frontmatter}>
           <slot />
         </Quickstart>
       </div>
+      <div id="grid-right">
+        <QuickstartPanel frontmatter={frontmatter} {headings} />
+      </div>
+      <!-- TODO: Add right side panel -->
     </main>
     <NewsletterCTA client:visible />
     <Footer />

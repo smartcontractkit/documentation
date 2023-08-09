@@ -1,0 +1,114 @@
+---
+import { MarkdownHeading } from "astro"
+import { QuickstartsFrontmatter } from "~/content/config"
+import * as CONFIG from "../../config"
+
+interface Props {
+  frontmatter: QuickstartsFrontmatter
+  headings: MarkdownHeading[]
+}
+const { frontmatter, headings } = Astro.props
+const currentPage = new URL(Astro.request.url).pathname
+const currentFile = `src/pages${currentPage.replace(/\/$/, "")}${frontmatter?.isIndex ? "/index" : ""}.mdx`
+const githubEditUrl = CONFIG.GITHUB_EDIT_URL + currentFile
+---
+
+<aside class="panel">
+  <!-- TODO: Replace placeholder image -->
+  <img src="https://globaleducationcoalition.unesco.org/uploads/326_Chainlink_color_logo_O1kmmQ.png" />
+  <hr />
+  <p>Chainlink Products: <span>{frontmatter.products.join(", ")}</span></p>
+  <p>Product Versions: <span>{frontmatter.products.join(", ")}</span></p>
+  <p>Required Time: <span>{frontmatter.time}</span></p>
+  {
+    frontmatter.requires && (
+      <p>
+        Requires: <span>{frontmatter.requires}</span>
+      </p>
+    )
+  }
+  <!-- TODO: Add docs references -->
+  <a href={githubEditUrl}>Open Github</a>
+  <div>
+    <h2 class="heading">On this page</h2>
+    <ul>
+      {
+        headings
+          .filter(({ depth }) => depth === 2)
+          .map((h) => (
+            <li>
+              <a href={`#${h.slug}`}>{h.text}</a>
+            </li>
+          ))
+      }
+    </ul>
+  </div>
+</aside>
+
+<style>
+  .panel {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6x);
+    padding: 116px var(--space-6x) 0;
+    background: var(--gray-100, #fafafb);
+  }
+
+  :where(a, p) {
+    font-size: 14px;
+  }
+
+  span {
+    font-size: unset;
+    font-weight: 500;
+    color: var(--text-common-color-text-heading, #1a2b6b);
+  }
+
+  hr {
+    height: 1px;
+    background: var(--gray-300, #ced0d5);
+  }
+
+  img {
+    max-width: none;
+    width: 337px;
+    height: 183px;
+    flex-shrink: 0;
+    border-radius: 4.523px;
+    border: 1.131px solid var(--gray-200, #ecedef);
+  }
+
+  h2.heading {
+    padding: 0;
+    margin-bottom: 0;
+  }
+
+  ul {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4x);
+  }
+
+  li {
+    color: var(--color-text-link);
+    line-height: 1;
+  }
+
+  li {
+    list-style-type: none;
+    position: relative;
+    left: 0.2em;
+  }
+
+  li::before {
+    content: "●";
+    position: relative;
+    bottom: 0.04em;
+    right: 0.2em;
+    font-size: 0.7em;
+  }
+
+  li:first-child {
+    margin-top: var(--space-3x);
+  }
+</style>

@@ -39,6 +39,17 @@ const baseFrontmatter = z
   })
   .strict()
 
+// TODO: Extend with properties for this page type
+const quickstartsFrontmatter = baseFrontmatter.extend({
+  section: z.enum(["quickstarts"]),
+  summary: z.string().optional(),
+  products: z.array(z.string()),
+  time: z.string(),
+  requires: z.string().optional(),
+})
+
+export type QuickstartsFrontmatter = z.infer<typeof quickstartsFrontmatter>
+
 const baseCollection = defineCollection({
   type: "content",
   schema: baseFrontmatter,
@@ -46,8 +57,7 @@ const baseCollection = defineCollection({
 
 const quickstartsCollection = defineCollection({
   type: "content",
-  // TODO: Extend with properties for this page type
-  schema: baseFrontmatter.extend({ section: z.enum(["quickstarts"]) }),
+  schema: quickstartsFrontmatter,
 })
 
 const anyApiCollection = baseCollection
