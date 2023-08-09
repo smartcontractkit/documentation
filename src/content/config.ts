@@ -44,6 +44,12 @@ const baseCollection = defineCollection({
   schema: baseFrontmatter,
 })
 
+const quickstartsCollection = defineCollection({
+  type: "content",
+  // TODO: Extend with properties for this page type
+  schema: baseFrontmatter.extend({ section: z.enum(["quickstarts"]) }),
+})
+
 const anyApiCollection = baseCollection
 const architectureOverviewCollection = baseCollection
 const chainlinkAutomationCollection = baseCollection
@@ -66,4 +72,5 @@ export const collections = {
   resources: resourcesCollection,
   vrf: vrfCollection,
   ccip: ccipCollection,
+  quickstarts: quickstartsCollection,
 }
