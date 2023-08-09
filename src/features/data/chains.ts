@@ -21,8 +21,11 @@ export interface Chain {
   supportedFeatures: ("vrfSubscription" | "vrfDirectFunding" | "feeds")[]
 }
 
-export const getNetworkFromQueryString = (queryString): { chain: Chain; chainNetwork: ChainNetwork } => {
+export const getNetworkFromQueryString = (
+  queryString: string
+): { chain: Chain | null; chainNetwork: ChainNetwork | null } => {
   const chain = CHAINS.find((chain) => chain.networks.some((network) => network.queryString === queryString))
+  if (!chain) return { chain: null, chainNetwork: null }
   const chainNetwork = chain.networks.filter((network) => network.queryString === queryString)[0]
   return { chain, chainNetwork }
 }

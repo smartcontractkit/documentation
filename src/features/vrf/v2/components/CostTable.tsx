@@ -1,4 +1,4 @@
-import { CHAINS, Chain, ChainNetwork, getNetworkFromQueryString } from "~/features/data/chains"
+import { Chain, ChainNetwork, getNetworkFromQueryString } from "~/features/data/chains"
 import "./costTable.css"
 import { useEffect, useReducer, useState } from "preact/hooks"
 import { BigNumber, utils } from "ethers"
@@ -161,24 +161,6 @@ export const CostTable = ({ method }: Props) => {
   const [network] = useQueryString("network", "")
   const [networkName, setNetworkName] = useState<string>("")
 
-  const getDataResponse = async (mainChainName: string, networkName: string): Promise<dataResponse> => {
-    const cacheKey = `${mainChainName}-${networkName === mainChainName ? chain.networkType : networkName}-${
-      method === "vrfSubscription" ? "subscription" : "directFunding"
-    }`
-    if (cache[cacheKey] && cache[cacheKey].latestCacheUpdate - Date.now() < CACHE_EXPIRY_TIME) {
-      return cache[cacheKey].data
-    }
-
-    const response = await fetch(getGasCalculatorUrl({ mainChainName, networkName, chain, method }), { method: "GET" })
-
-    const json: dataResponse = await response.json()
-    cache[cacheKey] = {
-      data: json,
-      latestCacheUpdate: Date.now(),
-    }
-    return json
-  }
-
   useEffect(() => {
     if (typeof network !== "string" || network === "") return
 
@@ -235,7 +217,26 @@ export const CostTable = ({ method }: Props) => {
       console.error(error)
     })
     return () => dispatch({ type: "SET_LOADING", payload: false })
-  }, [method, network, mainChain, chain])
+  }, [method, network])
+
+  if (!mainChain || !chain) return
+  const getDataResponse = async (mainChainName: string, networkName: string): Promise<dataResponse> => {
+    const cacheKey = `${mainChainName}-${networkName === mainChainName ? chain.networkType : networkName}-${
+      method === "vrfSubscription" ? "subscription" : "directFunding"
+    }`
+    if (cache[cacheKey] && cache[cacheKey].latestCacheUpdate - Date.now() < CACHE_EXPIRY_TIME) {
+      return cache[cacheKey].data
+    }
+
+    const response = await fetch(getGasCalculatorUrl({ mainChainName, networkName, chain, method }), { method: "GET" })
+
+    const json: dataResponse = await response.json()
+    cache[cacheKey] = {
+      data: json,
+      latestCacheUpdate: Date.now(),
+    }
+    return json
+  }
 
   const handleRadioChange = (event) => {
     dispatch({ type: "SET_CURRENT_GAS_LANE", payload: parseInt(event.target.value) })
@@ -308,7 +309,6 @@ export const CostTable = ({ method }: Props) => {
       })
     }
   }
-
   const getsupportedNetworkShortcut = () => {
     const chainName = mainChain.label.toLowerCase()
     switch (chainName) {
@@ -488,9 +488,6 @@ export const CostTable = ({ method }: Props) => {
       res += state.maxCost[idx]
     }
     return res
-  }
-  if (!mainChain || !chain) {
-    return
   }
   if (state.isLoading) {
     return <p className="loading-text">Data is being fetched. Please wait a moment...</p>
