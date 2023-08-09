@@ -219,7 +219,7 @@ export const CostTable = ({ method }: Props) => {
     return () => dispatch({ type: "SET_LOADING", payload: false })
   }, [method, network])
 
-  if (!mainChain || !chain) return
+  if (!mainChain || !chain) return null
   const getDataResponse = async (mainChainName: string, networkName: string): Promise<dataResponse> => {
     const cacheKey = `${mainChainName}-${networkName === mainChainName ? chain.networkType : networkName}-${
       method === "vrfSubscription" ? "subscription" : "directFunding"
