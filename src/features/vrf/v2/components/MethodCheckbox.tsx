@@ -1,6 +1,8 @@
 import { useState } from "preact/hooks"
 import "./methodCheckbox.css"
-import { DropDownMenu } from "./DropdownMenu"
+import { CHAINS } from "~/features/data/chains"
+import { CostTable } from "./CostTable"
+import { Dropdown } from "./Dropdown"
 
 export const MethodCheckbox = () => {
   const [vrfMethodUsed, setVrfMethodUsed] = useState<"vrfSubscription" | "vrfDirectFunding">("vrfSubscription")
@@ -8,6 +10,7 @@ export const MethodCheckbox = () => {
   const handleChange = (event) => {
     setVrfMethodUsed(event.target.value)
   }
+  const options = CHAINS.filter((chain) => chain.supportedFeatures.includes(vrfMethodUsed))
 
   return (
     <div className="wrapper-container">
@@ -37,7 +40,8 @@ export const MethodCheckbox = () => {
         </div>
       </div>
 
-      <DropDownMenu method={vrfMethodUsed} />
+      <Dropdown options={options} />
+      <CostTable method={vrfMethodUsed} />
     </div>
   )
 }

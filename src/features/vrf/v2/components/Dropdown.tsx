@@ -30,6 +30,12 @@ export const Dropdown = ({ placeholder = "Select a network...", options }: Props
       // Bind the event listener
       document.addEventListener("mousedown", handleClickOutside)
 
+      // Find and set the search value based on the current network that is in the URL params.
+      const currentNetwork = matchingOptions
+        .flatMap((option: Chain) => option.networks)
+        .find((networkObject: ChainNetwork) => networkObject.queryString === network)
+      setSearchValue(currentNetwork?.name ?? "")
+
       return () => {
         // Unbind the event listener on clean up
         document.removeEventListener("mousedown", handleClickOutside)
@@ -48,7 +54,6 @@ export const Dropdown = ({ placeholder = "Select a network...", options }: Props
   }, [searchValue, options])
 
   const handleSelectedChain = (net: ChainNetwork) => {
-    // setSelectNet(net.name)
     setSearchValue(net.name)
   }
 
