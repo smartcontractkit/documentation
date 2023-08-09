@@ -159,7 +159,6 @@ export const CostTable = ({ method }: Props) => {
   const [mainChain, setMainChain] = useState<Chain | null>(null)
   const [chain, setChain] = useState<ChainNetwork | null>(null)
   const [network] = useQueryString("network", "")
-  const [mainChainName, setMainChainName] = useState<string>("")
   const [networkName, setNetworkName] = useState<string>("")
 
   const getDataResponse = async (mainChainName: string, networkName: string): Promise<dataResponse> => {
@@ -182,7 +181,6 @@ export const CostTable = ({ method }: Props) => {
 
   useEffect(() => {
     if (typeof network === "string" && network !== "") {
-      setMainChainName(network.split("-")[0])
       setNetworkName(network.split("-")[1])
       const { chain, chainNetwork } = getNetworkFromQueryString(network)
       setMainChain(chain)
@@ -194,7 +192,7 @@ export const CostTable = ({ method }: Props) => {
 
     dispatch({ type: "SET_LOADING", payload: true })
     const fillInputs = async () => {
-      const responseJson: dataResponse = await getDataResponse(mainChainName, networkName)
+      const responseJson: dataResponse = await getDataResponse(network.split("-")[0], networkName)
       const {
         gasPrice,
         L1GasPriceEstimate,
@@ -239,7 +237,6 @@ export const CostTable = ({ method }: Props) => {
       dispatch({ type: "SET_LOADING", payload: false })
       console.error(error)
     })
-    setSupportedNetworkShortcut(getsupportedNetworkShortcut(networkName))
     return () => dispatch({ type: "SET_LOADING", payload: false })
   }, [method, network, mainChain, chain])
 
@@ -317,28 +314,27 @@ export const CostTable = ({ method }: Props) => {
 
   const getsupportedNetworkShortcut = () => {
     const chainName = mainChain.label.toLowerCase()
-    const subChainName = networkName
     switch (chainName) {
       case "ethereum":
-        if (subChainName !== "mainnet") {
-          return `${subChainName}-${chain.networkType}`
+        if (networkName !== "mainnet") {
+          return `${networkName}-${chain.networkType}`
         }
         return `${chainName}-${chain.networkType}`
       case "bnb chain":
         return `${chainName.replace(" ", "-")}${chain.networkType === "testnet" ? "-" + chain.networkType : ""}`
       case "polygon (matic)":
         return `polygon-matic-${
-          chain.networkType === "testnet" ? subChainName + "-" + chain.networkType : chain.networkType
+          chain.networkType === "testnet" ? networkName + "-" + chain.networkType : chain.networkType
         }`
       case "avalanche":
         return `${chainName}-${
-          chain.networkType === "testnet" ? subChainName + "-" + chain.networkType : chain.networkType
+          chain.networkType === "testnet" ? networkName + "-" + chain.networkType : chain.networkType
         }`
       case "fantom":
         return `${chainName}-${chain.networkType}`
       case "arbitrum":
         return `${chainName}-${
-          chain.networkType === "testnet" ? subChainName + "-" + chain.networkType : chain.networkType
+          chain.networkType === "testnet" ? networkName + "-" + chain.networkType : chain.networkType
         }`
       default:
         throw new Error("network/chain does not exist or is not supported by VRF yet.")
