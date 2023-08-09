@@ -164,11 +164,6 @@ export const getGasCalculatorUrl = ({
   chainNetwork: ChainNetwork
   method: Props["method"]
 }) => {
-  console.log(
-    `https://vrf.chain.link/api/calculator?networkName=${mainChainName}&networkType=${
-      networkName === mainChainName ? chainNetwork.networkType.toLowerCase() : networkName
-    }&method=${method === "vrfSubscription" ? "subscription" : "directFunding"}`
-  )
   return `https://vrf.chain.link/api/calculator?networkName=${mainChainName}&networkType=${
     networkName === mainChainName ? chainNetwork.networkType.toLowerCase() : networkName
   }&method=${method === "vrfSubscription" ? "subscription" : "directFunding"}`
