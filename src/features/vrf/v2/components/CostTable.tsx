@@ -1,6 +1,6 @@
 import { Chain, ChainNetwork, getNetworkFromQueryString } from "~/features/data/chains"
 import "./costTable.css"
-import { useEffect, useReducer, useState } from "preact/hooks"
+import { useCallback, useEffect, useReducer, useState } from "preact/hooks"
 import { BigNumber, utils } from "ethers"
 import button from "@chainlink/design-system/button.module.css"
 import useQueryString from "~/hooks/useQueryString"
@@ -141,25 +141,47 @@ const cache: Cache = {}
 export const getGasCalculatorUrl = ({
   mainChainName,
   networkName,
-  chain,
+  mainChainNetwork,
   method,
 }: {
   mainChainName: string
   networkName: string
-  chain: ChainNetwork
+  mainChainNetwork: ChainNetwork
   method: Props["method"]
 }) => {
   return `https://vrf.chain.link/api/calculator?networkName=${mainChainName}&networkType=${
-    networkName === mainChainName ? chain.networkType.toLowerCase() : networkName
+    networkName === mainChainName ? mainChainNetwork.networkType.toLowerCase() : networkName
   }&method=${method === "vrfSubscription" ? "subscription" : "directFunding"}`
 }
 
 export const CostTable = ({ method }: Props) => {
   const [state, dispatch] = useReducer(reducer, initialState)
   const [mainChain, setMainChain] = useState<Chain | null>(null)
-  const [chain, setChain] = useState<ChainNetwork | null>(null)
+  const [mainChainNetwork, setMainChainNetwork] = useState<ChainNetwork | null>(null)
   const [network] = useQueryString("network", "")
   const [networkName, setNetworkName] = useState<string>("")
+  const getDataResponse = useCallback(
+    async (mainChainName: string, networkName: string): Promise<dataResponse | undefined> => {
+      const cacheKey = `${mainChainName}-${
+        networkName === mainChainName ? mainChainNetwork?.networkType : networkName
+      }-${method === "vrfSubscription" ? "subscription" : "directFunding"}`
+      if (cache[cacheKey] && cache[cacheKey].latestCacheUpdate - Date.now() < CACHE_EXPIRY_TIME) {
+        return cache[cacheKey].data
+      }
+      if (mainChainNetwork) {
+        const response = await fetch(getGasCalculatorUrl({ mainChainName, networkName, mainChainNetwork, method }), {
+          method: "GET",
+        })
+        const json: dataResponse = await response.json()
+        cache[cacheKey] = {
+          data: json,
+          latestCacheUpdate: Date.now(),
+        }
+        return json
+      }
+    },
+    [method]
+  )
 
   useEffect(() => {
     if (typeof network !== "string" || network === "") return
@@ -167,11 +189,11 @@ export const CostTable = ({ method }: Props) => {
     setNetworkName(network.split("-")[1])
     const { chain, chainNetwork } = getNetworkFromQueryString(network)
     setMainChain(chain)
-    setChain(chainNetwork)
-
+    setMainChainNetwork(chainNetwork)
     dispatch({ type: "SET_LOADING", payload: true })
     const fillInputs = async () => {
-      const responseJson: dataResponse = await getDataResponse(network.split("-")[0], networkName)
+      const responseJson: dataResponse | undefined = await getDataResponse(network.split("-")[0], networkName)
+      if (!responseJson) return
       const {
         gasPrice,
         L1GasPriceEstimate,
@@ -217,26 +239,9 @@ export const CostTable = ({ method }: Props) => {
       console.error(error)
     })
     return () => dispatch({ type: "SET_LOADING", payload: false })
-  }, [method, network])
+  }, [getDataResponse, network, mainChainNetwork, mainChain])
 
-  if (!mainChain || !chain) return null
-  const getDataResponse = async (mainChainName: string, networkName: string): Promise<dataResponse> => {
-    const cacheKey = `${mainChainName}-${networkName === mainChainName ? chain.networkType : networkName}-${
-      method === "vrfSubscription" ? "subscription" : "directFunding"
-    }`
-    if (cache[cacheKey] && cache[cacheKey].latestCacheUpdate - Date.now() < CACHE_EXPIRY_TIME) {
-      return cache[cacheKey].data
-    }
-
-    const response = await fetch(getGasCalculatorUrl({ mainChainName, networkName, chain, method }), { method: "GET" })
-
-    const json: dataResponse = await response.json()
-    cache[cacheKey] = {
-      data: json,
-      latestCacheUpdate: Date.now(),
-    }
-    return json
-  }
+  if (!mainChain || !mainChainNetwork) return null
 
   const handleRadioChange = (event) => {
     dispatch({ type: "SET_CURRENT_GAS_LANE", payload: parseInt(event.target.value) })
@@ -314,24 +319,32 @@ export const CostTable = ({ method }: Props) => {
     switch (chainName) {
       case "ethereum":
         if (networkName !== "mainnet") {
-          return `${networkName}-${chain.networkType}`
+          return `${networkName}-${mainChainNetwork.networkType}`
         }
-        return `${chainName}-${chain.networkType}`
+        return `${chainName}-${mainChainNetwork.networkType}`
       case "bnb chain":
-        return `${chainName.replace(" ", "-")}${chain.networkType === "testnet" ? "-" + chain.networkType : ""}`
+        return `${chainName.replace(" ", "-")}${
+          mainChainNetwork.networkType === "testnet" ? "-" + mainChainNetwork.networkType : ""
+        }`
       case "polygon (matic)":
         return `polygon-matic-${
-          chain.networkType === "testnet" ? networkName + "-" + chain.networkType : chain.networkType
+          mainChainNetwork.networkType === "testnet"
+            ? networkName + "-" + mainChainNetwork.networkType
+            : mainChainNetwork.networkType
         }`
       case "avalanche":
         return `${chainName}-${
-          chain.networkType === "testnet" ? networkName + "-" + chain.networkType : chain.networkType
+          mainChainNetwork.networkType === "testnet"
+            ? networkName + "-" + mainChainNetwork.networkType
+            : mainChainNetwork.networkType
         }`
       case "fantom":
-        return `${chainName}-${chain.networkType}`
+        return `${chainName}-${mainChainNetwork.networkType}`
       case "arbitrum":
         return `${chainName}-${
-          chain.networkType === "testnet" ? networkName + "-" + chain.networkType : chain.networkType
+          mainChainNetwork.networkType === "testnet"
+            ? networkName + "-" + mainChainNetwork.networkType
+            : mainChainNetwork.networkType
         }`
       default:
         throw new Error("network/chain does not exist or is not supported by VRF yet.")
