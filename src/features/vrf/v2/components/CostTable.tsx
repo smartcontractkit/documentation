@@ -1,6 +1,6 @@
 import { Chain, ChainNetwork, getNetworkFromQueryString } from "~/features/data/chains"
 import "./costTable.css"
-import { useCallback, useEffect, useReducer, useState } from "preact/hooks"
+import { useCallback, useEffect, useReducer } from "preact/hooks"
 import { BigNumber, utils } from "ethers"
 import button from "@chainlink/design-system/button.module.css"
 import useQueryString from "~/hooks/useQueryString"
@@ -28,6 +28,9 @@ interface dataResponse {
 
 interface State {
   isLoading: boolean
+  networkName: string
+  mainChain: Chain | null
+  mainChainNetwork: ChainNetwork | null
   gasPrice: string
   L1GasPriceEstimate: string | undefined
   currentL1GasPriceEstimate: string
@@ -60,6 +63,9 @@ const CACHE_EXPIRY_TIME = 5 * 60 * 1000 // 5 min in milliseconds
 
 const initialState: State = {
   isLoading: false,
+  networkName: "",
+  mainChain: null,
+  mainChainNetwork: null,
   gasPrice: "0",
   L1GasPriceEstimate: "0",
   currentL1GasPriceEstimate: "0",
@@ -82,6 +88,9 @@ const initialState: State = {
 type Action =
   | { type: "UPDATE_STATE"; payload: Partial<State> }
   | { type: "SET_LOADING"; payload: boolean }
+  | { type: "SET_NETWORK_NAME"; payload: string }
+  | { type: "SET_MAIN_CHAIN"; payload: Chain }
+  | { type: "SET_MAIN_CHAIN_NETWORK"; payload: ChainNetwork }
   | { type: "SET_GAS_PRICE"; payload: string }
   | { type: "SET_CURRENT_GAS_PRICE"; payload: string }
   | { type: "SET_CALLBACK_GAS_LIMIT"; payload: number }
@@ -103,6 +112,12 @@ const reducer = (state: State, action: Action) => {
       return Object.assign({}, state, action.payload)
     case "SET_LOADING":
       return { ...state, isLoading: action.payload }
+    case "SET_NETWORK_NAME":
+      return { ...state, networkName: action.payload }
+    case "SET_MAIN_CHAIN":
+      return { ...state, mainChain: action.payload }
+    case "SET_MAIN_CHAIN_NETWORK":
+      return { ...state, mainChainNetwork: action.payload }
     case "SET_GAS_PRICE":
       return { ...state, gasPrice: action.payload, currentGasPrice: action.payload }
     case "SET_CURRENT_GAS_PRICE":
@@ -156,14 +171,11 @@ export const getGasCalculatorUrl = ({
 
 export const CostTable = ({ method }: Props) => {
   const [state, dispatch] = useReducer(reducer, initialState)
-  const [mainChain, setMainChain] = useState<Chain | null>(null)
-  const [mainChainNetwork, setMainChainNetwork] = useState<ChainNetwork | null>(null)
   const [network] = useQueryString("network", "")
-  const [networkName, setNetworkName] = useState<string>("")
   const getDataResponse = useCallback(
     async (mainChainName: string, networkName: string, chainNetwork: ChainNetwork): Promise<dataResponse> => {
       const cacheKey = `${mainChainName}-${
-        networkName === mainChainName ? mainChainNetwork?.networkType : networkName
+        networkName === mainChainName ? state.mainChainNetwork?.networkType : networkName
       }-${method === "vrfSubscription" ? "subscription" : "directFunding"}`
       if (cache[cacheKey] && cache[cacheKey].latestCacheUpdate - Date.now() < CACHE_EXPIRY_TIME) {
         return cache[cacheKey].data
@@ -184,12 +196,19 @@ export const CostTable = ({ method }: Props) => {
   useEffect(() => {
     if (typeof network !== "string" || network === "") return
 
-    setNetworkName(network.split("-")[1])
     const { chain, chainNetwork } = getNetworkFromQueryString(network)
-    setMainChain(chain)
-    setMainChainNetwork(chainNetwork)
+    const networkName = network.split("-")[1]
     dispatch({ type: "SET_LOADING", payload: true })
     const fillInputs = async () => {
+      dispatch({
+        type: "UPDATE_STATE",
+        payload: {
+          ...initialState,
+          networkName,
+          mainChain: chain,
+          mainChainNetwork: chainNetwork,
+        },
+      })
       if (!chainNetwork || !networkName) return
       const responseJson: dataResponse = await getDataResponse(network.split("-")[0], networkName, chainNetwork)
       const {
@@ -237,9 +256,9 @@ export const CostTable = ({ method }: Props) => {
       console.error(error)
     })
     return () => dispatch({ type: "SET_LOADING", payload: false })
-  }, [getDataResponse, network, networkName, mainChainNetwork])
+  }, [getDataResponse, network])
 
-  if (!mainChain || !mainChainNetwork) return null
+  if (!state.mainChain || !state.mainChainNetwork) return null
 
   const handleRadioChange = (event) => {
     dispatch({ type: "SET_CURRENT_GAS_LANE", payload: parseInt(event.target.value) })
@@ -313,36 +332,36 @@ export const CostTable = ({ method }: Props) => {
     }
   }
   const getsupportedNetworkShortcut = () => {
-    const chainName = mainChain.label.toLowerCase()
+    const chainName = state.mainChain?.label.toLowerCase()
     switch (chainName) {
       case "ethereum":
-        if (networkName !== "mainnet") {
-          return `${networkName}-${mainChainNetwork.networkType}`
+        if (state.networkName !== "mainnet") {
+          return `${state.networkName}-${state.mainChainNetwork?.networkType}`
         }
-        return `${chainName}-${mainChainNetwork.networkType}`
+        return `${chainName}-${state.mainChainNetwork?.networkType}`
       case "bnb chain":
         return `${chainName.replace(" ", "-")}${
-          mainChainNetwork.networkType === "testnet" ? "-" + mainChainNetwork.networkType : ""
+          state.mainChainNetwork?.networkType === "testnet" ? "-" + state.mainChainNetwork.networkType : ""
         }`
       case "polygon (matic)":
         return `polygon-matic-${
-          mainChainNetwork.networkType === "testnet"
-            ? networkName + "-" + mainChainNetwork.networkType
-            : mainChainNetwork.networkType
+          state.mainChainNetwork?.networkType === "testnet"
+            ? state.networkName + "-" + state.mainChainNetwork?.networkType
+            : state.mainChainNetwork?.networkType
         }`
       case "avalanche":
         return `${chainName}-${
-          mainChainNetwork.networkType === "testnet"
-            ? networkName + "-" + mainChainNetwork.networkType
-            : mainChainNetwork.networkType
+          state.mainChainNetwork?.networkType === "testnet"
+            ? state.networkName + "-" + state.mainChainNetwork?.networkType
+            : state.mainChainNetwork?.networkType
         }`
       case "fantom":
-        return `${chainName}-${mainChainNetwork.networkType}`
+        return `${chainName}-${state.mainChainNetwork?.networkType}`
       case "arbitrum":
         return `${chainName}-${
-          mainChainNetwork.networkType === "testnet"
-            ? networkName + "-" + mainChainNetwork.networkType
-            : mainChainNetwork.networkType
+          state.mainChainNetwork?.networkType === "testnet"
+            ? state.networkName + "-" + state.mainChainNetwork?.networkType
+            : state.mainChainNetwork?.networkType
         }`
       default:
         throw new Error("network/chain does not exist or is not supported by VRF yet.")
@@ -350,7 +369,7 @@ export const CostTable = ({ method }: Props) => {
   }
 
   const computeTotalRequestCost = () => {
-    if (mainChain.label.toLowerCase() === "arbitrum") {
+    if (state.mainChain && state.mainChain.label.toLowerCase() === "arbitrum") {
       computeArbitrumCost()
       return
     }
@@ -522,7 +541,7 @@ export const CostTable = ({ method }: Props) => {
               />
             </td>
           </tr>
-          {mainChain.label.toLowerCase() === "arbitrum" && state.L1GasPriceEstimate && (
+          {state.mainChain.label.toLowerCase() === "arbitrum" && state.L1GasPriceEstimate && (
             <tr>
               <td>L1 gas price (current is {getGasPrice(state.L1GasPriceEstimate)} gwei)</td>
               <td>
