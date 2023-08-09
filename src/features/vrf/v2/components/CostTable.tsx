@@ -180,15 +180,12 @@ export const CostTable = ({ method }: Props) => {
   }
 
   useEffect(() => {
-    if (typeof network === "string" && network !== "") {
-      setNetworkName(network.split("-")[1])
-      const { chain, chainNetwork } = getNetworkFromQueryString(network)
-      setMainChain(chain)
-      setChain(chainNetwork)
-    }
-    if (!mainChain || !chain) {
-      return
-    }
+    if (typeof network !== "string" || network === "") return
+
+    setNetworkName(network.split("-")[1])
+    const { chain, chainNetwork } = getNetworkFromQueryString(network)
+    setMainChain(chain)
+    setChain(chainNetwork)
 
     dispatch({ type: "SET_LOADING", payload: true })
     const fillInputs = async () => {

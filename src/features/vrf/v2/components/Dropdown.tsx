@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "preact/hooks"
 import "./dropdown.css"
 import { RefObject } from "preact"
-import { CHAINS, Chain, ChainNetwork } from "~/features/data/chains"
+import { Chain, ChainNetwork } from "~/features/data/chains"
 import useQueryString from "~/hooks/useQueryString"
 
 interface Props {
