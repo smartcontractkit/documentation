@@ -15,7 +15,7 @@ export interface Chain {
   img?: string
   networkStatusUrl: string
   networks: ChainNetwork[]
-  label?: string
+  label: string
   tags?: ChainTags
   supportedFeatures: ("vrfSubscription" | "vrfDirectFunding" | "feeds")[]
 }

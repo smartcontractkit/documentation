@@ -15,7 +15,7 @@ const AddressComponent = ({ contractUrl, address, endLength, urlClass, urlId }: 
   return (
     <span className={`addressContainer ${urlClass || ""}`} id={urlId}>
       <a title={address} className="addressLink" href={contractUrl}>
-        {endLength ? address.slice(0, endLength + 2) + "..." + address.slice(-endLength) : address}
+        {endLength && address ? address.slice(0, endLength + 2) + "..." + address.slice(-endLength) : address}
       </a>
       <button
         className={clsx("copyBtn", "copy-iconbutton")}

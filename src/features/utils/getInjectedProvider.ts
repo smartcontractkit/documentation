@@ -77,7 +77,7 @@ const fetchAccount = async (
 
 export const checkConnection = async () => {
   if (isMetamaskExternalProvider(window.ethereum)) {
-    const accountData: FetchAccountResponse | undefined = await fetchAccount(window.ethereum)
+    const accountData: FetchAccountResponse | null = await fetchAccount(window.ethereum)
     return accountData
   }
   return undefined

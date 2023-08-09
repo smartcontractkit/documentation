@@ -18,7 +18,7 @@ const starOutline = (
   </svg>
 )
 export const Feedback = () => {
-  const [rating, setRating] = useState<number>(undefined)
+  const [rating, setRating] = useState<number | undefined>(undefined)
   const [isSent, setIsSent] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -80,7 +80,7 @@ export const Feedback = () => {
               cursor: "pointer",
             }}
           >
-            {rating >= i + 1 ? star : starOutline}
+            {rating && rating >= i + 1 ? star : starOutline}
           </div>
         ))}
       </div>

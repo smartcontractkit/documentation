@@ -1,3 +1,5 @@
+import Prism from "prismjs"
+export {}
 // Expand with support for job spec v2 toml
 Prism.languages.jpv2dot = Prism.languages.extend("dot", {})
 
