@@ -141,16 +141,16 @@ const cache: Cache = {}
 export const getGasCalculatorUrl = ({
   mainChainName,
   networkName,
-  mainChainNetwork,
+  chainNetwork,
   method,
 }: {
   mainChainName: string
   networkName: string
-  mainChainNetwork: ChainNetwork
+  chainNetwork: ChainNetwork
   method: Props["method"]
 }) => {
   return `https://vrf.chain.link/api/calculator?networkName=${mainChainName}&networkType=${
-    networkName === mainChainName ? mainChainNetwork.networkType.toLowerCase() : networkName
+    networkName === mainChainName ? chainNetwork.networkType.toLowerCase() : networkName
   }&method=${method === "vrfSubscription" ? "subscription" : "directFunding"}`
 }
 
@@ -161,24 +161,22 @@ export const CostTable = ({ method }: Props) => {
   const [network] = useQueryString("network", "")
   const [networkName, setNetworkName] = useState<string>("")
   const getDataResponse = useCallback(
-    async (mainChainName: string, networkName: string): Promise<dataResponse | undefined> => {
+    async (mainChainName: string, networkName: string, chainNetwork: ChainNetwork): Promise<dataResponse> => {
       const cacheKey = `${mainChainName}-${
         networkName === mainChainName ? mainChainNetwork?.networkType : networkName
       }-${method === "vrfSubscription" ? "subscription" : "directFunding"}`
       if (cache[cacheKey] && cache[cacheKey].latestCacheUpdate - Date.now() < CACHE_EXPIRY_TIME) {
         return cache[cacheKey].data
       }
-      if (mainChainNetwork) {
-        const response = await fetch(getGasCalculatorUrl({ mainChainName, networkName, mainChainNetwork, method }), {
-          method: "GET",
-        })
-        const json: dataResponse = await response.json()
-        cache[cacheKey] = {
-          data: json,
-          latestCacheUpdate: Date.now(),
-        }
-        return json
+      const response = await fetch(getGasCalculatorUrl({ mainChainName, networkName, chainNetwork, method }), {
+        method: "GET",
+      })
+      const json: dataResponse = await response.json()
+      cache[cacheKey] = {
+        data: json,
+        latestCacheUpdate: Date.now(),
       }
+      return json
     },
     [method]
   )
@@ -192,8 +190,8 @@ export const CostTable = ({ method }: Props) => {
     setMainChainNetwork(chainNetwork)
     dispatch({ type: "SET_LOADING", payload: true })
     const fillInputs = async () => {
-      const responseJson: dataResponse | undefined = await getDataResponse(network.split("-")[0], networkName)
-      if (!responseJson) return
+      if (!chainNetwork || !networkName) return
+      const responseJson: dataResponse = await getDataResponse(network.split("-")[0], networkName, chainNetwork)
       const {
         gasPrice,
         L1GasPriceEstimate,
@@ -239,7 +237,7 @@ export const CostTable = ({ method }: Props) => {
       console.error(error)
     })
     return () => dispatch({ type: "SET_LOADING", payload: false })
-  }, [getDataResponse, network, mainChainNetwork, mainChain])
+  }, [getDataResponse, network, networkName, mainChainNetwork])
 
   if (!mainChain || !mainChainNetwork) return null
 
