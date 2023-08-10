@@ -11,7 +11,6 @@ export const chainToProvider: Record<SupportedChain, () => providers.Provider> =
   BNB_TESTNET: () => new providers.JsonRpcProvider("https://data-seed-prebsc-1-s1.binance.org:8545/"),
   POLYGON_MAINNET: () => new providers.JsonRpcProvider("https://rpc.ankr.com/polygon"),
   POLYGON_MUMBAI: () => new providers.JsonRpcProvider("https://rpc.ankr.com/polygon_mumbai"),
-  RSK_MAINNET: () => new providers.JsonRpcProvider("https://public-node.rsk.co"),
   GNOSIS_MAINNET: () => new providers.JsonRpcProvider("https://rpc.ankr.com/gnosis"),
   AVALANCHE_MAINNET: () => new providers.JsonRpcProvider("https://rpc.ankr.com/avalanche"),
   AVALANCHE_FUJI: () => new providers.JsonRpcProvider("https://rpc.ankr.com/avalanche_fuji"),
