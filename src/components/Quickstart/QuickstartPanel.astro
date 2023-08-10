@@ -1,6 +1,6 @@
 ---
 import { MarkdownHeading } from "astro"
-import { QuickstartsFrontmatter } from "~/content/config"
+import { QuickstartsFrontmatter, productsInfo } from "~/content/config"
 import * as CONFIG from "../../config"
 
 interface Props {
@@ -11,14 +11,15 @@ const { frontmatter, headings } = Astro.props
 const currentPage = new URL(Astro.request.url).pathname
 const currentFile = `src/pages${currentPage.replace(/\/$/, "")}${frontmatter?.isIndex ? "/index" : ""}.mdx`
 const githubEditUrl = CONFIG.GITHUB_EDIT_URL + currentFile
+const products = frontmatter.products.map((p) => productsInfo[p])
 ---
 
 <aside class="panel">
   <!-- TODO: Replace placeholder image -->
   <img src="https://globaleducationcoalition.unesco.org/uploads/326_Chainlink_color_logo_O1kmmQ.png" />
   <div class="description">
-    <div><p>Chainlink Products:</p> <p><span>{frontmatter.products.join(", ")}</span></p></div>
-    <div><p>Product Versions:</p> <p><span>{frontmatter.products.join(", ")}</span></p></div>
+    <div><p>Chainlink Products:</p> <p><span>{products.map((p) => p.name).join(", ")}</span></p></div>
+    <div><p>Product Versions:</p> <p><span>{products.map((p) => p.name).join(", ")}</span></p></div>
     <div><p>Required Time:</p> <p><span>{frontmatter.time}</span></p></div>
     {
       frontmatter.requires && (
@@ -31,13 +32,13 @@ const githubEditUrl = CONFIG.GITHUB_EDIT_URL + currentFile
       )
     }
     <div>
-      <p>Docs references:</p>
+      <p>Docs References:</p>
       <ul>
         <span
           >{
-            frontmatter.products.map((p) => (
-              <a>
-                <li style="line-height: 1.5;">{p}</li>
+            products.map((p) => (
+              <a href={`/${p.slug}`}>
+                <li style="line-height: 1.5;">{p.name}</li>
               </a>
             ))
           }</span
@@ -67,14 +68,14 @@ const githubEditUrl = CONFIG.GITHUB_EDIT_URL + currentFile
   .panel {
     display: flex;
     flex-direction: column;
-    gap: var(--space-5x);
-    padding: 116px var(--space-16x) 0;
+    gap: var(--space-8x);
+    padding: var(--space-12x) var(--space-16x) 0;
     background: var(--gray-100, #fafafb);
   }
 
   .panel .description {
     border-top: 1px solid var(--gray-300, #ced0d5);
-    padding-top: var(--space-4x);
+    padding-top: var(--space-8x);
     display: flex;
     flex-direction: column;
     gap: var(--space-5x);

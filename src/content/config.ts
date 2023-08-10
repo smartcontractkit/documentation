@@ -1,6 +1,22 @@
 import { z, defineCollection } from "astro:content"
 
-export const productEnum = z.enum(["CCIP", "Automation", "Functions", "VRF", "Data Feeds"])
+enum Products {
+  CCIP = "ccip",
+  AUTOMATION = "automation",
+  FUNCTIONS = "functions",
+  VRF = "vrf",
+  FEEDS = "feeds",
+}
+
+export const productsInfo: Record<Products, { name: string; slug: string }> = {
+  ccip: { name: "CCIP", slug: "ccip" },
+  automation: { name: "Automation", slug: "chainlink-automation/introduction" },
+  functions: { name: "Functions", slug: "chainlink-functions" },
+  vrf: { name: "VRF", slug: "vrf/v2/introduction" },
+  feeds: { name: "Data Feeds", slug: "data-feeds" },
+}
+
+const productEnum = z.nativeEnum(Products)
 
 export const sectionEnum = z.enum([
   "anyApi",
