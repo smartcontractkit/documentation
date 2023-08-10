@@ -111,6 +111,11 @@ const { frontmatter } = Astro.props
     line-height: 1.5;
   }
 
+  .content :global(ol) {
+    padding-left: 0;
+    counter-reset: counter;
+  }
+
   .content :global(ol > li:first-of-type) {
     border-top: 1px solid var(--gray-300, #ced0d5);
   }
@@ -118,23 +123,37 @@ const { frontmatter } = Astro.props
   .content :global(ol > li) {
     padding: 12px 0px;
     border-bottom: 1px solid var(--gray-300, #ced0d5);
+    list-style: none;
   }
 
-  .content :global(summary) {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
+  .content :global(details > summary) {
+    display: grid;
+    grid-template-columns: 0 1fr auto;
+    gap: var(--space-8x);
     cursor: pointer;
     color: var(--blue-800, #1a2b6b);
     font-size: 20px;
   }
 
+  .content :global(details > summary::before) {
+    content: counters(counter, ".") "";
+    counter-increment: counter;
+    color: var(--gray-400, #b7bac0);
+    letter-spacing: -0.24px;
+  }
+
   /* TODO: Replace with SVGs */
   .content :global(details > summary::after) {
     content: "v";
+    color: var(--gray-400, #b7bac0);
   }
 
   .content :global(details[open] > summary::after) {
     content: "^";
+    color: #174cc2;
+  }
+
+  .content :global(details > :not(summary)) {
+    padding-left: var(--space-8x);
   }
 </style>
