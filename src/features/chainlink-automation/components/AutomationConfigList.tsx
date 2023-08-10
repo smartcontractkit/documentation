@@ -21,18 +21,23 @@ export const AutomationConfigList = () => {
           const registryAddress = automationAddresses[supportedChain]
             ? automationAddresses[supportedChain]?.registryAddress
             : ""
-          return !title ? (
-            <p />
-          ) : (
+
+          const config = chainlinkAutomationConfig[supportedChain]
+
+          if (!(title && config && registryAddress && explorerUrl)) {
+            return null
+          }
+
+          return (
             <div key={supportedChain}>
               <h4 id={slugger.slug(title)}>{title}</h4>
-              {chainlinkAutomationConfig[supportedChain] && registryAddress && explorerUrl && (
+              {
                 <AutomationConfig
-                  config={chainlinkAutomationConfig[supportedChain]}
+                  config={config}
                   registryAddress={registryAddress}
                   getExplorerAddressUrl={getExplorerAddressUrl(explorerUrl)}
                 />
-              )}
+              }
             </div>
           )
         })}
