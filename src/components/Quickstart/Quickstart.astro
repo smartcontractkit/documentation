@@ -7,7 +7,34 @@ interface Props {
 const { frontmatter } = Astro.props
 ---
 
-<a>Back</a>
+<a class="back text-200" href="./">
+  <svg
+    width="25"
+    height="24"
+    viewBox="0 0 25 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    transform="scale(-1, 1)"
+  >
+    <g filter="url(#filter0_i)">
+      <path
+        d="M12.5024 22.497C18.3014 22.497 23.0024 17.796 23.0024 11.997C23.0024 6.19802 18.3014 1.49701 12.5024 1.49701C6.70345 1.49701 2.00244 6.19802 2.00244 11.997C2.00244 17.796 6.70345 22.497 12.5024 22.497Z"
+        fill="white"></path>
+    </g>
+    <path
+      d="M12.5024 22.497C18.3014 22.497 23.0024 17.796 23.0024 11.997C23.0024 6.19802 18.3014 1.49701 12.5024 1.49701C6.70345 1.49701 2.00244 6.19802 2.00244 11.997C2.00244 17.796 6.70345 22.497 12.5024 22.497Z"
+      stroke-width="1.5"
+      stroke-linecap="round"
+      stroke-linejoin="round"></path>
+    <path d="M17.0024 11.997H8.00244" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+    <path
+      d="M13.2524 8.24701L17.0024 11.997L13.2524 15.747"
+      stroke-width="1.5"
+      stroke-linecap="round"
+      stroke-linejoin="round"></path>
+  </svg>
+  Back</a
+>
 <article>
   <header>
     <h1>{frontmatter.title}</h1>
@@ -20,7 +47,36 @@ const { frontmatter } = Astro.props
   </section>
 </article>
 
+<script>
+  // Smooth scrolling with anchor links
+  document.querySelectorAll('a[href^="#"]').forEach((link) => {
+    link.addEventListener("click", (e) => {
+      e.preventDefault()
+      const selector = link.getAttribute("href")!
+      const target = document.querySelector(selector)!
+      target.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      })
+      history.pushState(null, "", selector)
+    })
+  })
+</script>
+
 <style>
+  .back {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2x);
+    color: var(--color-text-link);
+    stroke: var(--color-text-link);
+  }
+
+  .back:hover {
+    color: var(--color-text-link-hover);
+    stroke: var(--color-text-link-hover);
+  }
+
   article {
     margin-top: var(--space-10x);
   }
@@ -44,6 +100,7 @@ const { frontmatter } = Astro.props
   .content :global(*) {
     margin-top: 0;
     margin-bottom: 0;
+    max-width: 100%;
   }
 
   .content :global(:where(h2, h2 + *, summary + *)) {
@@ -64,8 +121,20 @@ const { frontmatter } = Astro.props
   }
 
   .content :global(summary) {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
     cursor: pointer;
     color: var(--blue-800, #1a2b6b);
     font-size: 20px;
+  }
+
+  /* TODO: Replace with SVGs */
+  .content :global(details > summary::after) {
+    content: "v";
+  }
+
+  .content :global(details[open] > summary::after) {
+    content: "^";
   }
 </style>
