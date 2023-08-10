@@ -24,36 +24,48 @@ const { frontmatter } = Astro.props
   article {
     margin-top: var(--space-10x);
   }
-  header h1 {
+
+  header * {
     margin-bottom: 0;
   }
+
   header h3 {
     color: #252e42;
     font-size: 18px;
     font-weight: 400;
     line-height: 1.5;
     margin-top: var(--space-6x);
-    margin-bottom: 0;
   }
 
-  article > .content {
+  .content {
     margin-top: var(--space-20x);
   }
 
-  article > .content :global(h2, p) {
+  .content :global(*) {
+    margin-top: 0;
     margin-bottom: 0;
   }
 
-  article > .content :global(h2 + *) {
+  .content :global(:where(h2, h2 + *, summary + *)) {
     margin-top: var(--space-6x);
   }
 
-  article > .content :global(h2) {
-    margin-top: var(--space-6x);
-  }
-
-  article > .content :global(li) {
-    margin: 0;
+  .content :global(li) {
     line-height: 1.5;
+  }
+
+  .content :global(ol > li:first-of-type) {
+    border-top: 1px solid var(--gray-300, #ced0d5);
+  }
+
+  .content :global(ol > li) {
+    padding: 12px 0px;
+    border-bottom: 1px solid var(--gray-300, #ced0d5);
+  }
+
+  .content :global(summary) {
+    cursor: pointer;
+    color: var(--blue-800, #1a2b6b);
+    font-size: 20px;
   }
 </style>
