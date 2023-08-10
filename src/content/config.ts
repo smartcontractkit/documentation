@@ -1,5 +1,7 @@
 import { z, defineCollection } from "astro:content"
 
+export const productEnum = z.enum(["CCIP", "Automation", "Functions", "VRF", "Data Feeds"])
+
 export const sectionEnum = z.enum([
   "anyApi",
   "global",
@@ -43,7 +45,7 @@ const baseFrontmatter = z
 const quickstartsFrontmatter = baseFrontmatter.extend({
   section: z.enum(["quickstarts"]),
   summary: z.string().optional(),
-  products: z.array(z.string()),
+  products: z.array(productEnum),
   time: z.string(),
   requires: z.string().optional(),
 })
