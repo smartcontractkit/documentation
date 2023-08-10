@@ -1,6 +1,6 @@
 /** @jsxImportSource preact */
 import { useStore } from "@nanostores/preact"
-import type { FunctionalComponent } from "preact"
+import type { FunctionalComponent, RefObject } from "preact"
 import { useState, useEffect, useRef } from "preact/hooks"
 import { shouldUpdateToc } from "./tocStore"
 export interface Heading {
@@ -11,7 +11,7 @@ export interface Heading {
 
 const TableOfContents: FunctionalComponent<{
   headers: Heading[]
-  clientSideToc: boolean
+  clientSideToc?: boolean
 }> = ({ headers = [], clientSideToc = false }) => {
   // headers = [...headers].filter(({ depth }) => depth > 1 && depth < 4)
   const [headings, setHeadings] = useState([...headers].filter(({ depth }) => depth > 1 && depth < 4))
@@ -65,12 +65,12 @@ const TableOfContents: FunctionalComponent<{
   }, [$shouldUpdateToc])
 
   const refreshHeadings = () => {
-    const headingList = []
+    const headingList: Heading[] = []
     document.querySelectorAll("article :is(h2,h3)").forEach((heading: HTMLHeadingElement) => {
       if (!heading.id) return
       headingList.push({
-        depth: heading.nodeName.charAt(1),
-        text: heading.textContent,
+        depth: Number(heading.nodeName.charAt(1)),
+        text: heading.textContent as string,
         slug: heading.id,
       })
     })
@@ -80,7 +80,7 @@ const TableOfContents: FunctionalComponent<{
   return (
     <>
       <h2 className="heading">On this page</h2>
-      <ul ref={tableOfContents}>
+      <ul ref={tableOfContents as RefObject<HTMLUListElement>}>
         <li className={`header-link depth-2 ${currentID === "overview" ? "active" : ""}`.trim()}>
           <a href="#overview">Overview</a>
         </li>
