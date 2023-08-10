@@ -23,6 +23,8 @@ You can find proxy addresses for the L2 sequencer feeds at the following address
 - Optimism:
   - Optimism mainnet: [0x371EAD81c9102C9BF4874A9075FFFf170F2Ee389](https://optimistic.etherscan.io/address/0x371EAD81c9102C9BF4874A9075FFFf170F2Ee389)
   - Optimism Goerli testnet: [0x4C4814aa04433e0FB31310379a4D6946D5e1D353](https://goerli-optimism.etherscan.io/address/0x4C4814aa04433e0FB31310379a4D6946D5e1D353)
+- BASE:
+  - BASE mainnet: [0xBCF85224fc0756B9Fa45aA7892530B47e10b6433](https://basescan.org/address/0xBCF85224fc0756B9Fa45aA7892530B47e10b6433)
 - Metis:
   - Andromeda mainnet: [0x58218ea7422255EBE94e56b504035a784b7AA204](https://andromeda-explorer.metis.io/address/0x58218ea7422255EBE94e56b504035a784b7AA204)
 
@@ -41,9 +43,9 @@ The diagram below shows how these feeds update and how a consumer retrieves the 
 
 If the Arbitrum network becomes unavailable, the `ArbitrumValidator` contract continues to send messages to the L2 network through the delayed inbox on L1. This message stays there until the sequencer is back up again. When the sequencer comes back online after downtime, it processes all transactions from the delayed inbox before it accepts new transactions. The message that signals when the sequencer is down will be processed before any new messages with transactions that require the sequencer to be operational.
 
-## Optimism and Metis
+## Optimism, BASE, and Metis
 
-On Optimism and Metis, the sequencer’s status is relayed from L1 to L2 where the consumer can retrieve it.
+On Optimism, BASE, and Metis, the sequencer's status is relayed from L1 to L2 where the consumer can retrieve it.
 
 <ClickToZoom src="/images/data-feed/l2-diagram-optimism-metis.webp" />
 
@@ -67,7 +69,7 @@ On Optimism and Metis, the sequencer’s status is relayed from L1 to L2 where t
 
 1. Consumers can then read from the `AggregatorProxy` contract, which fetches the latest round data from the `OptimismSequencerUptimeFeed` contract.
 
-### Handling outages on Optimism and Metis
+### Handling outages on Optimism, BASE, and Metis
 
 If the sequencer is down, messages cannot be transmitted from L1 to L2 and **no L2 transactions are executed**. Instead, messages are enqueued in the `CanonicalTransactionChain` on L1 and only processed in the order they arrived later when the sequencer comes back up. As long as the message from the validator on L1 is already enqueued in the `CTC`, the flag on the sequencer uptime feed on L2 will be guaranteed to be flipped prior to any subsequent transactions. The transaction that flips the flag on the uptime feed will be executed before transactions that were enqueued after it. This is further explained in the diagrams below.
 
