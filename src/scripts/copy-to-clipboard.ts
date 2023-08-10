@@ -33,7 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         container.appendChild(copyButton)
 
-        codeBlock.insertAdjacentElement("beforebegin", container)
+        codeBlock.insertAdjacentElement("afterbegin", container)
         observer.unobserve(codeBlock)
       }
     })
