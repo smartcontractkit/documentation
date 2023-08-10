@@ -17,22 +17,39 @@ const githubEditUrl = CONFIG.GITHUB_EDIT_URL + currentFile
   <!-- TODO: Replace placeholder image -->
   <img src="https://globaleducationcoalition.unesco.org/uploads/326_Chainlink_color_logo_O1kmmQ.png" />
   <div class="description">
-    <p>Chainlink Products: <span>{frontmatter.products.join(", ")}</span></p>
-    <p>Product Versions: <span>{frontmatter.products.join(", ")}</span></p>
-    <p>Required Time: <span>{frontmatter.time}</span></p>
+    <div><p>Chainlink Products:</p> <p><span>{frontmatter.products.join(", ")}</span></p></div>
+    <div><p>Product Versions:</p> <p><span>{frontmatter.products.join(", ")}</span></p></div>
+    <div><p>Required Time:</p> <p><span>{frontmatter.time}</span></p></div>
     {
       frontmatter.requires && (
-        <p>
-          Requires: <span>{frontmatter.requires}</span>
-        </p>
+        <div>
+          <p>Requires: </p>
+          <p>
+            <span>{frontmatter.requires}</span>
+          </p>
+        </div>
       )
     }
+    <div>
+      <p>Docs references:</p>
+      <ul>
+        <span
+          >{
+            frontmatter.products.map((p) => (
+              <a>
+                <li style="line-height: 1.5;">{p}</li>
+              </a>
+            ))
+          }</span
+        >
+      </ul>
+    </div>
   </div>
   <!-- TODO: Add docs references -->
   <a href={githubEditUrl}>Open Github</a>
   <div>
     <h2 class="heading">On this page</h2>
-    <ul>
+    <ul class="tos">
       {
         headings
           .filter(({ depth }) => depth === 2)
@@ -51,27 +68,34 @@ const githubEditUrl = CONFIG.GITHUB_EDIT_URL + currentFile
     display: flex;
     flex-direction: column;
     gap: var(--space-5x);
-    padding: 116px var(--space-6x) 0;
+    padding: 116px var(--space-16x) 0;
     background: var(--gray-100, #fafafb);
   }
 
   .panel .description {
     border-top: 1px solid var(--gray-300, #ced0d5);
-    padding-top: 16px;
+    padding-top: var(--space-4x);
     display: flex;
     flex-direction: column;
     gap: var(--space-5x);
   }
 
-  :where(a, p) {
-    font-size: 14px;
-    margin-bottom: 0;
+  .panel .description > div {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    --gutter: var(--space-6x);
+    --doc-padding: 2rem;
   }
 
-  span {
+  .panel .description span {
     font-size: unset;
     font-weight: 500;
     color: var(--text-common-color-text-heading, #1a2b6b);
+  }
+
+  :where(a, p, li) {
+    font-size: 14px;
+    margin-bottom: 0;
   }
 
   hr {
@@ -93,12 +117,17 @@ const githubEditUrl = CONFIG.GITHUB_EDIT_URL + currentFile
     margin-bottom: 0;
   }
 
-  li {
-    line-height: 1.5;
+  a {
+    text-decoration-line: underline;
+  }
+
+  .header-link {
+    font-size: 14px;
+    line-height: 2;
     list-style-type: none;
   }
 
-  li:first-child {
+  .tos li:first-child {
     margin-top: var(--space-3x);
   }
 </style>
