@@ -1,6 +1,6 @@
 import { Chain, ChainNetwork, getNetworkFromQueryString } from "~/features/data/chains"
 import "./costTable.css"
-import { useCallback, useEffect, useReducer, useRef } from "preact/hooks"
+import { useCallback, useEffect, useReducer } from "preact/hooks"
 import { BigNumber, utils } from "ethers"
 import button from "@chainlink/design-system/button.module.css"
 import useQueryString from "~/hooks/useQueryString"
@@ -167,12 +167,20 @@ export const getGasCalculatorUrl = ({
   return `https://vrf.chain.link/api/calculator?networkName=${mainChainName}&networkType=${
     networkName === mainChainName ? chainNetwork.networkType.toLowerCase() : networkName
   }&method=${method === "vrfSubscription" ? "subscription" : "directFunding"}`
+  // console.log(
+  //   `http://localhost:3001/api/calculator?networkName=${mainChainName}&networkType=${
+  //     networkName === mainChainName ? chainNetwork.networkType.toLowerCase() : networkName
+  //   }&method=${method === "vrfSubscription" ? "subscription" : "directFunding"}`
+  // )
+  // return `http://localhost:3001/api/calculator?networkName=${mainChainName}&networkType=${
+  //   networkName === mainChainName ? chainNetwork.networkType.toLowerCase() : networkName
+  // }&method=${method === "vrfSubscription" ? "subscription" : "directFunding"}`
 }
 
 export const CostTable = ({ method }: Props) => {
   const [state, dispatch] = useReducer(reducer, initialState)
   const [network] = useQueryString("network", "")
-  const lastApiCallTimestampRef = useRef<number>(0)
+  // const lastApiCallTimestampRef = useRef<number>(0)
   const getDataResponse = useCallback(
     async (mainChainName: string, networkName: string, chainNetwork: ChainNetwork): Promise<dataResponse> => {
       const cacheKey = `${mainChainName}-${
@@ -181,12 +189,14 @@ export const CostTable = ({ method }: Props) => {
       if (cache[cacheKey] && cache[cacheKey].latestCacheUpdate - Date.now() < CACHE_EXPIRY_TIME) {
         return cache[cacheKey].data
       }
-      const currentTime = Date.now()
-      const timeSinceLastCall = currentTime - lastApiCallTimestampRef.current
-      if (timeSinceLastCall < 5000) {
-        await new Promise((resolve) => setTimeout(resolve, 5000 - timeSinceLastCall))
-      }
-      lastApiCallTimestampRef.current = Date.now()
+      console.log("API call")
+      // throttling
+      // const currentTime = Date.now()
+      // const timeSinceLastCall = currentTime - lastApiCallTimestampRef.current
+      // if (timeSinceLastCall < 5000) {
+      //   await new Promise((resolve) => setTimeout(resolve, 5000 - timeSinceLastCall))
+      // }
+      // lastApiCallTimestampRef.current = Date.now()
       const response = await fetch(getGasCalculatorUrl({ mainChainName, networkName, chainNetwork, method }), {
         method: "GET",
       })
@@ -202,10 +212,10 @@ export const CostTable = ({ method }: Props) => {
 
   useEffect(() => {
     if (typeof network !== "string" || network === "") return
-
+    dispatch({ type: "SET_LOADING", payload: true })
+    console.log(state)
     const { chain, chainNetwork } = getNetworkFromQueryString(network)
     const networkName = network.split("-")[1]
-    dispatch({ type: "SET_LOADING", payload: true })
     const fillInputs = async () => {
       if (!chainNetwork || !networkName) {
         dispatch({
