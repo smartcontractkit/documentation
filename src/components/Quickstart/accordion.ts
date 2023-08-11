@@ -59,11 +59,12 @@ export class Accordion {
     const startHeight = `${this.el.offsetHeight}px`
     const endHeight = `${this.summary.offsetHeight + this.contentHeight}px`
     this.cancelIfAnimating()
+    const duration = 200 + Math.min(this.contentHeight, 300)
     this.animation = this.el.animate(
       {
         height: [startHeight, endHeight],
       },
-      { duration: 400, easing: "ease-out" }
+      { duration, easing: "ease-out" }
     )
     this.animation.onfinish = () => this.onAnimationFinish(true)
     this.animation.oncancel = () => (this.isExpanding = false)
