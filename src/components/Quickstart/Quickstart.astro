@@ -80,7 +80,7 @@ const { frontmatter } = Astro.props
   }
 
   .content {
-    margin-top: var(--space-20x);
+    margin-top: var(--space-16x);
   }
 
   .content :global(*) {
@@ -89,7 +89,13 @@ const { frontmatter } = Astro.props
     max-width: 100%;
   }
 
-  .content :global(:where(h2, h2 + *)) {
+  /* Creates padding for scrolling to h2 anchors */
+  .content :global(h2) {
+    padding-top: calc(var(--space-6x) + var(--space-1x));
+    margin-top: calc(-1 * var(--space-1x));
+  }
+
+  .content :global(:where(h2 + *)) {
     margin-top: var(--space-6x);
   }
 
@@ -155,21 +161,5 @@ const { frontmatter } = Astro.props
 <script>
   import { Accordion } from "./accordion"
 
-  // Smooth scrolling with anchor links
-  document.querySelectorAll('a[href^="#"]').forEach((link) => {
-    link.addEventListener("click", (e) => {
-      e.preventDefault()
-      const selector = link.getAttribute("href")!
-      const target = document.querySelector(selector)!
-      target.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      })
-      history.pushState(null, "", selector)
-    })
-  })
-
-  document.querySelectorAll("details").forEach((el) => {
-    new Accordion(el)
-  })
+  document.querySelectorAll("details").forEach((el) => new Accordion(el))
 </script>

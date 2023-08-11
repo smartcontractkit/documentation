@@ -46,7 +46,6 @@ const products = frontmatter.products.map((p) => productsInfo[p])
       </ul>
     </div>
   </div>
-  <!-- TODO: Add docs references -->
   <a href={githubEditUrl}>Open Github</a>
   <div>
     <h2 class="heading">On this page</h2>
@@ -132,3 +131,19 @@ const products = frontmatter.products.map((p) => productsInfo[p])
     margin-top: var(--space-3x);
   }
 </style>
+
+<script>
+  // Smooth scrolling with anchor links
+  document.querySelectorAll('a[href^="#"]').forEach((link) => {
+    link.addEventListener("click", (e) => {
+      e.preventDefault()
+      const selector = link.getAttribute("href")!
+      const target = document.querySelector(selector)!
+      target.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      })
+      history.pushState(null, "", selector)
+    })
+  })
+</script>
