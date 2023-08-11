@@ -3,21 +3,22 @@ import { useStore } from "@nanostores/preact"
 import type { FunctionalComponent, RefObject } from "preact"
 import { useState, useEffect, useRef } from "preact/hooks"
 import { shouldUpdateToc } from "./tocStore"
-export interface Heading {
-  depth: number
-  text: string
-  slug: string
+import { MarkdownHeading } from "astro"
+
+const liStyle = {
+  fontSize: "14px",
+  lineHeight: 2,
+  listStyleType: "none",
+  transitionProperty: "color, border-left-color",
+  transitionDuration: "100ms",
+  transitionTimingFunction: "ease-in",
 }
 
 const TableOfContents: FunctionalComponent<{
-  headers: Heading[]
-  clientSideToc?: boolean
-}> = ({ headers = [], clientSideToc = false }) => {
-  // headers = [...headers].filter(({ depth }) => depth > 1 && depth < 4)
-  const [headings, setHeadings] = useState([...headers].filter(({ depth }) => depth === 2))
+  headings: MarkdownHeading[]
+}> = ({ headings }) => {
   const tableOfContents = useRef<HTMLUListElement>()
   const [currentID, setCurrentID] = useState("overview")
-  const onThisPageID = "on-this-page-heading"
   const $shouldUpdateToc = useStore(shouldUpdateToc)
 
   useEffect(() => {
@@ -26,10 +27,7 @@ const TableOfContents: FunctionalComponent<{
     const setCurrent: IntersectionObserverCallback = (entries) => {
       for (const entry of entries) {
         if (entry.isIntersecting) {
-          const { id } = entry.target
-          if (id === onThisPageID) continue
-          setCurrentID(entry.target.id)
-          break
+          return setCurrentID(entry.target.id)
         }
       }
     }
@@ -37,45 +35,18 @@ const TableOfContents: FunctionalComponent<{
     const observerOptions: IntersectionObserverInit = {
       // Negative top margin accounts for `scroll-margin`.
       // Negative bottom margin means heading needs to be towards top of viewport to trigger intersection.
-      rootMargin: "-100px 0% -66%",
-      threshold: 1,
+      // top | right+left | bottom
+      rootMargin: `0px 0px -90%`,
     }
 
     const headingsObserver = new IntersectionObserver(setCurrent, observerOptions)
 
-    // Observe all the headings in the main page content.
-    document.querySelectorAll("article :is(h1,h2,h3)").forEach((h) => headingsObserver.observe(h))
+    // Observe all necessary headings in the main page content.
+    document.querySelectorAll("article :is(#overview, h2)").forEach((h) => headingsObserver.observe(h))
 
     // Stop observing when the component is unmounted.
     return () => headingsObserver.disconnect()
   }, [tableOfContents.current, $shouldUpdateToc])
-
-  useEffect(() => {
-    if (!tableOfContents.current) return
-    if (!clientSideToc) return
-    refreshHeadings()
-  }, [tableOfContents.current])
-
-  useEffect(() => {
-    if (!$shouldUpdateToc) return
-    if (!window) return
-    window.requestAnimationFrame(function () {
-      refreshHeadings()
-    })
-  }, [$shouldUpdateToc])
-
-  const refreshHeadings = () => {
-    const headingList: Heading[] = []
-    document.querySelectorAll("article :is(h2,h3)").forEach((heading: HTMLHeadingElement) => {
-      if (!heading.id) return
-      headingList.push({
-        depth: Number(heading.nodeName.charAt(1)),
-        text: heading.textContent as string,
-        slug: heading.id,
-      })
-    })
-    setHeadings(headingList)
-  }
 
   return (
     <>
@@ -83,14 +54,16 @@ const TableOfContents: FunctionalComponent<{
         On this page
       </h2>
       <ul ref={tableOfContents as RefObject<HTMLUListElement>}>
-        {headings.map((header) => (
-          <li
-            className={`header-link depth-${header.depth} ${currentID === header.slug ? "active" : ""}`.trim()}
-            style={{ fontSize: "14px", lineHeight: 2, listStyleType: "none" }}
-          >
-            <a href={`#${header.slug}`}>{header.text}</a>
-          </li>
-        ))}
+        <li className={`header-link${currentID === "overview" ? " active" : ""}`} style={liStyle}>
+          <a href="#overview">Overview</a>
+        </li>
+        {headings
+          .filter(({ depth }) => depth === 2)
+          .map((h) => (
+            <li className={`header-link${currentID === h.slug ? " active" : ""}`} style={liStyle}>
+              <a href={`#${h.slug}`}>{h.text}</a>
+            </li>
+          ))}
       </ul>
     </>
   )
