@@ -4,15 +4,7 @@ import type { FunctionalComponent, RefObject } from "preact"
 import { useState, useEffect, useRef } from "preact/hooks"
 import { shouldUpdateToc } from "./tocStore"
 import { MarkdownHeading } from "astro"
-
-const liStyle = {
-  fontSize: "14px",
-  lineHeight: 2,
-  listStyleType: "none",
-  transitionProperty: "color, border-left-color",
-  transitionDuration: "100ms",
-  transitionTimingFunction: "ease-in",
-}
+import styles from "./tableOfContents.module.css"
 
 const TableOfContents: FunctionalComponent<{
   headings: MarkdownHeading[]
@@ -53,14 +45,14 @@ const TableOfContents: FunctionalComponent<{
       <h2 className="heading" style={{ padding: 0 }}>
         On this page
       </h2>
-      <ul ref={tableOfContents as RefObject<HTMLUListElement>}>
-        <li className={`header-link${currentID === "overview" ? " active" : ""}`} style={liStyle}>
+      <ul ref={tableOfContents as RefObject<HTMLUListElement>} style={{ marginTop: "var(--space-4x)" }}>
+        <li className={`${styles.headerLink}${currentID === "overview" ? ` ${styles.active}` : ""}`}>
           <a href="#overview">Overview</a>
         </li>
         {headings
           .filter(({ depth }) => depth === 2)
           .map((h) => (
-            <li className={`header-link${currentID === h.slug ? " active" : ""}`} style={liStyle}>
+            <li className={`${styles.headerLink}${currentID === h.slug ? ` ${styles.active}` : ""}`}>
               <a href={`#${h.slug}`}>{h.text}</a>
             </li>
           ))}
