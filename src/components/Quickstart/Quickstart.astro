@@ -1,12 +1,16 @@
 ---
-import { MarkdownHeading } from "astro"
 import { QuickstartsFrontmatter } from "~/content/config"
 interface Props {
   frontmatter: QuickstartsFrontmatter
 }
 const { frontmatter } = Astro.props
+
+// NOTE: There's a bug with mdx and Astro where p tags on new lines add empty p tags around the content.
+// Unfortunately our linter / prettier automatically puts those tags on new lines for large blocks
+// Still figuring out what to do there
 ---
 
+<!-- TODO: Don't inline this SVG -->
 <a class="back text-200" href="./">
   <svg
     width="25"
@@ -41,27 +45,9 @@ const { frontmatter } = Astro.props
     <h3>{frontmatter.summary}</h3>
   </header>
   <section class="content">
-    <!-- https://docs.astro.build/en/core-concepts/astro-components/#slots -->
-    <!-- MDX content will be injected into the page where your <slot /> component is written -->
     <slot />
   </section>
 </article>
-
-<script>
-  // Smooth scrolling with anchor links
-  document.querySelectorAll('a[href^="#"]').forEach((link) => {
-    link.addEventListener("click", (e) => {
-      e.preventDefault()
-      const selector = link.getAttribute("href")!
-      const target = document.querySelector(selector)!
-      target.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      })
-      history.pushState(null, "", selector)
-    })
-  })
-</script>
 
 <style>
   .back {
@@ -103,7 +89,7 @@ const { frontmatter } = Astro.props
     max-width: 100%;
   }
 
-  .content :global(:where(h2, h2 + *, summary + *)) {
+  .content :global(:where(h2, h2 + *)) {
     margin-top: var(--space-6x);
   }
 
@@ -146,14 +132,44 @@ const { frontmatter } = Astro.props
   .content :global(details > summary::after) {
     content: "v";
     color: var(--gray-400, #b7bac0);
+    transition: 0.25s transform ease;
+    transform-origin: 50% 50%;
   }
 
   .content :global(details[open] > summary::after) {
-    content: "^";
+    transform: rotate(180deg);
     color: #174cc2;
   }
 
   .content :global(details > :not(summary)) {
     padding-left: var(--space-8x);
+    margin-top: 0;
+    padding-top: var(--space-6x);
+  }
+
+  .content :global(details > :not(summary):last-child) {
+    padding-bottom: var(--space-3x);
   }
 </style>
+
+<script>
+  import { Accordion } from "./accordion"
+
+  // Smooth scrolling with anchor links
+  document.querySelectorAll('a[href^="#"]').forEach((link) => {
+    link.addEventListener("click", (e) => {
+      e.preventDefault()
+      const selector = link.getAttribute("href")!
+      const target = document.querySelector(selector)!
+      target.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      })
+      history.pushState(null, "", selector)
+    })
+  })
+
+  document.querySelectorAll("details").forEach((el) => {
+    new Accordion(el)
+  })
+</script>
