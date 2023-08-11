@@ -42,7 +42,7 @@ export const normalizeConfig = <T>(config: Partial<Record<SupportedChain, T>>) =
         title: chains[technology].title,
         chains: {},
       }
-    normalizedConfig[technology].chains[chain] = config[chain]
+    normalizedConfig[technology]!.chains[chain] = config[chain]
   }
   return normalizedConfig
 }
