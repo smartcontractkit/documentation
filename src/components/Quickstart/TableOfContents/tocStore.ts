@@ -1,8 +1,8 @@
 // store/users.ts
+// TODO: De-duplicate from RightSidebar
 import { atom } from "nanostores"
 
 export const shouldUpdateToc = atom<string | undefined>()
-
 export function updateTableOfContents() {
   shouldUpdateToc.set(new Date().toUTCString())
 

@@ -2,6 +2,7 @@
 import { MarkdownHeading } from "astro"
 import { QuickstartsFrontmatter, productsInfo } from "~/content/config"
 import * as CONFIG from "../../config"
+import TableOfContents from "./TableOfContents"
 
 interface Props {
   frontmatter: QuickstartsFrontmatter
@@ -47,20 +48,9 @@ const products = frontmatter.products.map((p) => productsInfo[p])
     </div>
   </div>
   <a href={githubEditUrl}>Open Github</a>
-  <div>
-    <h2 class="heading">On this page</h2>
-    <ul class="tos">
-      {
-        headings
-          .filter(({ depth }) => depth === 2)
-          .map((h) => (
-            <li class={`header-link depth-${h.depth}`}>
-              <a href={`#${h.slug}`}>{h.text}</a>
-            </li>
-          ))
-      }
-    </ul>
-  </div>
+  <nav>
+    <TableOfContents client:media="(min-width: 50em)" headers={headings} />
+  </nav>
 </aside>
 
 <style>
@@ -93,14 +83,17 @@ const products = frontmatter.products.map((p) => productsInfo[p])
     color: var(--text-common-color-text-heading, #1a2b6b);
   }
 
+  nav {
+    top: 0;
+    padding: 0;
+    padding-top: var(--doc-padding);
+    overflow: auto;
+    position: sticky;
+  }
+
   :where(a, p, li) {
     font-size: 14px;
     margin-bottom: 0;
-  }
-
-  hr {
-    height: 1px;
-    background: var(--gray-300, #ced0d5);
   }
 
   img {
@@ -112,22 +105,7 @@ const products = frontmatter.products.map((p) => productsInfo[p])
     border: 1px solid var(--gray-200, #ecedef);
   }
 
-  h2.heading {
-    padding: 0;
-    margin-bottom: 0;
-  }
-
   a {
     text-decoration-line: underline;
-  }
-
-  .header-link {
-    font-size: 14px;
-    line-height: 2;
-    list-style-type: none;
-  }
-
-  .tos li:first-child {
-    margin-top: var(--space-3x);
   }
 </style>
