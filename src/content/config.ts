@@ -16,7 +16,7 @@ export const productsInfo: Record<Products, { name: string; slug: string }> = {
   feeds: { name: "Data Feeds", slug: "data-feeds" },
 }
 
-const productEnum = z.nativeEnum(Products)
+const productEnum = z.preprocess((val) => (val as string).toLowerCase(), z.nativeEnum(Products))
 
 export const sectionEnum = z.enum([
   "anyApi",
