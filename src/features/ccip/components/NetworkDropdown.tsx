@@ -268,7 +268,7 @@ export const NetworkDropdown = ({ options, userAddress }: Props) => {
         tabIndex={dropdownDisabled ? -1 : undefined}
         className={[styles["network-selector-container"], ...(dropdownDisabled ? [styles.disabled] : [])].join(" ")}
       >
-        <summary>
+        <summary className={styles["network-selector-summary"]}>
           <div className={styles["network-selector"]}>
             {isNetworkChangePending ? (
               <>
