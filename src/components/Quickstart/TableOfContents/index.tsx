@@ -46,9 +46,6 @@ const TableOfContents: FunctionalComponent<{
         On this page
       </h2>
       <ul ref={tableOfContents as RefObject<HTMLUListElement>} style={{ marginTop: "var(--space-4x)" }}>
-        <li className={`${styles.headerLink}${currentID === "overview" ? ` ${styles.active}` : ""}`}>
-          <a href="#overview">Overview</a>
-        </li>
         {headings
           .filter(({ depth }) => depth === 2)
           .map((h) => (
