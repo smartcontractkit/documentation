@@ -61,6 +61,7 @@ const baseFrontmatter = z
 const quickstartsFrontmatter = baseFrontmatter.extend({
   section: z.enum(["quickstarts"]),
   summary: z.string().optional(),
+  image: z.string(),
   products: z.array(productEnum),
   time: z.string(),
   requires: z.string().optional(),
