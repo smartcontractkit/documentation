@@ -17,7 +17,7 @@ const products = frontmatter.products.map((p) => productsInfo[p])
 
 <aside class="panel">
   <!-- TODO: Replace placeholder image -->
-  <img src="https://globaleducationcoalition.unesco.org/uploads/326_Chainlink_color_logo_O1kmmQ.png" />
+  <img class="feature" src="https://globaleducationcoalition.unesco.org/uploads/326_Chainlink_color_logo_O1kmmQ.png" />
   <div class="description">
     <div><p>Chainlink Products:</p> <p><span>{products.map((p) => p.name).join(", ")}</span></p></div>
     <div><p>Product Versions:</p> <p><span>{products.map((p) => p.name).join(", ")}</span></p></div>
@@ -47,7 +47,7 @@ const products = frontmatter.products.map((p) => productsInfo[p])
       </ul>
     </div>
   </div>
-  <a href={githubEditUrl}>Open Github</a>
+  <a href={githubEditUrl} class="primary button"><img src="/assets/github.svg" />Open Github</a>
   <nav>
     <TableOfContents client:media="(min-width: 50em)" {headings} />
   </nav>
@@ -55,11 +55,12 @@ const products = frontmatter.products.map((p) => productsInfo[p])
 
 <style>
   .panel {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-8x);
-    padding: var(--space-12x) var(--space-16x) 0;
+    padding: var(--space-16x) var(--space-6x) 0;
     background: var(--gray-100, #fafafb);
+  }
+
+  .panel > * {
+    margin-top: var(--space-8x);
   }
 
   .panel .description {
@@ -86,6 +87,7 @@ const products = frontmatter.products.map((p) => productsInfo[p])
   nav {
     top: 0;
     padding: var(--doc-padding) 0;
+    margin-top: 0;
     overflow: auto;
     position: sticky;
   }
@@ -95,7 +97,7 @@ const products = frontmatter.products.map((p) => productsInfo[p])
     margin-bottom: 0;
   }
 
-  img {
+  img.feature {
     max-width: none;
     width: 337px;
     height: 183px;
@@ -104,7 +106,14 @@ const products = frontmatter.products.map((p) => productsInfo[p])
     border: 1px solid var(--gray-200, #ecedef);
   }
 
-  a {
-    text-decoration-line: underline;
+  a.button {
+    width: 100%;
+  }
+
+  /* TODO: Replace with svg with white fill */
+  a.button img {
+    height: var(--space-6x);
+    width: var(--space-6x);
+    filter: brightness(0) invert(1);
   }
 </style>
