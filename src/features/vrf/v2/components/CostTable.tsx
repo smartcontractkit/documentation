@@ -90,7 +90,7 @@ type Action =
   | { type: "SET_CALLBACK_GAS"; payload: number }
   | { type: "SET_LINK_PREMIUM"; payload: number }
   | { type: "SET_DECIMAL_PLACES"; payload: number }
-  | { type: "SET_GAS_LANE_LIST"; payload: number[] | null }
+  | { type: "SET_GAS_LANE_LIST"; payload: number[] }
   | { type: "SET_CURRENT_GAS_LANE"; payload: number }
   | { type: "SET_CURRENT_VERIFICATION_GAS"; payload: number }
   | { type: "SET_PRICE_FEED"; payload: string }
