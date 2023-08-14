@@ -57,7 +57,6 @@ const baseFrontmatter = z
   })
   .strict()
 
-// TODO: Extend with properties for this page type
 const quickstartsFrontmatter = baseFrontmatter.extend({
   section: z.enum(["quickstarts"]),
   summary: z.string().optional(),
