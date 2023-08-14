@@ -14,40 +14,68 @@ import { Aside, ClickToZoom } from "@components"
 
 ## Request and Receive Data
 
-<ClickToZoom src="/images/chainlink-functions/requestAndReceive.png" />
+This model is similar to the [Basic Request Model](/architecture-overview/architecture-request-model): The consumer contract initiates the cycle by sending a request to the [FunctionsRouter contract](https://github.com/smartcontractkit/chainlink/blob/9f19654c086e8e92720d935d217536c8a5600c08/contracts/src/v0.8/functions/dev/v1_0_0/FunctionsRouter.sol). Oracle nodes watch for events emitted by the [FunctionsCoordinator contract](https://github.com/smartcontractkit/chainlink/blob/9f19654c086e8e92720d935d217536c8a5600c08/contracts/src/v0.8/functions/dev/v1_0_0/FunctionsCoordinator.sol) and run the computation off-chain. Finally, oracle nodes use the [Chainlink OCR](/architecture-overview/off-chain-reporting) protocol to aggregate all the returned before passing the single aggregated response back to the consumer contract via a callback function.
 
-Requests to _Chainlink Functions_ follow the [Request & Receive Data](/chainlink-functions/resources/concepts) cycle.
+<ClickToZoom
+  src="/images/chainlink-functions/requestAndReceive.png"
+  alt="Chainlink Functions request and receive diagram"
+/>
 
-1. A [EOA (Externally Owned Account)](https://ethereum.org/en/developers/docs/accounts/#types-of-account) initiates the transaction by calling the consumer contract.
-1. The consumer contract must inherit [FunctionsClient](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/functions/dev/v0_0_0/FunctionsClient.sol) to send the request to the [FunctionsOracle](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/functions/dev/v0_0_0/FunctionsOracle.sol) contract.
-1. The _FunctionsOracle_ contract:
-   1. Calls the [FunctionsBillingRegistry](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/functions/dev/v0_0_0/FunctionsBillingRegistry.sol) 's `startBilling` function to estimate the fulfillment costs and block the amount in the _Reservation balance_ (To learn more, read [Cost simulation](/chainlink-functions/resources/billing#cost-simulation-reservation)).
-   1. Emits an `OracleRequest` event containing information about the request.
-1. On reception of the event, each _DON_'s oracle initiates the API call on a serverless environment.
-1. Each serverless environment calls the API provider to fetch the API response.
-1. The _DON_ runs the [Off-chain Reporting protocol(OCR)](/chainlink-functions/resources/concepts) to aggregate all the API responses.
-1. The aggregate API response is transmitted by a DON's oracle node to the _FunctionsOracle_ contract.
-1. The _FunctionsOracle_ contract calls the _FunctionsBillingRegistry_'s `fulfillAndBill` function to calculate the fulfillment costs and finalize the billing (To learn more, read [Cost calculation](/chainlink-functions/resources/billing#cost-calculation-fulfillment)).
-1. The _FunctionsBillingRegistry_ contract calls back the consumer contract.
+The main actors and components are:
+
+- Initiator (or end-user): initiates the request to Chainlink Functions. It can be an [EOA (Externally Owned Account)](https://ethereum.org/en/developers/docs/accounts/#types-of-account) or Chainlink Automation.
+- Consumer contract: smart contract deployed by developers, which purpose is to interact with the FunctionsRouter to initiate a request.
+- FunctionsRouter contract: manages subscriptions and is the entry point for consumers. The interface of the router is stable. Consumers call the `sendRequest` method to initiate a request.
+- FunctionsCoordinator contracts: interface for the [Decentralized Oracle Network](https://chain.link/education/blockchain-oracles#decentralized-oracles). Oracle nodes listen to events emitted by the coordinator contract and interact with the coordinator to transmit the responses.
+- DON: Chainlink Functions are powered by a [Decentralized Oracle Network](https://chain.link/education/blockchain-oracles#decentralized-oracles). The oracle nodes are independent of each other and are responsible for executing the request's source code. The nodes use the [Chainlink OCR](/architecture-overview/off-chain-reporting) protocol to aggregate all the nodes' responses. Finally, a DON's oracle sends the aggregate response to the consumer contract in a callback.
+- Secrets endpoint: To transmit their secrets, users can encrypt them with the DON public key and then upload them to the secrets endpoint, a highly available service for securely sharing encrypted secrets with the nodes. **Note**: An alternative method involves self-hosting secrets. In this approach, users provide a publicly accessible HTTP(s) URL, allowing nodes to retrieve the encrypted secrets. Refer to the [secrets management](/chainlink-functions/resources/secrets) page for detailed information on both methods.
+- Serverless Environment: Every Oracle node accesses a distinct, sandboxed environment for computation. While the diagram illustrates an API request, the computation isn't restricted solely to this. You can perform any computation, from API calls to mathematical operations, using vanilla [Deno](https://deno.land/) code without module imports. Note: All nodes execute identical computations. If the target API has throttling limits, know that multiple simultaneous calls will occur since each DON node will independently run the request's source code.
+
+Let's walk through the sequence of interactions among these components, as illustrated in the diagram:
+
+1. If there are secrets, a user encrypts secrets with the public key linked to the DON master secret key (MSK) and then uploads the encrypted secrets to the secrets endpoint. The secrets endpoint pushes the encrypted secrets to the nodes part of the DON (The secrets capability depicted in this diagram is called _threshold decryption_ and is explained in [secrets management](/chainlink-functions/resources/secrets#threshold-decryption-service)).
+1. An [EOA (Externally Owned Account)](https://ethereum.org/en/developers/docs/accounts/#types-of-account) or Chainlink Automation initiates the request by calling the consumer contract.
+1. The consumer contract should inherit the [FunctionsClient](https://github.com/smartcontractkit/chainlink/blob/d0d1adc5c0a654f65f23ceb0c5a9a356d30f159c/contracts/src/v0.8/functions/dev/1_0_0/FunctionsClient.sol) contract. This ensures it will be able to receive responses from the [FunctionsRouter](https://github.com/smartcontractkit/chainlink/blob/d0d1adc5c0a654f65f23ceb0c5a9a356d30f159c/contracts/src/v0.8/functions/dev/1_0_0/FunctionsRouter.sol) contract via the `handleOracleFulfillment` callback. The router contract starts the billing to estimate the fulfillment costs and block the amount in the _reservation balance_ (To learn more, read [Cost simulation](/chainlink-functions/resources/billing#cost-simulation-reservation)). Then it calls the [FunctionsCoordinator contract](https://github.com/smartcontractkit/chainlink/blob/9f19654c086e8e92720d935d217536c8a5600c08/contracts/src/v0.8/functions/dev/v1_0_0/FunctionsCoordinator.sol).
+1. The coordinator contract emits an `OracleRequest` event containing information about the request.
+1. On reception of the event by the DON, the DON's nodes decrypt the secrets using the threshold decryption service (The threshold decryption capability is explained in [secrets management](/chainlink-functions/resources/secrets#threshold-decryption-service)). Each DON's Oracle node executes the request's source code in a serverless environment.
+1. The DON runs the Off-chain Reporting protocol(OCR) to aggregate the values returned by each node's execution of the source code.
+1. A DON's oracle node transmits the attested report (which includes the aggregated response) to the FunctionsCoordinator contract.
+1. The FunctionsCoordinator contract calls the FunctionsRouter's `fulfill` method to calculate the fulfillment costs and finalize the billing (To learn more, read [Cost calculation](/chainlink-functions/resources/billing#cost-calculation-fulfillment)).
+1. The FunctionsRouter contract calls the consumer contract's callback with the aggregated response.
 
 **Note**: Chainlink Functions requests are not limited to API requests. The diagram depicts an example of API requests, but you can request the DON to run any computation.
 
 ## Subscription Management
 
-Chainlink Functions requests receive funding from [subscription accounts](/chainlink-functions/resources/concepts). As explained in [Concepts](/chainlink-functions/resources/concepts), the _Subscription App_ is a User Interface that abstracts the communications with the _Subscriptions contract_ (aka _Functions Billing Registry_ contract). The _Functions Billing Registry_ lets you manage your subscription accounts.
+Chainlink Functions do not require your consumer contracts to hold LINK tokens and send them to oracles when making requests. Instead, you must create a subscription account and fund it to pay for your Chainlink Functions requests, so your consumer contracts don't need to hold LINK when calling Chainlink Functions.
 
-<Aside type="note">
-  The _Subscriptions App_ is not available now, we recommend using the [functions hardhat starter
-  kit](https://github.com/smartcontractkit/functions-hardhat-starter-kit) to communicate with the [Functions Billing
-  Registry
-  contract](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/functions/dev/v0_0_0/FunctionsBillingRegistry.sol).
-</Aside>
+### Concepts
+
+- Terms of service (ToS): Before interacting with Chainlink Functions, users must agree to the terms of service. Once signed, the accounts that can manage subscriptions are added to the `allowedSenders` in the [ToS allow list contract](https://github.com/smartcontractkit/chainlink/blob/9f19654c086e8e92720d935d217536c8a5600c08/contracts/src/v0.8/functions/dev/v1_0_0/accessControl/TermsOfServiceAllowList.sol).
+- Frontend: A user interface that allows users to agree to the sign Terms of service and interact with the FunctionsRouter to manage subscriptions.
+- Subscription account: An account that holds LINK tokens and makes them available to fund requests to Chainlink DON. A _Subscription ID_ uniquely identifies each account.
+- Subscription ID: 64-bit unsigned integer representing the unique identifier of the _Subscription account_.
+- Subscription owner: The wallet address that creates and manages a _Subscription account_. Any account can add LINK tokens to the subscription balance. Still, only the owner can add consumer contracts to the subscription, remove consumer contracts from the subscription, withdraw funds, or transfer a subscription. Only the subscription owner can generate encrypted secrets for requests that use their _Subscription ID_.
+- Subscription balance: The amount of LINK maintained on your _Subscription account_. Requests from consumer contracts are funded as long as sufficient funds are in the balance, so be sure to maintain sufficient funds in your _Subscription balance_ to pay for the requests and keep your applications running.
+- Subscription reservation: The amount of LINK blocked on the _Subscription balance_. It corresponds to the total LINK amount to be paid by in-flight requests.
+- Effective balance: The amount of LINK available on your _Subscription account_. `Effective balance = Subscription balance - Subscription reservation`.
+- Subscription consumers: Consumer contracts are approved to use funding from your _Subscription account_ while making Chainlink Functions requests. The consumers receive response data in a callback.
+
+### Accept ToS
+
+To ensure compliance and governance, Chainlink Functions mandates that any account that manages a subscription must first accept the platform's Terms of Service (ToS). The acceptance is verified by cross-referencing the account with the `allowedSenders` registry contained within the [TermsOfServiceAllowList contract](https://github.com/smartcontractkit/chainlink/blob/9f19654c086e8e92720d935d217536c8a5600c08/contracts/src/v0.8/functions/dev/v1_0_0/accessControl/TermsOfServiceAllowList.sol).
+
+<ClickToZoom src="/images/chainlink-functions/subscription/acceptToSEOA.png" />
+
+The acceptance process is initiated via the Chainlink Functions frontend. Once a user accepts the ToS by generating the required signature with their externally owned account (EOA), they transmit proof of acceptance to the [TermsOfServiceAllowList contract](https://github.com/smartcontractkit/chainlink/blob/9f19654c086e8e92720d935d217536c8a5600c08/contracts/src/v0.8/functions/dev/v1_0_0/accessControl/TermsOfServiceAllowList.sol). Upon successful validation of the proof, the EOA is added to the `allowedSenders` registry, permitting it to manage subscriptions.
 
 ### Create Subscription
 
 <ClickToZoom src="/images/chainlink-functions/subscription/createSubscription.png" />
 
-EOAs (Externally Owned Accounts) create subscriptions using the _Subscriptions App_. The App communicates with the _Functions Billing Registry_, which assigns a unique identifier (aka _Subscription ID_).
+Once the ToS is accepted, EOAs can create subscriptions. Upon creation, the [FunctionsRouter](https://github.com/smartcontractkit/chainlink/blob/d0d1adc5c0a654f65f23ceb0c5a9a356d30f159c/contracts/src/v0.8/functions/dev/1_0_0/FunctionsRouter.sol) assigns a unique identifier, _Subscription ID_.
+
+**Note**: EOAs can directly interact with the FunctionsRouter contract using their preferred web3 library, such as web3.js or ethers.js.
 
 ### Fund Subscription
 
@@ -55,32 +83,38 @@ EOAs (Externally Owned Accounts) create subscriptions using the _Subscriptions A
 
 You must fund your subscription accounts with enough LINK tokens:
 
-1. Connect your EOA to the _Subscription App_.
-1. Fund your subscription account. The _Subscriptions App_ abstracts the following:
+1. Connect your EOA to the Chainlink Functions frontend.
+1. Fund your subscription account. The Chainlink Functions frontend abstracts the following:
    1. Call `transferAndCall` on the LINK token contract, transferring LINK tokens along with the _Subscription ID_ in the payload.
-   1. The _Functions Billing Registry_ contract implements `onTokenTransfer`: It parses the _Subscription ID_ from the payload and funds the subscription account with the transferred LINK amount.
+   1. The FunctionsRouter contract implements `onTokenTransfer`: It parses the _Subscription ID_ from the payload and funds the subscription account with the transferred LINK amount.
+
+**Note**: EOAs can directly interact with the LinkToken contract using their preferred web3 library, such as web3.js or ethers.js.
 
 ### Add Consumer
 
 <ClickToZoom src="/images/chainlink-functions/subscription/addConsumer.png" />
 
-You must allowlist your consumers' contracts on your subscription account before they can make Chainlink Functions requests. To do so:
+You must allowlist your consumers' contracts on your subscription account before they can make Chainlink Functions requests:
 
-1. Connect your EOA to the _Subscription App_.
-1. Add the address of your consumer contract to your subscription account.
-1. The _Subscription App_ calls the _Functions Billing Registry_ contract to add the consumer contract address to your subscription account.
+1. Connect your EOA to the Chainlink Functions frontend.
+1. Add the address of the consumer contract to the subscription account.
+1. The Chainlink Functions frontend interacts with the FunctionsRouter contract to register the consumer contract address to the subscription account.
+
+**Note**: EOAs can directly interact with the FunctionsRouter contract using a web3 library, such as web3.js or ethers.js.
 
 ### Remove Consumer
 
 <ClickToZoom src="/images/chainlink-functions/subscription/removeConsumer.png" />
 
-To remove a consumer contract:
+To prevent further Chainlink Functions requests from a given consumer contract, you must remove it from your subscription account:
 
-1. Connect your EOA to the _Subscription App_.
-1. Remove the address of your consumer contract from the allowlist.
-1. The _Subscription App_ calls the _Functions Billing Registry_ contract to remove the consumer contract address from your subscription account.
+1. Connect your EOA to the Chainlink Functions frontend.
+1. Remove the address of the consumer contract from the subscription account.
+1. The Chainlink Functions frontend communicates with the FunctionsRouter contract to remove the consumer contract address from the subscription account.
 
-**Note**: You can still remove consumers from your subscription if there are in-flight requests. Your consumer contract will still be called back, and your _Subscription Account_ will be charged.
+**Note**: You can still remove consumers from your subscription even if in-flight requests exist. The consumer contract will still receive a callback, and your _Subscription Account_ will be charged.
+
+**Note**: EOAs can directly interact with the FunctionsRouter contract using a web3 library, such as web3.js or ethers.js.
 
 ### Cancel Subscription
 
@@ -88,17 +122,21 @@ To remove a consumer contract:
 
 To cancel a subscription:
 
-1. Connect your EOA to the _Subscription App_.
-1. Cancel your subscription, passing the _Subscription Balance_ receiver account address. The _Subscriptions App_ abstracts the following:
-   1. Call the `cancelSubscription` function on the _Functions Billing Registry_ contract, deleting the _Subscription ID_ and removing any existing consumers.
-   1. The outstanding _Subscription Balance_ is sent to the receiver account.
+1. Connect your EOA to the Chainlink Functions frontend.
+1. Cancel your subscription, providing the _Subscription Balance_ receiver account address. The Chainlink Functions frontend handles the following processes:
+   1. Invokes the `cancelSubscription` function on the FunctionsRouter contract, deleting the _Subscription ID_ and removing all associated consumers.
+   1. Transfers the remaining _Subscription Balance_ to the specified receiver account.
 
-**Note**: You cannot cancel a subscription if there are in-flight requests.
+**Note**: EOAs can directly interact with the FunctionsRouter contract using their preferred web3 library, such as web3.js or ethers.js.
+
+**Note**: Subscriptions cannot be canceled while there are in-flight requests. Furthermore, any expired requests (requests that have yet to receive a response within 5 minutes) must be timed out before cancellation.
 
 ### Transferring ownership of a Subscription
 
-Transferring ownership works as follows:
+Transferring ownership is currently only supported using the [Functions Hardhat Starter kit](https://github.com/smartcontractkit/functions-hardhat-starter-kit) or the [Functions Toolkit NPM package](https://github.com/smartcontractkit/functions-toolkit):
 
-1. Connect your EOA to the _Subscription App_.
-1. Initiate the ownership transfer by specifying the new owner's address.
-1. The new owner must connect their EOA to the _Subscription App_ and accept the ownership.
+1. Use the `functions-sub-transfer` command to initiate the transfer of ownership by specifying the new owner's address.
+1. As a prerequisite, the prospective owner must be part of the `allowedSenders` registry within the [TermsOfServiceAllowList contract](https://github.com/smartcontractkit/chainlink/blob/9f19654c086e8e92720d935d217536c8a5600c08/contracts/src/v0.8/functions/dev/v1_0_0/accessControl/TermsOfServiceAllowList.sol). This verifies their acceptance of the Chainlink Functions' Terms of Service (ToS).
+1. The prospective owner should use the [Functions Hardhat Starter kit](https://github.com/smartcontractkit/functions-hardhat-starter-kit) and run the `functions-sub-accept` command to confirm the ownership transfer.
+
+**Note**: This guide will be updated as soon as the Chainlink Functions frontend supports ownership transfers.

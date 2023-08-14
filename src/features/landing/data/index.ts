@@ -106,11 +106,10 @@ export const evmProducts = [
     links: [
       ["Introduction", "chainlink-functions"],
       ["Getting Started", "chainlink-functions/getting-started"],
-      ["Request Computation", "chainlink-functions/tutorials/simple-computation"],
+      ["Simple Computation", "chainlink-functions/tutorials/simple-computation"],
       ["Call APIs with Query Parameters", "chainlink-functions/tutorials/api-query-parameters"],
       ["POST Data to an API", "chainlink-functions/tutorials/api-post-data"],
       ["Use Secrets in Requests", "chainlink-functions/tutorials/api-use-secrets"],
-      ["Add Functions to Your Project", "chainlink-functions/resources/add-functions-to-projects"],
       ["Architecture", "chainlink-functions/resources/architecture"],
     ],
     chains: [
