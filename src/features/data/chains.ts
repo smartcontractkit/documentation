@@ -172,7 +172,7 @@ export const CHAINS: Chain[] = [
     title: "Arbitrum Data Feeds",
     img: "/assets/chains/arbitrum.svg",
     networkStatusUrl: "https://arbiscan.freshstatus.io/",
-    tags: ["default", "rates"],
+    tags: ["default", "rates", "nftFloorPrice"],
     supportedFeatures: ["vrfSubscription", "vrfDirectFunding", "feeds"],
     networks: [
       {
@@ -180,6 +180,7 @@ export const CHAINS: Chain[] = [
         explorerUrl: "https://arbiscan.io/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-arbitrum-1.json",
+        tags: ["nftFloorPrice"],
       },
       {
         name: "Arbitrum Goerli",
