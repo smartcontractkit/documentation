@@ -142,31 +142,41 @@ export function SearchModal({ isOpen, onClose }: { isOpen: boolean; onClose: () 
   }
   return (
     <Modal isOpen={isOpen} onClose={onClose} modalId={styles.searchModal}>
-      <InstantSearch indexName={getIndexName()} searchClient={searchClient}>
-        <SearchInput onClose={onClose} />
-        <hr className={styles.modalDivider} />
-        <div className={styles.resultsWrapper}>
-          <EmptyQueryBoundary fallback={null}>
-            <NoResultsBoundary>
-              <div className={styles.queryResults}>
-                <CustomHits
-                  title="Title Matches"
-                  escapeHTML={false}
-                  transformItems={(items) => {
-                    return items.filter(
-                      (item) =>
-                        // @ts-expect-error title is not an array
-                        item._highlightResult.title.matchLevel !== "none"
-                    )
-                  }}
-                  hitClassName="title-match-hit"
-                />
-                <CustomHits title="Content Matches" hitClassName="content-match-hit" />
-              </div>
-            </NoResultsBoundary>
-          </EmptyQueryBoundary>
-        </div>
-      </InstantSearch>
+      {
+        (
+          <InstantSearch indexName={getIndexName()} searchClient={searchClient}>
+            {
+              (
+                <>
+                  <SearchInput onClose={onClose} />
+                  <hr className={styles.modalDivider} />
+                  <div className={styles.resultsWrapper}>
+                    <EmptyQueryBoundary fallback={null}>
+                      <NoResultsBoundary>
+                        <div className={styles.queryResults}>
+                          <CustomHits
+                            title="Title Matches"
+                            escapeHTML={false}
+                            transformItems={(items) => {
+                              return items.filter(
+                                (item) =>
+                                  // @ts-expect-error title is not an array
+                                  item._highlightResult.title.matchLevel !== "none"
+                              )
+                            }}
+                            hitClassName="title-match-hit"
+                          />
+                          <CustomHits title="Content Matches" hitClassName="content-match-hit" />
+                        </div>
+                      </NoResultsBoundary>
+                    </EmptyQueryBoundary>
+                  </div>
+                </>
+              ) as React.ReactNode
+            }
+          </InstantSearch>
+        ) as React.ReactNode
+      }
     </Modal>
   )
 }

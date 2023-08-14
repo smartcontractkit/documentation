@@ -23,15 +23,13 @@ export const Cube = ({
   return (
     <div
       id={cubeStyles.cubeWrapper}
-      style={
-        {
-          "--bg-color": backgroundColor,
-          "--fill-color": color,
-          "--size": `${size}px`,
-          "--size-multiplier": CONTAINER_SIZE_MULTIPLIER,
-          "--radius-amount": BORDER_RADIUS_DIVISOR,
-        } as CubeCSSProperties
-      }
+      style={{
+        "--bg-color": backgroundColor,
+        "--fill-color": color,
+        "--size": `${size}px`,
+        "--size-multiplier": CONTAINER_SIZE_MULTIPLIER,
+        "--radius-amount": BORDER_RADIUS_DIVISOR,
+      }}
     >
       <div id={cubeStyles.wrapper}>
         <div id={cubeStyles.bottomCenter} className={cubeStyles.innerBox} />
