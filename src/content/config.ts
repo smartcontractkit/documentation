@@ -57,14 +57,16 @@ const baseFrontmatter = z
   })
   .strict()
 
-const quickstartsFrontmatter = baseFrontmatter.extend({
-  section: z.enum(["quickstarts"]),
-  summary: z.string().optional(),
-  image: z.string(),
-  products: z.array(productEnum),
-  time: z.string(),
-  requires: z.string().optional(),
-})
+const quickstartsFrontmatter = z
+  .object({
+    title: z.string(),
+    summary: z.string().optional(),
+    image: z.string(),
+    products: z.array(productEnum),
+    time: z.string(),
+    requires: z.string().optional(),
+  })
+  .strict()
 
 export type QuickstartsFrontmatter = z.infer<typeof quickstartsFrontmatter>
 

@@ -22,8 +22,6 @@ const formattedContentTitle = frontmatter.title
 
 const canonicalURLStr = new URL(Astro.url.pathname, Astro.site).href.replace(/\/+$/, "")
 const canonicalURL = new URL(canonicalURLStr)
-
-const includeLinkToWalletScript = !!Astro.props?.frontmatter?.metadata?.linkToWallet
 ---
 
 <html dir="ltr" lang="en-us" class="initial">
@@ -98,9 +96,6 @@ const includeLinkToWalletScript = !!Astro.props?.frontmatter?.metadata?.linkToWa
     <script>
       import "../scripts/index.ts"
     </script>
-    <script define:vars={{ includeLinkToWalletScript }}>
-      window.includeLinkToWalletScript = includeLinkToWalletScript
-    </script>
     <script define:vars={{ frontmatter }}>
       const persistedArticle = {
         title: frontmatter.title,
@@ -117,26 +112,18 @@ const includeLinkToWalletScript = !!Astro.props?.frontmatter?.metadata?.linkToWa
   </head>
 
   <body>
-    <Header frontmatter={frontmatter} />
+    <Header />
     <main class="layout" style={{ "margin-bottom": 0 }}>
       <div id="grid-main">
-        <Quickstart frontmatter={frontmatter}>
+        <Quickstart {frontmatter}>
           <slot />
         </Quickstart>
       </div>
       <div id="grid-right">
-        <QuickstartPanel frontmatter={frontmatter} {headings} />
+        <QuickstartPanel {frontmatter} {headings} />
       </div>
     </main>
     <NewsletterCTA client:visible />
     <Footer />
-
-    <script>
-      //@ts-expect-error
-      if (window.includeLinkToWalletScript) {
-        //@ts-expect-error astro handles the .ts extension
-        import("../scripts/link-to-wallet.ts")
-      }
-    </script>
   </body>
 </html>
