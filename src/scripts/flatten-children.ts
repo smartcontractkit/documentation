@@ -1,5 +1,7 @@
+import { SectionContent } from "~/config"
+
 export const flattenChildren = function (arr) {
-  const flattenedArray = []
+  const flattenedArray: SectionContent[] = []
   arr.forEach((item) => {
     flattenedArray.push(item)
     if (item.children) {
