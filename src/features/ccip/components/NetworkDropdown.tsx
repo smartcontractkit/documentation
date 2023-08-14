@@ -33,7 +33,7 @@ export const NetworkDropdown = ({ options, userAddress }: Props) => {
   const [showToast, setShowToast] = useState<boolean>(false)
   const [mintBnMTokenButtonDisabled, setMintBnMTokenButtonDisabled] = useState<boolean>(false)
   const [mintLnMTokenButtonDisabled, setMintLnMTokenButtonDisabled] = useState<boolean>(false)
-  const detailsElementRef = useRef(null)
+  const detailsElementRef = useRef<HTMLDetailsElement | null>(null)
   const closeDropdown = useCallback(() => {
     if (!detailsElementRef.current) return
 
@@ -99,7 +99,9 @@ export const NetworkDropdown = ({ options, userAddress }: Props) => {
       })
     } catch (switchError: unknown) {
       if (isSwitchNetworkError(switchError) && switchError.code === 4902) {
-        const { nativeCurrency, rpc, explorers } = getchainByChainId(option.chainId)
+        const chainInfo = getchainByChainId(option.chainId)
+        if (!chainInfo) return
+        const { nativeCurrency, rpc, explorers } = chainInfo
         await window.ethereum.request({
           method: "wallet_addEthereumChain",
           params: [
@@ -131,6 +133,7 @@ export const NetworkDropdown = ({ options, userAddress }: Props) => {
   }
 
   const addBnMAssetToWallet = async () => {
+    if (!activeNetwork?.BnM) return
     const { type, options } = activeNetwork.BnM.params
     validateEthereumApi(window.ethereum)
     const success = await window.ethereum.request({
@@ -154,7 +157,7 @@ export const NetworkDropdown = ({ options, userAddress }: Props) => {
   }
 
   const addLnMAssetToWallet = async () => {
-    if (activeNetwork.name !== "Ethereum Sepolia") {
+    if (!activeNetwork?.LnM || activeNetwork.name !== "Ethereum Sepolia") {
       return
     }
     const { type, options } = activeNetwork.LnM.params
@@ -182,6 +185,7 @@ export const NetworkDropdown = ({ options, userAddress }: Props) => {
   const mintBnMTokens = async () => {
     setIsLoading(LoadingState["LOADING..."])
     setMintBnMTokenButtonDisabled(true)
+    if (!activeNetwork?.BnM) return
     const { address: ccipBNMContractAddress } = activeNetwork.BnM.params.options
     const provider = new ethers.providers.Web3Provider(window.ethereum)
     const signer = provider.getSigner()
@@ -218,6 +222,7 @@ export const NetworkDropdown = ({ options, userAddress }: Props) => {
   const mintLnMTokens = async () => {
     setIsLoading(LoadingState["LOADING..."])
     setMintLnMTokenButtonDisabled(true)
+    if (!activeNetwork?.LnM) return
     const { address: ccipLNMContractAddress } = activeNetwork.LnM.params.options
     const provider = new ethers.providers.Web3Provider(window.ethereum)
     const signer = provider.getSigner()
@@ -263,7 +268,7 @@ export const NetworkDropdown = ({ options, userAddress }: Props) => {
         tabIndex={dropdownDisabled ? -1 : undefined}
         className={[styles["network-selector-container"], ...(dropdownDisabled ? [styles.disabled] : [])].join(" ")}
       >
-        <summary>
+        <summary className={styles["network-selector-summary"]}>
           <div className={styles["network-selector"]}>
             {isNetworkChangePending ? (
               <>

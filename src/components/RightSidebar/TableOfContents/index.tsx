@@ -5,7 +5,7 @@ import { useState, useEffect, useRef } from "preact/hooks"
 import { shouldUpdateToc } from "./tocStore"
 export interface Heading {
   depth: number
-  text: string
+  text: string | null
   slug: string
 }
 
@@ -15,7 +15,7 @@ const TableOfContents: FunctionalComponent<{
 }> = ({ headers = [], clientSideToc = false }) => {
   // headers = [...headers].filter(({ depth }) => depth > 1 && depth < 4)
   const [headings, setHeadings] = useState([...headers].filter(({ depth }) => depth > 1 && depth < 4))
-  const tableOfContents = useRef<HTMLUListElement>()
+  const tableOfContents = useRef<HTMLUListElement | null>(null)
   const [currentID, setCurrentID] = useState("overview")
   const onThisPageID = "on-this-page-heading"
   const $shouldUpdateToc = useStore(shouldUpdateToc)
@@ -70,7 +70,7 @@ const TableOfContents: FunctionalComponent<{
       if (!heading.id) return
       headingList.push({
         depth: Number(heading.nodeName.charAt(1)),
-        text: heading.textContent as string,
+        text: heading.textContent,
         slug: heading.id,
       })
     })
