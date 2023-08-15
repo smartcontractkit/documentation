@@ -341,7 +341,8 @@ export const CHAINS: Chain[] = [
         name: "Scroll Sepolia testnet",
         explorerUrl: "https://sepolia-blockscout.scroll.io/",
         networkType: "testnet",
-        rddUrl: "https://reference-data-directory-70fsby0i4-chainlinklabs.vercel.app/feeds-celo-testnet-alfajores.json",
+        rddUrl:
+          "https://reference-data-directory-70fsby0i4-chainlinklabs.vercel.app/feeds-ethereum-testnet-sepolia-scroll-1.json",
       },
     ],
   },
