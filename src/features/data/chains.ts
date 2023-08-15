@@ -315,7 +315,7 @@ export const CHAINS: Chain[] = [
     supportedFeatures: ["feeds"],
     networks: [
       {
-        name: "Celo mainnet",
+        name: "Celo Mainnet",
         explorerUrl: "https://explorer.celo.org/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-celo-mainnet.json",
@@ -325,6 +325,23 @@ export const CHAINS: Chain[] = [
         explorerUrl: "https://explorer.celo.org/alfajores/address/%s",
         networkType: "testnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-celo-testnet-alfajores.json",
+      },
+    ],
+  },
+  {
+    page: "scroll",
+    label: "Scroll",
+    title: "Scroll Data Feeds",
+    img: "/assets/chains/scroll.svg",
+    networkStatusUrl: "https://sepolia-blockscout.scroll.io/",
+    tags: ["default"],
+    supportedFeatures: ["feeds"],
+    networks: [
+      {
+        name: "Scroll Sepolia testnet",
+        explorerUrl: "https://sepolia-blockscout.scroll.io/",
+        networkType: "testnet",
+        rddUrl: "https://reference-data-directory-70fsby0i4-chainlinklabs.vercel.app/feeds-celo-testnet-alfajores.json",
       },
     ],
   },
@@ -461,6 +478,12 @@ export const ALL_CHAINS: Chain[] = [
         explorerUrl: "https://solscan.io/account/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-solana-mainnet.json",
+      },
+      {
+        name: "Celo Mainnet",
+        explorerUrl: "https://explorer.celo.org/address/%s",
+        networkType: "mainnet",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-celo-mainnet.json",
       },
     ],
     label: "All",
