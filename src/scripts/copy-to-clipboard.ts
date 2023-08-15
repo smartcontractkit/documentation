@@ -19,8 +19,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const codeBlock = entry.target
         entry.target.classList.add("copy-code-button-placeholder-hidden")
 
-        const container = document.createElement("div")
-        container.className = "copy-code-button-wrapper"
+        const copyButtonContainer = document.createElement("div")
+        copyButtonContainer.className = "copy-code-button-wrapper"
 
         const copyButton = document.createElement("button")
         copyButton.className = button.secondary
@@ -30,10 +30,17 @@ document.addEventListener("DOMContentLoaded", () => {
         copyButton.setAttribute("data-clipboard-text", s)
         copyButton.innerHTML = `<img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" style="width:16px; height: 16px">`
         copyButton.ariaLabel = "copy to clipoard"
+        copyButtonContainer.appendChild(copyButton)
 
-        container.appendChild(copyButton)
+        const container = document.createElement("div")
+        container.className = "code-wrapper"
 
-        codeBlock.insertAdjacentElement("beforebegin", container)
+        const currentParent = codeBlock.parentNode
+        const codeBlockClone = codeBlock.cloneNode(true)
+        container.appendChild(copyButtonContainer)
+        container.appendChild(codeBlockClone)
+        currentParent?.replaceChild(container, codeBlock)
+
         observer.unobserve(codeBlock)
       }
     })
