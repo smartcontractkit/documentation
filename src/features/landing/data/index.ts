@@ -38,6 +38,7 @@ export const evmProducts = [
       { id: "moonriver", title: "Moonriver" },
       { id: "base", title: "BASE" },
       { id: "celo", title: "Celo" },
+      { id: "polygonzkevm", title: "Polgyon zkEVM" },
       { id: "starknet", title: "StarkNet" },
       { id: "solana", title: "Solana" },
     ],

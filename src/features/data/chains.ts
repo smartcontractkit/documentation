@@ -368,6 +368,23 @@ export const CHAINS: Chain[] = [
       },
     ],
   },
+  {
+    page: "polygonzkevm",
+    title: "Polygon zkEVM",
+    label: "Polygon zkEVM",
+    img: "/assets/chains/polygonzkevm.svg",
+    networkStatusUrl: "https://testnet-zkevm.polygonscan.com/",
+    tags: ["default"],
+    supportedFeatures: ["feeds"],
+    networks: [
+      {
+        name: "Polygon zkEVM testnet",
+        explorerUrl: "https://testnet-zkevm.polygonscan.com/%s",
+        networkType: "testnet",
+        rddUrl: "https://reference-data-directory-ddec0jkpe-chainlinklabs.vercel.app/feeds-polygon-zkevm-testnet.json",
+      },
+    ],
+  },
 ]
 
 // All mainnet feeds. Used for deprecated feeds.
