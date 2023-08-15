@@ -54,7 +54,7 @@ const feedCategories = {
 }
 
 const Pagination = ({ addrPerPage, totalAddr, paginate, currentPage, firstAddr, lastAddr }) => {
-  const pageNumbers = []
+  const pageNumbers: number[] = []
 
   for (let i = 1; i <= Math.ceil(totalAddr / addrPerPage); i++) {
     pageNumbers.push(i)
@@ -360,7 +360,7 @@ export const MainnetTable = ({
     .filter(
       (pair) =>
         pair.name.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
-        pair.proxyAddress.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
+        pair.proxyAddress?.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
         pair.assetName.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
         pair.feedType.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
         pair.docs.porType?.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", "")) ||

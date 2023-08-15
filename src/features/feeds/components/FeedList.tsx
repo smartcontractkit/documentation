@@ -188,7 +188,7 @@ export const FeedList = ({
                       >
                         Data Feed Categories
                       </summary>
-                      <nav ref={wrapperRef} style={!showCategoriesDropdown && "display: none"}>
+                      <nav ref={wrapperRef} style={!showCategoriesDropdown ? { display: "none" } : {}}>
                         <ul>
                           {dataFeedCategory.map((category) => (
                             <li>

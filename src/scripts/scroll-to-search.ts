@@ -10,7 +10,9 @@ window.addEventListener("load", () => {
     if (searchElement) {
       searchElement.scrollIntoView({ behavior: "smooth" })
       const input = queryParams.get(searchElementId[0])
-      searchElement.placeholder = input
+      if (input) {
+        searchElement.placeholder = input
+      }
     }
   }
 })
