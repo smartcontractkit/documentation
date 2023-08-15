@@ -316,6 +316,48 @@ export const SIDEBAR = {
       ],
     },
     {
+      section: "TUTORIALS",
+      contents: [
+        {
+          title: "Time-based Automation",
+          url: "chainlink-automation/job-scheduler",
+        },
+        {
+          title: "Custom Logic Automation",
+          url: "chainlink-automation/register-upkeep",
+        },
+        {
+          title: "Manage your Upkeeps",
+          url: "chainlink-automation/manage-upkeeps",
+        },
+        {
+          title: "Creating Flexible Upkeeps",
+          url: "chainlink-automation/flexible-upkeeps",
+        },
+      ],
+    },
+    {
+      section: "GUIDES",
+      contents: [
+        {
+          title: "Automation Pricing",
+          url: "chainlink-automation/automation-economics",
+        },
+        {
+          title: "Automation Architecture",
+          url: "chainlink-automation/overview",
+        },
+        {
+          title: "Automation Release Notes",
+          url: "chainlink-automation/automation-release-notes",
+        },
+        {
+          title: "FAQs",
+          url: "chainlink-automation/faqs",
+        },
+      ],
+    },
+    {
       section: "EXAMPLES",
       contents: [
         {
@@ -337,48 +379,6 @@ export const SIDEBAR = {
         {
           title: "Automate Top-Up for VRF Subscriptions",
           url: "chainlink-automation/tutorials/vrf-sub-monitor",
-        },
-      ],
-    },
-    {
-      section: "Guides",
-      contents: [
-        {
-          title: "Time-based Automation",
-          url: "chainlink-automation/job-scheduler",
-        },
-        {
-          title: "Custom Logic Automation",
-          url: "chainlink-automation/register-upkeep",
-        },
-        {
-          title: "Manage your Upkeeps",
-          url: "chainlink-automation/manage-upkeeps",
-        },
-        {
-          title: "Creating Flexible Upkeeps",
-          url: "chainlink-automation/flexible-upkeeps",
-        },
-      ],
-    },
-    {
-      section: "Reference",
-      contents: [
-        {
-          title: "Automation Pricing",
-          url: "chainlink-automation/automation-economics",
-        },
-        {
-          title: "Automation Architecture",
-          url: "chainlink-automation/overview",
-        },
-        {
-          title: "Automation Release Notes",
-          url: "chainlink-automation/automation-release-notes",
-        },
-        {
-          title: "FAQs",
-          url: "chainlink-automation/faqs",
         },
       ],
     },
