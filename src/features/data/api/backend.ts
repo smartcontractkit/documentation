@@ -1,6 +1,6 @@
 import EleventyFetch from "@11ty/eleventy-fetch"
 import { ChainMetadata } from "."
-import { Chain } from "../data/chains"
+import { Chain } from "../chains"
 
 export const getServerSideChainMetadata = async (chains: Chain[]): Promise<ChainMetadata> => {
   const cache = {} as ChainMetadata

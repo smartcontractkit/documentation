@@ -1,3 +1,7 @@
+export type FeedDataItem = {
+  [key: string]: string
+}
+
 export const priceFeedAddresses = {
   btc: {
     usd: {
@@ -21,4 +25,12 @@ export const registryAddresses = {
       },
     },
   },
+}
+
+export const monitoredFeeds = {
+  mainnet: [
+    {
+      "0xBE456fd14720C3aCCc30A2013Bffd782c9Cb75D5": "TrueUSD",
+    },
+  ],
 }

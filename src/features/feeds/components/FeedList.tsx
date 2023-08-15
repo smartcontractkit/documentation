@@ -3,11 +3,10 @@ import { useEffect, useState, useRef } from "preact/hooks"
 import { MainnetTable, TestnetTable } from "./Tables"
 import feedList from "./FeedList.module.css"
 import { clsx } from "~/lib"
-import button from "@chainlink/design-system/button.module.css"
 import { updateTableOfContents } from "~/components/RightSidebar/TableOfContents/tocStore"
-import { Chain, CHAINS, ALL_CHAINS } from "../data/chains"
+import { Chain, CHAINS, ALL_CHAINS } from "~/features/data/chains"
 import { useGetChainMetadata } from "./useGetChainMetadata"
-import { ChainMetadata } from "../api"
+import { ChainMetadata } from "../../data/api"
 import useQueryString from "~/hooks/useQueryString"
 import { RefObject } from "preact"
 
@@ -82,7 +81,6 @@ export const FeedList = ({
   const isPor = dataFeedType === "por"
   const isNftFloor = dataFeedType === "nftFloor"
   const isRates = dataFeedType === "rates"
-  const isDefault = !isPor && !isNftFloor && !isRates
   const isDeprecating = ecosystem === "deprecating"
   let netCount = 0
 

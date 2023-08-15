@@ -46,7 +46,6 @@ const baseCollection = defineCollection({
 
 const anyApiCollection = baseCollection
 const architectureOverviewCollection = baseCollection
-const bifCollection = baseCollection
 const chainlinkAutomationCollection = baseCollection
 const chainlinkFunctionsCollection = baseCollection
 const chainlinkNodesCollection = baseCollection
@@ -59,7 +58,6 @@ const ccipCollection = baseCollection
 export const collections = {
   "any-api": anyApiCollection,
   "architecture-overview": architectureOverviewCollection,
-  "blockchain-integrations-framework": bifCollection,
   "chainlink-automation": chainlinkAutomationCollection,
   "chainlink-functions": chainlinkFunctionsCollection,
   "chainlink-nodes": chainlinkNodesCollection,

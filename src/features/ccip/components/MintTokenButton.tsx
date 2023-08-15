@@ -82,19 +82,21 @@ export const MintTokenButton = () => {
     const currentChainId = await ethereum.request({ method: "eth_chainId" }).catch((error: Error) => {
       alert(`Something went wrong: ${error.message}`)
     })
-    setUserAddress(addressList[0])
-    localStorage.setItem(
-      "isWalletConnected",
-      JSON.stringify({
-        isWalletConnected: true,
-        userAddress: addressList[0],
-        currentChainId,
-      })
-    )
+    if (addressList) {
+      setUserAddress(addressList[0])
+      localStorage.setItem(
+        "isWalletConnected",
+        JSON.stringify({
+          isWalletConnected: true,
+          userAddress: addressList[0],
+          currentChainId,
+        })
+      )
+    }
   }
 
   const requestPermissions = async (ethereum: MetaMaskInpageProvider) => {
-    let accountsPermission: RequestPermissions
+    let accountsPermission: RequestPermissions | undefined
     await ethereum
       .request({
         method: "wallet_requestPermissions",

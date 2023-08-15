@@ -1,4 +1,4 @@
-import { Chain } from "../data/chains"
+import { Chain } from "../chains"
 
 interface Docs {
   nftFloorUnits: any

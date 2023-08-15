@@ -1,10 +1,10 @@
 import { sectionEnum } from "../content/config"
 import { z } from "astro:content"
 type Sections = z.infer<typeof sectionEnum>
-
+export type SectionContent = { title: string; url: string; children?: { title: string; url: string }[] }
 type SectionEntry = {
   section: string
-  contents: { title: string; url: string; children?: { title: string; url: string }[] }[]
+  contents: SectionContent[]
 }
 
 export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
@@ -1032,6 +1032,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
     {
       section: "Chainlink Nodes",
       contents: [
+        {
+          title: "Overview",
+          url: "chainlink-nodes",
+        },
         {
           title: "Release Notes",
           url: "chainlink-nodes/node-versions",

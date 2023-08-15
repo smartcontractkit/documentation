@@ -10,6 +10,6 @@ export function updateTableOfContents() {
   if (window.location.hash) {
     const id = decodeURI(window.location.hash.split("#")[1])
     const scrollTo = document.getElementById(id)
-    scrollTo.scrollIntoView()
+    scrollTo && scrollTo.scrollIntoView()
   }
 }

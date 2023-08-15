@@ -1,11 +1,12 @@
 /** @jsxImportSource preact */
-import h from "preact"
 import feedList from "./FeedList.module.css"
 import { clsx } from "../../../lib"
-import { ChainNetwork } from "../data/chains"
+import { ChainNetwork } from "~/features/data/chains"
 import tableStyles from "./Tables.module.css"
-import button from "@chainlink/design-system/button.module.css"
+import { CheckHeartbeat } from "./pause-notice/CheckHeartbeat"
+import { monitoredFeeds, FeedDataItem } from "~/features/data"
 
+const feedItems = monitoredFeeds.mainnet
 const feedCategories = {
   verified: (
     <span className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")} title="Verified">
@@ -190,6 +191,21 @@ const ProofOfReserveTHead = ({
 const ProofOfReserveTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => (
   <tr>
     <td class={tableStyles.pairCol}>
+      {feedItems.map((feedItem: FeedDataItem) => {
+        const [feedAddress] = Object.keys(feedItem)
+        if (feedAddress === proxy.proxyAddress) {
+          return (
+            <CheckHeartbeat
+              feedAddress={proxy.proxyAddress}
+              supportedChain="ETHEREUM_MAINNET"
+              feedName="TUSD Reserves"
+              list
+              currencyName={feedItem[feedAddress]}
+            />
+          )
+        }
+        return ""
+      })}
       <div className={tableStyles.assetPair}>
         {feedCategories[proxy.docs.feedCategory] || ""}
         {proxy.name}

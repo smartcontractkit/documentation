@@ -43,13 +43,14 @@ export const EnsLookupForm = () => {
       const json = await response.json()
       const hashName = json.data.domains[0] ? json.data.domains[0].id : "Not Found"
 
-      const result = await getWeb3Provider("ETHEREUM_MAINNET").resolveName(selectedEnsString)
+      const result = await getWeb3Provider("ETHEREUM_MAINNET")?.resolveName(selectedEnsString)
 
-      setEnsResult({
-        ensName: selectedEnsString,
-        address: result,
-        hash: hashName,
-      })
+      result &&
+        setEnsResult({
+          ensName: selectedEnsString,
+          address: result,
+          hash: hashName,
+        })
     } catch (e) {
       setEnsResult({
         ensName: selectedEnsString,
