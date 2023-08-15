@@ -59,7 +59,9 @@ export const FeedList = ({
       const newUrl = window.location.pathname + "?" + searchParams.toString()
       window.history.replaceState({ path: newUrl }, "", newUrl)
       const inputElement = document.getElementById("search") as HTMLInputElement
-      inputElement.placeholder = "Search price feeds"
+      if (inputElement) {
+        inputElement.placeholder = "Search price feeds"
+      }
     }
   }, [chainMetadata.processedData, searchValue])
 
@@ -204,7 +206,10 @@ export const FeedList = ({
                         id="search"
                         class={feedList.filterDropdown_searchInput}
                         placeholder="Search price feeds"
-                        onInput={(event) => setSearchValue((event.target as HTMLInputElement).value)}
+                        onInput={(event) => {
+                          setSearchValue((event.target as HTMLInputElement).value)
+                          setCurrentPage(1)
+                        }}
                       />
                     </div>
                     <label class={feedList.detailsLabel}>
