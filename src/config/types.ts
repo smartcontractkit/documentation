@@ -37,6 +37,7 @@ export type SupportedChain =
   | "METIS_MAINNET"
   | "BASE_MAINNET"
   | "BASE_GOERLI"
+  | "SCROLL_TESTNET"
   | "CELO_MAINNET"
   | "CELO_ALFAJORES"
 
