@@ -73,7 +73,7 @@ const { frontmatter } = Astro.props
     <h1 id="overview">{frontmatter.title}</h1>
     <h3>{frontmatter.summary}</h3>
   </header>
-  <section class="content">
+  <section id="content">
     <slot />
   </section>
 </article>
@@ -108,52 +108,52 @@ const { frontmatter } = Astro.props
     margin-top: var(--space-6x);
   }
 
-  .content {
+  #content {
     margin-top: var(--space-20x);
   }
 
-  .content :global(*) {
+  #content :global(*) {
     margin-top: 0;
     margin-bottom: 0;
     max-width: 100%;
   }
 
-  .content > :global(*) {
+  #content > :global(*) {
     margin-top: var(--space-6x);
   }
 
-  .content :global(p + ul) {
+  #content :global(p + ul) {
     margin-top: 0;
   }
 
-  .content :global(h2) {
+  #content :global(h2) {
     scroll-margin-top: var(--space-4x);
   }
 
-  .content :global(li) {
+  #content :global(li) {
     line-height: 1.5;
   }
 
-  .content :global(ol) {
+  #content :global(ol) {
     padding-left: 0;
     counter-reset: counter;
   }
 
-  .content :global(ol > li:first-of-type) {
+  #content :global(ol > li:first-of-type) {
     border-top: 1px solid var(--gray-300, #ced0d5);
   }
 
-  .content :global(ol > li) {
-    padding: 12px 0px;
+  #content :global(ol > li) {
+    padding: var(--space-3x) 0px;
     border-bottom: 1px solid var(--gray-300, #ced0d5);
     list-style: none;
   }
 
-  .content :global(details) {
+  #content :global(details) {
     overflow: hidden;
   }
 
-  .content :global(details > summary) {
+  #content :global(details > summary) {
     display: grid;
     grid-template-columns: 0 1fr auto;
     gap: var(--space-8x);
@@ -162,35 +162,35 @@ const { frontmatter } = Astro.props
     font-size: 20px;
   }
 
-  .content :global(details > summary::before) {
+  #content :global(details > summary::before) {
     content: counters(counter, ".") "";
     counter-increment: counter;
     color: var(--gray-400, #b7bac0);
     letter-spacing: -0.24px;
   }
 
-  .content :global(details > summary::after) {
+  #content :global(details > summary::after) {
     content: url(/images/quickstarts/arrow-down.svg);
-    -webkit-mask: url(/images/quickstarts/arrow-down.svg) no-repeat 50% 50%;
-    -webkit-mask-size: 24px;
+    -webkit-mask: url(/images/quickstarts/arrow-down.svg) no-repeat center;
+    -webkit-mask-size: var(--space-6x);
     background-color: var(--gray-400, #b7bac0);
     transition: 0.25s transform ease;
   }
 
   /* Using custom attribute 'expanded' (created by Accordion)
   rather than 'open' since some browsers (Safari) have no respect for details attributes */
-  .content :global(details[expanded] > summary::after) {
+  #content :global(details[expanded] > summary::after) {
     transform: rotate(180deg);
     background-color: #174cc2;
   }
 
-  .content :global(details > :not(summary)) {
+  #content :global(details > :not(summary)) {
     margin-top: 0;
     padding-left: var(--space-8x);
     padding-top: var(--space-6x);
   }
 
-  .content :global(details > :not(summary):last-child) {
+  #content :global(details > :not(summary):last-child) {
     padding-bottom: var(--space-3x);
   }
 </style>
