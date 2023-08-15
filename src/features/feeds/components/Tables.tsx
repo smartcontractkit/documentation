@@ -3,6 +3,7 @@ import feedList from "./FeedList.module.css"
 import { clsx } from "../../../lib"
 import { ChainNetwork } from "~/features/data/chains"
 import tableStyles from "./Tables.module.css"
+import button from "@chainlink/design-system/button.module.css"
 import { CheckHeartbeat } from "./pause-notice/CheckHeartbeat"
 import { monitoredFeeds, FeedDataItem } from "~/features/data"
 
@@ -67,7 +68,7 @@ const Pagination = ({ addrPerPage, totalAddr, paginate, currentPage, firstAddr, 
             className={button.secondary}
             style={"outline-offset: 2px"}
             disabled={currentPage === 1}
-            onClick={() => paginate(currentPage - 1)}
+            onClick={() => paginate(Number(currentPage) - 1)}
           >
             Prev
           </button>
@@ -78,7 +79,7 @@ const Pagination = ({ addrPerPage, totalAddr, paginate, currentPage, firstAddr, 
             className={button.secondary}
             style={"outline-offset: 2px"}
             disabled={lastAddr >= totalAddr}
-            onClick={() => paginate(currentPage + 1)}
+            onClick={() => paginate(Number(currentPage) + 1)}
           >
             Next
           </button>
@@ -369,7 +370,6 @@ export const MainnetTable = ({
           .includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
         pair.docs.porSource?.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", ""))
     )
-  console.log("filteredMetadata", filteredMetadata)
   const slicedFilteredMetadata = filteredMetadata.slice(firstAddr, lastAddr)
   return (
     <div>

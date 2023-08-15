@@ -28,7 +28,7 @@ export const FeedList = ({
   const [selectedFeedCategories, setSelectedFeedCategories] = useQueryString("categories", [])
   const [showCategoriesDropdown, setShowCategoriesDropdown] = useState<boolean>(false)
   const [showExtraDetails, setShowExtraDetails] = useState(false)
-  const [currentPage, setCurrentPage] = useState(1)
+  const [currentPage, setCurrentPage] = useQueryString("page", 1)
   const paginate = (pageNumber) => setCurrentPage(pageNumber)
   const addrPerPage = 8
   const lastAddr = currentPage * addrPerPage
@@ -39,13 +39,21 @@ export const FeedList = ({
 
   function handleNetworkSelect(chain: Chain) {
     setSelectedChain(chain.page)
+    setSearchValue("")
+    setSelectedFeedCategories([])
+    setCurrentPage(1)
   }
 
   const handleCategorySelection = (category) => {
     paginate(1)
-    if (selectedFeedCategories.includes(category)) {
+    if (typeof selectedFeedCategories === "string" && selectedFeedCategories !== category) {
+      setSelectedFeedCategories([selectedFeedCategories, category])
+    } else if (typeof selectedFeedCategories === "string" && selectedFeedCategories === category) {
+      setSelectedFeedCategories([])
+    }
+    if (Array.isArray(selectedFeedCategories) && selectedFeedCategories.includes(category)) {
       setSelectedFeedCategories(selectedFeedCategories.filter((item) => item !== category))
-    } else {
+    } else if (Array.isArray(selectedFeedCategories)) {
       setSelectedFeedCategories([...selectedFeedCategories, category])
     }
   }
