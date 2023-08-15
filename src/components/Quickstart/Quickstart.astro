@@ -5,9 +5,9 @@ interface Props {
 }
 const { frontmatter } = Astro.props
 
-// NOTE: There's a bug with mdx and Astro where p tags on new lines add empty p tags around the content.
-// Unfortunately our linter / prettier automatically puts those tags on new lines for large blocks
-// and so I've added the quickstart content to prettierignore for now.
+/** There's a bug with mdx and Astro where p tags on new lines add empty p tags around the content.
+ * Unfortunately our linter / prettier automatically puts those tags on new lines for large blocks
+ * and so I've added the quickstart content to prettierignore for now. */
 ---
 
 <a class="back text-200" href="./">
@@ -149,6 +149,10 @@ const { frontmatter } = Astro.props
     list-style: none;
   }
 
+  .content :global(details) {
+    overflow: hidden;
+  }
+
   .content :global(details > summary) {
     display: grid;
     grid-template-columns: 0 1fr auto;
@@ -169,11 +173,13 @@ const { frontmatter } = Astro.props
     content: url(/images/quickstarts/arrow-down.svg);
     -webkit-mask: url(/images/quickstarts/arrow-down.svg) no-repeat 50% 50%;
     -webkit-mask-size: 24px;
-    background-color: #b7bac0;
+    background-color: var(--gray-400, #b7bac0);
     transition: 0.25s transform ease;
   }
 
-  .content :global(details[open] > summary::after) {
+  /* Using custom attribute 'expanded' (created by Accordion)
+  rather than 'open' since some browsers (Safari) have no respect for details attributes */
+  .content :global(details[expanded] > summary::after) {
     transform: rotate(180deg);
     background-color: #174cc2;
   }
