@@ -10,8 +10,6 @@ import { TabsContent } from "@components/Tabs"
 
 In this tutorial, you will learn how to set up a time-based upkeep to automate a smart contract function using Chainlink Automation.
 
-## Overview
-
 Time-based upkeeps are contracts you set up on Chainlink Automation that allow you to run a smart contract function automatically according to a custom schedule that you define. Time-based upkeeps allow you to run cron jobs.
 
 You can use time-based upkeeps to:
@@ -80,11 +78,69 @@ If you do not want to verify the contract on chain, paste the contract's [Applic
 
 1. **Select the time-based trigger.**
 
-1. Provide the address of your deployed contract.
+1. Provide the address of your deployed contract. If your contract is unverified, paste the ABI into the corresponding text box.
+
+### Specifying the time schedule
+
+After you enter the basic contract information, specify your time schedule in the form of a CRON expression. CRON expressions are a shorthand way to create a time schedule. Use the provided example buttons to experiment with different schedules and then create your own.
+
+```
+Cron jobs are interpreted according to this format:
+
+  ┌───────────── minute (0 - 59)
+  │ ┌───────────── hour (0 - 23)
+  │ │ ┌───────────── day of the month (1 - 31)
+  │ │ │ ┌───────────── month (1 - 12)
+  │ │ │ │ ┌───────────── day of the week (0 - 6) (Sunday to Saturday)
+  │ │ │ │ │
+  │ │ │ │ │
+  │ │ │ │ │
+  * * * * *
+
+All times are in UTC
+
+- can be used for range e.g. "0 8-16 * * *"
+/ can be used for interval e.g. "0 */2 * * *"
+, can be used for list e.g. "0 17 * * 0,2,4"
+
+  Special limitations:
+    * there is no year field
+    * no special characters: ? L W #
+    * lists can have a max length of 26
+    * no words like JAN / FEB or MON / TUES
+```
+
+#### Cron schedule examples
+
+| Cron expression  | Schedule                                     |
+| ---------------- | -------------------------------------------- |
+| `* * * * *`      | Every minute                                 |
+| `0 8-16 * * *`   | Every hour between 08:00-16:00 UTC           |
+| `0 */2 * * *`    | Every two hours                              |
+| `0 17 * * 0,2,4` | Sundays, Tuesdays and Thursdays at 17:00 UTC |
+
+The Chainlink Automation App displays the next five scheduled events to help you confirm that you have entered your desired schedule correctly.
+
+After you enter your CRON expression, click **Next**.
+
+<ClickToZoom src="/images/contract-devs/automation/automation-cron-expression.png" alt="Automation Cron Expression" />
+
+### Entering upkeep details
+
+To complete the upkeep registration process, you must enter some information about your upkeep including its name, gas limit, starting balance LINK, and contact information.
+
+<Aside type="note" title="Job Scheduler Gas requirements">
+  When you create an upkeep through the Job Scheduler, Chainlink Automation deploys a new `CronUpkeep` contract from the
+  [CronUpkeepFactory](https://github.com/smartcontractkit/chainlink/blob/d5a253fb6959104844eda8479c08909a76a6fea7/contracts/src/v0.8/automation/upkeeps/CronUpkeepFactory.sol)
+  to manage your time schedule and ensure that it is compatible. This contract uses roughly 110K gas per call, so it is
+  recommended to add 150K additional gas to the gas limit of the function you are automating.
+</Aside>
+
+![Automation Upkeep Details](/images/contract-devs/automation/automation-upkeep-details.png)
 
 1. **Complete the required details:**
 
    - **Upkeep name**: This will be publicly visible in the Chainlink Automation app.
-   - **Gas limit**: This is the maximum amount of gas that your transaction requires to execute on chain. This limit cannot exceed the `performGasLimit` value configured on the [registry](/chainlink-automation/supported-networks/#configurations). Before the network executes your transaction on chain, it simulates the transaction. If the gas required to execute your transaction exceeds the gas limit that you specified, your transaction will not be confirmed. Developers also have the ability to update `performGasLimit` for an upkeep. Consider running your function on a testnet to see how much gas it uses before you select a gas limit. This can be changed afterwards.
+   - **Gas limit**: This is the maximum amount of gas that your transaction requires to execute on chain. This limit cannot exceed the `performGasLimit` value configured on the [registry](/chainlink-automation/supported-networks/#configurations). Before the network executes your transaction on chain, it simulates the transaction. If the gas required to execute your transaction exceeds the gas limit that you specified, your transaction will not be confirmed. Consider running your function on a testnet to see how much gas it uses before you select a gas limit. This can be changed afterwards.
    - **Starting balance (LINK)**: Specify a LINK starting balance to fund your upkeep. See the [LINK Token Contracts](/resources/link-token-contracts) page to find the correct contract address and access faucets for testnet LINK. This field is required. You must have LINK before you can use the Chainlink Automation service.
    - **Your email address**: This email address will be encrypted and is used to send you an email when your upkeep is underfunded.
