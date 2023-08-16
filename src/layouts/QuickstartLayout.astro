@@ -35,7 +35,7 @@ const canonicalURL = new URL(canonicalURLStr)
       }
       body {
         width: 100%;
-        display: grid;
+        /* display: grid; */
         grid-template-rows: var(--theme-navbar-height) 1fr;
         --gutter: var(--space-6x);
         --doc-padding: 2rem;
@@ -44,9 +44,11 @@ const canonicalURL = new URL(canonicalURLStr)
       .layout {
         display: grid;
         justify-content: center;
-        grid-auto-flow: column;
-        grid-template-columns: minmax(0, var(--max-width)) 0fr;
+        grid-auto-flow: row;
         overflow-x: hidden;
+        max-width: var(--fullwidth-max-width);
+        margin-left: auto;
+        margin-right: auto;
       }
 
       #grid-main {
@@ -54,27 +56,26 @@ const canonicalURL = new URL(canonicalURLStr)
         display: flex;
         flex-direction: column;
         background: linear-gradient(180deg, rgba(245, 247, 253, 1) 0%, rgba(245, 247, 253, 0) 50%);
+        order: 1;
       }
 
       #grid-right {
-        display: none;
+        order: 0;
       }
 
-      @media (min-width: 50em) {
+      /* @media (min-width: 50em) {
         .layout {
-          overflow: initial;
-          grid-template-columns: minmax(0, var(--max-width)) 18rem;
-          gap: 2em;
         }
-      }
+      } */
 
       @media (min-width: 72em) {
         .layout {
-          grid-template-columns: minmax(0, var(--max-width)) 18rem;
+          grid-template-columns: 2fr 1fr;
+          gap: 2em;
         }
 
         #grid-right {
-          display: flex;
+          order: 2;
         }
       }
     </style>
@@ -82,15 +83,6 @@ const canonicalURL = new URL(canonicalURLStr)
       .layout > * {
         width: 100%;
         height: 100%;
-      }
-
-      .mobile-sidebar-toggle {
-        overflow: hidden;
-      }
-
-      .mobile-sidebar-toggle #grid-left {
-        display: block;
-        top: 2rem;
       }
     </style>
     <script>
