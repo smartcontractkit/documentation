@@ -3,6 +3,7 @@ import HeadCommon from "../components/HeadCommon.astro"
 import HeadSEO from "../components/HeadSEO.astro"
 import Header from "../components/Header/Header.astro"
 import Quickstart from "../components/Quickstart/Quickstart.astro"
+import QuickstartOverview from "../components/Quickstart/QuickstartOverview.astro"
 import QuickstartPanel from "../components/Quickstart/QuickstartPanel.astro"
 import * as CONFIG from "../config"
 import { NewsletterCTA } from "../components/Footer/NewsletterCTA"
@@ -37,6 +38,7 @@ const canonicalURL = new URL(canonicalURLStr)
       .layout {
         display: grid;
         /* TODO: Remove gutter, doc-padding from layout, place in Quickstart and QuickstartPanel */
+        grid-template-columns: minmax(350px, 100%);
         --gutter: var(--space-6x);
         --doc-padding: 2rem;
         max-width: var(--fullwidth-max-width);
@@ -44,31 +46,34 @@ const canonicalURL = new URL(canonicalURLStr)
         margin-right: auto;
       }
 
-      #grid-main {
-        padding: var(--doc-padding) var(--gutter) var(--space-20x);
-        background: linear-gradient(180deg, rgba(245, 247, 253, 1) 0%, rgba(245, 247, 253, 0) 50%);
-        order: 1;
+      #grid-top {
+        padding: var(--doc-padding) var(--gutter) 0;
+        /* background: linear-gradient(180deg, rgba(245, 247, 253, 1) 0%, rgba(245, 247, 253, 0) 50%); */
       }
 
-      #grid-right {
-        order: 0;
+      #grid-main {
+        padding: 0 var(--gutter) var(--space-20x);
       }
 
       @media (min-width: 72em) {
         .layout {
+          grid-template-areas: "top main_content" "bottom main_content";
           grid-template-columns: 2fr 1fr;
           gap: 2em;
         }
 
         #grid-right {
-          order: 2;
+          grid-area: main_content;
         }
-      }
-    </style>
-    <style is:global>
-      .layout > * {
-        width: 100%;
-        height: 100%;
+
+        #grid-top {
+          height: fit-content;
+          grid-area: top;
+        }
+
+        #grid-main {
+          grid-area: bottom;
+        }
       }
     </style>
     <script>
@@ -92,13 +97,16 @@ const canonicalURL = new URL(canonicalURLStr)
   <body>
     <Header />
     <main class="layout" style={{ "margin-bottom": 0 }}>
-      <div id="grid-main">
-        <Quickstart {frontmatter}>
-          <slot />
-        </Quickstart>
+      <div id="grid-top">
+        <QuickstartOverview {frontmatter} />
       </div>
       <div id="grid-right">
         <QuickstartPanel {frontmatter} {headings} />
+      </div>
+      <div id="grid-main">
+        <Quickstart>
+          <slot />
+        </Quickstart>
       </div>
     </main>
     <NewsletterCTA client:visible />
