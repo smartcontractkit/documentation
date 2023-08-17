@@ -45,7 +45,7 @@ const products = frontmatter.products.map((p) => productsInfo[p])
   </div>
   <a href={githubEditUrl} class="primary button"><img src="/assets/github.svg" />Open Github</a>
   <nav>
-    <TableOfContents {headings} />
+    <TableOfContents client:media="(min-width: 48em)" {headings} />
   </nav>
 </aside>
 
@@ -69,8 +69,6 @@ const products = frontmatter.products.map((p) => productsInfo[p])
   }
 
   .panel .description {
-    border-top: 1px solid var(--gray-300, #ced0d5);
-    padding-top: var(--space-8x);
     display: grid;
     grid-template-columns: 1fr 1fr;
     grid-template-rows: 1fr 1fr 1fr;
@@ -85,11 +83,11 @@ const products = frontmatter.products.map((p) => productsInfo[p])
   }
 
   .panel nav {
-    top: 0;
-    padding: var(--doc-padding) 0;
-    margin-top: 0;
-    overflow: auto;
-    position: sticky;
+    border-radius: 4px;
+    border: 1px solid var(--border-color-secondary, #ced0d5);
+    background: var(--background-color-primary, #fff);
+    box-shadow: 0px 12px 24px -2px rgba(35, 51, 123, 0.1);
+    padding: 32px 24px;
     width: 100%;
   }
 
@@ -106,6 +104,7 @@ const products = frontmatter.products.map((p) => productsInfo[p])
   }
 
   a.button {
+    margin-top: var(--space-3x);
     width: 100%;
   }
 
@@ -116,7 +115,7 @@ const products = frontmatter.products.map((p) => productsInfo[p])
     filter: brightness(0) invert(1);
   }
 
-  span {
+  .panel .description span {
     display: none;
   }
 
@@ -127,6 +126,8 @@ const products = frontmatter.products.map((p) => productsInfo[p])
     }
 
     .panel .description {
+      border-top: 1px solid var(--gray-300, #ced0d5);
+      padding-top: var(--space-8x);
       grid-template-columns: 1fr;
       grid-auto-flow: row;
     }
@@ -137,8 +138,23 @@ const products = frontmatter.products.map((p) => productsInfo[p])
       gap: var(--space-2x);
     }
 
-    span {
+    .panel .description span {
       display: initial;
+    }
+
+    a.button {
+      margin-top: var(--space-6x);
+    }
+
+    .panel nav {
+      border: initial;
+      background: initial;
+      box-shadow: initial;
+      top: 0;
+      padding: var(--doc-padding) 0;
+      margin-top: 0;
+      overflow: auto;
+      position: sticky;
     }
   }
 

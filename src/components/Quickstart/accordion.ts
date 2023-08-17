@@ -1,3 +1,5 @@
+// TODO: Changing between mobile / desktop layout
+// requires content height to be re-evaluated(?)
 export class Accordion {
   el: HTMLDetailsElement
   summary: HTMLElement
