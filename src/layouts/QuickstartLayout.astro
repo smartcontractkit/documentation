@@ -23,6 +23,8 @@ const formattedContentTitle = frontmatter.title
 
 const canonicalURLStr = new URL(Astro.url.pathname, Astro.site).href.replace(/\/+$/, "")
 const canonicalURL = new URL(canonicalURLStr)
+// Used to determine the article content selector for table of contents
+const contentId = "content"
 ---
 
 <html dir="ltr" lang="en-us" class="initial">
@@ -101,13 +103,13 @@ const canonicalURL = new URL(canonicalURLStr)
     <Header />
     <main class="layout">
       <div id="grid-top">
-        <QuickstartOverview {frontmatter} />
+        <QuickstartOverview {frontmatter} {contentId} />
       </div>
       <div id="grid-right">
-        <QuickstartPanel {frontmatter} {headings} />
+        <QuickstartPanel {frontmatter} {headings} {contentId} />
       </div>
       <div id="grid-main">
-        <Quickstart>
+        <Quickstart {contentId}>
           <slot />
         </Quickstart>
       </div>
