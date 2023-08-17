@@ -3,7 +3,7 @@ interface Props {
   contentId: string
 }
 // TODO: Figure out if I can refer to contentId's value as an id in styles
-// rather than using #content
+// rather than using #article
 const { contentId } = Astro.props
 
 /** There's a bug with mdx and Astro where p tags on new lines add empty p tags around the content.
@@ -11,62 +11,60 @@ const { contentId } = Astro.props
  * and so I've added the quickstart content to prettierignore for now. */
 ---
 
-<article id="article">
-  <section id={contentId}>
-    <slot />
-  </section>
+<article id={contentId}>
+  <slot />
 </article>
 
 <style>
-  article {
+  #article {
     margin-top: var(--space-10x);
   }
 
-  #content :global(*) {
+  #article :global(*) {
     margin-top: 0;
     margin-bottom: 0;
     max-width: 100%;
   }
 
-  #content > :global(*) {
+  #article > :global(*) {
     margin-top: var(--space-4x);
   }
 
-  #content :global(p + ul) {
+  #article :global(p + ul) {
     margin-top: 0;
   }
 
-  #content :global(h2) {
+  #article :global(h2) {
     color: black;
     font-size: 20px;
     margin-top: var(--space-10x);
     scroll-margin-top: calc(var(--space-4x) + var(--theme-navbar-height));
   }
 
-  #content :global(li) {
+  #article :global(li) {
     line-height: 1.5;
   }
 
-  #content :global(ol) {
+  #article :global(ol) {
     padding-left: 0;
     counter-reset: counter;
   }
 
-  #content :global(ol > li:first-of-type) {
+  #article :global(ol > li:first-of-type) {
     border-top: 1px solid var(--gray-300, #ced0d5);
   }
 
-  #content :global(ol > li) {
+  #article :global(ol > li) {
     padding: var(--space-2x) 0px;
     border-bottom: 1px solid var(--gray-300, #ced0d5);
     list-style: none;
   }
 
-  #content :global(details) {
+  #article :global(details) {
     overflow: hidden;
   }
 
-  #content :global(details > summary) {
+  #article :global(details > summary) {
     display: grid;
     grid-template-columns: 0 1fr auto;
     align-items: center;
@@ -76,14 +74,14 @@ const { contentId } = Astro.props
     font-size: 16px;
   }
 
-  #content :global(details > summary::before) {
+  #article :global(details > summary::before) {
     content: counters(counter, ".") "";
     counter-increment: counter;
     color: var(--gray-400, #b7bac0);
     letter-spacing: -0.24px;
   }
 
-  #content :global(details > summary::after) {
+  #article :global(details > summary::after) {
     content: url(/images/quickstarts/arrow-down.svg);
     -webkit-mask: url(/images/quickstarts/arrow-down.svg) no-repeat center;
     -webkit-mask-size: var(--space-6x);
@@ -93,43 +91,43 @@ const { contentId } = Astro.props
 
   /* Using custom attribute 'expanded' (created by Accordion)
   rather than 'open' since some browsers (Safari) have no respect for details attributes */
-  #content :global(details[expanded] > summary::after) {
+  #article :global(details[expanded] > summary::after) {
     transform: rotate(180deg);
     background-color: #174cc2;
   }
 
-  #content :global(details > :not(summary)) {
+  #article :global(details > :not(summary)) {
     margin-top: 0;
     padding-left: var(--space-8x);
     padding-top: var(--space-6x);
   }
 
-  #content :global(details > :not(summary):last-child) {
+  #article :global(details > :not(summary):last-child) {
     padding-bottom: var(--space-3x);
   }
 
   @media (min-width: 48em) {
-    #content :global(h2) {
+    #article :global(h2) {
       scroll-margin-top: var(--space-4x);
     }
   }
 
   @media (min-width: 50em) {
-    #content :global(h2) {
+    #article :global(h2) {
       font-size: 28px;
       margin-top: var(--space-6x);
       color: var(--blue-800, #1a2b6b);
     }
 
-    #content > :global(*) {
+    #article > :global(*) {
       margin-top: var(--space-6x);
     }
 
-    #content :global(ol > li) {
+    #article :global(ol > li) {
       padding: var(--space-3x) 0px;
     }
 
-    #content :global(details > summary) {
+    #article :global(details > summary) {
       font-size: 20px;
     }
   }
