@@ -48,5 +48,5 @@ export const HeaderBanner: React.FC<{ bannerContent?: BannerContent }> = ({ bann
         )}
       </p>
     </div>
-  )
+  ) as React.ReactElement // Explicitly assigning to ReactElement cause TS is confused otherwise
 }

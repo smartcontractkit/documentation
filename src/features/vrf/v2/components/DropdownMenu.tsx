@@ -130,7 +130,9 @@ export const DropDownMenu = ({ placeholder = "Select a network...", method }: Pr
           </div>
         </div>
       </div>
-      {selectedNet !== placeholder && <CostTable method={method} mainChain={selectedMainChain} chain={selectedChain} />}
+      {selectedNet !== placeholder && selectedMainChain && selectedChain && (
+        <CostTable method={method} mainChain={selectedMainChain} chain={selectedChain} />
+      )}
     </div>
   )
 }
