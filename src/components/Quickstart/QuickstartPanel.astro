@@ -30,7 +30,7 @@ const products = frontmatter.products.map((p) => productsInfo[p])
       )
     }
     <div>
-      <p>{""}</p>
+      <span>{""}</span>
       <ul>
         Docs references:
         {
@@ -71,15 +71,20 @@ const products = frontmatter.products.map((p) => productsInfo[p])
   .panel .description {
     border-top: 1px solid var(--gray-300, #ced0d5);
     padding-top: var(--space-8x);
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: flex-start;
     gap: var(--space-5x);
+  }
+
+  .panel .description > div:last-child {
+    grid-column: 2;
   }
 
   .panel .description > div {
     display: grid;
-    gap: var(--space-2x);
-    grid-template-columns: 1fr 1.2fr;
+    gap: var(--space-1x);
+    grid-template-columns: 1fr;
     --gutter: var(--space-6x);
     --doc-padding: 2rem;
   }
@@ -121,10 +126,31 @@ const products = frontmatter.products.map((p) => productsInfo[p])
     filter: brightness(0) invert(1);
   }
 
+  span {
+    display: none;
+  }
+
   @media (min-width: 48em) {
     .panel {
       padding: var(--space-4x) var(--space-6x) 0;
       background: var(--gray-100, #fafafb);
+    }
+
+    .panel .description > div {
+      grid-template-columns: 1fr 1.2fr;
+      gap: var(--space-2x);
+    }
+
+    .panel .description > div:last-child {
+      grid-column: 1;
+    }
+
+    .panel .description {
+      grid-template-columns: 1fr;
+    }
+
+    span {
+      display: initial;
     }
   }
 
