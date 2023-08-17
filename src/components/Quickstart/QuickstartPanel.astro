@@ -18,37 +18,34 @@ const products = frontmatter.products.map((p) => productsInfo[p])
 <aside class="panel">
   <img class="feature" src=`/images/quickstarts/feature/${frontmatter.image}` />
   <div class="description">
-    <div><p>Chainlink Products:</p> <p><span>{products.map((p) => p.name).join(", ")}</span></p></div>
-    <div><p>Product Versions:</p> <p><span>{products.map((p) => p.name).join(", ")}</span></p></div>
-    <div><p>Required Time:</p> <p><span>{frontmatter.time}</span></p></div>
+    <div><p>Chainlink Products:</p> <p>{products.map((p) => p.name).join(", ")}</p></div>
+    <div><p>Product Versions:</p> <p>{products.map((p) => p.name).join(", ")}</p></div>
+    <div><p>Required Time:</p> <p>{frontmatter.time}</p></div>
     {
       frontmatter.requires && (
         <div>
           <p>Requires: </p>
-          <p>
-            <span>{frontmatter.requires}</span>
-          </p>
+          <p>{frontmatter.requires}</p>
         </div>
       )
     }
     <div>
-      <p>Docs:</p>
+      <p>{""}</p>
       <ul>
-        <span
-          >{
-            products.map((p) => (
-              <a href={`/${p.slug}`}>
-                <li style="line-height: 1.5;">{p.name}</li>
-              </a>
-            ))
-          }</span
-        >
+        Docs references:
+        {
+          products.map((p) => (
+            <a href={`/${p.slug}`}>
+              <li>{p.name}</li>
+            </a>
+          ))
+        }
       </ul>
     </div>
   </div>
   <a href={githubEditUrl} class="primary button"><img src="/assets/github.svg" />Open Github</a>
   <nav>
-    <TableOfContents client:media="(min-width: 50em)" {headings} />
+    <TableOfContents {headings} />
   </nav>
 </aside>
 
@@ -58,8 +55,13 @@ const products = frontmatter.products.map((p) => productsInfo[p])
     flex-direction: column;
     align-items: center;
     height: 100%;
-    max-width: 550px;
+    max-width: 500px;
     padding: var(--space-4x) var(--gutter) 0;
+  }
+
+  .panel * {
+    font-size: 14px;
+    margin-bottom: 0;
   }
 
   .panel > * {
@@ -82,8 +84,7 @@ const products = frontmatter.products.map((p) => productsInfo[p])
     --doc-padding: 2rem;
   }
 
-  .panel .description span {
-    font-size: unset;
+  .panel .description > div > :last-child {
     font-weight: 500;
     color: var(--text-common-color-text-heading, #1a2b6b);
   }
@@ -95,11 +96,6 @@ const products = frontmatter.products.map((p) => productsInfo[p])
     overflow: auto;
     position: sticky;
     width: 100%;
-  }
-
-  .panel :where(a, p, li) {
-    font-size: 14px;
-    margin-bottom: 0;
   }
 
   .panel li {
