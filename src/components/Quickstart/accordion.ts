@@ -76,7 +76,7 @@ export class Accordion {
     const startHeight = `${this.el.offsetHeight}px`
     const endHeight = `${this.summary.offsetHeight + this.contentHeight}px`
     this.cancelIfAnimating()
-    const duration = 150 + Math.min(this.contentHeight, 300)
+    const duration = 250 + Math.min(this.contentHeight, 300)
     this.animation = this.el.animate(
       {
         height: [startHeight, endHeight],
