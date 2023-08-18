@@ -18,7 +18,7 @@ export const productsInfo: Record<Products, { name: string; slug: string }> = {
 
 const productEnum = z.preprocess((val) => (val as string).toLowerCase(), z.nativeEnum(Products))
 
-export const sectionEnum = z.enum([
+const sectionEnum = z.enum([
   "anyApi",
   "global",
   "bif",
@@ -31,6 +31,8 @@ export const sectionEnum = z.enum([
   "legacy",
   "vrf",
 ])
+
+export type Sections = z.infer<typeof sectionEnum>
 
 const metadata = z
   .object({

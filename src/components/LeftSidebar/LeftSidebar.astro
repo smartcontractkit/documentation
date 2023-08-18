@@ -1,25 +1,26 @@
 ---
-import { SIDEBAR, MENU, Frontmatter } from "../../config"
+import { Sections } from "~/content/config"
+import { SIDEBAR, MENU } from "../../config"
 import { flattenChildren } from "../../scripts/flatten-children"
 export type Props = {
   currentPage: string
-  content: Frontmatter
+  section?: Sections
 }
-const { currentPage, content } = Astro.props as Props
+const { currentPage, section } = Astro.props as Props
 
 // SIDEBAR is a flat array. Group it by sections to properly render.
-
-function getSidebarSections(section: string) {
-  if (section === "global") {
+function getSidebarSections(section?: Sections) {
+  if (!section) {
+    return []
+  } else if (section === "global") {
     return Object.keys(SIDEBAR).flatMap((parentSection) => {
-      return SIDEBAR[parentSection].map((entry) => ({ ...entry, parentSection }))
+      return SIDEBAR[parentSection].map((entry: any) => ({ ...entry, parentSection }))
     })
   }
-
-  return !!SIDEBAR[content?.section] ? SIDEBAR[content?.section] : []
+  return SIDEBAR[section] ?? []
 }
 
-const sidebarSections = getSidebarSections(content.section)
+const sidebarSections = getSidebarSections(section)
 
 // Remove slashes and params
 const removeSlashes = function (url: string) {
@@ -54,24 +55,23 @@ const currentPageMatch = removeSlashes(currentPage.slice(1))
   <hr class="menu-separator" />
   <ul class="nav-groups sidebar-nav-groups">
     {
-      sidebarSections.map((section) => (
-        <li aria-hidden={content.section === "global"} class={`parent-${section.parentSection}`}>
+      sidebarSections.map((s: { parentSection: any; contents: any[]; section: unknown }) => (
+        <li aria-hidden={section === "global"} class={`parent-${s.parentSection}`}>
           <div class="nav-group">
             <details
               open={
-                !!flattenChildren(section.contents).filter((object) => removeSlashes(object.url) == currentPageMatch)
-                  .length
+                !!flattenChildren(s.contents).filter((object) => removeSlashes(object.url) == currentPageMatch).length
               }
             >
-              <summary class="nav-group-title">{section.section}</summary>
+              <summary class="nav-group-title">{s.section}</summary>
               <nav>
                 <ul>
-                  {!!section.contents &&
-                    section.contents.map((child) => (
+                  {!!s.contents &&
+                    s.contents.map((child) => (
                       <>
                         <li class="nav-link">
                           <a
-                            href={`${Astro.site.pathname}${child.url}`}
+                            href={`${Astro.site?.pathname}${child.url}`}
                             aria-current={`${currentPageMatch === removeSlashes(child.url) ? "page" : "false"}`}
                           >
                             {child.title}
@@ -82,7 +82,7 @@ const currentPageMatch = removeSlashes(currentPage.slice(1))
                             {child.children.map((childItem) => (
                               <li class="nav-link nested">
                                 <a
-                                  href={`${Astro.site.pathname}${childItem.url}`}
+                                  href={`${Astro.site?.pathname}${childItem.url}`}
                                   aria-current={`${
                                     currentPageMatch === removeSlashes(childItem.url) ? "page" : "false"
                                   }`}

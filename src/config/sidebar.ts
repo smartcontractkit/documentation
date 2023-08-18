@@ -1,6 +1,4 @@
-import { sectionEnum } from "../content/config"
-import { z } from "astro:content"
-type Sections = z.infer<typeof sectionEnum>
+import { Sections } from "../content/config"
 export type SectionContent = { title: string; url: string; children?: { title: string; url: string }[] }
 type SectionEntry = {
   section: string

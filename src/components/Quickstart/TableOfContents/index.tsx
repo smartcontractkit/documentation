@@ -1,6 +1,6 @@
 /** @jsxImportSource preact */
 import { useStore } from "@nanostores/preact"
-import type { FunctionalComponent, RefObject } from "preact"
+import type { FunctionalComponent } from "preact"
 import { useState, useEffect, useRef } from "preact/hooks"
 import { shouldUpdateToc } from "./tocStore"
 import { MarkdownHeading } from "astro"
