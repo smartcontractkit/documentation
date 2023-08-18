@@ -80,7 +80,7 @@ const TableOfContents: FunctionalComponent<{
   return (
     <>
       <h2 className="heading">On this page</h2>
-      <ul ref={tableOfContents as RefObject<HTMLUListElement>}>
+      <ul ref={tableOfContents}>
         <li className={`header-link depth-2 ${currentID === "overview" ? "active" : ""}`.trim()}>
           <a href="#overview">Overview</a>
         </li>

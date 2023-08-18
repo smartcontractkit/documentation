@@ -9,7 +9,7 @@ import styles from "./tableOfContents.module.css"
 const TableOfContents: FunctionalComponent<{
   headings: MarkdownHeading[]
 }> = ({ headings }) => {
-  const tableOfContents = useRef<HTMLUListElement>()
+  const tableOfContents = useRef<HTMLUListElement | null>(null)
   const [currentID, setCurrentID] = useState("overview")
   const $shouldUpdateToc = useStore(shouldUpdateToc)
 
@@ -45,7 +45,7 @@ const TableOfContents: FunctionalComponent<{
       <h2 className="heading" style={{ padding: 0 }}>
         On this page
       </h2>
-      <ul ref={tableOfContents as RefObject<HTMLUListElement>} style={{ marginTop: "var(--space-4x)" }}>
+      <ul ref={tableOfContents} style={{ marginTop: "var(--space-4x)" }}>
         {headings
           .filter(({ depth }) => depth === 2)
           .map((h) => (
