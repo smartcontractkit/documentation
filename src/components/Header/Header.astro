@@ -194,10 +194,11 @@ const { section } = Astro.props
 </style>
 
 <script is:inline>
-  window.addEventListener("DOMContentLoaded", (event) => {
-    const parentSection = new URLSearchParams(window.location.search).get("parent") || "gettingStarted"
-    if (window.location.pathname !== "/" && !document.querySelectorAll('a[aria-current="true"]')[0]) {
-      let elem = document.getElementById(parentSection)
+  window.addEventListener("DOMContentLoaded", () => {
+    const parentSection = new URLSearchParams(window.location.search).get("parent")
+    const current = document.querySelector(".navbar").querySelector('a[aria-current="true"]')
+    if (parentSection && !current) {
+      const elem = document.getElementById(parentSection)
       elem.setAttribute("aria-current", "true")
     }
   })
