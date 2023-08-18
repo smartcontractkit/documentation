@@ -32,6 +32,15 @@ export const sectionEnum = z.enum([
   "vrf",
 ])
 
+const metadata = z
+  .object({
+    title: z.string().optional(),
+    description: z.string().optional(),
+    image: z.string().optional(),
+    linkToWallet: z.boolean().optional(),
+  })
+  .optional()
+
 const baseFrontmatter = z
   .object({
     section: sectionEnum,
@@ -40,18 +49,7 @@ const baseFrontmatter = z
     whatsnext: z.record(z.string(), z.string()).optional(),
     isMdx: z.boolean().optional(),
     isIndex: z.boolean().optional(),
-    metadata: z
-      .object({
-        title: z.string().optional(),
-        description: z.string().optional(),
-        image: z
-          .object({
-            0: z.string(),
-          })
-          .optional(),
-        linkToWallet: z.boolean().optional(),
-      })
-      .optional(),
+    metadata,
     excerpt: z.string().optional(),
     datafeedtype: z.string().optional(),
   })
@@ -70,7 +68,7 @@ const quickstartsFrontmatter = z
 
 export type BaseFrontmatter = z.infer<typeof baseFrontmatter>
 export type QuickstartsFrontmatter = z.infer<typeof quickstartsFrontmatter>
-export type AnyFrontmatter = QuickstartsFrontmatter | BaseFrontmatter
+export type Metadata = z.infer<typeof metadata>
 
 const baseCollection = defineCollection({
   type: "content",

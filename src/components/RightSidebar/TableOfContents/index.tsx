@@ -1,6 +1,6 @@
 /** @jsxImportSource preact */
 import { useStore } from "@nanostores/preact"
-import type { FunctionalComponent, RefObject } from "preact"
+import type { FunctionalComponent } from "preact"
 import { useState, useEffect, useRef } from "preact/hooks"
 import { shouldUpdateToc } from "./tocStore"
 export interface Heading {
@@ -11,8 +11,7 @@ export interface Heading {
 
 const TableOfContents: FunctionalComponent<{
   headers: Heading[]
-  clientSideToc?: boolean
-}> = ({ headers = [], clientSideToc = false }) => {
+}> = ({ headers = [] }) => {
   // headers = [...headers].filter(({ depth }) => depth > 1 && depth < 4)
   const [headings, setHeadings] = useState([...headers].filter(({ depth }) => depth > 1 && depth < 4))
   const tableOfContents = useRef<HTMLUListElement | null>(null)
@@ -49,12 +48,6 @@ const TableOfContents: FunctionalComponent<{
     // Stop observing when the component is unmounted.
     return () => headingsObserver.disconnect()
   }, [tableOfContents.current, $shouldUpdateToc])
-
-  useEffect(() => {
-    if (!tableOfContents.current) return
-    if (!clientSideToc) return
-    refreshHeadings()
-  }, [tableOfContents.current])
 
   useEffect(() => {
     if (!$shouldUpdateToc) return
