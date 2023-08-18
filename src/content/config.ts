@@ -60,7 +60,7 @@ const baseFrontmatter = z
 const quickstartsFrontmatter = z
   .object({
     title: z.string(),
-    summary: z.string().optional(),
+    description: z.string(),
     image: z.string(),
     products: z.array(productEnum),
     time: z.string(),
@@ -68,7 +68,9 @@ const quickstartsFrontmatter = z
   })
   .strict()
 
+export type BaseFrontmatter = z.infer<typeof baseFrontmatter>
 export type QuickstartsFrontmatter = z.infer<typeof quickstartsFrontmatter>
+export type AnyFrontmatter = QuickstartsFrontmatter | BaseFrontmatter
 
 const baseCollection = defineCollection({
   type: "content",
