@@ -8,8 +8,7 @@ import styles from "./tableOfContents.module.css"
 
 const TableOfContents: FunctionalComponent<{
   headings: MarkdownHeading[]
-  contentId: string
-}> = ({ headings, contentId }) => {
+}> = ({ headings }) => {
   const tableOfContents = useRef<HTMLUListElement>()
   const [currentID, setCurrentID] = useState("overview")
   const $shouldUpdateToc = useStore(shouldUpdateToc)
@@ -35,7 +34,7 @@ const TableOfContents: FunctionalComponent<{
     const headingsObserver = new IntersectionObserver(setCurrent, observerOptions)
 
     // Observe all necessary headings in the main page content.
-    document.querySelectorAll(`#${contentId} :is(#overview, h2)`).forEach((h) => headingsObserver.observe(h))
+    document.querySelectorAll(`#article :is(#overview, h2)`).forEach((h) => headingsObserver.observe(h))
 
     // Stop observing when the component is unmounted.
     return () => headingsObserver.disconnect()

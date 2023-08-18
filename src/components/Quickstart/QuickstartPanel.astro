@@ -7,9 +7,8 @@ import TableOfContents from "./TableOfContents"
 interface Props {
   frontmatter: QuickstartsFrontmatter
   headings: MarkdownHeading[]
-  contentId: string
 }
-const { frontmatter, headings, contentId } = Astro.props
+const { frontmatter, headings } = Astro.props
 const currentPage = new URL(Astro.request.url).pathname
 const currentFile = `src/pages${currentPage.replace(/\/$/, "")}.mdx`
 const githubEditUrl = CONFIG.GITHUB_EDIT_URL + currentFile
@@ -46,7 +45,7 @@ const products = frontmatter.products.map((p) => productsInfo[p])
   </div>
   <a href={githubEditUrl} class="primary button"><img src="/assets/github.svg" />Open Github</a>
   <nav>
-    <TableOfContents client:media="(min-width: 48em)" {headings} {contentId} />
+    <TableOfContents client:media="(min-width: 48em)" {headings} />
   </nav>
 </aside>
 
