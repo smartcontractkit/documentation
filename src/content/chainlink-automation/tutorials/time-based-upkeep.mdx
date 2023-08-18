@@ -23,10 +23,13 @@ You can use time-based upkeeps to:
 
 Before you start this tutorial, complete the following items:
 
-- You have a wallet set up
-- You have the gas currency for the chain in your wallet
-- You have ERC-677 LINK in your wallet. [Faucet link if you need LINK](https://faucets.chain.link/)
-- You have a smart contract that has an external or public function that you want called at a certain time or with a certain frequency
+- You have a cryptocurrency wallet set up (for example, [MetaMask](https://metamask.io/))
+- Your wallet is funded with:
+  - The gas currency for the chain where your contract is deployed (for example, Sepolia). [Get 0.5 Sepolia ETH](https://sepoliafaucet.com/).
+  - ERC-677 LINK. [Get 20 testnet LINK](https://faucets.chain.link/).
+- You have a smart contract that has an external or public function that you want called at a certain time or with a certain frequency.
+
+If you do not already have a deployed contract, [follow these instructions to deploy a simple "Hello, world!" contract](/getting-started/deploy-your-first-contract) and then return to this tutorial.
 
 ## Provide contract information
 
@@ -41,7 +44,7 @@ Chainlink Automation needs your smart contract's [Application Binary Interface](
 
 Verify your contract in the blockchain explorer by adding your contract's source code and other required information in the blockchain explorer UI. For example, you can verify contracts deployed to Polygon Mumbai testnet on the [testnet version of Polygonscan](https://mumbai.polygonscan.com/verifyContract).
 
-After you successfully verify your smart contract, its ABI becomes publicly available, so Chainlink Automation will be able to access it.
+After you successfully verify your smart contract, the Chainlink Automation App should be able to fetch its ABI automatically.
 
 </Fragment>
 <Fragment slot="panel.2">
@@ -80,6 +83,10 @@ If you do not want to verify the contract on chain, paste the contract's [Applic
 
 1. Provide the address of your deployed contract. If your contract is unverified, paste the ABI into the corresponding text box.
 
+1. If you're using the "Hello, World!" contract, add an updated message for the function input in the Chainlink Automation App:
+
+   <ClickToZoom src="/images/automation/qs-time-based-upkeep/new-message.png" alt="Function input" />
+
 ### Specifying the time schedule
 
 After you enter the basic contract information, specify your time schedule in the form of a CRON expression. CRON expressions are a shorthand way to create a time schedule. Use the provided example buttons to experiment with different schedules and then create your own.
@@ -112,12 +119,12 @@ All times are in UTC
 
 #### Cron schedule examples
 
-| Cron expression  | Schedule                                     |
-| ---------------- | -------------------------------------------- |
-| `* * * * *`      | Every minute                                 |
-| `0 8-16 * * *`   | Every hour between 08:00-16:00 UTC           |
-| `0 */2 * * *`    | Every two hours                              |
-| `0 17 * * 0,2,4` | Sundays, Tuesdays and Thursdays at 17:00 UTC |
+| Cron expression  | Schedule                                  |
+| ---------------- | ----------------------------------------- |
+| `* * * * *`      | Every minute                              |
+| `0 8-16 * * *`   | Every hour between 08:00-16:00 UTC        |
+| `0 */2 * * *`    | Every two hours                           |
+| `0 17 * * 0,2,4` | Sunday, Tuesday and Thursday at 17:00 UTC |
 
 The Chainlink Automation App displays the next five scheduled events to help you confirm that you have entered your desired schedule correctly.
 
@@ -141,6 +148,6 @@ To complete the upkeep registration process, you must enter some information abo
 1. **Complete the required details:**
 
    - **Upkeep name**: This will be publicly visible in the Chainlink Automation app.
-   - **Gas limit**: This is the maximum amount of gas that your transaction requires to execute on chain. This limit cannot exceed the `performGasLimit` value configured on the [registry](/chainlink-automation/supported-networks/#configurations). Before the network executes your transaction on chain, it simulates the transaction. If the gas required to execute your transaction exceeds the gas limit that you specified, your transaction will not be confirmed. Consider running your function on a testnet to see how much gas it uses before you select a gas limit. This can be changed afterwards.
-   - **Starting balance (LINK)**: Specify a LINK starting balance to fund your upkeep. See the [LINK Token Contracts](/resources/link-token-contracts) page to find the correct contract address and access faucets for testnet LINK. This field is required. You must have LINK before you can use the Chainlink Automation service.
+   - **Gas limit**: This is the maximum amount of gas that your transaction requires to execute on chain. This value defaults to 500000, which is sufficient for the simple `updateMessage` function in the Hello, World! contract. If the gas required to execute your transaction exceeds the gas limit that you specified, your transaction will not be confirmed.
+   - **Starting balance (LINK)**: Specify a LINK starting balance to fund your upkeep. If you're using the Hello, World! contract, 3 LINK is a sufficient starting balance. If your upkeep is underfunded after you create it, you can add more funds later.
    - **Your email address**: This email address will be encrypted and is used to send you an email when your upkeep is underfunded.
