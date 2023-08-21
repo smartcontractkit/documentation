@@ -28,13 +28,13 @@ const TableOfContents: FunctionalComponent<{
       // Negative top margin accounts for `scroll-margin`.
       // Negative bottom margin means heading needs to be towards top of viewport to trigger intersection.
       // top | right+left | bottom
-      rootMargin: `0px 0px -90%`,
+      rootMargin: `-30% 0px -70%`,
     }
 
     const sectionsObserver = new IntersectionObserver(setCurrent, observerOptions)
 
-    // Observe all necessary headings in the main page content.
-    document.querySelectorAll(`#article > section, section#article`).forEach((h) => sectionsObserver.observe(h))
+    // Observe all necessary sections in the main page content.
+    document.querySelectorAll("article > section, #overview").forEach((h) => sectionsObserver.observe(h))
 
     // Stop observing when the component is unmounted.
     return () => sectionsObserver.disconnect()

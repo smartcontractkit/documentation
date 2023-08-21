@@ -5,7 +5,6 @@
 ---
 
 <article id="article">
-  <!-- <div id="stickybg"></div> -->
   <slot />
 </article>
 
@@ -21,7 +20,7 @@
   }
 
   #article :global(section > *) {
-    margin-top: var(--space-4x);
+    margin-top: var(--space-5x);
   }
 
   #article :global(p + ul) {
@@ -29,26 +28,19 @@
   }
 
   #article :global(section) {
-    scroll-margin-top: calc(var(--space-4x) + var(--theme-navbar-height));
+    scroll-margin-top: var(--theme-navbar-height);
   }
 
   #article :global(h2) {
     color: black;
     font-size: 20px;
-    margin-top: var(--space-10x);
-    top: calc(var(--space-4x) + var(--theme-navbar-height));
-    overflow: auto;
-    position: sticky;
-  }
-
-  #article #stickybg {
-    margin: 0;
-    height: 100px;
-    background: rgb(255, 255, 255);
-    background: linear-gradient(0deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 50%);
+    margin: var(--space-10x) 0 calc(-1 * var(--space-5x));
+    padding-top: 0;
+    padding-bottom: var(--space-5x);
     top: var(--theme-navbar-height);
-    overflow: auto;
     position: sticky;
+    background: rgb(255, 255, 255);
+    background: linear-gradient(0deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 10%);
   }
 
   #article :global(li) {
@@ -121,13 +113,15 @@
   }
 
   @media (min-width: 48em) {
-    #article :global(h2) {
-      font-size: 28px;
-      margin-top: var(--space-6x);
-      color: var(--blue-800, #1a2b6b);
-    }
     #article :global(section > *) {
       margin-top: var(--space-6x);
+    }
+
+    #article :global(h2) {
+      font-size: 28px;
+      margin: calc(var(--space-6x) - var(--space-5x)) 0 calc(-1 * var(--space-6x));
+      padding: var(--space-5x) 0 var(--space-6x);
+      color: var(--blue-800, #1a2b6b);
     }
 
     #article :global(ol > li) {
@@ -142,10 +136,10 @@
   /* NOTE: Done at 50em since mobile header appears at this point */
   @media (min-width: 50em) {
     #article :global(section) {
-      scroll-margin-top: var(--space-4x);
+      scroll-margin-top: 20vh;
     }
     #article :global(h2) {
-      top: var(--space-4x);
+      top: 0;
     }
   }
 </style>
