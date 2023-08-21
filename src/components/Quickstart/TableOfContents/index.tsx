@@ -31,13 +31,13 @@ const TableOfContents: FunctionalComponent<{
       rootMargin: `0px 0px -90%`,
     }
 
-    const headingsObserver = new IntersectionObserver(setCurrent, observerOptions)
+    const sectionsObserver = new IntersectionObserver(setCurrent, observerOptions)
 
     // Observe all necessary headings in the main page content.
-    document.querySelectorAll(`#article :is(#overview, h2)`).forEach((h) => headingsObserver.observe(h))
+    document.querySelectorAll(`#article > section, section#article`).forEach((h) => sectionsObserver.observe(h))
 
     // Stop observing when the component is unmounted.
-    return () => headingsObserver.disconnect()
+    return () => sectionsObserver.disconnect()
   }, [tableOfContents.current, $shouldUpdateToc])
 
   return (
