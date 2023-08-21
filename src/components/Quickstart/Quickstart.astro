@@ -5,6 +5,7 @@
 ---
 
 <article id="article">
+  <div id="stickybg"></div>
   <slot />
 </article>
 
@@ -32,6 +33,23 @@
     font-size: 20px;
     margin-top: var(--space-10x);
     scroll-margin-top: calc(var(--space-4x) + var(--theme-navbar-height));
+  }
+
+  #article #stickybg {
+    margin: 0;
+    height: 100px;
+    background: rgb(255, 255, 255);
+    background: linear-gradient(0deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 50%);
+    top: var(--theme-navbar-height);
+    overflow: auto;
+    position: sticky;
+  }
+
+  /* TODO: Dynamically assign this based on IntersectionObserver */
+  #article :global(h2) {
+    top: calc(var(--space-4x) + var(--theme-navbar-height));
+    overflow: auto;
+    position: sticky;
   }
 
   #article :global(li) {
