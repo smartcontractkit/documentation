@@ -370,8 +370,8 @@ export const CHAINS: Chain[] = [
   },
   {
     page: "polygonzkevm",
-    title: "Polygon zkEVM",
     label: "Polygon zkEVM",
+    title: "Polygon zkEVM",
     img: "/assets/chains/polygonzkevm.svg",
     networkStatusUrl: "https://testnet-zkevm.polygonscan.com/",
     tags: ["default"],
@@ -379,9 +379,9 @@ export const CHAINS: Chain[] = [
     networks: [
       {
         name: "Polygon zkEVM testnet",
-        explorerUrl: "https://testnet-zkevm.polygonscan.com/%s",
+        explorerUrl: "https://testnet-zkevm.polygonscan.com/address/%s",
         networkType: "testnet",
-        rddUrl: "https://reference-data-directory-ddec0jkpe-chainlinklabs.vercel.app/feeds-polygon-zkevm-testnet.json",
+        rddUrl: "https://reference-data-directory-low5t42s1-chainlinklabs.vercel.app/feeds-polygon-zkevm-testnet.json",
       },
     ],
   },
