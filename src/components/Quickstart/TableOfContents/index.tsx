@@ -41,7 +41,7 @@ const TableOfContents: FunctionalComponent<{
   }, [tableOfContents.current, $shouldUpdateToc])
 
   return (
-    <>
+    <nav className={styles.toc}>
       <h2 className="heading" style={{ padding: 0 }}>
         On this page
       </h2>
@@ -72,7 +72,7 @@ const TableOfContents: FunctionalComponent<{
             </li>
           ))}
       </ul>
-    </>
+    </nav>
   )
 }
 
