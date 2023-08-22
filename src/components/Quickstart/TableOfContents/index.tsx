@@ -1,44 +1,15 @@
 /** @jsxImportSource preact */
-import { useStore } from "@nanostores/preact"
 import type { FunctionalComponent } from "preact"
-import { useState, useEffect, useRef } from "preact/hooks"
-import { shouldUpdateToc } from "./tocStore"
+import { useRef } from "preact/hooks"
 import { MarkdownHeading } from "astro"
 import styles from "./tableOfContents.module.css"
+import { useCurrentId } from "../Observer/observer"
 
 const TableOfContents: FunctionalComponent<{
   headings: MarkdownHeading[]
 }> = ({ headings }) => {
   const tableOfContents = useRef<HTMLUListElement | null>(null)
-  const [currentID, setCurrentID] = useState("overview")
-  const $shouldUpdateToc = useStore(shouldUpdateToc)
-
-  useEffect(() => {
-    if (!tableOfContents.current) return
-
-    const setCurrent: IntersectionObserverCallback = (entries) => {
-      for (const entry of entries) {
-        if (entry.isIntersecting) {
-          return setCurrentID(entry.target.id)
-        }
-      }
-    }
-
-    const observerOptions: IntersectionObserverInit = {
-      // Negative top margin accounts for `scroll-margin`.
-      // Negative bottom margin means heading needs to be towards top of viewport to trigger intersection.
-      // top | right+left | bottom
-      rootMargin: `-30% 0px -70%`,
-    }
-
-    const sectionsObserver = new IntersectionObserver(setCurrent, observerOptions)
-
-    // Observe all necessary sections in the main page content.
-    document.querySelectorAll("article > section, #overview").forEach((h) => sectionsObserver.observe(h))
-
-    // Stop observing when the component is unmounted.
-    return () => sectionsObserver.disconnect()
-  }, [tableOfContents.current, $shouldUpdateToc])
+  const { currentId } = useCurrentId()
 
   return (
     <nav className={styles.toc}>
@@ -49,7 +20,7 @@ const TableOfContents: FunctionalComponent<{
         {headings
           .filter(({ depth }) => depth === 2)
           .map((h) => (
-            <li className={`${styles.headerLink}${currentID === h.slug ? ` ${styles.active}` : ""}`}>
+            <li className={`${styles.headerLink}${currentId === h.slug ? ` ${styles.active}` : ""}`}>
               <a href={`#${h.slug}`}>
                 {h.text}
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
