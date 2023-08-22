@@ -339,7 +339,7 @@ export const CHAINS: Chain[] = [
     networks: [
       {
         name: "Scroll Sepolia testnet",
-        explorerUrl: "https://sepolia-blockscout.scroll.io/",
+        explorerUrl: "https://sepolia-blockscout.scroll.io/address/%s",
         networkType: "testnet",
         rddUrl:
           "https://reference-data-directory-70fsby0i4-chainlinklabs.vercel.app/feeds-ethereum-testnet-sepolia-scroll-1.json",
