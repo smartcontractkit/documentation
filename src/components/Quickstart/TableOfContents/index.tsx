@@ -18,12 +18,9 @@ const TableOfContents: FunctionalComponent<{
       </h2>
       <ul ref={tableOfContents} style={{ marginTop: "var(--space-4x)" }}>
         {headings
-          .filter(({ depth }) => depth > 1)
+          .filter(({ depth }) => depth === 2)
           .map((h) => (
-            <li
-              className={`${styles.headerLink} ${styles[`depth-${h.depth}`]}
-              ${$currentId === h.slug ? ` ${styles.active}` : ""}`}
-            >
+            <li className={`${styles.headerLink}${$currentId === h.slug ? ` ${styles.active}` : ""}`}>
               <a href={`#${h.slug}`}>
                 {h.text}
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
