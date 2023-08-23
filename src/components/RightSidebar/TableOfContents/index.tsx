@@ -1,91 +1,52 @@
 /** @jsxImportSource preact */
-import { useStore } from "@nanostores/preact"
 import type { FunctionalComponent } from "preact"
-import { useState, useEffect, useRef } from "preact/hooks"
-import { shouldUpdateToc } from "./tocStore"
-export interface Heading {
-  depth: number
-  text: string | null
-  slug: string
-}
+import { useRef } from "preact/hooks"
+import { useCurrentId } from "../../../hooks/currentId/useCurrentId"
+import { MarkdownHeading } from "astro"
+import styles from "./tableOfContents.module.css"
 
 const TableOfContents: FunctionalComponent<{
-  headers: Heading[]
-}> = ({ headers = [] }) => {
-  // headers = [...headers].filter(({ depth }) => depth > 1 && depth < 4)
-  const [headings, setHeadings] = useState([...headers].filter(({ depth }) => depth > 1 && depth < 4))
+  headings: MarkdownHeading[]
+}> = ({ headings }) => {
+  const { $currentId } = useCurrentId()
   const tableOfContents = useRef<HTMLUListElement | null>(null)
-  const [currentID, setCurrentID] = useState("overview")
-  const onThisPageID = "on-this-page-heading"
-  const $shouldUpdateToc = useStore(shouldUpdateToc)
-
-  useEffect(() => {
-    if (!tableOfContents.current) return
-
-    const setCurrent: IntersectionObserverCallback = (entries) => {
-      for (const entry of entries) {
-        if (entry.isIntersecting) {
-          const { id } = entry.target
-          if (id === onThisPageID) continue
-          setCurrentID(entry.target.id)
-          break
-        }
-      }
-    }
-
-    const observerOptions: IntersectionObserverInit = {
-      // Negative top margin accounts for `scroll-margin`.
-      // Negative bottom margin means heading needs to be towards top of viewport to trigger intersection.
-      rootMargin: "-100px 0% -66%",
-      threshold: 1,
-    }
-
-    const headingsObserver = new IntersectionObserver(setCurrent, observerOptions)
-
-    // Observe all the headings in the main page content.
-    document.querySelectorAll("article :is(h1,h2,h3)").forEach((h) => headingsObserver.observe(h))
-
-    // Stop observing when the component is unmounted.
-    return () => headingsObserver.disconnect()
-  }, [tableOfContents.current, $shouldUpdateToc])
-
-  useEffect(() => {
-    if (!$shouldUpdateToc) return
-    if (!window) return
-    window.requestAnimationFrame(function () {
-      refreshHeadings()
-    })
-  }, [$shouldUpdateToc])
-
-  const refreshHeadings = () => {
-    const headingList: Heading[] = []
-    document.querySelectorAll("article :is(h2,h3)").forEach((heading: HTMLHeadingElement) => {
-      if (!heading.id) return
-      headingList.push({
-        depth: Number(heading.nodeName.charAt(1)),
-        text: heading.textContent,
-        slug: heading.id,
-      })
-    })
-    setHeadings(headingList)
-  }
 
   return (
-    <>
-      <h2 className="heading">On this page</h2>
-      <ul ref={tableOfContents}>
-        <li className={`header-link depth-2 ${currentID === "overview" ? "active" : ""}`.trim()}>
-          <a href="#overview">Overview</a>
-        </li>
+    <nav className={styles.toc}>
+      <h2 className="heading" style={{ padding: 0 }}>
+        On this page
+      </h2>
+      <ul ref={tableOfContents} style={{ marginTop: "var(--space-4x)" }}>
         {headings
-          .filter(({ depth }) => depth > 1 && depth < 4)
-          .map((header) => (
-            <li className={`header-link depth-${header.depth} ${currentID === header.slug ? "active" : ""}`.trim()}>
-              <a href={`#${header.slug}`}>{header.text}</a>
+          .filter(({ depth }) => depth > 1)
+          .map((h) => (
+            <li
+              className={`${styles.headerLink} ${styles[`depth-${h.depth}`]}
+              ${$currentId === h.slug ? ` ${styles.active}` : ""}`}
+            >
+              <a href={`#${h.slug}`}>
+                {h.text}
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M16 12.25H7"
+                    stroke="#375BD2"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                  <path
+                    d="M12.5 8.25L16.25 12L12.5 15.75"
+                    stroke="#375BD2"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </a>
             </li>
           ))}
       </ul>
-    </>
+    </nav>
   )
 }
 
