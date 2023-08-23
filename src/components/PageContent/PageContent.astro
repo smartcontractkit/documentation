@@ -47,3 +47,24 @@ const whatsNext = content.whatsnext
     }
   }
 </style>
+
+<script>
+  // Wrap sections in <section> tags
+  // Allows us to create sticky headers
+  const children = document.querySelectorAll(".main-section > *")
+  for (var i = 0; i < children.length; i++) {
+    if (children[i].nodeName === "H2") {
+      const wrapper = document.createElement("section")
+      wrapper.id = children[i].id
+      children[i].parentNode!.insertBefore(wrapper, children[i])
+      wrapper.appendChild(children[i])
+      for (var j = i + 1; j < children.length; j++) {
+        if (children[j].nodeName === "H2") {
+          break
+        }
+        wrapper.appendChild(children[j])
+      }
+      i = j - 1
+    }
+  }
+</script>
