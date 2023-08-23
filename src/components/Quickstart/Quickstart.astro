@@ -1,10 +1,13 @@
 ---
+import { QuickstartBar } from "./QuickstartBar"
+
 /** There's a bug with mdx and Astro where p tags on new lines add empty p tags around the content.
  * Unfortunately our linter / prettier automatically puts those tags on new lines for large blocks
  * and so I've added the quickstart content to prettierignore for now. */
 ---
 
 <article id="article">
+  <QuickstartBar client:only="preact" />
   <slot />
 </article>
 
@@ -28,20 +31,16 @@
   }
 
   #article :global(section) {
-    scroll-margin-top: var(--theme-navbar-height);
+    scroll-margin-top: calc(var(--space-4x) + var(--theme-navbar-height));
   }
 
   #article :global(h2) {
     color: black;
     font-size: 20px;
-    margin: var(--space-10x) 0 calc(-1 * var(--space-5x));
-    padding-top: 0;
-    padding-bottom: var(--space-5x);
-    top: var(--theme-navbar-height);
+    margin-top: var(--space-10x);
+    top: calc(var(--space-4x) + var(--theme-navbar-height));
     position: sticky;
-    z-index: 1;
-    background: rgb(255, 255, 255);
-    background: linear-gradient(0deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 10%);
+    z-index: 2;
   }
 
   #article :global(li) {
@@ -134,8 +133,6 @@
 
     #article :global(h2) {
       font-size: 28px;
-      margin: calc(var(--space-6x) - var(--space-5x)) 0 calc(-1 * var(--space-6x));
-      padding: var(--space-5x) 0 var(--space-6x);
       color: var(--blue-800, #1a2b6b);
     }
 
@@ -151,10 +148,11 @@
   /* NOTE: Done at 50em since mobile header appears at this point */
   @media (min-width: 50em) {
     #article :global(section) {
-      scroll-margin-top: 20vh;
+      scroll-margin-top: var(--space-4x);
     }
+
     #article :global(h2) {
-      top: 0;
+      top: var(--space-4x);
     }
   }
 </style>
@@ -181,4 +179,18 @@
       i = j - 1
     }
   }
+
+  // Create sticky background
+  // const bg = document.createElement("div")
+  // bg.id = "bg"
+  // const article = document.getElementById("article")!
+  // console.log(bg.clientHeight)
+  // // TODO: Make responsive to window width changing
+  // const title = children.item(0)
+  // bg.style.height = `${title.clientHeight * 2.5}px`
+  // bg.style.maxWidth = `${article.clientWidth}px`
+  // const a = title.clientHeight * 2.5 + 24
+  // bg.style.marginBottom = `-${a / 2}px`
+  // bg.style.marginTop = `-${a / 2}px`
+  // article.prepend(bg)
 </script>
