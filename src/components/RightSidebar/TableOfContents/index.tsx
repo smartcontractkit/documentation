@@ -1,6 +1,6 @@
 /** @jsxImportSource preact */
 import type { FunctionalComponent } from "preact"
-import { useRef } from "preact/hooks"
+import { useEffect, useRef } from "preact/hooks"
 import { useCurrentId } from "../../../hooks/currentId/useCurrentId"
 import { MarkdownHeading } from "astro"
 import styles from "./tableOfContents.module.css"
@@ -8,8 +8,27 @@ import styles from "./tableOfContents.module.css"
 const TableOfContents: FunctionalComponent<{
   headings: MarkdownHeading[]
 }> = ({ headings }) => {
-  const { $currentId } = useCurrentId()
+  const { $currentId, setCurrentId } = useCurrentId()
   const tableOfContents = useRef<HTMLUListElement | null>(null)
+
+  useEffect(() => {
+    const observerCallback: IntersectionObserverCallback = (entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) {
+          return setCurrentId(entry.target.id)
+        }
+      }
+    }
+    const sectionsObserver = new IntersectionObserver(observerCallback, {
+      rootMargin: "-5% 0px -90%",
+    })
+    document.querySelectorAll(".main-section > section, #overview").forEach((h) => sectionsObserver.observe(h))
+
+    const headersObserver = new IntersectionObserver(observerCallback, {
+      rootMargin: "-10% 0px -80%",
+    })
+    document.querySelectorAll(".main-section > section > :where(h3, h4)").forEach((h) => headersObserver.observe(h))
+  }, [])
 
   return (
     <nav className={styles.toc}>
@@ -21,7 +40,7 @@ const TableOfContents: FunctionalComponent<{
           .filter(({ depth }) => depth > 1)
           .map((h) => (
             <li
-              className={`${styles.headerLink} ${styles[`depth-${h.depth}`]}
+              className={`${styles.headerLink}${h.depth > 2 ? ` ${styles[`depth-${h.depth}`]}` : ""}
               ${$currentId === h.slug ? ` ${styles.active}` : ""}`}
             >
               <a href={`#${h.slug}`}>
