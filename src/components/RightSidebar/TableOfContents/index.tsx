@@ -22,12 +22,22 @@ const TableOfContents: FunctionalComponent<{
     const sectionsObserver = new IntersectionObserver(observerCallback, {
       rootMargin: "-5% 0px -90%",
     })
-    document.querySelectorAll(".main-section > section, #overview").forEach((h) => sectionsObserver.observe(h))
-
     const subSectionsObserver = new IntersectionObserver(observerCallback, {
       rootMargin: "-10% 0px -80%",
     })
-    document.querySelectorAll(".main-section > section > section").forEach((h) => subSectionsObserver.observe(h))
+    const overview = document.getElementById("overview")
+    if (overview) {
+      sectionsObserver.observe(overview)
+    }
+    headings.forEach((h) => {
+      const e = document.getElementById(h.slug)
+      if (!e) return
+      if (h.depth === 2) {
+        sectionsObserver.observe(e)
+      } else if (h.depth === 3) {
+        subSectionsObserver.observe(e)
+      }
+    })
   }, [])
 
   return (
