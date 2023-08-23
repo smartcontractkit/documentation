@@ -152,3 +152,19 @@ Chainlink CCIP has been purposely designed to take a security-first approach to 
 If the fee paid on the source chain is within an acceptable range of the execution cost on the destination chain, the message will be transmitted as soon as possible after it is blessed by the Risk Management Network. If the cost of execution increases between request and execution time, CCIP incrementally increases the gas price to attempt to reach eventual execution, but this might introduce additional latency.
 
 Execution delays in excess of one hour should be rare as a result of _Smart Execution_. The `permissionlessExecutionThresholdSeconds` parameter represents the waiting time before manual execution is enabled. If the DON fails to execute within the duration of `permissionlessExecutionThresholdSeconds` due to extreme network conditions, you can manually execute the message through the [CCIP Explorer](https://ccip.chain.link/).
+
+## CCIP rate limits
+
+Chainlink CCIP token transfers benefit from rate limits for additional security. A rate limit has a maximum capacity and a refill rate, which is the speed at which the maximum capacity is restored after a token transfer has consumed some or all of the available capacity. The rate limits are enforced at both the source and destination blockchains for maximum security. If these rate limits are reached, descriptive errors with detailed information are generated and returned to the sender. This enables CCIP users to gracefully handle these errors within their dApps to preserve the end-user experience. A comprehensive list of errors and their descriptions is available on the [errors API reference](/ccip/api-reference/errors#ratelimiter) page.
+
+### Token pool rate limit
+
+For each supported token on each individual [lane](/ccip/concepts#lane), the token pool rate limit manages the total number of tokens that can be transferred within a given time. This limit is independent of the USD value of the token.
+
+For example, the maximum capacity of the LINK token pool on the Ethereum → Optimism lane is 100 LINK, and the refill rate is 1 LINK per second. If 100 LINK is transferred on that lane, the entire capacity would be consumed. After that, if a user wants to send 10 LINK, they must wait at least 10 seconds.
+
+### Aggregate rate limit
+
+Each [lane](/ccip/concepts#lane) also has an aggregate rate limit that limits the overall USD value that can be transferred on that lane across all supported tokens. To improve security, the aggregate rate limit for any given lane is always lower than the sum of all individual token pool rate limits for that lane.
+
+Consider an example where a lane has a maximum capacity of 100,000 USD, a refill rate of 100 USD per second, and several token transfers with a total value of 60,000 USD have been executed. In that example, the available capacity is 40,000 USD. If a user intends to transfer tokens equating to 50,000 USD, they must wait at least 100 seconds.
