@@ -330,7 +330,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         },
         {
           title: "Create Dynamic NFTs",
-          url: "chainlink-automation/tutorials/dynamic-nft",
+          url: "chainlink-automation/tutorials/dynamic-nft-qs",
         },
         {
           title: "Create a Vault Harvester",
