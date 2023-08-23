@@ -164,34 +164,23 @@ import { QuickstartBar } from "./QuickstartBar"
 
   // Wrap sections in <section> tags
   // Allows us to create sticky headers
-  const children = document.querySelectorAll("article > *")
-  for (var i = 0; i < children.length; i++) {
-    if (children[i].nodeName === "H2") {
-      const wrapper = document.createElement("section")
-      wrapper.id = children[i].id
-      children[i].parentNode!.insertBefore(wrapper, children[i])
-      wrapper.appendChild(children[i])
-      for (var j = i + 1; j < children.length; j++) {
-        if (children[j].nodeName === "H2") {
-          break
+  const wrapChildren = (children: NodeListOf<Element>, nodeName: string) => {
+    for (var i = 0; i < children.length; i++) {
+      if (children[i].nodeName === nodeName) {
+        const wrapper = document.createElement("section")
+        wrapper.id = children[i].id
+        children[i].parentNode!.insertBefore(wrapper, children[i])
+        wrapper.appendChild(children[i])
+        for (var j = i + 1; j < children.length; j++) {
+          if (children[j].nodeName === nodeName) {
+            break
+          }
+          wrapper.appendChild(children[j])
         }
-        wrapper.appendChild(children[j])
+        i = j - 1
       }
-      i = j - 1
     }
   }
-
-  // Create sticky background
-  // const bg = document.createElement("div")
-  // bg.id = "bg"
-  // const article = document.getElementById("article")!
-  // console.log(bg.clientHeight)
-  // // TODO: Make responsive to window width changing
-  // const title = children.item(0)
-  // bg.style.height = `${title.clientHeight * 2.5}px`
-  // bg.style.maxWidth = `${article.clientWidth}px`
-  // const a = title.clientHeight * 2.5 + 24
-  // bg.style.marginBottom = `-${a / 2}px`
-  // bg.style.marginTop = `-${a / 2}px`
-  // article.prepend(bg)
+  const children = document.querySelectorAll("article > *")
+  wrapChildren(children, "H2")
 </script>

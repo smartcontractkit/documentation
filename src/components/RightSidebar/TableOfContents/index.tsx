@@ -24,10 +24,10 @@ const TableOfContents: FunctionalComponent<{
     })
     document.querySelectorAll(".main-section > section, #overview").forEach((h) => sectionsObserver.observe(h))
 
-    const headersObserver = new IntersectionObserver(observerCallback, {
+    const subSectionsObserver = new IntersectionObserver(observerCallback, {
       rootMargin: "-10% 0px -80%",
     })
-    document.querySelectorAll(".main-section > section > :where(h3, h4)").forEach((h) => headersObserver.observe(h))
+    document.querySelectorAll(".main-section > section > section").forEach((h) => subSectionsObserver.observe(h))
   }, [])
 
   return (

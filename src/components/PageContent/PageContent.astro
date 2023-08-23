@@ -51,20 +51,30 @@ const whatsNext = content.whatsnext
 <script>
   // Wrap sections in <section> tags
   // Allows us to create sticky headers
-  const children = document.querySelectorAll(".main-section > *")
-  for (var i = 0; i < children.length; i++) {
-    if (children[i].nodeName === "H2") {
-      const wrapper = document.createElement("section")
-      wrapper.id = children[i].id
-      children[i].parentNode!.insertBefore(wrapper, children[i])
-      wrapper.appendChild(children[i])
-      for (var j = i + 1; j < children.length; j++) {
-        if (children[j].nodeName === "H2") {
-          break
+  const wrapChildren = (children: NodeListOf<Element>, nodeName: string) => {
+    const wrappers: HTMLElement[] = []
+    for (var i = 0; i < children.length; i++) {
+      if (children[i].nodeName === nodeName) {
+        const wrapper = document.createElement("section")
+        wrapper.id = children[i].id
+        children[i].parentNode!.insertBefore(wrapper, children[i])
+        wrapper.appendChild(children[i])
+        for (var j = i + 1; j < children.length; j++) {
+          if (children[j].nodeName === nodeName || children[j].nodeName === "SECTION") {
+            break
+          }
+          wrapper.appendChild(children[j])
         }
-        wrapper.appendChild(children[j])
+        i = j - 1
+        wrappers.push(wrapper)
       }
-      i = j - 1
     }
+    return wrappers
   }
+  const children = document.querySelectorAll(".main-section > *")
+  const wrappers = wrapChildren(children, "H2")
+  wrappers.forEach((wrapper) => {
+    const e = document.querySelectorAll(`#${wrapper.id} > *`)
+    wrapChildren(e, "H3")
+  })
 </script>
