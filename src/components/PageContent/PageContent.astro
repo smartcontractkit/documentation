@@ -2,6 +2,7 @@
 import { BaseFrontmatter } from "~/content/config"
 import TableOfContents from "../RightSidebar/TableOfContents"
 import { MarkdownHeading } from "astro"
+import { SectionBar } from "./SectionBar"
 
 export type Props = {
   frontmatter: BaseFrontmatter
@@ -9,10 +10,16 @@ export type Props = {
 }
 const { frontmatter, headings } = Astro.props
 const title = frontmatter.title
+const overview: MarkdownHeading = {
+  depth: 1,
+  slug: "overview",
+  text: title,
+}
 ---
 
 <article id="article">
-  <h1 class="content-title" id="overview">{title}</h1>
+  <SectionBar client:only="preact" headings={[overview, ...headings]} />
+  <h1 class="content-title" id={overview.slug}>{overview.text}</h1>
   <span class="sm:hidden">
     <TableOfContents client:media="(max-width: 50em)" {headings} />
   </span>
@@ -89,6 +96,17 @@ const title = frontmatter.title
     margin: 0;
   }
 
+  article :is(h2) {
+    margin-top: var(--space-10x);
+  }
+
+  section:target {
+    scroll-margin-top: calc(var(--theme-sidebar-offset, 2rem));
+  }
+
+  section > section:target {
+    scroll-margin-top: calc(var(--theme-sidebar-offset, 2rem) + 4rem);
+  }
   article :is(p, div) {
     margin-top: var(--space-6x);
   }

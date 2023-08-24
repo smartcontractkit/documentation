@@ -1,54 +1,15 @@
 /** @jsxImportSource preact */
 import type { FunctionalComponent } from "preact"
-import { useEffect, useRef } from "preact/hooks"
-import { useCurrentId } from "../../../hooks/currentId/useCurrentId"
+import { useRef } from "preact/hooks"
 import { MarkdownHeading } from "astro"
 import styles from "./tableOfContents.module.css"
+import { useCurrentId } from "~/hooks/currentId/useCurrentId"
 
 const TableOfContents: FunctionalComponent<{
   headings: MarkdownHeading[]
 }> = ({ headings }) => {
-  const { $currentId, setCurrentId } = useCurrentId()
+  const { $currentId } = useCurrentId()
   const tableOfContents = useRef<HTMLUListElement | null>(null)
-
-  useEffect(() => {
-    const observerCallback: IntersectionObserverCallback = (entries) => {
-      for (const entry of entries) {
-        if (entry.isIntersecting) {
-          return setCurrentId(entry.target.id)
-        }
-      }
-    }
-    const sectionsObserver = new IntersectionObserver(observerCallback, {
-      rootMargin: "-25% 0% -75%",
-    })
-
-    const wrapElement = (element: HTMLElement) => {
-      const wrapper = document.createElement("section")
-      const elements: Element[] = []
-      elements.push(element)
-      let next = element.nextElementSibling
-      while (next && !next.id) {
-        elements.push(next)
-        next = next.nextElementSibling
-      }
-      wrapper.id = element.id
-      element.parentNode?.insertBefore(wrapper, element)
-      elements.forEach((e) => wrapper.appendChild(e))
-      return wrapper
-    }
-
-    const setupHeading = (id: string) => {
-      const e = document.getElementById(id)
-      if (e) {
-        const wrapper = wrapElement(e)
-        sectionsObserver.observe(wrapper)
-      }
-    }
-
-    setupHeading("overview") // Set up for heading id created in PageContent
-    headings.forEach((h) => setupHeading(h.slug))
-  }, [])
 
   return (
     <nav className={styles.toc}>
