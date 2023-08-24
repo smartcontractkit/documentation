@@ -20,10 +20,7 @@ const TableOfContents: FunctionalComponent<{
       }
     }
     const sectionsObserver = new IntersectionObserver(observerCallback, {
-      rootMargin: "-5% 0px -90%",
-    })
-    const subSectionsObserver = new IntersectionObserver(observerCallback, {
-      rootMargin: "-10% 0px -80%",
+      rootMargin: "-25% 0% -75%",
     })
     const overview = document.getElementById("overview")
     if (overview) {
@@ -31,12 +28,10 @@ const TableOfContents: FunctionalComponent<{
     }
     headings.forEach((h) => {
       const e = document.getElementById(h.slug)
-      if (!e) return
-      if (h.depth === 2) {
-        sectionsObserver.observe(e)
-      } else if (h.depth === 3) {
-        subSectionsObserver.observe(e)
+      if (!e) {
+        return
       }
+      sectionsObserver.observe(e)
     })
   }, [])
 
