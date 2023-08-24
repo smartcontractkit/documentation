@@ -13,10 +13,8 @@ const TableOfContents: FunctionalComponent<{
 
   return (
     <nav className={styles.toc}>
-      <h2 className="heading" style={{ padding: 0 }}>
-        On this page
-      </h2>
-      <ul ref={tableOfContents} style={{ marginTop: "var(--space-4x)" }}>
+      <h2 className={styles.heading}>On this page</h2>
+      <ul ref={tableOfContents}>
         {headings
           .filter(({ depth }) => depth === 2)
           .map((h) => (

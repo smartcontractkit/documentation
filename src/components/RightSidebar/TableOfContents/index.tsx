@@ -22,25 +22,38 @@ const TableOfContents: FunctionalComponent<{
     const sectionsObserver = new IntersectionObserver(observerCallback, {
       rootMargin: "-25% 0% -75%",
     })
-    const overview = document.getElementById("overview")
-    if (overview) {
-      sectionsObserver.observe(overview)
-    }
-    headings.forEach((h) => {
-      const e = document.getElementById(h.slug)
-      if (!e) {
-        return
+
+    const wrapElement = (element: HTMLElement) => {
+      const wrapper = document.createElement("section")
+      const elements: Element[] = []
+      elements.push(element)
+      let next = element.nextElementSibling
+      while (next && !next.id) {
+        elements.push(next)
+        next = next.nextElementSibling
       }
-      sectionsObserver.observe(e)
-    })
+      wrapper.id = element.id
+      element.parentNode?.insertBefore(wrapper, element)
+      elements.forEach((e) => wrapper.appendChild(e))
+      return wrapper
+    }
+
+    const setupHeading = (id: string) => {
+      const e = document.getElementById(id)
+      if (e) {
+        const wrapper = wrapElement(e)
+        sectionsObserver.observe(wrapper)
+      }
+    }
+
+    setupHeading("overview") // Set up for heading id created in PageContent
+    headings.forEach((h) => setupHeading(h.slug))
   }, [])
 
   return (
     <nav className={styles.toc}>
-      <h2 className="heading" style={{ padding: 0 }}>
-        On this page
-      </h2>
-      <ul ref={tableOfContents} style={{ marginTop: "var(--space-4x)" }}>
+      <h2 className={styles.heading}>On this page</h2>
+      <ul ref={tableOfContents}>
         {headings
           .filter(({ depth }) => depth > 1)
           .map((h) => (

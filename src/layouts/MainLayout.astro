@@ -10,12 +10,16 @@ import { NewsletterCTA } from "../components/Footer/NewsletterCTA"
 import Footer from "~/components/Footer/Footer.astro"
 import { MarkdownHeading } from "astro"
 import { BaseFrontmatter } from "~/content/config"
+import WhatsNext from "~/components/PageContent/WhatsNext.astro"
+import MoreMenu from "~/components/RightSidebar/MoreMenu.astro"
 
 interface Props {
   frontmatter: BaseFrontmatter
   headings: MarkdownHeading[]
 }
 const { frontmatter, headings } = Astro.props
+
+const whatsNext = frontmatter.whatsnext
 
 const currentPage = new URL(Astro.request.url).pathname
 
@@ -160,12 +164,16 @@ const includeLinkToWalletScript = !!Astro.props?.frontmatter?.metadata?.linkToWa
         <LeftSidebar currentPage={currentPage} section={frontmatter.section} />
       </aside>
       <div id="grid-main">
-        <PageContent content={frontmatter} githubEditUrl={githubEditUrl} {headings}>
+        <PageContent {frontmatter} {headings}>
           <slot />
         </PageContent>
+        {whatsNext && <WhatsNext content={whatsNext} />}
+        <span class="sm:hidden">
+          <MoreMenu editHref={githubEditUrl} />
+        </span>
       </div>
       <aside id="grid-right" class="grid-sidebar" title="Table of Contents">
-        <RightSidebar content={frontmatter} githubEditUrl={githubEditUrl} {headings} />
+        <RightSidebar {githubEditUrl} {headings} />
       </aside>
     </main>
     <NewsletterCTA client:visible />
