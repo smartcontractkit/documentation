@@ -1,6 +1,6 @@
 ---
 import { Sections } from "~/content/config"
-import { SIDEBAR, MENU } from "../../config"
+import { SIDEBAR, MENU, SectionContent } from "../../config"
 import { flattenChildren } from "../../scripts/flatten-children"
 export type Props = {
   currentPage: string
@@ -9,7 +9,7 @@ export type Props = {
 const { currentPage, section } = Astro.props
 
 // SIDEBAR is a flat array. Group it by sections to properly render.
-function getSidebarSections(section?: Sections) {
+const getSidebarSections = (section?: Sections) => {
   if (!section) {
     return []
   } else if (section === "global") {
@@ -23,7 +23,7 @@ function getSidebarSections(section?: Sections) {
 const sidebarSections = getSidebarSections(section)
 
 // Remove slashes and params
-const removeSlashes = function (url: string) {
+const removeSlashes = (url: string) => {
   let sanitizedUrl = url
   sanitizedUrl = sanitizedUrl.split("?parent")[0]
   if (sanitizedUrl.charAt(0) == "/") sanitizedUrl = sanitizedUrl.substr(1)
@@ -33,98 +33,63 @@ const removeSlashes = function (url: string) {
 }
 
 const currentPageMatch = removeSlashes(currentPage.slice(1))
+// TODO: Don't have the sidebar nav replace the header on mobile
 ---
 
 <nav aria-labelledby="grid-left">
   <ul id="mobile-menu" class="nav-groups">
-    <li style="margin: 0; padding-bottom: 0;">
-      <div class="nav-group">
-        <h2 class="nav-group-title">NAVIGATION</h2>
-        <ul>
-          {
-            MENU.en.map((child) => (
-              <li class="nav-link">
-                <a href={`${child.link}`}>{child.text}</a>
-              </li>
-            ))
-          }
-        </ul>
-      </div>
-    </li>
-  </ul>
-  <hr class="menu-separator" />
-  <ul class="nav-groups sidebar-nav-groups">
+    <!-- TODO: Order this so title goes above ul -->
+    <h2 class="nav-group-title">NAVIGATION</h2>
     {
-      sidebarSections.map((s: { parentSection: any; contents: any[]; section: unknown }) => (
-        <li aria-hidden={section === "global"} class={`parent-${s.parentSection}`}>
-          <div class="nav-group">
-            <details
-              open={
-                !!flattenChildren(s.contents).filter((object) => removeSlashes(object.url) == currentPageMatch).length
-              }
-            >
-              <summary class="nav-group-title">{s.section}</summary>
-              <nav>
-                <ul>
-                  {!!s.contents &&
-                    s.contents.map((child) => (
-                      <>
-                        <li class="nav-link">
-                          <a
-                            href={`${Astro.site?.pathname}${child.url}`}
-                            aria-current={`${currentPageMatch === removeSlashes(child.url) ? "page" : "false"}`}
-                          >
-                            {child.title}
-                          </a>
-                        </li>
-                        {!!child.children && (
-                          <ul>
-                            {child.children.map((childItem) => (
-                              <li class="nav-link nested">
-                                <a
-                                  href={`${Astro.site?.pathname}${childItem.url}`}
-                                  aria-current={`${
-                                    currentPageMatch === removeSlashes(childItem.url) ? "page" : "false"
-                                  }`}
-                                >
-                                  {childItem.title}
-                                </a>
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                      </>
-                    ))}
-                </ul>
-              </nav>
-            </details>
-          </div>
+      MENU.en.map((child) => (
+        <li class="nav-link" style="margin: 0; padding-bottom: 0;">
+          <a href={child.link}>{child.text}</a>
         </li>
       ))
     }
   </ul>
+  <hr class="menu-separator" />
+  {
+    // TODO: This currently hides the sidebar on the main page(?)
+    // that needs to change
+    section !== "global" && (
+      <ul class="nav-groups">
+        {sidebarSections.map((s: { parentSection: Sections; contents: SectionContent[]; section: Sections }) => {
+          return (
+            <li class={s.parentSection ? `parent-${s.parentSection}` : ""}>
+              <details
+                open={
+                  !!flattenChildren(s.contents).filter((object) => removeSlashes(object.url) == currentPageMatch).length
+                }
+              >
+                <summary class="nav-group-title">{s.section}</summary>
+                <ul>
+                  {s.contents &&
+                    s.contents.map((child) => (
+                      <li class="nav-link">
+                        <a
+                          href={`${Astro.site?.pathname}${child.url}`}
+                          aria-current={currentPageMatch === removeSlashes(child.url) ? "page" : "false"}
+                        >
+                          {child.title}
+                        </a>
+                      </li>
+                    ))}
+                </ul>
+              </details>
+            </li>
+          )
+        })}
+      </ul>
+    )
+  }
 </nav>
-
-<script is:inline>
-  window.addEventListener("DOMContentLoaded", (event) => {
-    var target = document.querySelector('[aria-current="page"]')
-    if (target && target.offsetTop > window.innerHeight - 100) {
-      document.querySelector(".sidebar-nav-groups").scrollTop = target.offsetTop
-    }
-  })
-</script>
 
 <style>
   .menu-separator {
     border-top: 1px solid var(--theme-divider);
   }
-  @media (min-width: 50em) {
-    #mobile-menu,
-    .menu-separator {
-      display: none;
-      height: 0;
-    }
-  }
+
   nav {
     width: 100%;
   }
@@ -135,6 +100,10 @@ const currentPageMatch = removeSlashes(currentPage.slice(1))
     overflow-x: visible;
     overflow-y: auto;
     max-height: 100vh;
+  }
+
+  .nav-groups > li[aria-hidden="true"] {
+    display: none;
   }
 
   .nav-groups > li + li {
@@ -182,20 +151,6 @@ const currentPageMatch = removeSlashes(currentPage.slice(1))
     color: hsla(var(--color-base-white), 100%, 1);
   }
 
-  .nested {
-    padding-left: var(--space-4x);
-  }
-
-  @media (min-width: 50em) {
-    .nav-groups {
-      padding: 0;
-    }
-  }
-
-  .sidebar-nav-groups > li[aria-hidden="true"] {
-    display: none;
-  }
-
   details summary {
     cursor: pointer;
     color: var(--blue-800);
@@ -214,11 +169,30 @@ const currentPageMatch = removeSlashes(currentPage.slice(1))
   details[open] summary::after {
     transform: rotate(180deg);
   }
+
+  @media (min-width: 50em) {
+    .nav-groups {
+      padding: 0;
+    }
+
+    #mobile-menu,
+    .menu-separator {
+      display: none;
+      height: 0;
+    }
+  }
 </style>
 
 <script is:inline>
-  window.addEventListener("DOMContentLoaded", (event) => {
-    const parentSection = new URLSearchParams(window.location.search).get("parent") || "gettingStarted"
+  // TODO: Commented out until I find out if it's actually used
+  // window.addEventListener("DOMContentLoaded", (event) => {
+  //     var target = document.querySelector('[aria-current="page"]')
+  //     if (target && target.offsetTop > window.innerHeight - 100) {
+  //       document.querySelector(".nav-groups").scrollTop = target.offsetTop
+  //     }
+  //   })
+  window.addEventListener("DOMContentLoaded", () => {
+    const parentSection = new URLSearchParams(window.location.search).get("parent")
     if (parentSection) {
       for (let elem of document.querySelectorAll(`.parent-${parentSection}`)) {
         elem.setAttribute("aria-hidden", "false")
