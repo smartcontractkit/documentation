@@ -5,7 +5,7 @@ title: "VRF Subscription Balance Monitor"
 whatsnext: { "FAQs": "/chainlink-automation/faqs" }
 ---
 
-import { Aside, CodeSample } from "@components"
+import { Address, Aside, CodeSample, CopyText } from "@components"
 
 Automatically top-up your VRF subscription balances using Chainlink Automation to ensure there is sufficient funding for requests. [View the code on GitHub](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/dev/VRFSubscriptionBalanceMonitor.sol).
 
@@ -23,10 +23,10 @@ Automatically top-up your VRF subscription balances using Chainlink Automation t
 
 Before you start this tutorial, complete the following items:
 
-- Set up a cryptocurrency wallet
-- Fund your wallet with:
-  - Testnet LINK
-  - Testnet ETH (or other chain)
+- You have a cryptocurrency wallet set up (for example, [MetaMask](https://metamask.io/))
+- Your wallet is funded with:
+  - The gas currency for the chain where your contract is deployed (for example, Sepolia). [Get 0.5 Sepolia ETH](https://sepoliafaucet.com/).
+  - ERC-677 LINK. [Get 20 testnet LINK](https://faucets.chain.link/).
 - Create a VRF subscription
 
 <Aside type="note" title="New to smart contracts?">
@@ -39,30 +39,37 @@ Before you start this tutorial, complete the following items:
 
 This tutorial requires you to set up the following components in VRF before you use Automation to monitor VRF subscriptions:
 
-- [Create VRF subscriptions to monitor](#create-vrf-subscriptions), if you don't already have any
-- [Deploy the subscription balance monitor contract](#deploy-contract)
+- [Create VRF subscriptions to monitor](#create-vrf-subscriptions-to-monitor), if you don't already have any
+- [Deploy the subscription balance monitor contract](#deploy-the-subscription-balance-monitor-contract)
 
 ### Create VRF subscriptions to monitor
 
 If you already have existing VRF subscriptions you would like to monitor, skip to the next step.
 
-If you don't already have existing VRF subscriptions you would like to monitor, create two VRF subscriptions for demo purposes. One subscription will serve as an adequately funded VRF subscription for the balance monitor contract, and the other will serve (intentionally) as an underfunded VRF subscription so that the balance monitor contract can fund it.
+If you don't already have existing VRF subscriptions you would like to monitor, create two VRF subscriptions for demo purposes. One subscription will be adequately funded, and the other subscription will be underfunded intentionally so that the balance monitor contract can fund it.
 
 1. Open the VRF Subscription Manager, and connect your wallet.
 
+{/* prettier-ignore */}
+
+{" "}
+<div class="remix-callout">
+  <a href="https://vrf.chain.link">Open the Subscription Manager</a>
+</div>
+
 1. Create two subscriptions:
 
-   - Fund the first subscription with 12 testnet LINK, to serve as the adequately funded VRF subscription
-   - Fund the second subscription with 1 testnet LINK, to serve as the underfunded VRF subscription
+   - Fund one subscription with 12 testnet LINK to serve as the adequately funded VRF subscription
+   - Fund the other subscription with 1 testnet LINK to serve as the underfunded VRF subscription
 
-1. Get the VRF coordinator address and `keyHash` value for the gas lane. For Sepolia, the values are:
+1. Get the VRF coordinator address and `keyHash` value for the gas lane. For Sepolia these values are:
 
-   ```
-   coordinator
-   keyHash
-   ```
+   | Item             | Value                                                                                                     |
+   | ---------------- | --------------------------------------------------------------------------------------------------------- |
+   | VRF Coordinator  | <Address contractUrl="https://sepolia.etherscan.io/address/0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625" /> |
+   | 30 gwei Key Hash | <CopyText text="0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc56c" code/>                |
 
-   To find this information for other networks supported by VRF subscription, refer to the Supported Networks page.
+   To find these values for all networks supported by VRF subscription, refer to the [Supported Networks](/vrf/v2/subscription/supported-networks) page.
 
 1. Deploy a VRF-compatible contract for your VRF subscription:
 
