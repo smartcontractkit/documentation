@@ -119,7 +119,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
   ],
   dataFeeds: [
     {
-      section: "DATA FEEDS",
+      section: "Data Feeds",
       contents: [
         {
           title: "Overview",
@@ -299,7 +299,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
   ],
   automation: [
     {
-      section: "AUTOMATION",
+      section: "Automation",
       contents: [
         {
           title: "Introduction",
@@ -320,7 +320,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
-      section: "EXAMPLES",
+      section: "Examples",
       contents: [
         {
           title: "Automate the Reveal of Batch NFTs",
@@ -455,7 +455,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
   ],
   chainlinkFunctions: [
     {
-      section: "CHAINLINK FUNCTIONS",
+      section: "Chainlink Functions",
       contents: [
         {
           title: "What is Chainlink Functions?",
@@ -603,7 +603,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
   ],
   vrf: [
     {
-      section: "CHAINLINK VRF",
+      section: "Chainlink VRF",
       contents: [
         {
           title: "Introduction to Chainlink VRF",
@@ -624,7 +624,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
-      section: "SUBSCRIPTION METHOD",
+      section: "Subscription Method",
       contents: [
         {
           title: "Introduction",
@@ -639,7 +639,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "vrf/v2/subscription/examples/programmatic-subscription",
         },
         {
-          title: "Test locally using a Mock contract",
+          title: "Test Locally Using a Mock Contract",
           url: "vrf/v2/subscription/examples/test-locally",
         },
         {
@@ -657,7 +657,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
-      section: "DIRECT FUNDING METHOD",
+      section: "Direct Funding Method",
       contents: [
         {
           title: "Introduction",
@@ -668,7 +668,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "vrf/v2/direct-funding/examples/get-a-random-number",
         },
         {
-          title: "Test locally using a Mock contract",
+          title: "Test Locally Using a Mock Contract",
           url: "vrf/v2/direct-funding/examples/test-locally",
         },
         {
@@ -750,7 +750,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
   ],
   anyApi: [
     {
-      section: "CONNECTING TO APIs",
+      section: "Connecting to APIs",
       contents: [
         {
           title: "Introduction",
@@ -873,7 +873,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
   ],
   ccip: [
     {
-      section: "CHAINLINK CCIP",
+      section: "Chainlink CCIP",
       contents: [
         {
           title: "What is Chainlink CCIP?",
@@ -894,7 +894,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
-      section: "TUTORIALS",
+      section: "Tutorials",
       contents: [
         {
           title: "Transfer Tokens",
@@ -936,7 +936,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
-      section: "GUIDES",
+      section: "Guides",
       contents: [
         {
           title: "Concepts",
@@ -957,7 +957,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
-      section: "EXAMPLES",
+      section: "Examples",
       contents: [
         {
           title: "Cross-chain dApps and Tools",
@@ -1147,7 +1147,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
-      section: "ORACLE JOBS",
+      section: "Oracle Jobs",
       contents: [
         {
           title: "Migrating to v2 Jobs",
@@ -1176,7 +1176,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
-      section: "EXTERNAL ADAPTERS",
+      section: "External Adapters",
       contents: [
         {
           title: "Introduction",
@@ -1197,7 +1197,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
-      section: "EXTERNAL INITIATORS",
+      section: "External Initiators",
       contents: [
         {
           title: "Introduction",
