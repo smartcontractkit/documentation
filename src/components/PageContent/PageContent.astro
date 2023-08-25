@@ -2,7 +2,7 @@
 import { BaseFrontmatter } from "~/content/config"
 import TableOfContents from "../RightSidebar/TableOfContents"
 import { MarkdownHeading } from "astro"
-import { SectionBar } from "./SectionBar"
+import { ContentObserver } from "./ContentObserver"
 
 export type Props = {
   frontmatter: BaseFrontmatter
@@ -18,7 +18,7 @@ const overview: MarkdownHeading = {
 ---
 
 <article id="article">
-  <SectionBar client:only="preact" headings={[overview, ...headings]} />
+  <ContentObserver client:only="preact" headings={[overview, ...headings]} />
   <h1 class="content-title" id={overview.slug}>{overview.text}</h1>
   <span class="sm:hidden">
     <TableOfContents client:media="(max-width: 50em)" {headings} />

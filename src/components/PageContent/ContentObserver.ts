@@ -1,14 +1,8 @@
-import { useEffect, useState } from "preact/hooks"
-import { useCurrentSection } from "~/hooks/currentSection/useCurrentSection"
+import { useEffect } from "preact/hooks"
 import { MarkdownHeading } from "astro"
 import { useCurrentId } from "~/hooks/currentId/useCurrentId"
-import styles from "./sectionBar.module.css"
 
-// NOTE: Currently not using this visually, just need the logic
-export const SectionBar = ({ headings }: { headings: MarkdownHeading[] }) => {
-  // TODO: Figure out if we still want to use currentSection
-  // const [hidden, setHidden] = useState<boolean>(true)
-  // const { $currentSection, setCurrentSection } = useCurrentSection()
+export const ContentObserver = ({ headings }: { headings: MarkdownHeading[] }) => {
   const { setCurrentId } = useCurrentId()
 
   useEffect(() => {
@@ -16,14 +10,6 @@ export const SectionBar = ({ headings }: { headings: MarkdownHeading[] }) => {
       entries.reverse() // Get child entries before parent entries, allows nested headers to work properly
       for (const entry of entries) {
         if (entry.isIntersecting) {
-          // NOTE: Commented out until we figure out how / if this can be used
-          // const child = entry.target.firstElementChild
-          // if (child && ["H2"].includes(child.nodeName)) {
-          //   setHidden(false)
-          //   setCurrentSection(entry.target.firstElementChild)
-          // } else if (child && ["H1"].includes(child.nodeName)) {
-          //   setHidden(true)
-          // }
           return setCurrentId(entry.target.id)
         }
       }
@@ -32,6 +18,8 @@ export const SectionBar = ({ headings }: { headings: MarkdownHeading[] }) => {
       rootMargin: "-25% 0% -75%",
     })
 
+    // TODO: Set next.id to the next element id in headings to avoid stopping at other elements with ids
+    // i.e. new param (end: Element), check next.id !== end.id
     const wrapElements = (start: Element, options?: { wrapperElement?: "div" | "section"; isParent?: boolean }) => {
       const wrapper = document.createElement(options?.wrapperElement ?? "section")
       const elements: Element[] = []
@@ -73,11 +61,7 @@ export const SectionBar = ({ headings }: { headings: MarkdownHeading[] }) => {
         }
       }
     })
-  }, [])
 
-  // return (
-  //   <h2 className={styles.bar} disabled={hidden}>
-  //     {$currentSection.textContent}
-  //   </h2>
-  // )
+    return () => sectionsObserver.disconnect()
+  }, [])
 }
