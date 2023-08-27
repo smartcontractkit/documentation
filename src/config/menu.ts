@@ -9,11 +9,6 @@ type MenuItems = Record<LanguageKey, MenuItem[]>
 export const MENU: MenuItems = {
   en: [
     {
-      text: "Getting Started",
-      link: "/getting-started/conceptual-overview",
-      section: "gettingStarted",
-    },
-    {
       text: "Data Feeds",
       link: "/data-feeds",
       section: "dataFeeds",
@@ -37,11 +32,6 @@ export const MENU: MenuItems = {
       text: "Functions",
       link: "/chainlink-functions",
       section: "chainlinkFunctions",
-    },
-    {
-      text: "Any API",
-      link: "/any-api/introduction",
-      section: "anyApi",
     },
     {
       text: "Nodes",
