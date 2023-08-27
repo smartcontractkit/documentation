@@ -1086,6 +1086,79 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
   ],
+  global: [
+    {
+      section: "General Documentation",
+      contents: [
+        {
+          title: "Learning Resources",
+          url: "getting-started/other-tutorials",
+        },
+        {
+          title: "Smart Contract Overview",
+          url: "getting-started/conceptual-overview",
+          children: [
+            {
+              title: "Deploy Your First Smart Contract",
+              url: "getting-started/deploy-your-first-contract",
+            },
+          ],
+        },
+        {
+          title: "LINK Token Contracts",
+          url: "resources/link-token-contracts",
+          children: [
+            {
+              title: "Acquire testnet LINK",
+              url: "resources/acquire-link",
+            },
+            {
+              title: "Fund Your Contracts",
+              url: "resources/fund-your-contract",
+            },
+          ],
+        },
+        {
+          title: "Starter Kits and Frameworks",
+          url: "resources/create-a-chainlinked-project",
+        },
+        {
+          title: "Bridges and Associated Risks",
+          url: "resources/bridge-risks",
+        },
+        {
+          title: "Chainlink Architecture",
+          url: "architecture-overview/architecture-overview",
+          children: [
+            {
+              title: "Basic Request Model",
+              url: "architecture-overview/architecture-request-model",
+            },
+            {
+              title: "Decentralized Data Model",
+              url: "architecture-overview/architecture-decentralized-model",
+            },
+            {
+              title: "Off-Chain Reporting",
+              url: "architecture-overview/off-chain-reporting",
+            },
+          ],
+        },
+        {
+          title: "Developer Communications",
+          url: "resources/developer-communications",
+          children: [
+            { title: "Getting Help", url: "resources/getting-help" },
+            { title: "Hackathon Resources", url: "resources/hackathon-resources" },
+          ],
+        },
+        {
+          title: "Contributing to Chainlink",
+          url: "resources/contributing-to-chainlink",
+        },
+      ],
+    },
+  ],
   legacy: [
     {
       section: "VRF v1 [DEPRECATED]",
