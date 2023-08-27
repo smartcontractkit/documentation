@@ -135,6 +135,16 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "getting-started/other-tutorials?parent=dataFeeds",
         },
         {
+          title: "Smart Contract Overview",
+          url: "getting-started/conceptual-overview?parent=dataFeeds",
+          children: [
+            {
+              title: "Deploy Your First Smart Contract",
+              url: "getting-started/deploy-your-first-contract?parent=dataFeeds",
+            },
+          ],
+        },
+        {
           title: "LINK Token Contracts",
           url: "resources/link-token-contracts?parent=dataFeeds",
           children: [
@@ -284,6 +294,16 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Learning Resources",
           url: "getting-started/other-tutorials?parent=automation",
+        },
+        {
+          title: "Smart Contract Overview",
+          url: "getting-started/conceptual-overview?parent=automation",
+          children: [
+            {
+              title: "Deploy Your First Smart Contract",
+              url: "getting-started/deploy-your-first-contract?parent=automation",
+            },
+          ],
         },
         {
           title: "LINK Token Contracts",
@@ -446,6 +466,16 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "getting-started/other-tutorials?parent=chainlinkFunctions",
         },
         {
+          title: "Smart Contract Overview",
+          url: "getting-started/conceptual-overview?parent=chainlinkFunctions",
+          children: [
+            {
+              title: "Deploy Your First Smart Contract",
+              url: "getting-started/deploy-your-first-contract?parent=chainlinkFunctions",
+            },
+          ],
+        },
+        {
           title: "LINK Token Contracts",
           url: "resources/link-token-contracts?parent=chainlinkFunctions",
           children: [
@@ -590,6 +620,16 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Learning Resources",
           url: "getting-started/other-tutorials?parent=vrf",
+        },
+        {
+          title: "Smart Contract Overview",
+          url: "getting-started/conceptual-overview?parent=vrf",
+          children: [
+            {
+              title: "Deploy Your First Smart Contract",
+              url: "getting-started/deploy-your-first-contract?parent=vrf",
+            },
+          ],
         },
         {
           title: "LINK Token Contracts",
@@ -746,6 +786,16 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Learning Resources",
           url: "getting-started/other-tutorials?parent=ccip",
+        },
+        {
+          title: "Smart Contract Overview",
+          url: "getting-started/conceptual-overview?parent=ccip",
+          children: [
+            {
+              title: "Deploy Your First Smart Contract",
+              url: "getting-started/deploy-your-first-contract?parent=ccip",
+            },
+          ],
         },
         {
           title: "LINK Token Contracts",
