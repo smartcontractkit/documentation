@@ -53,6 +53,7 @@ const currentPageMatch = removeSlashes(currentPage.slice(1))
   <hr class="menu-separator" />
   <ul class="nav-groups">
     {
+      // TODO: Support nested sections
       sidebarSections.map((s: { parentSection: Sections; contents: SectionContent[]; section: Sections }) => (
         <li aria-hidden={section === "global"} class={s.parentSection ? `parent-${s.parentSection}` : ""}>
           <details
@@ -193,8 +194,6 @@ const currentPageMatch = removeSlashes(currentPage.slice(1))
   // })
   window.addEventListener("DOMContentLoaded", () => {
     const parentSection = new URLSearchParams(window.location.search).get("parent")
-    console.log(parentSection)
-
     if (parentSection) {
       for (let elem of document.querySelectorAll(`.parent-${parentSection}`)) {
         elem.setAttribute("aria-hidden", "false")
