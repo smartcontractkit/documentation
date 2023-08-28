@@ -1,8 +1,8 @@
 import { useEffect } from "preact/hooks"
-import { MarkdownHeading } from "astro"
 import { useCurrentId } from "~/hooks/currentId/useCurrentId"
+import { updateTableOfContents } from "../RightSidebar/TableOfContents/tocStore"
 
-export const ContentObserver = ({ headings }: { headings: MarkdownHeading[] }) => {
+export const ContentObserver = () => {
   const { setCurrentId } = useCurrentId()
 
   useEffect(() => {
@@ -20,8 +20,8 @@ export const ContentObserver = ({ headings }: { headings: MarkdownHeading[] }) =
 
     // TODO: Set next.id to the next element id in headings to avoid stopping at other elements with ids
     // i.e. new param (end: Element), check next.id !== end.id
-    const wrapElements = (start: Element, options?: { wrapperElement?: "div" | "section"; isParent?: boolean }) => {
-      const wrapper = document.createElement(options?.wrapperElement ?? "section")
+    const wrapElements = (start: Element, options?: { isParent?: boolean }) => {
+      const wrapper = document.createElement("section")
       const elements: Element[] = []
       elements.push(start)
       let next = start.nextElementSibling
@@ -39,29 +39,23 @@ export const ContentObserver = ({ headings }: { headings: MarkdownHeading[] }) =
      * Looks janky, but is necessary to achieve sticky h2 headers
      * with functioning intersection observers for nested h3, h4 headers
      */
-    headings.forEach((h) => {
-      const e = document.getElementById(h.slug)
-      if (e) {
-        // If h2, wrap all lesser headers as children
-        const wrapper = wrapElements(e, { isParent: h.depth === 2 })
-        sectionsObserver.observe(wrapper)
-        if (h.depth === 2) {
-          // Select nested h2 element in parent section (created previously)
-          const e = document.querySelector(`h2#${h.slug}`)
-          if (e) {
-            // Create a nested wrapper for non-subheading elements
-            const wrapper = wrapElements(e, { wrapperElement: "div" })
-            // Extract the header from the first nested wrapper to use as sticky header
-            if (wrapper.firstElementChild) {
-              wrapper.parentNode?.insertBefore(wrapper.firstElementChild, wrapper)
-            }
-            // Observe the rest of the nested wrapper
-            sectionsObserver.observe(wrapper)
-          }
+    const elements = document.querySelectorAll("article > :where(h1, h2, h3, h4)")
+    elements.forEach((e) => {
+      // If h2, wrap all lesser headers as children
+      const wrapper = wrapElements(e, { isParent: e.nodeName === "H2" })
+      sectionsObserver.observe(wrapper)
+      if (e.nodeName === "H2") {
+        // Create a nested wrapper for non-subheading elements
+        const wrapper = wrapElements(e)
+        // Extract the header from the first nested wrapper to use as sticky header
+        if (wrapper.firstElementChild) {
+          wrapper.parentNode?.insertBefore(wrapper.firstElementChild, wrapper)
         }
+        // Observe the rest of the nested wrapper
+        sectionsObserver.observe(wrapper)
       }
     })
-
+    updateTableOfContents()
     return () => sectionsObserver.disconnect()
   }, [])
 }

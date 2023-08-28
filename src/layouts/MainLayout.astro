@@ -8,16 +8,15 @@ import RightSidebar from "../components/RightSidebar/RightSidebar.astro"
 import * as CONFIG from "../config"
 import { NewsletterCTA } from "../components/Footer/NewsletterCTA"
 import Footer from "~/components/Footer/Footer.astro"
-import { MarkdownHeading } from "astro"
 import { BaseFrontmatter } from "~/content/config"
 import WhatsNext from "~/components/PageContent/WhatsNext.astro"
 import MoreMenu from "~/components/RightSidebar/MoreMenu.astro"
 
+// TODO: Stop passing down headings from ...slug
 interface Props {
   frontmatter: BaseFrontmatter
-  headings: MarkdownHeading[]
 }
-const { frontmatter, headings } = Astro.props
+const { frontmatter } = Astro.props
 
 const whatsNext = frontmatter.whatsnext
 
@@ -164,7 +163,7 @@ const includeLinkToWalletScript = !!Astro.props?.frontmatter?.metadata?.linkToWa
         <LeftSidebar currentPage={currentPage} section={frontmatter.section} />
       </aside>
       <div id="grid-main">
-        <PageContent {frontmatter} {headings}>
+        <PageContent {frontmatter}>
           <slot />
         </PageContent>
         {whatsNext && <WhatsNext content={whatsNext} />}
@@ -173,7 +172,7 @@ const includeLinkToWalletScript = !!Astro.props?.frontmatter?.metadata?.linkToWa
         </span>
       </div>
       <aside id="grid-right" class="grid-sidebar" title="Table of Contents">
-        <RightSidebar {githubEditUrl} {headings} />
+        <RightSidebar {githubEditUrl} />
       </aside>
     </main>
     <NewsletterCTA client:visible />

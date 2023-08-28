@@ -1,14 +1,13 @@
 ---
 import { BaseFrontmatter } from "~/content/config"
-import TableOfContents from "../RightSidebar/TableOfContents"
+// import TableOfContents from "../RightSidebar/TableOfContents"
 import { MarkdownHeading } from "astro"
 import { ContentObserver } from "./ContentObserver"
 
 export type Props = {
   frontmatter: BaseFrontmatter
-  headings: MarkdownHeading[]
 }
-const { frontmatter, headings } = Astro.props
+const { frontmatter } = Astro.props
 const title = frontmatter.title
 const overview: MarkdownHeading = {
   depth: 1,
@@ -17,103 +16,29 @@ const overview: MarkdownHeading = {
 }
 ---
 
+<!-- TODO: Get TOC out of article, use general layout from Quickstarts -->
 <article id="article">
-  <ContentObserver client:only="preact" headings={[overview, ...headings]} />
-  <h1 class="content-title" id={overview.slug}>{overview.text}</h1>
-  <span class="sm:hidden">
-    <TableOfContents client:media="(max-width: 50em)" {headings} />
-  </span>
+  <ContentObserver client:only="preact" />
+  <h1 id={overview.slug}>{overview.text}</h1>
+  <!-- <span class="sm:hidden">
+    <TableOfContents client:media="(max-width: 50em)" />
+  </span> -->
   <slot />
 </article>
 
 <!-- TODO: Use is:inline instead of :global on quickstarts -->
 <style is:inline>
-  article section > * {
-    margin-top: 1.25rem;
-  }
-
-  article > section > :where(div, section) > * {
-    margin-top: 1.25rem;
-  }
-
-  article > :first-child {
-    margin-top: 0;
-  }
-
-  article :is(ul, ol) {
-    line-height: 1.25em;
-    margin-bottom: 0.7em;
-  }
-
-  article :is(ul, ol) > li > :is(ul, ol) {
-    margin-top: 0.5rem;
-  }
-  article :is(ul, ol) > * + * {
-    margin-top: 0.75rem;
-  }
-
-  article nav :is(ul, ol) > * + * {
-    margin-top: inherit;
-  }
-
-  article li > :is(p, pre, blockquote):not(:first-child) {
-    margin-top: 1rem;
-  }
-
-  article :is(ul) {
-    padding-left: 1em;
-  }
-
-  article :is(ol) {
-    padding-left: 2em;
-  }
-
-  article nav :is(ul, ol) {
-    padding-left: inherit;
-  }
-
-  article nav {
-    margin-top: 1rem;
-    margin-bottom: 2rem;
-  }
-
-  article ::marker {
-    font-weight: bold;
-    color: var(--theme-text-light);
-  }
-
-  article iframe {
-    width: 100%;
-    height: auto;
-    aspect-ratio: 16 / 9;
-  }
-
   article {
     position: relative;
   }
 
   article * {
     max-width: 100%;
+    margin-bottom: 0;
   }
 
-  article :is(p, section, h1, h2, h3, h4) {
-    margin: 0;
-  }
-
-  article :is(h2) {
-    margin-top: var(--space-10x);
-  }
-
-  /* TODO: Add margin for top bar on mobile */
-  section:target {
-    scroll-margin-top: calc(var(--theme-sidebar-offset, 2rem));
-  }
-
-  section > section:target {
-    scroll-margin-top: calc(var(--theme-sidebar-offset, 2rem) + 4rem);
-  }
-  article :is(p, div) {
-    margin-top: var(--space-6x);
+  article :where(section) > :not(section) {
+    margin-top: var(--space-5x);
   }
 
   article :is(h1, h2) {
@@ -127,5 +52,56 @@ const overview: MarkdownHeading = {
 
   article :is(h3, h4) {
     padding-top: var(--space-8x);
+  }
+
+  article :is(h3, h4, li) {
+    margin-top: 0;
+  }
+
+  article > :first-child {
+    margin-top: 0;
+  }
+
+  article :is(ul) {
+    padding-left: var(--space-4x);
+  }
+
+  article :is(ul, ol) {
+    margin-top: var(--space-3x);
+  }
+
+  /* article :is(ul, ol) > li > :is(ul, ol) {
+    margin-top: 0.5rem;
+  } */
+  article :is(ul, ol) > * + * {
+    margin-top: 0.5rem;
+  }
+
+  article li > :is(p, pre, blockquote):not(:first-child) {
+    margin-top: var(--space-4x);
+  }
+
+  article :is(ol) {
+    padding-left: var(--space-8x);
+  }
+
+  article ::marker {
+    font-weight: bold;
+    color: var(--theme-text-light);
+  }
+
+  article iframe {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+  }
+
+  /* TODO: Add margin for top bar on mobile */
+  section:target {
+    scroll-margin-top: calc(var(--theme-sidebar-offset, 2rem));
+  }
+
+  section > section:target {
+    scroll-margin-top: calc(var(--theme-sidebar-offset, 2rem) + 4rem);
   }
 </style>
