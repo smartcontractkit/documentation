@@ -26,9 +26,13 @@ const overview: MarkdownHeading = {
   <slot />
 </article>
 
-<!-- NOTE: Can use is:inline instead of global on quickstarts -->
+<!-- TODO: Use is:inline instead of :global on quickstarts -->
 <style is:inline>
-  article > * + * {
+  article section > * {
+    margin-top: 1.25rem;
+  }
+
+  article > section > :where(div, section) > * {
     margin-top: 1.25rem;
   }
 
@@ -100,6 +104,7 @@ const overview: MarkdownHeading = {
     margin-top: var(--space-10x);
   }
 
+  /* TODO: Add margin for top bar on mobile */
   section:target {
     scroll-margin-top: calc(var(--theme-sidebar-offset, 2rem));
   }
@@ -109,10 +114,6 @@ const overview: MarkdownHeading = {
   }
   article :is(p, div) {
     margin-top: var(--space-6x);
-  }
-
-  article :is(ul) {
-    margin-top: var(--space-2x);
   }
 
   article :is(h1, h2) {
