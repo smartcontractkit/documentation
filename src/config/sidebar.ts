@@ -18,7 +18,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         },
         {
           title: "Getting Started",
-          url: "getting-started/consuming-data-feeds",
+          url: "data-feeds/getting-started",
         },
         {
           title: "Price Feeds",
@@ -540,7 +540,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         },
         {
           title: "Getting Started",
-          url: "getting-started/intermediates-tutorial",
+          url: "vrf/v2/getting-started",
         },
         {
           title: "Security Considerations",
@@ -1043,7 +1043,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         },
         {
           title: "Getting Started",
-          url: "getting-started/advanced-tutorial",
+          url: "any-api/getting-started",
         },
         {
           title: "Make a GET Request",
