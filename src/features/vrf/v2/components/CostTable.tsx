@@ -3,10 +3,10 @@ import "./costTable.css"
 import { useCallback, useEffect, useReducer } from "preact/hooks"
 import { BigNumber, utils } from "ethers"
 import button from "@chainlink/design-system/button.module.css"
-import useQueryString from "~/hooks/useQueryString"
 
 interface Props {
   method: "vrfSubscription" | "vrfDirectFunding"
+  network: string
 }
 
 interface directFundingResponse {
@@ -55,6 +55,12 @@ interface CacheEntry {
   latestCacheUpdate: number
 }
 
+interface UpdateChainResponse {
+  networkName: string
+  chain: Chain
+  chainNetwork: ChainNetwork
+}
+
 type Cache = {
   [key: string]: CacheEntry
 }
@@ -62,7 +68,7 @@ type Cache = {
 const CACHE_EXPIRY_TIME = 5 * 60 * 1000 // 5 min in milliseconds
 
 const initialState: State = {
-  isLoading: false,
+  isLoading: true,
   networkName: "",
   mainChain: null,
   mainChainNetwork: null,
@@ -164,23 +170,17 @@ export const getGasCalculatorUrl = ({
   chainNetwork: ChainNetwork
   method: Props["method"]
 }) => {
-  return `https://vrf.chain.link/api/calculator?networkName=${mainChainName}&networkType=${
-    networkName === mainChainName ? chainNetwork.networkType.toLowerCase() : networkName
-  }&method=${method === "vrfSubscription" ? "subscription" : "directFunding"}`
-  // console.log(
-  //   `http://localhost:3001/api/calculator?networkName=${mainChainName}&networkType=${
-  //     networkName === mainChainName ? chainNetwork.networkType.toLowerCase() : networkName
-  //   }&method=${method === "vrfSubscription" ? "subscription" : "directFunding"}`
-  // )
-  // return `http://localhost:3001/api/calculator?networkName=${mainChainName}&networkType=${
+  // return `https://vrf.chain.link/api/calculator?networkName=${mainChainName}&networkType=${
   //   networkName === mainChainName ? chainNetwork.networkType.toLowerCase() : networkName
   // }&method=${method === "vrfSubscription" ? "subscription" : "directFunding"}`
+  // TODO: use env variable
+  return `http://localhost:3001/api/calculator?networkName=${mainChainName}&networkType=${
+    networkName === mainChainName ? chainNetwork.networkType.toLowerCase() : networkName
+  }&method=${method === "vrfSubscription" ? "subscription" : "directFunding"}`
 }
 
-export const CostTable = ({ method }: Props) => {
+export const CostTable = ({ method, network }: Props) => {
   const [state, dispatch] = useReducer(reducer, initialState)
-  const [network] = useQueryString("network", "")
-  // const lastApiCallTimestampRef = useRef<number>(0)
   const getDataResponse = useCallback(
     async (mainChainName: string, networkName: string, chainNetwork: ChainNetwork): Promise<dataResponse> => {
       const cacheKey = `${mainChainName}-${
@@ -189,14 +189,6 @@ export const CostTable = ({ method }: Props) => {
       if (cache[cacheKey] && cache[cacheKey].latestCacheUpdate - Date.now() < CACHE_EXPIRY_TIME) {
         return cache[cacheKey].data
       }
-      console.log("API call")
-      // throttling
-      // const currentTime = Date.now()
-      // const timeSinceLastCall = currentTime - lastApiCallTimestampRef.current
-      // if (timeSinceLastCall < 5000) {
-      //   await new Promise((resolve) => setTimeout(resolve, 5000 - timeSinceLastCall))
-      // }
-      // lastApiCallTimestampRef.current = Date.now()
       const response = await fetch(getGasCalculatorUrl({ mainChainName, networkName, chainNetwork, method }), {
         method: "GET",
       })
@@ -210,39 +202,52 @@ export const CostTable = ({ method }: Props) => {
     [method]
   )
 
-  useEffect(() => {
-    if (typeof network !== "string" || network === "") return
-    dispatch({ type: "SET_LOADING", payload: true })
-    console.log(state)
+  const getChainParams = async (): Promise<UpdateChainResponse | null> => {
+    if (typeof network !== "string" || network === "") return null
+
     const { chain, chainNetwork } = getNetworkFromQueryString(network)
     const networkName = network.split("-")[1]
-    const fillInputs = async () => {
-      if (!chainNetwork || !networkName) {
-        dispatch({
-          type: "SET_LOADING",
-          payload: false,
-        })
-        return
-      }
-      const responseJson: dataResponse = await getDataResponse(network.split("-")[0], networkName, chainNetwork)
-      const {
-        gasPrice,
-        L1GasPriceEstimate,
-        callbackGasLimit,
-        LINKPremium,
-        decimalPlaces,
-        gasLaneList,
-        currentLINKPriceFeed,
-        directFunding,
-      } = responseJson
-      dispatch({
-        type: "UPDATE_STATE",
-        payload: {
+
+    if (!chainNetwork || !networkName || !chain) {
+      return null
+    }
+
+    return { networkName, chain, chainNetwork }
+  }
+
+  const fillInputs = useCallback(
+    async (network: string) => {
+      try {
+        if (!state.isLoading) {
+          dispatch({
+            type: "SET_LOADING",
+            payload: true,
+          })
+        }
+        const updatedChainValues = await getChainParams()
+        if (!updatedChainValues) return
+
+        const { networkName, chain, chainNetwork } = updatedChainValues
+
+        const responseJson = await getDataResponse(network.split("-")[0], networkName, chainNetwork)
+
+        const {
+          gasPrice,
+          L1GasPriceEstimate,
+          callbackGasLimit,
+          LINKPremium,
+          decimalPlaces,
+          gasLaneList,
+          currentLINKPriceFeed,
+          directFunding,
+        } = responseJson
+
+        const updatedState = {
           ...initialState,
+          gasPrice,
           networkName,
           mainChain: chain,
           mainChainNetwork: chainNetwork,
-          gasPrice,
           L1GasPriceEstimate,
           currentL1GasPriceEstimate: L1GasPriceEstimate,
           decimalPlaces,
@@ -252,29 +257,91 @@ export const CostTable = ({ method }: Props) => {
           gasLaneList,
           currentGasLane: gasLaneList[0] || 0,
           priceFeed: currentLINKPriceFeed,
-        },
-      })
-      if (Object.keys(directFunding).length) {
-        dispatch({
-          type: "UPDATE_STATE",
-          payload: {
-            wrapperOverheadGas: directFunding.wrapperGasOverhead,
-            currentVerificationGas: directFunding.currentVerificationGas,
-            wrapperLinkPremiumPercentage: directFunding.wrapperLinkPremiumPercentage,
-          },
-        })
+        }
+
+        if (Object.keys(directFunding).length) {
+          updatedState.wrapperOverheadGas = directFunding.wrapperGasOverhead
+          updatedState.currentVerificationGas = directFunding.currentVerificationGas
+          updatedState.wrapperLinkPremiumPercentage = directFunding.wrapperLinkPremiumPercentage
+        }
+
+        dispatch({ type: "UPDATE_STATE", payload: updatedState })
+      } catch (error) {
+        console.error(error)
+      } finally {
+        dispatch({ type: "SET_LOADING", payload: false })
       }
-      dispatch({ type: "SET_LOADING", payload: false })
-    }
+    },
+    [getDataResponse, network]
+  )
 
-    fillInputs().catch((error: Error) => {
-      dispatch({ type: "SET_LOADING", payload: false })
-      console.error(error)
-    })
-    return () => dispatch({ type: "SET_LOADING", payload: false })
-  }, [getDataResponse, network])
+  // useEffect(() => {
+  //   if (typeof network !== "string" || network === "") return
+  //   dispatch({
+  //     type: "SET_LOADING",
+  //     payload: true,
+  //   })
+  //   const { chain, chainNetwork } = getNetworkFromQueryString(network)
+  //   const networkName = network.split("-")[1]
+  //   const fillInputs = async () => {
+  //     if (!chainNetwork || !networkName) {
+  //       return
+  //     }
+  //     const responseJson: dataResponse = await getDataResponse(network.split("-")[0], networkName, chainNetwork)
+  //     const {
+  //       gasPrice,
+  //       L1GasPriceEstimate,
+  //       callbackGasLimit,
+  //       LINKPremium,
+  //       decimalPlaces,
+  //       gasLaneList,
+  //       currentLINKPriceFeed,
+  //       directFunding,
+  //     } = responseJson
 
-  if (!state.mainChain || !state.mainChainNetwork) return null
+  //     dispatch({
+  //       type: "UPDATE_STATE",
+  //       payload: {
+  //         ...initialState,
+  //         networkName,
+  //         mainChain: chain,
+  //         mainChainNetwork: chainNetwork,
+  //         gasPrice,
+  //         L1GasPriceEstimate,
+  //         currentL1GasPriceEstimate: L1GasPriceEstimate,
+  //         decimalPlaces,
+  //         currentGasPrice: gasPrice,
+  //         callbackGasLimit,
+  //         LINKPremium,
+  //         gasLaneList,
+  //         currentGasLane: gasLaneList[0] || 0,
+  //         priceFeed: currentLINKPriceFeed,
+  //       },
+  //     })
+  //     if (Object.keys(directFunding).length) {
+  //       dispatch({
+  //         type: "UPDATE_STATE",
+  //         payload: {
+  //           wrapperOverheadGas: directFunding.wrapperGasOverhead,
+  //           currentVerificationGas: directFunding.currentVerificationGas,
+  //           wrapperLinkPremiumPercentage: directFunding.wrapperLinkPremiumPercentage,
+  //         },
+  //       })
+  //     }
+  //   }
+
+  //   fillInputs()
+  //     .catch((error: Error) => {
+  //       console.error(error)
+  //     })
+  //     .finally(() => {
+  //       dispatch({ type: "SET_LOADING", payload: false })
+  //     })
+  // }, [getDataResponse, network])
+
+  useEffect(() => {
+    fillInputs(network)
+  }, [fillInputs])
 
   const handleRadioChange = (event) => {
     dispatch({ type: "SET_CURRENT_GAS_LANE", payload: parseInt(event.target.value) })
@@ -347,6 +414,7 @@ export const CostTable = ({ method }: Props) => {
       })
     }
   }
+
   const getsupportedNetworkShortcut = () => {
     const chainName = state.mainChain?.label.toLowerCase()
     switch (chainName) {
@@ -507,7 +575,7 @@ export const CostTable = ({ method }: Props) => {
     return res
   }
 
-  // Format total VRF cost to stop after second non-zero decimal.
+  // Format max VRF cost to stop after second non-zero decimal.
   const formatmaxCost = () => {
     if (state.maxCost === "0.00") {
       return state.maxCost
@@ -535,6 +603,7 @@ export const CostTable = ({ method }: Props) => {
     }
     return res
   }
+
   if (state.isLoading) {
     return <p className="loading-text">Data is being fetched. Please wait a moment...</p>
   } else {
@@ -557,7 +626,7 @@ export const CostTable = ({ method }: Props) => {
               />
             </td>
           </tr>
-          {state.mainChain.label.toLowerCase() === "arbitrum" && state.L1GasPriceEstimate && (
+          {state.mainChain && state.mainChain.label.toLowerCase() === "arbitrum" && state.L1GasPriceEstimate && (
             <tr>
               <td>L1 gas price (current is {getGasPrice(state.L1GasPriceEstimate)} gwei)</td>
               <td>
@@ -654,15 +723,17 @@ export const CostTable = ({ method }: Props) => {
         )}
         <p>
           To see these parameters in greater detail, read the
-          <a
-            href={`/vrf/v2/${kebabize(
-              method === "vrfSubscription" ? "subscription" : "directFunding"
-            )}/supported-networks/#${getsupportedNetworkShortcut()}`}
-            target="_blank"
-          >
-            {" "}
-            Supported Networks{" "}
-          </a>
+          {state.mainChain && (
+            <a
+              href={`/vrf/v2/${kebabize(
+                method === "vrfSubscription" ? "subscription" : "directFunding"
+              )}/supported-networks/#${getsupportedNetworkShortcut()}`}
+              target="_blank"
+            >
+              {" "}
+              Supported Networks{" "}
+            </a>
+          )}
           page.
         </p>
       </div>

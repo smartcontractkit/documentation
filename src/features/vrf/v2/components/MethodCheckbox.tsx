@@ -6,9 +6,14 @@ import { Dropdown } from "./Dropdown"
 
 export const MethodCheckbox = () => {
   const [vrfMethodUsed, setVrfMethodUsed] = useState<"vrfSubscription" | "vrfDirectFunding">("vrfSubscription")
+  const [network, setNetwork] = useState<string>("")
 
   const handleChange = (event) => {
     setVrfMethodUsed(event.target.value)
+  }
+
+  const handleSelectedNetwork = (newNetwork: string) => {
+    setNetwork(newNetwork)
   }
   const options = CHAINS.filter((chain) => chain.supportedFeatures.includes(vrfMethodUsed))
 
@@ -40,8 +45,8 @@ export const MethodCheckbox = () => {
         </div>
       </div>
 
-      <Dropdown options={options} />
-      <CostTable method={vrfMethodUsed} />
+      <Dropdown options={options} onSelectNetwork={handleSelectedNetwork} />
+      {network && <CostTable method={vrfMethodUsed} network={network} />}
     </div>
   )
 }
