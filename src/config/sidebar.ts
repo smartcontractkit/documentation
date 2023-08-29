@@ -337,7 +337,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "chainlink-automation/tutorials/vault-harvester",
         },
         {
-          title: "Automate Top-Up for Contract Balances",
+          title: "Automate Contract Balance Top-up",
           url: "chainlink-automation/tutorials/eth-balance",
         },
         {

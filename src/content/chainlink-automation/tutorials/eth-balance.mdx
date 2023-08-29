@@ -1,29 +1,55 @@
 ---
 section: automation
 date: Last Modified
-title: "EthBalanceMonitor Contract"
+title: "Automate Contract Balance Top-up"
 isMdx: true
 whatsnext: { "FAQs": "/chainlink-automation/faqs/" }
 ---
 
 import { Aside, CodeSample } from "@components"
 
-Some smart contract applications require you to maintain a certain Ethereum balance to ensure optimal operation. You can automate this using the decentralized Automation network offered by Chainlink Automation. Use these smart contracts to monitor and top-up balances on your smart contracts.
+Some smart contract applications require you to maintain a certain Ethereum balance to ensure optimal operation. You can automate this using Chainlink Automation. Use these smart contracts to monitor and top-up balances on your smart contracts.
 
-[ERC20 Balance Monitor](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/automation/upkeeps/ERC20BalanceMonitor.sol)
-[EVM Native `Eth` Gas Balance Monitor](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/automation/upkeeps/EthBalanceMonitor.sol)
+View the [EthBalanceMonitor.sol contract](https://github.com/smartcontractkit/documentation/blob/main/public/samples/Automation/tutorials/EthBalanceMonitor.sol) on GitHub.
+
+<Aside type="caution" title="Disclaimer">
+  This tutorial represents an example of using a Chainlink product or service and is provided to help you understand how
+  to interact with Chainlink's systems and services so that you can integrate them into your own. This template is
+  provided "AS IS" and "AS AVAILABLE" without warranties of any kind, has not been audited, and may be missing key
+  checks or error handling to make the usage of the product more clear. Do not use the code in this example in a
+  production environment without completing your own audits and application of best practices. Neither Chainlink Labs,
+  the Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs that are generated due
+  to errors in code.
+</Aside>
 
 Alternatively follow the detailed native (ETH) Gas Balance Monitor guide below.
 
-## `EthBalanceMonitor` Guide
+## Objective
 
-This guide explains the use case for the [`EthBalanceMonitor` contract](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/automation/upkeeps/EthBalanceMonitor.sol). This Automation contract monitors and funds Ethereum addresses that developers might need to top up frequently based on a configurable threshold. As a result, nodes are funded automatically.
+This Automation contract monitors and funds Ethereum addresses that developers might need to top up frequently based on a configurable threshold. You will deploy this example monitor contract and use the [automation.chain.link](https://automation.chain.link/) interface to register an upkeep and run the contract. To learn the basics about Chainlink Automation, read the [Chainlink Automation Introduction](/chainlink-automation/introduction).
 
-After deploying the contract, developers can go to [automation.chain.link](https://automation.chain.link/) to register Upkeep and run the contract. To take full advantage of the Chainlink Automation infrastructure, read all of the documentation to understand the features of Chainlink Automation.
+For this example, use the Polygon Mumbai testnet to simplify access to testnet funds. Later, you can use another EVM-compatible network of your choice.
 
-To find other example contracts, see the [Example Automation Contracts](/chainlink-automation/util-overview) page.
+## Before you begin
 
-## `EthBalanceMonitor` Properties
+Before you start this tutorial, complete the following items:
+
+- If you are new to smart contract development, learn how to [Deploy Your First Smart Contract](/getting-started/deploy-your-first-contract).
+- Set up a cryptocurrency wallet such as [MetaMask](https://metamask.io/).
+- Fund your wallet with the following testnet tokens:
+  - Get testnet MATIC from [faucet.polygon.technology](https://faucet.polygon.technology) to pay for your on-chain transactions.
+  - Get 20 ERC-677 testnet LINK from [faucets.chain.link/mumbai](https://faucets.chain.link/mumbai).
+
+## Setup steps
+
+1. Open the `EthBalanceMonitor.sol` example contract in Remix.
+
+   {/* prettier-ignore */}
+   <CodeSample src="samples/Automation/tutorials/EthBalanceMonitor.sol" showButtonOnly />
+
+1.
+
+## Examine the example code
 
 `EthBalanceMonitor` is ownable, pauseable, and compatible with the `AutomationCompatibleInterface` contract:
 
@@ -31,17 +57,12 @@ To find other example contracts, see the [Example Automation Contracts](/chainli
 - **Pauseable**: This feature allows the contract to implement a pause and unpause mechanism that the contract owner can trigger.
 - **Compatible**: The `AutomationCompatibleInterface` is necessary to create contracts that are compatible with the Chainlink Automation Network. To learn more about the `AutomationCompatibleInterface` and its uses and functions, read the [Making Compatible Contracts](/chainlink-automation/compatible-contracts) guide.
 
-You can open the contract in Remix:
-
-{/* prettier-ignore */}
-<CodeSample src="samples/Automation/tutorials/EthBalanceMonitor.sol" showButtonOnly/>
-
 <Aside type="note" title="Note on Owner Settings">
   Aside from certain features listed below, only owners can withdraw funds and pause or unpause the contract. If the
   contract is paused or unpaused, it will affect `checkUpkeep`, `performUpkeep`, and `topUp` functions.
 </Aside>
 
-## Functions
+### Contract functions
 
 Functions with an asterisk (`*`) denote features that only the owner can change. Click on each function to learn more about its parameters and design patterns:
 
