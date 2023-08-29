@@ -1,9 +1,11 @@
 // store/users.ts
 import { atom } from "nanostores"
 
-export const shouldUpdateToc = atom<string | undefined>()
+let updateCounter = 0
+
+export const shouldUpdateToc = atom<number | undefined>()
 export function updateTableOfContents() {
-  shouldUpdateToc.set(new Date().toUTCString())
+  shouldUpdateToc.set(++updateCounter)
 
   // Handle anchors after TOC loads
   if (window.location.hash) {
