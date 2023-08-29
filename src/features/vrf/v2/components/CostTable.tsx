@@ -170,7 +170,7 @@ export const getGasCalculatorUrl = ({
   mainChainName: string
   networkName: string
   chainNetwork: ChainNetwork
-  method: Props["method"]
+  method: "vrfSubscription" | "vrfDirectFunding"
   vrfApiBaseUrl: string
 }) => {
   return `${vrfApiBaseUrl}?networkName=${mainChainName}&networkType=${

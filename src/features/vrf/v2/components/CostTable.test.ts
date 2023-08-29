@@ -2,11 +2,13 @@ import { getGasCalculatorUrl } from "./CostTable"
 import { expect, test } from "@jest/globals"
 import { ChainNetwork } from "~/features/data/chains"
 
+const vrfApiBaseUrl = "https://vrf.chain.link/api/calculator"
+
 describe("getGasCalculatorUrl", () => {
   test("works with testnet", () => {
     const mainChainName = "ethereum"
     const networkName = "goerli"
-    const chain: ChainNetwork = {
+    const chainNetwork: ChainNetwork = {
       name: "Goerli Testnet",
       explorerUrl: "https://goerli.etherscan.io/address/%s",
       networkType: "testnet",
@@ -16,7 +18,7 @@ describe("getGasCalculatorUrl", () => {
     }
     const method = "vrfSubscription"
 
-    expect(getGasCalculatorUrl({ mainChainName, networkName, chain, method })).toEqual(
+    expect(getGasCalculatorUrl({ mainChainName, networkName, chainNetwork, method, vrfApiBaseUrl })).toEqual(
       "https://vrf.chain.link/api/calculator?networkName=ethereum&networkType=goerli&method=subscription"
     )
   })
@@ -24,7 +26,7 @@ describe("getGasCalculatorUrl", () => {
   test("works with mainnet", () => {
     const mainChainName = "polygon"
     const networkName = "mainnet"
-    const chain: ChainNetwork = {
+    const chainNetwork: ChainNetwork = {
       name: "Polygon Mainnet",
       explorerUrl: "https://polygonscan.com/address/%s",
       networkType: "mainnet",
@@ -34,7 +36,7 @@ describe("getGasCalculatorUrl", () => {
     }
     const method = "vrfDirectFunding"
 
-    expect(getGasCalculatorUrl({ mainChainName, networkName, chain, method })).toEqual(
+    expect(getGasCalculatorUrl({ mainChainName, networkName, chainNetwork, method, vrfApiBaseUrl })).toEqual(
       "https://vrf.chain.link/api/calculator?networkName=polygon&networkType=mainnet&method=directFunding"
     )
   })
