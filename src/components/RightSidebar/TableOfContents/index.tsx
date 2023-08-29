@@ -18,10 +18,13 @@ const TableOfContents: FunctionalComponent = () => {
     const newHeadings: MarkdownHeading[] = []
     elements.forEach((e) => {
       if (e.textContent) {
+        const depth = Number(e.nodeName.at(1))
+        const slug = e.id
+        const text = depth > 1 ? e.textContent : "Overview"
         newHeadings.push({
-          depth: Number(e.nodeName.at(1)),
-          slug: e.id,
-          text: e.textContent,
+          depth,
+          slug,
+          text,
         })
       }
     })
@@ -39,7 +42,7 @@ const TableOfContents: FunctionalComponent = () => {
               className={`${styles.headerLink}${h.depth && h.depth > 2 ? ` ${styles[`depth-${h.depth}`]}` : ""}
               ${$currentId === h.slug ? ` ${styles.active}` : ""}`}
             >
-              {h.depth > 1 ? h.text : "Overview"}
+              {h.text}
             </a>
           </li>
         ))}
