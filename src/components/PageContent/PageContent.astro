@@ -98,51 +98,63 @@ const overview: MarkdownHeading = {
 
   /* TODO: Add margin for top bar on mobile */
   section:target {
-    scroll-margin-top: calc(var(--theme-sidebar-offset, 2rem));
+    scroll-margin-top: var(--theme-navbar-height, 2rem);
   }
 
   section > section:target {
-    scroll-margin-top: calc(var(--theme-sidebar-offset, 2rem) + 4rem);
+    scroll-margin-top: calc(var(--theme-navbar-height, 2rem) + 6rem);
+  }
+
+  @media (min-width: 48em) {
+    section:target {
+      scroll-margin-top: 0;
+    }
+
+    section > section:target {
+      scroll-margin-top: 6rem;
+    }
   }
 </style>
 
 <script>
-  const wrapElements = (start: Element, options?: { isParent?: boolean }) => {
+  /**
+   * Looks janky, but is necessary to achieve sticky h2 headers
+   * with functioning intersection observers for nested h3, h4 headers
+   */
+  const wrapElements = (start: Element, isParent?: boolean) => {
     const wrapper = document.createElement("section")
     const elements: Element[] = []
     elements.push(start)
     let next = start.nextElementSibling
     // TODO: Un-jank this, maybe create a helper for wrapping elements
+    // which the islands can use in their render
     while (
       next &&
-      (next.nodeName !== "ASTRO-ISLAND" || !next.children.length || next.children[0].nodeName !== "SECTION") &&
-      (!next.id || (options?.isParent && !["H1", "H2"].includes(next.nodeName)))
+      (next.nodeName !== "ASTRO-ISLAND" || !next.hasChildNodes() || next.children[0].nodeName !== "SECTION") &&
+      (!next.id || (isParent && !["H1", "H2"].includes(next.nodeName)))
     ) {
       elements.push(next)
       next = next.nextElementSibling
     }
     wrapper.id = start.id
-    start.parentNode?.insertBefore(wrapper, start)
+    start.parentNode!.insertBefore(wrapper, start)
     elements.forEach((e) => wrapper.appendChild(e))
+    // If parent header (H1, H2), wrap all lesser headers as children
+    if (isParent) {
+      // Create a nested wrapper for non-subheading elements
+      const wrapper = wrapElements(start)
+      // Extract the header from the first nested wrapper to use as sticky header
+      if (wrapper.firstElementChild) {
+        wrapper.parentNode!.insertBefore(wrapper.firstElementChild, wrapper)
+        // If there's nothing after the title element, remove the now-empty wrapper
+        if (!wrapper.hasChildNodes()) {
+          wrapper.remove()
+        }
+      }
+    }
     return wrapper
   }
 
-  /**
-   * Looks janky, but is necessary to achieve sticky h2 headers
-   * with functioning intersection observers for nested h3, h4 headers
-   */
   const elements = document.body.querySelectorAll("article :where(h1, h2, h3, h4)")
-  elements.forEach((e) => {
-    const isParent = ["H1", "H2"].includes(e.nodeName)
-    // If parent header (H1, H2), wrap all lesser headers as children
-    wrapElements(e, { isParent })
-    if (isParent) {
-      // Create a nested wrapper for non-subheading elements
-      const wrapper = wrapElements(e)
-      // Extract the header from the first nested wrapper to use as sticky header
-      if (wrapper.firstElementChild) {
-        wrapper.parentNode?.insertBefore(wrapper.firstElementChild, wrapper)
-      }
-    }
-  })
+  elements.forEach((e) => wrapElements(e, ["H1", "H2"].includes(e.nodeName)))
 </script>
