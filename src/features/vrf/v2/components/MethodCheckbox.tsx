@@ -11,7 +11,6 @@ interface Props {
 
 export const MethodCheckbox = ({ vrfApiBaseUrl }: Props) => {
   const [vrfMethodUsed, setVrfMethodUsed] = useState<"vrfSubscription" | "vrfDirectFunding">("vrfSubscription")
-  // const [network, setNetwork] = useState<string>("")
   const [network] = useQueryString("network", "")
 
   const handleChange = (event) => {
