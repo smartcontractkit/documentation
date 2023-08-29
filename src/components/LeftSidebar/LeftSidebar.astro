@@ -65,15 +65,29 @@ const currentPageMatch = removeSlashes(currentPage.slice(1))
             <ul>
               {s.contents &&
                 s.contents.map((child) => (
-                  <li>
-                    <a
-                      class="nav-link"
-                      href={`${Astro.site?.pathname}${child.url}`}
-                      aria-current={currentPageMatch === removeSlashes(child.url) ? "page" : "false"}
-                    >
-                      {child.title}
-                    </a>
-                  </li>
+                  <>
+                    <li>
+                      <a
+                        class="nav-link"
+                        href={`${Astro.site?.pathname}${child.url}`}
+                        aria-current={currentPageMatch === removeSlashes(child.url) ? "page" : "false"}
+                      >
+                        {child.title}
+                      </a>
+                    </li>
+                    {child.children &&
+                      child.children.map((childItem) => (
+                        <li>
+                          <a
+                            class="nav-link nested"
+                            href={`${Astro.site?.pathname}${childItem.url}`}
+                            aria-current={`${currentPageMatch === removeSlashes(childItem.url) ? "page" : "false"}`}
+                          >
+                            {childItem.title}
+                          </a>
+                        </li>
+                      ))}
+                  </>
                 ))}
             </ul>
           </details>
@@ -129,7 +143,7 @@ const currentPageMatch = removeSlashes(currentPage.slice(1))
     width: 100%;
     font-size: 14px;
     color: var(--gray-500, #858a95);
-    padding: 0.5rem 1rem 0.5rem;
+    padding: var(--space-2x) var(--space-4x) var(--space-2x);
     border-left: 2px solid var(--gray-200, #ecedef);
     transition-property: color, border-left-color;
     transition-duration: 100ms;
@@ -152,6 +166,10 @@ const currentPageMatch = removeSlashes(currentPage.slice(1))
     color: hsla(var(--color-base-white), 100%, 1);
   }
 
+  .nav-link.nested {
+    padding-left: var(--space-8x);
+  }
+
   details summary {
     cursor: pointer;
     color: var(--blue-800);
@@ -160,8 +178,8 @@ const currentPageMatch = removeSlashes(currentPage.slice(1))
   details summary::after {
     content: "";
     display: inline-flex;
-    width: 24px;
-    height: 24px;
+    width: var(--space-6x);
+    height: var(--space-6x);
     background-image: url(https://smartcontract.imgix.net/icons/Caret.svg?auto=compress%2Cformat);
     background-repeat: no-repeat;
     float: right;
