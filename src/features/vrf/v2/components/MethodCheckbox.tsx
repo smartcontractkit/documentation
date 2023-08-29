@@ -3,18 +3,21 @@ import "./methodCheckbox.css"
 import { CHAINS } from "~/features/data/chains"
 import { CostTable } from "./CostTable"
 import { Dropdown } from "./Dropdown"
+import useQueryString from "~/hooks/useQueryString"
 
-export const MethodCheckbox = () => {
+interface Props {
+  vrfApiBaseUrl: string
+}
+
+export const MethodCheckbox = ({ vrfApiBaseUrl }: Props) => {
   const [vrfMethodUsed, setVrfMethodUsed] = useState<"vrfSubscription" | "vrfDirectFunding">("vrfSubscription")
-  const [network, setNetwork] = useState<string>("")
+  // const [network, setNetwork] = useState<string>("")
+  const [network] = useQueryString("network", "")
 
   const handleChange = (event) => {
     setVrfMethodUsed(event.target.value)
   }
 
-  const handleSelectedNetwork = (newNetwork: string) => {
-    setNetwork(newNetwork)
-  }
   const options = CHAINS.filter((chain) => chain.supportedFeatures.includes(vrfMethodUsed))
 
   return (
@@ -45,8 +48,8 @@ export const MethodCheckbox = () => {
         </div>
       </div>
 
-      <Dropdown options={options} onSelectNetwork={handleSelectedNetwork} />
-      {network && <CostTable method={vrfMethodUsed} network={network} />}
+      <Dropdown options={options} />
+      {network && <CostTable method={vrfMethodUsed} network={network.toString()} vrfApiBaseUrl={vrfApiBaseUrl} />}
     </div>
   )
 }

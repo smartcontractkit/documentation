@@ -7,10 +7,9 @@ import useQueryString from "~/hooks/useQueryString"
 interface Props {
   placeholder?: string
   options: Chain[]
-  onSelectNetwork: (str: string) => void
 }
 
-export const Dropdown = ({ placeholder = "Select a network...", options, onSelectNetwork }: Props) => {
+export const Dropdown = ({ placeholder = "Select a network...", options }: Props) => {
   const [network, setNetwork] = useQueryString("network", "")
   const [searchValue, setSearchValue] = useState<string>("")
   const [showMenu, setShowMenu] = useState<boolean>(false)
@@ -35,8 +34,6 @@ export const Dropdown = ({ placeholder = "Select a network...", options, onSelec
         .flatMap((option: Chain) => option.networks)
         .find((networkObject: ChainNetwork) => networkObject.queryString === network)
       setSearchValue(currentNetwork?.name ?? "")
-
-      onSelectNetwork(network?.toString() ?? "")
 
       return () => {
         // Unbind the event listener on clean up
@@ -115,7 +112,6 @@ export const Dropdown = ({ placeholder = "Select a network...", options, onSelec
                         <a
                           onClick={() => {
                             setNetwork(network.queryString)
-                            onSelectNetwork(network.queryString)
                             handleSelectedChain(network)
                             setShowMenu(false)
                             setShowSubMenu(-1)

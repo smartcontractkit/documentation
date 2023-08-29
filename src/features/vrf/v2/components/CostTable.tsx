@@ -7,6 +7,7 @@ import button from "@chainlink/design-system/button.module.css"
 interface Props {
   method: "vrfSubscription" | "vrfDirectFunding"
   network: string
+  vrfApiBaseUrl: string
 }
 
 interface directFundingResponse {
@@ -164,22 +165,20 @@ export const getGasCalculatorUrl = ({
   networkName,
   chainNetwork,
   method,
+  vrfApiBaseUrl,
 }: {
   mainChainName: string
   networkName: string
   chainNetwork: ChainNetwork
   method: Props["method"]
+  vrfApiBaseUrl: string
 }) => {
-  // return `https://vrf.chain.link/api/calculator?networkName=${mainChainName}&networkType=${
-  //   networkName === mainChainName ? chainNetwork.networkType.toLowerCase() : networkName
-  // }&method=${method === "vrfSubscription" ? "subscription" : "directFunding"}`
-  // TODO: use env variable
-  return `http://localhost:3001/api/calculator?networkName=${mainChainName}&networkType=${
+  return `${vrfApiBaseUrl}?networkName=${mainChainName}&networkType=${
     networkName === mainChainName ? chainNetwork.networkType.toLowerCase() : networkName
   }&method=${method === "vrfSubscription" ? "subscription" : "directFunding"}`
 }
 
-export const CostTable = ({ method, network }: Props) => {
+export const CostTable = ({ method, network, vrfApiBaseUrl }: Props) => {
   const [state, dispatch] = useReducer(reducer, initialState)
   const getDataResponse = useCallback(
     async (mainChainName: string, networkName: string, chainNetwork: ChainNetwork): Promise<dataResponse> => {
@@ -189,9 +188,12 @@ export const CostTable = ({ method, network }: Props) => {
       if (cache[cacheKey] && cache[cacheKey].latestCacheUpdate - Date.now() < CACHE_EXPIRY_TIME) {
         return cache[cacheKey].data
       }
-      const response = await fetch(getGasCalculatorUrl({ mainChainName, networkName, chainNetwork, method }), {
-        method: "GET",
-      })
+      const response = await fetch(
+        getGasCalculatorUrl({ mainChainName, networkName, chainNetwork, method, vrfApiBaseUrl }),
+        {
+          method: "GET",
+        }
+      )
       const json: dataResponse = await response.json()
       cache[cacheKey] = {
         data: json,
@@ -202,7 +204,7 @@ export const CostTable = ({ method, network }: Props) => {
     [method]
   )
 
-  const getChainParams = async (): Promise<UpdateChainResponse | null> => {
+  const getChainAndNetworkValues = async (): Promise<UpdateChainResponse | null> => {
     if (typeof network !== "string" || network === "") return null
 
     const { chain, chainNetwork } = getNetworkFromQueryString(network)
@@ -224,10 +226,10 @@ export const CostTable = ({ method, network }: Props) => {
             payload: true,
           })
         }
-        const updatedChainValues = await getChainParams()
-        if (!updatedChainValues) return
+        const updatedChainAndNetworkValues = await getChainAndNetworkValues()
+        if (!updatedChainAndNetworkValues) return
 
-        const { networkName, chain, chainNetwork } = updatedChainValues
+        const { networkName, chain, chainNetwork } = updatedChainAndNetworkValues
 
         const responseJson = await getDataResponse(network.split("-")[0], networkName, chainNetwork)
 
@@ -274,70 +276,6 @@ export const CostTable = ({ method, network }: Props) => {
     },
     [getDataResponse, network]
   )
-
-  // useEffect(() => {
-  //   if (typeof network !== "string" || network === "") return
-  //   dispatch({
-  //     type: "SET_LOADING",
-  //     payload: true,
-  //   })
-  //   const { chain, chainNetwork } = getNetworkFromQueryString(network)
-  //   const networkName = network.split("-")[1]
-  //   const fillInputs = async () => {
-  //     if (!chainNetwork || !networkName) {
-  //       return
-  //     }
-  //     const responseJson: dataResponse = await getDataResponse(network.split("-")[0], networkName, chainNetwork)
-  //     const {
-  //       gasPrice,
-  //       L1GasPriceEstimate,
-  //       callbackGasLimit,
-  //       LINKPremium,
-  //       decimalPlaces,
-  //       gasLaneList,
-  //       currentLINKPriceFeed,
-  //       directFunding,
-  //     } = responseJson
-
-  //     dispatch({
-  //       type: "UPDATE_STATE",
-  //       payload: {
-  //         ...initialState,
-  //         networkName,
-  //         mainChain: chain,
-  //         mainChainNetwork: chainNetwork,
-  //         gasPrice,
-  //         L1GasPriceEstimate,
-  //         currentL1GasPriceEstimate: L1GasPriceEstimate,
-  //         decimalPlaces,
-  //         currentGasPrice: gasPrice,
-  //         callbackGasLimit,
-  //         LINKPremium,
-  //         gasLaneList,
-  //         currentGasLane: gasLaneList[0] || 0,
-  //         priceFeed: currentLINKPriceFeed,
-  //       },
-  //     })
-  //     if (Object.keys(directFunding).length) {
-  //       dispatch({
-  //         type: "UPDATE_STATE",
-  //         payload: {
-  //           wrapperOverheadGas: directFunding.wrapperGasOverhead,
-  //           currentVerificationGas: directFunding.currentVerificationGas,
-  //           wrapperLinkPremiumPercentage: directFunding.wrapperLinkPremiumPercentage,
-  //         },
-  //       })
-  //     }
-  //   }
-
-  //   fillInputs()
-  //     .catch((error: Error) => {
-  //       console.error(error)
-  //     })
-  //     .finally(() => {
-  //       dispatch({ type: "SET_LOADING", payload: false })
-  //     })
-  // }, [getDataResponse, network])
 
   useEffect(() => {
     fillInputs(network)
