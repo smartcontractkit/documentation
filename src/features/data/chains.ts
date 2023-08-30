@@ -3,7 +3,7 @@ import { ChainMetadata } from "./api"
 type ChainTags = ("default" | "proofOfReserve" | "nftFloorPrice" | "rates")[]
 export interface ChainNetwork {
   name: string
-  explorerUrl: string
+  blockExplorerUrl: string
   networkType: "mainnet" | "testnet"
   rddUrl?: string
   metadata?: ChainMetadata[]
@@ -31,21 +31,21 @@ export const CHAINS: Chain[] = [
     networks: [
       {
         name: "Ethereum Mainnet",
-        explorerUrl: "https://etherscan.io/address/%s",
+        blockExplorerUrl: "https://etherscan.io/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-mainnet.json",
         tags: ["proofOfReserve", "nftFloorPrice"],
       },
       {
         name: "Sepolia Testnet",
-        explorerUrl: "https://sepolia.etherscan.io/address/%s",
+        blockExplorerUrl: "https://sepolia.etherscan.io/address/%s",
         networkType: "testnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-sepolia.json",
         tags: ["rates"],
       },
       {
         name: "Goerli Testnet",
-        explorerUrl: "https://goerli.etherscan.io/address/%s",
+        blockExplorerUrl: "https://goerli.etherscan.io/address/%s",
         networkType: "testnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-goerli.json",
         tags: ["proofOfReserve", "nftFloorPrice"],
@@ -63,13 +63,13 @@ export const CHAINS: Chain[] = [
     networks: [
       {
         name: "BNB Chain Mainnet",
-        explorerUrl: "https://bscscan.com/address/%s",
+        blockExplorerUrl: "https://bscscan.com/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-bsc-mainnet.json",
       },
       {
         name: "BNB Chain Testnet",
-        explorerUrl: "https://testnet.bscscan.com/address/%s",
+        blockExplorerUrl: "https://testnet.bscscan.com/address/%s",
         networkType: "testnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-bsc-testnet.json",
       },
@@ -87,14 +87,14 @@ export const CHAINS: Chain[] = [
     networks: [
       {
         name: "Polygon Mainnet",
-        explorerUrl: "https://polygonscan.com/address/%s",
+        blockExplorerUrl: "https://polygonscan.com/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-matic-mainnet.json",
         tags: ["proofOfReserve"],
       },
       {
         name: "Mumbai Testnet",
-        explorerUrl: "https://mumbai.polygonscan.com/address/%s",
+        blockExplorerUrl: "https://mumbai.polygonscan.com/address/%s",
         networkType: "testnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-matic-testnet.json",
         tags: ["nftFloorPrice", "rates"],
@@ -111,7 +111,7 @@ export const CHAINS: Chain[] = [
     networks: [
       {
         name: "Gnosis Chain Mainnet",
-        explorerUrl: "https://gnosisscan.io/address/%s",
+        blockExplorerUrl: "https://gnosisscan.io/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-xdai-mainnet.json",
       },
@@ -128,14 +128,14 @@ export const CHAINS: Chain[] = [
     networks: [
       {
         name: "Avalanche Mainnet",
-        explorerUrl: "https://snowtrace.io/address/%s",
+        blockExplorerUrl: "https://snowtrace.io/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-avalanche-mainnet.json",
         tags: ["proofOfReserve"],
       },
       {
         name: "Avalanche Testnet",
-        explorerUrl: "https://testnet.snowtrace.io/address/%s",
+        blockExplorerUrl: "https://testnet.snowtrace.io/address/%s",
         networkType: "testnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-avalanche-fuji-testnet.json",
         tags: ["proofOfReserve", "rates"],
@@ -154,13 +154,13 @@ export const CHAINS: Chain[] = [
     networks: [
       {
         name: "Fantom Mainnet",
-        explorerUrl: "https://ftmscan.com/address/%s",
+        blockExplorerUrl: "https://ftmscan.com/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-fantom-mainnet.json",
       },
       {
         name: "Fantom Testnet",
-        explorerUrl: "https://testnet.ftmscan.com/address/%s",
+        blockExplorerUrl: "https://testnet.ftmscan.com/address/%s",
         networkType: "testnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-fantom-testnet.json",
       },
@@ -177,14 +177,14 @@ export const CHAINS: Chain[] = [
     networks: [
       {
         name: "Arbitrum Mainnet",
-        explorerUrl: "https://arbiscan.io/address/%s",
+        blockExplorerUrl: "https://arbiscan.io/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-arbitrum-1.json",
         tags: ["nftFloorPrice"],
       },
       {
         name: "Arbitrum Goerli",
-        explorerUrl: "https://goerli-rollup-explorer.arbitrum.io/address/%s",
+        blockExplorerUrl: "https://goerli-rollup-explorer.arbitrum.io/address/%s",
         networkType: "testnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-goerli-arbitrum-1.json",
         tags: ["rates"],
@@ -202,7 +202,7 @@ export const CHAINS: Chain[] = [
     networks: [
       {
         name: "Harmony Mainnet",
-        explorerUrl: "https://explorer.harmony.one/#/address/%s",
+        blockExplorerUrl: "https://explorer.harmony.one/#/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-harmony-mainnet-0.json",
       },
@@ -219,13 +219,13 @@ export const CHAINS: Chain[] = [
     networks: [
       {
         name: "Optimism Mainnet",
-        explorerUrl: "https://optimistic.etherscan.io/address/%s",
+        blockExplorerUrl: "https://optimistic.etherscan.io/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-optimism-1.json",
       },
       {
         name: "Optimism Goerli",
-        explorerUrl: "https://goerli-optimism.etherscan.io/address/%s",
+        blockExplorerUrl: "https://goerli-optimism.etherscan.io/address/%s",
         networkType: "testnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-goerli-optimism-1.json",
       },
@@ -242,7 +242,7 @@ export const CHAINS: Chain[] = [
     networks: [
       {
         name: "Moonriver Mainnet",
-        explorerUrl: "https://moonriver.moonscan.io/address/%s",
+        blockExplorerUrl: "https://moonriver.moonscan.io/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-kusama-mainnet-moonriver.json",
       },
@@ -259,7 +259,7 @@ export const CHAINS: Chain[] = [
     networks: [
       {
         name: "Moonbeam Mainnet",
-        explorerUrl: "https://moonscan.io/address/%s",
+        blockExplorerUrl: "https://moonscan.io/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-polkadot-mainnet-moonbeam.json",
       },
@@ -276,7 +276,7 @@ export const CHAINS: Chain[] = [
     networks: [
       {
         name: "Metis Mainnet",
-        explorerUrl: "https://andromeda-explorer.metis.io/address/%s",
+        blockExplorerUrl: "https://andromeda-explorer.metis.io/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-andromeda-1.json",
       },
@@ -293,13 +293,13 @@ export const CHAINS: Chain[] = [
     networks: [
       {
         name: "BASE Mainnet",
-        explorerUrl: "https://basescan.org/address/%s",
+        blockExplorerUrl: "https://basescan.org/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-base-1.json",
       },
       {
         name: "BASE Goerli testnet",
-        explorerUrl: "https://goerli.basescan.org/address/%s",
+        blockExplorerUrl: "https://goerli.basescan.org/address/%s",
         networkType: "testnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-goerli-base-1.json",
       },
@@ -316,13 +316,13 @@ export const CHAINS: Chain[] = [
     networks: [
       {
         name: "Celo mainnet",
-        explorerUrl: "https://explorer.celo.org/address/%s",
+        blockExplorerUrl: "https://explorer.celo.org/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-celo-mainnet.json",
       },
       {
         name: "Celo Alfajores testnet",
-        explorerUrl: "https://explorer.celo.org/alfajores/address/%s",
+        blockExplorerUrl: "https://explorer.celo.org/alfajores/address/%s",
         networkType: "testnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-celo-testnet-alfajores.json",
       },
@@ -339,7 +339,7 @@ export const CHAINS: Chain[] = [
     networks: [
       {
         name: "StarkNet testnet",
-        explorerUrl: "https://testnet.starkscan.co/contract/%s",
+        blockExplorerUrl: "https://testnet.starkscan.co/contract/%s",
         networkType: "testnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-starknet-testnet-goerli-1.json",
       },
@@ -356,13 +356,13 @@ export const CHAINS: Chain[] = [
     networks: [
       {
         name: "Solana Mainnet",
-        explorerUrl: "https://solscan.io/account/%s",
+        blockExplorerUrl: "https://solscan.io/account/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-solana-mainnet.json",
       },
       {
         name: "Solana Devnet",
-        explorerUrl: "https://solscan.io/account/%s?cluster=devnet",
+        blockExplorerUrl: "https://solscan.io/account/%s?cluster=devnet",
         networkType: "testnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-solana-devnet.json",
       },
@@ -382,83 +382,83 @@ export const ALL_CHAINS: Chain[] = [
     networks: [
       {
         name: "Ethereum Mainnet",
-        explorerUrl: "https://etherscan.io/address/%s",
+        blockExplorerUrl: "https://etherscan.io/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-mainnet.json",
         tags: ["proofOfReserve", "nftFloorPrice"],
       },
       {
         name: "BNB Chain Mainnet",
-        explorerUrl: "https://bscscan.com/address/%s",
+        blockExplorerUrl: "https://bscscan.com/address/%s",
         networkType: "mainnet",
         tags: ["proofOfReserve"],
         rddUrl: "https://reference-data-directory.vercel.app/feeds-bsc-mainnet.json",
       },
       {
         name: "Polygon Mainnet",
-        explorerUrl: "https://polygonscan.com/address/%s",
+        blockExplorerUrl: "https://polygonscan.com/address/%s",
         networkType: "mainnet",
         tags: ["proofOfReserve"],
         rddUrl: "https://reference-data-directory.vercel.app/feeds-matic-mainnet.json",
       },
       {
         name: "Gnosis Chain Mainnet",
-        explorerUrl: "https://gnosisscan.io/address/%s",
+        blockExplorerUrl: "https://gnosisscan.io/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-xdai-mainnet.json",
       },
       {
         name: "Avalanche Mainnet",
-        explorerUrl: "https://snowtrace.io/address/%s",
+        blockExplorerUrl: "https://snowtrace.io/address/%s",
         networkType: "mainnet",
         tags: ["proofOfReserve"],
         rddUrl: "https://reference-data-directory.vercel.app/feeds-avalanche-mainnet.json",
       },
       {
         name: "Fantom Mainnet",
-        explorerUrl: "https://ftmscan.com/address/%s",
+        blockExplorerUrl: "https://ftmscan.com/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-fantom-mainnet.json",
       },
       {
         name: "Arbitrum Mainnet",
-        explorerUrl: "https://arbiscan.io/address/%s",
+        blockExplorerUrl: "https://arbiscan.io/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-arbitrum-1.json",
       },
       {
         name: "Harmony Mainnet",
-        explorerUrl: "https://explorer.harmony.one/#/address/%s",
+        blockExplorerUrl: "https://explorer.harmony.one/#/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-harmony-mainnet-0.json",
       },
       {
         name: "Optimism Mainnet",
-        explorerUrl: "https://optimistic.etherscan.io/address/%s",
+        blockExplorerUrl: "https://optimistic.etherscan.io/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-optimism-1.json",
       },
       {
         name: "Moonriver Mainnet",
-        explorerUrl: "https://moonriver.moonscan.io/address/%s",
+        blockExplorerUrl: "https://moonriver.moonscan.io/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-polkadot-mainnet-moonbeam.json",
       },
       {
         name: "Moonbeam Mainnet",
-        explorerUrl: "https://moonscan.io/address/%s",
+        blockExplorerUrl: "https://moonscan.io/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-kusama-mainnet-moonriver.json",
       },
       {
         name: "Metis Mainnet",
-        explorerUrl: "https://andromeda-explorer.metis.io/address/%s",
+        blockExplorerUrl: "https://andromeda-explorer.metis.io/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-andromeda-1.json",
       },
       {
         name: "Solana Mainnet",
-        explorerUrl: "https://solscan.io/account/%s",
+        blockExplorerUrl: "https://solscan.io/account/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-solana-mainnet.json",
       },
