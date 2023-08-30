@@ -5,11 +5,7 @@ import { CostTable } from "./CostTable"
 import { Dropdown } from "./Dropdown"
 import useQueryString from "~/hooks/useQueryString"
 
-interface Props {
-  vrfApiBaseUrl: string
-}
-
-export const MethodCheckbox = ({ vrfApiBaseUrl }: Props) => {
+export const MethodCheckbox = () => {
   const [vrfMethodUsed, setVrfMethodUsed] = useState<"vrfSubscription" | "vrfDirectFunding">("vrfSubscription")
   const [network] = useQueryString("network", "")
 
@@ -48,7 +44,7 @@ export const MethodCheckbox = ({ vrfApiBaseUrl }: Props) => {
       </div>
 
       <Dropdown options={options} />
-      {network && <CostTable method={vrfMethodUsed} network={network.toString()} vrfApiBaseUrl={vrfApiBaseUrl} />}
+      {network && <CostTable method={vrfMethodUsed} network={network.toString()} />}
     </div>
   )
 }

@@ -2,8 +2,6 @@ import { getGasCalculatorUrl } from "./CostTable"
 import { expect, test } from "@jest/globals"
 import { ChainNetwork } from "~/features/data/chains"
 
-const vrfApiBaseUrl = process.env.VRF_CALCULATOR_API_URL ?? ""
-
 describe("getGasCalculatorUrl", () => {
   test("works with testnet", () => {
     const mainChainName = "ethereum"
@@ -18,7 +16,7 @@ describe("getGasCalculatorUrl", () => {
     }
     const method = "vrfSubscription"
 
-    expect(getGasCalculatorUrl({ mainChainName, networkName, chainNetwork, method, vrfApiBaseUrl })).toEqual(
+    expect(getGasCalculatorUrl({ mainChainName, networkName, chainNetwork, method })).toEqual(
       "https://vrf.chain.link/api/calculator?networkName=ethereum&networkType=goerli&method=subscription"
     )
   })
@@ -36,7 +34,7 @@ describe("getGasCalculatorUrl", () => {
     }
     const method = "vrfDirectFunding"
 
-    expect(getGasCalculatorUrl({ mainChainName, networkName, chainNetwork, method, vrfApiBaseUrl })).toEqual(
+    expect(getGasCalculatorUrl({ mainChainName, networkName, chainNetwork, method })).toEqual(
       "https://vrf.chain.link/api/calculator?networkName=polygon&networkType=mainnet&method=directFunding"
     )
   })
