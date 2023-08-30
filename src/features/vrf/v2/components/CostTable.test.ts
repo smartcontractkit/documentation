@@ -8,7 +8,7 @@ describe("getGasCalculatorUrl", () => {
     const networkName = "goerli"
     const chain: ChainNetwork = {
       name: "Goerli Testnet",
-      blockExplorerUrl: "https://goerli.etherscan.io/address/%s",
+      explorerUrl: "https://goerli.etherscan.io/address/%s",
       networkType: "testnet",
       rddUrl: "https://reference-data-directory.vercel.app/feeds-goerli.json",
       tags: ["proofOfReserve", "nftFloorPrice"],
@@ -25,7 +25,7 @@ describe("getGasCalculatorUrl", () => {
     const networkName = "mainnet"
     const chain: ChainNetwork = {
       name: "Polygon Mainnet",
-      blockExplorerUrl: "https://polygonscan.com/address/%s",
+      explorerUrl: "https://polygonscan.com/address/%s",
       networkType: "mainnet",
       rddUrl: "https://reference-data-directory.vercel.app/feeds-matic-mainnet.json",
       tags: ["proofOfReserve"],

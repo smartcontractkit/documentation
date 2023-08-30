@@ -94,7 +94,7 @@ const DefaultTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => (
         </button>
         <a
           class={tableStyles.addressLink}
-          href={network.blockExplorerUrl.replace("%s", proxy.proxyAddress ?? proxy.transmissionsAccount)}
+          href={network.explorerUrl.replace("%s", proxy.proxyAddress ?? proxy.transmissionsAccount)}
         >
           {proxy.proxyAddress ?? proxy.transmissionsAccount}
         </a>
@@ -189,7 +189,7 @@ const ProofOfReserveTr = ({ network, proxy, showExtraDetails, isTestnet = false 
     <td aria-hidden={!showExtraDetails}>{proxy.decimals ? proxy.decimals : "N/A"}</td>
     <td>
       <div className={tableStyles.assetAddress}>
-        <a class={tableStyles.addressLink} href={network.blockExplorerUrl.replace("%s", proxy.proxyAddress)}>
+        <a class={tableStyles.addressLink} href={network.explorerUrl.replace("%s", proxy.proxyAddress)}>
           {proxy.proxyAddress}
         </a>
         <button
@@ -273,7 +273,7 @@ const NftFloorTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => 
         >
           <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
         </button>
-        <a class={tableStyles.addressLink} href={network.blockExplorerUrl.replace("%s", proxy.proxyAddress)}>
+        <a class={tableStyles.addressLink} href={network.explorerUrl.replace("%s", proxy.proxyAddress)}>
           {proxy.proxyAddress}
         </a>
       </div>
