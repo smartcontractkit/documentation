@@ -185,12 +185,9 @@ export const CostTable = ({ method, network }: Props) => {
       if (cache[cacheKey] && cache[cacheKey].latestCacheUpdate - Date.now() < CACHE_EXPIRY_TIME) {
         return cache[cacheKey].data
       }
-      const response = await fetch(
-        getGasCalculatorUrl({ mainChainName, networkName, chainNetwork, method }),
-        {
-          method: "GET",
-        }
-      )
+      const response = await fetch(getGasCalculatorUrl({ mainChainName, networkName, chainNetwork, method }), {
+        method: "GET",
+      })
       const json: dataResponse = await response.json()
       cache[cacheKey] = {
         data: json,
