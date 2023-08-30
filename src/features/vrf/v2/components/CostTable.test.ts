@@ -2,7 +2,7 @@ import { getGasCalculatorUrl } from "./CostTable"
 import { expect, test } from "@jest/globals"
 import { ChainNetwork } from "~/features/data/chains"
 
-const vrfApiBaseUrl = "https://vrf.chain.link/api/calculator"
+const vrfApiBaseUrl = process.env.VRF_CALCULATOR_API_URL ?? ""
 
 describe("getGasCalculatorUrl", () => {
   test("works with testnet", () => {
