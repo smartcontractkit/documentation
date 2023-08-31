@@ -10,8 +10,6 @@ import { NewsletterCTA } from "../components/Footer/NewsletterCTA"
 import Footer from "~/components/Footer/Footer.astro"
 import { BaseFrontmatter } from "~/content/config"
 import WhatsNext from "~/components/PageContent/WhatsNext.astro"
-import MoreMenu from "~/components/RightSidebar/MoreMenu.astro"
-
 interface Props {
   frontmatter: BaseFrontmatter
 }
@@ -43,92 +41,74 @@ const includeLinkToWalletScript = !!Astro.props?.frontmatter?.metadata?.linkToWa
         scroll-behavior: smooth;
       }
 
-      body {
-        width: 100%;
-        display: grid;
-        grid-template-rows: var(--theme-navbar-height) 1fr;
-        --gutter: var(--space-6x);
-        --doc-padding: 2rem;
-      }
-
       .layout {
         display: grid;
-        grid-template-columns: 0fr minmax(0, var(--max-width)) 0fr;
-        margin: 0;
+        grid-template-columns: auto;
+        --gutter: var(--space-6x);
+        --doc-padding: 2rem;
+        margin-bottom: 0;
       }
 
-      .layout :global(> *) {
-        width: 100%;
-        height: 100%;
-      }
-
-      .grid-sidebar {
-        height: 100vh;
-        position: sticky;
-        top: 0;
-        padding: 0;
-      }
-
-      #grid-left {
-        position: fixed;
-        background-color: var(--theme-bg);
-        z-index: 10;
-        display: none;
-      }
-
-      #grid-main {
-        padding: var(--doc-padding) var(--gutter);
-        grid-column: 2;
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-      }
-
+      #grid-left,
       #grid-right {
         display: none;
       }
 
+      #grid-left {
+        background-color: var(--theme-bg);
+      }
+
+      #grid-main {
+        padding: var(--doc-padding) var(--gutter);
+        display: flex;
+        flex-direction: column;
+        margin-bottom: var(--space-10x);
+      }
+
       @media (min-width: 50em) {
         .layout {
+          grid-template-columns: 1fr auto;
           gap: 1em;
         }
 
         #grid-left {
           display: flex;
-          position: sticky;
-          grid-column: 1;
           background: #fafbfd;
+          justify-content: flex-end;
         }
       }
 
       @media (min-width: 72em) {
         .layout {
-          grid-template-columns: 1fr 2fr 1fr;
+          grid-template-columns: 1fr minmax(auto, 900px) 1fr;
         }
 
         #grid-right {
-          grid-column: 3;
           display: flex;
-        }
-
-        #grid-left {
-          justify-content: flex-end;
         }
       }
     </style>
     <style is:global>
-      .layout > * {
-        width: 100%;
-        height: 100%;
-      }
+      @media (max-width: 50em) {
+        .mobile-sidebar-toggle {
+          overflow: hidden;
+        }
 
-      .mobile-sidebar-toggle {
-        overflow: hidden;
-      }
+        .mobile-sidebar-toggle #grid-left {
+          display: initial;
+          position: fixed;
+          width: 100vw;
+          height: calc(100vh - var(--theme-navbar-height));
+          overflow: auto;
+          top: var(--theme-navbar-height);
+          z-index: 5;
+        }
 
-      .mobile-sidebar-toggle #grid-left {
-        display: block;
-        top: 2rem;
+        .mobile-sidebar-toggle #grid-left * {
+          position: initial;
+          overflow: initial;
+          max-height: initial;
+        }
       }
     </style>
     <script>
@@ -155,7 +135,7 @@ const includeLinkToWalletScript = !!Astro.props?.frontmatter?.metadata?.linkToWa
   <body>
     <Header section={frontmatter.section} />
     <main class="layout">
-      <aside id="grid-left" class="grid-sidebar" title="Site Navigation">
+      <aside id="grid-left" title="Site Navigation">
         <LeftSidebar currentPage={currentPage} section={frontmatter.section} />
       </aside>
       <div id="grid-main">
@@ -163,11 +143,8 @@ const includeLinkToWalletScript = !!Astro.props?.frontmatter?.metadata?.linkToWa
           <slot />
         </PageContent>
         {whatsNext && <WhatsNext content={whatsNext} />}
-        <span class="sm:hidden">
-          <MoreMenu editHref={githubEditUrl} />
-        </span>
       </div>
-      <aside id="grid-right" class="grid-sidebar" title="Table of Contents">
+      <aside id="grid-right" title="Table of Contents">
         <RightSidebar {githubEditUrl} />
       </aside>
     </main>

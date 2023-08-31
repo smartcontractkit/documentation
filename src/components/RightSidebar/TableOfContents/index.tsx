@@ -14,7 +14,7 @@ const TableOfContents: FunctionalComponent = () => {
   const [headings, setHeadings] = useState<MarkdownHeading[]>()
 
   useEffect(() => {
-    const elements = document.querySelectorAll("article :where(h1, h2, h3, h4)")
+    const elements = document.querySelectorAll("article section :where(h1, h2, h3, h4)")
     const newHeadings: MarkdownHeading[] = []
     elements.forEach((e) => {
       if (e.textContent) {
@@ -33,7 +33,7 @@ const TableOfContents: FunctionalComponent = () => {
 
   return (
     <nav className={styles.toc}>
-      <h2 className={styles.heading}>On this page</h2>
+      <p className={styles.heading}>On this page</p>
       <ul ref={tableOfContents}>
         {headings?.map((h) => (
           <li>

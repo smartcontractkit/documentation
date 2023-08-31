@@ -42,8 +42,8 @@ const currentPageMatch = removeSlashes(currentPage.slice(1))
     <h2 class="nav-group-title">NAVIGATION</h2>
     {
       MENU.en.map((child) => (
-        <li style="margin-bottom: 0; padding-bottom: 0;">
-          <a class="nav-link" href={child.link}>
+        <li style="padding: 0;">
+          <a class="nav-link" href={child.link} style="font-size: 16px">
             {child.text}
           </a>
         </li>
@@ -61,7 +61,7 @@ const currentPageMatch = removeSlashes(currentPage.slice(1))
               !!flattenChildren(s.contents).filter((object) => removeSlashes(object.url) == currentPageMatch).length
             }
           >
-            <summary>{s.section}</summary>
+            <summary class="nav-group-title">{s.section}</summary>
             <ul>
               {s.contents &&
                 s.contents.map((child) => (
@@ -102,16 +102,16 @@ const currentPageMatch = removeSlashes(currentPage.slice(1))
     border-top: 1px solid var(--theme-divider);
   }
 
-  nav {
+  /* nav {
     width: 300px;
-  }
+  } */
 
   .nav-groups {
-    margin: 0;
+    margin: var(--doc-padding) 0;
     padding: 2rem;
     max-height: 100vh;
     top: 0;
-    overflow: hidden;
+    overflow-y: auto;
     position: sticky;
   }
 
@@ -120,29 +120,28 @@ const currentPageMatch = removeSlashes(currentPage.slice(1))
   }
 
   .nav-groups > li {
-    padding-top: var(--doc-padding);
+    padding-top: var(--space-4x);
   }
 
   .nav-groups > li[aria-hidden="true"] {
     display: none;
   }
 
-  .nav-groups > :last-child {
-    padding-bottom: 2rem;
-    margin-bottom: var(--theme-navbar-height);
+  .nav-group-title {
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: var(--space-3x);
+    color: var(--blue-800);
   }
 
   details summary {
+    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: var(--space-2x);
-    font-size: 16px;
-    font-weight: 500;
-    margin-bottom: 1rem;
-    cursor: pointer;
-    color: var(--blue-800);
   }
+
   details summary::after {
     content: "";
     width: var(--space-6x);
@@ -188,6 +187,9 @@ const currentPageMatch = removeSlashes(currentPage.slice(1))
   }
 
   @media (min-width: 50em) {
+    nav {
+      width: 300px;
+    }
     .nav-groups {
       padding: var(--space-8x);
     }
