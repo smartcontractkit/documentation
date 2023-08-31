@@ -42,6 +42,12 @@ const canonicalURL = new URL(canonicalURLStr)
         scroll-behavior: smooth;
       }
 
+      main {
+        background: linear-gradient(180deg, rgba(245, 247, 253, 0.75) 0%, rgba(245, 247, 253, 0) 20%),
+          url("/images/quickstarts/cube.svg") top left no-repeat;
+        background-size: 100%;
+      }
+
       .layout {
         display: grid;
         grid-template-columns: minmax(350px, 100%);
@@ -53,7 +59,6 @@ const canonicalURL = new URL(canonicalURLStr)
         margin-right: auto;
         margin-bottom: 0;
         justify-items: center;
-        background: linear-gradient(180deg, rgba(245, 247, 253, 1) 0%, rgba(245, 247, 253, 0) 40%);
       }
 
       #grid-top {
@@ -65,19 +70,24 @@ const canonicalURL = new URL(canonicalURLStr)
       }
 
       @media (min-width: 48em) {
+        main {
+          display: grid;
+          grid-template-columns: auto fit-content(100%) auto;
+          background-size: 50%;
+        }
         .layout {
           grid-template-areas: "top main_content" "bottom main_content";
           grid-template-columns: 2fr 1fr;
           gap: 2em;
-          background: linear-gradient(180deg, rgba(245, 247, 253, 0.6) 0%, rgba(245, 247, 253, 0) 50%),
-            url("/images/quickstarts/cube.svg") no-repeat;
-          /* background: url("/images/quickstarts/cube.svg") no-repeat top left; */
-          background-color: #fff;
-          background-size: 60%;
+        }
+
+        #right-bg {
+          background: var(--gray-100, #fafafb);
         }
 
         #grid-right {
           grid-area: main_content;
+          background: var(--gray-100, #fafafb);
         }
 
         #grid-top {
@@ -111,18 +121,22 @@ const canonicalURL = new URL(canonicalURLStr)
 
   <body>
     <Header />
-    <main class="layout">
-      <div id="grid-top">
-        <QuickstartOverview {frontmatter} />
+    <main>
+      <div></div>
+      <div class="layout">
+        <div id="grid-top">
+          <QuickstartOverview {frontmatter} />
+        </div>
+        <div id="grid-right">
+          <QuickstartPanel {frontmatter} {headings} />
+        </div>
+        <div id="grid-main">
+          <Quickstart>
+            <slot />
+          </Quickstart>
+        </div>
       </div>
-      <div id="grid-right">
-        <QuickstartPanel {frontmatter} {headings} />
-      </div>
-      <div id="grid-main">
-        <Quickstart>
-          <slot />
-        </Quickstart>
-      </div>
+      <div id="right-bg"></div>
     </main>
     <NewsletterCTA client:visible />
     <Footer />
