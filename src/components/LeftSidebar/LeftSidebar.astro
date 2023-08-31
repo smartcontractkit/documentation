@@ -61,7 +61,7 @@ const currentPageMatch = removeSlashes(currentPage.slice(1))
               !!flattenChildren(s.contents).filter((object) => removeSlashes(object.url) == currentPageMatch).length
             }
           >
-            <summary class="nav-group-title">{s.section}</summary>
+            <summary>{s.section}</summary>
             <ul>
               {s.contents &&
                 s.contents.map((child) => (
@@ -103,8 +103,7 @@ const currentPageMatch = removeSlashes(currentPage.slice(1))
   }
 
   nav {
-    width: 100%;
-    padding-top: var(--doc-padding);
+    width: 300px;
   }
 
   .nav-groups {
@@ -112,7 +111,7 @@ const currentPageMatch = removeSlashes(currentPage.slice(1))
     padding: 2rem;
     max-height: 100vh;
     top: 0;
-    overflow: auto;
+    overflow: hidden;
     position: sticky;
   }
 
@@ -133,19 +132,35 @@ const currentPageMatch = removeSlashes(currentPage.slice(1))
     margin-bottom: var(--theme-navbar-height);
   }
 
-  .nav-group-title {
+  details summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2x);
     font-size: 16px;
     font-weight: 500;
     margin-bottom: 1rem;
+    cursor: pointer;
+    color: var(--blue-800);
+  }
+  details summary::after {
+    content: "";
+    width: var(--space-6x);
+    height: var(--space-6x);
+    background-image: url(https://smartcontract.imgix.net/icons/Caret.svg?auto=compress%2Cformat);
+    background-repeat: no-repeat;
+  }
+
+  details[open] summary::after {
+    transform: rotate(180deg);
   }
 
   .nav-link {
     display: block;
     line-height: 1.5;
-    width: 100%;
     font-size: 14px;
     color: var(--gray-500, #858a95);
-    padding: var(--space-2x) var(--space-4x) var(--space-2x) var(--space-4x);
+    padding: var(--space-2x) var(--space-6x) var(--space-2x) var(--space-4x);
     border-left: 2px solid var(--gray-200, #ecedef);
     transition-property: color, border-left-color;
     transition-duration: 100ms;
@@ -170,25 +185,6 @@ const currentPageMatch = removeSlashes(currentPage.slice(1))
 
   .nav-link.nested {
     padding-left: var(--space-8x);
-  }
-
-  details summary {
-    cursor: pointer;
-    color: var(--blue-800);
-  }
-
-  details summary::after {
-    content: "";
-    display: inline-flex;
-    width: var(--space-6x);
-    height: var(--space-6x);
-    background-image: url(https://smartcontract.imgix.net/icons/Caret.svg?auto=compress%2Cformat);
-    background-repeat: no-repeat;
-    float: right;
-  }
-
-  details[open] summary::after {
-    transform: rotate(180deg);
   }
 
   @media (min-width: 50em) {
