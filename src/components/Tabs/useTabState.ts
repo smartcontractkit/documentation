@@ -9,12 +9,6 @@ export function useTabState(initialCurr: string, storeKey?: string): [string, (c
   // This ensures a nice SSR result, without waiting for the store to get set on the client!
   const [curr, setCurr] = useState<string>(initialCurr)
 
-  // If you're using a storeKey, set the shared store to an initial value
-  useEffect(() => {
-    if (storeKey) {
-      tabStore.setKey(storeKey, { curr: initialCurr })
-    }
-  }, [storeKey, initialCurr])
   // If you're using a storeKey, update local state whenever the shared store changes
   useEffect(() => {
     if (storeKey && $tabStore[storeKey]?.curr) {

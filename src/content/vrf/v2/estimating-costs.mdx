@@ -1,0 +1,411 @@
+---
+section: vrf
+date: Last Modified
+title: "Estimating VRF Costs"
+whatsnext:
+  {
+    "Get a Random Number": "/vrf/v2/direct-funding/examples/get-a-random-number",
+    "Supported Networks": "/vrf/v2/direct-funding/supported-networks",
+  }
+metadata:
+  title: "Estimating costs for Chainlink VRF v2"
+  description: "Learn how to estimate costs for Chainlink VRF v2."
+isMdx: true
+---
+
+import { Tabs, TabsContent } from "@components/Tabs"
+import { Aside, CodeSample } from "@components"
+import DropDown from "@features/vrf/v2/components/Dropdown.astro"
+
+This guide explains how to estimate VRF costs for both the subscription and direct funding methods.
+
+## VRF v2 cost calculator
+
+<DropDown />
+
+## Understanding transaction costs
+
+<TabsContent sharedStore="vrfMethod" client:visible>
+<Fragment slot="tab.1">Subscription</Fragment>
+<Fragment slot="tab.2">Direct funding</Fragment>
+<Fragment slot="panel.1">
+
+For Chainlink VRF v2 to fulfill your requests, you must maintain a sufficient amount of LINK in your subscription balance. Gas cost calculation includes the following variables:
+
+- **Gas price:** The current gas price, which fluctuates depending on network conditions.
+
+- **Callback gas:** The amount of gas used for the callback request that returns your requested random values.
+
+- **Verification gas:** The amount of gas used to verify randomness on-chain.
+
+The gas price depends on current network conditions. The callback gas depends on your callback function, and the number of random values in your request. The cost of each request is final only after the transaction is complete, but you define the limits you are willing to spend for the request with the following variables:
+
+- **Gas lane:** The maximum gas price you are willing to pay for a request in wei. Define this limit by specifying the appropriate `keyHash` in your request. The limits of each gas lane are important for handling gas price spikes when Chainlink VRF bumps the gas price to fulfill your request quickly.
+
+- **Callback gas limit:** Specifies the maximum amount of gas you are willing to spend on the callback request. Define this limit by specifying the `callbackGasLimit` value in your request.
+
+</Fragment>
+<Fragment slot="panel.2">
+
+For Chainlink VRF v2 to fulfill your requests, you must have a sufficient amount of LINK in your consuming contract. Gas cost calculation includes the following variables:
+
+- **Gas price:** The current gas price, which fluctuates depending on network conditions.
+
+- **Callback gas:** The amount of gas used for the callback request that returns your requested random values. The callback gas depends on your callback function and the number of random values in your request. Set the **callback gas limit** to specify the maximum amount of gas you are willing to spend on the callback request.
+
+- **Verification gas:** The amount of gas used to verify randomness on-chain.
+
+- **Wrapper overhead gas:** The amount of gas used by the VRF Wrapper contract. See the [Request and Receive Data](/vrf/v2/direct-funding#request-and-receive-data) section for details about the VRF v2 Wrapper contract design.
+
+Because the consuming contract directly pays the LINK for the request, the cost is calculated during the request and not during the callback when the randomness is fulfilled. Test your callback function to learn how to correctly estimate the callback gas limit.
+
+- If the gas limit is underestimated, the callback fails and the consuming contract is still charged for the work done to generate the requested random values.
+- If the gas limit is overestimated, the callback function will be executed but your contract is not refunded for the excess gas amount that you paid.
+
+Make sure that your consuming contracts are funded with enough LINK tokens to cover the transaction costs. If the consuming contract doesn't have enough LINK tokens, your request will revert.
+
+</Fragment>
+</TabsContent>
+
+### Estimate gas costs
+
+<TabsContent sharedStore="vrfMethod" client:visible>
+<Fragment slot="tab.1">Subscription</Fragment>
+<Fragment slot="tab.2">Direct funding</Fragment>
+<Fragment slot="panel.1">
+
+You need to pre-fund your subscription enough to meet the [minimum subscription balance](/vrf/v2/subscription#minimum-subscription-balance)
+in order to have a buffer against gas volatility.
+
+After the request is complete, the final gas cost is recorded based on how much gas is used for the verification and callback.
+The actual cost of the request is deducted from your subscription balance.
+
+The total gas cost in wei for your request uses the following formula:
+
+```
+(Gas price * (Verification gas + Callback gas)) = total gas cost
+```
+
+The total gas cost is converted to LINK using the ETH/LINK data feed. In the unlikely event that the data feed is
+unavailable, the VRF coordinator uses the `fallbackWeiPerUnitLink` value for the conversion instead. The
+`fallbackWeiPerUnitLink` value is defined in the
+[coordinator contract](/vrf/v2/subscription/supported-networks/#configurations) for your selected network.
+
+</Fragment>
+<Fragment slot="panel.2">
+
+The final gas cost to fulfill randomness is estimated based on how much gas is expected for the verification and callback. The total gas cost in wei uses the following formula:
+
+```
+(Gas price * (Verification gas
+              + Callback gas limit
+              + Wrapper gas overhead)) = total gas cost
+```
+
+The total gas cost is converted to LINK using the ETH/LINK data feed. In the unlikely event that the data feed is unavailable, the VRF Wrapper uses the `fallbackWeiPerUnitLink` value for the conversion instead. The `fallbackWeiPerUnitLink` value is defined in the [VRF v2 Wrapper contract](/vrf/v2/direct-funding/supported-networks/#configurations) for your selected network.
+
+The maximum allowed `callbackGasLimit` value for your requests is defined in the [Coordinator contract supported networks](/vrf/v2/subscription/supported-networks) page. Because the VRF v2 Wrapper adds a gas overhead, your `callbackGasLimit` must not exceed `maxGasLimit - wrapperGasOverhead`.
+
+</Fragment>
+</TabsContent>
+
+### Add LINK premium
+
+<TabsContent sharedStore="vrfMethod" client:visible>
+<Fragment slot="tab.1">Subscription</Fragment>
+<Fragment slot="tab.2">Direct funding</Fragment>
+<Fragment slot="panel.1">
+
+The LINK premium is added to the total gas cost. The premium is defined in the [coordinator contract](/vrf/v2/subscription/supported-networks/#configurations) with the `fulfillmentFlatFeeLinkPPMTier1` parameter in millionths of LINK.
+
+```
+(total gas cost + LINK premium) = total request cost
+```
+
+The total request cost is charged to your subscription balance.
+
+</Fragment>
+<Fragment slot="panel.2">
+
+A LINK premium is then added to the total gas cost. The premium is divided in two parts:
+
+- Wrapper premium: The premium percentage. You can find the percentage for your network in the [Supported networks](/vrf/v2/direct-funding/supported-networks/#configurations) page.
+- Coordinator premium: A flat fee. This premium is defined in the `fulfillmentFlatFeeLinkPPMTier1` parameter in millionths of LINK. You can find the flat fee of the coordinator for your network in the [Supported networks](/vrf/v2/direct-funding/supported-networks/#configurations) page.
+
+```
+(Coordinator premium
+  + (total gas cost * (1 + Wrapper premium percentage)) = total request cost
+```
+
+</Fragment>
+</TabsContent>
+
+### Ethereum example
+
+<TabsContent sharedStore="vrfMethod" client:visible>
+<Fragment slot="tab.1">Subscription</Fragment>
+<Fragment slot="tab.2">Direct funding</Fragment>
+<Fragment slot="panel.1">
+
+This is an example calculation of a VRF request on the Ethereum network. The values for other supported networks
+are available on the [Supported Networks](/vrf/v2/subscription/supported-networks) page.
+
+#### Estimate minimum subscription balance
+
+You need to have the [minimum subscription balance](/vrf/v2/subscription#minimum-subscription-balance) for your requests
+to be processed. This provides a buffer in case gas prices go higher when processing the request. The actual cost of the
+request is usually lower than the minimum subscription balance.
+
+| Parameter            | Value     |
+| -------------------- | --------- |
+| Gas lane             | 500 gwei  |
+| Callback gas limit   | 100000    |
+| Max verification gas | 200000    |
+| LINK premium         | 0.25 LINK |
+
+1. Calculate the total gas cost, using the maximum possible gas price for the selected gas lane, the estimated
+   maximum verification gas, and the full callback gas limit:
+
+   | Gas cost calculation                          | Total gas cost            |
+   | --------------------------------------------- | ------------------------- |
+   | Gas price x (Verification gas + Callback gas) |                           |
+   | 500 gwei x (200000 + 100000)                  | 150000000 gwei (0.15 ETH) |
+
+1. Convert the gas cost to LINK using the [LINK/ETH feed](https://data.chain.link/ethereum/mainnet/crypto-eth/link-eth).
+   For this example, assume the feed returns a conversion value of Ξ0.004 ETH per 1 LINK.
+
+   | ETH to LINK cost conversion | Total gas cost (LINK) |
+   | --------------------------- | --------------------- |
+   | 0.15 ETH / 0.004 ETH/LINK   | 37.5 LINK             |
+
+1. Add the LINK premium to get the total maximum cost of a request:
+
+   | Adding LINK premium                  | Maximum request cost (LINK) |
+   | ------------------------------------ | --------------------------- |
+   | Total gas cost (LINK) + LINK premium |                             |
+   | 37.5 LINK + 0.25 LINK                | 37.75 LINK                  |
+
+This example request requires a minimum subscription balance of 37.75 LINK. Check the **Max Cost** in the
+Subscription Manager to view the minimum subscription balance for all your contracts. When your request is
+processed, the actual cost of the request is deducted from your subscription balance.
+
+#### Estimate VRF request cost
+
+This example reflects an estimate of how much a VRF request costs. Check [Etherscan](https://etherscan.io/gastracker)
+for current gas prices.
+
+| Parameter             | Value     |
+| --------------------- | --------- |
+| Actual gas price      | 50 gwei   |
+| Callback gas used     | 95000     |
+| Verification gas used | 115000    |
+| LINK premium          | 0.25 LINK |
+
+1. Calculate the total gas cost:
+
+   | Gas cost calculation                          | Total gas cost             |
+   | --------------------------------------------- | -------------------------- |
+   | Gas price x (Verification gas + Callback gas) |                            |
+   | 50 gwei x (115000 + 95000)                    | 10500000 gwei (0.0105 ETH) |
+
+1. Convert the gas cost to LINK using the [LINK/ETH feed](https://data.chain.link/ethereum/mainnet/crypto-eth/link-eth).
+   For this example, assume the feed returns a conversion value of Ξ0.004 ETH per 1 LINK.
+
+   | ETH to LINK cost conversion | Total gas cost (LINK) |
+   | --------------------------- | --------------------- |
+   | 0.0105 ETH / 0.004 ETH/LINK | 2.625 LINK            |
+
+1. Add the LINK premium to get the total cost of a request:
+
+   | Adding LINK premium                  | Total request cost (LINK) |
+   | ------------------------------------ | ------------------------- |
+   | Total gas cost (LINK) + LINK premium |                           |
+   | 2.625 LINK + 0.25 LINK               | 2.875 LINK                |
+
+This example request would cost 2.875 LINK, which is deducted from your subscription balance.
+
+</Fragment>
+<Fragment slot="panel.2">
+
+This is an example calculation of a VRF request on the Ethereum network. The values for other supported networks
+are available on the [Supported Networks](/vrf/v2/direct-funding/supported-networks) page.
+
+| Parameter                                   | Value     |
+| ------------------------------------------- | --------- |
+| Gas price                                   | 50 gwei   |
+| Callback gas limit                          | 100000    |
+| Coordinator gas overhead (Verification gas) | 90000     |
+| Wrapper gas overhead                        | 40000     |
+| Coordinator premium                         | 0.25 LINK |
+| Wrapper premium percentage                  | 0         |
+
+#### Steps
+
+1. Calculate the total gas cost:
+
+   | Gas cost calculation                                                       | Total gas cost             |
+   | -------------------------------------------------------------------------- | -------------------------- |
+   | Gas price x (Verification gas + Callback gas limit + Wrapper gas overhead) |                            |
+   | 50 gwei x (90000 + 100000 + 40000)                                         | 11500000 gwei (0.0115 ETH) |
+
+1. Convert the gas cost to LINK using the [LINK/ETH feed](https://data.chain.link/ethereum/mainnet/crypto-eth/link-eth).
+   For this example, assume the feed returns a conversion value of Ξ0.004 ETH per 1 LINK.
+
+   | ETH to LINK cost conversion | Total gas cost (LINK) |
+   | --------------------------- | --------------------- |
+   | 0.0115 ETH / 0.004 ETH/LINK | 2.875 LINK            |
+
+1. Add the LINK premium to get the total cost of a request:
+
+   | Adding LINK premium                                                       | Total request cost (LINK) |
+   | ------------------------------------------------------------------------- | ------------------------- |
+   | Coordinator premium + (Total gas cost x (1 + Wrapper premium percentage)) |                           |
+   | 0.25 LINK + (2.875 x (1 + 0))                                             | 3.125 LINK                |
+
+This example request would cost 3.125 LINK.
+
+</Fragment>
+</TabsContent>
+
+### Arbitrum
+
+The total transaction costs for using Arbitrum involve both L2 gas costs and L1 costs. Arbitrum transactions are [posted in batches to L1 Ethereum](https://developer.arbitrum.io/inside-arbitrum-nitro/#how-the-sequencer-publishes-the-sequence), which incurs an L1 cost. For an individual transaction, the total cost includes part of the L1 cost incurred to post the batch that included the transaction.
+
+To learn how to estimate gas costs for Arbitrum, refer to the [Arbitrum gas estimation tutorial](https://developer.arbitrum.io/devs-how-tos/how-to-estimate-gas) and the full [Arbitrum gas estimation script](https://github.com/OffchainLabs/arbitrum-tutorials/tree/master/packages/gas-estimation) using their SDK. There is also a [**version of Arbitrum's gas estimation script extended to include VRF calculations**](#arbitrum-and-vrf-gas-estimation-code).
+
+#### Estimating Arbitrum gas costs with VRF
+
+<TabsContent sharedStore="vrfMethod" client:visible>
+<Fragment slot="tab.1">Subscription</Fragment>
+<Fragment slot="tab.2">Direct funding</Fragment>
+<Fragment slot="panel.1">
+
+VRF gas costs are calculated based on the amount of verification gas and callback gas used, multiplied by the gas price:
+
+```
+(Gas price * (Verification gas + Callback gas)) = total gas cost
+```
+
+For VRF Arbitrum transactions, add a buffer to estimate the additional L1 cost:
+
+```
+(L2GasPrice
+   * (Verification gas
+      + Callback gas
+      + L1 calldata gas buffer))) = total estimated gas cost
+```
+
+To calculate the L1 callback gas buffer:
+
+- `calldataSizeBytes`: A static size for the transaction's calldata in bytes. Total: 720 bytes.
+  - The amount Arbitrum adds to account for the static part of the transaction, fixed at 140 bytes.
+  - The size of an ABI-encoded VRF V2 fulfillment, fixed at 580 bytes (`fulfillmentTxSizeBytes`).
+- `L1PricePerByte`: The estimated cost of posting 1 byte of data on L1, which varies with L1 network gas prices.
+- `L2GasPrice`: The L2 gas price, which varies with L2 network gas prices.
+
+```
+L1 calldata gas buffer = (calldataSizeBytes * L1PricePerByte) / L2GasPrice
+
+ = (720 * L1PricePerByte) / L2GasPrice
+```
+
+This conversion allows us to estimate the L1 callback gas cost and incorporate it into the overall L2 gas estimate. You can add this estimated L1 callback gas buffer directly to the verification and callback gas:
+
+```
+(L2GasPrice
+   * (Verification gas
+      + Callback gas
+      + ((calldataSizeBytes * L1PricePerByte) / L2GasPrice)))) = total estimated gas cost
+```
+
+</Fragment>
+<Fragment slot="panel.2">
+
+VRF gas costs are calculated based on the amount of verification gas, callback gas and wrapper gas overhead, multiplied by the gas price:
+
+```
+(Gas price * (Verification gas + Callback gas + Wrapper gas overhead)) = total gas cost
+```
+
+For VRF Arbitrum transactions, add a buffer to estimate the additional L1 cost:
+
+```
+(L2GasPrice
+   * (Verification gas
+      + Callback gas
+      + Wrapper gas overhead
+      + L1 calldata gas buffer))) = total estimated gas cost
+```
+
+To calculate the L1 callback gas buffer:
+
+- `calldataSizeBytes`: A static size for the transaction's calldata in bytes. Total: 720 bytes.
+  - The amount Arbitrum adds to account for the static part of the transaction, fixed at 140 bytes.
+  - The size of an ABI-encoded VRF V2 fulfillment, fixed at 580 bytes (`fulfillmentTxSizeBytes`).
+- `L1PricePerByte`: The estimated cost of posting 1 byte of data on L1, which varies with L1 network gas prices.
+- `L2GasPrice`: The L2 gas price, which varies with L2 network gas prices.
+
+```
+L1 calldata gas buffer = (calldataSizeBytes * L1PricePerByte) / L2GasPrice
+
+ = (720 * L1PricePerByte) / L2GasPrice
+```
+
+This conversion allows us to estimate the L1 callback gas cost and incorporate it into the overall L2 gas estimate. You can add this estimated L1 callback gas buffer directly to the verification, callback, and wrapper gas:
+
+```
+(L2GasPrice
+   * (Verification gas
+      + Callback gas
+      + Wrapper gas overhead
+      + ((calldataSizeBytes * L1PricePerByte) / L2GasPrice)))) = total estimated gas cost
+```
+
+</Fragment>
+</TabsContent>
+
+#### Arbitrum and VRF gas estimation code
+
+This sample extends the [original Arbitrum gas estimation script](https://github.com/OffchainLabs/arbitrum-tutorials/tree/master/packages/gas-estimation) to estimate gas costs for VRF subscription and direct funding requests on Arbitrum.
+
+The following snippet shows only the VRF variables and calculations that were added to the Arbitrum gas estimation script. To learn more about how Arbitrum gas is calculated, refer to the [Arbitrum gas estimation tutorial](https://developer.arbitrum.io/devs-how-tos/how-to-estimate-gas). To run this code, use the [**full Arbitrum gas estimation script that includes VRF calculations**](https://github.com/smartcontractkit/smart-contract-examples/tree/main/vrf-arbitrum-gas-estimation).
+
+```typescript
+// VRF variables and calculations
+// ---------------------------------
+// Full script: https://github.com/smartcontractkit/smart-contract-examples/tree/main/vrf-arbitrum-gas-estimation
+// ---------------------------------
+// Estimated upper bound of verification gas for VRF subscription.
+// To see an estimate with an average amount of verification gas,
+// adjust this to 115000.
+const maxVerificationGas = 200000
+
+// The L1 Calldata size includes:
+// Arbitrum's static 140 bytes for transaction metadata
+// VRF V2's static 580 bytes, the size of a fulfillment's calldata abi-encoded in bytes
+// (from s_fulfillmentTxSizeBytes in VRFV2Wrapper.sol)
+const VRFCallDataSizeBytes = 140 + 580
+
+// For direct funding only. Coordinator gas is verification gas
+const wrapperGasOverhead = 40000
+const coordinatorGasOverhead = 90000
+
+// VRF user settings
+const callbackGasLimit = 175000
+
+// Estimate VRF L1 buffer
+const VRFL1CostEstimate = L1P.mul(VRFCallDataSizeBytes)
+const VRFL1Buffer = VRFL1CostEstimate.div(P)
+
+// VRF Subscription gas estimate
+// L2 gas price (P) * (maxVerificationGas + callbackGasLimit + VRFL1Buffer)
+const VRFL2SubscriptionGasSubtotal = BigNumber.from(maxVerificationGas + callbackGasLimit)
+const VRFSubscriptionGasTotal = VRFL2SubscriptionGasSubtotal.add(VRFL1Buffer)
+const VRFSubscriptionGasEstimate = P.mul(VRFSubscriptionGasTotal)
+
+// VRF Direct funding gas estimate
+// L2 gas price (P) * (coordinatorGasOverhead + callbackGasLimit + wrapperGasOverhead + VRFL1Buffer)
+const VRFL2DirectFundingGasSubtotal = BigNumber.from(coordinatorGasOverhead + wrapperGasOverhead + callbackGasLimit)
+const VRFDirectFundingGasTotal = VRFL2DirectFundingGasSubtotal.add(VRFL1Buffer)
+const VRFDirectFundingGasEstimate = P.mul(VRFDirectFundingGasTotal)
+```

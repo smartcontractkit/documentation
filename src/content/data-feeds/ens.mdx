@@ -1,0 +1,82 @@
+---
+section: dataFeeds
+date: Last Modified
+title: "Using ENS with Data Feeds"
+excerpt: "Ethereum Name Service"
+---
+
+import { EnsLookupForm } from "../../features/ens/components/EnsLookupForm.tsx"
+import { EnsManualLookupForm } from "../../features/ens/components/EnsManualLookupForm.tsx"
+import { Aside, CodeSample } from "@components"
+
+## Lookup
+
+<EnsLookupForm client:idle />
+
+## Manual Lookup
+
+<EnsManualLookupForm client:idle />
+
+## Naming Structure
+
+Chainlink data feeds fall under the `data.eth` naming suffix. To obtain a specific feed address, prefix this with the assets in the feed, separated by a dash (-).
+
+| Pair      | ENS Domain Name    |
+| :-------- | :----------------- |
+| ETH / USD | `eth-usd.data.eth` |
+| BTC / USD | `btc-usd.data.eth` |
+| ...       | `...`              |
+
+### Subdomains
+
+By default, the base name structure (`eth-usd.data.eth`) returns the proxy address for that feed. However, subdomains enable callers to retrieve other associated contract addresses, as shown in the following table.
+
+| Contract Addresses    | Subdomain Prefix | Example                       |
+| :-------------------- | :--------------- | :---------------------------- |
+| Proxy                 | `proxy`          | `proxy.eth-usd.data.eth`      |
+| Underlying aggregator | `aggregator`     | `aggregator.eth-usd.data.eth` |
+| Proposed aggregator   | `proposed`       | `proposed.eth-usd.data.eth`   |
+
+## Architecture
+
+### Resolver
+
+For each network, there is a single Chainlink resolver, which does not change. Its address can be obtained using the `data.eth` domain. This resolver manages the subdomains associated with `data.eth`.
+
+| Network          | Resolver Address                                                                                                         |
+| :--------------- | :----------------------------------------------------------------------------------------------------------------------- |
+| Ethereum Mainnet | [0x122eb74f9d0F1a5ed587F43D120C1c2BbDb9360B](https://app.ens.domains/address/0x122eb74f9d0F1a5ed587F43D120C1c2BbDb9360B) |
+
+### Listening for Address Changes
+
+When a new aggregator is deployed for a specific feed, it is first proposed, and when accepted becomes the aggregator for that feed. During this process, the `proposed` and `aggregator` subdomains for that feed will change. With each change, the resolver emits an `AddrChanged` event, using the feed subdomain (for example: `eth-usd.data.eth`) as the indexed parameter.
+
+**Example**: If you want to listen for when the aggregator of the ETH / USD feed changes, set up a listener to track the `AddrChanged` event on the resolver, using a filter like this: `ethers.utils.namehash('aggregator.eth-usd.data.eth')`.
+
+## Obtaining Addresses
+
+<Aside type="caution" title="Reverse Lookup">
+
+Reverse lookup is not supported.
+
+</Aside>
+
+### Javascript
+
+The example below uses Javascript Web3 library to interact with ENS. See the [ENS documentation](https://docs.ens.domains/dapp-developer-guide/resolving-names) for the full list of languages and libraries libraries that support ENS.
+
+This example logs the address of the data feed on the Ethereum mainnet for ETH / USD prices.
+
+<CodeSample src="samples/DataFeeds/ENSConsumer.js" />
+
+### Solidity
+
+In Solidity, the address of the ENS registry must be known. According to [ENS documentation](https://docs.ens.domains/ens-deployments), this address is the same across Mainnet and Goerli networks:
+
+ENS registry address: [0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e](https://etherscan.io/address/0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e).
+
+Also, instead of using readable string names like `eth-usd.data.eth`, resolvers accept bytes32 hash IDs for names. Hash IDs can be retrieved from [this subgraph](https://thegraph.com/explorer/subgraph/ensdomains/ens) or via this npm package [eth-ens-namehash](https://www.npmjs.com/package/@ensdomains/eth-ens-namehash).
+
+"ETH / USD" hash: `0xf599f4cd075a34b92169cf57271da65a7a936c35e3f31e854447fbb3e7eb736d`
+
+<CodeSample src="samples/DataFeeds/ENSConsumer.sol" />

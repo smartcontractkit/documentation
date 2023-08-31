@@ -13,21 +13,39 @@ clipboard.on("success", function (e) {
 })
 
 document.addEventListener("DOMContentLoaded", () => {
-  document.querySelectorAll("pre").forEach(function (codeBlock) {
-    const container = document.createElement("div")
-    container.className = "copy-code-button-wrapper"
+  const observer = new IntersectionObserver((entries, observer) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        const codeBlock = entry.target
+        entry.target.classList.add("copy-code-button-placeholder-hidden")
 
-    const copyButton = document.createElement("button")
-    copyButton.className = button.secondary
-    copyButton.classList.add(...["copy-iconbutton"])
-    copyButton.type = "button"
-    const s = codeBlock.innerText
-    copyButton.setAttribute("data-clipboard-text", s)
-    copyButton.innerHTML = `<img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" style="width:16px; height: 16px">`
-    copyButton.ariaLabel = "copy to clipoard"
+        const copyButtonContainer = document.createElement("div")
+        copyButtonContainer.className = "copy-code-button-wrapper"
 
-    container.appendChild(copyButton)
+        const copyButton = document.createElement("button")
+        copyButton.className = button.secondary
+        copyButton.classList.add(...["copy-iconbutton"])
+        copyButton.type = "button"
+        const s = (codeBlock as HTMLElement).innerText
+        copyButton.setAttribute("data-clipboard-text", s)
+        copyButton.innerHTML = `<img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" style="width:16px; height: 16px">`
+        copyButton.ariaLabel = "copy to clipoard"
+        copyButtonContainer.appendChild(copyButton)
 
-    codeBlock.insertAdjacentElement("beforebegin", container)
+        const container = document.createElement("div")
+        container.className = "code-wrapper"
+
+        const currentParent = codeBlock.parentNode
+        const codeBlockClone = codeBlock.cloneNode(true)
+        container.appendChild(copyButtonContainer)
+        container.appendChild(codeBlockClone)
+        currentParent?.replaceChild(container, codeBlock)
+
+        observer.unobserve(codeBlock)
+      }
+    })
+  })
+  document.querySelectorAll("pre").forEach((codeBlock) => {
+    observer.observe(codeBlock)
   })
 })

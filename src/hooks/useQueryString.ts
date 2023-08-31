@@ -6,7 +6,7 @@ const setQueryStringWithoutPageReload = (qsValue) => {
 
   const newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + qsValue
 
-  window.history.pushState({ path: newurl }, "", newurl)
+  window.history.replaceState({ path: newurl }, "", newurl)
 }
 const setQueryStringValue = (key, value, queryString = window.location.search) => {
   if (!window) return

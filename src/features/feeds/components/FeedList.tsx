@@ -3,11 +3,10 @@ import { useEffect, useState } from "preact/hooks"
 import { MainnetTable, TestnetTable } from "./Tables"
 import feedList from "./FeedList.module.css"
 import { clsx } from "~/lib"
-import button from "@chainlink/design-system/button.module.css"
 import { updateTableOfContents } from "~/components/RightSidebar/TableOfContents/tocStore"
-import { Chain, CHAINS, ALL_CHAINS } from "../data/chains"
+import { Chain, CHAINS, ALL_CHAINS } from "~/features/data/chains"
 import { useGetChainMetadata } from "./useGetChainMetadata"
-import { ChainMetadata } from "../api"
+import { ChainMetadata } from "../../data/api"
 import useQueryString from "~/hooks/useQueryString"
 
 export type DataFeedType = "default" | "por" | "nftFloor" | "rates"
@@ -39,7 +38,6 @@ export const FeedList = ({
   const isPor = dataFeedType === "por"
   const isNftFloor = dataFeedType === "nftFloor"
   const isRates = dataFeedType === "rates"
-  const isDefault = !isPor && !isNftFloor && !isRates
   const isDeprecating = ecosystem === "deprecating"
   let netCount = 0
 
@@ -77,14 +75,6 @@ export const FeedList = ({
                 </div>
               </div>
             </div>
-          )}
-
-          {(selectedChain === "arbitrum" || selectedChain === "optimism" || selectedChain === "metis") && (
-            <p>
-              This is an L2 network. As a best practice, use the L2 sequencer feed to verify the status of the sequencer
-              when running applications on L2 networks. See the{" "}
-              <a href="/docs/data-feeds/l2-sequencer-feeds/">L2 Sequencer Uptime Feeds</a> page for examples.
-            </p>
           )}
 
           {chainMetadata.processedData?.networkStatusUrl && !isDeprecating && (
@@ -131,6 +121,13 @@ export const FeedList = ({
                         <img src="/images/link.svg" alt="Link to this section" />
                       </a>
                     </h2>
+                    {(selectedChain === "arbitrum" || selectedChain === "optimism" || selectedChain === "metis") && (
+                      <p>
+                        {network.name} is an L2 network. As a best practice, use the L2 sequencer feed to verify the
+                        status of the sequencer when running applications on L2 networks. See the{" "}
+                        <a href="/docs/data-feeds/l2-sequencer-feeds/">L2 Sequencer Uptime Feeds</a> page for examples.
+                      </p>
+                    )}
                     <label>
                       <input
                         type="checkbox"

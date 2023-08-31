@@ -1,0 +1,81 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP Test Tokens"
+---
+
+import { ClickToZoom, Aside } from "@components"
+import { MintTokenButton } from "@features/ccip/components/MintTokenButton"
+
+As a best practice, always test your applications thoroughly on testnet before going live on mainnet. When testing token transfers, you must have enough tokens and ensure the [token pools](/ccip/architecture#token-pools) have enough funds. Public faucets sometimes limit how many tokens a user can create and token pools might not have enough liquidity. To resolve these issues, CCIP supports two test tokens that you can mint permissionlessly so you don't run out of tokens while testing different scenarios.
+
+## Tokens
+
+Two ERC20 test tokens are currently available on each testnet. You can find the token addresses for each testnet on the [Supported Networks](/ccip/supported-networks) page.
+
+| Name                                             | Decimals                                  | Type                                                | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| ------------------------------------------------ | ----------------------------------------- | --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <div style="white-space: nowrap;">CCIP-BnM</div> | <div style="text-align: center;">18</div> | <div style="white-space: nowrap;">Burn & Mint</div> | These tokens are minted on each testnet. When transferring these tokens between testnet blockchains, CCIP burns the tokens on the source chain and mint them on the destination chain.                                                                                                                                                                                                                                                                                     |
+| <div style="white-space: nowrap;">CCIP-LnM</div> | <div style="text-align: center;">18</div> | <div style="white-space: nowrap;">Lock & Mint</div> | These tokens are only minted on **Ethereum Sepolia**. On other testnet blockchains, the token representation is a wrapped/synthetic asset called _clCCIP-LnM_. When transferring these tokens from Ethereum Sepolia to another testnet, CCIP locks the _CCIP-LnM_ tokens on the source chain and mint the wrapped representation _clCCIP-LnM_ on the destination chain. Between non-Ethereum Sepolia chains, CCIP burns and mints the wrapped representation _clCCIP-LnM_. |
+
+## Mint Test Tokens
+
+You can mint both of these tokens using the following function call on the token contract. This function acts like a faucet. Each call mints 10\*\*18 units of a token to the specified address.
+
+- For _CCIP-BnM_, you can call `drip` on all testnet blockchains.
+- For _CCIP-LnM_, you can call `drip` only on Ethereum Sepolia.
+
+```solidity
+function drip(address to) external {
+  _mint(to, 1e18);
+}
+```
+
+### Mint tokens in the documentation
+
+You can use this interface to connect your MetaMask wallet, select a testnet, and mint tokens to your wallet address. Alternatively, you can call these same functions in the [block explorer](#mint-tokens-in-a-block-explorer).
+
+<MintTokenButton client:visible />
+
+### Mint tokens in a block explorer
+
+Follow these steps to learn how to mint these tokens. The steps explain how to mint _CCIP-BnM_ on _Ethereum Sepolia_:
+
+- Go to the [Supported Networks page](/ccip/supported-networks).
+- Go to [Ethereum Sepolia section](/ccip/supported-networks#ethereum-sepolia). You will find a list of active lanes where the source chain is _Ethereum Sepolia_. You will find the list of supported tokens you can transfer for each lane. You should find _CCIP-BnM_ in the list for each testnet.
+- Click on the token address to display it on the block explorer ([CCIP-BnM on Ethereum Sepolia Etherscan](https://sepolia.etherscan.io/address/0xFd57b4ddBf88a4e07fF4e34C487b99af2Fe82a05) in this case).
+
+  <ClickToZoom src="/images/ccip/test-tokens/token-etherscan.jpg" alt="Chainlink CCIP Test token etherscan" />
+
+- Click the _Contract_ tab and then on _Write Contract_ to see the list of transactions. Notice _Connect to Web3_.
+
+  <ClickToZoom
+    src="/images/ccip/test-tokens/token-etherscan-connect-to-web3.jpg"
+    alt="Chainlink CCIP Test token etherscan connect to web3."
+  />
+
+- Click _Connect to Web3_ to connect your MetaMask wallet to the block explorer.
+- Once connected, you can call the `drip` function.
+
+  <ClickToZoom
+    src="/images/ccip/test-tokens/token-etherscan-connected-to-web3.jpg"
+    alt="Chainlink CCIP Test token etherscan connected to web3."
+  />
+
+- Fill in the text field with your EOA, then click _Write_.
+- MetaMask will open and asks you to confirm the transaction.
+- After the transaction is confirmed, click _View your transaction_ to view your transaction.
+
+  <ClickToZoom
+    src="/images/ccip/test-tokens/token-etherscan-view-transaction.jpg"
+    alt="Chainlink CCIP Test token etherscan view your transaction."
+  />
+
+- You should see a successful transaction confirming that 1 _CCIP-BnM_ was sent to your EOA.
+
+  <ClickToZoom
+    src="/images/ccip/test-tokens/token-etherscan-token-minted.jpg"
+    alt="Chainlink CCIP Test token etherscan minted."
+  />
+
+- Follow this [MetaMask guide](https://support.metamask.io/hc/en-us/articles/360015489031#h_01FWH492CHY60HWPC28RW0872H) to import _CCIP-BnM_ in your wallet.

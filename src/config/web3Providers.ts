@@ -11,7 +11,6 @@ export const chainToProvider: Record<SupportedChain, () => providers.Provider> =
   BNB_TESTNET: () => new providers.JsonRpcProvider("https://data-seed-prebsc-1-s1.binance.org:8545/"),
   POLYGON_MAINNET: () => new providers.JsonRpcProvider("https://rpc.ankr.com/polygon"),
   POLYGON_MUMBAI: () => new providers.JsonRpcProvider("https://rpc.ankr.com/polygon_mumbai"),
-  RSK_MAINNET: () => new providers.JsonRpcProvider("https://public-node.rsk.co"),
   GNOSIS_MAINNET: () => new providers.JsonRpcProvider("https://rpc.ankr.com/gnosis"),
   AVALANCHE_MAINNET: () => new providers.JsonRpcProvider("https://rpc.ankr.com/avalanche"),
   AVALANCHE_FUJI: () => new providers.JsonRpcProvider("https://rpc.ankr.com/avalanche_fuji"),
@@ -28,4 +27,6 @@ export const chainToProvider: Record<SupportedChain, () => providers.Provider> =
   MOONBEAM_MAINNET: () => new providers.JsonRpcProvider("https://rpc.ankr.com/moonbeam"),
   METIS_MAINNET: () => new providers.JsonRpcProvider("https://andromeda.metis.io/?owner=1088"),
   BASE_GOERLI: () => new providers.JsonRpcProvider("https://goerli.base.org"),
+  CELO_MAINNET: () => new providers.JsonRpcProvider("https://alfajores-forno.celo-testnet.org"),
+  CELO_ALFAJORES: () => new providers.JsonRpcProvider("https://forno.celo.org"),
 }

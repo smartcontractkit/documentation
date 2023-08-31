@@ -1,0 +1,128 @@
+---
+section: nodeOperator
+date: Last Modified
+title: "Configuring Nodes"
+---
+
+Starting with Chainlink v2.0.0, TOML configuration is the only supported configuration method. You can switch to TOML format using the [Chainlink v1.13.0 image](https://hub.docker.com/r/smartcontract/chainlink/tags). After your Chainlink node is running stable on v1.13.0, you can continue to use the TOML config on future images where support for `.env` configs are no longer supported.
+
+You can see the available config options on the [Node Config](/chainlink-nodes/v1/node-config) and [Node Secrets](/chainlink-nodes/v1/secrets-config) pages.
+
+## Migrating from environment variables to TOML
+
+Before you begin, update your Chainlink Node to v1.13.0 and ensure that it operates as expected. This is the last version that supports environment variable configuration, and the best version to use for TOML migration before you update the node to future versions.
+
+### Export your current config
+
+You can generate the `config.toml` file using the `chainlink config dump` command. This guide shows you how to do this for a Chainlink node running in a Docker container:
+
+1. Open an interactive shell inside the Docker container that runs your node:
+
+   ```shell
+   docker exec -it chainlink bash
+   ```
+
+1. Log in to the Chainlink CLI with an account that has admin access:
+
+   ```shell
+   chainlink admin login
+   ```
+
+1. Export the current config to a `config.toml` file:
+
+   ```shell
+   chainlink config dump > config.toml
+   ```
+
+1. Log out of the Chainlink CLI and close the shell on the Docker container.
+
+   ```shell
+   chainlink admin logout && exit
+   ```
+
+1. Change to the directory where your .env file is located. This is the directory that you mount to Docker when you run the node. You will create your `config.toml` and `secrets.toml` files here so Docker can provide them to your node container.
+
+   ```shell
+   cd ~/.chainlink
+   ```
+
+1. Write the config file from the container to your host:
+
+   ```shell
+   docker exec -it chainlink cat /home/chainlink/config.toml > ./config.toml
+   ```
+
+1. Create a `secrets.toml` file with the minimum required secrets, which are `[Database]` and `[Password]`.
+
+   If you are working on a test node, you can use `?sslmode=disable` in the database `URL`. You might also need [`AllowSimplePasswords = true`](/chainlink-nodes/v1/secrets-config#allowsimplepasswords) in the `[Database]` section so you can start the node, but you should make the database password sufficiently complex as a best practice:
+
+   ```shell
+   echo "[Database]
+   URL = 'postgresql://user:pass@localhost:5432/dbname'
+
+   [Password]
+   Keystore = 'keystore_pass'" > ./secrets.toml
+   ```
+
+1. Edit the `secrets.toml` file to include the secrets you need for your specific Chainlink node. See the [Node Secrets](/chainlink-nodes/v1/secrets-config) page for a full list of available options.
+
+### Validate the configuration
+
+After you have the `config.toml` file and the `secrets.toml` files on the host system, you can validate these files using a temporary Docker container.
+
+1. Validate the configuration by running the `config validate` command in the Docker container. This command changes to `node validate` when you upgrade your node to version `2.0.0` or later.
+
+   ```shell
+   docker run --platform linux/x86_64/v8 --name chainlink-config-validator -v ~/.chainlink:/chainlink -it --rm smartcontract/chainlink:1.13.0 -config /chainlink/config.toml -secrets /chainlink/secrets.toml config validate
+   ```
+
+   You will likely see some invalid config errors. For example:
+
+   ```shell
+   Invalid configuration: EVM.3.Nodes: missing: must have at least one node
+   ```
+
+1. Edit the `config.toml` and `secrets.toml` files to manually correct any errors. See the [Node Config](/chainlink-nodes/v1/node-config) and [Node Secrets](/chainlink-nodes/v1/secrets-config) pages to learn which settings are valid. For the error in this example, an EVM chain was configured with no nodes. Removing this from the config made the config valid:
+
+   ```
+   [[EVM]]
+   ChainID = '421613'
+   Enabled = false
+   Nodes = []
+   ```
+
+1. Run the `config validate` command again and make additional changes until you have a valid config message:
+
+   ```shell
+   Valid configuration.
+   ```
+
+### Restart your Chainlink node using the TOML config
+
+With your valid config and secrets files, you can migrate your Chainlink node to use the new config.
+
+1. Stop your existing Chainlink node:
+
+   ```shell
+   docker stop chainlink
+   ```
+
+1. Make a Postgres [database snapshot](https://www.postgresql.org/docs/current/backup-dump.html) so you can restore your previous Chainlink node if necessary.
+
+1. Start a new Chainlink node Docker container named using the new `config.toml` and `secrets.toml` files. This example uses `chainlink-toml` as the container name:
+
+   ```shell
+   docker run --platform linux/x86_64/v8 --name chainlink-toml  -v ~/.chainlink:/chainlink -it -p 6688:6688 --add-host=host.docker.internal:host-gateway smartcontract/chainlink:1.13.0 -config /chainlink/config.toml -secrets /chainlink/secrets.toml node start
+   ```
+
+Test your node to verify that it works as intended. If you are using a VPS, open an [SSH tunnel](https://www.howtogeek.com/168145/how-to-use-ssh-tunneling/) using `ssh -i $KEY $USER@$REMOTE-IP -L 6688:localhost:6688 -N`. Connect to the Operator UI in your browser at `localhost:6688`.
+
+## Using multiple config files
+
+You can use multiple config and secrets files. The config settings from each file are applied in the order that you specify when you run your node. Duplicated fields override values specified in earlier config files. This allows you to create a common config that applies to many nodes with specific configs for nodes that need unique configuration settings. Specifying multiple secrets files is invalid.
+
+To specify multiple config files, add additional `-config` flags to the `docker run` command:
+
+```shell
+docker run --platform linux/x86_64/v8 --name chainlink -v ~/.chainlink:/chainlink -it -p 6688:6688 --add-host=host.docker.internal:host-gateway smartcontract/chainlink:1.13.0 -config /chainlink/config.toml -config /chainlink/config2.toml -config /chainlink/config3.toml -secrets /chainlink/secrets.toml node start
+```

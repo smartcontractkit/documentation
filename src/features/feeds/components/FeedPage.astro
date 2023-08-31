@@ -1,20 +1,40 @@
 ---
 import FeedsCommonCallout from "../callouts/FeedsCommonCallout.astro"
-import { FeedList } from "./FeedList.tsx"
-import type { DataFeedType } from "./FeedList.tsx"
+import { FeedList } from "./FeedList"
+import type { DataFeedType } from "./FeedList"
 import { Aside } from "@components"
 export type Props = {
   initialNetwork?: string
   ecosystem: string
   dataFeedType?: DataFeedType
 }
-import { getServerSideChainMetadata } from "../api/backend"
-import { CHAINS, ALL_CHAINS } from "../data/chains"
+import { getServerSideChainMetadata } from "~/features/data//api/backend"
+import { CHAINS, ALL_CHAINS } from "~/features/data/chains"
+import { CheckHeartbeat } from "./pause-notice/CheckHeartbeat"
+import { FeedDataItem, monitoredFeeds } from "~/features/data"
 
 const { initialNetwork, ecosystem, dataFeedType } = Astro.props
 
 const initialCache = await getServerSideChainMetadata([...CHAINS, ...ALL_CHAINS])
+const feedItems: FeedDataItem[] = monitoredFeeds.mainnet
 ---
+
+{
+  dataFeedType === "por"
+    ? feedItems.map((feedItem: FeedDataItem) => {
+        const [feedAddress] = Object.keys(feedItem)
+        return (
+          <CheckHeartbeat
+            client:idle
+            {feedAddress}
+            supportedChain="ETHEREUM_MAINNET"
+            feedName="TUSD Reserves"
+            currencyName={feedItem[feedAddress]}
+          />
+        )
+      })
+    : ""
+}
 
 {
   ecosystem === "deprecating" ? (
@@ -25,12 +45,12 @@ const initialCache = await getServerSideChainMetadata([...CHAINS, ...ALL_CHAINS]
         they are deployed on.
       </p>
       <p>
-        Data Feeds without publicly known active users may be scheduled for deprecation. Doing so not only helps
-        preserve blockchains as public goods by optimizing blockspace usage, but it helps reduce unnecessary costs
-        incurred by Chainlink node operators. This process is part of a broader ecosystem shift towards Chainlink
-        Economics 2.0, designed to maximize the adoption of the Chainlink protocol while optimizing for cost-efficiency
-        and long-term economic sustainability. Over time, new Data Feeds may be launched or relocated to alternative{" "}
-        blockchains/layer-2s that better reflect current user demand.
+        Data Feeds with low or no usage or feeds that do not have a viable path to economic sustainability may be
+        scheduled for deprecation. Doing so helps preserve blockchains as public goods by optimizing blockspace usage.
+        It also helps to reduce unnecessary costs incurred by Chainlink node operators. This process is part of a
+        broader ecosystem shift towards Chainlink Economics 2.0, designed to maximize the adoption of the Chainlink
+        protocol while optimizing for cost-efficiency and long-term economic sustainability. Over time, new Data Feeds
+        may be launched or relocated to alternative blockchains/layer-2s that better reflect current user demand.
       </p>
       <p>
         For status updates regarding Data Feeds, users should join the official Chainlink Discord and subscribe to the{" "}

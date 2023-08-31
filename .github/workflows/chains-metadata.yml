@@ -28,9 +28,9 @@ jobs:
           set -x
           if test -f ".scripts/reference/chainsToBe.json"; then
             cp ".scripts/reference/chainsToBe.json" ".scripts/reference/chains.json"
-            echo "::set-output name=createPR::true"
+            echo "createPR=true" >> $GITHUB_OUTPUT
             timestamp=$(date +%Y%m%d%H%M)
-            echo "::set-output name=timestamp::${timestamp}"
+            echo "timestamp=${timestamp}" >> $GITHUB_OUTPUT
           fi
       - if: ${{ steps.compare_chains.outputs.createPR }}
         id: chains_metadata_pr

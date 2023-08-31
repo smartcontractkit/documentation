@@ -18,7 +18,7 @@ const starOutline = (
   </svg>
 )
 export const Feedback = () => {
-  const [rating, setRating] = useState<number>(undefined)
+  const [rating, setRating] = useState<number | undefined>(undefined)
   const [isSent, setIsSent] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -80,7 +80,7 @@ export const Feedback = () => {
               cursor: "pointer",
             }}
           >
-            {rating >= i + 1 ? star : starOutline}
+            {rating && rating >= i + 1 ? star : starOutline}
           </div>
         ))}
       </div>
@@ -90,6 +90,7 @@ export const Feedback = () => {
           style={{
             padding: "var(--space-4x)",
             marginRight: "var(--space-4x)",
+            width: "max-content",
           }}
         >
           <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>

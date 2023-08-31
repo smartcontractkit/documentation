@@ -1,9 +1,12 @@
 /** @jsxImportSource preact */
-import h from "preact"
 import feedList from "./FeedList.module.css"
 import { clsx } from "../../../lib"
-import { ChainNetwork } from "../data/chains"
+import { ChainNetwork } from "~/features/data/chains"
 import tableStyles from "./Tables.module.css"
+import { CheckHeartbeat } from "./pause-notice/CheckHeartbeat"
+import { monitoredFeeds, FeedDataItem } from "~/features/data"
+
+const feedItems = monitoredFeeds.mainnet
 const feedCategories = {
   verified: (
     <span className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")} title="Verified">
@@ -53,8 +56,6 @@ const DefaultTHead = ({ showExtraDetails, isTestnet = false }: { showExtraDetail
   <thead>
     <tr>
       <th class={tableStyles.heading}>Pair</th>
-      <th aria-hidden={isTestnet}>Asset</th>
-      <th aria-hidden={isTestnet}>Type</th>
       <th aria-hidden={!showExtraDetails}>Deviation</th>
       <th aria-hidden={!showExtraDetails}>Heartbeat</th>
       <th aria-hidden={!showExtraDetails}>Dec</th>
@@ -79,18 +80,10 @@ const DefaultTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => (
         </div>
       )}
     </td>
-
-    <td aria-hidden={isTestnet}>
-      <div className={tableStyles.assetName}>{proxy.docs.assetName}</div>
-    </td>
-    <td aria-hidden={isTestnet}>{proxy.docs.feedType}</td>
     <td aria-hidden={!showExtraDetails}>{proxy.threshold ? proxy.threshold + "%" : "N/A"}</td>
     <td aria-hidden={!showExtraDetails}>{proxy.heartbeat ? proxy.heartbeat + "s" : "N/A"}</td>
     <td aria-hidden={!showExtraDetails}>{proxy.decimals ? proxy.decimals : "N/A"}</td>
     <td>
-      {/*
-        EVM feeds use proxy.proxyAddress. The proxy.transmissionsAccount is specific to Solana.
-      */}
       <div className={tableStyles.assetAddress}>
         <button
           class={clsx(tableStyles.copyBtn, "copy-iconbutton")}
@@ -106,6 +99,37 @@ const DefaultTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => (
           {proxy.proxyAddress ?? proxy.transmissionsAccount}
         </a>
       </div>
+      {!isTestnet ? (
+        <div>
+          <dl class={tableStyles.porDl}>
+            {proxy.docs.assetName ? (
+              <div>
+                <dt>
+                  <span class="label">Asset name:</span>
+                </dt>
+                <dd>{proxy.docs.assetName}</dd>
+              </div>
+            ) : (
+              ""
+            )}
+            {proxy.docs.feedType ? (
+              <div>
+                <dt>
+                  <span class="label">Asset type:</span>
+                </dt>
+                <dd>
+                  {proxy.docs.feedType}
+                  {proxy.docs.assetSubClass === "UK" ? " - " + proxy.docs.assetSubClass : ""}
+                </dd>
+              </div>
+            ) : (
+              ""
+            )}
+          </dl>
+        </div>
+      ) : (
+        ""
+      )}
     </td>
   </tr>
 )
@@ -131,6 +155,21 @@ const ProofOfReserveTHead = ({
 const ProofOfReserveTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => (
   <tr>
     <td class={tableStyles.pairCol}>
+      {feedItems.map((feedItem: FeedDataItem) => {
+        const [feedAddress] = Object.keys(feedItem)
+        if (feedAddress === proxy.proxyAddress) {
+          return (
+            <CheckHeartbeat
+              feedAddress={proxy.proxyAddress}
+              supportedChain="ETHEREUM_MAINNET"
+              feedName="TUSD Reserves"
+              list
+              currencyName={feedItem[feedAddress]}
+            />
+          )
+        }
+        return ""
+      })}
       <div className={tableStyles.assetPair}>
         {feedCategories[proxy.docs.feedCategory] || ""}
         {proxy.name}
@@ -307,12 +346,12 @@ export const TestnetTable = ({
     .filter((chain) => {
       if (isPor) return !!chain.docs.porType
       if (isNftFloor) return !!chain.docs.nftFloorUnits
-      if (isRates) return !!(chain.docs.productType === "Rates" || chain.docs.productSubType === "Rvol")
+      if (isRates) return !!(chain.docs.productType === "Rates" || chain.docs.productSubType === "Realized Volatility")
       return (
         !chain.docs.nftFloorUnits &&
         !chain.docs.porType &&
         chain.docs.productType !== "Rates" &&
-        chain.docs.productSubType !== "Rvol"
+        chain.docs.productSubType !== "Realized Volatility"
       )
     })
 

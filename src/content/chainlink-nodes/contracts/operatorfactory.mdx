@@ -1,0 +1,86 @@
+---
+section: nodeOperator
+date: Last Modified
+title: "Operator Factory"
+---
+
+The [factory](https://www.youtube.com/watch?v=Q1zZo4O_Ong) design pattern is a well know programming pattern: Rather than compiling and creating instances of a contract yourself, the _factory_ does it for you.
+As explained in the [operator guide](/chainlink-nodes/contracts/operator), the `OperatorFactory` contract comes with these benefits:
+
+- Node operators do not need to manually compile and deploy [operator](/chainlink-nodes/contracts/operator) or/and [forwarder](/chainlink-nodes/contracts/forwarder) contracts. They can deploy them directly from the factory. See the[deploynewoperator](#deploynewoperator), [deploynewforwarder](#deploynewforwarder), and [deploynewoperatorandforwarder](#deploynewoperatorandforwarder) functions.
+- Clients can verify if the factory deployed a given contract. See the [created](#created) function.
+
+## API Reference
+
+### Methods
+
+##### typeAndVersion
+
+```solidity
+function typeAndVersion() external pure virtual returns (string)
+```
+
+The type and version of this contract.
+
+###### Return values
+
+| Name | Type   | Description             |
+| ---- | ------ | ----------------------- |
+|      | string | Type and version string |
+
+##### deployNewOperator
+
+```solidity
+function deployNewOperator() external returns (address)
+```
+
+Creates a new operator contract with the msg.sender as owner. Emits `OperatorCreated` event.
+
+##### deployNewOperatorAndForwarder
+
+```solidity
+function deployNewOperatorAndForwarder() external returns (address, address)
+```
+
+Creates a new operator contract with the msg.sender as the owner and a new forwarder with the operator as the owner. Emits:
+
+- [OperatorCreated](#operatorcreated) event.
+- [AuthorizedForwarderCreated](#authorizedforwardercreated) event.
+
+##### deployNewForwarder
+
+```solidity
+function deployNewForwarder() external returns (address)
+```
+
+Creates a new forwarder contract with the msg.sender as owner. Emits [AuthorizedForwarderCreated](#authorizedforwardercreated) event.
+
+##### deployNewForwarderAndTransferOwnership
+
+```solidity
+function deployNewForwarderAndTransferOwnership(address to, bytes message) external returns (address)
+```
+
+Creates a new forwarder contract with the msg.sender as owner. Emits [AuthorizedForwarderCreated](#authorizedforwardercreated) event.
+
+##### created
+
+```solidity
+function created(address query) external view returns (bool)
+```
+
+Indicates whether this factory deployed an address.
+
+### Events
+
+#### OperatorCreated
+
+```solidity
+event OperatorCreated(address operator, address owner, address sender)
+```
+
+#### AuthorizedForwarderCreated
+
+```solidity
+event AuthorizedForwarderCreated(address forwarder, address owner, address sender)
+```

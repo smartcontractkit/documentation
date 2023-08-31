@@ -9,7 +9,7 @@ export const getWeb3Provider = (supportedChain: SupportedChain) => {
 export const getExplorer = (supportedChain: SupportedChain) => {
   const technology = chainToTechnology[supportedChain]
   if (!technology) return
-  return chains[technology].chains[supportedChain].explorer
+  return chains[technology]?.chains[supportedChain]?.explorer
 }
 
 export const getExplorerAddressUrl = (explorerUrl: string) => (contractAddress: string) => {
@@ -19,7 +19,7 @@ export const getExplorerAddressUrl = (explorerUrl: string) => (contractAddress: 
 export const getTitle = (supportedChain: SupportedChain) => {
   const technology = chainToTechnology[supportedChain]
   if (!technology) return
-  return chains[technology].chains[supportedChain].title
+  return chains[technology]?.chains[supportedChain]?.title
 }
 
 type NormalizedConfig<T> = Partial<
@@ -42,7 +42,7 @@ export const normalizeConfig = <T>(config: Partial<Record<SupportedChain, T>>) =
         title: chains[technology].title,
         chains: {},
       }
-    normalizedConfig[technology].chains[chain] = config[chain]
+    normalizedConfig[technology]!.chains[chain] = config[chain]
   }
   return normalizedConfig
 }

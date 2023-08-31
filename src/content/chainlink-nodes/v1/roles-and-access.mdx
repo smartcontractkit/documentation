@@ -1,0 +1,87 @@
+---
+section: nodeOperator
+date: Last Modified
+title: "Role-Based Access Control (RBAC)"
+---
+
+Chainlink Nodes allow the root admin CLI user and any additional admin users to create and assign tiers of role-based access to new users. These new API users can able to log in to the Operator UI independently.
+
+Each user has a specific role assigned to their account. There are four roles: `admin`, `edit`, `run`, and `view`.
+
+If there are multiple users who need specific access to manage the Chainlink Node instance, permissions and level of access can be set here.
+
+User management is configured through the use of the admin `chainlink admin users` command. Run `chainlink admin login` before you set user roles for other accounts. For example, a view-only user can be created with the following command:
+
+```shell
+chainlink admin users create --email=operator-ui-view-only@test.com --role=view
+```
+
+To modify permissions or delete existing users, run the `admin users chrole` or `admin users delete` commands. Use the `-h` flag to get a full list of options for these commands:
+
+```shell
+chainlink admin users chrole -h
+```
+
+```shell
+chainlink admin users delete -h
+```
+
+Specific actions are enabled to check role-based access before they execute. The following table lists the actions that have role-based access and the role that is required to run that action:
+
+| Action                                        | View | Run | Edit | Admin |
+| :-------------------------------------------- | :--: | :-: | :--: | :---: |
+| Update password                               |  X   |  X  |  X   |   X   |
+| Create self API token                         |  X   |  X  |  X   |   X   |
+| Delete self API token                         |  X   |  X  |  X   |   X   |
+| List external initiators                      |  X   |  X  |  X   |   X   |
+| Create external initiator                     |      |     |  X   |   X   |
+| Delete external initiator                     |      |     |  X   |   X   |
+| List bridges                                  |  X   |  X  |  X   |   X   |
+| View bridge                                   |  X   |  X  |  X   |   X   |
+| Create bridge                                 |      |     |  X   |   X   |
+| Edit bridge                                   |      |     |  X   |   X   |
+| Delete bridge                                 |      |     |  X   |   X   |
+| View config                                   |  X   |  X  |  X   |   X   |
+| Update config                                 |      |     |      |   X   |
+| Dump env/config                               |      |     |      |   X   |
+| View transaction attempts                     |  X   |  X  |  X   |   X   |
+| View transaction attempts EVM                 |  X   |  X  |  X   |   X   |
+| View transactions                             |  X   |  X  |  X   |   X   |
+| Replay a specific block number                |      |  X  |  X   |   X   |
+| List keys (CSA,ETH,OCR(2),P2P,Solana,Terra)   |  X   |  X  |  X   |   X   |
+| Create keys (CSA,ETH,OCR(2),P2P,Solana,Terra) |      |     |  X   |   X   |
+| Delete keys (CSA,ETH,OCR(2),P2P,Solana,Terra) |      |     |      |   X   |
+| Import keys (CSA,ETH,OCR(2),P2P,Solana,Terra) |      |     |      |   X   |
+| Export keys (CSA,ETH,OCR(2),P2P,Solana,Terra) |      |     |      |   X   |
+| List jobs                                     |  X   |  X  |  X   |   X   |
+| View job                                      |  X   |  X  |  X   |   X   |
+| Create job                                    |      |     |  X   |   X   |
+| Delete job                                    |      |     |  X   |   X   |
+| List pipeline runs                            |  X   |  X  |  X   |   X   |
+| View job runs                                 |  X   |  X  |  X   |   X   |
+| Delete job spec errors                        |      |     |  X   |   X   |
+| View features                                 |  X   |  X  |  X   |   X   |
+| View log                                      |  X   |  X  |  X   |   X   |
+| Update log                                    |      |     |      |   X   |
+| List chains                                   |  X   |  X  |  X   |   X   |
+| View chain                                    |  X   |  X  |  X   |   X   |
+| Create chain                                  |      |     |  X   |   X   |
+| Update chain                                  |      |     |  X   |   X   |
+| Delete chain                                  |      |     |  X   |   X   |
+| View nodes                                    |  X   |  X  |  X   |   X   |
+| Create node                                   |      |     |  X   |   X   |
+| Update node                                   |      |     |  X   |   X   |
+| Delete node                                   |      |     |  X   |   X   |
+| View forwarders                               |  X   |  X  |  X   |   X   |
+| Create forwarder                              |      |     |  X   |   X   |
+| Delete forwarder                              |      |     |  X   |   X   |
+| Create job run                                |      |  X  |  X   |   X   |
+| Create Transfer EVM                           |      |     |      |   X   |
+| Create Transfer Terra                         |      |     |      |   X   |
+| Create Transfer Solana                        |      |     |      |   X   |
+| Create user                                   |      |     |      |   X   |
+| Delete user                                   |      |     |      |   X   |
+| Edit user                                     |      |     |      |   X   |
+| List users                                    |      |     |      |   X   |
+
+The run command allows for minimal interaction and only enables the ability to replay a specific block number and kick off a job run.

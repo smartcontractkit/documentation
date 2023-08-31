@@ -9,7 +9,7 @@ export const AutomationConfigList = () => {
   const normalizedConfig = normalizeConfig(chainlinkAutomationConfig)
   return Object.keys(normalizedConfig).map((technology: SupportedTechnology) => {
     const config = normalizedConfig[technology]
-    const technologyTitle = config.title
+    const technologyTitle = config?.title
     return !technologyTitle ? (
       <p />
     ) : (
@@ -19,18 +19,25 @@ export const AutomationConfigList = () => {
           const title = getTitle(supportedChain)
           const explorerUrl = getExplorer(supportedChain)
           const registryAddress = automationAddresses[supportedChain]
-            ? automationAddresses[supportedChain].registryAddress
+            ? automationAddresses[supportedChain]?.registryAddress
             : ""
-          return !title ? (
-            <p />
-          ) : (
+
+          const config = chainlinkAutomationConfig[supportedChain]
+
+          if (!(title && config && registryAddress && explorerUrl)) {
+            return null
+          }
+
+          return (
             <div key={supportedChain}>
               <h4 id={slugger.slug(title)}>{title}</h4>
-              <AutomationConfig
-                config={chainlinkAutomationConfig[supportedChain]}
-                registryAddress={registryAddress}
-                getExplorerAddressUrl={getExplorerAddressUrl(explorerUrl)}
-              />
+              {
+                <AutomationConfig
+                  config={config}
+                  registryAddress={registryAddress}
+                  getExplorerAddressUrl={getExplorerAddressUrl(explorerUrl)}
+                />
+              }
             </div>
           )
         })}

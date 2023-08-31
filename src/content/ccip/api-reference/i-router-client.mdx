@@ -1,0 +1,137 @@
+---
+section: ccip
+date: Last Modified
+title: "IRouterClient API Reference"
+---
+
+import { Aside, CopyText } from "@components"
+
+<Aside type="note" title="Add Chainlink CCIP to your project">
+   If you need to integrate Chainlink CCIP into your project, install the [@chainlink-ccip/contracts NPM package](https://www.npmjs.com/package/@chainlink/contracts-ccip).
+
+- If you use [NPM](https://www.npmjs.com/): <CopyText text="npm install @chainlink-ccip/contracts --save" code/>
+
+- If you use [Yarn](https://yarnpkg.com/): <CopyText text="yarn add @chainlink-ccip/contracts" code/>
+
+</Aside>
+
+To send messages through CCIP, users must interact with the `IRouterClient` interface.
+After you import `IRouterClient.sol`, you can initialize a router client instance:
+
+```solidity
+import {IRouterClient} from "@chainlink/contracts-ccip/src/v0.8/ccip/interfaces/IRouterClient.sol";
+...
+IRouterClient router;
+constructor(address _router) {
+     router = IRouterClient(_router);
+ }
+```
+
+## Errors
+
+### UnsupportedDestinationChain
+
+```solidity
+error UnsupportedDestinationChain(uint64 destChainSelector)
+```
+
+### InsufficientFeeTokenAmount
+
+```solidity
+error InsufficientFeeTokenAmount()
+```
+
+### InvalidMsgValue
+
+```solidity
+error InvalidMsgValue()
+```
+
+## Functions
+
+### isChainSupported
+
+```solidity
+function isChainSupported(uint64 chainSelector) external view returns (bool supported)
+```
+
+Checks if the given chain ID is supported for sending/receiving.
+
+#### Parameters
+
+| Name          | Type   | Description         |
+| ------------- | ------ | ------------------- |
+| chainSelector | uint64 | The chain to check. |
+
+#### Return Values
+
+| Name      | Type | Description                           |
+| --------- | ---- | ------------------------------------- |
+| supported | bool | is true if supported or false if not. |
+
+### getSupportedTokens
+
+```solidity
+function getSupportedTokens(uint64 chainSelector) external view returns (address[] tokens)
+```
+
+Gets a list of all supported tokens which can be sent or received
+to or from a given chain ID.
+
+#### Parameters
+
+| Name          | Type   | Description        |
+| ------------- | ------ | ------------------ |
+| chainSelector | uint64 | The chainSelector. |
+
+#### Return Values
+
+| Name   | Type      | Description                            |
+| ------ | --------- | -------------------------------------- |
+| tokens | address[] | The addresses of all supported tokens. |
+
+### getFee
+
+```solidity
+function getFee(uint64 destinationChainSelector, struct Client.EVM2AnyMessage message) external view returns (uint256 fee)
+```
+
+_returns 0 fees on invalid message._
+
+#### Parameters
+
+| Name                     | Type                                                                      | Description                                                |
+| ------------------------ | ------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| destinationChainSelector | uint64                                                                    | The destination chainSelector                              |
+| message                  | struct [Client.EVM2AnyMessage](/ccip/api-reference/client#evm2anymessage) | The cross-chain CCIP message, including data and/or tokens |
+
+#### Return Values
+
+| Name | Type    | Description                                                                                  |
+| ---- | ------- | -------------------------------------------------------------------------------------------- |
+| fee  | uint256 | returns guaranteed execution fee for the specified message delivery to the destination chain |
+
+### ccipSend
+
+```solidity
+function ccipSend(uint64 destinationChainSelector, struct Client.EVM2AnyMessage message) external payable returns (bytes32)
+```
+
+Request a message to be sent to the destination chain.
+
+<Aside type="caution">
+  If the `msg.value` exceeds the required fee from `getFee`, the over overpayment is accepted with no refund.
+</Aside>
+
+#### Parameters
+
+| Name                     | Type                                                                      | Description                                                |
+| ------------------------ | ------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| destinationChainSelector | uint64                                                                    | The destination chain ID                                   |
+| message                  | struct [Client.EVM2AnyMessage](/ccip/api-reference/client#evm2anymessage) | The cross-chain CCIP message, including data and/or tokens |
+
+#### Return Values
+
+| Name | Type    | Description              |
+| ---- | ------- | ------------------------ |
+| [0]  | bytes32 | messageId The message ID |

@@ -1,3 +1,4 @@
+import ccipLogo from "../assets/ccip-logo.svg"
 import vrfLogo from "../assets/vrf-logo.svg"
 import functionsLogo from "../assets/functions-logo.svg"
 import automationLogo from "../assets/automation-logo.svg"
@@ -36,10 +37,64 @@ export const evmProducts = [
       { id: "moonbeam", title: "Moonbeam" },
       { id: "moonriver", title: "Moonriver" },
       { id: "base", title: "BASE" },
+      { id: "celo", title: "Celo" },
       { id: "starknet", title: "StarkNet" },
       { id: "solana", title: "Solana" },
     ],
     video: "https://www.youtube.com/watch?v=e75kwGzvtnI&list=PLVP9aGDn-X0QwJVbQvuKr-zrh2_DV5M6J&index=45",
+  },
+  {
+    title: "CCIP",
+    description:
+      "Connect decentralized applications and transfer tokens across chains using the Chainlink Cross-Chain Interoperability Protocol (CCIP)",
+    learnMorelink: "ccip",
+    image: ccipLogo,
+    links: [
+      ["Introduction", "ccip"],
+      ["Getting Started", "ccip/getting-started"],
+      ["Transfer Tokens Between Chains", "ccip/tutorials/cross-chain-tokens"],
+      ["Transfer Tokens from an EOA", "ccip/tutorials/cross-chain-tokens-from-eoa"],
+      ["Send Arbitrary Data", "ccip/tutorials/send-arbitrary-data"],
+      ["CCIP Architecture", "ccip/architecture"],
+    ],
+    chains: [
+      { id: "ethereum", title: "Ethereum" },
+      { id: "polygon", title: "Polygon" },
+      { id: "avalanche", title: "Avalanche" },
+      { id: "arbitrum", title: "Arbitrum" },
+      { id: "optimism", title: "Optimism" },
+    ],
+  },
+  {
+    title: "Automate Contracts",
+    description: "Decentralized, highly reliable, cost-efficient and highly secure automation for smart contracts",
+    learnMorelink: "chainlink-automation/introduction",
+    image: automationLogo,
+    links: [
+      ["Introduction", "chainlink-automation/introduction"],
+      ["Time-based Automation", "chainlink-automation/job-scheduler"],
+      ["Custom Logic Automation", "chainlink-automation/register-upkeep"],
+      ["Create Compatible Contracts", "chainlink-automation/compatible-contracts"],
+      ["Manage your Upkeeps", "chainlink-automation/manage-upkeeps"],
+      ["Creating Flexible Upkeeps", "chainlink-automation/flexible-upkeeps"],
+    ],
+    chains: [...baseChains, { id: "arbitrum", title: "Arbitrum" }, { id: "optimism", title: "Optimism" }],
+    video: "https://www.youtube.com/watch?v=dj0impNJdls&list=PLVP9aGDn-X0RloqS1uYcuaPSW3GIgoCkg&index=2",
+  },
+  {
+    title: "VRF v2",
+    description: "Verifiable, tamper-proof random number generator for blockchain gaming and NFT projects",
+    learnMorelink: "/vrf/v2/introduction",
+    image: vrfLogo,
+    links: [
+      ["Introduction", "/vrf/v2/introduction"],
+      ["Subscription Method", "/vrf/v2/subscription"],
+      ["Direct Funding Method", "/vrf/v2/direct-funding"],
+      ["Security Considerations", "/vrf/v2/security"],
+      ["Best Practices", "/vrf/v2/best-practices"],
+    ],
+    chains: [...baseChains],
+    video: "https://www.youtube.com/watch?v=JqZWariqh5s&list=PLVP9aGDn-X0QHDyBRvbITizWrRoecR0D8&index=2",
   },
   {
     title: "Chainlink Functions",
@@ -62,37 +117,6 @@ export const evmProducts = [
       { id: "polygon", title: "Polygon" },
       { id: "avalanche", title: "Avalanche" },
     ],
-  },
-  {
-    title: "Automate Contracts",
-    description: "Decentralized, highly reliable, cost-efficient and highly secure automation for smart contracts",
-    learnMorelink: "chainlink-automation/introduction",
-    image: automationLogo,
-    links: [
-      ["Introduction", "chainlink-automation/introduction"],
-      ["Time-based Automation", "chainlink-automation/job-scheduler"],
-      ["Custom Logic Automation", "chainlink-automation/register-upkeep"],
-      ["Create Compatible Contracts", "chainlink-automation/compatible-contracts"],
-      ["Manage your Upkeeps", "chainlink-automation/manage-upkeeps"],
-      ["Creating Flexible Upkeeps", "chainlink-automation/flexible-upkeeps"],
-    ],
-    chains: [...baseChains, { id: "arbitrum", title: "Arbitrum" }],
-    video: "https://www.youtube.com/watch?v=dj0impNJdls&list=PLVP9aGDn-X0RloqS1uYcuaPSW3GIgoCkg&index=2",
-  },
-  {
-    title: "VRF v2",
-    description: "Verifiable, tamper-proof random number generator for blockchain gaming and NFT projects",
-    learnMorelink: "/vrf/v2/introduction",
-    image: vrfLogo,
-    links: [
-      ["Introduction", "/vrf/v2/introduction"],
-      ["Subscription Method", "/vrf/v2/subscription"],
-      ["Direct Funding Method", "/vrf/v2/direct-funding"],
-      ["Security Considerations", "/vrf/v2/security"],
-      ["Best Practices", "/vrf/v2/best-practices"],
-    ],
-    chains: [...baseChains],
-    video: "https://www.youtube.com/watch?v=JqZWariqh5s&list=PLVP9aGDn-X0QHDyBRvbITizWrRoecR0D8&index=2",
   },
   {
     title: "External API Calls",

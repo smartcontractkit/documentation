@@ -1,12 +1,18 @@
-export const SIDEBAR = {
+import { sectionEnum } from "../content/config"
+import { z } from "astro:content"
+type Sections = z.infer<typeof sectionEnum>
+export type SectionContent = { title: string; url: string; children?: { title: string; url: string }[] }
+type SectionEntry = {
+  section: string
+  contents: SectionContent[]
+}
+
+export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
   gettingStarted: [
     {
       section: "Getting Started",
       contents: [
-        {
-          title: "Overview",
-          url: "getting-started/conceptual-overview",
-        },
+        { title: "Overview", url: "getting-started/conceptual-overview" },
         {
           title: "Deploy Your First Contract",
           url: "getting-started/deploy-your-first-contract",
@@ -162,6 +168,10 @@ export const SIDEBAR = {
           ],
         },
         {
+          title: "L2 Sequencer Uptime Feeds",
+          url: "data-feeds/l2-sequencer-feeds",
+        },
+        {
           title: "Selecting Quality Data Feeds",
           url: "data-feeds/selecting-data-feeds",
         },
@@ -185,10 +195,6 @@ export const SIDEBAR = {
         {
           title: "Data Feeds API Reference",
           url: "data-feeds/api-reference",
-        },
-        {
-          title: "L2 Sequencer Uptime Feeds",
-          url: "data-feeds/l2-sequencer-feeds",
         },
         {
           title: "Feed Registry",
@@ -302,12 +308,41 @@ export const SIDEBAR = {
           url: "chainlink-automation/introduction/",
         },
         {
+          title: "Getting Started",
+          url: "chainlink-automation/compatible-contracts",
+        },
+        {
           title: "Supported Networks",
           url: "chainlink-automation/supported-networks/",
         },
         {
           title: "Best Practices",
           url: "chainlink-automation/compatible-contract-best-practice",
+        },
+      ],
+    },
+    {
+      section: "EXAMPLES",
+      contents: [
+        {
+          title: "Automate the Reveal of Batch NFTs",
+          url: "chainlink-automation/tutorials/batch-nft",
+        },
+        {
+          title: "Create Dynamic NFTs",
+          url: "chainlink-automation/tutorials/dynamic-nft",
+        },
+        {
+          title: "Create a Vault Harvester",
+          url: "chainlink-automation/tutorials/vault-harvester",
+        },
+        {
+          title: "Automate Top-Up for Contract Balances",
+          url: "chainlink-automation/tutorials/eth-balance",
+        },
+        {
+          title: "Automate Top-Up for VRF Subscriptions",
+          url: "chainlink-automation/tutorials/vrf-sub-monitor",
         },
       ],
     },
@@ -323,27 +358,12 @@ export const SIDEBAR = {
           url: "chainlink-automation/register-upkeep",
         },
         {
-          title: "Create Compatible Contracts",
-          url: "chainlink-automation/compatible-contracts",
-        },
-
-        {
           title: "Manage your Upkeeps",
           url: "chainlink-automation/manage-upkeeps",
         },
         {
           title: "Creating Flexible Upkeeps",
           url: "chainlink-automation/flexible-upkeeps",
-        },
-        {
-          title: "Example Contracts",
-          url: "chainlink-automation/util-overview",
-          children: [
-            {
-              title: "EthBalanceMonitor",
-              url: "chainlink-automation/utility-contracts",
-            },
-          ],
         },
       ],
     },
@@ -524,11 +544,11 @@ export const SIDEBAR = {
       contents: [
         {
           title: "FunctionsClient",
-          url: "chainlink-functions/api-reference/FunctionsClient",
+          url: "chainlink-functions/api-reference/functions-client",
         },
         {
           title: "Functions library",
-          url: "chainlink-functions/api-reference/Functions",
+          url: "chainlink-functions/api-reference/functions",
         },
       ],
     },
@@ -853,10 +873,169 @@ export const SIDEBAR = {
       ],
     },
   ],
+  ccip: [
+    {
+      section: "CHAINLINK CCIP",
+      contents: [
+        {
+          title: "What is Chainlink CCIP?",
+          url: "ccip",
+        },
+        {
+          title: "Getting Started",
+          url: "ccip/getting-started",
+        },
+        {
+          title: "Supported Networks",
+          url: "ccip/supported-networks",
+        },
+        {
+          title: "Release Notes",
+          url: "ccip/release-notes",
+        },
+      ],
+    },
+    {
+      section: "TUTORIALS",
+      contents: [
+        {
+          title: "Transfer Tokens",
+          url: "ccip/tutorials/cross-chain-tokens",
+        },
+        {
+          title: "Transfer Tokens With Data",
+          url: "ccip/tutorials/programmable-token-transfers",
+        },
+        {
+          title: "Transfer Tokens Between EOAs",
+          url: "ccip/tutorials/cross-chain-tokens-from-eoa",
+        },
+        {
+          title: "Send Arbitrary Data",
+          url: "ccip/tutorials/send-arbitrary-data",
+        },
+      ],
+    },
+    {
+      section: "API Reference",
+      contents: [
+        {
+          title: "IRouterClient",
+          url: "ccip/api-reference/i-router-client",
+        },
+        {
+          title: "CCIPReceiver",
+          url: "ccip/api-reference/ccip-receiver",
+        },
+        {
+          title: "Client Library",
+          url: "ccip/api-reference/client",
+        },
+        {
+          title: "Errors",
+          url: "ccip/api-reference/errors",
+        },
+      ],
+    },
+    {
+      section: "GUIDES",
+      contents: [
+        {
+          title: "Concepts",
+          url: "ccip/concepts",
+        },
+        {
+          title: "Architecture and Billing",
+          url: "ccip/architecture",
+        },
+        {
+          title: "Test Tokens",
+          url: "ccip/test-tokens",
+        },
+        {
+          title: "Best Practices",
+          url: "ccip/best-practices",
+        },
+      ],
+    },
+    {
+      section: "EXAMPLES",
+      contents: [
+        {
+          title: "Cross-chain dApps and Tools",
+          url: "ccip/examples",
+        },
+      ],
+    },
+    {
+      section: "Chainlink Architecture",
+      contents: [
+        {
+          title: "Overview",
+          url: "architecture-overview/architecture-overview?parent=ccip",
+        },
+        {
+          title: "Basic Request Model",
+          url: "architecture-overview/architecture-request-model?parent=ccip",
+        },
+        {
+          title: "Decentralized Data Model",
+          url: "architecture-overview/architecture-decentralized-model?parent=ccip",
+        },
+        {
+          title: "Off-Chain Reporting",
+          url: "architecture-overview/off-chain-reporting?parent=ccip",
+        },
+      ],
+    },
+    {
+      section: "Resources",
+      contents: [
+        {
+          title: "Learning Resources",
+          url: "getting-started/other-tutorials?parent=ccip",
+        },
+        {
+          title: "Acquire testnet LINK",
+          url: "resources/acquire-link?parent=ccip",
+        },
+        {
+          title: "Fund Your Contracts",
+          url: "resources/fund-your-contract?parent=ccip",
+        },
+        {
+          title: "Install Frameworks",
+          url: "resources/create-a-chainlinked-project?parent=ccip",
+        },
+        {
+          title: "LINK Token Contracts",
+          url: "resources/link-token-contracts?parent=ccip",
+        },
+        {
+          title: "Bridges and Associated Risks",
+          url: "resources/bridge-risks?parent=ccip",
+        },
+        {
+          title: "Developer Communications",
+          url: "resources/developer-communications?parent=ccip",
+        },
+        { title: "Getting Help", url: "resources/getting-help" },
+        { title: "Hackathon Resources", url: "resources/hackathon-resources?parent=ccip" },
+        {
+          title: "Contributing to Chainlink",
+          url: "resources/contributing-to-chainlink?parent=ccip",
+        },
+      ],
+    },
+  ],
   nodeOperator: [
     {
       section: "Chainlink Nodes",
       contents: [
+        {
+          title: "Overview",
+          url: "chainlink-nodes",
+        },
         {
           title: "Release Notes",
           url: "chainlink-nodes/node-versions",

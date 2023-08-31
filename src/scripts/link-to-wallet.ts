@@ -28,7 +28,7 @@ const switchToNetworkText = "Switch network and add to wallet"
 const initChainChangeEventName = "InitChainChange"
 
 /**
- * Converts a nulber to HexString (a string which has a 0x prefix followed by any number of nibbles (i.e. case-insensitive hexadecimal characters, 0-9 and a-f).)
+ * Converts a number to HexString (a string which has a 0x prefix followed by any number of nibbles (i.e. case-insensitive hexadecimal characters, 0-9 and a-f).)
  */
 const toHex = ethers.utils.hexValue
 
@@ -224,127 +224,129 @@ const validateLinkAddress = async (address: string, provider: Web3Provider) => {
     throw new Error(`Error linkContract decimals. '${linkToken.decimals}' !== '${decimals}'`)
   }
 }
+const handleWalletTokenManagement = async () => {
+  try {
+    const ethereum = (await detectEthereumProvider()) as MetaMaskInpageProvider
+    // Support only Metamask extension for now.
+    if (!ethereum || !ethereum.isMetaMask) throw Error()
 
-try {
-  const ethereum = (await detectEthereumProvider()) as MetaMaskInpageProvider
-  // Support only Metamask extension for now.
-  if (!ethereum || !ethereum.isMetaMask) throw Error()
+    const provider = new ethers.providers.Web3Provider(ethereum as any, "any")
 
-  const provider = new ethers.providers.Web3Provider(ethereum as any, "any")
-
-  let detectedChainId: string | number | null = (await ethereum.request({
-    method: "eth_chainId",
-  })) as string | null
-  if (!detectedChainId) {
-    console.error(`Something went wrong. Wallet detected but chain not detected`)
-    throw Error()
-  }
-  detectedChainId = toHex(parseInt(detectedChainId))
-  if (!isChainIdFormatValid(detectedChainId)) {
-    console.error(`Something went wrong. format of detectedChainId '${detectedChainId}' not hexString`)
-    throw Error()
-  }
-
-  // Detect when user initiates the chain switch from the webapp
-  // variable chainFromSwitch used to diffenrentiate when user switch the chain
-  // directly from wallet
-  let chainFromSwitch: string
-  window.addEventListener(initChainChangeEventName, (evt: any) => {
-    chainFromSwitch = toHex(parseInt(evt.detail?.chainId))
-    if (!isChainIdFormatValid(chainFromSwitch)) {
-      console.error(`Something went wrong. format of chainFromSwitch '${chainFromSwitch}' not hexString`)
+    let detectedChainId: string | number | null = (await ethereum.request({
+      method: "eth_chainId",
+    })) as string | null
+    if (!detectedChainId) {
+      console.error(`Something went wrong. Wallet detected but chain not detected`)
+      throw Error()
     }
-  })
-
-  // Reload the page if the user changes the Chain.
-  // Only reload the page if the user initiates the switch directly from wallet
-  ethereum.on("chainChanged", (chainId) => {
-    if (chainId !== detectedChainId && chainFromSwitch !== chainId) {
-      window.location.reload()
+    detectedChainId = toHex(parseInt(detectedChainId))
+    if (!isChainIdFormatValid(detectedChainId)) {
+      console.error(`Something went wrong. format of detectedChainId '${detectedChainId}' not hexString`)
+      throw Error()
     }
-  })
 
-  const tokenAddressElements = Array.from(document.getElementsByClassName("erc-token-address"))
-
-  tokenAddressElements.forEach((element) => {
-    const id = element.id
-    // Make sure it has the right format.
-    if (!pattern.test(id)) {
-      if (!id) {
-        console.error(`Element's id cannot be null/empty if its class is erc-token-address `)
-      } else {
-        console.error(`Format of id ${id} not correct. Format should follow the pattern chainId_address`)
+    // Detect when user initiates the chain switch from the webapp
+    // variable chainFromSwitch used to diffenrentiate when user switch the chain
+    // directly from wallet
+    let chainFromSwitch: string
+    window.addEventListener(initChainChangeEventName, (evt: any) => {
+      chainFromSwitch = toHex(parseInt(evt.detail?.chainId))
+      if (!isChainIdFormatValid(chainFromSwitch)) {
+        console.error(`Something went wrong. format of chainFromSwitch '${chainFromSwitch}' not hexString`)
       }
-      return
-    }
-    let [chainId, address] = id.split(separator)
-    chainId = toHex(parseInt(chainId))
-    if (!isChainIdFormatValid(chainId)) {
-      console.error(`Something went wrong. format of chainId '${chainId}' not hexString`)
-      return
-    }
+    })
 
-    const button = document.createElement("button")
-    button.className = `${buttonStyles.secondary} linkToWalletBtn`
-    button.style.marginLeft = "10px"
-    button.style.fontSize = "12px"
-    button.style.padding = "4px"
-    const parameters: AddToWalletParameters = {
-      ...defaultWalletParameters,
-      address,
-    }
-
-    if (chainId === detectedChainId) {
-      // Insert add wallet button only for the detected chainId.
-      button.innerText = addToWalletText
-      button.onclick = async () => {
-        try {
-          await validateLinkAddress(address, provider)
-          addAssetToWallet(ethereum, parameters)
-        } catch (error) {
-          console.error(error)
-        }
-      }
-    } else {
-      button.innerText = switchToNetworkText
-      button.title = `Switch to network ${chainId} before adding the Link token`
-      button.onclick = async () => {
-        window.dispatchEvent(
-          new CustomEvent(initChainChangeEventName, {
-            detail: {
-              chainId,
-            },
-          })
-        )
-        try {
-          await switchToChain(chainId, ethereum)
-        } catch (switchError) {
-          if ((switchError as ProviderRpcError).code === 4902) {
-            // This error code indicates that the chain has not been added to MetaMask.
-            try {
-              await addChainToWallet(chainId, ethereum)
-            } catch (error) {
-              console.error(`Error happened when adding chain ${chainId} to metamask`, error)
-              return
-            }
-          } else {
-            console.error(`Error happened when switching to chain ${chainId} to metamask`, switchError)
-            return
-          }
-        }
-
-        try {
-          await validateLinkAddress(address, provider)
-          addAssetToWallet(ethereum, parameters)
-        } catch (error) {
-          console.error(error)
-        }
-        // Make sure the page is reloaded after the asset is loaded to the wallet
+    // Reload the page if the user changes the Chain.
+    // Only reload the page if the user initiates the switch directly from wallet
+    ethereum.on("chainChanged", (chainId) => {
+      if (chainId !== detectedChainId && chainFromSwitch !== chainId) {
         window.location.reload()
       }
-    }
-    element.insertAdjacentElement("afterend", button)
-  })
-} catch (e) {
-  console.error(e)
+    })
+
+    const tokenAddressElements = Array.from(document.getElementsByClassName("erc-token-address"))
+
+    tokenAddressElements.forEach((element) => {
+      const id = element.id
+      // Make sure it has the right format.
+      if (!pattern.test(id)) {
+        if (!id) {
+          console.error(`Element's id cannot be null/empty if its class is erc-token-address `)
+        } else {
+          console.error(`Format of id ${id} not correct. Format should follow the pattern chainId_address`)
+        }
+        return
+      }
+      let [chainId, address] = id.split(separator)
+      chainId = toHex(parseInt(chainId))
+      if (!isChainIdFormatValid(chainId)) {
+        console.error(`Something went wrong. format of chainId '${chainId}' not hexString`)
+        return
+      }
+
+      const button = document.createElement("button")
+      button.className = `${buttonStyles.secondary} linkToWalletBtn`
+      button.style.marginLeft = "10px"
+      button.style.fontSize = "12px"
+      button.style.padding = "4px"
+      const parameters: AddToWalletParameters = {
+        ...defaultWalletParameters,
+        address,
+      }
+
+      if (chainId === detectedChainId) {
+        // Insert add wallet button only for the detected chainId.
+        button.innerText = addToWalletText
+        button.onclick = async () => {
+          try {
+            await validateLinkAddress(address, provider)
+            addAssetToWallet(ethereum, parameters)
+          } catch (error) {
+            console.error(error)
+          }
+        }
+      } else {
+        button.innerText = switchToNetworkText
+        button.title = `Switch to network ${chainId} before adding the Link token`
+        button.onclick = async () => {
+          window.dispatchEvent(
+            new CustomEvent(initChainChangeEventName, {
+              detail: {
+                chainId,
+              },
+            })
+          )
+          try {
+            await switchToChain(chainId, ethereum)
+          } catch (switchError) {
+            if ((switchError as ProviderRpcError).code === 4902) {
+              // This error code indicates that the chain has not been added to MetaMask.
+              try {
+                await addChainToWallet(chainId, ethereum)
+              } catch (error) {
+                console.error(`Error happened when adding chain ${chainId} to metamask`, error)
+                return
+              }
+            } else {
+              console.error(`Error happened when switching to chain ${chainId} to metamask`, switchError)
+              return
+            }
+          }
+
+          try {
+            await validateLinkAddress(address, provider)
+            addAssetToWallet(ethereum, parameters)
+          } catch (error) {
+            console.error(error)
+          }
+          // Make sure the page is reloaded after the asset is loaded to the wallet
+          window.location.reload()
+        }
+      }
+      element.insertAdjacentElement("afterend", button)
+    })
+  } catch (e) {
+    console.error(e)
+  }
 }
+handleWalletTokenManagement()
