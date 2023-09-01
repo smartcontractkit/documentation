@@ -329,6 +329,23 @@ export const CHAINS: Chain[] = [
     ],
   },
   {
+    page: "polygonzkevm",
+    label: "Polygon zkEVM",
+    title: "Polygon zkEVM",
+    img: "/assets/chains/polygonzkevm.svg",
+    networkStatusUrl: "https://testnet-zkevm.polygonscan.com/",
+    tags: ["default"],
+    supportedFeatures: ["feeds"],
+    networks: [
+      {
+        name: "Polygon zkEVM testnet",
+        explorerUrl: "https://testnet-zkevm.polygonscan.com/address/%s",
+        networkType: "testnet",
+        rddUrl: "https://reference-data-directory-low5t42s1-chainlinklabs.vercel.app/feeds-polygon-zkevm-testnet.json",
+      },
+    ],
+  },
+  {
     page: "starknet",
     label: "StarkNet",
     title: "StarkNet Data Feeds",
@@ -365,23 +382,6 @@ export const CHAINS: Chain[] = [
         explorerUrl: "https://solscan.io/account/%s?cluster=devnet",
         networkType: "testnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-solana-devnet.json",
-      },
-    ],
-  },
-  {
-    page: "polygonzkevm",
-    label: "Polygon zkEVM",
-    title: "Polygon zkEVM",
-    img: "/assets/chains/polygonzkevm.svg",
-    networkStatusUrl: "https://testnet-zkevm.polygonscan.com/",
-    tags: ["default"],
-    supportedFeatures: ["feeds"],
-    networks: [
-      {
-        name: "Polygon zkEVM testnet",
-        explorerUrl: "https://testnet-zkevm.polygonscan.com/address/%s",
-        networkType: "testnet",
-        rddUrl: "https://reference-data-directory-low5t42s1-chainlinklabs.vercel.app/feeds-polygon-zkevm-testnet.json",
       },
     ],
   },
@@ -472,6 +472,18 @@ export const ALL_CHAINS: Chain[] = [
         explorerUrl: "https://andromeda-explorer.metis.io/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-andromeda-1.json",
+      },
+      {
+        name: "BASE Mainnet",
+        explorerUrl: "https://basescan.org/address/%s",
+        networkType: "mainnet",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-base-1.json",
+      },
+      {
+        name: "Celo Mainnet",
+        explorerUrl: "https://explorer.celo.org/address/%s",
+        networkType: "mainnet",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-celo-mainnet.json",
       },
       {
         name: "Solana Mainnet",
