@@ -8,15 +8,13 @@ export type Props = {
   frontmatter: BaseFrontmatter
 }
 const { frontmatter } = Astro.props
-// TODO: Solve why TOC is not showing on mobile
 ---
 
 <article id="article">
   <ContentObserver client:media="(min-width: 50em)" />
   <Overview title={frontmatter.title} />
   <span class="sm:hidden">
-    <!-- TODO: May be able to use (max-width: 50em) instead -->
-    <TableOfContents client:only="preact" />
+    <TableOfContents client:media="(max-width: 50em)" />
   </span>
   <slot />
 </article>
