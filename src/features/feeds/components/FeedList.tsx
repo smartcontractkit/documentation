@@ -7,7 +7,7 @@ import { Chain, CHAINS, ALL_CHAINS, ChainNetwork } from "~/features/data/chains"
 import { useGetChainMetadata } from "./useGetChainMetadata"
 import { ChainMetadata } from "../../data/api"
 import useQueryString from "~/hooks/useQueryString"
-import { updateContentObserver } from "~/components/PageContent/ContentObserver/coStore"
+import { updateTableOfContents } from "~/components/RightSidebar/TableOfContents/tocStore"
 
 export type DataFeedType = "default" | "por" | "nftFloor" | "rates"
 export const FeedList = ({
@@ -34,7 +34,7 @@ export const FeedList = ({
 
   useEffect(() => {
     if (chainMetadata.processedData) {
-      updateContentObserver()
+      updateTableOfContents()
     }
   }, [chainMetadata.processedData])
 
@@ -113,61 +113,64 @@ export const FeedList = ({
 
           return true
         })
-        .map((network: ChainNetwork) => (
-          <section key={network.name} id={network.name}>
-            {network.networkType === "mainnet" ? (
-              <>
-                <h3 id={network.name}>
-                  {network.name}{" "}
-                  <a className="anchor" href={`#${network.name}`}>
-                    <img src="/images/link.svg" alt="Link to this section" />
-                  </a>
-                </h3>
-                {(selectedChain === "arbitrum" || selectedChain === "optimism" || selectedChain === "metis") && (
-                  <p>
-                    {network.name} is an L2 network. As a best practice, use the L2 sequencer feed to verify the status
-                    of the sequencer when running applications on L2 networks. See the{" "}
-                    <a href="/docs/data-feeds/l2-sequencer-feeds/">L2 Sequencer Uptime Feeds</a> page for examples.
-                  </p>
-                )}
-                <label>
-                  <input
-                    type="checkbox"
-                    style="width:15px;height:15px;display:inline;"
-                    checked={showExtraDetails}
-                    onChange={() => setShowExtraDetails((old) => !old)}
-                  />{" "}
-                  Show more details
-                </label>
-                <MainnetTable
-                  network={network}
-                  showExtraDetails={showExtraDetails}
-                  dataFeedType={dataFeedType}
-                  ecosystem={ecosystem}
-                />
-              </>
-            ) : (
-              <>
-                <h3 id={network.name}>
-                  {network.name}{" "}
-                  <a className="anchor" href={`#${network.name}`}>
-                    <img src="/images/link.svg" alt="Link to this section" />
-                  </a>
-                </h3>
-                <label>
-                  <input
-                    type="checkbox"
-                    style="width:15px;height:15px;display:inline;"
-                    checked={showExtraDetails}
-                    onChange={() => setShowExtraDetails((old) => !old)}
-                  />{" "}
-                  Show more details
-                </label>
-                <TestnetTable network={network} showExtraDetails={showExtraDetails} dataFeedType={dataFeedType} />
-              </>
-            )}
-          </section>
-        ))}
+        .map((network: ChainNetwork) => {
+          const slug = network.name.toLowerCase().split(" ").join("-")
+          return (
+            <section key={network.name} id={slug}>
+              {network.networkType === "mainnet" ? (
+                <>
+                  <h3 id={slug}>
+                    {network.name}{" "}
+                    <a className="anchor" href={`#${slug}`}>
+                      <img src="/images/link.svg" alt="Link to this section" />
+                    </a>
+                  </h3>
+                  {(selectedChain === "arbitrum" || selectedChain === "optimism" || selectedChain === "metis") && (
+                    <p>
+                      {network.name} is an L2 network. As a best practice, use the L2 sequencer feed to verify the
+                      status of the sequencer when running applications on L2 networks. See the{" "}
+                      <a href="/docs/data-feeds/l2-sequencer-feeds/">L2 Sequencer Uptime Feeds</a> page for examples.
+                    </p>
+                  )}
+                  <label>
+                    <input
+                      type="checkbox"
+                      style="width:15px;height:15px;display:inline;"
+                      checked={showExtraDetails}
+                      onChange={() => setShowExtraDetails((old) => !old)}
+                    />{" "}
+                    Show more details
+                  </label>
+                  <MainnetTable
+                    network={network}
+                    showExtraDetails={showExtraDetails}
+                    dataFeedType={dataFeedType}
+                    ecosystem={ecosystem}
+                  />
+                </>
+              ) : (
+                <>
+                  <h3 id={slug}>
+                    {network.name}{" "}
+                    <a className="anchor" href={`#${slug}`}>
+                      <img src="/images/link.svg" alt="Link to this section" />
+                    </a>
+                  </h3>
+                  <label>
+                    <input
+                      type="checkbox"
+                      style="width:15px;height:15px;display:inline;"
+                      checked={showExtraDetails}
+                      onChange={() => setShowExtraDetails((old) => !old)}
+                    />{" "}
+                    Show more details
+                  </label>
+                  <TestnetTable network={network} showExtraDetails={showExtraDetails} dataFeedType={dataFeedType} />
+                </>
+              )}
+            </section>
+          )
+        })}
       {isDeprecating && netCount === 0 && (
         <div>
           <strong>No data feeds are scheduled for deprecation at this time.</strong>

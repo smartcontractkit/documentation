@@ -1,12 +1,9 @@
 import { useEffect } from "preact/hooks"
 import { useCurrentId } from "~/hooks/currentId/useCurrentId"
-import { updateTableOfContents } from "../../RightSidebar/TableOfContents/tocStore"
-import { useStore } from "@nanostores/preact"
-import { shouldUpdateCo } from "./coStore"
+import { MarkdownHeading } from "astro"
 
-export const ContentObserver = () => {
+export const ContentObserver = ({ headings }: { headings: MarkdownHeading[] }) => {
   const { setCurrentId } = useCurrentId()
-  const $shouldUpdateCo = useStore(shouldUpdateCo)
 
   useEffect(() => {
     const observerCallback: IntersectionObserverCallback = (entries) => {
@@ -20,13 +17,21 @@ export const ContentObserver = () => {
     const sectionsObserver = new IntersectionObserver(observerCallback, {
       rootMargin: "-25% 0% -75%",
     })
-    const sections = document.body.querySelectorAll("article > section, section > section")
+
+    const sections: (Element | null)[] = []
+    headings.forEach((h) => {
+      sections.push(document.body.querySelector(`section#${h.slug}`))
+      if (h.depth < 3) {
+        sections.push(document.body.querySelector(`section#${h.slug} > section#${h.slug}`))
+      }
+    })
     sections.forEach((section) => {
-      if (section.id) {
+      if (section) {
         sectionsObserver.observe(section)
       }
     })
-    updateTableOfContents()
     return () => sectionsObserver.disconnect()
-  }, [$shouldUpdateCo])
+  }, [headings])
+
+  return null
 }

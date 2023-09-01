@@ -6,6 +6,7 @@ import styles from "./tableOfContents.module.css"
 import { useCurrentId } from "~/hooks/currentId/useCurrentId"
 import { useStore } from "@nanostores/preact"
 import { shouldUpdateToc } from "./tocStore"
+import { ContentObserver } from "~/components/PageContent/ContentObserver/ContentObserver"
 
 const TableOfContents: FunctionalComponent = () => {
   const $shouldUpdateToc = useStore(shouldUpdateToc)
@@ -32,8 +33,11 @@ const TableOfContents: FunctionalComponent = () => {
     setHeadings(newHeadings)
   }, [$shouldUpdateToc])
 
+  if (!headings) return null
+
   return (
     <nav className={styles.toc}>
+      <ContentObserver headings={headings} />
       <p className={styles.heading}>On this page</p>
       <ul ref={tableOfContents}>
         {headings?.map((h) => (
