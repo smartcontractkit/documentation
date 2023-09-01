@@ -341,7 +341,7 @@ export const CHAINS: Chain[] = [
         name: "Polygon zkEVM testnet",
         explorerUrl: "https://testnet-zkevm.polygonscan.com/address/%s",
         networkType: "testnet",
-        rddUrl: "https://reference-data-directory-low5t42s1-chainlinklabs.vercel.app/feeds-polygon-zkevm-testnet.json",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-polygon-zkevm-testnet.json",
       },
     ],
   },
