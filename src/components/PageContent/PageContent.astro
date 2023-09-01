@@ -1,7 +1,6 @@
 ---
 import { BaseFrontmatter } from "~/content/config"
 import TableOfContents from "../RightSidebar/TableOfContents"
-import { ContentObserver } from "./ContentObserver/ContentObserver"
 import Overview from "./Overview.astro"
 
 export type Props = {
@@ -10,17 +9,22 @@ export type Props = {
 const { frontmatter } = Astro.props
 ---
 
-<article id="article">
+<span class="sm:hidden">
   <Overview title={frontmatter.title} />
-  <span class="sm:hidden">
-    <TableOfContents client:media="(max-width: 72em)" />
-  </span>
+  <TableOfContents client:media="(max-width: 72em)" />
+</span>
+<article id="article">
+  <h1 id="overview">{frontmatter.title}</h1>
   <slot />
 </article>
 
 <style is:inline>
   article {
     position: relative;
+  }
+
+  article h1#overview {
+    display: none;
   }
 
   article section > * {
@@ -147,6 +151,10 @@ const { frontmatter } = Astro.props
   }
 
   @media (min-width: 72em) {
+    article h1#overview {
+      display: block;
+    }
+
     .sm\:hidden {
       display: none;
     }
