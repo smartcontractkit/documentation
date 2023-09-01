@@ -8,13 +8,15 @@ export type Props = {
   frontmatter: BaseFrontmatter
 }
 const { frontmatter } = Astro.props
+// TODO: Solve why TOC is not showing on mobile
 ---
 
 <article id="article">
   <ContentObserver client:media="(min-width: 50em)" />
   <Overview title={frontmatter.title} />
   <span class="sm:hidden">
-    <TableOfContents client:media="(max-width: 50em)" />
+    <!-- TODO: May be able to use (max-width: 50em) instead -->
+    <TableOfContents client:only="preact" />
   </span>
   <slot />
 </article>
@@ -24,12 +26,12 @@ const { frontmatter } = Astro.props
     position: relative;
   }
 
-  article * {
+  article section > * {
     max-width: 100%;
     margin-bottom: 0;
   }
 
-  article :is(label) {
+  article section > :is(label) {
     display: flex;
     align-items: center;
     gap: var(--space-2x);
@@ -40,12 +42,12 @@ const { frontmatter } = Astro.props
     margin-top: var(--space-5x);
   }
 
-  article :is(h1, h2) {
+  article section > :is(h1, h2) {
     top: var(--theme-navbar-height, 2rem);
     z-index: 3;
   }
 
-  article :is(h2) {
+  article section > :is(h2) {
     position: sticky;
     background: white;
     font-size: 28px;
@@ -53,16 +55,16 @@ const { frontmatter } = Astro.props
     margin-bottom: calc(-1 * var(--space-5x));
   }
 
-  article :is(h3, h4) {
+  article section > :is(h3, h4) {
     padding-top: var(--space-8x);
   }
 
-  article :is(h3, h4, li) {
+  article section > :is(h3, h4, li) {
     margin-top: 0;
   }
 
-  article > :first-child {
-    margin-top: 0;
+  article section > :is(h4) {
+    font-size: 20px;
   }
 
   article :is(ul) {
@@ -94,7 +96,7 @@ const { frontmatter } = Astro.props
     color: var(--theme-text-light);
   }
 
-  article iframe {
+  article :is(iframe) {
     width: 100%;
     height: auto;
     aspect-ratio: 16 / 9;
@@ -109,14 +111,14 @@ const { frontmatter } = Astro.props
   }
 
   .sm\:hidden {
-    display: initial;
+    display: block;
   }
 
   @media (min-width: 50em) {
     .sm\:hidden {
       display: none;
     }
-    article :is(h1, h2) {
+    article section > :is(h1, h2) {
       position: sticky;
       background: white;
       border-bottom: 2px solid var(--blue-200, #dfe7fb);
@@ -124,17 +126,17 @@ const { frontmatter } = Astro.props
       padding: var(--space-8x) 0;
     }
 
-    article :is(h1) {
+    article section > :is(h1) {
       margin-top: 0;
     }
 
-    article :is(h2) {
+    article section > :is(h2) {
       font-size: 32px;
       margin-bottom: 0;
     }
 
-    article :is(h4) {
-      font-size: 32px;
+    article section > :is(h3) {
+      font-size: 28px;
     }
 
     section:target {
@@ -189,6 +191,8 @@ const { frontmatter } = Astro.props
     return wrapper
   }
 
-  const elements = document.body.querySelectorAll("article :where(h1, h2, h3, h4)")
+  // Only get direct descendants of the article content
+  // Grabs mdx headers without getting nested headers in components
+  const elements = document.body.querySelectorAll("article > :where(h1, h2, h3, h4)")
   elements.forEach((e) => wrapElements(e, ["H1", "H2"].includes(e.nodeName)))
 </script>

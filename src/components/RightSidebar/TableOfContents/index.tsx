@@ -14,7 +14,8 @@ const TableOfContents: FunctionalComponent = () => {
   const [headings, setHeadings] = useState<MarkdownHeading[]>()
 
   useEffect(() => {
-    const elements = document.querySelectorAll("article section :where(h1, h2, h3, h4)")
+    // Only get top-level headers, don't get nested component headers
+    const elements = document.querySelectorAll("article section > :where(h1, h2, h3, h4)")
     const newHeadings: MarkdownHeading[] = []
     elements.forEach((e) => {
       if (e.textContent) {

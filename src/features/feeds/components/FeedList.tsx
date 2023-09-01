@@ -93,10 +93,10 @@ export const FeedList = ({
       {chainMetadata.loading && !chainMetadata.processedData && <p>Loading...</p>}
 
       {chainMetadata.processedData?.networks
-        .filter((network: { metadata: any[]; tags: string | string[] }) => {
+        .filter((network: { metadata: unknown[]; tags: string | string[] }) => {
           if (isDeprecating) {
             let foundDeprecated = false
-            network.metadata?.forEach((feed: { docs: { shutdownDate: any } }) => {
+            network.metadata?.forEach((feed: { docs: { shutdownDate: unknown } }) => {
               if (feed.docs?.shutdownDate) {
                 foundDeprecated = true
                 netCount++

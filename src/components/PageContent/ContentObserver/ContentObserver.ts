@@ -20,7 +20,7 @@ export const ContentObserver = () => {
     const sectionsObserver = new IntersectionObserver(observerCallback, {
       rootMargin: "-25% 0% -75%",
     })
-    const sections = document.body.querySelectorAll("article section")
+    const sections = document.body.querySelectorAll("article > section, section > section")
     sections.forEach((section) => {
       if (section.id) {
         sectionsObserver.observe(section)

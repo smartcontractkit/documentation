@@ -45,7 +45,7 @@ export const Feedback = () => {
     })
   }
 
-  function handleSubmit(e: any) {
+  function handleSubmit(e) {
     e.preventDefault()
     const formData = new FormData(e.target)
     const data = {
