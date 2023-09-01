@@ -187,19 +187,6 @@ const { frontmatter } = Astro.props
     wrapper.id = start.id
     start.parentNode!.insertBefore(wrapper, start)
     elements.forEach((e) => wrapper.appendChild(e))
-    // If parent header (H1, H2), wrap all lesser headers as children
-    if (isParent) {
-      // Create a nested wrapper for non-subheading elements
-      const wrapper = wrapElements(start)
-      // Extract the header from the first nested wrapper to use as sticky header
-      if (wrapper.firstElementChild) {
-        wrapper.parentNode!.insertBefore(wrapper.firstElementChild, wrapper)
-        // If there's nothing after the title element, remove the now-empty wrapper
-        if (!wrapper.hasChildNodes()) {
-          wrapper.remove()
-        }
-      }
-    }
     return wrapper
   }
 

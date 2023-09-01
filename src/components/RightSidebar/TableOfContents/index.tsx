@@ -3,14 +3,14 @@ import type { FunctionalComponent } from "preact"
 import { useEffect, useRef, useState } from "preact/hooks"
 import { MarkdownHeading } from "astro"
 import styles from "./tableOfContents.module.css"
-import { useCurrentId } from "~/hooks/currentId/useCurrentId"
+import { useCurrentIds } from "~/hooks/currentIds/useCurrentIds"
 import { useStore } from "@nanostores/preact"
 import { shouldUpdateToc } from "./tocStore"
 import { ContentObserver } from "~/components/PageContent/ContentObserver/ContentObserver"
 
 const TableOfContents: FunctionalComponent = () => {
   const $shouldUpdateToc = useStore(shouldUpdateToc)
-  const { $currentId } = useCurrentId()
+  const { $currentIds } = useCurrentIds()
   const tableOfContents = useRef<HTMLUListElement | null>(null)
   const [headings, setHeadings] = useState<MarkdownHeading[]>()
 
@@ -45,7 +45,7 @@ const TableOfContents: FunctionalComponent = () => {
             <a
               href={`#${h.slug}`}
               className={`${styles.headerLink}${h.depth && h.depth > 2 ? ` ${styles[`depth-${h.depth}`]}` : ""}
-              ${$currentId === h.slug ? ` ${styles.active}` : ""}`}
+              ${$currentIds[h.slug] ? ` ${styles.active}` : ""}`}
             >
               {h.text}
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">

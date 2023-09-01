@@ -1,14 +1,14 @@
 /** @jsxImportSource preact */
 import type { FunctionalComponent } from "preact"
 import { useRef } from "preact/hooks"
-import { useCurrentId } from "../../../hooks/currentId/useCurrentId"
+import { useCurrentIds } from "../../../hooks/currentIds/useCurrentIds"
 import { MarkdownHeading } from "astro"
 import styles from "./tableOfContents.module.css"
 
 const TableOfContents: FunctionalComponent<{
   headings: MarkdownHeading[]
 }> = ({ headings }) => {
-  const { $currentId } = useCurrentId()
+  const { $currentIds } = useCurrentIds()
   const tableOfContents = useRef<HTMLUListElement | null>(null)
 
   return (
@@ -18,7 +18,7 @@ const TableOfContents: FunctionalComponent<{
         {headings
           .filter(({ depth }) => depth === 2)
           .map((h) => (
-            <li className={`${styles.headerLink}${$currentId === h.slug ? ` ${styles.active}` : ""}`}>
+            <li className={`${styles.headerLink}${$currentIds[h.slug] ? ` ${styles.active}` : ""}`}>
               <a href={`#${h.slug}`}>
                 {h.text}
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">

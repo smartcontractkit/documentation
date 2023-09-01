@@ -1,18 +1,19 @@
 import { useEffect } from "preact/hooks"
-import { useCurrentId } from "~/hooks/currentId/useCurrentId"
+import { useCurrentIds } from "~/hooks/currentIds/useCurrentIds"
+import { currentIds } from "~/hooks/currentIds/idStore"
 import { MarkdownHeading } from "astro"
 
 export const ContentObserver = ({ headings }: { headings: MarkdownHeading[] }) => {
-  const { setCurrentId } = useCurrentId()
+  const { setCurrentIds } = useCurrentIds()
 
   useEffect(() => {
     const observerCallback: IntersectionObserverCallback = (entries) => {
-      entries.reverse() // Get child entries before parent entries, allows nested headers to work properly
+      const ids: Record<string, boolean> = currentIds.get()
+      // entries.reverse() // Get child entries before parent entries, allows nested headers to work properly
       for (const entry of entries) {
-        if (entry.isIntersecting) {
-          return setCurrentId(entry.target.id)
-        }
+        ids[entry.target.id] = entry.isIntersecting
       }
+      setCurrentIds(ids)
     }
     const sectionsObserver = new IntersectionObserver(observerCallback, {
       rootMargin: "-25% 0% -75%",
@@ -21,9 +22,9 @@ export const ContentObserver = ({ headings }: { headings: MarkdownHeading[] }) =
     const sections: (Element | null)[] = []
     headings.forEach((h) => {
       sections.push(document.body.querySelector(`section#${h.slug}`))
-      if (h.depth < 3) {
-        sections.push(document.body.querySelector(`section#${h.slug} > section#${h.slug}`))
-      }
+      // if (h.depth < 3) {
+      //   sections.push(document.body.querySelector(`section#${h.slug} > section#${h.slug}`))
+      // }
     })
     sections.forEach((section) => {
       if (section) {
