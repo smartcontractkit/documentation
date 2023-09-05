@@ -27,7 +27,12 @@ const { frontmatter } = Astro.props
     display: none;
   }
 
-  article section > * {
+  /* Using padding instead of margin so intersection observers work without spaces */
+  article > section {
+    padding-top: var(--space-5x);
+  }
+
+  article :is(*) {
     max-width: 100%;
     margin-bottom: 0;
   }
@@ -57,7 +62,7 @@ const { frontmatter } = Astro.props
     background: white;
     font-size: 28px;
     padding: var(--space-6x) 0;
-    margin-bottom: calc(-1 * var(--space-5x));
+    margin: 0 0 calc(-1 * var(--space-5x));
   }
 
   article section > :is(h3, h4) {
@@ -107,12 +112,13 @@ const { frontmatter } = Astro.props
     aspect-ratio: 16 / 9;
   }
 
+  /* Offsets padding */
   section:target {
-    scroll-margin-top: var(--theme-navbar-height, 2rem);
+    scroll-margin-top: calc(var(--theme-navbar-height, 2rem) - var(--space-5x));
   }
 
   section > section:target {
-    scroll-margin-top: calc(var(--theme-navbar-height, 2rem) + 5rem);
+    scroll-margin-top: calc(var(--theme-navbar-height, 2rem) + var(--space-20x));
   }
 
   .sm\:hidden {
@@ -128,13 +134,12 @@ const { frontmatter } = Astro.props
       padding: var(--space-8x) 0;
     }
 
-    article section > :is(h1) {
-      margin-top: 0;
+    article section > :is(h1, h2) {
+      margin: 0;
     }
 
     article section > :is(h2) {
       font-size: 32px;
-      margin-bottom: 0;
     }
 
     article section > :is(h3) {
@@ -142,11 +147,11 @@ const { frontmatter } = Astro.props
     }
 
     section:target {
-      scroll-margin-top: 0;
+      scroll-margin-top: calc(-1 * var(--space-5x));
     }
 
     section > section:target {
-      scroll-margin-top: 6rem;
+      scroll-margin-top: var(--space-24x);
     }
   }
 
