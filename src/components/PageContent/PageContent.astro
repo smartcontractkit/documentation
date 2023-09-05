@@ -23,12 +23,37 @@ const whatsNext = content.whatsnext
   </nav>
 </article>
 
-<style>
-  .content {
-    padding: 0;
-    /* max-width: 75ch; */
+<style is:inline>
+  /* Required for floating content i.e. copy-code-button-wrapper */
+  article {
+    position: relative;
+  }
+
+  article :is(h1, h2, h3, h4, h5, h6) > a {
+    display: inline-block;
+    color: inherit;
     width: 100%;
-    height: 100%;
+  }
+
+  article h1#overview {
+    display: none;
+  }
+
+  /* Using padding instead of margin so intersection observers work without spaces */
+  article > section {
+    padding-top: var(--space-5x);
+  }
+
+  article :is(*) {
+    max-width: 100%;
+    margin-bottom: 0;
+  }
+
+  article :is(p, a) {
+    word-break: break-word;
+  }
+
+  article section > :is(label) {
     display: flex;
     flex-direction: column;
   }
