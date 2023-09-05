@@ -22,7 +22,10 @@ const TableOfContents: FunctionalComponent = () => {
     const elements = document.querySelectorAll("article section > :where(h1, h2, h3, h4)")
     const newHeadings: MarkdownHeading[] = []
     elements.forEach((e) => {
-      if (e.textContent) {
+      // Check for nextElementSibling, if there's no content
+      // following the header (i.e. empty overview)
+      // don't add a heading
+      if (e.textContent && e.nextElementSibling) {
         const depth = Number(e.nodeName.at(1))
         const slug = e.id
         const text = depth > 1 ? e.textContent : "Overview"

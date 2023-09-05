@@ -1,16 +1,21 @@
 ---
 import { BaseFrontmatter } from "~/content/config"
-import TableOfContents from "../RightSidebar/TableOfContents"
 import Overview from "./Overview.astro"
+import { MarkdownHeading } from "astro"
 
 export type Props = {
   frontmatter: BaseFrontmatter
 }
 const { frontmatter } = Astro.props
+const title: MarkdownHeading = {
+  text: frontmatter.title,
+  slug: "overview",
+  depth: 1,
+}
 ---
 
 <article id="article">
-  <Overview title={frontmatter.title} />
+  <Overview {title} />
   <slot />
 </article>
 
