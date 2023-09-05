@@ -8,6 +8,9 @@ import { useStore } from "@nanostores/preact"
 import { shouldUpdateToc } from "./tocStore"
 import { ContentObserver } from "~/components/PageContent/ContentObserver/ContentObserver"
 
+// TODO: Create initial state of headings(?)
+// This would reduce pop-in
+// Either that or use a suspense handler
 const TableOfContents: FunctionalComponent = () => {
   const $shouldUpdateToc = useStore(shouldUpdateToc)
   const { $currentIds } = useCurrentIds()
@@ -33,11 +36,9 @@ const TableOfContents: FunctionalComponent = () => {
     setHeadings(newHeadings)
   }, [$shouldUpdateToc])
 
-  if (!headings) return null
-
   return (
     <nav className={styles.toc}>
-      <ContentObserver headings={headings} />
+      <ContentObserver headings={headings ?? []} />
       <p className={styles.heading}>On this page</p>
       <ul ref={tableOfContents}>
         {headings?.map((h) => (

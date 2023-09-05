@@ -9,7 +9,6 @@ export const ContentObserver = ({ headings }: { headings: MarkdownHeading[] }) =
   useEffect(() => {
     const observerCallback: IntersectionObserverCallback = (entries) => {
       const ids: Record<string, boolean> = currentIds.get()
-      // entries.reverse() // Get child entries before parent entries, allows nested headers to work properly
       for (const entry of entries) {
         ids[entry.target.id] = entry.isIntersecting
       }
@@ -19,14 +18,8 @@ export const ContentObserver = ({ headings }: { headings: MarkdownHeading[] }) =
       rootMargin: "-20% 0% -80%",
     })
 
-    const sections: (Element | null)[] = []
     headings.forEach((h) => {
-      sections.push(document.body.querySelector(`section#${h.slug}`))
-      // if (h.depth < 3) {
-      //   sections.push(document.body.querySelector(`section#${h.slug} > section#${h.slug}`))
-      // }
-    })
-    sections.forEach((section) => {
+      const section = document.body.querySelector(`section#${h.slug}`)
       if (section) {
         sectionsObserver.observe(section)
       }

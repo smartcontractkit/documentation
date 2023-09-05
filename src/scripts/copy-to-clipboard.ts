@@ -34,6 +34,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const container = document.createElement("div")
         container.className = "code-wrapper"
+        container.style.marginTop = "var(--space-3x)"
 
         const currentParent = codeBlock.parentNode
         const codeBlockClone = codeBlock.cloneNode(true)

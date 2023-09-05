@@ -54,17 +54,17 @@ const { frontmatter } = Astro.props
     gap: var(--space-2x);
   }
 
-  article :where(section) > :not(section),
-  article > :not(section) {
+  article :where(section, astro-slot) > :not(section),
+  article > :not(section, astro-slot) {
     margin-top: var(--space-5x);
   }
 
-  article section > :is(h1, h2) {
+  article :where(section, astro-slot) > :is(h1, h2) {
     top: var(--theme-navbar-height, 2rem);
     z-index: 3;
   }
 
-  article section > :is(h2) {
+  article :where(section, astro-slot) > :is(h2) {
     position: sticky;
     background: white;
     font-size: 28px;
@@ -72,15 +72,15 @@ const { frontmatter } = Astro.props
     margin: 0 0 calc(-1 * var(--space-5x));
   }
 
-  article section > :is(h3, h4) {
+  article :where(section, astro-slot) > :is(h3, h4) {
     padding-top: var(--space-8x);
   }
 
-  article section > :is(h3, h4, li) {
+  article :where(section, astro-slot) > :is(h3, h4, li) {
     margin-top: 0;
   }
 
-  article section > :is(h4) {
+  article :where(section, astro-slot) > :is(h4) {
     font-size: 20px;
   }
 
@@ -133,7 +133,7 @@ const { frontmatter } = Astro.props
   }
 
   @media (min-width: 50em) {
-    article section > :is(h1, h2) {
+    article :where(section, astro-slot) > :is(h1, h2) {
       position: sticky;
       background: white;
       border-bottom: 2px solid var(--blue-200, #dfe7fb);
@@ -141,15 +141,15 @@ const { frontmatter } = Astro.props
       padding: var(--space-8x) 0;
     }
 
-    article section > :is(h1, h2) {
+    article :where(section, astro-slot) > :is(h1, h2) {
       margin: 0;
     }
 
-    article section > :is(h2) {
+    article :where(section, astro-slot) > :is(h2) {
       font-size: 32px;
     }
 
-    article section > :is(h3) {
+    article :where(section, astro-slot) > :is(h3) {
       font-size: 28px;
     }
 
@@ -175,16 +175,15 @@ const { frontmatter } = Astro.props
 
 <script>
   /**
-   * Looks janky, but is necessary to achieve sticky h2 headers
-   * with functioning intersection observers for nested h3, h4 headers
+   * Creates sticky headers which interact with
+   * intersection observers for nested h3, h4 headers
    */
+  // TODO: Allow h3 elements to be parents to h4 elements(?)
   const wrapElements = (start: Element, isParent?: boolean) => {
     const wrapper = document.createElement("section")
     const elements: Element[] = []
     elements.push(start)
     let next = start.nextElementSibling
-    // TODO: Un-jank this, maybe create a helper for wrapping elements
-    // which the islands can use in their render
     while (
       next &&
       (next.nodeName !== "ASTRO-ISLAND" || // Not an island

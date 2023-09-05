@@ -49,7 +49,9 @@ export const FeedList = ({
     <section id={id}>
       {!isDeprecating && (
         <>
-          <h2 id={id}>Networks</h2>
+          <h2 id={id}>
+            <a href={`#${id}`}>Networks</a>
+          </h2>
           <section id={id}>
             <div class={feedList.clChainnavProduct} role="tablist">
               {chains
@@ -120,10 +122,7 @@ export const FeedList = ({
               {network.networkType === "mainnet" ? (
                 <>
                   <h3 id={slug}>
-                    {network.name}{" "}
-                    <a className="anchor" href={`#${slug}`}>
-                      <img src="/images/link.svg" alt="Link to this section" />
-                    </a>
+                    <a href={`#${slug}`}>{network.name}</a>
                   </h3>
                   {(selectedChain === "arbitrum" || selectedChain === "optimism" || selectedChain === "metis") && (
                     <p>
@@ -138,7 +137,7 @@ export const FeedList = ({
                       style="width:15px;height:15px;display:inline;"
                       checked={showExtraDetails}
                       onChange={() => setShowExtraDetails((old) => !old)}
-                    />{" "}
+                    />
                     Show more details
                   </label>
                   <MainnetTable
@@ -151,10 +150,7 @@ export const FeedList = ({
               ) : (
                 <>
                   <h3 id={slug}>
-                    {network.name}{" "}
-                    <a className="anchor" href={`#${slug}`}>
-                      <img src="/images/link.svg" alt="Link to this section" />
-                    </a>
+                    <a href={`#${slug}`}>{network.name}</a>
                   </h3>
                   <label>
                     <input
