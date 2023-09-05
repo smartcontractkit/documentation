@@ -16,7 +16,7 @@ export const ContentObserver = ({ headings }: { headings: MarkdownHeading[] }) =
       setCurrentIds(ids)
     }
     const sectionsObserver = new IntersectionObserver(observerCallback, {
-      rootMargin: "-25% 0% -75%",
+      rootMargin: "-20% 0% -80%",
     })
 
     const sections: (Element | null)[] = []
