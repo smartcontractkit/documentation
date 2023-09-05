@@ -9,12 +9,8 @@ export type Props = {
 const { frontmatter } = Astro.props
 ---
 
-<span class="sm:hidden">
-  <Overview title={frontmatter.title} />
-  <TableOfContents client:media="(max-width: 72em)" />
-</span>
 <article id="article">
-  <h1 id="overview">{frontmatter.title}</h1>
+  <Overview title={frontmatter.title} />
   <slot />
 </article>
 
@@ -36,10 +32,6 @@ const { frontmatter } = Astro.props
 
   article table {
     margin-top: var(--space-2x);
-  }
-
-  article #overview {
-    display: none;
   }
 
   /* Using padding instead of margin so intersection observers work without spaces */
@@ -69,16 +61,7 @@ const { frontmatter } = Astro.props
   }
 
   article :where(section, astro-slot) > :is(h1, h2) {
-    top: var(--theme-navbar-height, 2rem);
-    z-index: 3;
-  }
-
-  article :where(section, astro-slot) > :is(h2) {
-    position: sticky;
-    background: white;
-    font-size: 28px;
-    padding: var(--space-6x) 0;
-    margin: 0 0 calc(-1 * var(--space-5x));
+    margin: 0;
   }
 
   article :where(section, astro-slot) > :is(h3, h4) {
@@ -89,7 +72,16 @@ const { frontmatter } = Astro.props
     margin-top: 0;
   }
 
-  article :where(section, astro-slot) > :is(h4) {
+  article :where(section, astro-slot) > h1 {
+    font-size: 32px;
+  }
+
+  article :where(section, astro-slot) > h2 {
+    font-size: 28px;
+    padding-top: var(--space-6x);
+  }
+
+  article :where(section, astro-slot) > h4 {
     font-size: 20px;
   }
 
@@ -133,25 +125,24 @@ const { frontmatter } = Astro.props
     scroll-margin-top: calc(var(--theme-navbar-height, 2rem) + var(--space-20x));
   }
 
-  .sm\:hidden {
-    display: block;
-  }
-
   @media (min-width: 50em) {
     article :where(section, astro-slot) > :is(h1, h2) {
       position: sticky;
+      top: 0;
+      z-index: 3;
       background: white;
       border-bottom: 2px solid var(--blue-200, #dfe7fb);
-      top: 0;
-      margin: 0;
       padding: var(--space-6x) 0;
     }
+    article :where(section, astro-slot) > h1 {
+      font-size: 40px;
+    }
 
-    article :where(section, astro-slot) > :is(h2) {
+    article :where(section, astro-slot) > h2 {
       font-size: 32px;
     }
 
-    article :where(section, astro-slot) > :is(h3) {
+    article :where(section, astro-slot) > h3 {
       font-size: 28px;
     }
 
@@ -161,16 +152,6 @@ const { frontmatter } = Astro.props
 
     section > section:target {
       scroll-margin-top: var(--space-24x);
-    }
-  }
-
-  @media (min-width: 72em) {
-    article #overview {
-      display: block;
-    }
-
-    .sm\:hidden {
-      display: none;
     }
   }
 </style>
