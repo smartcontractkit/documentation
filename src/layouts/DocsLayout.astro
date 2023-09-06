@@ -25,6 +25,8 @@ const titleHeading: MarkdownHeading = {
   depth: 1,
 }
 
+const initialHeadings = [titleHeading].concat(headings ?? [])
+
 const whatsNext = frontmatter.whatsnext
 
 const currentPage = new URL(Astro.request.url).pathname
@@ -78,8 +80,8 @@ const includeLinkToWalletScript = !!Astro.props?.frontmatter?.metadata?.linkToWa
 
       @media (min-width: 50em) {
         .layout {
-          grid-template-columns: 1fr auto;
-          gap: 1em;
+          grid-template-columns: 1fr 2fr 1fr;
+          gap: var(--gutter);
         }
 
         #grid-left {
@@ -87,19 +89,19 @@ const includeLinkToWalletScript = !!Astro.props?.frontmatter?.metadata?.linkToWa
           background: #fafbfd;
           justify-content: flex-end;
         }
-      }
-
-      @media (min-width: 72em) {
-        .layout {
-          grid-template-columns: 1fr 2fr 1fr;
-        }
 
         #grid-main {
-          padding-top: 0;
+          padding: 0 0 var(--doc-padding) 0;
         }
 
         #grid-right {
           display: flex;
+        }
+      }
+
+      @media (min-width: 72em) {
+        .layout {
+          gap: var(--doc-padding);
         }
       }
     </style>
@@ -149,7 +151,7 @@ const includeLinkToWalletScript = !!Astro.props?.frontmatter?.metadata?.linkToWa
 
   <body>
     <Header section={frontmatter.section} />
-    <MobileToc client:media="(max-width: 72em)" initialHeadings={[titleHeading].concat(headings ?? [])} />
+    <MobileToc client:media="(max-width: 50em)" {initialHeadings} />
     <main class="layout">
       <aside id="grid-left" title="Site Navigation">
         <LeftSidebar currentPage={currentPage} section={frontmatter.section} />
@@ -161,7 +163,7 @@ const includeLinkToWalletScript = !!Astro.props?.frontmatter?.metadata?.linkToWa
         {whatsNext && <WhatsNext content={whatsNext} />}
       </div>
       <aside id="grid-right" title="Table of Contents">
-        <RightSidebar {githubEditUrl} headings={[titleHeading].concat(headings ?? [])} />
+        <RightSidebar {githubEditUrl} headings={initialHeadings} />
       </aside>
     </main>
     <NewsletterCTA client:visible />

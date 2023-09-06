@@ -19,7 +19,7 @@ const { titleHeading } = Astro.props
     position: relative;
   }
 
-  article :is(h1, h2, h3, h4, h5, h6) > a {
+  article :is(h1, h2, h3, h4) > a {
     display: inline-block;
     color: inherit;
     width: 100%;
@@ -133,6 +133,17 @@ const { titleHeading } = Astro.props
       border-bottom: 2px solid var(--blue-200, #dfe7fb);
       padding: var(--space-6x) 0;
     }
+
+    section:target {
+      scroll-margin-top: calc(-1 * var(--space-5x));
+    }
+
+    section > section:target {
+      scroll-margin-top: var(--space-24x);
+    }
+  }
+
+  @media (min-width: 72em) {
     article :where(section, astro-slot) > h1 {
       font-size: 40px;
     }
@@ -143,14 +154,6 @@ const { titleHeading } = Astro.props
 
     article :where(section, astro-slot) > h3 {
       font-size: 28px;
-    }
-
-    section:target {
-      scroll-margin-top: calc(-1 * var(--space-5x));
-    }
-
-    section > section:target {
-      scroll-margin-top: var(--space-24x);
     }
   }
 </style>
