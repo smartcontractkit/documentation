@@ -1,14 +1,12 @@
-import { Chain, ChainNetwork } from "~/features/data/chains"
-
+import { Chain, ChainNetwork, getNetworkFromQueryString } from "~/features/data/chains"
 import "./costTable.css"
-import { useEffect, useReducer, useState } from "preact/hooks"
+import { useCallback, useEffect, useReducer } from "preact/hooks"
 import { BigNumber, utils } from "ethers"
 import button from "@chainlink/design-system/button.module.css"
 
 interface Props {
-  mainChain: Chain
-  chain: ChainNetwork
   method: "vrfSubscription" | "vrfDirectFunding"
+  network: string
 }
 
 interface directFundingResponse {
@@ -30,6 +28,9 @@ interface dataResponse {
 
 interface State {
   isLoading: boolean
+  networkName: string
+  mainChain: Chain | null
+  mainChainNetwork: ChainNetwork | null
   gasPrice: string
   L1GasPriceEstimate: string | undefined
   currentL1GasPriceEstimate: string
@@ -54,6 +55,12 @@ interface CacheEntry {
   latestCacheUpdate: number
 }
 
+interface UpdateChainResponse {
+  networkName: string
+  chain: Chain
+  chainNetwork: ChainNetwork
+}
+
 type Cache = {
   [key: string]: CacheEntry
 }
@@ -61,7 +68,10 @@ type Cache = {
 const CACHE_EXPIRY_TIME = 5 * 60 * 1000 // 5 min in milliseconds
 
 const initialState: State = {
-  isLoading: false,
+  isLoading: true,
+  networkName: "",
+  mainChain: null,
+  mainChainNetwork: null,
   gasPrice: "0",
   L1GasPriceEstimate: "0",
   currentL1GasPriceEstimate: "0",
@@ -84,6 +94,9 @@ const initialState: State = {
 type Action =
   | { type: "UPDATE_STATE"; payload: Partial<State> }
   | { type: "SET_LOADING"; payload: boolean }
+  | { type: "SET_NETWORK_NAME"; payload: string }
+  | { type: "SET_MAIN_CHAIN"; payload: Chain }
+  | { type: "SET_MAIN_CHAIN_NETWORK"; payload: ChainNetwork }
   | { type: "SET_GAS_PRICE"; payload: string }
   | { type: "SET_CURRENT_GAS_PRICE"; payload: string }
   | { type: "SET_CALLBACK_GAS_LIMIT"; payload: number }
@@ -105,6 +118,12 @@ const reducer = (state: State, action: Action) => {
       return Object.assign({}, state, action.payload)
     case "SET_LOADING":
       return { ...state, isLoading: action.payload }
+    case "SET_NETWORK_NAME":
+      return { ...state, networkName: action.payload }
+    case "SET_MAIN_CHAIN":
+      return { ...state, mainChain: action.payload }
+    case "SET_MAIN_CHAIN_NETWORK":
+      return { ...state, mainChainNetwork: action.payload }
     case "SET_GAS_PRICE":
       return { ...state, gasPrice: action.payload, currentGasPrice: action.payload }
     case "SET_CURRENT_GAS_PRICE":
@@ -143,96 +162,88 @@ const cache: Cache = {}
 export const getGasCalculatorUrl = ({
   mainChainName,
   networkName,
-  chain,
+  chainNetwork,
   method,
 }: {
   mainChainName: string
   networkName: string
-  chain: ChainNetwork
-  method: Props["method"]
+  chainNetwork: ChainNetwork
+  method: "vrfSubscription" | "vrfDirectFunding"
 }) => {
   return `https://vrf.chain.link/api/calculator?networkName=${mainChainName}&networkType=${
-    networkName === mainChainName ? chain.networkType.toLowerCase() : networkName
+    networkName === mainChainName ? chainNetwork.networkType.toLowerCase() : networkName
   }&method=${method === "vrfSubscription" ? "subscription" : "directFunding"}`
 }
-export const CostTable = ({ mainChain, chain, method }: Props) => {
+
+export const CostTable = ({ method, network }: Props) => {
   const [state, dispatch] = useReducer(reducer, initialState)
-  const [supportedNetworkShortcut, setSupportedNetworkShortcut] = useState("")
-  const getDataResponse = async (mainChainName: string, networkName: string): Promise<dataResponse> => {
-    const cacheKey = `${mainChainName}-${networkName === mainChainName ? chain.networkType : networkName}-${
-      method === "vrfSubscription" ? "subscription" : "directFunding"
-    }`
-    if (cache[cacheKey] && cache[cacheKey].latestCacheUpdate - Date.now() < CACHE_EXPIRY_TIME) {
-      return cache[cacheKey].data
+  const getDataResponse = useCallback(
+    async (mainChainName: string, networkName: string, chainNetwork: ChainNetwork): Promise<dataResponse> => {
+      const cacheKey = `${mainChainName}-${
+        networkName === mainChainName ? state.mainChainNetwork?.networkType : networkName
+      }-${method === "vrfSubscription" ? "subscription" : "directFunding"}`
+      if (cache[cacheKey] && cache[cacheKey].latestCacheUpdate - Date.now() < CACHE_EXPIRY_TIME) {
+        return cache[cacheKey].data
+      }
+      const response = await fetch(getGasCalculatorUrl({ mainChainName, networkName, chainNetwork, method }), {
+        method: "GET",
+      })
+      const json: dataResponse = await response.json()
+      cache[cacheKey] = {
+        data: json,
+        latestCacheUpdate: Date.now(),
+      }
+      return json
+    },
+    [method]
+  )
+
+  const getChainAndNetworkValues = async (): Promise<UpdateChainResponse | null> => {
+    if (typeof network !== "string" || network === "") return null
+
+    const { chain, chainNetwork } = getNetworkFromQueryString(network)
+    const networkName = network.split("-")[1]
+
+    if (!chainNetwork || !networkName || !chain) {
+      return null
     }
 
-    const response = await fetch(getGasCalculatorUrl({ mainChainName, networkName, chain, method }), { method: "GET" })
-
-    const json: dataResponse = await response.json()
-    cache[cacheKey] = {
-      data: json,
-      latestCacheUpdate: Date.now(),
-    }
-    return json
+    return { networkName, chain, chainNetwork }
   }
 
-  useEffect(() => {
-    let mainChainName, networkName
-    switch (mainChain.label) {
-      case "BNB Chain":
-        mainChainName = mainChain.label.replace("Chain", "").replace(" ", "").toLowerCase()
-        break
-      case "Polygon (Matic)":
-        mainChainName = mainChain.label.replace(" (Matic)", "").toLowerCase()
-        break
-      default:
-        mainChainName = mainChain.label.toLowerCase()
-    }
-    if (chain.name.includes("Mainnet")) {
-      networkName = "mainnet"
-    }
-    switch (chain.name) {
-      case "Sepolia Testnet":
-        networkName = "sepolia"
-        break
-      case "Goerli Testnet":
-        networkName = "goerli"
-        break
-      case "BNB Chain Testnet":
-        networkName = "testnet"
-        break
-      case "Mumbai Testnet":
-        networkName = "mumbai"
-        break
-      case "Avalanche Testnet":
-        networkName = "fuji"
-        break
-      case "Fantom Testnet":
-        networkName = "testnet"
-        break
-      case "Arbitrum Goerli":
-        networkName = "goerli"
-        break
-    }
-    dispatch({ type: "SET_LOADING", payload: true })
-    const fillInputs = async () => {
-      const responseJson: dataResponse = await getDataResponse(mainChainName, networkName)
-      const {
-        gasPrice,
-        L1GasPriceEstimate,
-        callbackGasLimit,
-        LINKPremium,
-        decimalPlaces,
-        gasLaneList,
-        currentLINKPriceFeed,
-        directFunding,
-      } = responseJson
+  const fillInputs = useCallback(
+    async (network: string) => {
+      try {
+        if (!state.isLoading) {
+          dispatch({
+            type: "SET_LOADING",
+            payload: true,
+          })
+        }
+        const updatedChainAndNetworkValues = await getChainAndNetworkValues()
+        if (!updatedChainAndNetworkValues) return
 
-      dispatch({
-        type: "UPDATE_STATE",
-        payload: {
+        const { networkName, chain, chainNetwork } = updatedChainAndNetworkValues
+
+        const responseJson = await getDataResponse(network.split("-")[0], networkName, chainNetwork)
+
+        const {
+          gasPrice,
+          L1GasPriceEstimate,
+          callbackGasLimit,
+          LINKPremium,
+          decimalPlaces,
+          gasLaneList,
+          currentLINKPriceFeed,
+          directFunding,
+        } = responseJson
+
+        const updatedState = {
           ...initialState,
           gasPrice,
+          networkName,
+          mainChain: chain,
+          mainChainNetwork: chainNetwork,
           L1GasPriceEstimate,
           currentL1GasPriceEstimate: L1GasPriceEstimate,
           decimalPlaces,
@@ -242,28 +253,27 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
           gasLaneList,
           currentGasLane: gasLaneList[0] || 0,
           priceFeed: currentLINKPriceFeed,
-        },
-      })
-      if (Object.keys(directFunding).length) {
-        dispatch({
-          type: "UPDATE_STATE",
-          payload: {
-            wrapperOverheadGas: directFunding.wrapperGasOverhead,
-            currentVerificationGas: directFunding.currentVerificationGas,
-            wrapperLinkPremiumPercentage: directFunding.wrapperLinkPremiumPercentage,
-          },
-        })
-      }
-      dispatch({ type: "SET_LOADING", payload: false })
-    }
+        }
 
-    fillInputs().catch((error: Error) => {
-      dispatch({ type: "SET_LOADING", payload: false })
-      console.error(error)
-    })
-    setSupportedNetworkShortcut(getsupportedNetworkShortcut(networkName))
-    return () => dispatch({ type: "SET_LOADING", payload: false })
-  }, [method, mainChain, chain])
+        if (Object.keys(directFunding).length) {
+          updatedState.wrapperOverheadGas = directFunding.wrapperGasOverhead
+          updatedState.currentVerificationGas = directFunding.currentVerificationGas
+          updatedState.wrapperLinkPremiumPercentage = directFunding.wrapperLinkPremiumPercentage
+        }
+
+        dispatch({ type: "UPDATE_STATE", payload: updatedState })
+      } catch (error) {
+        console.error(error)
+      } finally {
+        dispatch({ type: "SET_LOADING", payload: false })
+      }
+    },
+    [getDataResponse, network]
+  )
+
+  useEffect(() => {
+    fillInputs(network)
+  }, [fillInputs])
 
   const handleRadioChange = (event) => {
     dispatch({ type: "SET_CURRENT_GAS_LANE", payload: parseInt(event.target.value) })
@@ -337,26 +347,37 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
     }
   }
 
-  const getsupportedNetworkShortcut = (networkName) => {
-    const mainChainName = mainChain.label.toLowerCase()
-    switch (mainChainName) {
+  const getsupportedNetworkShortcut = () => {
+    const chainName = state.mainChain?.label.toLowerCase()
+    switch (chainName) {
       case "ethereum":
-        return `${chain.networkType !== "mainnet" ? networkName : mainChainName}-${chain.networkType}`
+        if (state.networkName !== "mainnet") {
+          return `${state.networkName}-${state.mainChainNetwork?.networkType}`
+        }
+        return `${chainName}-${state.mainChainNetwork?.networkType}`
       case "bnb chain":
-        return `${mainChainName.replace(" ", "-")}${chain.networkType === "testnet" ? "-" + chain.networkType : ""}`
+        return `${chainName.replace(" ", "-")}${
+          state.mainChainNetwork?.networkType === "testnet" ? "-" + state.mainChainNetwork.networkType : ""
+        }`
       case "polygon (matic)":
         return `polygon-matic-${
-          chain.networkType === "testnet" ? networkName + "-" + chain.networkType : chain.networkType
+          state.mainChainNetwork?.networkType === "testnet"
+            ? state.networkName + "-" + state.mainChainNetwork?.networkType
+            : state.mainChainNetwork?.networkType
         }`
       case "avalanche":
-        return `${mainChainName}-${
-          chain.networkType === "testnet" ? networkName + "-" + chain.networkType : chain.networkType
+        return `${chainName}-${
+          state.mainChainNetwork?.networkType === "testnet"
+            ? state.networkName + "-" + state.mainChainNetwork?.networkType
+            : state.mainChainNetwork?.networkType
         }`
       case "fantom":
-        return `${mainChainName}-${chain.networkType}`
+        return `${chainName}-${state.mainChainNetwork?.networkType}`
       case "arbitrum":
-        return `${mainChainName}-${
-          chain.networkType === "testnet" ? networkName + "-" + chain.networkType : chain.networkType
+        return `${chainName}-${
+          state.mainChainNetwork?.networkType === "testnet"
+            ? state.networkName + "-" + state.mainChainNetwork?.networkType
+            : state.mainChainNetwork?.networkType
         }`
       default:
         throw new Error("network/chain does not exist or is not supported by VRF yet.")
@@ -364,7 +385,7 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
   }
 
   const computeTotalRequestCost = () => {
-    if (mainChain.label.toLowerCase() === "arbitrum") {
+    if (state.mainChain && state.mainChain.label.toLowerCase() === "arbitrum") {
       computeArbitrumCost()
       return
     }
@@ -486,7 +507,7 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
     return res
   }
 
-  // Format total VRF cost to stop after second non-zero decimal.
+  // Format max VRF cost to stop after second non-zero decimal.
   const formatmaxCost = () => {
     if (state.maxCost === "0.00") {
       return state.maxCost
@@ -537,7 +558,7 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
               />
             </td>
           </tr>
-          {mainChain.label.toLowerCase() === "arbitrum" && state.L1GasPriceEstimate && (
+          {state.mainChain && state.mainChain.label.toLowerCase() === "arbitrum" && state.L1GasPriceEstimate && (
             <tr>
               <td>L1 gas price (current is {getGasPrice(state.L1GasPriceEstimate)} gwei)</td>
               <td>
@@ -634,15 +655,17 @@ export const CostTable = ({ mainChain, chain, method }: Props) => {
         )}
         <p>
           To see these parameters in greater detail, read the
-          <a
-            href={`/vrf/v2/${kebabize(
-              method === "vrfSubscription" ? "subscription" : "directFunding"
-            )}/supported-networks/#${supportedNetworkShortcut}`}
-            target="_blank"
-          >
-            {" "}
-            Supported Networks{" "}
-          </a>
+          {state.mainChain && (
+            <a
+              href={`/vrf/v2/${kebabize(
+                method === "vrfSubscription" ? "subscription" : "directFunding"
+              )}/supported-networks/#${getsupportedNetworkShortcut()}`}
+              target="_blank"
+            >
+              {" "}
+              Supported Networks{" "}
+            </a>
+          )}
           page.
         </p>
       </div>
