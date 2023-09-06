@@ -33,7 +33,7 @@ export const ContentObserver = ({ headings }: { headings: MarkdownHeading[] }) =
     }
 
     const sectionsObserver = new IntersectionObserver(observerCallback, {
-      rootMargin: "-20% 0% -80%",
+      rootMargin: "-25% 0% -75%",
     })
 
     headings.forEach((h) => {
