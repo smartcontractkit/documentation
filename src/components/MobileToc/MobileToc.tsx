@@ -52,9 +52,11 @@ const MobileToc: FunctionalComponent<{
           <button className={`secondary${expanded ? ` active` : ""}`} onClick={() => setExpanded(!expanded)}>
             On this page
           </button>
-          <p className={styles.stickyHeader}>{$stickyHeader}</p>
+          {/* NOTE: Defaulting to "Overview" so there's something showing while collapsing */}
+          <p className={styles.stickyHeader}>{$stickyHeader || "Overview"}</p>
         </div>
         <div hidden={!expanded} className={styles.heightWrapper}>
+          {/* TODO: Move headings / ContentObserver logic / HTML to their own component, consolidate with TableOfContents */}
           <ul>
             {headings?.map((h) => (
               <li onClick={() => setExpanded(false)}>
