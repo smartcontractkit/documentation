@@ -28,10 +28,10 @@ export const FeedList = ({
   const [selectedFeedCategories, setSelectedFeedCategories] = useQueryString("categories", [])
   const [showCategoriesDropdown, setShowCategoriesDropdown] = useState<boolean>(false)
   const [showExtraDetails, setShowExtraDetails] = useState(false)
-  const [currentPage, setCurrentPage] = useQueryString("page", 1)
-  const paginate = (pageNumber) => setCurrentPage(pageNumber)
+  const [currentPage, setCurrentPage] = useQueryString("page", "1")
+  const paginate = (pageNumber) => setCurrentPage(String(pageNumber))
   const addrPerPage = 8
-  const lastAddr = currentPage * addrPerPage
+  const lastAddr = Number(currentPage) * addrPerPage
   const firstAddr = lastAddr - addrPerPage
   const dataFeedCategory = ["verified", "monitored", "provisional", "custom", "specialized", "deprecating"]
   const chainMetadata = useGetChainMetadata(chains.filter((chain) => chain.page === selectedChain)[0], { initialCache })
@@ -41,7 +41,7 @@ export const FeedList = ({
     setSelectedChain(chain.page)
     setSearchValue("")
     setSelectedFeedCategories([])
-    setCurrentPage(1)
+    setCurrentPage("1")
   }
 
   const handleCategorySelection = (category) => {
@@ -195,7 +195,7 @@ export const FeedList = ({
                               <button onClick={() => handleCategorySelection(category)}>
                                 <input
                                   type="checkbox"
-                                  checked={selectedFeedCategories.includes(category)}
+                                  checked={selectedFeedCategories?.includes(category)}
                                   readonly
                                   style="cursor:pointer;"
                                 />
@@ -214,7 +214,7 @@ export const FeedList = ({
                         placeholder="Search price feeds"
                         onInput={(event) => {
                           setSearchValue((event.target as HTMLInputElement).value)
-                          setCurrentPage(1)
+                          setCurrentPage("1")
                         }}
                       />
                     </div>
@@ -228,7 +228,13 @@ export const FeedList = ({
                       Show more details
                     </label>
                     <MainnetTable
-                      selectedFeedCategories={selectedFeedCategories}
+                      selectedFeedCategories={
+                        Array.isArray(selectedFeedCategories)
+                          ? selectedFeedCategories
+                          : selectedFeedCategories
+                          ? [selectedFeedCategories]
+                          : []
+                      }
                       network={network}
                       showExtraDetails={showExtraDetails}
                       dataFeedType={dataFeedType}
@@ -236,9 +242,9 @@ export const FeedList = ({
                       lastAddr={lastAddr}
                       firstAddr={firstAddr}
                       addrPerPage={addrPerPage}
-                      currentPage={currentPage}
+                      currentPage={Number(currentPage)}
                       paginate={paginate}
-                      searchValue={searchValue}
+                      searchValue={typeof searchValue === "string" ? searchValue : ""}
                     />
                   </div>
                 ) : (
