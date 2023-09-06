@@ -1,33 +1,63 @@
 .toc {
-  padding: var(--doc-padding) 0;
-  margin-top: 0;
-  margin-bottom: 0;
+  position: fixed;
+  z-index: 5;
+  background-color: #fff;
+  width: 100vw;
+}
+
+.toc[aria-hidden="true"] {
+  top: 0;
+  transition: top 400ms ease;
+}
+
+.toc[aria-hidden="false"] {
+  top: var(--theme-navbar-height);
+  transition: top 400ms ease;
 }
 
 .toc ul {
   overflow-y: auto;
-  margin-top: var(--space-4x);
+  padding: 0 var(--space-4x);
   line-height: 1.5;
   list-style-type: none;
-  max-height: 70vh;
-  overflow-y: auto;
-  padding: 0 var(--space-4x);
-  padding-inline-start: 0;
+  height: calc(100vh - var(--theme-navbar-height) - var(--space-16x));
+}
+
+.heightWrapper {
+  height: 100vh;
 }
 
 .heading {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2x);
+  /* TODO: Set height to global token */
+  height: var(--space-16x);
+  padding: 0 var(--space-4x);
+}
+
+.heading button {
+  min-width: fit-content;
+  padding-left: var(--space-4x);
+  padding-right: var(--space-4x);
+}
+
+.stickyHeader {
+  margin: 0;
   color: var(--color-text-heading);
-  font-size: 12px;
-  letter-spacing: 1px;
-  font-weight: 500;
-  text-transform: uppercase;
-  margin-bottom: 0;
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-clamp: 2;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 
 .headerLink {
-  display: inline-block;
+  display: block;
   color: var(--gray-500, #858a95);
-  font-size: 14px;
+  font-size: 16px;
   padding: var(--space-2x) 0;
   padding-left: var(--space-4x);
   border-left: 2px solid var(--theme-divider);
@@ -54,4 +84,10 @@
 
 .headerLink.depth-4 {
   padding-left: var(--space-12x);
+}
+
+@media (min-width: 50em) {
+  .toc {
+    display: none;
+  }
 }

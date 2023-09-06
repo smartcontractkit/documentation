@@ -7,13 +7,17 @@ import { useCurrentIds } from "~/hooks/currentIds/useCurrentIds"
 import { useStore } from "@nanostores/preact"
 import { shouldUpdateToc } from "./tocStore"
 import { ContentObserver } from "~/components/PageContent/ContentObserver/ContentObserver"
+import { useStickyHeader } from "~/hooks/stickyHeader/useStickyHeader"
 
 const MobileToc: FunctionalComponent<{
   initialHeadings: MarkdownHeading[]
 }> = ({ initialHeadings }) => {
   const $shouldUpdateToc = useStore(shouldUpdateToc)
   const { $currentIds } = useCurrentIds()
+  const { $stickyHeader } = useStickyHeader()
+
   const [headings, setHeadings] = useState<MarkdownHeading[]>(initialHeadings)
+  const [expanded, setExpanded] = useState<boolean>(false)
 
   useEffect(() => {
     // Only get top-level headers, don't get nested component headers
@@ -38,24 +42,35 @@ const MobileToc: FunctionalComponent<{
     setHeadings(newHeadings)
   }, [$shouldUpdateToc])
 
+  const hidden = !$stickyHeader
+
   return (
-    <nav className={styles.toc}>
-      <ContentObserver headings={headings ?? []} />
-      <p className={styles.heading}>On this page</p>
-      <ul>
-        {headings?.map((h) => (
-          <li>
-            <a
-              href={`#${h.slug}`}
-              className={`${styles.headerLink}${h.depth && h.depth > 2 ? ` ${styles[`depth-${h.depth}`]}` : ""}
+    <>
+      <ContentObserver headings={headings} />
+      <nav className={styles.toc} aria-hidden={hidden}>
+        <div className={styles.heading}>
+          <button className={`secondary${expanded ? ` active` : ""}`} onClick={() => setExpanded(!expanded)}>
+            On this page
+          </button>
+          <p className={styles.stickyHeader}>{$stickyHeader}</p>
+        </div>
+        <div hidden={!expanded} className={styles.heightWrapper}>
+          <ul>
+            {headings?.map((h) => (
+              <li onClick={() => setExpanded(false)}>
+                <a
+                  href={`#${h.slug}`}
+                  className={`${styles.headerLink}${h.depth && h.depth > 2 ? ` ${styles[`depth-${h.depth}`]}` : ""}
               ${$currentIds[h.slug] ? ` ${styles.active}` : ""}`}
-            >
-              {h.depth > 1 ? h.text : "Overview"}
-            </a>
-          </li>
-        ))}
-      </ul>
-    </nav>
+                >
+                  {h.depth > 1 ? h.text : "Overview"}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </nav>
+    </>
   )
 }
 
