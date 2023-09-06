@@ -10,10 +10,18 @@ import { NewsletterCTA } from "../components/Footer/NewsletterCTA"
 import Footer from "~/components/Footer/Footer.astro"
 import { BaseFrontmatter } from "~/content/config"
 import WhatsNext from "~/components/PageContent/WhatsNext.astro"
+import { MarkdownHeading } from "astro"
 interface Props {
   frontmatter: BaseFrontmatter
+  headings?: MarkdownHeading[]
 }
-const { frontmatter } = Astro.props
+const { frontmatter, headings } = Astro.props
+
+const titleHeading: MarkdownHeading = {
+  text: frontmatter.title,
+  slug: "overview",
+  depth: 1,
+}
 
 const whatsNext = frontmatter.whatsnext
 
@@ -144,13 +152,13 @@ const includeLinkToWalletScript = !!Astro.props?.frontmatter?.metadata?.linkToWa
         <LeftSidebar currentPage={currentPage} section={frontmatter.section} />
       </aside>
       <div id="grid-main">
-        <PageContent {frontmatter}>
+        <PageContent {titleHeading}>
           <slot />
         </PageContent>
         {whatsNext && <WhatsNext content={whatsNext} />}
       </div>
       <aside id="grid-right" title="Table of Contents">
-        <RightSidebar {githubEditUrl} />
+        <RightSidebar {githubEditUrl} headings={[titleHeading].concat(headings ?? [])} />
       </aside>
     </main>
     <NewsletterCTA client:visible />

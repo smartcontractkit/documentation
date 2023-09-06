@@ -2,15 +2,17 @@
 import TableOfContents from "./TableOfContents"
 import MoreMenu from "./MoreMenu.astro"
 import { Feedback } from "../PageContent/Feedback"
+import { MarkdownHeading } from "astro"
 
 export type Props = {
   githubEditUrl: string
+  headings: MarkdownHeading[]
 }
-const { githubEditUrl } = Astro.props
+const { githubEditUrl, headings } = Astro.props
 ---
 
 <section class="sidebar-nav" aria-labelledby="grid-right">
-  <TableOfContents client:media="(min-width: 72em)" />
+  <TableOfContents client:media="(min-width: 72em)" initialHeadings={headings} />
   <MoreMenu editHref={githubEditUrl} />
   <h2 class="heading feedback-title">Feedback</h2>
   <div class="feedback-wrapper">
