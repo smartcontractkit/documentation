@@ -44,7 +44,7 @@ const MobileToc: FunctionalComponent<{
 
   // Stop scrolling on underlying body when expanded
   useEffect(() => {
-    document.body.style.overflow = expanded ? "hidden" : "auto"
+    document.body.style.overflow = expanded ? "hidden" : ""
   }, [expanded])
 
   const hidden = !$stickyHeader
