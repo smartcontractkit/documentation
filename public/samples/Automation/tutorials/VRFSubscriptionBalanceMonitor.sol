@@ -2,10 +2,10 @@
 
 pragma solidity 0.8.6;
 
-import "../shared/access/ConfirmedOwner.sol";
-import "../automation/interfaces/KeeperCompatibleInterface.sol";
-import "../interfaces/VRFCoordinatorV2Interface.sol";
-import "../shared/interfaces/LinkTokenInterface.sol";
+import "@chainlink/contracts/src/v0.8/ConfirmedOwner.sol";
+import "@chainlink/contracts/src/v0.8/interfaces/KeeperCompatibleInterface.sol";
+import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
+import "@chainlink/contracts/src/v0.8/interfaces/LinkTokenInterface.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 
 /**
