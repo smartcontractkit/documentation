@@ -4,7 +4,7 @@ import { useEffect, useState } from "preact/hooks"
 import { MarkdownHeading } from "astro"
 import styles from "./stickyHeader.module.css"
 import { useStickyHeader } from "~/hooks/stickyHeader/useStickyHeader"
-import MobileToc from "../MobileToc/MobileToc"
+import TableOfContents from "~/components/TableOfContents/TableOfContents"
 
 const StickyHeader: FunctionalComponent<{
   initialHeadings: MarkdownHeading[]
@@ -29,7 +29,7 @@ const StickyHeader: FunctionalComponent<{
         <p>{$stickyHeader || "Overview"}</p>
       </div>
       <div hidden={!expanded} className={styles.heightWrapper}>
-        <MobileToc initialHeadings={initialHeadings} onNavigate={() => setExpanded(false)} />
+        <TableOfContents initialHeadings={initialHeadings} onNavigate={() => setExpanded(false)} />
       </div>
     </div>
   )

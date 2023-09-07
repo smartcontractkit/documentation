@@ -2,13 +2,13 @@
 import type { FunctionalComponent } from "preact"
 import { useEffect, useState } from "preact/hooks"
 import { MarkdownHeading } from "astro"
-import styles from "./mobileToc.module.css"
+import styles from "./tableOfContents.module.css"
 import { useCurrentIds } from "~/hooks/currentIds/useCurrentIds"
 import { useStore } from "@nanostores/preact"
-import { shouldUpdateToc } from "../tocStore"
+import { shouldUpdateToc } from "./tocStore"
 import { ContentObserver } from "~/components/PageContent/ContentObserver/ContentObserver"
 
-const MobileToc: FunctionalComponent<{
+const TableOfContents: FunctionalComponent<{
   initialHeadings: MarkdownHeading[]
   onNavigate?: () => void
 }> = ({ initialHeadings, onNavigate }) => {
@@ -60,4 +60,4 @@ const MobileToc: FunctionalComponent<{
   )
 }
 
-export default MobileToc
+export default TableOfContents
