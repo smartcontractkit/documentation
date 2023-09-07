@@ -26,10 +26,6 @@ const AddressComponent = ({ contractUrl, address, endLength, urlClass, urlId }: 
       </button>
 
       <style jsx>{`
-        .addressContainer {
-          white-space: nowrap;
-        }
-
         .addressLink {
           background: var(--color-background-secondary);
           padding: 1px 5px;
