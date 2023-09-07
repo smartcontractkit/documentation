@@ -7,6 +7,7 @@ interface Docs {
   feedType?: string
   hidden?: boolean
   porAuditor?: string
+  porSource?: string
   porType?: string
   productSubType?: string
   productType?: string
