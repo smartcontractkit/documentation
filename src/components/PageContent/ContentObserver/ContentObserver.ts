@@ -4,7 +4,7 @@ import { currentIds } from "~/hooks/currentIds/idStore"
 import { MarkdownHeading } from "astro"
 import { useStickyHeader } from "~/hooks/stickyHeader/useStickyHeader"
 
-export const ContentObserver = ({ headings }: { headings: MarkdownHeading[] }) => {
+export const ContentObserver = ({ headings, shouldUpdate }: { headings: MarkdownHeading[]; shouldUpdate: number }) => {
   const { setCurrentIds } = useCurrentIds()
   const { setStickyHeader } = useStickyHeader()
 
@@ -43,7 +43,7 @@ export const ContentObserver = ({ headings }: { headings: MarkdownHeading[] }) =
       }
     })
     return () => sectionsObserver.disconnect()
-  }, [headings])
+  }, [headings, shouldUpdate])
 
   return null
 }

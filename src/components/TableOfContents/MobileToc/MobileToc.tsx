@@ -5,7 +5,7 @@ import { MarkdownHeading } from "astro"
 import styles from "./mobileToc.module.css"
 import { useCurrentIds } from "~/hooks/currentIds/useCurrentIds"
 import { useStore } from "@nanostores/preact"
-import { shouldUpdateToc } from "./tocStore"
+import { shouldUpdateToc } from "../tocStore"
 import { ContentObserver } from "~/components/PageContent/ContentObserver/ContentObserver"
 import { useStickyHeader } from "~/hooks/stickyHeader/useStickyHeader"
 
@@ -51,7 +51,7 @@ const MobileToc: FunctionalComponent<{
 
   return (
     <>
-      <ContentObserver headings={headings} />
+      <ContentObserver headings={headings} shouldUpdate={$shouldUpdateToc} />
       <nav className={styles.toc} aria-hidden={hidden}>
         <div className={styles.heading}>
           <button className={`secondary${expanded ? ` active` : ""}`} onClick={() => setExpanded(!expanded)}>

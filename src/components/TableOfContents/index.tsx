@@ -40,7 +40,7 @@ const TableOfContents: FunctionalComponent<{
 
   return (
     <nav className={styles.toc}>
-      <ContentObserver headings={headings ?? []} />
+      <ContentObserver headings={headings} shouldUpdate={$shouldUpdateToc} />
       <p className={styles.heading}>On this page</p>
       <ul>
         {headings?.map((h) => (

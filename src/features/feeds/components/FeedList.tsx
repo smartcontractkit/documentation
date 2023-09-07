@@ -8,7 +8,7 @@ import { useGetChainMetadata } from "./useGetChainMetadata"
 import { ChainMetadata } from "../../data/api"
 import useQueryString from "~/hooks/useQueryString"
 import { RefObject } from "preact"
-import { updateTableOfContents } from "~/components/RightSidebar/TableOfContents/tocStore"
+import { updateTableOfContents } from "~/components/TableOfContents/tocStore"
 
 export type DataFeedType = "default" | "por" | "nftFloor" | "rates"
 export const FeedList = ({
