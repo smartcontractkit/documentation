@@ -34,6 +34,7 @@ const AddressComponent = ({ contractUrl, address, endLength, urlClass, urlId }: 
           background: var(--color-background-secondary);
           padding: 1px 5px;
           border-radius: var(--border-radius-10);
+          word-break: break-word;
         }
 
         .copyBtn {
