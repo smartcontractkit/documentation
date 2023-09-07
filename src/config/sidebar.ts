@@ -734,6 +734,23 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
+      section: "Concepts",
+      contents: [
+        {
+          title: "Concept Overview",
+          url: "ccip/concepts",
+        },
+        {
+          title: "Architecture and Billing",
+          url: "ccip/architecture",
+        },
+        {
+          title: "Best Practices",
+          url: "ccip/best-practices",
+        },
+      ],
+    },
+    {
       section: "API Reference",
       contents: [
         {
@@ -751,23 +768,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Errors",
           url: "ccip/api-reference/errors",
-        },
-      ],
-    },
-    {
-      section: "Concepts",
-      contents: [
-        {
-          title: "Concept Overview",
-          url: "ccip/concepts",
-        },
-        {
-          title: "Architecture and Billing",
-          url: "ccip/architecture",
-        },
-        {
-          title: "Best Practices",
-          url: "ccip/best-practices",
         },
       ],
     },
