@@ -7,17 +7,15 @@ import { useCurrentIds } from "~/hooks/currentIds/useCurrentIds"
 import { useStore } from "@nanostores/preact"
 import { shouldUpdateToc } from "../tocStore"
 import { ContentObserver } from "~/components/PageContent/ContentObserver/ContentObserver"
-import { useStickyHeader } from "~/hooks/stickyHeader/useStickyHeader"
 
 const MobileToc: FunctionalComponent<{
   initialHeadings: MarkdownHeading[]
-}> = ({ initialHeadings }) => {
+  onNavigate?: () => void
+}> = ({ initialHeadings, onNavigate }) => {
   const $shouldUpdateToc = useStore(shouldUpdateToc)
   const { $currentIds } = useCurrentIds()
-  const { $stickyHeader } = useStickyHeader()
 
   const [headings, setHeadings] = useState<MarkdownHeading[]>(initialHeadings)
-  const [expanded, setExpanded] = useState<boolean>(false)
 
   useEffect(() => {
     // Only get top-level headers, don't get nested component headers
@@ -42,42 +40,23 @@ const MobileToc: FunctionalComponent<{
     setHeadings(newHeadings)
   }, [$shouldUpdateToc])
 
-  // Stop scrolling on underlying body when expanded
-  useEffect(() => {
-    document.body.style.overflow = expanded ? "hidden" : ""
-  }, [expanded])
-
-  const hidden = !$stickyHeader
-
   return (
-    <>
+    <nav className={styles.container}>
       <ContentObserver headings={headings} shouldUpdate={$shouldUpdateToc} />
-      <nav className={styles.toc} aria-hidden={hidden}>
-        <div className={styles.heading}>
-          <button className={`secondary${expanded ? ` active` : ""}`} onClick={() => setExpanded(!expanded)}>
-            On this page
-          </button>
-          {/* NOTE: Defaulting to "Overview" so there's something showing while collapsing */}
-          <p className={styles.stickyHeader}>{$stickyHeader || "Overview"}</p>
-        </div>
-        <div hidden={!expanded} className={styles.heightWrapper}>
-          {/* TODO: Move headings / ContentObserver logic / HTML to their own component, consolidate with TableOfContents */}
-          <ul>
-            {headings?.map((h) => (
-              <li onClick={() => setExpanded(false)}>
-                <a
-                  href={`#${h.slug}`}
-                  className={`${styles.headerLink}${h.depth && h.depth > 2 ? ` ${styles[`depth-${h.depth}`]}` : ""}
+      <ul>
+        {headings.map((h) => (
+          <li onClick={onNavigate}>
+            <a
+              href={`#${h.slug}`}
+              className={`${styles.headerLink}${h.depth && h.depth > 2 ? ` ${styles[`depth-${h.depth}`]}` : ""}
               ${$currentIds[h.slug] ? ` ${styles.active}` : ""}`}
-                >
-                  {h.depth > 1 ? h.text : "Overview"}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </nav>
-    </>
+            >
+              {h.depth > 1 ? h.text : "Overview"}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
   )
 }
 
