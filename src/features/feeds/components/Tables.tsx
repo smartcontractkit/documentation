@@ -3,6 +3,7 @@ import feedList from "./FeedList.module.css"
 import { clsx } from "../../../lib"
 import { ChainNetwork } from "~/features/data/chains"
 import tableStyles from "./Tables.module.css"
+import button from "@chainlink/design-system/button.module.css"
 import { CheckHeartbeat } from "./pause-notice/CheckHeartbeat"
 import { monitoredFeeds, FeedDataItem } from "~/features/data"
 
@@ -50,6 +51,42 @@ const feedCategories = {
       </a>
     </span>
   ),
+}
+
+const Pagination = ({ addrPerPage, totalAddr, paginate, currentPage, firstAddr, lastAddr }) => {
+  const pageNumbers: number[] = []
+
+  for (let i = 1; i <= Math.ceil(totalAddr / addrPerPage); i++) {
+    pageNumbers.push(i)
+  }
+
+  return (
+    <div class={tableStyles.pagination}>
+      {totalAddr !== 0 && (
+        <>
+          <button
+            className={button.secondary}
+            style={"outline-offset: 2px"}
+            disabled={currentPage === 1}
+            onClick={() => paginate(Number(currentPage) - 1)}
+          >
+            Prev
+          </button>
+          <p>
+            Showing {firstAddr + 1} to {lastAddr > totalAddr ? totalAddr : lastAddr} of {totalAddr} entries
+          </p>
+          <button
+            className={button.secondary}
+            style={"outline-offset: 2px"}
+            disabled={lastAddr >= totalAddr}
+            onClick={() => paginate(Number(currentPage) + 1)}
+          >
+            Next
+          </button>
+        </>
+      )}
+    </div>
+  )
 }
 
 const DefaultTHead = ({ showExtraDetails, isTestnet = false }: { showExtraDetails: boolean; isTestnet?: boolean }) => (
@@ -286,14 +323,27 @@ export const MainnetTable = ({
   showExtraDetails,
   dataFeedType,
   ecosystem,
+  selectedFeedCategories,
+  firstAddr,
+  lastAddr,
+  addrPerPage,
+  currentPage,
+  paginate,
+  searchValue,
 }: {
   network: ChainNetwork
   showExtraDetails: boolean
   dataFeedType: string
   ecosystem: string
+  selectedFeedCategories: string[]
+  firstAddr: number
+  lastAddr: number
+  addrPerPage: number
+  currentPage: number
+  paginate
+  searchValue: string
 }) => {
   if (!network.metadata) return null
-
   const isDeprecating = ecosystem === "deprecating"
   const isPor = dataFeedType === "por"
   const isNftFloor = dataFeedType === "nftFloor"
@@ -306,22 +356,62 @@ export const MainnetTable = ({
       if (isNftFloor) return !!chain.docs.nftFloorUnits
       return !chain.docs.nftFloorUnits && !chain.docs.porType
     })
+    .filter((chain) => selectedFeedCategories.length === 0 || selectedFeedCategories.includes(chain.feedCategory))
+    .filter(
+      (pair) =>
+        pair.name.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
+        pair.proxyAddress?.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
+        pair.assetName.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
+        pair.feedType.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
+        pair.docs.porType?.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
+        pair.docs.porAuditor
+          ?.toLowerCase()
+          .replaceAll(" ", "")
+          .includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
+        pair.docs.porSource?.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", ""))
+    )
+  const slicedFilteredMetadata = filteredMetadata.slice(firstAddr, lastAddr)
   return (
-    <div style={{ overflowX: "auto" }}>
-      <table class={tableStyles.table}>
-        {isPor && <ProofOfReserveTHead showExtraDetails={showExtraDetails} />}
-        {isDefault && <DefaultTHead showExtraDetails={showExtraDetails} />}
-        {isNftFloor && <NftFloorTHead showExtraDetails={showExtraDetails} />}
-        <tbody>
-          {filteredMetadata.map((proxy) => (
+    <div>
+      <div style={{ overflowX: "auto" }}>
+        <table class={tableStyles.mainnetTable} style={{ overflowX: "auto" }}>
+          {slicedFilteredMetadata.length === 0 ? (
+            <tr>
+              <td style={{ textAlign: "center" }}>
+                <img
+                  src="https://smartcontract.imgix.net/icons/null-search.svg?auto=compress%2Cformat"
+                  style={{ height: "160px" }}
+                />
+                <h4>No results found</h4>
+                <p>There are no data feeds in this category at the moment.</p>
+              </td>
+            </tr>
+          ) : (
             <>
-              {isPor && <ProofOfReserveTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
-              {isDefault && <DefaultTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
-              {isNftFloor && <NftFloorTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
+              {isPor && <ProofOfReserveTHead showExtraDetails={showExtraDetails} />}
+              {isDefault && <DefaultTHead showExtraDetails={showExtraDetails} />}
+              {isNftFloor && <NftFloorTHead showExtraDetails={showExtraDetails} />}
+              <tbody>
+                {slicedFilteredMetadata.map((proxy) => (
+                  <>
+                    {isPor && <ProofOfReserveTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
+                    {isDefault && <DefaultTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
+                    {isNftFloor && <NftFloorTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
+                  </>
+                ))}
+              </tbody>
             </>
-          ))}
-        </tbody>
-      </table>
+          )}
+        </table>
+      </div>
+      <Pagination
+        addrPerPage={addrPerPage}
+        totalAddr={filteredMetadata.length}
+        currentPage={currentPage}
+        firstAddr={firstAddr}
+        lastAddr={lastAddr}
+        paginate={paginate}
+      />
     </div>
   )
 }
