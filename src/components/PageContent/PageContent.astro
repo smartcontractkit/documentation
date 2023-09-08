@@ -43,8 +43,11 @@ const { titleHeading } = Astro.props
     margin-bottom: 0;
   }
 
-  article p {
+  article :is(h1, h2, h3, h4, p) {
     word-break: break-word;
+  }
+
+  article p {
     margin-bottom: 0;
   }
 
@@ -119,25 +122,10 @@ const { titleHeading } = Astro.props
     aspect-ratio: 16 / 9;
   }
 
-  /* Apply only to 2nd column and on since we usually
-  *  have function names in the first column
-  */
-  article tr :nth-child(n + 2) {
-    word-break: break-word;
-  }
-
-  article td {
-    width: fit-content;
-  }
-
   /* Offsets padding */
   section:target {
     scroll-margin-top: calc(var(--theme-navbar-height) + var(--space-12x));
   }
-
-  /* section > section:target {
-    scroll-margin-top: calc(var(--theme-navbar-height) + var(--space-12x));
-  } */
 
   @media (min-width: 50em) {
     article :where(section, astro-slot) > :is(h1, h2) {
@@ -178,7 +166,7 @@ const { titleHeading } = Astro.props
    * Creates sticky headers which interact with
    * intersection observers for nested h3, h4 headers
    */
-  const wrapElements = (start: Element, isParent?: boolean) => {
+  const wrapHeaders = (start: Element, isParent?: boolean) => {
     const wrapper = document.createElement("section")
     const elements: Element[] = []
     elements.push(start)
@@ -202,6 +190,15 @@ const { titleHeading } = Astro.props
 
   // Only get direct descendants of the article content
   // Grabs mdx headers without getting nested headers in components
-  const elements = document.body.querySelectorAll("article > :where(h1, h2, h3, h4)")
-  elements.forEach((e) => wrapElements(e, ["H1", "H2"].includes(e.nodeName)))
+  const headers = document.body.querySelectorAll("article > :where(h1, h2, h3, h4)")
+  headers.forEach((e) => wrapHeaders(e, ["H1", "H2"].includes(e.nodeName)))
+
+  // Wrap tables in div with overflow supported
+  const tables = document.body.querySelectorAll("article table")
+  tables.forEach((table) => {
+    const wrapper = document.createElement("div")
+    wrapper.style.overflowX = "auto"
+    table.parentNode!.insertBefore(wrapper, table)
+    wrapper.appendChild(table)
+  })
 </script>
