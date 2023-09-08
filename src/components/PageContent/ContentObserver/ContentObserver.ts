@@ -4,32 +4,37 @@ import { currentIds } from "~/hooks/currentIds/idStore"
 import { MarkdownHeading } from "astro"
 import { useStickyHeader } from "~/hooks/stickyHeader/useStickyHeader"
 
-export const ContentObserver = ({ headings, shouldUpdate }: { headings: MarkdownHeading[]; shouldUpdate: number }) => {
+interface Props {
+  headings: MarkdownHeading[]
+  shouldUpdate: number
+}
+
+export const ContentObserver = ({ headings, shouldUpdate }: Props) => {
   const { setCurrentIds } = useCurrentIds()
   const { setStickyHeader } = useStickyHeader()
 
   useEffect(() => {
     const observerCallback: IntersectionObserverCallback = (entries) => {
       let stickyHeaderSet = false
-      const ids: Record<string, boolean> = currentIds.get()
+      const intersectingElementMap: Record<string, boolean> = currentIds.get()
       for (const entry of entries) {
-        if (!entry.isIntersecting && entry.target.id === "overview") {
+        const { isIntersecting, target } = entry
+        const { id, firstElementChild } = target
+        if (!isIntersecting && id === "overview") {
           setStickyHeader("")
         }
-        ids[entry.target.id] = entry.isIntersecting
+        intersectingElementMap[id] = isIntersecting
         if (
           !stickyHeaderSet &&
-          entry.isIntersecting &&
-          entry.target.firstElementChild?.textContent &&
-          ["H1", "H2"].includes(entry.target.firstElementChild.nodeName)
+          isIntersecting &&
+          firstElementChild?.textContent &&
+          ["H1", "H2"].includes(firstElementChild.nodeName)
         ) {
           stickyHeaderSet = true
-          setStickyHeader(
-            entry.target.firstElementChild.id === "overview" ? "Overview" : entry.target.firstElementChild.textContent
-          )
+          setStickyHeader(firstElementChild.id === "overview" ? "Overview" : firstElementChild.textContent)
         }
       }
-      setCurrentIds(ids)
+      setCurrentIds(intersectingElementMap)
     }
 
     const sectionsObserver = new IntersectionObserver(observerCallback, {
