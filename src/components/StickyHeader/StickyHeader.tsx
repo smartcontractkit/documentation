@@ -15,6 +15,10 @@ const StickyHeader: FunctionalComponent<{
   // Stop scrolling on underlying body when expanded
   useEffect(() => {
     document.body.style.overflow = expanded ? "hidden" : ""
+    return () => {
+      // Reset overflow style when component unmounts
+      document.body.style.overflow = ""
+    }
   }, [expanded])
 
   const hidden = !$stickyHeader
