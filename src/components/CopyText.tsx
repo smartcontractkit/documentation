@@ -20,7 +20,7 @@ const CopyContainer = ({ text, code }: Props) => {
 
       <style jsx>{`
         .copyContainer {
-          white-space: nowrap;
+          word-break: break-word;
         }
 
         .copyBtn {
