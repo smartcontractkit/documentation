@@ -1,7 +1,6 @@
 import React, { useState, useCallback } from "react"
 import styles from "./Search.module.css"
 
-import { useKeyPress } from "~/hooks/useKeyPress"
 import { SearchModal } from "./SearchModal"
 
 export default function Search() {
@@ -14,12 +13,6 @@ export default function Search() {
   const onClose = useCallback(() => {
     setIsOpen(false)
   }, [setIsOpen])
-
-  useKeyPress("/", {
-    onDown: () => {
-      if (!isOpen) setIsOpen(true)
-    },
-  })
 
   return (
     <>
