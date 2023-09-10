@@ -142,4 +142,20 @@ export const supportedNetworks: CCIPNetworkOptions[] = [
       },
     },
   },
+  {
+    name: "BNB Chain testnet",
+    chainId: "0x61",
+    icon: "/assets/chains/bnb-chain.svg",
+    BnM: {
+      params: {
+        type: "ERC20",
+        options: {
+          address: "0xbfa2acd33ed6eec0ed3cc06bf1ac38d22b36b9e9",
+          symbol: "CCIP-BnM",
+          decimals: 18,
+          image: CCIPTokenImage,
+        },
+      },
+    },
+  },
 ]
