@@ -118,26 +118,4 @@ export const evmProducts = [
       { id: "avalanche", title: "Avalanche" },
     ],
   },
-  {
-    title: "External API Calls",
-    description: "Request and receive data from any API using the Chainlink contract library",
-    learnMorelink: "/any-api/introduction",
-    image: externalApiLogo,
-    links: [
-      ["Introduction", "/any-api/introduction"],
-      ["Make a GET Request", "/any-api/get-request/introduction"],
-      ["Find Existing Jobs", "/any-api/find-oracle"],
-      ["API Reference", "/any-api/api-reference"],
-    ],
-    chains: [
-      ...baseChains,
-      { id: "arbitrum", title: "Arbitrum" },
-      { id: "optimism", title: "Optimism" },
-      { id: "gnosis-chain", title: "Gnosis Chain" },
-      { id: "harmony", title: "Harmony" },
-      { id: "metis", title: "Metis" },
-      { id: "moonbeam", title: "Moonbeam" },
-      { id: "moonriver", title: "Moonriver" },
-    ],
-  },
 ] as ProductCardProps[]
