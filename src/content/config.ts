@@ -1,15 +1,12 @@
 import { z, defineCollection } from "astro:content"
 
 export const sectionEnum = z.enum([
-  "anyApi",
   "global",
-  "bif",
   "ccip",
   "automation",
   "chainlinkFunctions",
   "nodeOperator",
   "dataFeeds",
-  "gettingStarted",
   "legacy",
   "vrf",
 ])
@@ -44,25 +41,21 @@ const baseCollection = defineCollection({
   schema: baseFrontmatter,
 })
 
-const anyApiCollection = baseCollection
 const architectureOverviewCollection = baseCollection
 const chainlinkAutomationCollection = baseCollection
 const chainlinkFunctionsCollection = baseCollection
 const chainlinkNodesCollection = baseCollection
 const dataFeedsCollection = baseCollection
-const gettingStartedCollection = baseCollection
 const resourcesCollection = baseCollection
 const vrfCollection = baseCollection
 const ccipCollection = baseCollection
 
 export const collections = {
-  "any-api": anyApiCollection,
   "architecture-overview": architectureOverviewCollection,
   "chainlink-automation": chainlinkAutomationCollection,
   "chainlink-functions": chainlinkFunctionsCollection,
   "chainlink-nodes": chainlinkNodesCollection,
   "data-feeds": dataFeedsCollection,
-  "getting-started": gettingStartedCollection,
   resources: resourcesCollection,
   vrf: vrfCollection,
   ccip: ccipCollection,
