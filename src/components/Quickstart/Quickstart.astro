@@ -11,31 +11,31 @@ import { QuickstartBar } from "./QuickstartBar"
   <slot />
 </article>
 
-<style>
+<style is:inline>
   #article {
     margin-top: var(--space-10x);
   }
 
-  #article :global(*) {
+  #article * {
     margin-top: 0;
     margin-bottom: 0;
     max-width: 100%;
   }
 
-  #article :global(section > *) {
+  #article section > * {
     margin-top: var(--space-5x);
   }
 
-  #article :global(p + ul) {
+  #article p + ul {
     margin-top: 0;
   }
 
-  #article :global(section) {
+  #article section {
     margin-top: var(--space-10x);
     scroll-margin-top: calc(var(--space-4x) + var(--theme-navbar-height));
   }
 
-  #article :global(h2) {
+  #article h2 {
     color: black;
     font-size: 20px;
     top: calc(var(--space-4x) + var(--theme-navbar-height));
@@ -43,21 +43,21 @@ import { QuickstartBar } from "./QuickstartBar"
     z-index: 2;
   }
 
-  #article :global(li) {
+  #article li {
     line-height: 1.5;
   }
 
-  #article :global(ul) {
+  #article ul {
     list-style: none;
   }
 
-  #article :global(ul > li) {
+  #article ul > li {
     position: relative;
     left: 0.5rem;
     padding-right: 1rem;
   }
 
-  #article :global(ul > li::before) {
+  #article ul > li::before {
     position: absolute;
     content: "●";
     font-size: 0.5rem;
@@ -65,26 +65,26 @@ import { QuickstartBar } from "./QuickstartBar"
     left: -1rem;
   }
 
-  #article :global(ol) {
+  #article ol {
     padding-left: 0;
     counter-reset: counter;
   }
 
-  #article :global(ol > li:first-of-type) {
+  #article ol > li:first-of-type {
     border-top: 1px solid var(--gray-300, #ced0d5);
   }
 
-  #article :global(ol > li) {
+  #article ol > li {
     padding: var(--space-2x) 0px;
     border-bottom: 1px solid var(--gray-300, #ced0d5);
     list-style: none;
   }
 
-  #article :global(details) {
+  #article details {
     overflow: hidden;
   }
 
-  #article :global(details > summary) {
+  #article details > summary {
     display: grid;
     grid-template-columns: 0 1fr auto;
     align-items: center;
@@ -94,14 +94,14 @@ import { QuickstartBar } from "./QuickstartBar"
     font-size: 16px;
   }
 
-  #article :global(details > summary::before) {
+  #article details > summary::before {
     content: counters(counter, ".") "";
     counter-increment: counter;
     color: var(--gray-400, #b7bac0);
     letter-spacing: -0.24px;
   }
 
-  #article :global(details > summary::after) {
+  #article details > summary::after {
     content: url(/images/quickstarts/arrow-down.svg);
     -webkit-mask: url(/images/quickstarts/arrow-down.svg) no-repeat center;
     -webkit-mask-size: var(--space-6x);
@@ -111,48 +111,48 @@ import { QuickstartBar } from "./QuickstartBar"
 
   /* Using custom attribute 'expanded' (created by Accordion)
   rather than 'open' since some browsers (Safari) have no respect for details attributes */
-  #article :global(details[expanded] > summary::after) {
+  #article details[expanded] > summary::after {
     transform: rotate(180deg);
     background-color: #174cc2;
   }
 
-  #article :global(details > :not(summary)) {
+  #article details > :not(summary) {
     margin-top: 0;
     padding-left: var(--space-8x);
     padding-top: var(--space-6x);
   }
 
-  #article :global(details > :not(summary):last-child) {
+  #article details > :not(summary):last-child {
     padding-bottom: var(--space-3x);
   }
 
   @media (min-width: 48em) {
-    #article :global(section > *) {
+    #article section > * {
       margin-top: var(--space-6x);
     }
 
-    #article :global(h2) {
+    #article h2 {
       font-size: 28px;
       color: var(--blue-800, #1a2b6b);
     }
 
-    #article :global(ol > li) {
+    #article ol > li {
       padding: var(--space-3x) 0px;
     }
 
-    #article :global(details > summary) {
+    #article details > summary {
       font-size: 20px;
     }
   }
 
   /* NOTE: Done at 50em since mobile header appears at this point */
   @media (min-width: 50em) {
-    #article :global(section) {
+    #article section {
       margin-top: var(--space-6x);
       scroll-margin-top: var(--space-4x);
     }
 
-    #article :global(h2) {
+    #article h2 {
       top: var(--space-4x);
     }
   }
