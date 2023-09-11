@@ -27,8 +27,7 @@ const TableOfContents: FunctionalComponent<{
     const query = `article :where(
       section > :where(h2, h3, h4)
       ${extraHeaders ? `, ${extraHeaders}` : ""}
-      )
-    `
+    )`
     const elements = document.querySelectorAll(query)
     const newHeadings: MarkdownHeading[] = []
 
