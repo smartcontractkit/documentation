@@ -282,7 +282,9 @@ export const CostTable = ({ method, network }: Props) => {
   const computeArbitrumCost = () => {
     const VRFCallDataSizeBytes = 140 + 580
     const {
+      L1GasPriceEstimate,
       currentL1GasPriceEstimate,
+      gasPrice,
       currentGasPrice,
       decimalPlaces,
       currentVerificationGas,
@@ -292,8 +294,12 @@ export const CostTable = ({ method, network }: Props) => {
       priceFeed,
       wrapperOverheadGas,
     } = state
-    const L1P = BigNumber.from(currentL1GasPriceEstimate)
-    const L2P = BigNumber.from(currentGasPrice)
+    const L1P =
+      currentL1GasPriceEstimate === L1GasPriceEstimate
+        ? BigNumber.from(currentL1GasPriceEstimate)
+        : utils.parseUnits(currentL1GasPriceEstimate, "gwei")
+    const L2P =
+      currentGasPrice === gasPrice ? BigNumber.from(currentGasPrice) : utils.parseUnits(currentGasPrice, "gwei")
 
     const L2PGasLane = utils.parseUnits(currentGasLane.toString(), "gwei")
     const VRFL1CostEstimate = L1P.mul(VRFCallDataSizeBytes)
@@ -391,6 +397,7 @@ export const CostTable = ({ method, network }: Props) => {
     }
     const {
       currentGasPrice,
+      gasPrice,
       decimalPlaces,
       callbackGas,
       currentVerificationGas,
@@ -400,7 +407,8 @@ export const CostTable = ({ method, network }: Props) => {
       wrapperOverheadGas,
       wrapperLinkPremiumPercentage,
     } = state
-    const bigNumberGasPrice = BigNumber.from(currentGasPrice)
+    const bigNumberGasPrice =
+      currentGasPrice === gasPrice ? BigNumber.from(currentGasPrice) : utils.parseUnits(currentGasPrice, "gwei")
     const bigNumberGasLane = utils.parseUnits(currentGasLane.toString(), "gwei")
     const bigNumberPriceFeed = utils.formatUnits(BigNumber.from(priceFeed), decimalPlaces)
     const formattedPriceFeed = utils.parseEther(bigNumberPriceFeed)
@@ -442,7 +450,14 @@ export const CostTable = ({ method, network }: Props) => {
   const handleChangeCallback = (e: Event) => {
     const { target } = e
     if (target instanceof HTMLInputElement) {
-      const val = target.value
+      if (!target.value) {
+        dispatch({
+          type: "SET_CALLBACK_GAS",
+          payload: 0,
+        })
+        return
+      }
+      const val = target.value.replaceAll(",", "")
       if (parseInt(val) >= state.callbackGasLimit) {
         dispatch({
           type: "SET_CALLBACK_GAS",
@@ -457,16 +472,25 @@ export const CostTable = ({ method, network }: Props) => {
   const handleChangeGas = (e: Event) => {
     const { target } = e
     if (target instanceof HTMLInputElement) {
-      const val = target.value || "0.0"
-      dispatch({ type: "SET_CURRENT_GAS_PRICE", payload: utils.parseUnits(val, "gwei").toString() })
+      const isArbitrum = state.mainChain && state.mainChain.label.toLowerCase() === "arbitrum"
+      console.log(isArbitrum)
+      const minValue = isArbitrum ? "0.01" : "0"
+      const val =
+        isNaN(parseInt(target.value)) || !target.value || target.value === "0"
+          ? minValue
+          : target.value.replaceAll(",", "")
+      dispatch({ type: "SET_CURRENT_GAS_PRICE", payload: val })
     }
   }
 
   const handleChangeGasL1 = (e: Event) => {
     const { target } = e
     if (target instanceof HTMLInputElement) {
-      const val = target.value || "0.0"
-      dispatch({ type: "SET_CURRENT_L1_GAS_PRICE_ESTIMATE", payload: utils.parseUnits(val, "gwei").toString() })
+      const val = isNaN(parseInt(target.value)) || !target.value ? "0" : target.value.replaceAll(",", "")
+      dispatch({
+        type: "SET_CURRENT_L1_GAS_PRICE_ESTIMATE",
+        payload: val,
+      })
     }
   }
 
@@ -536,6 +560,10 @@ export const CostTable = ({ method, network }: Props) => {
     return res
   }
 
+  const formatGasPrice = (val: string) => {
+    return utils.formatUnits(BigNumber.from(val).toHexString(), "gwei")
+  }
+
   if (state.isLoading) {
     return <p className="loading-text">Data is being fetched. Please wait a moment...</p>
   } else {
@@ -550,11 +578,16 @@ export const CostTable = ({ method, network }: Props) => {
             <td>Gas price (current is {getGasPrice(state.gasPrice)} gwei)</td>
             <td>
               <input
-                type="number"
+                type="text"
                 id="gas"
-                min={1}
-                value={utils.formatUnits(state.currentGasPrice, "gwei")}
-                onBlur={handleChangeGas}
+                min={"0"}
+                // utils.commify blocks the use of decimals so, using regex here instead to add commas as thousand separators.
+                value={
+                  state.currentGasPrice === state.gasPrice
+                    ? formatGasPrice(state.currentGasPrice)
+                    : state.currentGasPrice.replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",")
+                }
+                onChange={handleChangeGas}
               />
             </td>
           </tr>
@@ -563,11 +596,15 @@ export const CostTable = ({ method, network }: Props) => {
               <td>L1 gas price (current is {getGasPrice(state.L1GasPriceEstimate)} gwei)</td>
               <td>
                 <input
-                  type="number"
+                  type="text"
                   id="L1Gas"
-                  min={0}
-                  value={utils.formatUnits(state.currentL1GasPriceEstimate, "gwei")}
-                  onBlur={handleChangeGasL1}
+                  min={"0"}
+                  value={
+                    state.currentL1GasPriceEstimate === state.L1GasPriceEstimate
+                      ? utils.formatUnits(state.currentL1GasPriceEstimate, "gwei")
+                      : state.currentL1GasPriceEstimate.replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",")
+                  }
+                  onChange={handleChangeGasL1}
                 />
               </td>
             </tr>
@@ -577,10 +614,10 @@ export const CostTable = ({ method, network }: Props) => {
             <td>
               <input
                 id="callback-gas-value"
-                type="number"
-                max={state.callbackGasLimit}
-                value={state.callbackGas}
-                min={0}
+                type="text"
+                max={state.callbackGasLimit.toLocaleString()}
+                value={utils.commify(state.callbackGas ?? "0")}
+                min={"0"}
                 onChange={handleChangeCallback}
               />
             </td>
