@@ -65,26 +65,26 @@ import { QuickstartBar } from "./QuickstartBar"
     left: -1rem;
   }
 
-  #article ol {
+  #article ol.steps {
     padding-left: 0;
     counter-reset: counter;
   }
 
-  #article ol > li:first-of-type {
+  #article ol.steps > li:first-of-type {
     border-top: 1px solid var(--gray-300, #ced0d5);
   }
 
-  #article ol > li {
+  #article ol.steps > li {
     padding: var(--space-2x) 0px;
     border-bottom: 1px solid var(--gray-300, #ced0d5);
     list-style: none;
   }
 
-  #article details {
+  #article ol.steps details {
     overflow: hidden;
   }
 
-  #article details > summary {
+  #article ol.steps details > summary {
     display: grid;
     grid-template-columns: 0 1fr auto;
     align-items: center;
@@ -94,14 +94,14 @@ import { QuickstartBar } from "./QuickstartBar"
     font-size: 16px;
   }
 
-  #article details > summary::before {
+  #article ol.steps details > summary::before {
     content: counters(counter, ".") "";
     counter-increment: counter;
     color: var(--gray-400, #b7bac0);
     letter-spacing: -0.24px;
   }
 
-  #article details > summary::after {
+  #article ol.steps details > summary::after {
     content: url(/images/quickstarts/arrow-down.svg);
     -webkit-mask: url(/images/quickstarts/arrow-down.svg) no-repeat center;
     -webkit-mask-size: var(--space-6x);
@@ -111,18 +111,18 @@ import { QuickstartBar } from "./QuickstartBar"
 
   /* Using custom attribute 'expanded' (created by Accordion)
   rather than 'open' since some browsers (Safari) have no respect for details attributes */
-  #article details[expanded] > summary::after {
+  #article ol.steps details[expanded] > summary::after {
     transform: rotate(180deg);
     background-color: #174cc2;
   }
 
-  #article details > :not(summary) {
+  #article ol.steps details > :not(summary) {
     margin-top: 0;
     padding-left: var(--space-8x);
     padding-top: var(--space-6x);
   }
 
-  #article details > :not(summary):last-child {
+  #article ol.steps details > :not(summary):last-child {
     padding-bottom: var(--space-3x);
   }
 
@@ -136,11 +136,11 @@ import { QuickstartBar } from "./QuickstartBar"
       color: var(--blue-800, #1a2b6b);
     }
 
-    #article ol > li {
+    #article ol.steps > li {
       padding: var(--space-3x) 0px;
     }
 
-    #article details > summary {
+    #article ol.steps details > summary {
       font-size: 20px;
     }
   }
@@ -160,7 +160,7 @@ import { QuickstartBar } from "./QuickstartBar"
 
 <script>
   import { Accordion } from "./accordion"
-  document.querySelectorAll("details").forEach((el) => new Accordion(el))
+  document.querySelectorAll("ol.steps details").forEach((el: HTMLDetailsElement) => new Accordion(el))
 
   // Wrap sections in <section> tags
   // Allows us to create sticky headers
