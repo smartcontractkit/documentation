@@ -180,54 +180,54 @@ export const FeedList = ({
                       <a href="/docs/data-feeds/l2-sequencer-feeds/">L2 Sequencer Uptime Feeds</a> page for examples.
                     </p>
                   )}
-
-                  <details class={feedList.filterDropdown_details}>
-                    <summary
-                      class={feedList.filterDropdown_details}
-                      className="text-200"
-                      onClick={() => setShowCategoriesDropdown((prev) => !prev)}
-                    >
-                      Data Feed Categories
-                    </summary>
-                    <nav ref={wrapperRef} style={!showCategoriesDropdown ? { display: "none" } : {}}>
-                      <ul>
-                        {dataFeedCategory.map((category) => (
-                          <li>
-                            <button onClick={() => handleCategorySelection(category)}>
-                              <input
-                                type="checkbox"
-                                checked={selectedFeedCategories?.includes(category)}
-                                readonly
-                                style="cursor:pointer;"
-                              />
-                              <span> {category}</span>
-                            </button>
-                          </li>
-                        ))}
-                      </ul>
-                    </nav>
-                  </details>
-
-                  <div class={feedList.filterDropdown_search}>
-                    <input
-                      id="search"
-                      class={feedList.filterDropdown_searchInput}
-                      placeholder="Search price feeds"
-                      onInput={(event) => {
-                        setSearchValue((event.target as HTMLInputElement).value)
-                        setCurrentPage("1")
-                      }}
-                    />
+                  <div className={feedList.tableFilters}>
+                    <details class={feedList.filterDropdown_details}>
+                      <summary
+                        class={feedList.filterDropdown_details}
+                        className="text-200"
+                        onClick={() => setShowCategoriesDropdown((prev) => !prev)}
+                      >
+                        Data Feed Categories
+                      </summary>
+                      <nav ref={wrapperRef} style={!showCategoriesDropdown ? { display: "none" } : {}}>
+                        <ul>
+                          {dataFeedCategory.map((category) => (
+                            <li>
+                              <button onClick={() => handleCategorySelection(category)}>
+                                <input
+                                  type="checkbox"
+                                  checked={selectedFeedCategories?.includes(category)}
+                                  readonly
+                                  style="cursor:pointer;"
+                                />
+                                <span> {category}</span>
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      </nav>
+                    </details>
+                    <form class={feedList.filterDropdown_search}>
+                      <input
+                        id="search"
+                        class={feedList.filterDropdown_searchInput}
+                        placeholder="Search price feeds"
+                        onInput={(event) => {
+                          setSearchValue((event.target as HTMLInputElement).value)
+                          setCurrentPage("1")
+                        }}
+                      />
+                    </form>
+                    <label class={feedList.detailsLabel}>
+                      <input
+                        type="checkbox"
+                        style="width:15px;height:15px;display:inline;"
+                        checked={showExtraDetails}
+                        onChange={() => setShowExtraDetails((old) => !old)}
+                      />
+                      Show more details
+                    </label>
                   </div>
-                  <label class={feedList.detailsLabel}>
-                    <input
-                      type="checkbox"
-                      style="width:15px;height:15px;display:inline;"
-                      checked={showExtraDetails}
-                      onChange={() => setShowExtraDetails((old) => !old)}
-                    />
-                    Show more details
-                  </label>
                   <MainnetTable
                     selectedFeedCategories={
                       Array.isArray(selectedFeedCategories)
