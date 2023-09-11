@@ -31,14 +31,16 @@ import { QuickstartBar } from "./QuickstartBar"
   }
 
   #article section {
-    margin-top: var(--space-10x);
-    scroll-margin-top: calc(var(--space-4x) + var(--theme-navbar-height));
+    padding-top: var(--space-10x);
+    margin-top: 0;
+    scroll-margin-top: var(--theme-navbar-height);
   }
 
   #article h2 {
     color: black;
     font-size: 20px;
     top: calc(var(--space-4x) + var(--theme-navbar-height));
+    margin-top: 0;
     position: sticky;
     z-index: 2;
   }
@@ -78,6 +80,7 @@ import { QuickstartBar } from "./QuickstartBar"
     padding: var(--space-2x) 0px;
     border-bottom: 1px solid var(--gray-300, #ced0d5);
     list-style: none;
+    scroll-margin-top: calc(var(--space-20x) + var(--theme-navbar-height));
   }
 
   #article ol.steps details {
@@ -134,6 +137,7 @@ import { QuickstartBar } from "./QuickstartBar"
     #article h2 {
       font-size: 28px;
       color: var(--blue-800, #1a2b6b);
+      margin-top: 0;
     }
 
     #article ol.steps > li {
@@ -148,8 +152,12 @@ import { QuickstartBar } from "./QuickstartBar"
   /* NOTE: Done at 50em since mobile header appears at this point */
   @media (min-width: 50em) {
     #article section {
-      margin-top: var(--space-6x);
+      padding-top: var(--space-6x);
       scroll-margin-top: var(--space-4x);
+    }
+
+    #article ol.steps > li {
+      scroll-margin-top: var(--space-20x);
     }
 
     #article h2 {
@@ -160,38 +168,48 @@ import { QuickstartBar } from "./QuickstartBar"
 
 <script>
   import { Accordion } from "./accordion"
-  document.querySelectorAll("ol.steps details").forEach((el: HTMLDetailsElement) => new Accordion(el))
-
-  // Wrap sections in <section> tags
-  // Allows us to create sticky headers
-  const children = document.querySelectorAll("article > *")
-  for (var i = 0; i < children.length; i++) {
-    if (children[i].nodeName === "H2") {
-      const wrapper = document.createElement("section")
-      wrapper.id = children[i].id
-      children[i].parentNode!.insertBefore(wrapper, children[i])
-      wrapper.appendChild(children[i])
-      for (var j = i + 1; j < children.length; j++) {
-        if (children[j].nodeName === "H2") {
-          break
-        }
-        wrapper.appendChild(children[j])
+  const detailsElements = document.querySelectorAll("ol.steps details")
+  detailsElements.forEach((el: HTMLDetailsElement) => {
+    new Accordion(el)
+    // Required for ContentObserver / TOC
+    const summary = el.querySelector("summary")
+    if (summary) {
+      const id = summary.innerText.toLowerCase().split(" ").join("-")
+      summary.id = id
+      if (el.parentElement) {
+        el.parentElement.id = id
       }
-      i = j - 1
     }
+  })
+
+  /**
+   * Creates sticky headers which interact with
+   * intersection observers
+   */
+  const wrapHeaders = (start: Element, isParent?: boolean) => {
+    const wrapper = document.createElement("section")
+    const elements: Element[] = []
+    elements.push(start)
+    let next = start.nextElementSibling
+    while (
+      next && // Just bear with me
+      (next.nodeName !== "ASTRO-ISLAND" || // Not an island
+        !next.hasChildNodes() || // Island doesn't have HTML content
+        next.children[0].nodeName !== "SECTION" || // First child of the island is not a section
+        !next.children[0].id) && // Section does not have an id
+      (!next.id || (isParent && !["H1", "H2"].includes(next.nodeName)))
+    ) {
+      elements.push(next)
+      next = next.nextElementSibling
+    }
+    wrapper.id = start.id
+    start.parentNode!.insertBefore(wrapper, start)
+    elements.forEach((e) => wrapper.appendChild(e))
+    return wrapper
   }
 
-  // Create sticky background
-  // const bg = document.createElement("div")
-  // bg.id = "bg"
-  // const article = document.getElementById("article")!
-  // console.log(bg.clientHeight)
-  // // TODO: Make responsive to window width changing
-  // const title = children.item(0)
-  // bg.style.height = `${title.clientHeight * 2.5}px`
-  // bg.style.maxWidth = `${article.clientWidth}px`
-  // const a = title.clientHeight * 2.5 + 24
-  // bg.style.marginBottom = `-${a / 2}px`
-  // bg.style.marginTop = `-${a / 2}px`
-  // article.prepend(bg)
+  // Only get direct descendants of the article content
+  // Grabs mdx headers without getting nested headers in components
+  const headers = document.body.querySelectorAll("article > :where(h1, h2, h3, h4)")
+  headers.forEach((e) => wrapHeaders(e, ["H1", "H2"].includes(e.nodeName)))
 </script>
