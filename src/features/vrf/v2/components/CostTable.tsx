@@ -294,12 +294,19 @@ export const CostTable = ({ method, network }: Props) => {
       priceFeed,
       wrapperOverheadGas,
     } = state
+    // If currentGasPrice is 0, it will throw a division by zero error. So, let's adjust it to a very small value to still give an approximation of the cost.
+    const formattedCurrentGasPrice =
+      parseFloat(currentGasPrice) === 0 && BigNumber.from(currentGasPrice).toNumber() === 0
+        ? "0.000001"
+        : currentGasPrice
     const L1P =
       currentL1GasPriceEstimate === L1GasPriceEstimate
         ? BigNumber.from(currentL1GasPriceEstimate)
         : utils.parseUnits(currentL1GasPriceEstimate, "gwei")
     const L2P =
-      currentGasPrice === gasPrice ? BigNumber.from(currentGasPrice) : utils.parseUnits(currentGasPrice, "gwei")
+      currentGasPrice === gasPrice
+        ? BigNumber.from(formattedCurrentGasPrice)
+        : utils.parseUnits(formattedCurrentGasPrice, "gwei")
 
     const L2PGasLane = utils.parseUnits(currentGasLane.toString(), "gwei")
     const VRFL1CostEstimate = L1P.mul(VRFCallDataSizeBytes)
@@ -472,21 +479,40 @@ export const CostTable = ({ method, network }: Props) => {
   const handleChangeGas = (e: Event) => {
     const { target } = e
     if (target instanceof HTMLInputElement) {
-      const isArbitrum = state.mainChain && state.mainChain.label.toLowerCase() === "arbitrum"
-      console.log(isArbitrum)
-      const minValue = isArbitrum ? "0.01" : "0"
-      const val =
-        isNaN(parseInt(target.value)) || !target.value || target.value === "0"
-          ? minValue
-          : target.value.replaceAll(",", "")
-      dispatch({ type: "SET_CURRENT_GAS_PRICE", payload: val })
+      const val = target.value || "0"
+      dispatch({
+        type: "SET_CURRENT_GAS_PRICE",
+        payload: val,
+      })
+    }
+  }
+
+  const cleanGasValue = (e: Event) => {
+    const { target } = e
+    if (target instanceof HTMLInputElement) {
+      const val = parseFloat(target.value).toString()
+      dispatch({
+        type: "SET_CURRENT_GAS_PRICE",
+        payload: val,
+      })
     }
   }
 
   const handleChangeGasL1 = (e: Event) => {
     const { target } = e
     if (target instanceof HTMLInputElement) {
-      const val = isNaN(parseInt(target.value)) || !target.value ? "0" : target.value.replaceAll(",", "")
+      const val = target.value || "0"
+      dispatch({
+        type: "SET_CURRENT_L1_GAS_PRICE_ESTIMATE",
+        payload: val,
+      })
+    }
+  }
+
+  const cleanL1GasValue = (e: Event) => {
+    const { target } = e
+    if (target instanceof HTMLInputElement) {
+      const val = parseFloat(target.value).toString()
       dispatch({
         type: "SET_CURRENT_L1_GAS_PRICE_ESTIMATE",
         payload: val,
@@ -560,10 +586,6 @@ export const CostTable = ({ method, network }: Props) => {
     return res
   }
 
-  const formatGasPrice = (val: string) => {
-    return utils.formatUnits(BigNumber.from(val).toHexString(), "gwei")
-  }
-
   if (state.isLoading) {
     return <p className="loading-text">Data is being fetched. Please wait a moment...</p>
   } else {
@@ -578,16 +600,16 @@ export const CostTable = ({ method, network }: Props) => {
             <td>Gas price (current is {getGasPrice(state.gasPrice)} gwei)</td>
             <td>
               <input
-                type="text"
+                type="number"
                 id="gas"
-                min={"0"}
-                // utils.commify blocks the use of decimals so, using regex here instead to add commas as thousand separators.
+                min={0}
                 value={
                   state.currentGasPrice === state.gasPrice
-                    ? formatGasPrice(state.currentGasPrice)
-                    : state.currentGasPrice.replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",")
+                    ? utils.formatUnits(state.currentGasPrice, "gwei")
+                    : state.currentGasPrice
                 }
                 onChange={handleChangeGas}
+                onBlur={cleanGasValue}
               />
             </td>
           </tr>
@@ -596,15 +618,16 @@ export const CostTable = ({ method, network }: Props) => {
               <td>L1 gas price (current is {getGasPrice(state.L1GasPriceEstimate)} gwei)</td>
               <td>
                 <input
-                  type="text"
+                  type="number"
                   id="L1Gas"
-                  min={"0"}
+                  min={0}
                   value={
                     state.currentL1GasPriceEstimate === state.L1GasPriceEstimate
                       ? utils.formatUnits(state.currentL1GasPriceEstimate, "gwei")
-                      : state.currentL1GasPriceEstimate.replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",")
+                      : state.currentL1GasPriceEstimate
                   }
                   onChange={handleChangeGasL1}
+                  onBlur={cleanL1GasValue}
                 />
               </td>
             </tr>
@@ -617,7 +640,6 @@ export const CostTable = ({ method, network }: Props) => {
                 type="text"
                 max={state.callbackGasLimit.toLocaleString()}
                 value={utils.commify(state.callbackGas ?? "0")}
-                min={"0"}
                 onChange={handleChangeCallback}
               />
             </td>
