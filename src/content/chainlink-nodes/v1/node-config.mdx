@@ -587,7 +587,7 @@ HTTPWriteTimeout controls how long the Chainlink node's API server can hold a so
 HTTPPort = 6688 # Default
 ```
 
-HTTPPort is the port used for the Chainlink Node API, CLI, and GUI.
+HTTPPort is the port used for the Chainlink Node API, [CLI](/docs/configuration-variables/#cli-client), and GUI.
 
 ### SecureCookies
 
@@ -899,6 +899,7 @@ ContractTransmitterTransmitTimeout = '10s' # Default
 DatabaseTimeout = '10s' # Default
 KeyBundleID = '7a5f66bbe6594259325bf2b4f5b1a9c900000000000000000000000000000000' # Example
 CaptureEATelemetry = false # Default
+CaptureAutomationCustomTelemetry = false # Default
 DefaultTransactionQueueDepth = 1 # Default
 SimulateTransactions = false # Default
 TraceLogging = false # Default
@@ -1009,6 +1010,14 @@ CaptureEATelemetry = false # Default
 ```
 
 CaptureEATelemetry toggles collecting extra information from External Adaptares
+
+### CaptureAutomationCustomTelemetry
+
+```toml
+CaptureAutomationCustomTelemetry = false # Default
+```
+
+CaptureAutomationCustomTelemetry toggles collecting automation specific telemetry
 
 ### DefaultTransactionQueueDepth
 
@@ -2603,6 +2612,82 @@ ContractConfirmations = 4
 ContractTransmitterTransmitTimeout = '10s'
 DatabaseTimeout = '10s'
 ObservationGracePeriod = '1s'
+
+[OCR2]
+[OCR2.Automation]
+GasLimit = 5300000
+```
+
+### BSC Testnet (97)
+
+```toml
+AutoCreateKey = true
+BlockBackfillDepth = 10
+BlockBackfillSkip = false
+FinalityDepth = 50
+FinalityTagEnabled = false
+LinkContractAddress = '0x84b9B910527Ad5C03A9Ca831909E21e236EA7b06'
+LogBackfillBatchSize = 1000
+LogPollInterval = '3s'
+LogKeepBlocksDepth = 100000
+MinIncomingConfirmations = 3
+MinContractPayment = '0.00001 link'
+NonceAutoSync = true
+NoNewHeadsThreshold = '30s'
+RPCDefaultBatchSize = 250
+RPCBlockQueryDelay = 2
+
+[Transactions]
+ForwardersEnabled = false
+MaxInFlight = 16
+MaxQueued = 250
+ReaperInterval = '1h0m0s'
+ReaperThreshold = '168h0m0s'
+ResendAfterThreshold = '1m0s'
+
+[BalanceMonitor]
+Enabled = true
+
+[GasEstimator]
+Mode = 'BlockHistory'
+PriceDefault = '5 gwei'
+PriceMax = '115792089237316195423570985008687907853269984665.640564039457584007913129639935 tether'
+PriceMin = '1 gwei'
+LimitDefault = 500000
+LimitMax = 500000
+LimitMultiplier = '1'
+LimitTransfer = 21000
+BumpMin = '5 gwei'
+BumpPercent = 20
+BumpThreshold = 5
+EIP1559DynamicFees = false
+FeeCapDefault = '100 gwei'
+TipCapDefault = '1 wei'
+TipCapMin = '1 wei'
+
+[GasEstimator.BlockHistory]
+BatchSize = 25
+BlockHistorySize = 24
+CheckInclusionBlocks = 12
+CheckInclusionPercentile = 90
+TransactionPercentile = 60
+
+[HeadTracker]
+HistoryDepth = 100
+MaxBufferSize = 3
+SamplingInterval = '1s'
+
+[NodePool]
+PollFailureThreshold = 5
+PollInterval = '10s'
+SelectionMode = 'HighestHead'
+SyncThreshold = 10
+
+[OCR]
+ContractConfirmations = 4
+ContractTransmitterTransmitTimeout = '2s'
+DatabaseTimeout = '2s'
+ObservationGracePeriod = '500ms'
 
 [OCR2]
 [OCR2.Automation]
@@ -4207,6 +4292,156 @@ ObservationGracePeriod = '1s'
 GasLimit = 5300000
 ```
 
+### Scroll Sepolia (534351)
+
+```toml
+AutoCreateKey = true
+BlockBackfillDepth = 10
+BlockBackfillSkip = false
+FinalityDepth = 1
+FinalityTagEnabled = false
+LogBackfillBatchSize = 1000
+LogPollInterval = '30s'
+LogKeepBlocksDepth = 100000
+MinIncomingConfirmations = 1
+MinContractPayment = '0.00001 link'
+NonceAutoSync = true
+NoNewHeadsThreshold = '0s'
+RPCDefaultBatchSize = 250
+RPCBlockQueryDelay = 1
+
+[Transactions]
+ForwardersEnabled = false
+MaxInFlight = 16
+MaxQueued = 250
+ReaperInterval = '1h0m0s'
+ReaperThreshold = '168h0m0s'
+ResendAfterThreshold = '2m0s'
+
+[BalanceMonitor]
+Enabled = true
+
+[GasEstimator]
+Mode = 'L2Suggested'
+PriceDefault = '20 gwei'
+PriceMax = '115792089237316195423570985008687907853269984665.640564039457584007913129639935 tether'
+PriceMin = '0'
+LimitDefault = 500000
+LimitMax = 500000
+LimitMultiplier = '1'
+LimitTransfer = 21000
+BumpMin = '5 gwei'
+BumpPercent = 20
+BumpThreshold = 0
+EIP1559DynamicFees = false
+FeeCapDefault = '100 gwei'
+TipCapDefault = '1 wei'
+TipCapMin = '1 wei'
+
+[GasEstimator.BlockHistory]
+BatchSize = 25
+BlockHistorySize = 0
+CheckInclusionBlocks = 12
+CheckInclusionPercentile = 90
+TransactionPercentile = 60
+
+[HeadTracker]
+HistoryDepth = 50
+MaxBufferSize = 3
+SamplingInterval = '1s'
+
+[NodePool]
+PollFailureThreshold = 5
+PollInterval = '10s'
+SelectionMode = 'HighestHead'
+SyncThreshold = 5
+
+[OCR]
+ContractConfirmations = 1
+ContractTransmitterTransmitTimeout = '10s'
+DatabaseTimeout = '10s'
+ObservationGracePeriod = '1s'
+
+[OCR2]
+[OCR2.Automation]
+GasLimit = 5300000
+```
+
+### Scroll Mainnet (534352)
+
+```toml
+AutoCreateKey = true
+BlockBackfillDepth = 10
+BlockBackfillSkip = false
+FinalityDepth = 1
+FinalityTagEnabled = false
+LogBackfillBatchSize = 1000
+LogPollInterval = '30s'
+LogKeepBlocksDepth = 100000
+MinIncomingConfirmations = 1
+MinContractPayment = '0.00001 link'
+NonceAutoSync = true
+NoNewHeadsThreshold = '0s'
+RPCDefaultBatchSize = 250
+RPCBlockQueryDelay = 1
+
+[Transactions]
+ForwardersEnabled = false
+MaxInFlight = 16
+MaxQueued = 250
+ReaperInterval = '1h0m0s'
+ReaperThreshold = '168h0m0s'
+ResendAfterThreshold = '2m0s'
+
+[BalanceMonitor]
+Enabled = true
+
+[GasEstimator]
+Mode = 'L2Suggested'
+PriceDefault = '20 gwei'
+PriceMax = '115792089237316195423570985008687907853269984665.640564039457584007913129639935 tether'
+PriceMin = '0'
+LimitDefault = 500000
+LimitMax = 500000
+LimitMultiplier = '1'
+LimitTransfer = 21000
+BumpMin = '5 gwei'
+BumpPercent = 20
+BumpThreshold = 0
+EIP1559DynamicFees = false
+FeeCapDefault = '100 gwei'
+TipCapDefault = '1 wei'
+TipCapMin = '1 wei'
+
+[GasEstimator.BlockHistory]
+BatchSize = 25
+BlockHistorySize = 0
+CheckInclusionBlocks = 12
+CheckInclusionPercentile = 90
+TransactionPercentile = 60
+
+[HeadTracker]
+HistoryDepth = 50
+MaxBufferSize = 3
+SamplingInterval = '1s'
+
+[NodePool]
+PollFailureThreshold = 5
+PollInterval = '10s'
+SelectionMode = 'HighestHead'
+SyncThreshold = 5
+
+[OCR]
+ContractConfirmations = 1
+ContractTransmitterTransmitTimeout = '10s'
+DatabaseTimeout = '10s'
+ObservationGracePeriod = '1s'
+
+[OCR2]
+[OCR2.Automation]
+GasLimit = 5300000
+```
+
 ### Ethereum Sepolia (11155111)
 
 ```toml
@@ -4435,6 +4670,8 @@ ObservationGracePeriod = '1s'
 GasLimit = 5300000
 ```
 
+## EVM Chain Parameters
+
 ### ChainID
 
 ```toml
@@ -4530,7 +4767,7 @@ Finality for a block is solely defined by the finality related tags provided by 
 FlagsContractAddress = '0xae4E781a6218A8031764928E88d457937A954fC3' # Example
 ```
 
-FlagsContractAddress can optionally point to a [Flags contract](https://github.com/smartcontractkit/chainlink/blob/release/2.4.0/contracts/src/v0.8/Flags.sol). If set, the node will lookup that contract for each job that supports flags contracts (currently OCR and FM jobs are supported). If the job's contractAddress is set as hibernating in the FlagsContractAddress address, it overrides the standard update parameters (such as heartbeat/threshold).
+FlagsContractAddress can optionally point to a [Flags contract](https://github.com/smartcontractkit/chainlink/blob/release/2.5.0/contracts/src/v0.8/Flags.sol). If set, the node will lookup that contract for each job that supports flags contracts (currently OCR and FM jobs are supported). If the job's contractAddress is set as hibernating in the FlagsContractAddress address, it overrides the standard update parameters (such as heartbeat/threshold).
 
 ### LinkContractAddress
 
@@ -5338,11 +5575,12 @@ GasLimit controls the gas limit for transmit transactions from ocr2automation jo
 [[Cosmos]]
 ChainID = 'Malaga-420' # Example
 Enabled = true # Default
+Bech32Prefix = 'wasm' # Default
 BlockRate = '6s' # Default
 BlocksUntilTxTimeout = 30 # Default
 ConfirmPollPeriod = '1s' # Default
 FallbackGasPrice = '0.015' # Default
-FCDURL = 'http://cosmos.com' # Example
+FeeToken = 'ucosm' # Default
 GasLimitMultiplier = '1.5' # Default
 MaxMsgsPerBatch = 100 # Default
 OCR2CachePollPeriod = '4s' # Default
@@ -5365,6 +5603,14 @@ Enabled = true # Default
 ```
 
 Enabled enables this chain.
+
+### Bech32Prefix
+
+```toml
+Bech32Prefix = 'wasm' # Default
+```
+
+Bech32Prefix is the human-readable prefix for addresses on this Cosmos chain. See https://docs.cosmos.network/v0.47/spec/addresses/bech32.
 
 ### BlockRate
 
@@ -5398,13 +5644,13 @@ FallbackGasPrice = '0.015' # Default
 
 FallbackGasPrice sets a fallback gas price to use when the estimator is not available.
 
-### FCDURL
+### FeeToken
 
 ```toml
-FCDURL = 'http://cosmos.com' # Example
+FeeToken = 'ucosm' # Default
 ```
 
-FCDURL sets the FCD (Full Client Daemon) URL.
+FeeToken is the token denomination which is being used to pay gas fees on this chain.
 
 ### GasLimitMultiplier
 
