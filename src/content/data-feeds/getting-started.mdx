@@ -1,20 +1,39 @@
+---
+section: dataFeeds
+date: Last Modified
+title: "Consuming Data Feeds"
+excerpt: "Smart Contracts and Chainlink"
+whatsnext:
+  {
+    "See examples for how to read feeds on-chain and off-chain": "/data-feeds/using-data-feeds",
+    "Learn how to retrieve Historical Price Data": "/data-feeds/historical-data",
+    "Read the Data Feeds API Reference": "/data-feeds/api-reference",
+  }
+metadata:
+  title: "Consuming Data Feeds"
+  description: "Learn how to consume Chainlink Data Feeds in your smart contracts."
+  image:
+    0: "/files/1a63254-link.png"
+---
+
 import { Aside, CodeSample } from "@components"
 
-<Aside type="note" title="New to smart contracts?">
+You can use Chainlink Data Feeds to connect your smart contracts to asset pricing data like the [ETH / USD feed](https://data.chain.link/eth-usd). These data feeds use data aggregated from many independent Chainlink node operators. Each price feed has an on-chain address and functions that enable contracts to read pricing data from that address.
 
-This tutorial assumes that you know how to create and deploy basic smart contracts. If you are new to smart contract development, learn how to [Deploy Your First Smart Contract](/getting-started/deploy-your-first-contract/) before you start this guide.
+This guide shows you how to read Data Feeds and store the value on-chain using Solidity. To learn how to read feeds off-chain or use different languages, see the [Using Data Feeds on EVM Chains](/data-feeds/using-data-feeds) guide. Alternatively, you can also learn how to use Data Feeds on [Solana](/data-feeds/solana) or [StarkNet](/data-feeds/starknet).
 
-</Aside>
-
-When you connect a smart contract to real-world services or off-chain data, you create a _hybrid smart contract_. For example, you can use Chainlink Data Feeds to connect your smart contracts to asset pricing data like the [ETH / USD feed](https://data.chain.link/eth-usd). These data feeds use the data aggregated from many independent Chainlink node operators. Each price feed has an on-chain address and functions that enable contracts to read pricing data from that address.
-
-The code for reading Data Feeds is the same across all EVM-compatible blockchains and Data Feed types. You choose different types of feeds for different uses, but the request and response format are the same.
+The code for reading Data Feeds on Ethereum or other EVM-compatible blockchains is the same for each chain and each Data Feed types. You choose different types of feeds for different uses, but the request and response format are the same. The answer decimal length and expected value ranges might change depending on what feed you use.
 
 <Aside type="caution" title="Using Data Feeds on L2 networks">
-
-If you are using Chainlink Data Feeds on L2 networks like Arbitrum, Optimism, and Metis, you must also check the latest answer from the L2 Sequencer Uptime Feed to ensure that the data is accurate in the event of an L2 sequencer outage. See the [L2 Sequencer Uptime Feeds](/data-feeds/l2-sequencer-feeds) page to learn how to use Data Feeds on L2 networks.
-
+  If you are using Chainlink Data Feeds on L2 networks like Arbitrum, Optimism, and Metis, you must also check the
+  latest answer from the L2 Sequencer Uptime Feed to ensure that the data is accurate in the event of an L2 sequencer
+  outage. See the [L2 Sequencer Uptime Feeds](/data-feeds/l2-sequencer-feeds) page to learn how to use Data Feeds on L2
+  networks.
 </Aside>
+
+## Before you begin
+
+If you are new to smart contract development, learn how to [Deploy Your First Smart Contract](/getting-started/deploy-your-first-contract/) before you start this guide.
 
 ## Examine the sample contract
 
