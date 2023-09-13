@@ -4,132 +4,201 @@ section: vrf
 title: "Pass VRF costs to the end user"
 ---
 
-{/* Imports if necessary */}
 import { Aside } from "@components"
+import { TabsContent } from "@components/Tabs"
 
-{/* Add a brief description of the tutorial that leads into the Overview section */}
 This tutorial shows you how to identify the cost of specific VRF requests so that you can pass this cost to the end users of your application.
-
-{/* Add an overview description of the tutorial with significant conceptual information, architecture information, and descriptive diagrams. This section describes what the reader will build in the tutorial, what the completed tutorial demonstrates, and what uses cases might be enabled by adopting the technology behind the tutorial. */}
 
 ## Objective
 
-You can use the components and code samples in this tutorial as a starting point for building your own applications.
-
-{/* Optional - A prerequisites section with an unordered list of what you need before you begin the tutorial. */}
+The VRF direct funding method calculates costs at request time. In this tutorial, you will use VRF direct funding and map VRF request IDs to their corresponding responses from the VRF service, along with the cost of each request.
 
 ## Before you begin
 
+<Aside type="note" title="New to smart contract development?">
+  If you are new to smart contract development, learn how to [Deploy Your First Smart
+  Contract](/getting-started/deploy-your-first-contract).
+</Aside>
+
 Before you start this tutorial, complete the following items:
 
-- Item 1
-- Item 2
-- Item 3
+- Install [`make`](http://www.gnu.org/software/make).
 
-{/* Heading names with ## <h2> style. If <h3> or <h4> are required for sub-sections, add more # characters. */}
+   <TabsContent sharedStore="osType" client:visible>
+ <Fragment slot="tab.1">MacOS</Fragment>
+ <Fragment slot="tab.2">Windows</Fragment>
+ <Fragment slot="panel.1">
+ 1. The Xcode command line tools include `make`. If you've previously installed Xcode, skip to step 2 to verify your installation.
+ Otherwise, open a Terminal window and run:
+
+  ```sh
+  xcode-select --install
+  ```
+
+  Alternatively, if you prefer to [use Homebrew](https://formulae.brew.sh/formula/make), be aware that GNU `make` is installed as `gmake`.
+
+  1.  Verify your `make` installation:
+
+  ```sh
+  make
+  ```
+
+  If `make` is installed successfully, you will get the following output:
+
+  ```sh
+  make: *** No targets specified or no makefile found. Stop.
+  ```
+
+   </Fragment>
+ <Fragment slot="panel.2">
+ 1. Install [`make` for Windows](https://gnuwin32.sourceforge.net/packages/make.htm) by downloading their [setup program](https://gnuwin32.sourceforge.net/downlinks/make.php).
+
+  1.  [Edit your path variable](https://www.computerhope.com/issues/ch000549.htm) to include `make` by adding the following text to the path:
+      `C:\Program Files (x86)\GnuWin32\bin`.
+
+  1.  Verify your `make` installation:
+
+  ```sh
+  make
+  ```
+
+  If `make` is installed successfully, you will get the following output:
+
+  ```sh
+  make: *** No targets specified or no makefile found. Stop.
+  ```
+
+   </Fragment>
+ </Tabs>
+
+- Run `git --version` to check your `git` installation. You should see an output similar to `git version x.x.x`. If not, install [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git).
+- Get your Etherscan API key for contract verification. If you do not already have one:
+  - [Create an Etherscan account](https://docs.etherscan.io/getting-started/creating-an-account).
+  - [Create an Etherscan API key](https://docs.etherscan.io/getting-started/viewing-api-usage-statistics).
+- Create an account with [Infura](https://www.infura.io/) or [Alchemy](https://www.alchemy.com/) to use as an RPC endpoint if you do not already have one. Alternatively, you can [use your own testnet clients](/chainlink-nodes/resources/run-an-ethereum-client).
 
 ## Setup steps
 
-{/* A brief description of the components the user will set up in the tutorial. Include an unordered list with heading links to the sub-sections */}
-This tutorial requires you to set up two primary components:
+This tutorial requires several setup steps:
 
-- [Component 1](#setup-sub-section-1)
-- [Component 2](#setup-sub-section-1)
+- [Clone the example repo](##clone-the-example-repo)
+- [Configure the Foundry project](#configure-the-foundry-project)
+- [Install dependencies](#install-dependencies)
 
-{/* Use sub-sections for major components of the tutorial. Usually multiple major components go into creating a tutorial. Separate each one into a different section if it makes sense. */}
+### Clone the example repo
 
-### Setup sub-section 1
+Clone the [`vrf-direct-funding-example` repo](https://github.com/smartcontractkit/vrf-direct-funding-example):
 
-{/_
-Optional - Use the <Aside> component to call extra attention to risks, warnings, or potential issues.
-Available types are:
-note
-tip
-caution
-danger
-_/}
+```sh
+git clone git@github.com:linkpoolio/vrf-direct-funding-consumer.git
+```
 
-<Aside type="note" title="Example notice">
-  Example notice.
-</Aside>
+This gives you an existing [Foundry](https://github.com/foundry-rs/foundry) project to configure and use.
 
-{/* Brief description of what components you are setting up and why it is necessary for the guide. */}
-Run `./setup-example` to install the required config files.
+### Configure the Foundry project
 
-{/* An ordered list of steps to run with example output and descriptions of each step where possible. */}
+[Foundry](https://github.com/foundry-rs/foundry) is an Ethereum application development toolkit that is used here to configure and deploy the contract. You need the following information:
 
-1. Run the `./setup-example` command.
+- The RPC URL for your deployment network, using an [RPC node provider](https://ethereum.org/en/developers/docs/nodes-and-clients/nodes-as-a-service/) such as [Infura](https://www.infura.io/) or [Alchemy](https://www.alchemy.com/).
+- The private key for your deployer account. If your deployer account is in MetaMask, [export your private key from MetaMask](https://support.metamask.io/hc/en-us/articles/360015289632-How-to-export-an-account-s-private-key).
+- An [Etherscan API key](https://docs.etherscan.io/getting-started/viewing-api-usage-statistics) for contract verification.
 
-   {/* Command to run for setting up */}
+1. Create an `.env` file at the root of the `vrf-direct-funding-example/` directory:
 
-   ```shell
-   ./setup-example
+   ```
+   # Network RPCs
+   export RPC_URL=
+
+   # Private key for contract deployment
+   export PRIVATE_KEY=
+
+   # Explorer API key used to verify contracts
+   export EXPLORER_KEY=
    ```
 
-   This command prints the expected result.
+1. In your `.env` file, fill in these values:
 
-   {/* Command output */}
+   | Parameter      | Description                                                 | Example                                     |
+   | -------------- | ----------------------------------------------------------- | ------------------------------------------- |
+   | `RPC_URL`      | The RPC URL for the network you want to deploy to.          | `https://sepolia.infura.io/v3/your-api-key` |
+   | `PRIVATE_KEY`  | The private key of the account you want to deploy from.     | `0xabc123abc123abc123abc123abc123...`       |
+   | `EXPLORER_KEY` | The API key for Etherscan needed for contract verification. | `ABC123ABC123ABC123ABC123ABC123ABC1`        |
 
-   ```text
-   Expected results
-   ```
+### Install dependencies
 
-1. {/* Step 2 */}
+At the root of the `vrf-direct-funding-example/` directory, run:
 
-   1. {/* Sub-step A */}
-   1. {/* Sub-step B */}
+```sh
+make install
+```
 
-1. {/* Step 3 */}
+This command will install the project dependencies, which include [chainlink](https://github.com/smartcontractkit/chainlink) and [openzepplin-contracts](https://github.com/OpenZeppelin/openzeppelin-contracts) for secure smart contract development.
 
-{/* Sub-section 2 - Add additional sub sections for each major component of the tutorial. */}
+## Deploy and test
 
-### Setup sub-section 2
+Foundry includes [Forge](https://github.com/foundry-rs/foundry/tree/master/crates/forge), an Ethereum testing framework. Deployment and testing are both scripted within this Foundry project. The project's [Makefile](https://github.com/smartcontractkit/vrf-direct-funding-example/blob/main/Makefile) helps you invoke Forge with simple commands to start the deployment and testing scripts.
 
-{/* The section for running the tutorial and reaching the final result. */}
-
-## Run steps
-
-{/* Brief description for running or deploying the completed tutorial result. This section should be the final section of the tutorial instructions. */}
-Run the example in a terminal. When you are done, you will have a complete running solution.
-
-{/* An ordered list of steps to run with example output and descriptions of what is happening in each step. */}
-
-1. Run the `./run-tutorial` command.
+1. At the root of the `vrf-direct-funding-example/` directory, run this command to deploy the contract:
 
    {/* Command to run */}
 
    ```shell
-   ./run-tutorial
+   make deploy
    ```
 
-   This command prints the expected result.
+1. To test the contract, run this command:
 
-   {/* Command output */}
-
-   ```text
-   Expected result
+   ```shell
+   make test
    ```
 
-1. {/* Step 2 */}
+## Code example
 
-1. {/* Step 3 */}
+This section explains how the [`VRFDirectFundingConsumer.sol`](https://github.com/smartcontractkit/vrf-direct-funding-example/blob/main/src/VRFDirectFundingConsumer.sol) contract maps each request to its cost.
 
-{/* Optional - Include code examples and a description of how it works. If there are specific best practices or details that you want to call out, highlight them. */}
+This `RequestStatus` struct is used to map attributes of each VRF request to its request ID, including its cost, its fulfillment status, and the random values generated by the VRF service in response to the request:
 
-### Code example
+```solidity
+struct RequestStatus {
+        uint256 paid;
+        bool fulfilled;
+        uint256[] randomWords;
+    }
 
-The main part of this tutorial is the [`test.js` script](samples/productName/tutorialName/test.js).
+mapping(uint256 => RequestStatus) public s_requests;
+```
 
-{/* Add the code sample to the /public/samples folder and reference it using the CodeSample component. */}
+The `requestRandomWords()` function uses a method in the VRF wrapper contract to calculate the request cost upfront, and then transfers enough LINK to the VRF wrapper to cover the request. After sending the request, it sets up the `RequestStatus` with the cost and other attributes to be updated after request fulfillment.
 
-<CodeSample src="samples/productName/tutorialName/test.js" />
+```solidity
+uint256 requestPrice = vrfWrapper.calculateRequestPrice(
+            requestConfig.callbackGasLimit
+        );
 
-{/* Describe the important parts of the code example and what they accomplish. */}
-This example has the following components:
+require(
+      linkTokenContract.transferFrom(
+            msg.sender,
+            address(this),
+            requestPrice
+      ),
+      "Not enough LINK"
+   );
+   ...
 
-- `const test`: An example constant storing a string.
-- `print()`: A function used to print `test` to the console.
+   s_requests[requestId] = RequestStatus({
+            paid: requestPrice,
+            randomWords: new uint256[](0),
+            fulfilled: false
+        });
+```
 
-## Summary (Optional)
+After the VRF service fulfills your randomness request, it calls back your `fulfillRandomWords()` function, where you implement logic to handle the random values. It's recommended to keep the processing in your callback function minimal to save on gas costs. In this case, the example contract updates the `RequestStatus` in the request mapping, and emits an event indicating that the request has been fulfilled. Another part of your application can listen for this event and further process the random values separately from the callback function.
 
-{/* Add an optional summary leading into the What's Next links. */}
+```solidity
+function fulfillRandomWords(uint256 _requestId, uint256[] memory _randomWords) internal override {
+  require(s_requests[_requestId].paid > 0, "request not found");
+  s_requests[_requestId].fulfilled = true;
+  s_requests[_requestId].randomWords = _randomWords;
+  emit RequestFulfilled(_requestId, _randomWords, s_requests[_requestId].paid);
+}
+```
