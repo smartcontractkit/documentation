@@ -7,8 +7,9 @@ import { BannerContent } from "../components/HeaderBanner"
 // export const NotificationData: BannerContent | null = null
 
 export const NotificationData: BannerContent | null = {
-  description: "CCIP is now available on testnet for all developers.",
+  description: "Join us at SmartCon 2023—where Web3 gets real.",
   type: "info",
-  linkText: "Get started today.",
-  linkUrl: "https://docs.chain.link/ccip",
+  linkText: "Get your ticket.",
+  linkUrl:
+    "https://smartcon.chain.link/?utm_medium=referral&utm_source=chainlink-docs&utm_campaign=smartcon-2023&agid=kgmdzq5cr7sn",
 }

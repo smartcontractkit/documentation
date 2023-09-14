@@ -13,10 +13,6 @@ export const SearchInput = ({ onClose }: { onClose: () => void }) => {
   const [value, setValue] = useState("")
   const debouncedValue = useDebounce(value, 350)
 
-  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setValue(event.target.value)
-  }
-
   useEffect(() => {
     searchBoxApi.refine(debouncedValue)
   }, [debouncedValue])
@@ -25,7 +21,9 @@ export const SearchInput = ({ onClose }: { onClose: () => void }) => {
     <div className={styles.wrapper}>
       <input
         className={clsx(styles.input, ".focus-visible")}
-        onChange={handleChange}
+        onChange={(event) => {
+          setValue((event.target as HTMLInputElement).value)
+        }}
         placeholder={
           window.matchMedia("(min-width: 50em)").matches
             ? "Search Chainlink documentation..."

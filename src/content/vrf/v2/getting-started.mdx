@@ -1,7 +1,7 @@
 ---
-section: gettingStarted
+section: vrf
 date: Last Modified
-title: "Random Numbers: Using Chainlink VRF"
+title: "Getting Started with Chainlink VRF"
 excerpt: "Using Chainlink VRF"
 whatsnext:
   {
@@ -12,7 +12,7 @@ whatsnext:
     "Supported Networks": "/vrf/v2/subscription/supported-networks",
   }
 metadata:
-  title: "Random Numbers: Using Chainlink VRF"
+  title: "Getting Started with Chainlink VRF"
   description: "Learn how to use randomness in your smart contracts using Chainlink VRF."
   image:
     0: "/files/2a242f1-link.png"
@@ -23,7 +23,8 @@ import { YouTube } from "@astro-community/astro-embed-youtube"
 
 <Aside type="note" title="Requirements">
   This guide assumes that you have basic knowledge about writing and deploying smart contracts. If you are new to smart
-  contract development, read the [Consuming Data Feeds](/getting-started/consuming-data-feeds) guide before you begin.
+  contract development, learn how to [Deploy Your First Smart Contract](/getting-started/deploy-your-first-contract)
+  before you begin.
 </Aside>
 
 <YouTube id="https://www.youtube.com/watch?v=rdJ5d8j1RCg&ab" />
@@ -38,7 +39,7 @@ Randomness is very difficult to generate on blockchains. This is because every n
 
 ## What is the Request and Receive cycle?
 
-The [previous guide](/getting-started/consuming-data-feeds) explained how to consume Chainlink Data Feeds, which consist of reference data posted on-chain by oracles. This data is stored in a contract and can be referenced by consumers until the oracle updates the data again.
+The [Data Feeds Getting Started](/data-feeds/getting-started) guide explains how to consume Chainlink Data Feeds, which consist of reference data posted on-chain by oracles. This data is stored in a contract and can be referenced by consumers until the oracle updates the data again.
 
 Randomness, on the other hand, cannot be reference data. If the result of randomness is stored on-chain, any actor could retrieve the value and predict the outcome. Instead, randomness must be requested from an oracle, which generates a number and a cryptographic proof. Then, the oracle returns that result to the contract that requested it. This sequence is known as the **[Request and Receive cycle](/architecture-overview/architecture-request-model)**.
 
@@ -72,7 +73,7 @@ For this example, create a new subscription on the Sepolia testnet as explained 
 
 Chainlink maintains a [library of contracts](https://github.com/smartcontractkit/chainlink/tree/master/contracts) that make consuming data from oracles easier. For Chainlink VRF, you will use:
 
-- [`VRFConsumerBaseV2`](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/VRFConsumerBaseV2.sol) that must be imported and extended from the contract that you create.
+- [`VRFConsumerBaseV2`](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/vrf/VRFConsumerBaseV2.sol) that must be imported and extended from the contract that you create.
 - [`VRFCoordinatorV2Interface`](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol) that must be imported to communicate with the VRF coordinator.
 
 {/* prettier-ignore */}
@@ -339,7 +340,7 @@ You have now completed all necessary functions to generate randomness and assign
 
 ## How do I deploy to testnet?
 
-You will deploy this contract on the Sepolia test network. You need to [have some Sepolia ETH](/getting-started/deploy-your-first-contract/#install-and-fund-your-metamask-wallet) in your MetaMask account to pay for the gas.
+You will deploy this contract on the Sepolia test network. You must have some Sepolia testnet ETH in your MetaMask account to pay for the gas. Testnet ETH is also available from several [public faucets](https://faucetlink.to/sepolia).
 
 This deployment is slightly different than the example in the [Deploy Your First Contract](/getting-started/deploy-your-first-contract) guide. In this case, you pass in parameters to the constructor upon deployment.
 

@@ -5,11 +5,13 @@ title: "Chainlink Data Feeds"
 isIndex: true
 whatsnext:
   {
-    "Using Data Feeds": "/data-feeds/using-data-feeds",
+    "Follow the Data Feeds Getting Started guide to learn the basics": "/data-feeds/getting-started",
     "Read the API reference for using Data Feeds": "/data-feeds/api-reference",
-    "Price Feed Addresses": "/data-feeds/price-feeds/addresses",
-    "Proof of Reserve Feed Addresses": "/data-feeds/proof-of-reserve/addresses",
-    "NFT Floor Price Feed Addresses": "/data-feeds/nft-floor-price/addresses",
+    "Find Rate Price Feed Addresses": "/data-feeds/price-feeds/addresses",
+    "Find Rate Proof of Reserve Feed Addresses": "/data-feeds/proof-of-reserve/addresses",
+    "Find Rate NFT Floor Price Feed Addresses": "/data-feeds/nft-floor-price/addresses",
+    "Find Rate and Volatility Feed Addresses": "/data-feeds/rates-feeds/addresses",
+    "Learn how to use Data Feeds on L2 networks": "/data-feeds/l2-sequencer-feeds",
   }
 metadata:
   title: "Chainlink Data Feeds Documentation"
@@ -116,7 +118,7 @@ To accommodate the dynamic nature of off-chain environments, Chainlink Data Feed
 
 These updates include changes to the aggregator configuration or a complete replacement of the aggregator that the proxy uses. If you consume data feeds through the proxy, your applications can continue to operate during these changes.
 
-Proxy and aggregator contracts all have an `owner` address that has permission to change variables and functions. For example, if you read the [BTC/USD proxy contract](https://etherscan.io/address/0xF4030086522a5bEEa4988F8cA5B36dbC97BeE88c#readContract) in Etherscan, you can see the `owner` address. This address is a [multi-signature safe](https://docs.gnosis-safe.io/introduction/the-programmable-account/gnosis-safe) (multisig) that you can also inspect.
+Proxy and aggregator contracts all have an `owner` address that has permission to change variables and functions. For example, if you read the [BTC/USD proxy contract](https://etherscan.io/address/0xF4030086522a5bEEa4988F8cA5B36dbC97BeE88c#readContract) in Etherscan, you can see the `owner` address. This address is a [multi-signature safe](https://docs.safe.global/getting-started/readme) (multisig) that you can also inspect.
 
 If you [view the multisig contract](https://etherscan.io/address/0x21f73D42Eb58Ba49dDB685dc29D3bF5c0f0373CA#readProxyContract) in Etherscan using the _Read as Proxy_ feature, you can see the full details of the multisig including the list of addresses that can sign and the number of signers required for the multisig to approve actions on any contracts that it owns.
 
@@ -130,9 +132,9 @@ Create your own monitoring alerts based on deviations in the answers that data f
 
 ### Check the latest answer against reasonable limits
 
-The data feed aggregator includes both [`minAnswer` and `maxAnswer` values](https://github.com/smartcontractkit/libocr/blob/9e4afd8896f365b964bdf769ca28f373a3fb0300/contract/AccessControlledOffchainAggregator.sol#L33). These variables prevent the aggregator from updating the `latestAnswer` outside the agreed range of acceptable values, but they do not stop your application from reading the most recent answer.
+The data feed aggregator includes both [`minAnswer` and `maxAnswer` values](https://github.com/smartcontractkit/libocr/blob/9e4afd8896f365b964bdf769ca28f373a3fb0300/contract/AccessControlledOffchainAggregator.sol#L33). On most data feeds, these values are no longer used and they do not stop your application from reading the most recent answer. For monitoring purposes, you must decide what limits are acceptable for your application.
 
-Configure your application to detect when the reported answer is close to reaching `minAnswer` or `maxAnswer` and issue an alert so you can respond to a potential market event. Separately, configure your application to detect and respond to extreme price volatility or prices that are outside of your acceptable limits.
+Configure your application to detect when the reported answer is close to reaching reasonable minimum and maximum limits so it can alert you to potential market events. Separately, configure your application to detect and respond to extreme price volatility or prices that are outside of your acceptable limits.
 
 ### Check the timestamp of the latest answer
 

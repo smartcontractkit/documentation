@@ -1,4 +1,4 @@
-import { Chain } from "../data/chains"
+import { Chain } from "../chains"
 
 interface Docs {
   nftFloorUnits: any
@@ -7,6 +7,7 @@ interface Docs {
   feedType?: string
   hidden?: boolean
   porAuditor?: string
+  porSource?: string
   porType?: string
   productSubType?: string
   productType?: string

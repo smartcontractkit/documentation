@@ -1,34 +1,66 @@
-import { useState, useCallback } from "preact/hooks"
-import qs from "query-string"
+import { useState, useCallback, useEffect } from "preact/hooks"
+type SearchParamValue = string | string[]
 
-const setQueryStringWithoutPageReload = (qsValue) => {
-  if (!window) return
+export const setQueryStringValue = (searchParamKey: string, value: SearchParamValue): SearchParamValue | undefined => {
+  if (typeof window === "undefined") return
 
-  const newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + qsValue
+  const currentSearchParams = new URLSearchParams(window.location.search)
+  if (typeof value !== "string") {
+    currentSearchParams.delete(searchParamKey)
+    value.forEach((val) => {
+      currentSearchParams.append(searchParamKey, val)
+    })
+  } else {
+    currentSearchParams.set(searchParamKey, value)
+  }
+  const newurl =
+    window.location.protocol +
+    "//" +
+    window.location.host +
+    window.location.pathname +
+    `?${currentSearchParams.toString()}`
 
   window.history.replaceState({ path: newurl }, "", newurl)
-}
-const setQueryStringValue = (key, value, queryString = window.location.search) => {
-  if (!window) return
 
-  const values = qs.parse(queryString)
-  const newQsValue = qs.stringify({ ...values, [key]: value })
-  setQueryStringWithoutPageReload(`?${newQsValue}`)
+  return getQueryStringValue(searchParamKey)
 }
-const getQueryStringValue = (key) => {
-  if (typeof window === "undefined") return
-  const values = qs.parse(window.location.search)
-  return values[key]
+export const getQueryStringValue = (searchParamKey: string): SearchParamValue | undefined => {
+  if (typeof window === "undefined") return undefined
+  const values = new URLSearchParams(window.location.search).getAll(searchParamKey)
+  return values.length > 1 ? values : values[0]
 }
-function useQueryString(key, initialValue) {
-  const [value, setValue] = useState(getQueryStringValue(key) || initialValue)
+
+function useQueryString(
+  searchParamKey: string,
+  initialValue?: SearchParamValue
+): [SearchParamValue | undefined, (newValue: SearchParamValue) => void] {
+  const [value, setValue] = useState<SearchParamValue | undefined>(getQueryStringValue(searchParamKey) || initialValue)
+  // Keep URL in sync when memory is updated using initial value.
+  useEffect(() => {
+    if (initialValue && !getQueryStringValue(searchParamKey)) {
+      setQueryStringValue(searchParamKey, initialValue)
+    }
+  }, [])
+
   const onSetValue = useCallback(
-    (newValue) => {
+    (newValue: SearchParamValue) => {
       setValue(newValue)
-      setQueryStringValue(key, newValue)
+      setQueryStringValue(searchParamKey, newValue)
     },
-    [key]
+    [searchParamKey]
   )
+  // Keep memory in sync when search params are updated.
+  useEffect(() => {
+    const body = document.querySelector("body")
+    if (!body) return
+    const observer = new MutationObserver(() => {
+      const newQueryStringValue = getQueryStringValue(searchParamKey)
+      if (newQueryStringValue !== value && newQueryStringValue) {
+        setValue(newQueryStringValue)
+      }
+    })
+    observer.observe(body, { childList: true, subtree: true })
+  }, [])
 
   return [value, onSetValue]
 }
