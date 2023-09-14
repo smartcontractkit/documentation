@@ -282,7 +282,9 @@ export const CostTable = ({ method, network }: Props) => {
   const computeArbitrumCost = () => {
     const VRFCallDataSizeBytes = 140 + 580
     const {
+      L1GasPriceEstimate,
       currentL1GasPriceEstimate,
+      gasPrice,
       currentGasPrice,
       decimalPlaces,
       currentVerificationGas,
@@ -292,8 +294,19 @@ export const CostTable = ({ method, network }: Props) => {
       priceFeed,
       wrapperOverheadGas,
     } = state
-    const L1P = BigNumber.from(currentL1GasPriceEstimate)
-    const L2P = BigNumber.from(currentGasPrice)
+    // If currentGasPrice is 0, it will throw a division by zero error. So, let's adjust it to a very small value to still give an approximation of the cost.
+    const formattedCurrentGasPrice =
+      parseFloat(currentGasPrice) === 0 && BigNumber.from(currentGasPrice).toNumber() === 0
+        ? "0.000001"
+        : currentGasPrice
+    const L1P =
+      currentL1GasPriceEstimate === L1GasPriceEstimate
+        ? BigNumber.from(currentL1GasPriceEstimate)
+        : utils.parseUnits(currentL1GasPriceEstimate, "gwei")
+    const L2P =
+      currentGasPrice === gasPrice
+        ? BigNumber.from(formattedCurrentGasPrice)
+        : utils.parseUnits(formattedCurrentGasPrice, "gwei")
 
     const L2PGasLane = utils.parseUnits(currentGasLane.toString(), "gwei")
     const VRFL1CostEstimate = L1P.mul(VRFCallDataSizeBytes)
@@ -391,6 +404,7 @@ export const CostTable = ({ method, network }: Props) => {
     }
     const {
       currentGasPrice,
+      gasPrice,
       decimalPlaces,
       callbackGas,
       currentVerificationGas,
@@ -400,7 +414,8 @@ export const CostTable = ({ method, network }: Props) => {
       wrapperOverheadGas,
       wrapperLinkPremiumPercentage,
     } = state
-    const bigNumberGasPrice = BigNumber.from(currentGasPrice)
+    const bigNumberGasPrice =
+      currentGasPrice === gasPrice ? BigNumber.from(currentGasPrice) : utils.parseUnits(currentGasPrice, "gwei")
     const bigNumberGasLane = utils.parseUnits(currentGasLane.toString(), "gwei")
     const bigNumberPriceFeed = utils.formatUnits(BigNumber.from(priceFeed), decimalPlaces)
     const formattedPriceFeed = utils.parseEther(bigNumberPriceFeed)
@@ -442,7 +457,14 @@ export const CostTable = ({ method, network }: Props) => {
   const handleChangeCallback = (e: Event) => {
     const { target } = e
     if (target instanceof HTMLInputElement) {
-      const val = target.value
+      if (!target.value) {
+        dispatch({
+          type: "SET_CALLBACK_GAS",
+          payload: 0,
+        })
+        return
+      }
+      const val = target.value.replaceAll(",", "")
       if (parseInt(val) >= state.callbackGasLimit) {
         dispatch({
           type: "SET_CALLBACK_GAS",
@@ -457,16 +479,44 @@ export const CostTable = ({ method, network }: Props) => {
   const handleChangeGas = (e: Event) => {
     const { target } = e
     if (target instanceof HTMLInputElement) {
-      const val = target.value || "0.0"
-      dispatch({ type: "SET_CURRENT_GAS_PRICE", payload: utils.parseUnits(val, "gwei").toString() })
+      const val = target.value || "0"
+      dispatch({
+        type: "SET_CURRENT_GAS_PRICE",
+        payload: val,
+      })
+    }
+  }
+
+  const cleanGasValue = (e: Event) => {
+    const { target } = e
+    if (target instanceof HTMLInputElement) {
+      const val = parseFloat(target.value).toString()
+      dispatch({
+        type: "SET_CURRENT_GAS_PRICE",
+        payload: val,
+      })
     }
   }
 
   const handleChangeGasL1 = (e: Event) => {
     const { target } = e
     if (target instanceof HTMLInputElement) {
-      const val = target.value || "0.0"
-      dispatch({ type: "SET_CURRENT_L1_GAS_PRICE_ESTIMATE", payload: utils.parseUnits(val, "gwei").toString() })
+      const val = target.value || "0"
+      dispatch({
+        type: "SET_CURRENT_L1_GAS_PRICE_ESTIMATE",
+        payload: val,
+      })
+    }
+  }
+
+  const cleanL1GasValue = (e: Event) => {
+    const { target } = e
+    if (target instanceof HTMLInputElement) {
+      const val = parseFloat(target.value).toString()
+      dispatch({
+        type: "SET_CURRENT_L1_GAS_PRICE_ESTIMATE",
+        payload: val,
+      })
     }
   }
 
@@ -552,9 +602,14 @@ export const CostTable = ({ method, network }: Props) => {
               <input
                 type="number"
                 id="gas"
-                min={1}
-                value={utils.formatUnits(state.currentGasPrice, "gwei")}
-                onBlur={handleChangeGas}
+                min={0}
+                value={
+                  state.currentGasPrice === state.gasPrice
+                    ? utils.formatUnits(state.currentGasPrice, "gwei")
+                    : state.currentGasPrice
+                }
+                onChange={handleChangeGas}
+                onBlur={cleanGasValue}
               />
             </td>
           </tr>
@@ -566,8 +621,13 @@ export const CostTable = ({ method, network }: Props) => {
                   type="number"
                   id="L1Gas"
                   min={0}
-                  value={utils.formatUnits(state.currentL1GasPriceEstimate, "gwei")}
-                  onBlur={handleChangeGasL1}
+                  value={
+                    state.currentL1GasPriceEstimate === state.L1GasPriceEstimate
+                      ? utils.formatUnits(state.currentL1GasPriceEstimate, "gwei")
+                      : state.currentL1GasPriceEstimate
+                  }
+                  onChange={handleChangeGasL1}
+                  onBlur={cleanL1GasValue}
                 />
               </td>
             </tr>
@@ -577,10 +637,9 @@ export const CostTable = ({ method, network }: Props) => {
             <td>
               <input
                 id="callback-gas-value"
-                type="number"
-                max={state.callbackGasLimit}
-                value={state.callbackGas}
-                min={0}
+                type="text"
+                max={state.callbackGasLimit.toLocaleString()}
+                value={utils.commify(state.callbackGas ?? "0")}
                 onChange={handleChangeCallback}
               />
             </td>
