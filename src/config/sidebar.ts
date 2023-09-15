@@ -237,6 +237,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "chainlink-automation/tutorials/batch-nft",
         },
         {
+          title: "Create a time-based upkeep",
+          url: "quickstarts/time-based-upkeep",
+        },
+        {
           title: "Create Dynamic NFTs",
           url: "chainlink-automation/tutorials/dynamic-nft",
         },
