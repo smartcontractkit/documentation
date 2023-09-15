@@ -238,7 +238,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         },
         {
           title: "Create a time-based upkeep",
-          url: "chainlink-automation/tutorials/time-based-upkeep",
+          url: "quickstarts/time-based-upkeep",
         },
         {
           title: "Create Dynamic NFTs",
