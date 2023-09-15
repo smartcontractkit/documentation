@@ -241,8 +241,8 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "quickstarts/time-based-upkeep",
         },
         {
-          title: "Create Dynamic NFTs",
-          url: "chainlink-automation/tutorials/dynamic-nft-qs",
+          title: "Dynamic Metadata Automation",
+          url: "quickstarts/dynamic-metadata",
         },
         {
           title: "Create a Vault Harvester",
