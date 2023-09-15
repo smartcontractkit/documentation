@@ -613,8 +613,8 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "vrf/v2/direct-funding/examples/test-locally",
         },
         {
-          title: "Pass costs to end user",
-          url: "vrf/v2/direct-funding/examples/pass-cost-to-end-user",
+          title: "Pass Costs to End Users",
+          url: "quickstarts/pass-cost-to-end-user",
         },
         {
           title: "Supported Networks",
