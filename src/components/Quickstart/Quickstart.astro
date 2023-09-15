@@ -175,14 +175,15 @@ import { QuickstartBar } from "./QuickstartBar"
 <script>
   import { Accordion } from "./accordion"
   const detailsElements = document.querySelectorAll("ol.steps details")
-  detailsElements.forEach((el: HTMLDetailsElement) => {
+  detailsElements.forEach((el: HTMLDetailsElement, i) => {
     new Accordion(el)
     // Required for ContentObserver / TOC
     const summary = el.querySelector("summary")
     if (summary) {
       const id = summary.innerText.toLowerCase().split(" ").join("-")
       summary.id = id
-      if (el.parentElement) {
+      summary.setAttribute("data-id", `${i + 1}-${id}`) // Set for analytics
+      if (el.parentElement?.nodeName === "LI") {
         el.parentElement.id = id
       }
     }
