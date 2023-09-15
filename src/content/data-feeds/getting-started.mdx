@@ -47,7 +47,7 @@ The contract has the following components:
 
 - The `constructor() {}` initializes an interface object named `dataFeed` that uses `AggregatorV3Interface` and connects specifically to a proxy aggregator contract that is already deployed at `0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43`. The interface allows your contract to run functions on that deployed aggregator contract.
 
-- The `getLatestData()` function calls your `dataFeed` object and runs the `latestRoundData()` function. When you deploy the contract, it initializes the `dataFeed` object to point to the aggregator at `0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43`, which is the proxy address for the Sepolia BTC / USD data feed. Your contract connects to that address and executes the function. The aggregator connects with several oracle nodes and aggregates the pricing data from those nodes. The response from the aggregator includes several variables, but `getLatestData()` returns only the `answer` variable.
+- The `getChainlinkDataFeedLatestAnswer()` function calls your `dataFeed` object and runs the `latestRoundData()` function. When you deploy the contract, it initializes the `dataFeed` object to point to the aggregator at `0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43`, which is the proxy address for the Sepolia BTC / USD data feed. Your contract connects to that address and executes the function. The aggregator connects with several oracle nodes and aggregates the pricing data from those nodes. The response from the aggregator includes several variables, but `getChainlinkDataFeedLatestAnswer()` returns only the `answer` variable.
 
 ## Compile, deploy, and run the contract
 
@@ -94,6 +94,6 @@ Deploy the `DataConsumerV3` smart contract on the Sepolia testnet.
 
    ![Remix Deployed Contracts Section](/images/getting-started/deployedContractDataConsumerV3.png)
 
-1. Click **getLatestData** to show the latest answer from the aggregator contract. In this example, the answer is the latest price, which appears just below the button. The returned answer is an integer, so it is missing its decimal point. You can find the correct number of decimal places for this answer on the [Price Feed addresses](/data-feeds/price-feeds/addresses) page by clicking the **Show more details** checkbox. The answer on the BTC / USD feed uses 8 decimal places, so an answer of `3030914000000` indicates a BTC / USD price of `30309.14`. Each feed uses a different number of decimal places for answers.
+1. Click **getChainlinkDataFeedLatestAnswer** to show the latest answer from the aggregator contract. In this example, the answer is the latest price, which appears just below the button. The returned answer is an integer, so it is missing its decimal point. You can find the correct number of decimal places for this answer on the [Price Feed addresses](/data-feeds/price-feeds/addresses) page by clicking the **Show more details** checkbox. The answer on the BTC / USD feed uses 8 decimal places, so an answer of `3030914000000` indicates a BTC / USD price of `30309.14`. Each feed uses a different number of decimal places for answers.
 
    ![A screenshot showing the deployed contract and the latest answer.](/images/getting-started/getLatestPrice.png)
