@@ -254,7 +254,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         },
         {
           title: "Automate Top-Up for VRF Subscriptions",
-          url: "chainlink-automation/tutorials/vrf-sub-monitor",
+          url: "quickstarts/vrf-subscription-monitor",
         },
       ],
     },
