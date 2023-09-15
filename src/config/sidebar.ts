@@ -79,6 +79,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-feeds/historical-data",
         },
         {
+          title: "Using the Web3.js Plugin",
+          url: "quickstarts/web3js",
+        },
+        {
           title: "Using Feed Registry",
           url: "data-feeds/feed-registry",
         },
@@ -233,6 +237,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "chainlink-automation/tutorials/batch-nft",
         },
         {
+          title: "Create a time-based upkeep",
+          url: "quickstarts/time-based-upkeep",
+        },
+        {
           title: "Create Dynamic NFTs",
           url: "chainlink-automation/tutorials/dynamic-nft",
         },
@@ -246,7 +254,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         },
         {
           title: "Automate Top-Up for VRF Subscriptions",
-          url: "chainlink-automation/tutorials/vrf-sub-monitor",
+          url: "quickstarts/vrf-subscription-monitor",
         },
       ],
     },
