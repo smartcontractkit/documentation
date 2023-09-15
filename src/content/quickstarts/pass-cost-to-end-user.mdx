@@ -1,6 +1,7 @@
 ---
 section: vrf
 title: "Pass VRF Costs to the End Users"
+whatsnext: { "Find the list of supported networks for VRF": "/vrf/v2/subscription/supported-networks" }
 ---
 
 import { Aside } from "@components"
@@ -183,23 +184,33 @@ make install
 
 This command will install the project dependencies, which include [chainlink](https://github.com/smartcontractkit/chainlink) and [openzepplin-contracts](https://github.com/OpenZeppelin/openzeppelin-contracts) for secure smart contract development.
 
-## Deploy and test
+### Deploy the contract
 
 Foundry includes [Forge](https://github.com/foundry-rs/foundry/tree/master/crates/forge), an Ethereum testing framework. Deployment and testing are both scripted within this Foundry project. The project's [Makefile](https://github.com/smartcontractkit/vrf-direct-funding-example/blob/main/Makefile) helps you invoke Forge with simple commands to start the deployment and testing scripts.
 
-1. At the root of the `vrf-direct-funding-example/` directory, run this command to deploy the contract:
+At the root of the `vrf-direct-funding-example/` directory, run this command to deploy the contract:
 
-   {/* Command to run */}
+```shell
+make deploy
+```
 
-   ```shell
-   make deploy
-   ```
+## Run the example
 
-1. To test the contract, run this command:
+Test the contract as the end-user.
 
-   ```shell
-   make test
-   ```
+1. Open the [LINK Token Contract](https://docs.chain.link/resources/link-token-contracts) write functions for your network in an explorer. For example, on Polygon Mumbai you can open the [0x0ed18e80aacede8cb52a6043976c255eff6fedbf](https://mumbai.polygonscan.com/address/0x0ed18e80aacede8cb52a6043976c255eff6fedbf#writeContract) contract.
+
+1. Connect your wallet to the scanning app so you can run write functions.
+
+1. Approve the deployed contract to spend LINK. Run the `approve` function with your deployed contract address and `5000000000000000000` Juels (5 LINK). Metamask asks you to approve the transaction.
+
+1. Open your deployed contract in the scanner.
+
+1. On the contract tab, open the write functions for your deployed contract.
+
+1. Again, connect your wallet to the scanning app so you can run write functions.
+
+1. In the `requestRandomWords` function, click **Write** to initiate a request for randomness as an end-user.
 
 ## Code example
 
