@@ -241,7 +241,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "quickstarts/time-based-upkeep",
         },
         {
-          title: "Dynamic Metadata Automation",
+          title: "Dynamic Metadata with Automation",
           url: "quickstarts/dynamic-metadata",
         },
         {
