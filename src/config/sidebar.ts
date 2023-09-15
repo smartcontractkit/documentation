@@ -79,6 +79,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-feeds/historical-data",
         },
         {
+          title: "Using the Web3.js Plugin",
+          url: "quickstarts/web3js",
+        },
+        {
           title: "Using Feed Registry",
           url: "data-feeds/feed-registry",
         },
