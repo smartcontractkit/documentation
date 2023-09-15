@@ -36,7 +36,7 @@ contract DataConsumerWithSequencerCheck {
     }
 
     // Check the sequencer status and return the latest data
-    function getLatestData() public view returns (int) {
+    function getChainlinkDataFeedLatestAnswer() public view returns (int) {
         // prettier-ignore
         (
             /*uint80 roundID*/,
