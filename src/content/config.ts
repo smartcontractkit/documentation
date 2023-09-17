@@ -87,6 +87,7 @@ const dataFeedsCollection = baseCollection
 const resourcesCollection = baseCollection
 const vrfCollection = baseCollection
 const ccipCollection = baseCollection
+const quickstartsCollection = baseCollection
 
 export const collections = {
   "architecture-overview": architectureOverviewCollection,
@@ -94,6 +95,7 @@ export const collections = {
   "chainlink-functions": chainlinkFunctionsCollection,
   "chainlink-nodes": chainlinkNodesCollection,
   "data-feeds": dataFeedsCollection,
+  quickstarts: quickstartsCollection,
   resources: resourcesCollection,
   vrf: vrfCollection,
   ccip: ccipCollection,
