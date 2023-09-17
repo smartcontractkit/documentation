@@ -87,7 +87,6 @@ const dataFeedsCollection = baseCollection
 const resourcesCollection = baseCollection
 const vrfCollection = baseCollection
 const ccipCollection = baseCollection
-const quickstartsCollection = baseCollection
 
 export const collections = {
   "architecture-overview": architectureOverviewCollection,
@@ -99,5 +98,4 @@ export const collections = {
   resources: resourcesCollection,
   vrf: vrfCollection,
   ccip: ccipCollection,
-  quickstarts: quickstartsCollection,
 }
