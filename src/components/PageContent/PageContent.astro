@@ -61,9 +61,12 @@ const { titleHeading } = Astro.props
     gap: var(--space-2x);
   }
 
-  article :where(section, astro-slot) > :not(section, astro-slot),
-  article > :not(section, astro-slot) {
+  article :where(section, astro-slot, astro-island) > :not(section, astro-slot, astro-island) {
     margin-top: var(--space-5x);
+  }
+
+  article section > :is(h1, h2, h3, h4) + * {
+    margin-top: var(--space-5x) !important;
   }
 
   article :where(section, astro-slot) > :is(h1, h2) {
@@ -94,8 +97,13 @@ const { titleHeading } = Astro.props
   article :is(ul, ol) {
     margin-top: var(--space-3x);
   }
-  article :is(ul, ol) > * + *,
+
+  article :is(ul, ol) > li,
   article :is(ul, ol) > li > :is(ul, ol) {
+    margin-top: var(--space-2x);
+  }
+
+  article li > * {
     margin-top: var(--space-2x);
   }
 
@@ -107,8 +115,9 @@ const { titleHeading } = Astro.props
     padding-left: var(--space-8x);
   }
 
-  article li > :is(p, pre, blockquote):not(:first-child) {
-    margin-top: var(--space-4x);
+  /* Offset line-height difference */
+  article li > :not(p):last-child {
+    margin-bottom: var(--space-3x);
   }
 
   article ::marker {
