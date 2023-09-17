@@ -10,8 +10,7 @@ import { ContentObserver } from "~/components/PageContent/ContentObserver/Conten
 
 const TableOfContents: FunctionalComponent<{
   initialHeadings: MarkdownHeading[]
-  onNavigate?: () => void
-}> = ({ initialHeadings, onNavigate }) => {
+}> = ({ initialHeadings }) => {
   const $shouldUpdateToc = useStore(shouldUpdateToc)
   const { $currentIds } = useCurrentIds()
 
@@ -48,7 +47,7 @@ const TableOfContents: FunctionalComponent<{
       <ContentObserver headings={headings} shouldUpdate={$shouldUpdateToc} />
       <ul>
         {headings.map((h) => (
-          <li key={h.slug} onClick={onNavigate}>
+          <li key={h.slug}>
             <a
               href={`#${h.slug}`}
               className={`${styles.headerLink}${h.depth && h.depth > 2 ? ` ${styles[`depth-${h.depth}`]}` : ""}

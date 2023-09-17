@@ -20,9 +20,6 @@ export const ContentObserver = ({ headings, shouldUpdate }: Props) => {
       for (const entry of entries) {
         const { isIntersecting, target } = entry
         const { id, firstElementChild } = target
-        if (!isIntersecting && id === "overview") {
-          setStickyHeader("")
-        }
         intersectingElementMap[id] = isIntersecting
         if (
           !stickyHeaderSet &&
@@ -33,6 +30,9 @@ export const ContentObserver = ({ headings, shouldUpdate }: Props) => {
           stickyHeaderSet = true
           setStickyHeader(firstElementChild.id === "overview" ? "Overview" : firstElementChild.textContent)
         }
+      }
+      if (Object.values(currentIds.get()).every((v) => !v)) {
+        setStickyHeader("")
       }
       setCurrentIds(intersectingElementMap)
     }
