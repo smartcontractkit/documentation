@@ -98,11 +98,11 @@ export const FeedList = ({
 
   return (
     <section id={id}>
+      <h2 id={id}>
+        <a href={`#${id}`}>Networks</a>
+      </h2>
       {!isDeprecating && (
         <>
-          <h2 id={id}>
-            <a href={`#${id}`}>Networks</a>
-          </h2>
           <div class={feedList.clChainnavProduct} role="tablist">
             {chains
               .filter((chain) => {
