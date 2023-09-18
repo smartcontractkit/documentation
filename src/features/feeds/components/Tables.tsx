@@ -124,7 +124,6 @@ const DefaultTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => (
       <div className={tableStyles.assetAddress}>
         <button
           class={clsx(tableStyles.copyBtn, "copy-iconbutton")}
-          style={{ height: "16px", width: "16px" }}
           data-clipboard-text={proxy.proxyAddress ?? proxy.transmissionsAccount}
         >
           <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />

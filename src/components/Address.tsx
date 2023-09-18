@@ -19,7 +19,7 @@ const AddressComponent = ({ contractUrl, address, endLength, urlClass, urlId }: 
       </a>
       <button
         className={clsx("copyBtn", "copy-iconbutton")}
-        style={{ height: "16px", width: "16px" }}
+        style={{ height: "16px", width: "16px", minWidth: "12px" }}
         data-clipboard-text={address}
       >
         <img src="/assets/icons/copyIcon.svg" alt="Copy to clipboard" />
@@ -30,6 +30,13 @@ const AddressComponent = ({ contractUrl, address, endLength, urlClass, urlId }: 
           background: var(--color-background-secondary);
           padding: 1px 5px;
           border-radius: var(--border-radius-10);
+          word-break: break-word;
+        }
+
+        .addressContainer {
+          display: flex;
+          align-items: center;
+          gap: var(--space-1x);
           word-break: break-word;
         }
 
