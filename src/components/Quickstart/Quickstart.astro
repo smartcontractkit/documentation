@@ -1,4 +1,5 @@
 ---
+import Aside from "@components/Aside.astro"
 import { QuickstartBar } from "./QuickstartBar"
 
 /** There's a bug with mdx and Astro where p tags on new lines add empty p tags around the content.
@@ -8,56 +9,83 @@ import { QuickstartBar } from "./QuickstartBar"
 
 <article id="article">
   <QuickstartBar client:only="preact" />
+  <Aside type="caution" title="Disclaimer">
+    This tutorial represents an example of using a Chainlink product or service and is provided to help you understand
+    how to interact with Chainlink's systems and services so that you can integrate them into your own. This template is
+    provided "AS IS" and "AS AVAILABLE" without warranties of any kind, has not been audited, and may be missing key
+    checks or error handling to make the usage of the product more clear. Do not use the code in this example in a
+    production environment without completing your own audits and application of best practices. Neither Chainlink Labs,
+    the Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs that are generated due
+    to errors in code.
+  </Aside>
   <slot />
 </article>
 
-<style>
+<style is:inline>
   #article {
     margin-top: var(--space-10x);
   }
 
-  #article :global(*) {
+  #article * {
     margin-top: 0;
     margin-bottom: 0;
     max-width: 100%;
   }
 
-  #article :global(section > *) {
+  #article section > :not(section) {
     margin-top: var(--space-5x);
   }
 
-  #article :global(p + ul) {
+  #article p + ul {
     margin-top: 0;
   }
 
-  #article :global(section) {
-    margin-top: var(--space-10x);
-    scroll-margin-top: calc(var(--space-4x) + var(--theme-navbar-height));
+  #article section {
+    padding-top: var(--space-10x);
+    margin-top: 0;
+    scroll-margin-top: var(--theme-navbar-height);
   }
 
-  #article :global(h2) {
+  #article section > :is(h1, h2, h3, h4, h5, h6) > a {
+    display: inline-block;
+    color: inherit;
+    width: 100%;
+  }
+
+  #article section > h2 {
     color: black;
-    font-size: 20px;
+    font-size: 24px;
     top: calc(var(--space-4x) + var(--theme-navbar-height));
+    margin-top: 0;
     position: sticky;
     z-index: 2;
   }
 
-  #article :global(li) {
+  #article section > h3 {
+    color: black;
+    font-size: 20px;
+  }
+
+  #article section > :is(h4, h5, h6) {
+    color: black;
+    font-size: 16px;
+  }
+
+  #article section > li {
     line-height: 1.5;
   }
 
-  #article :global(ul) {
+  #article section > ul {
     list-style: none;
   }
 
-  #article :global(ul > li) {
+  #article section > ul > li {
     position: relative;
     left: 0.5rem;
     padding-right: 1rem;
   }
 
-  #article :global(ul > li::before) {
+  #article section > ul > li::before {
     position: absolute;
     content: "●";
     font-size: 0.5rem;
@@ -65,26 +93,27 @@ import { QuickstartBar } from "./QuickstartBar"
     left: -1rem;
   }
 
-  #article :global(ol) {
+  #article ol.steps {
     padding-left: 0;
     counter-reset: counter;
   }
 
-  #article :global(ol > li:first-of-type) {
+  #article ol.steps > li:first-of-type {
     border-top: 1px solid var(--gray-300, #ced0d5);
   }
 
-  #article :global(ol > li) {
+  #article ol.steps > li {
     padding: var(--space-2x) 0px;
     border-bottom: 1px solid var(--gray-300, #ced0d5);
     list-style: none;
+    scroll-margin-top: calc(var(--space-20x) + var(--theme-navbar-height));
   }
 
-  #article :global(details) {
+  #article ol.steps details {
     overflow: hidden;
   }
 
-  #article :global(details > summary) {
+  #article ol.steps details > summary {
     display: grid;
     grid-template-columns: 0 1fr auto;
     align-items: center;
@@ -94,14 +123,14 @@ import { QuickstartBar } from "./QuickstartBar"
     font-size: 16px;
   }
 
-  #article :global(details > summary::before) {
+  #article ol.steps details > summary::before {
     content: counters(counter, ".") "";
     counter-increment: counter;
     color: var(--gray-400, #b7bac0);
     letter-spacing: -0.24px;
   }
 
-  #article :global(details > summary::after) {
+  #article ol.steps details > summary::after {
     content: url(/images/quickstarts/arrow-down.svg);
     -webkit-mask: url(/images/quickstarts/arrow-down.svg) no-repeat center;
     -webkit-mask-size: var(--space-6x);
@@ -111,48 +140,64 @@ import { QuickstartBar } from "./QuickstartBar"
 
   /* Using custom attribute 'expanded' (created by Accordion)
   rather than 'open' since some browsers (Safari) have no respect for details attributes */
-  #article :global(details[expanded] > summary::after) {
+  #article ol.steps details[expanded] > summary::after {
     transform: rotate(180deg);
     background-color: #174cc2;
   }
 
-  #article :global(details > :not(summary)) {
+  #article ol.steps details > :not(summary) {
     margin-top: 0;
     padding-left: var(--space-8x);
     padding-top: var(--space-6x);
   }
 
-  #article :global(details > :not(summary):last-child) {
+  #article ol.steps details > :not(summary):last-child {
     padding-bottom: var(--space-3x);
   }
 
-  @media (min-width: 50em) {
-    #article :global(section > *) {
+  @media (min-width: 48em) {
+    #article section > :not(section) {
       margin-top: var(--space-6x);
     }
 
-    #article :global(h2) {
+    #article section > h2 {
       font-size: 28px;
       color: var(--blue-800, #1a2b6b);
+      margin-top: 0;
     }
 
-    #article :global(ol > li) {
+    #article section > h3 {
+      font-size: 24px;
+      color: var(--blue-800, #1a2b6b);
+      margin-top: 0;
+    }
+
+    #article section > :is(h4, h5, h6) {
+      color: var(--blue-800, #1a2b6b);
+      font-size: 20px;
+    }
+
+    #article ol.steps > li {
       padding: var(--space-3x) 0px;
     }
 
-    #article :global(details > summary) {
+    #article ol.steps details > summary {
       font-size: 20px;
     }
   }
 
   /* NOTE: Done at 50em since mobile header appears at this point */
   @media (min-width: 50em) {
-    #article :global(section) {
-      margin-top: var(--space-6x);
+    #article section {
+      padding-top: var(--space-6x);
       scroll-margin-top: var(--space-4x);
     }
 
-    #article :global(h2) {
+    #article ol.steps > li {
+      scroll-margin-top: var(--space-20x);
+    }
+
+    #article section > h2 {
       top: var(--space-4x);
     }
   }
@@ -160,27 +205,49 @@ import { QuickstartBar } from "./QuickstartBar"
 
 <script>
   import { Accordion } from "./accordion"
-  document.querySelectorAll("details").forEach((el) => new Accordion(el))
-
-  // Wrap sections in <section> tags
-  // Allows us to create sticky headers
-  const wrapChildren = (children: NodeListOf<Element>, nodeName: string) => {
-    for (var i = 0; i < children.length; i++) {
-      if (children[i].nodeName === nodeName) {
-        const wrapper = document.createElement("section")
-        wrapper.id = children[i].id
-        children[i].parentNode!.insertBefore(wrapper, children[i])
-        wrapper.appendChild(children[i])
-        for (var j = i + 1; j < children.length; j++) {
-          if (children[j].nodeName === nodeName) {
-            break
-          }
-          wrapper.appendChild(children[j])
-        }
-        i = j - 1
+  const detailsElements = document.querySelectorAll("ol.steps details")
+  detailsElements.forEach((el: HTMLDetailsElement, i) => {
+    new Accordion(el)
+    // Required for ContentObserver / TOC
+    const summary = el.querySelector("summary")
+    if (summary) {
+      const id = summary.innerText.toLowerCase().split(" ").join("-")
+      summary.id = id
+      summary.setAttribute("data-id", `${i + 1}-${id}`) // Set for analytics
+      if (el.parentElement?.nodeName === "LI") {
+        el.parentElement.id = id
       }
     }
+  })
+
+  /**
+   * Creates sticky headers which interact with
+   * intersection observers
+   */
+  const wrapHeaders = (start: Element, isParent?: boolean) => {
+    const wrapper = document.createElement("section")
+    const elements: Element[] = []
+    elements.push(start)
+    let next = start.nextElementSibling
+    while (
+      next && // Just bear with me
+      (next.nodeName !== "ASTRO-ISLAND" || // Not an island
+        !next.hasChildNodes() || // Island doesn't have HTML content
+        next.children[0].nodeName !== "SECTION" || // First child of the island is not a section
+        !next.children[0].id) && // Section does not have an id
+      (!next.id || (isParent && !["H1", "H2"].includes(next.nodeName)))
+    ) {
+      elements.push(next)
+      next = next.nextElementSibling
+    }
+    wrapper.id = start.id
+    start.parentNode!.insertBefore(wrapper, start)
+    elements.forEach((e) => wrapper.appendChild(e))
+    return wrapper
   }
-  const children = document.querySelectorAll("article > *")
-  wrapChildren(children, "H2")
+
+  // Only get direct descendants of the article content
+  // Grabs mdx headers without getting nested headers in components
+  const headers = document.body.querySelectorAll("article > :where(h1, h2, h3, h4)")
+  headers.forEach((e) => wrapHeaders(e, ["H1", "H2"].includes(e.nodeName)))
 </script>
