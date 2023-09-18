@@ -9,11 +9,11 @@ import TableOfContents from "~/components/TableOfContents/TableOfContents"
 const StickyHeader: FunctionalComponent<{
   initialHeadings: MarkdownHeading[]
 }> = ({ initialHeadings }) => {
-  const { $stickyHeader } = useStickyHeader()
   const [expanded, setExpanded] = useState<boolean>(false)
-
-  const hidden = !$stickyHeader
   const expandButtonRef = useRef(null)
+  const { $stickyHeader } = useStickyHeader()
+  const hidden = !$stickyHeader
+
   return (
     <div
       className={styles.container}
