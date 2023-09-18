@@ -10,20 +10,22 @@ import { QuickstartBar } from "./QuickstartBar"
 <article id="article">
   <QuickstartBar client:only="preact" />
   <Aside type="caution" title="Disclaimer">
-    This tutorial represents an example of using a Chainlink product or service and is provided to help you understand
-    how to interact with Chainlink's systems and services so that you can integrate them into your own. This template is
-    provided "AS IS" and "AS AVAILABLE" without warranties of any kind, has not been audited, and may be missing key
-    checks or error handling to make the usage of the product more clear. Do not use the code in this example in a
-    production environment without completing your own audits and application of best practices. Neither Chainlink Labs,
-    the Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs that are generated due
-    to errors in code.
+    <p>
+      This tutorial represents an example of using a Chainlink product or service and is provided to help you understand
+      how to interact with Chainlink's systems and services so that you can integrate them into your own. This template
+      is provided "AS IS" and "AS AVAILABLE" without warranties of any kind, has not been audited, and may be missing
+      key checks or error handling to make the usage of the product more clear. Do not use the code in this example in a
+      production environment without completing your own audits and application of best practices. Neither Chainlink
+      Labs, the Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs that are
+      generated due to errors in code.
+    </p>
   </Aside>
   <slot />
 </article>
 
 <style is:inline>
   #article {
-    margin-top: var(--space-10x);
+    margin-top: var(--space-20x);
   }
 
   #article * {
@@ -33,21 +35,36 @@ import { QuickstartBar } from "./QuickstartBar"
   }
 
   #article section {
-    padding-top: var(--space-10x);
+    padding-top: var(--space-8x);
     margin-top: 0;
+  }
+
+  #article section > section {
+    padding-top: var(--space-6x);
+  }
+
+  #article section:target {
     scroll-margin-top: var(--theme-navbar-height);
   }
 
-  #article section > :not(section) {
+  #article section > section:target {
+    scroll-margin-top: calc(var(--theme-navbar-height) + var(--space-12x));
+  }
+
+  #article :where(section, astro-slot, astro-island) > :not(section, astro-slot, astro-island, ul, ol) {
     margin-top: var(--space-5x);
   }
 
-  article :is(h1, h2, h3, h4, h5, h6, p, li) {
-    word-break: break-word;
+  #article section > :is(h1, h2, h3, h4) + :not(section, astro-slot, astro-island) {
+    margin-top: var(--space-4x) !important;
   }
 
-  #article p + ul {
+  #article section > :is(h1, h2, h3, h4, h5, h6) {
     margin-top: 0;
+  }
+
+  #article :is(h1, h2, h3, h4, h5, h6, p, li) {
+    word-break: break-word;
   }
 
   #article section > :is(h1, h2, h3, h4, h5, h6) > a {
@@ -56,40 +73,59 @@ import { QuickstartBar } from "./QuickstartBar"
     width: 100%;
   }
 
-  #article section > h2 {
+  #article section > :is(h2, h3, h4, h5, h6) {
     color: black;
-    font-size: 24px;
-    top: calc(var(--space-4x) + var(--theme-navbar-height));
     margin-top: 0;
+  }
+
+  #article section > h2 {
+    font-size: 24px;
+    top: var(--theme-navbar-height);
     position: sticky;
     z-index: 2;
   }
 
   #article section > h3 {
-    color: black;
     font-size: 20px;
   }
 
   #article section > :is(h4, h5, h6) {
-    color: black;
     font-size: 16px;
   }
 
-  #article section > li {
-    line-height: 1.5;
-  }
-
-  #article section > ul {
+  #article ul {
+    padding-left: calc(var(--space-2x) + 2px);
     list-style: none;
   }
 
-  #article section > ul > li {
+  #article ol {
+    padding-left: calc(var(--space-6x) + 2px);
+  }
+
+  #article :is(ul, ol) {
+    margin-top: var(--space-3x);
+  }
+
+  #article :is(ul, ol) > li,
+  #article :is(ul, ol) > li > :is(ul, ol) {
+    margin-top: var(--space-1x);
+  }
+
+  #article li {
+    line-height: 1.5;
+  }
+
+  #article li > * {
+    margin-top: var(--space-2x);
+  }
+
+  #article ul > li {
     position: relative;
     left: 0.5rem;
     padding-right: 1rem;
   }
 
-  #article section > ul > li::before {
+  #article ul > li::before {
     position: absolute;
     content: "●";
     font-size: 0.5rem;
@@ -107,10 +143,15 @@ import { QuickstartBar } from "./QuickstartBar"
   }
 
   #article ol.steps > li {
+    margin: 0;
     padding: var(--space-2x) 0px;
     border-bottom: 1px solid var(--gray-300, #ced0d5);
     list-style: none;
     scroll-margin-top: calc(var(--space-20x) + var(--theme-navbar-height));
+  }
+
+  #article ol.steps > li > * {
+    margin: 0;
   }
 
   #article ol.steps details {
@@ -160,24 +201,31 @@ import { QuickstartBar } from "./QuickstartBar"
   }
 
   @media (min-width: 48em) {
-    #article section > :not(section) {
+    #article {
+      margin-top: var(--space-2x);
+    }
+
+    #article :where(section, astro-slot, astro-island) > :not(section, astro-slot, astro-island, ul, ol) {
       margin-top: var(--space-6x);
+    }
+
+    #article section > :is(h1, h2, h3, h4) + :not(section, astro-slot, astro-island) {
+      margin-top: var(--space-4x) !important;
+    }
+
+    #article section > :is(h2, h3, h4, h5, h6) {
+      color: var(--blue-800, #1a2b6b);
     }
 
     #article section > h2 {
       font-size: 28px;
-      color: var(--blue-800, #1a2b6b);
-      margin-top: 0;
     }
 
     #article section > h3 {
       font-size: 24px;
-      color: var(--blue-800, #1a2b6b);
-      margin-top: 0;
     }
 
     #article section > :is(h4, h5, h6) {
-      color: var(--blue-800, #1a2b6b);
       font-size: 20px;
     }
 
@@ -192,17 +240,20 @@ import { QuickstartBar } from "./QuickstartBar"
 
   /* NOTE: Done at 50em since mobile header appears at this point */
   @media (min-width: 50em) {
-    #article section {
-      padding-top: var(--space-6x);
-      scroll-margin-top: var(--space-4x);
+    #article section:target {
+      scroll-margin-top: 0;
     }
 
-    #article ol.steps > li {
+    #article section > section:target {
+      scroll-margin-top: var(--space-16x);
+    }
+
+    #article ol.steps > li:target {
       scroll-margin-top: var(--space-20x);
     }
 
     #article section > h2 {
-      top: var(--space-4x);
+      top: var(--space-6x);
     }
   }
 </style>
