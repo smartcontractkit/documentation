@@ -1,0 +1,159 @@
+---
+section: global
+date: Last Modified
+title: "Run the Solana Prediction Game"
+---
+
+You can use [on-chain Chainlink Data Feeds](/data-feeds/solana) to demonstrate how to build a simple prediction game using Solana.
+
+## Objective
+
+This tutorial shows you how to install and configure the [Solana Prediction Game](https://github.com/smartcontractkit/solana-prediction-game) locally so you can learn from this example and build your own applications on Solana that use Chainlink Data Feeds.
+
+## Before you begin
+
+1. Install [Node.js 14 or higher][node.js-url]. Run `node --version` to verify which version you have installed:
+
+   ```sh
+    node --version
+   ```
+
+1. Set up `yarn` package manager.
+
+   ```sh
+   npm i -g yarn
+   ```
+
+1. Set up `gh` on your machine
+
+   ```sh
+   npm install -g gh
+   ```
+
+1. Fork and clone the repo
+
+   ```sh
+   gh repo fork https://github.com/smartcontractkit/solana-prediction-game.git --clone
+   ```
+
+1. Set up Solana CLI
+
+   - [MacOS & Linux](https://docs.solana.com/cli/install-solana-cli-tools#macos--linux)
+   - [Windows](https://docs.solana.com/cli/install-solana-cli-tools#windows)
+
+1. Run `solana --version` to make sure the Solana CLI is installed correctly.
+
+   ```sh
+     solana --version
+   ```
+
+1. Set up Vercel
+
+   1. To install the latest version of Vercel CLI, run this command:
+
+      ```sh
+      npm i -g vercel
+      ```
+
+   1. To quickly start a new project, run the following commands:
+
+      ```sh
+      cd solana-prediction-game    # Change directory to the project
+      vercel          # Deploy to the cloud
+      ```
+
+   1. [Connect your Git repository](https://vercel.com/docs/git) to Vercel and deploy with git push.
+
+1. Set up a Solana wallet. For this example, [install the Phantom wallet](https://phantom.app/):
+
+   1. Visit https://phantom.app/download and select your browser type. Follow the steps in your respective extension store to add Phantom to your browser. After installing, you should see Phantom start-up in a new tab.
+   1. If you are a brand new Solana user, select "Create New Wallet" and create a password. If you are an existing Solana user, you can follow the steps [here](https://phantom.app/help/migrating-from-sollet-to-phantom) to migrate your existing wallets to Phantom.
+   1. Store your "Secret Recovery Phrase" in a safe and secure location, it is the only way to recover your wallet. Whoever has access to this phrase has access to your funds.
+
+1. Set up Phantom mobile app.
+
+   1. Visit https://phantom.app/download and select the app marketplace according to your device type (iOS/Android). You will be redirected to the Phantom application on your device app store, follow the steps to download and install the application on your device. After installing, open the app and you should see the Phantom onboarding screen to set up a new wallet.
+   1. If you are a brand new user, select "Create a new wallet" and enable the device authentication (which may vary according to the device type) to protect your wallet from unauthorized access. If you are an existing Solana user, you can select "I already have a wallet" and enter your seed phrase to restore your wallets.
+   1. You can add additional security, e.g: enabling bio-metric security or face recognition, in Settings (Upper left corner), Security & Privacy.
+
+1. Switch to Solana Devnet
+
+1. Open your Phantom Wallet, click on the gear icon in the bottom right-hand corner, scroll to Change Network and click on Devnet.
+
+1. Airdrop yourself Devnet Solana Tokens.
+
+1. Open the faucet: https://solfaucet.com/
+1. Copy your Phantom Wallet address
+1. Paste your wallet address into the text field and then click 'DEVNET' to send the Solana token
+
+1. [Switch your network to `devnet` on your wallet](https://docs.realms.today/phantom-wallet).
+
+## Set up the example
+
+1. Change to the project directory `cd solana-prediction-game`
+1. Run `cp .env.example .env`
+1. Install the NPM packages
+   ```sh
+   yarn
+   ```
+1. Download a wallet extension on your browser, preferably [Phantom](https://phantom.app/download). Follow the instructions to set up your wallet.
+1. You need an Escrow account to hold and pay out Solana to your users. There are two ways to acquire this:
+
+   1. Copy your private key from your Wallet. In this example, we will be using Phantom.
+      - Head to the Phantom browser extension menu
+      - Create a new account
+      - Select the menu and pick `Security and Privacy`
+      - Then `Export Private Key`
+      - Enter your password.
+      - Finally copy the contents to `WALLET_PRIVATE_KEY=` in `.env`
+   1. Create a temporary Solana wallet via `solana-keygen`. Alternatively, if you have an existing wallet that you want to use, locate the path to your [keypair][keypair-url] file and use it as the keypair for the rest of this guide.
+      ```sh
+        solana-keygen new --outfile ./id.json
+      ```
+      Copy the contents of the array in `./id.json` to `WALLET_PRIVATE_KEY=` in `.env`
+
+1. Set up a MongoDB database.
+
+   1. Set up a MongoDB account via the following tutorial: [Create MongoDB Account](https://www.mongodb.com/docs/guides/atlas/account/).
+   1. Set up MongoDB cluster. [Create Cluster](https://www.mongodb.com/docs/guides/atlas/cluster/)
+   1. Set up MongoDB User. [Create User](https://www.mongodb.com/docs/guides/atlas/db-user/)
+      ![Users Page](src/assets/screenshots/users_page.png)
+      ![Create User](src/assets/screenshots/add_user.png)
+   1. [Get the MongoDB Connection URI](https://www.mongodb.com/docs/guides/atlas/connection-string/).
+
+      1. Navigate to the [Database Deployments](https://cloud.mongodb.com/v2?_ga=2.162842878.354261710.1675751201-506434847.1674149602) page for your project.
+      1. Click the Connect button.
+         ![Connect](src/assets/screenshots/sample-data-cluster.png)
+      1. Select `Connect your application`
+         ![Connection String](src/assets/screenshots/connection-string.png)
+      1. Copy the connection URI string to `MONGODB_URI=` in your `.env`.
+         ![URI string](src/assets/screenshots/mongodb_uri.png)
+      1. Replace the `<user>` and `<password>` to your `MONGODB_URI` with the username & password you created.
+         ![MONGODB_URI](src/assets/screenshots/mongo_uri.png)
+
+   1. [Configure your Network Connection](https://www.mongodb.com/docs/guides/atlas/network-connections/#configure-a-network-connection) for your local development and deployment
+
+      1. For Local development.
+
+         - On the left sidebar of your screen select `Network Access`
+         - Click on `Add IP Address`.
+         - Click `Add My Current IP Address`.
+         - Click `Confirm` and your IP address is added to the list of addresses.
+
+      1. For `Vercel` deployment.
+
+         - On the left sidebar of your screen select `Network Access`.
+         - Click on `Add IP Address`.
+         - In the box labeled `Access List Entry` add `0.0.0.0/0`.
+         - In the box labeled `	Required for your Cluster(s) linked to Vercel` add `Required for your Cluster(s) linked to Vercel`.
+         - Click `Confirm` and your IP address is added to the list of addresses.
+
+           ![Network Access](src/assets/screenshots/network_access.png)
+
+1. Generate a random API key [here](https://generate-random.org/api-key-generator) and copy it to `API_SECRET_KEY=`.
+
+1. Run the following command to start the application:
+
+   ```sh
+   yarn development
+   ```
