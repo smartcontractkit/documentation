@@ -1133,6 +1133,12 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Starter Kits and Frameworks",
           url: "resources/create-a-chainlinked-project",
+          children: [
+            {
+              title: "Chainlink Hardhat Starter Kit",
+              url: "quickstarts/chainlink-hardhat-starter-kit",
+            },
+          ],
         },
         {
           title: "Bridges and Associated Risks",
