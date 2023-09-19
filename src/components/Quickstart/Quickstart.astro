@@ -53,7 +53,11 @@ import Aside from "@components/Aside.astro"
     margin-top: var(--space-5x);
   }
 
-  #article section > :is(h1, h2, h3, h4) + :not(section, astro-slot, astro-island) {
+  #article section > h2 + :not(section, astro-slot, astro-island) {
+    margin-top: 0 !important;
+  }
+
+  #article section > :is(h1, h3, h4) + :not(section, astro-slot, astro-island) {
     margin-top: var(--space-5x) !important;
   }
 
@@ -78,11 +82,13 @@ import Aside from "@components/Aside.astro"
 
   #article section > h2 {
     font-size: 24px;
-    top: 0;
+    top: calc(var(--theme-navbar-height) - 1px);
     position: sticky;
     z-index: 3;
-    margin-top: calc(-1 * var(--theme-navbar-height));
-    padding-top: var(--theme-navbar-height);
+    background: rgba(255, 255, 255, 0.93);
+
+    background: linear-gradient(0deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.93) 15%);
+    padding-bottom: var(--space-5x);
   }
 
   #article section > h2 > a {
@@ -209,18 +215,6 @@ import Aside from "@components/Aside.astro"
     padding-bottom: var(--space-3x);
   }
 
-  #article .stickyBackground {
-    background: rgb(255, 255, 255, 1);
-  }
-
-  #article .stickyBackground .gradient {
-    position: absolute;
-    height: var(--space-8x);
-    width: 100%;
-    background: linear-gradient(0deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 65%);
-    backdrop-filter: blur(0.5px);
-  }
-
   @media (min-width: 48em) {
     #article {
       margin-top: 0;
@@ -230,7 +224,7 @@ import Aside from "@components/Aside.astro"
       margin-top: var(--space-6x);
     }
 
-    #article section > :is(h1, h2, h3, h4) + :not(section, astro-slot, astro-island) {
+    #article section > :is(h1, h3, h4) + :not(section, astro-slot, astro-island) {
       margin-top: var(--space-5x) !important;
     }
 
@@ -240,6 +234,7 @@ import Aside from "@components/Aside.astro"
 
     #article section > h2 {
       font-size: 28px;
+      padding-bottom: var(--space-5x);
     }
 
     #article section > h3 {
@@ -274,18 +269,16 @@ import Aside from "@components/Aside.astro"
     }
 
     #article section > h2 {
+      top: 0;
+      background: none;
       margin-top: calc(-1 * var(--space-5x));
       padding-top: var(--space-5x);
     }
 
     #article .stickyBackground {
+      background: rgb(255, 255, 255, 0.95);
+      background: linear-gradient(0deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.95) 15%);
       backdrop-filter: blur(0.5px);
-      background: rgb(255, 255, 255, 0.98);
-    }
-
-    #article .stickyBackground .gradient {
-      height: var(--space-10x);
-      background: linear-gradient(0deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.98) 60%);
     }
   }
 </style>
@@ -340,14 +333,11 @@ import Aside from "@components/Aside.astro"
 
   // Add background to currently sticky header
   const stickyHeaders = document.body.querySelectorAll("article > section > h2")
-  const gradient = document.createElement("div")
-  gradient.classList.add("gradient")
   const observerCallback: IntersectionObserverCallback = (entries) => {
     for (const entry of entries) {
       const { isIntersecting, target } = entry
       if (isIntersecting) {
         target.classList.add("stickyBackground")
-        target.appendChild(gradient)
       } else {
         target.classList.remove("stickyBackground")
       }
