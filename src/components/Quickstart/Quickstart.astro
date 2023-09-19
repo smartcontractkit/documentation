@@ -1,6 +1,5 @@
 ---
 import Aside from "@components/Aside.astro"
-import { QuickstartBar } from "./QuickstartBar"
 
 /** There's a bug with mdx and Astro where p tags on new lines add empty p tags around the content.
  * Unfortunately our linter / prettier automatically puts those tags on new lines for large blocks
@@ -8,7 +7,6 @@ import { QuickstartBar } from "./QuickstartBar"
 ---
 
 <article id="article">
-  <QuickstartBar client:only="preact" />
   <Aside type="caution" title="Disclaimer">
     <p>
       This tutorial represents an example of using a Chainlink product or service and is provided to help you understand
@@ -25,8 +23,7 @@ import { QuickstartBar } from "./QuickstartBar"
 
 <style is:inline>
   #article {
-    /* Space to offset QuickstartBar */
-    margin-top: var(--space-20x);
+    margin-top: var(--space-10x);
   }
 
   #article * {
@@ -57,7 +54,7 @@ import { QuickstartBar } from "./QuickstartBar"
   }
 
   #article section > :is(h1, h2, h3, h4) + :not(section, astro-slot, astro-island) {
-    margin-top: var(--space-4x) !important;
+    margin-top: var(--space-5x) !important;
   }
 
   #article section > :is(h1, h2, h3, h4, h5, h6) {
@@ -81,17 +78,19 @@ import { QuickstartBar } from "./QuickstartBar"
 
   #article section > h2 {
     font-size: 24px;
-    top: var(--theme-navbar-height);
+    top: 0;
     position: sticky;
     z-index: 3;
+    margin-top: calc(-1 * var(--theme-navbar-height));
+    padding-top: var(--theme-navbar-height);
   }
 
   #article section > h2 > a {
     overflow: hidden;
     text-overflow: ellipsis;
-    line-clamp: 2;
+    line-clamp: 3;
     display: -webkit-box;
-    -webkit-line-clamp: 2;
+    -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
   }
 
@@ -210,9 +209,21 @@ import { QuickstartBar } from "./QuickstartBar"
     padding-bottom: var(--space-3x);
   }
 
+  #article .stickyBackground {
+    background: rgb(255, 255, 255, 1);
+  }
+
+  #article .stickyBackground .gradient {
+    position: absolute;
+    height: var(--space-8x);
+    width: 100%;
+    background: linear-gradient(0deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 65%);
+    backdrop-filter: blur(0.5px);
+  }
+
   @media (min-width: 48em) {
     #article {
-      margin-top: var(--space-10x);
+      margin-top: 0;
     }
 
     #article :where(section, astro-slot, astro-island) > :not(section, astro-slot, astro-island, ul, ol) {
@@ -250,10 +261,6 @@ import { QuickstartBar } from "./QuickstartBar"
 
   /* NOTE: Done at 50em since mobile header appears at this point */
   @media (min-width: 50em) {
-    #article {
-      margin-top: var(--space-2x);
-    }
-
     #article section:target {
       scroll-margin-top: 0;
     }
@@ -267,7 +274,18 @@ import { QuickstartBar } from "./QuickstartBar"
     }
 
     #article section > h2 {
-      top: var(--space-4x);
+      margin-top: calc(-1 * var(--space-6x));
+      padding-top: var(--space-6x);
+    }
+
+    #article .stickyBackground {
+      backdrop-filter: blur(0.5px);
+      background: rgb(255, 255, 255, 0.98);
+    }
+
+    #article .stickyBackground .gradient {
+      height: var(--space-8x);
+      background: linear-gradient(0deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.98) 70%);
     }
   }
 </style>
@@ -319,4 +337,25 @@ import { QuickstartBar } from "./QuickstartBar"
   // Grabs mdx headers without getting nested headers in components
   const headers = document.body.querySelectorAll("article > :where(h1, h2, h3, h4)")
   headers.forEach((e) => wrapHeaders(e, ["H1", "H2"].includes(e.nodeName)))
+
+  // Add background to currently sticky header
+  const stickyHeaders = document.body.querySelectorAll("article > section > h2")
+  const gradient = document.createElement("div")
+  gradient.classList.add("gradient")
+  const observerCallback: IntersectionObserverCallback = (entries) => {
+    for (const entry of entries) {
+      const { isIntersecting, target } = entry
+      if (isIntersecting) {
+        target.classList.add("stickyBackground")
+        target.appendChild(gradient)
+      } else {
+        target.classList.remove("stickyBackground")
+      }
+    }
+  }
+
+  const stickyHeaderObserver = new IntersectionObserver(observerCallback, {
+    rootMargin: "0% 0% -100%",
+  })
+  stickyHeaders.forEach((h) => stickyHeaderObserver.observe(h))
 </script>
