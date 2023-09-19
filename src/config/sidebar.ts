@@ -108,8 +108,8 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-feeds/solana/using-data-feeds-solana",
         },
         {
-          title: "Prediction Game Example",
-          url: "quickstarts/solana-prediction-game",
+          title: "Price Feeds Showcase Example",
+          url: "quickstarts/price-feeds-showcase",
         },
       ],
     },
