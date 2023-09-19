@@ -129,6 +129,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "Feed Registry API Reference",
           url: "data-feeds/feed-registry/feed-registry-functions",
         },
+        {
+          title: "Host your own Price Feed API",
+          url: "quickstarts/historical-price-feeds",
+        },
       ],
     },
     {
