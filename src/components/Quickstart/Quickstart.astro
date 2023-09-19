@@ -1,6 +1,5 @@
 ---
 import Aside from "@components/Aside.astro"
-import { QuickstartBar } from "./QuickstartBar"
 
 /** There's a bug with mdx and Astro where p tags on new lines add empty p tags around the content.
  * Unfortunately our linter / prettier automatically puts those tags on new lines for large blocks
@@ -8,15 +7,16 @@ import { QuickstartBar } from "./QuickstartBar"
 ---
 
 <article id="article">
-  <QuickstartBar client:only="preact" />
   <Aside type="caution" title="Disclaimer">
-    This tutorial represents an example of using a Chainlink product or service and is provided to help you understand
-    how to interact with Chainlink's systems and services so that you can integrate them into your own. This template is
-    provided "AS IS" and "AS AVAILABLE" without warranties of any kind, has not been audited, and may be missing key
-    checks or error handling to make the usage of the product more clear. Do not use the code in this example in a
-    production environment without completing your own audits and application of best practices. Neither Chainlink Labs,
-    the Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs that are generated due
-    to errors in code.
+    <p>
+      This tutorial represents an example of using a Chainlink product or service and is provided to help you understand
+      how to interact with Chainlink's systems and services so that you can integrate them into your own. This template
+      is provided "AS IS" and "AS AVAILABLE" without warranties of any kind, has not been audited, and may be missing
+      key checks or error handling to make the usage of the product more clear. Do not use the code in this example in a
+      production environment without completing your own audits and application of best practices. Neither Chainlink
+      Labs, the Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs that are
+      generated due to errors in code.
+    </p>
   </Aside>
   <slot />
 </article>
@@ -32,18 +32,41 @@ import { QuickstartBar } from "./QuickstartBar"
     max-width: 100%;
   }
 
-  #article section > :not(section) {
+  #article section {
+    padding-top: var(--space-8x);
+    margin-top: 0;
+  }
+
+  #article section > section {
+    padding-top: var(--space-6x);
+  }
+
+  #article section:target {
+    scroll-margin-top: var(--theme-navbar-height);
+  }
+
+  #article section > section:target {
+    scroll-margin-top: calc(var(--theme-navbar-height) + var(--space-12x));
+  }
+
+  #article :where(section, astro-slot, astro-island) > :not(section, astro-slot, astro-island, ul, ol) {
     margin-top: var(--space-5x);
   }
 
-  #article p + ul {
+  #article section > h2 + :not(section, astro-slot, astro-island) {
+    margin-top: 0 !important;
+  }
+
+  #article section > :is(h1, h3, h4) + :not(section, astro-slot, astro-island) {
+    margin-top: var(--space-5x) !important;
+  }
+
+  #article section > :is(h1, h2, h3, h4, h5, h6) {
     margin-top: 0;
   }
 
-  #article section {
-    padding-top: var(--space-10x);
-    margin-top: 0;
-    scroll-margin-top: var(--theme-navbar-height);
+  #article :is(h1, h2, h3, h4, h5, h6, p, li) {
+    word-break: break-word;
   }
 
   #article section > :is(h1, h2, h3, h4, h5, h6) > a {
@@ -52,40 +75,72 @@ import { QuickstartBar } from "./QuickstartBar"
     width: 100%;
   }
 
-  #article section > h2 {
+  #article section > :is(h2, h3, h4, h5, h6) {
     color: black;
-    font-size: 24px;
-    top: calc(var(--space-4x) + var(--theme-navbar-height));
     margin-top: 0;
+  }
+
+  #article section > h2 {
+    font-size: 24px;
+    top: calc(var(--theme-navbar-height) - 1px);
     position: sticky;
-    z-index: 2;
+    z-index: 3;
+    background: rgba(255, 255, 255, 0.93);
+
+    background: linear-gradient(0deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.93) 15%);
+    padding-bottom: var(--space-5x);
+  }
+
+  #article section > h2 > a {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-clamp: 3;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
   }
 
   #article section > h3 {
-    color: black;
     font-size: 20px;
   }
 
   #article section > :is(h4, h5, h6) {
-    color: black;
     font-size: 16px;
   }
 
-  #article section > li {
-    line-height: 1.5;
-  }
-
-  #article section > ul {
+  #article ul {
+    padding-left: calc(var(--space-2x) + 2px);
     list-style: none;
   }
 
-  #article section > ul > li {
+  #article ol {
+    padding-left: calc(var(--space-6x) + 2px);
+  }
+
+  #article :is(ul, ol) {
+    margin-top: var(--space-3x);
+  }
+
+  #article :is(ul, ol) > li,
+  #article :is(ul, ol) > li > :is(ul, ol) {
+    margin-top: var(--space-1x);
+  }
+
+  #article li {
+    line-height: 1.5;
+  }
+
+  #article li > * {
+    margin-top: var(--space-2x);
+  }
+
+  #article ul > li {
     position: relative;
     left: 0.5rem;
     padding-right: 1rem;
   }
 
-  #article section > ul > li::before {
+  #article ul > li::before {
     position: absolute;
     content: "●";
     font-size: 0.5rem;
@@ -103,10 +158,15 @@ import { QuickstartBar } from "./QuickstartBar"
   }
 
   #article ol.steps > li {
+    margin: 0;
     padding: var(--space-2x) 0px;
     border-bottom: 1px solid var(--gray-300, #ced0d5);
     list-style: none;
     scroll-margin-top: calc(var(--space-20x) + var(--theme-navbar-height));
+  }
+
+  #article ol.steps > li > * {
+    margin: 0;
   }
 
   #article ol.steps details {
@@ -156,24 +216,32 @@ import { QuickstartBar } from "./QuickstartBar"
   }
 
   @media (min-width: 48em) {
-    #article section > :not(section) {
+    #article {
+      margin-top: 0;
+    }
+
+    #article :where(section, astro-slot, astro-island) > :not(section, astro-slot, astro-island, ul, ol) {
       margin-top: var(--space-6x);
+    }
+
+    #article section > :is(h1, h3, h4) + :not(section, astro-slot, astro-island) {
+      margin-top: var(--space-5x) !important;
+    }
+
+    #article section > :is(h2, h3, h4, h5, h6) {
+      color: var(--blue-800, #1a2b6b);
     }
 
     #article section > h2 {
       font-size: 28px;
-      color: var(--blue-800, #1a2b6b);
-      margin-top: 0;
+      padding-bottom: var(--space-5x);
     }
 
     #article section > h3 {
       font-size: 24px;
-      color: var(--blue-800, #1a2b6b);
-      margin-top: 0;
     }
 
     #article section > :is(h4, h5, h6) {
-      color: var(--blue-800, #1a2b6b);
       font-size: 20px;
     }
 
@@ -188,17 +256,29 @@ import { QuickstartBar } from "./QuickstartBar"
 
   /* NOTE: Done at 50em since mobile header appears at this point */
   @media (min-width: 50em) {
-    #article section {
-      padding-top: var(--space-6x);
-      scroll-margin-top: var(--space-4x);
+    #article section:target {
+      scroll-margin-top: 0;
     }
 
-    #article ol.steps > li {
+    #article section > section:target {
+      scroll-margin-top: var(--space-16x);
+    }
+
+    #article ol.steps > li:target {
       scroll-margin-top: var(--space-20x);
     }
 
     #article section > h2 {
-      top: var(--space-4x);
+      top: 0;
+      background: none;
+      margin-top: calc(-1 * var(--space-5x));
+      padding-top: var(--space-5x);
+    }
+
+    #article .stickyBackground {
+      background: rgb(255, 255, 255, 0.95);
+      background: linear-gradient(0deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.95) 15%);
+      backdrop-filter: blur(0.5px);
     }
   }
 </style>
@@ -250,4 +330,22 @@ import { QuickstartBar } from "./QuickstartBar"
   // Grabs mdx headers without getting nested headers in components
   const headers = document.body.querySelectorAll("article > :where(h1, h2, h3, h4)")
   headers.forEach((e) => wrapHeaders(e, ["H1", "H2"].includes(e.nodeName)))
+
+  // Add background to currently sticky header
+  const stickyHeaders = document.body.querySelectorAll("article > section > h2")
+  const observerCallback: IntersectionObserverCallback = (entries) => {
+    for (const entry of entries) {
+      const { isIntersecting, target } = entry
+      if (isIntersecting) {
+        target.classList.add("stickyBackground")
+      } else {
+        target.classList.remove("stickyBackground")
+      }
+    }
+  }
+
+  const stickyHeaderObserver = new IntersectionObserver(observerCallback, {
+    rootMargin: "0% 0% -100%",
+  })
+  stickyHeaders.forEach((h) => stickyHeaderObserver.observe(h))
 </script>
