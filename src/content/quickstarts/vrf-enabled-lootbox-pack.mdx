@@ -1,7 +1,6 @@
 ---
-layout: ../../../../layouts/MainLayout.astro
 section: vrf
-title: "Lootbox - Use VRF to create random rewards"
+title: "VRF-Enabled LootBox/Pack Contract"
 whatsnext:
   {
     "Review VRF best practices": "/vrf/v2/best-practices",
@@ -326,89 +325,26 @@ The processing done in the `fulfillRandomWords` callback function is minimal. He
 
 ```solidity
 ...
+/// @notice Requests randomness from Chainlink VRF
+/// @dev The VRF subscription must be active and sufficient LINK must be available
+/// @return requestId The ID of the request
+function _requestRandomness() internal returns (uint256 requestId) {
+    requestId = VRFCoordinatorV2Interface(i_vrfCoordinatorV2)
+        .requestRandomWords(
+            i_vrfKeyHash,
+            i_vrfSubscriptionId,
+            REQUEST_CONFIRMATIONS,
+            CALLBACK_GASLIMIT,
+            NUMWORDS
+        );
+}
 
-/*//////////////////////////////////////////////////////////////
-                              VRF LOGIC
-  //////////////////////////////////////////////////////////////*/
-
-    /// @notice Requests randomness from Chainlink VRF
-    /// @dev The VRF subscription must be active and sufficient LINK must be available
-    /// @return requestId The ID of the request
-    function _requestRandomness() internal returns (uint256 requestId) {
-        requestId = VRFCoordinatorV2Interface(i_vrfCoordinatorV2)
-            .requestRandomWords(
-                i_vrfKeyHash,
-                i_vrfSubscriptionId,
-                REQUEST_CONFIRMATIONS,
-                CALLBACK_GASLIMIT,
-                NUMWORDS
-            );
-    }
-
-    /// @inheritdoc VRFConsumerBaseV2
-    function fulfillRandomWords(
-        uint256 requestId,
-        uint256[] memory randomWords
-    ) internal override {
-        s_requests[requestId].randomness = randomWords[0];
-        emit OpenRequestFulfilled(requestId, randomWords[0]);
-    }
-```
-
-### How the lootbox uses random values
-
-```solidity
-    ...
-
-    /// @notice Picks the rewards using the given randomness as a seed
-    /// @param amountToOpen The amount of lootbox units the user is opening
-    /// @param randomness The random number used to pick the rewards
-    /// @return rewardUnits The list of tokens and amounts that the user will receive as rewards
-    /// @return updatedTokens The list of tokens and amounts that are left after the rewards are picked
-    function _getRewardUnits(
-        uint256 amountToOpen,
-        uint256 randomness
-    )
-        internal
-        view
-        returns (Token[] memory rewardUnits, Token[] memory updatedTokens)
-    {
-        uint256 totalRewardUnits = s_supply * s_amountDistributedPerOpen;
-        uint256 totalRewardKinds = s_perUnitAmounts.length;
-
-        uint256 numOfRewardUnitsToDistribute = amountToOpen *
-            s_amountDistributedPerOpen;
-        rewardUnits = new Token[](numOfRewardUnitsToDistribute);
-
-        (Token[] memory tokens, ) = getLootboxTokens();
-        for (uint256 i = 0; i < numOfRewardUnitsToDistribute; i += 1) {
-            uint256 randomNumber = uint256(
-                keccak256(abi.encode(randomness, i))
-            );
-            uint256 target = randomNumber % totalRewardUnits;
-            uint256 step;
-
-            for (uint256 j = 0; j < totalRewardKinds; j += 1) {
-                uint256 totalRewardUnitsOfKind = tokens[j].totalAmount /
-                    s_perUnitAmounts[j];
-
-                if (step + totalRewardUnitsOfKind > target) {
-                    tokens[j].totalAmount -= s_perUnitAmounts[j];
-
-                    rewardUnits[i].assetContract = tokens[j].assetContract;
-                    rewardUnits[i].tokenType = tokens[j].tokenType;
-                    rewardUnits[i].tokenId = tokens[j].tokenId;
-                    rewardUnits[i].totalAmount = s_perUnitAmounts[j];
-
-                    totalRewardUnits -= 1;
-
-                    break;
-                } else {
-                    step += totalRewardUnitsOfKind;
-                }
-            }
-        }
-
-        updatedTokens = tokens;
-    }
+/// @inheritdoc VRFConsumerBaseV2
+function fulfillRandomWords(
+    uint256 requestId,
+    uint256[] memory randomWords
+) internal override {
+    s_requests[requestId].randomness = randomWords[0];
+    emit OpenRequestFulfilled(requestId, randomWords[0]);
+}
 ```
