@@ -131,7 +131,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         },
         {
           title: "Host your own Price Feed API",
-          url: "quickstarts/historical-price-feeds",
+          url: "quickstarts/historical-price-feeds-api",
         },
       ],
     },
