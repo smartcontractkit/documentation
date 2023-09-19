@@ -38,7 +38,7 @@ export const ContentObserver = ({ headings, shouldUpdate }: Props) => {
     }
 
     const sectionsObserver = new IntersectionObserver(observerCallback, {
-      rootMargin: "-25% 0% -75%",
+      rootMargin: "-15% 0% -85%",
     })
 
     headings.forEach((h) => {
