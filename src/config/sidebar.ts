@@ -234,7 +234,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       contents: [
         {
           title: "Automate the Reveal of Collections",
-          url: "chainlink-automation/tutorials/batch-reveal-quickstart",
+          url: "quickstarts/batch-reveal",
         },
         {
           title: "Create a time-based upkeep",
