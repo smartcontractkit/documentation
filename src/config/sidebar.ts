@@ -241,20 +241,20 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "quickstarts/time-based-upkeep",
         },
         {
-          title: "Create Dynamic NFTs",
-          url: "chainlink-automation/tutorials/dynamic-nft",
+          title: "Dynamic Metadata with Automation",
+          url: "quickstarts/dynamic-metadata",
         },
         {
           title: "Create a Vault Harvester",
           url: "chainlink-automation/tutorials/vault-harvester",
         },
         {
-          title: "Automate Top-Up for Contract Balances",
-          url: "chainlink-automation/tutorials/eth-balance",
+          title: "Automate Contract Balance Top-up",
+          url: "quickstarts/eth-balance-monitor",
         },
         {
           title: "Automate Top-Up for VRF Subscriptions",
-          url: "chainlink-automation/tutorials/vrf-sub-monitor",
+          url: "quickstarts/vrf-subscription-monitor",
         },
       ],
     },
@@ -611,6 +611,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Test locally using a Mock contract",
           url: "vrf/v2/direct-funding/examples/test-locally",
+        },
+        {
+          title: "Pass Costs to End Users",
+          url: "quickstarts/pass-cost-to-end-user",
         },
         {
           title: "Supported Networks",
