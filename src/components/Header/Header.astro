@@ -1,17 +1,16 @@
 ---
 import * as CONFIG from "../../config"
-import { Frontmatter, MENU } from "../../config/index"
+import { MENU } from "../../config/index"
 import SkipToContent from "./SkipToContent.astro"
-import SidebarToggle from "./SidebarToggle.tsx"
-import Search from "./Search/Search.tsx"
+import SidebarToggle from "./SidebarToggle"
+import Search from "./Search/Search"
 import NotificationBanner from "~/features/notifications/components/NotificationBanner.astro"
+import { Sections } from "~/content/config"
 
 export type Props = {
-  frontmatter?: Frontmatter
+  section?: Sections
 }
-const { frontmatter } = Astro.props
-
-const section = frontmatter?.section ?? undefined
+const { section } = Astro.props
 ---
 
 <!-- Google Tag Manager (noscript) -->
@@ -24,7 +23,7 @@ const section = frontmatter?.section ?? undefined
 <header>
   <SkipToContent />
   <nav class="nav-wrapper" title="Top Navigation">
-    <div class="logo flex">
+    <div class="logo">
       <a href="/">
         <img src="/chainlink-docs.svg" style="height:40px; width: 183px" alt={CONFIG.SITE.title ?? "Documentation"} />
       </a>
@@ -81,6 +80,7 @@ const section = frontmatter?.section ?? undefined
 
   .logo {
     display: flex;
+    align-items: center;
     overflow: hidden;
     width: 183px;
     height: 40px;
@@ -100,9 +100,6 @@ const section = frontmatter?.section ?? undefined
     margin: -0.5em -0.25em;
     text-decoration: none;
     font-weight: bold;
-  }
-
-  .logo a {
     transition: color 100ms ease-out;
     color: var(--theme-text);
   }
@@ -136,6 +133,21 @@ const section = frontmatter?.section ?? undefined
     display: none;
   }
 
+  .navbar {
+    display: none;
+  }
+
+  .search-item {
+    display: none;
+    position: relative;
+    z-index: 10;
+    display: flex;
+  }
+
+  :global(.search-item > *) {
+    flex-grow: 1;
+  }
+
   @media (min-width: 50em) {
     .logo {
       flex-grow: 0;
@@ -144,6 +156,7 @@ const section = frontmatter?.section ?? undefined
     .spacer {
       display: block;
     }
+
     header {
       position: static;
       padding: 1rem 0rem;
@@ -161,12 +174,7 @@ const section = frontmatter?.section ?? undefined
     .menu-toggle {
       display: none;
     }
-  }
 
-  .navbar {
-    display: none;
-  }
-  @media (min-width: 50em) {
     .navbar {
       display: flex;
       gap: 1rem;
@@ -181,24 +189,14 @@ const section = frontmatter?.section ?? undefined
       display: flex;
     }
   }
-
-  .search-item {
-    display: none;
-    position: relative;
-    z-index: 10;
-    display: flex;
-  }
-
-  :global(.search-item > *) {
-    flex-grow: 1;
-  }
 </style>
 
 <script is:inline>
-  window.addEventListener("DOMContentLoaded", (event) => {
+  window.addEventListener("DOMContentLoaded", () => {
     const parentSection = new URLSearchParams(window.location.search).get("parent") || "global"
-    if (window.location.pathname !== "/" && !document.querySelectorAll('a[aria-current="true"]')[0]) {
-      let elem = document.getElementById(parentSection)
+    const current = document.querySelector('.navbar a[aria-current="true"]')
+    if (parentSection && !current) {
+      const elem = document.getElementById(parentSection)
       elem.setAttribute("aria-current", "true")
     }
   })

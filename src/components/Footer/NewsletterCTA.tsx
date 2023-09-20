@@ -8,9 +8,9 @@ export type NewsletterCTAProps = {
 }
 export const NewsletterCTA = ({ title = "Stay updated on the latest Chainlink news" }: NewsletterCTAProps) => {
   return (
-    <section className={"newsletter-cta"}>
+    <div className={"newsletter-cta"}>
       <h2 className="cta-subscribe-h1 heading-600">{title}</h2>
       <NewsletterSignupForm />
-    </section>
+    </div>
   )
 }

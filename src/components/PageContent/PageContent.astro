@@ -1,49 +1,199 @@
 ---
-import MoreMenu from "../RightSidebar/MoreMenu.astro"
-import TableOfContents from "../RightSidebar/TableOfContents"
-import WhatsNext from "./WhatsNext.astro"
-const { content, githubEditUrl, headings } = Astro.props
-const title = content.title
-const whatsNext = content.whatsnext
+import Overview from "./Overview.astro"
+import { MarkdownHeading } from "astro"
+
+export type Props = {
+  titleHeading: MarkdownHeading
+}
+const { titleHeading } = Astro.props
 ---
 
-<article id="article" class="content">
-  <section class="main-section">
-    <h1 class="content-title" id="overview">{title}</h1>
-    <nav class="block sm:hidden">
-      <TableOfContents client:media="(max-width: 50em)" headers={headings} />
-    </nav>
-    <slot />
-
-    <slot name="after-content" />
-    {whatsNext && <WhatsNext content={whatsNext} />}
-  </section>
-  <nav class="block sm:hidden">
-    <MoreMenu editHref={githubEditUrl} />
-  </nav>
+<article id="article">
+  <Overview title={titleHeading} />
+  <slot />
 </article>
 
-<style>
-  .content {
-    padding: 0;
-    /* max-width: 75ch; */
+<style is:inline>
+  article :is(h1, h2, h3, h4) > a {
+    display: inline-block;
+    color: inherit;
     width: 100%;
-    height: 100%;
+  }
+
+  article astro-slot > :first-child {
+    margin-top: 0;
+  }
+
+  article table {
+    margin-top: var(--space-2x);
+  }
+
+  /* Using padding instead of margin so intersection observers work without spaces */
+  article > section {
+    padding-top: var(--space-5x);
+  }
+
+  article * {
+    max-width: 100%;
+    margin-bottom: 0;
+  }
+
+  article :is(h1, h2, h3, h4, h5, h6, p, li) {
+    word-break: break-word;
+  }
+
+  article p {
+    margin-bottom: 0;
+  }
+
+  article :is(p, li) {
+    line-height: 28px;
+  }
+
+  article label {
     display: flex;
-    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2x);
   }
 
-  .content > section {
-    margin-bottom: 4rem;
+  article :where(section, astro-slot, astro-island) > :not(section, astro-slot, astro-island) {
+    margin-top: var(--space-5x);
   }
 
-  .block {
-    display: block;
+  article section > :is(h1, h2, h3, h4) + :not(section, astro-slot, astro-island) {
+    margin-top: var(--space-5x) !important;
+  }
+
+  article :where(section, astro-slot) > :is(h1, h2) {
+    margin: 0;
+  }
+
+  article :where(section, astro-slot) > :is(h3, h4) {
+    padding-top: var(--space-8x);
+  }
+
+  article :where(section, astro-slot) > :is(h3, h4, li) {
+    margin-top: 0;
+  }
+
+  article :where(section, astro-slot) > h1 {
+    font-size: 32px;
+  }
+
+  article :where(section, astro-slot) > h2 {
+    font-size: 28px;
+    padding-top: var(--space-6x);
+  }
+
+  article :where(section, astro-slot) > h4 {
+    font-size: 20px;
+  }
+
+  article :is(ul, ol) {
+    margin-top: var(--space-3x);
+  }
+
+  article :is(ul, ol) > li,
+  article :is(ul, ol) > li > :is(ul, ol) {
+    margin-top: var(--space-2x);
+  }
+
+  article li > * {
+    margin-top: var(--space-2x);
+  }
+
+  article ul {
+    padding-left: calc(var(--space-4x) + 2px);
+  }
+
+  article ol {
+    padding-left: var(--space-8x);
+  }
+
+  /* Offset line-height difference */
+  article li > :not(p):last-child {
+    margin-bottom: var(--space-3x);
+  }
+
+  article ::marker {
+    font-weight: bold;
+    color: var(--theme-text-light);
+  }
+
+  article iframe {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+  }
+
+  /* Offsets padding */
+  section:target {
+    scroll-margin-top: var(--theme-navbar-height);
   }
 
   @media (min-width: 50em) {
-    .sm\:hidden {
-      display: none;
+    article :where(section, astro-slot) > :is(h1, h2) {
+      position: sticky;
+      top: 0;
+      z-index: 3;
+      background: white;
+      border-bottom: 2px solid var(--blue-200, #dfe7fb);
+      padding: var(--space-6x) 0;
+    }
+
+    section:target {
+      scroll-margin-top: calc(-1 * var(--space-5x));
+    }
+
+    section > section:target {
+      scroll-margin-top: var(--space-24x);
+    }
+  }
+
+  @media (min-width: 72em) {
+    article :where(section, astro-slot) > h1 {
+      font-size: 40px;
+    }
+
+    article :where(section, astro-slot) > h2 {
+      font-size: 32px;
+    }
+
+    article :where(section, astro-slot) > h3 {
+      font-size: 28px;
     }
   }
 </style>
+
+<script>
+  /**
+   * Creates sticky headers which interact with
+   * intersection observers for nested h3, h4 headers
+   */
+  const wrapHeaders = (start: Element, isParent?: boolean) => {
+    const wrapper = document.createElement("section")
+    const elements: Element[] = []
+    elements.push(start)
+    let next = start.nextElementSibling
+    while (
+      next && // Just bear with me
+      (next.nodeName !== "ASTRO-ISLAND" || // Not an island
+        !next.hasChildNodes() || // Island doesn't have HTML content
+        next.children[0].nodeName !== "SECTION" || // First child of the island is not a section
+        !next.children[0].id) && // Section does not have an id
+      (!next.id || (isParent && !["H1", "H2"].includes(next.nodeName)))
+    ) {
+      elements.push(next)
+      next = next.nextElementSibling
+    }
+    wrapper.id = start.id
+    start.parentNode!.insertBefore(wrapper, start)
+    elements.forEach((e) => wrapper.appendChild(e))
+    return wrapper
+  }
+
+  // Only get direct descendants of the article content
+  // Grabs mdx headers without getting nested headers in components
+  const headers = document.body.querySelectorAll("article > :where(h1, h2, h3, h4)")
+  headers.forEach((e) => wrapHeaders(e, ["H1", "H2"].includes(e.nodeName)))
+</script>

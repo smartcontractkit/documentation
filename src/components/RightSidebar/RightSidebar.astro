@@ -1,53 +1,55 @@
 ---
-import TableOfContents from "./TableOfContents"
 import MoreMenu from "./MoreMenu.astro"
 import { Feedback } from "../PageContent/Feedback"
-const { content, githubEditUrl, headings, clientSideToc } = Astro.props
+import { MarkdownHeading } from "astro"
+import TableOfContents from "~/components/TableOfContents/TableOfContents"
+
+export type Props = {
+  githubEditUrl: string
+  headings: MarkdownHeading[]
+}
+const { githubEditUrl, headings } = Astro.props
 ---
 
-<nav class="sidebar-nav" aria-labelledby="grid-right">
-  <div class="sidebar-nav-inner">
-    <div>
-      <TableOfContents client:media="(min-width: 50em)" headers={headings} clientSideToc={clientSideToc} />
-    </div>
-    <div>
-      <MoreMenu editHref={githubEditUrl} />
-    </div>
-
-    <div>
-      <h2 class="heading feedback-title">Feedback</h2>
-      <div class="feedback-wrapper">
-        <Feedback client:idle />
-      </div>
-    </div>
+<section class="sidebar-nav" aria-labelledby="grid-right">
+  <h2 class="heading">On this page</h2>
+  <div class="toc-wrapper">
+    <TableOfContents client:media="(min-width: 50em)" initialHeadings={headings} />
   </div>
-</nav>
+  <MoreMenu editHref={githubEditUrl} />
+  <h2 class="heading feedback-title">Feedback</h2>
+  <div class="feedback-wrapper">
+    <Feedback client:idle />
+  </div>
+</section>
 
 <style>
-  .feedback-wrapper {
-    padding-left: var(--space-4x);
-    margin-top: var(--space-2x);
-  }
   .sidebar-nav {
-    width: 100%;
+    height: fit-content;
+    padding: var(--doc-padding) 0 calc(2 * var(--doc-padding)) 0;
     position: sticky;
     top: 0;
   }
 
-  .sidebar-nav-inner {
-    height: 100%;
-    padding: 0;
-    padding-top: var(--doc-padding);
-    overflow: auto;
-  }
-  .sidebar-nav-inner > * {
-    margin-top: 1rem;
-  }
-  .sidebar-nav-inner > *:first-child {
-    margin-top: 0;
+  .heading {
+    color: var(--color-text-heading);
+    font-size: 12px;
+    letter-spacing: 1px;
+    font-weight: 500;
+    text-transform: uppercase;
+    margin-bottom: 0;
   }
 
-  .sidebar-nav-inner h2 {
-    margin: var(--space-4x) 0 0 0;
+  .feedback-title {
+    margin-top: var(--space-8x);
+  }
+
+  .feedback-wrapper {
+    margin-top: var(--space-3x);
+  }
+
+  .toc-wrapper {
+    padding: 0;
+    margin-bottom: var(--space-8x);
   }
 </style>

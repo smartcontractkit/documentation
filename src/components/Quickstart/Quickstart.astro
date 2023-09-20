@@ -1,0 +1,351 @@
+---
+import Aside from "@components/Aside.astro"
+
+/** There's a bug with mdx and Astro where p tags on new lines add empty p tags around the content.
+ * Unfortunately our linter / prettier automatically puts those tags on new lines for large blocks
+ * and so I've added the quickstart content to prettierignore for now. */
+---
+
+<article id="article">
+  <Aside type="caution" title="Disclaimer">
+    <p>
+      This tutorial represents an example of using a Chainlink product or service and is provided to help you understand
+      how to interact with Chainlink's systems and services so that you can integrate them into your own. This template
+      is provided "AS IS" and "AS AVAILABLE" without warranties of any kind, has not been audited, and may be missing
+      key checks or error handling to make the usage of the product more clear. Do not use the code in this example in a
+      production environment without completing your own audits and application of best practices. Neither Chainlink
+      Labs, the Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs that are
+      generated due to errors in code.
+    </p>
+  </Aside>
+  <slot />
+</article>
+
+<style is:inline>
+  #article {
+    margin-top: var(--space-10x);
+  }
+
+  #article * {
+    margin-top: 0;
+    margin-bottom: 0;
+    max-width: 100%;
+  }
+
+  #article section {
+    padding-top: var(--space-8x);
+    margin-top: 0;
+  }
+
+  #article section > section {
+    padding-top: var(--space-6x);
+  }
+
+  #article section:target {
+    scroll-margin-top: var(--theme-navbar-height);
+  }
+
+  #article section > section:target {
+    scroll-margin-top: calc(var(--theme-navbar-height) + var(--space-12x));
+  }
+
+  #article :where(section, astro-slot, astro-island) > :not(section, astro-slot, astro-island, ul, ol) {
+    margin-top: var(--space-5x);
+  }
+
+  #article section > h2 + :not(section, astro-slot, astro-island) {
+    margin-top: 0 !important;
+  }
+
+  #article section > :is(h1, h3, h4) + :not(section, astro-slot, astro-island) {
+    margin-top: var(--space-5x) !important;
+  }
+
+  #article section > :is(h1, h2, h3, h4, h5, h6) {
+    margin-top: 0;
+  }
+
+  #article :is(h1, h2, h3, h4, h5, h6, p, li) {
+    word-break: break-word;
+  }
+
+  #article section > :is(h1, h2, h3, h4, h5, h6) > a {
+    display: inline-block;
+    color: inherit;
+    width: 100%;
+  }
+
+  #article section > :is(h2, h3, h4, h5, h6) {
+    color: black;
+    margin-top: 0;
+  }
+
+  #article section > h2 {
+    font-size: 24px;
+    top: calc(var(--theme-navbar-height) - 1px);
+    position: sticky;
+    z-index: 3;
+    background: rgba(255, 255, 255, 0.93);
+
+    background: linear-gradient(0deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.93) 15%);
+    padding-bottom: var(--space-5x);
+  }
+
+  #article section > h2 > a {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-clamp: 3;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+  }
+
+  #article section > h3 {
+    font-size: 20px;
+  }
+
+  #article section > :is(h4, h5, h6) {
+    font-size: 16px;
+  }
+
+  #article ul {
+    padding-left: calc(var(--space-2x) + 2px);
+    list-style: none;
+  }
+
+  #article ol {
+    padding-left: calc(var(--space-6x) + 2px);
+  }
+
+  #article :is(ul, ol) {
+    margin-top: var(--space-3x);
+  }
+
+  #article :is(ul, ol) > li,
+  #article :is(ul, ol) > li > :is(ul, ol) {
+    margin-top: var(--space-1x);
+  }
+
+  #article li {
+    line-height: 1.5;
+  }
+
+  #article li > * {
+    margin-top: var(--space-2x);
+  }
+
+  #article ul > li {
+    position: relative;
+    left: 0.5rem;
+    padding-right: 1rem;
+  }
+
+  #article ul > li::before {
+    position: absolute;
+    content: "●";
+    font-size: 0.5rem;
+    top: 6.5px;
+    left: -1rem;
+  }
+
+  #article ol.steps {
+    padding-left: 0;
+    counter-reset: counter;
+  }
+
+  #article ol.steps > li:first-of-type {
+    border-top: 1px solid var(--gray-300, #ced0d5);
+  }
+
+  #article ol.steps > li {
+    margin: 0;
+    padding: var(--space-2x) 0px;
+    border-bottom: 1px solid var(--gray-300, #ced0d5);
+    list-style: none;
+    scroll-margin-top: calc(var(--space-20x) + var(--theme-navbar-height));
+  }
+
+  #article ol.steps > li > * {
+    margin: 0;
+  }
+
+  #article ol.steps details {
+    overflow: hidden;
+  }
+
+  #article ol.steps details > summary {
+    display: grid;
+    grid-template-columns: 0 1fr auto;
+    align-items: center;
+    gap: var(--space-8x);
+    cursor: pointer;
+    color: var(--blue-800, #1a2b6b);
+    font-size: 16px;
+  }
+
+  #article ol.steps details > summary::before {
+    content: counters(counter, ".") "";
+    counter-increment: counter;
+    color: var(--gray-400, #b7bac0);
+    letter-spacing: -0.24px;
+  }
+
+  #article ol.steps details > summary::after {
+    content: url(/images/quickstarts/arrow-down.svg);
+    -webkit-mask: url(/images/quickstarts/arrow-down.svg) no-repeat center;
+    -webkit-mask-size: var(--space-6x);
+    background-color: var(--gray-400, #b7bac0);
+    transition: 0.25s transform ease;
+  }
+
+  /* Using custom attribute 'expanded' (created by Accordion)
+  rather than 'open' since some browsers (Safari) have no respect for details attributes */
+  #article ol.steps details[expanded] > summary::after {
+    transform: rotate(180deg);
+    background-color: #174cc2;
+  }
+
+  #article ol.steps details > :not(summary) {
+    margin-top: 0;
+    padding-left: var(--space-8x);
+    padding-top: var(--space-6x);
+  }
+
+  #article ol.steps details > :not(summary):last-child {
+    padding-bottom: var(--space-3x);
+  }
+
+  @media (min-width: 48em) {
+    #article {
+      margin-top: 0;
+    }
+
+    #article :where(section, astro-slot, astro-island) > :not(section, astro-slot, astro-island, ul, ol) {
+      margin-top: var(--space-6x);
+    }
+
+    #article section > :is(h1, h3, h4) + :not(section, astro-slot, astro-island) {
+      margin-top: var(--space-5x) !important;
+    }
+
+    #article section > :is(h2, h3, h4, h5, h6) {
+      color: var(--blue-800, #1a2b6b);
+    }
+
+    #article section > h2 {
+      font-size: 28px;
+      padding-bottom: var(--space-5x);
+    }
+
+    #article section > h3 {
+      font-size: 24px;
+    }
+
+    #article section > :is(h4, h5, h6) {
+      font-size: 20px;
+    }
+
+    #article ol.steps > li {
+      padding: var(--space-3x) 0px;
+    }
+
+    #article ol.steps details > summary {
+      font-size: 20px;
+    }
+  }
+
+  /* NOTE: Done at 50em since mobile header appears at this point */
+  @media (min-width: 50em) {
+    #article section:target {
+      scroll-margin-top: 0;
+    }
+
+    #article section > section:target {
+      scroll-margin-top: var(--space-16x);
+    }
+
+    #article ol.steps > li:target {
+      scroll-margin-top: var(--space-20x);
+    }
+
+    #article section > h2 {
+      top: 0;
+      background: none;
+      margin-top: calc(-1 * var(--space-5x));
+      padding-top: var(--space-5x);
+    }
+
+    #article .stickyBackground {
+      background: rgb(255, 255, 255, 0.95);
+      background: linear-gradient(0deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.95) 15%);
+      backdrop-filter: blur(0.5px);
+    }
+  }
+</style>
+
+<script>
+  import { Accordion } from "./accordion"
+  const detailsElements = document.querySelectorAll("ol.steps details")
+  detailsElements.forEach((el: HTMLDetailsElement, i) => {
+    new Accordion(el)
+    // Required for ContentObserver / TOC
+    const summary = el.querySelector("summary")
+    if (summary) {
+      const id = summary.innerText.toLowerCase().split(" ").join("-")
+      summary.id = id
+      summary.setAttribute("data-id", `${i + 1}-${id}`) // Set for analytics
+      if (el.parentElement?.nodeName === "LI") {
+        el.parentElement.id = id
+      }
+    }
+  })
+
+  /**
+   * Creates sticky headers which interact with
+   * intersection observers
+   */
+  const wrapHeaders = (start: Element, isParent?: boolean) => {
+    const wrapper = document.createElement("section")
+    const elements: Element[] = []
+    elements.push(start)
+    let next = start.nextElementSibling
+    while (
+      next && // Just bear with me
+      (next.nodeName !== "ASTRO-ISLAND" || // Not an island
+        !next.hasChildNodes() || // Island doesn't have HTML content
+        next.children[0].nodeName !== "SECTION" || // First child of the island is not a section
+        !next.children[0].id) && // Section does not have an id
+      (!next.id || (isParent && !["H1", "H2"].includes(next.nodeName)))
+    ) {
+      elements.push(next)
+      next = next.nextElementSibling
+    }
+    wrapper.id = start.id
+    start.parentNode!.insertBefore(wrapper, start)
+    elements.forEach((e) => wrapper.appendChild(e))
+    return wrapper
+  }
+
+  // Only get direct descendants of the article content
+  // Grabs mdx headers without getting nested headers in components
+  const headers = document.body.querySelectorAll("article > :where(h1, h2, h3, h4)")
+  headers.forEach((e) => wrapHeaders(e, ["H1", "H2"].includes(e.nodeName)))
+
+  // Add background to currently sticky header
+  const stickyHeaders = document.body.querySelectorAll("article > section > h2")
+  const observerCallback: IntersectionObserverCallback = (entries) => {
+    for (const entry of entries) {
+      const { isIntersecting, target } = entry
+      if (isIntersecting) {
+        target.classList.add("stickyBackground")
+      } else {
+        target.classList.remove("stickyBackground")
+      }
+    }
+  }
+
+  const stickyHeaderObserver = new IntersectionObserver(observerCallback, {
+    rootMargin: "0% 0% -100%",
+  })
+  stickyHeaders.forEach((h) => stickyHeaderObserver.observe(h))
+</script>
