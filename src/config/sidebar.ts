@@ -1135,6 +1135,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "resources/create-a-chainlinked-project",
         },
         {
+          title: "Using the Hardhat Chainlink Plugin",
+          url: "quickstarts/hardhat-plugin",
+        },
+        {
           title: "Bridges and Associated Risks",
           url: "resources/bridge-risks",
         },
