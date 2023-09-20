@@ -140,19 +140,21 @@ In your `.env` file, fill in these values:
 
 The `LOOTBOX_FEE_PER_OPEN` allows you to pass transaction and VRF costs to the user when they open the lootbox.
 
-### Define the reward tokens
+### Define the rewards
 
-For rewards, the lootbox contracts supports any tokens from the following [token standards](https://ethereum.org/en/developers/docs/standards/tokens/):
+You can distribute multiple types of in-game rewards using this lootbox contract. The lootbox contract supports any rewards of the following [token standards](https://ethereum.org/en/developers/docs/standards/tokens/):
 
 - [ERC-20](https://ethereum.org/en/developers/docs/standards/tokens/erc-20/): the fungible token standard
 - [ERC-721](https://ethereum.org/en/developers/docs/standards/tokens/erc-721/): the NFT standard
 - [ERC-1155](https://ethereum.org/en/developers/docs/standards/tokens/erc-1155/): the multi-token standard
 
-The amounts per unit are used to calculate the lootbox supply of rewards. For example, if you want to distribute 100 tokens of a specific ERC-20 token, you would set the `totalAmount` to `100000000000000000000` and the `amountPerUnit` to `1000000000000000000`. This would result in a lootbox supply of 100 units. For testing, you can distribute a smaller amount of testnet tokens.
+The amounts per unit are used to calculate the lootbox supply of rewards. For example, if you want to distribute 100 of a specific NFT, you would set the `totalAmount` to `100000000000000000000` and the `amountPerUnit` to `1000000000000000000`. This would result in a lootbox supply of 100 units. For testing, you can distribute smaller amounts.
 
-Add all the tokens you want to distribute as rewards to the array in the list of tokens by following the format below.
+Add each type of in-game reward you want to distribute by following the format below.
 
-<Aside type="note">The deployer account must own all the tokens you want to distribute as rewards.</Aside>
+<Aside type="note">
+  The deployer account must own the entire lootbox supply that you want to distribute as rewards.
+</Aside>
 
 There's an example configuration file in [`scripts/data/tokens.json`](https://github.com/smartcontractkit/quickstarts-lootbox/blob/main/scripts/data/tokens.json) which includes a list of all supported token types:
 
@@ -197,7 +199,7 @@ There's an example configuration file in [`scripts/data/tokens.json`](https://gi
 
 The [Merkle tree](https://ethereum.org/en/developers/tutorials/merkle-proofs-for-offline-data-integrity/#introduction) for the [private opening mode](#private-mode) is generated from the address list in the [`scripts/data/whitelist.json`](https://github.com/smartcontractkit/quickstarts-lootbox/blob/main/scripts/data/whitelist.json) file. Edit the file and add all the addresses you want to list.
 
-For this tutorial, add the address for your secondary account that you'll use to receive the reward tokens when you test opening the lootbox.
+For this tutorial, add the address for your secondary account that you'll use to receive the rewards when you test opening the lootbox.
 
 If you don't want to do a private mint, leave the `whitelist.json` file empty, and the contract will be initialized in [public opening mode](#public-mode).
 
@@ -252,7 +254,7 @@ The [deploy script](https://github.com/smartcontractkit/quickstarts-lootbox/blob
 
     This is a mandatory step because the contract must store the tokens in its own balance. It is important to ensure the deployer account owns all the tokens you want to distribute as rewards.
 
-1.  Generate a [Merkle tree](https://ethereum.org/en/developers/tutorials/merkle-proofs-for-offline-data-integrity/#introduction) for the allow list.
+1.  Generate a [Merkle tree](https://ethereum.org/en/developers/tutorials/merkle-proofs-for-offline-data-integrity/#introduction) for the allowlist.
 
 1.  Create and fund a VRF subscription if one is not provided.
 
@@ -339,8 +341,8 @@ The main part of this tutorial is in the [`Lootbox.sol` contract](https://github
 - Requests a random value from VRF for each open request
 - Uses the random value as a seed to determine the reward
 - Tracks and validates requests to open the lootbox
-- Transfers reward tokens to the user, for valid requests
-- Tracks how many reward tokens remain in the lootbox
+- Transfers rewards to the user, for valid requests
+- Tracks how many rewards remain in the lootbox
 - Validates user addresses against the allowlist, if in private mode
 
 This section focuses on how VRF is used in the lootbox contract.
