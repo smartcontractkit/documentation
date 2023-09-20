@@ -42,7 +42,7 @@ export const ContentObserver = ({ headings, shouldUpdate }: Props) => {
     })
 
     headings.forEach((h) => {
-      const section = document.body.querySelector(`section#${h.slug}`)
+      const section = document.getElementById(h.slug)
       if (section) {
         sectionsObserver.observe(section)
       }
