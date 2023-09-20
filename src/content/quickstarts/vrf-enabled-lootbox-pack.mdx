@@ -38,9 +38,13 @@ This example contract supports distributing any rewards that adhere to fungible,
 
 ## Before you begin
 
+<Aside type="note" title="New to smart contract development?">
+  If you are new to smart contract development, learn how to [Deploy Your First Smart
+  Contract](/getting-started/deploy-your-first-contract).
+</Aside>
+
 Before you start this tutorial, complete the following items:
 
-- If you are new to smart contract development, learn how to [Deploy Your First Smart Contract](/getting-started/deploy-your-first-contract).
 - Install [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
   - Run `git --version` to check the installation. You should see an output similar to `git version x.x.x`.
 - Install [Nodejs](https://nodejs.org/en/) 16.0.0 or higher
@@ -49,7 +53,7 @@ Before you start this tutorial, complete the following items:
 - [Create an Etherscan API key](https://docs.etherscan.io/getting-started/viewing-api-usage-statistics) if you do not already have one.
 - Create an account with [Infura](https://www.infura.io/) or [Alchemy](https://www.alchemy.com/) to use as an RPC endpoint if you do not already have one. Alternatively, you can [use your own testnet clients](/chainlink-nodes/resources/run-an-ethereum-client).
 
-Your _deployer account_ is the main account that you will use to deploy the lootbox contract, distribute reward tokens, pay for transaction fees, and pay for VRF costs.
+Your _deployer account_ is the main account that you will use to deploy the lootbox contract, distribute reward tokens, pay for transaction fees, and pay for VRF costs. This is also the owner account.
 
 - Ensure the deployer account owns all the tokens you wish to distribute as rewards.
 - To deploy this contract on testnets, ensure the deployer account has testnet LINK and testnet ETH (Sepolia). Use the [LINK faucet](https://faucets.chain.link/) to retrieve 20 testnet LINK and 0.1 Sepolia ETH.
@@ -58,7 +62,7 @@ Your _deployer account_ is the main account that you will use to deploy the loot
   - [Estimate the minimum subscription balance](/vrf/v2/estimating-costs#estimate-minimum-subscription-balance) that VRF requires to process your randomness request. The minimum subscription balance provides a buffer against gas volatility, and only the actual cost of your request will be deducted from your account. If your subscription is underfunded, your VRF request will be [pending](/vrf/v2/subscription/ui#pending) for 24 hours. If that happens, check the [Subscription Manager](https://vrf.chain.link]) to see the additional balance needed.
   - The initial funding amount is set to 10 LINK. Optionally, you can modify the initial funding amount in [`network-config.ts`](https://github.com/smartcontractkit/quickstarts-lootbox/blob/main/network-config.ts).
 
-- [Create a second account in your MetaMask wallet](https://support.metamask.io/hc/en-us/articles/360015289452-How-to-create-an-additional-account-in-your-wallet). This account is called the _receiving account_ in this tutorial. You will use this _receiving account_ to open a test lootbox and receive the reward tokens as a user. [Configure the account](https://support.metamask.io/hc/en-us/articles/360015489031-How-to-display-tokens-in-MetaMask) to display the reward tokens that you want to distribute from the lootbox.
+- [Create a second account in your MetaMask wallet](https://support.metamask.io/hc/en-us/articles/360015289452-How-to-create-an-additional-account-in-your-wallet). This account is called the _receiving account_ in this tutorial, and its address is called the _opener address_. You will use this receiving account to open a test lootbox and receive the reward tokens as a user. [Configure the account](https://support.metamask.io/hc/en-us/articles/360015489031-How-to-display-tokens-in-MetaMask) to display the reward tokens that you want to distribute from the lootbox.
 
 ## Setup the example
 
@@ -68,7 +72,7 @@ This tutorial requires several setup steps:
 1. [Configure the Hardhat project](#configure-the-hardhat-project)
 1. [Set your contract parameters](#set-your-contract-parameters)
 1. [Define the reward tokens](#define-the-reward-tokens)
-1. [Create an allow list for private mints](#create-an-allow-list-for-private-mints)
+1. [Create an allowlist for private mints](#create-an-allowlist-for-private-mints)
 
 ### Clone the example repo and install dependencies
 
@@ -189,7 +193,7 @@ There's an example configuration file in [`scripts/data/tokens.json`](https://gi
 </Fragment>
 </Tabs>
 
-### Create an allow list for private mints
+### Create an allowlist for private mints
 
 The [Merkle tree](https://ethereum.org/en/developers/tutorials/merkle-proofs-for-offline-data-integrity/#introduction) for the [private opening mode](#private-mode) is generated from the address list in the [`scripts/data/whitelist.json`](https://github.com/smartcontractkit/quickstarts-lootbox/blob/main/scripts/data/whitelist.json) file. Edit the file and add all the addresses you want to list.
 
@@ -270,17 +274,39 @@ The [deploy script](https://github.com/smartcontractkit/quickstarts-lootbox/blob
 
 Next, switch accounts and open the lootbox as a user to test the contract.
 
-## Open the lootbox
+## Open the lootbox and claim rewards
 
-Once the contract is deployed and the start timestamp is reached, users can start opening the lootbox. The amount of rewards they receive depends on the amount of units they open by specifying the `amountToOpen` parameter and paying the corresponding fee.
+Once the contract is deployed and the start timestamp is reached, users can start opening the lootbox. The amount of rewards users receive depends on the amount of units they open by specifying the `amountToOpen` parameter and paying the corresponding fee.
+
+1. Switch to your receiving account to act as a test user and copy its address for the next steps.
+
+1. Open the lootbox. In Sepolia Etherscan:
+
+   - Call the `publicOpen()` function if you initialized the contract with an empty allowlist.
+   - Call the `privateOpen()` function if you set up an allowlist. Generate the Merkle proof locally using [merkletreejs](https://github.com/merkletreejs/merkletreejs), and pass in the opener address:
+
+   ```js
+   merkleTree.getHexProof(keccak256(allowlistedUserAddress))
+   ```
+
+   Pass the Merkle proof as input to `privateOpen()` in Sepolia Etherscan.
+
+1. The rewards are ready to claim when the randomness result from VRF is ready. To check this, call the `canClaimRewards` function and pass in the opener address.
+1. When the rewards are ready, call the `claimRewards` function to claim the reward, and pass in the opener address.
+
+## Access control
 
 You can control access to the lootbox with two modes: private and public. Use these modes to determine which users can open the lootbox. The owner account can update this setting after deployment, so you can test the opening functionality privately before making the lootbox available to the public.
 
 ### Private mode
 
-In this mode, the lootbox is only open to addresses on the allow list by calling the `privateOpen` function and providing Merkle proof for the address. To generate it, see [merkletreejs](https://github.com/merkletreejs/merkletreejs).
+In this mode, the lootbox is only open to addresses on the allowlist by calling the `privateOpen` function and providing Merkle proof for the address. You can generate the Merkle proof locally using [merkletreejs](https://github.com/merkletreejs/merkletreejs):
 
-The allow list is set on contract deployment and can be changed by calling the `setWhitelistRoot` function from the owner account. The private mode can be enabled or disabled at any time by calling the `setPrivateOpen` function from the owner account.
+```js
+merkleTree.getHexProof(keccak256(whitelistedUserAddress))
+```
+
+The allowlist is set on contract deployment and can be changed by calling the `setWhitelistRoot` function from the owner account. The private mode can be enabled or disabled at any time by calling the `setPrivateOpen` function from the owner account.
 
 ### Public mode
 
@@ -306,7 +332,7 @@ One address can only have one open request at a time. If you try to open the loo
 
 At any time, the owner can withdraw funds from the collected fees by calling the `withdraw` function. By doing so, the contract balance will be transferred to the owner account.
 
-## Code example
+## Code walkthrough
 
 The main part of this tutorial is in the [`Lootbox.sol` contract](https://github.com/smartcontractkit/quickstarts-lootbox/blob/main/contracts/Lootbox.sol). The Lootbox contract manages the following tasks:
 
