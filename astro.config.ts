@@ -14,7 +14,7 @@ export default defineConfig({
   markdown: {
     drafts: true,
     rehypePlugins: [
-      [rehypeSlug, { prefix: "s_" }],
+      rehypeSlug,
       [
         rehypeAutolinkHeadings,
         {
