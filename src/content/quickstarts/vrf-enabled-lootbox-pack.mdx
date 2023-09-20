@@ -53,16 +53,16 @@ Before you start this tutorial, complete the following items:
 - [Create an Etherscan API key](https://docs.etherscan.io/getting-started/viewing-api-usage-statistics) if you do not already have one.
 - Create an account with [Infura](https://www.infura.io/) or [Alchemy](https://www.alchemy.com/) to use as an RPC endpoint if you do not already have one. Alternatively, you can [use your own testnet clients](/chainlink-nodes/resources/run-an-ethereum-client).
 
-Your _deployer account_ is the main account that you will use to deploy the lootbox contract, distribute reward tokens, pay for transaction fees, and pay for VRF costs. This is also the owner account.
+Your _deployer account_ is the main account that you will use to deploy the lootbox contract, distribute rewards, pay for transaction fees, and pay for VRF costs. This is also the owner account.
 
-- Ensure the deployer account owns all the tokens you wish to distribute as rewards.
+- Ensure the deployer account owns all the assets you wish to distribute as rewards.
 - To deploy this contract on testnets, ensure the deployer account has testnet LINK and testnet ETH (Sepolia). Use the [LINK faucet](https://faucets.chain.link/) to retrieve 20 testnet LINK and 0.1 Sepolia ETH.
 - Ensure the deployer account has enough LINK to fund the [VRF subscription](/vrf/v2/subscription). If you don't already have a VRF subscription, the deployment script will create and fund one for you.
 
   - [Estimate the minimum subscription balance](/vrf/v2/estimating-costs#estimate-minimum-subscription-balance) that VRF requires to process your randomness request. The minimum subscription balance provides a buffer against gas volatility, and only the actual cost of your request will be deducted from your account. If your subscription is underfunded, your VRF request will be [pending](/vrf/v2/subscription/ui#pending) for 24 hours. If that happens, check the [Subscription Manager](https://vrf.chain.link]) to see the additional balance needed.
   - The initial funding amount is set to 10 LINK. Optionally, you can modify the initial funding amount in [`network-config.ts`](https://github.com/smartcontractkit/quickstarts-lootbox/blob/main/network-config.ts).
 
-- [Create a second account in your MetaMask wallet](https://support.metamask.io/hc/en-us/articles/360015289452-How-to-create-an-additional-account-in-your-wallet). This account is called the _receiving account_ in this tutorial, and its address is called the _opener address_. You will use this receiving account to open a test lootbox and receive the reward tokens as a user. [Configure the account](https://support.metamask.io/hc/en-us/articles/360015489031-How-to-display-tokens-in-MetaMask) to display the reward tokens that you want to distribute from the lootbox.
+- [Create a second account in your MetaMask wallet](https://support.metamask.io/hc/en-us/articles/360015289452-How-to-create-an-additional-account-in-your-wallet). This account is called the _receiving account_ in this tutorial, and its address is called the _opener address_. You will use this receiving account to open a test lootbox and receive the rewards as a user. [Configure the account](https://support.metamask.io/hc/en-us/articles/360015489031-How-to-display-tokens-in-MetaMask) to display the rewards that you want to distribute from the lootbox.
 
 ## Setup the example
 
@@ -71,7 +71,7 @@ This tutorial requires several setup steps:
 1. [Clone the example repo and install dependencies](#clone-the-example-repo-and-install-dependencies)
 1. [Configure the Hardhat project](#configure-the-hardhat-project)
 1. [Set your contract parameters](#set-your-contract-parameters)
-1. [Define the reward tokens](#define-the-reward-tokens)
+1. [Define the rewards](#define-the-rewards)
 1. [Create an allowlist for private mints](#create-an-allowlist-for-private-mints)
 
 ### Clone the example repo and install dependencies
@@ -250,9 +250,9 @@ npx hardhat run scripts/deploy.js --network <network>
 
 The [deploy script](https://github.com/smartcontractkit/quickstarts-lootbox/blob/main/scripts/deploy.ts) also completes the following actions:
 
-1.  Approve each token configured in [`scripts/data/tokens.json`](https://github.com/smartcontractkit/quickstarts-lootbox/blob/main/scripts/data/tokens.json) for the deployed contract address.
+1.  Approve each type of reward configured in [`scripts/data/tokens.json`](https://github.com/smartcontractkit/quickstarts-lootbox/blob/main/scripts/data/tokens.json) for the deployed contract address.
 
-    This is a mandatory step because the contract must store the tokens in its own balance. It is important to ensure the deployer account owns all the tokens you want to distribute as rewards.
+    This is a mandatory step because the contract must store the assets in its own balance. It is important to ensure the deployer account owns all the assets you want to distribute as rewards.
 
 1.  Generate a [Merkle tree](https://ethereum.org/en/developers/tutorials/merkle-proofs-for-offline-data-integrity/#introduction) for the allowlist.
 
