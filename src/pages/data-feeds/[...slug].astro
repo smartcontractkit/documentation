@@ -1,6 +1,10 @@
 ---
-import { getCollection } from "astro:content"
-import MainLayout from "~/layouts/MainLayout.astro"
+import { CollectionEntry, getCollection } from "astro:content"
+import DocsLayout from "~/layouts/DocsLayout.astro"
+
+interface Props {
+  entry: CollectionEntry<"data-feeds">
+}
 
 export async function getStaticPaths() {
   const dataFeedsEntries = await getCollection("data-feeds")
@@ -13,6 +17,6 @@ const { entry } = Astro.props
 const { Content, headings } = await entry.render()
 ---
 
-<MainLayout frontmatter={entry.data} headings={headings}>
+<DocsLayout frontmatter={entry.data} {headings}>
   <Content />
-</MainLayout>
+</DocsLayout>

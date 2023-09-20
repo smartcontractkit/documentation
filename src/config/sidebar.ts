@@ -228,7 +228,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
-      section: "EXAMPLES",
+      section: "Examples",
       contents: [
         {
           title: "Automate the Reveal of Batch NFTs",
@@ -578,7 +578,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "vrf/v2/subscription/examples/programmatic-subscription",
         },
         {
-          title: "Test locally using a Mock contract",
+          title: "Test Locally Using a Mock Contract",
           url: "vrf/v2/subscription/examples/test-locally",
         },
         {
@@ -607,7 +607,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "vrf/v2/direct-funding/examples/get-a-random-number",
         },
         {
-          title: "Test locally using a Mock contract",
+          title: "Test Locally Using a Mock Contract",
           url: "vrf/v2/direct-funding/examples/test-locally",
         },
         {

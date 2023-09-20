@@ -11,7 +11,7 @@ export const PriceButton = ({
   value: string
 }) => {
   return (
-    <div style={{ display: "flex" }}>
+    <div style={{ display: "flex", marginTop: "var(--space-2x)" }}>
       <button type="button" onClick={buttonFunction} className={button.secondary}>
         {buttonName}
       </button>
