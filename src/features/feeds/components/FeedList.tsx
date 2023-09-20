@@ -94,7 +94,7 @@ export const FeedList = ({
   const isRates = dataFeedType === "rates"
   const isDeprecating = ecosystem === "deprecating"
   let netCount = 0
-  const id = "network-list"
+  const id = "s_network-list"
 
   return (
     <section id={id}>
@@ -165,7 +165,7 @@ export const FeedList = ({
           return true
         })
         .map((network: ChainNetwork) => {
-          const slug = network.name.toLowerCase().split(" ").join("-")
+          const slug = "s_" + network.name.toLowerCase().split(" ").join("-")
           return (
             <section key={network.name} id={slug}>
               {network.networkType === "mainnet" ? (
