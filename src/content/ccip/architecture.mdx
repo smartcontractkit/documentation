@@ -2,7 +2,11 @@
 section: ccip
 date: Last Modified
 title: "CCIP Architecture and Billing"
-whatsnext: { "CCIP Best Practices": "/ccip/best-practices" }
+whatsnext:
+  {
+    "Learn CCIP best practices": "/ccip/best-practices",
+    "Find the list of supported networks, lanes, and rate limits on the CCIP Supported Networks page": "/ccip/supported-networks",
+  }
 ---
 
 import { Aside, ClickToZoom } from "@components"
@@ -48,7 +52,7 @@ The figure below outlines the different components involved in a cross-chain tra
 - The contracts in dark blue are the CCIP interface ([Router](#router)). To use CCIP, users need only to understand how to interact with the router; they don't need to understand the whole CCIP architecture. **Note**: The CCIP interface is static and remains consistent over time to provide reliability and stability to the users.
 - The contracts in light blue are internal to the CCIP protocol and subject to change.
 
-<ClickToZoom src="/images/ccip/architecture.png" alt="Chainlink CCIP Detailed Architecture" />
+<ClickToZoom src="/images/ccip/ccip-diagram-04_v04.webp" alt="Chainlink CCIP Detailed Architecture" />
 
 ### On-chain components
 
@@ -155,16 +159,20 @@ Execution delays in excess of one hour should be rare as a result of _Smart Exec
 
 ## CCIP rate limits
 
-Chainlink CCIP token transfers benefit from rate limits for additional security. A rate limit has a maximum capacity and a refill rate, which is the speed at which the maximum capacity is restored after a token transfer has consumed some or all of the available capacity. The rate limits are enforced at both the source and destination blockchains for maximum security. If these rate limits are reached, descriptive errors with detailed information are generated and returned to the sender. This enables CCIP users to gracefully handle these errors within their dApps to preserve the end-user experience. A comprehensive list of errors and their descriptions is available on the [errors API reference](/ccip/api-reference/errors#ratelimiter) page.
+Chainlink CCIP token transfers benefit from rate limits for additional security. A rate limit has a maximum capacity and a refill rate, which is the speed at which the maximum capacity is restored after a token transfer has consumed some or all of the available capacity.
+
+You can find the complete list of lanes and their rate limits on the [CCIP Supported Networks](/ccip/supported-networks) page.
+
+The rate limits are enforced at both the source and destination blockchains for maximum security. If these rate limits are reached, descriptive errors with detailed information are generated and returned to the sender. This enables CCIP users to gracefully handle these errors within their dApps to preserve the end-user experience. A comprehensive list of errors and their descriptions is available on the [errors API reference](/ccip/api-reference/errors#ratelimiter) page.
 
 ### Token pool rate limit
 
 For each supported token on each individual [lane](/ccip/concepts#lane), the token pool rate limit manages the total number of tokens that can be transferred within a given time. This limit is independent of the USD value of the token.
 
-For example, the maximum capacity of the LINK token pool on the Ethereum → Optimism lane is 100 LINK, and the refill rate is 1 LINK per second. If 100 LINK is transferred on that lane, the entire capacity would be consumed. After that, if a user wants to send 10 LINK, they must wait at least 10 seconds.
+For example, the maximum capacity of the snxUSD token pool on the [Mainnet Ethereum → Optimism lane](/ccip/supported-networks#optimism-mainnet--ethereum-mainnet-lane) is 100,000 snxUSD. The refill rate is 167 snxUSD per second. If 100,000 snxUSD is transferred on that lane, the entire capacity is consumed. After that, if a user wants to send 1670 snxUSD, they must wait at least 10 seconds as the capacity refills. The maximum throughput for this token on the lane is 100,000 snxUSD every 10 minutes.
 
 ### Aggregate rate limit
 
 Each [lane](/ccip/concepts#lane) also has an aggregate rate limit that limits the overall USD value that can be transferred on that lane across all supported tokens. To improve security, the aggregate rate limit for any given lane is always lower than the sum of all individual token pool rate limits for that lane.
 
-Consider an example where a lane has a maximum capacity of 100,000 USD, a refill rate of 100 USD per second, and several token transfers with a total value of 60,000 USD have been executed. In that example, the available capacity is 40,000 USD. If a user intends to transfer tokens equating to 50,000 USD, they must wait at least 100 seconds.
+Consider an example where a lane has a maximum capacity of 100,000 USD, a refill rate of 167 USD per second, and several token transfers with a total value of 60,000 USD have been executed. In that example, the remaining available capacity is 40,000 USD. If a user intends to transfer tokens equating to 50,000 USD, they must wait at least 60 seconds for capacity to refill the additional 10,000 USD that is required. The maximum throughput in USD value on the lane is 100,000 USD every 10 minutes.

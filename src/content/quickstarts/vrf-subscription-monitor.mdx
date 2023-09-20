@@ -1,0 +1,307 @@
+---
+section: automation
+date: Last Modified
+title: "VRF Subscription Balance Monitor"
+whatsnext:
+  {
+    "Find the list of supported networks for Chainlink Automation": "/chainlink-automation/supported-networks",
+    "Find the list of supported networks for VRF": "/vrf/v2/subscription/supported-networks",
+    "FAQs": "/chainlink-automation/faqs",
+  }
+---
+
+import { Address, Aside, ClickToZoom, CodeSample, CopyText } from "@components"
+
+Automatically top-up your VRF subscription balances using Chainlink Automation to ensure there is sufficient funding for requests. [View the code on GitHub](https://github.com/smartcontractkit/documentation/blob/main/public/samples/Automation/tutorials/VRFSubscriptionBalanceMonitor.sol).
+
+<Aside type="caution" title="Disclaimer">
+  This tutorial represents an example of using a Chainlink product or service and is provided to help you understand how
+  to interact with Chainlink's systems and services so that you can integrate them into your own. This template is
+  provided "AS IS" and "AS AVAILABLE" without warranties of any kind, has not been audited, and may be missing key
+  checks or error handling to make the usage of the product more clear. Do not use the code in this example in a
+  production environment without completing your own audits and application of best practices. Neither Chainlink Labs,
+  the Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs that are generated due
+  to errors in code.
+</Aside>
+
+## Objective
+
+This example shows how to automate the process for funding VRF subscription balances. You will deploy and test a VRF subscription balance manager contract that monitors multiple subscriptions and tops them up with LINK as necessary. You can set up this contract to monitor existing VRF subscriptions. Alternatively, you will create two VRF subscriptions for testing: one that is underfunded, and another that is adequately funded. When you test the subscription balance manager contract, it only tops up the underfunded subscription.
+
+## Before you begin
+
+Before you start this tutorial, complete the following items:
+
+- If you are new to smart contract development, learn how to [Deploy Your First Smart Contract](/getting-started/deploy-your-first-contract).
+- Install and configure a cryptocurrency wallet like [MetaMask](https://metamask.io/).
+- Add testnet funds to your wallet:
+  - Add the gas currency for the chain where your contract is deployed. For this example, use Sepolia. [Get 0.5 Sepolia ETH](https://sepoliafaucet.com/).
+  - Add ERC-677 LINK. You can get 20 Sepolia testnet LINK from [faucets.chain.link](https://faucets.chain.link/).
+- Gather the subscription IDs for any existing VRF subscriptions you would like to monitor. If you do not have any VRF subscriptions, you will create two for demo purposes in this tutorial.
+
+<Aside type="note" title="New to smart contracts?">
+  This tutorial assumes that you know how to create and deploy basic smart contracts. If you are new to smart contract
+  development, deploy a VRF-compatible contract by [following these
+  instructions](/getting-started/intermediates-tutorial) and then return to this tutorial.
+</Aside>
+
+## Setup steps
+
+This tutorial requires you to set up the following components in VRF before you use Automation to monitor VRF subscriptions:
+
+- [Create VRF subscriptions to monitor](#create-vrf-subscriptions-to-monitor), if you don't already have any
+- [Deploy VRF-compatible contracts](#deploy-vrf-compatible-contracts-as-consumers)
+
+If you already have existing VRF subscriptions you would like to monitor, [skip to the next step](#deploy-the-subscription-balance-monitor-contract).
+
+### Create VRF subscriptions to monitor
+
+If you don't already have existing VRF subscriptions you would like to monitor, create two VRF subscriptions for demo purposes. One subscription will be adequately funded, and the other subscription will be underfunded intentionally so that the subscription balance monitor contract can fund it.
+
+1. Open the VRF Subscription Manager, and connect your wallet.
+
+   {/* prettier-ignore */}
+    {" "}
+
+   <div class="remix-callout">
+     <a href="https://vrf.chain.link">Open the Subscription Manager</a>
+   </div>
+
+1. Create two subscriptions:
+
+   - Fund one subscription with 12 testnet LINK to serve as the adequately funded VRF subscription
+   - Fund the other subscription with 1 testnet LINK to serve as the underfunded VRF subscription
+
+### Deploy VRF-compatible contracts as consumers
+
+In this section, you will deploy the same VRF contract twice. Each deployed contract will serve as a consuming contract for one of your VRF subscriptions.
+
+1. Deploy this VRF-compatible contract for your VRF subscription:
+
+   <CodeSample src="/samples/VRF/VRFD20.sol" showButtonOnly />
+
+   This `VRFD20.sol` contract uses VRF to randomly assign you a _Game of Thrones_ house. The VRF coordinator address and key hash values are hardcoded in this contract for Sepolia. If you want to use a different testnet, you must update those values before deploying the contract.
+
+   <Aside type="note">
+     If you are unfamiliar with deploying smart contracts, deploy a VRF-compatible contract by following the [VRF
+     Getting Started](/vrf/v2/getting-started) guide. Then return to this tutorial.
+   </Aside>
+
+1. Under the _Solidity compiler_ tab, compile the contract.
+
+1. Under the _Deploy and run transactions_ tab, select _Injected Provider - MetaMask_ for the **Environment** field. Make sure the `VRFD20.sol` contract is selected in the **Contract** field.
+
+1. Deploy the contract, passing in the subscription ID of your adequately funded subscription.
+
+1. After the contract is deployed successfully, copy the contract address from Remix. Navigate back to the VRF Subscription Manager and add the contract address as a consumer for your adequately funded subscription.
+
+1. Navigate back to Remix to deploy the contract once more. Change the subscription ID to the subscription ID of your intentionally underfunded subscription, and click **Deploy**.
+
+1. Once more, after the contract is deployed successfully, copy the second contract address from Remix. Navigate back to the VRF Subscription Manager and add this second contract address as a consumer for your intentionally underfunded subscription.
+
+## Deploy the subscription balance monitor contract
+
+In this section, you will deploy the subscription balance monitor contract, using the same address that is the admin owner for both of your VRF subscriptions. The contract will monitor any VRF subscriptions owned by this address, and fund any underfunded subscriptions using funds owned by this address.
+
+#### Get required inputs for the balance monitor contract
+
+The constructor for this contract requires the following information for the supported network that you want to deploy on:
+
+- The LINK token address, which is found on the [LINK token contracts](/resources/link-token-contracts) page.
+- The Automation registry address, which is found on the [Automation supported networks](/chainlink-automation/supported-networks/) page.
+- The VRF coordinator address, which is found on the [VRF Subscription Supported Networks](/vrf/v2/subscription/supported-networks) page.
+- Minimum wait period, which you can use to add buffer time between funding multiple subscription IDs. For demo purposes, you will monitor only two VRF subscriptions, so you can set this value to `60` seconds.
+
+For Sepolia, these values are all consolidated here:
+
+| Item                        | Value                                                                                                                                                                                           |
+| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| LINK token address          | <Address contractUrl="https://sepolia.etherscan.io/token/0x779877A7B0D9E8603169DdbD7836e478b4624789" urlId="11155111_0x779877A7B0D9E8603169DdbD7836e478b4624789" urlClass="erc-token-address"/> |
+| VRF Coordinator             | <Address contractUrl="https://sepolia.etherscan.io/address/0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625" />                                                                                       |
+| Automation registry address | <Address contractUrl="https://sepolia.etherscan.io/address/0xE16Df59B887e3Caa439E0b29B42bA2e7976FD8b2" />                                                                                       |
+
+1. Open the `VRFSubscriptionBalanceMonitor.sol` contract in Remix.
+
+   <CodeSample src="/samples/Automation/tutorials/VRFSubscriptionBalanceMonitor.sol" showButtonOnly />
+
+1. Under the _Solidity compiler_ tab, compile the contract.
+
+1. Under the _Deploy and run transactions_ tab, select _Injected Provider - MetaMask_ for the **Environment** field.
+
+1. Expand the **Deploy** field and enter the values for Sepolia:
+
+   | Item                    | Value                                                              |
+   | ----------------------- | ------------------------------------------------------------------ |
+   | `LINKTOKENADDRESS`      | <CopyText text="0x779877A7B0D9E8603169DdbD7836e478b4624789" code/> |
+   | `COORDINATORADDRESS`    | <CopyText text="0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625" code/> |
+   | `KEEPERREGISTRYADDRESS` | <CopyText text="0xE16Df59B887e3Caa439E0b29B42bA2e7976FD8b2" code/> |
+   | `MINWAITPERIODSECONDS`  | <CopyText text="60" code/>                                         |
+
+1. Click **Deploy**. MetaMask opens and prompts you to confirm the contract deployment transaction.
+
+1. Copy the address of your newly deployed contract. You can find this in Sepolia Etherscan through the contract deployment transaction, or in Remix in the **Deployed Contracts** section.
+
+## Register the subscription balance monitor contract on Automation
+
+In this section, you will register an upkeep on Chainlink Automation to run the subscription balance monitor contract. This enables Automation to check whether you have any underfunded VRF subscriptions, and if so, top up their balances appropriately.
+
+### Register an upkeep
+
+Registering an upkeep on Chainlink Automation creates a smart contract that will run your VRF subscription balance monitor contract.
+
+{/* prettier-ignore */}
+{" "}
+
+<div class="remix-callout">
+  <a href="https://automation.chain.link">Open the Chainlink Automation App</a>
+</div>
+
+1. Click **Register new Upkeep**.
+
+1. Select the _Custom logic_ trigger.
+
+1. Input the address of your deployed subscription balance monitor contract.
+
+1. Get the ABI from Remix.
+
+1. Enter the values for the constructor.
+
+   | Item                    | Value                                                              |
+   | ----------------------- | ------------------------------------------------------------------ |
+   | `LINKTOKENADDRESS`      | <CopyText text="0x779877A7B0D9E8603169DdbD7836e478b4624789" code/> |
+   | `COORDINATORADDRESS`    | <CopyText text="0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625" code/> |
+   | `KEEPERREGISTRYADDRESS` | <CopyText text="0xE16Df59B887e3Caa439E0b29B42bA2e7976FD8b2" code/> |
+   | `MINWAITPERIODSECONDS`  | <CopyText text="60" code/>                                         |
+
+1. Fund the upkeep with enough LINK to monitor your VRF subscriptions.
+
+## Examine the code
+
+This section explains how the `VRFSubscriptionBalanceMonitor.sol` contract [tracks your VRF subscriptions](#tracking-subscriptions) and [uses Chainlink Automation](#using-automation) to fund your underfunded subscriptions. You can [view the code for the full contract on GitHub](https://github.com/smartcontractkit/documentation/blob/main/public/samples/Automation/tutorials/VRFSubscriptionBalanceMonitor.sol).
+
+### Tracking subscriptions
+
+The `VRFSubscriptionBalanceMonitor.sol` contract tracks your VRF subscriptions by creating a watchlist and storing attributes of each subscription required to monitor when they need funding.
+
+The `setWatchList()` function creates the watchlist of subscriptions, validates it, and then sets a `Target` for each subscription. The `Target` struct helps track whether a subscription is active, its minimum balance, when it was last funded, and the amount of LINK (in juels) to send to the subscription each time it is topped up.
+
+```solidity
+struct Target {
+    bool isActive;
+    uint96 minBalanceJuels;
+    uint96 topUpAmountJuels;
+    uint56 lastTopUpTimestamp;
+  }
+
+...
+
+/**
+   * @notice Sets the list of subscriptions to watch and their funding parameters.
+   * @param subscriptionIds the list of subscription ids to watch
+   * @param minBalancesJuels the minimum balances for each subscription
+   * @param topUpAmountsJuels the amount to top up each subscription
+   */
+  function setWatchList(
+    uint64[] calldata subscriptionIds,
+    uint96[] calldata minBalancesJuels,
+    uint96[] calldata topUpAmountsJuels
+  ) external onlyOwner {
+    if (subscriptionIds.length != minBalancesJuels.length || subscriptionIds.length != topUpAmountsJuels.length) {
+      revert InvalidWatchList();
+    }
+    uint64[] memory oldWatchList = s_watchList;
+    for (uint256 idx = 0; idx < oldWatchList.length; idx++) {
+      s_targets[oldWatchList[idx]].isActive = false;
+    }
+    for (uint256 idx = 0; idx < subscriptionIds.length; idx++) {
+      if (s_targets[subscriptionIds[idx]].isActive) {
+        revert DuplicateSubcriptionId(subscriptionIds[idx]);
+      }
+      if (subscriptionIds[idx] == 0) {
+        revert InvalidWatchList();
+      }
+      if (topUpAmountsJuels[idx] <= minBalancesJuels[idx]) {
+        revert InvalidWatchList();
+      }
+      s_targets[subscriptionIds[idx]] = Target({
+        isActive: true,
+        minBalanceJuels: minBalancesJuels[idx],
+        topUpAmountJuels: topUpAmountsJuels[idx],
+        lastTopUpTimestamp: 0
+      });
+    }
+    s_watchList = subscriptionIds;
+  }
+
+```
+
+The `getUnderfundedSubscriptions()` function assesses each subscription in the watchlist and creates a list of subscriptions that need to be funded. Using the attributes stored in the `Target` struct for each subscription, this function adds a subscription to the `needsFunding` list if the following conditions are met:
+
+- The subscription is underfunded
+- The owning contract has a sufficient balance to fund the subscription
+- It's been long enough since the last time the subscription's balance was topped up
+
+```solidity
+/**
+ * @notice Gets a list of subscriptions that are underfunded.
+ * @return list of subscriptions that are underfunded
+ */
+function getUnderfundedSubscriptions() public view returns (uint64[] memory) {
+  uint64[] memory watchList = s_watchList;
+  uint64[] memory needsFunding = new uint64[](watchList.length);
+  uint256 count = 0;
+  uint256 minWaitPeriod = s_minWaitPeriodSeconds;
+  uint256 contractBalance = LINKTOKEN.balanceOf(address(this));
+  Target memory target;
+  for (uint256 idx = 0; idx < watchList.length; idx++) {
+    target = s_targets[watchList[idx]];
+    (uint96 subscriptionBalance, , , ) = COORDINATOR.getSubscription(watchList[idx]);
+    if (
+      target.lastTopUpTimestamp + minWaitPeriod <= block.timestamp &&
+      contractBalance >= target.topUpAmountJuels &&
+      subscriptionBalance < target.minBalanceJuels
+    ) {
+      needsFunding[count] = watchList[idx];
+      count++;
+      contractBalance -= target.topUpAmountJuels;
+    }
+  }
+  if (count < watchList.length) {
+    assembly {
+      mstore(needsFunding, count)
+    }
+  }
+  return needsFunding;
+}
+```
+
+### Using Automation
+
+The `VRFSubscriptionBalanceMonitor.sol` contract uses Chainlink Automation to top up underfunded subscriptions:
+
+- In `checkUpkeep()`, it pulls the list of underfunded subscriptions. If this list is empty, it indicates that the upkeep is not needed, and Automation takes no further action.
+- Automation only runs `performUpkeep()` if there are underfunded subscriptions, and it tops up any subscriptions that need funding.
+
+```solidity
+/**
+ * @notice Gets list of subscription ids that are underfunded and returns a keeper-compatible payload.
+ * @return upkeepNeeded signals if upkeep is needed, performData is an abi encoded list of subscription ids that need funds
+ */
+function checkUpkeep(
+  bytes calldata
+) external view override whenNotPaused returns (bool upkeepNeeded, bytes memory performData) {
+  uint64[] memory needsFunding = getUnderfundedSubscriptions();
+  upkeepNeeded = needsFunding.length > 0;
+  performData = abi.encode(needsFunding);
+  return (upkeepNeeded, performData);
+}
+
+/**
+ * @notice Called by the keeper to send funds to underfunded addresses.
+ * @param performData the abi encoded list of addresses to fund
+ */
+function performUpkeep(bytes calldata performData) external override onlyKeeperRegistry whenNotPaused {
+  uint64[] memory needsFunding = abi.decode(performData, (uint64[]));
+  topUp(needsFunding);
+}
+```
