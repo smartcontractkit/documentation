@@ -630,7 +630,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "EXAMPLES",
       contents: [
         {
-          title: "Lootbox - Use VRF to create random rewards",
+          title: "LootBox/Pack Contract",
           url: "quickstarts/vrf-enabled-lootbox-pack",
         },
       ],
