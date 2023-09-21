@@ -80,9 +80,8 @@ Below are comments on some environment variables:
 - `PRIVATE_KEY` - private key of an account used for deployment and interaction with smart contracts. Once Anvil is started, a set of private keys for local usage is provided. Use one of these for local development
 - `ROOT` - root directory of the Chainlink node
 - `CHAINLINK_CONTAINER_NAME` - Chainlink node container name for the possibility of automating communication with it
-- `COMPOSE_PROJECT_NAME` - Docker network project name for the possibility of automating communication with it, more on it: https://docs.docker.com/compose/environment-variables/envvars/#compose_project_name
-
-If environment variables related to a Chainlink node, including a Link Token contract address, were changed during your work you should run the `make fct-run-nodes` command in order for them to be applied.
+- `COMPOSE_PROJECT_NAME` - Docker network project name for the possibility of automating communication with it. See the [Docker Documentation](https://docs.docker.com/compose/environment-variables/envvars/#compose_project_name) to learn more.
+  If environment variables related to a Chainlink node, including a Link Token contract address, were changed during your work you should run the `make fct-run-nodes` command in order for them to be applied.
 
 ## Configure your project
 
@@ -144,14 +143,6 @@ Once Chainlink cluster is launched, a Chainlink nodes' Operator GUI will be avai
 
 For authorization, you must use the credentials specified in the [chainlink_api_credentials](https://github.com/smartcontractkit/foundry-chainlink-toolkit/blob/main/https://github.com/smartcontractkit/foundry-chainlink-toolkit/tree/main/chainlink/settings/chainlink_api_credentials).
 
-You can also initialize the test environment manually by following these steps:
-
-1. [Deploy Link Token contract](https://github.com/smartcontractkit/foundry-chainlink-toolkit/blob/main/DOCUMENTATION.md#deploy-link-token-contract)
-1. Set `LINK_TOKEN_CONTRACT` in `.env`
-1. [Spin up a Chainlink nodes cluster](https://github.com/smartcontractkit/foundry-chainlink-toolkit/blob/main/DOCUMENTATION.md#spin-up-a-chainlink-cluster)
-1. [Fund Chainlink nodes with ETH](https://github.com/smartcontractkit/foundry-chainlink-toolkit/blob/main/DOCUMENTATION.md#transfer-eth-to-chainlink-nodes)
-1. [Fund Chainlink nodes with Link tokens](https://github.com/smartcontractkit/foundry-chainlink-toolkit/blob/main/DOCUMENTATION.md#transfer-link-tokens-to-chainlink-nodes)
-
 ### Set up Chainlink Jobs
 
 ```
@@ -160,7 +151,7 @@ make fct-setup-job
 
 [This command](https://github.com/smartcontractkit/foundry-chainlink-toolkit/blob/main/DOCUMENTATION.md#set-up-a-chainlink-job) displays a list of available Chainlink jobs and sets up the selected one.
 
-You can also set up a Chainlink job by calling the respective command.
+You can also set up a Chainlink job by calling the respective command. Manual set up of a Chainlink Job is recommended when using a custom Consumer or Aggregator contract, or when a different job configuration is desired. You can create a custom TOML file and use it to create a Chainlink Job instance through the Operator GUI or develop a custom script using the existing scripts provided by this toolkit. Manual setup steps are documented [repository](https://github.com/smartcontractkit/foundry-chainlink-toolkit/blob/main/README.md#set-up-chainlink-jobs) for each job type.
 
 #### Direct Request Job
 
@@ -170,15 +161,6 @@ make fct-setup-direct-request-job
 
 [This command](https://github.com/smartcontractkit/foundry-chainlink-toolkit/blob/main/DOCUMENTATION.md#set-up-direct-request-job) automatically sets up a Direct Request job.
 
-You can also set up a Direct Request job manually by following these steps:
-
-1. [Deploy Oracle contract](https://github.com/smartcontractkit/foundry-chainlink-toolkit/blob/main/DOCUMENTATION.md#deploy-oracle-contract)
-1. [Deploy Consumer contract](https://github.com/smartcontractkit/foundry-chainlink-toolkit/blob/main/DOCUMENTATION.md#deploy-consumer-contract)
-1. [Fund Consumer contract with Link tokens](https://github.com/smartcontractkit/foundry-chainlink-toolkit/blob/main/DOCUMENTATION.md#transfer-link-tokens)
-1. [Create Direct Request Job](https://github.com/smartcontractkit/foundry-chainlink-toolkit/blob/main/DOCUMENTATION.md#create-chainlink-direct-request-job)
-1. [Request ETH price with Consumer contract, a corresponding job will be launched](https://github.com/smartcontractkit/foundry-chainlink-toolkit/blob/main/DOCUMENTATION.md#request-eth-price)
-1. [Get ETH price after completing a job](https://github.com/smartcontractkit/foundry-chainlink-toolkit/blob/main/DOCUMENTATION.md#get-eth-price)
-
 #### Cron Job
 
 ```
@@ -186,12 +168,6 @@ make fct-setup-cron-job
 ```
 
 [This command](https://github.com/smartcontractkit/foundry-chainlink-toolkit/blob/main/DOCUMENTATION.md#set-up-cron-job) automatically sets up a Cron job.
-
-You can also set up a Cron job manually by following these steps:
-
-1. [Deploy Cron Consumer contract](https://github.com/smartcontractkit/foundry-chainlink-toolkit/blob/main/DOCUMENTATION.md#deploy-cron-consumer-contract)
-1. [Create Cron Job](https://github.com/smartcontractkit/foundry-chainlink-toolkit/blob/main/DOCUMENTATION.md#create-chainlink-cron-job)
-1. [Get ETH price after completing a job](https://github.com/smartcontractkit/foundry-chainlink-toolkit/blob/main/DOCUMENTATION.md#get-eth-price--cron-)
 
 #### Webhook Job
 
@@ -201,11 +177,6 @@ make fct-setup-webhook-job
 
 [This command](https://github.com/smartcontractkit/foundry-chainlink-toolkit/blob/main/DOCUMENTATION.md#set-up-webhook-job) automatically sets up a Webhook job.
 
-You can also set up a Webhook job manually by following these steps:
-
-1. [Create Webhook Job](https://github.com/smartcontractkit/foundry-chainlink-toolkit/blob/main/DOCUMENTATION.md#create-chainlink-webhook-job)
-1. [Run Webhook Job](https://github.com/smartcontractkit/foundry-chainlink-toolkit/blob/main/DOCUMENTATION.md#run-chainlink-webhook-job)
-
 #### Keeper Job
 
 ```
@@ -214,33 +185,6 @@ make fct-setup-keeper-job
 
 [This command](https://github.com/smartcontractkit/foundry-chainlink-toolkit/blob/main/DOCUMENTATION.md#set-up-keeper-job) automatically sets up a Keeper job.
 
-You can also set up a Keeper job manually by following these steps:
-
-1. [Deploy Keeper Consumer contract](https://github.com/smartcontractkit/foundry-chainlink-toolkit/blob/main/DOCUMENTATION.md#deploy-keeper-consumer-contract)
-1. [Deploy Registry contract](https://github.com/smartcontractkit/foundry-chainlink-toolkit/blob/main/DOCUMENTATION.md#deploy-keeper-registry-contract)
-1. [Create Keeper Jobs for Chainlink nodes in a cluster](https://github.com/smartcontractkit/foundry-chainlink-toolkit/blob/main/DOCUMENTATION.md#create-chainlink-keeper-jobs)
-1. [Register Chainlink nodes as keepers in a Registry contract](https://github.com/smartcontractkit/foundry-chainlink-toolkit/blob/main/DOCUMENTATION.md#set-keepers)
-1. [Register Keeper Consumer as upkeep in a Registry contract](https://github.com/smartcontractkit/foundry-chainlink-toolkit/blob/main/DOCUMENTATION.md#register-keeper-consumer)
-1. [Fund the latest upkeep in a Registry contract](https://github.com/smartcontractkit/foundry-chainlink-toolkit/blob/main/DOCUMENTATION.md#fund-latest-upkeep)
-1. [Get value of `counter` variable in a Keeper contract](https://github.com/smartcontractkit/foundry-chainlink-toolkit/blob/main/DOCUMENTATION.md#get-keeper-counter)
-
-#### Flux Job
-
-```
-make fct-setup-flux-job
-```
-
-[This command](https://github.com/smartcontractkit/foundry-chainlink-toolkit/blob/main/DOCUMENTATION.md#set-up-flux-job) automatically sets up a Flux job.
-
-You can also set up a Flux job manually by following these steps:
-
-1. [Deploy Flux Aggregator contract](https://github.com/smartcontractkit/foundry-chainlink-toolkit/blob/main/DOCUMENTATION.md#deploy-flux-aggregator-contract)
-1. [Fund Flux Aggregator contract with Link tokens](https://github.com/smartcontractkit/foundry-chainlink-toolkit/blob/main/DOCUMENTATION.md#transfer-link-tokens)
-1. [Update Flux Aggregator available funds](https://github.com/smartcontractkit/foundry-chainlink-toolkit/blob/main/DOCUMENTATION.md#update-available-funds)
-1. [Set Flux Aggregator oracles](https://github.com/smartcontractkit/foundry-chainlink-toolkit/blob/main/DOCUMENTATION.md#set-oracles)
-1. [Create Flux Jobs for the first 3 Chainlink nodes in a cluster](https://github.com/smartcontractkit/foundry-chainlink-toolkit/blob/main/DOCUMENTATION.md#create-chainlink-flux-jobs)
-1. [Get the answer of the latest Flux round from the Flux Aggregator contract](https://github.com/smartcontractkit/foundry-chainlink-toolkit/blob/main/DOCUMENTATION.md#get-flux-latest-answer)
-
 #### OCR Job
 
 ```
@@ -248,18 +192,6 @@ make fct-setup-ocr-job
 ```
 
 [This command](https://github.com/smartcontractkit/foundry-chainlink-toolkit/blob/main/DOCUMENTATION.md#set-up-flux-job) automatically sets up an OCR job.
-
-You can also set up a OCR job manually by following these steps:
-
-1. [Deploy Offchain Aggregator contract](https://github.com/smartcontractkit/foundry-chainlink-toolkit/blob/main/DOCUMENTATION.md#deploy-offchain-aggregator-contract)
-1. [Set Offchain Aggregator payees](https://github.com/smartcontractkit/foundry-chainlink-toolkit/blob/main/DOCUMENTATION.md#set-payees)
-1. [Set Offchain Aggregator config](https://github.com/smartcontractkit/foundry-chainlink-toolkit/blob/main/DOCUMENTATION.md#set-config)
-1. [Create OCR Job for a bootstrap Chainlink node (first in a cluster)](https://github.com/smartcontractkit/foundry-chainlink-toolkit/blob/main/DOCUMENTATION.md#create-chainlink-ocr--bootstrap--job)
-1. [Create OCR Jobs for Chainlink nodes in a cluster except the first one (bootstrap)](https://github.com/smartcontractkit/foundry-chainlink-toolkit/blob/main/DOCUMENTATION.md#create-chainlink-ocr-jobs)
-1. [Request new OCR round in the Offchain Aggregator contract (optional)](https://github.com/smartcontractkit/foundry-chainlink-toolkit/blob/main/DOCUMENTATION.md#request-new-round)
-1. [Get the answer of the latest OCR round from the Offchain Aggregator contract](https://github.com/smartcontractkit/foundry-chainlink-toolkit/blob/main/DOCUMENTATION.md#get-ocr-latest-answer)
-
-Manual set up of a Chainlink Job is recommended when utilizing a custom Consumer or Aggregator contract, or when a different job configuration is desired. You can create a custom TOML file and use it to create a Chainlink Job instance through the Operator GUI or develop a custom script using the existing scripts provided by this toolkit.
 
 ## Project Structure
 
