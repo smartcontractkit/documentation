@@ -972,6 +972,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "Best Practices for Nodes on AWS",
           url: "chainlink-nodes/resources/best-practices-aws",
         },
+        {
+          title: "Run nodes using the Foundry Chainlink Toolkit",
+          url: "quickstarts/foundry-chainlink-toolkit",
+        },
         { title: "Miscellaneous", url: "chainlink-nodes/resources/miscellaneous" },
       ],
     },
