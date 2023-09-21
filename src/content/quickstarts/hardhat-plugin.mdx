@@ -5,7 +5,7 @@ title: "Using the Hardhat Chainlink Plugin"
 ---
 
 import { Aside } from "@components"
-import { Tabs, TabsContent } from "@components/Tabs"
+import { Tabs } from "@components/Tabs"
 
 The [Hardhat Chainlink Plugin](https://github.com/smartcontractkit/hardhat-chainlink) offers a convenient way to integrate Chainlink functionality into your web3 development workflow by seamlessly interacting with Chainlink services within your Hardhat-based projects. Currently, the plugin supports Data Feeds, VRF, and Automation. It also provides a sandbox environment for running a local Chainlink node.
 
@@ -40,7 +40,7 @@ This tutorial shows you how to install and use the Hardhat Chainlink plugin.
 You can install the Hardhat Chainlink plugin using either npm or yarn.
 Choose the package manager that you prefer and run one of the following commands:
 
-<Tabs sharedStore="pkgManager" client:visible>
+<Tabs client:visible>
   <Fragment slot="tab.1">npm</Fragment>
   <Fragment slot="tab.2">yarn</Fragment>
   <Fragment slot="panel.1">```console npm install @chainlink/hardhat-chainlink ```</Fragment>
@@ -49,7 +49,7 @@ Choose the package manager that you prefer and run one of the following commands
 
 After installation, add the plugin to your Hardhat config:
 
-<Tabs sharedStore="language" client:visible>
+<Tabs client:visible>
   <Fragment slot="tab.1">JavaScript</Fragment>
   <Fragment slot="tab.2">TypeScript</Fragment>
   <Fragment slot="panel.1">In `hardhat.config.js`: ```js require("@chainlink/hardhat-chainlink"); ```</Fragment>
@@ -200,12 +200,13 @@ For a more in-depth understanding of the structure of these records, please expl
 
 You can access the plugin registries using one of the following methods:
 
-<TabsContent sharedStore="pluginMethod" client:visible>
+<Tabs client:visible>
 <Fragment slot="tab.1">CLI</Fragment>
 <Fragment slot="tab.2">Directly calling methods</Fragment>
 <Fragment slot="panel.1">
 To interact with the registries through the CLI, use the following command:
-```
+
+```shell
 npx hardhat chainlink:registries [method]
 ```
 
@@ -214,7 +215,7 @@ The CLI will inquire about the necessary additional information, such as the pre
 
 To get a list of all available getter-method for a specific registry, you can use:
 
-```
+```shell
 npx hardhat chainlink:registries:subtasks
 ```
 
@@ -230,11 +231,12 @@ npx hardhat chainlink:registries getDataFeed
 </Fragment>
 <Fragment slot="panel.2">
 Access the registries as methods directly in the Hardhat Environment:
-```
+
+```shell
 const registry = hre.chainlink.registries.{registryName};
 ```
 
-Replace {registryName} with the name of the registry (e.g., dataFeeds, feedRegistries, keeperRegistries).
+Replace `{registryName}` with the name of the registry. For example, `dataFeeds`, `feedRegistries`, or `keeperRegistries`.
 
 Example of getting data from registry in the Hardhat Environment:
 
@@ -247,4 +249,4 @@ async function myFunction() {
 ```
 
 </Fragment>
-</TabsContent>
+</Tabs>
