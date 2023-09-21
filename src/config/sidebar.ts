@@ -148,7 +148,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           children: [
             {
               title: "Deploy Your First Smart Contract",
-              url: "getting-started/deploy-your-first-contract?parent=dataFeeds",
+              url: "quickstarts/deploy-your-first-contract?parent=dataFeeds",
             },
           ],
         },
@@ -317,7 +317,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           children: [
             {
               title: "Deploy Your First Smart Contract",
-              url: "getting-started/deploy-your-first-contract?parent=automation",
+              url: "quickstarts/deploy-your-first-contract?parent=automation",
             },
           ],
         },
@@ -491,7 +491,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           children: [
             {
               title: "Deploy Your First Smart Contract",
-              url: "getting-started/deploy-your-first-contract?parent=chainlinkFunctions",
+              url: "quickstarts/deploy-your-first-contract?parent=chainlinkFunctions",
             },
           ],
         },
@@ -660,7 +660,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           children: [
             {
               title: "Deploy Your First Smart Contract",
-              url: "getting-started/deploy-your-first-contract?parent=vrf",
+              url: "quickstarts/deploy-your-first-contract?parent=vrf",
             },
           ],
         },
@@ -830,7 +830,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           children: [
             {
               title: "Deploy Your First Smart Contract",
-              url: "getting-started/deploy-your-first-contract?parent=ccip",
+              url: "quickstarts/deploy-your-first-contract?parent=ccip",
             },
           ],
         },
@@ -1137,7 +1137,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           children: [
             {
               title: "Deploy Your First Smart Contract",
-              url: "getting-started/deploy-your-first-contract",
+              url: "quickstarts/deploy-your-first-contract",
             },
           ],
         },
