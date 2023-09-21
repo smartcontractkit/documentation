@@ -233,8 +233,8 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "EXAMPLES",
       contents: [
         {
-          title: "Automate the Reveal of Batch NFTs",
-          url: "chainlink-automation/tutorials/batch-nft",
+          title: "Automate the Reveal of Collections",
+          url: "quickstarts/batch-reveal",
         },
         {
           title: "Create a time-based upkeep",
@@ -623,6 +623,15 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Migrating from VRF v1",
           url: "vrf/v2/direct-funding/migration-from-v1",
+        },
+      ],
+    },
+    {
+      section: "EXAMPLES",
+      contents: [
+        {
+          title: "LootBox/Pack Contract",
+          url: "quickstarts/vrf-enabled-lootbox-pack",
         },
       ],
     },

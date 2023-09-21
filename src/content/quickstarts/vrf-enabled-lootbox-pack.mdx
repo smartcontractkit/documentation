@@ -1,0 +1,354 @@
+---
+section: vrf
+title: "VRF-Enabled LootBox/Pack Contract"
+whatsnext:
+  {
+    "Review VRF best practices": "/vrf/v2/best-practices",
+    "Learn how to test VRF dApps locally using a mock contract": "/vrf/v2/direct-funding/examples/test-locally",
+    "Learn how to estimate VRF costs": "/vrf/v2/estimating-costs",
+    "See the list of supported networks for VRF": "/vrf/v2/direct-funding/supported-networks",
+  }
+---
+
+import { Aside, CodeSample } from "@components"
+import { Tabs } from "@components/Tabs"
+
+The lootbox utility contract uses Chainlink VRF to determine a random reward that you can distribute as a [Loot Box](https://en.wikipedia.org/wiki/Loot_box) to users. This allows you to issue rewards fairly and transparently using verified randomness that the recipients can verify on-chain.
+
+{/* prettier-ignore */}
+<div class="remix-callout">
+  <a href="https://github.com/smartcontractkit/quickstarts-lootbox">See the code on GitHub</a>
+</div>
+
+## Objective
+
+This tutorial demonstrates how to create a reward distribution dApp to distribute in-game rewards to players. In this tutorial, you will use example code from the [smartcontractkit/quickstarts-lootbox](https://github.com/smartcontractkit/quickstarts-lootbox) repository. You will configure the example to work on a testnet of your choice, use an RPC endpoint of your choice, and distribute in-game rewards to players by using a lootbox contract. This example uses the [HardHat](https://hardhat.org/) framework to help you complete the testing and deployment steps.
+
+This example contract supports distributing any rewards that adhere to fungible, non-fungible, and other configuration standards. For example, you can create a set of in-game rewards, transfer them to the lootbox contract when you deploy it, and then the lootbox contract manages in-game reward distributions.
+
+<Aside type="caution" title="Disclaimer">
+  This tutorial represents an example of using a Chainlink product or service and is provided to help you understand how
+  to interact with Chainlink's systems and services so that you can integrate them into your own. This template is
+  provided "AS IS" and "AS AVAILABLE" without warranties of any kind, has not been audited, and may be missing key
+  checks or error handling to make the usage of the product more clear. Do not use the code in this example in a
+  production environment without completing your own audits and application of best practices. Neither Chainlink Labs,
+  the Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs that are generated due
+  to errors in code.
+</Aside>
+
+## Before you begin
+
+<Aside type="note" title="New to smart contract development?">
+  If you are new to smart contract development, learn how to [Deploy Your First Smart
+  Contract](/getting-started/deploy-your-first-contract).
+</Aside>
+
+Before you start this tutorial, complete the following items:
+
+- Install [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
+  - Run `git --version` to check the installation. You should see an output similar to `git version x.x.x`.
+- Install [Nodejs](https://nodejs.org/en/) 16.0.0 or higher
+  - Run `node --version` to check the installation. You should see an output similar to `v16.x.x`.
+  - Optionally, you can also [Install Yarn](https://classic.yarnpkg.com/lang/en/docs/install/) and use it to run this example instead of using `npm`.
+- [Create an Etherscan API key](https://docs.etherscan.io/getting-started/viewing-api-usage-statistics) if you do not already have one.
+- Create an account with [Infura](https://www.infura.io/) or [Alchemy](https://www.alchemy.com/) to use as an RPC endpoint if you do not already have one. Alternatively, you can [use your own testnet clients](/chainlink-nodes/resources/run-an-ethereum-client).
+
+Your _deployer account_ is the main account that you will use to deploy the lootbox contract, distribute rewards, pay for transaction fees, and pay for VRF costs. This is also the owner account.
+
+- Ensure the deployer account owns all the assets you wish to distribute as rewards.
+- To deploy this contract on testnets, ensure the deployer account has testnet LINK and testnet ETH (Sepolia). Use the [LINK faucet](https://faucets.chain.link/) to retrieve 20 testnet LINK and 0.1 Sepolia ETH.
+- Ensure the deployer account has enough LINK to fund the [VRF subscription](/vrf/v2/subscription). If you don't already have a VRF subscription, the deployment script will create and fund one for you.
+
+  - [Estimate the minimum subscription balance](/vrf/v2/estimating-costs#estimate-minimum-subscription-balance) that VRF requires to process your randomness request. The minimum subscription balance provides a buffer against gas volatility, and only the actual cost of your request will be deducted from your account. If your subscription is underfunded, your VRF request will be [pending](/vrf/v2/subscription/ui#pending) for 24 hours. If that happens, check the [Subscription Manager](https://vrf.chain.link]) to see the additional balance needed.
+  - The initial funding amount is set to 10 LINK. Optionally, you can modify the initial funding amount in [`network-config.ts`](https://github.com/smartcontractkit/quickstarts-lootbox/blob/main/network-config.ts).
+
+- [Create a second account in your MetaMask wallet](https://support.metamask.io/hc/en-us/articles/360015289452-How-to-create-an-additional-account-in-your-wallet). This account is called the _receiving account_ in this tutorial, and its address is called the _opener address_. You will use this receiving account to open a test lootbox and receive the rewards as a user. [Configure the account](https://support.metamask.io/hc/en-us/articles/360015489031-How-to-display-tokens-in-MetaMask) to display the rewards that you want to distribute from the lootbox.
+
+## Setup the example
+
+This tutorial requires several setup steps:
+
+1. [Clone the example repo and install dependencies](#clone-the-example-repo-and-install-dependencies)
+1. [Configure the Hardhat project](#configure-the-hardhat-project)
+1. [Set your contract parameters](#set-your-contract-parameters)
+1. [Define the rewards](#define-the-rewards)
+1. [Create an allowlist for private mints](#create-an-allowlist-for-private-mints)
+
+### Clone the example repo and install dependencies
+
+Clone the repo and install all dependencies.
+
+{/* prettier-ignore */}
+<Tabs client:visible>
+<Fragment slot="tab.1">npm</Fragment>
+<Fragment slot="tab.2">yarn</Fragment>
+<Fragment slot="panel.1">
+```bash
+git clone git@github.com:smartcontractkit/quickstarts-lootbox.git && \
+cd quickstarts-lootbox && \
+npm install
+```
+</Fragment>
+<Fragment slot="panel.2">
+Alternatively, you can use [yarn](https://yarnpkg.com/) to install dependencies.
+
+```bash
+git clone git@github.com:smartcontractkit/quickstarts-lootbox.git && \
+cd quickstarts-lootbox && \
+yarn install
+```
+
+</Fragment>
+</Tabs>
+
+### Configure your project
+
+Copy the `.env.example` file to `.env` and fill in the values.
+
+```bash
+cp .env.example .env
+```
+
+### Configure the Hardhat project
+
+[Hardhat](https://hardhat.org/) is an Ethereum development environment that is used here to configure and deploy the lootbox contract. You need the following information:
+
+- The [RPC URL for your deployment network](https://hardhat.org/hardhat-runner/docs/config#json-rpc-based-networks), using an [RPC node provider](https://ethereum.org/en/developers/docs/nodes-and-clients/nodes-as-a-service/) such as [Infura](https://www.infura.io/) or [Alchemy](https://www.alchemy.com/).
+- The [private key for your deployer account](https://hardhat.org/hardhat-runner/docs/guides/verifying#deploying-and-verifying-a-contract-in-the-sepolia-testnet). If your deployer account is in MetaMask, [export your private key from MetaMask](https://support.metamask.io/hc/en-us/articles/360015289632-How-to-export-an-account-s-private-key).
+- An [Etherscan API key](https://hardhat.org/hardhat-runner/docs/guides/verifying#getting-an-api-key-from-etherscan) for contract verification. [Create an Etherscan API key](https://docs.etherscan.io/getting-started/viewing-api-usage-statistics) if you do not already have one.
+
+1. In your `.env` file, fill in these values:
+
+   | Parameter           | Description                                                 | Example                                     |
+   | ------------------- | ----------------------------------------------------------- | ------------------------------------------- |
+   | `NETWORK_RPC_URL`   | The RPC URL for the network you want to deploy to.          | `https://sepolia.infura.io/v3/your-api-key` |
+   | `PRIVATE_KEY`       | The private key of the account you want to deploy from.     | `0xabc123abc123abc123abc123abc123...`       |
+   | `ETHERSCAN_API_KEY` | The API key for Etherscan needed for contract verification. | `ABC123ABC123ABC123ABC123ABC123ABC1`        |
+
+1. If you're using a deployment network other than Sepolia, Goerli, or Ethereum: configure your deployment network in both the `.env` file and in the [`hardhat.config.ts`](https://github.com/smartcontractkit/quickstarts-lootbox/blob/main/hardhat.config.ts) file.
+
+### Set your contract parameters
+
+In your `.env` file, fill in these values:
+
+| Parameter                             | Description                                                                                                               | Example      |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- | ------------ |
+| `LOOTBOX_FEE_PER_OPEN`                | The fee per open in ETH                                                                                                   | `0.05`       |
+| `LOOTBOX_AMOUNT_DISTRIBUTED_PER_OPEN` | The amount of reward units distributed per open                                                                           | `1`          |
+| `LOOTBOX_OPEN_START_TIMESTAMP`        | The start timestamp in UNIX time for the public open. Leave blank to start immediately.                                   | `1630000000` |
+| `VRF_SUBSCRIPTION_ID`                 | A funded Chainlink VRF subscription ID. If you leave this blank, a new subscription will be created and funded on deploy. | `7123`       |
+
+The `LOOTBOX_FEE_PER_OPEN` allows you to pass transaction and VRF costs to the user when they open the lootbox.
+
+### Define the rewards
+
+You can distribute multiple types of in-game rewards using this lootbox contract. The lootbox contract supports any rewards of the following [token standards](https://ethereum.org/en/developers/docs/standards/tokens/):
+
+- [ERC-20](https://ethereum.org/en/developers/docs/standards/tokens/erc-20/): the fungible token standard
+- [ERC-721](https://ethereum.org/en/developers/docs/standards/tokens/erc-721/): the NFT standard
+- [ERC-1155](https://ethereum.org/en/developers/docs/standards/tokens/erc-1155/): the multi-token standard
+
+The amounts per unit are used to calculate the lootbox supply of rewards. For example, if you want to distribute 100 of a specific NFT, you would set the `totalAmount` to `100000000000000000000` and the `amountPerUnit` to `1000000000000000000`. This would result in a lootbox supply of 100 units. For testing, you can distribute smaller amounts.
+
+Add each type of in-game reward you want to distribute by following the format below.
+
+<Aside type="note">
+  The deployer account must own the entire lootbox supply that you want to distribute as rewards.
+</Aside>
+
+There's an example configuration file in [`scripts/data/tokens.json`](https://github.com/smartcontractkit/quickstarts-lootbox/blob/main/scripts/data/tokens.json) which includes a list of all supported token types:
+
+{/* prettier-ignore */}
+<Tabs client:visible>
+<Fragment slot="tab.1">ERC-20</Fragment>
+<Fragment slot="tab.2">ERC-721</Fragment>
+<Fragment slot="tab.3">ERC-1155</Fragment>
+<Fragment slot="panel.1">
+```json
+{
+  "tokenType": "ERC20",
+  "assetContract": "0x0000000000000000000000000000000000000001",
+  "totalAmount": "100000000000000000000",
+  "amountPerUnit": "10000000"
+}
+```
+</Fragment>
+<Fragment slot="panel.2">
+```json
+{
+  "tokenType": "ERC721",
+  "assetContract": "0x0000000000000000000000000000000000000002",
+  "tokenIds": ["1", "2"]
+}
+```
+</Fragment>
+<Fragment slot="panel.3">
+```json
+{
+  "tokenType": "ERC1155",
+  "assetContract": "0x0000000000000000000000000000000000000003",
+  "tokenId": "0",
+  "totalAmount": "100",
+  "amountPerUnit": "10"
+}
+```
+</Fragment>
+</Tabs>
+
+### Create an allowlist for private mints
+
+The [Merkle tree](https://ethereum.org/en/developers/tutorials/merkle-proofs-for-offline-data-integrity/#introduction) for the [private opening mode](#private-mode) is generated from the address list in the [`scripts/data/whitelist.json`](https://github.com/smartcontractkit/quickstarts-lootbox/blob/main/scripts/data/whitelist.json) file. Edit the file and add all the addresses you want to list.
+
+For this tutorial, add the address for your secondary account that you'll use to receive the rewards when you test opening the lootbox.
+
+If you don't want to do a private mint, leave the `whitelist.json` file empty, and the contract will be initialized in [public opening mode](#public-mode).
+
+### Post-deployment configuration
+
+After deployment, you can optionally change some contract parameters by calling the following functions from the owner account:
+
+| Function           | Description                             | Parameters           |
+| ------------------ | --------------------------------------- | -------------------- |
+| `setWhitelistRoot` | Set new Merkle root for the allow list. | `whitelistRoot`      |
+| `setPrivateOpen`   | Enable/disable public opening mode.     | `privateOpenEnabled` |
+
+## Deploy and run the example lootbox contract
+
+Now that your example is configured, you can test, deploy, and run the example. Then, switch accounts to act as a user who received the lootbox and receive the example rewards.
+
+### Deploy the example contract
+
+Run the `npx hardhat run` command and replace `<network>` with the network that you want to deploy to. The network must be configured in [`hardhat.config.ts`](https://github.com/smartcontractkit/quickstarts-lootbox/blob/main/hardhat.config.ts).
+
+```bash
+npx hardhat run scripts/deploy.js --network <network>
+```
+
+The [deploy script](https://github.com/smartcontractkit/quickstarts-lootbox/blob/main/scripts/deploy.ts) also completes the following actions:
+
+1.  Approve each type of reward configured in [`scripts/data/tokens.json`](https://github.com/smartcontractkit/quickstarts-lootbox/blob/main/scripts/data/tokens.json) for the deployed contract address.
+
+    This is a mandatory step because the contract must store the assets in its own balance. It is important to ensure the deployer account owns all the assets you want to distribute as rewards.
+
+1.  Generate a [Merkle tree](https://ethereum.org/en/developers/tutorials/merkle-proofs-for-offline-data-integrity/#introduction) for the allowlist.
+
+1.  Create and fund a VRF subscription if one is not provided.
+
+    {/* prettier-ignore */}
+    <Aside type="note">
+    Make sure the deployer account has enough LINK to fund the subscription. The initial funding amount is configured in [`network-config.ts`](https://github.com/smartcontractkit/quickstarts-lootbox/blob/main/network-config.ts). For testnets, you can use the [LINK faucet](https://faucets.chain.link/).
+
+    [Estimate the minimum subscription balance](/vrf/v2/estimating-costs#estimate-minimum-subscription-balance) that VRF requires to process your randomness request. The minimum subscription balance provides a buffer against gas volatility, and only the actual cost of your request will be deducted from your account.
+
+    If your subscription is underfunded, your VRF request will be [pending](/vrf/v2/subscription/ui#pending) for 24 hours. If this happens, check the [Subscription Manager](https://vrf.chain.link]) to see the additional balance needed.
+
+    </Aside>
+
+1.  Add the deployed contract address as a consumer to the VRF subscription.
+
+    If you provided a subscription ID, make sure the deployer account is the owner of the subscription. Otherwise, comment out the `addVrfConsumer` function in the deploy script and add the contract address manually.
+
+1.  Verify the contract on Etherscan. This is important to show users the source code for the contract so they can confirm how it works. If you want to skip this step during testing, comment out the `verify` function in the deploy script.
+
+Next, switch accounts and open the lootbox as a user to test the contract.
+
+## Open the lootbox and claim rewards
+
+Once the contract is deployed and the start timestamp is reached, users can start opening the lootbox. The amount of rewards users receive depends on the amount of units they open by specifying the `amountToOpen` parameter and paying the corresponding fee.
+
+1. Switch to your receiving account to act as a test user and copy its address for the next steps.
+
+1. Open the lootbox. In Sepolia Etherscan:
+
+   - Call the `publicOpen()` function if you initialized the contract with an empty allowlist.
+   - Call the `privateOpen()` function if you set up an allowlist. Generate the Merkle proof locally using [merkletreejs](https://github.com/merkletreejs/merkletreejs), and pass in the opener address:
+
+   ```js
+   merkleTree.getHexProof(keccak256(allowlistedUserAddress))
+   ```
+
+   Pass the Merkle proof as input to `privateOpen()` in Sepolia Etherscan.
+
+1. The rewards are ready to claim when the randomness result from VRF is ready. To check this, navigate to the **Read** tab, call the `canClaimRewards` function and pass in the opener address.
+1. When the rewards are ready, navigate to the **Write** tab, call the `claimRewards` function to claim the reward and pass in the opener address.
+
+## Access control
+
+You can control access to the lootbox with two modes: private and public. Use these modes to determine which users can open the lootbox. The owner account can update this setting after deployment, so you can test the opening functionality privately before making the lootbox available to the public.
+
+### Private mode
+
+In this mode, the lootbox is only open to addresses on the allowlist by calling the `privateOpen` function and providing Merkle proof for the address. You can generate the Merkle proof locally using [merkletreejs](https://github.com/merkletreejs/merkletreejs):
+
+```js
+merkleTree.getHexProof(keccak256(whitelistedUserAddress))
+```
+
+The allowlist is set on contract deployment and can be changed by calling the `setWhitelistRoot` function from the owner account. The private mode can be enabled or disabled at any time by calling the `setPrivateOpen` function from the owner account.
+
+### Public mode
+
+When the private mode is disabled, anyone can open the lootbox by calling the `publicOpen` function. It will do the same thing as the `privateOpen` function but without the Merkle proof.
+
+## Randomness
+
+The contract uses [Chainlink VRF](https://vrf.chain.link) to generate randomness which is used to determine the rewards the user receives.
+
+Because the randomness is generated off-chain, the contract will not be able to transfer the rewards immediately. Instead, it will store the request and once the randomness is received, the user or anyone else can call the `claimRewards` function to transfer the rewards to the user.
+
+The lootbox creator can also call the `claimRewards` function and improve the user experience by transferring the rewards to the user immediately. You can automate this further by using [Chainlink Automation](https://automation.chain.link/).
+
+## Claim rewards
+
+The rewards for an open request can be claimed by calling the `claimRewards` function and passing the opener address as the parameter. This will transfer the rewards to the opener address.
+
+The claim function can only be called after the randomness is fulfilled. To check this, call the `canClaimRewards` function and pass the opener address as the parameter.
+
+One address can only have one open request at a time. If you try to open the lootbox again before the previous request is fulfilled, the transaction reverts with a `PendingOpenRequest` error.
+
+## Withdraw funds
+
+At any time, the owner can withdraw funds from the collected fees by calling the `withdraw` function. By doing so, the contract balance will be transferred to the owner account.
+
+## Code walkthrough
+
+The main part of this tutorial is in the [`Lootbox.sol` contract](https://github.com/smartcontractkit/quickstarts-lootbox/blob/main/contracts/Lootbox.sol). The Lootbox contract manages the following tasks:
+
+- Requests a random value from VRF for each open request
+- Uses the random value as a seed to determine the reward
+- Tracks and validates requests to open the lootbox
+- Transfers rewards to the user, for valid requests
+- Tracks how many rewards remain in the lootbox
+- Validates user addresses against the allowlist, if in private mode
+
+This section focuses on how VRF is used in the lootbox contract.
+
+### How the lootbox interacts with the VRF service
+
+The processing done in the `fulfillRandomWords` callback function is minimal. Here, the function simply stores the randomness result from VRF and emits an event to indicate that the randomness is ready, so the lootbox open request can now be fulfilled. Reducing the computational processing in your `fulfillRandomWords` callback function makes the callback more gas efficient, and it reduces the chance that your `callbackGasLimit` will be too low for the VRF request to go through.
+
+```solidity
+...
+/// @notice Requests randomness from Chainlink VRF
+/// @dev The VRF subscription must be active and sufficient LINK must be available
+/// @return requestId The ID of the request
+function _requestRandomness() internal returns (uint256 requestId) {
+    requestId = VRFCoordinatorV2Interface(i_vrfCoordinatorV2)
+        .requestRandomWords(
+            i_vrfKeyHash,
+            i_vrfSubscriptionId,
+            REQUEST_CONFIRMATIONS,
+            CALLBACK_GASLIMIT,
+            NUMWORDS
+        );
+}
+
+/// @inheritdoc VRFConsumerBaseV2
+function fulfillRandomWords(
+    uint256 requestId,
+    uint256[] memory randomWords
+) internal override {
+    s_requests[requestId].randomness = randomWords[0];
+    emit OpenRequestFulfilled(requestId, randomWords[0]);
+}
+```
