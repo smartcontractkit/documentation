@@ -233,8 +233,8 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "EXAMPLES",
       contents: [
         {
-          title: "Automate the Reveal of Batch NFTs",
-          url: "chainlink-automation/tutorials/batch-nft",
+          title: "Automate the Reveal of Collections",
+          url: "quickstarts/batch-reveal",
         },
         {
           title: "Create a time-based upkeep",
