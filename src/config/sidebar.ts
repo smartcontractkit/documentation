@@ -167,8 +167,8 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "resources/create-a-chainlinked-project?parent=dataFeeds",
         },
         {
-          title: "Using the Hardhat Chainlink Plugin?parent=dataFeeds",
-          url: "quickstarts/hardhat-plugin",
+          title: "Using the Hardhat Chainlink Plugin",
+          url: "quickstarts/hardhat-plugin?parent=dataFeeds",
         },
         {
           title: "Bridges and Associated Risks",
@@ -336,8 +336,8 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "resources/create-a-chainlinked-project?parent=automation",
         },
         {
-          title: "Using the Hardhat Chainlink Plugin?parent=automation",
-          url: "quickstarts/hardhat-plugin",
+          title: "Using the Hardhat Chainlink Plugin",
+          url: "quickstarts/hardhat-plugin?parent=automation",
         },
         {
           title: "Bridges and Associated Risks",
@@ -679,8 +679,8 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "resources/create-a-chainlinked-project?parent=vrf",
         },
         {
-          title: "Using the Hardhat Chainlink Plugin?parent=vrf",
-          url: "quickstarts/hardhat-plugin",
+          title: "Using the Hardhat Chainlink Plugin",
+          url: "quickstarts/hardhat-plugin?parent=vrf",
         },
         {
           title: "Bridges and Associated Risks",
