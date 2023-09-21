@@ -1,0 +1,141 @@
+---
+section: dataFeeds
+title: "Historical Price Feeds API"
+---
+
+This API endpoint allows you to fetch historical prices from Chainlink price feeds for a specified period. The API endpoint returns the price data in JSON format. You can use this API endpoint to fetch historical prices for a single round or multiple rounds.
+
+## Objective
+
+This example shows you how to set up and run a pre-built API that reads historical price data from Chainlink Price Feeds. The API runs off-chain, but reads the data from on-chain [Chainlink Data Feeds](/data-feeds). You can use this API to build your own applications.
+
+## Before you begin
+
+- Install [Node.js](https://nodejs.org/en/download/) >= 14.x.x
+- Install [Yarn](https://classic.yarnpkg.com/en/docs/install/#mac-stable) >= 1.22.x
+
+## Set steps
+
+1. Clone the [Historical Prices API](https://github.com/smartcontractkit/quickstarts-historical-prices-api.git) repo and change directories:
+
+   ```bash
+   git clone https://github.com/smartcontractkit/quickstarts-historical-prices-api.git && cd quickstarts-historical-prices-api
+   ```
+
+1. Install the dependencies:
+
+   ```bash
+   yarn install
+   ```
+
+1. Build the project:
+
+   ```bash
+   yarn build
+   ```
+
+1. Start the server:
+
+   ```bash
+   yarn start
+   ```
+
+## Run the example
+
+After you complete the setup steps, you can access the UI at `http://localhost:3000`. The API is available at `http://localhost:3000/api/price`.
+
+In order to fetch the price for a single round, you need to specify the same start and end timestamps. Make sure that the time frame exists. The API endpoint will return the price for the round that is within the specified time frame.
+
+### Request a single-round
+
+Make a simple `curl` request to test the API:
+
+```bash
+curl http://localhost:3000/api/price?contractAddress=0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419&startTimestamp=1614556800&endTimestamp=1614556800&chain=mainnet&rpcUrl=https://eth-mainnet.alchemyapi.io/v2/your-api-key
+```
+
+Response:
+
+```json
+{
+  "description": "ETH/USD",
+  "decimals": 8,
+  "rounds": [
+    {
+      "phaseId": "1",
+      "roundId": "1",
+      "answer": "2000",
+      "timestamp": "2021-03-01T00:00:00Z"
+    },
+    {
+      "phaseId": "1",
+      "roundId": "2",
+      "answer": "2100",
+      "timestamp": "2021-03-01T01:00:00Z"
+    }
+  ]
+}
+```
+
+### Request multiple rounds
+
+In order to fetch the prices for multiple rounds, you need to specify different start and end timestamps. Make sure that the start timestamp is less than the end timestamp and that the time frames exist. The API endpoint will return the prices for the rounds that are within the specified time frame.
+
+Make a simple `curl` request to test the API with multiple rounds returned:
+
+```bash
+GET /api/price?contractAddress=0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419&startTimestamp=1614556800&endTimestamp=1614643200&chain=mainnet&rpcUrl=https://eth-mainnet.alchemyapi.io/v2/your-api-key
+```
+
+Example response:
+
+```json
+{
+  "description": "ETH/USD",
+  "decimals": 8,
+  "rounds": [
+    {
+      "phaseId": "1",
+      "roundId": "1",
+      "answer": "2000",
+      "timestamp": "2021-03-01T00:00:00Z"
+    },
+    ⋮
+    ⋮
+  ]
+}
+```
+
+## Reference
+
+The endpoint for this API is `GET /api/price`.
+
+### Query Parameters
+
+| Required | Parameter       | Description                                            | Type     | Options                                                                                                                                                      |
+| -------- | --------------- | ------------------------------------------------------ | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| ✅       | contractAddress | The address of the Chainlink price feed contract.      | `string` | [Price Feeds](https://docs.chain.link/data-feeds/price-feeds/addresses)                                                                                      |
+| ✅       | startTimestamp  | The start timestamp of the period for fetching prices. | `number` | Unix timestamp in seconds. Example: `1681187628`                                                                                                             |
+| ✅       | endTimestamp    | The end timestamp of the period for fetching prices.   | `number` | Unix timestamp in seconds. Example: `1681187628`                                                                                                             |
+| ✅       | chain           | The blockchain network where the contract is deployed. | `string` | `mainnet`, `goerli`, `arbitrum`, `bsc`, `polygon` , `avalanche`, `fantom`, `moonbeam`, `moonriver`, `harmonyOne`, `optimism`, `metis`, `baseGoerli`,`gnosis` |
+|          | rpcUrl          | The RPC URL for the blockchain network.                | `string` | [RPC URLs](https://chainlist.org/)                                                                                                                           |
+
+### Response
+
+The response is a JSON object with the following properties:
+
+- `description`: The price pair name.
+- `decimals`: The number of decimals for the answer.
+- `rounds`: An array of round data objects. Each round data object has the following properties:
+  - `phaseId`: The phase ID of the round.
+  - `roundId`: The round ID.
+  - `answer`: The price at the round.
+  - `timestamp`: The timestamp of the round in UTC.
+
+### Errors
+
+The API endpoint may return one of the following errors:
+
+- `Input validation error`: This error is returned when the input parameters are not valid.
+- `Failed to get client for chain`: This error is returned when the API fails to get a client for the specified blockchain network.
+- `Failed to get phase data from contract`: This error is returned when the API fails to get phase data from the contract.
