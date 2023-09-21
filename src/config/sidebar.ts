@@ -169,6 +169,12 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Starter Kits and Frameworks",
           url: "resources/create-a-chainlinked-project?parent=dataFeeds",
+          children: [
+            {
+              title: "Chainlink Hardhat Starter Kit",
+              url: "quickstarts/chainlink-hardhat-starter-kit?parent=dataFeeds",
+            },
+          ],
         },
         {
           title: "Using the Hardhat Chainlink Plugin",
@@ -338,6 +344,12 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Starter Kits and Frameworks",
           url: "resources/create-a-chainlinked-project?parent=automation",
+          children: [
+            {
+              title: "Chainlink Hardhat Starter Kit",
+              url: "quickstarts/chainlink-hardhat-starter-kit?parent=automation",
+            },
+          ],
         },
         {
           title: "Using the Hardhat Chainlink Plugin",
@@ -512,6 +524,12 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Starter Kits and Frameworks",
           url: "resources/create-a-chainlinked-project?parent=chainlinkFunctions",
+          children: [
+            {
+              title: "Chainlink Hardhat Starter Kit",
+              url: "quickstarts/chainlink-hardhat-starter-kit?parent=chainlinkFunctions",
+            },
+          ],
         },
         {
           title: "Bridges and Associated Risks",
@@ -681,6 +699,12 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Starter Kits and Frameworks",
           url: "resources/create-a-chainlinked-project?parent=vrf",
+          children: [
+            {
+              title: "Chainlink Hardhat Starter Kit",
+              url: "quickstarts/chainlink-hardhat-starter-kit?parent=vrf",
+            },
+          ],
         },
         {
           title: "Using the Hardhat Chainlink Plugin",
@@ -851,6 +875,12 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Starter Kits and Frameworks",
           url: "resources/create-a-chainlinked-project?parent=ccip",
+          children: [
+            {
+              title: "Chainlink Hardhat Starter Kit",
+              url: "quickstarts/chainlink-hardhat-starter-kit?parent=ccip",
+            },
+          ],
         },
         {
           title: "Bridges and Associated Risks",
