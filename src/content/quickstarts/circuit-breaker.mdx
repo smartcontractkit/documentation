@@ -10,12 +10,12 @@ The example circuit breaker contract is a highly configurable proof of concept t
 
 {/* prettier-ignore */}
 <div class="remix-callout">
-  <a href="https://github.com/smartcontractkit/circuit-breaker-chainlink-automation">See the code on GitHub</a>
+  <a href="https://github.com/smartcontractkit/quickstarts-circuitbreaker">See the code on GitHub</a>
 </div>
 
-## Overview
+## Objective
 
-This example uses HardHat and Ganache for development and testing.
+The [Circuit Breaker repository](https://github.com/smartcontractkit/quickstarts-circuitbreaker) contains example contracts of an implementation of a circuit breaker that can be used with any OCR price feed. It is possible to monitor a given contract, specify the price when the circuit breaker will be triggered based on predefined conditions, and then underlying logic of what happens when the circuit breaker is triggered.
 
 ## Before you begin
 
@@ -31,9 +31,9 @@ Before you start this tutorial, install the required tools:
 
 ## Setup the example
 
-To set up this example, clone the source, configure environment variables, and start the test UI.
+To set up this example, clone the source and install the required packages.
 
-1. Clone the [smartcontractkit/circuit-breaker-chainlink-automation](https://github.com/smartcontractkit/circuit-breaker-chainlink-automation.git) repository, change directories, and install the dependencies using `npm`:
+1. Clone the [smartcontractkit/quickstarts-circuitbreaker](https://github.com/smartcontractkit/quickstarts-circuitbreaker) repository, change directories, and install the dependencies using `npm`:
 
    ```shell
    https://github.com/smartcontractkit/circuit-breaker-chainlink-automation.git && \
@@ -41,34 +41,17 @@ To set up this example, clone the source, configure environment variables, and s
    npm i
    ```
 
-1. Configure an `.env` file with default settings.
+1. Install the `chainlink/contracts` npm package:
 
    ```shell
-   echo "NETWORK=hardhat" >> .env && \
-   echo "LOCAL_RPC_URL=\"http://127.0.0.1:7545\"" >> .env
-   ```
-
-1. Add your RPC URL to the `.env` file. Replace `YOUR_RPC_URL` with the [RPC URL for your deployment network](https://hardhat.org/hardhat-runner/docs/config#json-rpc-based-networks). You can use an RPC node provider such as [Infura](https://www.infura.io/) or [Alchemy](https://www.alchemy.com/). Alternative,
-
-   ```shell
-   echo "MAINNET_RPC_URL=\"YOUR_RPC_URL\"" >> .env
-   ```
-
-1. Deploy the testnet contract to your local Ganache testnet:
-
-   ```shell
-   make deploy
-   ```
-
-1. Change to the `./ui` directory and install the UI dependencies:
-
-   ```shell
-   cd ./ui && \
-   npm i
+   npm install @chainlink/contracts@0.6.1 --save
    ```
 
 ## Run the example
 
-### Code example
-
-## Summary
+1. Deploy the ExampleImplementation.sol - while deploying this, the constructor will expect the proxy contract address of the price feed (example: 0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43), the maxBalance (example: 3000000000000 ) and “isEmergencyPossible” flag (which could be set to true if you want the circuit breaking condition to be checked; this allows for this to be turned OFF with false if needed)
+1. Deploy the CircuitBreaker.sol
+1. Go to https://automation.chain.link/ and click Register new Upkeep.
+1. Select custom logic and for Target contract address, enter the address of CircuitBreaker.sol
+1. Fill in the rest of the field as desired, however, In the Check Data field - pass in the address of the ExampleImplementation.sol contract. Note: Use abi.encode this contract address with a 0x in the beginning before entering it as checkData
+1. Register and fund your upkeep.
