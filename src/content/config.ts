@@ -15,7 +15,7 @@ export const productsInfo: Record<Products, { name: string; slug: string }> = {
   functions: { name: "Functions", slug: "chainlink-functions" },
   vrf: { name: "VRF", slug: "vrf/v2/introduction" },
   feeds: { name: "Data Feeds", slug: "data-feeds" },
-  general: { name: "General", slug: "general" },
+  general: { name: "General", slug: "/" },
 }
 
 const productEnum = z.preprocess((val) => (val as string).toLowerCase(), z.nativeEnum(Products))
