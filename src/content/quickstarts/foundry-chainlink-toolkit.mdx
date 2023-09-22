@@ -1,0 +1,198 @@
+---
+section: nodeOperator
+title: "Foundry Chainlink Toolkit"
+---
+
+This toolkit makes spinning up, managing, and testing smart contracts and local Chainlink nodes easier using [Foundry](https://book.getfoundry.sh) to deploy and test smart contracts. It can be integrated into existing Foundry projects.
+
+## Objective
+
+This project shows you how to install and run the simplify the development and testing of smart contracts that use Chainlink oracles. This project is aimed primarily at those who use the Foundry toolchain.
+
+## Before you begin
+
+1. Install Foundry toolchain. Reference the below commands or go to the [Foundry documentation](https://book.getfoundry.sh/getting-started/installation).
+
+   - MacOS/Linux
+
+     ```
+     curl -L https://foundry.paradigm.xyz | bash
+     ```
+
+     This will download foundryup. Restart your terminal session, then install Foundry by running:
+
+     ```
+     foundryup
+     ```
+
+     You might see the following error on MacOS: `dyld: Library not loaded: /usr/local/opt/libusb/lib/libusb-1.0.0.dylib` To fix this, install libusb: `brew install libusb` See [installation troubleshooting](https://github.com/foundry-rs/foundry/blob/master/README.md#troubleshooting-installation) for details.
+
+1. Install [GNU make](https://www.gnu.org/software/make/). The functionality of the project is wrapped in the [makefile](https://github.com/smartcontractkit/foundry-chainlink-toolkit/blob/main/makefile). Reference the below commands based on your OS or go to [Make documentation](https://www.gnu.org/software/make/manual/make.html).
+
+   - MacOS: install [Homebrew](https://brew.sh/) first, then run
+
+     ```
+     brew install make
+     ```
+
+   - Debian/Ubuntu
+
+     ```
+     apt install make
+     ```
+
+   - Fedora/RHEL
+
+     ```
+     yum install make
+     ```
+
+1. [Install and run Docker](https://docs.docker.com/get-docker/).
+
+1. Integrate the toolkit into your project. The Foundry-Chainlink toolkit is designed to be installed as a Forge dependency:
+
+   ```
+   forge install smartcontractkit/foundry-chainlink-toolkit
+   ```
+
+1. Install the [Forge Standard Library](https://github.com/foundry-rs/forge-std) in your project:
+
+   ```
+   forge install foundry-rs/forge-std
+   ```
+
+1. If you need to run this toolkit as a demo standalone application, install the dependencies:
+
+   ```
+   git submodule update
+   ```
+
+## Set up environment variables
+
+Use the `env.template` file, create or update an `.env` file in the root directory of your project.
+In most cases, you will not need to modify the default values specified in this file.
+
+Below are comments on some environment variables:
+
+- `FCT_PLUGIN_PATH` - path to the Foundry-Chainlink toolkit root
+- `ETH_URL` - RPC node web socket used by the Chainlink node
+- `RPC_URL` - RPC node http endpoint used by Forge
+- `PRIVATE_KEY` - private key of an account used for deployment and interaction with smart contracts. Once Anvil is started, a set of private keys for local usage is provided. Use one of these for local development
+- `ROOT` - root directory of the Chainlink node
+- `CHAINLINK_CONTAINER_NAME` - Chainlink node container name for the possibility of automating communication with it
+- `COMPOSE_PROJECT_NAME` - Docker network project name for the possibility of automating communication with it. See the [Docker Documentation](https://docs.docker.com/compose/environment-variables/envvars/#compose_project_name) to learn more.
+  If environment variables related to a Chainlink node, including a Link Token contract address, were changed during your work you should run the `make fct-run-nodes` command in order for them to be applied.
+
+## Configure your project
+
+1. Give Forge permission to read the output directory of the toolkit by adding this setting to the foundry.toml:
+
+   ```
+   fs_permissions = [{ access = "read", path = "lib/foundry-chainlink-toolkit/out"}]
+   ```
+
+   The default path to the root of the Foundry-Chainlink toolkit is `lib/foundry-chainlink-toolkit`. Unfortunately at the moment `foundry.toml` cannot read all environment variables. Specify a different path if necessary.
+
+1. Incorporate the [makefile-external](https://github.com/smartcontractkit/foundry-chainlink-toolkit/blob/main/makefile-external) into your project. To do this, create or update a makefile in the root of your project with:
+
+   ```
+   -include ${FCT_PLUGIN_PATH}/makefile-external
+   ```
+
+## Set up chain RPC node
+
+In order for a Chainlink node to be able to interact with the blockchain, and to interact with the blockchain using the [Forge](https://book.getfoundry.sh/forge/), you have to know an RPC node http endpoint and web socket for a chosen network compatible with Chainlink.
+In addition to the networks listed in [this list](/chainlink-automation/supported-networks/), Chainlink is compatible with any EVM-compatible networks.
+
+For local testing, we recommend using [Anvil](https://book.getfoundry.sh/anvil/), which is a part of the Foundry toolchain.  
+You can run it using the following command:
+
+```
+make fct-anvil
+```
+
+If the local Ethereum node is restarted, [re-initialize the Chainlink cluster](#initialize-testing-environment) or perform a [clean spin-up of the Chainlink nodes](https://github.com/smartcontractkit/foundry-chainlink-toolkit/blob/main/DOCUMENTATION.md#restart-a-chainlink-cluster) to avoid possible synchronization errors.
+
+## Run the example
+
+Scripts for automating the initialization of the test environment and setting up Chainlink jobs will be described below.
+
+To display autogenerated help with a brief description of the most commonly used scripts, run:
+
+```
+make fct-help
+```
+
+For a more detailed description of the available scripts, you can refer to [DOCUMENTATION.md](https://github.com/smartcontractkit/foundry-chainlink-toolkit/blob/main/DOCUMENTATION.md) in the repository.
+
+### Initialize testing environment
+
+```
+make fct-init
+```
+
+[This command](https://github.com/smartcontractkit/foundry-chainlink-toolkit/blob/main/DOCUMENTATION.md#initialize-test-environment) automatically initializes the test environment, in particular, it makes clean spin-up of a Chainlink cluster of 5 Chainlink nodes.
+
+Once Chainlink cluster is launched, a Chainlink nodes' Operator GUI will be available at:
+
+- http://127.0.0.1:6711 - Chainlink node 1
+- http://127.0.0.1:6722 - Chainlink node 2
+- http://127.0.0.1:6733 - Chainlink node 3
+- http://127.0.0.1:6744 - Chainlink node 4
+- http://127.0.0.1:6755 - Chainlink node 5
+
+For authorization, you must use the credentials specified in the [chainlink_api_credentials](https://github.com/smartcontractkit/foundry-chainlink-toolkit/blob/main/https://github.com/smartcontractkit/foundry-chainlink-toolkit/tree/main/chainlink/settings/chainlink_api_credentials).
+
+### Set up Chainlink Jobs
+
+```
+make fct-setup-job
+```
+
+[This command](https://github.com/smartcontractkit/foundry-chainlink-toolkit/blob/main/DOCUMENTATION.md#set-up-a-chainlink-job) displays a list of available Chainlink jobs and sets up the selected one.
+
+You can also set up a Chainlink job by calling the respective command. Manual set up of a Chainlink Job is recommended when using a custom Consumer or Aggregator contract, or when a different job configuration is desired. You can create a custom TOML file and use it to create a Chainlink Job instance through the Operator GUI or develop a custom script using the existing scripts provided by this toolkit. Manual setup steps are documented [repository](https://github.com/smartcontractkit/foundry-chainlink-toolkit/blob/main/README.md#set-up-chainlink-jobs) for each job type.
+
+#### Direct Request Job
+
+```
+make fct-setup-direct-request-job
+```
+
+[This command](https://github.com/smartcontractkit/foundry-chainlink-toolkit/blob/main/DOCUMENTATION.md#set-up-direct-request-job) automatically sets up a Direct Request job.
+
+#### Cron Job
+
+```
+make fct-setup-cron-job
+```
+
+[This command](https://github.com/smartcontractkit/foundry-chainlink-toolkit/blob/main/DOCUMENTATION.md#set-up-cron-job) automatically sets up a Cron job.
+
+#### Webhook Job
+
+```
+make fct-setup-webhook-job
+```
+
+[This command](https://github.com/smartcontractkit/foundry-chainlink-toolkit/blob/main/DOCUMENTATION.md#set-up-webhook-job) automatically sets up a Webhook job.
+
+#### Keeper Job
+
+```
+make fct-setup-keeper-job
+```
+
+[This command](https://github.com/smartcontractkit/foundry-chainlink-toolkit/blob/main/DOCUMENTATION.md#set-up-keeper-job) automatically sets up a Keeper job.
+
+#### OCR Job
+
+```
+make fct-setup-ocr-job
+```
+
+[This command](https://github.com/smartcontractkit/foundry-chainlink-toolkit/blob/main/DOCUMENTATION.md#set-up-flux-job) automatically sets up an OCR job.
+
+## Project Structure
+
+You can find the full project structure in the [repository](https://github.com/smartcontractkit/foundry-chainlink-toolkit/blob/main/README.md#project-structure).
