@@ -659,7 +659,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
-      section: "EXAMPLES",
+      section: "Examples",
       contents: [
         {
           title: "LootBox/Pack Contract",
