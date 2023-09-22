@@ -18,11 +18,11 @@ const icons = {
 }
 ---
 
-<aside class={`content ${type}`} aria-label={title}>
+<aside class={type} aria-label={title}>
   <div class="icon">
     <img src={icons[type]} style="width: 1.5em;height: 1.5em;" alt={type} />
   </div>
-  <div class="asideContent">
+  <div class="content">
     <p class="title heading-100" aria-hidden="true">
       {title}
     </p>
@@ -37,6 +37,7 @@ const icons = {
     padding: var(--space-4x);
     gap: var(--space-4x);
     background-color: var(--aside-bg);
+    border: 1px solid #eee;
     border-radius: var(--border-radius-10);
     color: var(--color-text-info);
 
@@ -46,45 +47,20 @@ const icons = {
     display: flex;
   }
 
-  .title {
+  .content .title {
     font-weight: bold;
-    font-size: 14px;
     text-transform: uppercase;
-  }
-
-  aside p {
-    color: var(--color-text-info);
+    color: var(--theme-text);
   }
 
   .icon {
     flex-shrink: 0;
     width: 1.5em;
   }
+
   .icon svg {
     vertical-align: middle;
     fill: currentcolor;
-  }
-
-  aside :global(a),
-  aside :global(a > code:not([class*="language"])) {
-    color: var(--color-text-link);
-  }
-
-  aside :global(p),
-  aside.content :global(ul) {
-    color: var(--theme-text);
-  }
-
-  :global(.theme-dark) aside :global(code:not([class*="language"])) {
-    color: var(--theme-code-text);
-  }
-
-  aside :global(pre) {
-    margin-left: 0;
-    margin-right: 0;
-  }
-
-  .tip {
   }
 
   .caution {
@@ -94,14 +70,35 @@ const icons = {
   .danger {
     --aside-bg: var(--color-background-error);
   }
+</style>
 
-  .asideContent :global(p) {
-    margin-bottom: 0;
-    font-size: 14px;
-    line-height: 1.4;
+<style is:inline>
+  .content a,
+  .content a > code:not([class*="language"]) {
+    color: var(--color-text-link);
   }
 
-  .asideContent :global(p + p) {
+  .theme-dark .content code:not([class*="language"]) {
+    color: var(--theme-code-text);
+  }
+
+  .content p,
+  .content ul {
+    color: var(--theme-text-light);
+    line-height: 1.5;
+    font-size: 14px;
+  }
+
+  .content p {
+    margin-bottom: 0;
+  }
+
+  .content p + p {
     margin-top: var(--space-2x);
+  }
+
+  .content pre {
+    margin-left: 0;
+    margin-right: 0;
   }
 </style>
