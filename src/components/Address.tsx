@@ -34,7 +34,7 @@ const AddressComponent = ({ contractUrl, address, endLength, urlClass, urlId }: 
         }
 
         .addressContainer {
-          display: flex;
+          display: inline-flex;
           align-items: center;
           gap: var(--space-1x);
           word-break: break-word;
