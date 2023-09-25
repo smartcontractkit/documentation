@@ -1,11 +1,3 @@
----
-import Aside from "@components/Aside.astro"
-
-/** There's a bug with mdx and Astro where p tags on new lines add empty p tags around the content.
- * Unfortunately our linter / prettier automatically puts those tags on new lines for large blocks
- * and so I've added the quickstart content to prettierignore for now. */
----
-
 <article id="article">
   <slot />
 </article>
@@ -273,22 +265,6 @@ import Aside from "@components/Aside.astro"
 </style>
 
 <script>
-  import { Accordion } from "./accordion"
-  const detailsElements = document.querySelectorAll("ol.steps details")
-  detailsElements.forEach((el: HTMLDetailsElement, i) => {
-    new Accordion(el)
-    // Required for ContentObserver / TOC
-    const summary = el.querySelector("summary")
-    if (summary) {
-      const id = summary.innerText.toLowerCase().split(" ").join("-")
-      summary.id = id
-      summary.setAttribute("data-id", `${i + 1}-${id}`) // Set for analytics
-      if (el.parentElement?.nodeName === "LI") {
-        el.parentElement.id = id
-      }
-    }
-  })
-
   /**
    * Creates sticky headers which interact with
    * intersection observers

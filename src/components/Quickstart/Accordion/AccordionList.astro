@@ -1,0 +1,61 @@
+---
+import Accordion from "./Accordion.astro"
+
+interface Props {
+  entries: {
+    title: string
+    children: any
+  }[]
+  numbered: boolean
+}
+const { entries, numbered } = Astro.props
+---
+
+<ol>
+  {
+    entries.map((entry, i) => {
+      const id = entry.title.toLowerCase().split(" ").join("-")
+      return (
+        <li id={id}>
+          <Accordion title={entry.title} number={numbered ? i + 1 : undefined}>
+            {entry.children}
+          </Accordion>
+        </li>
+      )
+    })
+  }
+</ol>
+
+<style>
+  ol {
+    padding-left: 0;
+  }
+
+  ol > li:first-of-type {
+    border-top: 1px solid var(--gray-300, #ced0d5);
+  }
+
+  ol > li {
+    margin: 0;
+    padding: var(--space-2x) 0px;
+    border-bottom: 1px solid var(--gray-300, #ced0d5);
+    list-style: none;
+    scroll-margin-top: calc(var(--space-20x) + var(--theme-navbar-height));
+  }
+
+  ol > li > * {
+    margin: 0;
+  }
+
+  @media (min-width: 48em) {
+    ol > li {
+      padding: var(--space-3x) 0px;
+    }
+  }
+
+  @media (min-width: 50em) {
+    ol > li:target {
+      scroll-margin-top: var(--space-20x);
+    }
+  }
+</style>

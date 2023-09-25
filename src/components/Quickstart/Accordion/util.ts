@@ -1,15 +1,16 @@
 // TODO: Changing between mobile / desktop layout
 // requires content height to be re-evaluated(?)
-export class Accordion {
-  el: HTMLDetailsElement
+export class Accordion extends HTMLElement {
+  details: HTMLDetailsElement
   summary: HTMLElement
   animation: Animation | null
   contentHeight = 0
   isClosing = false
   isExpanding = false
-  constructor(el: HTMLDetailsElement) {
-    this.el = el
-    const content = el.querySelectorAll(":scope > :not(summary)")
+  constructor() {
+    super()
+    this.details = this.querySelector("details") as HTMLDetailsElement
+    const content = this.details.querySelectorAll(":scope > :not(summary)")
     if (content.length === 0) {
       return
     }
@@ -21,15 +22,15 @@ export class Accordion {
     if (this.contentHeight === 0) {
       /** Required to work on browsers (incl. Safari)
        * which don't count collapsed details elements as having height / width */
-      this.el.open = true
+      this.details.open = true
       content.forEach((value) => {
         if (value.clientHeight > 0) {
           this.contentHeight += value.clientHeight
         }
       })
-      this.el.open = false
+      this.details.open = false
     }
-    this.summary = el.querySelector("summary") as HTMLElement
+    this.summary = this.details.querySelector("summary") as HTMLElement
     this.summary.addEventListener("click", (e: MouseEvent) => this.onClick(e))
   }
 
@@ -41,20 +42,20 @@ export class Accordion {
 
   onClick(e: { preventDefault: () => void }) {
     e.preventDefault()
-    if (this.isClosing || !this.el.open) {
+    if (this.isClosing || !this.details.open) {
       this.open()
-    } else if (this.isExpanding || this.el.open) {
+    } else if (this.isExpanding || this.details.open) {
       this.shrink()
     }
   }
 
   shrink() {
-    this.el.toggleAttribute("expanded")
+    this.details.toggleAttribute("expanded")
     this.isClosing = true
-    const startHeight = `${this.el.offsetHeight}px`
+    const startHeight = `${this.details.offsetHeight}px`
     const endHeight = `${this.summary.offsetHeight}px`
     this.cancelIfAnimating()
-    this.animation = this.el.animate(
+    this.animation = this.details.animate(
       {
         height: [startHeight, endHeight],
       },
@@ -65,19 +66,19 @@ export class Accordion {
   }
 
   open() {
-    this.el.style.height = `${this.el.offsetHeight}px`
-    this.el.open = true
+    this.details.style.height = `${this.details.offsetHeight}px`
+    this.details.open = true
     window.requestAnimationFrame(() => this.expand())
   }
 
   expand() {
-    this.el.toggleAttribute("expanded")
+    this.details.toggleAttribute("expanded")
     this.isExpanding = true
-    const startHeight = `${this.el.offsetHeight}px`
+    const startHeight = `${this.details.offsetHeight}px`
     const endHeight = `${this.summary.offsetHeight + this.contentHeight}px`
     this.cancelIfAnimating()
     const duration = 250 + Math.min(this.contentHeight, 300)
-    this.animation = this.el.animate(
+    this.animation = this.details.animate(
       {
         height: [startHeight, endHeight],
       },
@@ -88,9 +89,9 @@ export class Accordion {
   }
 
   onAnimationFinish(open: boolean) {
-    this.el.open = open
+    this.details.open = open
     this.animation = null
     this.isClosing = this.isExpanding = false
-    this.el.style.height = ""
+    this.details.style.height = ""
   }
 }

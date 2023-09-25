@@ -1,0 +1,92 @@
+---
+interface Props {
+  title: string
+  number?: number
+}
+const { title, number } = Astro.props
+const id = title.toLowerCase().split(" ").join("-")
+---
+
+<astro-accordion>
+  <div class="header-wrapper-3" id={id} title={title}>
+    <details style={number === 1 || !number ? { borderTop: "1px solid var(--gray-300, #ced0d5)" } : {}}>
+      <summary id={id} data-id={`${number}-${id}`}>
+        <span class="before">{number}</span>
+        {title}</summary
+      >
+      <slot />
+    </details>
+  </div>
+</astro-accordion>
+
+<style>
+  details {
+    overflow: hidden;
+    border-bottom: 1px solid var(--gray-300, #ced0d5);
+  }
+
+  details > summary {
+    display: grid;
+    grid-template-columns: 0 1fr auto;
+    align-items: center;
+    gap: var(--space-8x);
+    cursor: pointer;
+    color: var(--blue-800, #1a2b6b);
+    font-size: 16px;
+    padding: var(--space-2x) 0px;
+  }
+
+  div.header-wrapper-3 {
+    scroll-margin-top: calc(var(--space-20x) + var(--theme-navbar-height));
+  }
+
+  span.before {
+    font-size: inherit;
+    color: var(--gray-400, #b7bac0);
+    letter-spacing: -0.24px;
+  }
+
+  details > summary::after {
+    content: url(/images/quickstarts/arrow-down.svg);
+    -webkit-mask: url(/images/quickstarts/arrow-down.svg) no-repeat center;
+    -webkit-mask-size: var(--space-6x);
+    background-color: var(--gray-400, #b7bac0);
+    transition: 0.25s transform ease;
+  }
+
+  /* Using custom attribute 'expanded' (created by Accordion)
+  rather than 'open' since some browsers (Safari) have no respect for details attributes */
+  details[expanded] > summary::after {
+    transform: rotate(180deg);
+    background-color: #174cc2;
+  }
+
+  @media (min-width: 48em) {
+    details > summary {
+      font-size: 20px;
+      padding: var(--space-3x) 0px;
+    }
+  }
+
+  @media (min-width: 50em) {
+    div.header-wrapper-3 {
+      scroll-margin-top: var(--space-20x);
+    }
+  }
+</style>
+
+<style is:inline>
+  details > :not(summary) {
+    margin-top: 0;
+    padding-left: var(--space-8x);
+  }
+
+  details > :not(summary):last-child {
+    padding-bottom: var(--space-4x);
+  }
+</style>
+
+<script>
+  import { Accordion } from "./util"
+  customElements.define("astro-accordion", Accordion)
+</script>

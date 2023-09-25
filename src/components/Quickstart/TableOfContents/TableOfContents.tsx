@@ -8,15 +8,15 @@ import { currentIds } from "~/hooks/currentIds/idStore"
 import { useStore } from "@nanostores/preact"
 import { shouldUpdateToc } from "./tocStore"
 
-type ExtraHeaders = "SUMMARY"
-const elementDepthMap: Record<ExtraHeaders, number> = {
-  SUMMARY: 3,
+type HeaderWrapperClass = "header-wrapper-2" | "header-wrapper-3"
+const wrapperDepthMap: Record<HeaderWrapperClass, number> = {
+  "header-wrapper-2": 2,
+  "header-wrapper-3": 3,
 }
 
 const TableOfContents: FunctionalComponent<{
   initialHeadings: MarkdownHeading[]
-  extraHeaders?: ExtraHeaders
-}> = ({ initialHeadings, extraHeaders }) => {
+}> = ({ initialHeadings }) => {
   const $shouldUpdateToc = useStore(shouldUpdateToc)
   const { $currentIds, setCurrentIds } = useCurrentIds()
 
@@ -25,8 +25,8 @@ const TableOfContents: FunctionalComponent<{
   useEffect(() => {
     // Only get top-level headers, don't get nested component headers
     const query = `article :where(
-      section > :where(h2, h3, h4)
-      ${extraHeaders ? `, ${extraHeaders}` : ""}
+      section > :where(h2, h3, h4),
+       .${Object.keys(wrapperDepthMap).join(", .")}
     )`
     const elements = document.querySelectorAll(query)
     const newHeadings: MarkdownHeading[] = []
@@ -37,18 +37,15 @@ const TableOfContents: FunctionalComponent<{
     }
 
     elements.forEach((e) => {
-      const depth = Number(e.nodeName.at(1)) || elementDepthMap[e.nodeName]
+      const depth = Number(e.nodeName.at(1)) || wrapperDepthMap[e.className.split(" ")[0]]
       const slug = e.id
-      const text = e.textContent
-      // Check for nextElementSibling, if there's no content
-      // following the header, then don't add a heading
-      const hasNext = e.nextElementSibling
-      if (depth && slug && text && hasNext) {
+      const text = e.getAttribute("title") || e.textContent
+      if (depth && slug && text) {
         newHeadings.push({ depth, slug, text })
       }
     })
     setHeadings(newHeadings)
-  }, [$shouldUpdateToc, extraHeaders])
+  }, [$shouldUpdateToc])
 
   useEffect(() => {
     const observerCallback: IntersectionObserverCallback = (entries) => {
