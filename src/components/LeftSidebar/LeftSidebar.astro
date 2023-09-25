@@ -2,6 +2,7 @@
 import { Sections } from "~/content/config"
 import { SIDEBAR, MENU, SectionContent } from "../../config"
 import { flattenChildren } from "../../scripts/flatten-children"
+import ActiveIcon from "./ActiveIcon.astro"
 export type Props = {
   currentPage: string
   section?: Sections
@@ -59,7 +60,7 @@ const currentPageMatch = removeSlashes(currentPage.slice(1))
             }
           >
             <summary class="nav-group-title">{s.section}</summary>
-            <ul>
+            <ul class="nav-group-entries">
               {s.contents &&
                 s.contents.map((child) => (
                   <>
@@ -69,6 +70,7 @@ const currentPageMatch = removeSlashes(currentPage.slice(1))
                         href={`${Astro.site?.pathname}${child.url}`}
                         aria-current={currentPageMatch === removeSlashes(child.url) ? "page" : "false"}
                       >
+                        <ActiveIcon />
                         {child.title}
                       </a>
                     </li>
@@ -80,6 +82,7 @@ const currentPageMatch = removeSlashes(currentPage.slice(1))
                             href={`${Astro.site?.pathname}${childItem.url}`}
                             aria-current={`${currentPageMatch === removeSlashes(childItem.url) ? "page" : "false"}`}
                           >
+                            <ActiveIcon />
                             {childItem.title}
                           </a>
                         </li>
@@ -107,12 +110,12 @@ const currentPageMatch = removeSlashes(currentPage.slice(1))
     position: sticky;
   }
 
-  .nav-groups :is(ul, li) {
+  .nav-groups li {
     list-style: none;
   }
 
   .nav-groups > li {
-    padding-top: var(--space-4x);
+    padding-top: var(--space-2x);
   }
 
   .nav-groups > li:first-of-type {
@@ -128,6 +131,10 @@ const currentPageMatch = removeSlashes(currentPage.slice(1))
     font-weight: 500;
     margin-bottom: var(--space-3x);
     color: var(--blue-800);
+  }
+
+  .nav-group-entries {
+    margin-bottom: var(--space-2x);
   }
 
   details summary {
@@ -151,15 +158,14 @@ const currentPageMatch = removeSlashes(currentPage.slice(1))
   }
 
   .nav-link {
-    display: block;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2x);
     line-height: 1.5;
     font-size: 16px;
     color: var(--gray-500, #858a95);
-    padding: var(--space-2x) var(--space-6x) var(--space-2x) var(--space-4x);
-    border-left: 2px solid var(--gray-200, #ecedef);
-    transition-property: color, border-left-color;
-    transition-duration: 100ms;
-    transition-timing-function: ease-in;
+    padding: var(--space-2x) var(--space-6x) var(--space-2x) 0;
+    transition: color 100ms ease-in;
   }
 
   .nav-link.active,
@@ -167,19 +173,17 @@ const currentPageMatch = removeSlashes(currentPage.slice(1))
   .nav-link:focus,
   .nav-link[aria-current="page"] {
     color: var(--blue-600, #375bd2);
-    border-left-color: var(--blue-600, #375bd2);
   }
 
   .nav-link[aria-current="page"] {
     font-weight: 500;
   }
-
   :global(:root.theme-dark) .nav-link[aria-current="page"] {
     color: hsla(var(--color-base-white), 100%, 1);
   }
 
   .nav-link.nested {
-    padding-left: var(--space-8x);
+    padding-left: var(--space-5x);
   }
 
   @media (min-width: 50em) {
@@ -207,6 +211,16 @@ const currentPageMatch = removeSlashes(currentPage.slice(1))
     nav {
       width: 300px;
     }
+  }
+</style>
+
+<style is:inline>
+  .nav-link svg {
+    opacity: 0;
+  }
+
+  .nav-link[aria-current="page"] svg {
+    opacity: 1;
   }
 </style>
 
