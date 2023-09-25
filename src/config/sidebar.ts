@@ -105,6 +105,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "Using Data Feeds On-Chain",
           url: "data-feeds/solana/using-data-feeds-solana",
         },
+        {
+          title: "Price Feeds Showcase Example",
+          url: "quickstarts/price-feeds-showcase",
+        },
       ],
     },
     {
@@ -127,6 +131,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "Feed Registry API Reference",
           url: "data-feeds/feed-registry/feed-registry-functions",
         },
+        {
+          title: "Host your own Price Feed API",
+          url: "quickstarts/historical-price-feeds-api",
+        },
       ],
     },
     {
@@ -142,7 +150,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           children: [
             {
               title: "Deploy Your First Smart Contract",
-              url: "getting-started/deploy-your-first-contract?parent=dataFeeds",
+              url: "quickstarts/deploy-your-first-contract?parent=dataFeeds",
             },
           ],
         },
@@ -163,6 +171,16 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Starter Kits and Frameworks",
           url: "resources/create-a-chainlinked-project?parent=dataFeeds",
+          children: [
+            {
+              title: "Chainlink Hardhat Starter Kit",
+              url: "quickstarts/chainlink-hardhat-starter-kit?parent=dataFeeds",
+            },
+          ],
+        },
+        {
+          title: "Using the Hardhat Chainlink Plugin",
+          url: "quickstarts/hardhat-plugin?parent=dataFeeds",
         },
         {
           title: "Bridges and Associated Risks",
@@ -231,8 +249,8 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "Examples",
       contents: [
         {
-          title: "Automate the Reveal of Batch NFTs",
-          url: "chainlink-automation/tutorials/batch-nft",
+          title: "Automate the Reveal of Collections",
+          url: "quickstarts/batch-reveal",
         },
         {
           title: "Create a time-based upkeep",
@@ -307,7 +325,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           children: [
             {
               title: "Deploy Your First Smart Contract",
-              url: "getting-started/deploy-your-first-contract?parent=automation",
+              url: "quickstarts/deploy-your-first-contract?parent=automation",
             },
           ],
         },
@@ -328,6 +346,16 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Starter Kits and Frameworks",
           url: "resources/create-a-chainlinked-project?parent=automation",
+          children: [
+            {
+              title: "Chainlink Hardhat Starter Kit",
+              url: "quickstarts/chainlink-hardhat-starter-kit?parent=automation",
+            },
+          ],
+        },
+        {
+          title: "Using the Hardhat Chainlink Plugin",
+          url: "quickstarts/hardhat-plugin?parent=automation",
         },
         {
           title: "Bridges and Associated Risks",
@@ -477,7 +505,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           children: [
             {
               title: "Deploy Your First Smart Contract",
-              url: "getting-started/deploy-your-first-contract?parent=chainlinkFunctions",
+              url: "quickstarts/deploy-your-first-contract?parent=chainlinkFunctions",
             },
           ],
         },
@@ -498,6 +526,12 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Starter Kits and Frameworks",
           url: "resources/create-a-chainlinked-project?parent=chainlinkFunctions",
+          children: [
+            {
+              title: "Chainlink Hardhat Starter Kit",
+              url: "quickstarts/chainlink-hardhat-starter-kit?parent=chainlinkFunctions",
+            },
+          ],
         },
         {
           title: "Bridges and Associated Risks",
@@ -625,6 +659,15 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
+      section: "EXAMPLES",
+      contents: [
+        {
+          title: "LootBox/Pack Contract",
+          url: "quickstarts/vrf-enabled-lootbox-pack",
+        },
+      ],
+    },
+    {
       section: "Resources",
       contents: [
         {
@@ -637,7 +680,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           children: [
             {
               title: "Deploy Your First Smart Contract",
-              url: "getting-started/deploy-your-first-contract?parent=vrf",
+              url: "quickstarts/deploy-your-first-contract?parent=vrf",
             },
           ],
         },
@@ -658,6 +701,16 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Starter Kits and Frameworks",
           url: "resources/create-a-chainlinked-project?parent=vrf",
+          children: [
+            {
+              title: "Chainlink Hardhat Starter Kit",
+              url: "quickstarts/chainlink-hardhat-starter-kit?parent=vrf",
+            },
+          ],
+        },
+        {
+          title: "Using the Hardhat Chainlink Plugin",
+          url: "quickstarts/hardhat-plugin?parent=vrf",
         },
         {
           title: "Bridges and Associated Risks",
@@ -803,7 +856,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           children: [
             {
               title: "Deploy Your First Smart Contract",
-              url: "getting-started/deploy-your-first-contract?parent=ccip",
+              url: "quickstarts/deploy-your-first-contract?parent=ccip",
             },
           ],
         },
@@ -824,6 +877,12 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Starter Kits and Frameworks",
           url: "resources/create-a-chainlinked-project?parent=ccip",
+          children: [
+            {
+              title: "Chainlink Hardhat Starter Kit",
+              url: "quickstarts/chainlink-hardhat-starter-kit?parent=ccip",
+            },
+          ],
         },
         {
           title: "Bridges and Associated Risks",
@@ -944,6 +1003,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Best Practices for Nodes on AWS",
           url: "chainlink-nodes/resources/best-practices-aws",
+        },
+        {
+          title: "Run nodes using the Foundry Chainlink Toolkit",
+          url: "quickstarts/foundry-chainlink-toolkit",
         },
         { title: "Miscellaneous", url: "chainlink-nodes/resources/miscellaneous" },
       ],
@@ -1110,7 +1173,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           children: [
             {
               title: "Deploy Your First Smart Contract",
-              url: "getting-started/deploy-your-first-contract",
+              url: "quickstarts/deploy-your-first-contract",
             },
           ],
         },
@@ -1131,6 +1194,16 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Starter Kits and Frameworks",
           url: "resources/create-a-chainlinked-project",
+          children: [
+            {
+              title: "Chainlink Hardhat Starter Kit",
+              url: "quickstarts/chainlink-hardhat-starter-kit",
+            },
+          ],
+        },
+        {
+          title: "Using the Hardhat Chainlink Plugin",
+          url: "quickstarts/hardhat-plugin",
         },
         {
           title: "Bridges and Associated Risks",
