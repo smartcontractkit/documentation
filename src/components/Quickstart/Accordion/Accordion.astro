@@ -12,9 +12,9 @@ const id = title.toLowerCase().split(" ").join("-")
     <details style={number === 1 || !number ? { borderTop: "1px solid var(--gray-300, #ced0d5)" } : {}}>
       <summary id={id} data-id={`${number}-${id}`}>
         <span class="before">{number}</span>
-        {title}</summary
-      >
-      <div class="content">
+        {title}
+      </summary>
+      <div class="accordionContent">
         <slot />
       </div>
     </details>
@@ -63,8 +63,9 @@ const id = title.toLowerCase().split(" ").join("-")
     background-color: #174cc2;
   }
 
-  .content {
+  .accordionContent {
     padding-left: var(--space-8x);
+    padding-bottom: var(--space-4x);
   }
 
   @media (min-width: 48em) {
@@ -82,8 +83,12 @@ const id = title.toLowerCase().split(" ").join("-")
 </style>
 
 <style is:inline>
-  .content > :last-child {
-    padding-bottom: var(--space-4x);
+  .accordionContent > :not(astro-slot, astro-island, ul, ol) {
+    margin-top: var(--space-4x);
+  }
+
+  .accordionContent > :first-child {
+    margin-top: 0;
   }
 </style>
 
