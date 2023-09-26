@@ -13,35 +13,36 @@ export const AutomationConfigList = () => {
     return !technologyTitle ? (
       <p />
     ) : (
-      <div key={technology}>
-        <h3 id={slugger.slug(technologyTitle)}>{technologyTitle}</h3>
-        {Object.keys(config.chains).map((supportedChain: SupportedChain) => {
-          const title = getTitle(supportedChain)
-          const explorerUrl = getExplorer(supportedChain)
-          const registryAddress = automationAddresses[supportedChain]
-            ? automationAddresses[supportedChain]?.registryAddress
-            : ""
+      <>
+      {Object.keys(config.chains).map((supportedChain: SupportedChain) => {
+        const title = getTitle(supportedChain)
+        const explorerUrl = getExplorer(supportedChain)
+        const registryAddress = automationAddresses[supportedChain]
+          ? automationAddresses[supportedChain]?.registryAddress
+          : ""
 
-          const config = chainlinkAutomationConfig[supportedChain]
+        const config = chainlinkAutomationConfig[supportedChain]
 
-          if (!(title && config && registryAddress && explorerUrl)) {
-            return null
-          }
+        if (!(title && config && registryAddress && explorerUrl)) {
+          return null
+        }
 
-          return (
-            <div key={supportedChain}>
-              <h4 id={slugger.slug(title)}>{title}</h4>
-              {
-                <AutomationConfig
-                  config={config}
-                  registryAddress={registryAddress}
-                  getExplorerAddressUrl={getExplorerAddressUrl(explorerUrl)}
-                />
-              }
-            </div>
-          )
-        })}
-      </div>
+        const h3Slug = slugger.slug(title)
+
+        return (
+          <section id={h3Slug} key={supportedChain}>
+            <h3 id={h3Slug}>{title}</h3>
+            {
+              <AutomationConfig
+                config={config}
+                registryAddress={registryAddress}
+                getExplorerAddressUrl={getExplorerAddressUrl(explorerUrl)}
+              />
+            }
+          </section>
+        )
+      })}
+      </>
     )
   })
 }
