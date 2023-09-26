@@ -24,10 +24,6 @@ const { titleHeading } = Astro.props
     margin-top: 0;
   }
 
-  article table {
-    margin-top: var(--space-2x);
-  }
-
   /* Using padding instead of margin so intersection observers work without spaces */
   article > section {
     padding-top: var(--space-5x);
@@ -60,24 +56,16 @@ const { titleHeading } = Astro.props
     margin-top: var(--space-5x);
   }
 
-  article section > :is(h1, h2, h3, h4) + :not(section, astro-slot, astro-island) {
+  article section > :is(h1, h2, h3) + :not(section, astro-slot, astro-island, h5, h6) {
     margin-top: var(--space-5x) !important;
   }
 
-  article section > :is(h5, h6) + :not(section, astro-slot, astro-island) {
+  article section > :is(h4, h5, h6) + :not(section, astro-slot, astro-island) {
     margin-top: var(--space-3x) !important;
   }
 
   article :where(section, astro-slot) > :is(h1, h2) {
     margin: 0;
-  }
-
-  article :where(section, astro-slot) > :is(h3, h4, h5, h6) {
-    padding-top: var(--space-8x);
-  }
-
-  article :where(section, astro-slot) > :is(h5, h6) {
-    padding-top: var(--space-4x);
   }
 
   article :where(section, astro-slot) > :is(h3, h4, h5, h6, li) {
@@ -93,11 +81,17 @@ const { titleHeading } = Astro.props
     padding-top: var(--space-6x);
   }
 
+  article :where(section, astro-slot) > h3 {
+    padding-top: var(--space-8x);
+  }
+
   article :where(section, astro-slot) > h4 {
+    padding-top: var(--space-5x);
     font-size: 20px;
   }
 
   article :where(section, astro-slot) > :is(h5, h6) {
+    padding-top: var(--space-4x);
     font-size: 16px;
   }
 
@@ -139,7 +133,7 @@ const { titleHeading } = Astro.props
   }
 
   /* Offsets padding */
-  section:target {
+  article :is(section, h5, h6):target {
     scroll-margin-top: var(--theme-navbar-height);
   }
 
@@ -157,8 +151,16 @@ const { titleHeading } = Astro.props
       scroll-margin-top: calc(-1 * var(--space-5x));
     }
 
-    section > section:target {
+    section > :is(section, h5, h6):target {
       scroll-margin-top: var(--space-24x);
+    }
+
+    article :where(section, astro-slot) > h3 {
+      padding-top: var(--space-8x);
+    }
+
+    article :where(section, astro-slot) > h4 {
+      padding-top: var(--space-6x);
     }
   }
 
