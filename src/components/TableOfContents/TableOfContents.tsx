@@ -27,14 +27,14 @@ const TableOfContents: FunctionalComponent<{
     }
 
     elements.forEach((e) => {
-      // Check for nextElementSibling, if there's no content
-      // following the header (i.e. empty overview)
-      // don't add a heading
-      if (e.textContent && e.nextElementSibling) {
+      const depth = Number(e.nodeName.at(1))
+      const slug = e.id
+      const text = e.textContent
+      if (text) {
         newHeadings.push({
-          depth: Number(e.nodeName.at(1)),
-          slug: e.id,
-          text: e.textContent,
+          depth,
+          slug,
+          text,
         })
       }
     })
