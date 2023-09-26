@@ -14,34 +14,34 @@ export const AutomationConfigList = () => {
       <p />
     ) : (
       <>
-      {Object.keys(config.chains).map((supportedChain: SupportedChain) => {
-        const title = getTitle(supportedChain)
-        const explorerUrl = getExplorer(supportedChain)
-        const registryAddress = automationAddresses[supportedChain]
-          ? automationAddresses[supportedChain]?.registryAddress
-          : ""
+        {Object.keys(config.chains).map((supportedChain: SupportedChain) => {
+          const title = getTitle(supportedChain)
+          const explorerUrl = getExplorer(supportedChain)
+          const registryAddress = automationAddresses[supportedChain]
+            ? automationAddresses[supportedChain]?.registryAddress
+            : ""
 
-        const config = chainlinkAutomationConfig[supportedChain]
+          const config = chainlinkAutomationConfig[supportedChain]
 
-        if (!(title && config && registryAddress && explorerUrl)) {
-          return null
-        }
+          if (!(title && config && registryAddress && explorerUrl)) {
+            return null
+          }
 
-        const h3Slug = slugger.slug(title)
+          const h3Slug = slugger.slug(title)
 
-        return (
-          <section id={h3Slug} key={supportedChain}>
-            <h3 id={h3Slug}>{title}</h3>
-            {
-              <AutomationConfig
-                config={config}
-                registryAddress={registryAddress}
-                getExplorerAddressUrl={getExplorerAddressUrl(explorerUrl)}
-              />
-            }
-          </section>
-        )
-      })}
+          return (
+            <section id={h3Slug} key={supportedChain}>
+              <h3 id={h3Slug}>{title}</h3>
+              {
+                <AutomationConfig
+                  config={config}
+                  registryAddress={registryAddress}
+                  getExplorerAddressUrl={getExplorerAddressUrl(explorerUrl)}
+                />
+              }
+            </section>
+          )
+        })}
       </>
     )
   })
