@@ -80,11 +80,20 @@ const includeLinkToWalletScript = !!Astro.props?.frontmatter?.metadata?.linkToWa
       }
 
       @media (min-width: 50em) {
+        main {
+          display: grid;
+          grid-template-columns: auto fit-content(100%) auto;
+        }
+
         .layout {
-          grid-template-columns: 1fr 2fr 1fr;
+          grid-template-columns: auto 2fr 1fr;
           gap: var(--gutter);
           max-width: var(--fullwidth-max-width);
           align-self: center;
+        }
+
+        #left-bg {
+          background: #fafbfd;
         }
 
         #grid-left {
@@ -155,19 +164,23 @@ const includeLinkToWalletScript = !!Astro.props?.frontmatter?.metadata?.linkToWa
   <body>
     <Header section={frontmatter.section} />
     <StickyHeader client:media="(max-width: 50em)" {initialHeadings} />
-    <main class="layout">
-      <aside id="grid-left" title="Site Navigation">
-        <LeftSidebar currentPage={currentPage} section={frontmatter.section} />
-      </aside>
-      <div id="grid-main">
-        <PageContent {titleHeading}>
-          <slot />
-        </PageContent>
-        {whatsNext && <WhatsNext content={whatsNext} />}
+    <main>
+      <div id="left-bg"></div>
+      <div class="layout">
+        <aside id="grid-left" title="Site Navigation">
+          <LeftSidebar currentPage={currentPage} section={frontmatter.section} />
+        </aside>
+        <div id="grid-main">
+          <PageContent {titleHeading}>
+            <slot />
+          </PageContent>
+          {whatsNext && <WhatsNext content={whatsNext} />}
+        </div>
+        <aside id="grid-right" title="Table of Contents">
+          <RightSidebar {githubEditUrl} headings={initialHeadings} />
+        </aside>
       </div>
-      <aside id="grid-right" title="Table of Contents">
-        <RightSidebar {githubEditUrl} headings={initialHeadings} />
-      </aside>
+      <div hidden="true"></div>
     </main>
     <NewsletterCTA client:visible />
     <Footer />
