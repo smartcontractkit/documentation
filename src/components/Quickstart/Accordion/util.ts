@@ -1,35 +1,12 @@
-// TODO: Changing between mobile / desktop layout
-// requires content height to be re-evaluated(?)
 export class Accordion extends HTMLElement {
   details: HTMLDetailsElement
   summary: HTMLElement
   animation: Animation | null
-  contentHeight = 0
   isClosing = false
   isExpanding = false
   constructor() {
     super()
     this.details = this.querySelector("details") as HTMLDetailsElement
-    const content = this.details.querySelectorAll(":scope > :not(summary)")
-    if (content.length === 0) {
-      return
-    }
-    content.forEach((value) => {
-      if (value.clientHeight > 0) {
-        this.contentHeight += value.clientHeight
-      }
-    })
-    if (this.contentHeight === 0) {
-      /** Required to work on browsers (incl. Safari)
-       * which don't count collapsed details elements as having height / width */
-      this.details.open = true
-      content.forEach((value) => {
-        if (value.clientHeight > 0) {
-          this.contentHeight += value.clientHeight
-        }
-      })
-      this.details.open = false
-    }
     this.summary = this.details.querySelector("summary") as HTMLElement
     this.summary.addEventListener("click", (e: MouseEvent) => this.onClick(e))
   }
@@ -74,10 +51,17 @@ export class Accordion extends HTMLElement {
   expand() {
     this.details.toggleAttribute("expanded")
     this.isExpanding = true
+    let contentHeight = 0
+    const content = this.details.querySelectorAll(":scope > :not(summary)")
+    content.forEach((value) => {
+      if (value.clientHeight > 0) {
+        contentHeight += value.clientHeight
+      }
+    })
     const startHeight = `${this.details.offsetHeight}px`
-    const endHeight = `${this.summary.offsetHeight + this.contentHeight}px`
+    const endHeight = `${this.summary.offsetHeight + contentHeight}px`
     this.cancelIfAnimating()
-    const duration = 250 + Math.min(this.contentHeight, 300)
+    const duration = 250 + Math.min(contentHeight, 300)
     this.animation = this.details.animate(
       {
         height: [startHeight, endHeight],
