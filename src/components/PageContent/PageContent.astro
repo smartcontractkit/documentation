@@ -14,7 +14,7 @@ const { titleHeading } = Astro.props
 </article>
 
 <style is:inline>
-  article :is(h1, h2, h3, h4) > a {
+  article :is(h1, h2, h3, h4, h5, h6) > a {
     display: inline-block;
     color: inherit;
     width: 100%;
@@ -64,15 +64,23 @@ const { titleHeading } = Astro.props
     margin-top: var(--space-5x) !important;
   }
 
+  article section > :is(h5, h6) + :not(section, astro-slot, astro-island) {
+    margin-top: var(--space-3x) !important;
+  }
+
   article :where(section, astro-slot) > :is(h1, h2) {
     margin: 0;
   }
 
-  article :where(section, astro-slot) > :is(h3, h4) {
+  article :where(section, astro-slot) > :is(h3, h4, h5, h6) {
     padding-top: var(--space-8x);
   }
 
-  article :where(section, astro-slot) > :is(h3, h4, li) {
+  article :where(section, astro-slot) > :is(h5, h6) {
+    padding-top: var(--space-4x);
+  }
+
+  article :where(section, astro-slot) > :is(h3, h4, h5, h6, li) {
     margin-top: 0;
   }
 
@@ -87,6 +95,10 @@ const { titleHeading } = Astro.props
 
   article :where(section, astro-slot) > h4 {
     font-size: 20px;
+  }
+
+  article :where(section, astro-slot) > :is(h5, h6) {
+    font-size: 16px;
   }
 
   article :is(ul, ol) {
@@ -181,7 +193,7 @@ const { titleHeading } = Astro.props
         !next.hasChildNodes() || // Island doesn't have HTML content
         next.children[0].nodeName !== "SECTION" || // First child of the island is not a section
         !next.children[0].id) && // Section does not have an id
-      (!next.id || (isParent && !["H1", "H2"].includes(next.nodeName)))
+      (!next.id || ["H5", "H6"].includes(next.nodeName) || (isParent && !["H1", "H2"].includes(next.nodeName)))
     ) {
       elements.push(next)
       next = next.nextElementSibling
