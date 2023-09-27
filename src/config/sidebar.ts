@@ -8,168 +8,58 @@ type SectionEntry = {
 }
 
 export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
-  gettingStarted: [
-    {
-      section: "Getting Started",
-      contents: [
-        { title: "Overview", url: "getting-started/conceptual-overview" },
-        {
-          title: "Deploy Your First Contract",
-          url: "getting-started/deploy-your-first-contract",
-        },
-        {
-          title: "Consuming Data Feeds",
-          url: "getting-started/consuming-data-feeds",
-        },
-        {
-          title: "Get Random Numbers",
-          url: "getting-started/intermediates-tutorial",
-        },
-        {
-          title: "API Calls",
-          url: "getting-started/advanced-tutorial",
-        },
-      ],
-    },
-    {
-      section: "Chainlink Architecture",
-      contents: [
-        {
-          title: "Overview",
-          url: "architecture-overview/architecture-overview?parent=gettingStarted",
-        },
-        {
-          title: "Basic Request Model",
-          url: "architecture-overview/architecture-request-model?parent=gettingStarted",
-        },
-        {
-          title: "Decentralized Data Model",
-          url: "architecture-overview/architecture-decentralized-model?parent=gettingStarted",
-        },
-        {
-          title: "Off-Chain Reporting",
-          url: "architecture-overview/off-chain-reporting?parent=gettingStarted",
-        },
-      ],
-    },
-    {
-      section: "Resources",
-      contents: [
-        {
-          title: "Learning Resources",
-          url: "getting-started/other-tutorials?parent=gettingStarted",
-        },
-        {
-          title: "Acquire testnet LINK",
-          url: "resources/acquire-link?parent=gettingStarted",
-        },
-        {
-          title: "Fund Your Contracts",
-          url: "resources/fund-your-contract?parent=gettingStarted",
-        },
-        {
-          title: "Install Frameworks",
-          url: "resources/create-a-chainlinked-project?parent=gettingStarted",
-        },
-        {
-          title: "LINK Token Contracts",
-          url: "resources/link-token-contracts?parent=gettingStarted",
-        },
-        {
-          title: "Bridges and Associated Risks",
-          url: "resources/bridge-risks?parent=gettingStarted",
-        },
-        {
-          title: "Developer Communications",
-          url: "resources/developer-communications?parent=gettingStarted",
-        },
-        {
-          title: "Getting Help",
-          url: "resources/getting-help?parent=gettingStarted",
-        },
-        {
-          title: "Hackathon Resources",
-          url: "resources/hackathon-resources?parent=gettingStarted",
-        },
-        {
-          title: "Contributing to Chainlink",
-          url: "resources/contributing-to-chainlink?parent=gettingStarted",
-        },
-      ],
-    },
-    {
-      section: "Next Steps",
-      contents: [
-        {
-          title: "Data Feeds",
-          url: "data-feeds",
-        },
-        {
-          title: "Chainlink VRF",
-          url: "vrf/v2/introduction",
-        },
-        {
-          title: "Chainlink Automation",
-          url: "chainlink-automation/introduction",
-        },
-        {
-          title: "Connect to Public API Data",
-          url: "any-api/introduction",
-        },
-      ],
-    },
-  ],
   dataFeeds: [
     {
-      section: "DATA FEEDS",
+      section: "Chainlink Data Feeds",
       contents: [
         {
           title: "Overview",
           url: "data-feeds",
+        },
+        {
+          title: "Getting Started",
+          url: "data-feeds/getting-started",
         },
         {
           title: "Price Feeds",
           url: "data-feeds/price-feeds",
-          children: [
-            {
-              title: "Price Feed Addresses",
-              url: "data-feeds/price-feeds/addresses",
-            },
-          ],
         },
         {
           title: "Proof of Reserve Feeds",
           url: "data-feeds/proof-of-reserve",
-          children: [
-            {
-              title: "Proof of Reserve Addresses",
-              url: "data-feeds/proof-of-reserve/addresses",
-            },
-          ],
         },
         {
           title: "NFT Floor Price Feeds",
           url: "data-feeds/nft-floor-price",
-          children: [
-            {
-              title: "NFT Floor Price Addresses",
-              url: "data-feeds/nft-floor-price/addresses",
-            },
-          ],
         },
         {
           title: "Rate and Volatility Feeds",
           url: "data-feeds/rates-feeds",
-          children: [
-            {
-              title: "Rate and Volatility Feed Addresses",
-              url: "data-feeds/rates-feeds/addresses",
-            },
-          ],
         },
         {
           title: "L2 Sequencer Uptime Feeds",
           url: "data-feeds/l2-sequencer-feeds",
+        },
+      ],
+    },
+    {
+      section: "Feed Addresses",
+      contents: [
+        {
+          title: "Price Feed Addresses",
+          url: "data-feeds/price-feeds/addresses",
+        },
+        {
+          title: "Proof of Reserve Addresses",
+          url: "data-feeds/proof-of-reserve/addresses",
+        },
+        {
+          title: "NFT Floor Price Addresses",
+          url: "data-feeds/nft-floor-price/addresses",
+        },
+        {
+          title: "Rate and Volatility Feed Addresses",
+          url: "data-feeds/rates-feeds/addresses",
         },
         {
           title: "Selecting Quality Data Feeds",
@@ -178,33 +68,23 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
-      section: "Ethereum and EVM Chains",
+      section: "Ethereum and EVM Guides",
       contents: [
         {
           title: "Using Data Feeds",
           url: "data-feeds/using-data-feeds",
         },
         {
-          title: "Code Examples",
-          url: "data-feeds/examples",
-        },
-        {
           title: "Getting Historical Data",
           url: "data-feeds/historical-data",
         },
         {
-          title: "Data Feeds API Reference",
-          url: "data-feeds/api-reference",
+          title: "Using the Web3.js Plugin",
+          url: "quickstarts/web3js",
         },
         {
-          title: "Feed Registry",
+          title: "Using Feed Registry",
           url: "data-feeds/feed-registry",
-          children: [
-            {
-              title: "Feed Registry API Reference",
-              url: "data-feeds/feed-registry/feed-registry-functions",
-            },
-          ],
         },
         {
           title: "Using ENS with Data Feeds",
@@ -213,7 +93,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
-      section: "Solana",
+      section: "Solana Guides",
       contents: [
         {
           title: "Data Feeds on Solana",
@@ -227,10 +107,14 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "Using Data Feeds On-Chain",
           url: "data-feeds/solana/using-data-feeds-solana",
         },
+        {
+          title: "Price Feeds Showcase Example",
+          url: "quickstarts/price-feeds-showcase",
+        },
       ],
     },
     {
-      section: "StarkNet",
+      section: "StarkNet Guides",
       contents: [
         {
           title: "Using Data Feeds on StarkNet",
@@ -239,23 +123,19 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
-      section: "Chainlink Architecture",
+      section: "API Reference",
       contents: [
         {
-          title: "Overview",
-          url: "architecture-overview/architecture-overview?parent=dataFeeds",
+          title: "Data Feeds API Reference",
+          url: "data-feeds/api-reference",
         },
         {
-          title: "Basic Request Model",
-          url: "architecture-overview/architecture-request-model?parent=dataFeeds",
+          title: "Feed Registry API Reference",
+          url: "data-feeds/feed-registry/feed-registry-functions",
         },
         {
-          title: "Decentralized Data Model",
-          url: "architecture-overview/architecture-decentralized-model?parent=dataFeeds",
-        },
-        {
-          title: "Off-Chain Reporting",
-          url: "architecture-overview/off-chain-reporting?parent=dataFeeds",
+          title: "Host your own Price Feed API",
+          url: "quickstarts/historical-price-feeds-api",
         },
       ],
     },
@@ -267,31 +147,73 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "getting-started/other-tutorials?parent=dataFeeds",
         },
         {
-          title: "Acquire testnet LINK",
-          url: "resources/acquire-link?parent=dataFeeds",
-        },
-        {
-          title: "Fund Your Contracts",
-          url: "resources/fund-your-contract?parent=dataFeeds",
-        },
-        {
-          title: "Install Frameworks",
-          url: "resources/create-a-chainlinked-project?parent=dataFeeds",
+          title: "Smart Contract Overview",
+          url: "getting-started/conceptual-overview?parent=dataFeeds",
+          children: [
+            {
+              title: "Deploy Your First Smart Contract",
+              url: "quickstarts/deploy-your-first-contract?parent=dataFeeds",
+            },
+          ],
         },
         {
           title: "LINK Token Contracts",
           url: "resources/link-token-contracts?parent=dataFeeds",
+          children: [
+            {
+              title: "Acquire testnet LINK",
+              url: "resources/acquire-link?parent=dataFeeds",
+            },
+            {
+              title: "Fund Your Contracts",
+              url: "resources/fund-your-contract?parent=dataFeeds",
+            },
+          ],
+        },
+        {
+          title: "Starter Kits and Frameworks",
+          url: "resources/create-a-chainlinked-project?parent=dataFeeds",
+          children: [
+            {
+              title: "Chainlink Hardhat Starter Kit",
+              url: "quickstarts/chainlink-hardhat-starter-kit?parent=dataFeeds",
+            },
+          ],
+        },
+        {
+          title: "Using the Hardhat Chainlink Plugin",
+          url: "quickstarts/hardhat-plugin?parent=dataFeeds",
         },
         {
           title: "Bridges and Associated Risks",
           url: "resources/bridge-risks?parent=dataFeeds",
         },
         {
+          title: "Chainlink Architecture",
+          url: "architecture-overview/architecture-overview?parent=dataFeeds",
+          children: [
+            {
+              title: "Basic Request Model",
+              url: "architecture-overview/architecture-request-model?parent=dataFeeds",
+            },
+            {
+              title: "Decentralized Data Model",
+              url: "architecture-overview/architecture-decentralized-model?parent=dataFeeds",
+            },
+            {
+              title: "Off-Chain Reporting",
+              url: "architecture-overview/off-chain-reporting?parent=dataFeeds",
+            },
+          ],
+        },
+        {
           title: "Developer Communications",
           url: "resources/developer-communications?parent=dataFeeds",
+          children: [
+            { title: "Getting Help", url: "resources/getting-help?parent=dataFeeds" },
+            { title: "Hackathon Resources", url: "resources/hackathon-resources?parent=dataFeeds" },
+          ],
         },
-        { title: "Getting Help", url: "resources/getting-help" },
-        { title: "Hackathon Resources", url: "resources/hackathon-resources?parent=dataFeeds" },
         {
           title: "Contributing to Chainlink",
           url: "resources/contributing-to-chainlink?parent=dataFeeds",
@@ -301,7 +223,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
   ],
   automation: [
     {
-      section: "AUTOMATION",
+      section: "Chainlink Automation",
       contents: [
         {
           title: "Introduction",
@@ -319,30 +241,38 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "Best Practices",
           url: "chainlink-automation/compatible-contract-best-practice",
         },
+        {
+          title: "Release Notes",
+          url: "chainlink-automation/automation-release-notes",
+        },
       ],
     },
     {
       section: "EXAMPLES",
       contents: [
         {
-          title: "Automate the Reveal of Batch NFTs",
-          url: "chainlink-automation/tutorials/batch-nft",
+          title: "Automate the Reveal of Collections",
+          url: "quickstarts/batch-reveal",
         },
         {
-          title: "Create Dynamic NFTs",
-          url: "chainlink-automation/tutorials/dynamic-nft",
+          title: "Create a time-based upkeep",
+          url: "quickstarts/time-based-upkeep",
+        },
+        {
+          title: "Dynamic Metadata with Automation",
+          url: "quickstarts/dynamic-metadata",
         },
         {
           title: "Create a Vault Harvester",
           url: "chainlink-automation/tutorials/vault-harvester",
         },
         {
-          title: "Automate Top-Up for Contract Balances",
-          url: "chainlink-automation/tutorials/eth-balance",
+          title: "Automate Contract Balance Top-up",
+          url: "quickstarts/eth-balance-monitor",
         },
         {
           title: "Automate Top-Up for VRF Subscriptions",
-          url: "chainlink-automation/tutorials/vrf-sub-monitor",
+          url: "quickstarts/vrf-subscription-monitor",
         },
       ],
     },
@@ -368,7 +298,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
-      section: "Reference",
+      section: "Concepts",
       contents: [
         {
           title: "Automation Pricing",
@@ -379,33 +309,8 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "chainlink-automation/overview",
         },
         {
-          title: "Automation Release Notes",
-          url: "chainlink-automation/automation-release-notes",
-        },
-        {
           title: "FAQs",
           url: "chainlink-automation/faqs",
-        },
-      ],
-    },
-    {
-      section: "Chainlink Architecture",
-      contents: [
-        {
-          title: "Overview",
-          url: "architecture-overview/architecture-overview?parent=automation",
-        },
-        {
-          title: "Basic Request Model",
-          url: "architecture-overview/architecture-request-model?parent=automation",
-        },
-        {
-          title: "Decentralized Data Model",
-          url: "architecture-overview/architecture-decentralized-model?parent=automation",
-        },
-        {
-          title: "Off-Chain Reporting",
-          url: "architecture-overview/off-chain-reporting?parent=automation",
         },
       ],
     },
@@ -417,36 +322,72 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "getting-started/other-tutorials?parent=automation",
         },
         {
-          title: "Acquire testnet LINK",
-          url: "resources/acquire-link?parent=automation",
-        },
-        {
-          title: "Fund Your Contracts",
-          url: "resources/fund-your-contract?parent=automation",
-        },
-        {
-          title: "Install Frameworks",
-          url: "resources/create-a-chainlinked-project?parent=automation",
+          title: "Smart Contract Overview",
+          url: "getting-started/conceptual-overview?parent=automation",
+          children: [
+            {
+              title: "Deploy Your First Smart Contract",
+              url: "quickstarts/deploy-your-first-contract?parent=automation",
+            },
+          ],
         },
         {
           title: "LINK Token Contracts",
           url: "resources/link-token-contracts?parent=automation",
+          children: [
+            {
+              title: "Acquire testnet LINK",
+              url: "resources/acquire-link?parent=automation",
+            },
+            {
+              title: "Fund Your Contracts",
+              url: "resources/fund-your-contract?parent=automation",
+            },
+          ],
+        },
+        {
+          title: "Starter Kits and Frameworks",
+          url: "resources/create-a-chainlinked-project?parent=automation",
+          children: [
+            {
+              title: "Chainlink Hardhat Starter Kit",
+              url: "quickstarts/chainlink-hardhat-starter-kit?parent=automation",
+            },
+          ],
+        },
+        {
+          title: "Using the Hardhat Chainlink Plugin",
+          url: "quickstarts/hardhat-plugin?parent=automation",
         },
         {
           title: "Bridges and Associated Risks",
           url: "resources/bridge-risks?parent=automation",
         },
         {
+          title: "Chainlink Architecture",
+          url: "architecture-overview/architecture-overview?parent=automation",
+          children: [
+            {
+              title: "Basic Request Model",
+              url: "architecture-overview/architecture-request-model?parent=automation",
+            },
+            {
+              title: "Decentralized Data Model",
+              url: "architecture-overview/architecture-decentralized-model?parent=automation",
+            },
+            {
+              title: "Off-Chain Reporting",
+              url: "architecture-overview/off-chain-reporting?parent=automation",
+            },
+          ],
+        },
+        {
           title: "Developer Communications",
           url: "resources/developer-communications?parent=automation",
-        },
-        {
-          title: "Getting Help",
-          url: "resources/getting-help?parent=automation",
-        },
-        {
-          title: "Hackathon Resources",
-          url: "resources/hackathon-resources?parent=automation",
+          children: [
+            { title: "Getting Help", url: "resources/getting-help?parent=automation" },
+            { title: "Hackathon Resources", url: "resources/hackathon-resources?parent=automation" },
+          ],
         },
         {
           title: "Contributing to Chainlink",
@@ -457,20 +398,24 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
   ],
   chainlinkFunctions: [
     {
-      section: "CHAINLINK FUNCTIONS",
+      section: "Chainlink Functions",
       contents: [
         {
-          title: "What is Chainlink Functions?",
+          title: "Overview",
           url: "chainlink-functions",
         },
         {
           title: "Getting Started",
           url: "chainlink-functions/getting-started",
         },
+        {
+          title: "Supported Networks",
+          url: "chainlink-functions/supported-networks",
+        },
       ],
     },
     {
-      section: "Tutorials",
+      section: "Guides",
       contents: [
         {
           title: "Request Computation",
@@ -504,23 +449,24 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "Automate your Functions",
           url: "chainlink-functions/tutorials/automate-functions/",
         },
+        {
+          title: "Add Functions to a Project",
+          url: "chainlink-functions/resources/add-functions-to-projects",
+        },
       ],
     },
     {
-      section: "Guides",
+      section: "Concepts",
       contents: [
         {
-          title: "Concepts",
+          title: "Concept Overview",
           url: "chainlink-functions/resources/concepts",
         },
         {
           title: "Architecture",
           url: "chainlink-functions/resources/architecture",
         },
-        {
-          title: "Add Functions to a Project",
-          url: "chainlink-functions/resources/add-functions-to-projects",
-        },
+
         {
           title: "Managing Subscriptions",
           url: "chainlink-functions/resources/subscriptions",
@@ -528,10 +474,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Billing",
           url: "chainlink-functions/resources/billing",
-        },
-        {
-          title: "Supported Networks",
-          url: "chainlink-functions/supported-networks",
         },
         {
           title: "Service Limits",
@@ -553,48 +495,75 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
-      section: "Chainlink Architecture",
-      contents: [
-        {
-          title: "Overview",
-          url: "architecture-overview/architecture-overview?parent=chainlinkFunctions",
-        },
-        {
-          title: "Basic Request Model",
-          url: "architecture-overview/architecture-request-model?parent=chainlinkFunctions",
-        },
-        {
-          title: "Decentralized Data Model",
-          url: "architecture-overview/architecture-decentralized-model?parent=chainlinkFunctions",
-        },
-        {
-          title: "Off-Chain Reporting",
-          url: "architecture-overview/off-chain-reporting?parent=chainlinkFunctions",
-        },
-      ],
-    },
-    {
       section: "Resources",
       contents: [
         {
-          title: "Acquire testnet LINK",
-          url: "resources/acquire-link?parent=chainlinkFunctions",
+          title: "Learning Resources",
+          url: "getting-started/other-tutorials?parent=chainlinkFunctions",
+        },
+        {
+          title: "Smart Contract Overview",
+          url: "getting-started/conceptual-overview?parent=chainlinkFunctions",
+          children: [
+            {
+              title: "Deploy Your First Smart Contract",
+              url: "quickstarts/deploy-your-first-contract?parent=chainlinkFunctions",
+            },
+          ],
         },
         {
           title: "LINK Token Contracts",
           url: "resources/link-token-contracts?parent=chainlinkFunctions",
+          children: [
+            {
+              title: "Acquire testnet LINK",
+              url: "resources/acquire-link?parent=chainlinkFunctions",
+            },
+            {
+              title: "Fund Your Contracts",
+              url: "resources/fund-your-contract?parent=chainlinkFunctions",
+            },
+          ],
+        },
+        {
+          title: "Starter Kits and Frameworks",
+          url: "resources/create-a-chainlinked-project?parent=chainlinkFunctions",
+          children: [
+            {
+              title: "Chainlink Hardhat Starter Kit",
+              url: "quickstarts/chainlink-hardhat-starter-kit?parent=chainlinkFunctions",
+            },
+          ],
+        },
+        {
+          title: "Bridges and Associated Risks",
+          url: "resources/bridge-risks?parent=chainlinkFunctions",
+        },
+        {
+          title: "Chainlink Architecture",
+          url: "architecture-overview/architecture-overview?parent=chainlinkFunctions",
+          children: [
+            {
+              title: "Basic Request Model",
+              url: "architecture-overview/architecture-request-model?parent=chainlinkFunctions",
+            },
+            {
+              title: "Decentralized Data Model",
+              url: "architecture-overview/architecture-decentralized-model?parent=chainlinkFunctions",
+            },
+            {
+              title: "Off-Chain Reporting",
+              url: "architecture-overview/off-chain-reporting?parent=chainlinkFunctions",
+            },
+          ],
         },
         {
           title: "Developer Communications",
           url: "resources/developer-communications?parent=chainlinkFunctions",
-        },
-        {
-          title: "Getting Help",
-          url: "resources/getting-help?parent=chainlinkFunctions",
-        },
-        {
-          title: "Hackathon Resources",
-          url: "resources/hackathon-resources?parent=chainlinkFunctions",
+          children: [
+            { title: "Getting Help", url: "resources/getting-help?parent=chainlinkFunctions" },
+            { title: "Hackathon Resources", url: "resources/hackathon-resources?parent=chainlinkFunctions" },
+          ],
         },
         {
           title: "Contributing to Chainlink",
@@ -605,11 +574,15 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
   ],
   vrf: [
     {
-      section: "CHAINLINK VRF",
+      section: "Chainlink VRF",
       contents: [
         {
-          title: "Introduction to Chainlink VRF",
+          title: "Overview",
           url: "vrf/v2/introduction",
+        },
+        {
+          title: "Getting Started",
+          url: "vrf/v2/getting-started",
         },
         {
           title: "Security Considerations",
@@ -626,7 +599,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
-      section: "SUBSCRIPTION METHOD",
+      section: "Subscription Method",
       contents: [
         {
           title: "Introduction",
@@ -659,7 +632,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
-      section: "DIRECT FUNDING METHOD",
+      section: "Direct Funding Method",
       contents: [
         {
           title: "Introduction",
@@ -674,6 +647,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "vrf/v2/direct-funding/examples/test-locally",
         },
         {
+          title: "Pass Costs to End Users",
+          url: "quickstarts/pass-cost-to-end-user",
+        },
+        {
           title: "Supported Networks",
           url: "vrf/v2/direct-funding/supported-networks",
         },
@@ -684,23 +661,11 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
-      section: "Chainlink Architecture",
+      section: "EXAMPLES",
       contents: [
         {
-          title: "Overview",
-          url: "architecture-overview/architecture-overview?parent=vrf",
-        },
-        {
-          title: "Basic Request Model",
-          url: "architecture-overview/architecture-request-model?parent=vrf",
-        },
-        {
-          title: "Decentralized Data Model",
-          url: "architecture-overview/architecture-decentralized-model?parent=vrf",
-        },
-        {
-          title: "Off-Chain Reporting",
-          url: "architecture-overview/off-chain-reporting?parent=vrf",
+          title: "LootBox/Pack Contract",
+          url: "quickstarts/vrf-enabled-lootbox-pack",
         },
       ],
     },
@@ -712,36 +677,72 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "getting-started/other-tutorials?parent=vrf",
         },
         {
-          title: "Acquire testnet LINK",
-          url: "resources/acquire-link?parent=vrf",
-        },
-        {
-          title: "Fund Your Contracts",
-          url: "resources/fund-your-contract?parent=vrf",
-        },
-        {
-          title: "Install Frameworks",
-          url: "resources/create-a-chainlinked-project?parent=vrf",
+          title: "Smart Contract Overview",
+          url: "getting-started/conceptual-overview?parent=vrf",
+          children: [
+            {
+              title: "Deploy Your First Smart Contract",
+              url: "quickstarts/deploy-your-first-contract?parent=vrf",
+            },
+          ],
         },
         {
           title: "LINK Token Contracts",
           url: "resources/link-token-contracts?parent=vrf",
+          children: [
+            {
+              title: "Acquire testnet LINK",
+              url: "resources/acquire-link?parent=vrf",
+            },
+            {
+              title: "Fund Your Contracts",
+              url: "resources/fund-your-contract?parent=vrf",
+            },
+          ],
+        },
+        {
+          title: "Starter Kits and Frameworks",
+          url: "resources/create-a-chainlinked-project?parent=vrf",
+          children: [
+            {
+              title: "Chainlink Hardhat Starter Kit",
+              url: "quickstarts/chainlink-hardhat-starter-kit?parent=vrf",
+            },
+          ],
+        },
+        {
+          title: "Using the Hardhat Chainlink Plugin",
+          url: "quickstarts/hardhat-plugin?parent=vrf",
         },
         {
           title: "Bridges and Associated Risks",
           url: "resources/bridge-risks?parent=vrf",
         },
         {
+          title: "Chainlink Architecture",
+          url: "architecture-overview/architecture-overview?parent=vrf",
+          children: [
+            {
+              title: "Basic Request Model",
+              url: "architecture-overview/architecture-request-model?parent=vrf",
+            },
+            {
+              title: "Decentralized Data Model",
+              url: "architecture-overview/architecture-decentralized-model?parent=vrf",
+            },
+            {
+              title: "Off-Chain Reporting",
+              url: "architecture-overview/off-chain-reporting?parent=vrf",
+            },
+          ],
+        },
+        {
           title: "Developer Communications",
           url: "resources/developer-communications?parent=vrf",
-        },
-        {
-          title: "Getting Help",
-          url: "resources/getting-help?parent=vrf",
-        },
-        {
-          title: "Hackathon Resources",
-          url: "resources/hackathon-resources?parent=vrf",
+          children: [
+            { title: "Getting Help", url: "resources/getting-help?parent=vrf" },
+            { title: "Hackathon Resources", url: "resources/hackathon-resources?parent=vrf" },
+          ],
         },
         {
           title: "Contributing to Chainlink",
@@ -750,135 +751,12 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
   ],
-  anyApi: [
-    {
-      section: "CONNECTING TO APIs",
-      contents: [
-        {
-          title: "Introduction",
-          url: "any-api/introduction",
-        },
-      ],
-    },
-    {
-      section: "Make a GET Request",
-      contents: [
-        {
-          title: "Overview",
-          url: "any-api/get-request/introduction",
-        },
-        {
-          title: "Single Word Response",
-          url: "any-api/get-request/examples/single-word-response",
-        },
-        {
-          title: "Multi-Variable Responses",
-          url: "any-api/get-request/examples/multi-variable-responses",
-        },
-        {
-          title: "Array Response",
-          url: "any-api/get-request/examples/array-response",
-        },
-        {
-          title: "Large Responses",
-          url: "any-api/get-request/examples/large-responses",
-        },
-        {
-          title: "Existing Job Request",
-          url: "any-api/get-request/examples/existing-job-request",
-        },
-      ],
-    },
-    {
-      section: "Reference",
-      contents: [
-        {
-          title: "Find Existing Jobs",
-          url: "any-api/find-oracle",
-        },
-        {
-          title: "Testnet Oracles",
-          url: "any-api/testnet-oracles",
-        },
-        {
-          title: "API Reference",
-          url: "any-api/api-reference",
-        },
-      ],
-    },
-    {
-      section: "Chainlink Architecture",
-      contents: [
-        {
-          title: "Overview",
-          url: "architecture-overview/architecture-overview?parent=anyApi",
-        },
-        {
-          title: "Basic Request Model",
-          url: "architecture-overview/architecture-request-model?parent=anyApi",
-        },
-        {
-          title: "Decentralized Data Model",
-          url: "architecture-overview/architecture-decentralized-model?parent=anyApi",
-        },
-        {
-          title: "Off-Chain Reporting",
-          url: "architecture-overview/off-chain-reporting?parent=anyApi",
-        },
-      ],
-    },
-    {
-      section: "Resources",
-      contents: [
-        {
-          title: "Learning Resources",
-          url: "getting-started/other-tutorials?parent=anyApi",
-        },
-        {
-          title: "Acquire testnet LINK",
-          url: "resources/acquire-link?parent=anyApi",
-        },
-        {
-          title: "Fund Your Contracts",
-          url: "resources/fund-your-contract?parent=anyApi",
-        },
-        {
-          title: "Install Frameworks",
-          url: "resources/create-a-chainlinked-project?parent=anyApi",
-        },
-        {
-          title: "LINK Token Contracts",
-          url: "resources/link-token-contracts?parent=anyApi",
-        },
-        {
-          title: "Bridges and Associated Risks",
-          url: "resources/bridge-risks?parent=anyApi",
-        },
-        {
-          title: "Developer Communications",
-          url: "resources/developer-communications?parent=anyApi",
-        },
-        {
-          title: "Getting Help",
-          url: "resources/getting-help?parent=anyApi",
-        },
-        {
-          title: "Hackathon Resources",
-          url: "resources/hackathon-resources?parent=anyApi",
-        },
-        {
-          title: "Contributing to Chainlink",
-          url: "resources/contributing-to-chainlink?parent=anyApi",
-        },
-      ],
-    },
-  ],
   ccip: [
     {
-      section: "CHAINLINK CCIP",
+      section: "Chainlink CCIP",
       contents: [
         {
-          title: "What is Chainlink CCIP?",
+          title: "Overview",
           url: "ccip",
         },
         {
@@ -896,7 +774,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
-      section: "TUTORIALS",
+      section: "Guides",
       contents: [
         {
           title: "Transfer Tokens",
@@ -913,6 +791,27 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Send Arbitrary Data",
           url: "ccip/tutorials/send-arbitrary-data",
+        },
+        {
+          title: "Acquire Test Tokens",
+          url: "ccip/test-tokens",
+        },
+      ],
+    },
+    {
+      section: "Concepts",
+      contents: [
+        {
+          title: "Concept Overview",
+          url: "ccip/concepts",
+        },
+        {
+          title: "Architecture and Billing",
+          url: "ccip/architecture",
+        },
+        {
+          title: "Best Practices",
+          url: "ccip/best-practices",
         },
       ],
     },
@@ -938,53 +837,11 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
-      section: "GUIDES",
-      contents: [
-        {
-          title: "Concepts",
-          url: "ccip/concepts",
-        },
-        {
-          title: "Architecture and Billing",
-          url: "ccip/architecture",
-        },
-        {
-          title: "Test Tokens",
-          url: "ccip/test-tokens",
-        },
-        {
-          title: "Best Practices",
-          url: "ccip/best-practices",
-        },
-      ],
-    },
-    {
-      section: "EXAMPLES",
+      section: "Examples",
       contents: [
         {
           title: "Cross-chain dApps and Tools",
           url: "ccip/examples",
-        },
-      ],
-    },
-    {
-      section: "Chainlink Architecture",
-      contents: [
-        {
-          title: "Overview",
-          url: "architecture-overview/architecture-overview?parent=ccip",
-        },
-        {
-          title: "Basic Request Model",
-          url: "architecture-overview/architecture-request-model?parent=ccip",
-        },
-        {
-          title: "Decentralized Data Model",
-          url: "architecture-overview/architecture-decentralized-model?parent=ccip",
-        },
-        {
-          title: "Off-Chain Reporting",
-          url: "architecture-overview/off-chain-reporting?parent=ccip",
         },
       ],
     },
@@ -996,31 +853,69 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "getting-started/other-tutorials?parent=ccip",
         },
         {
-          title: "Acquire testnet LINK",
-          url: "resources/acquire-link?parent=ccip",
-        },
-        {
-          title: "Fund Your Contracts",
-          url: "resources/fund-your-contract?parent=ccip",
-        },
-        {
-          title: "Install Frameworks",
-          url: "resources/create-a-chainlinked-project?parent=ccip",
+          title: "Smart Contract Overview",
+          url: "getting-started/conceptual-overview?parent=ccip",
+          children: [
+            {
+              title: "Deploy Your First Smart Contract",
+              url: "quickstarts/deploy-your-first-contract?parent=ccip",
+            },
+          ],
         },
         {
           title: "LINK Token Contracts",
           url: "resources/link-token-contracts?parent=ccip",
+          children: [
+            {
+              title: "Acquire testnet LINK",
+              url: "resources/acquire-link?parent=ccip",
+            },
+            {
+              title: "Fund Your Contracts",
+              url: "resources/fund-your-contract?parent=ccip",
+            },
+          ],
+        },
+        {
+          title: "Starter Kits and Frameworks",
+          url: "resources/create-a-chainlinked-project?parent=ccip",
+          children: [
+            {
+              title: "Chainlink Hardhat Starter Kit",
+              url: "quickstarts/chainlink-hardhat-starter-kit?parent=ccip",
+            },
+          ],
         },
         {
           title: "Bridges and Associated Risks",
           url: "resources/bridge-risks?parent=ccip",
         },
         {
+          title: "Chainlink Architecture",
+          url: "architecture-overview/architecture-overview?parent=ccip",
+          children: [
+            {
+              title: "Basic Request Model",
+              url: "architecture-overview/architecture-request-model?parent=ccip",
+            },
+            {
+              title: "Decentralized Data Model",
+              url: "architecture-overview/architecture-decentralized-model?parent=ccip",
+            },
+            {
+              title: "Off-Chain Reporting",
+              url: "architecture-overview/off-chain-reporting?parent=ccip",
+            },
+          ],
+        },
+        {
           title: "Developer Communications",
           url: "resources/developer-communications?parent=ccip",
+          children: [
+            { title: "Getting Help", url: "resources/getting-help?parent=ccip" },
+            { title: "Hackathon Resources", url: "resources/hackathon-resources?parent=ccip" },
+          ],
         },
-        { title: "Getting Help", url: "resources/getting-help" },
-        { title: "Hackathon Resources", url: "resources/hackathon-resources?parent=ccip" },
         {
           title: "Contributing to Chainlink",
           url: "resources/contributing-to-chainlink?parent=ccip",
@@ -1039,10 +934,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Release Notes",
           url: "chainlink-nodes/node-versions",
-        },
-        {
-          title: "System Requirements",
-          url: "chainlink-nodes/resources/requirements",
         },
         {
           title: "Run a Chainlink Node",
@@ -1067,13 +958,17 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           ],
         },
         {
-          title: "Roles and Access Control",
+          title: "Using Roles and Access Control",
           url: "chainlink-nodes/v1/roles-and-access",
+        },
+        {
+          title: "System Requirements",
+          url: "chainlink-nodes/resources/requirements",
         },
       ],
     },
     {
-      section: "Tutorials",
+      section: "Guides",
       contents: [
         {
           title: "Fulfilling Requests",
@@ -1083,10 +978,43 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "Using Forwarder Contracts",
           url: "chainlink-nodes/v1/using-forwarder",
         },
+        {
+          title: "Running an Ethereum Client",
+          url: "chainlink-nodes/resources/run-an-ethereum-client",
+        },
+        {
+          title: "Connecting to a Remote Database",
+          url: "chainlink-nodes/resources/connecting-to-a-remote-database",
+        },
+        {
+          title: "Enabling HTTPS Connections",
+          url: "chainlink-nodes/resources/enabling-https-connections",
+        },
+        {
+          title: "Performing System Maintenance",
+          url: "chainlink-nodes/resources/performing-system-maintenance",
+        },
+        {
+          title: "Optimizing EVM Performance",
+          url: "chainlink-nodes/resources/evm-performance-configuration",
+        },
+        {
+          title: "Security and Operation Best Practices",
+          url: "chainlink-nodes/resources/best-security-practices",
+        },
+        {
+          title: "Best Practices for Nodes on AWS",
+          url: "chainlink-nodes/resources/best-practices-aws",
+        },
+        {
+          title: "Run nodes using the Foundry Chainlink Toolkit",
+          url: "quickstarts/foundry-chainlink-toolkit",
+        },
+        { title: "Miscellaneous", url: "chainlink-nodes/resources/miscellaneous" },
       ],
     },
     {
-      section: "Contracts",
+      section: "Contract Reference",
       contents: [
         {
           title: "Operator",
@@ -1115,41 +1043,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
-      section: "Resources",
-      contents: [
-        {
-          title: "Running an Ethereum Client",
-          url: "chainlink-nodes/resources/run-an-ethereum-client",
-        },
-        {
-          title: "Connecting to a Remote Database",
-          url: "chainlink-nodes/resources/connecting-to-a-remote-database",
-        },
-        {
-          title: "Enabling HTTPS Connections",
-          url: "chainlink-nodes/resources/enabling-https-connections",
-        },
-        {
-          title: "Performing System Maintenance",
-          url: "chainlink-nodes/resources/performing-system-maintenance",
-        },
-        {
-          title: "Security and Operation Best Practices",
-          url: "chainlink-nodes/resources/best-security-practices",
-        },
-        {
-          title: "Optimizing EVM Performance",
-          url: "chainlink-nodes/resources/evm-performance-configuration",
-        },
-        {
-          title: "Best Practices for Nodes on AWS",
-          url: "chainlink-nodes/resources/best-practices-aws",
-        },
-        { title: "Miscellaneous", url: "chainlink-nodes/resources/miscellaneous" },
-      ],
-    },
-    {
-      section: "ORACLE JOBS",
+      section: "Job and Task Reference",
       contents: [
         {
           title: "Migrating to v2 Jobs",
@@ -1178,7 +1072,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
-      section: "EXTERNAL ADAPTERS",
+      section: "External Adapters",
       contents: [
         {
           title: "Introduction",
@@ -1199,7 +1093,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
-      section: "EXTERNAL INITIATORS",
+      section: "External Initiators",
       contents: [
         {
           title: "Introduction",
@@ -1212,6 +1106,140 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Adding External Initiators to Nodes",
           url: "chainlink-nodes/external-initiators/external-initiators-in-nodes",
+        },
+      ],
+    },
+    {
+      section: "Connect to Any API",
+      contents: [
+        {
+          title: "Overview",
+          url: "any-api/introduction",
+        },
+        {
+          title: "Getting Started",
+          url: "any-api/getting-started",
+        },
+        {
+          title: "Make a GET Request",
+          url: "any-api/get-request/introduction",
+          children: [
+            {
+              title: "Single Word Response",
+              url: "any-api/get-request/examples/single-word-response",
+            },
+            {
+              title: "Multi-Variable Responses",
+              url: "any-api/get-request/examples/multi-variable-responses",
+            },
+            {
+              title: "Array Response",
+              url: "any-api/get-request/examples/array-response",
+            },
+            {
+              title: "Large Responses",
+              url: "any-api/get-request/examples/large-responses",
+            },
+            {
+              title: "Existing Job Request",
+              url: "any-api/get-request/examples/existing-job-request",
+            },
+          ],
+        },
+        {
+          title: "Find Existing Jobs",
+          url: "any-api/find-oracle",
+        },
+        {
+          title: "Testnet Oracles",
+          url: "any-api/testnet-oracles",
+        },
+        {
+          title: "API Reference",
+          url: "any-api/api-reference",
+        },
+      ],
+    },
+  ],
+  global: [
+    {
+      section: "General Documentation",
+      contents: [
+        {
+          title: "Learning Resources",
+          url: "getting-started/other-tutorials",
+        },
+        {
+          title: "Smart Contract Overview",
+          url: "getting-started/conceptual-overview",
+          children: [
+            {
+              title: "Deploy Your First Smart Contract",
+              url: "quickstarts/deploy-your-first-contract",
+            },
+          ],
+        },
+        {
+          title: "LINK Token Contracts",
+          url: "resources/link-token-contracts",
+          children: [
+            {
+              title: "Acquire testnet LINK",
+              url: "resources/acquire-link",
+            },
+            {
+              title: "Fund Your Contracts",
+              url: "resources/fund-your-contract",
+            },
+          ],
+        },
+        {
+          title: "Starter Kits and Frameworks",
+          url: "resources/create-a-chainlinked-project",
+          children: [
+            {
+              title: "Chainlink Hardhat Starter Kit",
+              url: "quickstarts/chainlink-hardhat-starter-kit",
+            },
+          ],
+        },
+        {
+          title: "Using the Hardhat Chainlink Plugin",
+          url: "quickstarts/hardhat-plugin",
+        },
+        {
+          title: "Bridges and Associated Risks",
+          url: "resources/bridge-risks",
+        },
+        {
+          title: "Chainlink Architecture",
+          url: "architecture-overview/architecture-overview",
+          children: [
+            {
+              title: "Basic Request Model",
+              url: "architecture-overview/architecture-request-model",
+            },
+            {
+              title: "Decentralized Data Model",
+              url: "architecture-overview/architecture-decentralized-model",
+            },
+            {
+              title: "Off-Chain Reporting",
+              url: "architecture-overview/off-chain-reporting",
+            },
+          ],
+        },
+        {
+          title: "Developer Communications",
+          url: "resources/developer-communications",
+          children: [
+            { title: "Getting Help", url: "resources/getting-help" },
+            { title: "Hackathon Resources", url: "resources/hackathon-resources" },
+          ],
+        },
+        {
+          title: "Contributing to Chainlink",
+          url: "resources/contributing-to-chainlink",
         },
       ],
     },
@@ -1232,7 +1260,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
-      section: "v1 JSON JOBS [REMOVED]",
+      section: "v1 JSON Jobs [REMOVED]",
       contents: [
         {
           title: "Job Specifications",

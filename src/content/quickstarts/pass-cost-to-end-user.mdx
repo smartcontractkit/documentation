@@ -1,0 +1,300 @@
+---
+section: vrf
+title: "Pass VRF Costs to the End Users"
+whatsnext: { "Find the list of supported networks for VRF": "/vrf/v2/subscription/supported-networks" }
+---
+
+import { Aside, ClickToZoom } from "@components"
+import { TabsContent } from "@components/Tabs"
+
+This tutorial shows you how to identify the cost of specific VRF requests so that you can pass this cost to the end users of your application.
+
+## Objective
+
+The VRF direct funding method calculates costs at request time. In this tutorial, you will use VRF direct funding and map VRF request IDs to their corresponding responses from the VRF service, along with the cost of each request.
+
+<Aside type="caution" title="Disclaimer">
+  This tutorial represents an example of using a Chainlink product or service and is provided to help you understand how
+  to interact with Chainlink's systems and services so that you can integrate them into your own. This template is
+  provided "AS IS" and "AS AVAILABLE" without warranties of any kind, has not been audited, and may be missing key
+  checks or error handling to make the usage of the product more clear. Do not use the code in this example in a
+  production environment without completing your own audits and application of best practices. Neither Chainlink Labs,
+  the Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs that are generated due
+  to errors in code.
+</Aside>
+
+## Before you begin
+
+<Aside type="note" title="New to smart contract development?">
+  If you are new to smart contract development, learn how to [Deploy Your First Smart
+  Contract](/quickstarts/deploy-your-first-contract).
+</Aside>
+
+Before you start this tutorial, complete the following items:
+
+- Install [Foundry](https://book.getfoundry.sh/getting-started/installation).
+
+  {/* prettier-ignore */}
+   <TabsContent sharedStore="osType" client:visible>
+   <Fragment slot="tab.1">macOS</Fragment>
+   <Fragment slot="tab.2">Windows</Fragment>
+   <Fragment slot="panel.1">
+   1. Open a Terminal window and run:
+      ```sh
+      curl -L https://foundry.paradigm.xyz | bash
+      ```
+   1. Follow the instructions in your terminal to add `foundryup` to your CLI.
+   1. Run `foundryup`. After successful installation, you should get output that contains a Foundry banner. After that,
+      you should see `foundryup` installing `forge` and other packages:
+      ```sh
+      foundryup: installing foundry (version nightly, tag nightly-74c03182d41c75c40e5a1c398aca9400305ff678)
+      foundryup: downloading latest forge, cast, anvil, and chisel
+      ########################################################################################################## 100.0%
+      foundryup: downloading manpages
+      ########################################################################################################## 100.0%
+      foundryup: installed - forge 0.2.0 (74c0318 2023-09-14T00:27:34.321593000Z)
+      foundryup: installed - cast 0.2.0 (74c0318 2023-09-14T00:27:34.059889000Z)
+      foundryup: installed - anvil 0.2.0 (74c0318 2023-09-14T00:27:34.192518000Z)
+      foundryup: installed - chisel 0.2.0 (74c0318 2023-09-14T00:27:33.928662000Z)
+      foundryup: done!
+      ```
+   </Fragment>
+   <Fragment slot="panel.2">
+   1. Foundry does not support Powershell or Cmd, so you will need to install and use [WSL](https://learn.microsoft.com/en-us/windows/wsl/install). ([Git Bash for Windows](https://gitforwindows.org/) also works with Foundry.)
+   1. After installing WSL or Git Bash, open a terminal window and run:
+      ```sh
+      curl -L https://foundry.paradigm.xyz | bash
+      ```
+   1. Follow the instructions in your terminal to add `foundryup` to your CLI.
+   1. Run `foundryup`. After successful installation, you should get output that contains a Foundry banner. After that,
+      you should see `foundryup` installing `forge` and other packages:
+      ```sh
+      foundryup: installing foundry (version nightly, tag nightly-74c03182d41c75c40e5a1c398aca9400305ff678)
+      foundryup: downloading latest forge, cast, anvil, and chisel
+      ########################################################################################################## 100.0%
+      foundryup: downloading manpages
+      ########################################################################################################## 100.0%
+      foundryup: installed - forge 0.2.0 (74c0318 2023-09-14T00:27:34.321593000Z)
+      foundryup: installed - cast 0.2.0 (74c0318 2023-09-14T00:27:34.059889000Z)
+      foundryup: installed - anvil 0.2.0 (74c0318 2023-09-14T00:27:34.192518000Z)
+      foundryup: installed - chisel 0.2.0 (74c0318 2023-09-14T00:27:33.928662000Z)
+      foundryup: done!
+      ```
+   </Fragment>
+   </TabsContent>
+
+- Install [`make`](http://www.gnu.org/software/make) if you do not already have it.
+
+  {/* prettier-ignore */}
+   <TabsContent sharedStore="osType" client:visible>
+   <Fragment slot="tab.1">macOS</Fragment>
+   <Fragment slot="tab.2">Windows</Fragment>
+   <Fragment slot="panel.1">
+   1. The Xcode command line tools include `make`. If you've previously installed Xcode, skip to step 2 to verify your installation. Otherwise, open a Terminal window and run:
+      ```sh
+      xcode-select --install
+      ```
+      Alternatively, if you prefer to [use Homebrew](https://formulae.brew.sh/formula/make), be aware that GNU `make` is installed as `gmake`.
+   1.  Verify your `make` installation:
+         ```sh
+         make
+         ```
+         If `make` is installed successfully, you will get the following output:
+         ```sh
+         make: *** No targets specified or no makefile found. Stop.
+         ```
+   </Fragment>
+   <Fragment slot="panel.2">
+   1. If you're using WSL, open an Ubuntu terminal and run:
+      ```sh
+      sudo apt install make
+      ```
+   1. [Edit your path variable to include `make`](https://help.ubuntu.com/community/EnvironmentVariables#Persistent_environment_variables).
+   1. Verify your `make` installation:
+      ```sh
+      make
+      ```
+      If `make` is installed successfully, you will get the following output:
+      ```sh
+      make: *** No targets specified or no makefile found. Stop.
+      ```
+   </Fragment>
+   </TabsContent>
+
+- Run `git --version` to check your `git` installation. You should see an output similar to `git version x.x.x`. If not, install [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git).
+- Get your Etherscan API key for contract verification. If you do not already have one:
+  - [Create an Etherscan account](https://docs.etherscan.io/getting-started/creating-an-account).
+  - [Create an Etherscan API key](https://docs.etherscan.io/getting-started/viewing-api-usage-statistics).
+- Create an account with [Infura](https://www.infura.io/) or [Alchemy](https://www.alchemy.com/) to use as an RPC endpoint if you do not already have one. Alternatively, you can [use your own testnet clients](/chainlink-nodes/resources/run-an-ethereum-client).
+
+## Setup steps
+
+This tutorial requires several setup steps:
+
+- [Clone the example repo](#clone-the-example-repo)
+- [Configure the Foundry project](#configure-the-foundry-project)
+- [Install dependencies](#install-dependencies)
+
+### Clone the example repo
+
+Clone the [`vrf-direct-funding-example` repo](https://github.com/smartcontractkit/vrf-direct-funding-example):
+
+```sh
+git clone git@github.com:smartcontractkit/vrf-direct-funding-example.git
+```
+
+This gives you an existing [Foundry](https://github.com/foundry-rs/foundry) project to configure and use.
+
+### Configure the Foundry project
+
+[Foundry](https://github.com/foundry-rs/foundry) is an Ethereum application development toolkit that is used here to configure and deploy the contract. You need the following information:
+
+- The RPC URL for your deployment network, using an [RPC node provider](https://ethereum.org/en/developers/docs/nodes-and-clients/nodes-as-a-service/) such as [Infura](https://www.infura.io/) or [Alchemy](https://www.alchemy.com/).
+- The private key for your deployer account. If your deployer account is in MetaMask, [export your private key from MetaMask](https://support.metamask.io/hc/en-us/articles/360015289632-How-to-export-an-account-s-private-key).
+- An [Etherscan API key](https://docs.etherscan.io/getting-started/viewing-api-usage-statistics) for contract verification.
+
+1. Create an `.env` file at the root of the `vrf-direct-funding-example/` directory:
+
+   ```
+   # Network RPCs
+   export RPC_URL=
+
+   # Private key for contract deployment
+   export PRIVATE_KEY=
+
+   # Explorer API key used to verify contracts
+   export EXPLORER_KEY=
+   ```
+
+1. In your `.env` file, fill in these values:
+
+   | Parameter      | Description                                                 | Example                                     |
+   | -------------- | ----------------------------------------------------------- | ------------------------------------------- |
+   | `RPC_URL`      | The RPC URL for the network you want to deploy to.          | `https://sepolia.infura.io/v3/your-api-key` |
+   | `PRIVATE_KEY`  | The private key of the account you want to deploy from.     | `0xabc123abc123abc123abc123abc123...`       |
+   | `EXPLORER_KEY` | The API key for Etherscan needed for contract verification. | `ABC123ABC123ABC123ABC123ABC123ABC1`        |
+
+### Install dependencies
+
+At the root of the `vrf-direct-funding-example/` directory, run:
+
+```sh
+make install
+```
+
+This command will install the project dependencies, which include [chainlink](https://github.com/smartcontractkit/chainlink) and [openzepplin-contracts](https://github.com/OpenZeppelin/openzeppelin-contracts) for secure smart contract development.
+
+### Deploy the contract
+
+Foundry includes [Forge](https://github.com/foundry-rs/foundry/tree/master/crates/forge), an Ethereum testing framework. The project's [Makefile](https://github.com/smartcontractkit/vrf-direct-funding-example/blob/main/Makefile) helps you invoke Forge with simple commands to start the deployment script.
+
+At the root of the `vrf-direct-funding-example/` directory, run this command to deploy the contract:
+
+```shell
+make deploy
+```
+
+## Run the example
+
+Test the contract as the end-user.
+
+1. Open the [LINK Token Contract](https://docs.chain.link/resources/link-token-contracts) write functions for your network in an explorer. For example, on Polygon Mumbai you can open the [0x0ed18e80aacede8cb52a6043976c255eff6fedbf](https://mumbai.polygonscan.com/address/0x0ed18e80aacede8cb52a6043976c255eff6fedbf#writeContract) contract.
+
+1. Connect your wallet to the scanning app so you can run write functions.
+
+   <ClickToZoom
+     src="/images/quickstarts/pass-cost-to-end-user/connect-to-scanner.webp"
+     alt="Connect wallet to the scanner"
+     style="max-width: 50%;"
+   />
+
+1. Approve the deployed contract to spend LINK. Run the `approve` function with your deployed contract address and `5000000000000000000` Juels (5 LINK) as variables. Click **Write** to run the function. Metamask asks you to approve the transaction.
+
+   <ClickToZoom
+     src="/images/quickstarts/pass-cost-to-end-user/approve-link-spend.webp"
+     alt="Approve LINK spend"
+     style="max-width: 50%;"
+   />
+
+1. Open your deployed contract in the scanner.
+
+1. On the **Contract** tab, open the **Write Contract** functions list for your deployed contract.
+
+1. Again, connect your wallet to the scanner so you can run write functions on the deployed contract.
+
+   <ClickToZoom
+     src="/images/quickstarts/pass-cost-to-end-user/connect-to-scanner-deployed-contract.webp"
+     alt="Connect to the scanner while viewing your deployed contract"
+     style="max-width: 50%;"
+   />
+
+1. In the `requestRandomWords` function, click **Write** to initiate a request for randomness as an end-user. Confirm the transaction in MetaMask.
+
+   <ClickToZoom
+     src="/images/quickstarts/pass-cost-to-end-user/request-randomness.webp"
+     alt="Request randomness with the Write button under requestRandomWords"
+     style="max-width: 50%;"
+   />
+
+1. If the transaction is successful, you will see a **View your transaction** button.
+
+1. On the **Read Contract** tab for your deployed contract, view the `lastRequestId` value.
+
+1. Use this value to find the request status and view the random value.
+
+   <ClickToZoom
+     src="/images/quickstarts/pass-cost-to-end-user/request-status-with-answer.webp"
+     alt="View the request status with your lastRequestId value"
+     style="max-width: 50%;"
+   />
+
+## Code example
+
+This section explains how the [`VRFDirectFundingConsumer.sol`](https://github.com/smartcontractkit/vrf-direct-funding-example/blob/main/src/VRFDirectFundingConsumer.sol) contract maps each request to its cost.
+
+This `RequestStatus` struct is used to map attributes of each VRF request to its request ID, including its cost, its fulfillment status, and the random values generated by the VRF service in response to the request:
+
+```solidity
+struct RequestStatus {
+        uint256 paid;
+        bool fulfilled;
+        uint256[] randomWords;
+    }
+
+mapping(uint256 => RequestStatus) public s_requests;
+```
+
+The `requestRandomWords()` function uses a method in the VRF wrapper contract to calculate the request cost upfront, and then transfers enough LINK to the VRF wrapper to cover the request. After sending the request, it sets up the `RequestStatus` with the cost and other attributes to be updated after request fulfillment.
+
+```solidity
+uint256 requestPrice = vrfWrapper.calculateRequestPrice(
+            requestConfig.callbackGasLimit
+        );
+
+require(
+      linkTokenContract.transferFrom(
+            msg.sender,
+            address(this),
+            requestPrice
+      ),
+      "Not enough LINK"
+   );
+   ...
+
+   s_requests[requestId] = RequestStatus({
+            paid: requestPrice,
+            randomWords: new uint256[](0),
+            fulfilled: false
+        });
+```
+
+After the VRF service fulfills your randomness request, it calls back your `fulfillRandomWords()` function, where you implement logic to handle the random values. It's recommended to keep the processing in your callback function minimal to save on gas costs. In this case, the example contract updates the `RequestStatus` in the request mapping, and emits an event indicating that the request has been fulfilled. Another part of your application can listen for this event and further process the random values separately from the callback function.
+
+```solidity
+function fulfillRandomWords(uint256 _requestId, uint256[] memory _randomWords) internal override {
+  require(s_requests[_requestId].paid > 0, "request not found");
+  s_requests[_requestId].fulfilled = true;
+  s_requests[_requestId].randomWords = _randomWords;
+  emit RequestFulfilled(_requestId, _randomWords, s_requests[_requestId].paid);
+}
+```
