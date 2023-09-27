@@ -38,11 +38,13 @@ To estimate the accurate gas limit for your destination contract, consider the f
 - Leveraging Ethereum client RPC by applying `eth_estimateGas` on `receiver.ccipReceive()`. You can find more information on the [Ethereum API Documentation](https://ethereum.github.io/execution-apis/api-documentation/) and [Alchemy documentation](https://docs.alchemy.com/reference/eth-estimategas).
 - Conducting [Foundry gas tests](https://book.getfoundry.sh/forge/gas-tracking).
 - Using [Hardhat plugin for gas tests](https://github.com/cgewecke/eth-gas-reporter).
-- Using a blockchain explorer to look up the gas consumption of a particular internal tx.
+- Using a blockchain explorer to look up the gas consumption of a particular internal transaction.
 
 ## Using `extraArgs`
 
-If `extraArgs` are left empty, a default of _200000_ `gasLimit` will be set with no strict sequencing. For production deployments, make sure that `extraArgs` is mutable. This allows you to build it off-chain and pass it in a call to a function or store it in a variable that you can update on-demand. This makes `extraArgs` compatible with future CCIP upgrades.
+The purpose of `extraArgs` is to allow compatibility with future CCIP upgrades. To get this benefit, make sure that `extraArgs` is mutable in production deployments. This allows you to build it off-chain and pass it in a call to a function or store it in a variable that you can update on-demand.
+
+If `extraArgs` are left empty, a default of _200000_ `gasLimit` will be set with no strict sequencing.
 
 ## Sequencing
 
@@ -51,7 +53,7 @@ If `extraArgs` are left empty, a default of _200000_ `gasLimit` will be set with
   guarantee its maintenance or further development in the future.
 </Aside>
 
-CCIP will always process messages sent from a specific sender to a specific destination blockchain in the order they were sent. If you set `strict: true` in the `extraArgs` part of the message, and if the `ccipReceive` fails (reverts), it will **_prevent any following messages from the same sender from being processed until the current message is successfully executed_**.
+CCIP always processes messages sent from a specific sender to a specific destination blockchain in the order they were sent. If you set `strict: true` in the `extraArgs` part of the message, and if the `ccipReceive` fails (reverts), it will **_prevent any following messages from the same sender from being processed until the current message is successfully executed_**.
 
 You should be very careful when using this feature to avoid unintentionally stopping messages from the sender from being processed. If you use `strict: true`, you should foresee the following mitigations:
 
@@ -66,7 +68,7 @@ Although CCIP has been thoroughly reviewed and audited, inherent risks might sti
 
 ## Review and audit your code
 
-Before secure value with contracts that implement CCIP interfaces and routers, ensure that your code is secure and reliable. If you have a unique use case for CCIP that might involve additional cross-chain risk, [Contact the Chainlink Labs Team](https://chain.link/contact?ref_id=CCIP) before deploying your application to mainnet.
+Before securing value with contracts that implement CCIP interfaces and routers, ensure that your code is secure and reliable. If you have a unique use case for CCIP that might involve additional cross-chain risk, [contact the Chainlink Labs Team](https://chain.link/contact?ref_id=CCIP) before deploying your application to mainnet.
 
 ## Soak test your dApps
 

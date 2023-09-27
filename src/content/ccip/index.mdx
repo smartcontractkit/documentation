@@ -31,9 +31,9 @@ The _Chainlink Cross-Chain Interoperability Protocol (CCIP)_ provides these capa
 
 ## What is Chainlink CCIP
 
-Chainlink CCIP provides a single simple interface through which dApps and web3 entrepreneurs can securely meet all their cross-chain needs, including token transfers and arbitrary messaging.
+Chainlink CCIP provides a single simple interface through which dApps and web3 entrepreneurs can securely meet all their cross-chain needs. You can use CCIP to transfer data, tokens, or both data and tokens across chains.
 
-Given the [inherent risks of cross-chain interoperability](/resources/bridge-risks), a security-first mindset is being applied to CCIP. Some security features include a [Risk Management Network](/ccip/concepts#risk-management-network) that monitors for malicious activity, decentralized oracle computation from a wide range of high-quality node operators with verifiable on-chain performance histories, and the off-chain reporting ([OCR](/architecture-overview/off-chain-reporting)) protocol, which already secures significant value on several mainnet blockchains.
+Given the [inherent risks of cross-chain interoperability](/resources/bridge-risks), CCIP is built with a security-first mindset. Some security features include a [Risk Management Network](/ccip/concepts#risk-management-network) that monitors for malicious activity, decentralized oracle computation from a wide range of high-quality node operators with verifiable on-chain performance histories, and the off-chain reporting ([OCR](/architecture-overview/off-chain-reporting)) protocol, which already secures significant value on several mainnet blockchains.
 
 <ClickToZoom src="/images/ccip/ccip-diagram-04_v04.webp" alt="Chainlink CCIP Architecture" />
 
@@ -43,9 +43,19 @@ To understand how Chainlink CCIP works, refer to the [concepts](/ccip/concepts),
 
 Chainlink CCIP supports three main capabilities:
 
-- **Arbitrary Messaging** is the ability to send arbitrary data (encoded as bytes) to a receiving smart contract on a different blockchain. The developer is free to encode any data they wish to send. Typically, developers use arbitrary messaging to trigger an informed action on the receiving smart contract, such as rebalancing an index, minting a specific NFT, or calling an arbitrary function with the sent data as custom parameters. Developers can encode multiple instructions in a single message, enabling them to orchestrate complex, multi-step, multi-chain tasks. **Note**: This capability is specifically for smart contract receivers because EOAs on EVM blockchains cannot receive messages.
+- **Arbitrary Messaging** is the ability to send arbitrary data (encoded as bytes) to a receiving smart contract on a different blockchain. The developer is free to encode any data they wish to send. Typically, developers use arbitrary messaging to trigger an informed action on the receiving smart contract, such as rebalancing an index, minting a specific NFT, or calling an arbitrary function with the sent data as custom parameters. Developers can encode multiple instructions in a single message, enabling them to orchestrate complex, multi-step, multi-chain tasks.
 - **Token Transfer:** You can transfer tokens to a smart contract or directly to an [EOA (Externally Owned Account)](https://ethereum.org/en/developers/docs/accounts/#types-of-account) on a different blockchain.
-- **Programmable Token Transfer** is the ability to simultaneously transfer tokens and arbitrary data (encoded as bytes) within a single transaction. This mechanism allows users to transfer tokens and send instructions on what to do with those tokens. For example, a user could transfer tokens to a lending protocol with instructions to leverage those tokens as collateral for a loan, borrowing another asset to be sent back to the user. **Note**: Use this capability only for smart contracts. If you send data and transfer tokens to an EOA, only tokens will be transferred.
+- **Programmable Token Transfer** is the ability to simultaneously transfer tokens and arbitrary data (encoded as bytes) within a single transaction. This mechanism allows users to transfer tokens and send instructions on what to do with those tokens. For example, a user could transfer tokens to a lending protocol with instructions to leverage those tokens as collateral for a loan, borrowing another asset to be sent back to the user.
+
+### Receiving account types
+
+With CCIP, you send transactions with data, tokens, or both data and tokens. The receiver of a CCIP transaction is either a smart contract or an [externally owned account (EOA)](https://ethereum.org/en/developers/docs/accounts/#types-of-account). Smart contracts can receive both data and tokens, while EOAs can only receive tokens:
+
+| CCIP capability             | What is sent    | Type of receiving account supported                                                                    |
+| --------------------------- | --------------- | ------------------------------------------------------------------------------------------------------ |
+| Arbitrary Messaging         | Data            | Smart contracts only. EOAs on EVM blockchains cannot receive messages.                                 |
+| Token Transfer              | Tokens          | Smart contracts and EOAs                                                                               |
+| Programmable Token Transfer | Data and tokens | Smart contracts only. If you send data and transfer tokens to an EOA, only tokens will be transferred. |
 
 ## Common use cases
 
@@ -59,7 +69,7 @@ Chainlink CCIP enables a variety of use cases:
 Read [What Are Cross-Chain Smart Contracts](https://chain.link/education-hub/cross-chain-smart-contracts) to learn about cross-chain smart contracts and examples of use cases they enable.
 
 <Aside type="note" title="Early Access">
-  Chainlink CCIP is in the “Early Access” stage of development, which means that Chainlink CCIP currently has
+  Chainlink CCIP is in the "Early Access" stage of development, which means that Chainlink CCIP currently has
   functionality which is under development and may be changed in later versions. There is no guarantee any of the
   contemplated features of Chainlink CCIP or the Chainlink Network will be implemented as specified. Chainlink CCIP is a
   messaging protocol. Chainlink does not hold or transfer any assets. Please review the [Chainlink Terms of
