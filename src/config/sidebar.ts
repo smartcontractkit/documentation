@@ -274,6 +274,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "Automate Top-Up for VRF Subscriptions",
           url: "quickstarts/vrf-subscription-monitor",
         },
+        {
+          title: "Data Feed Circuit Breaker",
+          url: "quickstarts/circuit-breaker",
+        },
       ],
     },
     {

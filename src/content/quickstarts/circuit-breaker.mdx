@@ -10,6 +10,8 @@ whatsnext:
   }
 ---
 
+import { Address, Aside, ClickToZoom, CodeSample, CopyText } from "@components"
+
 Circuit breakers are useful for pausing dApps and processes when adverse events are detected on-chain. These circuit breakers can prevent loss of assets during volatile market events, unstable network conditions, or if systems that your dApp relies on become compromised.
 
 The example circuit breaker contract is a highly configurable proof of concept that can be used with [Data Feeds](/data-feeds). It is capable of emitting events or calling custom functions based on predefined conditions, and it comes with an interactive UI that allows users to easily configure and manage the contract.
@@ -19,11 +21,27 @@ The example circuit breaker contract is a highly configurable proof of concept t
   <a href="https://github.com/smartcontractkit/quickstarts-circuitbreaker">See the code on GitHub</a>
 </div>
 
+<Aside type="caution" title="Disclaimer">
+  This tutorial represents an example of using a Chainlink product or service and is provided to help you understand how
+  to interact with Chainlink's systems and services so that you can integrate them into your own. This template is
+  provided "AS IS" and "AS AVAILABLE" without warranties of any kind, has not been audited, and may be missing key
+  checks or error handling to make the usage of the product more clear. Do not use the code in this example in a
+  production environment without completing your own audits and application of best practices. Neither Chainlink Labs,
+  the Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs that are generated due
+  to errors in code.
+</Aside>
+
 ## Objective
 
-The [Circuit Breaker repository](https://github.com/smartcontractkit/quickstarts-circuitbreaker) contains example contracts of an implementation of a circuit breaker that can be used with any OCR price feed. It is possible to monitor a given contract, specify the price when the circuit breaker will be triggered based on predefined conditions, and then underlying logic of what happens when the circuit breaker is triggered.
+The [Circuit Breaker repository](https://github.com/smartcontractkit/quickstarts-circuitbreaker) contains an example implementation of a circuit breaker that can be used with any OCR price feed. You can monitor a given contract, specify the price when the circuit breaker will be triggered based on predefined conditions, and specify the underlying logic of what happens when the circuit breaker is triggered.
 
 ## Before you begin
+
+<Aside type="note" title="New to smart contracts?">
+  This tutorial assumes that you know how to create and deploy basic smart contracts. If you are new to smart contract
+  development, deploy a VRF-compatible contract by [following these
+  instructions](/getting-started/intermediates-tutorial) and then return to this tutorial.
+</Aside>
 
 You can run this example on Linux, MacOS, or the [Windows Subsystem for Linux](https://learn.microsoft.com/en-us/windows/wsl/about).
 
@@ -33,17 +51,19 @@ Before you start this tutorial, install the required tools:
   - Run `git --version` to check the installation. You should see an output similar to `git version x.x.x`.
 - Install [Nodejs](https://nodejs.org/en/) 16.0.0 or higher
   - Run `node --version` to check the installation. You should see an output similar to `v16.x.x`.
+- Install and configure a cryptocurrency wallet like [MetaMask](https://metamask.io/).
+- Add the Avalanche Fuji testnet and LINK to your wallet: <Address contractUrl="https://testnet.snowtrace.io/address/0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846" urlId="43113_0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846" urlClass="erc-token-address"/>
+- Add testnet funds to your wallet. You will need both ERC-677 LINK and the gas currency for the chain where your contract is deployed. For this example, use Avalanche Fuji and testnet LINK. You can get both at [faucets.chain.link](https://faucets.chain.link/fuji).
 
 ## Setup the example
 
 To set up this example, clone the source and install the required packages.
 
-1. Clone the [smartcontractkit/quickstarts-circuitbreaker](https://github.com/smartcontractkit/quickstarts-circuitbreaker) repository, change directories, and install the dependencies using `npm`:
+1. Clone the [smartcontractkit/quickstarts-circuitbreaker](https://github.com/smartcontractkit/quickstarts-circuitbreaker) repository and change directories:
 
    ```shell
-   https://github.com/smartcontractkit/circuit-breaker-chainlink-automation.git && \
-   cd circuit-breaker-chainlink-automation && \
-   npm i
+   git clone https://github.com/smartcontractkit/quickstarts-circuitbreaker.git && \
+   cd quickstarts-circuitbreaker
    ```
 
 1. Install the `chainlink/contracts` npm package:
@@ -52,16 +72,22 @@ To set up this example, clone the source and install the required packages.
    npm install @chainlink/contracts@0.6.1 --save
    ```
 
+   For this tutorial, disregard the resulting `npm` warnings.
+
 ## Run the example
 
 In this section, you will deploy two contracts and then set up Chainlink Automation.
 
 ### Deploy contracts
 
+1. Open the `ExampleImplementation.sol` contract in Remix:
+
+   <CodeSample src="/samples/Automation/tutorials/ExampleImplementation.sol" showButtonOnly />
+
 1. Deploy the `ExampleImplementation.sol` contract and enter the following input to the constructor:
-   - The proxy contract address of the price feed (example: `0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43`)
-   - The maxBalance (example: `3000000000000`)
-   - The `isEmergencyPossible` flag - set this to `true` if you want the circuit breaking condition to be checked
+   - The proxy contract address of the price feed. For example, the address for the BTC/USD price feed on Fuji is `0x31CF013A08c6Ac228C94551d535d5BAfE19c602a`. Find other price feed addresses [here](/data-feeds/price-feeds/addresses).
+   - The `maxBalance` in sats. For example, `2650000000000` for a max balance of $26,500.
+   - The `isEmergencyPossible` flag: set this to `true` if you want the circuit breaking condition to be checked. You can turn off this check by setting this value to `false`.
 1. Deploy the `CircuitBreaker.sol` contract.
 
 ### Register and fund an upkeep
@@ -81,8 +107,23 @@ Registering an upkeep on Chainlink Automation creates a smart contract that will
 
 1. For _Target contract address_, input the address of your deployed `CircuitBreaker.sol` contract.
 
-1. Get the ABI from Remix.
+1. ABI encode the address of your deployed `ExampleImplementation.sol` contract.
 
-1. In the Check Data field - pass in the address of the ExampleImplementation.sol contract. Note: Use abi.encode this contract address with a 0x in the beginning before entering it as checkData
+   1. Navigate to the [HashEx Online ABI Encoder](https://abi.hashex.org/).
+   1. Click **Add argument** and select **Address** as the argument type from the dropdown menu. 1. Enter the address of your deployed `ExampleImplementation.sol` contract.
+   1. From the **Encoded data** field, copy the encoded address starting in `0x`.
 
-1. Register and fund your upkeep.
+1. Navigate back to Remix. In the **Check Data** field, pass in the ABI encoded address of the `ExampleImplementation.sol` contract.
+
+1. Register and fund your upkeep with 2 testnet LINK.
+
+Now the Chainlink Automation network will watch your contract for these trigger parameters. If the price from the feed you provided is above the `maxBalance` threshold that was specified, the `executeEmergencyAction()` function will trigger.
+
+#### Updating the example implementation contract
+
+If you need to update your `ExampleImplementation.sol` contract, you can redeploy it with updated values and then use the same Automation upkeep. For example, to update the `maxBalance`:
+
+1. Redeploy the `ExampleImplementation.sol` contract with your updated `maxBalance` value.
+1. ABI encode the address of your newly deployed `ExampleImplementation.sol` contract.
+1. In the Chainlink Automation app, within the **Actions** menu for your existing upkeep, click **Edit check data**.
+1. Enter `0x`, paste the new ABI-encoded contract address, and click **Change check data**. MetaMask opens and prompts you to confirm the transaction.
