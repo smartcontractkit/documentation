@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 import "@chainlink/contracts/src/v0.8/AutomationCompatible.sol";
 import {AutomationCompatibleInterface} from "@chainlink/contracts/src/v0.8/AutomationCompatible.sol";
 
-import {IPerformExecutor} from "@smartcontractkit/quickstarts-circuitbreaker/interfaces/IPerformExecutor.sol";
+import {IPerformExecutor} from "./interfaces/IPerformExecutor.sol";
 
 contract CircuitBreaker is AutomationCompatibleInterface {
     /**
