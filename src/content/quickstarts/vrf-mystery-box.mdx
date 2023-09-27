@@ -13,30 +13,11 @@ whatsnext:
 import { Aside, CodeSample } from "@components"
 import { Tabs } from "@components/Tabs"
 
-This is a template for NFT collection with a mystery box mechanic powered by [Chainlink VRF](https://vrf.chain.link/). It could be used as is or as a starting point for your own project.
+This is a template for NFT collection with a mystery box mechanic powered by [Chainlink VRF](https://vrf.chain.link/).
 
 Smart contracts are based on the gas efficient [ERC721Psi](https://github.com/estarriolvetch/ERC721Psi) and are fully tested. It's super easy to deploy and configure with most of the steps automated in the deploy script.
 
 Some of the key features of this template include private minting stage with a merkle tree, rate limited batch minting, delayed reveal with randomization technique to save gas, provenance hash to verify the authenticity of the metadata, royalties for secondary sales, and configurable parameters.
-
-## Table of Contents
-
-- [Requirements](#requirements)
-- [Getting Started](#getting-started)
-- [Setup](#setup)
-- [Test](#test)
-- [Deploy](#deploy)
-- [Private Mint](#private-mint)
-- [Public Mint](#public-mint)
-- [Metadata](#metadata)
-- [Provenance](#provenance)
-- [Reveal](#reveal)
-- [Withdraw Funds](#withdraw-funds)
-- [Royalties](#royalty)
-- [Configuration](#configuration)
-- [Format](#format)
-- [Lint](#lint)
-- [References](#references)
 
 ## Objective
 
@@ -158,40 +139,67 @@ For coverage reports, run the following command:
 npm run coverage
 ```
 
-## Deploy
+## Deploy and run the example mystery box contract
 
-Besides deploying the contract, the deploy script will also:
+Now that your example is configured, you can test, deploy, and run the example. Then, switch accounts to act as a user who is minting NFTs.
 
-1. Create and fund a VRF subscription if one is not provided.
-   Note: Make sure the deployer account has enough LINK to fund the subscription. The initial funding amount is configured in `network-config.js`. For testnets, you can use the [LINK faucet](https://docs.chain.link/docs/link-token-contracts/#faucets).
-2. Add the deployed contract address as a consumer to the VRF subscription.
-   Note: If you provided a subscription ID, make sure the deployer account is the owner of the subscription. Otherwise, comment out the `addVrfConsumer` function in the deploy script and add the contract address manually.
-3. Generate a merkle tree for the private mint.
-   Note: The merkle tree is generated from the address list in `scripts/data/whitelist.json` file. Leave the file empty if you don't want to do a private mint.
-4. Verify the contract on Etherscan. If you want to skip this step, comment out the `verify` function in the deploy script.
+### Deploy the example contract
 
-To run the deploy script, run the following command and replace `<network>` with the network you want to deploy to.
+Run the `npx hardhat run` command and replace `<network>` with the network that you want to deploy to. The network must be configured in [`hardhat.config.ts`](https://github.com/smartcontractkit/chainlink-solutions-mysterybox/blob/main/hardhat.config.ts).
 
 ```bash
 npx hardhat run scripts/deploy.js --network <network>
 ```
 
-Note: The network must be configured in `hardhat.config.js`.
+## Deploy
 
-## Private Mint
+Besides deploying the contract, the deploy script will also:
 
-The contract is by default in private mode after deployment. This means that only whitelisted addresses can mint tokens. The list of whitelisted addresses is stored in a merkle tree. The merkle tree is generated from the address list in `scripts/data/whitelist.json` file.
+1.  Create and fund a VRF subscription if one is not provided.
 
-If you don't want to do a private mint, leave the file empty and enable public minting by calling the `setPublicMint` function with `true` as the parameter.
+    {/* prettier-ignore */}
+    <Aside type="note">
+    Make sure the deployer account has enough LINK to fund the subscription. The initial funding amount is configured in [`network-config.ts`](https://github.com/smartcontractkit/chainlink-solutions-mysterybox/blob/main/network-config.ts). For testnets, you can use the [LINK faucet](https://faucets.chain.link/).
+
+    [Estimate the minimum subscription balance](/vrf/v2/estimating-costs#estimate-minimum-subscription-balance) that VRF requires to process your randomness request. The minimum subscription balance provides a buffer against gas volatility, and only the actual cost of your request will be deducted from your account.
+
+    If your subscription is underfunded, your VRF request will be [pending](/vrf/v2/subscription/ui#pending) for 24 hours. If this happens, check the [Subscription Manager](https://vrf.chain.link]) to see the additional balance needed.
+
+    </Aside>
+
+1.  Add the deployed contract address as a consumer to the VRF subscription.
+
+    If you provided a subscription ID, make sure the deployer account is the owner of the subscription. Otherwise, comment out the `addVrfConsumer` function in the deploy script and add the contract address manually.
+
+1.  Generate a [Merkle tree](https://ethereum.org/en/developers/tutorials/merkle-proofs-for-offline-data-integrity/#introduction) for the allowlist.
+    Note: The merkle tree is generated from the address list in `scripts/data/whitelist.json` file. Leave the file empty if you don't want to do a private mint.
+1.  Verify the contract on Etherscan. This is important to show users the source code for the contract so they can confirm how it works. If you want to skip this step during testing, comment out the `verify` function in the deploy script.
+
+## Access control for minting
+
+You can set up the minting for the mystery box in two modes: private and public. Use these modes to determine which users can mint tokens. The owner account can update this setting after deployment, so you can test the opening functionality privately before making the mystery box available to the public.
+
+### Enable private minting
+
+The contract is by default in private mode after deployment. This means that only addresses on the allowlist can mint tokens. The list of allowed addresses is stored in a merkle tree. The merkle tree is generated from the address list in `scripts/data/whitelist.json` file.
 
 Minting tokens in private mode is done by calling the `privateMint` function. The function takes the following parameters:
 
 - `amount` The amount of tokens to mint.
-- `proof` The merkle proof for the user's address. To generate it, see [merkletreejs](https://github.com/merkletreejs/merkletreejs).
+- `proof` The merkle proof for the user's address.
 
-## Public Mint
+You can generate the Merkle proof locally using [merkletreejs](https://github.com/merkletreejs/merkletreejs):
 
-To enable public minting, call the `setPublicMint` function with `true` as the parameter.
+```js
+merkleTree.getHexProof(keccak256(whitelistedUserAddress))
+```
+
+### Enable public minting
+
+To enable public minting:
+
+1. Leave the `scripts/data/whitelist.json` file empty.
+1. Call the `setPublicMint` function with `true` as the parameter.
 
 Minting tokens in public mode is done by calling the `publicMint` function. The function takes the following parameters:
 
@@ -207,7 +215,7 @@ Because of the [randomization technique](https://mirror.xyz/ctor.xyz/ZEY5-wn-3Ee
 
 This creates additional trust for the users because they can verify the metadata before minting.
 
-#### Storage Options
+### Storage options
 
 The metadata for each token is stored in a JSON file and must be hosted somewhere. You can use any storage provider you want. Here are some options:
 
@@ -239,19 +247,19 @@ The token URI will also start to use the `baseURI` instead of the `unrevealedURI
 
 Once the collection is revealed, the minting functions will be disabled.
 
-## Withdraw Funds
+## Withdraw funds
 
-At any time, the owner can withdraw funds from the contract by calling the `withdraw` function. By doing so the contract balance will be transferred to the owner account.
+At any time, the owner can withdraw funds from the collected fees by calling the `withdraw` function. By doing so, the contract balance will be transferred to the owner account.
 
 ## Royalties
 
-This contract supports royalties for secondary sales. The royalty fee is set to `NFT_ROYALTIY_BPS` basis points and royalty receiver is set to the owner account by default. It can be changed by calling the `setRoyalty` function.
+This contract supports royalties for secondary sales. The royalty fee is set to `NFT_ROYALTY_BPS` basis points and royalty receiver is set to the owner account by default. It can be changed by calling the `setRoyalty` function.
 
 The standard for royalties is defined in the [ERC2981](https://eips.ethereum.org/EIPS/eip-2981) EIP and this contract implements it.
 
-## Configuration
+## Post-deployment configuration
 
-Upon deployment, some of the contract parameters can be changed by calling the following functions from the owner account.
+After deployment, you can optionally change some contract parameters by calling the following functions from the owner account:
 
 | Function            | Description                              | Parameters           |
 | ------------------- | ---------------------------------------- | -------------------- |
@@ -262,36 +270,26 @@ Upon deployment, some of the contract parameters can be changed by calling the f
 | `setRoyalty`        | Set new royalty receiver and fee.        | `receiver`, `feeBps` |
 | `setPublicMint`     | Enable/disable public minting.           | `publicMintEnabled`  |
 
-## Format
+## Formatting and linting
 
 For formatting, we use [prettier](https://prettier.io/).
 
-To check the formatting, run the following command.
+To check the formatting, run the following command:
 
 ```bash
 npm run prettier:check
 ```
 
-To fix the formatting, run the following command.
+To fix the formatting, run the following command:
 
 ```bash
 npm run prettier:write
 ```
 
-## Lint
-
 For linting, we use [eslint](https://eslint.org/).
 
-To run the linter, run the following command.
+To run the linter, run the following command:
 
 ```bash
 npm run lint
 ```
-
-## References
-
-- [Chainlink VRF](https://docs.chain.link/docs/chainlink-vrf)
-- [OpenZeppelin](https://docs.openzeppelin.com/contracts/4.x/)
-- [ERC721Psi](https://github.com/estarriolvetch/ERC721Psi)
-- [ERC721](https://eips.ethereum.org/EIPS/eip-721)
-- [Hardhat](https://hardhat.org/getting-started/)
