@@ -535,6 +535,7 @@ export const ALL_CHAINS: Chain[] = [
         explorerUrl: "https://explorer.celo.org/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-celo-mainnet.json",
+        queryString: "celo-mainnet",
       },
     ],
     label: "All",
