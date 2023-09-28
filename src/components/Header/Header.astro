@@ -3,9 +3,10 @@ import * as CONFIG from "../../config"
 import { MENU } from "../../config/index"
 import SkipToContent from "./SkipToContent.astro"
 import SidebarToggle from "./SidebarToggle"
-import Search from "./Search/Search"
+// import Search from "./Search/Search"
 import NotificationBanner from "~/features/notifications/components/NotificationBanner.astro"
 import { Sections } from "~/content/config"
+import { Search as AlgoSearch } from "../AlgoSearch/Search"
 
 export type Props = {
   section?: Sections
@@ -38,13 +39,7 @@ const { section } = Astro.props
       }
     </div>
 
-    {
-      CONFIG.ALGOLIA && (
-        <div class="search-item">
-          <Search client:visible />
-        </div>
-      )
-    }
+    {CONFIG.ALGOLIA && <AlgoSearch client:idle />}
     <a href="https://github.com/smartcontractkit/documentation" class="github-url" target="_blank" rel="nofollow">
       <img src="/assets/github.svg" />
     </a>
@@ -135,17 +130,6 @@ const { section } = Astro.props
 
   .navbar {
     display: none;
-  }
-
-  .search-item {
-    display: none;
-    position: relative;
-    z-index: 10;
-    display: flex;
-  }
-
-  :global(.search-item > *) {
-    flex-grow: 1;
   }
 
   @media (min-width: 50em) {
