@@ -1243,6 +1243,15 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         },
       ],
     },
+    {
+      section: "Examples",
+      contents: [
+        {
+          title: "Chainlink Demo App",
+          url: "quickstarts/chainlink-demo-app",
+        },
+      ],
+    },
   ],
   legacy: [
     {
