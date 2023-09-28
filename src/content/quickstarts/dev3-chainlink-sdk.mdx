@@ -58,9 +58,11 @@ Install the Dev3 SDK in your `npm` project.
       const ethSDK = Chainlink.instance("https://ethereum.publicnode.com", Chainlink.PriceFeeds.ETH)
       ```
 
+      This sets up reading data feeds for Ethereum mainnet.
+
 ## Consuming data feeds
 
-Once the SDK is initialized, you can start consuming different feeds as outlined in the examples below. Add the following code to your JavaScript or TypeScript file:
+Once the SDK is initialized, you can start consuming different feeds as outlined in the examples below:
 
 {/* prettier-ignore */}
 <TabsContent sharedStore="feedType" client:visible>
@@ -68,22 +70,35 @@ Once the SDK is initialized, you can start consuming different feeds as outlined
   <Fragment slot="tab.2">NFT Floor Price Feeds</Fragment>
   <Fragment slot="tab.3">Proof of Reserve Feeds</Fragment>
   <Fragment slot="panel.1">
-    ```ts
-    // AAVE/ETH price feed
-    ethSDK.getFromOracle(ethSDK.feeds.AAVE_ETH).then((res) => {
-        console.log(res.answer.toString());
-    });
-    ```
-  </Fragment>
-  <Fragment slot="panel.2">
+  1. Add the following code to your JavaScript or TypeScript file:
+      ```ts
+      // AAVE/ETH price feed
+      ethSDK.getFromOracle(ethSDK.feeds.AAVE_ETH).then((res) => {
+          console.log(res.answer.toString());
+      });
+      ```
+  1. Run your file. For example:
+
+      ```sh
+      node index.js
+      ```
+
+1. The output should be similar to: `40104190000000000`. Compare this to the [AAVE / ETH price feed](https://data.chain.link/ethereum/mainnet/crypto-eth/aave-eth), which returns `Ξ0.04010419` at the time of writing.
+   </Fragment>
+<Fragment slot="panel.2">
+Add the following code to your JavaScript or TypeScript file:
+
+
     ```ts
     // Azuki floor price
     ethSDK.getFromOracle(ethSDK.feeds.AZUKI_FLOOR_ETH).then((res) => {
         console.log(res.answer.toString());
     });
     ```
+
   </Fragment>
   <Fragment slot="panel.3">
+  Add the following code to your JavaScript or TypeScript file:
     ```ts
     // EURS reserves
     ethSDK.getFromOracle(ethSDK.feeds.EURS_RESERVES).then((res) => {
