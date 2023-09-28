@@ -7,7 +7,6 @@
   overflow: hidden;
   white-space: nowrap;
   width: fit-content;
-  max-width: 160px; /* Initial width */
   cursor: pointer;
 }
 
@@ -19,6 +18,7 @@
 }
 
 .container .text {
+  display: none;
   font-size: 14px;
   color: #6d7380;
   text-overflow: ellipsis;
@@ -31,7 +31,26 @@
   display: none;
 }
 
-@media screen and (min-width: 480px) {
+@media screen and (min-width: 37.75em) {
+  .container {
+    max-width: 160px; /* Initial width */
+    transition: max-width 0.5s ease, border 0.5s ease; /* Transitions for width and border */
+  }
+
+  .container:hover {
+    max-width: 260px; /* Expanded width on hover */
+    border-radius: var(--space-1x);
+    border: 1px solid var(--blue-blue-200, #dfe7fb);
+    background: var(--background-color-background-primary, #fff);
+    transition: max-width 0.4s ease, border 0.4s ease; /* Faster transitions on hover */
+  }
+
+  .container .text {
+    display: inline;
+  }
+}
+
+@media screen and (min-width: 50em) {
   .container .shortcut {
     display: flex;
     padding: var(--space-1x) var(--space-2x);
@@ -41,17 +60,5 @@
     border-radius: var(--space-2x);
     border: 1px solid var(--border-color-border-primary, #ecedef);
     color: #6d7380;
-  }
-
-  .container {
-    transition: max-width 0.5s ease, border 0.5s ease; /* Transitions for width and border */
-  }
-
-  .container:hover {
-    max-width: 230px; /* Expanded width on hover */
-    border-radius: var(--space-1x);
-    border: 1px solid var(--blue-blue-200, #dfe7fb);
-    background: var(--background-color-background-primary, #fff);
-    transition: max-width 0.3s ease, border 0.3s ease; /* Faster transitions on hover */
   }
 }

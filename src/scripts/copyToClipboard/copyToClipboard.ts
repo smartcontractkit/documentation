@@ -22,7 +22,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const copyButton = document.createElement("button")
     copyButton.className = button.secondary
-    copyButton.classList.add(...["copy-iconbutton"])
+    copyButton.classList.add("copy-iconbutton")
     copyButton.type = "button"
     const s = (codeBlock as HTMLElement).innerText
     copyButton.setAttribute("data-clipboard-text", s)
