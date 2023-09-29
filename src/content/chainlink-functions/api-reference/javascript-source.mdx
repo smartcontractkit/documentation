@@ -1,0 +1,62 @@
+---
+section: chainlinkFunctions
+date: Last Modified
+title: "JavaScript code API Reference"
+---
+
+JavaScript source code for a Functions request should comply with certain restrictions:
+
+- **Allowed Modules**: Only vanilla [Deno](https://deno.land/) is supported, without module imports.
+- **Return Type**: Must return a JavaScript `Buffer` object representing the response bytes sent back to the invoking contract.
+- **Time Limit**: Scripts must execute within a 10-second timeframe; otherwise, they will be terminated, and an error will be returned to the requesting contract.
+
+## HTTP Requests
+
+For making HTTP requests, use the `Functions.makeHttpRequest` function.
+
+### Syntax
+
+```javascript
+const response = await Functions.makeHttpRequest({
+  url: "http://example.com",
+  method: "GET", // Optional
+  // Other optional parameters
+})
+```
+
+### Parameters
+
+| Parameter      | Optionality | Description                               | Default Value |
+| -------------- | ----------- | ----------------------------------------- | ------------- |
+| `url`          | Required    | The target URL.                           | N/A           |
+| `method`       | Optional    | HTTP method to be used.                   | `'GET'`       |
+| `headers`      | Optional    | HTTP headers for the request.             | N/A           |
+| `params`       | Optional    | URL query parameters.                     | N/A           |
+| `data`         | Optional    | Body content for the request.             | N/A           |
+| `timeout`      | Optional    | Maximum request duration in milliseconds. | `3000 ms`     |
+| `responseType` | Optional    | Expected response type.                   | `'json'`      |
+
+### Return Object
+
+| Response Type | Fields       | Description                                      |
+| ------------- | ------------ | ------------------------------------------------ |
+| Success       | `data`       | Response data sent by the server.                |
+|               | `status`     | Numeric HTTP status code.                        |
+|               | `statusText` | Textual representation of HTTP status.           |
+|               | `headers`    | HTTP headers sent by the server in the response. |
+| Error         | `error`      | Indicates an error occurred (`true`).            |
+|               | `message`    | Optional error message.                          |
+|               | `code`       | Optional error code.                             |
+|               | `response`   | Optional server response.                        |
+
+## Data Encoding Functions
+
+The Functions library includes several encoding functions, which are useful for preparing data for blockchain contracts.
+
+| Function                  | Input Type       | Output Type      | Description                                                                    |
+| ------------------------- | ---------------- | ---------------- | ------------------------------------------------------------------------------ |
+| `Functions.encodeUint256` | Positive Integer | 32-byte `Buffer` | Converts a positive integer to a 32-byte `Buffer` for a `uint256` in Solidity. |
+| `Functions.encodeInt256`  | Integer          | 32-byte `Buffer` | Converts an integer to a 32-byte `Buffer` for an `int256` in Solidity.         |
+| `Functions.encodeString`  | String           | `Buffer`         | Converts a string to a `Buffer` for a `string` type in Solidity.               |
+
+**Note**: Using these encoding functions is optional. The source code must return a `Buffer` that represents the on-chain bytes array.
