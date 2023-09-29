@@ -6,12 +6,18 @@ import SidebarToggle from "./SidebarToggle"
 // import Search from "./Search/Search"
 import NotificationBanner from "~/features/notifications/components/NotificationBanner.astro"
 import { Sections } from "~/content/config"
-import { Search as AlgoSearch } from "../AlgoSearch/Search"
+import { NavBarView } from "@chainlink/components"
 
 export type Props = {
   section?: Sections
 }
 const { section } = Astro.props
+
+// TODO: Replace env for imgix in utils
+// TODO: Fix top of sticky elements on mobile (set new height for --theme-navbar-height(?))
+// TODO: Work with collapsable property (use grid somehow(?))
+// TODO: Work with topLevelNavigation (use next/router(?))
+// TODO: Figure out the right client directive
 ---
 
 <!-- Google Tag Manager (noscript) -->
@@ -21,7 +27,9 @@ const { section } = Astro.props
   width="0"
   style="display:none;visibility:hidden"></iframe>
 <!-- End Google Tag Manager (noscript) -->
-<header>
+
+<NavBarView app="Docs" topLevelNavigation={"ccip"} client:idle />
+<!-- <header>
   <SkipToContent />
   <nav class="nav-wrapper" title="Top Navigation">
     <div class="logo">
@@ -48,10 +56,10 @@ const { section } = Astro.props
     </div>
     <div id="weglot"></div>
   </nav>
-</header>
+</header> -->
 <NotificationBanner />
 
-<style>
+<!-- <style>
   header {
     z-index: 11;
     height: var(--theme-navbar-height);
@@ -184,4 +192,4 @@ const { section } = Astro.props
       elem.setAttribute("aria-current", "true")
     }
   })
-</script>
+</script> -->
