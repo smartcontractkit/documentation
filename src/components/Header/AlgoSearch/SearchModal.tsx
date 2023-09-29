@@ -41,7 +41,7 @@ export const SearchModal = ({ showModal, onClose }: { showModal: boolean; onClos
             />
           }
           showSearch={showModal}
-          placeholder="Search Chainlink & Resources"
+          placeholder="Search across Chainlink resources"
           assistantID="4bcde2e970f34c2fa80a7e14615e09e2"
           endpoint="wss://streamingprod.algoverai.link/chat_chainlink"
           basicSearchEndpoint="https://api.algovera.ai/chainlink/search"
