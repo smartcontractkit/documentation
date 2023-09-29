@@ -1,55 +1,47 @@
 ---
 section: chainlinkFunctions
 date: Last Modified
-title: "Automate your Functions"
+title: "Automate your Functions (Time-based Automation)"
 ---
 
-import { Aside, ClickToZoom } from "@components"
+import { Aside, ClickToZoom, CopyText, CodeSample } from "@components"
 import ChainlinkFunctions from "@features/chainlink-functions/common/ChainlinkFunctions.astro"
 
 This tutorial shows you how to use [Chainlink Automation](/chainlink-automation/introduction) to automate your Chainlink Functions. Automation is essential when you want to trigger the same function regularly, such as fetching weather data daily or fetching an asset price on every block.
 
 Read the [API multiple calls](/chainlink-functions/tutorials/api-multiple-calls) tutorial before you follow the steps in this example. This tutorial uses the same example but with an important difference:
 
-- You will deploy [AutomatedFunctionsConsumer.sol](https://github.com/smartcontractkit/functions-hardhat-starter-kit/blob/main/contracts/AutomatedFunctionsConsumer.sol) instead of [FunctionsConsumer.sol](https://github.com/smartcontractkit/functions-hardhat-starter-kit/blob/main/contracts/FunctionsConsumer.sol). `AutomatedFunctionsConsumer.sol` is a Chainlink Functions Consumer contract that is [Chainlink Automation compatible](/chainlink-automation/compatible-contracts). After you deploy and set up your contract, Chainlink Automation triggers your function according to a time schedule.
+- You will deploy [AutomatedFunctionsConsumerExample.sol](https://remix.ethereum.org/#url=https://docs.chain.link/samples/ChainlinkFunctions/AutomatedFunctionsConsumerExample.sol) instead of the [FunctionsConsumerExample contract](https://remix.ethereum.org/#url=https://docs.chain.link/samples/ChainlinkFunctions/FunctionsConsumerExample.sol).
+
+  After you deploy and set up your contract, Chainlink Automation triggers your function according to a time schedule.
 
 <Aside type="caution">
-  Chainlink Functions is still in BETA. Please utilize credentials that are assigned for your testing purposes only and
-  that do not secure sensitive data or real value. The use of secrets in your requests is an experimental feature that
-  may not operate as expected and is subject to change. Use of this feature is at your own risk and may result in
-  unexpected errors, possible revealing of the secret as new versions are released, or other issues.
+  Chainlink Functions is still in BETA. The use of secrets in your requests is an experimental feature that may not
+  operate as expected and is subject to change. Use of this feature is at your own risk and may result in unexpected
+  errors, possible revealing of the secret as new versions are released, or other issues.
+</Aside>
+
+<Aside type="note">
+  Chainlink Functions is a self-service solution. You must ensure that the data sources or APIs specified in requests
+  are of sufficient quality and have the proper availability for your use case. You are responsible for complying with
+  the licensing agreements for all data providers that you connect with through Chainlink Functions. Violations of data
+  provider licensing agreements or the [terms](https://chain.link/terms) can result in suspension or termination of your
+  Chainlink Functions account.
 </Aside>
 
 ## Before you begin
-
-<Aside type="note" title="Request Access">
-  Chainlink Functions is currently in a limited BETA. Apply [here](http://functions.chain.link/) to add your EVM account
-  address to the Allow List.
-</Aside>
 
 1. **[Complete the setup steps in the Getting Started guide](/chainlink-functions/getting-started):** The Getting Started Guide shows you how to set up your environment with the necessary tools for this tutorial.
 
 1. Make sure to understand the [API multiple calls](/chainlink-functions/tutorials/api-multiple-calls) guide.
 
-1. Make sure your subscription has enough LINK to pay for your requests. See the [Get Subscription Details](/chainlink-functions/resources/subscriptions#get-subscription-details) page to learn how to check your subscription balance. If your subscription runs out of LINK, follow the [Fund a Subscription](/chainlink-functions/resources/subscriptions#fund-a-subscription) guide.
+1. Make sure your subscription has enough LINK to pay for your requests. Also, you must maintain a minimum balance to upload encrypted secrets to the DON (Read the [minimum balance for uploading encrypted secrets section](/chainlink-functions/resources/billing#minimum-balance-for-uploading-encrypted-secrets) to learn more). You can check your subscription details (including the balance in LINK) in the [Chainlink Functions frontend](/chainlink-functions/resources/subscriptions). If your subscription runs out of LINK, follow the [Fund a Subscription](/chainlink-functions/resources/subscriptions#fund-a-subscription) guide. This guide recommends maintaining at least 2 LINK within your subscription.
 
-1. Check out the _tutorials_ branch of the [Chainlink Functions Starter Kit](https://github.com/smartcontractkit/functions-hardhat-starter-kit). You can locate this tutorial in [the _/tutorials/6-multiple-apis_ directory](https://github.com/smartcontractkit/functions-hardhat-starter-kit/tree/tutorials/tutorials/6-multiple-apis).
-
-   ```bash
-   git checkout tutorials
-   ```
+1. You can locate the scripts used in this tutorial in the [_examples/10-automate-functions_ directory](https://github.com/smartcontractkit/smart-contract-examples/tree/main/functions-examples/examples/10-automate-functions).
 
 1. Get a free API key from [CoinMarketCap](https://coinmarketcap.com/api/) and note your API key.
 
-1. The starter kit stores encrypted secrets as [gists](https://docs.github.com/en/get-started/writing-on-github/editing-and-sharing-content-with-gists/creating-gists) to share them off-chain with the Decentralized Oracle Network. To allow the starter kit to write gists on your behalf, create a [github fine-grained personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token#creating-a-fine-grained-personal-access-token).
-
-   1. Visit [Github tokens settings page](https://github.com/settings/tokens?type=beta).
-   1. Click on _Generate new token_.
-   1. Provide a name to your token and define the expiration date.
-   1. Under `Account permissions`, enable _Read and write_ for Gists. **Note**: Do not enable additional settings.
-   1. Click on _Generate token_ and copy your fine-grained personal access token.
-
-1. Run `npx env-enc set` to add an encrypted `GITHUB_API_TOKEN` and `COINMARKETCAP_API_KEY` to your `.env.enc` file.
+1. Run `npx env-enc set` to add an encrypted `COINMARKETCAP_API_KEY` to your `.env.enc` file.
 
    ```shell
    npx env-enc set
@@ -62,151 +54,116 @@ Read the [API multiple calls](/chainlink-functions/tutorials/api-multiple-calls)
   necessary variables in the [Before you begin](#before-you-begin) section.
 </Aside>
 
-This tutorial is configured to get the median `BTC/USD` price from multiple data sources according to a time schedule. For a detailed explanation of the code example, read the [Explanation](#explanation) section.
+This tutorial is configured to get the median `BTC/USD` price from multiple data sources according to a time schedule. For a detailed explanation of the code example, read the [Examine the code](#examine-the-code) section.
 
-- Open `configjs`. Note the `args` value is `["1", "bitcoin", "btc-bitcoin"]`. These arguments are BTC IDs at CoinMarketCap, CoinGecko, and Coinpaprika. You can adapt `args` to fetch other asset prices. See the API docs for [CoinMarketCap](https://coinmarketcap.com/api/documentation/v1/), [CoinGecko](https://www.coingecko.com/en/api/documentation), and [CoinPaprika](https://api.coinpaprika.com/) for details. For more information about the request, read the [request config](#configjs) section.
-- Open `source.js` to analyze the JavaScript source code. Read the [source code explanation](#sourcejs) for a more detailed explanation of the request source file.
+### Deploy an Automated Functions Consumer contract
 
-### Simulation
+1. Deploy a Functions consumer contract on _Polygon Mumbai_:
 
-The [Chainlink Functions Hardhat Starter Kit](https://github.com/smartcontractkit/functions-hardhat-starter-kit) includes a simulator to test your Functions code on your local machine. The `functions-simulate` command executes your code in a local runtime environment and simulates an end-to-end fulfillment. This helps you to fix issues before you submit functions to the Decentralized Oracle Network.
+   1. Open the [AutomatedFunctionsConsumerExample.sol](https://remix.ethereum.org/#url=https://docs.chain.link/samples/ChainlinkFunctions/AutomatedFunctionsConsumerExample.sol) in Remix.
 
-Run the `functions-simulate` task to run the source code locally and make sure `config.js` and `source.js` are correctly written:
+   {" "}
 
-```bash
-npx hardhat functions-simulate --configpath REPLACE_CONFIG_PATH
-```
+   <CodeSample src="samples/ChainlinkFunctions/AutomatedFunctionsConsumerExample.sol" showButtonOnly={true} />
 
-Example:
+   1. Compile the contract.
+   1. Open MetaMask and select the _Polygon Mumbai_ network.
+   1. In Remix under the **Deploy & Run Transactions** tab, select _Injected Provider - MetaMask_ in the **Environment** list. Remix will use the MetaMask wallet to communicate with _Polygon Mumbai_.
+   1. Under the **Deploy** section, fill in the router address for your specific blockchain. You can find both of these addresses on the [Supported Networks](/chainlink-functions/supported-networks) page. For _Polygon Mumbai_, the router address is <CopyText text="0x6E2dc0F9DB014aE19888F539E59285D2Ea04244C" code/>.
+   1. Click the **Deploy** button to deploy the contract. MetaMask prompts you to confirm the transaction. Check the transaction details to make sure you are deploying the contract to _Polygon Mumbai_.
+   1. After you confirm the transaction, the contract address appears in the Deployed Contracts list. Copy your contract address.
 
-```text
-$ npx hardhat functions-simulate --configpath tutorials/6-multiple-apis/config.js
-secp256k1 unavailable, reverting to browser version
-
-__Compiling Contracts__
-Nothing to compile
-Duplicate definition of Transfer (Transfer(address,address,uint256,bytes), Transfer(address,address,uint256))
-
-Executing JavaScript request source code locally...
-
-__Console log messages from sandboxed code__
-Median Bitcoin price: $28347.05
-
-__Output from sandboxed source code__
-Output represented as a hex string: 0x00000000000000000000000000000000000000000000000000000000002b4111
-Decoded as a uint256: 2834705
-
-__Simulated On-Chain Response__
-Response returned to client contract represented as a hex string: 0x00000000000000000000000000000000000000000000000000000000002b4111
-Decoded as a uint256: 2834705
-
-Gas used by sendRequest: 398311
-Gas used by client callback function: 75029
-```
-
-Reading the output of the example above, you can note that the `BTC/USD` median price is: _28347.05 USD_. Because Solidity does not support decimals, we move the decimal point so that the value looks like the integer `2834705` before returning the `bytes` encoded value `0x00000000000000000000000000000000000000000000000000000000002b4111` in the callback. Read the [source code explanation](#sourcejs) for a more detailed explanation.
-
-### Deploy an Automation Consumer contract
-
-After running the simulator and confirming d that your Function runs without issues, run the `functions-deploy-auto-client` command. This command does the following:
-
-- Deploy the [AutomatedFunctionsConsumer.sol](https://github.com/smartcontractkit/functions-hardhat-starter-kit/blob/main/contracts/AutomatedFunctionsConsumer.sol) contract. You can set the interval of executions when deploying the contract.
-- Add the deployed contract to your subscription.
-- Simulate the request that is stored in your deployed contract.
-- Store the request, which includes the source code, encrypted gist URL, and arguments in the contract storage. **Note**: The stored request is sent to the DON according to the provided time interval.
-
-In your terminal, run the `functions-deploy-auto-client` command:
-
-```shell
-npx hardhat functions-deploy-auto-client --network REPLACE_NETWORK --subid REPLACE_SUBSCRIPTION_ID --interval REPLACE_INTERVAL_SECONDS --configpath REPLACE_CONFIG_PATH
-```
-
-Example:
-
-```text
-$ npx hardhat functions-deploy-auto-client --network polygonMumbai --subid 443 --interval 60 --configpath tutorials/6-multiple-apis/config.js
-secp256k1 unavailable, reverting to browser version
-Deploying AutomatedFunctionsConsumer contract to mumbai
-
-__Compiling Contracts__
-Nothing to compile
-
-Waiting 1 block for transaction 0x6d68add0027ac0228c9e4b284fda4cedff87a2e73892545f8d34922e9fff338e to be confirmed...
-Adding consumer contract address 0x6164Df3A2b2899124400c064306c74dA71804865 to subscription 443
-Waiting 2 blocks for transaction 0x856e01a16b68bd273b44cd5935d451b334017eca238d5c90b93c415fe03238fd to be confirmed...
-
-Added consumer contract address 0x6164Df3A2b2899124400c064306c74dA71804865 to subscription 443
-2 authorized consumer contracts for subscription 443:
-[
-  '0x4B4BA2Fd6b93aDF8d6b6002E10540E58394388Ea',
-  '0x6164Df3A2b2899124400c064306c74dA71804865'
-]
-Setting the Functions request in AutomatedFunctionsConsumer contract 0x6164Df3A2b2899124400c064306c74dA71804865 on mumbai
-Simulating Functions request locally...
-
-__Console log messages from sandboxed code__
-Median Bitcoin price: $28365.03
-
-__Output from sandboxed source code__
-Output represented as a hex string: 0x00000000000000000000000000000000000000000000000000000000002b4817
-Decoded as a uint256: 2836503
-
-Successfully created encrypted secrets Gist: https://gist.github.com/aelmanaa/67631d9e07c58fd9903121947f2bf29e
-Be sure to delete the Gist https://gist.github.com/aelmanaa/67631d9e07c58fd9903121947f2bf29e once encrypted secrets are no longer in use!
-
-Setting Functions request
-
-Waiting 2 block for transaction 0x2d14301323063d4f6e8e5910ffac4c2bfbea0fca7fcd39d6a76ce332c882da46 to be confirmed...
-
-Created new Functions request in AutomatedFunctionsConsumer contract 0x6164Df3A2b2899124400c064306c74dA71804865 on mumbai
-
-AutomatedFunctionsConsumer contract deployed to 0x6164Df3A2b2899124400c064306c74dA71804865 on mumbai
-```
-
-<Aside type="note" title="Delete your gist once the secrets are no longer in use">
-  In contrast to the [Call Multiple Data Sources guide](/chainlink-functions/tutorials/api-multiple-calls), the gist
-  that is created by the Chainlink starter kit is not deleted automatically at the end of the command. As a result, your
-  contract sends the encrypted gist URL to the DON with each execution. It's recommended that you run the `npx hardhat
-  functions-clear-gists` command to delete the gist once the secrets are no longer required. This is particularly
-  important if you remove your contract from Chainlink Automation.
-</Aside>
-
-In the example above, you deployed a Chainlink Functions consumer contract and configured it to get the median bitcoin price every 60 seconds.
-
-**Note**: You can change the request's parameters to build a new request or update other parameters, such as the time interval or the subscription ID to which your contract is linked. To do so, run the `functions-set-auto-request`:
-
-```shell
-npx hardhat functions-set-auto-request --contract REPLACE_YOUR_CONTRACT --network REPLACE_NETWORK --subid REPLACE_SUBSCRIPTION_ID --interval REPLACE_INTERVAL_SECONDS --gaslimit REPLACE_GAS_LIMITS --configpath tutorials/6-multiple-apis/config.js
-```
-
-The `--interval` and `--gaslimit` flags are optional.
-
-As an example, you can use this command to set a new interval of one hour:
-
-```shell
-npx hardhat functions-set-auto-request --contract 0x6164Df3A2b2899124400c064306c74dA71804865 --network polygonMumbai --subid 443 --interval 3600 --configpath tutorials/6-multiple-apis/config.js
-```
+1. Create a Chainlink Functions subscription and add your contract as an approved consumer contract. **Note**: If you followed the previous tutorials, then you can reuse your existing subscription.
 
 ### Configure Chainlink Automation
 
-The consumer contract that you deployed is designed to be used with a **custom logic** upkeep. Follow the instructions in the [Registering an Upkeep](/chainlink-automation/register-upkeep/#register-an-upkeep-using-the-chainlink-automation-app) guide to register your deployed contract using the [Chainlink Automation App](https://automation.chain.link/). Use the following upkeep settings:
+The consumer contract that you deployed is designed to be used with a **time-based** automation. Follow the instructions in the [Automation Job Scheduler](/chainlink-automation/job-scheduler) guide to register your deployed contract using the [Chainlink Automation App](https://automation.chain.link/). Use the following upkeep settings:
 
-- Trigger: Custom logic
+- Trigger: Time-based
 - Target contract address: The address of the Chainlink Functions consumer contract that you deployed
-- Gas limit: 700000
-- Starting balance (LINK): 1
+- ABI: copy/paste the abi from [automatedFunctions.json](https://github.com/smartcontractkit/smart-contract-examples/blob/main/functions-examples/abi/automatedFunctions.json)
+- Target function: sendRequestCBOR
+- Time internal: Every 15 minutes
+- Gas limit: <CopyText text="1000000" code/>
+- Starting balance (LINK): <CopyText text="1" code/>
 
 You can leave the other settings at their default values for the example in this tutorial.
+**Note**: After creation, check your upkeep details and note the address of the upkeep contract. The upkeep contract is reponsible for calling your Functions consumer contract at regular times intervals.
 
-Chainlink Automation will trigger sending the request according to your provided time interval.
+<ClickToZoom
+  src="/images/chainlink-functions/tutorials/automation/automation-register-scheduler.jpg"
+  alt="Register Functions consumer with automation scheduler"
+/>
 
 <Aside type="note" title="Monitor your balances">
-There are two balances that you have to monitor:
+There are two balances that you must monitor:
 
-- Your subscription balance: Your balance will be charged each time your Chainlink Functions is fulfilled. If your balance is insufficient, your contract cannot send requests. Automating your Chainlink Functions means they will be regularly triggered, so monitor and fund your subscription account regularly. Read [Get Subscription Details](/chainlink-functions/resources/subscriptions#get-subscription-details) to learn how to check your subscription balance.
+- Your subscription balance: Your balance will be charged each time your Chainlink Functions is fulfilled. If your balance is insufficient, your contract cannot send requests. Automating your Chainlink Functions means they will be regularly triggered, so monitor and fund your subscription account regularly. You can check your subscription details (including the balance in LINK) in the [Chainlink Functions frontend](/chainlink-functions/resources/subscriptions).
 - Your upkeep balance: You can check this balance on the [Chainlink Automation App](https://automation.chain.link/). The upkeep balance pays Chainlink Automation Network to send your requests according to your provided time interval. Chainlink Automation will not trigger your requests if your upkeep balance runs low.
 
 </Aside>
+
+### Configure your Automation Consumer contract
+
+Two important steps are done here:
+
+1. Configure your contract so only the upkeep contract can call the `sendRequestCBOR` function. This security measure is important to prevent anyone from calling several times `sendRequestCBOR` and draining your Functions subscription balance. Follow these steps:
+
+   1. On RemixIDE, under the _Deploy & Transactions_ tab, locate your deployed Functions consumer contract.
+   1. Open the list of functions.
+   1. Fill in the `setAutomationCronContract` function with the upkeep contract address you copied from the previous step.
+   1. Click on _transact_. A Metamask popup appears and asks you to confirm the transaction.
+   1. Confirm the transaction and wait for it to be confirmed.
+
+1. Configure the request details by calling the `updateRequest` function. This step stores the encoded request (source code, reference to encrypted secrets if any, arguments), gas limit, subscription ID, and job ID in the contract storage (see [Examine the code](#examine-the-code)). To do so, follow these steps:
+
+   1. On a terminal, go to the [_Functions tutorials_ directory](https://github.com/smartcontractkit/smart-contract-examples/tree/main/).
+   1. Open [updateRequest.js](https://github.com/smartcontractkit/smart-contract-examples/blob/main/functions-examples/examples/10-automate-functions/updateRequest.js) and replace the consumer contract address and the subscription ID with your own values:
+
+   ```javascript
+   const consumerAddress = "0x5abE77Ba2aE8918bfD96e2e382d5f213f10D39fA" // REPLACE this with your Functions consumer address
+   const subscriptionId = 3 // REPLACE this with your subscription ID
+   ```
+
+   1. Run the [updateRequest.js](https://github.com/smartcontractkit/smart-contract-examples/blob/main/functions-examples/examples/10-automate-functions/updateRequest.js) script.
+
+      ```shell
+      node examples/10-automate-functions/updateRequest.js
+      ```
+
+      Example:
+
+      ```text
+      $ node examples/10-automate-functions/updateRequest.js
+      secp256k1 unavailable, reverting to browser version
+      Start simulation...
+      Performing simulation with the following versions:
+      deno 1.36.3 (release, aarch64-apple-darwin)
+      v8 11.6.189.12
+      typescript 5.1.6
+
+
+      Simulation result {
+        capturedTerminalOutput: 'Median Bitcoin price: 25702.07\n',
+        responseBytesHexstring: '0x00000000000000000000000000000000000000000000000000000000002737df'
+      }
+      ✅ Decoded response to uint256:  2570207n
+
+      Make request...
+      Upload encrypted secret to gateways https://01.functions-gateway.testnet.chain.link/user. StorageSlotId 0. Expiration in minutes: 150
+
+      ✅ Secrets uploaded properly to gateways https://01.functions-gateway.testnet.chain.link/user! Gateways response:  { version: 1693925775, success: true }
+
+      ✅ Automated Functions request settings updated! Transaction hash 0x6017e4b36f80c7d06e0f0f1dd48239e688419a8141b90ad944bff89232fa8e14 - Check the explorer https://mumbai.polygonscan.com/tx/0x6017e4b36f80c7d06e0f0f1dd48239e688419a8141b90ad944bff89232fa8e14
+      ```
+
+   The output of the example gives you the following information:
+
+   - Your request is first run on a sandbox environment to ensure it is correctly configured.
+   - The encrypted secrets were uploaded to the secrets endpoint `https://01.functions-gateway.testnet.chain.link/user`.
+   - The Functions consumer contract's request details are updated.
+
+At this stage, your Functions consumer contract is configured to get the median Bitcoin price every 15 minutes.
 
 ### Check Result
 
@@ -218,177 +175,117 @@ Click on your upkeep to fetch de details:
 
 <ClickToZoom src="/images/chainlink-functions/tutorials/automation/myupkeep-details.jpg" />
 
-As you can see in the _History_ table, the upkeep is running every minute.
-On your terminal, run the `functions-read` task with the `contract` parameter to read the latest received response:
+As you can see in the _History_ table, the upkeep is running every 15 minutes.
+On your terminal, run the [readLatest](https://github.com/smartcontractkit/smart-contract-examples/blob/main/functions-examples/examples/10-automate-functions/readLatest.js) to read the latest received response:
 
-```bash
-npx hardhat functions-read  --contract REPLACE_CONSUMER_CONTRACT_ADDRESS --network REPLACE_NETWORK --configpath REPLACE_CONFIG_PATH
-```
+    1.  Open `readLatest.js` and replace the consumer contract address with your own values:
 
-Example:
+    ```javascript
+    const consumerAddress = "0x5abE77Ba2aE8918bfD96e2e382d5f213f10D39fA" // REPLACE this with your Functions consumer address
+    ```
 
-```text
-$ npx hardhat functions-read  --contract 0x6164Df3A2b2899124400c064306c74dA71804865  --network polygonMumbai --configpath tutorials/6-multiple-apis/config.js
-secp256k1 unavailable, reverting to browser version
-Reading data from Functions client contract 0x6164Df3A2b2899124400c064306c74dA71804865 on network mumbai
+    1. Run the [readLatest](https://github.com/smartcontractkit/smart-contract-examples/blob/main/functions-examples/examples/10-automate-functions/readLatest.js) script.
 
-On-chain response represented as a hex string: 0x00000000000000000000000000000000000000000000000000000000002af472
-Decoded as a uint256: 2815090
-```
+      ```shell
+      node examples/10-automate-functions/readLatest.js
+      ```
 
-### Cleaning
+      Example:
+
+      ```text
+      $ node examples/10-automate-functions/readLatest.js
+      secp256k1 unavailable, reverting to browser version
+      Last request ID is 0x38687b48c9d8dfc7115d516840d45089a5409557765f031c14b332913e92ee7e
+      ✅ Decoded response to uint256:  2570207n
+      ```
+
+### Clean up
 
 After you finish the guide:
 
 1. Cancel your upkeep from the [Chainlink Automation App](https://automation.chain.link/). **Note**: Remember to withdraw funds after you cancel the upkeep. There is a 50-block delay once upkeep between the moment you cancel your upkeep and the moment you can withdraw funds.
-1. To delete the gist, run the `functions-clear-gists` task with the `contract` parameter.
 
-```shell
-npx hardhat functions-clear-gists --contract REPLACE_CONSUMER_CONTRACT_ADDRESS --network REPLACE_NETWORK
-```
-
-Example:
-
-```text
-$ npx hardhat functions-clear-gists --contract 0x6164Df3A2b2899124400c064306c74dA71804865 --network polygonMumbai
-secp256k1 unavailable, reverting to browser version
-Off-chain secrets Gist https://gist.github.com/aelmanaa/67631d9e07c58fd9903121947f2bf29e deleted successfully
-
-All off-chain secret Gists for Automated Consumer 0x6164Df3A2b2899124400c064306c74dA71804865 have been deleted.
-```
-
-## Explanation
+## Examine the code
 
 ### AutomatedFunctionsConsumer.sol
 
-To write a Chainlink Functions consumer contract, your contract must import [FunctionsClient.sol](https://github.com/smartcontractkit/chainlink/tree/master/contracts/src/v0.8/functions/dev/v0_0_0/FunctionsClient.sol). You can read the API reference: [FunctionsClient](/chainlink-functions/api-reference/functions-client). This contract is not available in an NPM package, so you must download and import it from within your project.
-
-    ```
-    import {Functions, FunctionsClient} from "./dev/functions/FunctionsClient.sol";
-    ```
-
-To create a Chainlink Automation contract, your contract must import `AutomationCompatibleInterface` from [AutomationCompatible.sol](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/automation/AutomationCompatible.sol)
-
-    ```
-    import {AutomationCompatibleInterface} from "@chainlink/contracts/src/v0.8/automation/AutomationCompatible.sol";
-    ```
-
-Import [ConfirmedOwner](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/shared/access/ConfirmedOwner.sol) from the [@chainlink/contracts](https://www.npmjs.com/package/@chainlink/contracts) NPM package. This contract includes functions to set up the owner, transfer ownership, and a function modifier `onlyOwner` that restricts certain functions to the contract owner.
-
-Your contract must inherit `FunctionsClient` and `ConfirmedOwner` contracts, and implement the `AutomationCompatibleInterface` interface.
-
-    ```
-    contract AutomatedFunctionsConsumer is FunctionsClient, ConfirmedOwner, AutomationCompatibleInterface
-    ```
-
-Use the [Functions.sol](https://github.com/smartcontractkit/chainlink/tree/master/contracts/src/v0.8/functions/dev/v0_0_0/Functions.sol) library to get all the functions needed for building a Chainlink Functions request. You can read the API reference: [Functions](/chainlink-functions/api-reference/functions).
-
-    ```
-    using Functions for Functions.Request;
-    ```
-
-The request sent to Chainlink Functions is defined as a state variable. The contract owner stores this request, which is regularly sent to Chainlink Functions whenever Chainlink Automation triggers it.
-
-    ```
-    bytes public requestCBOR
-    ```
-
-The latest request ID, latest received response, and latest received error (if any) are defined as state variables. Note that `latestResponse` and `latestError` are encoded as dynamically sized byte array `bytes`, so you will still need to decode them to read the response or error:
-
-    ```
-    bytes32 public latestRequestId;
-    bytes public latestResponse;
-    bytes public latestError;
-    ```
-
-The subscription ID (the subscription account your contract is linked to) and the fulfillment gas limit (Maximum amount of gas used to fulfill a Chainlink Function request) are defined as state variables. Only the contract owner can modify these variables.
-
-    ```
-    uint64 public subscriptionId;
-    uint32 public fulfillGasLimit;
-    ```
-
-The update interval (time interval in seconds of triggering a Chainlink Function request) and the timestamp of the last request are defined as state variables. They are used to check if the time interval has been reached so that Chainlink Automation can trigger a new request.
-
-    ```
-    uint256 public updateInterval;
-    uint256 public lastUpkeepTimeStamp;
-    ```
-
-Define `upkeepCounter` and `responseCounter` to keep track of the number of requests (triggered by Chainlink Automation) and the number of fulfilled requests (once the request has been fulfilled by Chainlink Functions).
-
-Define the `OCRResponse` event that your smart contract will emit during the callback:
-
-    ```
-    event OCRResponse(bytes32 indexed requestId, bytes result, bytes err);
-    ```
-
-Pass the oracle address for your network, your Chainlink functions ID, fulfillment gas limit, and update interval when you deploy the contract:
-
-    ```
-    constructor(
-      address oracle,
-      uint64 _subscriptionId,
-      uint32 _fulfillGasLimit,
-      uint256 _updateInterval
-    ) FunctionsClient(oracle) ConfirmedOwner(msg.sender)
-    ```
-
-You can change the oracle address at any time by calling the `updateOracleAddress` function.
-
-To store a request in the `requestCBOR` state variable, the contract owner has to:
-
-- Call the `generateRequest` function. It uses the `Functions`library to initialize the request and add any passed encrypted secrets or arguments. Finally, it returns an encoded request. You can read the API Reference for [Initializing a request](/chainlink-functions/api-reference/functions/#initializerequest), [adding secrets](/chainlink-functions/api-reference/functions/#addinlinesecrets), and [adding arguments](/chainlink-functions/api-reference/functions/#addargs). **Note**: This call is done off-chain to save gas when calling the `setRequest` function.
-
-  ```
-  Functions.Request memory req;
-  req.initializeRequest(Functions.Location.Inline, Functions.CodeLanguage.JavaScript, source);
-  if (secrets.length > 0) {
-    req.addRemoteSecrets(secrets);
-  }
-  if (args.length > 0) req.addArgs(args);
-
-  return req.encodeCBOR();
-  ```
-
-- Call the `setRequest` function and pass the subscription ID, fulfillment gas limit, update interval, and the encoded request (returned by `generateRequest`). `setRequest` updates the `updateInterval`, `subscriptionId`, `fulfillGasLimit`, and `requestCBOR` state variables.
-
-`checkUpkeep` and `performUpkeep` functions are used by Chainlink Automation:
-
-- `checkUpkeep`: Returns a boolean which determines whether Chainlink Automation can trigger the `performUpkeep` function. The boolean is set to true whenever the time interval is met.
-
-  ```
-  upkeepNeeded = (block.timestamp - lastUpkeepTimeStamp) > updateInterval;
-  ```
-
-- `performUpkeep`: Sends the request to the oracle by calling the `FunctionsClient` `sendRequest` function. You can read the API reference for [sending a request](/chainlink-functions/api-reference/functions-client/#sendrequest). Also, it updates `lastUpkeepTimeStamp` with the current timestamp, increments `upkeepCounter`, and sets `latestRequestId` to the last request ID.
-
-  ```
-  lastUpkeepTimeStamp = block.timestamp;
-  upkeepCounter = upkeepCounter + 1;
-  ...
-  bytes32 requestId = s_oracle.sendRequest(
-  subscriptionId,
-  requestCBOR,
-  fulfillGasLimit
-  );
-  ...
-  latestRequestId = assignedReqID;
-  ```
-
-`fulfillRequest` is invoked by Chainlink Functions during the callback. This function is defined in `FunctionsClient` as `virtual` (read `fulfillRequest` [API reference](/chainlink-functions/api-reference/functions-client/#fulfillrequest)). So, your smart contract must override the function to implement the callback. The implementation of the callback is straightforward: the contract stores the latest response and error in `latestResponse` and `latestError` and increments `responseCounter` before emitting the `OCRResponse` event.
-
-    ```
-    latestResponse = response;
-    latestError = err;
-    responseCounter = responseCounter + 1;
-    emit OCRResponse(requestId, response, err);
-    ```
-
-### config.js
-
-See the [explanation](/chainlink-functions/tutorials/api-multiple-calls#configjs) for the Call Multiple Data Sources tutorial.
+<ChainlinkFunctions section="automated-functions-consumer" />
 
 ### source.js
 
-See the [explanation](/chainlink-functions/tutorials/api-multiple-calls#sourcejs) for the Call Multiple Data Sources tutorial.
+The JavaScript code is similar to the [Call Multiple Data Sources](/chainlink-functions/tutorials/api-multiple-calls) tutorial.
+
+### updateRequest.js
+
+This explanation focuses on the [update.js](https://github.com/smartcontractkit/smart-contract-examples/blob/main/functions-examples/examples/10-automate-functions/updateRequest.js) script and shows how to use the [Chainlink Functions NPM package](https://github.com/smartcontractkit/functions-toolkit) in your own JavaScript/TypeScript project to encode a request off-chain then store in your contract. The code is self-explanatory and has comments to help you understand all the steps.
+
+The script imports:
+
+- [path](https://nodejs.org/docs/latest/api/path.html) and [fs](https://nodejs.org/api/fs.html) : Used to read the [source file](https://github.com/smartcontractkit/smart-contract-examples/blob/main/functions-examples/examples/5-use-secrets-threshold/source.js).
+- [ethers](https://docs.ethers.org/v5/): Ethers.js library, enables the script to interact with the blockchain.
+- `@chainlink/functions-toolkit`: Chainlink Functions NPM package. All its utilities are documented in the [NPM README](https://github.com/smartcontractkit/functions-toolkit/blob/main/README.md).
+- `@chainlink/env-enc`: A tool for loading and storing encrypted environment variables. Read the [official documentation](https://www.npmjs.com/package/@chainlink/env-enc) to learn more.
+- `../abi/automatedFunctions.json`: The abi of the contract your script will interact with. **Note**: The script was tested with this [AutomatedFunctionsConsumer contract](https://remix.ethereum.org/#url=https://docs.chain.link/samples/ChainlinkFunctions/AutomatedFunctionsConsumerExample.sol).
+
+The script has two hardcoded values that you have to change using your own Functions consumer contract and subscription ID:
+
+```javascript
+const consumerAddress = "0x5abE77Ba2aE8918bfD96e2e382d5f213f10D39fA" // REPLACE this with your Functions consumer address
+const subscriptionId = 3 // REPLACE this with your subscription ID
+```
+
+The primary function that the script executes is `updateRequestMumbai`. This function can be broken into five main parts:
+
+1. Definition of necessary identifiers:
+
+   - `routerAddress`: Chainlink Functions router address on Polygon Mumbai.
+   - `donId`: Identifier of the DON that will fulfill your requests on Polygon Mumbai.
+   - `gatewayUrls`: The secrets endpoint URL to which you will upload the encrypted secrets.
+   - `explorerUrl`: Block explorer url of Polygon Mumbai.
+   - `source`: The source code must be a string object. That's why we use `fs.readFileSync` to read `source.js` and then call `toString()` to get the content as a `string` object.
+   - `args`: During the execution of your function, These arguments are passed to the source code. The `args` value is `["1", "bitcoin", "btc-bitcoin"]`. These arguments are BTC IDs at CoinMarketCap, CoinGecko, and Coinpaprika. You can adapt args to fetch other asset prices.
+   - `secrets`: The secrets object that will be encrypted.
+   - `slotIdNumber`: Slot ID at the DON where to upload the encrypted secrets.
+   - `expirationTimeMinutes`: Expiration time in minutes of the encrypted secrets.
+   - `gasLimit`: Maximum gas that Chainlink Functions can use when transmitting the response to your contract.
+   - Initialization of ethers `signer` and `provider` objects. The signer is used to make transactions on the blockchain, and the provider reads data from the blockchain.
+
+1. Simulating your request in a sandbox environment:
+
+   - Use `simulateScript` from the Chainlink Functions NPM package.
+   - Read the `response` of the simulation. If successful, use the Functions NPM package `decodeResult` function and `ReturnType` enum to decode the response to the expected returned type (`ReturnType.uint256` in this example).
+
+1. Encrypt the secrets, upload the encrypted secrets to the DON, and then encode the reference to the DON-hosted encrypted secrets. This is done in three steps:
+
+   - Initialize a `SecretsManager` instance from the Functions NPM package, then call the `encryptSecrets` function.
+   - Call the `uploadEncryptedSecretsToDON` function of the `SecretsManager` instance. This function returns an object containing a `success` boolean as long as `version`, the secret version on the DON storage.
+   - Call the `buildDONHostedEncryptedSecretsReference` function of the `SecretsManager` instance and use the slot ID and version to encode the DON-hosted encrypted secrets reference.
+
+1. Encode the request data off-chain using the `buildRequestCBOR` function fomr the Functions NPM package.
+
+1. Update the Functions consumer contract:
+
+   - Initialize your functions consumer contract using the contract address, abi, and ethers signer.
+   - Call the `updateRequest` function of your consumer contract.
+
+### readLatest.js
+
+This explanation focuses on the [readLatest](https://github.com/smartcontractkit/smart-contract-examples/blob/main/functions-examples/examples/10-automate-functions/readLatest.js) script and that reads the latest receive response of your consumer contract then decode it off-chain using the Chainlink Function NPM package.
+
+The script has one hardcoded values that you have to change using your own Functions consumer contract address:
+
+```javascript
+const consumerAddress = "0x5abE77Ba2aE8918bfD96e2e382d5f213f10D39fA" // REPLACE this with your Functions consumer address
+```
+
+The primary function that the script executes is `readLatest`. This function can be broken into two main parts:
+
+1. Read the latest response:
+
+   - Initialize your functions consumer contract using the contract address, abi, and ethers provider.
+   - Call the `s_lastRequestId`, `s_lastResponse`, and `s_lastError` functions of your consumer contract.
+
+1. Decode the latest response:
+
+   - If there was an error, read the latest error and parse it to `string`.
+   - If there was no error, use the Functions NPM package `decodeResult` function and `ReturnType` enum to decode the response to the expected returned type (`ReturnType.uint256` in this example).
