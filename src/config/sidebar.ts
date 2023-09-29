@@ -282,6 +282,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "Data Feed Circuit Breaker",
           url: "quickstarts/circuit-breaker",
         },
+        {
+          title: "Giveaway Manager",
+          url: "quickstarts/giveaway",
+        },
       ],
     },
     {
