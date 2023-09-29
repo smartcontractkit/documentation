@@ -16,7 +16,7 @@ export const Search = () => {
   }
 
   // Prohibit scrolling on body when modal is visible
-  // useEffect(() => {
+  // React.useEffect(() => {
   //   if (showModal) {
   //     document.body.classList.add(styles.hideOverflow)
   //   } else {
@@ -37,6 +37,7 @@ export const Search = () => {
           onClick={(e) => e.stopPropagation()} // Stops us from hiding modal when clicks are to AlgoveraSearch
         >
           <AlgoveraSearch
+            apiKey="e32fe1586cebb937a9287bf5561edfb62907f6074fc43b9201a305b20e881a5d"
             headerLogo={
               <img
                 alt="Chainlink logo"
