@@ -7,72 +7,86 @@ whatsnext: { "What's next?": "/chainlink-functions/resources/service-limits" }
 
 import { Aside } from "@components"
 
-## Concepts
+## Request costs
 
-For _Chainlink Functions_ to fulfill your requests, you must maintain a sufficient amount of LINK in your _subscription balance_. Because _Chainlink Functions_ follows the [Request and Receive Data](/chainlink-functions/resources/concepts) model, billing is also done in two steps:
+To send Chainlink Functions requests, you must maintain a sufficient amount of LINK in your subscription balance. Because Chainlink Functions follows the [Request and Receive Data](/chainlink-functions/resources/architecture) model, billing is done in two steps:
 
-1. During the _Request_ step. the cost to fulfill a Chainlink Functions request is **estimated** and blocked on the _Subscription balance_ by adding it to the _Subscription reservation_.
-1. During the _Receive_ step, the exact cost of the fulfillment is **calculated** and billed to the _Subscription account_.
+1. During the **request** step, the cost to fulfill a Chainlink Functions request is **estimated** and blocked on the subscription balance by adding it to the subscription reservation.
+1. During the **receive** step, the exact fulfillment cost is **calculated**, then billed to the subscription account, and the subscription reservation is removed.
 
 You can break down total costs into the following components:
 
-- Gas cost: This cost is paid back to the _Transmitter oracle_ for fulfilling the request.
-- Fees:
-  - DON fees: These fees are paid to the _DON_ in LINK to compensate the nodes for their work.
-  - Registry fees: These fees are paid in LINK for the maintenance of the _Subscriptions Contract_.
+- Gas cost: This cost is paid back to the transmitter oracle in LINK for fulfilling the request.
+- Premium fees: These fees are paid in LINK to compensate nodes for their work and for the maintenance of the FunctionsRouter contract.
 
 Gas cost calculation includes the following variables:
 
 - Gas price: The current gas price fluctuates depending on network conditions.
+- Overestimated gas price: refers to a deliberately higher gas price estimation to account for potential price fluctuations between the time a request is made and the time Chainlink Functions fulfills it. By setting the gas price higher than the current one, Chainlink Functions increases the likelihood that the request will be fulfilled, even if gas prices rise unexpectedly in the short term. The overestimation is calculated as a percentage increase over the current gas price.
 - Callback gas: The amount of gas used for the callback request. See the [Cost Calculation](#cost-calculation-fulfillment) section.
-- Estimated gas overhead: The amount of gas used by the _Subscriptions contract_ and _Functions Oracle contract_. It is an estimate of the total gas cost of fulfilling a request. See the [Cost Simulation](#cost-simulation-reservation) section.
-- Gas Report: The exact amount of gas used by the _Functions Oracle contract_ when fulfilling a request. See the [Cost Calculation](#cost-calculation-fulfillment) section.
-- Gas after payment: The amount of gas used to cover additional operations such as decrementing the subscription balance and incrementing the oracle's withdrawable balance.
-- Callback gas limit: This specifies the maximum amount of gas to spend for a client callback. It is an estimate of the total gas cost to fulfil a request. See the [Cost Simulation](#cost-simulation-reservation) section.
-- Native to LINK conversion: This allows your subscription balance to be billed only in LINK tokens.
-  - Convert the network's native gas tokens to LINK: The total gas cost in _native_ units is converted to LINK using the correct [Price Feed](/data-feeds/price-feeds/addresses). On Sepolia, the conversion uses the ETH/LINK Price Feed. On Polygon Mumbai, the conversion uses the MATIC/LINK Price Feed.
-  - Fallback Wei to LINK ratio: In the unlikely event that the _Native to LINK_ price data feed is unavailable, the fallback conversion is used. You can find this ratio by running the `gitConfig` function in the Oracle Registry proxy contract. See the [Supported Networks](/chainlink-functions/supported-networks) page to find the contract addresses for each network.
+- Callback gas limit: The maximum amount of gas that can be used to call the `handleOracleFulfillment` callback function of the consumer contract in order to provide the response. See the [Cost Simulation](#cost-simulation-reservation) section.
+- Gas overhead: The amount of gas used by the FunctionsRouter and FunctionsCoordinator contracts. It is an estimate of the total gas cost of fulfilling a request.
+- Native to LINK translation: Your subscription balance can be billed only in LINK tokens.
+  - Translate the network's native gas tokens to LINK: The total gas cost in _native_ units is translated using the correct [Price Feed](/data-feeds/price-feeds/addresses). For example, on Sepolia, the translation uses the ETH/LINK Price Feed, and on Polygon Mumbai, the translation uses the MATIC/LINK Price Feed.
+  - Fallback Wei to LINK ratio: In the unlikely event that the _Native to LINK_ price data feed is unavailable, the fallback translation is used. You can find this ratio by running the `getConfig` function in the FunctionsCoordinator contract. See the [Supported Networks](/chainlink-functions/supported-networks) page to find the contract addresses for each network.
 
-## Cost Simulation (Reservation)
+### Cost Simulation (Reservation)
 
-During the _Request_ step:
+During the **request** step:
 
-- The total cost in LINK is **estimated** using the following formula:
+1. The total cost in LINK is **estimated** using the following formula:
 
-  ```
-  (Gas price * (Estimated gas overhead + Callback gas limit + Gas after payment)) / Native to LINK conversion = total estimated gas cost in LINK
+   ```
+   total estimated gas cost in LINK = (Overestimated gas price * (Gas overhead + Callback gas limit)) / Native to LINK translation
 
-  total estimated cost in LINK = total gas cost + DON fees + Registry fees
-  ```
+   total estimated cost in LINK = total estimated gas cost + premium fees
+   ```
 
-- The total estimated cost is then added to the _Subscription reservation_.
+1. The total estimated cost is then added to the subscription reservation.
 
-## Cost Calculation (Fulfillment)
+### Cost Calculation (Fulfillment)
 
 When a DON's oracle reports the response, subscription accounts are charged based on the gas amount used in the callback:
 
-- The total cost in LINK is **calculated** using the following formula:
+1. The total cost in LINK is **calculated** using the following formula:
 
-  ```
-  (Gas price * (Gas Report + Callback gas + Gas after payment)) / Native to LINK conversion = total gas cost in LINK
+   ```
+   total gas cost in LINK = (Gas price * (Gas overhead + Callback gas)) / Native to LINK translation
 
-  total cost in LINK = total gas cost + DON fees + Registry fees
-  ```
+   total cost in LINK = total gas cost + premium fees
+   ```
 
-- The _Subscription contract_ performs several accounting movements:
-  - Debit the _Subscription balance_ of the total cost.
-  - Pay the Registry fee.
-  - Pay the oracle that reported the response: Repayment of _total gas cost_ and proportional share of the _DON_ fees.
-  - Pay the oracles participating in the _DON_ with the rest of the _DON_ fees.
-  - Decrease the _Subscription reservation_ of the _total estimated cost_.
+1. The FunctionsRouter contract performs several accounting movements.
 
-## Fees
+## Minimum balance for uploading encrypted secrets
 
-<Aside type="note">
-  <p>Testnet pricing does not reflect mainnet pricing.</p>
-</Aside>
+If you choose to store the encrypted secrets with the DON (learn more on the [Secrets Management page](/chainlink-functions/resources/secrets)), then one of your subscriptions must maintain a balance greater than the minimum required for uploading encrypted secrets. This balance is blockchain-specific. You can find the specific values for each blockchain on the [Supported Networks](/chainlink-functions/supported-networks) page.
+**Note**: Uploading encrypted secrets is free of charge. However, to prevent misuse of Chainlink Functions, you are required to maintain a minimum balance in one of the subscriptions owned by your externally-owned account (EOA) before you can upload encrypted secrets to a DON.
 
-| Item          | Ethereum Sepolia testnet | Polygon Mumbai testnet | Avalanche Fuji testnet |
-| ------------- | ------------------------ | ---------------------- | ---------------------- |
-| Registry fees | 0.2 LINK                 | 0.2 LINK               | 0.2 LINK               |
-| DON fees      | 0 LINK                   | 0 LINK                 | 0 LINK                 |
+## Withdrawing funds
+
+To withdraw your LINK balance, you must first cancel your subscription. To prevent misuse of Chainlink Functions, any subscription with fulfilled requests below the _request threshold_ will incur a cancellation fee. Both the request threshold and the cancellation fee are blockchain-specific. You can find their values for each blockchain on the [Supported Networks](/chainlink-functions/supported-networks) page.
+
+**Example 1**:
+
+- **Request Threshold**: Two requests
+- **Cancellation Fee**: 0.5 LINK
+- **Your Balance**: 0.4 LINK
+- **Number of Fulfilled Requests**: One
+- **Outcome**: Canceling your subscription results in a non-refundable balance
+
+**Example 2**:
+
+- **Request Threshold**: Two requests
+- **Cancellation Fee**: 0.5 LINK
+- **Your Balance**: 1 LINK
+- **Number of Fulfilled Requests**: One
+- **Outcome**: You will receive 0.5 LINK if you cancel your subscription
+
+**Example 3**:
+
+- **Request Threshold**: Two requests
+- **Cancellation Fee**: 0.5 LINK
+- **Your Balance**: 1 LINK
+- **Number of Fulfilled Requests**: Two or more
+- **Outcome**: You will receive 1 LINK if you cancel your subscription. Your subscription will not incur the cancellation fee
