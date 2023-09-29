@@ -56,7 +56,7 @@ export const evmProducts = [
       ["Getting Started", "chainlink-functions/getting-started"],
       ["Request Computation", "chainlink-functions/tutorials/simple-computation"],
       ["Call APIs with Query Parameters", "chainlink-functions/tutorials/api-query-parameters"],
-      ["Return Custom Data Types", "/chainlink-functions/tutorials/api-custom-response"],
+      ["Return Custom Data Types", "chainlink-functions/tutorials/api-custom-response"],
       ["POST Data to an API", "chainlink-functions/tutorials/api-post-data"],
       ["Use Secrets in Requests", "chainlink-functions/tutorials/api-use-secrets"],
       ["Architecture", "chainlink-functions/resources/architecture"],
