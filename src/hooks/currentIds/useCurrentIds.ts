@@ -1,5 +1,5 @@
-import { currentIds } from "./idStore"
 import { useStore } from "@nanostores/preact"
+import { currentIds } from "./idStore"
 
 export const useCurrentIds = () => ({
   $currentIds: useStore(currentIds),
