@@ -178,6 +178,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               title: "Chainlink Hardhat Starter Kit",
               url: "quickstarts/chainlink-hardhat-starter-kit?parent=dataFeeds",
             },
+            {
+              title: "Dev3 Chainlink SDK",
+              url: "quickstarts/dev3-chainlink-sdk?parent=dataFeeds",
+            },
           ],
         },
         {
@@ -357,6 +361,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               title: "Chainlink Hardhat Starter Kit",
               url: "quickstarts/chainlink-hardhat-starter-kit?parent=automation",
             },
+            {
+              title: "Dev3 Chainlink SDK",
+              url: "quickstarts/dev3-chainlink-sdk?parent=automation",
+            },
           ],
         },
         {
@@ -416,13 +424,17 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "Supported Networks",
           url: "chainlink-functions/supported-networks",
         },
+        {
+          title: "Service Responsibility",
+          url: "chainlink-functions/service-responsibility",
+        },
       ],
     },
     {
       section: "Guides",
       contents: [
         {
-          title: "Request Computation",
+          title: "Simple Computation",
           url: "chainlink-functions/tutorials/simple-computation",
         },
         {
@@ -438,24 +450,32 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "chainlink-functions/tutorials/api-post-data",
         },
         {
-          title: "Using Secrets in Requests",
+          title: "Using DON-hosted Secrets in Requests",
           url: "chainlink-functions/tutorials/api-use-secrets",
+        },
+        {
+          title: "Using User-hosted (gist) Secrets in Requests",
+          url: "chainlink-functions/tutorials/api-use-secrets-gist",
+        },
+        {
+          title: "Using User-hosted Secrets in Requests",
+          url: "chainlink-functions/tutorials/api-use-secrets-offchain",
         },
         {
           title: "Call Multiple Data Sources",
           url: "chainlink-functions/tutorials/api-multiple-calls",
         },
         {
-          title: "Using Off-chain Secrets in Requests",
-          url: "chainlink-functions/tutorials/api-use-secrets-offchain",
+          title: "Encode request data off-chain",
+          url: "chainlink-functions/tutorials/encode-request-offchain",
         },
         {
-          title: "Automate your Functions",
-          url: "chainlink-functions/tutorials/automate-functions/",
+          title: "Automate your Functions (Time-based Automation)",
+          url: "chainlink-functions/tutorials/automate-functions",
         },
         {
-          title: "Add Functions to a Project",
-          url: "chainlink-functions/resources/add-functions-to-projects",
+          title: "Automate your Functions (Custom Logic Automation)",
+          url: "chainlink-functions/tutorials/automate-functions-custom-logic",
         },
       ],
     },
@@ -463,14 +483,17 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "Concepts",
       contents: [
         {
-          title: "Concept Overview",
-          url: "chainlink-functions/resources/concepts",
-        },
-        {
           title: "Architecture",
           url: "chainlink-functions/resources/architecture",
         },
-
+        {
+          title: "Secrets Management",
+          url: "chainlink-functions/resources/secrets",
+        },
+        {
+          title: "Functions playground",
+          url: "chainlink-functions/resources/playground",
+        },
         {
           title: "Managing Subscriptions",
           url: "chainlink-functions/resources/subscriptions",
@@ -493,8 +516,12 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "chainlink-functions/api-reference/functions-client",
         },
         {
-          title: "Functions library",
-          url: "chainlink-functions/api-reference/functions",
+          title: "FunctionsRequest library",
+          url: "chainlink-functions/api-reference/functions-request",
+        },
+        {
+          title: "JavaScript source code",
+          url: "chainlink-functions/api-reference/javascript-source",
         },
       ],
     },
@@ -536,6 +563,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             {
               title: "Chainlink Hardhat Starter Kit",
               url: "quickstarts/chainlink-hardhat-starter-kit?parent=chainlinkFunctions",
+            },
+            {
+              title: "Dev3 Chainlink SDK",
+              url: "quickstarts/dev3-chainlink-sdk?parent=chainlinkFunctions",
             },
           ],
         },
@@ -712,6 +743,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               title: "Chainlink Hardhat Starter Kit",
               url: "quickstarts/chainlink-hardhat-starter-kit?parent=vrf",
             },
+            {
+              title: "Dev3 Chainlink SDK",
+              url: "quickstarts/dev3-chainlink-sdk?parent=vrf",
+            },
           ],
         },
         {
@@ -887,6 +922,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             {
               title: "Chainlink Hardhat Starter Kit",
               url: "quickstarts/chainlink-hardhat-starter-kit?parent=ccip",
+            },
+            {
+              title: "Dev3 Chainlink SDK",
+              url: "quickstarts/dev3-chainlink-sdk?parent=ccip",
             },
           ],
         },
@@ -1204,6 +1243,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             {
               title: "Chainlink Hardhat Starter Kit",
               url: "quickstarts/chainlink-hardhat-starter-kit",
+            },
+            {
+              title: "Dev3 Chainlink SDK",
+              url: "quickstarts/dev3-chainlink-sdk",
             },
           ],
         },

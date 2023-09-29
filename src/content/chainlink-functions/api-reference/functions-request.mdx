@@ -1,0 +1,227 @@
+---
+section: chainlinkFunctions
+date: Last Modified
+title: "FunctionsRequest library API Reference"
+---
+
+import { Aside, CopyText } from "@components"
+
+<Aside type="note" title="Add Chainlink to your project">
+   If you need to integrate Chainlink into your project, install the [@chainlink/contracts NPM package](https://www.npmjs.com/package/@chainlink/contracts).
+
+- If you use [NPM](https://www.npmjs.com/): <CopyText text="npm install @chainlink/contracts --save" code/>
+
+- If you use [Yarn](https://yarnpkg.com/): <CopyText text="yarn add @chainlink/contracts" code/>
+
+Functions contracts are available starting from version _0.7.1_.
+
+</Aside>
+
+Consumer contract developers use the [FunctionsRequest library](https://github.com/smartcontractkit/chainlink/blob/9f19654c086e8e92720d935d217536c8a5600c08/contracts/src/v0.8/functions/dev/v1_0_0/libraries/FunctionsRequest.sol) to build their [requests](#request).
+
+## Types and Constants
+
+### REQUEST_DATA_VERSION
+
+```solidity
+uint16 REQUEST_DATA_VERSION
+```
+
+### DEFAULT_BUFFER_SIZE
+
+```solidity
+uint256 DEFAULT_BUFFER_SIZE
+```
+
+### Location
+
+```solidity
+enum Location {
+  Inline,
+  Remote,
+  DONHosted
+}
+```
+
+| Value       | Description                                                                   |
+| ----------- | ----------------------------------------------------------------------------- |
+| `Inline`    | Provided within the Request.                                                  |
+| `Remote`    | Hosted through a remote location that can be accessed through a provided URL. |
+| `DONHosted` | Hosted on the DON's storage.                                                  |
+
+### CodeLanguage
+
+```solidity
+enum CodeLanguage {
+  JavaScript
+}
+```
+
+### Request
+
+```solidity
+struct Request {
+  enum FunctionsRequest.Location codeLocation;
+  enum FunctionsRequest.Location secretsLocation;
+  enum FunctionsRequest.CodeLanguage language;
+  string source;
+  bytes encryptedSecretsReference;
+  string[] args;
+  bytes[] bytesArgs;
+}
+```
+
+| Field                       | Type           | Description                                                                                                                                                                                      |
+| --------------------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `codeLocation`              | `Location`     | The location of the source code that will be executed on each node in the DON.                                                                                                                   |
+| `secretsLocation`           | `Location`     | The location of secrets that will be passed into the source code. \*Only Remote secrets are supported.                                                                                           |
+| `language`                  | `CodeLanguage` | The coding language that the source code is written in.                                                                                                                                          |
+| `source`                    | `string`       | Raw source code for `Request.codeLocation` of `Location.Inline`, URL for `Request.codeLocation` of `Location.Remote`, or slot decimal number for `Request.codeLocation` of `Location.DONHosted`. |
+| `encryptedSecretsReference` | `bytes`        | Encrypted URLs for `Request.secretsLocation` of `Location.Remote`, or CBOR encoded `slotid+version` for `Request.secretsLocation` of `Location.DONHosted`.                                       |
+| `args`                      | `string[]`     | String arguments that will be passed into the source code.                                                                                                                                       |
+| `bytesArgs`                 | `bytes[]`      | Bytes arguments that will be passed into the source code.                                                                                                                                        |
+
+## Errors
+
+### EmptySource
+
+```solidity
+error EmptySource()
+```
+
+### EmptySecrets
+
+```solidity
+error EmptySecrets()
+```
+
+### EmptyArgs
+
+```solidity
+error EmptyArgs()
+```
+
+### NoInlineSecrets
+
+```solidity
+error NoInlineSecrets()
+```
+
+## Functions
+
+### encodeCBOR
+
+```solidity
+function encodeCBOR(struct FunctionsRequest.Request self) internal pure returns (bytes)
+```
+
+Encodes a Request to CBOR encoded bytes
+
+#### Parameters
+
+| Name | Type                            | Description           |
+| ---- | ------------------------------- | --------------------- |
+| self | struct FunctionsRequest.Request | The request to encode |
+
+#### Return Values
+
+| Name | Type  | Description        |
+| ---- | ----- | ------------------ |
+| [0]  | bytes | CBOR encoded bytes |
+
+### initializeRequest
+
+```solidity
+function initializeRequest(struct FunctionsRequest.Request self, enum FunctionsRequest.Location codeLocation, enum FunctionsRequest.CodeLanguage language, string source) internal pure
+```
+
+Initializes a Chainlink Functions Request
+
+_Sets the codeLocation and code on the request_
+
+#### Parameters
+
+| Name         | Type                               | Description                               |
+| ------------ | ---------------------------------- | ----------------------------------------- |
+| self         | struct FunctionsRequest.Request    | The uninitialized request                 |
+| codeLocation | enum FunctionsRequest.Location     | The user provided source code location    |
+| language     | enum FunctionsRequest.CodeLanguage | The programming language of the user code |
+| source       | string                             | The user provided source code or a url    |
+
+### initializeRequestForInlineJavaScript
+
+```solidity
+function initializeRequestForInlineJavaScript(struct FunctionsRequest.Request self, string javaScriptSource) internal pure
+```
+
+Initializes a Chainlink Functions Request
+
+_Simplified version of initializeRequest for PoC_
+
+#### Parameters
+
+| Name             | Type                            | Description                                   |
+| ---------------- | ------------------------------- | --------------------------------------------- |
+| self             | struct FunctionsRequest.Request | The uninitialized request                     |
+| javaScriptSource | string                          | The user provided JS code (must not be empty) |
+
+### addSecretsReference
+
+```solidity
+function addSecretsReference(struct FunctionsRequest.Request self, bytes encryptedSecretsReference) internal pure
+```
+
+Adds Remote user encrypted secrets to a Request
+
+#### Parameters
+
+| Name                      | Type                            | Description                                                            |
+| ------------------------- | ------------------------------- | ---------------------------------------------------------------------- |
+| self                      | struct FunctionsRequest.Request | The initialized request                                                |
+| encryptedSecretsReference | bytes                           | Encrypted comma-separated string of URLs pointing to off-chain secrets |
+
+### addDONHostedSecrets
+
+```solidity
+function addDONHostedSecrets(struct FunctionsRequest.Request self, uint8 slotID, uint64 version) internal pure
+```
+
+Adds DON-hosted secrets reference to a Request
+
+#### Parameters
+
+| Name    | Type                            | Description                                 |
+| ------- | ------------------------------- | ------------------------------------------- |
+| self    | struct FunctionsRequest.Request | The initialized request                     |
+| slotID  | uint8                           | Slot ID of the user's secrets hosted on DON |
+| version | uint64                          | User data version (for the slotID)          |
+
+### setArgs
+
+```solidity
+function setArgs(struct FunctionsRequest.Request self, string[] args) internal pure
+```
+
+Sets args for the user run function
+
+#### Parameters
+
+| Name | Type                            | Description                                  |
+| ---- | ------------------------------- | -------------------------------------------- |
+| self | struct FunctionsRequest.Request | The initialized request                      |
+| args | string[]                        | The array of string args (must not be empty) |
+
+### setBytesArgs
+
+```solidity
+function setBytesArgs(struct FunctionsRequest.Request self, bytes[] args) internal pure
+```
+
+Sets bytes args for the user run function
+
+#### Parameters
+
+| Name | Type                            | Description                                 |
+| ---- | ------------------------------- | ------------------------------------------- |
+| self | struct FunctionsRequest.Request | The initialized request                     |
+| args | bytes[]                         | The array of bytes args (must not be empty) |
