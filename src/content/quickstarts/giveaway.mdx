@@ -5,7 +5,7 @@ title: Giveaway Manager
 whatsnext: { "FAQs": "/chainlink-automation/faqs" }
 ---
 
-import { Aside, CopyText } from "@components"
+import { Aside, ClickToZoom, CopyText } from "@components"
 
 The Giveaway Manager app is a highly configurable proof of concept for provably-fair giveaways using Chainlink Automation and VRF. It is capable of drawing winners from a CSV list or onchain entries using VRF Direct Funding and Automation. Fulfillment is not included, and this app demonstrates provably fair selection only.
 
@@ -13,7 +13,7 @@ The Giveaway Manager app is a highly configurable proof of concept for provably-
 
 ## Objective
 
-In this tutorial, you will deploy a local user interface to enable giveaways using Chainlink VRFv2 Direct Funding. The easy to use UI was designed to run simple drawings and giveaways with just a CSV list. Chainlink Automation provisioning and setup is also covered to enable timed-based, dynamic drawings.
+In this tutorial, you will deploy a local user interface to enable giveaways using Chainlink VRFv2 Direct Funding. The UI was designed to run simple drawings and giveaways with just a CSV list of participants. Chainlink Automation provisioning and setup is also covered to enable timed-based, dynamic drawings.
 
 You can use this to run:
 
@@ -190,7 +190,7 @@ Set environment variables to run the UI and then view it locally.
    ```
 1. To view the UI, open your browser at [localhost:3005](localhost:3005).
 
-## Testing
+### Testing
 
 To test contracts, navigate to the `contracts` directory and run the following command:
 
@@ -209,9 +209,56 @@ $ yarn lint
 $ yarn prettier
 ```
 
-### 8. Notes
+## Implement a static giveaway
 
-#### 1. Balance Amounts
+1. Navigate to http://localhost:3005/ in your browser.
+1. In the upper right corner, click **Connect wallet**. Connect your wallet and ensure the proper network is selected.
+
+   <ClickToZoom src="/images/quickstarts/giveaway/1-ui-connect-wallet.png" alt="Connect wallet" />
+
+1. Click **Create giveaway**.
+
+   <ClickToZoom src="/images/quickstarts/giveaway/2-ui-create-giveaway.png" alt="Create giveaway" />
+
+1. Static giveaway is selected by default. Fill in the details to configure the giveaway:
+
+   - Create a CSV file with a list of giveaway participants. Below the **Participants** field, download the example CSV participant file and fill it in. For testing, you can use a list of dummy wallet addresses.
+   - Fill in the rest of the fields and upload your CSV list of participants, then **Create** and confirm the wallet transaction that pops up.
+
+   {" "}
+   <ClickToZoom src="/images/quickstarts/giveaway/3-ui-create-static-giveaway.png" alt="Create static giveaway" />
+
+1. After the transaction processes, you should get a "Giveaway successfully created" message. Click the UI card for the new giveaway you just created:
+
+   <ClickToZoom src="/images/quickstarts/giveaway/4-ui-click-giveaway.png" alt="Click the newly created giveaway" />
+
+1. The details for your giveaway are displayed. Click **Pick Winners** and confirm the wallet transaction.
+
+   <ClickToZoom src="/images/quickstarts/giveaway/5-ui-pick-winners.png" alt="Pick winners" />
+
+1. A "Pending Transaction" popup displays while the transaction is processing. Once the transaction is complete, you should see a "Successfully picked winners" message. Click **Close**.
+
+   - Optional: You can reference the "View VRF Request" link to help prove the giveaway was fair.
+
+   <ClickToZoom src="/images/quickstarts/giveaway/6-ui-pick-winners-confirmation.png" alt="Pick winners confirmation" />
+
+1. At the bottom of the Giveaway page, upload your original participants (contestants) CSV again to see who won:
+
+   <ClickToZoom src="/images/quickstarts/giveaway/7-ui-upload-contestants-csv.png" alt="Upload contestants CSV" />
+
+1. After you've uploaded the CSV, click **Check Winners**:
+
+   <ClickToZoom src="/images/quickstarts/giveaway/8-ui-check-winners.png" alt="Check winners" />
+
+1. A **Giveaway winners** popup displays and shows the winners. This demo used a CSV of dummy wallet addresses. You can use whatever unique identifier you want. Since the identifier is hashed before it's put on-chain, the data remains private to only you as the admin.
+
+   <ClickToZoom src="/images/quickstarts/giveaway/9-ui-giveaway-winners.png" alt="View winners" />
+
+   You can export a CSV list of all the winners and share the list with participants if you wish. You can also choose to provide the VRF transaction from Step 7 as evidence that Chainlink VRF was used for fairness.
+
+## Notes
+
+### Required balance amounts
 
 As a creator of a giveaway, the minimum token requirements are needed to ensure that your giveaway is created and finished without issues. All unused LINK token amounts are able to be withdrawn after completion of giveaway.
 
@@ -219,11 +266,11 @@ As a creator of a giveaway, the minimum token requirements are needed to ensure 
   - 0.1 (VRF request)
   - 5 (Automation subscription)
 
-#### 2. Giveaway Status
+### Giveaway Status
 
 After picking winners is initiated in the UI, the status of the giveaway is moved to `pending`. Each subsequent block is then checked to see if the VRF request has been finished and winners picked. Once found, the status is automatically moved to `finished`. The winners are then able to be viewed and leftover LINK is able to be withdrawn.
 
-#### 3. Developer Integration for Entering Dynamic Giveaway
+### Developer Integration for Entering Dynamic Giveaway
 
 The Giveaway contract is able to be integrated with any application that is able to send a transaction to the contract. The user will need to call the `enterGiveaway` function with the following parameters:
 
