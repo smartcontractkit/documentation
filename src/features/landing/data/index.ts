@@ -106,7 +106,7 @@ export const evmProducts = [
     video: "https://www.youtube.com/watch?v=dj0impNJdls&list=PLVP9aGDn-X0RloqS1uYcuaPSW3GIgoCkg&index=2",
   },
   {
-    title: "VRF v2",
+    title: "VRF",
     description: "Verifiable, tamper-proof random number generator for blockchain gaming and NFT projects",
     learnMorelink: "/vrf/v2/introduction",
     image: vrfLogo,
