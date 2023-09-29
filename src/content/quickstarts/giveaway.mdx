@@ -5,97 +5,158 @@ title: Giveaway Manager
 whatsnext: { "FAQs": "/chainlink-automation/faqs" }
 ---
 
-## I. About
+import { Aside, CopyText } from "@components"
 
-The app is a highly configurable proof of concept for provably-fair giveaways using Chainlink Automation and VRF. It is capable of drawing winners from a CSV list or onchain entries utilizing Chainlink VRF Direct Funding and Automation. Fulfillment is not included and this app is for provably fair selection purposes only.
+The Giveaway Manager app is a highly configurable proof of concept for provably-fair giveaways using Chainlink Automation and VRF. It is capable of drawing winners from a CSV list or onchain entries using VRF Direct Funding and Automation. Fulfillment is not included, and this app demonstrates provably fair selection only.
 
 ![image](https://i.imgur.com/lCIAVrR.png)
 
-Recommended Networks:
+## Objective
 
-- Ethereum Mainnet
-- Ethereum Goerli
-- Polygon Mainnet
-- Polygon Mumbai
+In this tutorial, you will deploy a local user interface to enable giveaways using Chainlink VRFv2 Direct Funding. The easy to use UI was designed to run simple drawings and giveaways with just a CSV list. Chainlink Automation provisioning and setup is also covered to enable timed-based, dynamic drawings.
 
-It is recommened to start with a testnet deployment to get familar with the functionality before deploying to mainnets.
+You can use this to run:
 
-## II. Pre-requisites
+- Static Giveaways: Fairly and transparently pick winners from a participant list in CSV format. Unique participant IDs can be anything (emails, numbers, addresses). They are hashed so no user data is stored on-chain.
+- Dynamic Giveaways: Create a giveaway that participants can enter on their own via tx, then fairly and transparently pick winners whenever you'd like. This allows participants to register over a set period of time without the admin needing a full participant list like a static giveaway.
 
-### 1. Clone repo
+<Aside type="caution" title="Disclaimer">
+  This tutorial represents an example of using a Chainlink product or service and is provided to help you understand how
+  to interact with Chainlink's systems and services so that you can integrate them into your own. This template is
+  provided “AS IS” and “AS AVAILABLE” without warranties of any kind, has not been audited, and may be missing key
+  checks or error handling to make the usage of the product more clear. Do not use the code in this example in a
+  production environment without completing your own audits and application of best practices. Neither Chainlink Labs,
+  the Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs that are generated due
+  to errors in code.
+</Aside>
+
+## Before you begin
+
+<Aside type="note" title="New to smart contract development?">
+  If you are new to smart contract development, learn how to [Deploy Your First Smart
+  Contract](/getting-started/deploy-your-first-contract).
+</Aside>
+
+Before you start this tutorial, complete the following items:
+
+- Set up a cryptocurrency wallet such as [MetaMask](https://metamask.io/).
+- Fund your wallet with the following testnet tokens:
+  - Get testnet MATIC from [faucet.polygon.technology](https://faucet.polygon.technology) to pay for your on-chain transactions.
+  - Get at least 2 ERC-677 testnet LINK from [faucets.chain.link/mumbai](https://faucets.chain.link/mumbai).
+
+## Setup steps
+
+Setting up the app requires several steps:
+
+1. [Clone the repo](#clone-repo)
+1. [Create a block explorer API key](#create-a-block-explorer-api-key)
+1. [Set contract environment variables](#set-contract-environment-variables)
+
+### Clone the repo
+
+- Run `git --version` to check your `git` installation. You should see an output similar to `git version x.x.x`. If not, install [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git).
+- Install [NodeJS](https://nodejs.org/)
+- Install [yarn](https://yarnpkg.com/)
 
 ```bash
 $ git clone https://github.com/smartcontractkit/quickstart-giveaway.git
 ```
 
-### 2. Create block explorer API key
+### Create a block explorer API key
+
+The recommended networks for this app are Ethereum or Polygon mainnet and testnets.
+
+For demo purposes, use Polygon Mumbai for this tutorial. Create a block explorer API key to verify contracts on your preferred network:
 
 - [Etherscan](https://docs.etherscan.io/getting-started/viewing-api-usage-statistics)
-- [Polyscan](https://docs.polygonscan.com/getting-started/viewing-api-usage-statistics)
+- [Polygonscan](https://docs.polygonscan.com/getting-started/viewing-api-usage-statistics)
 
-### 3. Setup contracts environment variables
+### Set contract environment variables
 
-Setup an `env` variables
+1. Prepare the following values:
 
-```bash
-# <root>/contracts
-$ touch .env
-$ open .env
-# Consider using a secure env management package instead
-# Make sure this is untracked if you're going to push to your own repo
-```
+   - The RPC URL for your deployment network, using an [RPC node provider](https://ethereum.org/en/developers/docs/nodes-and-clients/nodes-as-a-service/) such as [Infura](https://www.infura.io/) or [Alchemy](https://www.alchemy.com/).
+   - The private key for your deployer account. If your deployer account is in MetaMask, [export your private key from MetaMask](https://support.metamask.io/hc/en-us/articles/360015289632-How-to-export-an-account-s-private-key).
+   - The block explorer API key from Etherscan or Polygonscan that you [created earlier](#create-a-block-explorer-api-key).
 
-```bash
-# Do NOT use quotes to assign values!
+   | Parameter         | Description                                                  | Example                                     |
+   | ----------------- | ------------------------------------------------------------ | ------------------------------------------- |
+   | `NETWORK_RPC_URL` | The RPC URL for the network you want to deploy to.           | `https://sepolia.infura.io/v3/your-api-key` |
+   | `PRIVATE_KEY`     | The private key of the account you want to deploy from.      | `0xabc123abc123abc123abc123abc123...`       |
+   | `EXPLORER_KEY`    | The block explorer API key needed for contract verification. | `ABC123ABC123ABC123ABC123ABC123ABC1`        |
 
-# Network RPCs
-export RPC_URL=
+1. In the `contracts` directory, create a `.env` file for your contract environment variables:
 
-# Private key for contract deployment
-export PRIVATE_KEY=
+   ```bash
+   # <root>/contracts
+   $ touch .env
+   $ open .env
+   ```
 
-# Explorer API key used to verify contracts
-export EXPLORER_KEY=
-```
+   If you're going to push this to your own repo, make sure this `.env` file is untracked, and consider using a secure env management package instead.
 
-### 4. Setup Wallet
+1. Add this content to your file and fill in the values. Do not use quotation marks when filling in the values.
 
-Install any wallet to your browser (currently supports Metamask)
+   ```bash
+   # Do NOT use quotes to assign values!
 
-## III. Setup (for public network deployments)
+   # Network RPCs
+   export RPC_URL=
 
-### 1. Setup Foundry
+   # Private key for contract deployment
+   export PRIVATE_KEY=
 
-[Installation instructions](https://book.getfoundry.sh/getting-started/installation)
+   # Explorer API key used to verify contracts
+   export EXPLORER_KEY=
+   ```
 
-```bash
-# Download foundry
-$ curl -L https://foundry.paradigm.xyz | bash
+### Install Foundry
 
-# Install foundry
-$ foundryup
+Refer to the [Foundry installation instructions](https://book.getfoundry.sh/getting-started/installation).
 
-# (Mac) Install anvil (prereq: Homebrew)
-$ brew install libusb
-```
+1. Download foundryup:
 
-### 2. Install contract dependencies if changes have been made to contracts
+   ```bash
+   # Download foundry
+   $ curl -L https://foundry.paradigm.xyz | bash
+   ```
+
+1. Restart your terminal session, then install Foundry by running:
+
+   ```bash
+   foundryup
+   ```
+
+   <Aside type="note" title="MacOS installation note">
+     You might see the following error on MacOS: `dyld: Library not loaded:
+     /usr/local/opt/libusb/lib/libusb-1.0.0.dylib`. To fix this, install libusb: `brew install libusb` See [installation
+     troubleshooting](https://github.com/foundry-rs/foundry/blob/master/README.md#troubleshooting-installation) for
+     details.
+   </Aside>
+
+### Install contract dependencies
+
+If you don't have `make` install it.
+
+Install contract dependencies if changes have been made to contracts:
 
 ```bash
 # <root>/contracts
 $ make install
 ```
 
-### 4. Deploy contract
+### Deploy contract
 
 ```bash
 # <root>/contracts
 $ make deploy
 ```
 
-**Note:** Save the deployed contract address from your terminal output, you'll need for step 6.
+Save the deployed contract address from your terminal output. This is the giveaway contract manager address that you will need when you [run the UI](#run-ui).
 
-### 5. Install UI dependencies
+### Install UI dependencies
+
+To install the UI dependencies, navigate to the `client` directory and run:
 
 ```bash
 # <root>/client
@@ -104,37 +165,41 @@ $ nvm use
 $ yarn
 ```
 
-### 6. Run UI
+### Run and view the UI
 
-Prepare your UI `env` variables for export (needed for each time you want to run UI):
+Set environment variables to run the UI and then view it locally.
 
-- Giveaway Contract Manager Address from Step 4 "Deploy Contract"
-- Token Contract Addresses can be found [here](https://docs.chain.link/resources/link-token-contracts)
-- Keeper Registry Contract Addresses (currently only Automation v1.2 supported): `0x02777053d6764996e594c3E88AF1D58D5363a2e6`
+1. Prepare your UI environment variables. These are needed for each time you want to run the UI:
 
-```bash
-# <root>/client/packages/ui
-# run these commands to set up your env vars (do not use quotes to assign values):
-$ export UI_GIVEAWAY_MANAGER_CONTRACT_ADDRESS=
-$ export UI_LINK_TOKEN_CONTRACT_ADDRESS=
-$ export UI_KEEPER_REGISTRY_CONTRACT_ADDRESS=
-$ yarn start
-```
+   | Item                                   | Value                                                                                                                                                                                                                                |
+   | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+   | `UI_GIVEAWAY_MANAGER_CONTRACT_ADDRESS` | The address of the Giveaway Contract Manager contract that you [deployed earlier](#deploy-contract)                                                                                                                                  |
+   | `UI_LINK_TOKEN_CONTRACT_ADDRESS`       | <CopyText text="0x779877A7B0D9E8603169DdbD7836e478b4624789" code/> <br/> See all [LINK token contract addresses](/resources/link-token-contracts)                                                                                    |
+   | `UI_KEEPER_REGISTRY_CONTRACT_ADDRESS`  | For Polygon Matic: <CopyText text="0x02777053d6764996e594c3E88AF1D58D5363a2e6" code/> <br/> This app currently supports Automation v1.2. See all [Automation registry contract addresses](/chainlink-automation/supported-networks/) |
 
-### 7. View UI
+1. Navigate to the `/client/packages/ui` directory, and run these commands to set up your UI environment variables. Do not use quotes to assign values:
+   ```bash
+   # <root>/client/packages/ui
+   export UI_GIVEAWAY_MANAGER_CONTRACT_ADDRESS=
+   export UI_LINK_TOKEN_CONTRACT_ADDRESS=
+   export UI_KEEPER_REGISTRY_CONTRACT_ADDRESS=
+   ```
+1. After setting the environment variables, run the UI locally:
+   ```bash
+   yarn start
+   ```
+1. To view the UI, open your browser at [localhost:3005](localhost:3005).
 
-- Open browser at [localhost:3005](localhost:3005)
+## Testing
 
-## IV. Testing
-
-### 1. Test Contracts
+To test contracts, navigate to the `contracts` directory and run the following command:
 
 ```bash
 # <root>/contracts
 make test-contracts-all
 ```
 
-### 2. Test UI
+To test the UI, navigate to the `/client/packages/ui` directory and run the following commands:
 
 ```bash
 # <root>/client/packages/ui
@@ -148,7 +213,7 @@ $ yarn prettier
 
 #### 1. Balance Amounts
 
-As a creator of a giveaway, the minimum token requirments are needed to ensure that your giveaway is created and finished without issues. All unused LINK token amounts are able to be withdrawn after completion of giveaway.
+As a creator of a giveaway, the minimum token requirements are needed to ensure that your giveaway is created and finished without issues. All unused LINK token amounts are able to be withdrawn after completion of giveaway.
 
 - 5.1 LINK
   - 0.1 (VRF request)
@@ -195,5 +260,3 @@ export interface EnterGiveawayParams {
   fee: string
 }
 ```
-
-> :warning: **Disclaimer**: "This repository represents an example of using a Chainlink product or service and is provided to help you understand how to interact with Chainlink’s systems and services so that you can integrate them into your own. This template is provided “AS IS” and “AS AVAILABLE” without warranties of any kind, has not been audited, and may be missing key checks or error handling to make the usage of the product more clear. Do not use the code in this example in a production environment without completing your own audits and application of best practices. Neither Chainlink Labs, the Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs that are generated due to errors in code."
