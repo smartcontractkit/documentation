@@ -63,7 +63,7 @@ export function TabsContent({ sharedStore, ...slots }: Props) {
   }
 
   return (
-    <div class={styles.contentContainer}>
+    <div className={styles.contentContainer}>
       <div role="tablist" onKeyDown={moveFocus}>
         {tabs.map(([key, content]) => (
           <button

@@ -1,4 +1,3 @@
-/** @jsxImportSource react */
 import styles from "./searchButton.module.css"
 
 export const SearchButton = ({ onClickHandler }: { onClickHandler: () => void }) => {

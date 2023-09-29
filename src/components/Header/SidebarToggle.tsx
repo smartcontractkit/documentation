@@ -1,5 +1,5 @@
+/** @jsxImportSource preact */
 import type { FunctionalComponent } from "preact"
-import { h, Fragment } from "preact"
 import { useState, useEffect } from "preact/hooks"
 import styles from "./SidebarToggle.module.css"
 
