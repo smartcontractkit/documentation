@@ -2,16 +2,13 @@ import React from "react"
 import { NavBar as Nav } from "@chainlink/components"
 import { Search } from "./AlgoSearch/Search"
 import { useScrollDirection } from "@chainlink/components/src/NavBar/useScrollDirection"
-import { useNavBar } from "./useNavBar/useNavBar"
-import { ScrollDirection } from "./useNavBar/navBarStore"
 import styles from "./scroll.module.css"
+
+type ScrollDirection = "up" | "down"
 
 export const NavBar = ({ path, showSearch = true }: { path: string; showSearch?: boolean }) => {
   const scrollDirection = useScrollDirection() as ScrollDirection
   const navRef = React.useRef(null)
-
-  // TODO: May not need useNavBar after all
-  const { setNavBarInfo } = useNavBar()
 
   React.useEffect(() => {
     if (navRef.current) {
@@ -23,7 +20,6 @@ export const NavBar = ({ path, showSearch = true }: { path: string; showSearch?:
         }
         e.style.top = `${scrollDirection === "up" ? height : 0}px`
       })
-      setNavBarInfo({ scrollDirection, height })
     }
   }, [scrollDirection])
   return (
