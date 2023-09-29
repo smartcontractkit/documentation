@@ -3,7 +3,7 @@ import vrfLogo from "../assets/vrf-logo.svg"
 import functionsLogo from "../assets/functions-logo.svg"
 import automationLogo from "../assets/automation-logo.svg"
 import dataFeedsLogo from "../assets/data-feeds-logo.svg"
-import externalApiLogo from "../assets/external-api-logo.svg"
+import dataStreamsLogo from "../assets/data-streams-logo.svg"
 import { ProductCardProps } from "../components/ProductCard"
 
 const baseChains = [
@@ -120,5 +120,19 @@ export const evmProducts = [
     ],
     chains: [...baseChains, { id: "arbitrum", title: "Arbitrum" }],
     video: "https://www.youtube.com/watch?v=JqZWariqh5s&list=PLVP9aGDn-X0QHDyBRvbITizWrRoecR0D8&index=2",
+  },
+  {
+    title: "Data Streams",
+    description:
+      "Secure and reliable high-frequency market data for ultra-fast derivatives products powered by decentralized and transparent infrastructure.",
+    learnMorelink: "data-streams",
+    image: dataStreamsLogo,
+    links: [
+      ["Introduction", "data-streams"],
+      ["Getting Started", "data-streams/getting-started"],
+      ["Stream IDs", "data-streams/stream-ids"],
+      ["Available Schemas", "data-streams/reference/report-schema"],
+    ],
+    chains: [{ id: "arbitrum", title: "Arbitrum" }],
   },
 ] as ProductCardProps[]

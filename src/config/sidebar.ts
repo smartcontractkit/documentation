@@ -191,6 +191,105 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
   ],
+  dataStreams: [
+    {
+      section: "Chainlink Data Streams",
+      contents: [
+        {
+          title: "Overview",
+          url: "data-streams",
+        },
+        {
+          title: "Getting Started",
+          url: "data-streams/getting-started",
+        },
+        {
+          title: "Stream IDs",
+          url: "data-streams/stream-ids",
+        },
+      ],
+    },
+    {
+      section: "Reference",
+      contents: [
+        {
+          title: "Report Schema",
+          url: "data-streams/reference/report-schema",
+        },
+      ],
+    },
+    {
+      section: "Resources",
+      contents: [
+        {
+          title: "Learning Resources",
+          url: "getting-started/other-tutorials?parent=dataStreams",
+        },
+        {
+          title: "Smart Contract Overview",
+          url: "getting-started/conceptual-overview?parent=dataStreams",
+          children: [
+            {
+              title: "Deploy Your First Smart Contract",
+              url: "getting-started/deploy-your-first-contract?parent=dataStreams",
+            },
+          ],
+        },
+        {
+          title: "LINK Token Contracts",
+          url: "resources/link-token-contracts?parent=dataStreams",
+          children: [
+            {
+              title: "Acquire testnet LINK",
+              url: "resources/acquire-link?parent=dataStreams",
+            },
+            {
+              title: "Fund Your Contracts",
+              url: "resources/fund-your-contract?parent=dataStreams",
+            },
+          ],
+        },
+        {
+          title: "Starter Kits and Frameworks",
+          url: "resources/create-a-chainlinked-project?parent=dataStreams",
+        },
+        {
+          title: "Bridges and Associated Risks",
+          url: "resources/bridge-risks?parent=dataStreams",
+        },
+        {
+          title: "Chainlink Architecture",
+          url: "architecture-overview/architecture-overview?parent=dataStreams",
+          children: [
+            {
+              title: "Basic Request Model",
+              url: "architecture-overview/architecture-request-model?parent=dataStreams",
+            },
+            {
+              title: "Decentralized Data Model",
+              url: "architecture-overview/architecture-decentralized-model?parent=dataStreams",
+            },
+            {
+              title: "Off-Chain Reporting",
+              url: "architecture-overview/off-chain-reporting?parent=dataStreams",
+            },
+          ],
+        },
+        {
+          title: "Developer Communications",
+          url: "resources/developer-communications?parent=dataStreams",
+          children: [
+            { title: "Getting Help", url: "resources/getting-help?parent=dataStreams" },
+            { title: "Hackathon Resources", url: "resources/hackathon-resources?parent=dataStreams" },
+          ],
+        },
+        {
+          title: "Contributing to Chainlink",
+          url: "resources/contributing-to-chainlink?parent=dataStreams",
+        },
+      ],
+    },
+  ],
   automation: [
     {
       section: "Chainlink Automation",

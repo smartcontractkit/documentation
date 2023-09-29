@@ -10,8 +10,9 @@ import useQueryString from "~/hooks/useQueryString"
 import { RefObject } from "preact"
 import { updateTableOfContents } from "~/components/TableOfContents/tocStore"
 
-export type DataFeedType = "default" | "por" | "nftFloor" | "rates"
+export type DataFeedType = "default" | "por" | "nftFloor" | "rates" | "streams"
 export const FeedList = ({
+  initialNetwork,
   dataFeedType = "default",
   ecosystem = "",
   initialCache,
@@ -23,7 +24,10 @@ export const FeedList = ({
 }) => {
   const chains = ecosystem === "deprecating" ? ALL_CHAINS : CHAINS
 
-  const [selectedChain, setSelectedChain] = useQueryString("network", chains[0].page)
+  const [selectedChain, setSelectedChain] = useQueryString(
+    "network",
+    ecosystem === "deprecating" ? chains[0].page : initialNetwork
+  )
   const [searchValue, setSearchValue] = useQueryString("search", "")
   const [selectedFeedCategories, setSelectedFeedCategories] = useQueryString("categories", [])
   const [showCategoriesDropdown, setShowCategoriesDropdown] = useState<boolean>(false)
@@ -89,6 +93,7 @@ export const FeedList = ({
     }, [ref])
   }
   useOutsideAlerter(wrapperRef)
+  const isStreams = dataFeedType === "streams"
   const isPor = dataFeedType === "por"
   const isNftFloor = dataFeedType === "nftFloor"
   const isRates = dataFeedType === "rates"
@@ -106,6 +111,8 @@ export const FeedList = ({
           <div class={feedList.clChainnavProduct} role="tablist">
             {chains
               .filter((chain) => {
+                if (isStreams) return chain.tags?.includes("streams")
+
                 if (isPor) return chain.tags?.includes("proofOfReserve")
 
                 if (isNftFloor) return chain.tags?.includes("nftFloorPrice")
@@ -156,6 +163,8 @@ export const FeedList = ({
             return foundDeprecated
           }
 
+          if (isStreams) return network.tags?.includes("streams")
+
           if (isPor) return network.tags?.includes("proofOfReserve")
 
           if (isNftFloor) return network.tags?.includes("nftFloorPrice")
@@ -173,13 +182,14 @@ export const FeedList = ({
                   <h3 id={slug}>
                     <a href={`#${slug}`}>{network.name}</a>
                   </h3>
-                  {(selectedChain === "arbitrum" || selectedChain === "optimism" || selectedChain === "metis") && (
-                    <p>
-                      {network.name} is an L2 network. As a best practice, use the L2 sequencer feed to verify the
-                      status of the sequencer when running applications on L2 networks. See the{" "}
-                      <a href="/docs/data-feeds/l2-sequencer-feeds/">L2 Sequencer Uptime Feeds</a> page for examples.
-                    </p>
-                  )}
+                  {!isStreams &&
+                    (selectedChain === "arbitrum" || selectedChain === "optimism" || selectedChain === "metis") && (
+                      <p>
+                        {network.name} is an L2 network. As a best practice, use the L2 sequencer feed to verify the
+                        status of the sequencer when running applications on L2 networks. See the{" "}
+                        <a href="/docs/data-feeds/l2-sequencer-feeds/">L2 Sequencer Uptime Feeds</a> page for examples.
+                      </p>
+                    )}
                   <div className={feedList.tableFilters}>
                     <details class={feedList.filterDropdown_details}>
                       <summary
