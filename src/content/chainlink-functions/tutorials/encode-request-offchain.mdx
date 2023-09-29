@@ -1,0 +1,205 @@
+---
+section: chainlinkFunctions
+date: Last Modified
+title: "Encode request data off-chain"
+---
+
+import { Aside } from "@components"
+import ChainlinkFunctions from "@features/chainlink-functions/common/ChainlinkFunctions.astro"
+
+This tutorial shows you how make multiple API calls from your smart contract to a Decentralized Oracle Network. After [OCR](/chainlink-functions/resources/architecture) completes off-chain computation and aggregation, the DON returns the asset price to your smart contract. This example returns the `BTC/USD` price.
+
+This guide assumes that you know how to build HTTP requests and how to use secrets. Read the [API query parameters](/chainlink-functions/tutorials/api-query-parameters) and [API use secrets](/chainlink-functions/tutorials/api-use-secrets) guides before you follow the example in this document.
+To build a decentralized asset price, send a request to the DON to fetch the price from many different API providers. Then, calculate the median price. The API providers in this example are:
+
+- [CoinMarket](https://coinmarketcap.com/api/documentation/v1/)
+- [CoinGecko](https://www.coingecko.com/en/api/documentation)
+- [CoinPaprika](https://api.coinpaprika.com/)
+
+Read the [Call Multiple Data Sources](/chainlink-functions/tutorials/api-multiple-calls) tutorial before you follow the steps in this example. This tutorial uses the same example but with a slightly different process:
+
+- Instead of sending the request data (source code, encrypted secrets reference, and arguments) in the request, you will first encode it off-chain and then send the encoded request. Encoding the request off-chain (e.g., from your front end or a server) rather than on-chain (from your smart contract) helps save gas.
+
+<Aside type="caution">
+  Chainlink Functions is still in BETA. The use of secrets in your requests is an experimental feature that may not
+  operate as expected and is subject to change. Use of this feature is at your own risk and may result in unexpected
+  errors, possible revealing of the secret as new versions are released, or other issues.
+</Aside>
+
+<Aside type="note">
+  Chainlink Functions is a self-service solution. You must ensure that the data sources or APIs specified in requests
+  are of sufficient quality and have the proper availability for your use case. You are responsible for complying with
+  the licensing agreements for all data providers that you connect with through Chainlink Functions. Violations of data
+  provider licensing agreements or the [terms](https://chain.link/terms) can result in suspension or termination of your
+  Chainlink Functions account.
+</Aside>
+
+## Before you begin
+
+1. **[Complete the setup steps in the Getting Started guide](/chainlink-functions/getting-started):** The Getting Started Guide shows you how to set up your environment with the necessary tools for these tutorials. You can re-use the same consumer contract for each of these tutorials.
+
+1. Make sure your subscription has enough LINK to pay for your requests. Also, you must maintain a minimum balance to upload encrypted secrets to the DON (Read the [minimum balance for uploading encrypted secrets section](/chainlink-functions/resources/billing#minimum-balance-for-uploading-encrypted-secrets) to learn more). You can check your subscription details (including the balance in LINK) in the [Chainlink Functions frontend](/chainlink-functions/resources/subscriptions). If your subscription runs out of LINK, follow the [Fund a Subscription](/chainlink-functions/resources/subscriptions#fund-a-subscription) guide. This guide recommends maintaining at least 2 LINK within your subscription.
+
+1. You can locate the scripts used in this tutorial in the [_examples/9-send-cbor_ directory](https://github.com/smartcontractkit/smart-contract-examples/tree/main/functions-examples/examples/9-send-cbor).
+
+1. Get a free API key from [CoinMarketCap](https://coinmarketcap.com/api/) and note your API key.
+
+1. Run `npx env-enc set` to add an encrypted `COINMARKETCAP_API_KEY` to your `.env.enc` file.
+
+   ```shell
+   npx env-enc set
+   ```
+
+## Tutorial
+
+<Aside type="note" title="Set up your environment variables">
+  This tutorial has some unique `.env.enc` setup steps. Make sure that you configured your `.env.enc` file with the
+  necessary variables in the [Before you begin](#before-you-begin) section.
+</Aside>
+
+This tutorial is configured to get the median `BTC/USD` price from multiple data sources. For a detailed explanation of the code example, read the [Examine the code](#examine-the-code) section.
+
+To run the example:
+
+1. Open the file `request.js`, which is located in the `9-send-cbor` folder.
+1. Replace the consumer contract address and the subscription ID with your own values.
+
+   ```javascript
+   const consumerAddress = "0x8dFf78B7EE3128D00E90611FBeD20A71397064D9" // REPLACE this with your Functions consumer address
+   const subscriptionId = 3 // REPLACE this with your subscription ID
+   ```
+
+1. Make a request:
+
+   ```shell
+   node examples/9-send-cbor/request.js
+   ```
+
+   The script runs your function in a sandbox environment before making an on-chain transaction:
+
+   ```text
+   $ node examples/9-send-cbor/request.js
+   secp256k1 unavailable, reverting to browser version
+   Start simulation...
+   Performing simulation with the following versions:
+   deno 1.36.3 (release, aarch64-apple-darwin)
+   v8 11.6.189.12
+   typescript 5.1.6
+
+
+   Simulation result {
+   capturedTerminalOutput: 'Median Bitcoin price: 25713.36\n',
+   responseBytesHexstring: '0x0000000000000000000000000000000000000000000000000000000000273c48'
+   }
+   ✅ Decoded response to uint256:  2571336n
+
+   Estimate request costs...
+   Duplicate definition of Transfer (Transfer(address,address,uint256,bytes), Transfer(address,address,uint256))
+   Fulfillment cost estimated to 0.000000000000215 LINK
+
+   Make request...
+   Upload encrypted secret to gateways https://01.functions-gateway.testnet.chain.link/user. StorageSlotId 0. Expiration in minutes: 15
+
+   ✅ Secrets uploaded properly to gateways https://01.functions-gateway.testnet.chain.link/user! Gateways response:  { version: 1693899379, success: true }
+
+   ✅ Functions request sent! Transaction hash 0x310c93ba1c9515a8e1dc4308e198c36f5f915410fc67c13f80ffb29a43dcbe60 -  Request id is 0x74b5b88db49dad155d1cd9b0da47cb140caf1f824cf09a88bc46132c21d41d20. Waiting for a response...
+   See your request in the explorer https://mumbai.polygonscan.com/tx/0x310c93ba1c9515a8e1dc4308e198c36f5f915410fc67c13f80ffb29a43dcbe60
+
+   ✅ Request 0x74b5b88db49dad155d1cd9b0da47cb140caf1f824cf09a88bc46132c21d41d20 fulfilled with code: 0. Cost is 0.000039224977086446 LINK. Complete response:  {
+   requestId: '0x74b5b88db49dad155d1cd9b0da47cb140caf1f824cf09a88bc46132c21d41d20',
+   subscriptionId: 3,
+   totalCostInJuels: 39224977086446n,
+   responseBytesHexstring: '0x0000000000000000000000000000000000000000000000000000000000273c48',
+   errorString: '',
+   returnDataBytesHexstring: '0x',
+   fulfillmentCode: 0
+   }
+
+   ✅ Decoded response to uint256:  2571336n
+   ```
+
+   The output of the example gives you the following information:
+
+   - Your request is first run on a sandbox environment to ensure it is correctly configured.
+   - The fulfillment costs are estimated before making the request.
+   - The encrypted secrets were uploaded to the secrets endpoint `https://01.functions-gateway.testnet.chain.link/user`.
+   - Your request was successfully sent to Chainlink Functions. The transaction in this example is [0x310c93ba1c9515a8e1dc4308e198c36f5f915410fc67c13f80ffb29a43dcbe60](https://mumbai.polygonscan.com/tx/0x310c93ba1c9515a8e1dc4308e198c36f5f915410fc67c13f80ffb29a43dcbe60) and the request ID is `0x74b5b88db49dad155d1cd9b0da47cb140caf1f824cf09a88bc46132c21d41d20`.
+
+   - The DON successfully fulfilled your request. The total cost was: `0.000039224977086446 LINK`.
+   - The consumer contract received a response in `bytes` with a value of `0x0000000000000000000000000000000000000000000000000000000000273c48`. Decoding it off-chain to `uint256` gives you a result: `2571336`. The median BTC price is 25713.36 USD.
+
+## Examine the code
+
+### FunctionsConsumerExample.sol
+
+<ChainlinkFunctions section="functions-consumer" />
+
+### JavaScript example
+
+#### source.js
+
+The JavaScript code is similar to the [Call Multiple Data Sources](/chainlink-functions/tutorials/api-multiple-calls) tutorial.
+
+#### request.js
+
+This explanation focuses on the [request.js](https://github.com/smartcontractkit/smart-contract-examples/blob/main/functions-examples/examples/8-multiple-apis/request.js) script and shows how to use the [Chainlink Functions NPM package](https://github.com/smartcontractkit/functions-toolkit) in your own JavaScript/TypeScript project to send requests to a DON. The code is self-explanatory and has comments to help you understand all the steps.
+
+The script imports:
+
+- [path](https://nodejs.org/docs/latest/api/path.html) and [fs](https://nodejs.org/api/fs.html) : Used to read the [source file](https://github.com/smartcontractkit/smart-contract-examples/blob/main/functions-examples/examples/8-multiple-apis/source.js).
+- [ethers](https://docs.ethers.org/v5/): Ethers.js library, enables the script to interact with the blockchain.
+- `@chainlink/functions-toolkit`: Chainlink Functions NPM package. All its utilities are documented in the [NPM README](https://github.com/smartcontractkit/functions-toolkit/blob/main/README.md).
+- `@chainlink/env-enc`: A tool for loading and storing encrypted environment variables. Read the [official documentation](https://www.npmjs.com/package/@chainlink/env-enc) to learn more.
+- `../abi/functionsClient.json`: The abi of the contract your script will interact with. **Note**: The script was tested with this [FunctionsConsumerExample contract](https://remix.ethereum.org/#url=https://docs.chain.link/samples/ChainlinkFunctions/FunctionsConsumerExample.sol).
+
+The script has two hardcoded values that you have to change using your own Functions consumer contract and subscription ID:
+
+```javascript
+const consumerAddress = "0x8dFf78B7EE3128D00E90611FBeD20A71397064D9" // REPLACE this with your Functions consumer address
+const subscriptionId = 3 // REPLACE this with your subscription ID
+```
+
+The primary function that the script executes is `makeRequestMumbai`. This function can be broken into seven main parts:
+
+1. Definition of necessary identifiers:
+
+   - `routerAddress`: Chainlink Functions router address on Polygon Mumbai.
+   - `donId`: Identifier of the DON that will fulfill your requests on Polygon Mumbai.
+   - `gatewayUrls`: The secrets endpoint URL to which you will upload the encrypted secrets.
+   - `explorerUrl`: Block explorer url of Polygon Mumbai.
+   - `source`: The source code must be a string object. That's why we use `fs.readFileSync` to read `source.js` and then call `toString()` to get the content as a `string` object.
+   - `args`: During the execution of your function, These arguments are passed to the source code. The `args` value is `["1", "bitcoin", "btc-bitcoin"]`. These arguments are BTC IDs at CoinMarketCap, CoinGecko, and Coinpaprika. You can adapt args to fetch other asset prices.
+   - `secrets`: The secrets object that will be encrypted.
+   - `slotIdNumber`: Slot ID at the DON where to upload the encrypted secrets.
+   - `expirationTimeMinutes`: Expiration time in minutes of the encrypted secrets.
+   - `gasLimit`: Maximum gas that Chainlink Functions can use when transmitting the response to your contract.
+   - Initialization of ethers `signer` and `provider` objects. The signer is used to make transactions on the blockchain, and the provider reads data from the blockchain.
+
+1. Simulating your request in a sandbox environment:
+
+   - Use `simulateScript` from the Chainlink Functions NPM package.
+   - Read the `response` of the simulation. If successful, use the Functions NPM package `decodeResult` function and `ReturnType` enum to decode the response to the expected returned type (`ReturnType.uint256` in this example).
+
+1. Estimating the costs:
+
+   - Initialize a `SubscriptionManager` from the Functions NPM package, then call the `estimateFunctionsRequestCost` function.
+   - The response is returned in Juels (1 LINK = 10\*\*18 Juels). Use the `ethers.utils.formatEther` utility function to convert the output to LINK.
+
+1. Encrypt the secrets, upload the encrypted secrets to the DON, and then encode the reference to the DON-hosted encrypted secrets. This is done in three steps:
+
+   - Initialize a `SecretsManager` instance from the Functions NPM package, then call the `encryptSecrets` function.
+   - Call the `uploadEncryptedSecretsToDON` function of the `SecretsManager` instance. This function returns an object containing a `success` boolean as long as `version`, the secret version on the DON storage.
+   - Call the `buildDONHostedEncryptedSecretsReference` function of the `SecretsManager` instance and use the slot ID and version to encode the DON-hosted encrypted secrets reference.
+
+1. Encode the request data off-chain using the `buildRequestCBOR` function fomr the Functions NPM package.
+
+1. Making a Chainlink Functions request:
+
+   - Initialize your functions consumer contract using the contract address, abi, and ethers signer.
+   - Make a [static call](https://docs.ethers.org/v5/api/contract/contract/#contract-callStatic) to the `sendRequestCBOR` function of your consumer contract to return the request ID that Chainlink Functions will generate.
+   - Call the `sendRequestCBOR` function of your consumer contract. **Note**: The encoded data that was generated by `buildRequestCBOR` is passed in the request.
+
+1. Waiting for the response:
+
+   - Initialize a `ResponseListener` from the Functions NPM package and then call the `listenForResponse` function to wait for a response. By default, this function waits for five minutes.
+   - Upon reception of the response, use the Functions NPM package `decodeResult` function and `ReturnType` enum to decode the response to the expected returned type (`ReturnType.uint256` in this example).
