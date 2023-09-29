@@ -6,6 +6,7 @@ whatsnext: { "FAQs": "/chainlink-automation/faqs" }
 ---
 
 import { Aside, ClickToZoom, CopyText } from "@components"
+import { TabsContent } from "@components/Tabs"
 
 The Giveaway Manager app is a highly configurable proof of concept for provably-fair giveaways using Chainlink Automation and VRF. It is capable of drawing winners from a CSV list or onchain entries using VRF Direct Funding and Automation. Fulfillment is not included, and this app demonstrates provably fair selection only.
 
@@ -42,7 +43,7 @@ Before you start this tutorial, complete the following items:
 - Set up a cryptocurrency wallet such as [MetaMask](https://metamask.io/).
 - Fund your wallet with the following testnet tokens:
   - Get testnet MATIC from [faucet.polygon.technology](https://faucet.polygon.technology) to pay for your on-chain transactions.
-  - Get at least 2 ERC-677 testnet LINK from [faucets.chain.link/mumbai](https://faucets.chain.link/mumbai).
+  - Request ERC-677 testnet LINK from [faucets.chain.link/mumbai](https://faucets.chain.link/mumbai). You will need [at least 5.1 LINK](#required-balance-amounts) to set up each giveaway with this app.
 
 ## Setup steps
 
@@ -51,6 +52,12 @@ Setting up the app requires several steps:
 1. [Clone the repo](#clone-repo)
 1. [Create a block explorer API key](#create-a-block-explorer-api-key)
 1. [Set contract environment variables](#set-contract-environment-variables)
+1. [Install Foundry](#install-foundry)
+1. [Install contract dependencies](#install-contract-dependencies)
+1. [Deploy contract](#deploy-contract)
+1. [Install UI dependencies](#install-ui-dependencies)
+1. [Run and view the UI](#run-and-view-the-ui)
+1. [Testing](#testing)
 
 ### Clone the repo
 
@@ -136,7 +143,43 @@ Refer to the [Foundry installation instructions](https://book.getfoundry.sh/gett
 
 ### Install contract dependencies
 
-If you don't have `make` install it.
+Install [GNU make](https://www.gnu.org/software/make/) if you do not already have it. The functionality of the project is wrapped in the [makefile](https://github.com/smartcontractkit/quickstarts-giveaway/blob/main/contracts/Makefile). Reference the below commands based on your OS or go to [Make documentation](https://www.gnu.org/software/make/manual/make.html).
+
+{/* prettier-ignore */}
+   <TabsContent sharedStore="osType" client:visible>
+   <Fragment slot="tab.1">macOS</Fragment>
+   <Fragment slot="tab.2">Windows</Fragment>
+   <Fragment slot="panel.1">
+   1. The Xcode command line tools include `make`. If you've previously installed Xcode, skip to step 2 to verify your installation. Otherwise, open a Terminal window and run:
+      ```sh
+      xcode-select --install
+      ```
+      Alternatively, if you prefer to [use Homebrew](https://formulae.brew.sh/formula/make), be aware that GNU `make` is installed as `gmake`.
+   1.  Verify your `make` installation:
+         ```sh
+         make
+         ```
+         If `make` is installed successfully, you will get the following output:
+         ```sh
+         make: *** No targets specified or no makefile found. Stop.
+         ```
+   </Fragment>
+   <Fragment slot="panel.2">
+   1. If you're using WSL, open an Ubuntu terminal and run:
+      ```sh
+      sudo apt install make
+      ```
+   1. [Edit your path variable to include `make`](https://help.ubuntu.com/community/EnvironmentVariables#Persistent_environment_variables).
+   1. Verify your `make` installation:
+      ```sh
+      make
+      ```
+      If `make` is installed successfully, you will get the following output:
+      ```sh
+      make: *** No targets specified or no makefile found. Stop.
+      ```
+   </Fragment>
+   </TabsContent>
 
 Install contract dependencies if changes have been made to contracts:
 
@@ -226,6 +269,7 @@ $ yarn prettier
    - Fill in the rest of the fields and upload your CSV list of participants, then **Create** and confirm the wallet transaction that pops up.
 
    {" "}
+
    <ClickToZoom src="/images/quickstarts/giveaway/3-ui-create-static-giveaway.png" alt="Create static giveaway" />
 
 1. After the transaction processes, you should get a "Giveaway successfully created" message. Click the UI card for the new giveaway you just created:
@@ -250,11 +294,71 @@ $ yarn prettier
 
    <ClickToZoom src="/images/quickstarts/giveaway/8-ui-check-winners.png" alt="Check winners" />
 
-1. A **Giveaway winners** popup displays and shows the winners. This demo used a CSV of dummy wallet addresses. You can use whatever unique identifier you want. Since the identifier is hashed before it's put on-chain, the data remains private to only you as the admin.
+1. A **Giveaway winners** popup displays and shows the winners. This demo used a CSV of dummy wallet addresses. You can use whichever unique identifiers you want. Since the identifier is hashed before it's put on-chain, the data remains private and visible only to you as the admin.
 
    <ClickToZoom src="/images/quickstarts/giveaway/9-ui-giveaway-winners.png" alt="View winners" />
 
    You can export a CSV list of all the winners and share the list with participants if you wish. You can also choose to provide the VRF transaction from Step 7 as evidence that Chainlink VRF was used for fairness.
+
+## Implement a dynamic giveaway
+
+1. Navigate to http://localhost:3005/ in your browser.
+1. In the upper right corner, click **Connect wallet**. Connect your wallet and ensure the proper network is selected.
+
+   <ClickToZoom src="/images/quickstarts/giveaway/1-ui-connect-wallet.png" alt="Connect wallet" />
+
+1. Click **Create giveaway**.
+
+   <ClickToZoom src="/images/quickstarts/giveaway/2-ui-create-giveaway.png" alt="Create giveaway" />
+
+1. For the **Select giveaway type** field, click **Dynamic**.
+
+   <ClickToZoom src="/images/quickstarts/giveaway/10-ui-select-dynamic-type.png" alt="Select giveaway type" />
+
+1. Fill in the details to configure the giveaway:
+
+   - If you want the Giveaway to close automatically after a certain duration, click **Enable Automation** and enter the duration. If you don't do this, you must manually close the Giveaway before drawing.
+   - Click **Create** and confirm the wallet transaction that pops up.
+
+   <ClickToZoom src="/images/quickstarts/giveaway/11-ui-create-dynamic-giveaway.png" alt="Create  dynamic giveaway" />
+
+1. After the transaction processes, you should get a "Giveaway successfully created" message. Click the UI card for the new giveaway you just created:
+
+   <ClickToZoom
+     src="/images/quickstarts/giveaway/12-ui-click-dynamic-giveaway.png"
+     alt="Click the newly created giveaway"
+   />
+
+1. The details for your giveaway are displayed. At the bottom, there are a few options:
+
+   - **Join Giveaway**: Allows the admin to submit a tx to join the giveaway (useful for some use cases)
+   - **Pick Winners**: You can pick the winners at any time, if you specified a duration it will automatically close the giveaway so that nobody can enter anymore. You'll still need to run this to pick the winners.
+   - **Cancel Giveaway**: Cancel the giveaway and prevent anyone from entering.
+
+   <ClickToZoom src="/images/quickstarts/giveaway/13-ui-dynamic-giveaway-options.png" alt="Dynamic giveaway options" />
+
+1. If you enabled a duration for the giveaway, you'll see the status change to **Staged** after the duration is complete. This means nobody else can join the giveaway and you're ready to pick winners.
+
+   <ClickToZoom src="/images/quickstarts/giveaway/14-ui-staged-status.png" alt="Staged status" />
+
+1. The details for your giveaway are displayed. Click **Pick Winners** and confirm the wallet transaction.
+
+   <ClickToZoom src="/images/quickstarts/giveaway/15-ui-dynamic-pick-winners.png" alt="Pick winners" />
+
+1. A "Pending Transaction" popup displays while the transaction is processing. Once the transaction is complete, you should see a "Successfully picked winners" message. Click **Close**.
+
+   - Optional: You can reference the "View VRF Request" link to help prove the giveaway was fair.
+
+   <ClickToZoom
+     src="/images/quickstarts/giveaway/16-ui-pick-winners-confirmation.png"
+     alt="Pick winners confirmation"
+   />
+
+1. After the transaction is confirmed, the Giveaway status changes to Finish. Click **View Winners** to see the wallet addresses of those who won.
+
+   <ClickToZoom src="/images/quickstarts/giveaway/17-ui-view-winners.png" alt="View winners" />
+
+   You can export a CSV list of all the winners and share the list with participants if you wish. You can also choose to provide the VRF transaction as evidence that Chainlink VRF was used for fairness.
 
 ## Notes
 
