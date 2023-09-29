@@ -51,7 +51,6 @@ export const Search = () => {
             }
             showSearch={showModal}
             placeholder="Search Chainlink & Resources"
-            apiKey="e32fe1586cebb937a9287bf5561edfb62907f6074fc43b9201a305b20e881a5d"
             assistantID="4bcde2e970f34c2fa80a7e14615e09e2"
             endpoint="wss://streamingprod.algoverai.link/chat_chainlink"
             basicSearchEndpoint="https://api.algovera.ai/chainlink/search"
