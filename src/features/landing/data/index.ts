@@ -132,6 +132,7 @@ export const evmProducts = [
       ["Getting Started", "data-streams/getting-started"],
       ["Stream IDs", "data-streams/stream-ids"],
       ["Available Schemas", "data-streams/reference/report-schema"],
+      ["Interface Reference", "data-streams/reference/interfaces"],
     ],
     chains: [{ id: "arbitrum", title: "Arbitrum" }],
   },

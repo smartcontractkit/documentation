@@ -209,7 +209,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         },
         {
           title: "Release Notes",
-          url: "data-streams/stream-ids",
+          url: "data-streams/release-notes",
         },
       ],
     },
