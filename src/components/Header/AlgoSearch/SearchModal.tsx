@@ -45,6 +45,7 @@ export const SearchModal = ({ showModal, onClose }: { showModal: boolean; onClos
           assistantID="4bcde2e970f34c2fa80a7e14615e09e2"
           endpoint="wss://streamingprod.algoverai.link/chat_chainlink"
           basicSearchEndpoint="https://api.algovera.ai/chainlink/search"
+          onClose={onClose}
         />
       </div>
     </div>
