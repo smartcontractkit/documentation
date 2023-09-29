@@ -6,7 +6,7 @@ import styles from "./tableOfContents.module.css"
 import { useCurrentIds } from "~/hooks/currentIds/useCurrentIds"
 import { useStore } from "@nanostores/preact"
 import { shouldUpdateToc } from "./tocStore"
-import { ContentObserver } from "~/components/PageContent/ContentObserver/ContentObserver"
+import { ContentObserver } from "~/components/PageContent/ContentObserver"
 
 const TableOfContents: FunctionalComponent<{
   initialHeadings: MarkdownHeading[]

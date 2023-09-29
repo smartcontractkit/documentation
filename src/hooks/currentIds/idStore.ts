@@ -1,3 +1,3 @@
-import { atom } from "nanostores"
+import { map } from "nanostores"
 
-export const currentIds = atom<Record<string, boolean>>({})
+export const currentIds = map<Record<string, boolean>>({})
