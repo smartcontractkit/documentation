@@ -3,7 +3,6 @@ import { EnsOptions } from "../data"
 import { useState } from "preact/hooks"
 import styles from "./EnsLookupForm.module.css"
 import { getWeb3Provider } from "@features/utils"
-import React from "react"
 
 export const EnsLookupForm = () => {
   const [ensResult, setEnsResult] = useState<
@@ -66,23 +65,18 @@ export const EnsLookupForm = () => {
     <div>
       <form class={styles.form}>
         <label>Pair:</label>
-        <select
-          class={styles.input}
-          onChange={(event: any) => {
-            getDropdownAddress(event.target.value)
-          }}
-        >
+        <select className={styles.input} onChange={(event) => getDropdownAddress(event.currentTarget.value)}>
           <option value="">Choose Pair</option>
           {EnsOptions.map((option) => (
             <option value={option.value}>{option.label}</option>
           ))}
         </select>
         <label>ENS Name:</label>
-        <input class={styles.input} value={isLoading ? "Loading..." : ensResult ? ensResult.ensName : ""} />
+        <input className={styles.input} value={isLoading ? "Loading..." : ensResult ? ensResult.ensName : ""} />
         <label>Address:</label>
-        <input class={styles.input} value={isLoading ? "Loading..." : ensResult ? ensResult.address : ""} />
+        <input className={styles.input} value={isLoading ? "Loading..." : ensResult ? ensResult.address : ""} />
         <label>Hash ID:</label>
-        <input class={styles.input} value={isLoading ? "Loading..." : ensResult ? ensResult.hash : ""} />
+        <input className={styles.input} value={isLoading ? "Loading..." : ensResult ? ensResult.hash : ""} />
       </form>
     </div>
   )

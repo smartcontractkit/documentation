@@ -1,4 +1,3 @@
-/** @jsxImportSource react */
 import React from "react"
 import { GlobalHotKeys } from "react-hotkeys"
 import { AlgoveraSearch } from "@algoveraai/search"
