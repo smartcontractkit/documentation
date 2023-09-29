@@ -1,0 +1,109 @@
+---
+section: chainlinkFunctions
+date: Last Modified
+title: "Chainlink Functions Demo App"
+whatsnext: { "FAQs": "/chainlink-automation/faqs" }
+---
+
+import { Aside } from "@components"
+
+The [Chainlink Functions Demo App](https://github.com/smartcontractkit/chainlink-functions-demo-app) is designed to run on the Mumbai testnet (Polygon). It uses [Chainlink Functions](/chainlink-functions). The functionality allows users to donate MATIC to their favorite GitHub creators. Authors of those repositories can then claim their donations. Donations are made in an amount of MATIC per amount of Stars the repository has.
+
+Chainlink Functions is used to determine the total donation amount by multiplying the MATIC amount by the star count. There's no back-end involved in the whole donation process.
+
+<Aside type="caution" title="Disclaimer">
+  This tutorial represents an example of using a Chainlink product or service and is provided to help you understand how
+  to interact with Chainlink's systems and services so that you can integrate them into your own. This template is
+  provided "AS IS" and "AS AVAILABLE" without warranties of any kind, has not been audited, and may be missing key
+  checks or error handling to make the usage of the product more clear. Do not use the code in this example in a
+  production environment without completing your own audits and application of best practices. Neither Chainlink Labs,
+  the Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs that are generated due
+  to errors in code.
+</Aside>
+
+## Objective
+
+You will create and manage a ledger contract to be used by the dApp. Tracking interaction between accounts gives a better insight into how the dApp functions. Using a different wallet for contract creation and dApp usage is preferable.
+
+## Before you begin
+
+Before you start this tutorial, complete the following items:
+
+- If you are new to smart contract development, learn how to [Deploy Your First Smart Contract](/getting-started/deploy-your-first-contract).
+- Set up a cryptocurrency wallet such as [MetaMask](https://metamask.io/).
+- To deploy this contract on testnets, ensure the deployer account has testnet ERC-677 LINK. Use the [LINK faucet](https://faucets.chain.link/) to retrieve testnet LINK.
+  - Get testnet MATIC from [faucet.polygon.technology](https://faucet.polygon.technology) to pay for your on-chain transactions.
+  - Get at least 2 ERC-677 testnet LINK from [faucets.chain.link/mumbai](https://faucets.chain.link/mumbai).
+- Install [Node.js](https://nodejs.org/en/download).
+- Install pnpm: `npm install -g pnpm`
+- Optional: If you want to verify your contracts onchain, create an account on [Polygonscan](http://polygonscan.com) and get an API key. Note that you'll need to create an account for the main network, which also works for the testnet.
+
+### Steps to implement
+
+Run these from the project directory where you've cloned this repo.
+
+1. Clone the repo and change directories:
+
+   ```bash
+   git clone https://github.com/smartcontractkit/chainlink-functions-demo-app.git && cd chainlink-functions-demo-app
+   ```
+
+1. Install the dependencies using `pnpm`:
+
+   ```bash
+   pnpm install
+   ```
+
+1. Create a `.env` file from the template:
+
+   ```bash
+   cp .env.example .env
+   ```
+
+1. In the `.env` file specify the following variables:
+
+   - `PRIVATE_KEY` - Private key of your wallet used for deploying contracts.
+   - `NEXT_PUBLIC_GA_TRACKING_ID` - Optional - Set to your Google Analytics tracking id to enable GA.
+   - `POLYGONSCAN_API_KEY` - Optional - API key for Polygonscan to verify and read contracts.
+
+1. Generate and build all required files:
+
+   ```bash
+   pnpm build
+   ```
+
+1. Deploy the Ledger contract:
+
+   ```bash
+   npx hardhat project:deploy
+   ```
+
+1. The deployment script prints the deployed contract address to your terminal. Add the address in the `NEXT_PUBLIC_CONTRACT_ADDRESS` environment variable to your `.env` file.
+
+1. Optionally, you can verify the contract. This allows you to decode the bytecode on Polygonscan. Verify the contract with `npx hardhat verify`:
+
+   ```bash
+   npx hardhat verify --constructor-args arguments.js $NEXT_PUBLIC_CONTRACT_ADDRESS
+   ```
+
+   Replace `$NEXT_PUBLIC_CONTRACT_ADDRESS` with your contract address if you don't have the address in your shell environment.
+
+1. Create a Chainlink Functions subscription and fund it using the `project:fund` script:
+
+   ```bash
+   npx hardhat project:fund
+   ```
+
+   For more information on how to manage your subscription, read [the official documentation](https://docs.chain.link/chainlink-functions/resources/subscriptions).
+
+1. Store the subscription ID in the `NEXT_PUBLIC_SUBSCRIPTION_ID` environment variable in your `.env` file.
+
+## Run the example
+
+1. Run the dev server:
+
+   ```bash
+   pnpm dev
+   ```
+
+1. In the terminal output, you'll see a URL with a port number. Open this URL in your browser to see the UI running locally.
