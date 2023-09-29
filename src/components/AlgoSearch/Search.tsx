@@ -16,13 +16,13 @@ export const Search = () => {
   }
 
   // Prohibit scrolling on body when modal is visible
-  // React.useEffect(() => {
-  //   if (showModal) {
-  //     document.body.classList.add(styles.hideOverflow)
-  //   } else {
-  //     document.body.classList.remove(styles.hideOverflow)
-  //   }
-  // }, [showModal])
+  React.useEffect(() => {
+    if (showModal) {
+      document.body.classList.add(styles.hideOverflow)
+    } else {
+      document.body.classList.remove(styles.hideOverflow)
+    }
+  }, [showModal])
 
   return (
     <GlobalHotKeys keyMap={hotKeysMap} handlers={hotkeyHandlers}>
