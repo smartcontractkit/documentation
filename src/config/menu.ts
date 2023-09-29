@@ -34,6 +34,11 @@ export const MENU: MenuItems = {
       section: "vrf",
     },
     {
+      text: "Data-Streams",
+      link: "/data-streams",
+      section: "dataStreams",
+    },
+    {
       text: "Nodes",
       link: "/chainlink-nodes",
       section: "nodeOperator",
