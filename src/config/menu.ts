@@ -25,7 +25,7 @@ export const MENU: MenuItems = {
     },
     {
       text: "Automation",
-      link: "/chainlink-automation/introduction",
+      link: "/chainlink-automation",
       section: "automation",
     },
     {

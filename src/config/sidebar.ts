@@ -196,20 +196,16 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "Chainlink Automation",
       contents: [
         {
-          title: "Introduction",
-          url: "chainlink-automation/introduction/",
+          title: "Overview",
+          url: "chainlink-automation",
         },
         {
           title: "Getting Started",
-          url: "chainlink-automation/compatible-contracts",
+          url: "chainlink-automation/getting-started",
         },
         {
           title: "Supported Networks",
-          url: "chainlink-automation/supported-networks/",
-        },
-        {
-          title: "Best Practices",
-          url: "chainlink-automation/compatible-contract-best-practice",
+          url: "chainlink-automation/supported-networks",
         },
         {
           title: "Release Notes",
@@ -218,32 +214,43 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
-      section: "Examples",
-      contents: [
-        {
-          title: "Create a Vault Harvester",
-          url: "chainlink-automation/tutorials/vault-harvester",
-        },
-      ],
-    },
-    {
       section: "Guides",
       contents: [
         {
-          title: "Time-based Automation",
+          title: "Create Automation-compatible Contracts",
+          url: "chainlink-automation/compatible-contracts",
+        },
+        {
+          title: "Register a Time-Based Upkeep",
           url: "chainlink-automation/job-scheduler",
         },
         {
-          title: "Custom Logic Automation",
+          title: "Register a Custom Logic Upkeep",
           url: "chainlink-automation/register-upkeep",
+        },
+        {
+          title: "Register a Log Trigger Upkeep",
+          url: "chainlink-automation/log-trigger",
+        },
+        {
+          title: "Register Upkeeps Programmatically",
+          url: "chainlink-automation/register-upkeep-in-contract",
+        },
+        {
+          title: "Secure Upkeeps Using the Forwarder",
+          url: "chainlink-automation/forwarder",
+        },
+        {
+          title: "Create Flexible Upkeeps",
+          url: "chainlink-automation/flexible-upkeeps",
         },
         {
           title: "Manage your Upkeeps",
           url: "chainlink-automation/manage-upkeeps",
         },
         {
-          title: "Creating Flexible Upkeeps",
-          url: "chainlink-automation/flexible-upkeeps",
+          title: "Use Automation with Data Streams",
+          url: "chainlink-automation/streams-lookup",
         },
       ],
     },
@@ -251,16 +258,42 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "Concepts",
       contents: [
         {
-          title: "Automation Pricing",
+          title: "Concepts",
+          url: "chainlink-automation/automation-concepts",
+        },
+        {
+          title: "Architecture",
+          url: "chainlink-automation/automation-architecture",
+        },
+        {
+          title: "Best Practices",
+          url: "chainlink-automation/compatible-contract-best-practice",
+        },
+      ],
+    },
+    {
+      section: "Reference",
+      contents: [
+        {
+          title: "Contracts",
+          url: "chainlink-automation/automation-contracts",
+        },
+        {
+          title: "Interfaces",
+          url: "chainlink-automation/automation-interfaces",
+        },
+        {
+          title: "Troubleshooting and Debugging",
+          url: "chainlink-automation/debugging-errors",
+        },
+      ],
+    },
+    {
+      section: "Economics",
+      contents: [
+        {
+          title: "Billing",
           url: "chainlink-automation/automation-economics",
-        },
-        {
-          title: "Automation Architecture",
-          url: "chainlink-automation/overview",
-        },
-        {
-          title: "FAQs",
-          url: "chainlink-automation/faqs",
         },
       ],
     },

@@ -1,0 +1,27 @@
+---
+section: automation
+date: Last Modified
+title: "Secure Upkeeps Using the Forwarder"
+isMdx: true
+whatsnext: { "Create a compatible contract for custom logic Upkeep": "/chainlink-automation/compatible-contracts/" }
+---
+
+import { Aside, CodeSample } from "@components"
+
+This tutorial explains how to use the `Forwarder` to add additional security to your Automation upkeeps. To learn how other Chainlink Automation contracts work, click [here](/chainlink-automation/automation-contracts).
+
+## What is a `Forwarder`? When is it used?
+
+Starting with Automation 2.0, each registered upkeep under the Chainlink Automation network will have its own unique `Forwarder` contract. This contract is the intermediary between the Automation Registry and the Upkeep contract. Technically speaking, the `Forwarder` will always be the `msg.Sender`for your upkeep.
+
+If your `performUpkeep` function is open and callable by anyone without risk of accepting unintentional external data, you don't need to use the forwarder.
+
+## Securing your upkeep
+
+If your upkeep's perform function needs to be permissioned, please consider adding `msg.sender = registry.getForwarder(upkeepID)` at the top of your `performUpkeep` function.
+
+To make this work you will need to:
+
+- Create `upkeepID` as a variable on your contract that only _you_ can update. `upkeepID` is a unique value that cannot change. It is known only after successful registration.
+- A variable storing the address of the registry. Only _you_ should be able to update this variable. update.
+- Call `registry.getForwarder(upkeepID)` using the Registry interface.

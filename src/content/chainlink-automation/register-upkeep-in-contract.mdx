@@ -1,0 +1,101 @@
+---
+section: automation
+date: Last Modified
+title: "Register Upkeeps Programmatically"
+isMdx: true
+whatsnext: { "Create a compatible contract for custom logic Upkeep": "/chainlink-automation/compatible-contracts/" }
+---
+
+import { Aside, CodeSample } from "@components"
+
+This guide explains how to register an upkeep from within your smart contract, also called programmatic upkeep creation. Your contract can then interact with it via the registry to get its balance, fund it, edit it, or cancel it using the `upkeepID`.
+
+## Before you begin
+
+Before beginning this process, complete the following tasks:
+
+1. Ensure the smart contract you want to automate is [Automation Compatible](/chainlink-automation/compatible-contracts). To learn more about the contracts Chainlink Automation uses, click [here](/chainlink-automation/automation-contracts).
+1. Ensure you have sufficient LINK in the contract that will be registering the Upkeep. See here to get testnet [LINK](https://faucets.chain.link/).
+1. Ensure you have the addresses for the LINK token you are using, and the correct registry/registrar. You can find these values on the [Supported Networks](/chainlink-automation/supported-networks) page. _Note_: You can retrieve the LINK token address by calling the function `getLinkAddress` on the registry .
+1. Use variables for the registry and registrar addresses that your admin can change as new versions of Chainlink Automation are released.
+
+1. The interface for LINK and Registrar for registration, interface for Registry for subsequent actions
+1. Interface is like the API specification of interacting with the contract.
+
+## Register the upkeep
+
+Programmatically registering an upkeep happens in two steps:
+
+1. Call the LINK token to give allowance to the Automation registrar for the amount of LINK you will fund your upkeep with at registration time, e.g.
+   Pizza code to do
+1. Call `registerUpkeep` on the Registrar contract using the `RegistrationParams` struct. You will receive the `upkeepID` if successful.
+
+| Var type | Var Name       | Example value       | Description                                                                                                                                                                                                                                      |
+| -------- | -------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| String   | name           | "Test upkeep"       | Name of upkeep that will be displayed in the UI.                                                                                                                                                                                                 |
+| bytes    | encryptedEmail | 0x                  | Can leave blank. If registering via UI we will encrypt email and store it here.                                                                                                                                                                  |
+| address  | upkeepContract |                     | Address of your Automation-compatible contract                                                                                                                                                                                                   |
+| uint32   | gasLimit       | 500000              | The maximum gas limit that will be used for your txns. Rather over-estimate gas since you only pay for what you use, while too low gas might mean your upkeep doesn't perform. Trade-off is higher gas means higher minimum funding requirement. |
+| address  | adminAddress   |                     | The address that will have admin rights for this upkeep. Use your wallet address, unless you want to make another wallet the admin.                                                                                                              |
+| uint8    | triggerType    | 0 or 1              | 0 is Conditional upkeep, 1 is Log trigger upkeep                                                                                                                                                                                                 |
+| bytes    | checkData      | 0x                  | checkData is a static input that you can specify now which will be sent into your checkUpkeep or checkLog, see interface.                                                                                                                        |
+| bytes    | triggerConfig  | 0x                  | The configuration for your upkeep. 0x for conditional upkeeps, or see next section for log triggers.                                                                                                                                             |
+| bytes    | offchainConfig | 0x                  | Leave as 0x, placeholder parameter for future.                                                                                                                                                                                                   |
+| uint96   | amount         | 1000000000000000000 | Ensure this is less than or equal to the allowance just given, and needs to be in WEI.                                                                                                                                                           |
+
+## Upkeep registration parameters and examples
+
+Depending on the trigger you are using, the `triggerConfig` will be different. Browse the triggers below to understand how to set up `triggerConfig`.
+
+### Custom logic upkeeps
+
+#### Parameters
+
+For upkeeps with triggers using on-chain state only, the following parameters are needed:
+
+#### Code sample
+
+<CodeSample src="/samples/Automation/UpkeepIDConditionalExample.sol" />
+
+### Time-based upkeeps
+
+#### Parameters
+
+For upkeeps with triggers based on a routine schedule, the following parameters are needed:
+
+#### Code sample
+
+<CodeSample src="/samples/Automation/UpkeepIDTimeBasedExample.sol" />
+
+### Log trigger upkeeps
+
+#### Parameters
+
+For upkeeps with triggers using emitted logs, the following parameters are needed:
+
+```solidity
+struct LogTriggerConfig {
+  address contractAddress; // must have address that will be emitting the log
+  uint8 filterSelector; // must have filtserSelector, denoting  which topics apply to filter ex 000, 101, 111...only last 3 bits apply
+  bytes32 topic0; // must have signature of the emitted event
+  bytes32 topic1; // optional filter on indexed topic 1
+  bytes32 topic2; // optional filter on indexed topic 2
+  bytes32 topic3; // optional filter on indexed topic 3
+}
+```
+
+where filterSelector is a bitmask mapping and value is set depending on the selection of filters
+| filterSelector | Topic 1 | Topic 2 | Topic 3 |
+| ----- | ------- | ------- | ------- |
+| 0 | Empty | Empty | Empty |
+| 1 | Filter | Empty | Empty |
+| 2 | Empty | Filter | Empty |
+| 3 | Filter | Filter | Empty |
+| 4 | Empty | Empty | Filter |
+| 5 | Filter | Empty | Filter |
+| 6 | Empty | Filter | Filter |
+| 7 | Filter | Filter | Filter |
+
+#### Code sample
+
+<CodeSample src="/samples/Automation/UpkeepIDlogTriggerExample.sol" />

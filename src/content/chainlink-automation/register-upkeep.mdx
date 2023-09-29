@@ -3,12 +3,27 @@ section: automation
 date: Last Modified
 title: "Register a Custom Logic Upkeep"
 isMdx: true
-whatsnext: { "Create a compatible contract for custom logic Upkeep": "/chainlink-automation/compatible-contracts/" }
+whatsnext:
+  {
+    "Register a time-based Upkeep": "/chainlink-automation/job-scheduler/",
+    "Register a log trigger Upkeep": "/chainlink-automation/log-trigger/",
+    "Register an Upkeep from solidity": "/chainlink-automation/register-upkeep-in-contract/",
+    "Automation architecture": "/chainlink-automation/automation-architecture/",
+    "Billing": "/chainlink-automation/automation-economics/",
+  }
 ---
 
 import { Aside, CodeSample } from "@components"
 
-This guide explains how to register a custom logic Upkeep that uses a [compatible contract](/chainlink-automation/compatible-contracts). You can register it using the Chainlink Automation App or from within a contract that you deploy.
+Create powerful automation for your smart contract that leverages your own custom logic to determine when to trigger your contract, and what to do when it should be triggered. This guide explains how to register a custom logic Upkeep that uses a [compatible contract](/chainlink-automation/compatible-contracts). You can register it using the Chainlink Automation App or from within a contract that you deploy.
+
+{/* prettier-ignore */}
+{" "}
+
+<Aside type="tip" title="Testing and best practices">
+  Follow the [best practices](/chainlink-automation/compatible-contract-best-practice) when creating a compatible
+  contract and test your upkeep on a testnet before deploying it to a mainnet.
+</Aside>
 
 ## Register an Upkeep using the Chainlink Automation App
 
@@ -31,10 +46,8 @@ This guide explains how to register a custom logic Upkeep that uses a [compatibl
    - **Upkeep name**: This will be publicly visible in the Chainlink Automation app.
    - **Gas limit**: This is the maximum amount of gas that your transaction requires to execute on chain. This limit cannot exceed the `performGasLimit` value configured on the [registry](/chainlink-automation/supported-networks/#configurations). Before the network executes your transaction on chain, it simulates the transaction. If the gas required to execute your transaction exceeds the gas limit that you specified, your transaction will not be confirmed. Developers also have the ability to update `performGasLimit` for an upkeep. Consider running your function on a testnet to see how much gas it uses before you select a gas limit. This can be changed afterwards.
    - **Starting balance (LINK)**: Specify a LINK starting balance to fund your upkeep. See the [LINK Token Contracts](/resources/link-token-contracts) page to find the correct contract address and access faucets for testnet LINK. This field is required. You must have LINK before you can use the Chainlink Automation service.
-   - **Check data**: This field is provided as an input for when your `checkUpkeep` function is simulated. Either leave this field blank or specify a hexadecimal value starting with `0x`. To learn how to make flexible upkeeps using `checkData`, see the [Flexible Upkeeps](/chainlink-automation/flexible-upkeeps) guide.
-   - **Your email address**: This email address will be encrypted and is used to send you an email when your upkeep is underfunded.
-     {/* prettier-ignore */}
 
+     {/* prettier-ignore */}
      {" "}
 
      <Aside type="tip" title="Funding Upkeep">
@@ -53,13 +66,8 @@ This guide explains how to register a custom logic Upkeep that uses a [compatibl
        testnet, get [LINK](/resources/link-token-contracts) from [faucets.chain.link](https://faucets.chain.link/).
      </Aside>
 
-     {/* prettier-ignore */}
-     {" "}
-
-     <Aside type="tip" title="Testing and best practices">
-       Follow the [best practices](/chainlink-automation/compatible-contract-best-practice) when creating a compatible
-       contract and test your upkeep on a testnet before deploying it to a mainnet.
-     </Aside>
+   - **Check data**: This field is provided as an input for when your `checkUpkeep` function is simulated. Either leave this field blank or specify a hexadecimal value starting with `0x`. To learn how to make flexible upkeeps using `checkData`, see the [Flexible Upkeeps](/chainlink-automation/flexible-upkeeps) guide.
+   - **Your email address**: This email address will be encrypted and is used to send you an email when your upkeep is underfunded.
 
 1. **Click `Register upkeep`** and confirm the transaction in MetaMask.
    ![Upkeep Registration Success Message](/images/contract-devs/automation/automation-registration-submitted.png)
@@ -84,39 +92,13 @@ Optionally, you can fetch the LINK address and registrar address from the intend
   _The minimum amount is 0.1 LINK._
 </Aside>
 
-Mainnet and testnet use different versions of the Registry and Registrar interfaces.
+## Code example
 
-- Mainnet: Use the v1.x registrar and registry interfaces. See the [Mainnet parameters](#mainnet-parameters) section.
-- Testnet: Use the v2.0 registrar and registry interfaces. See the [Testnet parameters](#testnet-parameters) section.
-
-## Code examples
-
-### Mainnet parameters
-
-This uses v1.x registrar and registry interfaces.
-
-<CodeSample src="samples/Automation/UpkeepIDConsumerExamplev1.sol" />
-
-#### `registerAndPredictID` parameters
-
-| Name             | Description                                                                                                                             |
-| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| `name`           | Name of Upkeep                                                                                                                          |
-| `encryptedEmail` | Not in use in programmatic registration. Please specify with `0x`                                                                       |
-| `upkeepContract` | Address of Keepers-compatible contract that will be automated                                                                           |
-| `gasLimit`       | The maximum amount of gas that will be used to execute your function on-chain                                                           |
-| `adminAddress`   | Address for Upkeep administrator. Upkeep administrator can fund contract.                                                               |
-| `checkData`      | ABI-encoded fixed and specified at Upkeep registration and used in every checkUpkeep. Can be empty (0x)                                 |
-| `amount`         | The amount of LINK (in Wei) to fund your Upkeep. The minimum amount is 0.1 LINK. To fund 0.1 LINK please set this to 100000000000000000 |
-| `source`         | Not in use in programmatic registration. Please specify with `0`.                                                                       |
-
-### Testnet parameters
-
-This uses v2.0 registry and registrar interfaces.
+This sample uses v2.0 registry and registrar interfaces.
 
 <CodeSample src="samples/Automation/UpkeepIDConsumerExample.sol" />
 
-#### `registerAndPredictID` parameters
+### `registerAndPredictID` parameters
 
 | Name             | Description                                                                                                                             |
 | ---------------- | --------------------------------------------------------------------------------------------------------------------------------------- |

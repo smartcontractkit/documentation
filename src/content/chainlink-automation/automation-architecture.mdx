@@ -1,34 +1,16 @@
 ---
 section: automation
 date: Last Modified
-title: "Chainlink Automation Architecture"
+title: "Automation Architecture"
 isMdx: true
-whatsnext: { "FAQs": "/chainlink-automation/faqs/" }
+whatsnext: { "Automation Best Practices": "/chainlink-automation/compatible-contract-best-practice" }
 ---
 
 import { ClickToZoom } from "@components"
 
-Chainlink Automation enables you to execute smart contract functions based on conditions that you specify without having to create and maintain your own centralized stack. Chainlink Automation is highly reliable and decentralized, supported by an industry leading team, and enables developers to deploy applications faster.
-
-There are three main actors in the ecosystem:
-
-- **Upkeeps**: These are the jobs or tasks that you execute on-chain. For example, you can call a smart contract function if a specific set of conditions are met.
-- **Automation registry**: The contract that you use to [register](/chainlink-automation/register-upkeep) and manage **upkeeps**.
-- **Automation Nodes**: Nodes in the Chainlink Automation Network that service registered and funded upkeeps in the Automation registry. Automation Nodes use the same Node Operators as Chainlink Data Feeds.
-
 The following diagram describes the architecture of the Chainlink Automation Network. The Chainlink Automation Registry governs the actors on the network and compensates Automation Nodes for performing successful upkeeps. Developers can register their Upkeeps, and Node Operators can register as Automation Nodes.
 
 <ClickToZoom src="/images/contract-devs/automation/automation-overview.png" />
-
-## Automation Contracts
-
-Automation Nodes use these contracts. You can find them in the [Chainlink repository](https://github.com/smartcontractkit/chainlink/tree/develop/contracts/src/v0.8/automation). For details about how to use them, see the [Creating Compatible Contracts](/chainlink-automation/compatible-contracts) guide.
-
-- `AutomationCompatible.sol`[(link)](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/automation/AutomationCompatible.sol): Imports the following contracts:
-  - `AutomationBase.sol`[(link)](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/automation/AutomationBase.sol): Enables the use of the `cannotExecute` modifier. Import this contract if you need for this modifier. See the [`checkUpkeep` function](/chainlink-automation/compatible-contracts#checkupkeep-function) for details.
-  - `AutomationCompatibleInterface.sol`[(link)](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/interfaces/automation/AutomationCompatibleInterface.sol): The interface to be implemented in order to make your contract compatible. Import this contract for type safety.
-- `AutomationRegistry1_2.sol`[(link)](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/automation/v1_2/KeeperRegistry1_2.sol): The registry contract that tracks all registered Upkeeps and the Automation Nodes that can perform them.
-- `KeeperRegistrar.sol`[(link)](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/automation/v1_2/KeeperRegistrar1_2.sol): The Registrar contract coverns the registration of new Upkeeps on the associated `KeeperRegistry` contract. Users who want to register Upkeeps by directly calling the deployed contract have to call the Transfer-and-Call function on the respective ERC-677 LINK contract configured on the Registrar and ensure they pass the correct encoded function call and inputs.
 
 ## How it works
 

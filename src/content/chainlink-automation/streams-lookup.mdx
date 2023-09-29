@@ -1,0 +1,40 @@
+---
+section: automation
+date: Last Modified
+title: "Using Automation with Data Streams"
+isMdx: true
+whatsnext:
+  {
+    "Log trigger Upkeeps": "/chainlink-automation/log-trigger/",
+    "Register an Upkeep in Solidity": "/chainlink-automation/register-upkeep-in-contract/",
+    "Automation architecture": "/chainlink-automation/automation-architecture/",
+    "Billing": "/chainlink-automation/automation-economics/",
+  }
+---
+
+import { Aside, CodeSample } from "@components"
+
+In this guide, you will learn how to use Chainlink Automation with Data Streams. Chainlink Automation will “listen” to log events triggering it to fetch and deliver Data Streams reports on-chain to settle trades on-chain.
+
+There are currently two types of Automation triggers that can retrieve Data Streams to use on-chain:
+
+- [**Log triggers**](/chainlink-automation/log-trigger): Automation will listen to a log emitted on-chain and parse the log data in combination with user’s upkeep code to retrieve Data Streams reports
+- [**Custom logic triggers**](/chainlink-automation/register-upkeep): Automation will check every second whether the logic of the contract requires Data Streams report retrieval before carrying out the process
+
+## Before you begin
+
+Before you begin this implementation, make sure you have the following:
+
+A [registered and funded upkeep](/chainlink-automation/register-upkeep-in-contract) which uses an [Automation-compatible contract](/chainlink-automation/compatible-contracts) that gives instructions to the Automation network. The upkeep completes the following tasks:
+
+- Parse the trigger log’s data and extract needed elements (e.g. market data needed and timestamp)
+- Map protocol market data to the relevant Data Stream feedIDs (if needed)
+- Trigger the [`StreamsLookup`](/chainlink-automation/automation-interfaces) using the specifications [provided below](#code-example)
+- Parse the fetched Data Streams signed reports
+- Perform on-chain code to deliver report and execute the trade depending on the outcome
+
+## Code example
+
+The following code provides an example of how Chainlink Automation can be used with Data Streams using [log triggers](/chainlink-automation/log-trigger). Data streams are hybrid data feeds in which cryptographically signed data is delivered to users through a Web 2.0-style API. Users can publish on demand on-chain for data verification and trade execution. You can also view the [parameters and specifications](/chainlink-automation/automation-interfaces#streamslookupcompatibleinterface) of the functions included within this sample.
+
+<CodeSample src="/samples/Automation/BlobTask.sol" />

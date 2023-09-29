@@ -1,0 +1,122 @@
+---
+section: automation
+date: Last Modified
+title: "Getting Started with Chainlink Automation"
+isMdx: true
+whatsnext:
+  {
+    "Register a time-based Upkeep": "/chainlink-automation/job-scheduler/",
+    "Register a custom logic Upkeep": "/chainlink-automation/register-upkeep/",
+    "Register a log trigger Upkeep": "/chainlink-automation/log-trigger/",
+    "Register an Upkeep from solidity": "/chainlink-automation/register-upkeep-in-contract/",
+    "Automation architecture": "/chainlink-automation/automation-architecture/",
+    "Billing": "/chainlink-automation/automation-economics/",
+  }
+---
+
+import { Aside, ClickToZoom } from "@components"
+import { YouTube } from "@astro-community/astro-embed-youtube"
+
+<Aside type="note" title="Automation UI">
+  See the Automation Registry UI at <a href="https://automation.chain.link">automation.chain.link</a>.
+</Aside>
+
+Chainlink Automation will reliably execute smart contract functions using a variety of triggers. Explore the examples below to see how Chainlink Automation works for each type of trigger. Before you begin, you will need an active cryptocurrency wallet such as Metamask.
+
+- [Time-based trigger](#time-based-trigger): Use a time-based trigger to execute your function according to a time schedule.
+- [Custom logic trigger](#custom-logic-trigger): Use a custom logic trigger to provide custom solidity logic that Automation Nodes evaluate (off-chain) to determine when to execute your function on-chain.
+- [Log trigger](#log-trigger): Use log data as both trigger and input.
+
+## Time-based trigger
+
+**Increment a counter every 5 minutes using our example contract.**
+
+1. Navigate to the [Chainlink Automation app](https://automation.chain.link/) and connect to **Arbitrum Goerli** in the top dropdown menu.
+
+2. If your wallet is not yet connected, do so now. You may also need to fetch Arbitrum Goerli testnet link [here](https://faucets.chain.link/arbitrum-goerli).
+
+3. Now select **Register new Upkeep** and select **Time-based** trigger.
+
+4. Under _Target contract address_, enter `0x698a3a4B0a98dda279795521Bd6f63cdBE605125`. This is a simple counter contract that will just increment with each call. Source code is [here](https://goerli.arbiscan.io/address/0x8D6e9b3dcb5148C1eF501C8407C83D6Aa9b7720e#code).
+
+5. In the _Contract call_ section, enter `addInteger` under _Target function_. In the _Function inputs_ section, enter a number to increment by under _intToAdd_. Then click **Next**.
+
+   <ClickToZoom src="/images/automation/gs_tbu_contract_address.png" />
+
+6. Now specify the time schedule, for example every 5 minutes. Paste the cron expression `*/5 * * * *` under _Cron expression_ or select one of the example timers. Then click **Next**.
+
+7. To learn more about CRON expressions, click [here](/chainlink-automation/job-scheduler#specifying-the-time-schedule).
+
+8. Enter an _Upkeep name_, your public key address under _Admin Address_, 500000 under _Gas limit_, and 0.1 under _Starting balance (LINK)_.
+
+   <ClickToZoom src="/images/automation/gs_tbu_upkeep_details.png" />
+
+9. Click **Register Upkeep**.
+
+10. After the transaction has completed, you can view the performs for your upkeep in the upkeep details.
+
+You have successfully automated your first time-based upkeep. To learn more about creating time-based upkeeps, read [here](/chainlink-automation/job-scheduler).
+
+## Custom logic trigger
+
+**Increment a counter using custom logic stored on-chain.**
+
+1. Navigate to the [Chainlink Automation app](https://automation.chain.link/) and connect to **Arbitrum Goerli** in the top dropdown menu.
+
+2. If your wallet is not yet connected, do so now. You may also need to fetch Arbitrum Goerli testnet link [here](https://faucets.chain.link/arbitrum-goerli).
+
+3. Now select **Register new Upkeep** and select **Custom logic** trigger.
+
+4. Under _Target contract address_, enter `0xC3d3656868594db09abD410821c9F9ab9812B4d1`. This contract uses logic stored on-chain and on-chain state to determine when to perform, which increments a counter. It is an example of an Automation-compatible contract and can be read [here](https://goerli.arbiscan.io/address/0xC3d3656868594db09abD410821c9F9ab9812B4d1#code). Click **Next**.
+
+   <ClickToZoom src="/images/automation/gs_clu_contract_address.png" />
+
+5. Enter an _Upkeep name_, your public key address under _Admin Address_, 500000 under _Gas limit_, and 0.1 under _Starting balance (LINK)_.
+
+6. Finally, enter your public key address under _Check data (Hexadecimal)_. This is an example of how we use `checkData`, which is optional static data that you can pass into your upkeep, to ensure your counter increments.
+
+7. Click **Register Upkeep**.
+
+8. After the transaction is complete, you can view the performs for your upkeep in the upkeep details. Your upkeep should perform once every minute and stop after 4 performs, as per the code.
+
+<ClickToZoom src="/images/automation/gs_clu_upkeep_details.png" />
+
+You have successfully automated your first custom logic upkeep. To learn more about creating custom logic upkeeps, read [here](/chainlink-automation/register-upkeep).
+
+## Log trigger
+
+**Increment an on-chain counter using a log as trigger.**
+
+1. Navigate to the [Chainlink Automation app](https://automation.chain.link/) and connect to **Arbitrum Goerli** in the top dropdown menu.
+
+2. If your wallet is not yet connected, do so now. You may also need to fetch Arbitrum Goerli testnet link [here](https://faucets.chain.link/arbitrum-goerli).
+
+3. Now select **Register new Upkeep** and select **log logic** trigger.
+
+4. Under _Contract to automate_, enter `0xcf39b55F3E583DdEc8D418dB4708A71aA8453a83`. This is a simple `iLogAutomation-compatible` contract example that will increment a counter when a log is detected. The code is [here](https://goerli.arbiscan.io/address/0xcf39b55F3E583DdEc8D418dB4708A71aA8453a83#code). Click **Next**.
+
+5. Under _Contract emitting logs_, enter `0xeB4ABE57c2ba0A467273f9b7fDed130AD863e923`. This is the contract Automation will listen to for emitted logs. The code is [here](https://goerli.arbiscan.io/address/0xeB4ABE57c2ba0A467273f9b7fDed130AD863e923#code). Click **Next**.
+
+   <ClickToZoom src="/images/automation/gs_ltu_log_trigger_details.png" />
+
+6. Under _Emitted log_ select **Bump** from the dropdown menu. This is the log signature Automation will look for.
+
+7. _Log index topic filters_ are optional filters to narrow the logs you want to trigger your upkeep. For our example enter your public key address under _addr_ and leave the _num_ field empty. Later when you call the _bump_ function to emit the log, your `msg.Sender` address will be emitted in the log, triggering your upkeep. Click **Next**.
+
+   <ClickToZoom src="/images/automation/gs_ltu_emit_log_details.png" />
+
+8. Enter an _Upkeep name_, your public key address under _Admin Address_, 500000 under _Gas limit_, and 0.1 under _Starting balance (LINK)_.
+
+9. Click **Register Upkeep** and wait for it to finish.
+
+10. To trigger your upkeep call call _bump_ on the trigger contract by navigating to the Arbitrum Goerli [scanner](https://goerli.arbiscan.io/address/0xeB4ABE57c2ba0A467273f9b7fDed130AD863e923#writeContract), connecting your wallet and executing the bump function. You can observe your upkeep's perform in the Automation dashboard.
+
+You have sucessfully automated your first log trigger upkeep. To learn more about creating log trigger upkeeps, read [here](/chainlink-automation/log-trigger).
+
+## Supported networks and costs
+
+For a list of blockchains that are supported by Chainlink Automation, see the [Supported Networks](/chainlink-automation/supported-networks) page. To learn more about the cost of using Chainlink Automation, see the [Automation Economics](/chainlink-automation/automation-economics) page.
+
+## Contact us
+
+For help with your specific use case, [contact us](https://chain.link/contact?ref_id=Automation) to connect with one of our Solutions Architects. You can also ask questions about Chainlink Automation on [Stack Overflow](https://stackoverflow.com/questions/ask?tags=chainlink) or the [#automation channel](https://discord.com/channels/592041321326182401/821350860302581771) in our [Discord server](https://discord.gg/qj9qarT). [Utility contracts](/chainlink-automation/tutorials/eth-balance) can also help you get started quickly.
