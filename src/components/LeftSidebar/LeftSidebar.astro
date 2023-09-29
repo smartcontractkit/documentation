@@ -37,20 +37,7 @@ const currentPageMatch = removeSlashes(currentPage.slice(1))
 ---
 
 <nav aria-labelledby="grid-left">
-  <ul id="mobile-menu" class="nav-groups" style="padding-bottom: var(--doc-padding);">
-    <h2 class="nav-group-title">NAVIGATION</h2>
-    {
-      MENU.en.map((child) => (
-        <li style="padding: 0;">
-          <a class="nav-link" href={child.link} style="font-size: 16px">
-            {child.text}
-          </a>
-        </li>
-      ))
-    }
-  </ul>
-  <hr class="menu-separator" />
-  <ul class="nav-groups">
+  <ul class="nav-groups" data-sticky>
     {
       sidebarSections.map((s: { parentSection: Sections; contents: SectionContent[]; section: Sections }) => (
         <li aria-hidden={section === "global"} class={s.parentSection ? `parent-${s.parentSection}` : ""}>
@@ -98,10 +85,6 @@ const currentPageMatch = removeSlashes(currentPage.slice(1))
 </nav>
 
 <style>
-  .menu-separator {
-    border-top: 1px solid var(--theme-divider);
-  }
-
   .nav-groups {
     padding: var(--doc-padding) var(--doc-padding) calc(var(--doc-padding) + var(--space-24x));
     max-height: 100vh;
@@ -189,6 +172,7 @@ const currentPageMatch = removeSlashes(currentPage.slice(1))
   @media (min-width: 50em) {
     nav {
       width: 230px;
+      padding-bottom: calc(2 * var(--doc-padding));
     }
 
     .nav-link {
@@ -197,7 +181,7 @@ const currentPageMatch = removeSlashes(currentPage.slice(1))
 
     .nav-groups {
       padding: var(--doc-padding);
-      margin-bottom: var(--doc-padding);
+      padding-bottom: 0;
     }
 
     #mobile-menu,
