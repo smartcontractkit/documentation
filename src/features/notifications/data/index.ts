@@ -1,12 +1,6 @@
 import { BannerContent } from "../components/HeaderBanner"
 
-/*
- * Set this variable to null to hide the notification
- */
-
-// export const NotificationData: BannerContent | null = null
-
-export const NotificationData: BannerContent | null = {
+export const NotificationData: BannerContent = {
   description: "Join us at SmartCon 2023—where Web3 gets real.",
   type: "info",
   linkText: "Get your ticket.",

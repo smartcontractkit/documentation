@@ -24,7 +24,7 @@ export const SearchModal = ({ showModal, onClose }: { showModal: boolean; onClos
     >
       <div
         className={styles.searchWrapper}
-        onClick={(e) => e.stopPropagation()} // Stops us from hiding modal when clicks are to AlgoveraSearch
+        onClick={(e) => e.stopPropagation()} // Stops us from closing modal when clicks are to AlgoveraSearch
       >
         <AlgoveraSearch
           apiKey="e32fe1586cebb937a9287bf5561edfb62907f6074fc43b9201a305b20e881a5d"
