@@ -526,6 +526,15 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
+      section: "Examples",
+      contents: [
+        {
+          title: "Functions Demo App",
+          url: "quickstarts/functions-demo-app",
+        },
+      ],
+    },
+    {
       section: "Resources",
       contents: [
         {
