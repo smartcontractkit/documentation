@@ -70,7 +70,7 @@ const TableOfContents: FunctionalComponent<{
   }, [$shouldUpdateToc, headings])
 
   return (
-    <nav className={styles.toc}>
+    <nav className={styles.toc} data-sticky>
       <h2 className={styles.heading}>On this page</h2>
       <ul>
         {headings &&
