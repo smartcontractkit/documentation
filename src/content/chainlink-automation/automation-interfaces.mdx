@@ -18,16 +18,16 @@ Your Automation-compatible contracts may use the following interfaces. You can f
 - If you want to call a function just based on time, consider using a [time-based upkeep](/chainlink-automation/job-scheduler).
 - If you want to use Automation with Data Streams, use [`StreamsLookupCompatibleInterface`](#streamslookupcompatibleinterface) interface.
 
-## `ILogAutomation`
+## ILogAutomation
 
 Below is an outline of function parameters for functions found in [`ILogAutomation.sol`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/automation/interfaces/ILogAutomation.sol). To use log triggers, you will need to implement this interface in your smart contract. Click on the functions below to understand the parameters:
 
-| Function Name                                               | Description                                                                            |
-| ----------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| [`checkLog`](#checklog-function)                            | Simulates off-chain once a log that matches log specifications is emitted.             |
-| [`performUpkeep`](#performupkeep-function-for-log-triggers) | Contains the logic that should be executed on-chain when `checkUpkeep` returns `true`. |
+| Function Name   | Description                                                                            |
+| --------------- | -------------------------------------------------------------------------------------- |
+| `checkLog`      | Simulates off-chain once a log that matches log specifications is emitted.             |
+| `performUpkeep` | Contains the logic that should be executed on-chain when `checkUpkeep` returns `true`. |
 
-### `checkLog` function
+### checkLog function
 
 `checkLog` is the initial `view` function that will be simulated off-chain once a log that matches log specification has been emmitted. It should parse the log data and trigger an action. For example, it can trigger the [retrieval of Data Streams reports](/chainlink-automation/streams-lookup#code-example).
 
@@ -59,7 +59,7 @@ function checkLog(
   {...}
 ```
 
-### `performUpkeep` function for log triggers
+### performUpkeep function for log triggers
 
 This function contains the code that will be executed on-chain to finalize the trade.
 
@@ -69,20 +69,20 @@ This function contains the code that will be executed on-chain to finalize the t
 | ------------- | ------- | ------------------------------------------------------------------------------------------------ | ------------------ |
 | `performData` | `bytes` | Data encoded in the `oracleCallback` function that will be used to execute the function on-chain | bytes              |
 
-## `AutomationCompatibleInterface`
+## AutomationCompatibleInterface
 
 [`AutomationCompatibleInterface.sol`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/automation/interfaces/AutomationCompatibleInterface.sol) is used to create and register upkeeps using custom logic triggers. Click on one of the functions below to understand its parameters and limits.
 
-| Function Name                                                        | Description                                                                                           |
-| -------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| [`checkUpkeep`](#checkupkeep-function)                               | Runs off-chain at every block to determine if the `performUpkeep` function should be called on-chain. |
-| [`performUpkeep`](#performupkeep-function-for-custom-logic-triggers) | Contains the logic that should be executed on-chain when `checkUpkeep` returns true.                  |
+| Function Name   | Description                                                                                           |
+| --------------- | ----------------------------------------------------------------------------------------------------- |
+| `checkUpkeep`   | Runs off-chain at every block to determine if the `performUpkeep` function should be called on-chain. |
+| `performUpkeep` | Contains the logic that should be executed on-chain when `checkUpkeep` returns true.                  |
 
-### `checkUpkeep` function
+### checkUpkeep function
 
 This function contains the logic that runs off-chain during every block as an [`eth_call`](https://eth.wiki/json-rpc/API#eth_call) to determine if `performUpkeep` should be executed on-chain. To reduce on-chain gas usage, attempt to do your gas intensive calculations off-chain in `checkUpkeep` and pass the result to `performUpkeep` on-chain.
 
-#### `checkUpkeep` gas limits
+#### checkUpkeep gas limits
 
 The `checkUpkeep` function is subject to the `checkGasLimit` in the [registry configuration](/chainlink-automation/supported-networks/#configurations).
 
@@ -98,14 +98,14 @@ Below are the parameters and return values of the `checkUpkeep` function. Click 
 
 **Parameters:**
 
-- [`checkData`](#checkdata): Fixed and specified at upkeep registration and used in every `checkUpkeep`. Can be empty (0x).
+- `checkData`: Fixed and specified at upkeep registration and used in every `checkUpkeep`. Can be empty (0x).
 
 **Return Values:**
 
 - `upkeepNeeded`: Boolean that when True will trigger the on-chain `performUpkeep` call.
-- [`performData`](#performdata): Bytes that will be used as input parameter when calling `performUpkeep`. If you would like to encode data to decode later, try `abi.encode`.
+- `performData`: Bytes that will be used as input parameter when calling `performUpkeep`. If you would like to encode data to decode later, try `abi.encode`.
 
-#### `checkData`
+#### checkData
 
 You can pass information into your `checkUpkeep` function from your [upkeep registration](/chainlink-automation/register-upkeep) to execute different code paths. For example, to check the balance on an specific address, set the `checkData` to abi encode the address. To learn how to create flexible upkeeps with checkData, please see out [flexible upkeeps](/chainlink-automation/flexible-upkeeps) page.
 
@@ -121,17 +121,17 @@ Tips on using `checkData`:
 
   **Example**: You could support multiple types of upkeep within a single contract and pass a function selector through the `checkData` function.
 
-#### `performData`
+#### performData
 
 The response from `checkUpkeep` is passed to the `performUpkeep` function as `performData`. This allows you to perform complex and gas intensive calculations as a simulation off-chain and only pass the needed data on-chain.
 
 You can create a highly flexible off-chain computation infrastructure that can perform precise actions on-chain by using `checkData` and `performData`. Both of these computations are entirely programmable.
 
-### `performUpkeep` function for custom logic triggers
+### performUpkeep function for custom logic triggers
 
 When `checkUpkeep` returns `upkeepNeeded == true`, the Automation node broadcasts a transaction to the blockchain to execute your `performUpkeep` function on-chain with `performData` as an input.
 
-#### `performUpkeep` gas limits
+#### performUpkeep gas limits
 
 During registration you have to specify the maximum gas limit that we should allow your contract to use. We simulate `performUpkeep` during `checkUpkeep` and if the gas exceeds this limit the function will not execute on-chain. One method to determine your upkeep's gas limit is to simulate the `performUpkeep` function and add enough overhead to take into account increases that might happen due to changes in `performData` or on-chain data. The gas limit you specify cannot exceed the `performGasLimit` in the [configuration of the registry](/chainlink-automation/supported-networks/#configurations).
 
@@ -143,9 +143,9 @@ function performUpkeep(bytes calldata performData) external override;
 
 **Parameters:**
 
-- [`performData`](#performdata): Data which was passed back from the `checkData` simulation. If it is encoded, it can easily be decoded into other types by calling `abi.decode`. This data should always be validated against the contract's current state.
+- `performData`: Data which was passed back from the `checkData` simulation. If it is encoded, it can easily be decoded into other types by calling `abi.decode`. This data should always be validated against the contract's current state.
 
-#### `performData`
+#### performData
 
 You can perform complex and broad off-chain computation, then execute on-chain state changes on a subset that meet your conditions. This can be done by passing the appropriate inputs within `performData` based on the results from your `checkUpkeep`. This pattern can greatly reduce your on-chain gas usage by narrowing the scope of work intelligently in your own Solidity code.
 
@@ -153,16 +153,16 @@ You can perform complex and broad off-chain computation, then execute on-chain s
   For example, if you have a "top up" contract that ensures several hundred account balances never decrease below a threshold, pass the list of accounts that meet the conditions so that the `performUpkeep` function validates and tops up only a small subset of the accounts.
 - **Identify the subset of states that must be updated**: If your contract maintains complicated objects such as arrays and structs, or stores a lot of data, you should read through your storage objects within your `checkUpkeep` and run your proprietary logic to determine if they require updates or maintenance. After that is complete, you can pass the known list of objects that require updates through the `performData` function.
 
-## `StreamsLookupCompatibleInterface`
+## StreamsLookupCompatibleInterface
 
-To use Data Streams with Automation, your contract must be [Automation-compatible](/chainlink-automation/compatible-contracts) and include [`StreamsLookupCompatibleInterface.sol`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/automation/interfaces/StreamsLookupCompatibleInterface.sol). This interface fetches and processes Data Streams reports. Click on the functions below to view their parameters and outputs.
+To use Data Streams with Automation, your contract must be [Automation-compatible](/chainlink-automation/compatible-contracts) and include a `StreamsLookupCompatibleInterface` interface. This interface fetches and processes Data Streams reports.
 
-| Function Name                                    | Description                                                                                                               |
-| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------- |
-| [`StreamsLookup` revert`](#streamslookup-revert) | Triggers the retrieval of specified reports.                                                                              |
-| [`checkCallback`](#checkcallback-function)       | Simulates off-chain to receive signed reports and conduct final parsing before sending data on-chain via `performUpkeep`. |
+| Function Name          | Description                                                                                                               |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `StreamsLookup` revert | Triggers the retrieval of specified reports.                                                                              |
+| `checkCallback`        | Simulates off-chain to receive signed reports and conduct final parsing before sending data on-chain via `performUpkeep`. |
 
-### `StreamsLookup` revert
+### StreamsLookup revert
 
 Automation network will use this revert to trigger fetching of the specified reports.
 
@@ -185,7 +185,7 @@ The fetched signed reports will be provided to the user in [`checkCallback`](#ch
 | `values`      | `bytes[]` | List of signed reports fetched from API                        | List of signed reports `values[0], values[1]…` ordered to match order in feeds |
 | `extraData`   | `bytes`   | Bytes data sent as part of original MercuryLookup revert error | e.g. can send log data if you want to decode to use                            |
 
-### `checkCallback` function
+### checkCallback function
 
 This is a `view` function that will be simulated off-chain to receive the signed reports and conduct any final parsing before sending data on-chain via `performUpkeep`. Inputs will match outputs of the `oracleLookup` revert.
 
@@ -202,20 +202,3 @@ This is a `view` function that will be simulated off-chain to receive the signed
 | -------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------ |
 | `performData`  | `bytes`   | Data encoded in the `oracleCallback` function that will be used to execute function on-chain, e.g. encode signed reports and log data if need be | `bytes`            |
 | `upkeepNeeded` | `boolean` | When set to `true` this will trigger the `performUpkeep` function to be executed on-chain                                                        | `true` of `false`  |
-
-#### Example
-
-```solidity
-// checkCallback - extra call back for user to process API data
-// will be performed off-chain e.g. simulated and response sent on-chain
-function checkCallback(
-    bytes[] memory values,
-    bytes memory extraData
-  ) external view returns (bool upkeepNeeded, bytes memory performData); {
-		// each requested report can be accessed via values[0], values[1], ... in the order provided
-		...
-		//encode to send all reports and extraData to performUpkeep (thus on-chain)
-		bytes memory performData = abi.encode(values, extraData)
-		return (true, extraData);
-	}
-```

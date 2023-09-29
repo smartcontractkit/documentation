@@ -34,7 +34,7 @@ export const MENU: MenuItems = {
       section: "vrf",
     },
     {
-      text: "Data-Streams",
+      text: "Data Streams",
       link: "/data-streams",
       section: "dataStreams",
     },

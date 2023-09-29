@@ -207,6 +207,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "Stream IDs",
           url: "data-streams/stream-ids",
         },
+        {
+          title: "Release Notes",
+          url: "data-streams/stream-ids",
+        },
       ],
     },
     {
@@ -215,6 +219,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Report Schema",
           url: "data-streams/reference/report-schema",
+        },
+        {
+          title: "Interfaces",
+          url: "data-streams/reference/interfaces",
         },
       ],
     },
