@@ -5,6 +5,9 @@ import SkipToContent from "./SkipToContent.astro"
 import SidebarToggle from "./SidebarToggle.tsx"
 import Search from "./Search/Search.tsx"
 import NotificationBanner from "~/features/notifications/components/NotificationBanner.astro"
+import * as Checkbox from "@radix-ui/react-checkbox"
+import { withReact } from "./ReactWrapper"
+import { NavBar } from "@chainlink/components"
 
 export type Props = {
   frontmatter?: Frontmatter
@@ -12,6 +15,8 @@ export type Props = {
 const { frontmatter } = Astro.props
 
 const section = frontmatter?.section ?? undefined
+
+const WrappedNavBar = withReact(NavBar)
 ---
 
 <!-- Google Tag Manager (noscript) -->
@@ -23,183 +28,186 @@ const section = frontmatter?.section ?? undefined
 <!-- End Google Tag Manager (noscript) -->
 <header>
   <SkipToContent />
-  <nav class="nav-wrapper" title="Top Navigation">
-    <div class="logo flex">
-      <a href="/">
-        <img src="/chainlink-docs.svg" style="height:40px; width: 183px" alt={CONFIG.SITE.title ?? "Documentation"} />
-      </a>
-    </div>
-    <div class="navbar">
-      {
+
+  <!-- This breaks-->
+  <!-- <NavBar app="Docs" path="'" /> -->
+
+  <WrappedNavBar app={"Docs"} />
+
+  <Checkbox.Root client:only="preact">
+    <Checkbox.Indicator client:only="preact" />
+  </Checkbox.Root>
+  <!-- {
         MENU.en.map((link) => (
           <a id={link.section} class="nav-link" href={link.link} aria-current={link.section === section}>
             {link.text}
           </a>
         ))
-      }
-    </div>
+      } -->
 
-    {
-      CONFIG.ALGOLIA && (
-        <div class="search-item">
-          <Search client:visible />
-        </div>
-      )
-    }
-    <a href="https://github.com/smartcontractkit/documentation" class="github-url" target="_blank" rel="nofollow">
-      <img src="/assets/github.svg" />
-    </a>
-    <div class="menu-toggle">
-      <SidebarToggle client:idle />
-    </div>
-    <div id="weglot"></div>
-  </nav>
-</header>
-<NotificationBanner />
-
-<style>
-  header {
-    z-index: 11;
-    height: var(--theme-navbar-height);
-    width: 100%;
-    background-color: var(--white);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: sticky;
-    top: 0;
+  {
+    CONFIG.ALGOLIA && (
+      <div class="search-item">
+        <Search client:visible />
+      </div>
+    )
   }
+  <a href="https://github.com/smartcontractkit/documentation" class="github-url" target="_blank" rel="nofollow">
+    <img src="/assets/github.svg" />
+  </a>
+  <div class="menu-toggle">
+    <SidebarToggle client:idle />
+  </div>
+  <div id="weglot"></div>
 
-  .nav-link {
-    color: var(--color-text-primary);
-    white-space: nowrap;
-  }
+  <NotificationBanner />
 
-  .nav-link:hover {
-    color: var(--color-text-link);
-  }
-
-  .logo {
-    display: flex;
-    overflow: hidden;
-    width: 183px;
-    height: 40px;
-    font-size: 2rem;
-    flex-shrink: 0;
-    font-weight: 600;
-    line-height: 1;
-    color: hsla(var(--color-base-white), 100%, 1);
-    gap: 0.25em;
-    z-index: -1;
-    flex-grow: 1;
-  }
-
-  .logo a {
-    display: flex;
-    padding: 0.5em 0.25em;
-    margin: -0.5em -0.25em;
-    text-decoration: none;
-    font-weight: bold;
-  }
-
-  .logo a {
-    transition: color 100ms ease-out;
-    color: var(--theme-text);
-  }
-
-  .logo a:hover,
-  .logo a:focus {
-    color: var(--theme-text-accent);
-  }
-
-  .logo h1 {
-    display: none;
-    font: inherit;
-    color: inherit;
-    margin: 0;
-  }
-
-  .nav-wrapper {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 1em;
-    width: 100%;
-    max-width: 82em;
-    margin: 0 1rem;
-  }
-  .spacer {
-    display: none;
-    flex-grow: 0.5;
-  }
-  .github-url {
-    display: none;
-  }
-
-  @media (min-width: 50em) {
-    .logo {
-      flex-grow: 0;
-    }
-
-    .spacer {
-      display: block;
-    }
+  <style>
     header {
-      position: static;
-      padding: 1rem 0rem;
+      z-index: 11;
+      height: var(--theme-navbar-height);
+      width: 100%;
+      background-color: var(--white);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: sticky;
+      top: 0;
+    }
+
+    .nav-link {
+      color: var(--color-text-primary);
+      white-space: nowrap;
+    }
+
+    .nav-link:hover {
+      color: var(--color-text-link);
     }
 
     .logo {
-      margin: 0;
-      z-index: 0;
+      display: flex;
+      overflow: hidden;
+      width: 183px;
+      height: 40px;
+      font-size: 2rem;
+      flex-shrink: 0;
+      font-weight: 600;
+      line-height: 1;
+      color: hsla(var(--color-base-white), 100%, 1);
+      gap: 0.25em;
+      z-index: -1;
+      flex-grow: 1;
+    }
+
+    .logo a {
+      display: flex;
+      padding: 0.5em 0.25em;
+      margin: -0.5em -0.25em;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .logo a {
+      transition: color 100ms ease-out;
+      color: var(--theme-text);
+    }
+
+    .logo a:hover,
+    .logo a:focus {
+      color: var(--theme-text-accent);
     }
 
     .logo h1 {
-      display: initial;
-    }
-
-    .menu-toggle {
       display: none;
+      font: inherit;
+      color: inherit;
+      margin: 0;
     }
-  }
 
-  .navbar {
-    display: none;
-  }
-  @media (min-width: 50em) {
-    .navbar {
+    .nav-wrapper {
       display: flex;
-      gap: 1rem;
-      flex-grow: 1;
-      justify-content: center;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 1em;
+      width: 100%;
+      max-width: 82em;
+      margin: 0 1rem;
     }
-    .navbar a[aria-current="true"] {
-      border-bottom: 2px solid var(--color-text-link);
+    .spacer {
+      display: none;
+      flex-grow: 0.5;
     }
     .github-url {
-      width: 24px;
+      display: none;
+    }
+
+    @media (min-width: 50em) {
+      .logo {
+        flex-grow: 0;
+      }
+
+      .spacer {
+        display: block;
+      }
+      header {
+        position: static;
+        padding: 1rem 0rem;
+      }
+
+      .logo {
+        margin: 0;
+        z-index: 0;
+      }
+
+      .logo h1 {
+        display: initial;
+      }
+
+      .menu-toggle {
+        display: none;
+      }
+    }
+
+    .navbar {
+      display: none;
+    }
+    @media (min-width: 50em) {
+      .navbar {
+        display: flex;
+        gap: 1rem;
+        flex-grow: 1;
+        justify-content: center;
+      }
+      .navbar a[aria-current="true"] {
+        border-bottom: 2px solid var(--color-text-link);
+      }
+      .github-url {
+        width: 24px;
+        display: flex;
+      }
+    }
+
+    .search-item {
+      display: none;
+      position: relative;
+      z-index: 10;
       display: flex;
     }
-  }
 
-  .search-item {
-    display: none;
-    position: relative;
-    z-index: 10;
-    display: flex;
-  }
-
-  :global(.search-item > *) {
-    flex-grow: 1;
-  }
-</style>
-
-<script is:inline>
-  window.addEventListener("DOMContentLoaded", (event) => {
-    const parentSection = new URLSearchParams(window.location.search).get("parent") || "global"
-    if (window.location.pathname !== "/" && !document.querySelectorAll('a[aria-current="true"]')[0]) {
-      let elem = document.getElementById(parentSection)
-      elem.setAttribute("aria-current", "true")
+    :global(.search-item > *) {
+      flex-grow: 1;
     }
-  })
-</script>
+  </style>
+
+  <script is:inline>
+    if (typeof window !== "undefined") {
+      window.addEventListener("DOMContentLoaded", (event) => {
+        const parentSection = new URLSearchParams(window.location.search).get("parent") || "global"
+        if (window.location.pathname !== "/" && !document.querySelectorAll('a[aria-current="true"]')[0]) {
+          let elem = document.getElementById(parentSection)
+          elem.setAttribute("aria-current", "true")
+        }
+      })
+    }
+  </script>
+</header>
