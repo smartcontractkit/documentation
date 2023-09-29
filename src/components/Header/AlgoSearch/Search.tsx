@@ -3,6 +3,7 @@ import { GlobalHotKeys } from "react-hotkeys"
 import { AlgoveraSearch } from "@algoveraai/search"
 import styles from "./search.module.css"
 import { SearchButton } from "./SearchButton"
+
 const hotKeysMap = {
   toggleModal: "command+k",
 }

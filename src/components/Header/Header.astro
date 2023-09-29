@@ -1,26 +1,14 @@
 ---
-import * as CONFIG from "../../config"
-import { MENU } from "../../config/index"
-import SkipToContent from "./SkipToContent.astro"
-import SidebarToggle from "./SidebarToggle"
-// import Search from "./Search/Search"
 import NotificationBanner from "~/features/notifications/components/NotificationBanner.astro"
-import { Sections } from "~/content/config"
-import { Search as AlgoSearch } from "../AlgoSearch/Search"
-import { NavBar } from "@chainlink/components"
-import { Header as H } from "./HeaderC"
-
-export type Props = {
-  section?: Sections
-}
-const { section } = Astro.props
+import { NavBar } from "./NavBar"
 
 // TODO: Replace env for imgix in utils
 // TODO: Fix top of sticky elements on mobile (set new height for --theme-navbar-height(?))
 // TODO: Work with collapsable property (use grid somehow(?))
 // TODO: Work with topLevelNavigation (use next/router(?))
-// TODO: Figure out the right client directive
 // TODO: Hide the LeftSidebar content on mobile (docs layout)
+
+const path = Astro.url.pathname
 ---
 
 <!-- Google Tag Manager (noscript) -->
@@ -30,6 +18,5 @@ const { section } = Astro.props
   width="0"
   style="display:none;visibility:hidden"></iframe>
 <!-- End Google Tag Manager (noscript) -->
-
-<H client:idle />
+<NavBar path={path} client:only="react" />
 <NotificationBanner />
