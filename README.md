@@ -4,6 +4,15 @@ Welcome to Chainlink developer documentation repository. This repository is the 
 
 This documentation is open source. If you want to contribute tutorials or improvements, see the [Contributing](https://github.com/smartcontractkit/documentation/blob/main/CONTRIBUTING.md) guide.
 
+> [!NOTE]
+> The code samples in this documentation are examples for using Chainlink products and services and are provided to help you understand how to
+> interact with Chainlink's systems and services so that you can integrate them into your own. These templates are provided
+> "AS IS" and "AS AVAILABLE" without warranties of any kind, have not been audited, and may be missing key checks or
+> error handling to make the usage of the product more clear. Do not use the example code in a production
+> environment without completing your own audits and application of best practices. Neither Chainlink Labs, the
+> Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs that are generated due to
+> errors in code.
+
 ## Developing
 
 To run a local development environment, use the following command:
