@@ -178,6 +178,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               title: "Chainlink Hardhat Starter Kit",
               url: "quickstarts/chainlink-hardhat-starter-kit?parent=dataFeeds",
             },
+            {
+              title: "Dev3 Chainlink SDK",
+              url: "quickstarts/dev3-chainlink-sdk?parent=dataFeeds",
+            },
           ],
         },
         {
@@ -352,6 +356,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             {
               title: "Chainlink Hardhat Starter Kit",
               url: "quickstarts/chainlink-hardhat-starter-kit?parent=automation",
+            },
+            {
+              title: "Dev3 Chainlink SDK",
+              url: "quickstarts/dev3-chainlink-sdk?parent=automation",
             },
           ],
         },
@@ -533,6 +541,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               title: "Chainlink Hardhat Starter Kit",
               url: "quickstarts/chainlink-hardhat-starter-kit?parent=chainlinkFunctions",
             },
+            {
+              title: "Dev3 Chainlink SDK",
+              url: "quickstarts/dev3-chainlink-sdk?parent=chainlinkFunctions",
+            },
           ],
         },
         {
@@ -707,6 +719,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             {
               title: "Chainlink Hardhat Starter Kit",
               url: "quickstarts/chainlink-hardhat-starter-kit?parent=vrf",
+            },
+            {
+              title: "Dev3 Chainlink SDK",
+              url: "quickstarts/dev3-chainlink-sdk?parent=vrf",
             },
           ],
         },
@@ -883,6 +899,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             {
               title: "Chainlink Hardhat Starter Kit",
               url: "quickstarts/chainlink-hardhat-starter-kit?parent=ccip",
+            },
+            {
+              title: "Dev3 Chainlink SDK",
+              url: "quickstarts/dev3-chainlink-sdk?parent=ccip",
             },
           ],
         },
@@ -1200,6 +1220,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             {
               title: "Chainlink Hardhat Starter Kit",
               url: "quickstarts/chainlink-hardhat-starter-kit",
+            },
+            {
+              title: "Dev3 Chainlink SDK",
+              url: "quickstarts/dev3-chainlink-sdk",
             },
           ],
         },
