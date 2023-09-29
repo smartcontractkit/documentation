@@ -120,19 +120,6 @@ const includeLinkToWalletScript = !!Astro.props?.frontmatter?.metadata?.linkToWa
     <script define:vars={{ includeLinkToWalletScript }}>
       window.includeLinkToWalletScript = includeLinkToWalletScript
     </script>
-    <script define:vars={{ frontmatter }}>
-      const persistedArticle = {
-        title: frontmatter.title,
-        url: frontmatter.url,
-      }
-
-      const recentArticles = JSON.parse(localStorage.getItem("recentArticles") || "[]")
-
-      if (!recentArticles.some((article) => article.url === persistedArticle.url)) {
-        recentArticles.unshift(persistedArticle)
-        localStorage.setItem("recentArticles", JSON.stringify(recentArticles.slice(0, 5)))
-      }
-    </script>
   </head>
 
   <body>
