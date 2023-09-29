@@ -355,10 +355,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "Manage your Upkeeps",
           url: "chainlink-automation/manage-upkeeps",
         },
-        {
-          title: "Use Automation with Data Streams",
-          url: "chainlink-automation/streams-lookup",
-        },
       ],
     },
     {
