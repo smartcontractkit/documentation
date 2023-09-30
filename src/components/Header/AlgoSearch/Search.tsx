@@ -4,14 +4,16 @@ import { SearchButton } from "./SearchButton"
 import { SearchModal } from "./SearchModal"
 
 const hotKeysMap = {
-  toggleModal: "command+k",
+  cmdK: "command+k",
+  ctrlK: "ctrl+k",
 }
 
 export const Search = () => {
   const [showModal, setShowModal] = React.useState(false)
 
   const hotkeyHandlers = {
-    toggleModal: () => setShowModal((s) => !s),
+    cmdK: () => setShowModal((s) => !s),
+    ctrlK: () => setShowModal((s) => !s),
   }
 
   return (
