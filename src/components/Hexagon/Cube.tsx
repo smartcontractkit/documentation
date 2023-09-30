@@ -1,4 +1,5 @@
-import React, { CSSProperties } from "react"
+/** @jsxImportSource preact */
+import { CSSProperties } from "react"
 import cubeStyles from "./Cube.module.css"
 
 export interface CubeCSSProperties extends CSSProperties {
