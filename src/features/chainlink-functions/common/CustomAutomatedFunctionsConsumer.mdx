@@ -1,0 +1,57 @@
+import { CodeSample } from "@components"
+
+<CodeSample src="samples/ChainlinkFunctions/CustomAutomatedFunctionsConsumerExample.sol" />
+
+- To write an automated Chainlink Functions consumer contract, your contract must import [FunctionsClient.sol](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/functions/dev/1_0_0/FunctionsClient.sol). You can read the API reference of [FunctionsClient](/chainlink-functions/api-reference/functions-client).
+
+  The contract is available in an NPM package, so you can import it from within your project.
+
+  ```
+  import {FunctionsClient} from "@chainlink/contracts/src/v0.8/functions/dev/v1_0_0/FunctionsClient.sol";
+  ```
+
+- To write a compatible Automations contract, your contract must import [AutomationCompatibleInterface.sol](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/automation/AutomationCompatible.sol).
+
+  The contract is available in an NPM package, so you can import it from within your project.
+
+  ```
+  import {AutomationCompatibleInterface} from "@chainlink/contracts/src/v0.8/automation/AutomationCompatible.sol";
+  ```
+
+- The `lastBlockNumber` is stored in the contract. It represents the block number of the last time `performUpkeep` was triggered.
+
+- The encoded `request`, `subscriptionId`, `gasLimit`, and `jobId` are stored in the contract storage. The contract owner sets these variables by calling the `updateRequest` function. **Note**: The request (source code, secrets, if any, and arguments) is encoded off-chain.
+
+- The latest request id, latest received response, and latest received error (if any) are defined as state variables:
+
+  ```
+  bytes32 public s_lastRequestId;
+  bytes public s_lastResponse;
+  bytes public s_lastError;
+  ```
+
+- We define the `Response` event that your smart contract will emit during the callback
+
+  ```
+  event Response(bytes32 indexed requestId, bytes response, bytes err);
+  ```
+
+- Pass the router address for your network when you deploy the contract:
+
+  ```
+  constructor(address router) FunctionsClient(router)
+  ```
+
+- The three remaining functions are:
+
+  - `checkUpkeep` for checking off-chain if `performUpkeep` should be executed. `performUpkeep` should only be executed if the current block number is higher than the block number of the last execution.
+
+  - `performUpkeep`: Executed by Chainlink Automation when `checkUpkeep` returns `true`. This function sends the request (encoded in `bytes`) to the router by calling the `FunctionsClient` `sendRequest` function.
+
+  - `fulfillRequest` to be invoked during the callback. This function is defined in `FunctionsClient` as `virtual` (read `fulfillRequest` [API reference](/chainlink-functions/api-reference/functions-client/#fulfillrequest)). So, your smart contract must override the function to implement the callback. The implementation of the callback is straightforward: the contract stores the latest response and error in `s_lastResponse` and `s_lastError` before emitting the `Response` event.
+
+    ```
+    s_lastResponse = response;
+    s_lastError = err;
+    emit Response(requestId, s_lastResponse, s_lastError);
+    ```

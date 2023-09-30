@@ -14,14 +14,9 @@ export const MENU: MenuItems = {
       section: "dataFeeds",
     },
     {
-      text: "VRF",
-      link: "/vrf/v2/introduction",
-      section: "vrf",
-    },
-    {
-      text: "Automation",
-      link: "/chainlink-automation/introduction",
-      section: "automation",
+      text: "Functions",
+      link: "/chainlink-functions",
+      section: "chainlinkFunctions",
     },
     {
       text: "CCIP",
@@ -29,9 +24,14 @@ export const MENU: MenuItems = {
       section: "ccip",
     },
     {
-      text: "Functions",
-      link: "/chainlink-functions",
-      section: "chainlinkFunctions",
+      text: "Automation",
+      link: "/chainlink-automation/introduction",
+      section: "automation",
+    },
+    {
+      text: "VRF",
+      link: "/vrf/v2/introduction",
+      section: "vrf",
     },
     {
       text: "Nodes",
