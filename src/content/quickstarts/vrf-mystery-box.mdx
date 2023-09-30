@@ -50,12 +50,9 @@ Before you start this tutorial, complete the following items:
 - [Create an SnowTrace API key](https://docs.snowtrace.io/getting-started/viewing-api-usage-statistics) if you do not already have one. This is used to verifiy your contracts onchain.
 - Create an account with [Infura](https://www.infura.io/) or [Alchemy](https://www.alchemy.com/) to use as an RPC endpoint if you do not already have one.
 
-## Setup the example
+## Steps to implement
 
-This tutorial requires several setup steps:
-
-1. [Clone the example repo and install dependencies](#clone-the-example-repo-and-install-dependencies)
-1. [Configure the Hardhat project](#configure-the-hardhat-project)
+This tutorial requires several setup steps to configure, test, and deploy the contracts.
 
 ### Clone the example repo and install dependencies
 
@@ -108,17 +105,13 @@ Next, set the parameters for the Hardhat project.
 
 [Hardhat](https://hardhat.org/) is an Ethereum development environment that is used here to configure and deploy the mystery box contract. You need the following information:
 
-- The [RPC URL for your deployment network](https://hardhat.org/hardhat-runner/docs/config#json-rpc-based-networks), using an [RPC node provider](https://ethereum.org/en/developers/docs/nodes-and-clients/nodes-as-a-service/) such as [Infura](https://www.infura.io/) or [Alchemy](https://www.alchemy.com/).
-- The [private key for your deployer account](https://hardhat.org/hardhat-runner/docs/guides/verifying#deploying-and-verifying-a-contract-in-the-sepolia-testnet). If your deployer account is in MetaMask, [export your private key from MetaMask](https://support.metamask.io/hc/en-us/articles/360015289632-How-to-export-an-account-s-private-key).
-- An [Etherscan API key](https://hardhat.org/hardhat-runner/docs/guides/verifying#getting-an-api-key-from-etherscan) for contract verification. [Create an Etherscan API key](https://docs.etherscan.io/getting-started/viewing-api-usage-statistics) if you do not already have one.
-
 | Parameter         | Description                                                                                                                                                                                          | Example                                               |
 | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
 | `FUJI_URL`        | The RPC URL for Avalanche Fuji testnet. You can use the default, or use your own URL. If you later decide to use Polygon Mumbai or another testnet, set the appropriate parameter from the template. | `https://avalanche-mainnet.infura.io/v3/your-api-key` |
 | `PRIVATE_KEY`     | The private key of the account you want to deploy from.                                                                                                                                              | `0xabc123abc123abc123abc123abc123...`                 |
 | `SCANNER_API_KEY` | The API key for SnowTrace used for contract verification. If you decide to deploy on Polygon Mumbai or another testnet, use that key instead.                                                        | `ABC123ABC123ABC123ABC123ABC123ABC1`                  |
 
-## Test
+### Test the contracts locally
 
 To run the unit tests, run the following command:
 
@@ -138,10 +131,6 @@ For coverage reports, run the following command:
 npm run coverage
 ```
 
-## Deploy and run the example mystery box contract
-
-Now that your example is configured, you can test, deploy, and run the example. Then, switch accounts to act as a user who is minting NFTs.
-
 ### Deploy the example contract
 
 Run the `npx hardhat run` command and replace `<network>` with the network that you want to deploy to. The network must be configured in [`hardhat.config.ts`](https://github.com/smartcontractkit/chainlink-solutions-mysterybox/blob/main/hardhat.config.ts).
@@ -160,91 +149,28 @@ In addition to deploying the contract, the deploy script also completes the foll
 
 1.  Verify the contract on Etherscan. This is important to show users the source code for the contract so they can confirm how it works. If you want to skip this step during testing, comment out the `verify` function in the deploy script.
 
-## Access control for minting
+After the deployment is complete, the terminal prints the link to view your contract on SnowTrace.
 
-You can set up the minting for the mystery box in two modes: private and public. Use these modes to determine which users can mint tokens. The owner account can update this setting after deployment, so you can test the opening functionality privately before making the mystery box available to the public.
+## Run the example
 
-### Enable private minting
+After the contract is deployed, run the example using contract functions on SnowTrace.
 
-The contract is by default in private mode after deployment. This means that only addresses on the allowlist can mint tokens. The list of allowed addresses is stored in a merkle tree. The merkle tree is generated from the address list in `scripts/data/whitelist.json` file.
+1. Open the SnowTrace link from your terminal to view your contract.
+1. On the **Contract** tab, click the **Write Contract** tab to view your contract's write functions.
+1. Click **Connect to Web3** to connect your wallet to SnowTrace so you can run the functions.
+1. Enable public minting:
+1. Open the `setPublicMint` function.
+1. Enter a value of `true`.
+1. Click **Write** to run the function. Approve the transaction in MetaMask.
+1. Mint an NFT to test the contract:
+1. Open the `publicMint` function.
+1. Enter a `publicMint` value of `0.1` AVAX and an ammount of `1`.
+1. Click **Write** to run the function. Approve the transaction in MetaMask.
+1. Reveal the box:
+1. Open the `reveal` function.
+1. Click `reveal` to reveal the mystery box.
+1. After the reveal, you can find the NFT in the token list for your externally owned account (EOA).
 
-Minting tokens in private mode is done by calling the `privateMint` function. The function takes the following parameters:
+## Explore the code
 
-- `amount` The amount of tokens to mint.
-- `proof` The merkle proof for the user's address.
-
-You can generate the Merkle proof locally using [merkletreejs](https://github.com/merkletreejs/merkletreejs):
-
-```js
-merkleTree.getHexProof(keccak256(whitelistedUserAddress))
-```
-
-### Enable public minting
-
-To enable public minting:
-
-1. Leave the `scripts/data/whitelist.json` file empty.
-1. Call the `setPublicMint` function with `true` as the parameter.
-
-Minting tokens in public mode is done by calling the `publicMint` function. The function takes the following parameters:
-
-- `amount` The amount of tokens to mint.
-
-Each address can only mint a maximum of `NFT_MAX_MINT_PER_USER` tokens.
-
-## Metadata
-
-NFT metadata is the standard description of an asset which allows applications (like wallets and marketplaces) to present them with rich data. You can learn more about this in the [Metadata Standards](https://docs.opensea.io/docs/metadata-standards) Guide by OpenSea.
-
-Because of the [randomization technique](https://mirror.xyz/ctor.xyz/ZEY5-wn-3EeHzkTUhACNJZVKc0-R6EsDwwHMr5YJEn0) used, the actual metadata for each token can be known before the reveal. So it is safe to set the `baseURI` in advance.
-
-This creates additional trust for the users because they can verify the metadata before minting.
-
-### Storage options
-
-The metadata for each token is stored in a JSON file and must be hosted somewhere. You can use any storage provider you want. Here are some options:
-
-- Decentralized
-  - [IPFS](https://ipfs.io/)
-  - [Arweave](https://www.arweave.org/)
-  - [Pinata](https://pinata.cloud/)
-- Centralized
-  - [AWS S3](https://aws.amazon.com/s3/)
-  - [Google Cloud Storage](https://cloud.google.com/storage)
-
-Alternatiely, you can build a metadata server that serves the metadata for each token. Here's an example of a [metadata server](https://github.com/ProjectOpenSea/metadata-api-nodejs) built by OpenSea.
-
-## Provenance
-
-The provenance hash is a hash of the collection's metadata. It is used to verify the authenticity of the collection in addition to the metadata known before reveal.
-
-It should be computed off-chain by SHA256 hashing every image, concatenating the hashes and then SHA256 hashing the combined string too. The resulting hash should be set as the provenance hash by calling the `setProvenanceHash` function.
-
-Learn more about the elegance of the provenance hash in this [blog post](https://blog.0xproject.com/the-elegance-of-the-provenance-hash-4d8d9b2a0b0e).
-
-## Reveal
-
-To reveal the NFTs, call the `reveal` function from the owner account. It will create a Chainlink VRF request to generate a random seed.
-
-When the request is fulfilled, the NFTs metadata for each token will be randomized with the seed provided.
-
-The token URI will also start to use the `baseURI` instead of the `unrevealedURI`, so make sure to call the `setBaseURI` function before calling the `reveal` function.
-
-Once the collection is revealed, the minting functions will be disabled.
-
-## Withdraw funds
-
-At any time, the owner can withdraw funds from the collected fees by calling the `withdraw` function. By doing so, the contract balance will be transferred to the owner account.
-
-## Post-deployment configuration
-
-After deployment, you can optionally change some contract parameters by calling the following functions from the owner account:
-
-| Function            | Description                              | Parameters           |
-| ------------------- | ---------------------------------------- | -------------------- |
-| `setBaseURI`        | Set the base URI for the token metadata. | `newBaseURI`         |
-| `setMintFee`        | Set new mint fee.                        | `fee`                |
-| `setWhitelistRoot`  | Set new merkle root for the whitelist.   | `whitelistRoot`      |
-| `setProvenanceHash` | Set new provenance hash.                 | `provenanceHash`     |
-| `setRoyalty`        | Set new royalty receiver and fee.        | `receiver`, `feeBps` |
-| `setPublicMint`     | Enable/disable public minting.           | `publicMintEnabled`  |
+After you complete the example, see the [Mystery Box repository](https://github.com/smartcontractkit/quickstarts-mysterybox/) to learn about more capabilities of this example and how to configure them. For example, you can learn more about the various [Configuration Options](https://github.com/smartcontractkit/quickstarts-mysterybox/#configuration) for this example and modify it to meet the needs of your application.
