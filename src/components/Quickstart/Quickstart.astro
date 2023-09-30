@@ -1,4 +1,9 @@
+---
+import StickyHeaderObserver from "./StickyHeaderObserver"
+---
+
 <article id="article">
+  <StickyHeaderObserver client:media="(min-width: 50em)" />
   <slot />
 </article>
 
@@ -174,13 +179,6 @@
       background: none;
       padding-top: var(--space-5x);
     }
-
-    article .stickyBackground {
-      background: rgb(255, 255, 255, 0.95);
-      background: linear-gradient(0deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.95) 15%);
-      backdrop-filter: blur(0.5px);
-      -webkit-backdrop-filter: blur(0.5px);
-    }
   }
 </style>
 
@@ -218,23 +216,4 @@
   // Grabs mdx headers without getting nested headers in components
   const headers = document.body.querySelectorAll("article > :where(h1, h2, h3, h4)")
   headers.forEach((e) => wrapHeaders(e, ["H1", "H2"].includes(e.nodeName)))
-
-  // Add background to currently sticky header
-  const stickyHeaders = document.body.querySelectorAll("article > section > h2")
-  const observerCallback: IntersectionObserverCallback = (entries) => {
-    for (const entry of entries) {
-      const { isIntersecting, target } = entry
-      if (isIntersecting) {
-        target.classList.add("stickyBackground")
-      } else {
-        target.classList.remove("stickyBackground")
-      }
-    }
-  }
-
-  const stickyHeaderObserver = new IntersectionObserver(observerCallback, {
-    rootMargin: "0% 0% -94%",
-  })
-
-  stickyHeaders.forEach((h) => stickyHeaderObserver.observe(h))
 </script>
