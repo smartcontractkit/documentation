@@ -7,7 +7,15 @@ title: "POST Data to an API"
 import { Aside } from "@components"
 import ChainlinkFunctions from "@features/chainlink-functions/common/ChainlinkFunctions.astro"
 
-This tutorial shows you how to send a request to a Decentralized Oracle Network to call the [Countries information GraphQL API](https://trevorblades.github.io/countries/queries/continent). After [OCR](/chainlink-functions/resources/concepts) completes off-chain computation and aggregation, it returns the name, capital, and currency for the specified country to your smart contract. Because the endpoint is a GraphQL API, write a function that sends a GraphQL query in a [POST HTTP method](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/POST).
+This tutorial shows you how to send a request to a Decentralized Oracle Network to call the [Countries information GraphQL API](https://trevorblades.github.io/countries/queries/continent). After [OCR](/chainlink-functions/resources/architecture) completes off-chain computation and aggregation, it returns the name, capital, and currency for the specified country to your smart contract. Because the endpoint is a GraphQL API, write a function that sends a GraphQL query in a [POST HTTP method](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/POST).
+
+<Aside type="note">
+  Chainlink Functions is a self-service solution. You must ensure that the data sources or APIs specified in requests
+  are of sufficient quality and have the proper availability for your use case. You are responsible for complying with
+  the licensing agreements for all data providers that you connect with through Chainlink Functions. Violations of data
+  provider licensing agreements or the [terms](https://chain.link/terms) can result in suspension or termination of your
+  Chainlink Functions account.
+</Aside>
 
 <Aside type="note" title="Maximum response size">
   You can return any number of responses as long as they are encoded in a `bytes` response. The maximum response size
@@ -24,174 +32,111 @@ This tutorial shows you how to send a request to a Decentralized Oracle Network 
 
 ## Before you begin
 
-<Aside type="note" title="Request Access">
-  Chainlink Functions is currently in a limited BETA. Apply [here](http://functions.chain.link/) to add your EVM account
-  address to the Allow List.
-</Aside>
-
 1. **[Complete the setup steps in the Getting Started guide](/chainlink-functions/getting-started):** The Getting Started Guide shows you how to set up your environment with the necessary tools for these tutorials. You can re-use the same consumer contract for each of these tutorials.
 
-1. Make sure your subscription has enough LINK to pay for your requests. Read [Get Subscription details](/chainlink-functions/resources/subscriptions#get-subscription-details) to learn how to check your subscription balance. If your subscription runs out of LINK, follow the [Fund a Subscription](/chainlink-functions/resources/subscriptions#fund-a-subscription) guide.
+1. Make sure your subscription has enough LINK to pay for your requests. You can check your subscription details (including the balance in LINK) in the [Chainlink Functions frontend](/chainlink-functions/resources/subscriptions). If your subscription runs out of LINK, follow the [Fund a Subscription](/chainlink-functions/resources/subscriptions#fund-a-subscription) guide.
 
-1. Check out the _tutorials_ branch of the [Chainlink Functions Starter Kit](https://github.com/smartcontractkit/functions-hardhat-starter-kit). You can locate this tutorial in [the _/tutorials/4-post-data_ directory](https://github.com/smartcontractkit/functions-hardhat-starter-kit/tree/tutorials/tutorials/4-post-data).
-
-   ```bash
-   git checkout tutorials
-   ```
+1. You can locate the scripts used in this tutorial in the [_examples/4-post-data_ directory](https://github.com/smartcontractkit/smart-contract-examples/tree/main/functions-examples/examples/4-post-data).
 
 ## Tutorial
 
-This tutorial is configured to get the country name, capital, and currency from [countries.trevorblades.com](https://countries.trevorblades.com/) in one request. For a detailed explanation of the code example, read the [Explanation](#explanation) section.
+This tutorial is configured to get the country name, capital, and currency from [countries.trevorblades.com](https://countries.trevorblades.com/) in one request. For a detailed explanation of the code example, read the [Examine the code](#examine-the-code) section.
 
-- Open `config.js`. The `args` value is `["JP"]` to fetch information about Japan. You can adapt `args` to retrieve information about other countries as well. Read the [Trevorblades API docs](https://github.com/trevorblades/countries) to get the list of supported countries. For more information about the request config file, read the [request config explanation](#configjs).
-- Open `source.js` to analyze the JavaScript source code. Read the [source code explanation](#sourcejs) for a more detailed explanation of the source code file.
+To run the example:
 
-### Simulation
+1. Open the file `request.js`, which is located in the `4-post-data` folder.
+1. Replace the consumer contract address and the subscription ID with your own values.
 
-The [Chainlink Functions Hardhat Starter Kit](https://github.com/smartcontractkit/functions-hardhat-starter-kit) includes a simulator to test your Functions code on your local machine. The `functions-simulate` command executes your code in a local runtime environment and simulates an end-to-end fulfillment. This helps you to fix issues before you submit your functions to a Decentralized Oracle Network.
+   ```javascript
+   const consumerAddress = "0x8dFf78B7EE3128D00E90611FBeD20A71397064D9" // REPLACE this with your Functions consumer address
+   const subscriptionId = 3 // REPLACE this with your subscription ID
+   ```
 
-Run the `functions-simulate` task to run the source code locally and make sure `config.js` and `source.js` are correctly written:
+1. Make a request:
 
-```bash
-npx hardhat functions-simulate --configpath REPLACE_CONFIG_PATH
-```
+   ```shell
+   node examples/4-post-data/request.js
+   ```
 
-Example:
+   The script runs your function in a sandbox environment before making an on-chain transaction:
 
-```text
-$ npx hardhat functions-simulate --configpath tutorials/4-post-data/config.js
-secp256k1 unavailable, reverting to browser version
-
-__Compiling Contracts__
-Nothing to compile
-Duplicate definition of Transfer (Transfer(address,address,uint256,bytes), Transfer(address,address,uint256))
-
-Executing JavaScript request source code locally...
-
-__Console log messages from sandboxed code__
-Get name, capital and currency for country code: JP
-HTTP POST Request to https://countries.trevorblades.com/
-country response { country: { name: 'Japan', capital: 'Tokyo', currency: 'JPY' } }
-
-__Output from sandboxed source code__
-Output represented as a hex string: 0x7b226e616d65223a224a6170616e222c226361706974616c223a22546f6b796f222c2263757272656e6379223a224a5059227d
-Decoded as a string: {"name":"Japan","capital":"Tokyo","currency":"JPY"}
-
-__Simulated On-Chain Response__
-Response returned to client contract represented as a hex string: 0x7b226e616d65223a224a6170616e222c226361706974616c223a22546f6b796f222c2263757272656e6379223a224a5059227d
-Decoded as a string: {"name":"Japan","capital":"Tokyo","currency":"JPY"}
-
-Gas used by sendRequest: 352913
-Gas used by client callback function: 98242
-```
-
-The output of this example tells you that the country name is _Japan_, capital is _Tokyo_, and the currency is _JPY_. Because the final result is a JSON object, convert it to a string and return the `bytes` encoded value `0x7b226e616d65223a224a6170616e222c226361706974616c223a22546f6b796f222c2263757272656e6379223a224a5059227d` in the callback. Read the [source code explanation](#sourcejs) for a more detailed explanation.
-
-### Request
-
-<Aside type="note" title="Reminder">
-  Before you can make a successful request, you must complete the setup steps in the [Before you
-  begin](#before-you-begin) section. Each tutorial is in a separate Git branch and some require unique entries in your
-  `.env.enc` file.
-</Aside>
-
-Send a request to the Decentralized Oracle Network to run the GraphQL query. Run the `functions-request` task with the `subid` (subscription ID) and `contract` parameters. This task passes the JavaScript source code, arguments, and secrets when it calls the `executeRequest` function in your deployed `FunctionsConsumer` contract. Read the [functionsConsumer](#functionsconsumersol) section for a more detailed explanation of the contract.
-
-```bash
-npx hardhat functions-request --subid REPLACE_SUBSCRIPTION_ID --contract REPLACE_CONSUMER_CONTRACT_ADDRESS --network REPLACE_NETWORK --configpath REPLACE_CONFIG_PATH
-```
-
-Example:
-
-```text
-$ npx hardhat functions-request --subid 443 --contract 0x4B4BA2Fd6b93aDF8d6b6002E10540E58394388Ea --network polygonMumbai --configpath tutorials/4-post-data/config.js
-secp256k1 unavailable, reverting to browser version
-Estimating cost if the current gas price remains the same...
-
-The transaction to initiate this request will charge the wallet (0x9d087fC03ae39b088326b67fA3C788236645b717):
-0.0004738875050548 MATIC, which (using mainnet value) is $0.0005282675179223535
-
-If the request's callback uses all 100,000 gas, this request will charge the subscription:
-0.200148583233322474 LINK
-
-Continue? Enter (y) Yes / (n) No
-y
-Simulating Functions request locally...
-
-__Console log messages from sandboxed code__
-Get name, capital and currency for country code: JP
-HTTP POST Request to https://countries.trevorblades.com/
-country response { country: { name: 'Japan', capital: 'Tokyo', currency: 'JPY' } }
-
-__Output from sandboxed source code__
-Output represented as a hex string: 0x7b226e616d65223a224a6170616e222c226361706974616c223a22546f6b796f222c2263757272656e6379223a224a5059227d
-Decoded as a string: {"name":"Japan","capital":"Tokyo","currency":"JPY"}
+   ```text
+   $ node examples/4-post-data/request.js
+   secp256k1 unavailable, reverting to browser version
+   Start simulation...
+   Performing simulation with the following versions:
+   deno 1.36.3 (release, aarch64-apple-darwin)
+   v8 11.6.189.12
+   typescript 5.1.6
 
 
-⣾ Request 0xfd3458d471506c9c59fce518d8b7267240940903e4a42dac144a29b90c9c9ab4 has been initiated. Waiting for fulfillment from the Decentralized Oracle Network...
+   Simulation result {
+     capturedTerminalOutput: 'Get name, capital and currency for country code: JP\n' +
+       'HTTP POST Request to https://countries.trevorblades.com/\n' +
+       'country response { country: { name: "Japan", capital: "Tokyo", currency: "JPY" } }\n',
+     responseBytesHexstring: '0x7b226e616d65223a224a6170616e222c226361706974616c223a22546f6b796f222c2263757272656e6379223a224a5059227d'
+   }
+   ✅ Decoded response to string:  {"name":"Japan","capital":"Tokyo","currency":"JPY"}
 
-ℹ Transaction confirmed, see https://mumbai.polygonscan.com/tx/0xb52fa5780be565ee0df732765d2e0e08e827e46be1df1f1eadab98a717c78c2b for more details.
+   Estimate request costs...
+   Duplicate definition of Transfer (Transfer(address,address,uint256,bytes), Transfer(address,address,uint256))
+   Fulfillment cost estimated to 0.0 LINK
 
-✔ Request 0xfd3458d471506c9c59fce518d8b7267240940903e4a42dac144a29b90c9c9ab4 fulfilled! Data has been written on-chain.
+   Make request...
 
-Response returned to client contract represented as a hex string: 0x7b226e616d65223a224a6170616e222c226361706974616c223a22546f6b796f222c2263757272656e6379223a224a5059227d
-Decoded as a string: {"name":"Japan","capital":"Tokyo","currency":"JPY"}
+   ✅ Functions request sent! Transaction hash 0x20e03fdd42fc69f8573b8bcda8f9e8df64caf2fe49712f0f18d3e5db303351ed -  Request id is 0xbc0df54be8b265b3b3bc9aff644123e905510dbeb486dc585ff607e133afb2f3. Waiting for a response...
+   See your request in the explorer https://mumbai.polygonscan.com/tx/0x20e03fdd42fc69f8573b8bcda8f9e8df64caf2fe49712f0f18d3e5db303351ed
 
-Actual amount billed to subscription #443:
-┌──────────────────────┬─────────────────────────────┐
-│         Type         │           Amount            │
-├──────────────────────┼─────────────────────────────┤
-│  Transmission cost:  │  0.000067030219895325 LINK  │
-│      Base fee:       │          0.2 LINK           │
-│                      │                             │
-│     Total cost:      │  0.200067030219895325 LINK  │
-└──────────────────────┴─────────────────────────────┘
+   ✅ Request 0xbc0df54be8b265b3b3bc9aff644123e905510dbeb486dc585ff607e133afb2f3 fulfilled with code: 0. Cost is 0.000035602577256 LINK. Complete response:  {
+     requestId: '0xbc0df54be8b265b3b3bc9aff644123e905510dbeb486dc585ff607e133afb2f3',
+     subscriptionId: 3,
+     totalCostInJuels: 35602577256000n,
+     responseBytesHexstring: '0x7b226e616d65223a224a6170616e222c226361706974616c223a22546f6b796f222c2263757272656e6379223a224a5059227d',
+     errorString: '',
+     returnDataBytesHexstring: '0x',
+     fulfillmentCode: 0
+   }
 
-```
+   ✅ Decoded response to string:  {"name":"Japan","capital":"Tokyo","currency":"JPY"}
+   ```
 
-The output of the example above gives you the following information:
+   The output of the example gives you the following information:
 
-- The `executeRequest` function was successfully called in the `FunctionsConsumer` contract. The transaction in this example is [0xb52fa5780be565ee0df732765d2e0e08e827e46be1df1f1eadab98a717c78c2b](https://mumbai.polygonscan.com/tx/0xb52fa5780be565ee0df732765d2e0e08e827e46be1df1f1eadab98a717c78c2b).
-- The request ID is `0xfd3458d471506c9c59fce518d8b7267240940903e4a42dac144a29b90c9c9ab4`.
-- The DON successfully fulfilled your request. The total cost was: `0.200067030219895325 LINK`.
-- The consumer contract received a response in `bytes` with a value of `0x7b226e616d65223a224a6170616e222c226361706974616c223a22546f6b796f222c2263757272656e6379223a224a5059227d`. Decoding it off-chain to a `string` gives you a result: `{"name":"Japan","capital":"Tokyo","currency":"JPY"}`.
+   - Your request is first run on a sandbox environment to ensure it is correctly configured.
+   - The fulfillment costs are estimated before making the request.
+   - Your request was successfully sent to Chainlink Functions. The transaction in this example is [0xbc0df54be8b265b3b3bc9aff644123e905510dbeb486dc585ff607e133afb2f3](https://mumbai.polygonscan.com/tx/0xbc0df54be8b265b3b3bc9aff644123e905510dbeb486dc585ff607e133afb2f3) and the request ID is `0xbc0df54be8b265b3b3bc9aff644123e905510dbeb486dc585ff607e133afb2f3`.
 
-At any time, you can run the `functions-read` task again with the `contract` parameter to read the latest received response.
+   - The DON successfully fulfilled your request. The total cost was: `0.000035602577256 LINK`.
+   - The consumer contract received a response in `bytes` with a value of `0x7b226e616d65223a224a6170616e222c226361706974616c223a22546f6b796f222c2263757272656e6379223a224a5059227d`. Decoding it off-chain to `string` gives you a result: `{"name":"Japan","capital":"Tokyo","currency":"JPY"}`.
 
-```bash
-npx hardhat functions-read  --contract REPLACE_CONSUMER_CONTRACT_ADDRESS --network REPLACE_NETWORK --configpath REPLACE_CONFIG_PATH
-```
+## Examine the code
 
-Example:
-
-```text
-$ npx hardhat functions-read  --contract 0x4B4BA2Fd6b93aDF8d6b6002E10540E58394388Ea  --network polygonMumbai --configpath tutorials/4-post-data/config.js
-secp256k1 unavailable, reverting to browser version
-Reading data from Functions client contract 0x4B4BA2Fd6b93aDF8d6b6002E10540E58394388Ea on network mumbai
-
-On-chain response represented as a hex string: 0x7b226e616d65223a224a6170616e222c226361706974616c223a22546f6b796f222c2263757272656e6379223a224a5059227d
-Decoded as a string: {"name":"Japan","capital":"Tokyo","currency":"JPY"}
-```
-
-Decoding `0x7b226e616d65223a224a6170616e222c226361706974616c223a22546f6b796f222c2263757272656e6379223a224a5059227d` from `bytes` to `string` gives you a string `{"name":"Japan","capital":"Tokyo","currency":"JPY"}`. Off-chain, you can use [JSON.parse()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse) to convert the JSON string to a JSON object.
-
-## Explanation
-
-### FunctionsConsumer.sol
+### FunctionsConsumerExample.sol
 
 <ChainlinkFunctions section="functions-consumer" />
 
-### config.js
+### JavaScript example
 
-Read the [Request Configuration](https://github.com/smartcontractkit/functions-hardhat-starter-kit#functions-library) section for a detailed description of each setting. In this example, the settings are the following:
+#### source.js
 
-- `codeLocation: Location.Inline`: The JavaScript code is provided within the request.
-- `codeLanguage: CodeLanguage.JavaScript`: The source code is developed in the JavaScript language.
-- `source: fs.readFileSync(path.resolve(__dirname, "source.js")).toString()`: The source code must be a script object. This example uses `fs.readFileSync` to read `source.js` and calls `toString()` to get the content as a `string` object.
-- `args: ["JP"]`: These arguments are passed to the source code. You can change the country code to request information of another country.
-- `expectedReturnType: ReturnType.string`: The response the DON receives is encoded in `bytes`. Because the country name, capital, and currency are put in a JSON string, define `ReturnType.string` to inform users how to decode the response received by the DON. Read the [source code explanation](#sourcejs) for more information.`
+The Decentralized Oracle Network will run the [JavaScript code](https://github.com/smartcontractkit/smart-contract-examples/blob/main/functions-examples/examples/4-post-data/source.js). The code is self-explanatory and has comments to help you understand all the steps. **Note**: The custom source code you want to execute in a Functions request can use vanilla [deno](https://deno.land/) but cannot use any require statements or imported modules.
 
-### source.js
+This JavaScript source code uses [Functions.makeHttpRequest](/chainlink-functions/api-reference/javascript-source#http-requests) to make HTTP requests. To request the `JP` country information, the source code calls the `https://countries.trevorblades.com/` URL and provides the query data in the HTTP request body. If you read the [Functions.makeHttpRequest](/chainlink-functions/api-reference/javascript-source#http-requests) documentation, you see that you must provide the following parameters:
+
+- url: `https://countries.trevorblades.com/`
+- data (HTTP body):
+
+  ```
+  {
+      query: `{\
+          country(code: "${countryCode}") { \
+          name \
+          capital \
+          currency \
+          } \
+      }`,
+  }
+  ```
 
 To check the expected API response:
 
@@ -223,27 +168,9 @@ To check the expected API response:
   }
   ```
 
-Read the [JavaScript code](https://github.com/smartcontractkit/functions-hardhat-starter-kit#javascript-code) section for a detailed explanation of how to write a compatible JavaScript source code. This JavaScript source code uses [Functions.makeHttpRequest](https://github.com/smartcontractkit/functions-hardhat-starter-kit#functions-library) to make HTTP requests. To request the `JP` country information, the source code calls the `https://countries.trevorblades.com/` URL and provides the query data in the HTTP request body. If you read the [Functions.makeHttpRequest](https://github.com/smartcontractkit/functions-hardhat-starter-kit#functions-library) documentation, you see that you must provide the following parameters:
+The main steps of the scripts are:
 
-- url: `https://countries.trevorblades.com/`
-- data (HTTP body):
-
-  ```
-  {
-      query: `{\
-          country(code: "${countryCode}") { \
-          name \
-          capital \
-          currency \
-          } \
-      }`,
-  }
-  ```
-
-The `countryCode` is fetched from the `args`. See the [request config](#configjs) section for more information.
-
-The code is self-explanatory and has comments to help you understand all the steps. The main steps are:
-
+- Fetch the `countryCode` from `args`.
 - Construct the HTTP object `countryRequest` using `Functions.makeHttpRequest`.
 - Run the HTTP request.
 - Read the country name, capital, and currency from the response.
@@ -259,3 +186,55 @@ The code is self-explanatory and has comments to help you understand all the ste
 
 - Convert the JSON object to a JSON string using `JSON.stringify(result)`. This step is mandatory before encoding `string` to `bytes`.
 - Return the result as a [buffer](https://nodejs.org/api/buffer.html#buffer) using the `Functions.string` helper function. **Note**: Read this [article](https://www.freecodecamp.org/news/do-you-want-a-better-understanding-of-buffer-in-node-js-check-this-out-2e29de2968e8/) if you are new to Javascript Buffers and want to understand why they are important.
+
+#### request.js
+
+This explanation focuses on the [request.js](https://github.com/smartcontractkit/smart-contract-examples/blob/main/functions-examples/examples/4-post-data/request.js) script and shows how to use the [Chainlink Functions NPM package](https://github.com/smartcontractkit/functions-toolkit) in your own JavaScript/TypeScript project to send requests to a DON. The code is self-explanatory and has comments to help you understand all the steps.
+
+The script imports:
+
+- [path](https://nodejs.org/docs/latest/api/path.html) and [fs](https://nodejs.org/api/fs.html) : Used to read the [source file](https://github.com/smartcontractkit/smart-contract-examples/blob/main/functions-examples/examples/4-post-data/source.js).
+- [ethers](https://docs.ethers.org/v5/): Ethers.js library, enables the script to interact with the blockchain.
+- `@chainlink/functions-toolkit`: Chainlink Functions NPM package. All its utilities are documented in the [NPM README](https://github.com/smartcontractkit/functions-toolkit/blob/main/README.md).
+- `@chainlink/env-enc`: A tool for loading and storing encrypted environment variables. Read the [official documentation](https://www.npmjs.com/package/@chainlink/env-enc) to learn more.
+- `../abi/functionsClient.json`: The abi of the contract your script will interact with. **Note**: The script was tested with this [FunctionsConsumerExample contract](https://remix.ethereum.org/#url=https://docs.chain.link/samples/ChainlinkFunctions/FunctionsConsumerExample.sol).
+
+The script has two hardcoded values that you have to change using your own Functions consumer contract and subscription ID:
+
+```javascript
+const consumerAddress = "0x8dFf78B7EE3128D00E90611FBeD20A71397064D9" // REPLACE this with your Functions consumer address
+const subscriptionId = 3 // REPLACE this with your subscription ID
+```
+
+The primary function that the script executes is `makeRequestMumbai`. This function can be broken into five main parts:
+
+1. Definition of necessary identifiers:
+
+   - `routerAddress`: Chainlink Functions router address on Polygon Mumbai.
+   - `donId`: Identifier of the DON that will fulfill your requests on Polygon Mumbai.
+   - `explorerUrl`: Block explorer url of Polygon Mumbai.
+   - `source`: The source code must be a string object. That's why we use `fs.readFileSync` to read `source.js` and then call `toString()` to get the content as a `string` object.
+   - `args`: During the execution of your function, These arguments are passed to the source code. The `args` value is `["JP"]`, which fetches country data for Japan.
+   - `gasLimit`: Maximum gas that Chainlink Functions can use when transmitting the response to your contract.
+   - Initialization of ethers `signer` and `provider` objects. The signer is used to make transactions on the blockchain, and the provider reads data from the blockchain.
+
+1. Simulating your request in a sandbox environment:
+
+   - Use `simulateScript` from the Chainlink Functions NPM package.
+   - Read the `response` of the simulation. If successful, use the Functions NPM package `decodeResult` function and `ReturnType` enum to decode the response to the expected returned type (`ReturnType.string` in this example).
+
+1. Estimating the costs:
+
+   - Initialize a `SubscriptionManager` from the Functions NPM package, then call the `estimateFunctionsRequestCost`.
+   - The response is returned in Juels (1 LINK = 10\*\*18 Juels). Use the `ethers.utils.formatEther` utility function to convert the output to LINK.
+
+1. Making a Chainlink Functions request:
+
+   - Initialize your functions consumer contract using the contract address, abi, and ethers signer.
+   - Make a [static call](https://docs.ethers.org/v5/api/contract/contract/#contract-callStatic) to the `sendRequest` function of your consumer contract to return the request ID that Chainlink Functions will generate.
+   - Call the `sendRequest` function of your consumer contract.
+
+1. Waiting for the response:
+
+   - Initialize a `ResponseListener` from the Functions NPM package and then call the `listenForResponse` function to wait for a response. By default, this function waits for five minutes.
+   - Upon reception of the response, use the Functions NPM package `decodeResult` function and `ReturnType` enum to decode the response to the expected returned type (`ReturnType.string` in this example).
