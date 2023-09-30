@@ -21,6 +21,8 @@ Some of the key features of this template include private minting stage with a m
 
 ## Objective
 
+You will use a HardHat project with the Chainlink Hardhat Plugin to deploy an existing MysteryBox application on Avalanche Fuji testnet.
+
 <Aside type="caution" title="Disclaimer">
   This tutorial represents an example of using a Chainlink product or service and is provided to help you understand how
   to interact with Chainlink's systems and services so that you can integrate them into your own. This template is
@@ -40,10 +42,12 @@ Some of the key features of this template include private minting stage with a m
 
 Before you start this tutorial, complete the following items:
 
+- Set up a cryptocurrency wallet such as [MetaMask](https://metamask.io/).
+- Fund your wallet with AVAX and LINK from [faucets.chain.link](https://faucets.chain.link/fuji).
 - Install [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git). Run `git --version` to check the installation.
 - Install [Nodejs](https://nodejs.org/en/) version 16 or later.
 - Optionally, you can [install Yarn](https://classic.yarnpkg.com/lang/en/docs/install/) and use it to run this example instead of using `npm`.
-- [Create an Etherscan API key](https://docs.etherscan.io/getting-started/viewing-api-usage-statistics) if you do not already have one.
+- [Create an SnowTrace API key](https://docs.snowtrace.io/getting-started/viewing-api-usage-statistics) if you do not already have one. This is used to verifiy your contracts onchain.
 - Create an account with [Infura](https://www.infura.io/) or [Alchemy](https://www.alchemy.com/) to use as an RPC endpoint if you do not already have one.
 
 ## Setup the example
@@ -85,7 +89,7 @@ Copy the `.env.example` file to `.env` and fill in the values.
 cp .env.example .env
 ```
 
-Set the parameters for the NFT contract.
+Set the parameters for the NFT contract. If you don't have a VRF subscription, delete the `VRF_SUBSCRIPTION_ID` parameter.
 
 | Parameter               | Description                                                                                                               | Example               |
 | ----------------------- | ------------------------------------------------------------------------------------------------------------------------- | --------------------- |
@@ -108,11 +112,11 @@ Next, set the parameters for the Hardhat project.
 - The [private key for your deployer account](https://hardhat.org/hardhat-runner/docs/guides/verifying#deploying-and-verifying-a-contract-in-the-sepolia-testnet). If your deployer account is in MetaMask, [export your private key from MetaMask](https://support.metamask.io/hc/en-us/articles/360015289632-How-to-export-an-account-s-private-key).
 - An [Etherscan API key](https://hardhat.org/hardhat-runner/docs/guides/verifying#getting-an-api-key-from-etherscan) for contract verification. [Create an Etherscan API key](https://docs.etherscan.io/getting-started/viewing-api-usage-statistics) if you do not already have one.
 
-| Parameter         | Description                                                 | Example                                    |
-| ----------------- | ----------------------------------------------------------- | ------------------------------------------ |
-| `NETWORK_RPC_URL` | The RPC URL for the network you want to deploy to.          | `https://goerli.infura.io/v3/your-api-key` |
-| `PRIVATE_KEY`     | The private key of the account you want to deploy from.     | `0xabc123abc123abc123abc123abc123...`      |
-| `ETHERSCAN_API`   | The API key for Etherscan needed for contract verification. | `ABC123ABC123ABC123ABC123ABC123ABC1`       |
+| Parameter         | Description                                                                                                                                            | Example                                               |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------- |
+| `FUJI_URL`        | The RPC URL for Avalanche Fuji testnet. If you later decide to use Polygon Mumbai or another testnet, set the appropriate parameter from the template. | `https://avalanche-mainnet.infura.io/v3/your-api-key` |
+| `PRIVATE_KEY`     | The private key of the account you want to deploy from.                                                                                                | `0xabc123abc123abc123abc123abc123...`                 |
+| `SCANNER_API_KEY` | The API key for SnowTrace used for contract verification. If you decide to deploy on Polygon Mumbai or another testnet, use that key instead.          | `ABC123ABC123ABC123ABC123ABC123ABC1`                  |
 
 ## Test
 
@@ -146,26 +150,14 @@ Run the `npx hardhat run` command and replace `<network>` with the network that 
 npx hardhat run scripts/deploy.ts --network <network>
 ```
 
-In addition to deploying the contract, the deploy script will also:
+In addition to deploying the contract, the deploy script also completes the following steps automatically:
 
-1.  Create and fund a VRF subscription if one is not provided.
+1.  Create and fund a VRF subscription if one is not provided. Make sure the deployer account has enough LINK to fund the subscription. The initial funding amount is configured in [`network-config.ts`](https://github.com/smartcontractkit/chainlink-solutions-mysterybox/blob/main/network-config.ts). For testnets, you can use the [LINK faucet](https://faucets.chain.link/) to get LINK. If your subscription is underfunded, your VRF request will be [pending](/vrf/v2/subscription/ui#pending) for 24 hours. If this happens, check the [Subscription Manager](https://vrf.chain.link]) to see the additional balance needed.
 
-    {/* prettier-ignore */}
-    <Aside type="note">
-    Make sure the deployer account has enough LINK to fund the subscription. The initial funding amount is configured in [`network-config.ts`](https://github.com/smartcontractkit/chainlink-solutions-mysterybox/blob/main/network-config.ts). For testnets, you can use the [LINK faucet](https://faucets.chain.link/).
+1.  Add the deployed contract address as a consumer to the VRF subscription. If you provided a subscription ID, make sure the deployer account is the owner of the subscription. Otherwise, comment out the `addVrfConsumer` function in the deploy script and add the contract address manually.
 
-    [Estimate the minimum subscription balance](/vrf/v2/estimating-costs#estimate-minimum-subscription-balance) that VRF requires to process your randomness request. The minimum subscription balance provides a buffer against gas volatility, and only the actual cost of your request will be deducted from your account.
+1.  Generate a [Merkle tree](https://ethereum.org/en/developers/tutorials/merkle-proofs-for-offline-data-integrity/#introduction) for the allowlist. The merkle tree is generated from the address list in `scripts/data/whitelist.json` file. Leave the file empty if you don't want to do a private mint.
 
-    If your subscription is underfunded, your VRF request will be [pending](/vrf/v2/subscription/ui#pending) for 24 hours. If this happens, check the [Subscription Manager](https://vrf.chain.link]) to see the additional balance needed.
-
-    </Aside>
-
-1.  Add the deployed contract address as a consumer to the VRF subscription.
-
-    If you provided a subscription ID, make sure the deployer account is the owner of the subscription. Otherwise, comment out the `addVrfConsumer` function in the deploy script and add the contract address manually.
-
-1.  Generate a [Merkle tree](https://ethereum.org/en/developers/tutorials/merkle-proofs-for-offline-data-integrity/#introduction) for the allowlist.
-    Note: The merkle tree is generated from the address list in `scripts/data/whitelist.json` file. Leave the file empty if you don't want to do a private mint.
 1.  Verify the contract on Etherscan. This is important to show users the source code for the contract so they can confirm how it works. If you want to skip this step during testing, comment out the `verify` function in the deploy script.
 
 ## Access control for minting
