@@ -40,13 +40,16 @@ Some of the key features of this template include private minting stage with a m
 
 Before you start this tutorial, complete the following items:
 
-- Install [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
-  - Run `git --version` to check the installation. You should see an output similar to `git version x.x.x`.
-- Install [Nodejs](https://nodejs.org/en/) 16.0.0 or higher
-  - Run `node --version` to check the installation. You should see an output similar to `v16.x.x`.
-  - Optionally, you can also [install Yarn](https://classic.yarnpkg.com/lang/en/docs/install/) and use it to run this example instead of using `npm`.
+- Install [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git). Run `git --version` to check the installation.
+- Install [Nodejs](https://nodejs.org/en/) version `>=16 <18`. Run `node --version` to check the installed version. If you can't install a different version, use [Install NVM](https://github.com/nvm-sh/nvm#installing-and-updating) and set the version to 16.
+
+  ```bash
+  nvm install 16 && nvm use 16
+  ```
+
+- Optionally, you can [install Yarn](https://classic.yarnpkg.com/lang/en/docs/install/) and use it to run this example instead of using `npm`.
 - [Create an Etherscan API key](https://docs.etherscan.io/getting-started/viewing-api-usage-statistics) if you do not already have one.
-- Create an account with [Infura](https://www.infura.io/) or [Alchemy](https://www.alchemy.com/) to use as an RPC endpoint if you do not already have one. Alternatively, you can [use your own testnet clients](/chainlink-nodes/resources/run-an-ethereum-client).
+- Create an account with [Infura](https://www.infura.io/) or [Alchemy](https://www.alchemy.com/) to use as an RPC endpoint if you do not already have one.
 
 ## Setup the example
 
@@ -71,14 +74,11 @@ npm install
 ```
 </Fragment>
 <Fragment slot="panel.2">
-Alternatively, you can use [yarn](https://yarnpkg.com/) to install dependencies.
-
 ```bash
 git clone git@github.com:smartcontractkit/quickstarts-mysterybox.git && \
 cd quickstarts-mysterybox && \
 yarn install
 ```
-
 </Fragment>
 </Tabs>
 
@@ -90,7 +90,7 @@ Copy the `.env.example` file to `.env` and fill in the values.
 cp .env.example .env
 ```
 
-Begin by setting up the parameters for the NFT contract.
+Set the parameters for the NFT contract.
 
 | Parameter               | Description                                                                                                               | Example               |
 | ----------------------- | ------------------------------------------------------------------------------------------------------------------------- | --------------------- |
@@ -103,7 +103,7 @@ Begin by setting up the parameters for the NFT contract.
 | `NFT_ROYALTY_BPS`       | The royalty fee for selling a token in basis points                                                                       | `500`                 |
 | `VRF_SUBSCRIPTION_ID`   | A funded Chainlink VRF subscription ID. If you leave this blank, a new subscription will be created and funded on deploy. | `123`                 |
 
-Next, set up the parameters for the Hardhat project.
+Next, set the parameters for the Hardhat project.
 
 ### Configure the Hardhat project
 
@@ -248,12 +248,6 @@ Once the collection is revealed, the minting functions will be disabled.
 ## Withdraw funds
 
 At any time, the owner can withdraw funds from the collected fees by calling the `withdraw` function. By doing so, the contract balance will be transferred to the owner account.
-
-## Royalties
-
-This contract supports royalties for secondary sales. The royalty fee is set to `NFT_ROYALTY_BPS` basis points and royalty receiver is set to the owner account by default. It can be changed by calling the `setRoyalty` function.
-
-The standard for royalties is defined in the [ERC2981](https://eips.ethereum.org/EIPS/eip-2981) EIP and this contract implements it.
 
 ## Post-deployment configuration
 
