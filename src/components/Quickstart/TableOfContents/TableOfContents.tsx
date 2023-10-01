@@ -4,7 +4,6 @@ import { useEffect, useState } from "preact/hooks"
 import { MarkdownHeading } from "astro"
 import styles from "./tableOfContents.module.css"
 import { useCurrentIds } from "~/hooks/currentIds/useCurrentIds"
-import { currentIds } from "~/hooks/currentIds/idStore"
 import { useStore } from "@nanostores/preact"
 import { shouldUpdateToc } from "./tocStore"
 
@@ -49,12 +48,12 @@ const TableOfContents: FunctionalComponent<{
 
   useEffect(() => {
     const observerCallback: IntersectionObserverCallback = (entries) => {
-      const intersectingElementMap: Record<string, boolean> = currentIds.get()
+      const intersectingElementMap: Record<string, boolean> = $currentIds
       for (const entry of entries) {
         const { isIntersecting, target } = entry
         intersectingElementMap[target.id] = isIntersecting
       }
-      setCurrentIds(intersectingElementMap)
+      setCurrentIds({ ...intersectingElementMap })
     }
 
     const elementObserver = new IntersectionObserver(observerCallback, {
@@ -71,7 +70,7 @@ const TableOfContents: FunctionalComponent<{
   }, [$shouldUpdateToc, headings])
 
   return (
-    <nav className={styles.toc}>
+    <nav className={styles.toc} data-sticky>
       <h2 className={styles.heading}>On this page</h2>
       <ul>
         {headings &&

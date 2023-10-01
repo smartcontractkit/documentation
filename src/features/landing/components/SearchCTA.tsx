@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from "react"
 import "./Search.css"
 
-import { SearchModal } from "~/components/Header/Search/SearchModal"
+import { SearchModal } from "~/components/Header/AlgoSearch/SearchModal"
 
 export function SearchCTA() {
   const [isOpen, setIsOpen] = useState(false)
@@ -21,8 +21,7 @@ export function SearchCTA() {
 
         <span style={{ fontSize: "1rem" }}>Search Chainlink Documentation...</span>
       </button>
-
-      <SearchModal isOpen={isOpen} onClose={onClose} />
+      <SearchModal showModal={isOpen} onClose={() => onClose()} />
     </>
   )
 }

@@ -52,7 +52,6 @@ const canonicalURL = new URL(canonicalURLStr)
       .layout {
         display: grid;
         grid-template-columns: minmax(250px, 100%);
-        /* TODO: Remove gutter, doc-padding from layout, place in Quickstart and QuickstartPanel */
         --gutter: var(--space-6x);
         --doc-padding: 2rem;
       }
@@ -105,19 +104,6 @@ const canonicalURL = new URL(canonicalURLStr)
     </style>
     <script>
       import "../scripts/index.ts"
-    </script>
-    <script define:vars={{ frontmatter }}>
-      const persistedArticle = {
-        title: frontmatter.title,
-        url: frontmatter.url,
-      }
-
-      const recentArticles = JSON.parse(localStorage.getItem("recentArticles") || "[]")
-
-      if (!recentArticles.some((article) => article.url === persistedArticle.url)) {
-        recentArticles.unshift(persistedArticle)
-        localStorage.setItem("recentArticles", JSON.stringify(recentArticles.slice(0, 5)))
-      }
     </script>
   </head>
 

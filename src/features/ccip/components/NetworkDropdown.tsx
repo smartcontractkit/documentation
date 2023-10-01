@@ -1,3 +1,4 @@
+/** @jsxImportSource preact */
 import { useCallback, useEffect, useRef, useState } from "preact/hooks"
 import styles from "./networkDropdown.module.css"
 import button from "@chainlink/design-system/button.module.css"

@@ -1,4 +1,4 @@
-import * as React from "react"
+/** @jsxImportSource preact */
 import { Cube } from "./Cube"
 import hexagonStyles from "./Hexagon.module.css"
 export const Hexagon = () => (
