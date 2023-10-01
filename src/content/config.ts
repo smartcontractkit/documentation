@@ -11,9 +11,9 @@ enum Products {
 
 export const productsInfo: Record<Products, { name: string; slug: string }> = {
   ccip: { name: "CCIP", slug: "ccip" },
-  automation: { name: "Automation", slug: "chainlink-automation/introduction" },
+  automation: { name: "Automation", slug: "chainlink-automation" },
   functions: { name: "Functions", slug: "chainlink-functions" },
-  vrf: { name: "VRF", slug: "vrf/v2/introduction" },
+  vrf: { name: "VRF", slug: "vrf" },
   feeds: { name: "Data Feeds", slug: "data-feeds" },
   general: { name: "General", slug: "/" },
 }
