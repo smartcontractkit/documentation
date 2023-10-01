@@ -1,6 +1,5 @@
 import { useEffect } from "preact/hooks"
 import { useCurrentIds } from "~/hooks/currentIds/useCurrentIds"
-import { currentIds } from "~/hooks/currentIds/idStore"
 import { MarkdownHeading } from "astro"
 import { useStickyHeader } from "~/hooks/stickyHeader/useStickyHeader"
 
@@ -10,13 +9,13 @@ interface Props {
 }
 
 export const ContentObserver = ({ headings, shouldUpdate }: Props) => {
-  const { setCurrentIds } = useCurrentIds()
+  const { $currentIds, setCurrentIds } = useCurrentIds()
   const { setStickyHeader } = useStickyHeader()
 
   useEffect(() => {
     const observerCallback: IntersectionObserverCallback = (entries) => {
       let stickyHeaderSet = false
-      const intersectingElementMap: Record<string, boolean> = currentIds.get()
+      const intersectingElementMap: Record<string, boolean> = $currentIds
       for (const entry of entries) {
         const { isIntersecting, target } = entry
         const { id, firstElementChild } = target
@@ -31,10 +30,10 @@ export const ContentObserver = ({ headings, shouldUpdate }: Props) => {
           setStickyHeader(firstElementChild.id === "overview" ? "Overview" : firstElementChild.textContent)
         }
       }
-      if (Object.values(currentIds.get()).every((v) => !v)) {
+      if (Object.values($currentIds).every((v) => !v)) {
         setStickyHeader("")
       }
-      setCurrentIds(intersectingElementMap)
+      setCurrentIds({ ...intersectingElementMap })
     }
 
     const sectionsObserver = new IntersectionObserver(observerCallback, {

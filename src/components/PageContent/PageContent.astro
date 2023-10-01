@@ -147,12 +147,8 @@ const { titleHeading } = Astro.props
       padding: var(--space-6x) 0;
     }
 
-    section:target {
-      scroll-margin-top: calc(-1 * var(--space-5x));
-    }
-
     section > :is(section, h5, h6):target {
-      scroll-margin-top: var(--space-24x);
+      scroll-margin-top: calc(var(--theme-navbar-height) + var(--space-24x));
     }
 
     article :where(section, astro-slot) > h3 {
@@ -202,6 +198,9 @@ const { titleHeading } = Astro.props
     }
     wrapper.id = start.id
     start.parentNode!.insertBefore(wrapper, start)
+    if (isParent) {
+      start.setAttribute("data-sticky", "")
+    }
     elements.forEach((e) => wrapper.appendChild(e))
     return wrapper
   }

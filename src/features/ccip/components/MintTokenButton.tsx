@@ -1,3 +1,4 @@
+/** @jsxImportSource preact */
 import detectEthereumProvider from "@metamask/detect-provider"
 import button from "@chainlink/design-system/button.module.css"
 import { MetaMaskInpageProvider } from "@metamask/providers"
