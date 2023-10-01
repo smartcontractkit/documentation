@@ -65,18 +65,18 @@ This function contains the code that will be executed on-chain to finalize the t
 
 #### Parameters
 
-| Variable Name | Type    | Description                                                                                      | Permissible Values |
-| ------------- | ------- | ------------------------------------------------------------------------------------------------ | ------------------ |
+| Variable Name | Type    | Description                                                                                | Permissible Values |
+| ------------- | ------- | ------------------------------------------------------------------------------------------ | ------------------ |
 | `performData` | `bytes` | Data encoded in the `checkLog` function that will be used to execute the function on-chain | bytes              |
 
 ## AutomationCompatibleInterface
 
 Custom logic upkeeps need to use the [`AutomationCompatibleInterface.sol`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/automation/interfaces/AutomationCompatibleInterface.sol) interface. Click on one of the functions below to understand its parameters and limits.
 
-| Function Name   | Description                                                                                           |
-| --------------- | ----------------------------------------------------------------------------------------------------- |
+| Function Name   | Description                                                                            |
+| --------------- | -------------------------------------------------------------------------------------- |
 | `checkUpkeep`   | Runs off-chain to determine if the `performUpkeep` function should be called on-chain. |
-| `performUpkeep` | Contains the logic that should be executed on-chain when `checkUpkeep` returns true.                  |
+| `performUpkeep` | Contains the logic that should be executed on-chain when `checkUpkeep` returns true.   |
 
 ### checkUpkeep function
 
@@ -125,7 +125,7 @@ You can create a highly flexible off-chain computation infrastructure that can p
 
 When `checkUpkeep` returns `upkeepNeeded == true`, the Automation node broadcasts a transaction to the blockchain to execute your `performUpkeep` function on-chain with `performData` as an input.
 
-Ensure that your `performUpkeep` is _idempotent_. Your `performUpkeep` function should change state such that `checkUpkeep` will not return `true` for the same subset of work once said work is complete. Otherwise the Upkeep will remain eligible and result in multiple performances by the Chainlink Automation Network on the exactly same subset of work. As a best practice, always [revalidate](/chainlink-automation/compatible-contract-best-practice#revalidate-performupkeep-on-automation-compatible-contracts) conditions for your upkeep at the start of your `performUpkeep` function.
+Ensure that your `performUpkeep` is _idempotent_. Your `performUpkeep` function should change state such that `checkUpkeep` will not return `true` for the same subset of work once said work is complete. Otherwise the Upkeep will remain eligible and result in multiple performances by the Chainlink Automation Network on the exactly same subset of work. As a best practice, always check conditions for your upkeep at the start of your `performUpkeep` function.
 
 ```solidity
 function performUpkeep(bytes calldata performData) external override;
