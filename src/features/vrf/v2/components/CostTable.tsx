@@ -1,3 +1,4 @@
+/** @jsxImportSource preact */
 import { Chain, ChainNetwork, getNetworkFromQueryString } from "~/features/data/chains"
 import "./costTable.css"
 import { useCallback, useEffect, useReducer } from "preact/hooks"

@@ -67,10 +67,6 @@ const includeLinkToWalletScript = !!Astro.props?.frontmatter?.metadata?.linkToWa
         display: none;
       }
 
-      #grid-left {
-        background-color: var(--theme-bg);
-      }
-
       #grid-main {
         padding: var(--doc-padding) var(--gutter);
         display: flex;
@@ -83,6 +79,7 @@ const includeLinkToWalletScript = !!Astro.props?.frontmatter?.metadata?.linkToWa
         main {
           display: grid;
           grid-template-columns: auto fit-content(100%) auto;
+          margin-bottom: 0 !important;
         }
 
         .layout {
@@ -92,13 +89,13 @@ const includeLinkToWalletScript = !!Astro.props?.frontmatter?.metadata?.linkToWa
           align-self: center;
         }
 
+        #grid-left,
         #left-bg {
           background: #fafbfd;
         }
 
         #grid-left {
           display: flex;
-          background: #fafbfd;
           justify-content: flex-end;
         }
 
@@ -117,47 +114,11 @@ const includeLinkToWalletScript = !!Astro.props?.frontmatter?.metadata?.linkToWa
         }
       }
     </style>
-    <style is:global>
-      @media (max-width: 50em) {
-        .mobile-sidebar-toggle {
-          overflow: hidden;
-        }
-
-        .mobile-sidebar-toggle #grid-left {
-          display: initial;
-          position: fixed;
-          width: 100vw;
-          height: calc(100vh - var(--theme-navbar-height));
-          overflow: auto;
-          top: var(--theme-navbar-height);
-          z-index: 5;
-        }
-
-        .mobile-sidebar-toggle #grid-left * {
-          position: initial;
-          overflow: initial;
-          max-height: initial;
-        }
-      }
-    </style>
     <script>
       import "../scripts/index.ts"
     </script>
     <script define:vars={{ includeLinkToWalletScript }}>
       window.includeLinkToWalletScript = includeLinkToWalletScript
-    </script>
-    <script define:vars={{ frontmatter }}>
-      const persistedArticle = {
-        title: frontmatter.title,
-        url: frontmatter.url,
-      }
-
-      const recentArticles = JSON.parse(localStorage.getItem("recentArticles") || "[]")
-
-      if (!recentArticles.some((article) => article.url === persistedArticle.url)) {
-        recentArticles.unshift(persistedArticle)
-        localStorage.setItem("recentArticles", JSON.stringify(recentArticles.slice(0, 5)))
-      }
     </script>
   </head>
 
