@@ -1,16 +1,13 @@
 ---
-section: vrf
 title: "VRF-Enabled Mystery Box"
-whatsnext:
-  {
-    "Review VRF best practices": "/vrf/v2/best-practices",
-    "Learn how to test VRF dApps locally using a mock contract": "/vrf/v2/direct-funding/examples/test-locally",
-    "Learn how to estimate VRF costs": "/vrf/v2/estimating-costs",
-    "See the list of supported networks for VRF": "/vrf/v2/direct-funding/supported-networks",
-  }
+description: "Build a mystery box smart contract using VRF."
+image: "QuickStarts-VRF-Enabled-LootBox-Pack-Contract.webp"
+products: ["vrf"]
+time: "90 minutes"
+requires: "Wallet with gas token & ERC-677 LINK"
 ---
 
-import { Aside, CodeSample } from "@components"
+import { Accordion, Aside, CodeSample } from "@components"
 import { Tabs } from "@components/Tabs"
 
 This is a template for NFT collection with a mystery box mechanic powered by [Chainlink VRF](https://vrf.chain.link/).
@@ -52,9 +49,7 @@ Before you start this tutorial, complete the following items:
 
 ## Steps to implement
 
-This tutorial requires several setup steps to configure, test, and deploy the contracts.
-
-### Clone the example repo and install dependencies
+<Accordion title="Clone the example repo and install dependencies" number={1}>
 
 Clone the repo and install all dependencies.
 
@@ -78,7 +73,9 @@ yarn install
 </Fragment>
 </Tabs>
 
-### Configure your project
+</Accordion>
+
+<Accordion title="Configure your project" number={2}>
 
 Copy the `.env.example` file to `.env` and fill in the values.
 
@@ -99,9 +96,10 @@ Set the parameters for the NFT contract. If you don't have a VRF subscription, d
 | `NFT_ROYALTY_BPS`       | The royalty fee for selling a token in basis points                                                                       | `500`                 |
 | `VRF_SUBSCRIPTION_ID`   | A funded Chainlink VRF subscription ID. If you leave this blank, a new subscription will be created and funded on deploy. | `123`                 |
 
-Next, set the parameters for the Hardhat project.
 
-### Configure the Hardhat project
+</Accordion>
+
+<Accordion title="Configure the Hardhat project" number={3}>
 
 [Hardhat](https://hardhat.org/) is an Ethereum development environment that is used here to configure and deploy the mystery box contract. You need the following information:
 
@@ -111,7 +109,9 @@ Next, set the parameters for the Hardhat project.
 | `PRIVATE_KEY`     | The private key of the account you want to deploy from.                                                                                                                                              | `0xabc123abc123abc123abc123abc123...`                 |
 | `SCANNER_API_KEY` | The API key for SnowTrace used for contract verification. If you decide to deploy on Polygon Mumbai or another testnet, use that key instead.                                                        | `ABC123ABC123ABC123ABC123ABC123ABC1`                  |
 
-### Test the contracts locally
+</Accordion>
+
+<Accordion title="Test the contracts locally" number={3}>
 
 To run the unit tests, run the following command:
 
@@ -131,7 +131,9 @@ For coverage reports, run the following command:
 npm run coverage
 ```
 
-### Deploy the example contract
+</Accordion>
+
+<Accordion title="Deploy the example contract" number={3}>
 
 Run the `npx hardhat run` command and replace `<network>` with the network that you want to deploy to. The network must be configured in [`hardhat.config.ts`](https://github.com/smartcontractkit/chainlink-solutions-mysterybox/blob/main/hardhat.config.ts).
 
@@ -151,7 +153,9 @@ In addition to deploying the contract, the deploy script also completes the foll
 
 After the deployment is complete, the terminal prints the link to view your contract on SnowTrace.
 
-## Run the example
+</Accordion>
+
+<Accordion title="Run the example" number={4}>
 
 After the contract is deployed, run the example using contract functions on SnowTrace.
 
@@ -170,6 +174,8 @@ After the contract is deployed, run the example using contract functions on Snow
 1. Open the `reveal` function.
 1. Click `reveal` to reveal the mystery box.
 1. After the reveal, you can find the NFT in the token list for your externally owned account (EOA).
+
+</Accordion>
 
 ## Explore the code
 
