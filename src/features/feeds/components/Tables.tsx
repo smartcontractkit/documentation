@@ -89,7 +89,7 @@ const Pagination = ({ addrPerPage, totalAddr, paginate, currentPage, firstAddr, 
   )
 }
 
-const DefaultTHead = ({ showExtraDetails, isTestnet = false }: { showExtraDetails: boolean; isTestnet?: boolean }) => (
+const DefaultTHead = ({ showExtraDetails }: { showExtraDetails: boolean }) => (
   <thead>
     <tr>
       <th class={tableStyles.heading}>Pair</th>
@@ -124,7 +124,6 @@ const DefaultTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => (
       <div className={tableStyles.assetAddress}>
         <button
           class={clsx(tableStyles.copyBtn, "copy-iconbutton")}
-          style={{ height: "16px", width: "16px" }}
           data-clipboard-text={proxy.proxyAddress ?? proxy.transmissionsAccount}
         >
           <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
@@ -136,20 +135,18 @@ const DefaultTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => (
           {proxy.proxyAddress ?? proxy.transmissionsAccount}
         </a>
       </div>
-      {!isTestnet ? (
+      {!isTestnet && (
         <div>
           <dl class={tableStyles.porDl}>
-            {proxy.docs.assetName ? (
+            {proxy.docs.assetName && (
               <div>
                 <dt>
                   <span class="label">Asset name:</span>
                 </dt>
                 <dd>{proxy.docs.assetName}</dd>
               </div>
-            ) : (
-              ""
             )}
-            {proxy.docs.feedType ? (
+            {proxy.docs.feedType && (
               <div>
                 <dt>
                   <span class="label">Asset type:</span>
@@ -159,25 +156,15 @@ const DefaultTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => (
                   {proxy.docs.assetSubClass === "UK" ? " - " + proxy.docs.assetSubClass : ""}
                 </dd>
               </div>
-            ) : (
-              ""
             )}
           </dl>
         </div>
-      ) : (
-        ""
       )}
     </td>
   </tr>
 )
 
-const ProofOfReserveTHead = ({
-  showExtraDetails,
-  isTestnet = false,
-}: {
-  showExtraDetails: boolean
-  isTestnet?: boolean
-}) => (
+const ProofOfReserveTHead = ({ showExtraDetails }: { showExtraDetails: boolean }) => (
   <thead>
     <tr>
       <th class={tableStyles.heading}>Proof of Reserve Feed</th>
@@ -189,7 +176,7 @@ const ProofOfReserveTHead = ({
   </thead>
 )
 
-const ProofOfReserveTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => (
+const ProofOfReserveTr = ({ network, proxy, showExtraDetails }) => (
   <tr>
     <td class={tableStyles.pairCol}>
       {feedItems.map((feedItem: FeedDataItem) => {
@@ -269,7 +256,7 @@ const ProofOfReserveTr = ({ network, proxy, showExtraDetails, isTestnet = false 
   </tr>
 )
 
-const NftFloorTHead = ({ showExtraDetails, isTestnet = false }: { showExtraDetails: boolean; isTestnet?: boolean }) => (
+const NftFloorTHead = ({ showExtraDetails }: { showExtraDetails: boolean }) => (
   <thead>
     <tr>
       <th class={tableStyles.heading}>NFT Floor Pricing Feed</th>
@@ -281,7 +268,7 @@ const NftFloorTHead = ({ showExtraDetails, isTestnet = false }: { showExtraDetai
     </tr>
   </thead>
 )
-const NftFloorTr = ({ network, proxy, showExtraDetails, isTestnet = false }) => (
+const NftFloorTr = ({ network, proxy, showExtraDetails }) => (
   <tr>
     <td class={tableStyles.pairCol}>
       <div className={tableStyles.assetPair}>
@@ -372,9 +359,9 @@ export const MainnetTable = ({
     )
   const slicedFilteredMetadata = filteredMetadata.slice(firstAddr, lastAddr)
   return (
-    <div>
-      <div style={{ overflowX: "auto" }}>
-        <table class={tableStyles.mainnetTable} style={{ overflowX: "auto" }}>
+    <>
+      <div class={tableStyles.tableWrapper}>
+        <table class={tableStyles.table}>
           {slicedFilteredMetadata.length === 0 ? (
             <tr>
               <td style={{ textAlign: "center" }}>
@@ -412,7 +399,7 @@ export const MainnetTable = ({
         lastAddr={lastAddr}
         paginate={paginate}
       />
-    </div>
+    </>
   )
 }
 
@@ -446,22 +433,18 @@ export const TestnetTable = ({
     })
 
   return (
-    <div>
+    <div class={tableStyles.tableWrapper}>
       <table class={tableStyles.table}>
-        {isPor && <ProofOfReserveTHead showExtraDetails={showExtraDetails} isTestnet />}
-        {isDefault && <DefaultTHead showExtraDetails={showExtraDetails} isTestnet />}
-        {isNftFloor && <NftFloorTHead showExtraDetails={showExtraDetails} isTestnet />}
-        {isRates && <DefaultTHead showExtraDetails={showExtraDetails} isTestnet />}
+        {isPor && <ProofOfReserveTHead showExtraDetails={showExtraDetails} />}
+        {isDefault && <DefaultTHead showExtraDetails={showExtraDetails} />}
+        {isNftFloor && <NftFloorTHead showExtraDetails={showExtraDetails} />}
+        {isRates && <DefaultTHead showExtraDetails={showExtraDetails} />}
         <tbody>
           {filteredMetadata.map((proxy) => (
             <>
-              {isPor && (
-                <ProofOfReserveTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} isTestnet />
-              )}
+              {isPor && <ProofOfReserveTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
               {isDefault && <DefaultTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} isTestnet />}
-              {isNftFloor && (
-                <NftFloorTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} isTestnet />
-              )}
+              {isNftFloor && <NftFloorTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
               {isRates && <DefaultTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} isTestnet />}
             </>
           ))}
