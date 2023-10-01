@@ -30,7 +30,7 @@ export const MENU: MenuItems = {
     },
     {
       text: "VRF",
-      link: "/vrf/v2/introduction",
+      link: "/vrf",
       section: "vrf",
     },
     {
