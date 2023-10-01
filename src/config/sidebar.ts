@@ -448,6 +448,15 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
+      section: "Examples",
+      contents: [
+        {
+          title: "Functions Demo App",
+          url: "quickstarts/functions-demo-app",
+        },
+      ],
+    },
+    {
       section: "Resources",
       contents: [
         {
@@ -1120,6 +1129,15 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Contributing to Chainlink",
           url: "resources/contributing-to-chainlink",
+        },
+      ],
+    },
+    {
+      section: "Examples",
+      contents: [
+        {
+          title: "Chainlink Demo App",
+          url: "quickstarts/chainlink-demo-app",
         },
       ],
     },

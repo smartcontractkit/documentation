@@ -1,0 +1,151 @@
+---
+section: global
+date: Last Modified
+title: "Dev3 Chainlink SDK"
+---
+
+import { Aside } from "@components"
+import { TabsContent } from "@components/Tabs"
+
+The [Dev3 Chainlink SDK module](https://github.com/0xDev3/dev3-sdk) is a fully open source TypeScript SDK which enables any frontend developer to fetch the prices of various assets through Chainlink Data Feeds. The SDK works with vanilla npm projects and frontend frameworks like Angular and React. Users can fetch price pairs, NFT floor price information, and more.
+
+## Objective
+
+You will install and use the Dev3 SDK to monitor a Chainlink price feed. Optionally, you can also deploy a Dev3 Chainlink SDK template from the [Dev3 dashboard](https://app.dev3.sh/).
+
+<Aside type="caution" title="Disclaimer">
+  This tutorial represents an example of using a Chainlink product or service and is provided to help you understand how
+  to interact with Chainlink's systems and services so that you can integrate them into your own. This template is
+  provided "AS IS" and "AS AVAILABLE" without warranties of any kind, has not been audited, and may be missing key
+  checks or error handling to make the usage of the product more clear. Do not use the code in this example in a
+  production environment without completing your own audits and application of best practices. Neither Chainlink Labs,
+  the Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs that are generated due
+  to errors in code.
+</Aside>
+
+## Before you begin
+
+Before you start this tutorial, complete the following items:
+
+- Install [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
+  - Run `git --version` to check the installation. You should see an output similar to `git version x.x.x`.
+- Install [Nodejs](https://nodejs.org/en/) 16.0.0 or higher
+  - Run `node --version` to check the installation. You should see an output similar to `v16.x.x`.
+
+## Install and initialize the SDK
+
+Install the Dev3 SDK in your `npm` project.
+
+1. Type the following command on your terminal while on your project's root folder:
+
+   ```sh
+   npm install dev3-sdk
+   ```
+
+1. In your JavaScript or TypeScript file:
+
+   1. Import the Chainlink module:
+
+      ```ts
+      import { Chainlink } from "dev3-sdk"
+      ```
+
+   1. Get an RPC URL for the network where you want to monitor price feeds. For example, a public node for Ethereum is `https://ethereum.publicnode.com`.
+
+   1. Fill in your RPC URL and then initialize the SDK by calling:
+
+      ```ts
+      const ethSDK = Chainlink.instance("https://ethereum.publicnode.com", Chainlink.PriceFeeds.ETH)
+      ```
+
+      This sets up reading data feeds for Ethereum mainnet.
+
+## Consuming data feeds
+
+Once the SDK is initialized, you can start consuming different feeds as outlined in the examples below:
+
+{/* prettier-ignore */}
+<TabsContent sharedStore="feedType" client:visible>
+  <Fragment slot="tab.1">Price Feeds</Fragment>
+  <Fragment slot="tab.2">NFT Floor Price Feeds</Fragment>
+  <Fragment slot="tab.3">Proof of Reserve Feeds</Fragment>
+  <Fragment slot="panel.1">
+  1. Add the following code to your JavaScript or TypeScript file:
+      ```ts
+      // AAVE/ETH price feed
+      ethSDK.getFromOracle(ethSDK.feeds.AAVE_ETH).then((res) => {
+          console.log(res.answer.toString());
+      });
+      ```
+  1. Run your file. For example:
+      ```sh
+      node index.js
+      ```
+  1. The output should be similar to: `40104190000000000`. Compare this to the [AAVE / ETH price feed](https://data.chain.link/ethereum/mainnet/crypto-eth/aave-eth), which returns `Ξ0.04010419` at the time of writing.
+  </Fragment>
+  <Fragment slot="panel.2">
+  1. Add the following code to your JavaScript or TypeScript file:
+    ```ts
+    // Azuki floor price
+    ethSDK.getFromOracle(ethSDK.feeds.COINBASE_AZUKI_FLOOR_PRICE_ETH).then((res) => {
+        console.log(res.answer.toString());
+    });
+    ```
+  1. Run your file. For example:
+      ```sh
+      node index.js
+      ```
+  1. The output should be similar to: `3480450640000000000`. Compare this to the [Azuki floor price feed](https://data.chain.link/ethereum/mainnet/nft-floor-prices/coinbase-azuki-floor-price-eth), which returns `Ξ3.4805` at the time of writing.
+  </Fragment>
+  <Fragment slot="panel.3">
+  1. Add the following code to your JavaScript or TypeScript file:
+    ```ts
+    // eFIL reserves
+    ethSDK.getFromOracle(ethSDK.feeds.EFIL_POR).then((res) => {
+        console.log(res.answer.toString());
+    });
+    ```
+  1. Run your file. For example:
+      ```sh
+      node index.js
+      ```
+  1. The output should be similar to: `126365967984000000000000`. Compare this to the [eFIL reserves price feed](https://data.chain.link/ethereum/mainnet/reserves/efil-por), which returns `126,366` at the time of writing.
+  </Fragment>
+</TabsContent>
+
+### Full list of feeds
+
+You can find all available feeds by visiting [data.chain.link](https://data.chain.link/).
+
+## Reading data
+
+The data is returned in the form of an RoundDataModel object:
+
+```ts
+export interface RoundDataModel {
+  roundID: BigNumber
+  answer: BigNumber
+  formattedAnswer?: string
+  startedAt: BigNumber
+  updatedAt: BigNumber
+  answeredInRound: BigNumber
+  assetName?: string
+  dataFeedName?: string
+}
+```
+
+## Deployable templates
+
+The Dev3 SDK includes Chainlink interfaces and contracts that you can deploy from the Dev3 dashboard. You can use these interfaces and contracts from within your frontends and/or wallets.
+
+To deploy them, navigate to the [Dev3 dashboard](https://app.dev3.sh/) and choose the **Deploy from template** option in your workspace. Search for "chainlink" within your Dev3 workspace, or view the source code directly:
+
+- [Interfaces](https://github.com/0xDev3/solidity-commons/tree/master/interfaces/chainlink)
+- [Deployable contracts](https://github.com/0xDev3/solidity-commons/tree/master/src/chainlink)
+
+## Additional information
+
+- The source code for this extension is extracted to the [GitHub repo](https://github.com/0xDev3/dev3-chainlink-sdk) so you can also use it as a standalone module.
+- Dev3 Chainlink SDK extracts all the pair contracts addresses for all networks that are compatible into code generated classes, so all modern editors will support full code autocomplete.
+
+![Contract address pairs screenshot](https://user-images.githubusercontent.com/42938691/229169473-409e6fec-d183-416c-b0b3-db12f34fcf3c.png)
