@@ -13,18 +13,30 @@ import { ClickToZoom } from "@components"
 
 Given an upkeep ID, this page contains different methods of understanding and fixing issues with Upkeeps.
 
-## Chainlink Automation App
+## Underfunded upkeeps
 
 In the Chainlink Automation app, you can see the registration details of the upkeep, alongside the balance required and `performUpkeep` history.  If the upkeep is underfunded, you’ll see a warning on top of the page. Underfunded upkeeps will not be performed.
 
 <ClickToZoom src="/images/automation/debugging-ui.png" />
 
+## Insufficient perform gas
+
+If your performGasLimit is too low, the Automation Network will not execute your upkeep as it will fail in simulation. Consider increasing your perform upkeep gas limit in the UI. See [supported Blockchain Networks](/chainlink-automation/supported-networks) for limits.
+
+## Insufficient check gas
+
+If the amount of computation in your checkUpkeep exceeds our checkGasLimit, your upkeep will not be performed. You will have to reduce the amount of compute in checkUpkeep to bring the gas below the applicable limits. See [supported Blockchain Networks](/chainlink-automation/supported-networks) for limits.
+
+## Paused upkeeps
+
+If your upkeep is paused, your upkeep will not be performed. Please unpause it via the UI..
+
 ## Etherscan
 
-You can view the registry/user’s upkeep address on [Etherscan](https://etherscan.io/) to view transaction history. There are three types of information you can find on Ehterscan:
+You can view the registry/user's upkeep address on [Etherscan](https://etherscan.io/) to view transaction history. There are three types of information you can find on Ehterscan:
 
 - **All transactions on registry**: This shows all the perform upkeeps on the registry. You can view a specific `perfomUpkeep` transaction to debug more.
-- **Specific `performUpkeep` transaction**: By diving deep in the logs, you can check the upkeep ID within UpkeepPerformed log. You can also view the gas limit in the transaction: this will be the sum of the upkeep's gas limit and overhead.
+- **Specific `performUpkeep` transaction**: By diving deep in the logs, you can check the upkeep ID within UpkeepPerformed log.
 - **Target's internal transactions**: For a particular target contract, you can view its internal transactions which contains `performUpkeep` transactions for that contract by using the registry address as the filter for _from_ address. _Note_: internal transactions are only visible on Etherscan.
 
 ## Tenderly
@@ -36,6 +48,5 @@ You can use [Tenderly](https://tenderly.co/) to simulate `checkUpkeep` and/or `p
 1. Click **Fetch ABI** to automatically fetch the registry ABI.
 1. Select the `checkUpkeep` function or `performUpkeep` function.
 1. Enter the ID of your Upkeep. You can find this in the [Chainlink Automation app](https://automation.chain.link/).
-1. Enter a random Automation node address. You can find Automation node addresses by going to etherscan on the registry and looking at the `getKeeperList` function on the registry. If you are simulating `perfomUpkeep`, you will need to set a _from_ address in transaction parameters to be one of the Automation nodes
 1. You can either enter a block number to simulate a past action or use a pending block number to view the current state of an action and view the end result of an of an action.
 1. Once the simulation is complete, you will see the result. This will be either a _success_ or an _error_. To understand errors, view information under the **Debug** tab. **Note**: if the `performUpkeep` is failing while the check is succeeding, Chainlink Automation will not broadcast transactions.

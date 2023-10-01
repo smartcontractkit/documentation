@@ -23,28 +23,3 @@ These are the jobs or tasks that you execute on-chain. For example, you can call
 ## Automation nodes
 
 Nodes in the Chainlink Automation Network that service registered and funded upkeeps in the Automation registry. Automation Nodes use the same Node Operators as Chainlink Data Feeds.
-
-## Automation contracts
-
-The on-chain component of Chainlink automation is too large to fit into the [size requirements](https://eips.ethereum.org/EIPS/eip-170) of a single contract. It is also too large to fit into two contracts, a solution that works for most large projects. In this section we explain how these contracts work in conjunction and the various tradeoffs of this format. To learn more about specific contracts and interfaces, visit the [Automation contracts page](/chainlink-automation/automation-contracts).
-
-### Key terms
-
-**Master Contract**: this is also called a “storage” contract. It is the entry-point into the chain of delegatecalls and its state should be noted.
-
-**Logic Contract**: this a contract that only holds code. We use the code at this address and execute it in the context of the master contract in order to increase our total capacity for on-chain code.
-
-### Contract Logic
-
-We chain multiple logic contracts together using [fallback functions](https://docs.soliditylang.org/en/v0.8.12/contracts.html#fallback-function) and [delegatecall](https://docs.soliditylang.org/en/v0.8.12/introduction-to-smart-contracts.html?highlight=delegatecall#delegatecall-callcode-and-libraries). If a function definition is not found on one contract, we fall back to the next, always executing the function in the scope of the master contract. The actual implementation of this is based off of [OpenZeppelin's Proxy contract](https://docs.openzeppelin.com/contracts/4.x/api/proxy#Proxy).
-
-![Automation Contracts Logic](/images/automation/automation_architecture_diagrams_03.png)
-
-### Special considerations
-
-- Functions on the master contract have the least gas overhead. The most price sensitive functions can be found on these contracts.
-- Functions on the master contract receive first-class support from tools like [Etherscan](https://etherscan.io/) and [Tenderly](https://tenderly.co/). If you have functions that may need debugging, we advise keeping them in the master contract.
-- Etherscan supports executing logic contract functions that are once removed from the master. Because of this, we give secondary preference to the first logic contract for user and debugging functions.
-- Functions on _Logic A_ through _Logic X_ have no support on Etherscan and will be difficult to look into for most users.
-- We use _Logic A, B, C_... to avoid confusion with Chainlink Automation versioning.
-- Storage locations for logic contract addresses **must be bytecode**. This can be done by marking these locations as `immutable`. Otherwise, the chaining mechanism will break.

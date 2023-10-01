@@ -5,11 +5,10 @@ title: "Register a Custom Logic Upkeep"
 isMdx: true
 whatsnext:
   {
-    "Register a time-based Upkeep": "/chainlink-automation/job-scheduler/",
+    "Automation compatible interfaces": "/chainlink-automation/automation-interfaces"
     "Register a log trigger Upkeep": "/chainlink-automation/log-trigger/",
     "Register an Upkeep from solidity": "/chainlink-automation/register-upkeep-in-contract/",
     "Automation architecture": "/chainlink-automation/automation-architecture/",
-    "Billing": "/chainlink-automation/automation-economics/",
   }
 ---
 
@@ -73,40 +72,3 @@ Create powerful automation for your smart contract that leverages your own custo
    ![Upkeep Registration Success Message](/images/contract-devs/automation/automation-registration-submitted.png)
 
 Your upkeeps will be displayed in your list of **Active Upkeeps**. You must monitor the balance of your upkeep. If the balance drops below the **minimum balance**, the Chainlink Automation Network will not perform the Upkeep. See [Managing Upkeeps](/chainlink-automation/manage-upkeeps) to learn how to manage your upkeeps.
-
-## Register an Upkeep using your own deployed contract
-
-You can dynamically create and manage Upkeeps using your own smart contracts. The following example displays a smart contract that can create an Upkeep and determine the Upkeep ID. You can also program your Upkeep to check its own balance and fund itself by interacting with the registry.
-
-### Prerequisites
-
-Find the following addresses for your network:
-
-- Correct [LINK token contract](/resources/link-token-contracts)
-- [Registry and registrar addresses for your network](/chainlink-automation/supported-networks/#configurations)
-
-Optionally, you can fetch the LINK address and registrar address from the intended registry at run-time.
-
-<Aside type="note" title="Fund your contract">
-  Make sure your contract has enough [ERC-677 LINK](/resources/link-token-contracts) to fund the Upkeep at creation.
-  _The minimum amount is 0.1 LINK._
-</Aside>
-
-## Code example
-
-This sample uses v2.0 registry and registrar interfaces.
-
-<CodeSample src="samples/Automation/UpkeepIDConsumerExample.sol" />
-
-### registerAndPredictID parameters
-
-| Name             | Description                                                                                                                             |
-| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| `name`           | Name of Upkeep                                                                                                                          |
-| `encryptedEmail` | Not in use in programmatic registration. Please specify with `0x`                                                                       |
-| `upkeepContract` | Address of Keepers-compatible contract that will be automated                                                                           |
-| `gasLimit`       | The maximum amount of gas that will be used to execute your function on-chain                                                           |
-| `adminAddress`   | Address for Upkeep administrator. Upkeep administrator can fund contract.                                                               |
-| `checkData`      | ABI-encoded fixed and specified at Upkeep registration and used in every checkUpkeep. Can be empty (0x)                                 |
-| `offchainConfig` | Not in use. Please specify as 0x                                                                                                        |
-| `amount`         | The amount of LINK (in Wei) to fund your Upkeep. The minimum amount is 0.1 LINK. To fund 0.1 LINK please set this to 100000000000000000 |

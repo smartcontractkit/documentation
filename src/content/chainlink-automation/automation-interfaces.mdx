@@ -20,7 +20,7 @@ Your Automation-compatible contracts may use the following interfaces. You can f
 
 ## ILogAutomation
 
-Below is an outline of function parameters for functions found in [`ILogAutomation.sol`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/automation/interfaces/ILogAutomation.sol). To use log triggers, you will need to implement this interface in your smart contract. Click on the functions below to understand the parameters:
+To use log triggers, you will need to implement the [`ILogAutomation.sol`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/automation/interfaces/ILogAutomation.sol) interface in your smart contract. Click on the functions below to understand the parameters:
 
 | Function Name   | Description                                                                            |
 | --------------- | -------------------------------------------------------------------------------------- |
@@ -29,7 +29,7 @@ Below is an outline of function parameters for functions found in [`ILogAutomati
 
 ### checkLog function
 
-`checkLog` is the initial `view` function that will be simulated off-chain once a log that matches log specification has been emmitted. It should parse the log data and trigger an action. For example, it can trigger the retrieval of Data Streams reports. See the [Data Streams Getting Started](/data-streams/getting-started) guide to see an example.
+`checkLog` a `view` function that will be simulated off-chain once a log that matches your `LogTriggerConfig` has been emmitted. You should parse the log data and the check if something needs to happen on-chain. For example, it can trigger the retrieval of Data Streams reports. See the [Data Streams Getting Started](/data-streams/getting-started) guide to see an example.
 
 #### Parameters
 
@@ -67,26 +67,20 @@ This function contains the code that will be executed on-chain to finalize the t
 
 | Variable Name | Type    | Description                                                                                      | Permissible Values |
 | ------------- | ------- | ------------------------------------------------------------------------------------------------ | ------------------ |
-| `performData` | `bytes` | Data encoded in the `oracleCallback` function that will be used to execute the function on-chain | bytes              |
+| `performData` | `bytes` | Data encoded in the `checkLog` function that will be used to execute the function on-chain | bytes              |
 
 ## AutomationCompatibleInterface
 
-[`AutomationCompatibleInterface.sol`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/automation/interfaces/AutomationCompatibleInterface.sol) is used to create and register upkeeps using custom logic triggers. Click on one of the functions below to understand its parameters and limits.
+Custom logic upkeeps need to use the [`AutomationCompatibleInterface.sol`](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/automation/interfaces/AutomationCompatibleInterface.sol) interface. Click on one of the functions below to understand its parameters and limits.
 
 | Function Name   | Description                                                                                           |
 | --------------- | ----------------------------------------------------------------------------------------------------- |
-| `checkUpkeep`   | Runs off-chain at every block to determine if the `performUpkeep` function should be called on-chain. |
+| `checkUpkeep`   | Runs off-chain to determine if the `performUpkeep` function should be called on-chain. |
 | `performUpkeep` | Contains the logic that should be executed on-chain when `checkUpkeep` returns true.                  |
 
 ### checkUpkeep function
 
-This function contains the logic that runs off-chain during every block as an [`eth_call`](https://eth.wiki/json-rpc/API#eth_call) to determine if `performUpkeep` should be executed on-chain. To reduce on-chain gas usage, attempt to do your gas intensive calculations off-chain in `checkUpkeep` and pass the result to `performUpkeep` on-chain.
-
-#### checkUpkeep gas limits
-
-The `checkUpkeep` function is subject to the `checkGasLimit` in the [registry configuration](/chainlink-automation/supported-networks/#configurations).
-
-Because `checkUpkeep` is only off-chain in simulation it is best to treat this as a `view` function and not modify any state. This might not always be possible if you want to use more advanced Solidity features like [`DelegateCall`](https://docs.soliditylang.org/en/latest/introduction-to-smart-contracts.html#delegatecall-callcode-and-libraries). It is a best practice to import the [`AutomationCompatible.sol`](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/automation/AutomationCompatible.sol) contract and use the `cannotExecute` modifier to ensure that the method can be used only for simulation purposes.
+This view function contains the logic that runs off-chain during every block as an [`eth_call`](https://eth.wiki/json-rpc/API#eth_call) to determine if `performUpkeep` should be executed on-chain. To reduce on-chain gas usage, attempt to do your gas intensive calculations off-chain in `checkUpkeep` and pass the result to `performUpkeep` on-chain. It is a best practice to import the [`AutomationCompatible.sol`](https://github.com/smartcontractkit/chainlink/blob/master/contracts/src/v0.8/automation/AutomationCompatible.sol) contract and use the `cannotExecute` modifier to ensure that the method can be used only for simulation purposes.
 
 ```solidity
 function checkUpkeep(
@@ -130,10 +124,6 @@ You can create a highly flexible off-chain computation infrastructure that can p
 ### performUpkeep function for custom logic triggers
 
 When `checkUpkeep` returns `upkeepNeeded == true`, the Automation node broadcasts a transaction to the blockchain to execute your `performUpkeep` function on-chain with `performData` as an input.
-
-#### performUpkeep gas limits
-
-During registration you have to specify the maximum gas limit that we should allow your contract to use. We simulate `performUpkeep` during `checkUpkeep` and if the gas exceeds this limit the function will not execute on-chain. One method to determine your upkeep's gas limit is to simulate the `performUpkeep` function and add enough overhead to take into account increases that might happen due to changes in `performData` or on-chain data. The gas limit you specify cannot exceed the `performGasLimit` in the [configuration of the registry](/chainlink-automation/supported-networks/#configurations).
 
 Ensure that your `performUpkeep` is _idempotent_. Your `performUpkeep` function should change state such that `checkUpkeep` will not return `true` for the same subset of work once said work is complete. Otherwise the Upkeep will remain eligible and result in multiple performances by the Chainlink Automation Network on the exactly same subset of work. As a best practice, always [revalidate](/chainlink-automation/compatible-contract-best-practice#revalidate-performupkeep-on-automation-compatible-contracts) conditions for your upkeep at the start of your `performUpkeep` function.
 

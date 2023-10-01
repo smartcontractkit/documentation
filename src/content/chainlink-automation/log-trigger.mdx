@@ -5,11 +5,9 @@ title: "Register a Log Trigger Upkeep"
 isMdx: true
 whatsnext:
   {
-    "Register a time-based Upkeep": "/chainlink-automation/job-scheduler/",
-    "Register a custom logic Upkeep": "/chainlink-automation/register-upkeep/",
+    "Automation compatible interfaces": "/chainlink-automation/automation-interfaces"
     "Register an Upkeep from solidity": "/chainlink-automation/register-upkeep-in-contract/",
     "Automation architecture": "/chainlink-automation/automation-architecture/",
-    "Billing": "/chainlink-automation/automation-economics/",
   }
 ---
 
@@ -24,6 +22,10 @@ import { Aside, CodeSample } from "@components"
 </Aside>
 
 Create powerful smart contracts that can use log data as both trigger and input. This guide explains how to create log-trigger upkeeps.
+
+<Aside type="tip" title="Reorg protection">
+  Your upkeeps will be protected against logs that are emitted during a reorg.
+</Aside>
 
 ## Register an Upkeep using the Chainlink Automation App
 
@@ -82,13 +84,3 @@ Create powerful smart contracts that can use log data as both trigger and input.
     ![Upkeep Registration Success Message](/images/contract-devs/automation/automation-registration-submitted.png)
 
 Your upkeeps will be displayed in your list of **Active Upkeeps**. You must monitor the balance of your upkeep. If the balance drops below the **minimum balance**, the Chainlink Automation Network will not perform the Upkeep. See [Managing Upkeeps](/chainlink-automation/manage-upkeeps) to learn how to manage your upkeeps.
-
-## Register an Upkeep Programmatically
-
-To use log triggers, your contract will need to contain the `ILogAutomation` interface. You can learn more about the interface [here](/chainlink-automation/automation-interfaces#ilogautomation). To learn how to create Automation-compatible contracts, click [here](/chainlink-automation/compatible-contracts).
-
-## Log trigger limits
-
-| Item      | Description                                                                                                           | Limits                                                                           |
-| --------- | --------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| User logs | Number of user logs processed by Chainlink Automation. If this threshold is surpassed, log processing may be delayed. | 2.5 logs per upkeep processed per second, and 50 logs per all upkeeps per second |
