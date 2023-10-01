@@ -197,7 +197,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       contents: [
         {
           title: "Introduction",
-          url: "chainlink-automation/introduction/",
+          url: "chainlink-automation",
         },
         {
           title: "Getting Started",
@@ -519,7 +519,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       contents: [
         {
           title: "Overview",
-          url: "vrf/v2/introduction",
+          url: "vrf",
         },
         {
           title: "Getting Started",

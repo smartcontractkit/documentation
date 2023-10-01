@@ -92,10 +92,10 @@ export const evmProducts = [
   {
     title: "Automate Contracts",
     description: "Decentralized, highly reliable, cost-efficient and highly secure automation for smart contracts",
-    learnMorelink: "chainlink-automation/introduction",
+    learnMorelink: "chainlink-automation",
     image: automationLogo,
     links: [
-      ["Overview", "chainlink-automation/introduction"],
+      ["Overview", "chainlink-automation"],
       ["Getting Started", "chainlink-automation/compatible-contracts"],
       ["Time-based Automation", "chainlink-automation/job-scheduler"],
       ["Custom Logic Automation", "chainlink-automation/register-upkeep"],
@@ -108,10 +108,10 @@ export const evmProducts = [
   {
     title: "VRF",
     description: "Verifiable, tamper-proof random number generator for blockchain gaming and NFT projects",
-    learnMorelink: "/vrf/v2/introduction",
+    learnMorelink: "/vrf",
     image: vrfLogo,
     links: [
-      ["Overview", "/vrf/v2/introduction"],
+      ["Overview", "/vrf"],
       ["Getting Started", "/vrf/v2/getting-started"],
       ["Subscription Method", "/vrf/v2/subscription"],
       ["Direct Funding Method", "/vrf/v2/direct-funding"],

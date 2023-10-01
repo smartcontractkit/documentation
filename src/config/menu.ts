@@ -25,12 +25,12 @@ export const MENU: MenuItems = {
     },
     {
       text: "Automation",
-      link: "/chainlink-automation/introduction",
+      link: "/chainlink-automation",
       section: "automation",
     },
     {
       text: "VRF",
-      link: "/vrf/v2/introduction",
+      link: "/vrf",
       section: "vrf",
     },
     {
