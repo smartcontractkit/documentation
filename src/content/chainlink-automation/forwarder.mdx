@@ -12,16 +12,17 @@ This tutorial explains how to use the `Forwarder` to add additional security to 
 
 ## What is a Forwarder? When is it used?
 
-Starting with Automation 2.0, each registered upkeep under the Chainlink Automation network will have its own unique `Forwarder` contract. This contract is the intermediary between the Automation Registry and the Upkeep contract. Technically speaking, the `Forwarder` will always be the `msg.Sender`for your upkeep.
+Starting with Automation 2.0, each registered upkeep under the Chainlink Automation network will have its own unique `Forwarder` contract. The `Forwarder` address will only be known after registration, as we deploy a new forwarder for each upkeep. The `Forwarder` contract is the intermediary between the Automation Registry and your Upkeep contract. The `Forwarder` will always be the `msg.Sender`for your upkeep.
 
-If your `performUpkeep` function is open and callable by anyone without risk of accepting unintentional external data, you don't need to use the forwarder.
+If your `performUpkeep` function is open and callable by anyone without risk of accepting unintentional external data, you don't need to use the `Forwarder`.
 
 ## Securing your upkeep
 
-If your upkeep's perform function needs to be permissioned, please consider adding `msg.sender = registry.getForwarder(upkeepID)` at the top of your `performUpkeep` function.
+If your upkeep's perform function needs to be permissioned, please consider adding `msg.sender = forwarder` at the top of your `performUpkeep` function.
 
 To make this work you will need to:
 
-- Create `upkeepID` as a variable on your contract that only _you_ can update. `upkeepID` is a unique value that cannot change. It is known only after successful registration.
-- A variable storing the address of the registry. Only _you_ should be able to update this variable. update.
-- Call `registry.getForwarder(upkeepID)` using the Registry interface.
+- Create `forwarder` as a mutable address variable on your contract that only _you_ can update. `forwarder` is a unique value that cannot change for your upkeep.
+- Create `setForwarder` function so you can update the `forwarder` address
+- After registration run `setForwarder` with the forwarder address in your UI, or programatically fetch it using `registry.getForwarder(upkeepID)` using the Registry interface.
+
