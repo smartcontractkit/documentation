@@ -209,8 +209,7 @@ export const CHAINS: Chain[] = [
         name: "Arbitrum Goerli",
         explorerUrl: "https://goerli-rollup-explorer.arbitrum.io/address/%s",
         networkType: "testnet",
-        rddUrl:
-          "https://reference-data-directory-kzv2sfaf3-chainlinklabs.vercel.app/feeds-ethereum-testnet-goerli-arbitrum-1.json",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-goerli-arbitrum-1.json",
         queryString: "arbitrum-goerli",
         tags: ["rates", "streams"],
       },
