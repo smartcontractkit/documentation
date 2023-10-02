@@ -29,14 +29,14 @@ To use log triggers, you will need to implement the [`ILogAutomation.sol`](https
 
 ### checkLog function
 
-`checkLog` a `view` function that will be simulated off-chain once a log that matches your `LogTriggerConfig` has been emmitted. You should parse the log data and the check if something needs to happen on-chain. For example, it can trigger the retrieval of Data Streams reports. See the [Data Streams Getting Started](/data-streams/getting-started) guide to see an example.
+`checkLog` is a `view` function that will be simulated off-chain once a log that matches your `LogTriggerConfig` has been emitted. You should parse the log data and the check if something needs to happen on-chain. For example, it can trigger the retrieval of Data Streams reports. See the [Data Streams Getting Started](/data-streams/getting-started) guide to see an example.
 
 #### Parameters
 
 | Variable Name | Type         | Description                                                                                                                                           | Permissible Values                                                                                                                                       |
 | ------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `log`         | struct `Log` | Struct log data of the log triggering the upkeep; Automation will form the triggering log into a struct so the user can query log data in `checkLog`. | `struct Log { uint256 index; uint256 timestamp; bytes32 txHash; uint256 blockNumber; bytes32 blockHash; address source; bytes32[] topics; bytes data; }` |
-| `checkData`   | `bytes`      | Optional additional bytes the user wants to provide. `checkData` is set at time of registering the upkeep.                                            |                                                                                                                                                          |
+| `checkData`   | `bytes`      | Optional additional bytes the user wants to provide. `checkData` is set at the time of registering the upkeep.                                            |                                                                                                                                                          |
 
 #### Example
 
@@ -101,7 +101,7 @@ Below are the parameters and return values of the `checkUpkeep` function. Click 
 
 #### checkData
 
-You can pass information into your `checkUpkeep` function from your [upkeep registration](/chainlink-automation/register-upkeep) to execute different code paths. For example, to check the balance on an specific address, set the `checkData` to abi encode the address. To learn how to create flexible upkeeps with checkData, please see out [flexible upkeeps](/chainlink-automation/flexible-upkeeps) page.
+You can pass information into your `checkUpkeep` function from your [upkeep registration](/chainlink-automation/register-upkeep) to execute different code paths. For example, to check the balance on a specific address, set the `checkData` to abi encode the address. To learn how to create flexible upkeeps with checkData, please see our [flexible upkeeps](/chainlink-automation/flexible-upkeeps) page.
 
 <CodeSample src="snippets/Automation/checkData.sol" />
 
@@ -137,9 +137,9 @@ function performUpkeep(bytes calldata performData) external override;
 
 #### performData
 
-You can perform complex and broad off-chain computation, then execute on-chain state changes on a subset that meet your conditions. This can be done by passing the appropriate inputs within `performData` based on the results from your `checkUpkeep`. This pattern can greatly reduce your on-chain gas usage by narrowing the scope of work intelligently in your own Solidity code.
+You can perform complex and broad off-chain computation, then execute on-chain state changes on a subset that meets your conditions. This can be done by passing the appropriate inputs within `performData` based on the results from your `checkUpkeep`. This pattern can greatly reduce your on-chain gas usage by narrowing the scope of work intelligently in your own Solidity code.
 
-- **Identify a list of addresses that require work**: You might have a number of addresses that you are validating for conditions before your contract takes an action. Doing this on-chain can be expensive. Filter the list of addresses by validating the necessary conditions within your `checkUpkeep` function. Then, pass the addresses that meets the condition through the `performData` function.
+- **Identify a list of addresses that require work**: You might have a number of addresses that you are validating for conditions before your contract takes an action. Doing this on-chain can be expensive. Filter the list of addresses by validating the necessary conditions within your `checkUpkeep` function. Then, pass the addresses that meet the condition through the `performData` function.
   For example, if you have a "top up" contract that ensures several hundred account balances never decrease below a threshold, pass the list of accounts that meet the conditions so that the `performUpkeep` function validates and tops up only a small subset of the accounts.
 - **Identify the subset of states that must be updated**: If your contract maintains complicated objects such as arrays and structs, or stores a lot of data, you should read through your storage objects within your `checkUpkeep` and run your proprietary logic to determine if they require updates or maintenance. After that is complete, you can pass the known list of objects that require updates through the `performData` function.
 
