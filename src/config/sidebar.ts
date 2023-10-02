@@ -191,25 +191,128 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
   ],
+  dataStreams: [
+    {
+      section: "Chainlink Data Streams",
+      contents: [
+        {
+          title: "Overview",
+          url: "data-streams",
+        },
+        {
+          title: "Getting Started",
+          url: "data-streams/getting-started",
+        },
+        {
+          title: "Stream IDs",
+          url: "data-streams/stream-ids",
+        },
+        {
+          title: "Release Notes",
+          url: "data-streams/release-notes",
+        },
+      ],
+    },
+    {
+      section: "Reference",
+      contents: [
+        {
+          title: "Report Schema",
+          url: "data-streams/reference/report-schema",
+        },
+        {
+          title: "Interfaces",
+          url: "data-streams/reference/interfaces",
+        },
+      ],
+    },
+    {
+      section: "Resources",
+      contents: [
+        {
+          title: "Learning Resources",
+          url: "getting-started/other-tutorials?parent=dataStreams",
+        },
+        {
+          title: "Smart Contract Overview",
+          url: "getting-started/conceptual-overview?parent=dataStreams",
+          children: [
+            {
+              title: "Deploy Your First Smart Contract",
+              url: "getting-started/deploy-your-first-contract?parent=dataStreams",
+            },
+          ],
+        },
+        {
+          title: "LINK Token Contracts",
+          url: "resources/link-token-contracts?parent=dataStreams",
+          children: [
+            {
+              title: "Acquire testnet LINK",
+              url: "resources/acquire-link?parent=dataStreams",
+            },
+            {
+              title: "Fund Your Contracts",
+              url: "resources/fund-your-contract?parent=dataStreams",
+            },
+          ],
+        },
+        {
+          title: "Starter Kits and Frameworks",
+          url: "resources/create-a-chainlinked-project?parent=dataStreams",
+        },
+        {
+          title: "Bridges and Associated Risks",
+          url: "resources/bridge-risks?parent=dataStreams",
+        },
+        {
+          title: "Chainlink Architecture",
+          url: "architecture-overview/architecture-overview?parent=dataStreams",
+          children: [
+            {
+              title: "Basic Request Model",
+              url: "architecture-overview/architecture-request-model?parent=dataStreams",
+            },
+            {
+              title: "Decentralized Data Model",
+              url: "architecture-overview/architecture-decentralized-model?parent=dataStreams",
+            },
+            {
+              title: "Off-Chain Reporting",
+              url: "architecture-overview/off-chain-reporting?parent=dataStreams",
+            },
+          ],
+        },
+        {
+          title: "Developer Communications",
+          url: "resources/developer-communications?parent=dataStreams",
+          children: [
+            { title: "Getting Help", url: "resources/getting-help?parent=dataStreams" },
+            { title: "Hackathon Resources", url: "resources/hackathon-resources?parent=dataStreams" },
+          ],
+        },
+        {
+          title: "Contributing to Chainlink",
+          url: "resources/contributing-to-chainlink?parent=dataStreams",
+        },
+      ],
+    },
+  ],
   automation: [
     {
       section: "Chainlink Automation",
       contents: [
         {
-          title: "Introduction",
+          title: "Overview",
           url: "chainlink-automation",
         },
         {
           title: "Getting Started",
-          url: "chainlink-automation/compatible-contracts",
+          url: "chainlink-automation/getting-started",
         },
         {
           title: "Supported Networks",
-          url: "chainlink-automation/supported-networks/",
-        },
-        {
-          title: "Best Practices",
-          url: "chainlink-automation/compatible-contract-best-practice",
+          url: "chainlink-automation/supported-networks",
         },
         {
           title: "Release Notes",
@@ -218,32 +321,39 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
-      section: "Examples",
-      contents: [
-        {
-          title: "Create a Vault Harvester",
-          url: "chainlink-automation/tutorials/vault-harvester",
-        },
-      ],
-    },
-    {
       section: "Guides",
       contents: [
         {
-          title: "Time-based Automation",
+          title: "Create Automation-compatible Contracts",
+          url: "chainlink-automation/compatible-contracts",
+        },
+        {
+          title: "Register a Time-Based Upkeep",
           url: "chainlink-automation/job-scheduler",
         },
         {
-          title: "Custom Logic Automation",
+          title: "Register a Custom Logic Upkeep",
           url: "chainlink-automation/register-upkeep",
+        },
+        {
+          title: "Register a Log Trigger Upkeep",
+          url: "chainlink-automation/log-trigger",
+        },
+        {
+          title: "Register Upkeeps Programmatically",
+          url: "chainlink-automation/register-upkeep-in-contract",
+        },
+        {
+          title: "Secure Upkeeps Using the Forwarder",
+          url: "chainlink-automation/forwarder",
+        },
+        {
+          title: "Create Flexible Upkeeps",
+          url: "chainlink-automation/flexible-upkeeps",
         },
         {
           title: "Manage your Upkeeps",
           url: "chainlink-automation/manage-upkeeps",
-        },
-        {
-          title: "Creating Flexible Upkeeps",
-          url: "chainlink-automation/flexible-upkeeps",
         },
       ],
     },
@@ -251,16 +361,42 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "Concepts",
       contents: [
         {
-          title: "Automation Pricing",
+          title: "Concepts",
+          url: "chainlink-automation/automation-concepts",
+        },
+        {
+          title: "Architecture",
+          url: "chainlink-automation/automation-architecture",
+        },
+        {
+          title: "Best Practices",
+          url: "chainlink-automation/compatible-contract-best-practice",
+        },
+      ],
+    },
+    {
+      section: "Reference",
+      contents: [
+        {
+          title: "Contracts",
+          url: "chainlink-automation/automation-contracts",
+        },
+        {
+          title: "Interfaces",
+          url: "chainlink-automation/automation-interfaces",
+        },
+        {
+          title: "Troubleshooting and Debugging",
+          url: "chainlink-automation/debugging-errors",
+        },
+      ],
+    },
+    {
+      section: "Economics",
+      contents: [
+        {
+          title: "Billing",
           url: "chainlink-automation/automation-economics",
-        },
-        {
-          title: "Automation Architecture",
-          url: "chainlink-automation/overview",
-        },
-        {
-          title: "FAQs",
-          url: "chainlink-automation/faqs",
         },
       ],
     },

@@ -1,0 +1,83 @@
+---
+section: automation
+date: Last Modified
+title: "Register a Log Trigger Upkeep"
+isMdx: true
+whatsnext:
+  {
+    "Automation compatible interfaces": "/chainlink-automation/automation-interfaces",
+    "Register an upkeep using Solidity": "/chainlink-automation/register-upkeep-in-contract/",
+    "Automation architecture": "/chainlink-automation/automation-architecture/",
+  }
+---
+
+import { Aside, CodeSample } from "@components"
+
+<Aside type="tip" title="Testing and best practices">
+  Follow the [best practices](/chainlink-automation/compatible-contract-best-practice) when creating a compatible
+  contract and test your upkeep on a testnet before deploying it to a mainnet.
+</Aside>
+
+Create powerful smart contracts that can use log data as both trigger and input. This guide explains how to create log-trigger upkeeps.
+
+<Aside type="tip" title="Reorg protection">
+  Your upkeeps will be protected against logs that are emitted during a reorg.
+</Aside>
+
+## Register an Upkeep using the Chainlink Automation App
+
+<div class="remix-callout">
+  <a href="https://automation.chain.link">Open the Chainlink Automation App</a>
+</div>
+
+1.  **Click the Register New Upkeep button**
+    ![Click Register New Upkeep](/images/contract-devs/automation/auto-ui-home.png)
+
+1.  **Connect your wallet** using the _Connect Wallet_ choose a network. For a list of supported networks, see the [Supported Blockchain Networks](/chainlink-automation/supported-networks) section. The Chainlink Automation App also lists the currently supported networks.
+    ![Connect With Metamask](/images/contract-devs/automation/auto-ui-wallet.png)
+
+1.  **Select the log trigger**
+    ![Select log trigger](/images/contract-devs/automation/log_trig_0_select.png)
+
+1.  **Provide the address of your [Automation-compatible contract](/chainlink-automation/compatible-contracts)** that you want to automate. Note this will need to follow the [iLogAutomation interface](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/automation/interfaces/ILogAutomation.sol). Following the interface ensures Automation nodes can interact with your contract as expected.
+    ![Address to automate](/images/contract-devs/automation/log_trig_1_upkeep_address.png)
+
+1.  **Provide the address of the contract that will be emitting the log** If the contract is not validated you will need to provide the ABI.
+    ![Contract emitting trigger log](/images/contract-devs/automation/log_trig_2_emitter_address.png)
+
+1.  **Use the dropdown to select the triggering event.** You can also provide one optional filter per any of the indexed events in the log, but you don't have to. When this combination of filters are matched the upkeep will trigger.
+    ![Contract emitting trigger log](/images/contract-devs/automation/log_trig_3_logsig_filter_populated.png)
+
+1.  **Complete the required details:**
+
+    - **Upkeep name**: This will be visible in the Chainlink Automation app.
+    - **Gas limit**: This is the maximum amount of gas that your transaction requires to execute on chain. This limit cannot exceed the `performGasLimit` value configured on the [registry](/chainlink-automation/supported-networks/#configurations).
+    - **Starting balance (LINK)**: Specify a LINK starting balance to fund your upkeep. See the [LINK Token Contracts](/resources/link-token-contracts) page to find the correct contract address and access faucets for testnet LINK. This field is required. You must have LINK before you can use the Chainlink Automation service.
+      {/* prettier-ignore */}
+
+      {" "}
+
+      <Aside type="tip" title="Funding Upkeep">
+        You should fund your contract with more LINK that you anticipate you will need. The network will not check or
+        perform your Upkeep if your balance is too low based on current exchange rates. View the [Automation
+        economics](/chainlink-automation/automation-economics) page to learn more about the cost of using Chainlink
+        Automation.
+      </Aside>
+
+           {/* prettier-ignore */}
+
+      {" "}
+
+      <Aside type="tip" title="ERC-677 Link">
+        For funding on Mainnet, you need ERC-677 LINK. Many token bridges give you ERC-20 LINK tokens. Use PegSwap to
+        [convert Chainlink tokens (LINK) to be ERC-677 compatible](https://pegswap.chain.link/). To fund on a supported
+        testnet, get [LINK](/resources/link-token-contracts) from [faucets.chain.link](https://faucets.chain.link/).
+      </Aside>
+
+    - **Check data**: Optional input field that you may use depending on whether you are using it in your contract.
+    - **Your email address**: Optional email address that will be and is used to send you an email when your upkeep is underfunded.
+
+1.  **Click `Register upkeep`** and confirm the transaction in MetaMask.
+    ![Upkeep Registration Success Message](/images/contract-devs/automation/automation-registration-submitted.png)
+
+Your upkeeps will be displayed in your list of **Active Upkeeps**. You must monitor the balance of your upkeep. If the balance drops below the **minimum balance**, the Chainlink Automation Network will not perform the Upkeep. See [Managing Upkeeps](/chainlink-automation/manage-upkeeps) to learn how to manage your upkeeps.
