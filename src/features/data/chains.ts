@@ -1,6 +1,6 @@
 import { ChainMetadata } from "./api"
 
-type ChainTags = ("default" | "proofOfReserve" | "nftFloorPrice" | "rates")[]
+type ChainTags = ("default" | "proofOfReserve" | "nftFloorPrice" | "rates" | "streams")[]
 export interface ChainNetwork {
   name: string
   explorerUrl: string
@@ -194,7 +194,7 @@ export const CHAINS: Chain[] = [
     title: "Arbitrum Data Feeds",
     img: "/assets/chains/arbitrum.svg",
     networkStatusUrl: "https://arbiscan.freshstatus.io/",
-    tags: ["default", "rates", "nftFloorPrice"],
+    tags: ["default", "rates", "nftFloorPrice", "streams"],
     supportedFeatures: ["vrfSubscription", "vrfDirectFunding", "feeds"],
     networks: [
       {
@@ -211,7 +211,7 @@ export const CHAINS: Chain[] = [
         networkType: "testnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-goerli-arbitrum-1.json",
         queryString: "arbitrum-goerli",
-        tags: ["rates"],
+        tags: ["rates", "streams"],
       },
     ],
   },

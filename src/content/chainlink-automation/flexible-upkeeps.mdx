@@ -3,7 +3,7 @@ section: automation
 date: Last Modified
 title: "Making flexible, secure, and low-cost contracts"
 isMdx: true
-whatsnext: { "Example Contracts": "/chainlink-automation/util-overview/", "FAQs": "/chainlink-automation/faqs/" }
+whatsnext: { "Example Contracts": "/chainlink-automation/util-overview/" }
 ---
 
 import { Aside, CodeSample } from "@components"
@@ -31,7 +31,7 @@ Chainlink Automation is supported on several [networks](/chainlink-automation/su
 
 ## Problem: On-chain computation leads to high gas fees
 
-In the guide for [Creating Compatible Contracts](/chainlink-automation/compatible-contracts), you deployed a basic [counter contract](/chainlink-automation/compatible-contracts/#example-contract) and verified that the counter increments every 30 seconds. However, more complex use cases can require looping over arrays or performing expensive computation. This leads to expensive gas fees and can increase the premium that end-users have to pay to use your dApp. To illustrate this, deploy an example contract that maintains internal balances.
+In the guide for [Creating Compatible Contracts](/chainlink-automation/compatible-contracts), you deployed a basic [counter contract](/chainlink-automation/compatible-contracts/#example-automation-compatible-contract-using-custom-logic-trigger) and verified that the counter increments every 30 seconds. However, more complex use cases can require looping over arrays or performing expensive computation. This leads to expensive gas fees and can increase the premium that end-users have to pay to use your dApp. To illustrate this, deploy an example contract that maintains internal balances.
 
 The contract has the following components:
 
@@ -74,14 +74,8 @@ To reduce these gas fees and avoid running out of gas, you can make some simple 
 
 Modify the contract and move the computation to the `checkUpkeep()` function. This computation _doesn’t consume any gas_ and supports multiple upkeeps for the same contract to do the work in parallel. The main difference between this new contract and the previous contract are:
 
-- The `checkUpkeep()` function receives [`checkData`](/chainlink-automation/compatible-contracts/#checkdata), which passes arbitrary bytes to the function. Pass a `lowerBound` and an `upperBound` to scope the work to a sub-array of `balances`. This creates several upkeeps with different values of `checkData`. The function loops over the sub-array and looks for the indexes of the elements that require re-balancing and calculates the required `increments`. Then, it returns `upkeepNeeded == true` and `performData`, which is calculated by encoding `indexes` and `increments`. Note that `checkUpkeep()` is a view function, so computation does not consume any gas.
-- The `performUpkeep()` function takes [performData](/chainlink-automation/compatible-contracts/#performdata-1) as a parameter and decodes it to fetch the `indexes` and the `increments`.
-
-<Aside type="note" title="Note on performData">
-  This data should always be validated against the contract’s current state to ensure that `performUpkeep()` is
-  idempotent. It also blocks malicious Automation Nodes from sending non-valid data. This example, tests that the state
-  is correct after re-balancing: `require(_balance == LIMIT, "Provided increment not correct");`
-</Aside>
+- The `checkUpkeep()` function receives [`checkData`](/chainlink-automation/automation-interfaces/#checkdata), which passes arbitrary bytes to the function. Pass a `lowerBound` and an `upperBound` to scope the work to a sub-array of `balances`. This creates several upkeeps with different values of `checkData`. The function loops over the sub-array and looks for the indexes of the elements that require re-balancing and calculates the required `increments`. Then, it returns `upkeepNeeded == true` and `performData`, which is calculated by encoding `indexes` and `increments`. Note that `checkUpkeep()` is a view function, so computation does not consume any gas.
+- The `performUpkeep()` function takes [performData](/chainlink-automation/automation-interfaces/#performdata) as a parameter and decodes it to fetch the `indexes` and the `increments`.
 
 <CodeSample src="samples/Automation/BalancerOffChain.sol" />
 

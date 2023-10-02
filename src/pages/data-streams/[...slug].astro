@@ -1,0 +1,18 @@
+---
+import { getCollection } from "astro:content"
+import DocsLayout from "~/layouts/DocsLayout.astro"
+
+export async function getStaticPaths() {
+  const dataStreamsEntries = await getCollection("data-streams")
+  return dataStreamsEntries.map((entry) => ({
+    params: { slug: entry.slug },
+    props: { entry },
+  }))
+}
+const { entry } = Astro.props
+const { Content, headings } = await entry.render()
+---
+
+<DocsLayout frontmatter={entry.data} headings={headings}>
+  <Content />
+</DocsLayout>

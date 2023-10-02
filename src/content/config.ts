@@ -27,6 +27,7 @@ const sectionEnum = z.enum([
   "chainlinkFunctions",
   "nodeOperator",
   "dataFeeds",
+  "dataStreams",
   "legacy",
   "vrf",
 ])
@@ -86,6 +87,7 @@ const chainlinkAutomationCollection = baseCollection
 const chainlinkFunctionsCollection = baseCollection
 const chainlinkNodesCollection = baseCollection
 const dataFeedsCollection = baseCollection
+const dataStreamsCollection = baseCollection
 const resourcesCollection = baseCollection
 const vrfCollection = baseCollection
 const ccipCollection = baseCollection
@@ -96,6 +98,7 @@ export const collections = {
   "chainlink-functions": chainlinkFunctionsCollection,
   "chainlink-nodes": chainlinkNodesCollection,
   "data-feeds": dataFeedsCollection,
+  "data-streams": dataStreamsCollection,
   quickstarts: quickstartsCollection,
   resources: resourcesCollection,
   vrf: vrfCollection,

@@ -20,6 +20,7 @@ export interface ChainMetadata {
   contractVersion: number
   decimalPlaces: number | null
   ens: null | string
+  feedId: null | string
   formatDecimalPlaces: number | null
   healthPrice: string
   heartbeat: number

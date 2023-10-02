@@ -96,7 +96,7 @@ const DefaultTHead = ({ showExtraDetails }: { showExtraDetails: boolean }) => (
       <th aria-hidden={!showExtraDetails}>Deviation</th>
       <th aria-hidden={!showExtraDetails}>Heartbeat</th>
       <th aria-hidden={!showExtraDetails}>Dec</th>
-      <th>Address</th>
+      <th>Address and info</th>
     </tr>
   </thead>
 )
@@ -305,6 +305,132 @@ const NftFloorTr = ({ network, proxy, showExtraDetails }) => (
   </tr>
 )
 
+const StreamsTHead = ({ showExtraDetails, isTestnet = false }: { showExtraDetails: boolean; isTestnet?: boolean }) => (
+  <thead>
+    <tr>
+      <th class={tableStyles.heading}>Stream</th>
+      <th>Stream info</th>
+    </tr>
+  </thead>
+)
+
+const StreamsTr = ({ network, proxy, showExtraDetails }) => (
+  <tr>
+    <td class={tableStyles.pairCol}>
+      <div className={tableStyles.assetPair}>
+        {feedCategories[proxy.docs.feedCategory] || ""}
+        {proxy.pair[0]}/{proxy.pair[1]}
+      </div>
+      {proxy.docs.shutdownDate && (
+        <div className={clsx(feedList.shutDate)}>
+          <hr />
+          Deprecating:
+          <br />
+          {proxy.docs.shutdownDate}
+        </div>
+      )}
+    </td>
+    <td style="width:80%;">
+      <div className={tableStyles.assetAddress}>
+        <span class="label">ID:</span>
+        <a class={tableStyles.addressLink} href={network.explorerUrl.replace("%s", proxy.feedId)}>
+          {proxy.feedId}
+        </a>
+        <button
+          class={clsx(tableStyles.copyBtn, "copy-iconbutton")}
+          style={{ height: "16px", width: "16px" }}
+          data-clipboard-text={proxy.feedId}
+        >
+          <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
+        </button>
+      </div>
+      <div className={tableStyles.assetAddress}>
+        <span class="label">Verifier proxy address:</span>
+        <a class={tableStyles.addressLink} href={network.explorerUrl.replace("%s", proxy.proxyAddress)}>
+          0xea9B98Be000FBEA7f6e88D08ebe70EbaAD10224c
+        </a>
+        <button
+          class={clsx(tableStyles.copyBtn, "copy-iconbutton")}
+          style={{ height: "16px", width: "16px" }}
+          data-clipboard-text="0xea9B98Be000FBEA7f6e88D08ebe70EbaAD10224c"
+        >
+          <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
+        </button>
+      </div>
+      <div>
+        <dl class={tableStyles.porDl}>
+          {proxy.docs.schema ? (
+            <div>
+              <dt>
+                <span class="label">Report schema:</span>
+              </dt>
+              <dd>{proxy.docs.schema}</dd>
+            </div>
+          ) : (
+            ""
+          )}
+          {proxy.docs.productType ? (
+            <div>
+              <dt>
+                <span class="label">Data type:</span>
+              </dt>
+              <dd>
+                {proxy.docs.productType}
+                {proxy.docs.productSubType ? " - " + proxy.docs.productSubType : ""}
+              </dd>
+            </div>
+          ) : (
+            ""
+          )}
+          {proxy.docs.assetClass ? (
+            <div>
+              <dt>
+                <span class="label">Asset class:</span>
+              </dt>
+              <dd>
+                {proxy.docs.assetClass}
+                {proxy.docs.assetSubClass ? " - " + proxy.docs.assetSubClass : ""}
+              </dd>
+            </div>
+          ) : (
+            ""
+          )}
+          {proxy.docs.quoteAsset ? (
+            <div aria-hidden={!showExtraDetails}>
+              <dt>
+                <span class="label">Quote asset:</span>
+              </dt>
+              <dd>{proxy.docs.quoteAsset}</dd>
+            </div>
+          ) : (
+            ""
+          )}
+          {proxy.docs.marketHours ? (
+            <div aria-hidden={!showExtraDetails}>
+              <dt>
+                <span class="label">Market hours:</span>
+              </dt>
+              <dd>{proxy.docs.marketHours}</dd>
+            </div>
+          ) : (
+            ""
+          )}
+          {proxy.name ? (
+            <div>
+              <dt>
+                <span class="label">Full name:</span>
+              </dt>
+              <dd>{proxy.name}</dd>
+            </div>
+          ) : (
+            ""
+          )}
+        </dl>
+      </div>
+    </td>
+  </tr>
+)
+
 export const MainnetTable = ({
   network,
   showExtraDetails,
@@ -332,13 +458,15 @@ export const MainnetTable = ({
 }) => {
   if (!network.metadata) return null
   const isDeprecating = ecosystem === "deprecating"
+  const isStreams = dataFeedType === "streams"
   const isPor = dataFeedType === "por"
   const isNftFloor = dataFeedType === "nftFloor"
-  const isDefault = !isNftFloor && !isPor
+  const isDefault = !isNftFloor && !isPor && !isStreams
   const filteredMetadata = network.metadata
     .sort((a, b) => (a.name < b.name ? -1 : 1))
     .filter((chain) => {
       if (isDeprecating) return !!chain.docs.shutdownDate
+      if (isStreams) return chain.contractType === "verifier"
       if (isPor) return !!chain.docs.porType
       if (isNftFloor) return !!chain.docs.nftFloorUnits
       return !chain.docs.nftFloorUnits && !chain.docs.porType
@@ -375,12 +503,14 @@ export const MainnetTable = ({
             </tr>
           ) : (
             <>
+              {isStreams && <StreamsTHead showExtraDetails={showExtraDetails} />}
               {isPor && <ProofOfReserveTHead showExtraDetails={showExtraDetails} />}
               {isDefault && <DefaultTHead showExtraDetails={showExtraDetails} />}
               {isNftFloor && <NftFloorTHead showExtraDetails={showExtraDetails} />}
               <tbody>
                 {slicedFilteredMetadata.map((proxy) => (
                   <>
+                    {isStreams && <StreamsTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
                     {isPor && <ProofOfReserveTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
                     {isDefault && <DefaultTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
                     {isNftFloor && <NftFloorTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
@@ -414,17 +544,20 @@ export const TestnetTable = ({
 }) => {
   if (!network.metadata) return null
 
+  const isStreams = dataFeedType === "streams"
   const isPor = dataFeedType === "por"
   const isNftFloor = dataFeedType === "nftFloor"
   const isRates = dataFeedType === "rates"
-  const isDefault = !isNftFloor && !isPor && !isRates
+  const isDefault = !isNftFloor && !isPor && !isRates && !isStreams
   const filteredMetadata = network.metadata
     .sort((a, b) => (a.name < b.name ? -1 : 1))
     .filter((chain) => {
+      if (isStreams) return !!chain.contractType
       if (isPor) return !!chain.docs.porType
       if (isNftFloor) return !!chain.docs.nftFloorUnits
       if (isRates) return !!(chain.docs.productType === "Rates" || chain.docs.productSubType === "Realized Volatility")
       return (
+        !chain.feedId &&
         !chain.docs.nftFloorUnits &&
         !chain.docs.porType &&
         chain.docs.productType !== "Rates" &&
@@ -435,6 +568,7 @@ export const TestnetTable = ({
   return (
     <div class={tableStyles.tableWrapper}>
       <table class={tableStyles.table}>
+        {isStreams && <StreamsTHead showExtraDetails={showExtraDetails} isTestnet />}
         {isPor && <ProofOfReserveTHead showExtraDetails={showExtraDetails} />}
         {isDefault && <DefaultTHead showExtraDetails={showExtraDetails} />}
         {isNftFloor && <NftFloorTHead showExtraDetails={showExtraDetails} />}
@@ -442,6 +576,7 @@ export const TestnetTable = ({
         <tbody>
           {filteredMetadata.map((proxy) => (
             <>
+              {isStreams && <StreamsTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
               {isPor && <ProofOfReserveTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
               {isDefault && <DefaultTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} isTestnet />}
               {isNftFloor && <NftFloorTr network={network} proxy={proxy} showExtraDetails={showExtraDetails} />}
