@@ -96,7 +96,7 @@ export const evmProducts = [
     image: automationLogo,
     links: [
       ["Overview", "chainlink-automation"],
-      ["Getting Started", "chainlink-automation/compatible-contracts"],
+      ["Getting Started", "chainlink-automation/getting-started"],
       ["Time-based Automation", "chainlink-automation/job-scheduler"],
       ["Custom Logic Automation", "chainlink-automation/register-upkeep"],
       ["Manage your Upkeeps", "chainlink-automation/manage-upkeeps"],
